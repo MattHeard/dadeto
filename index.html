@@ -11,7 +11,6 @@
 
             article {
                 padding: 4em 1em 0em 1em;
-                margin: 1em -1em 1em -1em;
                 border: 0.1em solid navy;
                 border-left: 0.2em solid;
             }
@@ -31,8 +30,10 @@
                 margin-bottom: 10vh;
                 margin-left: 10vw;
                 margin-right: 10vw;
-                max-width: 50em;
                 font-family: 'Avenir', Arial, Helvetica, sans-serif;
+                display: grid;
+                grid-gap: 1em;
+                grid-template-columns: repeat(auto-fill, 30em);
             }
 
             footer {
