@@ -1,0 +1,84 @@
+.date-2024-10-03 {
+  font-family: Arial, sans-serif;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f4f9;
+}
+
+.date-2024-10-03 .container {
+  width: 300px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.date-2024-10-03 .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.date-2024-10-03 .scoreboard {
+  display: flex;
+}
+
+.date-2024-10-03 .scoreboard div {
+  width: 30px;
+  height: 30px;
+  background-color: #eee;
+  margin: 0 5px;
+  text-align: center;
+  line-height: 30px;
+  border-radius: 4px;
+}
+
+.date-2024-10-03 .game-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-2024-10-03 .card-buttons {
+  display: flex;
+  align-items: center; /* Vertically align card and buttons */
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.date-2024-10-03 .card-display {
+  font-size: 120px;
+  margin-right: 20px; /* Space between the card and buttons */
+}
+
+.date-2024-10-03 .buttons {
+  display: flex;
+  flex-direction: column; /* Stack the buttons vertically */
+  gap: 15px; /* Add spacing between the buttons */
+}
+
+.date-2024-10-03 button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.date-2024-10-03 #correct {
+  background-color: #a8e6a1; /* Pastel green */
+}
+
+.date-2024-10-03 #incorrect {
+  background-color: #f8a8a8; /* Pastel red */
+}
+
+.date-2024-10-03 #total {
+  background-color: #eee; /* Keep the current grey */
+}
+
+.date-2024-10-03 p {
+    text-align: right;
+}
