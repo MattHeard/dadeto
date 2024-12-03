@@ -1,1 +1,43 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Node.js dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Editor and IDE files
+.idea/
+.vscode/
 *.swp
+*.sublime-*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Coverage reports
+coverage/
+
+# Generated files
+*.class
+*.min.*
+
+# Miscellaneous
+debug/
+*.lock

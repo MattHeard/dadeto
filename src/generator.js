@@ -1,4 +1,4 @@
-const htmlTemplate = `<!DOCTYPE html>
+const header = `<!DOCTYPE html>
 <html lang="en">
     <head>
         <title>Matt Heard</title>
@@ -54,7 +54,14 @@ const htmlTemplate = `<!DOCTYPE html>
         <header>
             <h1>Matt Heard</h1>
             <p>Software developer and philosopher in Berlin</p>
-        </header>
+        </header>`;
+
+const article = `
+        <article>
+            <p>Hello, world!</p>
+        </article>`;
+
+const footer = `
         <footer>
             All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.
         </footer>
@@ -62,5 +69,9 @@ const htmlTemplate = `<!DOCTYPE html>
 </html>`;
 
 export function generateBlog(blog) {
-    return htmlTemplate;
+    if (blog.posts.length === 0) {
+        return header + footer;
+    }
+    
+    return header + article + footer;
 }
