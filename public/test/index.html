@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blog Index</title>
+  <style>
+    :root {
+      --card-width: 800px;
+      --card-height: 400px;
+      --padding: 16px;
+      --bg-color: #f8f8f8;
+      --text-color: #000;
+      --accent: #001f3f;
+      --rare-accent: #ff851b;
+      --border-color: #ccc;
+    }
+    
+    /* Global & Background */
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      font-weight: 300;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      /* Subtle paper texture */
+      background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 5px);
+    }
+    
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      gap: 0;
+      /* Fixed card width but auto-adjust if container is too small */
+      grid-template-columns: repeat(auto-fit, minmax(0, var(--card-width)));
+      justify-content: start;
+      padding: var(--padding);
+    }
+    
+    /* Card Dimensions & Basic Styling */
+    .card {
+      width: var(--card-width);
+      height: var(--card-height);
+      border: 1px dashed var(--border-color);
+      box-sizing: border-box;
+      padding: var(--padding);
+      background-color: #fff;
+      overflow: hidden;
+      position: relative;
+      transition: height 0.1s ease-out;
+    }
+    
+    /* When viewport is narrower than card width */
+    @media (max-width: calc(var(--card-width))) {
+      .card {
+        width: 100%;
+      }
+    }
+    
+    /* Card Content & Clipping */
+    .card-content {
+      overflow: hidden;
+      height: 100%;
+    }
+    .card-content h2 {
+      margin-top: 0;
+    }
+    
+    /* Fullscreen/Pop-Out Button at top-right */
+    .fullscreen-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      text-decoration: none;
+      color: var(--accent);
+      font-size: 18px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .fullscreen-button:hover,
+    .fullscreen-button:focus {
+      color: darkblue;
+      outline: 2px solid var(--accent);
+    }
+    
+    /* Subtle Expansion Button (appears if content is clipped) */
+    .expand-button {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--accent);
+      display: none;
+    }
+    .expand-button:hover,
+    .expand-button:focus {
+      color: darkblue;
+      outline: 2px solid var(--accent);
+    }
+    
+    /* Hyperlinks */
+    a {
+      text-decoration: underline;
+    }
+    a:hover,
+    a:focus,
+    button:hover,
+    button:focus {
+      color: darkblue;
+    }
+    
+    /* Special Layout for Viewport Sized at 1.5 * Card Width:
+       When the available width equals calc(var(--card-width) * 1.5),
+       the grid shows a fixed card (left two-thirds) with a blank right third. */
+    @media (min-width: calc(var(--card-width) * 1.5)) and (max-width: calc(var(--card-width) * 1.5)) {
+      .grid {
+        width: calc(var(--card-width) * 1.5);
+        grid-template-columns: var(--card-width) auto;
+      }
+      .card {
+        grid-column: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid">
+    <!-- Card 1 -->
+    <article class="card">
+      <a href="post1.html" class="fullscreen-button" aria-label="Open post in full screen">⤢</a>
+      <div class="card-content">
+        <h2>Post Title 1</h2>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nisi nec arcu aliquam blandit.
+          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.
+        </p>
+      </div>
+      <button class="expand-button" aria-label="Expand content">▼</button>
+    </article>
+    
+    <!-- Card 2 -->
+    <article class="card">
+      <a href="post2.html" class="fullscreen-button" aria-label="Open post in full screen">⤢</a>
+      <div class="card-content">
+        <h2>Post Title 2</h2>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vitae risus sed libero tincidunt volutpat.
+          Mauris et dignissim sapien.
+        </p>
+      </div>
+      <button class="expand-button" aria-label="Expand content">▼</button>
+    </article>
+    
+    <!-- Card 3 (Longer content to force cropping) -->
+    <article class="card">
+      <a href="post3.html" class="fullscreen-button" aria-label="Open post in full screen">⤢</a>
+      <div class="card-content">
+        <h2>Post Title 3</h2>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque dignissim, nisi sit amet vestibulum convallis, 
+          justo ligula feugiat arcu, in facilisis metus turpis a eros. Cras ultricies magna a sapien mollis, at ultricies 
+          ligula dignissim. Morbi non sapien ac sem viverra aliquet a purus.
+        </p>
+      </div>
+      <button class="expand-button" aria-label="Expand content">▼</button>
+    </article>
+    
+    <!-- Card 4 -->
+    <article class="card">
+      <a href="post4.html" class="fullscreen-button" aria-label="Open post in full screen">⤢</a>
+      <div class="card-content">
+        <h2>Post Title 4</h2>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nisi nec arcu aliquam blandit.
+        </p>
+      </div>
+      <button class="expand-button" aria-label="Expand content">▼</button>
+    </article>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        const content = card.querySelector('.card-content');
+        const expandButton = card.querySelector('.expand-button');
+        // If the content is taller than its container, show the expansion button
+        if (content.scrollHeight > content.clientHeight + 1) {
+          expandButton.style.display = 'block';
+        }
+        expandButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Determine the top offset of the clicked card
+          const clickedTop = card.getBoundingClientRect().top;
+          const tolerance = 5; // pixels tolerance for same row
+          // Find all cards in the same grid row
+          const rowCards = Array.from(cards).filter(c => {
+            return Math.abs(c.getBoundingClientRect().top - clickedTop) < tolerance;
+          });
+          // Calculate the maximum height needed among cards in this row
+          let maxHeight = 0;
+          rowCards.forEach(c => {
+            const contentDiv = c.querySelector('.card-content');
+            const computed = window.getComputedStyle(c);
+            const padTop = parseFloat(computed.paddingTop);
+            const padBottom = parseFloat(computed.paddingBottom);
+            const requiredHeight = contentDiv.scrollHeight + padTop + padBottom;
+            if (requiredHeight > maxHeight) {
+              maxHeight = requiredHeight;
+            }
+          });
+          // Expand each card in the row with a smooth animation (max 100ms)
+          rowCards.forEach(c => {
+            c.style.height = maxHeight + 'px';
+            const btn = c.querySelector('.expand-button');
+            if (btn) btn.style.display = 'none';
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>

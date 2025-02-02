@@ -31,6 +31,7 @@
 
             body {
                 background-color: mintcream;
+                background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.02) 0, rgba(0, 0, 0, 0.02) 1px, transparent 1px, transparent 5px);
                 color: navy;
                 font-family: 'Inter', 'Avenir', Arial, Helvetica, sans-serif;
                 display: grid;
@@ -104,23 +105,25 @@
             </section>
         </article>
         <article id="2024-10-03">
-            <div class="date-2024-10-03">
-                <div class="header">
-                    <h1>HI-LO</h1>
-                    <div class="scoreboard">
-                        <div id="correct">0</div>
-                        <div id="incorrect">0</div>
-                        <div id="total">0</div>
-                    </div>
-                </div>
-                <div class="hi-lo-card">
-                    <div class="game-area">
-                        <div class="card-display">
-                            <div id="current-card">🂡</div>
+            <div class="date-2024-10-03" style="display: flex; flex-direction: column;">
+                <div class="container">
+                    <div class="header">
+                        <h1>HI-LO</h1>
+                        <div class="scoreboard">
+                            <div id="correct">0</div>
+                            <div id="incorrect">0</div>
+                            <div id="total">0</div>
                         </div>
-                        <div class="buttons">
-                            <button id="higher-btn">Higher</button>
-                            <button id="lower-btn">Lower</button>
+                    </div>
+                    <div class="hi-lo-card">
+                        <div class="game-area">
+                            <div class="card-display">
+                                <div id="current-card">🂡</div>
+                            </div>
+                            <div class="buttons">
+                                <button id="higher-btn">Higher</button>
+                                <button id="lower-btn">Lower</button>
+                            </div>
                         </div>
                     </div>
                 </div>
