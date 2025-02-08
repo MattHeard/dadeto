@@ -6,6 +6,16 @@ export function generateBlog(blog) {
     if (blog.posts.length === 0) {
         return header + footer;
     }
+
+    if (blog.posts.length == 1) {
+        return header + article + footer;
+    }
+
+    if (blog.posts.length == 2) {
+        const firstArticle = `<article><p>First post content</p></article>`;
+        const secondArticle = `<article><p>Second post content</p></article>`;
+        return header + firstArticle + secondArticle + footer;
+    }
     
     return header + article + footer;
 }

@@ -28,7 +28,7 @@ describe('Blog Generator', () => {
         expect(html).toBe(expectedHtml);
     });
 
-    test.skip('should generate complete HTML page with multiple posts', () => {
+    test('should generate complete HTML page with multiple posts', () => {
         const blog = {
             posts: [
                 { content: "First post content" },
