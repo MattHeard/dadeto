@@ -42,4 +42,21 @@ describe('Blog Generator', () => {
         const html = generateBlog(blog);
         expect(html).toBe(expectedHtml);
     });
+
+    test('should render a title', () => {
+        const blog = {
+            posts: [
+                {
+                    title: "First post",
+                    content: "First post content"
+                }
+            ]
+        };
+
+        const expectedBody = `<article><h2>First post</h2><p>First post content</p></article>`;
+        const expectedHtml = expectedHeader + expectedBody + expectedFooter;
+
+        const html = generateBlog(blog);
+        expect(html).toBe(expectedHtml);
+    });
 });

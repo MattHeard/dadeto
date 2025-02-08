@@ -6,6 +6,12 @@ const getArticle = (post) => `<article><p>${post.content}</p></article>`;
 
 // Generate the HTML from a blog
 export function generateBlog(blog) {
-    const articles = blog.posts.map(getArticle);
+    let articles;
+    if (blog.posts[0]?.title) {
+        const f = (post) => `<article><h2>${post.title}</h2><p>${post.content}</p></article>`;
+        articles = blog.posts.map(f);
+    } else {
+        articles = blog.posts.map(getArticle);
+    }
     return header + articles.join("") + footer;
 };
