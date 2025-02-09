@@ -1,17 +1,33 @@
-const header = `<!DOCTYPE html><html lang="en"><head><title>Matt Heard</title><meta name="viewport" content="width=device-width"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Acme&family=Inter:wght@100..900&display=swap" rel="stylesheet"></head><body><header><h1>Matt Heard</h1><p>Software developer and philosopher in Berlin</p></header>`;
-const footer = `<footer>All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.</footer></body></html>`;
+const doctype = `<!DOCTYPE html>`;
+const htmlPrefix = `<html lang="en">`;
+const blogTitle = `<title>Matt Heard</title>`;
+const metaTags = `<meta name="viewport" content="width=device-width">`;
+const fontLinks = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Acme&family=Inter:wght@100..900&display=swap" rel="stylesheet">`;
+const headContent = [blogTitle, metaTags, fontLinks].join("");
+const wrap = (tag, content) => `<${tag}>${content}</${tag}>`;
+const headBlock = wrap("head", headContent);
+const bodyPrefix = `<body>`;
+const headerElement = `<header><h1>Matt Heard</h1><p>Software developer and philosopher in Berlin</p></header>`;
+const header = [headBlock, bodyPrefix, headerElement].join("");
+const bodySuffix = `</body>`;
+const htmlSuffix = `</html>`;
+const footerContent = `All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.`;
+const footerBlock = wrap("footer", footerContent);
+const footer = [footerBlock, bodySuffix].join("");
+const wrapHtml = (content) => [doctype, htmlPrefix, content, htmlSuffix].join("");
 
 // Create an article from a post
-const getArticle = (post) => `<article><p>${post.content}</p></article>`;
+const wrapH2 = (content) => wrap("h2", content);
+const renderTitle = (t) => t ? wrapH2(t) : "";
+const wrapP = (content) => wrap("p", content);
+const renderContent = (c) => wrapP(c);
+const wrapArticle = (content) => wrap("article", content);
+const getArticleContent = (post) => [renderTitle(post.title), renderContent(post.content)].join("");
+const getArticle = (post) => wrapArticle(getArticleContent(post));
 
 // Generate the HTML from a blog
 export function generateBlog(blog) {
-    let articles;
-    if (blog.posts[0]?.title) {
-        const f = (post) => `<article><h2>${post.title}</h2><p>${post.content}</p></article>`;
-        articles = blog.posts.map(f);
-    } else {
-        articles = blog.posts.map(getArticle);
-    }
-    return header + articles.join("") + footer;
+    const articles = blog.posts.map(getArticle);
+    const htmlContents = header + articles.join("") + footer;
+    return wrapHtml(htmlContents);
 };
