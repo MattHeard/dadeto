@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
   <title>Matt Heard</title>
   <style>
     /* General Layout & Typography */
@@ -15,12 +16,12 @@
       padding: 0;
     }
     #container {
-      max-width: 50em;
-      padding: 1em;
+      max-width: 50ch;
+      padding: 1lh;
     }
     .entry {
       display: grid;
-      grid-template-columns: 4em auto;
+      grid-template-columns: 5ch auto;
       padding-bottom: 1em;
       gap: 0em 1em;
     }
@@ -28,7 +29,6 @@
       font-weight: bold;
       color: #33CCFF;
       text-align: right;
-      white-space: nowrap;
       padding: 0em 0em;
     }
     .value {
@@ -53,7 +53,7 @@
       text-transform: uppercase;
     }
     img {
-      max-width: 20em;
+      max-width: min(20em, 60vw);
       height: auto;
       display: block;
     }
