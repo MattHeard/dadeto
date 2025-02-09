@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Matt Heard</title>
+  <style>
+    /* General Layout & Typography */
+    body {
+      background-color: #121212;
+      color: #CCCCCC;
+      font-family: Consolas, monospace;
+      font-size: 16px;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+    }
+    #container {
+      max-width: 50em;
+      padding: 1em;
+    }
+    .entry {
+      display: grid;
+      grid-template-columns: 4em auto;
+      padding-bottom: 1em;
+      gap: 0em 1em;
+    }
+    .key {
+      font-weight: bold;
+      color: #33CCFF;
+      text-align: right;
+      white-space: nowrap;
+      padding: 0em 0em;
+    }
+    .value {
+      text-align: left;
+      color: #CCCCCC;
+    }
+    .article-title {
+      color: #121212;
+      background-color: #00FFFF
+    }
+    .media {
+      color: #00FF00;
+    }
+    .footer {
+      font-style: italic;
+    }
+
+    h1, h2, h3 {
+      color: #FFFFFF;
+      font-size: 16px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    img {
+      max-width: 20em;
+      height: auto;
+      display: block;
+    }
+    p {
+      margin: 0;
+    }
+    a {
+      color: #00FFFF;
+      text-decoration: none;
+      transition: color 0.2s ease-in-out;
+    }
+    a:hover {
+      color: #33FFFF;
+      text-decoration: underline;
+    }
+    
+    /* Log & Message Styles */
+    .warning {
+      color: #FFA500;
+    }
+    .error {
+      color: #FF0000;
+    }
+    .success {
+      color: #00FF00;
+    }
+    .metadata {
+      color: #33CCFF;
+    }
+    
+    /* Code Blocks & Inline Code */
+    code {
+      background-color: #1A1A1A;
+      color: #00FFFF;
+    }
+    pre {
+      background-color: #1A1A1A;
+      color: #CCCCCC;
+      padding: 10px;
+      overflow-x: auto;
+    }
+    #audio-controls {
+      background-color: #1A1A1A;
+      color: #00FFFF;
+      display: inline-block;
+    }
+    .audio-btn {
+      padding: 0em 1em;
+      border: none;
+      background: #00FF00;
+      color: #1A1A1A;
+      font-family: Consolas, monospace;
+      cursor: pointer;
+      height: 2em;
+    }
+    .audio-btn:hover {
+      text-decoration: underline;
+    }
+    
+    /* Collapsible Sections */
+    .collapsible {
+      cursor: pointer;
+      background-color: #1A1A1A;
+    }
+    .content {
+      display: none;
+    }
+    
+    /* Typewriter Effect */
+    .typewriter {
+      overflow: hidden;
+      border-right: 0.15em solid #CCCCCC;
+      white-space: nowrap;
+    }
+    
+    /* Blinking Cursor */
+    #cursor {
+      font-weight: bold;
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <!-- Header -->
+    <div class="entry">
+      <div class="key"></div>
+      <div class="value"><h1>Matt Heard</h1></div>
+      <div class="key"></div>
+      <div class="value metadata">Software developer and philosopher in Berlin</div>
+    </div>
+    
+    <article class="entry" id="DETE1">
+      <div class="key article-title">DETE1</div>
+      <div class="value"><h2><a href="#DETE1">Deterministic Moral Preferences</a></h2></div>
+      <div class="key">pubAt</div>
+      <div class="value metadata">2024-Oct-08</div>
+      <div class="key media">illus</div>
+      <div class="value">
+        <img loading="lazy" src="../2024-10-08.png" alt="A pointillist
+                painting of an Italian town square with muted colors, showing a
+                crowd of people discussing something important."/>
+      </div>
+      <div class="key media">audio</div>
+      <div class="value">
+        <audio id="terminal-audio" src="../2024-10-08.m4a"></audio>
+        <div id="audio-controls">
+          <button class="audio-btn" onclick="playAudio()">⏵ PLAY</button>
+          <button class="audio-btn" onclick="pauseAudio()">⏸ PAUSE</button>
+          <button class="audio-btn" onclick="stopAudio()">⏹ STOP</button>
+          <span id="audio-time" class="metadata">00:00</span>
+        </div>
+      </div>
+      <div class="key">text</div>
+      <p class="value">As a deterministic agent, you still have preferences. (These are pre-defined and moulded by external factors.) You prefer "good" outcomes, "good" intentions, and "right" actions. Your preferences combine and collide with those of others in your communities. These form social expectations. Community members formalise these and enforce them with rewards and punishments. You do not receive rewards and punishments due to your "moral responsibility". You receive them due to your (mis)alignment with the community. But this alignment goes both ways. Moral progress is a judgement of increasing alignment with your current preferences. Current misalignment encourages you to be political.</p>
+    </article>
+    <div class="entry">
+      <div class="key"></div>
+      <div class="footer value warning">
+        All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.
+      </div>
+    </div>
+  </div>
+  <script>
+    /* Toggle Collapsible Section */
+    function toggleCollapse(element) {
+      const content = element.nextElementSibling;
+      content.style.display = content.style.display === "block" ? "none" : "block";
+    }
+
+    const audio = document.getElementById("terminal-audio");
+    const timeDisplay = document.getElementById("audio-time");
+
+    function playAudio() {
+      audio.play();
+    }
+
+    function pauseAudio() {
+      audio.pause();
+    }
+
+    function stopAudio() {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
+    audio.addEventListener("timeupdate", function () {
+      let minutes = Math.floor(audio.currentTime / 60);
+      let seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+      timeDisplay.textContent = `${minutes}:${seconds}`;
+    });
+  </script>
+</body>
+</html>
