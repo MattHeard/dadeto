@@ -182,7 +182,11 @@ const wrapH2 = (content) => wrap("h2", content);
 const renderTitle = (t) => t ? wrapH2(t) : "";
 const wrapP = (content) => wrap("p", content);
 const renderContent = (c) => wrapP(c);
-const getArticleContent = (post) => [renderTitle(post.title), renderContent(post.content)].join("");
+const getArticleContent = (post) => {
+  return `<div class="value"><h2><a href="#${post.key}">${post.title}</a></h2></div>
+      <div class="key">text</div>
+      <p class="value">${post.content}</p>`;
+};
 const getArticle = (post) => {
     const content = getArticleContent(post);
     const idAttr = post.key ? ` id=\"${post.key}\"` : "";
