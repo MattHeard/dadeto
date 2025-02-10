@@ -35,5 +35,3 @@ export function generateBlog(blog, header, footer, wrapHtml) {
 export function generateBlogOuter(blog) {
     return generateBlog(blog, header, footer, wrapHtml);
 };
-
-export { header, footer, wrapHtml };
