@@ -25,6 +25,9 @@ describe('Blog Generator', () => {
         };
         const expectedHtml = `<html><body>
     <article class="entry" id="SING1">
+      <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="key article-title">SING1</div>
       <p>Hello, world!</p>
     </article>
 </body></html>`;
@@ -42,9 +45,15 @@ describe('Blog Generator', () => {
         
         const expectedHtml = `<html><body>
     <article class="entry" id="FIRS1">
+      <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="key article-title">FIRS1</div>
       <p>First post content</p>
     </article>
     <article class="entry" id="SECO2">
+      <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="key article-title">SECO2</div>
       <p>Second post content</p>
     </article>
 </body></html>`;
@@ -66,6 +75,9 @@ describe('Blog Generator', () => {
 
         const expectedHtml = `<html><body>
     <article class="entry" id="TITL1">
+      <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="key article-title">TITL1</div>
       <h2>First post</h2><p>First post content</p>
     </article>
 </body></html>`;

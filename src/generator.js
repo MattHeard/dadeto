@@ -135,7 +135,9 @@ const header = `<head>
       <div class="key"></div>
       <div class="value"><h1>Matt Heard</h1></div>
       <div class="key"></div>
-      <div class="value metadata">Software developer and philosopher in Berlin</div>
+      <div class="footer value warning">
+        Software developer and philosopher in Berlin
+      </div>
     </div>
 `;
 
@@ -185,6 +187,9 @@ const getArticle = (post) => {
     const content = getArticleContent(post);
     const idAttr = post.key ? ` id=\"${post.key}\"` : "";
     return `<article class=\"entry\"${idAttr}>
+      <div class=\"key full-width\">▄▄▄▄▄▄▄▄▄▄</div>
+      <div class=\"value full-width\">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
+      <div class=\"key article-title\">${post.key}</div>
       ${content}
     </article>`;
 };
