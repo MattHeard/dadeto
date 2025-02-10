@@ -184,7 +184,9 @@ const getArticleContent = (post) => [renderTitle(post.title), renderContent(post
 const getArticle = (post) => {
     const content = getArticleContent(post);
     const idAttr = post.key ? ` id=\"${post.key}\"` : "";
-    return `<article class=\"entry\"${idAttr}>${content}</article>`;
+    return `<article class=\"entry\"${idAttr}>
+      ${content}
+    </article>`;
 };
 
 // Generate the HTML from a blog
