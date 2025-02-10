@@ -16,7 +16,7 @@
       padding: 0;
     }
     #container {
-      max-width: 50ch;
+      max-width: 85ch;
       padding: 1lh;
     }
     .entry {
@@ -45,6 +45,16 @@
     .footer {
       font-style: italic;
     }
+    .full-width {
+      white-space: nowrap;
+      font-family: monospace;
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: clip;
+      line-height: 1;
+      color: #00FFFF;
+    }
 
     h1, h2, h3 {
       color: #FFFFFF;
@@ -63,11 +73,13 @@
     a {
       color: #00FFFF;
       text-decoration: none;
-      transition: color 0.2s ease-in-out;
     }
     a:hover {
       color: #33FFFF;
       text-decoration: underline;
+    }
+    h1 > a, h2 > a, h3 > a {
+      color: #FFFFFF;
     }
     
     /* Log & Message Styles */
@@ -150,6 +162,8 @@
     </div>
     
     <article class="entry" id="DETE1">
+      <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
       <div class="key article-title">DETE1</div>
       <div class="value"><h2><a href="#DETE1">Deterministic Moral Preferences</a></h2></div>
       <div class="key">pubAt</div>
