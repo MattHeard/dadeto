@@ -135,7 +135,7 @@ const header = `<head>
       <div class="key"></div>
       <div class="value"><h1>Matt Heard</h1></div>
       <div class="key"></div>
-      <div class="footer value warning">
+      <div class="value metadata">
         Software developer and philosopher in Berlin
       </div>
     </div>
@@ -184,6 +184,8 @@ const wrapP = (content) => wrap("p", content);
 const renderContent = (c) => wrapP(c);
 const getArticleContent = (post) => {
   return `<div class="value"><h2><a href="#${post.key}">${post.title}</a></h2></div>
+      <div class="key">pubAt</div>
+      <p class="value metadata">${post.publicationDate}</p>
       <div class="key">text</div>
       <p class="value">${post.content}</p>`;
 };
