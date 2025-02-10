@@ -5,15 +5,12 @@ const footer = "</body>";
 const wrapHtml = (c) => ["<html>", c, "</html>"].join("");
 
 describe('Blog Generator', () => {
-    const expectedHeader = header;
-    const expectedFooter = footer;
-
     test('should generate complete HTML page with no posts', () => {
         const blog = {
             posts: []
         };
         
-        const expectedHtml = wrapHtml(expectedHeader + expectedFooter);
+        const expectedHtml = "<html><body></body></html>";
         const html = generateBlog(blog, header, footer, wrapHtml);
         expect(html).toBe(expectedHtml);
     });
@@ -24,8 +21,7 @@ describe('Blog Generator', () => {
                 content: "Hello, world!"
             }]
         };
-        const expectedBody = `<article><p>Hello, world!</p></article>`;
-        const expectedHtml = wrapHtml(expectedHeader + expectedBody + expectedFooter);
+        const expectedHtml = "<html><body><article><p>Hello, world!</p></article></body></html>";
         const html = generateBlog(blog, header, footer, wrapHtml);
         expect(html).toBe(expectedHtml);
     });
@@ -38,8 +34,7 @@ describe('Blog Generator', () => {
             ]
         };
         
-        const expectedBody = `<article><p>First post content</p></article><article><p>Second post content</p></article>`;
-        const expectedHtml = wrapHtml(expectedHeader + expectedBody + expectedFooter);
+        const expectedHtml = "<html><body><article><p>First post content</p></article><article><p>Second post content</p></article></body></html>";
 
         const html = generateBlog(blog, header, footer, wrapHtml);
         expect(html).toBe(expectedHtml);
@@ -55,8 +50,7 @@ describe('Blog Generator', () => {
             ]
         };
 
-        const expectedBody = `<article><h2>First post</h2><p>First post content</p></article>`;
-        const expectedHtml = wrapHtml(expectedHeader + expectedBody + expectedFooter);
+        const expectedHtml = "<html><body><article><h2>First post</h2><p>First post content</p></article></body></html>";
 
         const html = generateBlog(blog, header, footer, wrapHtml);
         expect(html).toBe(expectedHtml);
