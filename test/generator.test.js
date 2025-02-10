@@ -10,7 +10,8 @@ describe('Blog Generator', () => {
             posts: []
         };
         
-        const expectedHtml = "<html><body></body></html>";
+        const expectedHtml = `<html><body>
+</body></html>`;
         const html = generateBlog(blog, header, footer, wrapHtml);
         expect(html).toBe(expectedHtml);
     });
@@ -21,7 +22,9 @@ describe('Blog Generator', () => {
                 content: "Hello, world!"
             }]
         };
-        const expectedHtml = "<html><body><article><p>Hello, world!</p></article></body></html>";
+        const expectedHtml = `<html><body>
+    <article><p>Hello, world!</p></article>
+</body></html>`;
         const html = generateBlog(blog, header, footer, wrapHtml);
         expect(html).toBe(expectedHtml);
     });
@@ -34,7 +37,10 @@ describe('Blog Generator', () => {
             ]
         };
         
-        const expectedHtml = "<html><body><article><p>First post content</p></article><article><p>Second post content</p></article></body></html>";
+        const expectedHtml = `<html><body>
+    <article><p>First post content</p></article>
+    <article><p>Second post content</p></article>
+</body></html>`;
 
         const html = generateBlog(blog, header, footer, wrapHtml);
         expect(html).toBe(expectedHtml);
@@ -50,7 +56,9 @@ describe('Blog Generator', () => {
             ]
         };
 
-        const expectedHtml = "<html><body><article><h2>First post</h2><p>First post content</p></article></body></html>";
+        const expectedHtml = `<html><body>
+    <article><h2>First post</h2><p>First post content</p></article>
+</body></html>`;
 
         const html = generateBlog(blog, header, footer, wrapHtml);
         expect(html).toBe(expectedHtml);

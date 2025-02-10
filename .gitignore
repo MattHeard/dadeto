@@ -30,6 +30,7 @@ build/
 *.tmp
 *.temp
 *.bak
+tmp/
 
 # Coverage reports
 coverage/

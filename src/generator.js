@@ -2,7 +2,7 @@ const docType = "<!DOCTYPE html>";
 const htmlPrefix = "<html lang='en'>";
 const htmlSuffix = "</html>";
 
-const header = `"<head>
+const header = `<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
   <title>Matt Heard</title>
@@ -126,31 +126,6 @@ const header = `"<head>
     .audio-btn:hover {
       text-decoration: underline;
     }
-    
-    /* Collapsible Sections */
-    .collapsible {
-      cursor: pointer;
-      background-color: #1A1A1A;
-    }
-    .content {
-      display: none;
-    }
-    
-    /* Typewriter Effect */
-    .typewriter {
-      overflow: hidden;
-      border-right: 0.15em solid #CCCCCC;
-      white-space: nowrap;
-    }
-    
-    /* Blinking Cursor */
-    #cursor {
-      font-weight: bold;
-      animation: blink 1s step-start infinite;
-    }
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
   </style>
 </head>
 <body>
@@ -161,9 +136,11 @@ const header = `"<head>
       <div class="value"><h1>Matt Heard</h1></div>
       <div class="key"></div>
       <div class="value metadata">Software developer and philosopher in Berlin</div>
-    </div>`;
+    </div>
+`;
 
-const footer = `    <div class="entry">
+const footer = `
+    <div class="entry">
       <div class="key"></div>
       <div class="footer value warning">
         All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.
@@ -171,12 +148,6 @@ const footer = `    <div class="entry">
     </div>
   </div>
   <script>
-    /* Toggle Collapsible Section */
-    function toggleCollapse(element) {
-      const content = element.nextElementSibling;
-      content.style.display = content.style.display === "block" ? "none" : "block";
-    }
-
     const audio = document.getElementById("terminal-audio");
     const timeDisplay = document.getElementById("audio-time");
 
@@ -219,7 +190,7 @@ export function generateBlogOuter(blog) {
 };
 
 export function generateBlog(blog, header, footer, wrapHtml) {
-    const articles = blog.posts.map(getArticle);
-    const htmlContents = header + articles.join("") + footer;
+    const articles = blog.posts.map(getArticle).map(article => "    " + article + "\n");
+    const htmlContents = header + "\n" + articles.join("") + footer;
     return wrapHtml(htmlContents);
 };
