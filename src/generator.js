@@ -26,8 +26,14 @@ const getArticleContent = (post) => [renderTitle(post.title), renderContent(post
 const getArticle = (post) => wrapArticle(getArticleContent(post));
 
 // Generate the HTML from a blog
-export function generateBlog(blog) {
+export function generateBlog(blog, header, footer, wrapHtml) {
     const articles = blog.posts.map(getArticle);
     const htmlContents = header + articles.join("") + footer;
     return wrapHtml(htmlContents);
+}
+
+export function generateBlogOuter(blog) {
+    return generateBlog(blog, header, footer, wrapHtml);
 };
+
+export { header, footer, wrapHtml };
