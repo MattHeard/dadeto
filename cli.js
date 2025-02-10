@@ -8,7 +8,7 @@ import { generateBlogOuter } from './src/generator.js';
 // Construct a sample blog object
 const sampleBlog = {
   posts: [
-    { title: "CLI Test Post", content: "This is a command line sample post." }
+    { key: "CLI001", title: "CLI Test Post", content: "This is a command line sample post." }
   ]
 };
 

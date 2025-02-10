@@ -180,10 +180,13 @@ const wrapH2 = (content) => wrap("h2", content);
 const renderTitle = (t) => t ? wrapH2(t) : "";
 const wrapP = (content) => wrap("p", content);
 const renderContent = (c) => wrapP(c);
-const wrapArticle = (content) => wrap("article", content);
 const getArticleContent = (post) => [renderTitle(post.title), renderContent(post.content)].join("");
-const getArticle = (post) => wrapArticle(getArticleContent(post));
- 
+const getArticle = (post) => {
+    const content = getArticleContent(post);
+    const idAttr = post.key ? ` id=\"${post.key}\"` : "";
+    return `<article class=\"entry\"${idAttr}>${content}</article>`;
+};
+
 // Generate the HTML from a blog
 export function generateBlogOuter(blog) {
     return generateBlog(blog, header, footer, wrapHtml);
