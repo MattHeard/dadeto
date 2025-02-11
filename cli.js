@@ -4,21 +4,15 @@
 // Make sure your package.json has "type": "module" if you're using ES modules.
 
 import { generateBlogOuter } from './src/generator.js';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+import fs from 'fs';
 
 // Construct a sample blog object
-const sampleBlog = {
-  posts: [
-    {
-      key: "CLIP1",
-      title: "CLI Test Post",
-      publicationDate: "2023-01-01",
-      content: "This is a command line sample post."
-    }
-  ]
-};
+const blog = require('./src/blog.json');
 
 // Generate the HTML using generateBlogOuter
-const outputHTML = generateBlogOuter(sampleBlog);
+const outputHTML = generateBlogOuter(blog);
 
-// Print the generated HTML to the console
-console.log(outputHTML);
+// Write the generated HTML to a file
+fs.writeFileSync('public/index.2025-02.html', outputHTML, 'utf8');

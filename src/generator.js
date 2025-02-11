@@ -177,11 +177,6 @@ const footer = `
 const wrapHtml = (c) => [docType, htmlPrefix, c, htmlSuffix].join("");
 
 // Create an article from a post
-const wrap = (tag, content) => `<${tag}>${content}</${tag}>`;
-const wrapH2 = (content) => wrap("h2", content);
-const renderTitle = (t) => t ? wrapH2(t) : "";
-const wrapP = (content) => wrap("p", content);
-const renderContent = (c) => wrapP(c);
 const getArticleContent = (post) => {
   return `<div class="value"><h2><a href="#${post.key}">${post.title}</a></h2></div>
       <div class="key">pubAt</div>
