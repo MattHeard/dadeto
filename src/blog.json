@@ -3,10 +3,12 @@
     {
       "key": "DETE1",
       "title": "Deterministic Moral Preferences",
-      "publicationDate": "2024-Oct-08",
-      "content": "As a deterministic agent, you still have preferences. (These are pre-defined and moulded by external factors.) You prefer \"good\" outcomes, \"good\" intentions, and \"right\" actions. Your preferences combine and collide with those of others in your communities. These form social expectations. Community members formalise these and enforce them with rewards and punishments. You do not receive rewards and punishments due to your \"moral responsibility\". You receive them due to your (mis)alignment with the community. But this alignment goes both ways. Moral progress is a judgement of increasing alignment with your current preferences. Current misalignment encourages you to be political.",
-      "illustrationUrl": "2024-10-08.png",
-      "illustrationAltText": "A pointillist painting of an Italian town square with muted colors, showing a crowd of people discussing something important.",
+      "publicationDate": "2024-10-08",
+      "content": ["As a deterministic agent, you still have preferences. (These are pre-defined and moulded by external factors.) You prefer \"good\" outcomes, \"good\" intentions, and \"right\" actions. Your preferences combine and collide with those of others in your communities. These form social expectations. Community members formalise these and enforce them with rewards and punishments. You do not receive rewards and punishments due to your \"moral responsibility\". You receive them due to your (mis)alignment with the community. But this alignment goes both ways. Moral progress is a judgement of increasing alignment with your current preferences. Current misalignment encourages you to be political."],
+      "illustration": {
+        "fileType": "png",
+        "altText": "A pointillist painting of an Italian town square with muted colors, showing a crowd of people discussing something important."
+      },
       "audioUrl": "2024-10-08.m4a"
     },
     {
@@ -20,73 +22,192 @@
     {
       "key": "ADJE1",
       "title": "Adjectives and Properties",
-      "publicationDate": "26 Jul 2024",
-      "content": "I was eight years old when I had my earliest metaphysical reflection. (This excludes religious doubt.) My thoughts: It was obvious that “bigger” and “smaller” were adjectives describing relations between objects. But “big” and “small” were also relations between objects and not properties of a single object. I am big compared to an ant, and small compared to the Milky Way, but I am neither big nor small alone. I conjected that there were no properties, only relations. I am not “alive” alone; I am more alive than someone in a vegetative state, who is more alive than a skeleton.",
-      "illustrationUrl": "2024-07-26.webp",
-      "illustrationAltText": "An illustration of a child deep in thought, surrounded by thought bubbles. One bubble shows an ant labeled ‘big’, another shows the Milky Way. Nearby are skeletons, pensive old men, and more ants.",
+      "publicationDate": "2024-07-26",
+      "content": ["I was eight years old when I had my earliest metaphysical reflection. (This excludes religious doubt.) My thoughts: It was obvious that “bigger” and “smaller” were adjectives describing relations between objects. But “big” and “small” were also relations between objects and not properties of a single object. I am big compared to an ant, and small compared to the Milky Way, but I am neither big nor small alone. I conjected that there were no properties, only relations. I am not “alive” alone; I am more alive than someone in a vegetative state, who is more alive than a skeleton."],
+      "illustration": {
+        "fileType": "webp",
+        "altText": "An illustration of a child deep in thought, surrounded by thought bubbles. One bubble shows an ant labeled ‘big’, another shows the Milky Way. Nearby are skeletons, pensive old men, and more ants."
+      },
       "audioUrl": "2024-07-26.m4a"
     },
     {
       "key": "ONAM1",
       "title": "On Amir's Egoism",
-      "publicationDate": "13 Apr 2024",
-      "content": "Lonely and Horny was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in Lonely and Horny. \"I'm the only one that I am, dude… I don't care about other people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in my feelings being good for me.\"",
-      "illustrationUrl": "",
-      "illustrationAltText": "",
+      "publicationDate": "2024-04-13",
+      "content": ["Lonely and Horny was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in Lonely and Horny. \"I'm the only one that I am, dude… I don't care about other people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in my feelings being good for me.\""],
+      "illustration": {
+        "fileType": "",
+        "altText": ""
+      },
       "audioUrl": "2024-04-13.m4a"
     },
     {
       "key": "ETHI1",
       "title": "Ethics' Divine Suspension",
-      "publicationDate": "6 Apr 2024",
-      "content": "",
-      "illustrationUrl": "",
-      "illustrationAltText": "",
+      "publicationDate": "2024-04-06",
+      "content": ["Søren Kierkegaard wrote in \"Fear and Trembling\" about Abraham sacrificing his son. Despite its contradiction with universal moral norms, Abraham was willing to obey God. This is Kierkegaard's example of \"teleological suspension of the ethical\". Here, the duty to obey God supersedes moral duty. I'm interested in coherent moral codes, which allow for determinate decision-making. I would frame this obedience to God as a \"trumping\" duty within a pluralistic moral framework. Reasoning drives quotidian decisions but a command from God would override that all. Kierkegaard appears to object to fitting this sublime duty of obedience into morality. Seems odd."],
+      "illustration": {
+        "fileType": "webp",
+        "altText": "An old Bible-style illustration of Abraham and Isaac at the moment of divine intervention."
+      },
+      "audioUrl": "2024-04-06.m4a"
+    },
+    {
+      "key": "HOLD1",
+      "title": "Holding Strong Opinions",
+      "publicationDate": "2024-04-02",
+      "content": [
+        "\"Strong opinions, held lightly.\" Indecision is paralysing. Knowledge is unreachable. Without certainty, how do we decide? Effective decision-making requires: Pragmatism: favour action over perfection. Probabilistic reasoning: balance possible outcomes. Fallibilism: accept that you will often be wrong. Ethical consideration: link your options to your moral values."
+      ],
+      "illustration": {
+        "fileType": "webp",
+        "altText": "An abstract representation of decision-making complexity, featuring a maze illuminated by a guiding light, surrounded by symbols of wisdom such as an open book, a compass, and interconnected nodes."
+      },
+      "audioUrl": "2024-04-02.m4a"
+    },
+    {
+      "key": "AMOR1",
+      "title": "Appreciating Moral Pluralism",
+      "publicationDate": "2023-09-10",
+      "content": [
+        "In the Trolley Problem, a runaway trolley is about to kill five people. You can divert it to another track, but if you do, another person will die instead. Many disagree about whether to divert the trolley. Some would choose to divert the trolley to minimize the number harmed. Others would refuse to divert the trolley, possibly because harm caused is worse than harm allowed. The lack of consensus can teach us about moral pluralism. Moral pluralism means different people have different moral values and moral codes. The Trolley Problem offers a framework for discussing and appreciating actual moral pluralism."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "Artistic representation of the Trolley Problem in a surreal environment. The tracks twist and turn in impossible ways, emphasizing the complexity of the decision. On one track, five figures stand with linked arms, while a lone figure stands defiantly on the other. Above, a constellation in the shape of scales balances the ethical concepts of harm caused and harm allowed."
+      },
+      "audioUrl": "2023-09-10.m4a"
+    },
+    {
+      "key": "CECA1",
+      "title": "Competing Environmental Causes",
+      "publicationDate": "2023-08-20",
+      "content": [
+        "Battery technology is crucial for mitigating climate change. But the materials often come from countries with lax environmental and labor protections. For example, there are reports of child labour and forced labour in the extraction of cobalt in the DRC. Lithium extraction is also water-intensive, impacting local ecosystems. Pausing or delaying the mining isn't the solution. Mining is essential for the transition away from fossil fuels. Instead, the focus should be on improving conditions and ethical sourcing. Failure to raise environmental and labour standards will extend our fossil fuel dependency."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "Oil painting illustrating the central role of battery technology in combating climate change. A large battery connects a polluted, smog-filled world on one side to a cleaner, greener world on the other. Miners labor in tough conditions while a parched landscape depicts the water-intensive nature of lithium extraction. Adjacent to this, a technologically advanced battery production facility stands tall, symbolizing hope."
+      },
+      "audioUrl": "2023-08-20.m4a"
+    },
+    {
+      "key": "AUNF1",
+      "title": "An Unpredictable Future",
+      "publicationDate": "2023-08-19",
+      "content": [
+        "AI is taking off, and this year brought new developments like GPT-4, Stable Diffusion XL, and llama.cpp. Even if all progress paused, the tools we already have could reshape society. Guessing what ten more years will look like is hard. We already struggle to predict the current pace of technology. We also can't be sure how people or governments will respond to these new tools. We don't know how they might want to direct its development. We should be careful and thoughtful, taking responsibility for how we use it. All while assuming everyone else will rush to use it."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "robots working in a factory next to human supervisors, saturday morning cartoon"
+      },
+      "audioUrl": "2023-08-19.m4a"
+    },
+    {
+      "key": "JWJ1",
+      "title": "John Wick's Justice",
+      "publicationDate": "2023-04-10",
+      "content": [
+        "There's a funny scene in John Wick 4 where Wick is climbing a staircase, only to have to fight his way up against assailants. He gets kicked all the way back down, and has to repeat the ascent.",
+        "As he climbed those stairs, the music rang familiar. Listening closely, I realized it was a remix, but this was Justice! Justice is one of my favorite French electronic bands, and it made perfect sense since the scene was set in Paris.",
+        "The pulsing music of Justice is in line with the film's electronic vibe, and I was just totally loving it."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "John wick, in a shootout in Berghain, with water pouring all around him, digital art"
+      },
+      "audioUrl": "2023-04-10.m4a"
+    },
+    {
+      "key": "APOR1",
+      "title": "Across the Pond",
+      "publicationDate": "2021-01-05",
+      "content": [
+        "Look closer. The right side of South America once snuggled into the left side of Africa. For hundreds of years, since the development of good global maps, we suspected it but didn't know it.",
+        "A century ago, geologists too were in a process of upheaval. In 1915, Alfred Wegener outlined this theory in The Origins of Continents and Oceans. But Wegener had more than a map: he had fossils.",
+        "Mesosaurus was too little of a croc to swim across oceans, but lived on both sides.",
+        "And Glossopteris was a seed fern whose seeds were too fat to blow so far."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "the continents of earth made from an arrangement of fossils"
+      },
+      "audioUrl": "2021-01-05.m4a"
+    },
+    {
+      "key": "ABF1",
+      "title": "A Brain Fog",
+      "publicationDate": "2021-01-04",
+      "content": [
+        "I'm tired. It's not so bad. Others have it worse. But I'm tired.",
+        "Last year was quite a year, but my close friends and family didn't get COVID-19. My relationships have strengthened despite the stress. Worrying about elderly neighbours and isolating with bored children didn't wear me down.",
+        "But it wore me out."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a messy desk, digital art, black and white"
+      },
+      "audioUrl": "2021-01-04.mp3"
+    },
+    {
+      "key": "TESE1",
+      "title": "The Sixth Extinction",
+      "publicationDate": "2019-12-26",
+      "content": [
+        "Free will has a problem. Either one chooses for a reason or for no reason. Either it's not a choice but an effect or it's not a choice but a dice roll. Either way, it's hard to blame someone like that.",
+        "The Sixth Extinction surveys human irruption and decimation of other species. It doesn't lay blame. At a species level, the course of human history seems to be a mix of mere causality and being lucky. There's no call-to-action at the end of the book, because it's not clear there is an action anyone can take to reverse human nature."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "the Panamanian rainforest, oil painting"
+      },
       "audioUrl": ""
     },
     {
-      "key": "HILO1",
-      "title": "HI-LO",
-      "publicationDate": "2024-10-03",
-      "content": "",
-      "illustrationUrl": "",
-      "illustrationAltText": "",
+      "key": "CCO1",
+      "title": "Climate Change Optimism",
+      "publicationDate": "2019-12-16",
+      "content": [
+        "Climate change is likely to cause hundreds of millions of extra people to die this century. Billions more will suffer. It cannot be “stopped”. In the face of this, grief is reasonable.",
+        "But preventing climate change is not binary: not only success or only failure. It is a matter of degree. With every degree increased, millions more suffer. 6° is worse than 5° and 4°.",
+        "In turn, 4° is better than 5° and 6°. With every degree averted, millions more avoid suffering. So, even small actions have tremendous impacts. Choosing to avoid meat, or cycle, or catch a train helps."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "hundreds of protestors in front of the brandenburger tor, dancing, red pencil sketch"
+      },
       "audioUrl": ""
     },
     {
-      "key": "HELLO1",
-      "title": "Hello world",
-      "publicationDate": "2024-10-02",
-      "content": "",
-      "illustrationUrl": "",
-      "illustrationAltText": "",
+      "key": "COG1",
+      "title": "Cost of Glue",
+      "publicationDate": "2019-12-10",
+      "content": [
+        "Modularisation in software design is about breaking down simple collections of complicated components into complex collections of simple components. A complicated component acts incorrectly when you cannot understand its internal behavior. A complex collection acts unexpectedly when you cannot understand their external interactions.",
+        "All non-trivial software is both complicated and complex, and we can refactor to trade-off between complicated and complex designs. Object-oriented programmers explored these trade-offs for the last few decades and now microservice architects are exploring them too.",
+        "Since working with a few microservice designs, I'm starting to see some trade-offs, especially with tracing interactions and serialisation overhead."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a tangle of yellow and black woollen yarn"
+      },
       "audioUrl": ""
     },
     {
-      "key": "ADJE1",
-      "title": "Adjectives and Properties",
-      "publicationDate": "26 Jul 2024",
-      "content": "I was eight years old when I had my earliest metaphysical reflection. (This excludes religious doubt.) My thoughts: It was obvious that “bigger” and “smaller” were adjectives describing relations between objects. But “big” and “small” were also relations between objects and not properties of a single object. I am big compared to an ant, and small compared to the Milky Way, but I am neither big nor small alone. I conjected that there were no properties, only relations. I am not “alive” alone; I am more alive than someone in a vegetative state, who is more alive than a skeleton.",
-      "illustrationUrl": "2024-07-26.webp",
-      "illustrationAltText": "An illustration of a child deep in thought, surrounded by thought bubbles. One bubble shows an ant labeled ‘big’, another shows the Milky Way. Nearby are skeletons, pensive old men, and more ants.",
-      "audioUrl": "2024-07-26.m4a"
-    },
-    {
-      "key": "AMIR1",
-      "title": "On Amir's Egoism",
-      "publicationDate": "13 Apr 2024",
-      "content": "Lonely and Horny was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in Lonely and Horny. \"I'm the only one that I am, dude… I don't care about other people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in my feelings being good for me.\"",
-      "illustrationUrl": "",
-      "illustrationAltText": "",
-      "audioUrl": "2024-04-13.m4a"
-    },
-    {
-      "key": "ETHI1",
-      "title": "Ethics' Divine Suspension",
-      "publicationDate": "6 Apr 2024",
-      "content": "",
-      "illustrationUrl": "",
-      "illustrationAltText": "",
+      "key": "FTV1",
+      "title": "Failed to Vote",
+      "publicationDate": "2019-05-06",
+      "content": [
+        "I missed the deadline to register to vote in Germany for the European Union elections. I am very proud of having voted in every national and local election I could, until now. I’m not proud of every vote, but proud that I voted.",
+        "I have lots of excuses for missing the registration deadline: Brexit; Taking a working holiday in New Zealand; The deadline being on a Sunday; Not having a printer for my form.",
+        "But they’re all bad excuses.",
+        "I knew that I could have been eligible, and should have sorted out my registration well in advance. I’m ashamed now."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "european flags, flapping gently in the wind, nighttime photograph"
+      },
       "audioUrl": ""
     }
   ]

@@ -178,11 +178,31 @@ const wrapHtml = (c) => [docType, htmlPrefix, c, htmlSuffix].join("");
 
 // Create an article from a post
 const getArticleContent = (post) => {
-  return `<div class="value"><h2><a href="#${post.key}">${post.title}</a></h2></div>
-      <div class="key">pubAt</div>
-      <p class="value metadata">${post.publicationDate}</p>
-      <div class="key">text</div>
-      <p class="value">${post.content}</p>`;
+  const titleKey = `<div class="key article-title">${post.key}</div>`;
+  const titleValue = `
+      <div class="value"><h2><a href="#${post.key}">${post.title}</a></h2></div>`;
+  const dateKey = `<div class="key">pubAt</div>`;
+  const dateValue = `
+      <p class="value metadata">${new Date(post.publicationDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>`;
+  const dateHtml = post.publicationDate ? `
+      ${dateKey}${dateValue}` : '';
+  const headerHTML = [titleKey, titleValue, dateHtml].join("");
+
+  let illustrationHTML = '';
+  if (post.illustration && post.publicationDate) {
+    illustrationHTML = `
+      <div class="key media">illus</div>
+      <div class="value">
+        <img loading="lazy" src="${post.publicationDate}.${post.illustration.fileType}" alt="${post.illustration.altText}"/>
+      </div>`;
+  }
+
+  const contentHTML = (post.content || []).map((text, index) => `
+      <div class="key">${index === 0 ? "text" : ""}</div>
+      <p class="value">${text}</p>`
+    ).join('');
+
+  return headerHTML + illustrationHTML + contentHTML;
 };
 const getArticle = (post) => {
     const content = getArticleContent(post);
@@ -190,7 +210,6 @@ const getArticle = (post) => {
     return `<article class=\"entry\"${idAttr}>
       <div class=\"key full-width\">▄▄▄▄▄▄▄▄▄▄</div>
       <div class=\"value full-width\">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
-      <div class=\"key article-title\">${post.key}</div>
       ${content}
     </article>`;
 };
