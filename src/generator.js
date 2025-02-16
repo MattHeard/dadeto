@@ -35,9 +35,7 @@ const entryDivContents = [
 
 const entryClass = "entry";
 
-const entryDiv = `<div class="${entryClass}">
-  ${entryDivContents}
-</div>`;
+const entryDiv = createDivElement(entryClass, `\n  ${entryDivContents}\n`);
 
 const header = `${headElement}
 <body>
