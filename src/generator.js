@@ -33,7 +33,9 @@ const entryDivContents = [
   metadataValueDiv
 ].join(entryDivJoinWhitespace);
 
-const entryDiv = `<div class="entry">
+const entryClass = "entry";
+
+const entryDiv = `<div class="${entryClass}">
   ${entryDivContents}
 </div>`;
 
