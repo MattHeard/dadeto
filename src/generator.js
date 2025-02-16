@@ -45,11 +45,13 @@ const header = `${headElement}
 
 const warningMessage = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
 
+const footerDiv = `<div class="footer value warning">
+  ${warningMessage}
+</div>`;
+
 const warningDiv = `<div class="entry">
-  <div class="key"></div>
-  <div class="footer value warning">
-    ${warningMessage}
-  </div>
+  ${emptyKeyDiv}
+  ${footerDiv}
 </div>`;
 
 const footer = `
