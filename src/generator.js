@@ -41,7 +41,7 @@ const entryDivContents = [
 
 const entryClass = "entry";
 
-const entryDivContent = `${entryDivJoinWhitespace}${entryDivContents}${entryDivJoinWhitespace}`;
+const entryDivContent = [entryDivJoinWhitespace, entryDivContents, entryDivJoinWhitespace].join('');
 const entryDiv = createDivElement(entryClass, entryDivContent);
 
 const header = `${headElement}
