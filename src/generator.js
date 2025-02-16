@@ -1,4 +1,5 @@
 import { headElement } from './head.js';
+import { fullWidthElement } from './full-width.js'
 
 const docType = "<!DOCTYPE html>";
 const htmlPrefix = "<html lang='en'>";
@@ -100,8 +101,7 @@ const getArticle = (post) => {
     const content = getArticleContent(post);
     const idAttr = post.key ? ` id=\"${post.key}\"` : "";
     return `<article class=\"entry\"${idAttr}>
-      <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
-      <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
+      ${fullWidthElement}
       ${content}
     </article>`;
 };
