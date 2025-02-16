@@ -22,9 +22,9 @@ function createDivElement(classes, content) {
 
 const h1ValueDiv = createDivElement(valueClass, h1Element);
 
-const indent = '\n  ';
+const newLineAndIndent = '\n  ';
 
-const metadataText = `${indent}Software developer and philosopher in Berlin${indent}`;
+const metadataText = `${newLineAndIndent}Software developer and philosopher in Berlin${newLineAndIndent}`;
 const metadataClass = "metadata";
 
 function joinClasses(classes) {
@@ -39,11 +39,11 @@ const entryDivContents = [
   h1ValueDiv,
   emptyKeyDiv,
   metadataValueDiv
-].join(indent);
+].join(newLineAndIndent);
 
 const entryClass = "entry";
 
-const entryDivContent = [indent, entryDivContents, indent].join('');
+const entryDivContent = [newLineAndIndent, entryDivContents, newLineAndIndent].join('');
 const entryDiv = createDivElement(entryClass, entryDivContent);
 
 const header = `${headElement}
@@ -57,9 +57,9 @@ const warningMessage = "All content is authored by Matt Heard and is <a href=\"h
 const footerDivClasses = joinClasses(["footer", valueClass, "warning"]);
 const footerDiv = createDivElement(footerDivClasses, warningMessage);
 
-const warningDivContents = [emptyKeyDiv, footerDiv].join(indent);
+const warningDivContents = [emptyKeyDiv, footerDiv].join(newLineAndIndent);
 
-const warningDiv = createDivElement(entryClass, `${indent}${warningDivContents}${indent}`);
+const warningDiv = createDivElement(entryClass, `${newLineAndIndent}${warningDivContents}${newLineAndIndent}`);
 
 const footer = `
   ${warningDiv}
