@@ -54,7 +54,7 @@ const header = `${headElement}
 
 const warningMessage = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
 
-const footerDivClasses = joinClasses(["footer", "value", "warning"]);
+const footerDivClasses = joinClasses(["footer", valueClass, "warning"]);
 const footerDiv = createDivElement(footerDivClasses, warningMessage);
 
 const warningDivContents = [emptyKeyDiv, footerDiv].join(indent);
@@ -75,7 +75,7 @@ const getArticleContent = (post) => {
   const titleLink = `<a href="#${post.key}">${post.title}</a>`;
   const titleHeader = `<h2>${titleLink}</h2>`;
   const titleValue = `
-      <div class="value">${titleHeader}</div>`;
+      <div class="${valueClass}">${titleHeader}</div>`;
   const dateKey = `<div class="key">pubAt</div>`;
   const dateValue = `
       <p class="value metadata">${new Date(post.publicationDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>`;
