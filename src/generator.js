@@ -54,9 +54,10 @@ const warningMessage = "All content is authored by Matt Heard and is <a href=\"h
 const footerDivClasses = joinClasses(["footer", "value", "warning"]);
 const footerDiv = createDivElement(footerDivClasses, warningMessage);
 
+const warningDivContents = `${emptyKeyDiv}\n  ${footerDiv}`;
+
 const warningDiv = `<div class="entry">
-  ${emptyKeyDiv}
-  ${footerDiv}
+  ${warningDivContents}
 </div>`;
 
 const footer = `
