@@ -13,7 +13,8 @@ const titleText = "Matt Heard";
 const h1Element = `<h1>${titleText}</h1>`;
 
 const valueClass = "value";
-const titleKeyClasses = "key article-title";
+const classJoinSeparator = ' ';
+const titleKeyClasses = joinClasses(["key", "article-title"]);
 
 function createDivElement(classes, content) {
   return `<div class="${classes}">${content}</div>`;
@@ -25,7 +26,6 @@ const indent = '\n  ';
 
 const metadataText = `${indent}Software developer and philosopher in Berlin${indent}`;
 const metadataClass = "metadata";
-const classJoinSeparator = ' ';
 
 function joinClasses(classes) {
   return classes.join(classJoinSeparator);
