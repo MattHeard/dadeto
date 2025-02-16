@@ -25,11 +25,13 @@ const entryDivContents = [
   metadataValueDiv
 ].join(entryDivJoinWhitespace);
 
+const entryDiv = `<div class="entry">
+  ${entryDivContents}
+</div>`;
+
 const containerDiv = `<div id="container">
   <!-- Header -->
-  <div class="entry">
-    ${entryDivContents}  
-  </div>`;
+  ${entryDiv}`;
 
 const header = `${headElement}
 <body>
