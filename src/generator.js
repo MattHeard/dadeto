@@ -7,7 +7,8 @@ const htmlSuffix = "</html>";
 
 const emptyKeyDiv = `<div class="key"></div>`;
 
-const h1Element = `<h1>Matt Heard</h1>`;
+const titleText = "Matt Heard";
+const h1Element = `<h1>${titleText}</h1>`;
 const h1ValueDiv = `<div class="value">${h1Element}</div>`;
 
 const metadataValueDiv = `<div class="value metadata">
