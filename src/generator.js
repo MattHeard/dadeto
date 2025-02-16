@@ -5,12 +5,14 @@ const docType = "<!DOCTYPE html>";
 const htmlPrefix = "<html lang='en'>";
 const htmlSuffix = "</html>";
 
+const emptyKeyDiv = `<div class="key"></div>`;
+
 const containerDiv = `<div id="container">
   <!-- Header -->
   <div class="entry">
-    <div class="key"></div>
+    ${emptyKeyDiv}
     <div class="value"><h1>Matt Heard</h1></div>
-    <div class="key"></div>
+    ${emptyKeyDiv}
     <div class="value metadata">
       Software developer and philosopher in Berlin
     </div>
