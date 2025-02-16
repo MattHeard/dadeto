@@ -6,7 +6,7 @@ const htmlPrefix = "<html lang='en'>";
 const htmlSuffix = "</html>";
 
 const keyClass = "key";
-const emptyKeyDiv = `<div class="${keyClass}"></div>`;
+const emptyKeyDiv = createDivElement(keyClass, "");
 
 const titleText = "Matt Heard";
 const h1Element = `<h1>${titleText}</h1>`;
