@@ -35,7 +35,9 @@ const containerDiv = `<div id="container">
 
 const header = `${headElement}
 <body>
-  ${containerDiv}`;
+  <div id="container">
+    <!-- Header -->
+    ${entryDiv}`;
 
 const footer = `
     <div class="entry">
