@@ -1,17 +1,11 @@
 import { styles } from './styles.js';
+import { headElement } from './head.js';
 
 const docType = "<!DOCTYPE html>";
 const htmlPrefix = "<html lang='en'>";
 const htmlSuffix = "</html>";
 
-const header = `<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width">
-  <title>Matt Heard</title>
-  <style>
-    ${styles}
-  </style>
-</head>
+const header = `${headElement}
 <body>
   <div id="container">
     <!-- Header -->
