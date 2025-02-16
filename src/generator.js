@@ -16,12 +16,12 @@ const metadataValueDiv = `<div class="value metadata">
   ${metadataText}
 </div>`;
 
-const entryDivContents = `
-  ${emptyKeyDiv}
-  ${h1ValueDiv}
-  ${emptyKeyDiv}
-  ${metadataValueDiv}
-`;
+const entryDivContents = [
+  emptyKeyDiv,
+  h1ValueDiv,
+  emptyKeyDiv,
+  metadataValueDiv
+].join('\n  ');
 
 const containerDiv = `<div id="container">
   <!-- Header -->
