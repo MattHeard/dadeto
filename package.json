@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "generate": "node cli.js",
+    "generate": "node generate.js",
     "test-watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll"
   },
   "devDependencies": {

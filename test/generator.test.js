@@ -28,6 +28,11 @@ describe('Blog Generator', () => {
                     illustration: {
                         fileType: "png",
                         altText: "a tangle of yellow and black woollen yarn"
+                    },
+                    youtube: {
+                        id: "EdlrqPPI_YQ",
+                        title: "Lonely & Horny Episode 2 - Orion",
+                        timestamp: 420
                     }
                 }
             ]
@@ -53,6 +58,10 @@ describe('Blog Generator', () => {
       <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
       <div class="key article-title">SECO2</div>
       <div class="value"><h2><a href="#SECO2">Second Post</a></h2></div>
+      <div class="key media">video</div>
+      <p class="value">
+        <iframe height="300px" width="100%" src="https://www.youtube.com/embed/EdlrqPPI_YQ?start=420" title="Lonely &amp; Horny Episode 2 - Orion" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
+      </p>
       <div class="key">text</div>
       <p class="value">Second post content</p>
       <div class="key"></div>

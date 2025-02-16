@@ -197,19 +197,34 @@ const getArticleContent = (post) => {
       </div>`;
   }
 
+  const youtubeHTML = post.youtube ? `
+      <div class="key media">video</div>
+      <p class="value">
+        <iframe height="300px" width="100%" src="https://www.youtube.com/embed/${post.youtube.id}?start=${post.youtube.timestamp}" title="${escapeHtml(post.youtube.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
+      </p>` : '';
+
   const contentHTML = (post.content || []).map((text, index) => `
       <div class="key">${index === 0 ? "text" : ""}</div>
       <p class="value">${text}</p>`
     ).join('');
 
-  return headerHTML + illustrationHTML + contentHTML;
+  return headerHTML + illustrationHTML + youtubeHTML + contentHTML;
 };
+
+function escapeHtml(unsafe) {
+  return unsafe.replace(/&/g, "&amp;")
+               .replace(/</g, "&lt;")
+               .replace(/>/g, "&gt;")
+               .replace(/"/g, "&quot;")
+               .replace(/'/g, "&#039;");
+}
+
 const getArticle = (post) => {
     const content = getArticleContent(post);
     const idAttr = post.key ? ` id=\"${post.key}\"` : "";
     return `<article class=\"entry\"${idAttr}>
-      <div class=\"key full-width\">▄▄▄▄▄▄▄▄▄▄</div>
-      <div class=\"value full-width\">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+      <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
       ${content}
     </article>`;
 };

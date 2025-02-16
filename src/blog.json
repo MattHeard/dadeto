@@ -35,11 +35,12 @@
       "title": "On Amir's Egoism",
       "publicationDate": "2024-04-13",
       "content": ["Lonely and Horny was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in Lonely and Horny. \"I'm the only one that I am, dude… I don't care about other people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in my feelings being good for me.\""],
-      "illustration": {
-        "fileType": "",
-        "altText": ""
-      },
-      "audioUrl": "2024-04-13.m4a"
+      "audioUrl": "2024-04-13.m4a",
+      "youtube": {
+          "id": "EdlrqPPI_YQ",
+          "title": "Lonely & Horny Episode 2 - Orion",
+          "timestamp": 420
+      }
     },
     {
       "key": "ETHI1",
