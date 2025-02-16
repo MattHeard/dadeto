@@ -7,11 +7,13 @@ const htmlSuffix = "</html>";
 
 const emptyKeyDiv = `<div class="key"></div>`;
 
+const h1ValueDiv = `<div class="value"><h1>Matt Heard</h1></div>`;
+
 const containerDiv = `<div id="container">
   <!-- Header -->
   <div class="entry">
     ${emptyKeyDiv}
-    <div class="value"><h1>Matt Heard</h1></div>
+    ${h1ValueDiv}
     ${emptyKeyDiv}
     <div class="value metadata">
       Software developer and philosopher in Berlin
