@@ -13,6 +13,7 @@ const titleText = "Matt Heard";
 const h1Element = `<h1>${titleText}</h1>`;
 
 const valueClass = "value";
+const titleKeyClasses = "key article-title";
 
 function createDivElement(classes, content) {
   return `<div class="${classes}">${content}</div>`;
@@ -70,7 +71,6 @@ const wrapHtml = (c) => [docType, htmlPrefix, c, htmlSuffix].join("");
 
 // Create an article from a post
 const getArticleContent = (post) => {
-  const titleKeyClasses = "key article-title";
   const titleKey = createDivElement(titleKeyClasses, post.key);
   const titleValue = `
       <div class="value"><h2><a href="#${post.key}">${post.title}</a></h2></div>`;
