@@ -19,12 +19,12 @@ function createDivElement(classes, content) {
 
 const h1ValueDiv = createDivElement(valueClass, h1Element);
 
-const metadataText = "\n  Software developer and philosopher in Berlin\n";
+const entryDivJoinWhitespace = '\n  ';
+
+const metadataText = `${entryDivJoinWhitespace}Software developer and philosopher in Berlin${entryDivJoinWhitespace}`;
 const metadataClass = "metadata";
 const metadataValueClasses = [valueClass, metadataClass].join(' ');
 const metadataValueDiv = createDivElement(metadataValueClasses, metadataText);
-
-const entryDivJoinWhitespace = '\n  ';
 
 const entryDivContents = [
   emptyKeyDiv,
