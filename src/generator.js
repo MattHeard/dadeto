@@ -43,11 +43,13 @@ const header = `${headElement}
     <!-- Header -->
     ${entryDiv}`;
 
+const warningMessage = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
+
 const footer = `
     <div class="entry">
       <div class="key"></div>
       <div class="footer value warning">
-        All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.
+        ${warningMessage}
       </div>
     </div>
   </div>
