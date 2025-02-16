@@ -1,4 +1,3 @@
-import { styles } from './styles.js';
 import { headElement } from './head.js';
 
 const docType = "<!DOCTYPE html>";
