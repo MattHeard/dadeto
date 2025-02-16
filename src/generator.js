@@ -1,5 +1,6 @@
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js'
+import scriptTag from './script.js';
 
 const docType = "<!DOCTYPE html>";
 const htmlPrefix = "<html lang='en'>";
@@ -62,29 +63,7 @@ const warningDiv = createDivElement(entryClass, `\n  ${warningDivContents}\n`);
 const footer = `
   ${warningDiv}
   </div>
-  <script>
-    const audio = document.getElementById("terminal-audio");
-    const timeDisplay = document.getElementById("audio-time");
-
-    function playAudio() {
-      audio.play();
-    }
-
-    function pauseAudio() {
-      audio.pause();
-    }
-
-    function stopAudio() {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-
-    audio.addEventListener("timeupdate", function () {
-      let minutes = Math.floor(audio.currentTime / 60);
-      let seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
-      timeDisplay.textContent = [minutes, ":", seconds].join("");
-    });
-  </script>
+  ${scriptTag}>
 </body>`;
 
 const wrapHtml = (c) => [docType, htmlPrefix, c, htmlSuffix].join("");
