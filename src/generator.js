@@ -10,8 +10,14 @@ const emptyKeyDiv = `<div class="${keyClass}"></div>`;
 
 const titleText = "Matt Heard";
 const h1Element = `<h1>${titleText}</h1>`;
+
 const valueClass = "value";
-const h1ValueDiv = `<div class="${valueClass}">${h1Element}</div>`;
+
+function createDivElement(classes, content) {
+  return `<div class="${classes}">${content}</div>`;
+}
+
+const h1ValueDiv = createDivElement(valueClass, h1Element);
 
 const metadataText = "Software developer and philosopher in Berlin";
 const metadataClass = "metadata";
