@@ -73,8 +73,9 @@ const wrapHtml = (c) => [docType, htmlPrefix, c, htmlSuffix].join("");
 const getArticleContent = (post) => {
   const titleKey = createDivElement(titleKeyClasses, post.key);
   const titleLink = `<a href="#${post.key}">${post.title}</a>`;
+  const titleHeader = `<h2>${titleLink}</h2>`;
   const titleValue = `
-      <div class="value"><h2>${titleLink}</h2></div>`;
+      <div class="value">${titleHeader}</div>`;
   const dateKey = `<div class="key">pubAt</div>`;
   const dateValue = `
       <p class="value metadata">${new Date(post.publicationDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>`;
