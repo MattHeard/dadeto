@@ -24,7 +24,12 @@ const entryDivJoinWhitespace = '\n  ';
 const metadataText = `${entryDivJoinWhitespace}Software developer and philosopher in Berlin${entryDivJoinWhitespace}`;
 const metadataClass = "metadata";
 const classJoinSeparator = ' ';
-const metadataValueClasses = [valueClass, metadataClass].join(classJoinSeparator);
+
+function joinClasses(classes) {
+  return classes.join(classJoinSeparator);
+}
+
+const metadataValueClasses = joinClasses([valueClass, metadataClass]);
 const metadataValueDiv = createDivElement(metadataValueClasses, metadataText);
 
 const entryDivContents = [
@@ -46,7 +51,7 @@ const header = `${headElement}
 
 const warningMessage = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
 
-const footerDivClasses = "footer value warning";
+const footerDivClasses = joinClasses(["footer", "value", "warning"]);
 const footerDiv = `<div class="${footerDivClasses}">
   ${warningMessage}
 </div>`;
