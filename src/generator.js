@@ -5,19 +5,20 @@ const docType = "<!DOCTYPE html>";
 const htmlPrefix = "<html lang='en'>";
 const htmlSuffix = "</html>";
 
+const containerDiv = `<div id="container">
+  <!-- Header -->
+  <div class="entry">
+    <div class="key"></div>
+    <div class="value"><h1>Matt Heard</h1></div>
+    <div class="key"></div>
+    <div class="value metadata">
+      Software developer and philosopher in Berlin
+    </div>
+  </div>`;
+
 const header = `${headElement}
 <body>
-  <div id="container">
-    <!-- Header -->
-    <div class="entry">
-      <div class="key"></div>
-      <div class="value"><h1>Matt Heard</h1></div>
-      <div class="key"></div>
-      <div class="value metadata">
-        Software developer and philosopher in Berlin
-      </div>
-    </div>
-`;
+  ${containerDiv}`;
 
 const footer = `
     <div class="entry">
