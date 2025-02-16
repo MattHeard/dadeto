@@ -21,7 +21,7 @@ const h1ValueDiv = createDivElement(valueClass, h1Element);
 
 const metadataText = "\n  Software developer and philosopher in Berlin\n";
 const metadataClass = "metadata";
-const metadataValueClasses = `${valueClass} ${metadataClass}`;
+const metadataValueClasses = [valueClass, metadataClass].join(' ');
 const metadataValueDiv = createDivElement(metadataValueClasses, metadataText);
 
 const entryDivJoinWhitespace = '\n  ';
