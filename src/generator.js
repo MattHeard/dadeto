@@ -52,9 +52,7 @@ const header = `${headElement}
 const warningMessage = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
 
 const footerDivClasses = joinClasses(["footer", "value", "warning"]);
-const footerDiv = `<div class="${footerDivClasses}">
-  ${warningMessage}
-</div>`;
+const footerDiv = createDivElement(footerDivClasses, warningMessage);
 
 const warningDiv = `<div class="entry">
   ${emptyKeyDiv}
