@@ -70,7 +70,8 @@ const wrapHtml = (c) => [docType, htmlPrefix, c, htmlSuffix].join("");
 
 // Create an article from a post
 const getArticleContent = (post) => {
-  const titleKey = `<div class="key article-title">${post.key}</div>`;
+  const titleKeyClasses = "key article-title";
+  const titleKey = `<div class="${titleKeyClasses}">${post.key}</div>`;
   const titleValue = `
       <div class="value"><h2><a href="#${post.key}">${post.title}</a></h2></div>`;
   const dateKey = `<div class="key">pubAt</div>`;
