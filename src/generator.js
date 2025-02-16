@@ -39,10 +39,6 @@ const entryDiv = `<div class="${entryClass}">
   ${entryDivContents}
 </div>`;
 
-const containerDiv = `<div id="container">
-  <!-- Header -->
-  ${entryDiv}`;
-
 const header = `${headElement}
 <body>
   <div id="container">
