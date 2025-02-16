@@ -41,7 +41,7 @@ const entryDivContents = [
 
 const entryClass = "entry";
 
-const entryDiv = createDivElement(entryClass, `\n  ${entryDivContents}\n`);
+const entryDiv = createDivElement(entryClass, `${entryDivJoinWhitespace}${entryDivContents}${entryDivJoinWhitespace}`);
 
 const header = `${headElement}
 <body>
@@ -56,9 +56,7 @@ const footerDiv = createDivElement(footerDivClasses, warningMessage);
 
 const warningDivContents = `${emptyKeyDiv}\n  ${footerDiv}`;
 
-const warningDiv = `<div class="entry">
-  ${warningDivContents}
-</div>`;
+const warningDiv = createDivElement(entryClass, `\n  ${warningDivContents}\n`);
 
 const footer = `
   ${warningDiv}
