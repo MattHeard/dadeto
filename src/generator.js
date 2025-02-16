@@ -11,17 +11,22 @@ const titleText = "Matt Heard";
 const h1Element = `<h1>${titleText}</h1>`;
 const h1ValueDiv = `<div class="value">${h1Element}</div>`;
 
+const metadataText = "Software developer and philosopher in Berlin";
 const metadataValueDiv = `<div class="value metadata">
-  Software developer and philosopher in Berlin
+  ${metadataText}
 </div>`;
+
+const entryDivContents = `
+  ${emptyKeyDiv}
+  ${h1ValueDiv}
+  ${emptyKeyDiv}
+  ${metadataValueDiv}
+`;
 
 const containerDiv = `<div id="container">
   <!-- Header -->
   <div class="entry">
-    ${emptyKeyDiv}
-    ${h1ValueDiv}
-    ${emptyKeyDiv}
-    ${metadataValueDiv}
+    ${entryDivContents}  
   </div>`;
 
 const header = `${headElement}
