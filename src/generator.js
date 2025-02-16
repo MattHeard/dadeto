@@ -45,13 +45,15 @@ const header = `${headElement}
 
 const warningMessage = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
 
+const warningDiv = `<div class="entry">
+  <div class="key"></div>
+  <div class="footer value warning">
+    ${warningMessage}
+  </div>
+</div>`;
+
 const footer = `
-    <div class="entry">
-      <div class="key"></div>
-      <div class="footer value warning">
-        ${warningMessage}
-      </div>
-    </div>
+  ${warningDiv}
   </div>
   <script>
     const audio = document.getElementById("terminal-audio");
