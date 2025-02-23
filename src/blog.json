@@ -9,14 +9,18 @@
         "fileType": "png",
         "altText": "A pointillist painting of an Italian town square with muted colors, showing a crowd of people discussing something important."
       },
-      "audioUrl": "2024-10-08.m4a"
+      "audio": {
+        "fileType": "m4a"
+      }
     },
     {
       "key": "HILO1",
+      "publicationDate": "2024-10-03",
       "title": "HI-LO"
     },
     {
       "key": "HELL1",
+      "publicationDate": "2024-10-02",
       "title": "Hello world"
     },
     {
@@ -28,14 +32,18 @@
         "fileType": "webp",
         "altText": "An illustration of a child deep in thought, surrounded by thought bubbles. One bubble shows an ant labeled ‘big’, another shows the Milky Way. Nearby are skeletons, pensive old men, and more ants."
       },
-      "audioUrl": "2024-07-26.m4a"
+      "audio": {
+        "fileType": "m4a"
+      }
     },
     {
       "key": "ONAM1",
       "title": "On Amir's Egoism",
       "publicationDate": "2024-04-13",
       "content": ["Lonely and Horny was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in Lonely and Horny. \"I'm the only one that I am, dude… I don't care about other people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in my feelings being good for me.\""],
-      "audioUrl": "2024-04-13.m4a",
+      "audio": {
+        "fileType": "m4a"
+      },
       "youtube": {
           "id": "EdlrqPPI_YQ",
           "title": "Lonely & Horny Episode 2 - Orion",
@@ -51,7 +59,9 @@
         "fileType": "webp",
         "altText": "An old Bible-style illustration of Abraham and Isaac at the moment of divine intervention."
       },
-      "audioUrl": "2024-04-06.m4a"
+      "audio": {
+        "fileType": "m4a"
+      }
     },
     {
       "key": "HOLD1",
@@ -64,7 +74,9 @@
         "fileType": "webp",
         "altText": "An abstract representation of decision-making complexity, featuring a maze illuminated by a guiding light, surrounded by symbols of wisdom such as an open book, a compass, and interconnected nodes."
       },
-      "audioUrl": "2024-04-02.m4a"
+      "audio": {
+        "fileType": "m4a"
+      }
     },
     {
       "key": "AMOR1",
@@ -77,7 +89,9 @@
         "fileType": "png",
         "altText": "Artistic representation of the Trolley Problem in a surreal environment. The tracks twist and turn in impossible ways, emphasizing the complexity of the decision. On one track, five figures stand with linked arms, while a lone figure stands defiantly on the other. Above, a constellation in the shape of scales balances the ethical concepts of harm caused and harm allowed."
       },
-      "audioUrl": "2023-09-10.m4a"
+      "audio": {
+        "fileType": "m4a"
+      }
     },
     {
       "key": "CECA1",
@@ -90,7 +104,9 @@
         "fileType": "png",
         "altText": "Oil painting illustrating the central role of battery technology in combating climate change. A large battery connects a polluted, smog-filled world on one side to a cleaner, greener world on the other. Miners labor in tough conditions while a parched landscape depicts the water-intensive nature of lithium extraction. Adjacent to this, a technologically advanced battery production facility stands tall, symbolizing hope."
       },
-      "audioUrl": "2023-08-20.m4a"
+      "audio": {
+        "fileType": "m4a"
+      }
     },
     {
       "key": "AUNF1",
@@ -103,7 +119,9 @@
         "fileType": "png",
         "altText": "robots working in a factory next to human supervisors, saturday morning cartoon"
       },
-      "audioUrl": "2023-08-19.m4a"
+      "audio": {
+        "fileType": "m4a"
+      }
     },
     {
       "key": "JWJ1",
@@ -118,7 +136,9 @@
         "fileType": "png",
         "altText": "John wick, in a shootout in Berghain, with water pouring all around him, digital art"
       },
-      "audioUrl": "2023-04-10.m4a"
+      "audio": {
+        "fileType": "m4a"
+      } 
     },
     {
       "key": "APOR1",
@@ -134,7 +154,9 @@
         "fileType": "png",
         "altText": "the continents of earth made from an arrangement of fossils"
       },
-      "audioUrl": "2021-01-05.m4a"
+      "audio": {
+        "fileType": "m4a"
+      }
     },
     {
       "key": "ABF1",
@@ -149,7 +171,9 @@
         "fileType": "png",
         "altText": "a messy desk, digital art, black and white"
       },
-      "audioUrl": "2021-01-04.mp3"
+      "audio": {
+        "fileType": "mp3"
+      }
     },
     {
       "key": "TESE1",
@@ -162,8 +186,7 @@
       "illustration": {
         "fileType": "png",
         "altText": "the Panamanian rainforest, oil painting"
-      },
-      "audioUrl": ""
+      }
     },
     {
       "key": "CCO1",
@@ -177,8 +200,7 @@
       "illustration": {
         "fileType": "png",
         "altText": "hundreds of protestors in front of the brandenburger tor, dancing, red pencil sketch"
-      },
-      "audioUrl": ""
+      }
     },
     {
       "key": "COG1",
@@ -192,8 +214,7 @@
       "illustration": {
         "fileType": "png",
         "altText": "a tangle of yellow and black woollen yarn"
-      },
-      "audioUrl": ""
+      }
     },
     {
       "key": "FTV1",
@@ -208,8 +229,7 @@
       "illustration": {
         "fileType": "png",
         "altText": "european flags, flapping gently in the wind, nighttime photograph"
-      },
-      "audioUrl": ""
+      }
     }
   ]
 }

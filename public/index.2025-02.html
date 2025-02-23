@@ -3,139 +3,137 @@
   <meta name="viewport" content="width=device-width">
   <title>Matt Heard</title>
   <style>
-    /* General Layout & Typography */
-    body {
-      background-color: #121212;
-      color: #CCCCCC;
-      font-family: Consolas, monospace;
-      font-size: 16px;
-      line-height: 1.5;
-      margin: 0;
-      padding: 0;
-    }
-    #container {
-      max-width: 85ch;
-      padding: 1lh;
-    }
-    .entry {
-      display: grid;
-      grid-template-columns: 5ch auto;
-      padding-bottom: 1em;
-      gap: 0em 1em;
-    }
-    .key {
-      font-weight: bold;
-      color: #33CCFF;
-      text-align: right;
-      padding: 0em 0em;
-    }
-    .value {
-      text-align: left;
-      color: #CCCCCC;
-    }
-    .article-title {
-      color: #121212;
-      background-color: #00FFFF
-    }
-    .media {
-      color: #00FF00;
-    }
-    .footer {
-      font-style: italic;
-    }
-    .full-width {
-      white-space: nowrap;
-      font-family: monospace;
-      display: block;
-      width: 100%;
-      overflow: hidden;
-      text-overflow: clip;
-      line-height: 1;
-      color: #00FFFF;
-    }
+    
+  body {
+    background-color: #121212;
+    color: #CCCCCC;
+    font-family: Consolas, monospace;
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+  }
+  #container {
+    max-width: 85ch;
+    padding: 1lh;
+  }
+  .entry {
+    display: grid;
+    grid-template-columns: 5ch auto;
+    padding-bottom: 1em;
+    gap: 0em 1em;
+  }
+  .key {
+    font-weight: bold;
+    color: #33CCFF;
+    text-align: right;
+    padding: 0em 0em;
+  }
+  .value {
+    text-align: left;
+    color: #CCCCCC;
+  }
+  .article-title {
+    color: #121212;
+    background-color: #00FFFF;
+  }
+  .media {
+    color: #00FF00;
+  }
+  .footer {
+    font-style: italic;
+  }
+  .full-width {
+    white-space: nowrap;
+    font-family: monospace;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: clip;
+    line-height: 1;
+    color: #00FFFF;
+  }
 
-    h1, h2, h3 {
-      color: #FFFFFF;
-      font-size: 16px;
-      margin: 0;
-      text-transform: uppercase;
-    }
-    img {
-      max-width: min(20em, 60vw);
-      height: auto;
-      display: block;
-    }
-    p {
-      margin: 0;
-    }
-    a {
-      color: #00FFFF;
-      text-decoration: none;
-    }
-    a:hover {
-      color: #33FFFF;
-      text-decoration: underline;
-    }
-    h1 > a, h2 > a, h3 > a {
-      color: #FFFFFF;
-    }
-    
-    /* Log & Message Styles */
-    .warning {
-      color: #FFA500;
-    }
-    .error {
-      color: #FF0000;
-    }
-    .success {
-      color: #00FF00;
-    }
-    .metadata {
-      color: #33CCFF;
-    }
-    
-    /* Code Blocks & Inline Code */
-    code {
-      background-color: #1A1A1A;
-      color: #00FFFF;
-    }
-    pre {
-      background-color: #1A1A1A;
-      color: #CCCCCC;
-      padding: 10px;
-      overflow-x: auto;
-    }
-    #audio-controls {
-      background-color: #1A1A1A;
-      color: #00FFFF;
-      display: inline-block;
-    }
-    .audio-btn {
-      padding: 0em 1em;
-      border: none;
-      background: #00FF00;
-      color: #1A1A1A;
-      font-family: Consolas, monospace;
-      cursor: pointer;
-      height: 2em;
-    }
-    .audio-btn:hover {
-      text-decoration: underline;
-    }
+  h1, h2, h3 {
+    color: #FFFFFF;
+    font-size: 16px;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  img {
+    max-width: min(20em, 60vw);
+    height: auto;
+    display: block;
+  }
+  p {
+    margin: 0;
+  }
+  a {
+    color: #00FFFF;
+    text-decoration: none;
+  }
+  a:hover {
+    color: #33FFFF;
+    text-decoration: underline;
+  }
+  h1 > a, h2 > a, h3 > a {
+    color: #FFFFFF;
+  }
+
+  .warning {
+    color: #FFA500;
+  }
+  .error {
+    color: #FF0000;
+  }
+  .success {
+    color: #00FF00;
+  }
+  .metadata {
+    color: #33CCFF;
+  }
+
+  code {
+    background-color: #1A1A1A;
+    color: #00FFFF;
+  }
+  pre {
+    background-color: #1A1A1A;
+    color: #CCCCCC;
+    padding: 10px;
+    overflow-x: auto;
+  }
+  #audio-controls {
+    background-color: #1A1A1A;
+    color: #00FFFF;
+    display: inline-block;
+  }
+  .audio-btn {
+    padding: 0em 1em;
+    border: none;
+    background: #00FF00;
+    color: #1A1A1A;
+    font-family: Consolas, monospace;
+    cursor: pointer;
+    height: 2em;
+  }
+  .audio-btn:hover {
+    text-decoration: underline;
+  }
+
   </style>
 </head>
 <body>
   <div id="container">
     <!-- Header -->
     <div class="entry">
-      <div class="key"></div>
-      <div class="value"><h1>Matt Heard</h1></div>
-      <div class="key"></div>
-      <div class="value metadata">
-        Software developer and philosopher in Berlin
-      </div>
-    </div>
-
+  <div class="key"></div>
+  <div class="value"><h1>Matt Heard</h1></div>
+  <div class="key"></div>
+  <div class="value metadata">
+  Software developer and philosopher in Berlin
+  </div>
+  </div>
     <article class="entry" id="DETE1">
       <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
       <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
@@ -147,6 +145,10 @@
       <div class="value">
         <img loading="lazy" src="2024-10-08.png" alt="A pointillist painting of an Italian town square with muted colors, showing a crowd of people discussing something important."/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2024-10-08.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">As a deterministic agent, you still have preferences. (These are pre-defined and moulded by external factors.) You prefer "good" outcomes, "good" intentions, and "right" actions. Your preferences combine and collide with those of others in your communities. These form social expectations. Community members formalise these and enforce them with rewards and punishments. You do not receive rewards and punishments due to your "moral responsibility". You receive them due to your (mis)alignment with the community. But this alignment goes both ways. Moral progress is a judgement of increasing alignment with your current preferences. Current misalignment encourages you to be political.</p>
     </article>
@@ -155,12 +157,16 @@
       <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
       <div class="key article-title">HILO1</div>
       <div class="value"><h2><a href="#HILO1">HI-LO</a></h2></div>
+      <div class="key">pubAt</div>
+      <p class="value metadata">3 Oct 2024</p>
     </article>
     <article class="entry" id="HELL1">
       <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
       <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
       <div class="key article-title">HELL1</div>
       <div class="value"><h2><a href="#HELL1">Hello world</a></h2></div>
+      <div class="key">pubAt</div>
+      <p class="value metadata">2 Oct 2024</p>
     </article>
     <article class="entry" id="ADJE1">
       <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
@@ -173,6 +179,10 @@
       <div class="value">
         <img loading="lazy" src="2024-07-26.webp" alt="An illustration of a child deep in thought, surrounded by thought bubbles. One bubble shows an ant labeled ‘big’, another shows the Milky Way. Nearby are skeletons, pensive old men, and more ants."/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2024-07-26.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">I was eight years old when I had my earliest metaphysical reflection. (This excludes religious doubt.) My thoughts: It was obvious that “bigger” and “smaller” were adjectives describing relations between objects. But “big” and “small” were also relations between objects and not properties of a single object. I am big compared to an ant, and small compared to the Milky Way, but I am neither big nor small alone. I conjected that there were no properties, only relations. I am not “alive” alone; I am more alive than someone in a vegetative state, who is more alive than a skeleton.</p>
     </article>
@@ -183,6 +193,10 @@
       <div class="value"><h2><a href="#ONAM1">On Amir's Egoism</a></h2></div>
       <div class="key">pubAt</div>
       <p class="value metadata">13 Apr 2024</p>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2024-04-13.m4a" type="audio/m4a">
+      </audio>
       <div class="key media">video</div>
       <p class="value">
         <iframe height="300px" width="100%" src="https://www.youtube.com/embed/EdlrqPPI_YQ?start=420" title="Lonely &amp; Horny Episode 2 - Orion" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
@@ -201,6 +215,10 @@
       <div class="value">
         <img loading="lazy" src="2024-04-06.webp" alt="An old Bible-style illustration of Abraham and Isaac at the moment of divine intervention."/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2024-04-06.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">Søren Kierkegaard wrote in "Fear and Trembling" about Abraham sacrificing his son. Despite its contradiction with universal moral norms, Abraham was willing to obey God. This is Kierkegaard's example of "teleological suspension of the ethical". Here, the duty to obey God supersedes moral duty. I'm interested in coherent moral codes, which allow for determinate decision-making. I would frame this obedience to God as a "trumping" duty within a pluralistic moral framework. Reasoning drives quotidian decisions but a command from God would override that all. Kierkegaard appears to object to fitting this sublime duty of obedience into morality. Seems odd.</p>
     </article>
@@ -215,6 +233,10 @@
       <div class="value">
         <img loading="lazy" src="2024-04-02.webp" alt="An abstract representation of decision-making complexity, featuring a maze illuminated by a guiding light, surrounded by symbols of wisdom such as an open book, a compass, and interconnected nodes."/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2024-04-02.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">"Strong opinions, held lightly." Indecision is paralysing. Knowledge is unreachable. Without certainty, how do we decide? Effective decision-making requires: Pragmatism: favour action over perfection. Probabilistic reasoning: balance possible outcomes. Fallibilism: accept that you will often be wrong. Ethical consideration: link your options to your moral values.</p>
     </article>
@@ -229,6 +251,10 @@
       <div class="value">
         <img loading="lazy" src="2023-09-10.png" alt="Artistic representation of the Trolley Problem in a surreal environment. The tracks twist and turn in impossible ways, emphasizing the complexity of the decision. On one track, five figures stand with linked arms, while a lone figure stands defiantly on the other. Above, a constellation in the shape of scales balances the ethical concepts of harm caused and harm allowed."/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2023-09-10.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">In the Trolley Problem, a runaway trolley is about to kill five people. You can divert it to another track, but if you do, another person will die instead. Many disagree about whether to divert the trolley. Some would choose to divert the trolley to minimize the number harmed. Others would refuse to divert the trolley, possibly because harm caused is worse than harm allowed. The lack of consensus can teach us about moral pluralism. Moral pluralism means different people have different moral values and moral codes. The Trolley Problem offers a framework for discussing and appreciating actual moral pluralism.</p>
     </article>
@@ -243,6 +269,10 @@
       <div class="value">
         <img loading="lazy" src="2023-08-20.png" alt="Oil painting illustrating the central role of battery technology in combating climate change. A large battery connects a polluted, smog-filled world on one side to a cleaner, greener world on the other. Miners labor in tough conditions while a parched landscape depicts the water-intensive nature of lithium extraction. Adjacent to this, a technologically advanced battery production facility stands tall, symbolizing hope."/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2023-08-20.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">Battery technology is crucial for mitigating climate change. But the materials often come from countries with lax environmental and labor protections. For example, there are reports of child labour and forced labour in the extraction of cobalt in the DRC. Lithium extraction is also water-intensive, impacting local ecosystems. Pausing or delaying the mining isn't the solution. Mining is essential for the transition away from fossil fuels. Instead, the focus should be on improving conditions and ethical sourcing. Failure to raise environmental and labour standards will extend our fossil fuel dependency.</p>
     </article>
@@ -257,6 +287,10 @@
       <div class="value">
         <img loading="lazy" src="2023-08-19.png" alt="robots working in a factory next to human supervisors, saturday morning cartoon"/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2023-08-19.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">AI is taking off, and this year brought new developments like GPT-4, Stable Diffusion XL, and llama.cpp. Even if all progress paused, the tools we already have could reshape society. Guessing what ten more years will look like is hard. We already struggle to predict the current pace of technology. We also can't be sure how people or governments will respond to these new tools. We don't know how they might want to direct its development. We should be careful and thoughtful, taking responsibility for how we use it. All while assuming everyone else will rush to use it.</p>
     </article>
@@ -271,6 +305,10 @@
       <div class="value">
         <img loading="lazy" src="2023-04-10.png" alt="John wick, in a shootout in Berghain, with water pouring all around him, digital art"/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2023-04-10.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">There's a funny scene in John Wick 4 where Wick is climbing a staircase, only to have to fight his way up against assailants. He gets kicked all the way back down, and has to repeat the ascent.</p>
       <div class="key"></div>
@@ -289,6 +327,10 @@
       <div class="value">
         <img loading="lazy" src="2021-01-05.png" alt="the continents of earth made from an arrangement of fossils"/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2021-01-05.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">Look closer. The right side of South America once snuggled into the left side of Africa. For hundreds of years, since the development of good global maps, we suspected it but didn't know it.</p>
       <div class="key"></div>
@@ -309,6 +351,10 @@
       <div class="value">
         <img loading="lazy" src="2021-01-04.png" alt="a messy desk, digital art, black and white"/>
       </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2021-01-04.m4a" type="audio/m4a">
+      </audio>
       <div class="key">text</div>
       <p class="value">I'm tired. It's not so bad. Others have it worse. But I'm tired.</p>
       <div class="key"></div>
@@ -389,13 +435,12 @@
       <p class="value">I knew that I could have been eligible, and should have sorted out my registration well in advance. I’m ashamed now.</p>
     </article>
 
-    <div class="entry">
-      <div class="key"></div>
-      <div class="footer value warning">
-        All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.
-      </div>
-    </div>
+  <div class="entry">
+  <div class="key"></div>
+  <div class="footer value warning">All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.</div>
   </div>
+  </div>
+  
   <script>
     const audio = document.getElementById("terminal-audio");
     const timeDisplay = document.getElementById("audio-time");
@@ -414,9 +459,10 @@
     }
 
     audio.addEventListener("timeupdate", function () {
-      let minutes = Math.floor(audio.currentTime / 60);
-      let seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
-      timeDisplay.textContent = [minutes, ":", seconds].join("");
+      const minutes = Math.floor(audio.currentTime / 60);
+      const seconds = Math.floor(audio.currentTime % 60);
+      timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
     });
   </script>
+>
 </body></html>

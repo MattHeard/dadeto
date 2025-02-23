@@ -21,6 +21,7 @@ describe('Blog Generator', () => {
                 {
                     key: "SECO2",
                     title: "Second Post",
+                    publicationDate: "2022-05-05",
                     content: [
                         "Second post content",
                         "Another paragraph"
@@ -33,6 +34,9 @@ describe('Blog Generator', () => {
                         id: "EdlrqPPI_YQ",
                         title: "Lonely & Horny Episode 2 - Orion",
                         timestamp: 420
+                    },
+                    audio: {
+                        fileType: "m4a",
                     }
                 }
             ]
@@ -58,6 +62,16 @@ describe('Blog Generator', () => {
       <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
       <div class="key article-title">SECO2</div>
       <div class="value"><h2><a href="#SECO2">Second Post</a></h2></div>
+      <div class="key">pubAt</div>
+      <p class="value metadata">5 May 2022</p>
+      <div class="key media">illus</div>
+      <div class="value">
+        <img loading="lazy" src="2022-05-05.png" alt="a tangle of yellow and black woollen yarn"/>
+      </div>
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="2022-05-05.m4a" type="audio/m4a">
+      </audio>
       <div class="key media">video</div>
       <p class="value">
         <iframe height="300px" width="100%" src="https://www.youtube.com/embed/EdlrqPPI_YQ?start=420" title="Lonely &amp; Horny Episode 2 - Orion" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>

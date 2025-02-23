@@ -92,6 +92,14 @@ const getArticleContent = (post) => {
       </div>`;
   }
 
+  const audioSrc = post.audio ? `${post.publicationDate}.m4a` : '';
+  const audioType = 'audio/m4a';
+  const audioHTML = audioSrc ? `
+      <div class="key media">audio</div>
+      <audio class="value" controls>
+        <source src="${audioSrc}" type="${audioType}">
+      </audio>` : '';
+
   const youtubeHTML = post.youtube ? `
       <div class="key media">video</div>
       <p class="value">
@@ -103,7 +111,7 @@ const getArticleContent = (post) => {
       <p class="value">${text}</p>`
     ).join('');
 
-  return headerHTML + illustrationHTML + youtubeHTML + contentHTML;
+  return headerHTML + illustrationHTML + audioHTML + youtubeHTML + contentHTML;
 };
 
 function escapeHtml(unsafe) {
