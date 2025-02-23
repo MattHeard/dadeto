@@ -93,11 +93,10 @@ const getArticleContent = (post) => {
   }
 
   const audioSrc = post.audio ? `${post.publicationDate}.m4a` : '';
-  const audioType = 'audio/m4a';
   const audioHTML = audioSrc ? `
       <div class="key media">audio</div>
       <audio class="value" controls>
-        <source src="${audioSrc}" type="${audioType}">
+        <source src="${audioSrc}">
       </audio>` : '';
 
   const youtubeHTML = post.youtube ? `

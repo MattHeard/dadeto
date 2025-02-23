@@ -70,7 +70,7 @@ describe('Blog Generator', () => {
       </div>
       <div class="key media">audio</div>
       <audio class="value" controls>
-        <source src="2022-05-05.m4a" type="audio/m4a">
+        <source src="2022-05-05.m4a">
       </audio>
       <div class="key media">video</div>
       <p class="value">
