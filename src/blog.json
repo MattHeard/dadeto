@@ -4,7 +4,9 @@
       "key": "DETE1",
       "title": "Deterministic Moral Preferences",
       "publicationDate": "2024-10-08",
-      "content": ["As a deterministic agent, you still have preferences. (These are pre-defined and moulded by external factors.) You prefer \"good\" outcomes, \"good\" intentions, and \"right\" actions. Your preferences combine and collide with those of others in your communities. These form social expectations. Community members formalise these and enforce them with rewards and punishments. You do not receive rewards and punishments due to your \"moral responsibility\". You receive them due to your (mis)alignment with the community. But this alignment goes both ways. Moral progress is a judgement of increasing alignment with your current preferences. Current misalignment encourages you to be political."],
+      "content": [
+        "As a deterministic agent, you still have preferences. (These are pre-defined and moulded by external factors.) You prefer \"good\" outcomes, \"good\" intentions, and \"right\" actions. Your preferences combine and collide with those of others in your communities. These form social expectations. Community members formalise these and enforce them with rewards and punishments. You do not receive rewards and punishments due to your \"moral responsibility\". You receive them due to your (mis)alignment with the community. But this alignment goes both ways. Moral progress is a judgement of increasing alignment with your current preferences. Current misalignment encourages you to be political."
+      ],
       "illustration": {
         "fileType": "png",
         "altText": "A pointillist painting of an Italian town square with muted colors, showing a crowd of people discussing something important."
@@ -27,7 +29,10 @@
       "key": "ADJE1",
       "title": "Adjectives and Properties",
       "publicationDate": "2024-07-26",
-      "content": ["I was eight years old when I had my earliest metaphysical reflection. (This excludes religious doubt.) My thoughts: It was obvious that “bigger” and “smaller” were adjectives describing relations between objects. But “big” and “small” were also relations between objects and not properties of a single object. I am big compared to an ant, and small compared to the Milky Way, but I am neither big nor small alone. I conjected that there were no properties, only relations. I am not “alive” alone; I am more alive than someone in a vegetative state, who is more alive than a skeleton."],
+      "content": [
+        "I was eight years old when I had my earliest metaphysical reflection. (This excludes religious doubt.)","My thoughts:",
+        "It was obvious that “bigger” and “smaller” were adjectives describing relations between objects. But “big” and “small” were also relations between objects and not properties of a single object. I am big compared to an ant, and small compared to the Milky Way, but I am neither big nor small alone. I conjected that there were no properties, only relations. I am not “alive” alone; I am more alive than someone in a vegetative state, who is more alive than a skeleton."
+      ],
       "illustration": {
         "fileType": "webp",
         "altText": "An illustration of a child deep in thought, surrounded by thought bubbles. One bubble shows an ant labeled ‘big’, another shows the Milky Way. Nearby are skeletons, pensive old men, and more ants."
@@ -40,7 +45,10 @@
       "key": "ONAM1",
       "title": "On Amir's Egoism",
       "publicationDate": "2024-04-13",
-      "content": ["Lonely and Horny was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in Lonely and Horny. \"I'm the only one that I am, dude… I don't care about other people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in my feelings being good for me.\""],
+      "content": [
+        "_Lonely and Horny_ was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in _Lonely and Horny_. He gives a spirited, funny, and coherent defence of philosophical egoism that I haven’t seen often.",
+        "_\"I'm the only one that I am, dude… I don't care about *other* people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in *my* feelings *being good* for *me*.\"_"
+      ],
       "audio": {
         "fileType": "m4a"
       },
@@ -54,7 +62,9 @@
       "key": "ETHI1",
       "title": "Ethics' Divine Suspension",
       "publicationDate": "2024-04-06",
-      "content": ["Søren Kierkegaard wrote in \"Fear and Trembling\" about Abraham sacrificing his son. Despite its contradiction with universal moral norms, Abraham was willing to obey God. This is Kierkegaard's example of \"teleological suspension of the ethical\". Here, the duty to obey God supersedes moral duty. I'm interested in coherent moral codes, which allow for determinate decision-making. I would frame this obedience to God as a \"trumping\" duty within a pluralistic moral framework. Reasoning drives quotidian decisions but a command from God would override that all. Kierkegaard appears to object to fitting this sublime duty of obedience into morality. Seems odd."],
+      "content": [
+        "Søren Kierkegaard wrote in \"Fear and Trembling\" about Abraham sacrificing his son. Despite its contradiction with universal moral norms, Abraham was willing to obey God. This is Kierkegaard's example of \"teleological suspension of the ethical\". Here, the duty to obey God supersedes moral duty. I'm interested in coherent moral codes, which allow for determinate decision-making. I would frame this obedience to God as a \"trumping\" duty within a pluralistic moral framework. Reasoning drives quotidian decisions but a command from God would override that all. Kierkegaard appears to object to fitting this sublime duty of obedience into morality. Seems odd."
+      ],
       "illustration": {
         "fileType": "webp",
         "altText": "An old Bible-style illustration of Abraham and Isaac at the moment of divine intervention."
@@ -68,7 +78,14 @@
       "title": "Holding Strong Opinions",
       "publicationDate": "2024-04-02",
       "content": [
-        "\"Strong opinions, held lightly.\" Indecision is paralysing. Knowledge is unreachable. Without certainty, how do we decide? Effective decision-making requires: Pragmatism: favour action over perfection. Probabilistic reasoning: balance possible outcomes. Fallibilism: accept that you will often be wrong. Ethical consideration: link your options to your moral values."
+        "\"Strong opinions, held lightly.\" Indecision is paralysing. Knowledge is unreachable. Without certainty, how do we decide?",
+        "Effective decision-making requires:",
+        "1. Pragmatism: favour action over perfection.",
+        "2. Probabilistic reasoning: balance possible outcomes.",
+        "3. Fallibilism: accept that you will often be wrong.",
+        "4. Ethical consideration: link your options to your moral values.",
+        "5. Community wisdom: seek feedback and collective experience.",
+        "By factoring these into each choice we make, we build habits and intuitions. As we reflect and practice, we gain speed and accuracy. Poor decisions also guide us to invest more in learning and discovery. In the end, we gain humility, empathy, and confidence to move forward."
       ],
       "illustration": {
         "fileType": "webp",
