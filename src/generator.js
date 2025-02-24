@@ -10,13 +10,14 @@ const keyClass = "key";
 const emptyKeyDiv = createDivElement(keyClass, "");
 
 const h1Element = `<pre aria-label="Matt Heard" role="heading" aria-level="1">
-▄▄▄▄   ▗▄▗▄▄▄▗▄▄▄▖   
-█ █ █ ▐▌ ▐▌█   █     
-█   █ ▐▛▀▜▌█   █     
-▗▖ ▗▗▞▀▚▗▞▀▜▗▄▄▖   ▐▌
-▐▌ ▐▐▛▀▀▝▚▄▟▐▌ ▐▌  ▐▌
-▐▛▀▜▝▚▄▄▖   ▐▛▀▚▗▞▀▜▌
-▐▌ ▐▌       ▐▌ ▐▝▚▄▟▌
+▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖      
+▐▛▚▞▜▌▐▌ ▐▌ █    █        
+▐▌  ▐▌▐▛▀▜▌ █    █        
+▐▌  ▐▌▐▌ ▐▌ █    █        
+▗▖ ▗▖▗▄▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄  
+▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █ 
+▐▛▀▜▌▐▛▀▀▘▐▛▀▜▌▐▛▀▚▖▐▌  █ 
+▐▌ ▐▌▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀
 </pre>`;
 
 const valueClass = "value";
