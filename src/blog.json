@@ -30,7 +30,8 @@
       "title": "Adjectives and Properties",
       "publicationDate": "2024-07-26",
       "content": [
-        "I was eight years old when I had my earliest metaphysical reflection. (This excludes religious doubt.)","My thoughts:",
+        "I was eight years old when I had my earliest metaphysical reflection. (This excludes religious doubt.)",
+        "My thoughts:",
         "It was obvious that “bigger” and “smaller” were adjectives describing relations between objects. But “big” and “small” were also relations between objects and not properties of a single object. I am big compared to an ant, and small compared to the Milky Way, but I am neither big nor small alone. I conjected that there were no properties, only relations. I am not “alive” alone; I am more alive than someone in a vegetative state, who is more alive than a skeleton."
       ],
       "illustration": {
@@ -96,7 +97,7 @@
       }
     },
     {
-      "key": "AMOR1",
+      "key": "APPR1",
       "title": "Appreciating Moral Pluralism",
       "publicationDate": "2023-09-10",
       "content": [
@@ -111,7 +112,7 @@
       }
     },
     {
-      "key": "CECA1",
+      "key": "COMP1",
       "title": "Competing Environmental Causes",
       "publicationDate": "2023-08-20",
       "content": [
@@ -123,10 +124,75 @@
       },
       "audio": {
         "fileType": "m4a"
-      }
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.youtube.com/watch?v=XkTCD4mQtAo",
+          "title": "Climate-Smart Mining: Minerals for Climate Action",
+          "source": "World Bank",
+          "medium": "YouTube"
+        },
+        {
+          "url": "https://pubdocs.worldbank.org/en/961711588875536384/Minerals-for-Climate-Action-The-Mineral-Intensity-of-the-Clean-Energy-Transition.pdf",
+          "title": "Minerals for Climate Action: The Mineral Intensity of the Clean Energy Transition",
+          "source": "World Bank"
+        },
+        {
+          "url": "https://changeit.app/blog/2021-03-26-environmental-impact-of-lithium-batteries/",
+          "title": "What is the environmental impact of lithium batteries?",
+          "author": "Carolina Freitas",
+          "source": "ChangeIt"
+        },
+        {
+          "url": "https://www.wired.co.uk/article/lithium-batteries-environment-impact",
+          "title": "The spiralling environmental cost of our lithium battery addiction",
+          "author": "Amit Katwala",
+          "source": "Wired.co.uk"
+        },
+        {
+          "url": "https://earth.org/environmental-impact-of-battery-production/",
+          "title": "The Environmental Impact of Battery Production for Electric Vehicles",
+          "author": "Lakshmi R B",
+          "source": "Earth.org"
+        },
+        {
+          "url": "https://earth.org/cobalt-mining/",
+          "title": "Cobalt Mining: The Dark Side of the Renewable Energy Transition",
+          "author": "Aphra Murray",
+          "source": "Earth.org"
+        },
+        {
+          "url": "https://www3.weforum.org/docs/WEF_Making_Mining_Safe_2020.pdf",
+          "title": "Making Mining Safe and Fair: Artisanal cobalt extraction in the Democratic Republic of the Congo",
+          "source": "World Economic Forum"
+        },
+        {
+          "url": "https://www.reuters.com/article/us-philippines-mining/philippines-to-shut-half-of-mines-mostly-nickel-in-environmental-clampdown-idINKBN15H0BQ",
+          "title": "Philippines to shut half of mines mostly nickel in environmental clampdown",
+          "author": "Enrico Dela Cruz and Manolo Serapio Jr",
+          "source": "Reuters"
+        },
+        {
+          "url": "https://www.scmp.com/business/article/3202402/asias-lithium-capital-grinds-halt-output-battery-material-stops-yichun-amid-pollution-investigation",
+          "title": "‘Asia’s lithium capital’ grinds to a halt as output of battery material stops in Yichun amid pollution investigation in Jiangxi province’s Jin River",
+          "author": "Yujie Xue",
+          "source": "South China Morning Post"
+        },
+        {
+          "url": "https://www.economist.com/middle-east-and-africa/2022/07/05/how-the-world-depends-on-small-cobalt-miners",
+          "title": "How the world depends on small cobalt miners",
+          "author": "Kolwezi and Fungurume",
+          "source": "The Economist"
+        },
+        {
+          "url": "https://me.smenet.org/webContent.cfm?webarticleid=4429",
+          "title": "U.S. Department of Energy releases 2023 Critical Materials Assessment",
+          "source": "Mining Engineering"
+        }
+      ]
     },
     {
-      "key": "AUNF1",
+      "key": "ANUN1",
       "title": "An Unpredictable Future",
       "publicationDate": "2023-08-19",
       "content": [
@@ -138,10 +204,27 @@
       },
       "audio": {
         "fileType": "m4a"
-      }
+      },
+      "relatedLinks": [
+        {
+          "url": "https://openai.com/gpt-4",
+          "title": "GPT-4",
+          "source": "OpenAI"
+        },
+        {
+          "url": "https://stability.ai/blog/stable-diffusion-sdxl-1-announcement",
+          "title": "Announcing SDXL 1.0",
+          "source": "stability.ai"
+        },
+        {
+          "url": "https://github.com/ggerganov/llama.cpp",
+          "title": "llama.cpp",
+          "source": "Github"
+        }
+      ]
     },
     {
-      "key": "JWJ1",
+      "key": "JOHN1",
       "title": "John Wick's Justice",
       "publicationDate": "2023-04-10",
       "content": [
@@ -151,14 +234,28 @@
       ],
       "illustration": {
         "fileType": "png",
-        "altText": "John wick, in a shootout in Berghain, with water pouring all around him, digital art"
+        "altText": "John Wick, in a shootout in Berghain, with water pouring all around him, digital art"
       },
       "audio": {
         "fileType": "m4a"
-      } 
+      },
+      "relatedLinks": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Berghain",
+          "title": "Berghain",
+          "source": "Wikipedia"
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=ZdGrC9S4PYA",
+          "title": "\"Mr. Manager\"",
+          "note": "clip from _Arrested Development_",
+          "source": "YouTube",
+          "quote": "It's up to me now. I'm Mr. Manager"
+        }
+      ]
     },
     {
-      "key": "APOR1",
+      "key": "ACRO1",
       "title": "Across the Pond",
       "publicationDate": "2021-01-05",
       "content": [
@@ -176,7 +273,7 @@
       }
     },
     {
-      "key": "ABF1",
+      "key": "ABRA1",
       "title": "A Brain Fog",
       "publicationDate": "2021-01-04",
       "content": [
@@ -193,7 +290,7 @@
       }
     },
     {
-      "key": "TESE1",
+      "key": "THES1",
       "title": "The Sixth Extinction",
       "publicationDate": "2019-12-26",
       "content": [
@@ -206,7 +303,7 @@
       }
     },
     {
-      "key": "CCO1",
+      "key": "CLIM1",
       "title": "Climate Change Optimism",
       "publicationDate": "2019-12-16",
       "content": [
@@ -220,7 +317,7 @@
       }
     },
     {
-      "key": "COG1",
+      "key": "COST1",
       "title": "Cost of Glue",
       "publicationDate": "2019-12-10",
       "content": [
