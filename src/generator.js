@@ -1,15 +1,68 @@
 import { headElement } from './head.js';
-import { fullWidthElement } from './full-width.js'
+import { fullWidthElement } from './full-width.js';
 import scriptTag from './script.js';
 
-const docType = "<!DOCTYPE html>";
-const htmlPrefix = "<html lang='en'>";
-const htmlSuffix = "</html>";
+// Constants for HTML structure
+const DOCTYPE = "<!DOCTYPE html>";
+const HTML_START = "<html lang='en'>";
+const HTML_END = "</html>";
 
-const keyClass = "key";
-const emptyKeyDiv = createDivElement(keyClass, "");
+// CSS class names
+const CLASS = {
+  KEY: "key",
+  VALUE: "value",
+  ENTRY: "entry",
+  ARTICLE_TITLE: "article-title",
+  METADATA: "metadata",
+  FOOTER: "footer",
+  WARNING: "warning",
+  MEDIA: "media",
+  FULL_WIDTH: "full-width"
+};
 
-const h1Element = `<pre aria-label="Matt Heard" role="heading" aria-level="1">
+// HTML generation helpers
+function createDiv(classes, content) {
+  return `<div class="${classes}">${content}</div>`;
+}
+
+function joinClasses(classes) {
+  return classes.join(' ');
+}
+
+function createKeyDiv(content = "") {
+  return createDiv(CLASS.KEY, content);
+}
+
+function createValueDiv(content, additionalClasses = []) {
+  const classes = [CLASS.VALUE, ...additionalClasses].filter(Boolean);
+  return createDiv(joinClasses(classes), content);
+}
+
+/**
+ * Escapes HTML special characters to prevent XSS attacks
+ */
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/**
+ * Format date in "4 May 2022" format
+ */
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString('en-GB', { 
+    day: 'numeric', 
+    month: 'short', 
+    year: 'numeric' 
+  });
+}
+
+// Header components
+const HEADER_BANNER = `<pre aria-label="Matt Heard" role="heading" aria-level="1">
 ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖      
 ▐▛▚▞▜▌▐▌ ▐▌ █    █        
 ▐▌  ▐▌▐▛▀▜▌ █    █        
@@ -20,131 +73,153 @@ const h1Element = `<pre aria-label="Matt Heard" role="heading" aria-level="1">
 ▐▌ ▐▌▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀
 </pre>`;
 
-const valueClass = "value";
-const classJoinSeparator = ' ';
-const titleKeyClasses = joinClasses(["key", "article-title"]);
+const METADATA_TEXT = `
+  Software developer and philosopher in Berlin
+  `;
 
-function createDivElement(classes, content) {
-  return `<div class="${classes}">${content}</div>`;
+function createHeaderSection() {
+  const emptyKeyDiv = createKeyDiv();
+  const h1ValueDiv = createValueDiv(HEADER_BANNER);
+  const metadataValueDiv = createValueDiv(METADATA_TEXT, [CLASS.METADATA]);
+  
+  const headerContent = [
+    emptyKeyDiv,
+    h1ValueDiv,
+    emptyKeyDiv,
+    metadataValueDiv
+  ].join('\n  ');
+  
+  return createDiv(CLASS.ENTRY, `\n  ${headerContent}\n  `);
 }
 
-const h1ValueDiv = createDivElement(valueClass, h1Element);
+// Footer components
+const WARNING_MESSAGE = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
 
-const newLineAndIndent = '\n  ';
-
-const metadataText = `${newLineAndIndent}Software developer and philosopher in Berlin${newLineAndIndent}`;
-const metadataClass = "metadata";
-
-function joinClasses(classes) {
-  return classes.join(classJoinSeparator);
+function createFooterSection() {
+  const emptyKeyDiv = createKeyDiv();
+  const footerDiv = createDiv(joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]), WARNING_MESSAGE);
+  const footerContent = [emptyKeyDiv, footerDiv].join('\n  ');
+  
+  return createDiv(CLASS.ENTRY, `\n  ${footerContent}\n  `);
 }
 
-const metadataValueClasses = joinClasses([valueClass, metadataClass]);
-const metadataValueDiv = createDivElement(metadataValueClasses, metadataText);
-
-const entryDivContents = [
-  emptyKeyDiv,
-  h1ValueDiv,
-  emptyKeyDiv,
-  metadataValueDiv
-].join(newLineAndIndent);
-
-const entryClass = "entry";
-
-const entryDivContent = [newLineAndIndent, entryDivContents, newLineAndIndent].join('');
-const entryDiv = createDivElement(entryClass, entryDivContent);
-
-const header = `${headElement}
+// Page structure
+function createPageHeader() {
+  const headerElement = createHeaderSection();
+  return `${headElement}
 <body>
   <div id="container">
     <!-- Header -->
-    ${entryDiv}`;
+    ${headerElement}`;
+}
 
-const warningMessage = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
-
-const footerDivClasses = joinClasses(["footer", valueClass, "warning"]);
-const footerDiv = createDivElement(footerDivClasses, warningMessage);
-
-const warningDivContents = [emptyKeyDiv, footerDiv].join(newLineAndIndent);
-
-const warningDiv = createDivElement(entryClass, `${newLineAndIndent}${warningDivContents}${newLineAndIndent}`);
-
-const footer = `
-  ${warningDiv}
+function createPageFooter() {
+  const footerElement = createFooterSection();
+  return `
+  ${footerElement}
   </div>
-  ${scriptTag}>
+  ${scriptTag}
 </body>`;
+}
 
-const wrapHtml = (c) => [docType, htmlPrefix, c, htmlSuffix].join("");
+function wrapHtml(content) {
+  return [DOCTYPE, HTML_START, content, HTML_END].join("");
+}
 
-// Create an article from a post
-const getArticleContent = (post) => {
-  const titleKey = createDivElement(titleKeyClasses, post.key);
+/**
+ * Create an article from a blog post
+ */
+function generateArticle(post) {
+  const content = generateArticleContent(post);
+  const idAttr = post.key ? ` id="${post.key}"` : "";
+  
+  return `<article class="${CLASS.ENTRY}"${idAttr}>
+      ${fullWidthElement}
+      ${content}
+    </article>`;
+}
+
+/**
+ * Generate the content of a blog post article
+ */
+function generateArticleContent(post) {
+  // Title section
+  const titleClasses = joinClasses([CLASS.KEY, CLASS.ARTICLE_TITLE]);
+  const titleKey = createDiv(titleClasses, post.key);
   const titleLink = `<a href="#${post.key}">${post.title}</a>`;
   const titleHeader = `<h2>${titleLink}</h2>`;
   const titleValue = `
-      <div class="${valueClass}">${titleHeader}</div>`;
-  const dateKey = `<div class="key">pubAt</div>`;
-  const dateValue = `
-      <p class="value metadata">${new Date(post.publicationDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>`;
-  const dateHtml = post.publicationDate ? `
-      ${dateKey}${dateValue}` : '';
+      <div class="${CLASS.VALUE}">${titleHeader}</div>`;
+  
+  // Date section
+  let dateHtml = '';
+  if (post.publicationDate) {
+    const dateKey = `<div class="${CLASS.KEY}">pubAt</div>`;
+    const dateValue = `
+      <p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
+    dateHtml = `
+      ${dateKey}${dateValue}`;
+  }
+  
   const headerHTML = [titleKey, titleValue, dateHtml].join("");
 
+  // Illustration section
   let illustrationHTML = '';
   if (post.illustration && post.publicationDate) {
     illustrationHTML = `
-      <div class="key media">illus</div>
-      <div class="value">
+      <div class="${CLASS.KEY} ${CLASS.MEDIA}">illus</div>
+      <div class="${CLASS.VALUE}">
         <img loading="lazy" src="${post.publicationDate}.${post.illustration.fileType}" alt="${post.illustration.altText}"/>
       </div>`;
   }
 
-  const audioSrc = post.audio ? `${post.publicationDate}.m4a` : '';
-  const audioHTML = audioSrc ? `
-      <div class="key media">audio</div>
-      <audio class="value" controls>
+  // Audio section
+  let audioHTML = '';
+  if (post.audio) {
+    const audioSrc = `${post.publicationDate}.m4a`;
+    audioHTML = `
+      <div class="${CLASS.KEY} ${CLASS.MEDIA}">audio</div>
+      <audio class="${CLASS.VALUE}" controls>
         <source src="${audioSrc}">
-      </audio>` : '';
+      </audio>`;
+  }
 
-  const youtubeHTML = post.youtube ? `
-      <div class="key media">video</div>
-      <p class="value">
+  // YouTube section
+  let youtubeHTML = '';
+  if (post.youtube) {
+    youtubeHTML = `
+      <div class="${CLASS.KEY} ${CLASS.MEDIA}">video</div>
+      <p class="${CLASS.VALUE}">
         <iframe height="300px" width="100%" src="https://www.youtube.com/embed/${post.youtube.id}?start=${post.youtube.timestamp}" title="${escapeHtml(post.youtube.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
-      </p>` : '';
+      </p>`;
+  }
 
+  // Content sections
   const contentHTML = (post.content || []).map((text, index) => `
-      <div class="key">${index === 0 ? "text" : ""}</div>
-      <p class="value">${text}</p>`
-    ).join('');
+      <div class="${CLASS.KEY}">${index === 0 ? "text" : ""}</div>
+      <p class="${CLASS.VALUE}">${text}</p>`
+  ).join('');
 
+  // Combine all sections
   return headerHTML + illustrationHTML + audioHTML + youtubeHTML + contentHTML;
-};
-
-function escapeHtml(unsafe) {
-  return unsafe.replace(/&/g, "&amp;")
-               .replace(/</g, "&lt;")
-               .replace(/>/g, "&gt;")
-               .replace(/"/g, "&quot;")
-               .replace(/'/g, "&#039;");
 }
 
-const getArticle = (post) => {
-    const content = getArticleContent(post);
-    const idAttr = post.key ? ` id=\"${post.key}\"` : "";
-    return `<article class=\"entry\"${idAttr}>
-      ${fullWidthElement}
-      ${content}
-    </article>`;
-};
-
-// Generate the HTML from a blog
+/**
+ * Generate a complete blog HTML
+ */
 export function generateBlogOuter(blog) {
-    return generateBlog(blog, header, footer, wrapHtml);
-};
+  return generateBlog(blog, createPageHeader(), createPageFooter(), wrapHtml);
+}
 
+/**
+ * Generate blog HTML with customizable header, footer and wrapper
+ */
 export function generateBlog(blog, header, footer, wrapHtml) {
-    const articles = blog.posts.map(getArticle).map(article => "    " + article + "\n");
-    const htmlContents = header + "\n" + articles.join("") + footer;
-    return wrapHtml(htmlContents);
-};
+  const articles = blog.posts
+    .map(generateArticle)
+    .map(article => "    " + article + "\n")
+    .join("");
+    
+  const htmlContents = header + "\n" + articles + footer;
+  return wrapHtml(htmlContents);
+}
