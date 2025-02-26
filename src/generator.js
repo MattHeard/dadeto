@@ -126,15 +126,24 @@ function prefixWithEmptyKey(valueDiv) {
   return createKeyValuePair(emptyKeyDiv, valueDiv);
 }
 
-function createHeaderSection() {
+/**
+ * Create the content for the header section
+ */
+function createHeaderContent() {
   const h1ValueDiv = createValueDiv(HEADER_BANNER);
   const metadataValueDiv = createValueDiv(METADATA_TEXT, [CLASS.METADATA]);
 
-  const headerContent = [
+  return [
     prefixWithEmptyKey(h1ValueDiv),
     prefixWithEmptyKey(metadataValueDiv)
   ].join(NEWLINE_WITH_INDENT);
+}
 
+/**
+ * Create the header section with banner and metadata
+ */
+function createHeaderSection() {
+  const headerContent = createHeaderContent();
   return createDiv(CLASS.ENTRY, NEWLINE_WITH_INDENT + headerContent + NEWLINE_WITH_INDENT);
 }
 
