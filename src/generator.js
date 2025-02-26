@@ -4,8 +4,6 @@ import scriptTag from './script.js';
 
 // Constants for HTML structure
 const DOCTYPE = "<!DOCTYPE html>";
-const HTML_START = "<html lang='en'>";
-const HTML_END = "</html>";
 
 // CSS class names
 const CLASS = {
@@ -129,8 +127,8 @@ function createPageFooter() {
 }
 
 function wrapHtml(content) {
-  const htmlContent = [HTML_START, content, HTML_END].join("");
-  return DOCTYPE + htmlContent;
+  const htmlContent = ["<html lang='en'>", content, "</html>"].join("");
+  return [DOCTYPE, htmlContent].join("");
 }
 
 /**
