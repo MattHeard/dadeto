@@ -151,6 +151,13 @@ function createFooterSection() {
 
 // Page structure
 /**
+ * Create the opening container div
+ */
+function createContainerDivOpen() {
+  return '  <div id="container">';
+}
+
+/**
  * Create the page header with head element, body opening tag and header section
  */
 function createPageHeader() {
@@ -159,7 +166,7 @@ function createPageHeader() {
   return [
     headElement,
     '<body>',
-    '  <div id="container">',
+    createContainerDivOpen(),
     '    <!-- Header -->',
     '    ' + headerElement
   ].join('\n');
