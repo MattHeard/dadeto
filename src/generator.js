@@ -179,16 +179,25 @@ function generateArticle(post) {
 }
 
 /**
- * Generate the content of a blog post article
+ * Generate the title section for a blog post
  */
-function generateArticleContent(post) {
-  // Title section
+function generateTitleSection(post) {
   const titleClasses = joinClasses([CLASS.KEY, CLASS.ARTICLE_TITLE]);
   const titleKey = createDiv(titleClasses, post.key);
   const titleLink = `<a href="#${post.key}">${post.title}</a>`;
   const titleHeader = `<h2>${titleLink}</h2>`;
   const titleValue = `
       <div class="${CLASS.VALUE}">${titleHeader}</div>`;
+  
+  return [titleKey, titleValue].join("");
+}
+
+/**
+ * Generate the content of a blog post article
+ */
+function generateArticleContent(post) {
+  // Title section
+  const titleSection = generateTitleSection(post);
   
   // Date section
   let dateHtml = '';
@@ -200,7 +209,7 @@ function generateArticleContent(post) {
       ${dateKey}${dateValue}`;
   }
   
-  const headerHTML = [titleKey, titleValue, dateHtml].join("");
+  const headerHTML = titleSection + dateHtml;
 
   // Illustration section
   let illustrationHTML = '';
