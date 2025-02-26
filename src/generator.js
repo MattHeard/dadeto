@@ -138,11 +138,12 @@ function generateArticle(post) {
   const content = generateArticleContent(post);
   const idAttr = post.key ? ` id="${post.key}"` : "";
   const classAttr = ` class="${CLASS.ENTRY}"`;
+  const tagName = "article";
   
-  return `<article${classAttr}${idAttr}>
+  return `<${tagName}${classAttr}${idAttr}>
       ${fullWidthElement}
       ${content}
-    </article>`;
+    </${tagName}>`;
 }
 
 /**
