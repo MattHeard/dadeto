@@ -19,9 +19,6 @@ const CLASS = {
 };
 
 // HTML tag names
-const TAG_NAME = {
-};
-
 const DIV_TAG_NAME = "div";
 
 // HTML generation helpers
