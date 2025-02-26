@@ -129,7 +129,8 @@ function createPageFooter() {
 function wrapHtml(content) {
   const tagName = "html";
   const language = "en";
-  const htmlContent = [`<${tagName} lang='${language}'>`, content, `</${tagName}>`].join("");
+  const langAttr = "lang";
+  const htmlContent = [`<${tagName} ${langAttr}='${language}'>`, content, `</${tagName}>`].join("");
   return [DOCTYPE, htmlContent].join("");
 }
 
