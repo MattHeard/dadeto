@@ -279,15 +279,22 @@ function generateArticle(post) {
 }
 
 /**
+ * Create the title value for a blog post
+ */
+function createTitleValue(post) {
+  const titleLink = `<a href="#${post.key}">${post.title}</a>`;
+  const titleHeader = `<h2>${titleLink}</h2>`;
+  return `
+      <div class="${CLASS.VALUE}">${titleHeader}</div>`;
+}
+
+/**
  * Generate the title section for a blog post
  */
 function generateTitleSection(post) {
   const titleClasses = joinClasses([CLASS.KEY, CLASS.ARTICLE_TITLE]);
   const titleKey = createDiv(titleClasses, post.key);
-  const titleLink = `<a href="#${post.key}">${post.title}</a>`;
-  const titleHeader = `<h2>${titleLink}</h2>`;
-  const titleValue = `
-      <div class="${CLASS.VALUE}">${titleHeader}</div>`;
+  const titleValue = createTitleValue(post);
   
   return createKeyValuePairInline(titleKey, titleValue);
 }
