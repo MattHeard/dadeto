@@ -172,15 +172,32 @@ function createPageHeader() {
   ].join('\n');
 }
 
+/**
+ * Create the closing container div
+ */
+function createContainerDivClose() {
+  return '  </div>';
+}
+
+/**
+ * Create the body closing tag
+ */
+function createBodyClose() {
+  return '</body>';
+}
+
+/**
+ * Create the page footer with footer section, container div closing, and body closing tag
+ */
 function createPageFooter() {
   const footerElement = createFooterSection();
   
   return [
     '',
     '  ' + footerElement,
-    '  </div>',
+    createContainerDivClose(),
     '  ' + scriptTag,
-    '</body>'
+    createBodyClose()
   ].join('\n');
 }
 
