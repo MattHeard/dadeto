@@ -240,6 +240,21 @@ function generateAudioSection(post) {
 }
 
 /**
+ * Generate the YouTube section for a blog post
+ */
+function generateYouTubeSection(post) {
+  if (!post.youtube) {
+    return '';
+  }
+  
+  return `
+      <div class="${CLASS.KEY} ${CLASS.MEDIA}">video</div>
+      <p class="${CLASS.VALUE}">
+        <iframe height="300px" width="100%" src="https://www.youtube.com/embed/${post.youtube.id}?start=${post.youtube.timestamp}" title="${escapeHtml(post.youtube.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
+      </p>`;
+}
+
+/**
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
@@ -258,14 +273,7 @@ function generateArticleContent(post) {
   const audioHTML = generateAudioSection(post);
 
   // YouTube section
-  let youtubeHTML = '';
-  if (post.youtube) {
-    youtubeHTML = `
-      <div class="${CLASS.KEY} ${CLASS.MEDIA}">video</div>
-      <p class="${CLASS.VALUE}">
-        <iframe height="300px" width="100%" src="https://www.youtube.com/embed/${post.youtube.id}?start=${post.youtube.timestamp}" title="${escapeHtml(post.youtube.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
-      </p>`;
-  }
+  const youtubeHTML = generateYouTubeSection(post);
 
   // Content sections
   const contentHTML = (post.content || []).map((text, index) => `
