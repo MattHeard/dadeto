@@ -209,6 +209,21 @@ function generateDateSection(post) {
 }
 
 /**
+ * Generate the illustration section for a blog post
+ */
+function generateIllustrationSection(post) {
+  if (!post.illustration || !post.publicationDate) {
+    return '';
+  }
+  
+  return `
+      <div class="${CLASS.KEY} ${CLASS.MEDIA}">illus</div>
+      <div class="${CLASS.VALUE}">
+        <img loading="lazy" src="${post.publicationDate}.${post.illustration.fileType}" alt="${post.illustration.altText}"/>
+      </div>`;
+}
+
+/**
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
@@ -221,14 +236,7 @@ function generateArticleContent(post) {
   const headerHTML = titleSection + dateSection;
 
   // Illustration section
-  let illustrationHTML = '';
-  if (post.illustration && post.publicationDate) {
-    illustrationHTML = `
-      <div class="${CLASS.KEY} ${CLASS.MEDIA}">illus</div>
-      <div class="${CLASS.VALUE}">
-        <img loading="lazy" src="${post.publicationDate}.${post.illustration.fileType}" alt="${post.illustration.altText}"/>
-      </div>`;
-  }
+  const illustrationHTML = generateIllustrationSection(post);
 
   // Audio section
   let audioHTML = '';
