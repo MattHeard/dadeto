@@ -19,10 +19,14 @@ const CLASS = {
 };
 
 // HTML generation helpers
+function createTag(tagName, attributes, content) {
+  return `<${tagName} ${attributes}>${content}</${tagName}>`;
+}
+
 function createDiv(classes, content) {
   const tagName = "div";
   const classAttr = createAttrPair("class", classes);
-  return `<${tagName} ${classAttr}>${content}</${tagName}>`;
+  return createTag(tagName, classAttr, content);
 }
 
 function joinClasses(classes) {
