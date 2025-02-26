@@ -22,7 +22,7 @@ const CLASS = {
 function createTag(tagName, attributes, content) {
   const openingTag = `<${tagName} ${attributes}>`;
   const closingTag = `</${tagName}>`;
-  return `${openingTag}${content}${closingTag}`;
+  return [openingTag, content, closingTag].join("");
 }
 
 function createDiv(classes, content) {
