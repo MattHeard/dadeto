@@ -38,6 +38,10 @@ function createValueDiv(content, additionalClasses = []) {
   return createDiv(joinedClasses, content);
 }
 
+function createAttrPair(attrName, attrValue) {
+  return `${attrName}='${attrValue}'`;
+}
+
 /**
  * Escapes HTML special characters to prevent XSS attacks
  */
@@ -130,7 +134,7 @@ function wrapHtml(content) {
   const tagName = "html";
   const language = "en";
   const langAttr = "lang";
-  const langAttrPair = `${langAttr}='${language}'`;
+  const langAttrPair = createAttrPair(langAttr, language);
   const htmlContent = [`<${tagName} ${langAttrPair}>`, content, `</${tagName}>`].join("");
   return [DOCTYPE, htmlContent].join("");
 }
