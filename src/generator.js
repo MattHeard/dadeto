@@ -80,18 +80,20 @@ const METADATA_TEXT = `
   Software developer and philosopher in Berlin
   `;
 
-function createHeaderSection() {
+function prefixWithEmptyKey(valueDiv) {
   const emptyKeyDiv = createKeyDiv();
+  return [emptyKeyDiv, valueDiv].join('\n  ');
+}
+
+function createHeaderSection() {
   const h1ValueDiv = createValueDiv(HEADER_BANNER);
   const metadataValueDiv = createValueDiv(METADATA_TEXT, [CLASS.METADATA]);
-  
+
   const headerContent = [
-    emptyKeyDiv,
-    h1ValueDiv,
-    emptyKeyDiv,
-    metadataValueDiv
+    prefixWithEmptyKey(h1ValueDiv),
+    prefixWithEmptyKey(metadataValueDiv)
   ].join('\n  ');
-  
+
   return createDiv(CLASS.ENTRY, `\n  ${headerContent}\n  `);
 }
 
