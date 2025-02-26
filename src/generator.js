@@ -20,8 +20,6 @@ const CLASS = {
 
 // HTML tag names
 const TAG_NAME = {
-  ARTICLE: "article",
-  HTML: "html"
 };
 
 const DIV_TAG_NAME = "div";
@@ -146,7 +144,7 @@ function createPageFooter() {
 }
 
 function wrapHtml(content) {
-  const tagName = TAG_NAME.HTML;
+  const tagName = "html";
   const language = "en";
   const langAttr = "lang";
   const langAttrPair = createAttrPair(langAttr, language);
@@ -161,7 +159,7 @@ function generateArticle(post) {
   const content = generateArticleContent(post);
   const idAttr = post.key ? ` id="${post.key}"` : "";
   const classAttr = ` class="${CLASS.ENTRY}"`;
-  const tagName = TAG_NAME.ARTICLE;
+  const tagName = "article";
   
   return `<${tagName}${classAttr}${idAttr}>
       ${fullWidthElement}
