@@ -185,6 +185,16 @@ function wrapHtml(content) {
 }
 
 /**
+ * Generate HTML for all articles in the blog
+ */
+function generateArticles(posts) {
+  return posts
+    .map(generateArticle)
+    .map(article => "    " + article + "\n")
+    .join("");
+}
+
+/**
  * Create an article from a blog post
  */
 function generateArticle(post) {
@@ -325,20 +335,10 @@ function generateArticleContent(post) {
 }
 
 /**
- * Generate a complete blog HTML
- */
-export function generateBlogOuter(blog) {
-  return generateBlog(blog, createPageHeader(), createPageFooter(), wrapHtml);
-}
-
-/**
  * Generate blog HTML with customizable header, footer and wrapper
  */
 export function generateBlog(blog, header, footer, wrapHtml) {
-  const articles = blog.posts
-    .map(generateArticle)
-    .map(article => "    " + article + "\n")
-    .join("");
+  const articles = generateArticles(blog.posts);
     
   // We use an array for better readability but need to follow the exact format
   // to match the expected output
@@ -350,4 +350,11 @@ export function generateBlog(blog, header, footer, wrapHtml) {
   ].join("");
   
   return wrapHtml(htmlContents);
+}
+
+/**
+ * Generate a complete blog HTML
+ */
+export function generateBlogOuter(blog) {
+  return generateBlog(blog, createPageHeader(), createPageFooter(), wrapHtml);
 }
