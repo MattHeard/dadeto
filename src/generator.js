@@ -130,7 +130,8 @@ function wrapHtml(content) {
   const tagName = "html";
   const language = "en";
   const langAttr = "lang";
-  const htmlContent = [`<${tagName} ${langAttr}='${language}'>`, content, `</${tagName}>`].join("");
+  const langAttrPair = `${langAttr}='${language}'`;
+  const htmlContent = [`<${tagName} ${langAttrPair}>`, content, `</${tagName}>`].join("");
   return [DOCTYPE, htmlContent].join("");
 }
 
