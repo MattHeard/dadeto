@@ -26,7 +26,8 @@ const ARTICLE_TAG_NAME = "article";
 // HTML attribute names
 const ATTR_NAME = {
   LANG: "lang",
-  CLASS: "class"
+  CLASS: "class",
+  ID: "id"
 };
 
 // HTML generation helpers
@@ -161,12 +162,13 @@ function wrapHtml(content) {
  */
 function generateArticle(post) {
   const content = generateArticleContent(post);
-  const idPart = post.key ? ` id="${post.key}"` : "";
-  const classPart = ` class="${CLASS.ENTRY}"`;
-  const attributes = `${classPart}${idPart}`;
+  const classAttr = createAttrPair(ATTR_NAME.CLASS, CLASS.ENTRY);
+  // Add ID only if the post has a key
+  const idAttr = post.key ? " " + createAttrPair(ATTR_NAME.ID, post.key) : "";
+  const attributes = `${classAttr}${idAttr}`;
   const tagName = ARTICLE_TAG_NAME;
   
-  return `<${tagName}${attributes}>
+  return `<${tagName} ${attributes}>
       ${fullWidthElement}
       ${content}
     </${tagName}>`;
