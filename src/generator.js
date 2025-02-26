@@ -21,7 +21,7 @@ const CLASS = {
 // HTML generation helpers
 function createDiv(classes, content) {
   const tagName = "div";
-  const classAttr = `class="${classes}"`;
+  const classAttr = createAttrPair("class", classes);
   return `<${tagName} ${classAttr}>${content}</${tagName}>`;
 }
 
