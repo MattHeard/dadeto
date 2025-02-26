@@ -119,9 +119,9 @@ function createHeaderSection() {
   const headerContent = [
     prefixWithEmptyKey(h1ValueDiv),
     prefixWithEmptyKey(metadataValueDiv)
-  ].join('\n  ');
+  ].join(NEWLINE_WITH_INDENT);
 
-  return createDiv(CLASS.ENTRY, `\n  ${headerContent}\n  `);
+  return createDiv(CLASS.ENTRY, NEWLINE_WITH_INDENT + headerContent + NEWLINE_WITH_INDENT);
 }
 
 // Footer components
