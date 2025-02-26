@@ -233,49 +233,55 @@ function generateDateSection(post) {
 }
 
 /**
+ * Higher-order function for generating media sections
+ */
+function createMediaSectionGenerator(mediaType, label, contentGenerator) {
+  return function(post) {
+    if (!post[mediaType] || (mediaType !== 'youtube' && !post.publicationDate)) {
+      return '';
+    }
+    
+    const keyDiv = `<div class="${CLASS.KEY} ${CLASS.MEDIA}">${label}</div>`;
+    const valueDiv = contentGenerator(post);
+    
+    return `
+      ${keyDiv}
+      ${valueDiv}`;
+  };
+}
+
+/**
  * Generate the illustration section for a blog post
  */
 function generateIllustrationSection(post) {
-  if (!post.illustration || !post.publicationDate) {
-    return '';
-  }
-  
-  return `
-      <div class="${CLASS.KEY} ${CLASS.MEDIA}">illus</div>
-      <div class="${CLASS.VALUE}">
+  return createMediaSectionGenerator('illustration', 'illus', (post) => {
+    return `<div class="${CLASS.VALUE}">
         <img loading="lazy" src="${post.publicationDate}.${post.illustration.fileType}" alt="${post.illustration.altText}"/>
       </div>`;
+  })(post);
 }
 
 /**
  * Generate the audio section for a blog post
  */
 function generateAudioSection(post) {
-  if (!post.audio || !post.publicationDate) {
-    return '';
-  }
-  
-  const audioSrc = `${post.publicationDate}.m4a`;
-  return `
-      <div class="${CLASS.KEY} ${CLASS.MEDIA}">audio</div>
-      <audio class="${CLASS.VALUE}" controls>
+  return createMediaSectionGenerator('audio', 'audio', (post) => {
+    const audioSrc = `${post.publicationDate}.m4a`;
+    return `<audio class="${CLASS.VALUE}" controls>
         <source src="${audioSrc}">
       </audio>`;
+  })(post);
 }
 
 /**
  * Generate the YouTube section for a blog post
  */
 function generateYouTubeSection(post) {
-  if (!post.youtube) {
-    return '';
-  }
-  
-  return `
-      <div class="${CLASS.KEY} ${CLASS.MEDIA}">video</div>
-      <p class="${CLASS.VALUE}">
+  return createMediaSectionGenerator('youtube', 'video', (post) => {
+    return `<p class="${CLASS.VALUE}">
         <iframe height="300px" width="100%" src="https://www.youtube.com/embed/${post.youtube.id}?start=${post.youtube.timestamp}" title="${escapeHtml(post.youtube.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
       </p>`;
+  })(post);
 }
 
 /**
