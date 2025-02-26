@@ -136,13 +136,19 @@ function createFooterSection() {
 }
 
 // Page structure
+/**
+ * Create the page header with head element, body opening tag and header section
+ */
 function createPageHeader() {
   const headerElement = createHeaderSection();
-  return `${headElement}
-<body>
-  <div id="container">
-    <!-- Header -->
-    ${headerElement}`;
+  
+  return [
+    headElement,
+    '<body>',
+    '  <div id="container">',
+    '    <!-- Header -->',
+    '    ' + headerElement
+  ].join('\n');
 }
 
 function createPageFooter() {
