@@ -137,8 +137,9 @@ function wrapHtml(content) {
 function generateArticle(post) {
   const content = generateArticleContent(post);
   const idAttr = post.key ? ` id="${post.key}"` : "";
+  const classAttr = ` class="${CLASS.ENTRY}"`;
   
-  return `<article class="${CLASS.ENTRY}"${idAttr}>
+  return `<article${classAttr}${idAttr}>
       ${fullWidthElement}
       ${content}
     </article>`;
