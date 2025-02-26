@@ -20,7 +20,9 @@ const CLASS = {
 
 // HTML generation helpers
 function createTag(tagName, attributes, content) {
-  return `<${tagName} ${attributes}>${content}</${tagName}>`;
+  const openingTag = `<${tagName} ${attributes}>`;
+  const closingTag = `</${tagName}>`;
+  return `${openingTag}${content}${closingTag}`;
 }
 
 function createDiv(classes, content) {
