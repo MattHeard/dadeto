@@ -69,6 +69,13 @@ function createKeyValuePair(keyDiv, valueDiv) {
   return [keyDiv, valueDiv].join(NEWLINE_WITH_INDENT);
 }
 
+/**
+ * Create a key-value pair with two divs without adding newlines
+ */
+function createKeyValuePairInline(keyDiv, valueDiv) {
+  return [keyDiv, valueDiv].join("");
+}
+
 function createAttrPair(attrName, attrValue) {
   return `${attrName}="${attrValue}"`;
 }
@@ -206,7 +213,7 @@ function generateTitleSection(post) {
   const titleValue = `
       <div class="${CLASS.VALUE}">${titleHeader}</div>`;
   
-  return [titleKey, titleValue].join("");
+  return createKeyValuePairInline(titleKey, titleValue);
 }
 
 /**
