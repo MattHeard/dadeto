@@ -153,11 +153,14 @@ function createPageHeader() {
 
 function createPageFooter() {
   const footerElement = createFooterSection();
-  return `
-  ${footerElement}
-  </div>
-  ${scriptTag}
-</body>`;
+  
+  return [
+    '',
+    '  ' + footerElement,
+    '  </div>',
+    '  ' + scriptTag,
+    '</body>'
+  ].join('\n');
 }
 
 function wrapHtml(content) {
