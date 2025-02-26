@@ -130,9 +130,9 @@ const WARNING_MESSAGE = "All content is authored by Matt Heard and is <a href=\"
 function createFooterSection() {
   const emptyKeyDiv = createKeyDiv();
   const footerDiv = createDiv(joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]), WARNING_MESSAGE);
-  const footerContent = [emptyKeyDiv, footerDiv].join('\n  ');
+  const footerContent = [emptyKeyDiv, footerDiv].join(NEWLINE_WITH_INDENT);
   
-  return createDiv(CLASS.ENTRY, `\n  ${footerContent}\n  `);
+  return createDiv(CLASS.ENTRY, NEWLINE_WITH_INDENT + footerContent + NEWLINE_WITH_INDENT);
 }
 
 // Page structure
