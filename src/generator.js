@@ -129,7 +129,8 @@ function createPageFooter() {
 }
 
 function wrapHtml(content) {
-  return [DOCTYPE, HTML_START, content, HTML_END].join("");
+  const htmlContent = [HTML_START, content, HTML_END].join("");
+  return DOCTYPE + htmlContent;
 }
 
 /**
