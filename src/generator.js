@@ -170,12 +170,13 @@ function generateArticle(post) {
   // Add ID only if the post has a key
   const idAttr = post.key ? " " + createAttrPair(ATTR_NAME.ID, post.key) : "";
   const attributes = `${classAttr}${idAttr}`;
-  const tagName = ARTICLE_TAG_NAME;
   
-  return `<${tagName} ${attributes}>
+  const formattedContent = `
       ${fullWidthElement}
       ${content}
-    </${tagName}>`;
+    `;
+  
+  return createTag(ARTICLE_TAG_NAME, attributes, formattedContent);
 }
 
 /**
