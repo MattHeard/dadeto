@@ -224,7 +224,7 @@ function generateDateSection(post) {
     return '';
   }
   
-  const dateKey = `<div class="${CLASS.KEY}">pubAt</div>`;
+  const dateKey = createDiv(CLASS.KEY, "pubAt");
   const dateValue = `
       <p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
   
