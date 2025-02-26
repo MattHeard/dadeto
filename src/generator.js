@@ -20,6 +20,7 @@ const CLASS = {
 
 // HTML tag names
 const DIV_TAG_NAME = "div";
+const HTML_TAG_NAME = "html";
 
 // HTML generation helpers
 function createTag(tagName, attributes, content) {
@@ -141,7 +142,7 @@ function createPageFooter() {
 }
 
 function wrapHtml(content) {
-  const tagName = "html";
+  const tagName = HTML_TAG_NAME;
   const language = "en";
   const langAttr = "lang";
   const langAttrPair = createAttrPair(langAttr, language);
