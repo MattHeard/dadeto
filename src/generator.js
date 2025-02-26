@@ -150,11 +150,20 @@ function createHeaderSection() {
 // Footer components
 const WARNING_MESSAGE = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
 
-function createFooterSection() {
+/**
+ * Create the content for the footer section
+ */
+function createFooterContent() {
   const emptyKeyDiv = createKeyDiv();
   const footerDiv = createDiv(joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]), WARNING_MESSAGE);
-  const footerContent = createKeyValuePair(emptyKeyDiv, footerDiv);
-  
+  return createKeyValuePair(emptyKeyDiv, footerDiv);
+}
+
+/**
+ * Create the footer section with warning message
+ */
+function createFooterSection() {
+  const footerContent = createFooterContent();
   return createDiv(CLASS.ENTRY, NEWLINE_WITH_INDENT + footerContent + NEWLINE_WITH_INDENT);
 }
 
