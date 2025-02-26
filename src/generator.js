@@ -309,6 +309,14 @@ export function generateBlog(blog, header, footer, wrapHtml) {
     .map(article => "    " + article + "\n")
     .join("");
     
-  const htmlContents = header + "\n" + articles + footer;
+  // We use an array for better readability but need to follow the exact format
+  // to match the expected output
+  const htmlContents = [
+    header,
+    "\n",
+    articles,
+    footer
+  ].join("");
+  
   return wrapHtml(htmlContents);
 }
