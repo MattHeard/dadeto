@@ -295,6 +295,22 @@ function generateYouTubeSection(post) {
 }
 
 /**
+ * Generate all media sections for a blog post
+ */
+function generateMediaSections(post) {
+  // Illustration section
+  const illustrationHTML = generateIllustrationSection(post);
+
+  // Audio section
+  const audioHTML = generateAudioSection(post);
+
+  // YouTube section
+  const youtubeHTML = generateYouTubeSection(post);
+  
+  return illustrationHTML + audioHTML + youtubeHTML;
+}
+
+/**
  * Generate the text content sections for a blog post
  */
 function generateContentSections(post) {
@@ -318,20 +334,14 @@ function generateArticleContent(post) {
   
   const headerHTML = titleSection + dateSection;
 
-  // Illustration section
-  const illustrationHTML = generateIllustrationSection(post);
-
-  // Audio section
-  const audioHTML = generateAudioSection(post);
-
-  // YouTube section
-  const youtubeHTML = generateYouTubeSection(post);
+  // Media sections
+  const mediaHTML = generateMediaSections(post);
 
   // Content sections
   const contentHTML = generateContentSections(post);
 
   // Combine all sections
-  return headerHTML + illustrationHTML + audioHTML + youtubeHTML + contentHTML;
+  return headerHTML + mediaHTML + contentHTML;
 }
 
 /**
