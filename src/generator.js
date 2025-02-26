@@ -21,7 +21,8 @@ const CLASS = {
 // HTML generation helpers
 function createDiv(classes, content) {
   const tagName = "div";
-  return `<${tagName} class="${classes}">${content}</${tagName}>`;
+  const classAttr = `class="${classes}"`;
+  return `<${tagName} ${classAttr}>${content}</${tagName}>`;
 }
 
 function joinClasses(classes) {
