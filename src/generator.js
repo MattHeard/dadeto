@@ -116,7 +116,7 @@ const METADATA_TEXT = `${NEWLINE_WITH_INDENT}Software developer and philosopher 
 
 function prefixWithEmptyKey(valueDiv) {
   const emptyKeyDiv = createKeyDiv();
-  return [emptyKeyDiv, valueDiv].join(NEWLINE_WITH_INDENT);
+  return createKeyValuePair(emptyKeyDiv, valueDiv);
 }
 
 function createHeaderSection() {
