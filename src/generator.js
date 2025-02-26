@@ -62,6 +62,13 @@ function createValueDiv(content, additionalClasses = []) {
   return createDiv(joinedClasses, content);
 }
 
+/**
+ * Create a key-value pair with two divs
+ */
+function createKeyValuePair(keyDiv, valueDiv) {
+  return [keyDiv, valueDiv].join(NEWLINE_WITH_INDENT);
+}
+
 function createAttrPair(attrName, attrValue) {
   return `${attrName}="${attrValue}"`;
 }
