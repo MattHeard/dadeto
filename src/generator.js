@@ -156,11 +156,12 @@ function wrapHtml(content) {
  */
 function generateArticle(post) {
   const content = generateArticleContent(post);
-  const idAttr = post.key ? ` id="${post.key}"` : "";
-  const classAttr = ` class="${CLASS.ENTRY}"`;
+  const idPart = post.key ? ` id="${post.key}"` : "";
+  const classPart = ` class="${CLASS.ENTRY}"`;
+  const attributes = `${classPart}${idPart}`;
   const tagName = ARTICLE_TAG_NAME;
   
-  return `<${tagName}${classAttr}${idAttr}>
+  return `<${tagName}${attributes}>
       ${fullWidthElement}
       ${content}
     </${tagName}>`;
