@@ -21,6 +21,7 @@ const CLASS = {
 // HTML tag names
 const DIV_TAG_NAME = "div";
 const HTML_TAG_NAME = "html";
+const ARTICLE_TAG_NAME = "article";
 
 // HTML generation helpers
 function createTag(tagName, attributes, content) {
@@ -157,7 +158,7 @@ function generateArticle(post) {
   const content = generateArticleContent(post);
   const idAttr = post.key ? ` id="${post.key}"` : "";
   const classAttr = ` class="${CLASS.ENTRY}"`;
-  const tagName = "article";
+  const tagName = ARTICLE_TAG_NAME;
   
   return `<${tagName}${classAttr}${idAttr}>
       ${fullWidthElement}
