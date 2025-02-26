@@ -35,19 +35,22 @@ function createKeyDiv(content = "") {
 
 function createValueDiv(content, additionalClasses = []) {
   const classes = [CLASS.VALUE, ...additionalClasses].filter(Boolean);
-  return createDiv(joinClasses(classes), content);
+  const joinedClasses = joinClasses(classes);
+  return createDiv(joinedClasses, content);
 }
 
 /**
  * Escapes HTML special characters to prevent XSS attacks
  */
 function escapeHtml(text) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  const replacements = [
+    { from: /&/g, to: "&amp;" },
+    { from: /</g, to: "&lt;" },
+    { from: />/g, to: "&gt;" },
+    { from: /"/g, to: "&quot;" },
+    { from: /'/g, to: "&#039;" },
+  ];
+  return replacements.reduce((acc, { from, to }) => acc.replace(from, to), text);
 }
 
 /**
