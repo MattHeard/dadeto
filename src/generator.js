@@ -39,7 +39,7 @@ function createValueDiv(content, additionalClasses = []) {
 }
 
 function createAttrPair(attrName, attrValue) {
-  return `${attrName}='${attrValue}'`;
+  return `${attrName}="${attrValue}"`;
 }
 
 /**
