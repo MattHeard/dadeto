@@ -90,9 +90,11 @@ const METADATA_TEXT = `
   Software developer and philosopher in Berlin
   `;
 
+const NEWLINE_WITH_INDENT = '\n  ';
+
 function prefixWithEmptyKey(valueDiv) {
   const emptyKeyDiv = createKeyDiv();
-  return [emptyKeyDiv, valueDiv].join('\n  ');
+  return [emptyKeyDiv, valueDiv].join(NEWLINE_WITH_INDENT);
 }
 
 function createHeaderSection() {
