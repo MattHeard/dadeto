@@ -23,6 +23,12 @@ const DIV_TAG_NAME = "div";
 const HTML_TAG_NAME = "html";
 const ARTICLE_TAG_NAME = "article";
 
+// HTML attribute names
+const ATTR_NAME = {
+  LANG: "lang",
+  CLASS: "class"
+};
+
 // HTML generation helpers
 function createTag(tagName, attributes, content) {
   const openingTag = `<${tagName} ${attributes}>`;
@@ -32,7 +38,7 @@ function createTag(tagName, attributes, content) {
 
 function createDiv(classes, content) {
   const tagName = DIV_TAG_NAME;
-  const classAttr = createAttrPair("class", classes);
+  const classAttr = createAttrPair(ATTR_NAME.CLASS, classes);
   return createTag(tagName, classAttr, content);
 }
 
@@ -145,8 +151,7 @@ function createPageFooter() {
 function wrapHtml(content) {
   const tagName = HTML_TAG_NAME;
   const language = "en";
-  const langAttr = "lang";
-  const langAttrPair = createAttrPair(langAttr, language);
+  const langAttrPair = createAttrPair(ATTR_NAME.LANG, language);
   const htmlContent = [`<${tagName} ${langAttrPair}>`, content, `</${tagName}>`].join("");
   return [DOCTYPE, htmlContent].join("");
 }
