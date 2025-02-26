@@ -195,14 +195,21 @@ function generateArticles(posts) {
 }
 
 /**
+ * Create attributes for an article element
+ */
+function createArticleAttributes(post) {
+  const classAttr = createAttrPair(ATTR_NAME.CLASS, CLASS.ENTRY);
+  // Add ID only if the post has a key
+  const idAttr = post.key ? " " + createAttrPair(ATTR_NAME.ID, post.key) : "";
+  return `${classAttr}${idAttr}`;
+}
+
+/**
  * Create an article from a blog post
  */
 function generateArticle(post) {
   const content = generateArticleContent(post);
-  const classAttr = createAttrPair(ATTR_NAME.CLASS, CLASS.ENTRY);
-  // Add ID only if the post has a key
-  const idAttr = post.key ? " " + createAttrPair(ATTR_NAME.ID, post.key) : "";
-  const attributes = `${classAttr}${idAttr}`;
+  const attributes = createArticleAttributes(post);
   
   const formattedContent = `
       ${fullWidthElement}
