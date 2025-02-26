@@ -193,6 +193,22 @@ function generateTitleSection(post) {
 }
 
 /**
+ * Generate the date section for a blog post
+ */
+function generateDateSection(post) {
+  if (!post.publicationDate) {
+    return '';
+  }
+  
+  const dateKey = `<div class="${CLASS.KEY}">pubAt</div>`;
+  const dateValue = `
+      <p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
+  
+  return `
+      ${dateKey}${dateValue}`;
+}
+
+/**
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
@@ -200,16 +216,9 @@ function generateArticleContent(post) {
   const titleSection = generateTitleSection(post);
   
   // Date section
-  let dateHtml = '';
-  if (post.publicationDate) {
-    const dateKey = `<div class="${CLASS.KEY}">pubAt</div>`;
-    const dateValue = `
-      <p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
-    dateHtml = `
-      ${dateKey}${dateValue}`;
-  }
+  const dateSection = generateDateSection(post);
   
-  const headerHTML = titleSection + dateHtml;
+  const headerHTML = titleSection + dateSection;
 
   // Illustration section
   let illustrationHTML = '';
