@@ -255,6 +255,16 @@ function generateYouTubeSection(post) {
 }
 
 /**
+ * Generate the text content sections for a blog post
+ */
+function generateContentSections(post) {
+  return (post.content || []).map((text, index) => `
+      <div class="${CLASS.KEY}">${index === 0 ? "text" : ""}</div>
+      <p class="${CLASS.VALUE}">${text}</p>`
+  ).join('');
+}
+
+/**
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
@@ -276,10 +286,7 @@ function generateArticleContent(post) {
   const youtubeHTML = generateYouTubeSection(post);
 
   // Content sections
-  const contentHTML = (post.content || []).map((text, index) => `
-      <div class="${CLASS.KEY}">${index === 0 ? "text" : ""}</div>
-      <p class="${CLASS.VALUE}">${text}</p>`
-  ).join('');
+  const contentHTML = generateContentSections(post);
 
   // Combine all sections
   return headerHTML + illustrationHTML + audioHTML + youtubeHTML + contentHTML;
