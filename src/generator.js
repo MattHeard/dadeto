@@ -177,11 +177,28 @@ function createPageFooter() {
   ].join('\n');
 }
 
-function wrapHtml(content) {
+/**
+ * Create the DOCTYPE declaration
+ */
+function createDoctype() {
+  return DOCTYPE;
+}
+
+/**
+ * Create the HTML tag with language attribute
+ */
+function createHtmlTag(content) {
   const tagName = HTML_TAG_NAME;
   const attributes = createAttrPair(ATTR_NAME.LANG, LANGUAGE.EN);
-  const htmlContent = createTag(tagName, attributes, content);
-  return [DOCTYPE, htmlContent].join("");
+  return createTag(tagName, attributes, content);
+}
+
+/**
+ * Wrap content in HTML structure
+ */
+function wrapHtml(content) {
+  const htmlContent = createHtmlTag(content);
+  return [createDoctype(), htmlContent].join("");
 }
 
 /**
