@@ -86,11 +86,9 @@ const HEADER_BANNER = `<pre aria-label="Matt Heard" role="heading" aria-level="1
 ▐▌ ▐▌▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀
 </pre>`;
 
-const METADATA_TEXT = `
-  Software developer and philosopher in Berlin
-  `;
-
 const NEWLINE_WITH_INDENT = '\n  ';
+
+const METADATA_TEXT = `${NEWLINE_WITH_INDENT}Software developer and philosopher in Berlin${NEWLINE_WITH_INDENT}`;
 
 function prefixWithEmptyKey(valueDiv) {
   const emptyKeyDiv = createKeyDiv();
