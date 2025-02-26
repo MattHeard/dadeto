@@ -5,6 +5,11 @@ import scriptTag from './script.js';
 // Constants for HTML structure
 const DOCTYPE = "<!DOCTYPE html>";
 
+// Language settings
+const LANGUAGE = {
+  EN: "en"
+};
+
 // CSS class names
 const CLASS = {
   KEY: "key",
@@ -151,8 +156,7 @@ function createPageFooter() {
 
 function wrapHtml(content) {
   const tagName = HTML_TAG_NAME;
-  const language = "en";
-  const attributes = createAttrPair(ATTR_NAME.LANG, language);
+  const attributes = createAttrPair(ATTR_NAME.LANG, LANGUAGE.EN);
   const htmlContent = createTag(tagName, attributes, content);
   return [DOCTYPE, htmlContent].join("");
 }
