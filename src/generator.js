@@ -224,6 +224,22 @@ function generateIllustrationSection(post) {
 }
 
 /**
+ * Generate the audio section for a blog post
+ */
+function generateAudioSection(post) {
+  if (!post.audio || !post.publicationDate) {
+    return '';
+  }
+  
+  const audioSrc = `${post.publicationDate}.m4a`;
+  return `
+      <div class="${CLASS.KEY} ${CLASS.MEDIA}">audio</div>
+      <audio class="${CLASS.VALUE}" controls>
+        <source src="${audioSrc}">
+      </audio>`;
+}
+
+/**
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
@@ -239,15 +255,7 @@ function generateArticleContent(post) {
   const illustrationHTML = generateIllustrationSection(post);
 
   // Audio section
-  let audioHTML = '';
-  if (post.audio) {
-    const audioSrc = `${post.publicationDate}.m4a`;
-    audioHTML = `
-      <div class="${CLASS.KEY} ${CLASS.MEDIA}">audio</div>
-      <audio class="${CLASS.VALUE}" controls>
-        <source src="${audioSrc}">
-      </audio>`;
-  }
+  const audioHTML = generateAudioSection(post);
 
   // YouTube section
   let youtubeHTML = '';
