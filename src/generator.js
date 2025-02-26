@@ -288,10 +288,12 @@ function generateYouTubeSection(post) {
  * Generate the text content sections for a blog post
  */
 function generateContentSections(post) {
-  return (post.content || []).map((text, index) => `
-      <div class="${CLASS.KEY}">${index === 0 ? "text" : ""}</div>
-      <p class="${CLASS.VALUE}">${text}</p>`
-  ).join('');
+  return (post.content || []).map((text, index) => {
+    const key = index === 0 ? "text" : "";
+    return `
+      <div class="${CLASS.KEY}">${key}</div>
+      <p class="${CLASS.VALUE}">${text}</p>`;
+  }).join('');
 }
 
 /**
