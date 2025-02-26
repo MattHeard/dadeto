@@ -18,6 +18,14 @@ const CLASS = {
   FULL_WIDTH: "full-width"
 };
 
+// HTML tag names
+const TAG_NAME = {
+  ARTICLE: "article",
+  HTML: "html"
+};
+
+const DIV_TAG_NAME = "div";
+
 // HTML generation helpers
 function createTag(tagName, attributes, content) {
   const openingTag = `<${tagName} ${attributes}>`;
@@ -26,7 +34,7 @@ function createTag(tagName, attributes, content) {
 }
 
 function createDiv(classes, content) {
-  const tagName = "div";
+  const tagName = DIV_TAG_NAME;
   const classAttr = createAttrPair("class", classes);
   return createTag(tagName, classAttr, content);
 }
@@ -138,7 +146,7 @@ function createPageFooter() {
 }
 
 function wrapHtml(content) {
-  const tagName = "html";
+  const tagName = TAG_NAME.HTML;
   const language = "en";
   const langAttr = "lang";
   const langAttrPair = createAttrPair(langAttr, language);
@@ -153,7 +161,7 @@ function generateArticle(post) {
   const content = generateArticleContent(post);
   const idAttr = post.key ? ` id="${post.key}"` : "";
   const classAttr = ` class="${CLASS.ENTRY}"`;
-  const tagName = "article";
+  const tagName = TAG_NAME.ARTICLE;
   
   return `<${tagName}${classAttr}${idAttr}>
       ${fullWidthElement}
