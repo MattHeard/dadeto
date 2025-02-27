@@ -582,13 +582,25 @@ function generateMediaSections(post) {
 }
 
 /**
+ * Determine if an item is the first in the content array
+ */
+function isFirstContentItem(index) {
+  return index === 0;
+}
+
+/**
+ * Create HTML for a single content item
+ */
+function createContentItemHTML(text, index) {
+  const isFirst = isFirstContentItem(index);
+  return createContentSectionItem(text, isFirst);
+}
+
+/**
  * Map content items to HTML
  */
 function mapContentToHTML(contentArray) {
-  return contentArray.map((text, index) => {
-    const isFirst = index === 0;
-    return createContentSectionItem(text, isFirst);
-  });
+  return contentArray.map(createContentItemHTML);
 }
 
 /**
