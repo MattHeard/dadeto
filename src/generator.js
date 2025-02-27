@@ -44,6 +44,14 @@ const HTML_ESCAPE_REPLACEMENTS = [
   { from: /'/g, to: "&#039;" },
 ];
 
+// Date formatting constants
+const DATE_LOCALE = 'en-GB';
+const DATE_FORMAT_OPTIONS = { 
+  day: 'numeric', 
+  month: 'short', 
+  year: 'numeric' 
+};
+
 // HTML generation helpers
 /**
  * Create an HTML tag with the specified name, attributes, and content
@@ -167,30 +175,31 @@ function escapeHtml(text) {
 }
 
 /**
- * Create date formatting options
- */
-function createDateFormatOptions() {
-  return { 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric' 
-  };
-}
-
-/**
  * Convert a date string to a Date object
+ * @param {string} dateString - The date string to convert
+ * @returns {Date} - The Date object
  */
 function createDateFromString(dateString) {
   return new Date(dateString);
 }
 
 /**
+ * Format a date using the locale and options
+ * @param {Date} date - The date to format
+ * @returns {string} - The formatted date string
+ */
+function formatDateWithOptions(date) {
+  return date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT_OPTIONS);
+}
+
+/**
  * Format date in "4 May 2022" format
+ * @param {string} dateString - The date string to format
+ * @returns {string} - The formatted date string
  */
 function formatDate(dateString) {
   const date = createDateFromString(dateString);
-  const options = createDateFormatOptions();
-  return date.toLocaleDateString('en-GB', options);
+  return formatDateWithOptions(date);
 }
 
 // Header components
