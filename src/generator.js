@@ -366,7 +366,8 @@ function shouldDisplayMedia(post, mediaType) {
  * Create a key div for media sections
  */
 function createMediaKeyDiv(label) {
-  return `<div class="${CLASS.KEY} ${CLASS.MEDIA}">${label}</div>`;
+  const classes = `${CLASS.KEY} ${CLASS.MEDIA}`;
+  return createDiv(classes, label);
 }
 
 /**
