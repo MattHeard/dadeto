@@ -177,18 +177,26 @@ function createContainerDivOpen() {
 }
 
 /**
- * Create the page header with head element, body opening tag and header section
+ * Create the header content array
  */
-function createPageHeader() {
-  const headerElement = createHeaderSection();
-  
+function createHeaderContentArray(headerElement) {
   return [
     headElement,
     '<body>',
     createContainerDivOpen(),
     '    <!-- Header -->',
     '    ' + headerElement
-  ].join('\n');
+  ];
+}
+
+/**
+ * Create the page header with head element, body opening tag and header section
+ */
+function createPageHeader() {
+  const headerElement = createHeaderSection();
+  const contentArray = createHeaderContentArray(headerElement);
+  
+  return contentArray.join('\n');
 }
 
 /**
