@@ -228,11 +228,24 @@ function createHeaderContent() {
 }
 
 /**
+ * Create a section with the given content
+ * @param {string} content - The content to wrap in a section
+ * @returns {string} - HTML for the section
+ */
+function createSection(content) {
+  return createDiv(
+    CLASS.ENTRY, 
+    NEWLINE_WITH_INDENT + content + NEWLINE_WITH_INDENT
+  );
+}
+
+/**
  * Create the header section with banner and metadata
+ * @returns {string} - HTML for the header section
  */
 function createHeaderSection() {
   const headerContent = createHeaderContent();
-  return createDiv(CLASS.ENTRY, NEWLINE_WITH_INDENT + headerContent + NEWLINE_WITH_INDENT);
+  return createSection(headerContent);
 }
 
 // Footer components
@@ -240,19 +253,24 @@ const WARNING_MESSAGE = "All content is authored by Matt Heard and is <a href=\"
 
 /**
  * Create the content for the footer section
+ * @returns {string} - HTML for the footer content
  */
 function createFooterContent() {
   const emptyKeyDiv = createKeyDiv();
-  const footerDiv = createDiv(joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]), WARNING_MESSAGE);
+  const footerDiv = createDiv(
+    joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]), 
+    WARNING_MESSAGE
+  );
   return createKeyValuePair(emptyKeyDiv, footerDiv);
 }
 
 /**
  * Create the footer section with warning message
+ * @returns {string} - HTML for the footer section
  */
 function createFooterSection() {
   const footerContent = createFooterContent();
-  return createDiv(CLASS.ENTRY, NEWLINE_WITH_INDENT + footerContent + NEWLINE_WITH_INDENT);
+  return createSection(footerContent);
 }
 
 // Page structure
