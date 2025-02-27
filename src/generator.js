@@ -655,8 +655,25 @@ export function generateBlog(blog, header, footer, wrapHtml) {
 }
 
 /**
+ * Create blog components needed for generation
+ */
+function createBlogComponents() {
+  return {
+    header: createPageHeader(),
+    footer: createPageFooter(),
+    wrapFunc: wrapHtml
+  };
+}
+
+/**
  * Generate a complete blog HTML
  */
 export function generateBlogOuter(blog) {
-  return generateBlog(blog, createPageHeader(), createPageFooter(), wrapHtml);
+  const components = createBlogComponents();
+  return generateBlog(
+    blog, 
+    components.header, 
+    components.footer, 
+    components.wrapFunc
+  );
 }
