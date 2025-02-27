@@ -500,11 +500,24 @@ function generateAudioSection(post) {
 }
 
 /**
+ * Create YouTube iframe with proper attributes
+ */
+function createYouTubeIframe(post) {
+  const youtubeId = post.youtube.id;
+  const timestamp = post.youtube.timestamp;
+  const title = escapeHtml(post.youtube.title);
+  
+  return `<iframe height="300px" width="100%" src="https://www.youtube.com/embed/${youtubeId}?start=${timestamp}" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>`;
+}
+
+/**
  * Create YouTube content
  */
 function createYouTubeContent(post) {
+  const iframe = createYouTubeIframe(post);
+  
   return `<p class="${CLASS.VALUE}">
-        <iframe height="300px" width="100%" src="https://www.youtube.com/embed/${post.youtube.id}?start=${post.youtube.timestamp}" title="${escapeHtml(post.youtube.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
+        ${iframe}
       </p>`;
 }
 
