@@ -371,15 +371,20 @@ function generateIllustrationSection(post) {
 }
 
 /**
+ * Create audio content
+ */
+function createAudioContent(post) {
+  const audioSrc = `${post.publicationDate}.m4a`;
+  return `<audio class="${CLASS.VALUE}" controls>
+        <source src="${audioSrc}">
+      </audio>`;
+}
+
+/**
  * Generate the audio section for a blog post
  */
 function generateAudioSection(post) {
-  return createMediaSectionGenerator('audio', 'audio', (post) => {
-    const audioSrc = `${post.publicationDate}.m4a`;
-    return `<audio class="${CLASS.VALUE}" controls>
-        <source src="${audioSrc}">
-      </audio>`;
-  })(post);
+  return createMediaSectionGenerator('audio', 'audio', createAudioContent)(post);
 }
 
 /**
