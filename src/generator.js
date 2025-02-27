@@ -471,13 +471,6 @@ function createContentItemHTML(text, index) {
 }
 
 /**
- * Map content items to HTML
- */
-function mapContentToHTML(contentArray) {
-  return contentArray.map(createContentItemHTML);
-}
-
-/**
  * Create a content section item with exact formatting
  */
 function createContentSectionItem(text, isFirst) {
@@ -495,9 +488,7 @@ function createContentSectionItem(text, isFirst) {
  */
 function generateContentSections(post) {
   const contentArray = getContentArray(post);
-  const contentItems = mapContentToHTML(contentArray);
-  
-  return combineHTMLSections(...contentItems);
+  return contentArray.map((text, index) => createContentItemHTML(text, index)).join('');
 }
 
 /**
