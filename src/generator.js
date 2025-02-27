@@ -287,16 +287,22 @@ function createArticleAttributes(post) {
 }
 
 /**
+ * Format article content with full width element
+ */
+function formatArticleContent(content) {
+  return `
+      ${fullWidthElement}
+      ${content}
+    `;
+}
+
+/**
  * Create an article from a blog post
  */
 function generateArticle(post) {
   const content = generateArticleContent(post);
+  const formattedContent = formatArticleContent(content);
   const attributes = createArticleAttributes(post);
-  
-  const formattedContent = `
-      ${fullWidthElement}
-      ${content}
-    `;
   
   return createTag(ARTICLE_TAG_NAME, attributes, formattedContent);
 }
