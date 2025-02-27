@@ -35,6 +35,15 @@ const ATTR_NAME = {
   ID: "id"
 };
 
+// HTML escape replacements
+const HTML_ESCAPE_REPLACEMENTS = [
+  { from: /&/g, to: "&amp;" },
+  { from: /</g, to: "&lt;" },
+  { from: />/g, to: "&gt;" },
+  { from: /"/g, to: "&quot;" },
+  { from: /'/g, to: "&#039;" },
+];
+
 // HTML generation helpers
 /**
  * Create an HTML tag with the specified name, attributes, and content
@@ -150,17 +159,11 @@ function applyAllHtmlEscapeReplacements(text, replacements) {
 
 /**
  * Escapes HTML special characters to prevent XSS attacks
+ * @param {string} text - The text to escape
+ * @returns {string} - HTML-escaped text
  */
 function escapeHtml(text) {
-  const replacements = [
-    { from: /&/g, to: "&amp;" },
-    { from: /</g, to: "&lt;" },
-    { from: />/g, to: "&gt;" },
-    { from: /"/g, to: "&quot;" },
-    { from: /'/g, to: "&#039;" },
-  ];
-  
-  return applyAllHtmlEscapeReplacements(text, replacements);
+  return applyAllHtmlEscapeReplacements(text, HTML_ESCAPE_REPLACEMENTS);
 }
 
 /**
