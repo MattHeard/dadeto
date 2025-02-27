@@ -279,6 +279,19 @@ function generateArticle(post) {
 }
 
 /**
+ * Generate header section for a blog post
+ */
+function generateHeaderSection(post) {
+  // Title section
+  const titleSection = generateTitleSection(post);
+  
+  // Date section
+  const dateSection = generateDateSection(post);
+  
+  return titleSection + dateSection;
+}
+
+/**
  * Create the title value for a blog post
  */
 function createTitleValue(post) {
@@ -442,13 +455,8 @@ function generateContentSections(post) {
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
-  // Title section
-  const titleSection = generateTitleSection(post);
-  
-  // Date section
-  const dateSection = generateDateSection(post);
-  
-  const headerHTML = titleSection + dateSection;
+  // Header sections (title and date)
+  const headerHTML = generateHeaderSection(post);
 
   // Media sections
   const mediaHTML = generateMediaSections(post);
