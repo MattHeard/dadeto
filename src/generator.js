@@ -467,11 +467,23 @@ function createMediaSectionGenerator(mediaType, label, contentGenerator) {
 }
 
 /**
+ * Create illustration image element
+ */
+function createIllustrationImage(post) {
+  const src = `${post.publicationDate}.${post.illustration.fileType}`;
+  const altText = post.illustration.altText;
+  
+  return `<img loading="lazy" src="${src}" alt="${altText}"/>`;
+}
+
+/**
  * Create illustration content
  */
 function createIllustrationContent(post) {
+  const image = createIllustrationImage(post);
+  
   return `<div class="${CLASS.VALUE}">
-        <img loading="lazy" src="${post.publicationDate}.${post.illustration.fileType}" alt="${post.illustration.altText}"/>
+        ${image}
       </div>`;
 }
 
