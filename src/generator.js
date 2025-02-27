@@ -279,16 +279,20 @@ function generateArticle(post) {
 }
 
 /**
+ * Combine title and date sections
+ */
+function combineTitleAndDateSections(titleSection, dateSection) {
+  return titleSection + dateSection;
+}
+
+/**
  * Generate header section for a blog post
  */
 function generateHeaderSection(post) {
-  // Title section
   const titleSection = generateTitleSection(post);
-  
-  // Date section
   const dateSection = generateDateSection(post);
   
-  return titleSection + dateSection;
+  return combineTitleAndDateSections(titleSection, dateSection);
 }
 
 /**
