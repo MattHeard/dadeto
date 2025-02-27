@@ -118,14 +118,30 @@ function escapeHtml(text) {
 }
 
 /**
- * Format date in "4 May 2022" format
+ * Create date formatting options
  */
-function formatDate(dateString) {
-  return new Date(dateString).toLocaleDateString('en-GB', { 
+function createDateFormatOptions() {
+  return { 
     day: 'numeric', 
     month: 'short', 
     year: 'numeric' 
-  });
+  };
+}
+
+/**
+ * Convert a date string to a Date object
+ */
+function createDateFromString(dateString) {
+  return new Date(dateString);
+}
+
+/**
+ * Format date in "4 May 2022" format
+ */
+function formatDate(dateString) {
+  const date = createDateFromString(dateString);
+  const options = createDateFormatOptions();
+  return date.toLocaleDateString('en-GB', options);
 }
 
 // Header components
