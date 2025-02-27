@@ -452,20 +452,21 @@ function generateContentSections(post) {
 }
 
 /**
+ * Combine all sections of an article
+ */
+function combineArticleSections(headerHTML, mediaHTML, contentHTML) {
+  return headerHTML + mediaHTML + contentHTML;
+}
+
+/**
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
-  // Header sections (title and date)
   const headerHTML = generateHeaderSection(post);
-
-  // Media sections
   const mediaHTML = generateMediaSections(post);
-
-  // Content sections
   const contentHTML = generateContentSections(post);
 
-  // Combine all sections
-  return headerHTML + mediaHTML + contentHTML;
+  return combineArticleSections(headerHTML, mediaHTML, contentHTML);
 }
 
 /**
