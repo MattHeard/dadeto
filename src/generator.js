@@ -206,18 +206,26 @@ function createBodyClose() {
 }
 
 /**
- * Create the page footer with footer section, container div closing, and body closing tag
+ * Create the footer content array
  */
-function createPageFooter() {
-  const footerElement = createFooterSection();
-  
+function createFooterContentArray(footerElement) {
   return [
     '',
     '  ' + footerElement,
     createContainerDivClose(),
     '  ' + scriptTag,
     createBodyClose()
-  ].join('\n');
+  ];
+}
+
+/**
+ * Create the page footer with footer section, container div closing, and body closing tag
+ */
+function createPageFooter() {
+  const footerElement = createFooterSection();
+  const contentArray = createFooterContentArray(footerElement);
+  
+  return contentArray.join('\n');
 }
 
 /**
