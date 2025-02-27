@@ -279,10 +279,21 @@ function generateArticles(posts) {
 /**
  * Create attributes for an article element
  */
+function createIdAttributeIfNeeded(post) {
+  if (!post.key) {
+    return "";
+  }
+  
+  return " " + createAttrPair(ATTR_NAME.ID, post.key);
+}
+
+/**
+ * Create attributes for an article element
+ */
 function createArticleAttributes(post) {
   const classAttr = createAttrPair(ATTR_NAME.CLASS, CLASS.ENTRY);
-  // Add ID only if the post has a key
-  const idAttr = post.key ? " " + createAttrPair(ATTR_NAME.ID, post.key) : "";
+  const idAttr = createIdAttributeIfNeeded(post);
+  
   return `${classAttr}${idAttr}`;
 }
 
