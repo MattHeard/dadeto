@@ -427,10 +427,24 @@ function generateDateSection(post) {
 }
 
 /**
+ * Check if post has the specified media type
+ */
+function hasMediaType(post, mediaType) {
+  return !!post[mediaType];
+}
+
+/**
+ * Check if post either is YouTube content or has a publication date
+ */
+function isValidMediaType(post, mediaType) {
+  return mediaType === 'youtube' || post.publicationDate;
+}
+
+/**
  * Check if media should be displayed
  */
 function shouldDisplayMedia(post, mediaType) {
-  return post[mediaType] && (mediaType === 'youtube' || post.publicationDate);
+  return hasMediaType(post, mediaType) && isValidMediaType(post, mediaType);
 }
 
 /**
