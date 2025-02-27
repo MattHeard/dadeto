@@ -456,22 +456,6 @@ function getContentArray(post) {
 }
 
 /**
- * Join HTML content items into a single string
- */
-function joinContentItems(contentItems) {
-  return contentItems.join('');
-}
-
-/**
- * Generate the text content sections for a blog post
- */
-function generateContentSections(post) {
-  const contentArray = getContentArray(post);
-  const contentItems = mapContentToHTML(contentArray);
-  return joinContentItems(contentItems);
-}
-
-/**
  * Determine if an item is the first in the content array
  */
 function isFirstContentItem(index) {
@@ -504,6 +488,16 @@ function createContentSectionItem(text, isFirst) {
   return `
       ${keyDiv}
       ${valueDiv}`;
+}
+
+/**
+ * Generate the text content sections for a blog post
+ */
+function generateContentSections(post) {
+  const contentArray = getContentArray(post);
+  const contentItems = mapContentToHTML(contentArray);
+  
+  return combineHTMLSections(...contentItems);
 }
 
 /**
