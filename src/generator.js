@@ -719,11 +719,11 @@ function combineArticleSections(headerHTML, mediaHTML, contentHTML) {
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
-  const headerHTML = generateHeaderSection(post);
-  const mediaHTML = generateMediaSections(post);
-  const contentHTML = generateContentSections(post);
-
-  return combineArticleSections(headerHTML, mediaHTML, contentHTML);
+  return combineHTMLSections(
+    generateHeaderSection(post),
+    generateMediaSections(post),
+    generateContentSections(post)
+  );
 }
 
 /**
