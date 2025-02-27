@@ -445,19 +445,21 @@ function generateYouTubeSection(post) {
 }
 
 /**
+ * Combine all media section HTML
+ */
+function combineMediaSections(illustrationHTML, audioHTML, youtubeHTML) {
+  return illustrationHTML + audioHTML + youtubeHTML;
+}
+
+/**
  * Generate all media sections for a blog post
  */
 function generateMediaSections(post) {
-  // Illustration section
   const illustrationHTML = generateIllustrationSection(post);
-
-  // Audio section
   const audioHTML = generateAudioSection(post);
-
-  // YouTube section
   const youtubeHTML = generateYouTubeSection(post);
   
-  return illustrationHTML + audioHTML + youtubeHTML;
+  return combineMediaSections(illustrationHTML, audioHTML, youtubeHTML);
 }
 
 /**
