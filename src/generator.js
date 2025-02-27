@@ -82,6 +82,27 @@ function createAttrPair(attrName, attrValue) {
 }
 
 /**
+ * Apply a single HTML escape replacement
+ */
+function applyHtmlEscapeReplacement(text, replacement) {
+  const { from, to } = replacement;
+  return text.replace(from, to);
+}
+
+/**
+ * Apply all HTML escape replacements
+ */
+function applyAllHtmlEscapeReplacements(text, replacements) {
+  let result = text;
+  
+  for (const replacement of replacements) {
+    result = applyHtmlEscapeReplacement(result, replacement);
+  }
+  
+  return result;
+}
+
+/**
  * Escapes HTML special characters to prevent XSS attacks
  */
 function escapeHtml(text) {
@@ -92,7 +113,8 @@ function escapeHtml(text) {
     { from: /"/g, to: "&quot;" },
     { from: /'/g, to: "&#039;" },
   ];
-  return replacements.reduce((acc, { from, to }) => acc.replace(from, to), text);
+  
+  return applyAllHtmlEscapeReplacements(text, replacements);
 }
 
 /**
