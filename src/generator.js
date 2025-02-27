@@ -488,7 +488,13 @@ function createContentSectionItem(text, isFirst) {
  */
 function generateContentSections(post) {
   const contentArray = getContentArray(post);
-  return contentArray.map((text, index) => createContentItemHTML(text, index)).join('');
+  
+  const contentItems = contentArray.map((text, index) => {
+    const isFirst = isFirstContentItem(index);
+    return createContentSectionItem(text, isFirst);
+  });
+  
+  return contentItems.join('');
 }
 
 /**
