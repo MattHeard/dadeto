@@ -244,13 +244,33 @@ function wrapHtml(content) {
 }
 
 /**
+ * Convert a post to article HTML
+ */
+function convertPostToArticleHTML(post) {
+  return generateArticle(post);
+}
+
+/**
+ * Format article HTML with indentation
+ */
+function formatArticleHTML(articleHTML) {
+  return "    " + articleHTML + "\n";
+}
+
+/**
+ * Process posts and join article HTML
+ */
+function processPostsToHTML(posts) {
+  const articleHTMLs = posts.map(convertPostToArticleHTML);
+  const formattedHTMLs = articleHTMLs.map(formatArticleHTML);
+  return formattedHTMLs.join("");
+}
+
+/**
  * Generate HTML for all articles in the blog
  */
 function generateArticles(posts) {
-  return posts
-    .map(generateArticle)
-    .map(article => "    " + article + "\n")
-    .join("");
+  return processPostsToHTML(posts);
 }
 
 /**
