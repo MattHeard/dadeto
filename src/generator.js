@@ -330,6 +330,15 @@ function createMediaKeyDiv(label) {
 }
 
 /**
+ * Format a media section with key and value divs
+ */
+function formatMediaSection(keyDiv, valueDiv) {
+  return `
+      ${keyDiv}
+      ${valueDiv}`;
+}
+
+/**
  * Higher-order function for generating media sections
  */
 function createMediaSectionGenerator(mediaType, label, contentGenerator) {
@@ -341,9 +350,7 @@ function createMediaSectionGenerator(mediaType, label, contentGenerator) {
     const keyDiv = createMediaKeyDiv(label);
     const valueDiv = contentGenerator(post);
     
-    return `
-      ${keyDiv}
-      ${valueDiv}`;
+    return formatMediaSection(keyDiv, valueDiv);
   };
 }
 
