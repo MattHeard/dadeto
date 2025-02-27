@@ -405,14 +405,21 @@ function generateMediaSections(post) {
 }
 
 /**
+ * Create a content section item with exact formatting
+ */
+function createContentSectionItem(text, isFirst) {
+  const key = isFirst ? "text" : "";
+  return `
+      <div class="${CLASS.KEY}">${key}</div>
+      <p class="${CLASS.VALUE}">${text}</p>`;
+}
+
+/**
  * Generate the text content sections for a blog post
  */
 function generateContentSections(post) {
   return (post.content || []).map((text, index) => {
-    const key = index === 0 ? "text" : "";
-    return `
-      <div class="${CLASS.KEY}">${key}</div>
-      <p class="${CLASS.VALUE}">${text}</p>`;
+    return createContentSectionItem(text, index === 0);
   }).join('');
 }
 
