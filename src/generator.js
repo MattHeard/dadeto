@@ -449,10 +449,10 @@ function generateArticle(post) {
 }
 
 /**
- * Combine title and date sections
+ * Combine multiple HTML sections into a single string
  */
-function combineTitleAndDateSections(titleSection, dateSection) {
-  return titleSection + dateSection;
+function combineHTMLSections(...sections) {
+  return sections.join('');
 }
 
 /**
@@ -462,7 +462,7 @@ function generateHeaderSection(post) {
   const titleSection = generateTitleSection(post);
   const dateSection = generateDateSection(post);
   
-  return combineTitleAndDateSections(titleSection, dateSection);
+  return combineHTMLSections(titleSection, dateSection);
 }
 
 /**
@@ -640,21 +640,14 @@ function generateYouTubeSection(post) {
 }
 
 /**
- * Combine all media section HTML
- */
-function combineMediaSections(illustrationHTML, audioHTML, youtubeHTML) {
-  return illustrationHTML + audioHTML + youtubeHTML;
-}
-
-/**
  * Generate all media sections for a blog post
  */
 function generateMediaSections(post) {
-  const illustrationHTML = generateIllustrationSection(post);
-  const audioHTML = generateAudioSection(post);
-  const youtubeHTML = generateYouTubeSection(post);
-  
-  return combineMediaSections(illustrationHTML, audioHTML, youtubeHTML);
+  return combineHTMLSections(
+    generateIllustrationSection(post),
+    generateAudioSection(post),
+    generateYouTubeSection(post)
+  );
 }
 
 /**
@@ -719,7 +712,7 @@ function generateContentSections(post) {
  * Combine all sections of an article
  */
 function combineArticleSections(headerHTML, mediaHTML, contentHTML) {
-  return headerHTML + mediaHTML + contentHTML;
+  return combineHTMLSections(headerHTML, mediaHTML, contentHTML);
 }
 
 /**
