@@ -470,19 +470,24 @@ function generateArticleContent(post) {
 }
 
 /**
- * Generate blog HTML with customizable header, footer and wrapper
+ * Create blog HTML content array
  */
-export function generateBlog(blog, header, footer, wrapHtml) {
-  const articles = generateArticles(blog.posts);
-    
-  // We use an array for better readability but need to follow the exact format
-  // to match the expected output
-  const htmlContents = [
+function createBlogContentArray(header, articles, footer) {
+  return [
     header,
     "\n",
     articles,
     footer
-  ].join("");
+  ];
+}
+
+/**
+ * Generate blog HTML with customizable header, footer and wrapper
+ */
+export function generateBlog(blog, header, footer, wrapHtml) {
+  const articles = generateArticles(blog.posts);
+  const contentArray = createBlogContentArray(header, articles, footer);
+  const htmlContents = contentArray.join("");
   
   return wrapHtml(htmlContents);
 }
