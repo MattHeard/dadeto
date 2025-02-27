@@ -491,7 +491,7 @@ function generateContentSections(post) {
   
   const contentItems = contentArray.map(createContentItemWithIndex);
   
-  return contentItems.join('');
+  return combineHTMLSections(...contentItems);
 }
 
 /**
