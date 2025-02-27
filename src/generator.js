@@ -495,12 +495,21 @@ function generateIllustrationSection(post) {
 }
 
 /**
+ * Create audio source element
+ */
+function createAudioSource(post) {
+  const audioSrc = `${post.publicationDate}.m4a`;
+  return `<source src="${audioSrc}">`;
+}
+
+/**
  * Create audio content
  */
 function createAudioContent(post) {
-  const audioSrc = `${post.publicationDate}.m4a`;
+  const source = createAudioSource(post);
+  
   return `<audio class="${CLASS.VALUE}" controls>
-        <source src="${audioSrc}">
+        ${source}
       </audio>`;
 }
 
