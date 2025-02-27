@@ -316,11 +316,18 @@ function generateDateSection(post) {
 }
 
 /**
+ * Check if media should be displayed
+ */
+function shouldDisplayMedia(post, mediaType) {
+  return post[mediaType] && (mediaType === 'youtube' || post.publicationDate);
+}
+
+/**
  * Higher-order function for generating media sections
  */
 function createMediaSectionGenerator(mediaType, label, contentGenerator) {
   return function(post) {
-    if (!post[mediaType] || (mediaType !== 'youtube' && !post.publicationDate)) {
+    if (!shouldDisplayMedia(post, mediaType)) {
       return '';
     }
     
