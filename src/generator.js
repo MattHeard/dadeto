@@ -463,9 +463,9 @@ function isFirstContentItem(index) {
 }
 
 /**
- * Create HTML for a single content item
+ * Create a content item with index awareness
  */
-function createContentItemHTML(text, index) {
+function createContentItemWithIndex(text, index) {
   const isFirst = isFirstContentItem(index);
   return createContentSectionItem(text, isFirst);
 }
@@ -489,10 +489,7 @@ function createContentSectionItem(text, isFirst) {
 function generateContentSections(post) {
   const contentArray = getContentArray(post);
   
-  const contentItems = contentArray.map((text, index) => {
-    const isFirst = isFirstContentItem(index);
-    return createContentSectionItem(text, isFirst);
-  });
+  const contentItems = contentArray.map(createContentItemWithIndex);
   
   return contentItems.join('');
 }
