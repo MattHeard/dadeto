@@ -36,6 +36,13 @@ const ATTR_NAME = {
 };
 
 // HTML generation helpers
+/**
+ * Create an HTML tag with the specified name, attributes, and content
+ * @param {string} tagName - The HTML tag name
+ * @param {string} attributes - The HTML attributes as a string
+ * @param {string} content - The content to place inside the tag
+ * @returns {string} - The complete HTML tag
+ */
 function createTag(tagName, attributes, content) {
   const openingTag = `<${tagName} ${attributes}>`;
   const closingTag = `</${tagName}>`;
@@ -43,20 +50,42 @@ function createTag(tagName, attributes, content) {
   return tagParts.join("");
 }
 
+/**
+ * Create a div element with specified classes and content
+ * @param {string} classes - CSS classes to apply to the div
+ * @param {string} content - HTML content to place inside the div
+ * @returns {string} - HTML div element
+ */
 function createDiv(classes, content) {
   const tagName = DIV_TAG_NAME;
   const classAttr = createAttrPair(ATTR_NAME.CLASS, classes);
   return createTag(tagName, classAttr, content);
 }
 
+/**
+ * Join CSS classes into a space-separated string
+ * @param {string[]} classes - Array of CSS class names
+ * @returns {string} - Space-separated class string
+ */
 function joinClasses(classes) {
   return classes.join(' ');
 }
 
+/**
+ * Create a div with the key class
+ * @param {string} content - Content for the key div
+ * @returns {string} - HTML div element with key class
+ */
 function createKeyDiv(content = "") {
   return createDiv(CLASS.KEY, content);
 }
 
+/**
+ * Create a div with the value class and optional additional classes
+ * @param {string} content - Content for the value div
+ * @param {string[]} additionalClasses - Additional CSS classes to apply
+ * @returns {string} - HTML div element with value class and any additional classes
+ */
 function createValueDiv(content, additionalClasses = []) {
   const classes = [CLASS.VALUE, ...additionalClasses].filter(Boolean);
   const joinedClasses = joinClasses(classes);
@@ -65,6 +94,9 @@ function createValueDiv(content, additionalClasses = []) {
 
 /**
  * Create a key-value pair with two divs
+ * @param {string} keyDiv - The key div HTML
+ * @param {string} valueDiv - The value div HTML
+ * @returns {string} - Combined key-value HTML
  */
 function createKeyValuePair(keyDiv, valueDiv) {
   return [keyDiv, valueDiv].join(NEWLINE_WITH_INDENT);
