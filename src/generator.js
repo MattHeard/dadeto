@@ -355,14 +355,19 @@ function createMediaSectionGenerator(mediaType, label, contentGenerator) {
 }
 
 /**
+ * Create illustration content
+ */
+function createIllustrationContent(post) {
+  return `<div class="${CLASS.VALUE}">
+        <img loading="lazy" src="${post.publicationDate}.${post.illustration.fileType}" alt="${post.illustration.altText}"/>
+      </div>`;
+}
+
+/**
  * Generate the illustration section for a blog post
  */
 function generateIllustrationSection(post) {
-  return createMediaSectionGenerator('illustration', 'illus', (post) => {
-    return `<div class="${CLASS.VALUE}">
-        <img loading="lazy" src="${post.publicationDate}.${post.illustration.fileType}" alt="${post.illustration.altText}"/>
-      </div>`;
-  })(post);
+  return createMediaSectionGenerator('illustration', 'illus', createIllustrationContent)(post);
 }
 
 /**
