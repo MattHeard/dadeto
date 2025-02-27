@@ -39,7 +39,8 @@ const ATTR_NAME = {
 function createTag(tagName, attributes, content) {
   const openingTag = `<${tagName} ${attributes}>`;
   const closingTag = `</${tagName}>`;
-  return [openingTag, content, closingTag].join("");
+  const tagParts = [openingTag, content, closingTag];
+  return tagParts.join("");
 }
 
 function createDiv(classes, content) {
