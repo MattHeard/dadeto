@@ -323,6 +323,13 @@ function shouldDisplayMedia(post, mediaType) {
 }
 
 /**
+ * Create a key div for media sections
+ */
+function createMediaKeyDiv(label) {
+  return `<div class="${CLASS.KEY} ${CLASS.MEDIA}">${label}</div>`;
+}
+
+/**
  * Higher-order function for generating media sections
  */
 function createMediaSectionGenerator(mediaType, label, contentGenerator) {
@@ -331,7 +338,7 @@ function createMediaSectionGenerator(mediaType, label, contentGenerator) {
       return '';
     }
     
-    const keyDiv = `<div class="${CLASS.KEY} ${CLASS.MEDIA}">${label}</div>`;
+    const keyDiv = createMediaKeyDiv(label);
     const valueDiv = contentGenerator(post);
     
     return `
