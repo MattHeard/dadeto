@@ -475,9 +475,12 @@ function mapContentToHTML(contentArray) {
  */
 function createContentSectionItem(text, isFirst) {
   const key = isFirst ? "text" : "";
+  const keyDiv = createDiv(CLASS.KEY, key);
+  const valueDiv = `<p class="${CLASS.VALUE}">${text}</p>`;
+  
   return `
-      <div class="${CLASS.KEY}">${key}</div>
-      <p class="${CLASS.VALUE}">${text}</p>`;
+      ${keyDiv}
+      ${valueDiv}`;
 }
 
 /**
