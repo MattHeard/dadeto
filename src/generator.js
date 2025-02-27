@@ -241,7 +241,9 @@ function createHtmlTag(content) {
  */
 function wrapHtml(content) {
   const htmlContent = createHtmlTag(content);
-  return [createDoctype(), htmlContent].join("");
+  const doctype = createDoctype();
+  const parts = [doctype, htmlContent];
+  return parts.join("");
 }
 
 /**
