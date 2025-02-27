@@ -449,10 +449,61 @@ function generateArticle(post) {
 }
 
 /**
- * Combine multiple HTML sections into a single string
+ * Get content array from post, defaulting to empty array if not present
  */
-function combineHTMLSections(...sections) {
-  return sections.join('');
+function getContentArray(post) {
+  return post.content || [];
+}
+
+/**
+ * Join HTML content items into a single string
+ */
+function joinContentItems(contentItems) {
+  return contentItems.join('');
+}
+
+/**
+ * Generate the text content sections for a blog post
+ */
+function generateContentSections(post) {
+  const contentArray = getContentArray(post);
+  const contentItems = mapContentToHTML(contentArray);
+  return joinContentItems(contentItems);
+}
+
+/**
+ * Determine if an item is the first in the content array
+ */
+function isFirstContentItem(index) {
+  return index === 0;
+}
+
+/**
+ * Create HTML for a single content item
+ */
+function createContentItemHTML(text, index) {
+  const isFirst = isFirstContentItem(index);
+  return createContentSectionItem(text, isFirst);
+}
+
+/**
+ * Map content items to HTML
+ */
+function mapContentToHTML(contentArray) {
+  return contentArray.map(createContentItemHTML);
+}
+
+/**
+ * Create a content section item with exact formatting
+ */
+function createContentSectionItem(text, isFirst) {
+  const key = isFirst ? "text" : "";
+  const keyDiv = createDiv(CLASS.KEY, key);
+  const valueDiv = `<p class="${CLASS.VALUE}">${text}</p>`;
+  
+  return `
+      ${keyDiv}
+      ${valueDiv}`;
 }
 
 /**
@@ -651,68 +702,10 @@ function generateMediaSections(post) {
 }
 
 /**
- * Determine if an item is the first in the content array
+ * Combine multiple HTML sections into a single string
  */
-function isFirstContentItem(index) {
-  return index === 0;
-}
-
-/**
- * Create HTML for a single content item
- */
-function createContentItemHTML(text, index) {
-  const isFirst = isFirstContentItem(index);
-  return createContentSectionItem(text, isFirst);
-}
-
-/**
- * Map content items to HTML
- */
-function mapContentToHTML(contentArray) {
-  return contentArray.map(createContentItemHTML);
-}
-
-/**
- * Create a content section item with exact formatting
- */
-function createContentSectionItem(text, isFirst) {
-  const key = isFirst ? "text" : "";
-  const keyDiv = createDiv(CLASS.KEY, key);
-  const valueDiv = `<p class="${CLASS.VALUE}">${text}</p>`;
-  
-  return `
-      ${keyDiv}
-      ${valueDiv}`;
-}
-
-/**
- * Get content array from post, defaulting to empty array if not present
- */
-function getContentArray(post) {
-  return post.content || [];
-}
-
-/**
- * Join HTML content items into a single string
- */
-function joinContentItems(contentItems) {
-  return contentItems.join('');
-}
-
-/**
- * Generate the text content sections for a blog post
- */
-function generateContentSections(post) {
-  const contentArray = getContentArray(post);
-  const contentItems = mapContentToHTML(contentArray);
-  return joinContentItems(contentItems);
-}
-
-/**
- * Combine all sections of an article
- */
-function combineArticleSections(headerHTML, mediaHTML, contentHTML) {
-  return combineHTMLSections(headerHTML, mediaHTML, contentHTML);
+function combineHTMLSections(...sections) {
+  return sections.join('');
 }
 
 /**
