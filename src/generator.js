@@ -433,6 +433,16 @@ function generateMediaSections(post) {
 }
 
 /**
+ * Map content items to HTML
+ */
+function mapContentToHTML(contentArray) {
+  return contentArray.map((text, index) => {
+    const isFirst = index === 0;
+    return createContentSectionItem(text, isFirst);
+  });
+}
+
+/**
  * Create a content section item with exact formatting
  */
 function createContentSectionItem(text, isFirst) {
@@ -446,9 +456,9 @@ function createContentSectionItem(text, isFirst) {
  * Generate the text content sections for a blog post
  */
 function generateContentSections(post) {
-  return (post.content || []).map((text, index) => {
-    return createContentSectionItem(text, index === 0);
-  }).join('');
+  const contentArray = post.content || [];
+  const contentItems = mapContentToHTML(contentArray);
+  return contentItems.join('');
 }
 
 /**
