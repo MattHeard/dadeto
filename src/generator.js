@@ -388,14 +388,19 @@ function generateAudioSection(post) {
 }
 
 /**
+ * Create YouTube content
+ */
+function createYouTubeContent(post) {
+  return `<p class="${CLASS.VALUE}">
+        <iframe height="300px" width="100%" src="https://www.youtube.com/embed/${post.youtube.id}?start=${post.youtube.timestamp}" title="${escapeHtml(post.youtube.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
+      </p>`;
+}
+
+/**
  * Generate the YouTube section for a blog post
  */
 function generateYouTubeSection(post) {
-  return createMediaSectionGenerator('youtube', 'video', (post) => {
-    return `<p class="${CLASS.VALUE}">
-        <iframe height="300px" width="100%" src="https://www.youtube.com/embed/${post.youtube.id}?start=${post.youtube.timestamp}" title="${escapeHtml(post.youtube.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
-      </p>`;
-  })(post);
+  return createMediaSectionGenerator('youtube', 'video', createYouTubeContent)(post);
 }
 
 /**
