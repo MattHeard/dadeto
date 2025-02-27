@@ -617,12 +617,26 @@ function createContentSectionItem(text, isFirst) {
 }
 
 /**
+ * Get content array from post, defaulting to empty array if not present
+ */
+function getContentArray(post) {
+  return post.content || [];
+}
+
+/**
+ * Join HTML content items into a single string
+ */
+function joinContentItems(contentItems) {
+  return contentItems.join('');
+}
+
+/**
  * Generate the text content sections for a blog post
  */
 function generateContentSections(post) {
-  const contentArray = post.content || [];
+  const contentArray = getContentArray(post);
   const contentItems = mapContentToHTML(contentArray);
-  return contentItems.join('');
+  return joinContentItems(contentItems);
 }
 
 /**
