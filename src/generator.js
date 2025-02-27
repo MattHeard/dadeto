@@ -109,12 +109,23 @@ function createKeyValuePairInline(keyDiv, valueDiv) {
   return [keyDiv, valueDiv].join("");
 }
 
+/**
+ * Create an HTML attribute name-value pair
+ * @param {string} attrName - The attribute name
+ * @param {string} attrValue - The attribute value
+ * @returns {string} - Formatted attribute string (name="value")
+ */
 function createAttrPair(attrName, attrValue) {
   return `${attrName}="${attrValue}"`;
 }
 
 /**
  * Apply a single HTML escape replacement
+ * @param {string} text - The text to process
+ * @param {Object} replacement - The replacement definition
+ * @param {RegExp} replacement.from - The pattern to replace
+ * @param {string} replacement.to - The replacement string
+ * @returns {string} - Text with the replacement applied
  */
 function applyHtmlEscapeReplacement(text, replacement) {
   const { from, to } = replacement;
@@ -123,6 +134,9 @@ function applyHtmlEscapeReplacement(text, replacement) {
 
 /**
  * Apply all HTML escape replacements
+ * @param {string} text - The text to process
+ * @param {Array<Object>} replacements - Array of replacement definitions
+ * @returns {string} - Text with all replacements applied
  */
 function applyAllHtmlEscapeReplacements(text, replacements) {
   let result = text;
