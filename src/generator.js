@@ -580,16 +580,32 @@ function formatMediaSection(keyDiv, valueDiv) {
 }
 
 /**
+ * Generate media content based on media type
+ */
+function generateMediaContent(post, mediaType) {
+  switch (mediaType) {
+    case 'illustration':
+      return createIllustrationContent(post);
+    case 'audio':
+      return createAudioContent(post);
+    case 'youtube':
+      return createYouTubeContent(post);
+    default:
+      return '';
+  }
+}
+
+/**
  * Higher-order function for generating media sections
  */
-function createMediaSectionGenerator(mediaType, label, contentGenerator) {
+function createMediaSectionGenerator(mediaType, label) {
   return function(post) {
     if (!shouldDisplayMedia(post, mediaType)) {
       return '';
     }
     
     const keyDiv = createMediaKeyDiv(label);
-    const valueDiv = contentGenerator(post);
+    const valueDiv = generateMediaContent(post, mediaType);
     
     return formatMediaSection(keyDiv, valueDiv);
   };
@@ -617,13 +633,6 @@ function createIllustrationContent(post) {
 }
 
 /**
- * Generate the illustration section for a blog post
- */
-function generateIllustrationSection(post) {
-  return createMediaSectionGenerator('illustration', 'illus', createIllustrationContent)(post);
-}
-
-/**
  * Create audio source element
  */
 function createAudioSource(post) {
@@ -640,13 +649,6 @@ function createAudioContent(post) {
   return `<audio class="${CLASS.VALUE}" controls>
         ${source}
       </audio>`;
-}
-
-/**
- * Generate the audio section for a blog post
- */
-function generateAudioSection(post) {
-  return createMediaSectionGenerator('audio', 'audio', createAudioContent)(post);
 }
 
 /**
@@ -672,10 +674,24 @@ function createYouTubeContent(post) {
 }
 
 /**
+ * Generate the illustration section for a blog post
+ */
+function generateIllustrationSection(post) {
+  return createMediaSectionGenerator('illustration', 'illus')(post);
+}
+
+/**
+ * Generate the audio section for a blog post
+ */
+function generateAudioSection(post) {
+  return createMediaSectionGenerator('audio', 'audio')(post);
+}
+
+/**
  * Generate the YouTube section for a blog post
  */
 function generateYouTubeSection(post) {
-  return createMediaSectionGenerator('youtube', 'video', createYouTubeContent)(post);
+  return createMediaSectionGenerator('youtube', 'video')(post);
 }
 
 /**
