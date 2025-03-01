@@ -486,15 +486,16 @@ function createContentItemWithIndex(text, index) {
 
 /**
  * Create a content section item with exact formatting
+ * @param {string} text - The content text
+ * @param {boolean} isFirst - Whether this is the first content item
+ * @returns {string} - Formatted content section HTML
  */
 function createContentSectionItem(text, isFirst) {
   const key = isFirst ? "text" : "";
   const keyDiv = createDiv(CLASS.KEY, key);
   const valueDiv = `<p class="${CLASS.VALUE}">${text}</p>`;
   
-  return `
-      ${keyDiv}
-      ${valueDiv}`;
+  return formatSection(keyDiv, valueDiv);
 }
 
 /**
@@ -585,9 +586,12 @@ function createMediaKeyDiv(label) {
 }
 
 /**
- * Format a media section with key and value divs
+ * Format a section with key and value divs
+ * @param {string} keyDiv - The key div HTML
+ * @param {string} valueDiv - The value div HTML
+ * @returns {string} - Formatted section HTML
  */
-function formatMediaSection(keyDiv, valueDiv) {
+function formatSection(keyDiv, valueDiv) {
   return `
       ${keyDiv}
       ${valueDiv}`;
@@ -621,7 +625,7 @@ function createMediaSectionGenerator(mediaType, label) {
     const keyDiv = createMediaKeyDiv(label);
     const valueDiv = generateMediaContent(post, mediaType);
     
-    return formatMediaSection(keyDiv, valueDiv);
+    return formatSection(keyDiv, valueDiv);
   };
 }
 
