@@ -113,17 +113,12 @@ function createValueDiv(content, additionalClasses = []) {
  * Create a key-value pair with two divs
  * @param {string} keyDiv - The key div HTML
  * @param {string} valueDiv - The value div HTML
+ * @param {boolean} [inline=false] - Whether to join inline (no newlines) or with newlines
  * @returns {string} - Combined key-value HTML
  */
-function createKeyValuePair(keyDiv, valueDiv) {
-  return [keyDiv, valueDiv].join(NEWLINE_WITH_INDENT);
-}
-
-/**
- * Create a key-value pair with two divs without adding newlines
- */
-function createKeyValuePairInline(keyDiv, valueDiv) {
-  return [keyDiv, valueDiv].join("");
+function createKeyValuePair(keyDiv, valueDiv, inline = false) {
+  const separator = inline ? "" : NEWLINE_WITH_INDENT;
+  return [keyDiv, valueDiv].join(separator);
 }
 
 /**
@@ -522,7 +517,7 @@ function generateTitleSection(post) {
   const titleKey = createDiv(titleClasses, post.key);
   const titleValue = createTitleValue(post);
   
-  return createKeyValuePairInline(titleKey, titleValue);
+  return createKeyValuePair(titleKey, titleValue, true);
 }
 
 /**
