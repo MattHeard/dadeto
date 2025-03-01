@@ -110,15 +110,34 @@ function createValueDiv(content, additionalClasses = []) {
 }
 
 /**
- * Create a key-value pair with two divs
+ * Joins two HTML elements with a specified separator
+ * @param {string} first - The first HTML element
+ * @param {string} second - The second HTML element
+ * @param {string} separator - The separator to join with
+ * @returns {string} - Combined HTML string
+ */
+function joinHtmlElements(first, second, separator) {
+  return [first, second].join(separator);
+}
+
+/**
+ * Create a key-value pair with two divs, separated by a newline and indent
  * @param {string} keyDiv - The key div HTML
  * @param {string} valueDiv - The value div HTML
- * @param {boolean} [inline=false] - Whether to join inline (no newlines) or with newlines
- * @returns {string} - Combined key-value HTML
+ * @returns {string} - Combined key-value HTML with newlines
  */
-function createKeyValuePair(keyDiv, valueDiv, inline = false) {
-  const separator = inline ? "" : NEWLINE_WITH_INDENT;
-  return [keyDiv, valueDiv].join(separator);
+function createKeyValuePair(keyDiv, valueDiv) {
+  return joinHtmlElements(keyDiv, valueDiv, NEWLINE_WITH_INDENT);
+}
+
+/**
+ * Create a key-value pair with two divs without adding newlines
+ * @param {string} keyDiv - The key div HTML
+ * @param {string} valueDiv - The value div HTML
+ * @returns {string} - Combined key-value HTML with no spacing
+ */
+function createKeyValuePairInline(keyDiv, valueDiv) {
+  return joinHtmlElements(keyDiv, valueDiv, "");
 }
 
 /**
@@ -517,7 +536,7 @@ function generateTitleSection(post) {
   const titleKey = createDiv(titleClasses, post.key);
   const titleValue = createTitleValue(post);
   
-  return createKeyValuePair(titleKey, titleValue, true);
+  return createKeyValuePairInline(titleKey, titleValue);
 }
 
 /**
