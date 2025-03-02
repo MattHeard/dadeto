@@ -6,16 +6,19 @@ import {
   createAttrPair, 
   escapeHtml, 
   applyHtmlEscapeReplacement, 
-  applyAllHtmlEscapeReplacements 
+  applyAllHtmlEscapeReplacements,
+  createDoctype,
+  createHtmlTag,
+  wrapHtml,
+  joinHtmlElements,
+  DOCTYPE,
+  LANGUAGE,
+  HTML_TAG_NAME,
+  ATTR_NAME,
+  HTML_ESCAPE_REPLACEMENTS
 } from './html.js';
 
-// Constants for HTML structure
-const DOCTYPE = "<!DOCTYPE html>";
 
-// Language settings
-const LANGUAGE = {
-  EN: "en"
-};
 
 // CSS class names
 const CLASS = {
@@ -32,24 +35,7 @@ const CLASS = {
 
 // HTML tag names
 const DIV_TAG_NAME = "div";
-const HTML_TAG_NAME = "html";
 const ARTICLE_TAG_NAME = "article";
-
-// HTML attribute names
-const ATTR_NAME = {
-  LANG: "lang",
-  CLASS: "class",
-  ID: "id"
-};
-
-// HTML escape replacements
-const HTML_ESCAPE_REPLACEMENTS = [
-  { from: /&/g, to: "&amp;" },
-  { from: /</g, to: "&lt;" },
-  { from: />/g, to: "&gt;" },
-  { from: /"/g, to: "&quot;" },
-  { from: /'/g, to: "&#039;" },
-];
 
 // Date formatting constants
 const DATE_LOCALE = 'en-GB';
@@ -103,16 +89,7 @@ function createValueDiv(content, additionalClasses = []) {
   return createDiv(joinedClasses, content);
 }
 
-/**
- * Joins two HTML elements with a specified separator
- * @param {string} first - The first HTML element
- * @param {string} second - The second HTML element
- * @param {string} separator - The separator to join with
- * @returns {string} - Combined HTML string
- */
-function joinHtmlElements(first, second, separator) {
-  return [first, second].join(separator);
-}
+
 
 /**
  * Create a key-value pair with two divs, separated by a newline and indent
@@ -314,31 +291,7 @@ function createPageFooter() {
   return contentArray.join('\n');
 }
 
-/**
- * Create the DOCTYPE declaration
- */
-function createDoctype() {
-  return DOCTYPE;
-}
 
-/**
- * Create the HTML tag with language attribute
- */
-function createHtmlTag(content) {
-  const tagName = HTML_TAG_NAME;
-  const attributes = createAttrPair(ATTR_NAME.LANG, LANGUAGE.EN);
-  return createTag(tagName, attributes, content);
-}
-
-/**
- * Wrap content in HTML structure
- */
-function wrapHtml(content) {
-  const htmlContent = createHtmlTag(content);
-  const doctype = createDoctype();
-  const parts = [doctype, htmlContent];
-  return parts.join("");
-}
 
 /**
  * Convert a post to article HTML
