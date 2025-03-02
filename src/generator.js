@@ -1,7 +1,7 @@
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
 import scriptTag from './script.js';
-import { createTag } from './html.js';
+import { createTag, createAttrPair } from './html.js';
 
 // Constants for HTML structure
 const DOCTYPE = "<!DOCTYPE html>";
@@ -128,15 +128,7 @@ function createKeyValuePairInline(keyDiv, valueDiv) {
   return joinHtmlElements(keyDiv, valueDiv, "");
 }
 
-/**
- * Create an HTML attribute name-value pair
- * @param {string} attrName - The attribute name
- * @param {string} attrValue - The attribute value
- * @returns {string} - Formatted attribute string (name="value")
- */
-function createAttrPair(attrName, attrValue) {
-  return `${attrName}="${attrValue}"`;
-}
+
 
 /**
  * Apply a single HTML escape replacement
