@@ -5,17 +5,9 @@ import {
   createTag, 
   createAttrPair, 
   escapeHtml, 
-  applyHtmlEscapeReplacement, 
-  applyAllHtmlEscapeReplacements,
-  createDoctype,
-  createHtmlTag,
   wrapHtml,
   joinHtmlElements,
-  DOCTYPE,
-  LANGUAGE,
-  HTML_TAG_NAME,
-  ATTR_NAME,
-  HTML_ESCAPE_REPLACEMENTS
+  ATTR_NAME
 } from './html.js';
 
 
