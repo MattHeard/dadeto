@@ -1,6 +1,7 @@
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
 import scriptTag from './script.js';
+import { createTag } from './html.js';
 
 // Constants for HTML structure
 const DOCTYPE = "<!DOCTYPE html>";
@@ -53,19 +54,6 @@ const DATE_FORMAT_OPTIONS = {
 };
 
 // HTML generation helpers
-/**
- * Create an HTML tag with the specified name, attributes, and content
- * @param {string} tagName - The HTML tag name
- * @param {string} attributes - The HTML attributes as a string
- * @param {string} content - The content to place inside the tag
- * @returns {string} - The complete HTML tag
- */
-function createTag(tagName, attributes, content) {
-  const openingTag = `<${tagName} ${attributes}>`;
-  const closingTag = `</${tagName}>`;
-  const tagParts = [openingTag, content, closingTag];
-  return tagParts.join("");
-}
 
 /**
  * Create a div element with specified classes and content
