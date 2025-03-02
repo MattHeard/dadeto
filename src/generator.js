@@ -1,7 +1,13 @@
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
 import scriptTag from './script.js';
-import { createTag, createAttrPair } from './html.js';
+import { 
+  createTag, 
+  createAttrPair, 
+  escapeHtml, 
+  applyHtmlEscapeReplacement, 
+  applyAllHtmlEscapeReplacements 
+} from './html.js';
 
 // Constants for HTML structure
 const DOCTYPE = "<!DOCTYPE html>";
@@ -130,43 +136,7 @@ function createKeyValuePairInline(keyDiv, valueDiv) {
 
 
 
-/**
- * Apply a single HTML escape replacement
- * @param {string} text - The text to process
- * @param {Object} replacement - The replacement definition
- * @param {RegExp} replacement.from - The pattern to replace
- * @param {string} replacement.to - The replacement string
- * @returns {string} - Text with the replacement applied
- */
-function applyHtmlEscapeReplacement(text, replacement) {
-  const { from, to } = replacement;
-  return text.replace(from, to);
-}
 
-/**
- * Apply all HTML escape replacements
- * @param {string} text - The text to process
- * @param {Array<Object>} replacements - Array of replacement definitions
- * @returns {string} - Text with all replacements applied
- */
-function applyAllHtmlEscapeReplacements(text, replacements) {
-  let result = text;
-  
-  for (const replacement of replacements) {
-    result = applyHtmlEscapeReplacement(result, replacement);
-  }
-  
-  return result;
-}
-
-/**
- * Escapes HTML special characters to prevent XSS attacks
- * @param {string} text - The text to escape
- * @returns {string} - HTML-escaped text
- */
-function escapeHtml(text) {
-  return applyAllHtmlEscapeReplacements(text, HTML_ESCAPE_REPLACEMENTS);
-}
 
 /**
  * Convert a date string to a Date object
