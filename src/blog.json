@@ -130,64 +130,75 @@
           "url": "https://www.youtube.com/watch?v=XkTCD4mQtAo",
           "title": "Climate-Smart Mining: Minerals for Climate Action",
           "source": "World Bank",
-          "medium": "YouTube"
+          "medium": "YouTube",
+          "type": "video"
         },
         {
           "url": "https://pubdocs.worldbank.org/en/961711588875536384/Minerals-for-Climate-Action-The-Mineral-Intensity-of-the-Clean-Energy-Transition.pdf",
           "title": "Minerals for Climate Action: The Mineral Intensity of the Clean Energy Transition",
-          "source": "World Bank"
+          "source": "World Bank",
+          "type": "report"
         },
         {
           "url": "https://changeit.app/blog/2021-03-26-environmental-impact-of-lithium-batteries/",
           "title": "What is the environmental impact of lithium batteries?",
           "author": "Carolina Freitas",
-          "source": "ChangeIt"
+          "source": "ChangeIt",
+          "type": "article"
         },
         {
           "url": "https://www.wired.co.uk/article/lithium-batteries-environment-impact",
           "title": "The spiralling environmental cost of our lithium battery addiction",
           "author": "Amit Katwala",
-          "source": "Wired.co.uk"
+          "source": "Wired.co.uk",
+          "type": "article"
         },
         {
           "url": "https://earth.org/environmental-impact-of-battery-production/",
           "title": "The Environmental Impact of Battery Production for Electric Vehicles",
           "author": "Lakshmi R B",
-          "source": "Earth.org"
+          "source": "Earth.org",
+          "type": "article"
         },
         {
           "url": "https://earth.org/cobalt-mining/",
           "title": "Cobalt Mining: The Dark Side of the Renewable Energy Transition",
           "author": "Aphra Murray",
-          "source": "Earth.org"
+          "source": "Earth.org",
+          "type": "article"
         },
         {
           "url": "https://www3.weforum.org/docs/WEF_Making_Mining_Safe_2020.pdf",
           "title": "Making Mining Safe and Fair: Artisanal cobalt extraction in the Democratic Republic of the Congo",
-          "source": "World Economic Forum"
+          "source": "World Economic Forum",
+          "type": "report"
         },
         {
           "url": "https://www.reuters.com/article/us-philippines-mining/philippines-to-shut-half-of-mines-mostly-nickel-in-environmental-clampdown-idINKBN15H0BQ",
           "title": "Philippines to shut half of mines mostly nickel in environmental clampdown",
           "author": "Enrico Dela Cruz and Manolo Serapio Jr",
-          "source": "Reuters"
+          "source": "Reuters",
+          "type": "article"
         },
         {
           "url": "https://www.scmp.com/business/article/3202402/asias-lithium-capital-grinds-halt-output-battery-material-stops-yichun-amid-pollution-investigation",
           "title": "‘Asia’s lithium capital’ grinds to a halt as output of battery material stops in Yichun amid pollution investigation in Jiangxi province’s Jin River",
           "author": "Yujie Xue",
-          "source": "South China Morning Post"
+          "source": "South China Morning Post",
+          "type": "article"
         },
         {
           "url": "https://www.economist.com/middle-east-and-africa/2022/07/05/how-the-world-depends-on-small-cobalt-miners",
           "title": "How the world depends on small cobalt miners",
           "author": "Kolwezi and Fungurume",
-          "source": "The Economist"
+          "source": "The Economist",
+          "type": "article"
         },
         {
           "url": "https://me.smenet.org/webContent.cfm?webarticleid=4429",
           "title": "U.S. Department of Energy releases 2023 Critical Materials Assessment",
-          "source": "Mining Engineering"
+          "source": "Mining Engineering",
+          "type": "report"
         }
       ]
     },
@@ -209,17 +220,20 @@
         {
           "url": "https://openai.com/gpt-4",
           "title": "GPT-4",
-          "source": "OpenAI"
+          "source": "OpenAI",
+          "type": "website"
         },
         {
           "url": "https://stability.ai/blog/stable-diffusion-sdxl-1-announcement",
           "title": "Announcing SDXL 1.0",
-          "source": "stability.ai"
+          "source": "stability.ai",
+          "type": "article"
         },
         {
           "url": "https://github.com/ggerganov/llama.cpp",
           "title": "llama.cpp",
-          "source": "Github"
+          "source": "Github",
+          "type": "website"
         }
       ]
     },
@@ -243,14 +257,16 @@
         {
           "url": "https://en.wikipedia.org/wiki/Berghain",
           "title": "Berghain",
-          "source": "Wikipedia"
+          "source": "Wikipedia (EN)",
+          "type": "article"
         },
         {
           "url": "https://www.youtube.com/watch?v=ZdGrC9S4PYA",
           "title": "\"Mr. Manager\"",
           "note": "clip from _Arrested Development_",
           "source": "YouTube",
-          "quote": "It's up to me now. I'm Mr. Manager"
+          "quote": "It's up to me now. I'm Mr. Manager",
+          "type": "video"
         }
       ]
     },
@@ -259,10 +275,10 @@
       "title": "Across the Pond",
       "publicationDate": "2021-01-05",
       "content": [
-        "Look closer. The right side of South America once snuggled into the left side of Africa. For hundreds of years, since the development of good global maps, we suspected it but didn't know it.",
-        "A century ago, geologists too were in a process of upheaval. In 1915, Alfred Wegener outlined this theory in The Origins of Continents and Oceans. But Wegener had more than a map: he had fossils.",
-        "Mesosaurus was too little of a croc to swim across oceans, but lived on both sides.",
-        "And Glossopteris was a seed fern whose seeds were too fat to blow so far."
+        "Look closer. The right side of South America once snuggled into the left side of Africa. For hundreds of years, since the development of good global maps, we suspected it but didn't _know_ it.",
+        "A century ago, geologists too were in a process of upheaval. In 1915, Alfred Wegener outlined this theory in _The Origins of Continents and Oceans_. But Wegener had more than a map: he had fossils.",
+        "_Mesosaurus_ was too little of a croc to swim across oceans, but lived on both sides.",
+        "And _Glossopteris_ was a seed fern whose seeds were too fat to blow so far."
       ],
       "illustration": {
         "fileType": "png",
@@ -270,7 +286,22 @@
       },
       "audio": {
         "fileType": "m4a"
-      }
+      },
+      "relatedLinks": [
+        {
+          "url": "https://books.google.com/books?id=EEQdk9GRfkoC",
+          "title": "The Rejection of Continental Drift: Theory and Method in American Earth Science",
+          "author": "Naomi Oreskes",
+          "type": "book"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Robert_Falcon_Scott#Last_march",
+          "title": "Robert Falcon Scott, Last march",
+          "source": "Wikipedia (EN)",
+          "quote": "Next to their bodies lay 35 pounds of _Glossopteris_ tree fossils which they had dragged on hand sledges.",
+          "type": "article"
+        }
+      ]
     },
     {
       "key": "ABRA1",
@@ -279,7 +310,9 @@
       "content": [
         "I'm tired. It's not so bad. Others have it worse. But I'm tired.",
         "Last year was quite a year, but my close friends and family didn't get COVID-19. My relationships have strengthened despite the stress. Worrying about elderly neighbours and isolating with bored children didn't wear me down.",
-        "But it wore me out."
+        "But it wore me out.",
+        "Every day is on autopilot with dozens of easy 5-minute tasks left undone for days. A brain fog smothers me from morning til night.",
+        "The thing about walking through a fog is that you don't know where it ends. How much further do we have to go?"
       ],
       "illustration": {
         "fileType": "png",
@@ -295,12 +328,35 @@
       "publicationDate": "2019-12-26",
       "content": [
         "Free will has a problem. Either one chooses for a reason or for no reason. Either it's not a choice but an effect or it's not a choice but a dice roll. Either way, it's hard to blame someone like that.",
-        "The Sixth Extinction surveys human irruption and decimation of other species. It doesn't lay blame. At a species level, the course of human history seems to be a mix of mere causality and being lucky. There's no call-to-action at the end of the book, because it's not clear there is an action anyone can take to reverse human nature."
+        "_The Sixth Extinction_ surveys human irruption and decimation of other species. It doesn't lay blame. At a species level, the course of human history seems to be a mix of mere causality and being lucky. There's no call-to-action at the end of the book, because it's not clear there is an action anyone can take to reverse human nature."
       ],
       "illustration": {
         "fileType": "png",
         "altText": "the Panamanian rainforest, oil painting"
-      }
+      },
+      "relatedLinks": [
+        {
+          "url": "https://en.wikipedia.org/wiki/The_Sixth_Extinction:_An_Unnatural_History",
+          "title": "The Sixth Extinction: An Unnatural History",
+          "author": "Elizabeth Kolbert",
+          "source": "Wikipedia (EN)",
+          "type": "article"
+        },
+        {
+          "url": "https://plato.stanford.edu/entries/spinoza/",
+          "title": "Baruch Spinoza",
+          "author": "Steven Nadler",
+          "source": "The Stanford Encyclopedia of Philosophy",
+          "type": "article"
+        },
+        {
+          "url": "https://www.nationalgeographic.com/animals/2019/05/last-sumatran-rhino-malaysia-dies/",
+          "title": "Last Sumatran rhino in Malaysia dies",
+          "author": "Jason Bittel",
+          "source": "National Geographic",
+          "type": "article"
+        }
+      ]
     },
     {
       "key": "CLIM1",
@@ -314,7 +370,20 @@
       "illustration": {
         "fileType": "png",
         "altText": "hundreds of protestors in front of the brandenburger tor, dancing, red pencil sketch"
-      }
+      },
+      "relatedLinks": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Ecological_grief",
+          "title": "Ecological grief",
+          "source": "Wikipedia (EN)",
+          "type": "article"
+        },
+        {
+          "url": "https://climateone.org/audio/elizabeth-kolbert-and-david-roberts-covering-catastrophe",
+          "title": "Elizabeth Kolbert and David Roberts: Covering Catastrophe",
+          "type": "article"
+        }
+      ]
     },
     {
       "key": "COST1",
@@ -328,22 +397,405 @@
       "illustration": {
         "fileType": "png",
         "altText": "a tangle of yellow and black woollen yarn"
-      }
+      },
+      "relatedLinks": [
+        {
+          "url": "https://twitter.com/JackKleeman/status/1190354757308862468",
+          "title": "1500 microservices at @monzo…",
+          "author": "@JackKleeman",
+          "type": "microblog"
+        },
+        {
+          "url": "https://martinfowler.com/articles/break-monolith-into-microservices.html",
+          "title": "How to break a Monolith into Microservices",
+          "author": "Zhamak Dehghani",
+          "type": "article"
+        }
+      ]
     },
     {
-      "key": "FTV1",
+      "key": "FAIL1",
       "title": "Failed to Vote",
       "publicationDate": "2019-05-06",
       "content": [
         "I missed the deadline to register to vote in Germany for the European Union elections. I am very proud of having voted in every national and local election I could, until now. I’m not proud of every vote, but proud that I voted.",
-        "I have lots of excuses for missing the registration deadline: Brexit; Taking a working holiday in New Zealand; The deadline being on a Sunday; Not having a printer for my form.",
+        "I have lots of excuses for missing the registration deadline:",
+        "1. Brexit",
+        "2. Taking a working holiday in New Zealand",
+        "3. The deadline being on a Sunday",
+        "4. Not having a printer for my form",
         "But they’re all bad excuses.",
         "I knew that I could have been eligible, and should have sorted out my registration well in advance. I’m ashamed now."
       ],
       "illustration": {
         "fileType": "png",
         "altText": "european flags, flapping gently in the wind, nighttime photograph"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://en.wikipedia.org/wiki/The_Uninhabitable_Earth_(book)",
+          "title": "The Uninhabitable Earth",
+          "author": "David Wallace-Wells",
+          "type": "book",
+          "quote": "Each of us imposes some suffering on our future selves every time we flip on a light switch, buy a plane ticket, or fail to vote."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=QsEIw7M03Kw",
+          "title": "WOW, you have a beard",
+          "author": "Michael Henry",
+          "type": "video",
+          "quote": "Too busy to have your voice heard, I see."
+        }
+      ]
+    },
+    {
+      "key": "OPPO1",
+      "title": "Opportunity Cost Considerations",
+      "publicationDate": "2017-03-07",
+      "content": [
+        "Benjamin Franklin said that time was money. You could have earned ten shillings today, but you spent half of it sitting idle. You only got five shillings for the half-day you did work. To Franklin, you spent (or threw away) the other five shillings in front of the television. Suppose we talk about ten thousand dollars instead. You would likely save a child’s life by donating ten thousand dollars worth of mosquito nets. Have you spent (or thrown away) that child’s life by not fighting for a raise? Or upgrading a good car for a newer model?"
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "muted colourful overlapping triangles, digital art"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.againstmalaria.com/",
+          "title": "Against Malaria Foundation",
+          "type": "website"
+        }
+      ]
+    },
+    {
+      "key": "QUES1",
+      "title": "Questions for Reflection",
+      "publicationDate": "2016-12-31",
+      "content": [
+        "1. What single thing could you do differently that will have the biggest positive impact?",
+        "2. When was the last time you should have admitted you were wrong, but didn’t?",
+        "3. Did you discover a hobby that you need to make more time for?",
+        "4. Are there any books you wish you had read earlier?",
+        "5. Any books you wish you had never read?",
+        "6. Is there anybody you keep meaning to catch up with?",
+        "7. Do you have any good habits that you are struggling to make stick?",
+        "8. Do you have any bad habits that you are struggling to drop?",
+        "9. Are you happy?"
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a victorian woman resting in a garden, hugging her knee, looking wistfully into the distance, oil painting"
       }
+    },
+    {
+      "key": "MUTE1",
+      "title": "Muted Star Trek",
+      "publicationDate": "2016-10-07",
+      "content": [
+        "Our daughter is almost two, and we now also have a two-month old son. As I settled him back to sleep after his night feeds, I watched the original series of Star Trek on mute with subtitles. After a great first season I ordered some wireless headphones and continued watching. When they arrived I excitedly set them up, but the sound was jarring; I felt like somebody had taken Kirk, Spock, and McCoy and dubbed over their original voices. Of course I knew these were their voices, but I couldn’t continue watching without feeling like the show had become corrupted.",
+        "My favourite _Star Trek_ episodes so far:",
+        "1. _The City on the Edge of Forever_ (season 1, episode 28)",
+        "2. _The Deadly Years_ (season 2, episode 12)",
+        "3. _The Trouble with Tribbles_ (season 2, episode 15)",
+        "4. _A Private Little War_ (season 2, episode 19)"
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a desert planet with rocks in the background and a colourful sky, pencil and watercolour"
+      }
+    },
+    {
+      "key": "PERM1",
+      "title": "Permitted Moral Actions",
+      "publicationDate": "2016-02-13",
+      "content": [
+        "There are three categories of moral actions: forbidden, required, and permitted. Forbidden actions are those which one must not do. Required actions are those which one must do. Permitted actions are those which one may or may not do. When searching for a moral code to guide their lives, people look for a system of principles, justifications, and directions for how to act. This makes restrictive religious standards popular and powerful. Alternatively, if a moral code primarily consists of only permitted actions, people can't use the moral code to make decisive choices because they are given too much wiggle room."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "an infinite loop of small buddha statues made out of gold"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://books.google.co.nz/books?id=qWGp1iK9IlAC",
+          "title": "Moral Theory: An Introduction",
+          "author": "Mark Timmons",
+          "type": "book"
+        },
+        {
+          "url": "https://plato.stanford.edu/entries/metaethics/",
+          "title": "Metaethics",
+          "author": "Geoff Sayre-McCord",
+          "source": "The Stanford Encyclopedia of Philosophy",
+          "type": "article"
+        }
+      ]
+    },
+    {
+      "key": "PROV1",
+      "title": "Provoking Islamophobic Backlash",
+      "publicationDate": "2015-11-16",
+      "content": [
+        "If we assume that the Islamic State coordinated the November 2015 attacks on Paris, it should be quickly obvious that such an attack intended to encourage a backlash against Islamic refugees. The cynic in me entertains the possibility that the Syrian passport found by one killer's body was a prop to brew distrust of all Syrian refugees. It is unknown whether it belonged to the killer. All of the other suspects or identified killers appear to be Belgian or French. To retaliate against refugees who are fleeing these killers would compound the tragedy. I hope for a calm, measured response."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a nighttime aerial view of inner paris, with the eiffel tower lit up in the background, photograph"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.wsj.com/articles/paris-attacks-prompt-geopolitical-shift-in-west-1447623348",
+          "title": "Paris Attacks Prompt Geopolitical Shift in West",
+          "author": "Stephen Fidler and Julian E. Barnes",
+          "source": "The Wall Street Journal",
+          "type": "article"
+        },
+        {
+          "url": "https://www.esquire.com/news-politics/politics/news/a39727/paris-attacks-middle-eastern-oligarchies/",
+          "title": "There Is Only One Way to Defeat ISIS",
+          "author": "Charles P. Pierce",
+          "source": "Esquire",
+          "type": "article"
+        },
+        {
+          "url": "https://archive.nytimes.com/krugman.blogs.nytimes.com/2015/11/15/fear-and-friends/",
+          "title": "Fear and Friends",
+          "author": "Paul Krugman",
+          "source": "The New York Times",
+          "type": "article"
+        },
+        {
+          "url": "https://www.vox.com/world/2015/11/14/9735512/paris-attacks-isis-why/in/9496741",
+          "title": "Why ISIS would attack Paris, according to an expert",
+          "author": "Zack Beauchamp",
+          "source": "Vox",
+          "type": "article"
+        }
+      ]
+    },
+    {
+      "key": "FIRS1",
+      "title": "First Birthday Cupcakes",
+      "publicationDate": "2015-10-25",
+      "content": [
+        "My daughter Evelyn turns one today. It's a celebration for my wife and I as much as it is for our daughter, so I made cupcakes. I did the mixing with Evelyn. (She kept eating the flour.) I want to show my daughter that baking is not a \"mum\" activity, and cupcakes have little chance of error. They turned out slightly dry, but still great.",
+        "The only party hats the Warehouse had were \"princess\" themed. I was wanting something more gender-neutral, so I grabbed some gold wrapping paper and covered one. Another day in the life of a feminist dad."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a tray of birthday cupcakes, cubist painting"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.nigella.com/recipes/cupcakes",
+          "title": "Cupcakes",
+          "source": "Nigella.com",
+          "type": "website"
+        }
+      ]
+    },
+    {
+      "key": "FIRS1",
+      "title": "First Birthday Cupcakes",
+      "publicationDate": "2015-10-25",
+      "content": [
+        "My daughter Evelyn turns one today. It's a celebration for my wife and I as much as it is for our daughter, so I made cupcakes. I did the mixing with Evelyn. (She kept eating the flour.) I want to show my daughter that baking is not a \"mum\" activity, and cupcakes have little chance of error. They turned out slightly dry, but still great.",
+        "The only party hats the Warehouse had were \"princess\" themed. I was wanting something more gender-neutral, so I grabbed some gold wrapping paper and covered one. Another day in the life of a feminist dad."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a tray of birthday cupcakes, cubist painting"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.nigella.com/recipes/cupcakes",
+          "title": "Cupcakes",
+          "source": "Nigella.com",
+          "type": "website"
+        }
+      ]
+    },
+    {
+      "key": "THEW1",
+      "title": "The 'Wow Factor'",
+      "publicationDate": "2015-05-03",
+      "content": [
+        "The second trailer to _Jurassic World_ shows Beth (Bryce Dallas Howard) telling Owen (Chris Pratt) that the scientists have genetically modified a dinosaur to keep the park audiences interested. Owen scoffs that dinosaurs are already interesting. \"Corporate felt genetic modification would up the 'wow factor'.\" \"They're dinosaurs. 'Wow' enough.\" I reacted similarly and rolled my eyes when they mentioned genetic modification in the first trailer, but now think that maybe the filmmakers are commenting on the nature of the _Jurassic Park_ film franchise. The filmmakers clearly thought that the new film also needed something extra to keep their audiences interested."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a lego dinosaur diarama"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.youtube.com/watch?v=RFinNxS5KN4",
+          "title": "_Jurassic World_, first trailer",
+          "author": "Universal Studios",
+          "source": "YouTube",
+          "type": "video"
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=aJJrkyHas78",
+          "title": "_Jurassic World_, second trailer",
+          "author": "Universal Studios",
+          "source": "YouTube",
+          "type": "video"
+        },
+        {
+          "url": "https://screenrant.com/jurassic-world-park-steven-spielberg/",
+          "title": "'Jurassic World': Steven Spielberg Says It's 'Jurassic Park Come True'",
+          "author": "Chris Agar",
+          "source": "Screen Rant",
+          "type": "article",
+          "quote": "A subplot is going to be how the general public has become 'bored' of dinosaurs and are in need of a shiny new attraction to revitalize interest…"
+        }
+      ]
+    },
+    {
+      "key": "SNOW1",
+      "title": "_Snow Crash_ Thoughts",
+      "publicationDate": "2015-03-31",
+      "content": [
+        "Immersive virtual reality experiences may be only years, if not months, away. Despite enthusiasts' suspicion and hostility to the announcement, Facebook's acquisition of Oculus gives it a prime position for hosting the Street-like public hub. However, the majority of social interactions will be in private rooms like the Black Sun and Hiro Protagonist's office in _Snow Crash_. A federated social network could allow a heavy user to self-host and a casual user to connect through Facebook and both share the same virtual space. Rooms could establish realism standards and exclude avatars which break the immersion, encouraging investment in new designs."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "cyberpunk vr motorcycles racing to deliver pizza, digital sketches"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Snow_Crash",
+          "title": "Snow Crash",
+          "author": "Neal Stephenson",
+          "type": "book"
+        },
+        {
+          "url": "https://www.facebook.com/zuck/posts/10101319050523971",
+          "title": "I'm excited to announce that we've agreed to acquire Oculus VR…",
+          "author": "Mark Zuckerberg",
+          "source": "Facebook",
+          "type": "article"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Distributed_social_network",
+          "title": "Distributed social network",
+          "source": "Wikipedia (EN)",
+          "type": "article"
+        }
+      ]
+    },
+    {
+      "key": "THEP1",
+      "title": "The Post-Apocalyptic Microchip",
+      "publicationDate": "2015-03-31",
+      "content": [
+        "If World War III ended with a few scrappy scavengers in a desolate, nuclear wasteland, I can imagine several technologies being easy to rebuild. A wheel is simple and could be crudely constructed by anyone. With some engineering experience, you could likely find the scraps and basic tools needed to build something like a water pump. But could even the greatest engineer in electronics rebuild or repair a CPU? Blunt tools would be insufficient for the nano-scale precision required. Some materials, such as rare earth metals, might be impossible to find. Some technology production clearly relies on multibillion dollar infrastructure."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "Post-Apocalyptic Microchip, mixed media installation"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.computerworld.com/article/2576786/making-microchips.html",
+          "title": "Making Microchips",
+          "author": "Gary Anthes",
+          "source": "Computerworld",
+          "type": "article"
+        },
+        {
+          "url": "https://news.google.com/newspapers?id=_cESAAAAIBAJ&sjid=4fgDAAAAIBAJ&pg=2197%2C2065505",
+          "title": "Student Plans Complete Nuclear Bomb",
+          "source": "Spokane Daily Chronicle",
+          "date": "1976-10-09",
+          "type": "article",
+          "quote": "Dr. Frank Chilton, a California nuclear scientist who specializes in nuclear explosion engineering, said Phillips' design, outlined in a 34-page paper, would be 'pretty much guaranteed to work.'"
+        }
+      ]
+    },
+    {
+      "key": "FEMI1",
+      "title": "Feminist Film Villains",
+      "publicationDate": "2015-03-30",
+      "content": [
+        "Emily St. James claimed that _Gone Girl_ is a feminist film, but her article seems more interested in shocking up page views than in making a convincing argument. While I can see _Gone Girl_ as a favourite of MRAs and red-pillers, I see it as a film advancing feminism too. _Gone Girl_ presents a strong female villain which almost never exists. If actresses need better roles to prove they are as talented as men, better roles need to be written. No matter how you feel about the character, it is clear that _Gone Girl_'s Amy is such a role."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "blonde white woman looking away, gone girl, blue david fincher lighting, artistic photo"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.vox.com/2014/10/6/6905475/gone-girl-feminist-movie-david-fincher",
+          "title": "Gone Girl is the most feminist mainstream movie in years",
+          "author": "Emily St. James",
+          "source": "Vox",
+          "type": "article"
+        },
+        {
+          "url": "https://www.forbes.com/sites/moiraforbes/2013/08/06/hollywoods-highest-paid-actresses-where-gender-bias-reigns-supreme/",
+          "title": "Hollywood's Highest-Paid Actresses: Where Gender Bias Reigns Supreme",
+          "author": "Moira Forbes",
+          "source": "Forbes",
+          "type": "article",
+          "quote": "'The problem is the [earnings] averages don't work, because there are not enough parts for women to star in to get paid,' shared Amy Pascal, co-chair of Sony Pictures Entertainment…"
+        }
+      ]
+    },
+    {
+      "key": "RIGH1",
+      "title": "Right of Way",
+      "publicationDate": "2015-03-25",
+      "content": [
+        "I was thinking about victim-blaming and consequentialism as I walked home yesterday and as I crossed a pedestrian crossing, a cyclist was coming quickly down the road. The cyclist stopped to let me cross, and then pedalled hard to regain his lost momentum after I was across. This isn't very sensible. Cyclists have a much harder time decelerating and accelerating than pedestrians and drivers. Pedestrians should give way to cyclists so that they can maintain their momentum and use rolling stops instead of actual stops. It's arguably safer, too. Accidents might happen if a pedestrian assumes cyclists can stop quickly."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a cyclist navigating through an intersection in the middle of a city with lots of traffic, telephoto lens photo"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.vox.com/2014/5/9/5691098/why-cyclists-should-be-able-to-roll-through-stop-signs-and-ride-through-red-lights",
+          "title": "Why cyclists should be able to roll through stop signs and ride through red lights",
+          "author": "Joseph Stromberg",
+          "source": "Vox",
+          "type": "article"
+        },
+        {
+          "url": "https://www.nzta.govt.nz/roadcode/code-for-cycling",
+          "title": "Cycling in different situations",
+          "source": "NZ Transport Agency",
+          "type": "website"
+        }
+      ]
+    },
+    {
+      "key": "VICB1",
+      "title": "Victim-blaming and consequentialism",
+      "publicationDate": "2015-03-24",
+      "content": [
+        "A student wishes to take a shortcut through a dark alleyway and knows they risk being attacked. They take the shortcut anyway, and get mugged. Deontologists blame the aggressor entirely: the victim had a right to not be harmed. Consequentialists might argue that the student knew the risks and is partially responsible for the consequences of their choice. This is uncomfortable logic. In response we can either (1) reject consequentialism, (2) accept that we should blame victims (at least privately), or (3) refine the consequentialist calculus to stop victim-blaming. Maybe we could argue that optimal consequences require systems of rights?"
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a sketchy person in a trenchcoat in a dark alley, noir lighting, charcoal sketch"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.cracked.com/blog/5-reasons-we-will-always-blame-victim",
+          "title": "5 Reasons We Will Always Blame the Victim",
+          "author": "J.F. Sargent",
+          "source": "Cracked",
+          "type": "article"
+        },
+        {
+          "url": "https://plato.stanford.edu/entries/moral-responsibility/",
+          "title": "Moral Responsibility",
+          "author": "Andrew Eschleman",
+          "source": "The Stanford Encyclopedia of Philosophy",
+          "type": "article"
+        }
+      ]
     }
   ]
 }
