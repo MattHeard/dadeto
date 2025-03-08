@@ -60,7 +60,6 @@
         line-height: 1;
         color: #00ffff;
       }
-
       h1,
       h2,
       h3 {
@@ -90,7 +89,6 @@
       h3 > a {
         color: #ffffff;
       }
-
       .warning {
         color: #ffa500;
       }
@@ -103,7 +101,6 @@
       .metadata {
         color: #33ccff;
       }
-
       code {
         background-color: #1a1a1a;
         color: #00ffff;
@@ -176,9 +173,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2024-10-08.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2024-10-08.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           As a deterministic agent, you still have preferences. (These are
@@ -238,9 +233,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2024-07-26.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2024-07-26.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           I was eight years old when I had my earliest metaphysical reflection.
@@ -271,9 +264,7 @@
         <div class="key">pubAt</div>
         <p class="value metadata">13 Apr 2024</p>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2024-04-13.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2024-04-13.m4a" /></audio>
         <div class="key media">video</div>
         <p class="value">
           <iframe
@@ -323,9 +314,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2024-04-06.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2024-04-06.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           Søren Kierkegaard wrote in "Fear and Trembling" about Abraham
@@ -360,9 +349,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2024-04-02.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2024-04-02.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           "Strong opinions, held lightly." Indecision is paralysing. Knowledge
@@ -416,9 +403,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2023-09-10.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2023-09-10.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           In the Trolley Problem, a runaway trolley is about to kill five
@@ -453,9 +438,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2023-08-20.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2023-08-20.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           Battery technology is crucial for mitigating climate change. But the
@@ -489,9 +472,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2023-08-19.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2023-08-19.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           AI is taking off, and this year brought new developments like GPT-4,
@@ -525,9 +506,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2023-04-10.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2023-04-10.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           There's a funny scene in John Wick 4 where Wick is climbing a
@@ -567,9 +546,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2021-01-05.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2021-01-05.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           Look closer. The right side of South America once snuggled into the
@@ -613,9 +590,7 @@
           />
         </div>
         <div class="key media">audio</div>
-        <audio class="value" controls>
-          <source src="2021-01-04.m4a" />
-        </audio>
+        <audio class="value" controls><source src="2021-01-04.m4a" /></audio>
         <div class="key">text</div>
         <p class="value">
           I'm tired. It's not so bad. Others have it worse. But I'm tired.
@@ -2820,35 +2795,29 @@
           I shrugged them off. "For the sake of the movie", right?
         </p>
       </article>
-
       <div class="entry">
         <div class="key"></div>
         <div class="footer value warning">
-          All content is authored by Matt Heard and is
-          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+          All content is authored by Matt Heard and is<a
+            href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
             >CC BY-NC-SA 4.0</a
           >, unless otherwise noted.
         </div>
       </div>
     </div>
-
     <script>
       const audio = document.getElementById('terminal-audio');
       const timeDisplay = document.getElementById('audio-time');
-
       function playAudio() {
         audio.play();
       }
-
       function pauseAudio() {
         audio.pause();
       }
-
       function stopAudio() {
         audio.pause();
         audio.currentTime = 0;
       }
-
       audio.addEventListener('timeupdate', function () {
         const minutes = Math.floor(audio.currentTime / 60);
         const seconds = Math.floor(audio.currentTime % 60);

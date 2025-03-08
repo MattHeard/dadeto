@@ -640,10 +640,29 @@ export function generateBlog(blog, header, footer, wrapHtml) {
   const contentArray = createBlogContentArray(header, articles, footer);
   const htmlContents = contentArray.join('');
   
-  // Strip all newlines and indentation
-  const minifiedHtml = htmlContents.replace(/[\n\r\t\s]+/g, ' ').replace(/\s+</g, '<').replace(/>\s+/g, '>').replace(/\s+\/>/g, '/>').trim();
+  // Temporarily replace <pre> content to protect it from minification
+  const preTagContents = [];
+  let preProtectedHtml = htmlContents.replace(/<pre([^>]*)>([\s\S]*?)<\/pre>/g, (match, attributes, content) => {
+    const placeholder = `PRE_TAG_PLACEHOLDER_${preTagContents.length}`;
+    preTagContents.push({ attributes, content });
+    return `<pre${attributes}>${placeholder}</pre>`;
+  });
   
-  return wrapHtml(minifiedHtml);
+  // Strip all newlines and indentation from the rest of the HTML
+  const minifiedHtml = preProtectedHtml
+    .replace(/[\n\r\t\s]+/g, ' ')
+    .replace(/\s+</g, '<')
+    .replace(/>\s+/g, '>')
+    .replace(/\s+\/>/g, '/>')
+    .trim();
+  
+  // Restore the <pre> content
+  const restoredHtml = minifiedHtml.replace(/<pre([^>]*)>PRE_TAG_PLACEHOLDER_(\d+)<\/pre>/g, (match, attributes, index) => {
+    const { attributes: origAttributes, content } = preTagContents[parseInt(index, 10)];
+    return `<pre${origAttributes}>${content}</pre>`;
+  });
+  
+  return wrapHtml(restoredHtml);
 }
 
 /**
