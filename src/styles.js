@@ -2,7 +2,7 @@ export const styles = `
   body {
     background-color: #121212;
     color: #CCCCCC;
-    font-family: Consolas, monospace;
+    font-family: "Sono", Consolas, monospace;
     font-size: 16px;
     line-height: 1.5;
     margin: 0;
