@@ -80,13 +80,13 @@ function createValueDiv(content, additionalClasses = []) {
 }
 
 /**
- * Create a key-value pair with two divs, separated by a newline and indent
+ * Create a key-value pair with two divs
  * @param {string} keyDiv - The key div HTML
  * @param {string} valueDiv - The value div HTML
- * @returns {string} - Combined key-value HTML with newlines
+ * @returns {string} - Combined key-value HTML without newlines
  */
 function createKeyValuePair(keyDiv, valueDiv) {
-  return joinHtmlElements(keyDiv, valueDiv, NEWLINE_WITH_INDENT);
+  return joinHtmlElements(keyDiv, valueDiv, '');
 }
 
 /**
@@ -139,9 +139,10 @@ const HEADER_BANNER = `<pre aria-label="Matt Heard" role="heading" aria-level="1
 ▐▌ ▐▌▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀
 </pre>`;
 
-const NEWLINE_WITH_INDENT = '\n  ';
+// No longer using newlines and indentation
+const NEWLINE_WITH_INDENT = '';
 
-const METADATA_TEXT = `${NEWLINE_WITH_INDENT}Software developer and philosopher in Berlin${NEWLINE_WITH_INDENT}`;
+const METADATA_TEXT = `Software developer and philosopher in Berlin`;
 
 function prefixWithEmptyKey(valueDiv) {
   const emptyKeyDiv = createKeyDiv();
@@ -167,10 +168,7 @@ function createHeaderContent() {
  * @returns {string} - HTML for the section
  */
 function createSection(content) {
-  return createDiv(
-    CLASS.ENTRY,
-    NEWLINE_WITH_INDENT + content + NEWLINE_WITH_INDENT
-  );
+  return createDiv(CLASS.ENTRY, content);
 }
 
 /**
@@ -641,8 +639,11 @@ export function generateBlog(blog, header, footer, wrapHtml) {
   const articles = generateArticles(blog.posts);
   const contentArray = createBlogContentArray(header, articles, footer);
   const htmlContents = contentArray.join('');
-
-  return wrapHtml(htmlContents);
+  
+  // Strip all newlines and indentation
+  const minifiedHtml = htmlContents.replace(/[\n\r\t\s]+/g, ' ').replace(/\s+</g, '<').replace(/>\s+/g, '>').replace(/\s+\/>/g, '/>').trim();
+  
+  return wrapHtml(minifiedHtml);
 }
 
 /**
