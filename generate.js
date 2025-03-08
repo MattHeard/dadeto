@@ -5,8 +5,10 @@
 
 import { generateBlogOuter } from './src/generator.js';
 import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 import fs from 'fs';
+import prettier from 'prettier';
+
+const require = createRequire(import.meta.url);
 
 // Construct a sample blog object
 const blog = require('./src/blog.json');
@@ -14,5 +16,28 @@ const blog = require('./src/blog.json');
 // Generate the HTML using generateBlogOuter
 const outputHTML = generateBlogOuter(blog);
 
-// Write the generated HTML to a file
-fs.writeFileSync('public/index.2025-02.html', outputHTML, 'utf8');
+// Format the HTML using Prettier
+const formatHTML = async (html) => {
+  const options = await prettier.resolveConfig('./.prettierrc');
+  return prettier.format(html, {
+    ...options,
+    parser: 'html',
+  });
+};
+
+// Format and write the HTML to a file
+const writeFormattedHTML = async () => {
+  try {
+    const formattedHTML = await formatHTML(outputHTML);
+    fs.writeFileSync('public/index.2025-02.html', formattedHTML, 'utf8');
+    console.log('HTML formatted with Prettier and written to public/index.2025-02.html');
+  } catch (error) {
+    console.error('Error formatting HTML:', error);
+    // Fall back to unformatted HTML if formatting fails
+    fs.writeFileSync('public/index.2025-02.html', outputHTML, 'utf8');
+    console.log('Unformatted HTML written to public/index.2025-02.html');
+  }
+};
+
+// Execute the async function
+writeFormattedHTML();
