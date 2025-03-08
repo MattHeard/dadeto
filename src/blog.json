@@ -595,27 +595,6 @@
       ]
     },
     {
-      "key": "FIRS1",
-      "title": "First Birthday Cupcakes",
-      "publicationDate": "2015-10-25",
-      "content": [
-        "My daughter Evelyn turns one today. It's a celebration for my wife and I as much as it is for our daughter, so I made cupcakes. I did the mixing with Evelyn. (She kept eating the flour.) I want to show my daughter that baking is not a \"mum\" activity, and cupcakes have little chance of error. They turned out slightly dry, but still great.",
-        "The only party hats the Warehouse had were \"princess\" themed. I was wanting something more gender-neutral, so I grabbed some gold wrapping paper and covered one. Another day in the life of a feminist dad."
-      ],
-      "illustration": {
-        "fileType": "png",
-        "altText": "a tray of birthday cupcakes, cubist painting"
-      },
-      "relatedLinks": [
-        {
-          "url": "https://www.nigella.com/recipes/cupcakes",
-          "title": "Cupcakes",
-          "source": "Nigella.com",
-          "type": "website"
-        }
-      ]
-    },
-    {
       "key": "THEW1",
       "title": "The 'Wow Factor'",
       "publicationDate": "2015-05-03",
@@ -770,7 +749,7 @@
       ]
     },
     {
-      "key": "VICB1",
+      "key": "VICT1",
       "title": "Victim-blaming and consequentialism",
       "publicationDate": "2015-03-24",
       "content": [
@@ -796,6 +775,477 @@
           "type": "article"
         }
       ]
+    },
+    {
+      "key": "EFFE1",
+      "title": "Effective Vegan Advocacy",
+      "publicationDate": "2015-03-10",
+      "content": [
+        "I try to eat lots of vegan food. The livestock industry produces somewhere between 18% and 51% of global greenhouse gas emissions and eating less meat and dairy is the easiest way to reduce the pollution you cause. Pure veganism, though, can be a chore when you are pelted with advertising for beef and milk. Applying the Pareto principle, 80% of the reduction could probably be done for 20% of the effort, and vice versa. Convince others that 80% veganism is easy and more emissions will be reduced than trying and failing to convince people to go straight to 100%."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a happy person making food for friends, health food ad poster"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.theguardian.com/commentisfree/2014/aug/04/climate-change-impact-vegetarian",
+          "title": "Want to have a real impact on climate change? Then become a vegetarian",
+          "author": "Travis McKnight",
+          "source": "The Guardian",
+          "type": "article"
+        },
+        {
+          "url": "https://www.nytimes.com/2009/11/22/opinion/22steiner.html",
+          "title": "Animal, Vegetable, Miserable",
+          "author": "Gary Steiner",
+          "source": "The New York Times",
+          "type": "article"
+        },
+        {
+          "url": "https://www.csmonitor.com/2004/1027/p15s02-lifo.html",
+          "title": "One woman's quest to enjoy her dinner without guilt",
+          "author": "Amanda Paulson",
+          "source": "The Christian Science Monitor",
+          "type": "article"
+        },
+        {
+          "url": "http://web.archive.org/web/20100718094620/http://www.goveg.com/effectiveAdvocacy_personal.asp",
+          "title": "Personal Purity vs. Effective Advocacy",
+          "author": "Bruce Friedrich",
+          "source": "GoVeg.com (archived by the Internet Archive Wayback Machine)",
+          "type": "article"
+        },
+        {
+          "url": "https://books.google.de/books?id=-DrjAkTEqpwC&pg=PA283&redir_esc=y",
+          "title": "The Ethics of What We Eat: Why Our Food Choices Matter",
+          "author": "Peter Singer and Jim Mason",
+          "type": "book",
+          "note": "Page 283 has a discussion of Daren Firestone's Paris exemption where a vegan might find themselves in a fine restaurant and choose the meat because it looks so delicious."
+        },
+        {
+          "url": "https://www.motherjones.com/politics/2006/05/chew-right-thing/",
+          "title": "Chew the Right Thing",
+          "author": "Dave Gilson",
+          "source": "Mother Jones",
+          "type": "article"
+        },
+        {
+          "url": "https://www.fao.org/agriculture/lead/themes0/climate/en/",
+          "title": "The role of livestock in climate change",
+          "source": "United Nations Food and Agriculture Organization (UN FAO)",
+          "type": "article",
+          "quote": "Globally, the [livestock] sector contributes 18 percent (7.1 billion tonnes CO₂ equivalent) of global greenhouse gas emissions."
+        },
+        {
+          "url": "http://www.worldwatch.org/files/pdf/Livestock%20and%20Climate%20Change.pdf",
+          "title": "Livestock and Climate Change",
+          "source": "World Watch",
+          "type": "article",
+          "quote": "… our analysis shows that livestock and their byproducts actually account for at least 32,564 million tons of CO₂e per year, or 51 percent of annual worldwide GHG emissions."
+        }
+      ]
+    },
+    {
+      "key": "MAND1",
+      "title": "Mandelbrot's in Heaven",
+      "publicationDate": "2014-11-23",
+      "content": [
+        "Yesterday, I heard that Benoit Mandelbrot had died and I heard the news in a peculiar way. Jonathan Coulton plays an excellent song called \"Mandelbrot Set\" and I really liked the line",
+        "\"Mandelbrot's in heaven, at least he will be when he's dead.\"",
+        "\"Right now he's still alive and teaching math at Yale.\"",
+        "I listened to a recent album where Coulton played the song to an audience in Dallas. When he reached the line, he sang \"Mandelbrot's in heaven\" and then didn't sing any of the rest of the line. It reminded me of my former teachers who had died."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "mandelbrot fractal, digital art"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://wiki.jonathancoulton.com/Mandelbrot_Set",
+          "title": "Mandelbrot Set",
+          "author": "Jonathan Coulton",
+          "type": "song"
+        },
+        {
+          "url": "http://www.jocolive.com/",
+          "title": "JoCo Live",
+          "author": "Jonathan Coulton",
+          "type": "concert"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Benoit_Mandelbrot",
+          "title": "Benoit Mandelbrot",
+          "author": "Wikipedia (EN)",
+          "type": "article"
+        }
+      ]
+    },
+    {
+      "key": "FOSS1",
+      "title": "Fossil Fuel Divestment",
+      "publicationDate": "2014-09-27",
+      "content": [
+        "I'm not convinced that divestment from fossil fuel companies is effective. I think the financial arguments being put forth are very convincing: fossil fuel companies likely have a lot of reserves which are going to be stranded as people take climate change more seriously and investment funds which have a long-term focus should be calculating this into their investment strategies. But if the purpose is to starve fossil fuel companies of investment, can it ever succeed? Part of my scepticism comes from a worry that other investors will happily buy the divested shares because their price-to-earnings ratio is slightly lower."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a protest at wall street with lots of bankers holding picket signs decorated with dollar signs, telephoto lens"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.vox.com/2014/9/22/6828063/does-divestment-work",
+          "title": "Does fossil fuel divestment work?",
+          "author": "Matthew Yglesias",
+          "source": "Vox",
+          "type": "article"
+        },
+        {
+          "url": "https://iop.harvard.edu/does-divestment-work",
+          "title": "Does Divestment Work?",
+          "author": "Eric Hendey",
+          "source": "Harvard University Institute of Politics",
+          "type": "article",
+          "quote": "The evidence from South Africa suggests that divestment, while ineffective in a financial sense, can have an impact by shaping public discourse."
+        },
+        {
+          "url": "https://gofossilfree.org/",
+          "title": "GoFossilFree.org",
+          "type": "website"
+        }
+      ]
+    },
+    {
+      "key": "INCL1",
+      "title": "Inclusive Feminist Labels",
+      "publicationDate": "2014-05-04",
+      "content": [
+        "Adam Grant wrote about the scepticism that men face when exploring feminism. (\"Was he trying to ingratiate himself with women to improve his dating prospects?\") I worry about this myself. What I found most interesting in what he wrote, though, was the effect of inclusive group names and labels. Labelling an organisation \"Princeton Men and Women Opposed to Proposition 174\" encouraged more advocacy for other genders than \"Princeton Opponents of Proposition 174\". _Feminism_ is a label used to describe advocacy for women's rights. But it also extends to the promotion of gender equality for everyone. Is the label \"feminist\" exclusive?"
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "men standing up for female colleagues in a meeting, stock photo, colored pencil drawing"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.theatlantic.com/business/archive/2014/04/why-men-dont-stand-up-for-women-to-lead/361231/",
+          "title": "Why So Many Men Don't Stand Up for Their Female Colleagues",
+          "author": "Adam Grant",
+          "source": "The Atlantic",
+          "type": "article"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Bell_hooks",
+          "title": "bell hooks",
+          "source": "Wikipedia (EN)",
+          "type": "article"
+        },
+        {
+          "url": "https://leahalexandrahamilton.tumblr.com/post/84395934808/my-strength-is-not-for-hurting",
+          "title": "My Strength is not for Hurting",
+          "author": "Leah Hudson",
+          "source": "LeahAlexandraHamilton.tumblr.com",
+          "type": "article"
+        }
+      ]
+    },
+    {
+      "key": "THEG1",
+      "title": "The Great Depression",
+      "publicationDate": "2014-04-23",
+      "content": [
+        "I was sitting by a pool in a sunny resort in Fiji. Next to me there was a piña colada with condensation beading on the glass. And I couldn't put down _The Grapes of Wrath_ by John Steinbeck. The pain and poverty of its heroes was jarring against the luxurious, tropical backdrop. After adjusting for inflation, someone in 1937 would need to have picked over half a US ton of peaches to pay for the piña colada I had. Nonetheless, the novel has unrelenting optimism about perserverence through hardship. Meanwhile, Benjamin Graham made 14.7% per annum during the Great Depression."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "historic sepia photo of a wagon in the great depression going down a dusty road with rows of orange trees"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://en.wikipedia.org/wiki/The_Grapes_of_Wrath",
+          "title": "The Grapes of Wrath",
+          "author": "John Steinbeck",
+          "source": "Wikipedia (EN)",
+          "type": "article"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/The_Intelligent_Investor",
+          "title": "The Intelligent Investor",
+          "author": "Benjamin Graham",
+          "source": "Wikipedia (EN)",
+          "type": "article",
+          "quote": "There is no exact record of Graham's earliest returns, but from 1936 until he retired in 1956, his Graham-Newman Corp. gained at least 14.7% annually ... ."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=SFldGN3bXBU",
+          "title": "Escape (The Pina Colada Song)",
+          "author": "Rupert Holmes",
+          "type": "song"
+        },
+        {
+          "url": "https://firstlandingresort.com/",
+          "title": "First Landing Resort",
+          "type": "website"
+        }
+      ]
+    },
+    {
+      "key": "TRUS1",
+      "title": "Trust in Expertise",
+      "publicationDate": "2014-04-08",
+      "content": [
+        "We are all jacks of many trades and experts of only a few, if any. Despite this, opinions about everything are easy to develop and even easier to publicise. We encounter difficult questions about subjects unknown to us, such as climate science. In these situations, it is unreasonable to expect us to find our own answers. Instead, we rely on experts and we trust their judgment about their topics of study. Suppose that you cannot trust experts; they might be colluding to mislead you. Can you trust yourself to understand the complex topics more than you can trust the experts?"
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a person standing in front of a globe, looking thoughtful"
+      },
+      "relatedLinks": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Argument_from_authority",
+          "title": "Argument from authority",
+          "source": "Wikipedia (EN)",
+          "type": "article"
+        },
+        {
+          "url": "https://www.ipcc.ch/report/ar5/syr/",
+          "title": "Fifth Assessment Report",
+          "source": "Intergovernmental Panel on Climate Change (IPCC)",
+          "type": "report"
+        },
+        {
+          "url": "https://www.vox.com/2014/4/6/5556462/brain-dead-how-politics-makes-us-stupid",
+          "title": "How politics makes us stupid",
+          "author": "Ezra Klein",
+          "source": "Vox",
+          "type": "article"
+        }
+      ]
+    },
+    {
+      "key": "WOME1",
+      "title": "Women Aren't Crazy",
+      "publicationDate": "2014-03-24",
+      "content": [
+        "Yashar Ali wrote a good summary of how dismissing women's negative reactions to sexism can make women feel like they are being irrational. There is an unfair stereotype that women are crazy, so if a woman responds to sexism in a negative way, she must be 'overreacting'. Saying \"you're so sensitive!\" undermines her perspective. Some people see this rejection of women's opinions as inconsiderate, most don't notice it at all. But it fuels a cruel stereotype by muting women's viewpoints, as it seeds self-doubt and self-censoring. If this causes women to be hesitant to speak up, communities lose valuable voices."
+      ]
+    },
+    {
+      "key": "SORT1",
+      "title": "Sorted by Colour",
+      "publicationDate": "2014-03-18",
+      "content": [
+        "I was reading the newly-launched FiveThirtyEight blog today (it's not difficult to notice my nerd crush on Nate Silver) and he used his bookcase as an example of the 'trade-off between vividness and scalability'. My wife and I have been sorting our books by spine colour for a while now, but it's not as impressive as his. I have been curious about 'objective' algorithms for sorting by spine colour because some multi-colour books, like Nassim Nicholas Taleb's Antifragile, just refuse to be cleanly categorised. What about fitting spine rectangles into a 2-dimensional bookcase rectangle, optimising for minimal distance between similarly coloured pixels?"
+      ]
+    },
+    {
+      "key": "DUNG1",
+      "title": "Dungeons and Dragons",
+      "publicationDate": "2014-01-06",
+      "content": [
+        "I met my wife playing Dungeons & Dragons. The world-building, improv, and camaraderie made it feel like the perfect hobby for me, but a few factors have caused me to drop it. I'm geographically further away from my D&D group than I was during university (albeit most players still live in the same city as me) and I don't have as much free time to waste on map-making, which was one of the best parts. Finally, the stress from juggling increasingly powerful players alongside expanding permutations of game-breaking abilities burned me out. Even so, I'm feeling drawn to DMing again."
+      ]
+    },
+    {
+      "key": "BLAC1",
+      "title": "Black Milk Overload",
+      "publicationDate": "2013-05-02",
+      "content": [
+        "I was scrolling through my friends' Instagram photos and noticed that most were of girls wearing Black Milk leggings. I rolled my eyes and thought about how overrated they were, but then felt bad. The patterned leggings actually look pretty cool, and I reckon that Instagram has worked well as a word-of-mouth platform. I don't wear them myself, but I think I might be the kind of person to post photos of how they looked if I did. I don't particularly care about leggings, but I just thought it was interesting how I reacted negatively to a stream of photos."
+      ]
+    },
+    {
+      "key": "OFRA1",
+      "title": "O Frabjous Day!",
+      "publicationDate": "2013-05-01",
+      "content": [
+        "One of the sexiest things I've ever seen was one of my best friends impressing a girl by reciting Lewis Caroll's 'Jabberwocky' to her from memory. The poem shows why Alice's pair of books are incredibly insightful into the puzzles of language. Half of the words (like 'vorpal' and 'chortle') are made up, but the words still have meanings (even if Alice doesn't 'exactly know what they are'). We derive meanings from context, allowing us to learn new vocabulary. Even when half of the words are made up, we can understand them from how they reflect off of known words."
+      ]
+    },
+    {
+      "key": "REGU1",
+      "title": "Regulating Hate Speech",
+      "publicationDate": "2013-04-30",
+      "content": [
+        "Where does the line get drawn about what can be said? Dissent? Ignorant hatred? Inciting imminent violence? Trolling religious zealots? I generally believe that the better response to hate speech is more speech, presented in a civil manner, to expose the ignorance of the haters. But how does that protect the victims of hate speech? When racial slurs are aimed at children, how should a liberal respond? A hedonistic liberal would say that liberty is virtuous only for the sake of making people happier. Freedom of speech almost always does that, but I can imagine situations when it does not."
+      ]
+    },
+    {
+      "key": "LOSI1",
+      "title": "Losing Formatting Data",
+      "publicationDate": "2013-04-29",
+      "content": [
+        "As I hope you have noticed, I put at least as much effort into visually laying out my blog posts as I do into writing them. I carefully use Markdown to format my text and GIMP to shoop my decorative images maybe obsessively. So, when the Tumblr app on my phone strips my drafts of their formatting, it frustrates me. Back when I was a teenager, I would evangelise OpenOffice.org as a reasonable alternative to Microsoft Office, but it was difficult to justify making my documents look nice if exporting to Word was just going to butcher the layout."
+      ]
+    },
+    {
+      "key": "SUCK1",
+      "title": "_Sucker Punch_ Thoughts",
+      "publicationDate": "2013-04-29",
+      "content": [
+        "_Sucker Punch_ suffers from problems like poor pacing and shallow character depth, but while the form has obscured the message, the message is much more interesting than the story or visual effects. On one side of the coin, you are presented with a criticism of modern female exploitation: these animated exaggerations are not real women -- they are geek fantasies. But on the other side, the film is shamelessly indulging in the very fetishes it criticises. The sucker punch is thrown at the audience, drawing them in to see a video game fantasy, and then reprimanding them by breaking their toys."
+      ]
+    },
+    {
+      "key": "INDO1",
+      "title": "Indoor Vegetable Garden?",
+      "publicationDate": "2013-04-28",
+      "content": [
+        "A month ago we put an avocado stone and some spring onion stumps in water and placed them on the window sill. They are growing faster than I thought and my delusions of grandeur are giving me dreams of an indoor vegetable farm. My girlfriend bet me that the avocado stone would sprout within four weeks and I bet that it wouldn't. It sprouted a week later. Because I lost the bet, I'll have to run up to the top of the street in my underwear, and I don't know when she will make me do it. Dumb, over-achieving avocado!"
+      ]
+    },
+    {
+      "key": "DRIN1",
+      "title": "Drinking and Driving",
+      "publicationDate": "2013-04-26",
+      "content": [
+        "When someone is criminally punished only for driving while intoxicated, they are not being punished for an action which caused harm but because they performed a combination of actions which are statistically significantly linked with harm being caused. Due to an element of moral \"luck\", it is certainly possible for a drunk or high driver to drive somewhere without causing harm but we still consider that criminal. How does the act consequentialist reconcile this? Argue that driving drunk is not intrinsically wrong? Or develop a possibly convoluted argument for how each individual action of driving drunk somehow causes harm indirectly?"
+      ]
+    },
+    {
+      "key": "CODE1",
+      "title": "Code as Art?",
+      "publicationDate": "2013-04-25",
+      "content": [
+        "I was arguing/discussing with my future wife about what is considered \"art\". I believe that the artist's intentions are irrelevant and that whether something is \"art\" is determined by how the viewer observes it.  Looking for counterexamples and illustrations, I asked her: would you consider it possible for a computer program to be \"art\"? I would, but she wasn't sure. Undoubtedly, almost all computer programs are primarily functional, but there is elegant code and there is inelegant code. Does elegance make code artistic?  If it does, I should start a gallery of clips of elegant code from open-source software."
+      ]
+    },
+    {
+      "key": "REVE1",
+      "title": "Reverence for Sacrifice",
+      "publicationDate": "2013-04-25",
+      "content": [
+        "I attended a dawn memorial service for ANZAC veterans this morning and thought about how annual commemoration for military personnel serves as a type of intangible compensation for their unusually sacrificial employment. A soldier going to war risks much more than I do when I go to work, but I do not believe they get a \"heroism\" bonus in their paycheck. Instead, our social contract teaches us to \"pay\" them our respect. A similar honour is bestowed upon public servants with life-threatening careers such as firefighting and law enforcement. Do we have a duty to remember and enshrine our valiant?"
+      ]
+    },
+    {
+      "key": "JAYZ1",
+      "title": "Jay-Z's Christ Complex",
+      "publicationDate": "2012-12-12",
+      "content": [
+        "In \"Why I Love You\", Jay-Z plays a rapper at the top of the game, frustrated by former followers rooting for his downfall:",
+        "\"Didn't I spoil you?\"",
+        "\"Me or the money, who you loyal to?\"",
+        "He alludes to crucifixion",
+        "\"They want me dead\"",
+        "and resurrection",
+        "\"When the grief is over\"",
+        "\"Beef is over\"",
+        "\"I'll be fly when Easter's over\"",
+        "but admits that",
+        "\"Truth be told\"",
+        "\"After all that said\"",
+        "\"N****, I still got love for you.\"",
+        "Jay-Z (and Kanye) conclude by crudely paraphrasing Jesus:",
+        "\"Please Lord\"",
+        "\"For forgive 'em\"",
+        "\"For these n****\"",
+        "\"Not know\"",
+        "\"What they\"",
+        "\"Do, ooh.\""
+      ]
+    },
+    {
+      "key": "MULT1",
+      "title": "Multiculturalism and Competition",
+      "publicationDate": "2012-11-28",
+      "content": [
+        "My understanding of compassion in free market economics is that reducing the prices of goods and services through increasing market efficiency will help poor _consumers_ more than government intervention will help poor _workers_. But there are barriers to entry which are avoidable and are not caused by government intervention. Does aversion to multiculturalism act as a barrier to entry? When a fat, white woman yells \"Speak English!\" at a Chinese shopkeeper, the shopkeeper pays a hidden cost to continue working. In a maximally competitive market, where race shouldn't affect labour, neither should foreign cultural expression. More tolerance brings more competition."
+      ]
+    },
+    {
+      "key": "WELL1",
+      "title": "Wellington Red Carpet",
+      "publicationDate": "2012-11-28",
+      "content": [
+        "I took some photos of actors I like when I visited the red carpet today for the premiere of the first _Hobbit_ film. When I was in high school, I rushed with my friends down Kent Terrace towards the Embassy Theatre to see if we could get a good spot to see Viggo Mortensen, Ian McKellan, Elijah Wood and others at the premiere of _The Return of the King_. It was good fun: I remember yelling \"Viggo! Viggo! Viggo!\" in adoration at the top of my lungs. My reaction was more subdued today, but I enjoyed seeing glamourous actors again."
+      ]
+    },
+    {
+      "key": "SLOW1",
+      "title": "Slowly Floating Downstream",
+      "publicationDate": "2012-11-11",
+      "content": [
+        "My future wife and I took a scenic rafting trip down the Rangitikei River for Christmas last year and earlier this year we picked a random weekend to take the trip. That random weekend turned out to be warm and sunny, and perfect for a relaxing drift down a river a few hours away from home.  As expected, the escape from the city made us consider quitting our day jobs, even though I haven't even properly started mine yet. I'm definitely more at home where there are paved roads and cellphone service, but I need adventures too."
+      ]
+    },
+    {
+      "key": "NATE1",
+      "title": "Nate Silver Wins!",
+      "publicationDate": "2012-11-08",
+      "content": [
+        "Whether their leaders admit it or not, Republican losses across the board in US elections of legislative and executive branches indicate a shift away from the Tea Party.  But considering the issues needing immediate attention, the Democrat gains are not enough to deserve substantial celebration: the election doesn't solve the problems with the ongoing political stalemate.  But there was one clear winner: Nate Silver, who stood at the foreground of the battle between statisticians and pundits, led the number-crunchers to an overwhelming victory.  I feel more vindicated as long-time reader of Silver's blog than as an Obama supporter."
+      ]
+    },
+    {
+      "key": "AVOI1",
+      "title": "Avoiding Presidential Politics",
+      "publicationDate": "2012-11-06",
+      "content": [
+        "After closely following the US presidential election for at least the last year, I am actively avoiding reading any news about the results today.  I am attending an \"election party\" this evening where we will watch the news and tally electoral votes ourselves as the states report their results.  Unfortunately, because I live in New Zealand, the party is effectively time-shifted several hours after the actual election. Our party starts at 6pm, when the election will actually be wrapping up (waiting only for inconsequential results from a few West Coast states, Alaska and Hawaii).  Thank god for the DVR!"
+      ]
+    },
+    {
+      "key": "POLI1",
+      "title": "Policing Protests Better",
+      "publicationDate": "2012-11-06",
+      "content": [
+        "As I showered this morning, I imagined how I would act as police chief in charge of maintaining law and order during an \"Occupy Wall Street\"-style protest. Balancing the goals of prosecuting trespassers and keeping the peace is undeniably a difficult task, but I think that \"perception\" of police brutality against protesters creates a Streisand effect by rallying more support for the protesters and encouraging rioters and violent opportunists.  Wouldn't it be better to videotape any non-violent crimes (like trespassing) and not evict protesters, waiting for them leave out of boredom? The police can then prosecute peacefully later."
+      ]
+    },
+    {
+      "key": "RHET1",
+      "title": "Rhetoric Through Repetition",
+      "publicationDate": "2012-09-06",
+      "content": [
+        "Reading Joseph Romm's Language Intelligence has led me to pick up my previously put-aside interest in practicing effective rhetoric. With my background in philosophy and computer science, I have overvalued the role that unemotional logic has to play in crafting convincing speech. Just as I repeated my lines again and again and again when learning to play Friar Lawrence in school, I have been repeating the lines of Martin Luther King Jr's  \"I Have a Dream\". Starting with _anaphora_ and alliteration, I am keeping a keen eye on figures of speech that focus my future approaches to effective arguing."
+      ]
+    },
+    {
+      "key": "ARCT1",
+      "title": "Arctic Sea Ice",
+      "publicationDate": "2012-08-29",
+      "content": [
+        "This Arctic summer has broken records for the least sea ice in recent history. Lots of that melted ice will return this winter, but the total thick ice is decreasing. There are two issues to note. First, this melting trend exemplifies the clarity of the physical evidence for global warming. While Arctic sea ice levels alone do not establish human attribution, they identify much-needed climatic research. Second, the distinction between single- and multi-year ice highlights feedback loops. As more ice thaws and refreezes, less remains thick enough to maintain the albedo needed to prevent extra absorption of sunlight, accelerating warming."
+      ]
+    },
+    {
+      "key": "BLOG1",
+      "title": "Blogging About Myself",
+      "publicationDate": "2012-08-28",
+      "content": [
+        "Wouldn't only a narcissist create a website about themselves? I benefit and suffer from an inflated ego, of course. I wouldn't consider my opinions worth blogging about if I didn't. But I don't think that my blog was intended as a soapbox for me to grab attention. 21st century identities are forged much more so on the internet than 20th century identities, and with a blog and a Twitter handle and a Facebook wall and a Google+ profile, I can manage the definition of \"Matt Heard\" more effectively. If I don't, computers will deduce my personality from my search terms."
+      ]
+    },
+    {
+      "key": "INTR1",
+      "title": "_Introducing Political Philosophy_",
+      "publicationDate": "2012-08-24",
+      "content": [
+        "I have a habit of reading in sprints, consuming several books in one month and then not picking up any for the next several months. My future wife and I challenged each other to read more by starting from one end of our bookcase and reading each book one at a time. I just finished my second book: _Introducing Political Philosophy_. I was cheating, though, because it is short and each page has a large picture. But it's interesting and seems to be a good summary of the history of political thought. My next is _Brave New World_ by Aldous Huxley."
+      ]
+    },
+    {
+      "key": "WHYM1",
+      "title": "Why Must Everybody Like You?",
+      "publicationDate": "2006-05-05",
+      "content": [
+        "\"Why must everybody like you? Who liked J. P. Morgan? Was he impressive? In a Turkish bath he'd look like a butcher. But with his pockets on he was very well liked.\" (Miller, 72)",
+        "First of all, I was disappointed by Circa's 3rd of May performance of \"Death of a Salesman\" - not because the play was so badly done (it was great), but instead because my expectations were so high. For the few days before viewing it, I received the notion that the play in general, and also this Circa presentation of it were brilliant. I heard nothing but criticism for both, and so my expectations ran rampant and free.",
+        "I criticise the play in general for trying so hard to be depressing, and although it succeeded at achieving this, it seems like a cheap attraction for audiences. We go to horror films to watch people in situations we wouldn't enjoy being in ourselves - watch _Saw_ or its sequel. (I haven't watched _Saw_ but from the impression I get from others who have watched it, it's addictive in a disturbing way.) I believe that people watch depressing films and plays to cheer themselves up, and I disagree with how a lot of people believe that making a film or play depressing makes it a better film or play.",
+        "The play presents the idea of the \"American Dream\" and how it fails to transfer from an idealistic perspective of the social and economic world to a realistic perspective. The main fault of the idea is that although everyone may be capable of achieving success and reaching the top of the metaphorical mountain, not everyone can be on top, so people must fail for others to succeed. And this is where the majority of criticism of capitalism comes from: for one person to become richer, another must become poorer.",
+        "I disagree with the idea that the \"American Dream\" is a failure, as it is based on ideals which *are* applicable to a realistic perspective of the social and economic world - ideals such as needing to put in hard work to succeed and that if everyone is treated fairly, everyone has the ability to become successful.",
+        "Another aspect of the \"American Dream\" is that America is where dreams come true. Before dismissing this as illogical because geography cannot determine 'luck' or 'ability', the statistics need to be looked at:",
+        "In 2004, the US had an average income of $41400US ($64703NZ) while New Zealand had an average income of $20310US ($31747NZ). That's right, the average income of the US is double of that of New Zealand.",
+        "I'm not trying to show off or anything; my point is that the US is a land of opportunity because there is a different atmosphere of competition and hard work.",
+        "In California, school was all about competition. You had to get better than a B (85%) on every test to stay in the top class, and that isn't easy. I had a friend who was scared to tell his parents that he got less than 90% on a Biology exam.",
+        "I must admit that it's to the other extreme, but the lack of competitive attitude and the idea of \"she'll be right...\" has caused New Zealand to fail to achieve its potential. Of course, I'm speaking in generalisations. There is a group of extraordinary New Zealanders who manage to break through this lacking atmosphere to reach their full potential. And I hope to be one of them, one day."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "position": "end",
+        "note": "An explosion for Calum."
+      }
     }
   ]
 }
