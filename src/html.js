@@ -1,35 +1,35 @@
 // html.js - Core HTML utilities layer
 
 // Constants for HTML structure
-export const DOCTYPE = "<!DOCTYPE html>";
+export const DOCTYPE = '<!DOCTYPE html>';
 
 // Language settings
 export const LANGUAGE = {
-  EN: "en"
+  EN: 'en',
 };
 
 // HTML tag names
-export const HTML_TAG_NAME = "html";
+export const HTML_TAG_NAME = 'html';
 
 // HTML attribute names
 export const ATTR_NAME = {
-  LANG: "lang",
-  CLASS: "class",
-  ID: "id"
+  LANG: 'lang',
+  CLASS: 'class',
+  ID: 'id',
 };
 
 // HTML escape replacements
 export const HTML_ESCAPE_REPLACEMENTS = [
-  { from: /&/g, to: "&amp;" },
-  { from: /</g, to: "&lt;" },
-  { from: />/g, to: "&gt;" },
-  { from: /"/g, to: "&quot;" },
-  { from: /'/g, to: "&#039;" },
+  { from: /&/g, to: '&amp;' },
+  { from: /</g, to: '&lt;' },
+  { from: />/g, to: '&gt;' },
+  { from: /"/g, to: '&quot;' },
+  { from: /'/g, to: '&#039;' },
 ];
 
 // Newline and indentation constants
-export const NEWLINE = "\n";
-export const INDENT = "  ";
+export const NEWLINE = '\n';
+export const INDENT = '  ';
 export const NEWLINE_WITH_INDENT = NEWLINE + INDENT;
 
 /**
@@ -43,7 +43,7 @@ export function createTag(tagName, attributes, content) {
   const openingTag = `<${tagName} ${attributes}>`;
   const closingTag = `</${tagName}>`;
   const tagParts = [openingTag, content, closingTag];
-  return tagParts.join("");
+  return tagParts.join('');
 }
 
 /**
@@ -77,11 +77,11 @@ export function applyHtmlEscapeReplacement(text, replacement) {
  */
 export function applyAllHtmlEscapeReplacements(text, replacements) {
   let result = text;
-  
+
   for (const replacement of replacements) {
     result = applyHtmlEscapeReplacement(result, replacement);
   }
-  
+
   return result;
 }
 

@@ -1,40 +1,38 @@
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
 import scriptTag from './script.js';
-import { 
-  createTag, 
-  createAttrPair, 
-  escapeHtml, 
+import {
+  createTag,
+  createAttrPair,
+  escapeHtml,
   wrapHtml,
   joinHtmlElements,
-  ATTR_NAME
+  ATTR_NAME,
 } from './html.js';
-
-
 
 // CSS class names
 const CLASS = {
-  KEY: "key",
-  VALUE: "value",
-  ENTRY: "entry",
-  ARTICLE_TITLE: "article-title",
-  METADATA: "metadata",
-  FOOTER: "footer",
-  WARNING: "warning",
-  MEDIA: "media",
-  FULL_WIDTH: "full-width"
+  KEY: 'key',
+  VALUE: 'value',
+  ENTRY: 'entry',
+  ARTICLE_TITLE: 'article-title',
+  METADATA: 'metadata',
+  FOOTER: 'footer',
+  WARNING: 'warning',
+  MEDIA: 'media',
+  FULL_WIDTH: 'full-width',
 };
 
 // HTML tag names
-const DIV_TAG_NAME = "div";
-const ARTICLE_TAG_NAME = "article";
+const DIV_TAG_NAME = 'div';
+const ARTICLE_TAG_NAME = 'article';
 
 // Date formatting constants
 const DATE_LOCALE = 'en-GB';
-const DATE_FORMAT_OPTIONS = { 
-  day: 'numeric', 
-  month: 'short', 
-  year: 'numeric' 
+const DATE_FORMAT_OPTIONS = {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
 };
 
 // HTML generation helpers
@@ -65,7 +63,7 @@ function joinClasses(classes) {
  * @param {string} content - Content for the key div
  * @returns {string} - HTML div element with key class
  */
-function createKeyDiv(content = "") {
+function createKeyDiv(content = '') {
   return createDiv(CLASS.KEY, content);
 }
 
@@ -80,8 +78,6 @@ function createValueDiv(content, additionalClasses = []) {
   const joinedClasses = joinClasses(classes);
   return createDiv(joinedClasses, content);
 }
-
-
 
 /**
  * Create a key-value pair with two divs, separated by a newline and indent
@@ -100,12 +96,8 @@ function createKeyValuePair(keyDiv, valueDiv) {
  * @returns {string} - Combined key-value HTML with no spacing
  */
 function createKeyValuePairInline(keyDiv, valueDiv) {
-  return joinHtmlElements(keyDiv, valueDiv, "");
+  return joinHtmlElements(keyDiv, valueDiv, '');
 }
-
-
-
-
 
 /**
  * Convert a date string to a Date object
@@ -165,7 +157,7 @@ function createHeaderContent() {
 
   return [
     prefixWithEmptyKey(h1ValueDiv),
-    prefixWithEmptyKey(metadataValueDiv)
+    prefixWithEmptyKey(metadataValueDiv),
   ].join(NEWLINE_WITH_INDENT);
 }
 
@@ -176,7 +168,7 @@ function createHeaderContent() {
  */
 function createSection(content) {
   return createDiv(
-    CLASS.ENTRY, 
+    CLASS.ENTRY,
     NEWLINE_WITH_INDENT + content + NEWLINE_WITH_INDENT
   );
 }
@@ -191,7 +183,8 @@ function createHeaderSection() {
 }
 
 // Footer components
-const WARNING_MESSAGE = "All content is authored by Matt Heard and is <a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/\">CC BY-NC-SA 4.0</a>, unless otherwise noted.";
+const WARNING_MESSAGE =
+  'All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.';
 
 /**
  * Create the content for the footer section
@@ -200,7 +193,7 @@ const WARNING_MESSAGE = "All content is authored by Matt Heard and is <a href=\"
 function createFooterContent() {
   const emptyKeyDiv = createKeyDiv();
   const footerDiv = createDiv(
-    joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]), 
+    joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]),
     WARNING_MESSAGE
   );
   return createKeyValuePair(emptyKeyDiv, footerDiv);
@@ -232,7 +225,7 @@ function createHeaderContentArray(headerElement) {
     '<body>',
     createContainerDivOpen(),
     '    <!-- Header -->',
-    '    ' + headerElement
+    '    ' + headerElement,
   ];
 }
 
@@ -242,7 +235,7 @@ function createHeaderContentArray(headerElement) {
 function createPageHeader() {
   const headerElement = createHeaderSection();
   const contentArray = createHeaderContentArray(headerElement);
-  
+
   return contentArray.join('\n');
 }
 
@@ -269,7 +262,7 @@ function createFooterContentArray(footerElement) {
     '  ' + footerElement,
     createContainerDivClose(),
     '  ' + scriptTag,
-    createBodyClose()
+    createBodyClose(),
   ];
 }
 
@@ -279,11 +272,9 @@ function createFooterContentArray(footerElement) {
 function createPageFooter() {
   const footerElement = createFooterSection();
   const contentArray = createFooterContentArray(footerElement);
-  
+
   return contentArray.join('\n');
 }
-
-
 
 /**
  * Convert a post to article HTML
@@ -296,7 +287,7 @@ function convertPostToArticleHTML(post) {
  * Format article HTML with indentation
  */
 function formatArticleHTML(articleHTML) {
-  return "    " + articleHTML + "\n";
+  return '    ' + articleHTML + '\n';
 }
 
 /**
@@ -305,7 +296,7 @@ function formatArticleHTML(articleHTML) {
 function processPostsToHTML(posts) {
   const articleHTMLs = posts.map(convertPostToArticleHTML);
   const formattedHTMLs = articleHTMLs.map(formatArticleHTML);
-  return formattedHTMLs.join("");
+  return formattedHTMLs.join('');
 }
 
 /**
@@ -320,10 +311,10 @@ function generateArticles(posts) {
  */
 function createIdAttributeIfNeeded(post) {
   if (!post.key) {
-    return "";
+    return '';
   }
-  
-  return " " + createAttrPair(ATTR_NAME.ID, post.key);
+
+  return ' ' + createAttrPair(ATTR_NAME.ID, post.key);
 }
 
 /**
@@ -332,7 +323,7 @@ function createIdAttributeIfNeeded(post) {
 function createArticleAttributes(post) {
   const classAttr = createAttrPair(ATTR_NAME.CLASS, CLASS.ENTRY);
   const idAttr = createIdAttributeIfNeeded(post);
-  
+
   return `${classAttr}${idAttr}`;
 }
 
@@ -353,7 +344,7 @@ function generateArticle(post) {
   const content = generateArticleContent(post);
   const formattedContent = formatArticleContent(content);
   const attributes = createArticleAttributes(post);
-  
+
   return createTag(ARTICLE_TAG_NAME, attributes, formattedContent);
 }
 
@@ -386,10 +377,10 @@ function createContentItemWithIndex(text, index) {
  * @returns {string} - Formatted content section HTML
  */
 function createContentSectionItem(text, isFirst) {
-  const key = isFirst ? "text" : "";
+  const key = isFirst ? 'text' : '';
   const keyDiv = createDiv(CLASS.KEY, key);
   const valueDiv = `<p class="${CLASS.VALUE}">${text}</p>`;
-  
+
   return formatSection(keyDiv, valueDiv);
 }
 
@@ -398,9 +389,9 @@ function createContentSectionItem(text, isFirst) {
  */
 function generateContentSections(post) {
   const contentArray = getContentArray(post);
-  
+
   const contentItems = contentArray.map(createContentItemWithIndex);
-  
+
   return combineHTMLSections(...contentItems);
 }
 
@@ -410,7 +401,7 @@ function generateContentSections(post) {
 function generateHeaderSection(post) {
   const titleSection = generateTitleSection(post);
   const dateSection = generateDateSection(post);
-  
+
   return combineHTMLSections(titleSection, dateSection);
 }
 
@@ -431,7 +422,7 @@ function generateTitleSection(post) {
   const titleClasses = joinClasses([CLASS.KEY, CLASS.ARTICLE_TITLE]);
   const titleKey = createDiv(titleClasses, post.key);
   const titleValue = createTitleValue(post);
-  
+
   return createKeyValuePairInline(titleKey, titleValue);
 }
 
@@ -442,11 +433,11 @@ function generateDateSection(post) {
   if (!post.publicationDate) {
     return '';
   }
-  
-  const dateKey = createDiv(CLASS.KEY, "pubAt");
+
+  const dateKey = createDiv(CLASS.KEY, 'pubAt');
   const dateValue = `
       <p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
-  
+
   return `
       ${dateKey}${dateValue}`;
 }
@@ -512,14 +503,14 @@ function generateMediaContent(post, mediaType) {
  * Higher-order function for generating media sections
  */
 function createMediaSectionGenerator(mediaType, label) {
-  return function(post) {
+  return function (post) {
     if (!shouldDisplayMedia(post, mediaType)) {
       return '';
     }
-    
+
     const keyDiv = createMediaKeyDiv(label);
     const valueDiv = generateMediaContent(post, mediaType);
-    
+
     return formatSection(keyDiv, valueDiv);
   };
 }
@@ -530,7 +521,7 @@ function createMediaSectionGenerator(mediaType, label) {
 function createIllustrationImage(post) {
   const src = `${post.publicationDate}.${post.illustration.fileType}`;
   const altText = post.illustration.altText;
-  
+
   return `<img loading="lazy" src="${src}" alt="${altText}"/>`;
 }
 
@@ -539,7 +530,7 @@ function createIllustrationImage(post) {
  */
 function createIllustrationContent(post) {
   const image = createIllustrationImage(post);
-  
+
   return `<div class="${CLASS.VALUE}">
         ${image}
       </div>`;
@@ -558,7 +549,7 @@ function createAudioSource(post) {
  */
 function createAudioContent(post) {
   const source = createAudioSource(post);
-  
+
   return `<audio class="${CLASS.VALUE}" controls>
         ${source}
       </audio>`;
@@ -571,7 +562,7 @@ function createYouTubeIframe(post) {
   const youtubeId = post.youtube.id;
   const timestamp = post.youtube.timestamp;
   const title = escapeHtml(post.youtube.title);
-  
+
   return `<iframe height="300px" width="100%" src="https://www.youtube.com/embed/${youtubeId}?start=${timestamp}" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>`;
 }
 
@@ -580,7 +571,7 @@ function createYouTubeIframe(post) {
  */
 function createYouTubeContent(post) {
   const iframe = createYouTubeIframe(post);
-  
+
   return `<p class="${CLASS.VALUE}">
         ${iframe}
       </p>`;
@@ -640,12 +631,7 @@ function generateArticleContent(post) {
  * Create blog HTML content array
  */
 function createBlogContentArray(header, articles, footer) {
-  return [
-    header,
-    "\n",
-    articles,
-    footer
-  ];
+  return [header, '\n', articles, footer];
 }
 
 /**
@@ -654,8 +640,8 @@ function createBlogContentArray(header, articles, footer) {
 export function generateBlog(blog, header, footer, wrapHtml) {
   const articles = generateArticles(blog.posts);
   const contentArray = createBlogContentArray(header, articles, footer);
-  const htmlContents = contentArray.join("");
-  
+  const htmlContents = contentArray.join('');
+
   return wrapHtml(htmlContents);
 }
 
@@ -666,7 +652,7 @@ function createBlogComponents() {
   return {
     header: createPageHeader(),
     footer: createPageFooter(),
-    wrapFunc: wrapHtml
+    wrapFunc: wrapHtml,
   };
 }
 
@@ -676,9 +662,9 @@ function createBlogComponents() {
 export function generateBlogOuter(blog) {
   const components = createBlogComponents();
   return generateBlog(
-    blog, 
-    components.header, 
-    components.footer, 
+    blog,
+    components.header,
+    components.footer,
     components.wrapFunc
   );
 }

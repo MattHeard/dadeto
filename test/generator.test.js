@@ -1,48 +1,45 @@
 import { generateBlog } from '../src/generator.js';
 
-const header = "<body>";
-const footer = "</body>";
-const wrapHtml = (c) => ["<html>", c, "</html>"].join("");
+const header = '<body>';
+const footer = '</body>';
+const wrapHtml = c => ['<html>', c, '</html>'].join('');
 
 describe('Blog Generator', () => {
-    test('should generate complete HTML page with multiple posts', () => {
-        const blog = {
-            posts: [
-                {
-                    key: "FIRS1",
-                    title: "First Post",
-                    publicationDate: "2022-05-04",
-                    content: ["First post content"],
-                    illustration: {
-                        fileType: "png",
-                        altText: "a messy desk, digital art, black and white"
-                    }
-                },
-                {
-                    key: "SECO2",
-                    title: "Second Post",
-                    publicationDate: "2022-05-05",
-                    content: [
-                        "Second post content",
-                        "Another paragraph"
-                    ],
-                    illustration: {
-                        fileType: "png",
-                        altText: "a tangle of yellow and black woollen yarn"
-                    },
-                    youtube: {
-                        id: "EdlrqPPI_YQ",
-                        title: "Lonely & Horny Episode 2 - Orion",
-                        timestamp: 420
-                    },
-                    audio: {
-                        fileType: "m4a",
-                    }
-                }
-            ]
-        };
-        
-        const expectedHtml = `<html><body>
+  test('should generate complete HTML page with multiple posts', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'FIRS1',
+          title: 'First Post',
+          publicationDate: '2022-05-04',
+          content: ['First post content'],
+          illustration: {
+            fileType: 'png',
+            altText: 'a messy desk, digital art, black and white',
+          },
+        },
+        {
+          key: 'SECO2',
+          title: 'Second Post',
+          publicationDate: '2022-05-05',
+          content: ['Second post content', 'Another paragraph'],
+          illustration: {
+            fileType: 'png',
+            altText: 'a tangle of yellow and black woollen yarn',
+          },
+          youtube: {
+            id: 'EdlrqPPI_YQ',
+            title: 'Lonely & Horny Episode 2 - Orion',
+            timestamp: 420,
+          },
+          audio: {
+            fileType: 'm4a',
+          },
+        },
+      ],
+    };
+
+    const expectedHtml = `<html><body>
     <article class="entry" id="FIRS1">
       <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
       <div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div>
@@ -83,7 +80,7 @@ describe('Blog Generator', () => {
     </article>
 </body></html>`;
 
-        const html = generateBlog(blog, header, footer, wrapHtml);
-        expect(html).toBe(expectedHtml);
-    });
+    const html = generateBlog(blog, header, footer, wrapHtml);
+    expect(html).toBe(expectedHtml);
+  });
 });
