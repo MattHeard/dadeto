@@ -107,8 +107,7 @@ function createPair(first, second) {
  * @returns {string} - Combined HTML with no spacing
  */
 function createInlinePair(first, second) {
-  const parts = createParts(first, second);
-  return join(parts);
+  return createPair(first, second);
 }
 
 /**
