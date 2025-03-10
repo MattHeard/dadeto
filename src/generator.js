@@ -596,12 +596,13 @@ function generateMediaSections(post) {
  * @returns {string} - Formatted HTML for a related link
  */
 function formatRelatedLink(link) {
-  const { url, title, author, source, type } = link;
+  const { url, title, author, source, type, quote } = link;
   const escapedUrl = escapeHtml(url);
   const escapedTitle = escapeHtml(title);
   const escapedAuthor = author ? escapeHtml(author) : '';
   const escapedSource = source ? escapeHtml(source) : '';
   const escapedType = type ? escapeHtml(type) : '';
+  const escapedQuote = quote ? escapeHtml(quote) : '';
 
   // Ensure proper spacing between elements by using string concatenation with explicit spaces
   let linkText;
@@ -629,6 +630,11 @@ function formatRelatedLink(link) {
   // if (escapedType) {
   //   linkText += ` (${escapedType})`;
   // }
+  
+  // Add quote if available
+  if (escapedQuote) {
+    linkText += ` ("${escapedQuote}")`;
+  }
   
   return `<li>${linkText}</li>`;
 }
