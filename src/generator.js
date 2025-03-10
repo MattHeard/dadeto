@@ -8,6 +8,7 @@ import {
   escapeHtml,
   wrapHtml,
   joinHtmlElements,
+  join,
   ATTR_NAME,
 } from './html.js';
 
@@ -145,10 +146,10 @@ function createHeaderContent() {
   const h1ValueDiv = createValueDiv(HEADER_BANNER);
   const metadataValueDiv = createValueDiv(METADATA_TEXT, [CLASS.METADATA]);
 
-  return [
+  return join([
     prefixWithEmptyKey(h1ValueDiv),
     prefixWithEmptyKey(metadataValueDiv),
-  ].join('');
+  ]);
 }
 
 /**
