@@ -80,34 +80,34 @@ function createValueDiv(content, additionalClasses = []) {
 }
 
 /**
- * Create an array of key-value parts for joining
- * @param {string} keyDiv - The key div HTML
- * @param {string} valueDiv - The value div HTML
- * @returns {Array<string>} - Array containing key and value divs
+ * Create an array with two parts for joining
+ * @param {string} first - The first part
+ * @param {string} second - The second part
+ * @returns {Array<string>} - Array containing both parts
  */
-function createKeyValueParts(keyDiv, valueDiv) {
-  return [keyDiv, valueDiv];
+function createParts(first, second) {
+  return [first, second];
 }
 
 /**
- * Create a key-value pair with two divs
- * @param {string} keyDiv - The key div HTML
- * @param {string} valueDiv - The value div HTML
- * @returns {string} - Combined key-value HTML without newlines
+ * Create a pair with two elements
+ * @param {string} first - The first element
+ * @param {string} second - The second element
+ * @returns {string} - Combined HTML without newlines
  */
-function createKeyValuePair(keyDiv, valueDiv) {
-  const parts = createKeyValueParts(keyDiv, valueDiv);
+function createPair(first, second) {
+  const parts = createParts(first, second);
   return join(parts);
 }
 
 /**
- * Create a key-value pair with two divs without adding newlines
- * @param {string} keyDiv - The key div HTML
- * @param {string} valueDiv - The value div HTML
- * @returns {string} - Combined key-value HTML with no spacing
+ * Create an inline pair with two elements
+ * @param {string} first - The first element
+ * @param {string} second - The second element
+ * @returns {string} - Combined HTML with no spacing
  */
-function createKeyValuePairInline(keyDiv, valueDiv) {
-  const parts = createKeyValueParts(keyDiv, valueDiv);
+function createInlinePair(first, second) {
+  const parts = createParts(first, second);
   return join(parts);
 }
 
@@ -147,7 +147,7 @@ const METADATA_TEXT = `Software developer and philosopher in Berlin`;
 
 function prefixWithEmptyKey(valueDiv) {
   const emptyKeyDiv = createKeyDiv();
-  return createKeyValuePair(emptyKeyDiv, valueDiv);
+  return createPair(emptyKeyDiv, valueDiv);
 }
 
 /**
@@ -195,7 +195,7 @@ function createFooterContent() {
     joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]),
     WARNING_MESSAGE
   );
-  return createKeyValuePair(emptyKeyDiv, footerDiv);
+  return createPair(emptyKeyDiv, footerDiv);
 }
 
 /**
@@ -418,7 +418,7 @@ function generateTitleSection(post) {
   const titleKey = createDiv(titleClasses, post.key);
   const titleValue = createTitleValue(post);
 
-  return createKeyValuePairInline(titleKey, titleValue);
+  return createInlinePair(titleKey, titleValue);
 }
 
 /**
