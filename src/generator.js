@@ -211,7 +211,7 @@ function createFooterSection() {
  * Create the opening container div
  */
 function createContainerDivOpen() {
-  return '  <div id="container">';
+  return '<div id="container">';
 }
 
 /**
@@ -222,8 +222,8 @@ function createHeaderContentArray(headerElement) {
     headElement,
     '<body>',
     createContainerDivOpen(),
-    '    <!-- Header -->',
-    '    ' + headerElement,
+    '<!-- Header -->',
+    headerElement,
   ];
 }
 
@@ -234,14 +234,14 @@ function createPageHeader() {
   const headerElement = createHeaderSection();
   const contentArray = createHeaderContentArray(headerElement);
 
-  return contentArray.join('\n');
+  return contentArray.join('');
 }
 
 /**
  * Create the closing container div
  */
 function createContainerDivClose() {
-  return '  </div>';
+  return '</div>';
 }
 
 /**
@@ -257,9 +257,9 @@ function createBodyClose() {
 function createFooterContentArray(footerElement) {
   return [
     '',
-    '  ' + footerElement,
+    footerElement,
     createContainerDivClose(),
-    '  ' + scriptTag,
+    scriptTag,
     createBodyClose(),
   ];
 }
@@ -271,7 +271,7 @@ function createPageFooter() {
   const footerElement = createFooterSection();
   const contentArray = createFooterContentArray(footerElement);
 
-  return contentArray.join('\n');
+  return contentArray.join('');
 }
 
 /**
@@ -285,7 +285,7 @@ function convertPostToArticleHTML(post) {
  * Format article HTML with indentation
  */
 function formatArticleHTML(articleHTML) {
-  return '    ' + articleHTML + '\n';
+  return articleHTML;
 }
 
 /**
@@ -329,10 +329,7 @@ function createArticleAttributes(post) {
  * Format article content with full width element
  */
 function formatArticleContent(content) {
-  return `
-      ${fullWidthElement}
-      ${content}
-    `;
+  return `${fullWidthElement}${content}`;
 }
 
 /**
@@ -409,8 +406,7 @@ function generateHeaderSection(post) {
 function createTitleValue(post) {
   const titleLink = `<a href="#${post.key}">${post.title}</a>`;
   const titleHeader = `<h2>${titleLink}</h2>`;
-  return `
-      <div class="${CLASS.VALUE}">${titleHeader}</div>`;
+  return `<div class="${CLASS.VALUE}">${titleHeader}</div>`;
 }
 
 /**
@@ -433,11 +429,9 @@ function generateDateSection(post) {
   }
 
   const dateKey = createDiv(CLASS.KEY, 'pubAt');
-  const dateValue = `
-      <p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
+  const dateValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
 
-  return `
-      ${dateKey}${dateValue}`;
+  return `${dateKey}${dateValue}`;
 }
 
 /**
@@ -485,9 +479,7 @@ function createMediaKeyDiv(label) {
  * @returns {string} - Formatted section HTML
  */
 function formatSection(keyDiv, valueDiv) {
-  return `
-      ${keyDiv}
-      ${valueDiv}`;
+  return `${keyDiv}${valueDiv}`;
 }
 
 /**
@@ -538,9 +530,7 @@ function createIllustrationImage(post) {
 function createIllustrationContent(post) {
   const image = createIllustrationImage(post);
 
-  return `<div class="${CLASS.VALUE}">
-        ${image}
-      </div>`;
+  return `<div class="${CLASS.VALUE}">${image}</div>`;
 }
 
 /**
@@ -557,9 +547,7 @@ function createAudioSource(post) {
 function createAudioContent(post) {
   const source = createAudioSource(post);
 
-  return `<audio class="${CLASS.VALUE}" controls>
-        ${source}
-      </audio>`;
+  return `<audio class="${CLASS.VALUE}" controls>${source}</audio>`;
 }
 
 /**
@@ -579,9 +567,7 @@ function createYouTubeIframe(post) {
 function createYouTubeContent(post) {
   const iframe = createYouTubeIframe(post);
 
-  return `<p class="${CLASS.VALUE}">
-        ${iframe}
-      </p>`;
+  return `<p class="${CLASS.VALUE}">${iframe}</p>`;
 }
 
 /**
@@ -692,7 +678,8 @@ function generateArticleContent(post) {
  * Create blog HTML content array
  */
 function createBlogContentArray(header, articles, footer) {
-  return [header, '\n', articles, footer];
+  // Remove the newline character between elements
+  return [header, articles, footer];
 }
 
 /**
@@ -703,38 +690,8 @@ export function generateBlog(blog, header, footer, wrapHtml) {
   const contentArray = createBlogContentArray(header, articles, footer);
   const htmlContents = contentArray.join('');
   
-  // Temporarily replace <pre> content to protect it from minification
-  const preTagContents = [];
-  let preProtectedHtml = htmlContents.replace(/<pre([^>]*)>([\s\S]*?)<\/pre>/g, (match, attributes, content) => {
-    const placeholder = `PRE_TAG_PLACEHOLDER_${preTagContents.length}`;
-    preTagContents.push({ attributes, content });
-    return `<pre${attributes}>${placeholder}</pre>`;
-  });
-  
-  // Strip all newlines and indentation from the rest of the HTML
-  // But preserve spaces in specific places like related links and after closing tags
-  let minifiedHtml = preProtectedHtml
-    .replace(/[\n\r\t\s]+/g, ' ')
-    .trim();
-  
-  // This handles preserving spaces in "a by b (c)" patterns as needed in the tests
-  // For example: <a>Blog</a> by Wikipedia (reference)
-  minifiedHtml = minifiedHtml
-    .replace(/\s+</g, '<')
-    .replace(/>\s+/g, '>')
-    .replace(/\s+\/>/g, '/>')
-    // But we need to preserve spaces in specific places
-    .replace(/(a><\/a>)by/g, '$1 by')
-    .replace(/(a>)by ([^<]+)\(/g, '$1 by $2(');
-  
-  
-  // Restore the <pre> content
-  const restoredHtml = minifiedHtml.replace(/<pre([^>]*)>PRE_TAG_PLACEHOLDER_(\d+)<\/pre>/g, (match, attributes, index) => {
-    const { attributes: origAttributes, content } = preTagContents[parseInt(index, 10)];
-    return `<pre${origAttributes}>${content}</pre>`;
-  });
-  
-  return wrapHtml(restoredHtml);
+  // Simply return the HTML contents without any minification
+  return wrapHtml(htmlContents);
 }
 
 /**
