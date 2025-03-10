@@ -63,6 +63,10 @@ export const styles = `
   p {
     margin: 0;
   }
+  ul, .related-links {
+    margin: 0;
+    padding-left: 20px;
+  }
   a {
     color: #00FFFF;
     text-decoration: none;
