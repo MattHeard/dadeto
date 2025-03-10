@@ -173,10 +173,8 @@ const WARNING_MESSAGE =
  */
 function createFooterContent() {
   const emptyKeyDiv = createDiv(CLASS.KEY, '');
-  const footerDiv = createDiv(
-    joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]),
-    WARNING_MESSAGE
-  );
+  const classes = joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]);
+  const footerDiv = createDiv(classes, WARNING_MESSAGE);
   return createPair(emptyKeyDiv, footerDiv);
 }
 
