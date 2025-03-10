@@ -36,6 +36,9 @@ const DATE_FORMAT_OPTIONS = {
   year: 'numeric',
 };
 
+// Container ID
+const CONTAINER_ID = 'container';
+
 // HTML generation helpers
 
 /**
@@ -199,7 +202,7 @@ function createFooterSection() {
  * @returns {string} - Opening div tag with container ID
  */
 function createContainerDivOpen() {
-  const idAttr = createAttrPair(ATTR_NAME.ID, 'container');
+  const idAttr = createAttrPair(ATTR_NAME.ID, CONTAINER_ID);
   return `<${DIV_TAG_NAME} ${idAttr}>`;
 }
 
