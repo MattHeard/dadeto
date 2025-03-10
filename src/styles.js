@@ -65,7 +65,13 @@ export const styles = `
   }
   ul, .related-links {
     margin: 0;
-    padding-left: 20px;
+    padding-left: 0;
+    list-style-type: none;
+  }
+  
+  ul li::before, .related-links li::before {
+    content: "- ";
+    color: #33CCFF;
   }
   a {
     color: #00FFFF;
