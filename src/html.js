@@ -154,14 +154,6 @@ export function escapeHtml(text) {
 }
 
 /**
- * Create the DOCTYPE declaration
- * @returns {string} - The DOCTYPE declaration
- */
-export function createDoctype() {
-  return DOCTYPE;
-}
-
-/**
  * Create the HTML tag with language attribute
  * @param {string} content - The content to wrap in the HTML tag
  * @returns {string} - The HTML tag with content
@@ -178,8 +170,7 @@ export function createHtmlTag(content) {
  */
 export function wrapHtml(content) {
   const htmlTag = createHtmlTag(content);
-  const doctype = createDoctype();
-  return joinWithEmptyString([doctype, htmlTag]);
+  return joinWithEmptyString([DOCTYPE, htmlTag]);
 }
 
 /**
