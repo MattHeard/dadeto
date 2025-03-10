@@ -618,9 +618,11 @@ function formatRelatedLink(link) {
   // Ensure proper spacing between elements by using string concatenation with explicit spaces
   let linkText;
   
-  // Add quotation marks around the title for microblog type links
+  // Add special formatting based on link type
   if (type === 'microblog') {
     linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener">"${escapedTitle}"</a>`;
+  } else if (type === 'book') {
+    linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener"><em>_${escapedTitle}_</em></a>`;
   } else {
     linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener">${escapedTitle}</a>`;
   }
