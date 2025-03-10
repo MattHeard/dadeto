@@ -29,6 +29,12 @@ export const HTML_ESCAPE_REPLACEMENTS = [
 
 // HTML utilities
 
+// HTML tag symbols
+export const TAG_OPEN = '<';
+export const TAG_CLOSE = '>';
+export const SPACE = ' ';
+export const SLASH = '/';
+
 /**
  * Create an opening HTML tag with the specified name and attributes
  * @param {string} tagName - The HTML tag name
@@ -36,7 +42,7 @@ export const HTML_ESCAPE_REPLACEMENTS = [
  * @returns {string} - The opening HTML tag
  */
 export function createOpeningTag(tagName, attributes) {
-  const tagParts = ['<', tagName, ' ', attributes, '>'];
+  const tagParts = [TAG_OPEN, tagName, SPACE, attributes, TAG_CLOSE];
   return tagParts.join('');
 }
 
@@ -49,7 +55,7 @@ export function createOpeningTag(tagName, attributes) {
  */
 export function createTag(tagName, attributes, content) {
   const openingTag = createOpeningTag(tagName, attributes);
-  const closingTag = `</${tagName}>`;
+  const closingTag = [TAG_OPEN, SLASH, tagName, TAG_CLOSE].join('');
   const tagParts = [openingTag, content, closingTag];
   return tagParts.join('');
 }
