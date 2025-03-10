@@ -101,16 +101,6 @@ function createPair(first, second) {
 }
 
 /**
- * Create an inline pair with two elements
- * @param {string} first - The first element
- * @param {string} second - The second element
- * @returns {string} - Combined HTML with no spacing
- */
-function createInlinePair(first, second) {
-  return createPair(first, second);
-}
-
-/**
  * Convert a date string to a Date object
  * @param {string} dateString - The date string to convert
  * @returns {Date} - The Date object
@@ -417,7 +407,7 @@ function generateTitleSection(post) {
   const titleKey = createDiv(titleClasses, post.key);
   const titleValue = createTitleValue(post);
 
-  return createInlinePair(titleKey, titleValue);
+  return createPair(titleKey, titleValue);
 }
 
 /**
