@@ -120,7 +120,7 @@ export function createHtmlTag(content) {
 export function wrapHtml(content) {
   const htmlTag = createHtmlTag(content);
   const doctype = createDoctype();
-  return [doctype, htmlTag].join(NEWLINE);
+  return [doctype, htmlTag].join('');
 }
 
 /**
