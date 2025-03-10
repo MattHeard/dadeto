@@ -69,11 +69,11 @@ export function createOpeningTag(tagName, attributes) {
 
 /**
  * Get the parts that make up a closing HTML tag
- * @param {string} tagName - The HTML tag name
+ * @param {string} name - The HTML tag name
  * @returns {Array<string>} - Array of tag parts
  */
-export function getClosingTagParts(tagName) {
-  return [TAG_OPEN, SLASH, tagName, TAG_CLOSE];
+export function getClosingTagParts(name) {
+  return [TAG_OPEN, SLASH, name, TAG_CLOSE];
 }
 
 /**
