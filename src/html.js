@@ -34,7 +34,7 @@ export const HTML_ESCAPE_REPLACEMENTS = [
  * @param {Array<string>} parts - The array of strings to join
  * @returns {string} - The joined string
  */
-export function joinWithEmptyString(parts) {
+export function join(parts) {
   return parts.join('');
 }
 
@@ -64,7 +64,7 @@ export function getOpeningTagParts(tagName, attributes) {
  */
 export function createOpeningTag(tagName, attributes) {
   const tagParts = getOpeningTagParts(tagName, attributes);
-  return joinWithEmptyString(tagParts);
+  return join(tagParts);
 }
 
 /**
@@ -83,7 +83,7 @@ export function getClosingTagParts(tagName) {
  */
 export function createClosingTag(tagName) {
   const tagParts = getClosingTagParts(tagName);
-  return joinWithEmptyString(tagParts);
+  return join(tagParts);
 }
 
 /**
@@ -97,7 +97,7 @@ export function createTag(tagName, attributes, content) {
   const openingTag = createOpeningTag(tagName, attributes);
   const closingTag = createClosingTag(tagName);
   const tagParts = [openingTag, content, closingTag];
-  return joinWithEmptyString(tagParts);
+  return join(tagParts);
 }
 
 /**
@@ -118,7 +118,7 @@ export function getAttrPairParts(attrName, attrValue) {
  */
 export function createAttrPair(attrName, attrValue) {
   const attrParts = getAttrPairParts(attrName, attrValue);
-  return joinWithEmptyString(attrParts);
+  return join(attrParts);
 }
 
 /**
@@ -170,7 +170,7 @@ export function createHtmlTag(content) {
  */
 export function wrapHtml(content) {
   const htmlTag = createHtmlTag(content);
-  return joinWithEmptyString([DOCTYPE, htmlTag]);
+  return join([DOCTYPE, htmlTag]);
 }
 
 /**
