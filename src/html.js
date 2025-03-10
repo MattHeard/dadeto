@@ -141,13 +141,10 @@ export function applyHtmlEscapeReplacement(text, replacement) {
  * @returns {string} - Text with all replacements applied
  */
 export function applyAllHtmlEscapeReplacements(text, replacements) {
-  let result = text;
-
-  for (const replacement of replacements) {
-    result = applyHtmlEscapeReplacement(result, replacement);
-  }
-
-  return result;
+  return replacements.reduce(
+    (result, replacement) => applyHtmlEscapeReplacement(result, replacement),
+    text
+  );
 }
 
 /**
