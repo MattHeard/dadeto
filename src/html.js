@@ -48,12 +48,12 @@ export const QUOTE = '"';
 
 /**
  * Get the parts that make up an opening HTML tag
- * @param {string} tagName - The HTML tag name
+ * @param {string} name - The HTML tag name
  * @param {string} attributes - The HTML attributes as a string
  * @returns {Array<string>} - Array of tag parts
  */
-export function getOpeningTagParts(tagName, attributes) {
-  return [TAG_OPEN, tagName, SPACE, attributes, TAG_CLOSE];
+export function getOpeningTagParts(name, attributes) {
+  return [TAG_OPEN, name, SPACE, attributes, TAG_CLOSE];
 }
 
 /**
