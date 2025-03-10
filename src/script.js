@@ -57,35 +57,6 @@ const scriptTag = `<script>
       controlsContainer.appendChild(timeDisplay);
       
       audio.parentNode.insertBefore(controlsContainer, audio.nextSibling);
-      
-      if (!document.getElementById("audio-controls-style")) {
-        const style = document.createElement("style");
-        style.id = "audio-controls-style";
-        style.textContent = "
-          .audio-controls {
-            display: flex;
-            align-items: center;
-            margin: 10px 0;
-            background-color: #1a1a1a;
-            padding: 5px;
-            border-radius: 3px;
-          }
-          .audio-btn {
-            margin-right: 10px;
-            color: #33ccff;
-            text-decoration: none;
-            padding: 0 10px;
-          }
-          .audio-btn:hover {
-            text-decoration: underline;
-          }
-          .audio-time {
-            margin-left: 10px;
-            color: #cccccc;
-          }
-          ";
-        document.head.appendChild(style);
-      }
     });
   })();
 </script>`;

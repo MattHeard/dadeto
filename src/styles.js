@@ -121,6 +121,7 @@ export const styles = `
     font-family: Consolas, monospace;
     cursor: pointer;
     height: 2em;
+    margin-right: 1em;
   }
   .audio-btn:hover {
     text-decoration: underline;
