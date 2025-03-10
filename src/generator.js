@@ -125,8 +125,16 @@ function formatDate(dateString) {
 
 const METADATA_TEXT = `Software developer and philosopher in Berlin`;
 
+/**
+ * Create an empty div with the key class
+ * @returns {string} - HTML div element with key class and no content
+ */
+function createEmptyKeyDiv() {
+  return createDiv(CLASS.KEY, '');
+}
+
 function prefixWithEmptyKey(valueDiv) {
-  const emptyKeyDiv = createDiv(CLASS.KEY, '');
+  const emptyKeyDiv = createEmptyKeyDiv();
   return createPair(emptyKeyDiv, valueDiv);
 }
 
@@ -172,7 +180,7 @@ const WARNING_MESSAGE =
  * @returns {string} - HTML for the footer content
  */
 function createFooterContent() {
-  const emptyKeyDiv = createDiv(CLASS.KEY, '');
+  const emptyKeyDiv = createEmptyKeyDiv();
   const classes = joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]);
   const footerDiv = createDiv(classes, WARNING_MESSAGE);
   return createPair(emptyKeyDiv, footerDiv);
