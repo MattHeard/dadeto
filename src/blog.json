@@ -20,10 +20,37 @@
           "title": "Empathy is goated…",
           "author": "@AdjectiveAlli",
           "type": "microblog"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Man_a_Machine",
+          "title": "L'Homme Machine",
+          "author": "Julien Offray de La Mettrie",
+          "type": "book"
+        },
+        {
+          "url": "https://www.sas.upenn.edu/~cavitch/pdf-library/Nagel_Bat.pdf",
+          "title": "What is it Like to Be a Bat?",
+          "author": "Thomas Nagel",
+          "source": "The Philosophical Review",
+          "type": "article"
+        },
+        {
+          "url": "https://academic.oup.com/aristoteliansupp/article-abstract/48/1/135/1779753",
+          "title": "Zombies vs. Materialists",
+          "author": "Robert Kirk and J. E. R. Squires",
+          "source": "Aristotelian Society Supplementary Volume",
+          "type": "article"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/The_Conscious_Mind",
+          "title": "The Conscious Mind",
+          "author": "David Chalmers",
+          "type": "book"
         }
       ]
     },
     {
+      "key": "DETE1",
       "key": "DETE1",
       "title": "Deterministic Moral Preferences",
       "publicationDate": "2024-10-08",
