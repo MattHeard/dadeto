@@ -195,10 +195,12 @@ function createFooterSection() {
 
 // Page structure
 /**
- * Create the opening container div
+ * Create the opening tag for the container div
+ * @returns {string} - Opening div tag with container ID
  */
 function createContainerDivOpen() {
-  return '<div id="container">';
+  const idAttr = createAttrPair(ATTR_NAME.ID, 'container');
+  return `<${DIV_TAG_NAME} ${idAttr}>`;
 }
 
 /**
