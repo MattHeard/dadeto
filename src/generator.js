@@ -44,9 +44,8 @@ const DATE_FORMAT_OPTIONS = {
  * @returns {string} - HTML div element
  */
 function createDiv(classes, content) {
-  const tagName = DIV_TAG_NAME;
   const classAttr = createAttrPair(ATTR_NAME.CLASS, classes);
-  return createTag(tagName, classAttr, content);
+  return createTag(DIV_TAG_NAME, classAttr, content);
 }
 
 /**
