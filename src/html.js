@@ -36,7 +36,8 @@ export const HTML_ESCAPE_REPLACEMENTS = [
  * @returns {string} - The opening HTML tag
  */
 export function createOpeningTag(tagName, attributes) {
-  return `<${tagName} ${attributes}>`;
+  const tagParts = ['<', tagName, ' ', attributes, '>'];
+  return tagParts.join('');
 }
 
 /**
