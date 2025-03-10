@@ -36,13 +36,23 @@ export const SPACE = ' ';
 export const SLASH = '/';
 
 /**
+ * Get the parts that make up an opening HTML tag
+ * @param {string} tagName - The HTML tag name
+ * @param {string} attributes - The HTML attributes as a string
+ * @returns {Array<string>} - Array of tag parts
+ */
+export function getOpeningTagParts(tagName, attributes) {
+  return [TAG_OPEN, tagName, SPACE, attributes, TAG_CLOSE];
+}
+
+/**
  * Create an opening HTML tag with the specified name and attributes
  * @param {string} tagName - The HTML tag name
  * @param {string} attributes - The HTML attributes as a string
  * @returns {string} - The opening HTML tag
  */
 export function createOpeningTag(tagName, attributes) {
-  const tagParts = [TAG_OPEN, tagName, SPACE, attributes, TAG_CLOSE];
+  const tagParts = getOpeningTagParts(tagName, attributes);
   return tagParts.join('');
 }
 
