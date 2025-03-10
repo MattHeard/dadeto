@@ -135,16 +135,23 @@ export function applyHtmlEscapeReplacement(text, replacement) {
 }
 
 /**
+ * Helper function for use with reduce to apply HTML escape replacements
+ * @param {string} acc - The accumulated text
+ * @param {Object} replacement - The replacement definition
+ * @returns {string} - Text with the replacement applied
+ */
+function applyReplacementReducer(acc, replacement) {
+  return applyHtmlEscapeReplacement(acc, replacement);
+}
+
+/**
  * Apply all HTML escape replacements
  * @param {string} text - The text to process
  * @param {Array<Object>} replacements - Array of replacement definitions
  * @returns {string} - Text with all replacements applied
  */
 export function applyAllHtmlEscapeReplacements(text, replacements) {
-  return replacements.reduce(
-    (result, replacement) => applyHtmlEscapeReplacement(result, replacement),
-    text
-  );
+  return replacements.reduce(applyReplacementReducer, text);
 }
 
 /**
