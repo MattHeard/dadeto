@@ -130,7 +130,6 @@ function formatDate(dateString) {
 // Header components
 
 // No longer using newlines and indentation
-const NEWLINE_WITH_INDENT = '';
 
 const METADATA_TEXT = `Software developer and philosopher in Berlin`;
 
@@ -149,7 +148,7 @@ function createHeaderContent() {
   return [
     prefixWithEmptyKey(h1ValueDiv),
     prefixWithEmptyKey(metadataValueDiv),
-  ].join(NEWLINE_WITH_INDENT);
+  ].join('');
 }
 
 /**
