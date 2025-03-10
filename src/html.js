@@ -173,13 +173,4 @@ export function wrapHtml(content) {
   return join([DOCTYPE, htmlTag]);
 }
 
-/**
- * Joins two HTML elements with a specified separator
- * @param {string} first - The first HTML element
- * @param {string} second - The second HTML element
- * @param {string} separator - The separator to join with
- * @returns {string} - Combined HTML string
- */
-export function joinHtmlElements(first, second, separator) {
-  return [first, second].join(separator);
-}
+

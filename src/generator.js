@@ -7,7 +7,6 @@ import {
   createAttrPair,
   escapeHtml,
   wrapHtml,
-  joinHtmlElements,
   join,
   ATTR_NAME,
 } from './html.js';
@@ -87,7 +86,7 @@ function createValueDiv(content, additionalClasses = []) {
  * @returns {string} - Combined key-value HTML without newlines
  */
 function createKeyValuePair(keyDiv, valueDiv) {
-  return joinHtmlElements(keyDiv, valueDiv, '');
+  return join([keyDiv, valueDiv]);
 }
 
 /**
@@ -97,7 +96,7 @@ function createKeyValuePair(keyDiv, valueDiv) {
  * @returns {string} - Combined key-value HTML with no spacing
  */
 function createKeyValuePairInline(keyDiv, valueDiv) {
-  return joinHtmlElements(keyDiv, valueDiv, '');
+  return join([keyDiv, valueDiv]);
 }
 
 /**
