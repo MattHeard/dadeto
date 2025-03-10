@@ -1,6 +1,21 @@
 {
   "posts": [
     {
+      "key": "SYMP1",
+      "title": "Sympathy for P-Zombies",
+      "publicationDate": "2025-03-10",
+      "content": [
+        "This might sound like psychopathy, but bear with me.",
+        "There is an important difference between _empathy_ and _sympathy_. _Empathy_ is sharing some of the same conscious experiences as another person. _Sympathy_ is instead feeling compassion towards someone else who is suffering. Empathy requires a relation between you and a conscious experience. Sympathy does not.",
+        "A philosophical zombie appears to have conscious experience but lacks it. A P-zombie can still suffer but it lacks conscious experiences. So, one can sympathise with a P-zombie but cannot empathise with it.",
+        "If I doubt meaningful conscious experiences exist, then I must doubt empathy exists."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a cyberpunk-style illustration of a person standing before a mirror in a neon-lit futuristic cityscape. the reflection in the mirror is not their own but a smooth, featureless mannequin, creating an eerie contrast. the person’s edges subtly glitch, hinting at digital distortion. cool blue and purple neon lights cast an otherworldly glow, emphasizing the unsettling atmosphere. the background features a blurred cyberpunk city, reinforcing the theme of technology and identity"
+      }
+    },
+    {
       "key": "DETE1",
       "title": "Deterministic Moral Preferences",
       "publicationDate": "2024-10-08",

@@ -29,13 +29,13 @@ const formatHTML = async (html) => {
 const writeFormattedHTML = async () => {
   try {
     const formattedHTML = await formatHTML(outputHTML);
-    fs.writeFileSync('public/index.2025-02.html', formattedHTML, 'utf8');
-    console.log('HTML formatted with Prettier and written to public/index.2025-02.html');
+    fs.writeFileSync('public/index.html', formattedHTML, 'utf8');
+    console.log('HTML formatted with Prettier and written to public/index.html');
   } catch (error) {
     console.error('Error formatting HTML:', error);
     // Fall back to unformatted HTML if formatting fails
-    fs.writeFileSync('public/index.2025-02.html', outputHTML, 'utf8');
-    console.log('Unformatted HTML written to public/index.2025-02.html');
+    fs.writeFileSync('public/index.html', outputHTML, 'utf8');
+    console.log('Unformatted HTML written to public/index.html');
   }
 };
 
