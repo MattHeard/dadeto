@@ -30,6 +30,16 @@ export const HTML_ESCAPE_REPLACEMENTS = [
 // HTML utilities
 
 /**
+ * Create an opening HTML tag with the specified name and attributes
+ * @param {string} tagName - The HTML tag name
+ * @param {string} attributes - The HTML attributes as a string
+ * @returns {string} - The opening HTML tag
+ */
+export function createOpeningTag(tagName, attributes) {
+  return `<${tagName} ${attributes}>`;
+}
+
+/**
  * Create an HTML tag with the specified name, attributes, and content
  * @param {string} tagName - The HTML tag name
  * @param {string} attributes - The HTML attributes as a string
@@ -37,7 +47,7 @@ export const HTML_ESCAPE_REPLACEMENTS = [
  * @returns {string} - The complete HTML tag
  */
 export function createTag(tagName, attributes, content) {
-  const openingTag = `<${tagName} ${attributes}>`;
+  const openingTag = createOpeningTag(tagName, attributes);
   const closingTag = `</${tagName}>`;
   const tagParts = [openingTag, content, closingTag];
   return tagParts.join('');
