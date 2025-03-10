@@ -1,6 +1,7 @@
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
 import scriptTag from './script.js';
+import { HEADER_BANNER } from './title.js';
 import {
   createTag,
   createAttrPair,
@@ -127,16 +128,6 @@ function formatDate(dateString) {
 }
 
 // Header components
-const HEADER_BANNER = `<pre aria-label="Matt Heard" role="heading" aria-level="1">
-▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖      
-▐▛▚▞▜▌▐▌ ▐▌ █    █        
-▐▌  ▐▌▐▛▀▜▌ █    █        
-▐▌  ▐▌▐▌ ▐▌ █    █        
-▗▖ ▗▖▗▄▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄  
-▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █ 
-▐▛▀▜▌▐▛▀▀▘▐▛▀▜▌▐▛▀▚▖▐▌  █ 
-▐▌ ▐▌▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀
-</pre>`;
 
 // No longer using newlines and indentation
 const NEWLINE_WITH_INDENT = '';
