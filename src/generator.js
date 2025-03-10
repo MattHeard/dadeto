@@ -619,7 +619,7 @@ function formatRelatedLink(link) {
   let linkText;
   
   // Add special formatting based on link type
-  if (type === 'microblog') {
+  if (type === 'microblog' || type === 'article' || type === 'report') {
     linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener">"${escapedTitle}"</a>`;
   } else if (type === 'book') {
     linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener"><em>_${escapedTitle}_</em></a>`;
