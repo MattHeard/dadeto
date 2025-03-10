@@ -632,9 +632,9 @@ function formatRelatedLink(link) {
     linkText += ` by ${escapedAuthor}`;
   }
   
-  // Add source info if available with proper space before 'in'
+  // Add source info if available as a comma separated value
   if (escapedSource) {
-    linkText += ` in ${escapedSource}`;
+    linkText += `, ${escapedSource}`;
   }
   
   // Type information is no longer displayed
