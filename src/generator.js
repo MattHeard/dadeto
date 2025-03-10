@@ -660,7 +660,7 @@ function generateRelatedLinksSection(post) {
     return '';
   }
 
-  const keyDiv = createDiv(CLASS.KEY, 'related');
+  const keyDiv = createDiv(CLASS.KEY, 'links');
   // Join with an empty string to avoid spacing issues in the HTML output
   const linksList = post.relatedLinks.map(link => formatRelatedLink(link)).join('');
   const valueContent = `<ul class="related-links">${linksList}</ul>`;
