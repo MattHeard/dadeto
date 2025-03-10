@@ -27,10 +27,9 @@ export const HTML_ESCAPE_REPLACEMENTS = [
   { from: /'/g, to: '&#039;' },
 ];
 
-// Newline and indentation constants
-export const NEWLINE = '\n';
+// Indentation constants
 export const INDENT = '  ';
-export const NEWLINE_WITH_INDENT = NEWLINE + INDENT;
+export const NEWLINE_WITH_INDENT = '\n' + INDENT;
 
 /**
  * Create an HTML tag with the specified name, attributes, and content
