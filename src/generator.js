@@ -147,7 +147,7 @@ function createHeaderContent() {
     createValueDiv(METADATA_TEXT, [CLASS.METADATA])
   ];
 
-  const parts = valueDivs.map(valueDiv => prefixWithEmptyKey(valueDiv));
+  const parts = valueDivs.map(prefixWithEmptyKey);
   
   return join(parts);
 }
