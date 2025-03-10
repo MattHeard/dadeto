@@ -142,13 +142,12 @@ function prefixWithEmptyKey(valueDiv) {
  * Create the content for the header section
  */
 function createHeaderContent() {
-  const h1ValueDiv = createValueDiv(HEADER_BANNER);
-  const metadataValueDiv = createValueDiv(METADATA_TEXT, [CLASS.METADATA]);
-
-  const parts = [
-    prefixWithEmptyKey(h1ValueDiv),
-    prefixWithEmptyKey(metadataValueDiv),
+  const valueDivs = [
+    createValueDiv(HEADER_BANNER),
+    createValueDiv(METADATA_TEXT, [CLASS.METADATA])
   ];
+
+  const parts = valueDivs.map(valueDiv => prefixWithEmptyKey(valueDiv));
   
   return join(parts);
 }
