@@ -616,7 +616,14 @@ function formatRelatedLink(link) {
   const escapedType = type ? escapeHtml(type) : '';
 
   // Ensure proper spacing between elements by using string concatenation with explicit spaces
-  let linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener">${escapedTitle}</a>`;
+  let linkText;
+  
+  // Add quotation marks around the title for microblog type links
+  if (type === 'microblog') {
+    linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener">"${escapedTitle}"</a>`;
+  } else {
+    linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener">${escapedTitle}</a>`;
+  }
   
   // Add author info with proper space before 'by'
   if (escapedAuthor) {
