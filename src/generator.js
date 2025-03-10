@@ -80,13 +80,24 @@ function createValueDiv(content, additionalClasses = []) {
 }
 
 /**
+ * Create an array of key-value parts for joining
+ * @param {string} keyDiv - The key div HTML
+ * @param {string} valueDiv - The value div HTML
+ * @returns {Array<string>} - Array containing key and value divs
+ */
+function createKeyValueParts(keyDiv, valueDiv) {
+  return [keyDiv, valueDiv];
+}
+
+/**
  * Create a key-value pair with two divs
  * @param {string} keyDiv - The key div HTML
  * @param {string} valueDiv - The value div HTML
  * @returns {string} - Combined key-value HTML without newlines
  */
 function createKeyValuePair(keyDiv, valueDiv) {
-  return join([keyDiv, valueDiv]);
+  const parts = createKeyValueParts(keyDiv, valueDiv);
+  return join(parts);
 }
 
 /**
@@ -96,7 +107,8 @@ function createKeyValuePair(keyDiv, valueDiv) {
  * @returns {string} - Combined key-value HTML with no spacing
  */
 function createKeyValuePairInline(keyDiv, valueDiv) {
-  return join([keyDiv, valueDiv]);
+  const parts = createKeyValueParts(keyDiv, valueDiv);
+  return join(parts);
 }
 
 /**
