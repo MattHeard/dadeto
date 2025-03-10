@@ -59,15 +59,6 @@ function joinClasses(classes) {
 }
 
 /**
- * Create a div with the key class
- * @param {string} content - Content for the key div
- * @returns {string} - HTML div element with key class
- */
-function createKeyDiv(content = '') {
-  return createDiv(CLASS.KEY, content);
-}
-
-/**
  * Create a div with the value class and optional additional classes
  * @param {string} content - Content for the value div
  * @param {string[]} additionalClasses - Additional CSS classes to apply
@@ -135,7 +126,7 @@ function formatDate(dateString) {
 const METADATA_TEXT = `Software developer and philosopher in Berlin`;
 
 function prefixWithEmptyKey(valueDiv) {
-  const emptyKeyDiv = createKeyDiv();
+  const emptyKeyDiv = createDiv(CLASS.KEY, '');
   return createPair(emptyKeyDiv, valueDiv);
 }
 
@@ -179,7 +170,7 @@ const WARNING_MESSAGE =
  * @returns {string} - HTML for the footer content
  */
 function createFooterContent() {
-  const emptyKeyDiv = createKeyDiv();
+  const emptyKeyDiv = createDiv(CLASS.KEY, '');
   const footerDiv = createDiv(
     joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]),
     WARNING_MESSAGE
