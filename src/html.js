@@ -38,11 +38,13 @@ export function joinWithEmptyString(parts) {
   return parts.join('');
 }
 
-// HTML tag symbols
+// HTML tag and attribute symbols
 export const TAG_OPEN = '<';
 export const TAG_CLOSE = '>';
 export const SPACE = ' ';
 export const SLASH = '/';
+export const EQUALS = '=';
+export const QUOTE = '"';
 
 /**
  * Get the parts that make up an opening HTML tag
@@ -99,13 +101,24 @@ export function createTag(tagName, attributes, content) {
 }
 
 /**
+ * Get the parts of an HTML attribute name-value pair
+ * @param {string} attrName - The attribute name
+ * @param {string} attrValue - The attribute value
+ * @returns {Array<string>} - Array of attribute parts
+ */
+export function getAttrPairParts(attrName, attrValue) {
+  return [attrName, EQUALS, QUOTE, attrValue, QUOTE];
+}
+
+/**
  * Create an HTML attribute name-value pair
  * @param {string} attrName - The attribute name
  * @param {string} attrValue - The attribute value
  * @returns {string} - Formatted attribute string (name="value")
  */
 export function createAttrPair(attrName, attrValue) {
-  return `${attrName}="${attrValue}"`;
+  const attrParts = getAttrPairParts(attrName, attrValue);
+  return joinWithEmptyString(attrParts);
 }
 
 /**
