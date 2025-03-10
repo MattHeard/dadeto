@@ -29,6 +29,15 @@ export const HTML_ESCAPE_REPLACEMENTS = [
 
 // HTML utilities
 
+/**
+ * Join an array of strings with an empty string separator
+ * @param {Array<string>} parts - The array of strings to join
+ * @returns {string} - The joined string
+ */
+export function joinWithEmptyString(parts) {
+  return parts.join('');
+}
+
 // HTML tag symbols
 export const TAG_OPEN = '<';
 export const TAG_CLOSE = '>';
@@ -53,7 +62,26 @@ export function getOpeningTagParts(tagName, attributes) {
  */
 export function createOpeningTag(tagName, attributes) {
   const tagParts = getOpeningTagParts(tagName, attributes);
-  return tagParts.join('');
+  return joinWithEmptyString(tagParts);
+}
+
+/**
+ * Get the parts that make up a closing HTML tag
+ * @param {string} tagName - The HTML tag name
+ * @returns {Array<string>} - Array of tag parts
+ */
+export function getClosingTagParts(tagName) {
+  return [TAG_OPEN, SLASH, tagName, TAG_CLOSE];
+}
+
+/**
+ * Create a closing HTML tag with the specified name
+ * @param {string} tagName - The HTML tag name
+ * @returns {string} - The closing HTML tag
+ */
+export function createClosingTag(tagName) {
+  const tagParts = getClosingTagParts(tagName);
+  return joinWithEmptyString(tagParts);
 }
 
 /**
@@ -65,9 +93,9 @@ export function createOpeningTag(tagName, attributes) {
  */
 export function createTag(tagName, attributes, content) {
   const openingTag = createOpeningTag(tagName, attributes);
-  const closingTag = [TAG_OPEN, SLASH, tagName, TAG_CLOSE].join('');
+  const closingTag = createClosingTag(tagName);
   const tagParts = [openingTag, content, closingTag];
-  return tagParts.join('');
+  return joinWithEmptyString(tagParts);
 }
 
 /**
