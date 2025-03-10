@@ -642,10 +642,10 @@ function formatRelatedLink(link) {
     linkText += ` in ${escapedSource}`;
   }
   
-  // Add type info in parentheses with proper space before the parentheses
-  if (escapedType) {
-    linkText += ` (${escapedType})`;
-  }
+  // Type information is no longer displayed
+  // if (escapedType) {
+  //   linkText += ` (${escapedType})`;
+  // }
   
   return `<li>${linkText}</li>`;
 }
