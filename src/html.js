@@ -216,10 +216,11 @@ function processInlineCode(markdown) {
  * @returns {string} - The converted HTML
  */
 export function getHtmlFromMarkdown(markdown) {
-  // Process in order of most specific to least specific
-  markdown = processBold(markdown);
-  markdown = processStrikethrough(markdown);
-  markdown = processItalics(markdown);
-  markdown = processInlineCode(markdown);
-  return markdown;
+  const processors = [
+    processBold,
+    processStrikethrough,
+    processItalics,
+    processInlineCode
+  ];
+  return processors.reduce((acc, processor) => processor(acc), markdown);
 }
