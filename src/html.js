@@ -179,6 +179,8 @@ export function wrapHtml(content) {
  * @returns {string} - The converted HTML
  */
 export function getHtmlFromMarkdown(markdown) {
-  // Basic implementation for converting markdown to HTML
-  return markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+  // Convert bold markdown to HTML
+  markdown = markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  markdown = markdown.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+  return markdown;
 }

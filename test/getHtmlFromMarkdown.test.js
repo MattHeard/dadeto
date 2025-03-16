@@ -1,9 +1,15 @@
 import { getHtmlFromMarkdown } from '../src/html';
 
 describe('getHtmlFromMarkdown', () => {
-  it('should convert markdown to HTML', () => {
-    const markdown = '# Hello, World!';
+  it('should convert *foo* to bold', () => {
+    const markdown = '*foo*';
     const html = getHtmlFromMarkdown(markdown);
-    expect(html).toBe('<h1>Hello, World!</h1>');
+    expect(html).toBe('<strong>foo</strong>');
+  });
+
+  it('should convert **foo** to bold', () => {
+    const markdown = '**foo**';
+    const html = getHtmlFromMarkdown(markdown);
+    expect(html).toBe('<strong>foo</strong>');
   });
 });
