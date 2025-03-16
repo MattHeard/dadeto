@@ -180,6 +180,7 @@ export function wrapHtml(content) {
  */
 export function getHtmlFromMarkdown(markdown) {
   return markdown
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>*$1*</em>')
     .replace(/_(.*?)_/g, '<em>_$1_</em>');
 }
