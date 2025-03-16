@@ -6,4 +6,10 @@ describe('getHtmlFromMarkdown', () => {
     const html = getHtmlFromMarkdown(markdown);
     expect(html).toBe('<em>*foo*</em>');
   });
+
+  it('should convert _foo_ to italics', () => {
+    const markdown = '_foo_';
+    const html = getHtmlFromMarkdown(markdown);
+    expect(html).toBe('<em>_foo_</em>');
+  });
 });
