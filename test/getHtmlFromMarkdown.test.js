@@ -18,4 +18,22 @@ describe('getHtmlFromMarkdown', () => {
     const html = getHtmlFromMarkdown(markdown);
     expect(html).toBe('<em>foo</em>');
   });
+
+  it('should convert `foo` to inline code', () => {
+    const markdown = '`foo`';
+    const html = getHtmlFromMarkdown(markdown);
+    expect(html).toBe('<code>foo</code>');
+  });
+
+  it('should convert code with special characters', () => {
+    const markdown = '`<div>foo</div>`';
+    const html = getHtmlFromMarkdown(markdown);
+    expect(html).toBe('<code>&lt;div&gt;foo&lt;/div&gt;</code>');
+  });
+
+  it('should handle multiple inline code blocks', () => {
+    const markdown = 'Use `const` for constants and `let` for variables';
+    const html = getHtmlFromMarkdown(markdown);
+    expect(html).toBe('Use <code>const</code> for constants and <code>let</code> for variables');
+  });
 });
