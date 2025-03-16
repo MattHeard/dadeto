@@ -36,4 +36,16 @@ describe('getHtmlFromMarkdown', () => {
     const html = getHtmlFromMarkdown(markdown);
     expect(html).toBe('Use <code>const</code> for constants and <code>let</code> for variables');
   });
+
+  it('should convert ~~foo~~ to strikethrough', () => {
+    const markdown = '~~foo~~';
+    const html = getHtmlFromMarkdown(markdown);
+    expect(html).toBe('<del>foo</del>');
+  });
+
+  it('should handle strikethrough with other formatting', () => {
+    const markdown = '~~**bold** and _italic_~~';
+    const html = getHtmlFromMarkdown(markdown);
+    expect(html).toBe('<del><strong>bold</strong> and <em>italic</em></del>');
+  });
 });
