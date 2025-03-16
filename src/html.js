@@ -182,5 +182,7 @@ export function getHtmlFromMarkdown(markdown) {
   // Convert bold markdown to HTML
   markdown = markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   markdown = markdown.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+  // Convert italics markdown to HTML
+  markdown = markdown.replace(/_(.*?)_/g, '<em>$1</em>');
   return markdown;
 }
