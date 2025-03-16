@@ -174,19 +174,52 @@ export function wrapHtml(content) {
 }
 
 /**
+ * Process bold markdown
+ * @param {string} markdown - The markdown text to process
+ * @returns {string} - The processed markdown
+ */
+function processBold(markdown) {
+  return markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
+
+/**
+ * Process italics markdown
+ * @param {string} markdown - The markdown text to process
+ * @returns {string} - The processed markdown
+ */
+function processItalics(markdown) {
+  return markdown.replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/_(.*?)_/g, '<em>$1</em>');
+}
+
+/**
+ * Process strikethrough markdown
+ * @param {string} markdown - The markdown text to process
+ * @returns {string} - The processed markdown
+ */
+function processStrikethrough(markdown) {
+  return markdown.replace(/~~(.*?)~~/g, '<del>$1</del>');
+}
+
+/**
+ * Process inline code markdown
+ * @param {string} markdown - The markdown text to process
+ * @returns {string} - The processed markdown
+ */
+function processInlineCode(markdown) {
+  return markdown.replace(/`(.*?)`/g, (_, code) => '<code>' + escapeHtml(code) + '</code>');
+}
+
+/**
  * Convert markdown to HTML
  * @param {string} markdown - The markdown text to convert
  * @returns {string} - The converted HTML
  */
 export function getHtmlFromMarkdown(markdown) {
-  // Convert bold markdown to HTML
-  markdown = markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  // Convert italics markdown to HTML
-  markdown = markdown.replace(/\*(.*?)\*/g, '<em>$1</em>');
-  markdown = markdown.replace(/_(.*?)_/g, '<em>$1</em>');
-  // Convert strikethrough markdown to HTML
-  markdown = markdown.replace(/~~(.*?)~~/g, '<del>$1</del>');
-  // Convert inline code markdown to HTML and escape HTML characters
-  markdown = markdown.replace(/`(.*?)`/g, (_, code) => `<code>${escapeHtml(code)}</code>`);
+  // Process in order of most specific to least specific
+  markdown = processBold(markdown);
+  markdown = processStrikethrough(markdown);
+  markdown = processItalics(markdown);
+  markdown = processInlineCode(markdown);
   return markdown;
 }
