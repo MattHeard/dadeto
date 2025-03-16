@@ -179,5 +179,5 @@ export function wrapHtml(content) {
  * @returns {string} - The converted HTML
  */
 export function getHtmlFromMarkdown(markdown) {
-  return markdown;
+  return markdown.replace(/\*(.*?)\*/g, '<em>*$1*</em>');
 }
