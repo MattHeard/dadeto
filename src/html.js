@@ -174,34 +174,6 @@ export function wrapHtml(content) {
 }
 
 /**
- * Process bold markdown
- * @param {string} markdown - The markdown text to process
- * @returns {string} - The processed markdown
- */
-function processBold(markdown) {
-  return markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-}
-
-/**
- * Process italics markdown
- * @param {string} markdown - The markdown text to process
- * @returns {string} - The processed markdown
- */
-function processItalics(markdown) {
-  return markdown.replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/_(.*?)_/g, '<em>$1</em>');
-}
-
-/**
- * Process inline code markdown
- * @param {string} markdown - The markdown text to process
- * @returns {string} - The processed markdown
- */
-function processInlineCode(markdown) {
-  return markdown.replace(/`(.*?)`/g, (_, code) => '<code>' + escapeHtml(code) + '</code>');
-}
-
-/**
  * Convert markdown to HTML
  * @param {string} markdown - The markdown text to convert
  * @returns {string} - The converted HTML
