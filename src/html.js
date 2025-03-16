@@ -173,4 +173,12 @@ export function wrapHtml(content) {
   return join([DOCTYPE, htmlTag]);
 }
 
-
+/**
+ * Convert markdown to HTML
+ * @param {string} markdown - The markdown text to convert
+ * @returns {string} - The converted HTML
+ */
+export function getHtmlFromMarkdown(markdown) {
+  // Basic implementation for converting markdown to HTML
+  return markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+}

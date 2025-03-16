@@ -1,4 +1,4 @@
-import { getHtmlFromMarkdown } from '../src/getHtmlFromMarkdown';
+import { getHtmlFromMarkdown } from '../src/html';
 
 describe('getHtmlFromMarkdown', () => {
   it('should convert markdown to HTML', () => {
