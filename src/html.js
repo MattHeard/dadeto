@@ -184,5 +184,7 @@ export function getHtmlFromMarkdown(markdown) {
   markdown = markdown.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
   // Convert italics markdown to HTML
   markdown = markdown.replace(/_(.*?)_/g, '<em>$1</em>');
+  // Convert inline code markdown to HTML and escape HTML characters
+  markdown = markdown.replace(/`(.*?)`/g, (_, code) => `<code>${escapeHtml(code)}</code>`);
   return markdown;
 }
