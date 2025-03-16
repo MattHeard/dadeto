@@ -193,15 +193,6 @@ function processItalics(markdown) {
 }
 
 /**
- * Process strikethrough markdown
- * @param {string} markdown - The markdown text to process
- * @returns {string} - The processed markdown
- */
-function processStrikethrough(markdown) {
-  return markdown.replace(/~~(.*?)~~/g, '<del>$1</del>');
-}
-
-/**
  * Process inline code markdown
  * @param {string} markdown - The markdown text to process
  * @returns {string} - The processed markdown
@@ -216,11 +207,5 @@ function processInlineCode(markdown) {
  * @returns {string} - The converted HTML
  */
 export function getHtmlFromMarkdown(markdown) {
-  const processors = [
-    processBold,
-    processStrikethrough,
-    processItalics,
-    processInlineCode
-  ];
-  return processors.reduce((acc, processor) => processor(acc), markdown);
+  return markdown;
 }
