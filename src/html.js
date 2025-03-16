@@ -179,10 +179,5 @@ export function wrapHtml(content) {
  * @returns {string} - The converted HTML
  */
 export function getHtmlFromMarkdown(markdown) {
-  return markdown
-    .replace(/(\*\*)(.*?)(\*\*)/g, '<strong>$1$2$3</strong>')
-    .replace(/(\*)(.*?)(\*)/g, '<em>$1$2$3</em>')
-    .replace(/(_)(.*?)(_)/g, '<em>$1$2$3</em>')
-    .replace(/(`)(.*?)(`)/g, '<code>$1$2$3</code>')
-    .replace(/(~~)(.*?)(~~)/g, '<del>$1$2$3</del>');
+  return markdown;
 }
