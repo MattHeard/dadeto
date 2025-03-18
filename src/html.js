@@ -172,15 +172,3 @@ export function wrapHtml(content) {
   const htmlTag = createHtmlTag(content);
   return join([DOCTYPE, htmlTag]);
 }
-
-/**
- * Convert markdown to HTML
- * @param {string} markdown - The markdown text to convert
- * @returns {string} - The converted HTML
- */
-export function getHtmlFromMarkdown(markdown) {
-  return markdown
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>*$1*</em>')
-    .replace(/_(.*?)_/g, '<em>_$1_</em>');
-}
