@@ -7,12 +7,12 @@
  * @returns {string} The formatted text.
  */
 /**
- * Process text with the specified delimiter pattern
+ * Process a single occurrence of the delimiter pattern
  * @param {string} text - The text to process
  * @param {string} delimiter - The delimiter to search for
- * @returns {string|null} - The processed text if pattern found, or null if no pattern found
+ * @returns {object|null} - Object with processed result and remainder, or null if no pattern found
  */
-const processDelimiter = (text, delimiter) => {
+const processSingleDelimiter = (text, delimiter) => {
   const startIndex = text.indexOf(delimiter);
   if (startIndex === -1) return null;
   
@@ -23,7 +23,31 @@ const processDelimiter = (text, delimiter) => {
   const boldText = text.substring(startIndex, endIndex + delimiter.length);
   const afterText = text.substring(endIndex + delimiter.length);
   
-  return beforeText + `<strong>${boldText}</strong>` + afterText;
+  return {
+    result: beforeText + `<strong>${boldText}</strong>`,
+    remainder: afterText
+  };
+};
+
+/**
+ * Process all occurrences of the delimiter pattern
+ * @param {string} text - The text to process
+ * @param {string} delimiter - The delimiter to search for
+ * @returns {string|null} - The fully processed text or null if no pattern found
+ */
+const processDelimiter = (text, delimiter) => {
+  const result = processSingleDelimiter(text, delimiter);
+  if (!result) return null;
+  
+  // Process the remainder recursively
+  if (result.remainder.includes(delimiter)) {
+    const remainderProcessed = processDelimiter(result.remainder, delimiter);
+    if (remainderProcessed) {
+      return result.result + remainderProcessed;
+    }
+  }
+  
+  return result.result + result.remainder;
 };
 
 /**

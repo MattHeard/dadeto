@@ -11,6 +11,7 @@ describe('getFormattedText', () => {
     { text: '__foo__', expected: '<strong>__foo__</strong>' },
     { text: 'text **foo**', expected: 'text <strong>**foo**</strong>' },
     { text: '**foo** text', expected: '<strong>**foo**</strong> text' },
+    { text: '**foo** and **bar**', expected: '<strong>**foo**</strong> and <strong>**bar**</strong>' },
   ];
 
   testCases.forEach((testCase, index) => {
