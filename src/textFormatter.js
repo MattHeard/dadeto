@@ -9,6 +9,8 @@
 export function getFormattedText(text) {
   if (text.startsWith('**') && text.endsWith('**') && text.length >= 4) {
     return `<strong>${text}</strong>`;
+  } else if (text.startsWith('__') && text.endsWith('__') && text.length >= 4) {
+    return `<em>${text}</em>`;
   }
   return text;
 }
