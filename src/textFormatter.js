@@ -7,8 +7,6 @@
  * @returns {string} The formatted text.
  */
 export function getFormattedText(text) {
-  let formattedText = text;
-  
   // Check for complete string match first
   if ((text.startsWith('**') && text.endsWith('**') || 
        text.startsWith('__') && text.endsWith('__')) && 
@@ -17,16 +15,16 @@ export function getFormattedText(text) {
   }
   
   // Search for **text** patterns
-  let startIndex = formattedText.indexOf('**');
+  const startIndex = text.indexOf('**');
   if (startIndex !== -1) {
-    const endIndex = formattedText.indexOf('**', startIndex + 2);
+    const endIndex = text.indexOf('**', startIndex + 2);
     if (endIndex !== -1) {
-      const beforeText = formattedText.substring(0, startIndex);
-      const boldText = formattedText.substring(startIndex, endIndex + 2);
-      const afterText = formattedText.substring(endIndex + 2);
-      formattedText = beforeText + `<strong>${boldText}</strong>` + afterText;
+      const beforeText = text.substring(0, startIndex);
+      const boldText = text.substring(startIndex, endIndex + 2);
+      const afterText = text.substring(endIndex + 2);
+      return beforeText + `<strong>${boldText}</strong>` + afterText;
     }
   }
   
-  return formattedText;
+  return text;
 }
