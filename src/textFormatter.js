@@ -7,21 +7,26 @@
  * @returns {string} The formatted text.
  */
 export function getFormattedText(text) {
-  // Check for complete string match first
-  if ((text.startsWith('**') && text.endsWith('**') || 
-       text.startsWith('__') && text.endsWith('__')) && 
-      text.length >= 4) {
-    return `<strong>${text}</strong>`;
+  // Search for **text** patterns
+  const doubleAsteriskStart = text.indexOf('**');
+  if (doubleAsteriskStart !== -1) {
+    const doubleAsteriskEnd = text.indexOf('**', doubleAsteriskStart + 2);
+    if (doubleAsteriskEnd !== -1) {
+      const beforeText = text.substring(0, doubleAsteriskStart);
+      const boldText = text.substring(doubleAsteriskStart, doubleAsteriskEnd + 2);
+      const afterText = text.substring(doubleAsteriskEnd + 2);
+      return beforeText + `<strong>${boldText}</strong>` + afterText;
+    }
   }
   
-  // Search for **text** patterns
-  const startIndex = text.indexOf('**');
-  if (startIndex !== -1) {
-    const endIndex = text.indexOf('**', startIndex + 2);
-    if (endIndex !== -1) {
-      const beforeText = text.substring(0, startIndex);
-      const boldText = text.substring(startIndex, endIndex + 2);
-      const afterText = text.substring(endIndex + 2);
+  // Search for __text__ patterns
+  const doubleUnderscoreStart = text.indexOf('__');
+  if (doubleUnderscoreStart !== -1) {
+    const doubleUnderscoreEnd = text.indexOf('__', doubleUnderscoreStart + 2);
+    if (doubleUnderscoreEnd !== -1) {
+      const beforeText = text.substring(0, doubleUnderscoreStart);
+      const boldText = text.substring(doubleUnderscoreStart, doubleUnderscoreEnd + 2);
+      const afterText = text.substring(doubleUnderscoreEnd + 2);
       return beforeText + `<strong>${boldText}</strong>` + afterText;
     }
   }
