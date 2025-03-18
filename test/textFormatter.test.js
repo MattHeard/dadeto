@@ -3,21 +3,16 @@
 import { getFormattedText } from '../src/textFormatter';
 
 describe('getFormattedText', () => {
-  it('should return an empty string when given an empty string', () => {
-    const text = '';
-    const formattedText = getFormattedText(text);
-    expect(formattedText).toBe('');
-  });
+  const testCases = [
+    { text: '', expected: '' },
+    { text: 'foo', expected: 'foo' },
+    { text: '**foo**', expected: '<strong>**foo**</strong>' },
+  ];
 
-  it('should return "foo" when given "foo" as input', () => {
-    const text = 'foo';
-    const formattedText = getFormattedText(text);
-    expect(formattedText).toBe('foo');
-  });
-
-  it('should return "<strong>**foo**</strong>" when given "**foo**" as input', () => {
-    const text = '**foo**';
-    const formattedText = getFormattedText(text);
-    expect(formattedText).toBe('<strong>**foo**</strong>');
+  testCases.forEach((testCase, index) => {
+    it(`should return ${testCase.expected} when given ${testCase.text} as input`, () => {
+      const formattedText = getFormattedText(testCase.text);
+      expect(formattedText).toBe(testCase.expected);
+    });
   });
 });
