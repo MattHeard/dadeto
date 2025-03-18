@@ -14,4 +14,10 @@ describe('getFormattedText', () => {
     const formattedText = getFormattedText(text);
     expect(formattedText).toBe('foo');
   });
+
+  it('should return "<strong>**foo**</strong>" when given "**foo**" as input', () => {
+    const text = '**foo**';
+    const formattedText = getFormattedText(text);
+    expect(formattedText).toBe('<strong>**foo**</strong>');
+  });
 });
