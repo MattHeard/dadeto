@@ -9,6 +9,7 @@ describe('getFormattedText', () => {
     { text: '**foo**', expected: '<strong>**foo**</strong>' },
     { text: '**bar**', expected: '<strong>**bar**</strong>' },
     { text: '__foo__', expected: '<strong>__foo__</strong>' },
+    { text: 'text **foo**', expected: 'text <strong>**foo**</strong>' },
   ];
 
   testCases.forEach((testCase, index) => {
