@@ -8,4 +8,10 @@ describe('getFormattedText', () => {
     const formattedText = getFormattedText(text);
     expect(formattedText).toBe('');
   });
+
+  it('should return "foo" when given "foo" as input', () => {
+    const text = 'foo';
+    const formattedText = getFormattedText(text);
+    expect(formattedText).toBe('foo');
+  });
 });
