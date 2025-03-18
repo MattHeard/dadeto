@@ -7,10 +7,8 @@
  * @returns {string} The formatted text.
  */
 export function getFormattedText(text) {
-  if (text === '**foo**') {
-    return '<strong>**foo**</strong>';
-  } else if (text === '**bar**') {
-    return '<strong>**bar**</strong>';
+  if (text.startsWith('**') && text.endsWith('**') && text.length >= 4) {
+    return `<strong>${text}</strong>`;
   }
   return text;
 }
