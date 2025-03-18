@@ -7,109 +7,58 @@
  * @returns {string} The formatted text.
  */
 /**
- * Base formatter class implementing the Chain of Responsibility pattern
+ * Process text with the specified delimiter pattern
+ * @param {string} text - The text to process
+ * @param {string} delimiter - The delimiter to search for
+ * @returns {string|null} - The processed text if pattern found, or null if no pattern found
  */
-class TextFormatter {
-  constructor(next = null) {
-    this.next = next;
-  }
+const processDelimiter = (text, delimiter) => {
+  const startIndex = text.indexOf(delimiter);
+  if (startIndex === -1) return null;
   
-  /**
-   * Set the next formatter in the chain
-   * @param {TextFormatter} formatter - The next formatter in the chain
-   * @returns {TextFormatter} - The formatter that was set as next
-   */
-  setNext(formatter) {
-    this.next = formatter;
-    return formatter;
-  }
+  const endIndex = text.indexOf(delimiter, startIndex + delimiter.length);
+  if (endIndex === -1) return null;
   
-  /**
-   * Format the text or pass to the next formatter in the chain
-   * @param {string} text - The text to format
-   * @returns {string} - The formatted text
-   */
-  format(text) {
-    const result = this.processText(text);
-    if (result) return result;
-    
-    if (this.next) {
-      return this.next.format(text);
-    }
-    
-    return text;
-  }
+  const beforeText = text.substring(0, startIndex);
+  const boldText = text.substring(startIndex, endIndex + delimiter.length);
+  const afterText = text.substring(endIndex + delimiter.length);
   
-  /**
-   * Process the text (to be implemented by subclasses)
-   * @param {string} text - The text to process
-   * @returns {string|null} - The processed text or null if not processed
-   */
-  processText(text) {
-    return null; // Default implementation does nothing
-  }
-}
-
-/**
- * Formatter for text wrapped in double asterisks
- */
-class AsteriskFormatter extends TextFormatter {
-  processText(text) {
-    return this.processDelimiter(text, '**');
-  }
-  
-  processDelimiter(text, delimiter) {
-    const startIndex = text.indexOf(delimiter);
-    if (startIndex === -1) return null;
-    
-    const endIndex = text.indexOf(delimiter, startIndex + delimiter.length);
-    if (endIndex === -1) return null;
-    
-    const beforeText = text.substring(0, startIndex);
-    const boldText = text.substring(startIndex, endIndex + delimiter.length);
-    const afterText = text.substring(endIndex + delimiter.length);
-    
-    return beforeText + `<strong>${boldText}</strong>` + afterText;
-  }
-}
-
-/**
- * Formatter for text wrapped in double underscores
- */
-class UnderscoreFormatter extends TextFormatter {
-  processText(text) {
-    return this.processDelimiter(text, '__');
-  }
-  
-  processDelimiter(text, delimiter) {
-    const startIndex = text.indexOf(delimiter);
-    if (startIndex === -1) return null;
-    
-    const endIndex = text.indexOf(delimiter, startIndex + delimiter.length);
-    if (endIndex === -1) return null;
-    
-    const beforeText = text.substring(0, startIndex);
-    const boldText = text.substring(startIndex, endIndex + delimiter.length);
-    const afterText = text.substring(endIndex + delimiter.length);
-    
-    return beforeText + `<strong>${boldText}</strong>` + afterText;
-  }
-}
-
-/**
- * Set up the chain of formatters
- */
-const setupFormatterChain = () => {
-  const asteriskFormatter = new AsteriskFormatter();
-  const underscoreFormatter = new UnderscoreFormatter();
-  
-  asteriskFormatter.setNext(underscoreFormatter);
-  
-  return asteriskFormatter;
+  return beforeText + `<strong>${boldText}</strong>` + afterText;
 };
 
-// Create the formatter chain once
-const formatterChain = setupFormatterChain();
+/**
+ * Creates a formatter function for a specific delimiter
+ * @param {string} delimiter - The delimiter to format
+ * @returns {function} - A formatter function for the delimiter
+ */
+const createDelimiterFormatter = (delimiter) => (text) => processDelimiter(text, delimiter);
+
+/**
+ * Combines multiple formatters into a chain using the Chain of Responsibility pattern
+ * @param {...function} formatters - The formatter functions to chain
+ * @returns {function} - A function that applies all formatters in sequence
+ */
+const chainFormatters = (...formatters) => (text) => {
+  for (const formatter of formatters) {
+    const result = formatter(text);
+    if (result) return result;
+  }
+  return text;
+};
+
+/**
+ * Create specific formatters for each delimiter type
+ */
+const asteriskFormatter = createDelimiterFormatter('**');
+const underscoreFormatter = createDelimiterFormatter('__');
+
+/**
+ * Combine the formatters into a chain
+ */
+const formatterChain = chainFormatters(
+  asteriskFormatter,
+  underscoreFormatter
+);
 
 /**
  * Format the given text using the chain of formatters
@@ -117,5 +66,5 @@ const formatterChain = setupFormatterChain();
  * @returns {string} - The formatted text
  */
 export function getFormattedText(text) {
-  return formatterChain.format(text);
+  return formatterChain(text);
 }
