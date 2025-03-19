@@ -724,3 +724,94 @@ export function generateBlogOuter(blog) {
     components.wrapFunc
   );
 }
+
+/**
+ * Generate an interactive article that uses a JavaScript function
+ * @param {string} id - The ID for the article (e.g., 'IDEN1')
+ * @param {string} title - The title for the article (e.g., 'Identity')
+ * @param {string} modulePath - The path to the module file (e.g., '/src/toys/2025-03-19/identity.js')
+ * @param {string} functionName - The name of the function to import (e.g., 'identity')
+ * @returns {string} - HTML for the interactive article
+ */
+export function generateInteractiveArticle(id, title, modulePath, functionName) {
+  const articleAttributes = `${createAttrPair(ATTR_NAME.CLASS, CLASS.ENTRY)} ${createAttrPair(ATTR_NAME.ID, id)}`;
+  
+  const titleSection = `
+        <div class="key article-title">${id}</div>
+        <div class="value">
+          <h2><a href="#${id}">${title}</a></h2>
+        </div>`;
+  
+  const inputSection = `
+        <div class="key">in</div>
+        <div class="value">
+          <form>
+            <input type="text">
+          </form>
+        </div>`;
+  
+  const buttonSection = `
+        <div class="key"></div>
+        <div class="value">
+          <button type="submit">Submit</button>
+        </div>`;
+  
+  const outputSection = `
+        <div class="key">out</div>
+        <div class="value warning">
+          <p>Initialising...</p>
+        </div>`;
+  
+  const scriptSection = `
+        <script type="module">
+          // Import the ${functionName} function from the external JS file
+          import { ${functionName} } from '${modulePath}';
+
+          // Get the article element
+          const article = document.getElementById('${id}');
+          
+          // Get the elements within the article
+          const inputElement = article.querySelector('input');
+          const submitButton = article.querySelector('button');
+          const outputElement = article.querySelector('p');
+          
+          // Initialize with a message
+          outputElement.textContent = 'Ready for input';
+          outputElement.parentElement.classList.remove('warning');
+          
+          // Extract the form submission handler into a reusable function
+          function handleSubmit(event) {
+            if (event) {
+              event.preventDefault();
+            }
+            const inputValue = inputElement.value;
+            
+            // Use the imported ${functionName} function
+            const result = ${functionName}(inputValue);
+            
+            // Update the output
+            outputElement.textContent = result;
+          }
+          
+          // Add event listener to the submit button
+          submitButton.addEventListener('click', handleSubmit);
+          
+          // Add event listener for Enter key in the input field
+          inputElement.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+              handleSubmit(event);
+            }
+          });
+        </script>`;
+
+  const fullWidthHeader = `
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>`;
+  
+  const articleContent = `${fullWidthHeader}${titleSection}${inputSection}${buttonSection}${outputSection}${scriptSection}`;
+
+  return `<article ${articleAttributes}>${articleContent}
+      </article>`;
+}
