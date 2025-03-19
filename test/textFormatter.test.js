@@ -1,6 +1,6 @@
 // textFormatter.test.js
 
-import { getFormattedText } from '../src/textFormatter';
+import { getFormattedText } from '../src/generator/textFormatter.js';
 
 describe('getFormattedText', () => {
   const testCases = [
