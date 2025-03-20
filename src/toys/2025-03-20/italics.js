@@ -3,24 +3,7 @@ const BOLD_PATTERN = /(?:\*\*.*?\*\*)|(?:__.*?__)/s;
 const ASTERISK_ITALICS_PATTERN = /\*(.*?)\*/g;
 const UNDERSCORE_ITALICS_PATTERN = /_(.*?)_/g;
 
-/**
- * Validates if the input is a non-empty string
- * @param {any} text - The input to validate
- * @param {boolean} allowEmpty - Whether to allow empty strings
- * @returns {boolean} - Whether the input is valid
- * @private
- */
-function isValidInput(text, allowEmpty = false) {
-  if (!text || typeof text !== 'string') {
-    return false;
-  }
-  
-  if (!allowEmpty && text.trim() === '') {
-    return false;
-  }
-  
-  return true;
-}
+
 
 
 
@@ -88,7 +71,7 @@ function processTextPreservingBold(text) {
  * @returns {string} Text with HTML <em> tags added around Markdown-formatted italics
  */
 export function italics(text) {
-  if (!isValidInput(text, true)) {
+  if (!text || typeof text !== 'string') {
     return text;
   }
   
