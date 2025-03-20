@@ -19,21 +19,21 @@ export function italics(text) {
   }
   
   // We'll use a recursive approach with special handling for bold segments
-  return processText(text);
+  return processTextPreservingBold(text);
 }
 
 /**
- * Process text recursively to handle all formatting cases
+ * Process text recursively to handle all formatting cases, preserving bold segments
  * @param {string} text - The text to process
- * @returns {string} - Processed text with HTML tags added
+ * @returns {string} - Processed text with HTML tags added around italics while preserving bold
  */
-function processText(text) {
+function processTextPreservingBold(text) {
   // First, identify any bold patterns
   const boldMatch = text.match(BOLD_PATTERN);
   
   if (!boldMatch) {
     // No bold pattern found, process italics only
-    return processItalics(text);
+    return applyItalicsFormatting(text);
   }
   
   const boldText = boldMatch[0];
@@ -46,19 +46,19 @@ function processText(text) {
   const afterText = text.substring(boldEndIndex);
   
   // Process text before and after the bold section for italics
-  const processedBeforeText = processItalics(beforeText);
-  const processedAfterText = processText(afterText); // Continue processing the rest recursively
+  const processedBeforeText = applyItalicsFormatting(beforeText);
+  const processedAfterText = processTextPreservingBold(afterText); // Continue processing the rest recursively
   
   // Combine the processed sections with the unchanged bold text
   return processedBeforeText + boldText + processedAfterText;
 }
 
 /**
- * Process just the italic markdown in text
+ * Apply HTML formatting to italic markdown in text while preserving the markdown characters
  * @param {string} text - The text to process
  * @returns {string} - Text with italic markdown wrapped in <em> tags
  */
-function processItalics(text) {
+function applyItalicsFormatting(text) {
   let result = text;
   
   // Process *asterisk* style italics
