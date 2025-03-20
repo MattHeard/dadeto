@@ -834,9 +834,10 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
           /**
            * Initialize a component when it enters the viewport
            * @param {string} id - The ID of the article element to observe
-           * @param {Function} processingFunction - The function to process input values
+           * @param {string} modulePath - Path to the module containing the processing function
+           * @param {string} functionName - Name of the function to import from the module
            */
-          function initializeWhenVisible(id, processingFunction) {
+          function initializeWhenVisible(id, modulePath, functionName) {
             const article = document.getElementById(id);
             
             // Create an observer instance
@@ -844,8 +845,15 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
               entries.forEach(entry => {
                 // If the article is visible
                 if (entry.isIntersecting) {
-                  // Initialize the component
-                  initializeInteractiveComponent(id, processingFunction);
+                  // Dynamically import the module only when the article is visible
+                  import(modulePath).then((module) => {
+                    const processingFunction = module[functionName];
+                    
+                    // Initialize the component with the imported function
+                    initializeInteractiveComponent(id, processingFunction);
+                  }).catch(error => {
+                    console.error('Error loading module ' + modulePath + ':', error);
+                  });
                   
                   // Stop observing once initialized
                   observer.disconnect();
@@ -862,7 +870,7 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
           }
           
           // Initialize the component when it becomes visible
-          initializeWhenVisible('${id}', ${functionName});
+          initializeWhenVisible('${id}', '${modulePath}', '${functionName}');
         </script>`;
 
   const fullWidthHeader = `
