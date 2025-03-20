@@ -156,6 +156,21 @@ function processAllItalicStyles(text) {
 }
 
 /**
+ * Create a replacement string for italic markdown content
+ * @param {string} content - The inner content of the markdown
+ * @param {string} marker - The markdown marker character (* or _)
+ * @returns {string} - HTML formatted replacement string
+ * @private
+ */
+function createItalicReplacementString(content, marker) {
+  const openTag = '<em>';
+  const closeTag = '</em>';
+  const markedContent = `${marker}${content}${marker}`;
+  
+  return `${openTag}${markedContent}${closeTag}`;
+}
+
+/**
  * Apply HTML formatting to markdown italics of a specific style
  * @param {string} text - The text to process
  * @param {RegExp} pattern - The regex pattern to match
@@ -164,5 +179,7 @@ function processAllItalicStyles(text) {
  * @private
  */
 function applySingleStyleItalicFormat(text, pattern, marker) {
-  return text.replace(pattern, `<em>${marker}$1${marker}</em>`);
+  return text.replace(pattern, (match, capturedContent) => {
+    return createItalicReplacementString(capturedContent, marker);
+  });
 }
