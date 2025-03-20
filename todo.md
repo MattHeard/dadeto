@@ -8,4 +8,3 @@ This document tracks planned features, improvements, and tasks for the Dadeto bl
 - Add italic formatting
 - Add blockquote support
 - Add inline image support
-- Add string->string toy layout
