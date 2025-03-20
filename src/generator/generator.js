@@ -831,8 +831,38 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
             enableControls();
           }
           
-          // Initialize the component with the specified function
-          initializeInteractiveComponent('${id}', ${functionName});
+          /**
+           * Initialize a component when it enters the viewport
+           * @param {string} id - The ID of the article element to observe
+           * @param {Function} processingFunction - The function to process input values
+           */
+          function initializeWhenVisible(id, processingFunction) {
+            const article = document.getElementById(id);
+            
+            // Create an observer instance
+            const observer = new IntersectionObserver((entries, observer) => {
+              entries.forEach(entry => {
+                // If the article is visible
+                if (entry.isIntersecting) {
+                  // Initialize the component
+                  initializeInteractiveComponent(id, processingFunction);
+                  
+                  // Stop observing once initialized
+                  observer.disconnect();
+                }
+              });
+            }, {
+              // Options for the observer
+              root: null, // viewport
+              threshold: 0.1 // 10% visibility is enough to trigger
+            });
+            
+            // Start observing the article
+            observer.observe(article);
+          }
+          
+          // Initialize the component when it becomes visible
+          initializeWhenVisible('${id}', ${functionName});
         </script>`;
 
   const fullWidthHeader = `
