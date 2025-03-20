@@ -3,6 +3,12 @@ const BOLD_PATTERN = /(?:\*\*.*?\*\*)|(?:__.*?__)/s;
 const ASTERISK_ITALICS_PATTERN = /\*(.*?)\*/g;
 const UNDERSCORE_ITALICS_PATTERN = /_(.*?)_/g;
 
+// Configurations for different italic styles
+const ITALIC_STYLES = [
+  { pattern: ASTERISK_ITALICS_PATTERN, marker: '*' },
+  { pattern: UNDERSCORE_ITALICS_PATTERN, marker: '_' }
+];
+
 
 
 
@@ -120,11 +126,14 @@ function findBoldSegments(text) {
  * @private
  */
 function processAllItalicStyles(text) {
-  // Process the text through both types of italic formatting in a functional chain
-  return applySingleStyleItalicFormat(
-    applySingleStyleItalicFormat(text, ASTERISK_ITALICS_PATTERN, '*'),
-    UNDERSCORE_ITALICS_PATTERN, 
-    '_'
+  // Process the text through all italic styles using reduce
+  return ITALIC_STYLES.reduce(
+    (processedText, style) => applySingleStyleItalicFormat(
+      processedText, 
+      style.pattern, 
+      style.marker
+    ),
+    text
   );
 }
 
