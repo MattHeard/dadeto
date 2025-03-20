@@ -775,9 +775,19 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
           const submitButton = article.querySelector('button');
           const outputElement = article.querySelector('p');
           
-          // Initialize with a message
-          outputElement.textContent = 'Ready for input';
-          outputElement.parentElement.classList.remove('warning');
+          // Disable controls during initialization
+          inputElement.disabled = true;
+          submitButton.disabled = true;
+          
+          // Function to enable the controls when ready
+          function enableControls() {
+            inputElement.disabled = false;
+            submitButton.disabled = false;
+            outputElement.textContent = 'Ready for input';
+            outputElement.parentElement.classList.remove('warning');
+            // Focus the input field for immediate typing
+            inputElement.focus();
+          }
           
           // Extract the form submission handler into a reusable function
           function handleSubmit(event) {
@@ -802,6 +812,11 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
               handleSubmit(event);
             }
           });
+          
+          // Simulate a short initialization delay (can be removed in production)
+          setTimeout(() => {
+            enableControls();
+          }, 500); // 500ms delay to demonstrate the disabled state
         </script>`;
 
   const fullWidthHeader = `
