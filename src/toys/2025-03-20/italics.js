@@ -10,6 +10,18 @@ const UNDERSCORE_ITALICS_PATTERN = /_(.*?)_/g;
  * Handles both *single asterisk* and _underscore_ style Markdown italics.
  * Does NOT add <em> tags around bold markdown syntax (** or __).
  * 
+ * @example
+ * // Returns: '<em>*italic*</em> text'
+ * italics('*italic* text');
+ * 
+ * @example
+ * // Returns: '<em>_italic_</em> text'
+ * italics('_italic_ text');
+ * 
+ * @example
+ * // Returns: '**bold** and <em>*italic*</em>'
+ * italics('**bold** and *italic*');
+ * 
  * @param {string} text - The input text that may contain Markdown italics syntax
  * @returns {string} Text with HTML <em> tags added around Markdown-formatted italics
  */
@@ -23,9 +35,17 @@ export function italics(text) {
 }
 
 /**
- * Process text recursively to handle all formatting cases, preserving bold segments
+ * Process text recursively to handle all formatting cases, preserving bold segments.
+ * This function identifies bold markdown segments and leaves them unmodified,
+ * while processing the text before and after for italic formatting.
+ * 
+ * @example
+ * // Returns: '**bold** <em>*italic*</em>'
+ * processTextPreservingBold('**bold** *italic*');
+ * 
  * @param {string} text - The text to process
  * @returns {string} - Processed text with HTML tags added around italics while preserving bold
+ * @private
  */
 function processTextPreservingBold(text) {
   // First, identify any bold patterns
@@ -54,9 +74,20 @@ function processTextPreservingBold(text) {
 }
 
 /**
- * Apply HTML formatting to italic markdown in text while preserving the markdown characters
+ * Apply HTML formatting to italic markdown in text while preserving the markdown characters.
+ * Processes both asterisk and underscore style italic markers.
+ * 
+ * @example
+ * // Returns: '<em>*text*</em>'
+ * applyItalicsFormatting('*text*');
+ * 
+ * @example
+ * // Returns: '<em>_text_</em>'
+ * applyItalicsFormatting('_text_');
+ * 
  * @param {string} text - The text to process
  * @returns {string} - Text with italic markdown wrapped in <em> tags
+ * @private
  */
 function applyItalicsFormatting(text) {
   let result = text;
