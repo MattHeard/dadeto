@@ -125,14 +125,25 @@ function findBoldSegments(text) {
  * @returns {string} - Text with italic markdown wrapped in <em> tags
  * @private
  */
+/**
+ * Apply a specific italic style configuration to the text
+ * @param {string} text - The text to process
+ * @param {Object} styleConfig - Configuration object with pattern and marker
+ * @returns {string} - Text with the particular italic style formatted
+ * @private
+ */
+function applyItalicStyleConfig(text, styleConfig) {
+  return applySingleStyleItalicFormat(
+    text,
+    styleConfig.pattern,
+    styleConfig.marker
+  );
+}
+
 function processAllItalicStyles(text) {
   // Process the text through all italic styles using reduce
   return ITALIC_STYLES.reduce(
-    (processedText, style) => applySingleStyleItalicFormat(
-      processedText, 
-      style.pattern, 
-      style.marker
-    ),
+    (processedText, styleConfig) => applyItalicStyleConfig(processedText, styleConfig),
     text
   );
 }
