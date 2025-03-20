@@ -195,7 +195,7 @@
         
         <div class="key">out</div>
         <div class="value warning">
-          <p>Initialising...</p>
+          <p>This toy requires Javascript to run.</p>
         </div>
 
         <script type="module">
@@ -213,6 +213,9 @@
           // Disable controls during initialization
           inputElement.disabled = true;
           submitButton.disabled = true;
+          
+          // Update message to show JS is running
+          outputElement.textContent = 'Initialising...';
           
           // Function to enable the controls when ready
           function enableControls() {

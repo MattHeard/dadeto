@@ -759,7 +759,7 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
   const outputSection = `
         <div class="key">out</div>
         <div class="value warning">
-          <p>Initialising...</p>
+          <p>This toy requires Javascript to run.</p>
         </div>`;
   
   const scriptSection = `
@@ -778,6 +778,9 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
           // Disable controls during initialization
           inputElement.disabled = true;
           submitButton.disabled = true;
+          
+          // Update message to show JS is running
+          outputElement.textContent = 'Initialising...';
           
           // Function to enable the controls when ready
           function enableControls() {
