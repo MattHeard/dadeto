@@ -4,6 +4,31 @@ const ASTERISK_ITALICS_PATTERN = /\*(.*?)\*/g;
 const UNDERSCORE_ITALICS_PATTERN = /_(.*?)_/g;
 
 /**
+ * Find bold segments in text and split into bold text and surrounding text
+ * 
+ * @param {string} text - The text to process
+ * @returns {Object|null} - Object with boldText, beforeText, and afterText properties, or null if no bold found
+ * @private
+ */
+function findBoldSegments(text) {
+  const boldMatch = text.match(BOLD_PATTERN);
+  
+  if (!boldMatch) {
+    return null;
+  }
+  
+  const boldText = boldMatch[0];
+  const boldStartIndex = boldMatch.index;
+  const boldEndIndex = boldStartIndex + boldText.length;
+  
+  return {
+    boldText,
+    beforeText: text.substring(0, boldStartIndex),
+    afterText: text.substring(boldEndIndex)
+  };
+}
+
+/**
  * Adds HTML <em> tags around text marked with Markdown italics while preserving
  * the original Markdown characters.
  * 
@@ -54,21 +79,15 @@ function processTextPreservingBold(text) {
   }
   
   // First, identify any bold patterns
-  const boldMatch = text.match(BOLD_PATTERN);
+  const boldSegments = findBoldSegments(text);
   
-  if (!boldMatch) {
+  if (!boldSegments) {
     // No bold pattern found, process italics only
     return applyItalicsFormatting(text);
   }
   
-  const boldText = boldMatch[0];
-  const boldStartIndex = boldMatch.index;
-  const boldEndIndex = boldStartIndex + boldText.length;
-  
-  // Text before the bold section
-  const beforeText = text.substring(0, boldStartIndex);
-  // Text after the bold section
-  const afterText = text.substring(boldEndIndex);
+  // Extract the segments
+  const { boldText, beforeText, afterText } = boldSegments;
   
   // Process text before and after the bold section for italics
   // Use empty string as fallback for undefined or null segments
@@ -101,13 +120,29 @@ function applyItalicsFormatting(text) {
     return text;
   }
   
-  let result = text;
-  
-  // Process *asterisk* style italics
-  result = result.replace(ASTERISK_ITALICS_PATTERN, '<em>*$1*</em>');
-  
-  // Process _underscore_ style italics 
-  result = result.replace(UNDERSCORE_ITALICS_PATTERN, '<em>_$1_</em>');
+  // Process the text through both formatting helpers
+  let result = applyAsteriskItalicsFormatting(text);
+  result = applyUnderscoreItalicsFormatting(result);
   
   return result;
+}
+
+/**
+ * Apply HTML formatting to asterisk-style italic markdown
+ * @param {string} text - The text to process
+ * @returns {string} - Text with asterisk italic markdown wrapped in <em> tags
+ * @private
+ */
+function applyAsteriskItalicsFormatting(text) {
+  return text.replace(ASTERISK_ITALICS_PATTERN, '<em>*$1*</em>');
+}
+
+/**
+ * Apply HTML formatting to underscore-style italic markdown
+ * @param {string} text - The text to process
+ * @returns {string} - Text with underscore italic markdown wrapped in <em> tags
+ * @private
+ */
+function applyUnderscoreItalicsFormatting(text) {
+  return text.replace(UNDERSCORE_ITALICS_PATTERN, '<em>_$1_</em>');
 }
