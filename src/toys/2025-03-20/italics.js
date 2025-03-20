@@ -31,7 +31,7 @@ function processTextPreservingBold(text) {
   
   if (!boldSegments) {
     // No bold pattern found, process italics only
-    return applyItalicsFormatting(text);
+    return processAllItalicStyles(text);
   }
   
   // Extract the segments
@@ -39,7 +39,7 @@ function processTextPreservingBold(text) {
   
   // Process text before and after the bold section for italics
   // Use empty string as fallback for undefined or null segments
-  const processedBeforeText = beforeText ? applyItalicsFormatting(beforeText) : '';
+  const processedBeforeText = beforeText ? processAllItalicStyles(beforeText) : '';
   const processedAfterText = afterText ? processTextPreservingBold(afterText) : ''; // Continue processing the rest recursively
   
   // Combine the processed sections with the unchanged bold text
@@ -112,20 +112,20 @@ function findBoldSegments(text) {
  * 
  * @example
  * // Returns: '<em>*text*</em>'
- * applyItalicsFormatting('*text*');
+ * processAllItalicStyles('*text*');
  * 
  * @example
  * // Returns: '<em>_text_</em>'
- * applyItalicsFormatting('_text_');
+ * processAllItalicStyles('_text_');
  * 
  * @param {string} text - The text to process
  * @returns {string} - Text with italic markdown wrapped in <em> tags
  * @private
  */
-function applyItalicsFormatting(text) {
+function processAllItalicStyles(text) {
   // Process the text through both types of italic formatting
-  let result = applyItalicFormatting(text, ASTERISK_ITALICS_PATTERN, '*');
-  result = applyItalicFormatting(result, UNDERSCORE_ITALICS_PATTERN, '_');
+  let result = applySingleStyleItalicFormat(text, ASTERISK_ITALICS_PATTERN, '*');
+  result = applySingleStyleItalicFormat(result, UNDERSCORE_ITALICS_PATTERN, '_');
   
   return result;
 }
@@ -138,6 +138,6 @@ function applyItalicsFormatting(text) {
  * @returns {string} - Text with italic markdown wrapped in <em> tags
  * @private
  */
-function applyItalicFormatting(text, pattern, marker) {
+function applySingleStyleItalicFormat(text, pattern, marker) {
   return text.replace(pattern, `<em>${marker}$1${marker}</em>`);
 }
