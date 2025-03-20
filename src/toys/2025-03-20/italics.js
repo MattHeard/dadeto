@@ -163,6 +163,17 @@ function processAllItalicStyles(text) {
  * @private
  */
 /**
+ * Wrap content with a marker at the beginning and end
+ * @param {string} content - The content to wrap
+ * @param {string} marker - The marker to add at beginning and end
+ * @returns {string} - Content wrapped with markers
+ * @private
+ */
+function wrapWithMarker(content, marker) {
+  return `${marker}${content}${marker}`;
+}
+
+/**
  * Create an HTML tag wrapper for content
  * @param {string} tagName - The HTML tag name (without brackets)
  * @param {string} content - The content to wrap
@@ -174,11 +185,8 @@ function wrapWithHtmlTag(tagName, content) {
 }
 
 function createItalicReplacementString(content, marker) {
-  // Mark the content with markdown markers
-  const markedContent = `${marker}${content}${marker}`;
-  
-  // Wrap with HTML tag
-  return wrapWithHtmlTag('em', markedContent);
+  // First wrap content with markdown markers, then with HTML tag
+  return wrapWithHtmlTag('em', wrapWithMarker(content, marker));
 }
 
 /**
