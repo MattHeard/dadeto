@@ -38,9 +38,9 @@ function isValidInput(text, allowEmpty = false) {
  * @private
  */
 function processTextPreservingBold(text) {
-  // Ensure we have valid input
-  if (!isValidInput(text)) {
-    return text;
+  // For recursive calls with empty segments, return early
+  if (!text || text.trim() === '') {
+    return '';
   }
   
   // First, identify any bold patterns
@@ -140,11 +140,6 @@ function findBoldSegments(text) {
  * @private
  */
 function applyItalicsFormatting(text) {
-  // Ensure we have valid input
-  if (!isValidInput(text)) {
-    return text;
-  }
-  
   // Process the text through both types of italic formatting
   let result = applyItalicFormatting(text, ASTERISK_ITALICS_PATTERN, '*');
   result = applyItalicFormatting(result, UNDERSCORE_ITALICS_PATTERN, '_');
