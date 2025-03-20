@@ -149,10 +149,7 @@ function applyItalicStyleConfig(text, styleConfig) {
  */
 function processAllItalicStyles(text) {
   // Process the text through all italic styles using reduce
-  return ITALIC_STYLES.reduce(
-    (processedText, styleConfig) => applyItalicStyleConfig(processedText, styleConfig),
-    text
-  );
+  return ITALIC_STYLES.reduce(applyItalicStyleConfig, text);
 }
 
 /**
