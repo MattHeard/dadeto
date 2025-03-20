@@ -35,4 +35,25 @@ describe('italics function', () => {
       'Text with <em>_multiple_</em> <em>*italic*</em> <em>_formats_</em> mixed <em>*in*</em>'
     );
   });
+
+  test('does not add <em> tags around bold double-asterisk markdown', () => {
+    expect(italics('This is **bold** text')).toBe('This is **bold** text');
+    expect(italics('**Start** and end')).toBe('**Start** and end');
+    expect(italics('Mixed **bold** and *italic*')).toBe('Mixed **bold** and <em>*italic*</em>');
+  });
+
+  test('does not add <em> tags around bold double-underscore markdown', () => {
+    expect(italics('This is __bold__ text')).toBe('This is __bold__ text');
+    expect(italics('__Start__ and end')).toBe('__Start__ and end');
+    expect(italics('Mixed __bold__ and _italic_')).toBe('Mixed __bold__ and <em>_italic_</em>');
+  });
+
+  test('handles complex mixed formatting correctly', () => {
+    expect(italics('**Bold** and *italic* mixed')).toBe('**Bold** and <em>*italic*</em> mixed');
+    expect(italics('__Bold__ and _italic_ mixed')).toBe('__Bold__ and <em>_italic_</em> mixed');
+    expect(italics('**Bold with *nested italic***')).toBe('**Bold with *nested italic***');
+    expect(italics('__Bold with _nested italic___')).toBe('__Bold with _nested italic___');
+    expect(italics('Text with **bold** and *italic* and __more bold__ and _more italic_'))
+      .toBe('Text with **bold** and <em>*italic*</em> and __more bold__ and <em>_more italic_</em>');
+  });
 });
