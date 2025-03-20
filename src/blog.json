@@ -7,7 +7,14 @@
       "toy": {
         "modulePath": "/2025-03-20/identity.js",
         "functionName": "identity"
-      }
+      },
+      "relatedLinks": [
+        {
+          "url": "#HELL1",
+          "title": "Hello world",
+          "type": "article"
+        }
+      ]
     },
     {
       "key": "GETT1",
@@ -28,7 +35,7 @@
       },
       "relatedLinks": [
         {
-          "url": "https://mattheard.net/#ABRA1",
+          "url": "#ABRA1",
           "title": "A Brain Fog",
           "type": "article"
         },
@@ -159,7 +166,15 @@
           "id": "EdlrqPPI_YQ",
           "title": "Lonely & Horny Episode 2 - Orion",
           "timestamp": 420
-      }
+      },
+      "relatedLinks": [
+        {
+          "url": "https://www.gutenberg.org/cache/epub/46743/pg46743-images.html",
+          "title": "The Methods of Ethics",
+          "author": "Henry Sidgwick",
+          "type": "book"
+        }
+      ]
     },
     {
       "key": "ETHI1",
