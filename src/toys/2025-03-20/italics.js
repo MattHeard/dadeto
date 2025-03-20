@@ -3,6 +3,25 @@ const BOLD_PATTERN = /(?:\*\*.*?\*\*)|(?:__.*?__)/s;
 const ASTERISK_ITALICS_PATTERN = /\*(.*?)\*/g;
 const UNDERSCORE_ITALICS_PATTERN = /_(.*?)_/g;
 
+/**
+ * Validates if the input is a non-empty string
+ * @param {any} text - The input to validate
+ * @param {boolean} allowEmpty - Whether to allow empty strings
+ * @returns {boolean} - Whether the input is valid
+ * @private
+ */
+function isValidInput(text, allowEmpty = false) {
+  if (!text || typeof text !== 'string') {
+    return false;
+  }
+  
+  if (!allowEmpty && text.trim() === '') {
+    return false;
+  }
+  
+  return true;
+}
+
 
 
 /**
@@ -20,7 +39,7 @@ const UNDERSCORE_ITALICS_PATTERN = /_(.*?)_/g;
  */
 function processTextPreservingBold(text) {
   // Ensure we have valid input
-  if (!text || typeof text !== 'string' || text.trim() === '') {
+  if (!isValidInput(text)) {
     return text;
   }
   
@@ -69,7 +88,7 @@ function processTextPreservingBold(text) {
  * @returns {string} Text with HTML <em> tags added around Markdown-formatted italics
  */
 export function italics(text) {
-  if (!text || typeof text !== 'string') {
+  if (!isValidInput(text, true)) {
     return text;
   }
   
@@ -122,7 +141,7 @@ function findBoldSegments(text) {
  */
 function applyItalicsFormatting(text) {
   // Ensure we have valid input
-  if (!text || typeof text !== 'string' || text.trim() === '') {
+  if (!isValidInput(text)) {
     return text;
   }
   
