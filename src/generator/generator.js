@@ -510,7 +510,9 @@ function createMediaSectionGenerator(mediaType, label) {
  * Create illustration image element
  */
 function createIllustrationImage(post) {
-  const src = `${post.publicationDate}.${post.illustration.fileType}`;
+  // Use fileName if provided, otherwise fall back to publicationDate
+  const fileName = post.illustration.fileName || post.publicationDate;
+  const src = `${fileName}.${post.illustration.fileType}`;
   const altText = post.illustration.altText;
 
   return `<img loading="lazy" src="${src}" alt="${altText}"/>`;
