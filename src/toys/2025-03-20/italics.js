@@ -48,6 +48,11 @@ export function italics(text) {
  * @private
  */
 function processTextPreservingBold(text) {
+  // Ensure we have valid input
+  if (!text || typeof text !== 'string' || text.trim() === '') {
+    return text;
+  }
+  
   // First, identify any bold patterns
   const boldMatch = text.match(BOLD_PATTERN);
   
@@ -66,8 +71,9 @@ function processTextPreservingBold(text) {
   const afterText = text.substring(boldEndIndex);
   
   // Process text before and after the bold section for italics
-  const processedBeforeText = applyItalicsFormatting(beforeText);
-  const processedAfterText = processTextPreservingBold(afterText); // Continue processing the rest recursively
+  // Use empty string as fallback for undefined or null segments
+  const processedBeforeText = beforeText ? applyItalicsFormatting(beforeText) : '';
+  const processedAfterText = afterText ? processTextPreservingBold(afterText) : ''; // Continue processing the rest recursively
   
   // Combine the processed sections with the unchanged bold text
   return processedBeforeText + boldText + processedAfterText;
@@ -90,6 +96,11 @@ function processTextPreservingBold(text) {
  * @private
  */
 function applyItalicsFormatting(text) {
+  // Ensure we have valid input
+  if (!text || typeof text !== 'string' || text.trim() === '') {
+    return text;
+  }
+  
   let result = text;
   
   // Process *asterisk* style italics
