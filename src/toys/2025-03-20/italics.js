@@ -125,6 +125,7 @@ function findBoldSegments(text) {
  * @returns {string} - Text with italic markdown wrapped in <em> tags
  * @private
  */
+
 /**
  * Apply a specific italic style configuration to the text
  * @param {string} text - The text to process
@@ -140,6 +141,12 @@ function applyItalicStyleConfig(text, styleConfig) {
   );
 }
 
+/**
+ * Process text through all italic style types (asterisk and underscore)
+ * @param {string} text - The text to process 
+ * @returns {string} - Text with all italic styles formatted
+ * @private
+ */
 function processAllItalicStyles(text) {
   // Process the text through all italic styles using reduce
   return ITALIC_STYLES.reduce(
