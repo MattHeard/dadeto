@@ -167,8 +167,13 @@ function processAllItalicStyles(text) {
  * @private
  */
 function createItalicReplacementString(content, marker) {
-  const markedContent = `${marker}${content}${marker}`;
-  return `${ITALIC_OPEN_TAG}${markedContent}${ITALIC_CLOSE_TAG}`;
+  return [
+    ITALIC_OPEN_TAG,
+    marker,
+    content,
+    marker,
+    ITALIC_CLOSE_TAG
+  ].join('');
 }
 
 /**
