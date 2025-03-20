@@ -231,7 +231,7 @@
         
         <div class="key">out</div>
         <div class="value warning">
-          <p>This toy requires Javascript to run.</p>
+          <p class="output">This toy requires Javascript to run.</p>
         </div>
         
         <!-- Register this interactive component -->
@@ -330,7 +330,7 @@
         // Get the elements within the article
         const inputElement = article.querySelector('input');
         const submitButton = article.querySelector('button');
-        const outputElement = article.querySelector('p');
+        const outputElement = article.querySelector('p.output');
         
         // Disable controls during initialization
         inputElement.disabled = true;

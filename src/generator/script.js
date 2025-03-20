@@ -77,7 +77,7 @@ const interactiveComponentsScript = `
     // Get the elements within the article
     const inputElement = article.querySelector('input');
     const submitButton = article.querySelector('button');
-    const outputElement = article.querySelector('p');
+    const outputElement = article.querySelector('p.output');
     
     // Disable controls during initialization
     inputElement.disabled = true;

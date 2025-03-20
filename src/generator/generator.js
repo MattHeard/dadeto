@@ -670,6 +670,91 @@ function combineHTMLSections(...sections) {
 }
 
 /**
+ * Check if post has a toy component
+ * @param {Object} post - The blog post
+ * @returns {boolean} - True if post has a toy component
+ */
+function hasToy(post) {
+  return post && post.toy && post.toy.modulePath && post.toy.functionName;
+}
+
+/**
+ * Generate the input section for a toy component
+ * @returns {string} - HTML for the input section
+ */
+function generateToyInputSection() {
+  const keyDiv = createDiv(CLASS.KEY, 'in');
+  const valueContent = '<form><input type="text" disabled></form>';
+  const valueDiv = createValueDiv(valueContent);
+  
+  return formatSection(keyDiv, valueDiv);
+}
+
+/**
+ * Generate the button section for a toy component
+ * @returns {string} - HTML for the button section
+ */
+function generateToyButtonSection() {
+  const keyDiv = createEmptyKeyDiv();
+  const valueContent = '<button type="submit" disabled>Submit</button>';
+  const valueDiv = createValueDiv(valueContent);
+  
+  return formatSection(keyDiv, valueDiv);
+}
+
+/**
+ * Generate the output section for a toy component
+ * @returns {string} - HTML for the output section
+ */
+function generateToyOutputSection() {
+  const keyDiv = createDiv(CLASS.KEY, 'out');
+  const valueContent = '<p class="output">This toy requires Javascript to run.</p>';
+  const valueDiv = createValueDiv(valueContent, [CLASS.WARNING]);
+  
+  return formatSection(keyDiv, valueDiv);
+}
+
+/**
+ * Generate script tag to add the component
+ * @param {Object} post - The blog post
+ * @returns {string} - HTML script tag
+ */
+function generateToyScript(post) {
+  const scriptContent = `window.addComponent('${post.key}', '${post.toy.modulePath}', '${post.toy.functionName}');`;
+  return `<script type="module">${scriptContent}</script>`;
+}
+
+/**
+ * Generate the toy UI components for a blog post
+ * @param {Object} post - The blog post
+ * @returns {string} - HTML for the toy UI components
+ */
+function generateToyUISection(post) {
+  if (!hasToy(post)) {
+    return '';
+  }
+  
+  return combineHTMLSections(
+    generateToyInputSection(),
+    generateToyButtonSection(),
+    generateToyOutputSection()
+  );
+}
+
+/**
+ * Generate the toy script section for a blog post
+ * @param {Object} post - The blog post
+ * @returns {string} - HTML for the toy script section
+ */
+function generateToyScriptSection(post) {
+  if (!hasToy(post)) {
+    return '';
+  }
+  
+  return generateToyScript(post);
+}
+
+/**
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
@@ -677,7 +762,9 @@ function generateArticleContent(post) {
     generateHeaderSection(post),
     generateMediaSections(post),
     generateContentSections(post),
-    generateRelatedLinksSection(post)
+    generateToyUISection(post),
+    generateRelatedLinksSection(post),
+    generateToyScriptSection(post)
   );
 }
 

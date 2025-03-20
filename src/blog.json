@@ -1,6 +1,15 @@
 {
   "posts": [
     {
+      "key": "IDEN1",
+      "title": "Identity",
+      "publicationDate": "2025-03-20",
+      "toy": {
+        "modulePath": "/2025-03-20/identity.js",
+        "functionName": "identity"
+      }
+    },
+    {
       "key": "GETT1",
       "title": "_Getting Things Done_",
       "publicationDate": "2025-03-15",
@@ -90,7 +99,6 @@
       ]
     },
     {
-      "key": "DETE1",
       "key": "DETE1",
       "title": "Deterministic Moral Preferences",
       "publicationDate": "2024-10-08",

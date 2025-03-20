@@ -206,6 +206,31 @@
           Software developer and philosopher in Berlin
         </div>
       </div>
+      <article class="entry" id="IDEN1">
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">IDEN1</div>
+        <div class="value">
+          <h2><a href="#IDEN1">Identity</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">20 Mar 2025</p>
+        <div class="key">in</div>
+        <div class="value">
+          <form><input type="text" disabled /></form>
+        </div>
+        <div class="key"></div>
+        <div class="value"><button type="submit" disabled>Submit</button></div>
+        <div class="key">out</div>
+        <div class="value warning">
+          <p class="output">This toy requires Javascript to run.</p>
+        </div>
+        <script type="module">
+          window.addComponent('IDEN1', '/2025-03-20/identity.js', 'identity');
+        </script>
+      </article>
       <article class="entry" id="GETT1">
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
         <div class="value full-width">
@@ -3895,7 +3920,7 @@
         // Get the elements within the article
         const inputElement = article.querySelector('input');
         const submitButton = article.querySelector('button');
-        const outputElement = article.querySelector('p');
+        const outputElement = article.querySelector('p.output');
 
         // Disable controls during initialization
         inputElement.disabled = true;
