@@ -767,59 +767,72 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
           // Import the ${functionName} function from the external JS file
           import { ${functionName} } from '${modulePath}';
 
-          // Get the article element
-          const article = document.getElementById('${id}');
-          
-          // Get the elements within the article
-          const inputElement = article.querySelector('input');
-          const submitButton = article.querySelector('button');
-          const outputElement = article.querySelector('p');
-          
-          // Disable controls during initialization
-          inputElement.disabled = true;
-          submitButton.disabled = true;
-          
-          // Update message to show JS is running
-          outputElement.textContent = 'Initialising...';
-          
-          // Function to enable the controls when ready
-          function enableControls() {
-            inputElement.disabled = false;
-            submitButton.disabled = false;
-            outputElement.textContent = 'Ready for input';
-            outputElement.parentElement.classList.remove('warning');
-            // Focus the input field for immediate typing
-            inputElement.focus();
-          }
-          
-          // Extract the form submission handler into a reusable function
-          function handleSubmit(event) {
-            if (event) {
-              event.preventDefault();
-            }
-            const inputValue = inputElement.value;
+          /**
+           * Initialize an interactive component with a processing function
+           * @param {string} id - The ID of the article element
+           * @param {Function} processingFunction - The function to process input values
+           */
+          function initializeInteractiveComponent(id, processingFunction) {
+            // Get the article element
+            const article = document.getElementById(id);
             
-            // Use the imported ${functionName} function
-            const result = ${functionName}(inputValue);
+            // Get the elements within the article
+            const inputElement = article.querySelector('input');
+            const submitButton = article.querySelector('button');
+            const outputElement = article.querySelector('p');
             
-            // Update the output
-            outputElement.textContent = result;
-          }
-          
-          // Add event listener to the submit button
-          submitButton.addEventListener('click', handleSubmit);
-          
-          // Add event listener for Enter key in the input field
-          inputElement.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-              handleSubmit(event);
+            // Disable controls during initialization
+            inputElement.disabled = true;
+            submitButton.disabled = true;
+            
+            // Update message to show JS is running
+            outputElement.textContent = 'Initialising...';
+            
+            /**
+             * Enable controls and update status message
+             */
+            function enableControls() {
+              inputElement.disabled = false;
+              submitButton.disabled = false;
+              outputElement.textContent = 'Ready for input';
+              outputElement.parentElement.classList.remove('warning');
+              // Focus the input field for immediate typing
+              inputElement.focus();
             }
-          });
-          
-          // Simulate a short initialization delay (can be removed in production)
-          setTimeout(() => {
+            
+            /**
+             * Handle form submission events
+             * @param {Event} event - The submission event
+             */
+            function handleSubmit(event) {
+              if (event) {
+                event.preventDefault();
+              }
+              const inputValue = inputElement.value;
+              
+              // Use the provided processing function
+              const result = processingFunction(inputValue);
+              
+              // Update the output
+              outputElement.textContent = result;
+            }
+            
+            // Add event listener to the submit button
+            submitButton.addEventListener('click', handleSubmit);
+            
+            // Add event listener for Enter key in the input field
+            inputElement.addEventListener('keypress', (event) => {
+              if (event.key === 'Enter') {
+                handleSubmit(event);
+              }
+            });
+            
+            // Enable controls when initialization is complete
             enableControls();
-          }, 500); // 500ms delay to demonstrate the disabled state
+          }
+          
+          // Initialize the component with the specified function
+          initializeInteractiveComponent('${id}', ${functionName});
         </script>`;
 
   const fullWidthHeader = `
