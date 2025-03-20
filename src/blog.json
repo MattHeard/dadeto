@@ -121,7 +121,11 @@
     {
       "key": "HELL1",
       "publicationDate": "2024-10-02",
-      "title": "Hello world"
+      "title": "Hello world",
+      "toy": {
+        "modulePath": "/2024-10-02/hello.js",
+        "functionName": "hello"
+      }
     },
     {
       "key": "ADJE1",
