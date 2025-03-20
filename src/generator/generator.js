@@ -746,14 +746,14 @@ export function generateInteractiveArticle(id, title, modulePath, functionName) 
         <div class="key">in</div>
         <div class="value">
           <form>
-            <input type="text">
+            <input type="text" disabled>
           </form>
         </div>`;
   
   const buttonSection = `
         <div class="key"></div>
         <div class="value">
-          <button type="submit">Submit</button>
+          <button type="submit" disabled>Submit</button>
         </div>`;
   
   const outputSection = `
