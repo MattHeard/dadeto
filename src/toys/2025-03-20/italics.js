@@ -126,29 +126,21 @@ function applyItalicsFormatting(text) {
     return text;
   }
   
-  // Process the text through both formatting helpers
-  let result = applyAsteriskItalicsFormatting(text);
-  result = applyUnderscoreItalicsFormatting(result);
+  // Process the text through both types of italic formatting
+  let result = applyItalicFormatting(text, ASTERISK_ITALICS_PATTERN, '*');
+  result = applyItalicFormatting(result, UNDERSCORE_ITALICS_PATTERN, '_');
   
   return result;
 }
 
 /**
- * Apply HTML formatting to asterisk-style italic markdown
+ * Apply HTML formatting to markdown italics of a specific style
  * @param {string} text - The text to process
- * @returns {string} - Text with asterisk italic markdown wrapped in <em> tags
+ * @param {RegExp} pattern - The regex pattern to match
+ * @param {string} marker - The markdown marker character (* or _)
+ * @returns {string} - Text with italic markdown wrapped in <em> tags
  * @private
  */
-function applyAsteriskItalicsFormatting(text) {
-  return text.replace(ASTERISK_ITALICS_PATTERN, '<em>*$1*</em>');
-}
-
-/**
- * Apply HTML formatting to underscore-style italic markdown
- * @param {string} text - The text to process
- * @returns {string} - Text with underscore italic markdown wrapped in <em> tags
- * @private
- */
-function applyUnderscoreItalicsFormatting(text) {
-  return text.replace(UNDERSCORE_ITALICS_PATTERN, '<em>_$1_</em>');
+function applyItalicFormatting(text, pattern, marker) {
+  return text.replace(pattern, `<em>${marker}$1${marker}</em>`);
 }
