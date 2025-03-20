@@ -9,6 +9,10 @@ const ITALIC_STYLES = [
   { pattern: UNDERSCORE_ITALICS_PATTERN, marker: '_' }
 ];
 
+// HTML tag constants
+const ITALIC_OPEN_TAG = '<em>';
+const ITALIC_CLOSE_TAG = '</em>';
+
 
 
 
@@ -163,11 +167,8 @@ function processAllItalicStyles(text) {
  * @private
  */
 function createItalicReplacementString(content, marker) {
-  const openTag = '<em>';
-  const closeTag = '</em>';
   const markedContent = `${marker}${content}${marker}`;
-  
-  return `${openTag}${markedContent}${closeTag}`;
+  return `${ITALIC_OPEN_TAG}${markedContent}${ITALIC_CLOSE_TAG}`;
 }
 
 /**
