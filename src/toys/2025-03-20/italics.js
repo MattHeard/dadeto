@@ -34,16 +34,13 @@ function processTextPreservingBold(text) {
     return processAllItalicStyles(text);
   }
   
-  // Extract the segments
+  // Extract the segments and immediately process them for the return value
   const { boldText, beforeText, afterText } = boldSegments;
   
-  // Process text before and after the bold section for italics
-  // Use empty string as fallback for undefined or null segments
-  const processedBeforeText = beforeText ? processAllItalicStyles(beforeText) : '';
-  const processedAfterText = afterText ? processTextPreservingBold(afterText) : ''; // Continue processing the rest recursively
-  
-  // Combine the processed sections with the unchanged bold text
-  return processedBeforeText + boldText + processedAfterText;
+  // Combine the processed sections with the unchanged bold text in a single return statement
+  return (beforeText ? processAllItalicStyles(beforeText) : '') + 
+         boldText + 
+         (afterText ? processTextPreservingBold(afterText) : '');
 }
 
 // Main exported function
@@ -123,11 +120,12 @@ function findBoldSegments(text) {
  * @private
  */
 function processAllItalicStyles(text) {
-  // Process the text through both types of italic formatting
-  let result = applySingleStyleItalicFormat(text, ASTERISK_ITALICS_PATTERN, '*');
-  result = applySingleStyleItalicFormat(result, UNDERSCORE_ITALICS_PATTERN, '_');
-  
-  return result;
+  // Process the text through both types of italic formatting in a functional chain
+  return applySingleStyleItalicFormat(
+    applySingleStyleItalicFormat(text, ASTERISK_ITALICS_PATTERN, '*'),
+    UNDERSCORE_ITALICS_PATTERN, 
+    '_'
+  );
 }
 
 /**
