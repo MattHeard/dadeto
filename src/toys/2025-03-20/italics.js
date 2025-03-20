@@ -162,20 +162,23 @@ function processAllItalicStyles(text) {
  * @returns {string} - HTML formatted replacement string
  * @private
  */
+/**
+ * Create an HTML tag wrapper for content
+ * @param {string} tagName - The HTML tag name (without brackets)
+ * @param {string} content - The content to wrap
+ * @returns {string} - The content wrapped in the HTML tag
+ * @private
+ */
+function wrapWithHtmlTag(tagName, content) {
+  return [`<${tagName}>`, content, `</${tagName}>`].join('');
+}
+
 function createItalicReplacementString(content, marker) {
-  const tagName = 'em';
+  // Mark the content with markdown markers
+  const markedContent = `${marker}${content}${marker}`;
   
-  return [
-    '<',
-    tagName,
-    '>',
-    marker,
-    content,
-    marker,
-    '</',
-    tagName,
-    '>'
-  ].join('');
+  // Wrap with HTML tag
+  return wrapWithHtmlTag('em', markedContent);
 }
 
 /**
