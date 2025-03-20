@@ -163,12 +163,18 @@ function processAllItalicStyles(text) {
  * @private
  */
 function createItalicReplacementString(content, marker) {
+  const tagName = 'em';
+  
   return [
-    '<em>',
+    '<',
+    tagName,
+    '>',
     marker,
     content,
     marker,
-    '</em>'
+    '</',
+    tagName,
+    '>'
   ].join('');
 }
 
