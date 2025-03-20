@@ -1,3 +1,8 @@
+// Regex patterns for different markdown styles
+const BOLD_PATTERN = /(?:\*\*.*?\*\*)|(?:__.*?__)/s;
+const ASTERISK_ITALICS_PATTERN = /\*(.*?)\*/g;
+const UNDERSCORE_ITALICS_PATTERN = /_(.*?)_/g;
+
 /**
  * Adds HTML <em> tags around text marked with Markdown italics while preserving
  * the original Markdown characters.
@@ -24,7 +29,7 @@ export function italics(text) {
  */
 function processText(text) {
   // First, identify any bold patterns
-  const boldMatch = text.match(/(?:\*\*.*?\*\*)|(?:__.*?__)/s);
+  const boldMatch = text.match(BOLD_PATTERN);
   
   if (!boldMatch) {
     // No bold pattern found, process italics only
@@ -57,10 +62,10 @@ function processItalics(text) {
   let result = text;
   
   // Process *asterisk* style italics
-  result = result.replace(/\*(.*?)\*/g, '<em>*$1*</em>');
+  result = result.replace(ASTERISK_ITALICS_PATTERN, '<em>*$1*</em>');
   
   // Process _underscore_ style italics 
-  result = result.replace(/_(.*?)_/g, '<em>_$1_</em>');
+  result = result.replace(UNDERSCORE_ITALICS_PATTERN, '<em>_$1_</em>');
   
   return result;
 }
