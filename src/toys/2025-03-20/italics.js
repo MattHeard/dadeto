@@ -134,11 +134,9 @@ function findBoldSegments(text) {
  * @private
  */
 function applyItalicStyleConfig(text, styleConfig) {
-  return applySingleStyleItalicFormat(
-    text,
-    styleConfig.pattern,
-    styleConfig.marker
-  );
+  return text.replace(styleConfig.pattern, (match, capturedContent) => {
+    return createItalicReplacementString(capturedContent, styleConfig.marker);
+  });
 }
 
 /**
@@ -186,16 +184,4 @@ function createItalicReplacementString(content, marker) {
   return wrapWithHtmlTag('em', wrapWithMarker(content, marker));
 }
 
-/**
- * Apply HTML formatting to markdown italics of a specific style
- * @param {string} text - The text to process
- * @param {RegExp} pattern - The regex pattern to match
- * @param {string} marker - The markdown marker character (* or _)
- * @returns {string} - Text with italic markdown wrapped in <em> tags
- * @private
- */
-function applySingleStyleItalicFormat(text, pattern, marker) {
-  return text.replace(pattern, (match, capturedContent) => {
-    return createItalicReplacementString(capturedContent, marker);
-  });
-}
+
