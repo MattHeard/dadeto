@@ -286,4 +286,29 @@ describe('Blog Generator', () => {
     const expectedHtml = `<html><body><article class="entry" id="TOY01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TOY01</div><div class="value"><h2><a href="#TOY01">Post with Toy</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Mar 2024</p><div class="key">in</div><div class="value"><form><input type="text" disabled></form></div><div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div><div class="key">out</div><div class="value warning"><p class="output">This toy requires Javascript to run.</p></div><script type="module">window.addComponent('TOY01', './toys/2024-03-01/calculator.js', 'calculator');</script></article><article class="entry" id="LINK1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">LINK1</div><div class="value"><h2><a href="#LINK1">Post with Related Links</a></h2></div><div class="key">pubAt</div><p class="value metadata">2 Mar 2024</p><div class="key">in</div><div class="value"><form><input type="text" disabled></form></div><div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div><div class="key">out</div><div class="value warning"><p class="output">This toy requires Javascript to run.</p></div><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="https://example.com/article" target="_blank" rel="noopener">"Example Article"</a> by John Doe, Example Blog</li><li><a href="https://example.org/book" target="_blank" rel="noopener"><em>_Programming Guide_</em></a> by Jane Smith, Tech Publishing</li></ul></div><script type="module">window.addComponent('LINK1', './toys/2024-03-02/counter.js', 'counter');</script></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
+
+  test('should display tags for posts', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'TAG01',
+          title: 'Post with Single Tag',
+          publicationDate: '2024-04-01',
+          content: ['This is a post with a single tag.'],
+          tags: ['tutorial']
+        },
+        {
+          key: 'TAG02',
+          title: 'Post with Multiple Tags',
+          publicationDate: '2024-04-02',
+          content: ['This is a post with multiple tags.'],
+          tags: ['javascript', 'programming', 'web-development']
+        }
+      ],
+    };
+
+    const html = generateBlog(blog, header, footer, wrapHtml);
+    const expectedHtml = `<html><body><article class="entry" id="TAG01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TAG01</div><div class="value"><h2><a href="#TAG01">Post with Single Tag</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Apr 2024</p><div class="key">tags</div><p class="value metadata"><span class="tag">tutorial</span></p><div class="key">text</div><p class="value">This is a post with a single tag.</p></article><article class="entry" id="TAG02"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TAG02</div><div class="value"><h2><a href="#TAG02">Post with Multiple Tags</a></h2></div><div class="key">pubAt</div><p class="value metadata">2 Apr 2024</p><div class="key">tags</div><p class="value metadata"><span class="tag">javascript</span> <span class="tag">programming</span> <span class="tag">web-development</span></p><div class="key">text</div><p class="value">This is a post with multiple tags.</p></article></body></html>`;
+    expect(html).toBe(expectedHtml);
+  });
 });

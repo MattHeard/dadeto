@@ -388,8 +388,9 @@ function generateContentSections(post) {
 function generateHeaderSection(post) {
   const titleSection = generateTitleSection(post);
   const dateSection = generateDateSection(post);
+  const tagsSection = generateTagsSection(post);
 
-  return combineHTMLSections(titleSection, dateSection);
+  return combineHTMLSections(titleSection, dateSection, tagsSection);
 }
 
 /**
@@ -427,6 +428,23 @@ function generateDateSection(post) {
 }
 
 /**
+ * Generate the tags section for a blog post
+ * @param {Object} post - The blog post
+ * @returns {string} - HTML for the tags section
+ */
+function generateTagsSection(post) {
+  if (!hasTags(post)) {
+    return '';
+  }
+
+  const tagsKey = createDiv(CLASS.KEY, 'tags');
+  const tagsContent = post.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join(' ');
+  const tagsValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagsContent}</p>`;
+
+  return `${tagsKey}${tagsValue}`;
+}
+
+/**
  * Check if post has the specified media type
  */
 function hasMediaType(post, mediaType) {
@@ -440,6 +458,15 @@ function hasMediaType(post, mediaType) {
  */
 function hasRelatedLinks(post) {
   return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
+}
+
+/**
+ * Check if post has tags
+ * @param {Object} post - The blog post
+ * @returns {boolean} - True if post has tags
+ */
+function hasTags(post) {
+  return post.tags !== undefined && Array.isArray(post.tags) && post.tags.length > 0;
 }
 
 /**
