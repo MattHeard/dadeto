@@ -2,6 +2,9 @@
 const ASTERISK_MARKER = '*';
 const UNDERSCORE_MARKER = '_';
 
+// Pattern to match special regex characters that need escaping
+const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
+
 /**
  * Creates a doubled marker (e.g., ** or __) for bold text
  * @param {string} marker - The marker character (* or _)
@@ -20,7 +23,7 @@ function createDoubledMarker(marker) {
  */
 function createBoldPatternPart(marker) {
   // Escape marker if it's a special regex character
-  const escapedMarker = /[.*+?^${}()|[\]\\]/.test(marker) ? `\\${marker}` : marker;
+  const escapedMarker = REGEX_SPECIAL_CHARS.test(marker) ? `\\${marker}` : marker;
   const doubledMarker = createDoubledMarker(escapedMarker);
   
   // Break the pattern into its constituent parts
@@ -58,7 +61,7 @@ function createBoldPattern() {
  */
 function createItalicsPattern(marker) {
   // Escape marker if it's a special regex character
-  const escapedMarker = /[.*+?^${}()|[\]\\]/.test(marker) ? `\\${marker}` : marker;
+  const escapedMarker = REGEX_SPECIAL_CHARS.test(marker) ? `\\${marker}` : marker;
   return new RegExp(`${escapedMarker}(.*?)${escapedMarker}`, 'g');
 }
 
