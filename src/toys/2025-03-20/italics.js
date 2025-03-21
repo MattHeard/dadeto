@@ -46,10 +46,8 @@ function createItalicStyle(marker) {
  * @private
  */
 function getItalicStyles() {
-  return [
-    createItalicStyle(ASTERISK_MARKER),
-    createItalicStyle(UNDERSCORE_MARKER)
-  ];
+  const markers = [ASTERISK_MARKER, UNDERSCORE_MARKER];
+  return markers.map(createItalicStyle);
 }
 
 
