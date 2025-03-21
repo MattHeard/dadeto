@@ -27,10 +27,23 @@ function createItalicsPattern(marker) {
 
 
 
+/**
+ * Creates a style configuration object for a specific marker
+ * @param {string} marker - The marker character (* or _)
+ * @returns {Object} - A style configuration object with pattern and marker properties
+ * @private
+ */
+function createItalicStyle(marker) {
+  return {
+    pattern: createItalicsPattern(marker),
+    marker
+  };
+}
+
 // Configurations for different italic styles
 const ITALIC_STYLES = [
-  { pattern: createItalicsPattern(ASTERISK_MARKER), marker: ASTERISK_MARKER },
-  { pattern: createItalicsPattern(UNDERSCORE_MARKER), marker: UNDERSCORE_MARKER }
+  createItalicStyle(ASTERISK_MARKER),
+  createItalicStyle(UNDERSCORE_MARKER)
 ];
 
 
