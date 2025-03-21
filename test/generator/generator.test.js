@@ -102,34 +102,57 @@ describe('Blog Generator', () => {
 
   test('should contain content for posts', () => {
     const blog = {
-      posts: [{
-        key: 'POST1',
-        title: 'Single Post',
-        publicationDate: '2024-01-01',
-        content: ['This is the content of the single post.'],
-      }],
+      posts: [
+        {
+          key: 'FIRS1',
+          title: 'First',
+          publicationDate: '2024-01-01',
+          content: ['This is the content of the first post.'],
+        },
+        {
+          key: 'SECO1',
+          title: 'Second',
+          publicationDate: '2023-12-31',
+          content: [
+            'This post has two paragraphs.',
+            'Here is the second one.'
+          ]
+        }
+      ],
     };
 
     const html = generateBlog(blog, header, footer, wrapHtml);
-    const expectedHtml = `<html><body><article class="entry" id="POST1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">POST1</div><div class="value"><h2><a href="#POST1">Single Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key">text</div><p class="value">This is the content of the single post.</p></article></body></html>`;
+    const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">First</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key">text</div><p class="value">This is the content of the first post.</p></article><article class="entry" id="SECO1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">SECO1</div><div class="value"><h2><a href="#SECO1">Second</a></h2></div><div class="key">pubAt</div><p class="value metadata">31 Dec 2023</p><div class="key">text</div><p class="value">This post has two paragraphs.</p><div class="key"></div><p class="value">Here is the second one.</p></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
 
   test('should contain an illustration for posts', () => {
     const blog = {
-      posts: [{
-        key: 'POST1',
-        title: 'Single Post',
-        publicationDate: '2024-01-01',
-        illustration: {
-          fileType: 'png',
-          altText: 'A description of the illustration'
+      posts: [
+        {
+          key: 'FIRS1',
+          title: 'Single Post',
+          publicationDate: '2024-01-01',
+          illustration: {
+            fileType: 'png',
+            altText: 'An illustration'
+          },
         },
-      }],
+        {
+          key: 'SECO1',
+          title: 'Second',
+          publicationDate: '2023-12-31',
+          illustration: {
+            fileType: 'svg',
+            fileName: '2023-12-31-0',
+            altText: 'A diagram'
+          },
+        }
+      ],
     };
 
     const html = generateBlog(blog, header, footer, wrapHtml);
-    const expectedHtml = `<html><body><article class="entry" id="POST1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">POST1</div><div class="value"><h2><a href="#POST1">Single Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2024-01-01.png" alt="A description of the illustration"/></div></article></body></html>`;
+    const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">Single Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2024-01-01.png" alt="An illustration"/></div></article><article class="entry" id="SECO1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">SECO1</div><div class="value"><h2><a href="#SECO1">Second</a></h2></div><div class="key">pubAt</div><p class="value metadata">31 Dec 2023</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2023-12-31-0.svg" alt="A diagram"/></div></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
 });
