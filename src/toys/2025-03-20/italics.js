@@ -3,14 +3,13 @@ const ASTERISK_MARKER = '*';
 const UNDERSCORE_MARKER = '_';
 
 /**
- * Creates a repeated marker string
- * @param {string} marker - The marker character to repeat
- * @param {number} count - Number of times to repeat the marker
- * @returns {string} - The repeated marker string
+ * Creates a doubled marker (e.g., ** or __) for bold text
+ * @param {string} marker - The marker character (* or _)
+ * @returns {string} - The doubled marker
  * @private
  */
-function repeatMarker(marker, count) {
-  return marker.repeat(count);
+function createDoubledMarker(marker) {
+  return marker.repeat(2);
 }
 
 /**
@@ -22,7 +21,7 @@ function repeatMarker(marker, count) {
 function createBoldPatternPart(marker) {
   // Escape marker if it's a special regex character
   const escapedMarker = /[.*+?^${}()|[\]\\]/.test(marker) ? `\\${marker}` : marker;
-  const doubledMarker = repeatMarker(escapedMarker, 2);
+  const doubledMarker = createDoubledMarker(escapedMarker);
   
   // Break the pattern into its constituent parts
   const patternParts = [
