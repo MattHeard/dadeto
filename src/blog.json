@@ -659,10 +659,10 @@
         }
       ],
       "tags": [
-  "software",
-  "complexity",
-  "trade-offs"
-]
+        "software",
+        "complexity",
+        "trade-offs"
+      ]
     },
     {
       "key": "FAIL1",
@@ -697,6 +697,11 @@
           "type": "video",
           "quote": "Too busy to have your voice heard, I see."
         }
+      ],
+      "tags": [
+        "voting",
+        "regret",
+        "civic-duty"
       ]
     },
     {
@@ -716,6 +721,11 @@
           "title": "Against Malaria Foundation",
           "type": "website"
         }
+      ],
+      "tags": [
+        "economics",
+        "ethics",
+        "priorities"
       ]
     },
     {
@@ -736,7 +746,12 @@
       "illustration": {
         "fileType": "png",
         "altText": "a victorian woman resting in a garden, hugging her knee, looking wistfully into the distance, oil painting"
-      }
+      },
+      "tags": [
+        "introspection",
+        "habits",
+        "goals"
+      ]
     },
     {
       "key": "MUTE1",
@@ -753,7 +768,12 @@
       "illustration": {
         "fileType": "png",
         "altText": "a desert planet with rocks in the background and a colourful sky, pencil and watercolour"
-      }
+      },
+      "tags": [
+        "television",
+        "parenting",
+        "nostalgia"
+      ]
     },
     {
       "key": "PERM1",
@@ -780,6 +800,11 @@
           "source": "The Stanford Encyclopedia of Philosophy",
           "type": "article"
         }
+      ],
+      "tags": [
+        "philosophy",
+        "ethics",
+        "decision-making"
       ]
     },
     {
@@ -822,7 +847,12 @@
           "source": "Vox",
           "type": "article"
         }
-      ]
+      ],
+      "tags": [
+  "terrorism",
+  "refugees",
+  "media"
+]
     },
     {
       "key": "FIRS1",
@@ -843,6 +873,11 @@
           "source": "Nigella.com",
           "type": "website"
         }
+      ],
+      "tags": [
+        "parenting",
+        "baking",
+        "gender-roles"
       ]
     },
     {
@@ -879,6 +914,11 @@
           "type": "article",
           "quote": "A subplot is going to be how the general public has become 'bored' of dinosaurs and are in need of a shiny new attraction to revitalize interest…"
         }
+      ],
+      "tags": [
+        "film",
+        "spectacle",
+        "meta-commentary"
       ]
     },
     {
@@ -913,6 +953,11 @@
           "source": "Wikipedia (EN)",
           "type": "article"
         }
+      ],
+      "tags": [
+        "technology",
+        "virtual-reality",
+        "social-networks"
       ]
     },
     {
@@ -943,6 +988,11 @@
           "type": "article",
           "quote": "Dr. Frank Chilton, a California nuclear scientist who specializes in nuclear explosion engineering, said Phillips' design, outlined in a 34-page paper, would be 'pretty much guaranteed to work.'"
         }
+      ],
+      "tags": [
+        "technology",
+        "infrastructure",
+        "fragility"
       ]
     },
     {
@@ -972,6 +1022,11 @@
           "type": "article",
           "quote": "'The problem is the [earnings] averages don't work, because there are not enough parts for women to star in to get paid,' shared Amy Pascal, co-chair of Sony Pictures Entertainment…"
         }
+      ],
+      "tags": [
+        "film",
+        "feminism",
+        "villains"
       ]
     },
     {
@@ -999,6 +1054,11 @@
           "source": "NZ Transport Agency",
           "type": "website"
         }
+      ],
+      "tags": [
+        "cycling",
+        "safety",
+        "consequentialism"
       ]
     },
     {
@@ -1027,6 +1087,11 @@
           "source": "The Stanford Encyclopedia of Philosophy",
           "type": "article"
         }
+      ],
+      "tags": [
+        "ethics",
+        "consequentialism",
+        "blame"
       ]
     },
     {
@@ -1097,6 +1162,11 @@
           "type": "article",
           "quote": "… our analysis shows that livestock and their byproducts actually account for at least 32,564 million tons of CO₂e per year, or 51 percent of annual worldwide GHG emissions."
         }
+      ],
+      "tags": [
+        "veganism",
+        "climate",
+        "advocacy"
       ]
     },
     {
@@ -1132,6 +1202,11 @@
           "author": "Wikipedia (EN)",
           "type": "article"
         }
+      ],
+      "tags": [
+        "maths",
+        "music",
+        "loss"
       ]
     },
     {
@@ -1166,6 +1241,11 @@
           "title": "GoFossilFree.org",
           "type": "website"
         }
+      ],
+      "tags": [
+        "climate",
+        "finance",
+        "activism"
       ]
     },
     {
@@ -1200,6 +1280,11 @@
           "source": "LeahAlexandraHamilton.tumblr.com",
           "type": "article"
         }
+      ],
+      "tags": [
+        "feminism",
+        "language",
+        "advocacy"
       ]
     },
     {
@@ -1240,6 +1325,11 @@
           "title": "First Landing Resort",
           "type": "website"
         }
+      ],
+      "tags": [
+        "history",
+        "inequality",
+        "resilience"
       ]
     },
     {
@@ -1273,6 +1363,11 @@
           "source": "Vox",
           "type": "article"
         }
+      ],
+      "tags": [
+        "epistemology",
+        "science",
+        "authority"
       ]
     },
     {
@@ -1281,6 +1376,11 @@
       "publicationDate": "2014-03-24",
       "content": [
         "Yashar Ali wrote a good summary of how dismissing women's negative reactions to sexism can make women feel like they are being irrational. There is an unfair stereotype that women are crazy, so if a woman responds to sexism in a negative way, she must be 'overreacting'. Saying \"you're so sensitive!\" undermines her perspective. Some people see this rejection of women's opinions as inconsiderate, most don't notice it at all. But it fuels a cruel stereotype by muting women's viewpoints, as it seeds self-doubt and self-censoring. If this causes women to be hesitant to speak up, communities lose valuable voices."
+      ],
+      "tags": [
+        "sexism",
+        "stereotypes",
+        "feminism"
       ]
     },
     {
