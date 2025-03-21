@@ -99,4 +99,19 @@ describe('Blog Generator', () => {
     const html = generateBlog(blog, header, footer, wrapHtml);
     expect(html).toBe(expectedHtml);
   });
+
+  test('should generate HTML content for a single post', () => {
+    const blog = {
+      posts: [{
+        key: 'POST1',
+        title: 'Single Post',
+        publicationDate: '2024-01-01',
+        content: ['This is the content of the single post.'],
+      }],
+    };
+
+    const html = generateBlog(blog, header, footer, wrapHtml);
+    const expectedHtml = `<html><body><article class="entry" id="POST1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">POST1</div><div class="value"><h2><a href="#POST1">Single Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key">text</div><p class="value">This is the content of the single post.</p></article></body></html>`;
+    expect(html.replace(/\s+/g, '')).toBe(expectedHtml.replace(/\s+/g, ''));
+  });
 });
