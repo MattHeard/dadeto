@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "ITAL1",
+      "title": "Italics",
+      "publicationDate": "2025-03-21",
+      "toy": {
+        "modulePath": "/2025-03-21/italics.js",
+        "functionName": "italics"
+      },
+      "relatedLinks": [
+        {
+          "url": "#IDEN1",
+          "title": "Identity",
+          "type": "article"
+        }
+      ]
+    },
+    {
       "key": "IDEN1",
       "title": "Identity",
       "publicationDate": "2025-03-20",
