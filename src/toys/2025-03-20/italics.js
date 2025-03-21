@@ -3,6 +3,16 @@ const ASTERISK_MARKER = '*';
 const UNDERSCORE_MARKER = '_';
 
 /**
+ * Creates a doubled marker (e.g., ** or __)
+ * @param {string} marker - The marker character (* or _)
+ * @returns {string} - The doubled marker
+ * @private
+ */
+function createDoubledMarker(marker) {
+  return `${marker}${marker}`;
+}
+
+/**
  * Creates a regex pattern part for bold text with a specific marker
  * @param {string} marker - The marker character (* or _)
  * @returns {string} - Regex pattern string for bold with the specified marker
@@ -11,8 +21,19 @@ const UNDERSCORE_MARKER = '_';
 function createBoldPatternPart(marker) {
   // Escape marker if it's a special regex character
   const escapedMarker = /[.*+?^${}()|[\]\\]/.test(marker) ? `\\${marker}` : marker;
-  // Create pattern for doubled markers surrounding content
-  return `(?:${escapedMarker}${escapedMarker}.*?${escapedMarker}${escapedMarker})`;
+  const doubledMarker = createDoubledMarker(escapedMarker);
+  
+  // Break the pattern into its constituent parts
+  const patternParts = [
+    '(?:', // Opening non-capturing group
+    doubledMarker, // Opening doubled marker
+    '.*?', // Lazy match of content
+    doubledMarker, // Closing doubled marker
+    ')' // Closing group
+  ];
+  
+  // Join the parts to create the full pattern
+  return patternParts.join('');
 }
 
 /**
