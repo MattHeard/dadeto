@@ -70,34 +70,12 @@ function createItalicsPattern(marker) {
 
 
 /**
- * Creates a style configuration object for a specific marker
- * @param {string} marker - The marker character (* or _)
- * @returns {Object} - A style configuration object with pattern and marker properties
- * @private
- */
-function createItalicStyle(marker) {
-  return {
-    pattern: createItalicsPattern(marker),
-    marker
-  };
-}
-
-/**
  * Returns the array of markers used for italic styles
  * @returns {Array} - Array of marker characters
  * @private
  */
 function getItalicMarkers() {
   return [ASTERISK_MARKER, UNDERSCORE_MARKER];
-}
-
-/**
- * Returns the configuration for all italic styles to be processed
- * @returns {Array} - Array of style configuration objects
- * @private
- */
-function getItalicStyles() {
-  return getItalicMarkers().map(createItalicStyle);
 }
 
 
@@ -218,15 +196,16 @@ function findBoldSegments(text) {
  */
 
 /**
- * Apply a specific italic style configuration to the text
+ * Apply italic formatting for a specific marker to the text
  * @param {string} text - The text to process
- * @param {Object} styleConfig - Configuration object with pattern and marker
+ * @param {string} marker - The marker character (* or _)
  * @returns {string} - Text with the particular italic style formatted
  * @private
  */
-function applyItalicStyleConfig(text, styleConfig) {
-  return text.replace(styleConfig.pattern, (match, capturedContent) => {
-    return createItalicReplacementString(capturedContent, styleConfig.marker);
+function applyItalicFormatting(text, marker) {
+  const pattern = createItalicsPattern(marker);
+  return text.replace(pattern, (match, capturedContent) => {
+    return createItalicReplacementString(capturedContent, marker);
   });
 }
 
@@ -237,8 +216,8 @@ function applyItalicStyleConfig(text, styleConfig) {
  * @private
  */
 function processAllItalicStyles(text) {
-  // Process the text through all italic styles using reduce
-  return getItalicStyles().reduce(applyItalicStyleConfig, text);
+  // Process the text through all italic markers using reduce
+  return getItalicMarkers().reduce(applyItalicFormatting, text);
 }
 
 /**
