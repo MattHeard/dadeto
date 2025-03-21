@@ -41,13 +41,21 @@ function createItalicStyle(marker) {
 }
 
 /**
+ * Returns the array of markers used for italic styles
+ * @returns {Array} - Array of marker characters
+ * @private
+ */
+function getItalicMarkers() {
+  return [ASTERISK_MARKER, UNDERSCORE_MARKER];
+}
+
+/**
  * Returns the configuration for all italic styles to be processed
  * @returns {Array} - Array of style configuration objects
  * @private
  */
 function getItalicStyles() {
-  const markers = [ASTERISK_MARKER, UNDERSCORE_MARKER];
-  return markers.map(createItalicStyle);
+  return getItalicMarkers().map(createItalicStyle);
 }
 
 
