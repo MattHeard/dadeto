@@ -4,6 +4,10 @@
       "key": "ITAL1",
       "title": "Italics",
       "publicationDate": "2025-03-21",
+      "illustration": {
+        "fileType": "png",
+        "altText": "a minimalist black-and-white line drawing illustrating the concept of italics using abstract forms. two slanted lines suggest movement or emphasis, placed within an otherwise sparse and balanced composition. the lines are clean, angled, and unadorned, evoking a modernist typographic sketch without any complete letters or words."
+      },
       "toy": {
         "modulePath": "/2025-03-21/italics.js",
         "functionName": "italics"
@@ -20,6 +24,10 @@
       "key": "IDEN1",
       "title": "Identity",
       "publicationDate": "2025-03-20",
+      "illustration": {
+        "fileType": "png",
+        "altText": "a brutalist web style illustration showing a symmetrical, monochrome browser window split down the middle. both sides contain identical grid-based layouts with harsh lines, broken ui elements, and raw html-like boxes. the background is flat grey. the design emphasizes the idea of identity as self-sameness through mirrored structure and rigid repetition, using a gritty, utilitarian aesthetic with no text or ornamentation."
+      },
       "toy": {
         "modulePath": "/2025-03-20/identity.js",
         "functionName": "identity"
@@ -145,6 +153,10 @@
       "key": "HELL1",
       "publicationDate": "2024-10-02",
       "title": "Hello world",
+      "illustration": {
+        "fileType": "png",
+        "altText": "a kawaii techno-pop illustration of a smiling cartoon computer displaying “hello world” in colorful pixel text. the computer has blushing cheeks, big shiny eyes, and sits against a pastel background filled with sparkles, hearts, stars, and floating digital icons like a floppy disk and keyboard. the overall vibe is cheerful, playful, and digitally cute."
+      },
       "toy": {
         "modulePath": "/2024-10-02/hello.js",
         "functionName": "hello"
