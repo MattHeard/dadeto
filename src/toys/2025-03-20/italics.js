@@ -1,12 +1,16 @@
+// Markdown marker characters
+const ASTERISK_MARKER = '*';
+const UNDERSCORE_MARKER = '_';
+
 // Regex patterns for different markdown styles
-const BOLD_PATTERN = /(?:\*\*.*?\*\*)|(?:__.*?__)/s;
-const ASTERISK_ITALICS_PATTERN = /\*(.*?)\*/g;
-const UNDERSCORE_ITALICS_PATTERN = /_(.*?)_/g;
+const BOLD_PATTERN = new RegExp(`(?:\\${ASTERISK_MARKER}\\${ASTERISK_MARKER}.*?\\${ASTERISK_MARKER}\\${ASTERISK_MARKER})|(?:${UNDERSCORE_MARKER}${UNDERSCORE_MARKER}.*?${UNDERSCORE_MARKER}${UNDERSCORE_MARKER})`, 's');
+const ASTERISK_ITALICS_PATTERN = new RegExp(`\\${ASTERISK_MARKER}(.*?)\\${ASTERISK_MARKER}`, 'g');
+const UNDERSCORE_ITALICS_PATTERN = new RegExp(`${UNDERSCORE_MARKER}(.*?)${UNDERSCORE_MARKER}`, 'g');
 
 // Configurations for different italic styles
 const ITALIC_STYLES = [
-  { pattern: ASTERISK_ITALICS_PATTERN, marker: '*' },
-  { pattern: UNDERSCORE_ITALICS_PATTERN, marker: '_' }
+  { pattern: ASTERISK_ITALICS_PATTERN, marker: ASTERISK_MARKER },
+  { pattern: UNDERSCORE_ITALICS_PATTERN, marker: UNDERSCORE_MARKER }
 ];
 
 
