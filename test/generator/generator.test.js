@@ -253,12 +253,26 @@ describe('Blog Generator', () => {
             modulePath: './toys/2024-03-01/calculator.js',
             functionName: 'calculator'
           }
+        },
+        {
+          key: 'CONT1',
+          title: 'Post with Content',
+          publicationDate: '2024-03-02',
+          content: [
+            'This is a post with regular content.',
+            'It has multiple paragraphs to demonstrate text formatting.',
+            'This post also has a toy component.'
+          ],
+          toy: {
+            modulePath: './toys/2024-03-02/counter.js',
+            functionName: 'counter'
+          }
         }
       ],
     };
 
     const html = generateBlog(blog, header, footer, wrapHtml);
-    const expectedHtml = `<html><body><article class="entry" id="TOY01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TOY01</div><div class="value"><h2><a href="#TOY01">Post with Toy</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Mar 2024</p><div class="key">in</div><div class="value"><form><input type="text" disabled></form></div><div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div><div class="key">out</div><div class="value warning"><p class="output">This toy requires Javascript to run.</p></div><script type="module">window.addComponent('TOY01', './toys/2024-03-01/calculator.js', 'calculator');</script></article></body></html>`;
+    const expectedHtml = `<html><body><article class="entry" id="TOY01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TOY01</div><div class="value"><h2><a href="#TOY01">Post with Toy</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Mar 2024</p><div class="key">in</div><div class="value"><form><input type="text" disabled></form></div><div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div><div class="key">out</div><div class="value warning"><p class="output">This toy requires Javascript to run.</p></div><script type="module">window.addComponent('TOY01', './toys/2024-03-01/calculator.js', 'calculator');</script></article><article class="entry" id="CONT1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">CONT1</div><div class="value"><h2><a href="#CONT1">Post with Content</a></h2></div><div class="key">pubAt</div><p class="value metadata">2 Mar 2024</p><div class="key">text</div><p class="value">This is a post with regular content.</p><div class="key"></div><p class="value">It has multiple paragraphs to demonstrate text formatting.</p><div class="key"></div><p class="value">This post also has a toy component.</p><div class="key">in</div><div class="value"><form><input type="text" disabled></form></div><div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div><div class="key">out</div><div class="value warning"><p class="output">This toy requires Javascript to run.</p></div><script type="module">window.addComponent('CONT1', './toys/2024-03-02/counter.js', 'counter');</script></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
 });
