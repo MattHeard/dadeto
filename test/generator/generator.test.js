@@ -112,6 +112,24 @@ describe('Blog Generator', () => {
 
     const html = generateBlog(blog, header, footer, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="POST1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">POST1</div><div class="value"><h2><a href="#POST1">Single Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key">text</div><p class="value">This is the content of the single post.</p></article></body></html>`;
-    expect(html.replace(/\s+/g, '')).toBe(expectedHtml.replace(/\s+/g, ''));
+    expect(html).toBe(expectedHtml);
+  });
+
+  test('should contain an illustration for posts', () => {
+    const blog = {
+      posts: [{
+        key: 'POST1',
+        title: 'Single Post',
+        publicationDate: '2024-01-01',
+        illustration: {
+          fileType: 'png',
+          altText: 'A description of the illustration'
+        },
+      }],
+    };
+
+    const html = generateBlog(blog, header, footer, wrapHtml);
+    const expectedHtml = `<html><body><article class="entry" id="POST1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">POST1</div><div class="value"><h2><a href="#POST1">Single Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2024-01-01.png" alt="A description of the illustration"/></div></article></body></html>`;
+    expect(html).toBe(expectedHtml);
   });
 });
