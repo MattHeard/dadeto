@@ -155,4 +155,31 @@ describe('Blog Generator', () => {
     const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">Single Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2024-01-01.png" alt="An illustration"/></div></article><article class="entry" id="SECO1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">SECO1</div><div class="value"><h2><a href="#SECO1">Second</a></h2></div><div class="key">pubAt</div><p class="value metadata">31 Dec 2023</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2023-12-31-0.svg" alt="A diagram"/></div></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
+
+  test('should contain audio elements', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'FIRS1',
+          title: 'First',
+          publicationDate: '2024-01-01',
+          audio: {
+            fileType: 'mp3'
+          },
+        },
+        {
+          key: 'SECO1',
+          title: 'Second',
+          publicationDate: '2023-12-31',
+          audio: {
+            fileType: 'wav'
+          },
+        },
+      ],
+    };
+
+    const html = generateBlog(blog, header, footer, wrapHtml);
+    const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">First</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key media">audio</div><audio class="value" controls><source src="2024-01-01.mp3"></audio></article><article class="entry" id="SECO1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">SECO1</div><div class="value"><h2><a href="#SECO1">Second</a></h2></div><div class="key">pubAt</div><p class="value metadata">31 Dec 2023</p><div class="key media">audio</div><audio class="value" controls><source src="2023-12-31.wav"></audio></article></body></html>`;
+    expect(html).toBe(expectedHtml);
+  });
 });
