@@ -94,8 +94,6 @@ const interactiveComponentsScript = `
       submitButton.disabled = false;
       outputElement.textContent = 'Ready for input';
       outputElement.parentElement.classList.remove('warning');
-      // Focus the input field for immediate typing
-      inputElement.focus();
     }
     
     /**
