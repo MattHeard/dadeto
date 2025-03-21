@@ -45,6 +45,11 @@
           "title": "Identity",
           "type": "article"
         }
+      ],
+      "tags": [
+        "toy",
+        "emphasis",
+        "typography"
       ]
     },
     {
@@ -65,6 +70,11 @@
           "title": "Hello world",
           "type": "article"
         }
+      ],
+      "tags": [
+        "toy",
+        "equality",
+        "functions"
       ]
     },
     {
@@ -1389,6 +1399,11 @@
       "publicationDate": "2014-03-18",
       "content": [
         "I was reading the newly-launched FiveThirtyEight blog today (it's not difficult to notice my nerd crush on Nate Silver) and he used his bookcase as an example of the 'trade-off between vividness and scalability'. My wife and I have been sorting our books by spine colour for a while now, but it's not as impressive as his. I have been curious about 'objective' algorithms for sorting by spine colour because some multi-colour books, like Nassim Nicholas Taleb's Antifragile, just refuse to be cleanly categorised. What about fitting spine rectangles into a 2-dimensional bookcase rectangle, optimising for minimal distance between similarly coloured pixels?"
+      ],
+      "tags": [
+        "books",
+        "aesthetics",
+        "algorithms"
       ]
     },
     {
@@ -1397,6 +1412,11 @@
       "publicationDate": "2014-01-06",
       "content": [
         "I met my wife playing Dungeons & Dragons. The world-building, improv, and camaraderie made it feel like the perfect hobby for me, but a few factors have caused me to drop it. I'm geographically further away from my D&D group than I was during university (albeit most players still live in the same city as me) and I don't have as much free time to waste on map-making, which was one of the best parts. Finally, the stress from juggling increasingly powerful players alongside expanding permutations of game-breaking abilities burned me out. Even so, I'm feeling drawn to DMing again."
+      ],
+      "tags": [
+        "gaming",
+        "storytelling",
+        "burnout"
       ]
     },
     {
@@ -1405,6 +1425,11 @@
       "publicationDate": "2013-05-02",
       "content": [
         "I was scrolling through my friends' Instagram photos and noticed that most were of girls wearing Black Milk leggings. I rolled my eyes and thought about how overrated they were, but then felt bad. The patterned leggings actually look pretty cool, and I reckon that Instagram has worked well as a word-of-mouth platform. I don't wear them myself, but I think I might be the kind of person to post photos of how they looked if I did. I don't particularly care about leggings, but I just thought it was interesting how I reacted negatively to a stream of photos."
+      ],
+      "tags": [
+        "fashion",
+        "social-media",
+        "self-awareness"
       ]
     },
     {
@@ -1413,6 +1438,11 @@
       "publicationDate": "2013-05-01",
       "content": [
         "One of the sexiest things I've ever seen was one of my best friends impressing a girl by reciting Lewis Caroll's 'Jabberwocky' to her from memory. The poem shows why Alice's pair of books are incredibly insightful into the puzzles of language. Half of the words (like 'vorpal' and 'chortle') are made up, but the words still have meanings (even if Alice doesn't 'exactly know what they are'). We derive meanings from context, allowing us to learn new vocabulary. Even when half of the words are made up, we can understand them from how they reflect off of known words."
+      ],
+      "tags": [
+        "poetry",
+        "language",
+        "romance"
       ]
     },
     {
@@ -1421,6 +1451,11 @@
       "publicationDate": "2013-04-30",
       "content": [
         "Where does the line get drawn about what can be said? Dissent? Ignorant hatred? Inciting imminent violence? Trolling religious zealots? I generally believe that the better response to hate speech is more speech, presented in a civil manner, to expose the ignorance of the haters. But how does that protect the victims of hate speech? When racial slurs are aimed at children, how should a liberal respond? A hedonistic liberal would say that liberty is virtuous only for the sake of making people happier. Freedom of speech almost always does that, but I can imagine situations when it does not."
+      ],
+      "tags": [
+        "free-speech",
+        "ethics",
+        "harm"
       ]
     },
     {
@@ -1429,6 +1464,11 @@
       "publicationDate": "2013-04-29",
       "content": [
         "As I hope you have noticed, I put at least as much effort into visually laying out my blog posts as I do into writing them. I carefully use Markdown to format my text and GIMP to shoop my decorative images maybe obsessively. So, when the Tumblr app on my phone strips my drafts of their formatting, it frustrates me. Back when I was a teenager, I would evangelise OpenOffice.org as a reasonable alternative to Microsoft Office, but it was difficult to justify making my documents look nice if exporting to Word was just going to butcher the layout."
+      ],
+      "tags": [
+        "writing",
+        "software",
+        "frustration"
       ]
     },
     {
@@ -1437,6 +1477,11 @@
       "publicationDate": "2013-04-29",
       "content": [
         "_Sucker Punch_ suffers from problems like poor pacing and shallow character depth, but while the form has obscured the message, the message is much more interesting than the story or visual effects. On one side of the coin, you are presented with a criticism of modern female exploitation: these animated exaggerations are not real women -- they are geek fantasies. But on the other side, the film is shamelessly indulging in the very fetishes it criticises. The sucker punch is thrown at the audience, drawing them in to see a video game fantasy, and then reprimanding them by breaking their toys."
+      ],
+      "tags": [
+        "film",
+        "feminism",
+        "critique"
       ]
     },
     {
@@ -1445,6 +1490,11 @@
       "publicationDate": "2013-04-28",
       "content": [
         "A month ago we put an avocado stone and some spring onion stumps in water and placed them on the window sill. They are growing faster than I thought and my delusions of grandeur are giving me dreams of an indoor vegetable farm. My girlfriend bet me that the avocado stone would sprout within four weeks and I bet that it wouldn't. It sprouted a week later. Because I lost the bet, I'll have to run up to the top of the street in my underwear, and I don't know when she will make me do it. Dumb, over-achieving avocado!"
+      ],
+      "tags": [
+        "gardening",
+        "wagers",
+        "surprise"
       ]
     },
     {
@@ -1453,6 +1503,11 @@
       "publicationDate": "2013-04-26",
       "content": [
         "When someone is criminally punished only for driving while intoxicated, they are not being punished for an action which caused harm but because they performed a combination of actions which are statistically significantly linked with harm being caused. Due to an element of moral \"luck\", it is certainly possible for a drunk or high driver to drive somewhere without causing harm but we still consider that criminal. How does the act consequentialist reconcile this? Argue that driving drunk is not intrinsically wrong? Or develop a possibly convoluted argument for how each individual action of driving drunk somehow causes harm indirectly?"
+      ],
+      "tags": [
+        "ethics",
+        "risk",
+        "law"
       ]
     },
     {
@@ -1461,6 +1516,11 @@
       "publicationDate": "2013-04-25",
       "content": [
         "I was arguing/discussing with my future wife about what is considered \"art\". I believe that the artist's intentions are irrelevant and that whether something is \"art\" is determined by how the viewer observes it.  Looking for counterexamples and illustrations, I asked her: would you consider it possible for a computer program to be \"art\"? I would, but she wasn't sure. Undoubtedly, almost all computer programs are primarily functional, but there is elegant code and there is inelegant code. Does elegance make code artistic?  If it does, I should start a gallery of clips of elegant code from open-source software."
+      ],
+      "tags": [
+        "software",
+        "aesthetics",
+        "art"
       ]
     },
     {
@@ -1469,6 +1529,11 @@
       "publicationDate": "2013-04-25",
       "content": [
         "I attended a dawn memorial service for ANZAC veterans this morning and thought about how annual commemoration for military personnel serves as a type of intangible compensation for their unusually sacrificial employment. A soldier going to war risks much more than I do when I go to work, but I do not believe they get a \"heroism\" bonus in their paycheck. Instead, our social contract teaches us to \"pay\" them our respect. A similar honour is bestowed upon public servants with life-threatening careers such as firefighting and law enforcement. Do we have a duty to remember and enshrine our valiant?"
+      ],
+      "tags": [
+        "sacrifice",
+        "commemoration",
+        "duty"
       ]
     },
     {
