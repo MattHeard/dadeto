@@ -220,4 +220,25 @@ describe('Blog Generator', () => {
     const expectedHtml = `<html><body><article class="entry" id="LINK1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">LINK1</div><div class="value"><h2><a href="#LINK1">Post with Links</a></h2></div><div class="key">pubAt</div><p class="value metadata">15 Jan 2024</p><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="https://example.com/article" target="_blank" rel="noopener">"Example Article"</a> by John Doe, Example Blog ("This is an important quote")</li><li><a href="https://example.org/book" target="_blank" rel="noopener"><em>_Example Book_</em></a> by Jane Smith, Example Publishing</li><li><a href="https://example.net" target="_blank" rel="noopener">Example Website</a>, Example Net</li></ul></div></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
+
+  test('should contain a YouTube video for a post', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'VIDE1',
+          title: 'Post with Video',
+          publicationDate: '2024-02-01',
+          youtube: {
+            id: 'dQw4w9WgXcQ',
+            timestamp: 0,
+            title: 'Never Gonna Give You Up'
+          }
+        }
+      ],
+    };
+
+    const html = generateBlog(blog, header, footer, wrapHtml);
+    const expectedHtml = `<html><body><article class="entry" id="VIDE1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">VIDE1</div><div class="value"><h2><a href="#VIDE1">Post with Video</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Feb 2024</p><div class="key media">video</div><p class="value"><iframe height="300px" width="100%" src="https://www.youtube.com/embed/dQw4w9WgXcQ?start=0" title="Never Gonna Give You Up" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe></p></article></body></html>`;
+    expect(html).toBe(expectedHtml);
+  });
 });
