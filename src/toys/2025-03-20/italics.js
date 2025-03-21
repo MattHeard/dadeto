@@ -3,12 +3,31 @@ const ASTERISK_MARKER = '*';
 const UNDERSCORE_MARKER = '_';
 
 /**
+ * Creates a regex pattern part for bold text with a specific marker
+ * @param {string} marker - The marker character (* or _)
+ * @returns {string} - Regex pattern string for bold with the specified marker
+ * @private
+ */
+function createBoldPatternPart(marker) {
+  // Escape marker if it's a special regex character
+  const escapedMarker = /[.*+?^${}()|[\]\\]/.test(marker) ? `\\${marker}` : marker;
+  // Create pattern for doubled markers surrounding content
+  return `(?:${escapedMarker}${escapedMarker}.*?${escapedMarker}${escapedMarker})`;
+}
+
+/**
  * Returns a regex pattern that matches both asterisk and underscore bold markdown
  * @returns {RegExp} - The regex pattern for bold markdown
  * @private
  */
 function createBoldPattern() {
-  return new RegExp(`(?:\\${ASTERISK_MARKER}\\${ASTERISK_MARKER}.*?\\${ASTERISK_MARKER}\\${ASTERISK_MARKER})|(?:${UNDERSCORE_MARKER}${UNDERSCORE_MARKER}.*?${UNDERSCORE_MARKER}${UNDERSCORE_MARKER})`, 's');
+  // Combine patterns for different marker types with OR
+  const pattern = [
+    createBoldPatternPart(ASTERISK_MARKER),
+    createBoldPatternPart(UNDERSCORE_MARKER)
+  ].join('|');
+  
+  return new RegExp(pattern, 's');
 }
 
 /**
