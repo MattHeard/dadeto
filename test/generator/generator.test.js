@@ -182,4 +182,42 @@ describe('Blog Generator', () => {
     const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">First</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key media">audio</div><audio class="value" controls><source src="2024-01-01.mp3"></audio></article><article class="entry" id="SECO1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">SECO1</div><div class="value"><h2><a href="#SECO1">Second</a></h2></div><div class="key">pubAt</div><p class="value metadata">31 Dec 2023</p><div class="key media">audio</div><audio class="value" controls><source src="2023-12-31.wav"></audio></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
+
+  test('should contain related links for a post', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'LINK1',
+          title: 'Post with Links',
+          publicationDate: '2024-01-15',
+          relatedLinks: [
+            {
+              url: 'https://example.com/article',
+              title: 'Example Article',
+              author: 'John Doe',
+              source: 'Example Blog',
+              type: 'article',
+              quote: 'This is an important quote'
+            },
+            {
+              url: 'https://example.org/book',
+              title: 'Example Book',
+              author: 'Jane Smith',
+              source: 'Example Publishing',
+              type: 'book'
+            },
+            {
+              url: 'https://example.net',
+              title: 'Example Website',
+              source: 'Example Net'
+            }
+          ]
+        }
+      ],
+    };
+
+    const html = generateBlog(blog, header, footer, wrapHtml);
+    const expectedHtml = `<html><body><article class="entry" id="LINK1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">LINK1</div><div class="value"><h2><a href="#LINK1">Post with Links</a></h2></div><div class="key">pubAt</div><p class="value metadata">15 Jan 2024</p><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="https://example.com/article" target="_blank" rel="noopener">"Example Article"</a> by John Doe, Example Blog ("This is an important quote")</li><li><a href="https://example.org/book" target="_blank" rel="noopener"><em>_Example Book_</em></a> by Jane Smith, Example Publishing</li><li><a href="https://example.net" target="_blank" rel="noopener">Example Website</a>, Example Net</li></ul></div></article></body></html>`;
+    expect(html).toBe(expectedHtml);
+  });
 });
