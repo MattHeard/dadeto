@@ -1,11 +1,33 @@
 {
   "posts": [
     {
+      "key": "BOOL1",
+      "title": "Boolean Coercer",
+      "publicationDate": "2025-03-21",
+      "illustration": {
+        "fileType": "png",
+        "fileName": "2025-03-21-1",
+        "altText": "a brutalist-style abstract illustration symbolizing the coercion of values into boolean outcomes. the image features a jagged, concrete-like central structure resembling a processing unit. angular, geometric shapes flow into this structure and emerge as three outcomes: a solid green cube representing truth, a red cube for falsehood, and scattered grey fragments symbolizing discarded or unrecognized values. the color palette is mostly grayscale with stark accents of green and red, evoking a heavy, industrial atmosphere. the visual language is raw, minimalist, and symbolic, with no text or labels."
+      },
+      "toy": {
+        "modulePath": "/2025-03-21/booleanCoercer.js",
+        "functionName": "coerceToBoolean"
+      },
+      "relatedLinks": [
+        {
+          "url": "#IDEN1",
+          "title": "Identity",
+          "type": "article"
+        }
+      ]
+    },
+    {
       "key": "ITAL1",
       "title": "Italics",
       "publicationDate": "2025-03-21",
       "illustration": {
         "fileType": "png",
+        "fileName": "2025-03-21-0",
         "altText": "a minimalist black-and-white line drawing illustrating the concept of italics using abstract forms. two slanted lines suggest movement or emphasis, placed within an otherwise sparse and balanced composition. the lines are clean, angled, and unadorned, evoking a modernist typographic sketch without any complete letters or words."
       },
       "toy": {
