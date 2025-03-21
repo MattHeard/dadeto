@@ -40,11 +40,17 @@ function createItalicStyle(marker) {
   };
 }
 
-// Configurations for different italic styles
-const ITALIC_STYLES = [
-  createItalicStyle(ASTERISK_MARKER),
-  createItalicStyle(UNDERSCORE_MARKER)
-];
+/**
+ * Returns the configuration for all italic styles to be processed
+ * @returns {Array} - Array of style configuration objects
+ * @private
+ */
+function getItalicStyles() {
+  return [
+    createItalicStyle(ASTERISK_MARKER),
+    createItalicStyle(UNDERSCORE_MARKER)
+  ];
+}
 
 
 
@@ -184,7 +190,7 @@ function applyItalicStyleConfig(text, styleConfig) {
  */
 function processAllItalicStyles(text) {
   // Process the text through all italic styles using reduce
-  return ITALIC_STYLES.reduce(applyItalicStyleConfig, text);
+  return getItalicStyles().reduce(applyItalicStyleConfig, text);
 }
 
 /**
