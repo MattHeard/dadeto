@@ -65,10 +65,6 @@ function createItalicsPattern(marker) {
   return new RegExp(`${escapedMarker}(.*?)${escapedMarker}`, 'g');
 }
 
-
-
-
-
 /**
  * Returns the array of markers used for italic styles
  * @returns {Array} - Array of marker characters
@@ -77,10 +73,6 @@ function createItalicsPattern(marker) {
 function getItalicMarkers() {
   return [ASTERISK_MARKER, UNDERSCORE_MARKER];
 }
-
-
-
-
 
 /**
  * Process text recursively to handle all formatting cases, preserving bold segments.
