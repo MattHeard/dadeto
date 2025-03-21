@@ -241,4 +241,24 @@ describe('Blog Generator', () => {
     const expectedHtml = `<html><body><article class="entry" id="VIDE1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">VIDE1</div><div class="value"><h2><a href="#VIDE1">Post with Video</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Feb 2024</p><div class="key media">video</div><p class="value"><iframe height="300px" width="100%" src="https://www.youtube.com/embed/dQw4w9WgXcQ?start=0" title="Never Gonna Give You Up" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe></p></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
+
+  test('should contain a toy component for a post', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'TOY01',
+          title: 'Post with Toy',
+          publicationDate: '2024-03-01',
+          toy: {
+            modulePath: './toys/2024-03-01/calculator.js',
+            functionName: 'calculator'
+          }
+        }
+      ],
+    };
+
+    const html = generateBlog(blog, header, footer, wrapHtml);
+    const expectedHtml = `<html><body><article class="entry" id="TOY01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TOY01</div><div class="value"><h2><a href="#TOY01">Post with Toy</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Mar 2024</p><div class="key">in</div><div class="value"><form><input type="text" disabled></form></div><div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div><div class="key">out</div><div class="value warning"><p class="output">This toy requires Javascript to run.</p></div><script type="module">window.addComponent('TOY01', './toys/2024-03-01/calculator.js', 'calculator');</script></article></body></html>`;
+    expect(html).toBe(expectedHtml);
+  });
 });
