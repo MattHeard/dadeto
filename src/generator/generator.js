@@ -438,7 +438,7 @@ function generateTagsSection(post) {
   }
 
   const tagsKey = createDiv(CLASS.KEY, 'tags');
-  const tagsContent = post.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join(' ');
+  const tagsContent = post.tags.map(tag => escapeHtml(tag)).join(', ');
   const tagsValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagsContent}</p>`;
 
   return `${tagsKey}${tagsValue}`;
