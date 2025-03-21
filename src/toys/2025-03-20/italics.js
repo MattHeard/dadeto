@@ -42,11 +42,14 @@ function createBoldPatternPart(marker) {
  * @private
  */
 function createBoldPattern() {
+  // Define markers to use for bold patterns
+  const boldMarkers = [ASTERISK_MARKER, UNDERSCORE_MARKER];
+  
+  // Create pattern parts for each marker
+  const patternParts = boldMarkers.map(createBoldPatternPart);
+  
   // Combine patterns for different marker types with OR
-  const pattern = [
-    createBoldPatternPart(ASTERISK_MARKER),
-    createBoldPatternPart(UNDERSCORE_MARKER)
-  ].join('|');
+  const pattern = patternParts.join('|');
   
   return new RegExp(pattern, 's');
 }
