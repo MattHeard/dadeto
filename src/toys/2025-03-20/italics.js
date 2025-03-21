@@ -12,12 +12,24 @@ function createBoldPattern() {
 }
 
 /**
+ * Returns a regex pattern that matches text wrapped with a specific marker
+ * @param {string} marker - The marker character (* or _)
+ * @returns {RegExp} - The regex pattern for the specified marker
+ * @private
+ */
+function createItalicsPattern(marker) {
+  // Escape marker if it's a special regex character
+  const escapedMarker = /[.*+?^${}()|[\]\\]/.test(marker) ? `\\${marker}` : marker;
+  return new RegExp(`${escapedMarker}(.*?)${escapedMarker}`, 'g');
+}
+
+/**
  * Returns a regex pattern that matches asterisk italic markdown
  * @returns {RegExp} - The regex pattern for asterisk italic markdown
  * @private
  */
 function createAsteriskItalicsPattern() {
-  return new RegExp(`\\${ASTERISK_MARKER}(.*?)\\${ASTERISK_MARKER}`, 'g');
+  return createItalicsPattern(ASTERISK_MARKER);
 }
 
 /**
@@ -26,7 +38,7 @@ function createAsteriskItalicsPattern() {
  * @private
  */
 function createUnderscoreItalicsPattern() {
-  return new RegExp(`${UNDERSCORE_MARKER}(.*?)${UNDERSCORE_MARKER}`, 'g');
+  return createItalicsPattern(UNDERSCORE_MARKER);
 }
 
 // Configurations for different italic styles
