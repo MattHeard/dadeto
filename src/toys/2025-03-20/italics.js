@@ -2,15 +2,37 @@
 const ASTERISK_MARKER = '*';
 const UNDERSCORE_MARKER = '_';
 
-// Regex patterns for different markdown styles
-const BOLD_PATTERN = new RegExp(`(?:\\${ASTERISK_MARKER}\\${ASTERISK_MARKER}.*?\\${ASTERISK_MARKER}\\${ASTERISK_MARKER})|(?:${UNDERSCORE_MARKER}${UNDERSCORE_MARKER}.*?${UNDERSCORE_MARKER}${UNDERSCORE_MARKER})`, 's');
-const ASTERISK_ITALICS_PATTERN = new RegExp(`\\${ASTERISK_MARKER}(.*?)\\${ASTERISK_MARKER}`, 'g');
-const UNDERSCORE_ITALICS_PATTERN = new RegExp(`${UNDERSCORE_MARKER}(.*?)${UNDERSCORE_MARKER}`, 'g');
+/**
+ * Returns a regex pattern that matches both asterisk and underscore bold markdown
+ * @returns {RegExp} - The regex pattern for bold markdown
+ * @private
+ */
+function createBoldPattern() {
+  return new RegExp(`(?:\\${ASTERISK_MARKER}\\${ASTERISK_MARKER}.*?\\${ASTERISK_MARKER}\\${ASTERISK_MARKER})|(?:${UNDERSCORE_MARKER}${UNDERSCORE_MARKER}.*?${UNDERSCORE_MARKER}${UNDERSCORE_MARKER})`, 's');
+}
+
+/**
+ * Returns a regex pattern that matches asterisk italic markdown
+ * @returns {RegExp} - The regex pattern for asterisk italic markdown
+ * @private
+ */
+function createAsteriskItalicsPattern() {
+  return new RegExp(`\\${ASTERISK_MARKER}(.*?)\\${ASTERISK_MARKER}`, 'g');
+}
+
+/**
+ * Returns a regex pattern that matches underscore italic markdown
+ * @returns {RegExp} - The regex pattern for underscore italic markdown
+ * @private
+ */
+function createUnderscoreItalicsPattern() {
+  return new RegExp(`${UNDERSCORE_MARKER}(.*?)${UNDERSCORE_MARKER}`, 'g');
+}
 
 // Configurations for different italic styles
 const ITALIC_STYLES = [
-  { pattern: ASTERISK_ITALICS_PATTERN, marker: ASTERISK_MARKER },
-  { pattern: UNDERSCORE_ITALICS_PATTERN, marker: UNDERSCORE_MARKER }
+  { pattern: createAsteriskItalicsPattern(), marker: ASTERISK_MARKER },
+  { pattern: createUnderscoreItalicsPattern(), marker: UNDERSCORE_MARKER }
 ];
 
 
@@ -96,7 +118,7 @@ export function italics(text) {
  * @private
  */
 function findBoldSegments(text) {
-  const boldMatch = text.match(BOLD_PATTERN);
+  const boldMatch = text.match(createBoldPattern());
   
   if (!boldMatch) {
     return null;
