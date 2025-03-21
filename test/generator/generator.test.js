@@ -100,7 +100,7 @@ describe('Blog Generator', () => {
     expect(html).toBe(expectedHtml);
   });
 
-  test('should generate HTML content for a single post', () => {
+  test('should contain content for posts', () => {
     const blog = {
       posts: [{
         key: 'POST1',
