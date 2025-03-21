@@ -171,23 +171,6 @@ function findBoldSegments(text) {
 }
 
 /**
- * Apply HTML formatting to italic markdown in text while preserving the markdown characters.
- * Processes both asterisk and underscore style italic markers.
- * 
- * @example
- * // Returns: '<em>*text*</em>'
- * processAllItalicStyles('*text*');
- * 
- * @example
- * // Returns: '<em>_text_</em>'
- * processAllItalicStyles('_text_');
- * 
- * @param {string} text - The text to process
- * @returns {string} - Text with italic markdown wrapped in <em> tags
- * @private
- */
-
-/**
  * Apply italic formatting for a specific marker to the text
  * @param {string} text - The text to process
  * @param {string} marker - The marker character (* or _)
@@ -203,6 +186,15 @@ function applyItalicFormatting(text, marker) {
 
 /**
  * Process text through all italic style types (asterisk and underscore)
+ * 
+ * @example
+ * // Returns: '<em>*text*</em>'
+ * processAllItalicStyles('*text*');
+ * 
+ * @example
+ * // Returns: '<em>_text_</em>'
+ * processAllItalicStyles('_text_');
+ * 
  * @param {string} text - The text to process 
  * @returns {string} - Text with all italic styles formatted
  * @private
@@ -212,13 +204,6 @@ function processAllItalicStyles(text) {
   return getItalicMarkers().reduce(applyItalicFormatting, text);
 }
 
-/**
- * Create a replacement string for italic markdown content
- * @param {string} content - The inner content of the markdown
- * @param {string} marker - The markdown marker character (* or _)
- * @returns {string} - HTML formatted replacement string
- * @private
- */
 /**
  * Wrap content with a marker at the beginning and end
  * @param {string} content - The content to wrap
@@ -241,6 +226,13 @@ function wrapWithHtmlTag(tagName, content) {
   return [`<${tagName}>`, content, `</${tagName}>`].join('');
 }
 
+/**
+ * Create a replacement string for italic markdown content
+ * @param {string} content - The inner content of the markdown
+ * @param {string} marker - The markdown marker character (* or _)
+ * @returns {string} - HTML formatted replacement string
+ * @private
+ */
 function createItalicReplacementString(content, marker) {
   // First wrap content with markdown markers, then with HTML tag
   return wrapWithHtmlTag('em', wrapWithMarker(content, marker));
