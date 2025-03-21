@@ -25,19 +25,12 @@ function createItalicsPattern(marker) {
 
 
 
-/**
- * Returns a regex pattern that matches underscore italic markdown
- * @returns {RegExp} - The regex pattern for underscore italic markdown
- * @private
- */
-function createUnderscoreItalicsPattern() {
-  return createItalicsPattern(UNDERSCORE_MARKER);
-}
+
 
 // Configurations for different italic styles
 const ITALIC_STYLES = [
   { pattern: createItalicsPattern(ASTERISK_MARKER), marker: ASTERISK_MARKER },
-  { pattern: createUnderscoreItalicsPattern(), marker: UNDERSCORE_MARKER }
+  { pattern: createItalicsPattern(UNDERSCORE_MARKER), marker: UNDERSCORE_MARKER }
 ];
 
 
