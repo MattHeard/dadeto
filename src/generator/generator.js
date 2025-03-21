@@ -531,7 +531,7 @@ function createIllustrationContent(post) {
  * Create audio source element
  */
 function createAudioSource(post) {
-  const audioSrc = `${post.publicationDate}.m4a`;
+  const audioSrc = `${post.publicationDate}.${post.audio.fileType}`;
   return `<source src="${audioSrc}">`;
 }
 
@@ -813,4 +813,3 @@ export function generateBlogOuter(blog) {
     components.wrapFunc
   );
 }
-
