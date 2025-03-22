@@ -181,14 +181,42 @@ function hideArticlesByClass(className) {
   }
 }
 
-// Initialize tag click handlers
+function toggleHideLink(link, className) {
+  // Check if a span with the hide link already exists immediately after the link.
+  if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
+    // Remove the span if it exists.
+    link.nextElementSibling.remove();
+  } else {
+    // Create a new span element.
+    var span = document.createElement('span');
+    span.classList.add('hide-span');
+    // Append the opening text node.
+    span.appendChild(document.createTextNode(" ("));
+
+    // Create the hide anchor element.
+    var hideLink = document.createElement('a');
+    hideLink.textContent = "hide";
+    // Add click listener to trigger hideArticlesByClass.
+    hideLink.addEventListener('click', function(event) {
+      event.preventDefault();
+      hideArticlesByClass(className);
+    });
+    span.appendChild(hideLink);
+    // Append the closing text node.
+    span.appendChild(document.createTextNode(")"));
+
+    // Insert the span immediately after the link.
+    link.parentNode.insertBefore(span, link.nextSibling);
+  }
+}
+
 (function() {
   Array.from(document.getElementsByTagName('a')).forEach(function(link) {
     Array.from(link.classList).forEach(function(className) {
       if (className.indexOf('tag-') === 0) {
         link.addEventListener('click', function(event) {
           event.preventDefault();
-          hideArticlesByClass(className);
+          toggleHideLink(link, className);
         });
         return; // exit after first tag- match
       }
