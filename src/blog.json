@@ -242,7 +242,7 @@
       "publicationDate": "2024-04-13",
       "content": [
         "_Lonely and Horny_ was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in _Lonely and Horny_. He gives a spirited, funny, and coherent defence of philosophical egoism that I haven’t seen often.",
-        "_\"I'm the only one that I am, dude… I don't care about *other* people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in *my* feelings *being good* for *me*.\"_"
+        { "type": "quote", "content": "_\"I'm the only one that I am, dude… I don't care about *other* people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in *my* feelings *being good* for *me*.\"_" }
       ],
       "audio": {
         "fileType": "m4a"
@@ -1185,8 +1185,8 @@
       "publicationDate": "2014-11-23",
       "content": [
         "Yesterday, I heard that Benoit Mandelbrot had died and I heard the news in a peculiar way. Jonathan Coulton plays an excellent song called \"Mandelbrot Set\" and I really liked the line",
-        "\"Mandelbrot's in heaven, at least he will be when he's dead.\"",
-        "\"Right now he's still alive and teaching math at Yale.\"",
+        { "type": "quote", "content": "Mandelbrot's in heaven, at least he will be when he's dead." },
+        { "type": "quote", "content": "Right now he's still alive and teaching math at Yale." },
         "I listened to a recent album where Coulton played the song to an audience in Dallas. When he reached the line, he sang \"Mandelbrot's in heaven\" and then didn't sing any of the rest of the line. It reminded me of my former teachers who had died."
       ],
       "illustration": {
@@ -1542,25 +1542,25 @@
       "publicationDate": "2012-12-12",
       "content": [
         "In \"Why I Love You\", Jay-Z plays a rapper at the top of the game, frustrated by former followers rooting for his downfall:",
-        "\"Didn't I spoil you?\"",
-        "\"Me or the money, who you loyal to?\"",
+        { "type": "quote", "content": "Didn't I spoil you?" },
+        { "type": "quote", "content": "Me or the money, who you loyal to?" },
         "He alludes to crucifixion",
-        "\"They want me dead\"",
+        { "type": "quote", "content": "They want me dead" },
         "and resurrection",
-        "\"When the grief is over\"",
-        "\"Beef is over\"",
-        "\"I'll be fly when Easter's over\"",
+        { "type": "quote", "content": "When the grief is over" },
+        { "type": "quote", "content": "Beef is over" },
+        { "type": "quote", "content": "I'll be fly when Easter's over" },
         "but admits that",
-        "\"Truth be told\"",
-        "\"After all that said\"",
-        "\"N****, I still got love for you.\"",
+        { "type": "quote", "content": "Truth be told" },
+        { "type": "quote", "content": "After all that said" },
+        { "type": "quote", "content": "N****, I still got love for you" },
         "Jay-Z (and Kanye) conclude by crudely paraphrasing Jesus:",
-        "\"Please Lord\"",
-        "\"For forgive 'em\"",
-        "\"For these n****\"",
-        "\"Not know\"",
-        "\"What they\"",
-        "\"Do, ooh.\""
+        { "type": "quote", "content": "Please Lord" },
+        { "type": "quote", "content": "For forgive 'em" },
+        { "type": "quote", "content": "For these n****" },
+        { "type": "quote", "content": "Not know" },
+        { "type": "quote", "content": "What they" },
+        { "type": "quote", "content": "Do, ooh." }
       ]
     },
     {
@@ -1645,10 +1645,10 @@
     },
     {
       "key": "WHYM1",
-      "title": "Why Must Everybody Like You?",
+      "title": "Why MustEverybody Like You?",
       "publicationDate": "2006-05-05",
       "content": [
-        "\"Why must everybody like you? Who liked J. P. Morgan? Was he impressive? In a Turkish bath he'd look like a butcher. But with his pockets on he was very well liked.\" (Miller, 72)",
+        { "type": "quote", "content": "\"Why must everybody like you? Who liked J. P. Morgan? Was he impressive? In a Turkish bath he'd look like a butcher. But with his pockets on he was very well liked.\" (Miller, 72)" },
         "First of all, I was disappointed by Circa's 3rd of May performance of \"Death of a Salesman\" - not because the play was so badly done (it was great), but instead because my expectations were so high. For the few days before viewing it, I received the notion that the play in general, and also this Circa presentation of it were brilliant. I heard nothing but criticism for both, and so my expectations ran rampant and free.",
         "I criticise the play in general for trying so hard to be depressing, and although it succeeded at achieving this, it seems like a cheap attraction for audiences. We go to horror films to watch people in situations we wouldn't enjoy being in ourselves - watch _Saw_ or its sequel. (I haven't watched _Saw_ but from the impression I get from others who have watched it, it's addictive in a disturbing way.) I believe that people watch depressing films and plays to cheer themselves up, and I disagree with how a lot of people believe that making a film or play depressing makes it a better film or play.",
         "The play presents the idea of the \"American Dream\" and how it fails to transfer from an idealistic perspective of the social and economic world to a realistic perspective. The main fault of the idea is that although everyone may be capable of achieving success and reaching the top of the metaphorical mountain, not everyone can be on top, so people must fail for others to succeed. And this is where the majority of criticism of capitalism comes from: for one person to become richer, another must become poorer.",
@@ -1676,8 +1676,8 @@
         "I can't really make any analytical commentary of it, as all allusions to other films are parodies and are meant to be blatent and obvious.",
         "One thing that I can say is that there wasn't enough of Leslie Nielsen, the king of spoof acting. If you like watching parody films such as _Airplane!_ and _the Naked Gun_, you'll remember Nielsen's great contributions to the spoof genre. As the President of the US of A, Nielsen brought back this amazing humour, but I must say that there wasn't enough of it.",
         "A funny scene with the President listening to a girl reading a story about a duck when he finds out about the alien invasion, parodying when Bush kept listening to a story about a goat after hearing about the September 11 attacks.",
-        "Aide: \"Sir, our planet is under attack by an alien invasion.\"",
-        "Pres: \"Okay, but I just want to see what happens with this duck.\"",
+        { "type": "quote", "content": "Aide: \"Sir, our planet is under attack by an alien invasion.\"" },
+        { "type": "quote", "content": "Pres: \"Okay, but I just want to see what happens with this duck.\"" },
         "---",
         "_Closer_:",
         "I know it's an old film, but I've been wanting to see it because I love Natalie Portman (films), if you didn't know.",
@@ -1705,7 +1705,7 @@
         "But that's no where near as interesting as one of the philosophical themes or motifs (or whatever the hell they call them) of the film: coincidence. Many of the characters of the film, especially V, don't believe in the notion of coincidence: \"There is no such thing as coincidence, just the illusion of coincidence.\" But if you do not believe in coincidence, then you must believe in something connecting events, whether it be Fate or God or Gaia. Do you believe that you have Free Will to choose what to do with your life, or do you believe that every choice you make is not really a choice, but just causality playing its role on the neurons in your brain, causing you to make a certain 'choice' because of the way your brain is wired? I would hate to live with the idea that everything is run by causality.",
         "I'm just going to ramble on a tangent for just a moment longer. The idea of causality is flawed, as it implies that every event is caused by a stimulus, which in turn would be its own event. This means that a giant tree of events would exist and there must've been an initial event at the start of time (ie. the Big Bang) which was caused by something. Either something outside of the existence of the universe from 'before' the existence of the universe must have started the Big Bang.",
         "Wow, that's really off-topic.",
-        "\"Voilà! In view, a humble vaudevillian veteran, cast vicariously as both victim and villain by the vicissitudes of Fate. This visage, no mere veneer of vanity, is it vestige of the vox populi, now vacant, vanished, as the once vital voice of the verisimilitude now venerates what they once vilified. However, this valorous visitation of a by-gone vexation, stands vivified, and has vowed to vanquish these venal and virulent vermin vanguarding vice and vouchsafing the violently vicious and voracious violation of volition. The only verdict is vengeance; a vendetta, held as a votive, not in vain, for the value and veracity of such shall one day vindicate the vigilant and the virtuous. Verily, this vichyssoise of verbiage veers most verbose vis-à-vis an introduction, and so it is my very good honor to meet you and you may call me V.\""
+        { "type": "quote", "content": "\"Voilà! In view, a humble vaudevillian veteran, cast vicariously as both victim and villain by the vicissitudes of Fate. This visage, no mere veneer of vanity, is it vestige of the vox populi, now vacant, vanished, as the once vital voice of the verisimilitude now venerates what they once vilified. However, this valorous visitation of a by-gone vexation, stands vivified, and has vowed to vanquish these venal and virulent vermin vanguarding vice and vouchsafing the violently vicious and voracious violation of volition. The only verdict is vengeance; a vendetta, held as a votive, not in vain, for the value and veracity of such shall one day vindicate the vigilant and the virtuous. Verily, this vichyssoise of verbiage veers most verbose vis-à-vis an introduction, and so it is my very good honor to meet you and you may call me V.\"" }
       ]
     },
     {
@@ -1754,19 +1754,19 @@
       "title": "Look up at the sky.",
       "publicationDate": "2006-03-07",
       "content": [
-        "Look up at the sky.",
-        "I'm thinking of you,",
-        "As the clouds float on by.",
-        "On grass-stained backs they lie.",
-        "Quiet peace comes to those who",
-        "Look up at the sky.",
-        "But when you get too high,",
-        "It starts to lose it's hue",
-        "As the clouds float on by.",
-        "And if you're wondering why,",
-        "I'm thinking of, waiting for you,",
-        "Look up at the sky,",
-        "As the clouds float on by.",
+        { "type": "quote", "content": "Look up at the sky." },
+        { "type": "quote", "content": "I'm thinking of you," },
+        { "type": "quote", "content": "As the clouds float on by." },
+        { "type": "quote", "content": "On grass-stained backs they lie." },
+        { "type": "quote", "content": "Quiet peace comes to those who" },
+        { "type": "quote", "content": "Look up at the sky." },
+        { "type": "quote", "content": "But when you get too high," },
+        { "type": "quote", "content": "It starts to lose it's hue" },
+        { "type": "quote", "content": "As the clouds float on by." },
+        { "type": "quote", "content": "And if you're wondering why," },
+        { "type": "quote", "content": "I'm thinking of, waiting for you," },
+        { "type": "quote", "content": "Look up at the sky," },
+        { "type": "quote", "content": "As the clouds float on by." },
         "---",
         "Presented to all by popular demand (by Rob)."
       ]
@@ -1805,7 +1805,7 @@
       "title": "good sense",
       "publicationDate": "2005-02-07",
       "content": [
-        "\"Good sense is, of all things among men, the most equally distributed; for everyone thinks himself so abundantly provided with it, that those even who are the most difficult to satisfy in everything else, do not usually desire a larger measure of this quality than they already possess.\"",
+        { "type": "quote", "content": "Good sense is, of all things among men, the most equally distributed; for everyone thinks himself so abundantly provided with it, that those even who are the most difficult to satisfy in everything else, do not usually desire a larger measure of this quality than they already possess." },
         "*- Rene Descartes*",
         "_A Discourse on Method_"
       ]
