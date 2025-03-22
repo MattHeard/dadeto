@@ -174,6 +174,29 @@ const interactiveComponentsScript = `
   } else {
     console.warn('No interactive components found to initialize');
   }
+
+  function hideArticlesByClass(className) {
+    var articles = document.getElementsByTagName('article');
+    for (var i = 0; i < articles.length; i++) {
+      if (articles[i].classList.contains(className)) {
+        articles[i].style.display = 'none';
+      }
+    }
+  }
+
+  (function() {
+    Array.from(document.getElementsByTagName('a')).forEach(function(link) {
+      Array.from(link.classList).forEach(function(className) {
+        if (className.indexOf('tag-') === 0) {
+          link.addEventListener('click', function(event) {
+            event.preventDefault();
+            hideArticlesByClass(className);
+          });
+          return; // exit after first tag- match
+        }
+      });
+    });
+  })();
 </script>
 `;
 
