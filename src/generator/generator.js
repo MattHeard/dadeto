@@ -381,8 +381,27 @@ function createContentSectionItem(content, isFirst) {
   if (typeof content === 'object' && content !== null) {
     if (content.type === 'quote') {
       // Render quote as blockquote with corner elements
-      // Create blockquote with corner elements
-      valueDiv = `<blockquote class="${CLASS.VALUE}"><div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>${content.content}</blockquote>`;
+      const corners = `<div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>`;
+      
+      // Process the content based on its type
+      let paragraphs;
+      if (Array.isArray(content.content)) {
+        // Handle array of paragraphs
+        paragraphs = content.content.map(para => `<p>${para}</p>`).join('');
+      } else {
+        // Single paragraph
+        paragraphs = `<p>${content.content}</p>`;
+      }
+      
+      valueDiv = `<blockquote class="${CLASS.VALUE}">${corners}${paragraphs}</blockquote>`;
+    } else if (content.type === 'text' && Array.isArray(content.content)) {
+      // Handle array of paragraphs for text type as blockquote
+      const corners = `<div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>`;
+      
+      // Create paragraphs from the array content
+      const paragraphs = content.content.map(para => `<p>${para}</p>`).join('');
+      
+      valueDiv = `<blockquote class="${CLASS.VALUE}">${corners}${paragraphs}</blockquote>`;
     } else {
       // Default for other content types - can be expanded for other types
       valueDiv = `<p class="${CLASS.VALUE}">${content.content || content}</p>`;
