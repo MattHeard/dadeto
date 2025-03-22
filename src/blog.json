@@ -1185,8 +1185,13 @@
       "publicationDate": "2014-11-23",
       "content": [
         "Yesterday, I heard that Benoit Mandelbrot had died and I heard the news in a peculiar way. Jonathan Coulton plays an excellent song called \"Mandelbrot Set\" and I really liked the line",
-        { "type": "quote", "content": "Mandelbrot's in heaven, at least he will be when he's dead." },
-        { "type": "quote", "content": "Right now he's still alive and teaching math at Yale." },
+        {
+          "type": "quote",
+          "content": [
+            "Mandelbrot's in heaven, at least he will be when he's dead.",
+            "Right now he's still alive and teaching math at Yale."
+          ]
+        },
         "I listened to a recent album where Coulton played the song to an audience in Dallas. When he reached the line, he sang \"Mandelbrot's in heaven\" and then didn't sing any of the rest of the line. It reminded me of my former teachers who had died."
       ],
       "illustration": {
@@ -1542,25 +1547,45 @@
       "publicationDate": "2012-12-12",
       "content": [
         "In \"Why I Love You\", Jay-Z plays a rapper at the top of the game, frustrated by former followers rooting for his downfall:",
-        { "type": "quote", "content": "Didn't I spoil you?" },
-        { "type": "quote", "content": "Me or the money, who you loyal to?" },
+        {
+          "type": "quote",
+          "content": [
+            "Didn't I spoil you?",
+            "Me or the money, who you loyal to?"
+          ]
+        },
         "He alludes to crucifixion",
         { "type": "quote", "content": "They want me dead" },
         "and resurrection",
-        { "type": "quote", "content": "When the grief is over" },
-        { "type": "quote", "content": "Beef is over" },
-        { "type": "quote", "content": "I'll be fly when Easter's over" },
+        {
+          "type": "quote",
+          "content": [
+            "When the grief is over",
+            "Beef is over",
+            "I'll be fly when Easter's over"
+          ]
+        },
         "but admits that",
-        { "type": "quote", "content": "Truth be told" },
-        { "type": "quote", "content": "After all that said" },
-        { "type": "quote", "content": "N****, I still got love for you" },
+        {
+          "type": "quote",
+          "content": [
+            "Truth be told",
+            "After all that said",
+            "N****, I still got love for you"
+          ]
+        },
         "Jay-Z (and Kanye) conclude by crudely paraphrasing Jesus:",
-        { "type": "quote", "content": "Please Lord" },
-        { "type": "quote", "content": "For forgive 'em" },
-        { "type": "quote", "content": "For these n****" },
-        { "type": "quote", "content": "Not know" },
-        { "type": "quote", "content": "What they" },
-        { "type": "quote", "content": "Do, ooh." }
+        {
+          "type": "quote",
+          "content": [
+            "Please Lord",
+            "For forgive 'em",
+            "For these n****",
+            "Not know",
+            "What they",
+            "Do, ooh."
+          ]
+        }
       ]
     },
     {
@@ -1676,8 +1701,13 @@
         "I can't really make any analytical commentary of it, as all allusions to other films are parodies and are meant to be blatent and obvious.",
         "One thing that I can say is that there wasn't enough of Leslie Nielsen, the king of spoof acting. If you like watching parody films such as _Airplane!_ and _the Naked Gun_, you'll remember Nielsen's great contributions to the spoof genre. As the President of the US of A, Nielsen brought back this amazing humour, but I must say that there wasn't enough of it.",
         "A funny scene with the President listening to a girl reading a story about a duck when he finds out about the alien invasion, parodying when Bush kept listening to a story about a goat after hearing about the September 11 attacks.",
-        { "type": "quote", "content": "Aide: \"Sir, our planet is under attack by an alien invasion.\"" },
-        { "type": "quote", "content": "Pres: \"Okay, but I just want to see what happens with this duck.\"" },
+        {
+          "type": "quote",
+          "content": [
+            "Aide: \"Sir, our planet is under attack by an alien invasion.\"",
+            "Pres: \"Okay, but I just want to see what happens with this duck.\""
+          ]
+        },
         "---",
         "_Closer_:",
         "I know it's an old film, but I've been wanting to see it because I love Natalie Portman (films), if you didn't know.",
@@ -1754,19 +1784,24 @@
       "title": "Look up at the sky.",
       "publicationDate": "2006-03-07",
       "content": [
-        { "type": "quote", "content": "Look up at the sky." },
-        { "type": "quote", "content": "I'm thinking of you," },
-        { "type": "quote", "content": "As the clouds float on by." },
-        { "type": "quote", "content": "On grass-stained backs they lie." },
-        { "type": "quote", "content": "Quiet peace comes to those who" },
-        { "type": "quote", "content": "Look up at the sky." },
-        { "type": "quote", "content": "But when you get too high," },
-        { "type": "quote", "content": "It starts to lose it's hue" },
-        { "type": "quote", "content": "As the clouds float on by." },
-        { "type": "quote", "content": "And if you're wondering why," },
-        { "type": "quote", "content": "I'm thinking of, waiting for you," },
-        { "type": "quote", "content": "Look up at the sky," },
-        { "type": "quote", "content": "As the clouds float on by." },
+        {
+          "type": "quote",
+          "content": [
+            "Look up at the sky.",
+            "I'm thinking of you,",
+            "As the clouds float on by.",
+            "On grass-stained backs they lie.",
+            "Quiet peace comes to those who",
+            "Look up at the sky.",
+            "But when you get too high,",
+            "It starts to lose it's hue",
+            "As the clouds float on by.",
+            "And if you're wondering why,",
+            "I'm thinking of, waiting for you,",
+            "Look up at the sky,",
+            "As the clouds float on by."
+          ]
+        },
         "---",
         "Presented to all by popular demand (by Rob)."
       ]
