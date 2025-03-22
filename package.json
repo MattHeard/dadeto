@@ -6,7 +6,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "generate": "node generate.js",
     "test-watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",
-    "tcr": "npm test && git add . && git commit -m 'TCR: tests pass' || git reset --hard"
+    "tcr": "./tcr.sh"
   },
   "devDependencies": {
     "jest": "^29.7.0",
