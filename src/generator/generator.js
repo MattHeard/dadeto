@@ -367,14 +367,29 @@ function createContentItemWithIndex(text, index) {
 
 /**
  * Create a content section item with exact formatting
- * @param {string} text - The content text
+ * @param {Object|string} content - The content object or text
  * @param {boolean} isFirst - Whether this is the first content item
  * @returns {string} - Formatted content section HTML
  */
-function createContentSectionItem(text, isFirst) {
+function createContentSectionItem(content, isFirst) {
   const key = isFirst ? 'text' : '';
   const keyDiv = createDiv(CLASS.KEY, key);
-  const valueDiv = `<p class="${CLASS.VALUE}">${text}</p>`;
+  
+  let valueDiv;
+  
+  // Check if content is an object with type and content properties
+  if (typeof content === 'object' && content !== null) {
+    if (content.type === 'quote') {
+      // Render quote as blockquote
+      valueDiv = `<blockquote class="${CLASS.VALUE}">${content.content}</blockquote>`;
+    } else {
+      // Default for other content types - can be expanded for other types
+      valueDiv = `<p class="${CLASS.VALUE}">${content.content || content}</p>`;
+    }
+  } else {
+    // Plain text content
+    valueDiv = `<p class="${CLASS.VALUE}">${content}</p>`;
+  }
 
   return formatSection(keyDiv, valueDiv);
 }

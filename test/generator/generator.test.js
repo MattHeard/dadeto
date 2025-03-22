@@ -311,4 +311,23 @@ describe('Blog Generator', () => {
     const expectedHtml = `<html><body><article class="entry tag-tutorial" id="TAG01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TAG01</div><div class="value"><h2><a href="#TAG01">Post with Single Tag</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Apr 2024</p><div class="key">tags</div><p class="value metadata"><a class="tag-tutorial">tutorial</a></p><div class="key">text</div><p class="value">This is a post with a single tag.</p></article><article class="entry tag-javascript tag-programming tag-web-development" id="TAG02"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TAG02</div><div class="value"><h2><a href="#TAG02">Post with Multiple Tags</a></h2></div><div class="key">pubAt</div><p class="value metadata">2 Apr 2024</p><div class="key">tags</div><p class="value metadata"><a class="tag-javascript">javascript</a>, <a class="tag-programming">programming</a>, <a class="tag-web-development">web-development</a></p><div class="key">text</div><p class="value">This is a post with multiple tags.</p></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
+
+  test('should render quotes as blockquotes', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'FIRS1',
+          title: 'First',
+          publicationDate: '2024-01-01',
+          content: [
+            { type: 'quote', content: 'This is the content of the first post.' }
+          ],
+        }
+      ],
+    };
+
+    const html = generateBlog(blog, header, footer, wrapHtml);
+    const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">First</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key">text</div><blockquote class="value">This is the content of the first post.</blockquote></article></body></html>`;
+    expect(html).toBe(expectedHtml);
+  });
 });
