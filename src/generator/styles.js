@@ -127,4 +127,11 @@ export const styles = `
   .audio-btn:hover {
     text-decoration: underline;
   }
+
+  blockquote {
+    font-style: italic;
+    padding: 1.5em 2ch;
+    margin: 0;
+    background-color: #1a1a1a;
+  }
 `;
