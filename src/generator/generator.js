@@ -380,8 +380,9 @@ function createContentSectionItem(content, isFirst) {
   // Check if content is an object with type and content properties
   if (typeof content === 'object' && content !== null) {
     if (content.type === 'quote') {
-      // Render quote as blockquote
-      valueDiv = `<blockquote class="${CLASS.VALUE}">${content.content}</blockquote>`;
+      // Render quote as blockquote with corner elements
+      // Create blockquote with corner elements
+      valueDiv = `<blockquote class="${CLASS.VALUE}"><div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>${content.content}</blockquote>`;
     } else {
       // Default for other content types - can be expanded for other types
       valueDiv = `<p class="${CLASS.VALUE}">${content.content || content}</p>`;

@@ -133,5 +133,90 @@ export const styles = `
     padding: 1.5em 2ch;
     margin: 0;
     background-color: #1a1a1a;
+    position: relative; /* Add this to make absolute positioning of corners work */
+  }
+
+  .corner {
+    position: absolute;
+    display: block; /* Ensure the corners are displayed */
+    width: 2ch;
+    height: 1.5em;
+  }
+
+  .corner .h-line,
+  .corner .v-line {
+    position: absolute;
+    background: #CCCCCC;
+    display: block; /* Ensure the lines are displayed */
+  }
+
+  .h-line {
+    height: 2px;
+    width: 2ch;
+  }
+
+  .v-line {
+    width: 2px;
+    height: 1.5em;
+  }
+
+  .corner-tl {
+    top: 0;
+    left: 0;
+  }
+
+  .corner-tl .h-line {
+    top: 0;
+    left: 0;
+  }
+
+  .corner-tl .v-line {
+    top: 0;
+    left: 0;
+  }
+
+  .corner-tr {
+    top: 0;
+    right: 0;
+  }
+
+  .corner-tr .h-line {
+    top: 0;
+    right: 0;
+  }
+
+  .corner-tr .v-line {
+    top: 0;
+    right: 0;
+  }
+
+  .corner-bl {
+    bottom: 0;
+    left: 0;
+  }
+
+  .corner-bl .h-line {
+    bottom: 0;
+    left: 0;
+  }
+
+  .corner-bl .v-line {
+    bottom: 0;
+    left: 0;
+  }
+
+  .corner-br {
+    bottom: 0;
+    right: 0;
+  }
+
+  .corner-br .h-line {
+    bottom: 0;
+    right: 0;
+  }
+
+  .corner-br .v-line {
+    bottom: 0;
+    right: 0;
   }
 `;

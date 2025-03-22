@@ -151,6 +151,91 @@
         padding: 1.5em 2ch;
         margin: 0;
         background-color: #1a1a1a;
+        position: relative; /* Add this to make absolute positioning of corners work */
+      }
+
+      .corner {
+        position: absolute;
+        display: block; /* Ensure the corners are displayed */
+        width: 2ch;
+        height: 1.5em;
+      }
+
+      .corner .h-line,
+      .corner .v-line {
+        position: absolute;
+        background: #cccccc;
+        display: block; /* Ensure the lines are displayed */
+      }
+
+      .h-line {
+        height: 2px;
+        width: 2ch;
+      }
+
+      .v-line {
+        width: 2px;
+        height: 1.5em;
+      }
+
+      .corner-tl {
+        top: 0;
+        left: 0;
+      }
+
+      .corner-tl .h-line {
+        top: 0;
+        left: 0;
+      }
+
+      .corner-tl .v-line {
+        top: 0;
+        left: 0;
+      }
+
+      .corner-tr {
+        top: 0;
+        right: 0;
+      }
+
+      .corner-tr .h-line {
+        top: 0;
+        right: 0;
+      }
+
+      .corner-tr .v-line {
+        top: 0;
+        right: 0;
+      }
+
+      .corner-bl {
+        bottom: 0;
+        left: 0;
+      }
+
+      .corner-bl .h-line {
+        bottom: 0;
+        left: 0;
+      }
+
+      .corner-bl .v-line {
+        bottom: 0;
+        left: 0;
+      }
+
+      .corner-br {
+        bottom: 0;
+        right: 0;
+      }
+
+      .corner-br .h-line {
+        bottom: 0;
+        right: 0;
+      }
+
+      .corner-br .v-line {
+        bottom: 0;
+        right: 0;
       }
     </style>
 
@@ -722,6 +807,22 @@
         </p>
         <div class="key"></div>
         <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
           _"I'm the only one that I am, dude… I don't care about *other* people,
           because they're not me. … Me is the only feelings I know and can have,
           so I’m invested in *my* feelings *being good* for *me*."_
@@ -2520,10 +2621,42 @@
         </p>
         <div class="key"></div>
         <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
           Mandelbrot's in heaven, at least he will be when he's dead.
         </blockquote>
         <div class="key"></div>
         <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
           Right now he's still alive and teaching math at Yale.
         </blockquote>
         <div class="key"></div>
@@ -3242,47 +3375,315 @@
           frustrated by former followers rooting for his downfall:
         </p>
         <div class="key"></div>
-        <blockquote class="value">Didn't I spoil you?</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Didn't I spoil you?
+        </blockquote>
         <div class="key"></div>
         <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
           Me or the money, who you loyal to?
         </blockquote>
         <div class="key"></div>
         <p class="value">He alludes to crucifixion</p>
         <div class="key"></div>
-        <blockquote class="value">They want me dead</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          They want me dead
+        </blockquote>
         <div class="key"></div>
         <p class="value">and resurrection</p>
         <div class="key"></div>
-        <blockquote class="value">When the grief is over</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          When the grief is over
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">Beef is over</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Beef is over
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">I'll be fly when Easter's over</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          I'll be fly when Easter's over
+        </blockquote>
         <div class="key"></div>
         <p class="value">but admits that</p>
         <div class="key"></div>
-        <blockquote class="value">Truth be told</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Truth be told
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">After all that said</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          After all that said
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">N****, I still got love for you</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          N****, I still got love for you
+        </blockquote>
         <div class="key"></div>
         <p class="value">
           Jay-Z (and Kanye) conclude by crudely paraphrasing Jesus:
         </p>
         <div class="key"></div>
-        <blockquote class="value">Please Lord</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Please Lord
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">For forgive 'em</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          For forgive 'em
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">For these n****</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          For these n****
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">Not know</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Not know
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">What they</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          What they
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">Do, ooh.</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Do, ooh.
+        </blockquote>
       </article>
       <article class="entry" id="MULT1">
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
@@ -3543,6 +3944,22 @@
         </div>
         <div class="key">text</div>
         <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
           "Why must everybody like you? Who liked J. P. Morgan? Was he
           impressive? In a Turkish bath he'd look like a butcher. But with his
           pockets on he was very well liked." (Miller, 72)
@@ -3669,10 +4086,42 @@
         </p>
         <div class="key"></div>
         <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
           Aide: "Sir, our planet is under attack by an alien invasion."
         </blockquote>
         <div class="key"></div>
         <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
           Pres: "Okay, but I just want to see what happens with this duck."
         </blockquote>
         <div class="key"></div>
@@ -3829,6 +4278,22 @@
         <p class="value">Wow, that's really off-topic.</p>
         <div class="key"></div>
         <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
           "Voilà! In view, a humble vaudevillian veteran, cast vicariously as
           both victim and villain by the vicissitudes of Fate. This visage, no
           mere veneer of vanity, is it vestige of the vox populi, now vacant,
@@ -3995,31 +4460,265 @@
         <div class="key">pubAt</div>
         <p class="value metadata">7 Mar 2006</p>
         <div class="key">text</div>
-        <blockquote class="value">Look up at the sky.</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Look up at the sky.
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">I'm thinking of you,</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          I'm thinking of you,
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">As the clouds float on by.</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          As the clouds float on by.
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">On grass-stained backs they lie.</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          On grass-stained backs they lie.
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">Quiet peace comes to those who</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Quiet peace comes to those who
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">Look up at the sky.</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Look up at the sky.
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">But when you get too high,</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          But when you get too high,
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">It starts to lose it's hue</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          It starts to lose it's hue
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">As the clouds float on by.</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          As the clouds float on by.
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">And if you're wondering why,</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          And if you're wondering why,
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">I'm thinking of, waiting for you,</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          I'm thinking of, waiting for you,
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">Look up at the sky,</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          Look up at the sky,
+        </blockquote>
         <div class="key"></div>
-        <blockquote class="value">As the clouds float on by.</blockquote>
+        <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          As the clouds float on by.
+        </blockquote>
         <div class="key"></div>
         <p class="value">---</p>
         <div class="key"></div>
@@ -4145,6 +4844,22 @@
         <p class="value metadata">7 Feb 2005</p>
         <div class="key">text</div>
         <blockquote class="value">
+          <div class="corner corner-tl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-tr">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-bl">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
+          <div class="corner corner-br">
+            <div class="h-line"></div>
+            <div class="v-line"></div>
+          </div>
           Good sense is, of all things among men, the most equally distributed;
           for everyone thinks himself so abundantly provided with it, that those
           even who are the most difficult to satisfy in everything else, do not
