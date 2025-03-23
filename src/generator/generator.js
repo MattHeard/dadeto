@@ -752,7 +752,9 @@ function combineHTMLSections(...sections) {
  * @returns {boolean} - True if post has a toy component
  */
 function hasToy(post) {
-  return post?.toy?.modulePath && post.toy.functionName;
+  const hasModulePath = post?.toy?.modulePath;
+  const hasFunctionName = post?.toy?.functionName;
+  return Boolean(hasModulePath && hasFunctionName);
 }
 
 /**
