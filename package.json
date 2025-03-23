@@ -7,7 +7,7 @@
     "generate": "node generate.js",
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
     "tcr": "./tcr.sh",
-    "stryker": "node --experimental-vm-modules ./node_modules/.bin/stryker run"
+    "stryker": "node --experimental-vm-modules ./node_modules/.bin/stryker run > reports/mutation/text/output.txt"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.9",

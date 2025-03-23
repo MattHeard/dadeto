@@ -2,7 +2,7 @@ export default {
   mutate: ["src/**/*.js", "!**/*.html"],
   testRunner: "jest",
   coverageAnalysis: "perTest",
-  reporters: ["html", "clear-text", "progress"],
+  reporters: ["clear-text"],
   jest: {
     configFile: "jest.config.mjs"
   },
