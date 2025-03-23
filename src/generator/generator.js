@@ -568,16 +568,13 @@ function formatSection(keyDiv, valueDiv) {
  * Generate media content based on media type
  */
 function generateMediaContent(post, mediaType) {
-  switch (mediaType) {
-    case 'illustration':
-      return createIllustrationContent(post);
-    case 'audio':
-      return createAudioContent(post);
-    case 'youtube':
-      return createYouTubeContent(post);
-    default:
-      return '';
-  }
+  const generators = {
+    illustration: createIllustrationContent,
+    audio: createAudioContent,
+    youtube: createYouTubeContent
+  };
+
+  return (generators[mediaType] || (() => ''))(post);
 }
 
 /**
