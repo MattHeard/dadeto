@@ -705,15 +705,19 @@ function formatBaseLink(type, url, title) {
   return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>${formattedTitle}</a>`;
 }
 
+function joinLinkParts(parts) {
+  return parts.filter(Boolean).join('');
+}
+
 function composeLinkParts(baseLink, author, source, quote) {
   const parts = [
     baseLink,
     author ? ` by ${author}` : '',
     source ? `, ${source}` : '',
     quote ? ` ("${quote}")` : ''
-  ].filter(Boolean);
+  ];
 
-  return `<li>${parts.join('')}</li>`;
+  return `<li>${joinLinkParts(parts)}</li>`;
 }
 
 function formatRelatedLink(link) {
