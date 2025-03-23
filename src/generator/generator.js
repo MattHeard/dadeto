@@ -1,3 +1,17 @@
+/**
+ * Create a blockquote HTML string.
+ * @param {string|string[]} content - A string or an array of strings.
+ * @returns {string} - The blockquote HTML.
+ */
+function createBlockquote(content) {
+  let paragraphs;
+  if (Array.isArray(content)) {
+    paragraphs = content.map(para => `<p>${para}</p>`).join('');
+  } else {
+    paragraphs = `<p>${content}</p>`;
+  }
+  return `<blockquote class="${CLASS.VALUE}">${BLOCKQUOTE_CORNERS}${paragraphs}</blockquote>`;
+}
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
 import scriptTag from './script.js';
@@ -381,29 +395,8 @@ function createContentSectionItem(content, isFirst) {
   
   // Check if content is an object with type and content properties
   if (typeof content === 'object' && content !== null) {
-    if (content.type === 'quote') {
-      // Render quote as blockquote with corner elements
-      const corners = BLOCKQUOTE_CORNERS;
-      
-      // Process the content based on its type
-      let paragraphs;
-      if (Array.isArray(content.content)) {
-        // Handle array of paragraphs
-        paragraphs = content.content.map(para => `<p>${para}</p>`).join('');
-      } else {
-        // Single paragraph
-        paragraphs = `<p>${content.content}</p>`;
-      }
-      
-      valueDiv = `<blockquote class="${CLASS.VALUE}">${corners}${paragraphs}</blockquote>`;
-    } else if (content.type === 'text' && Array.isArray(content.content)) {
-      // Handle array of paragraphs for text type as blockquote
-      const corners = BLOCKQUOTE_CORNERS;
-      
-      // Create paragraphs from the array content
-      const paragraphs = content.content.map(para => `<p>${para}</p>`).join('');
-      
-      valueDiv = `<blockquote class="${CLASS.VALUE}">${corners}${paragraphs}</blockquote>`;
+    if (content.type === 'quote' || (content.type === 'text' && Array.isArray(content.content))) {
+      valueDiv = createBlockquote(content.content);
     } else {
       // Default for other content types - can be expanded for other types
       valueDiv = `<p class="${CLASS.VALUE}">${content.content || content}</p>`;
