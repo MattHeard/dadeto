@@ -392,7 +392,7 @@ function createContentItemWithIndex(text, index) {
 function normalizeContentItem(content) {
   return (typeof content === 'object' && content !== null)
     ? content
-    : { type: 'text', content: content };
+    : { type: 'text', content };
 }
 
 /**
