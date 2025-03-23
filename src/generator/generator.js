@@ -706,13 +706,12 @@ function formatBaseLink(type, url, title) {
 }
 
 function composeLinkParts(baseLink, author, source, quote) {
-  const optionalParts = [
-    author && ` by ${author}`,
-    source && `, ${source}`,
-    quote && ` ("${quote}")`
-  ];
+  const optionalParts = [];
+  if (author) optionalParts.push(` by ${author}`);
+  if (source) optionalParts.push(`, ${source}`);
+  if (quote) optionalParts.push(` ("${quote}")`);
 
-  return `<li>${[baseLink, ...optionalParts.filter(Boolean)].join('')}</li>`;
+  return `<li>${[baseLink, ...optionalParts].join('')}</li>`;
 }
 
 function formatRelatedLink(link) {
