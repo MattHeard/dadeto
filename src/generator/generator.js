@@ -803,24 +803,33 @@ function generateToyScriptSection(post) {
 }
 
 /**
- * Generate the content of a blog post article
+ * Get all sections for a blog post article.
+ * @param {Object} post - The blog post.
+ * @returns {string[]} - An array of HTML sections.
  */
-function generateArticleContent(post) {
+function getArticleSections(post) {
   const headerSection = generateHeaderSection(post);
   const mediaSection = generateMediaSections(post);
   const contentSection = generateContentSections(post);
   const toyUISection = generateToyUISection(post);
   const relatedLinksSection = generateRelatedLinksSection(post);
   const toyScriptSection = generateToyScriptSection(post);
-
-  return combineHTMLSections(
+ 
+  return [
     headerSection,
     mediaSection,
     contentSection,
     toyUISection,
     relatedLinksSection,
     toyScriptSection
-  );
+  ];
+}
+
+/**
+ * Generate the content of a blog post article
+ */
+function generateArticleContent(post) {
+  return combineHTMLSections(...getArticleSections(post));
 }
 
 /**
