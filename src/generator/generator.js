@@ -678,14 +678,21 @@ function generateYouTubeSection(post) {
 }
 
 /**
- * Generate all media sections for a blog post
+ * Mapping for media sections.
+ * Each key maps to a function that generates the corresponding media section.
+ */
+const MEDIA_SECTIONS = {
+  illustration: createMediaSectionGenerator('illustration', 'illus'),
+  audio: createMediaSectionGenerator('audio', 'audio'),
+  youtube: createMediaSectionGenerator('youtube', 'video'),
+};
+
+/**
+ * Generate all media sections for a blog post by iterating over the MEDIA_SECTIONS mapping.
  */
 function generateMediaSections(post) {
-  return combineHTMLSections(
-    generateIllustrationSection(post),
-    generateAudioSection(post),
-    generateYouTubeSection(post)
-  );
+  const sections = Object.values(MEDIA_SECTIONS).map(generator => generator(post));
+  return combineHTMLSections(...sections);
 }
 
 /**
