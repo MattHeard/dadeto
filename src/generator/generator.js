@@ -405,14 +405,18 @@ const CONTENT_RENDERERS = {
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
  
-  if (type === 'quote') {
+  if (shouldRenderAsBlockquote(type, content)) {
     return CONTENT_RENDERERS.quote(content);
   }
  
-  if (type === 'text' && Array.isArray(content)) {
-    return createBlockquote(content);
-  }
- 
+  return renderAsParagraph(content);
+}
+
+function shouldRenderAsBlockquote(type, content) {
+  return type === 'quote' || (type === 'text' && Array.isArray(content));
+}
+
+function renderAsParagraph(content) {
   return `<p class="${CLASS.VALUE}">${content}</p>`;
 }
 
