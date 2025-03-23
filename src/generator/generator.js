@@ -692,9 +692,14 @@ function escapeRelatedLinkFields(link) {
 }
 
 function formatTitleByType(type, title) {
-  if (type === 'book') return `<em>_${title}_</em>`;
-  if (['microblog', 'article', 'report'].includes(type)) return `"${title}"`;
-  return title;
+  const formatters = {
+    book: t => `<em>_${t}_</em>`,
+    microblog: t => `"${t}"`,
+    article: t => `"${t}"`,
+    report: t => `"${t}"`
+  };
+
+  return (formatters[type] || (t => t))(title);
 }
 
 function formatBaseLink(type, url, title) {
