@@ -709,14 +709,17 @@ function joinLinkParts(parts) {
   return parts.filter(Boolean).join('');
 }
 
-function composeLinkParts(baseLink, author, source, quote) {
-  const parts = [
+function createLinkParts(baseLink, author, source, quote) {
+  return [
     baseLink,
     author ? ` by ${author}` : '',
     source ? `, ${source}` : '',
     quote ? ` ("${quote}")` : ''
   ];
+}
 
+function composeLinkParts(baseLink, author, source, quote) {
+  const parts = createLinkParts(baseLink, author, source, quote);
   return `<li>${joinLinkParts(parts)}</li>`;
 }
 
