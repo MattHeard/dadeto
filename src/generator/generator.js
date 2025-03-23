@@ -680,6 +680,7 @@ function generateMediaSections(post) {
  * @param {Object} link - The related link object
  * @returns {string} - Formatted HTML for a related link
  */
+const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
 function formatRelatedLink(link) {
   const { url, title, author, source, type, quote } = link;
   const escapedUrl = escapeHtml(url);
@@ -694,11 +695,11 @@ function formatRelatedLink(link) {
   
   // Add special formatting based on link type
   if (type === 'microblog' || type === 'article' || type === 'report') {
-    linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener">"${escapedTitle}"</a>`;
+    linkText = `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}>"${escapedTitle}"</a>`;
   } else if (type === 'book') {
-    linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener"><em>_${escapedTitle}_</em></a>`;
+    linkText = `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}><em>_${escapedTitle}_</em></a>`;
   } else {
-    linkText = `<a href="${escapedUrl}" target="_blank" rel="noopener">${escapedTitle}</a>`;
+    linkText = `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}>${escapedTitle}</a>`;
   }
   
   // Add author info with proper space before 'by'
