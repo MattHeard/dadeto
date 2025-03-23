@@ -8,12 +8,15 @@ COMMIT_MESSAGE=${1:-"refactor"}
 
 echo "Running tests..."
 npm test
+TEST_EXIT_CODE=$?
+
 echo "Running ESLint..."
 npx eslint . -f json -o eslint-report.json
+LINT_EXIT_CODE=$?
 echo "ESLint report saved to eslint-report.json"
 
-# Check if tests passed
-if [ $? -eq 0 ]; then
+# Check if both tests and lint passed
+if [ $TEST_EXIT_CODE -eq 0 ] && [ $LINT_EXIT_CODE -eq 0 ]; then
   echo "Tests passed! Committing changes..."
   git add .
   git commit -m "$COMMIT_MESSAGE"
