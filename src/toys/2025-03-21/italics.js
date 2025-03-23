@@ -93,13 +93,19 @@ function processTextPreservingBold(text) {
   const segment = findBoldSegments(text);
   if (!segment) return processAllItalicStyles(text);
 
-  const { boldText, beforeText, afterText } = segment;
-
   return [
-    beforeText && processAllItalicStyles(beforeText),
-    boldText,
-    afterText && processTextPreservingBold(afterText)
+    processItalicBefore(segment.beforeText),
+    segment.boldText,
+    processBoldAfter(segment.afterText)
   ].filter(Boolean).join('');
+}
+
+function processItalicBefore(beforeText) {
+  return beforeText ? processAllItalicStyles(beforeText) : '';
+}
+
+function processBoldAfter(afterText) {
+  return afterText ? processTextPreservingBold(afterText) : '';
 }
 
 // Main exported function
