@@ -24,6 +24,8 @@ const CLASS = {
   FULL_WIDTH: 'full-width',
 };
 
+const BLOCKQUOTE_CORNERS = `<div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>`;
+
 // HTML tag names
 const DIV_TAG_NAME = 'div';
 const ARTICLE_TAG_NAME = 'article';
@@ -381,7 +383,7 @@ function createContentSectionItem(content, isFirst) {
   if (typeof content === 'object' && content !== null) {
     if (content.type === 'quote') {
       // Render quote as blockquote with corner elements
-      const corners = `<div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>`;
+      const corners = BLOCKQUOTE_CORNERS;
       
       // Process the content based on its type
       let paragraphs;
@@ -396,7 +398,7 @@ function createContentSectionItem(content, isFirst) {
       valueDiv = `<blockquote class="${CLASS.VALUE}">${corners}${paragraphs}</blockquote>`;
     } else if (content.type === 'text' && Array.isArray(content.content)) {
       // Handle array of paragraphs for text type as blockquote
-      const corners = `<div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>`;
+      const corners = BLOCKQUOTE_CORNERS;
       
       // Create paragraphs from the array content
       const paragraphs = content.content.map(para => `<p>${para}</p>`).join('');
