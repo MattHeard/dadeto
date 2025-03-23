@@ -72,6 +72,7 @@ Dadeto is a lightweight, JavaScript-based static site generator designed to crea
 - **Consistent Abstraction Layers:** Each module, function, or expression should represent only one layer of abstraction.
 - **Avoid Mutable State:** Favor immutability by not altering state once it's defined.
 - **One Expression per Statement:** Each statement should perform a single expression.
+- **Extract til you drop:** Continually extract reusable components and abstractions until no further improvement is possible.
 
 ## Blog Post Format
 
