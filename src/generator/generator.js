@@ -529,7 +529,7 @@ function hasRelatedLinks(post) {
  * @returns {boolean} - True if post has tags
  */
 function hasTags(post) {
-  return post.tags !== undefined && Array.isArray(post.tags) && post.tags.length > 0;
+  return Array.isArray(post.tags) && post.tags.length > 0;
 }
 
 /**
