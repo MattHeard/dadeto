@@ -117,3 +117,22 @@ Blog posts are defined in the `src/blog.json` file with the following structure:
 ## License
 
 All content is authored by Matt Heard and is [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), unless otherwise noted.
+
+```js
+/**
+ * Create the title section for a blog post.
+ * @param {Object} post - The blog post object.
+ * @returns {string} - HTML string for the title section.
+ */
+function createTitleSection(post) {
+  // Assuming post.title holds the title
+  return `<h1 class="post-title">${escapeHtml(post.title)}</h1>`;
+}
+
+function generateHeaderSection(post) {
+  const titleSection = createTitleSection(post);
+  const dateSection = generateDateSection(post);
+  const tagsSection = generateTagsSection(post);
+  return combineHTMLSections(titleSection, dateSection, tagsSection);
+}
+```
