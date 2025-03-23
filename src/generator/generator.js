@@ -692,13 +692,13 @@ function escapeRelatedLinkFields(link) {
 }
 
 function formatBaseLink(type, url, title) {
-  if (type === 'microblog' || type === 'article' || type === 'report') {
-    return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>"${title}"</a>`;
-  }
-  if (type === 'book') {
-    return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}><em>_${title}_</em></a>`;
-  }
-  return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>${title}</a>`;
+  const formattedTitle = (type === 'book')
+    ? `<em>_${title}_</em>`
+    : (type === 'microblog' || type === 'article' || type === 'report')
+    ? `"${title}"`
+    : title;
+
+  return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>${formattedTitle}</a>`;
 }
 
 function composeLinkParts(baseLink, author, source, quote) {
