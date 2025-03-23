@@ -8,4 +8,10 @@ export default defineConfig([
   { files: ["**/*.{js,mjs,cjs}"], languageOptions: { globals: {...globals.browser, ...globals.node} } },
   { files: ["**/*.{js,mjs,cjs}"], plugins: { js }, extends: ["js/recommended"] },
   { rules: { complexity: ["warn", { max: 10 }] } },
+  {
+    files: ["**/*.test.js"],
+    languageOptions: {
+      globals: globals.jest
+    }
+  }
 ]);
