@@ -486,7 +486,7 @@ function generateDateSection(post) {
   const dateKey = createDiv(CLASS.KEY, 'pubAt');
   const dateValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
 
-  return `${dateKey}${dateValue}`;
+  return createPair(dateKey, dateValue);
 }
 
 /**
@@ -506,7 +506,7 @@ function generateTagsSection(post) {
   }).join(', ');
   const tagsValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagsContent}</p>`;
 
-  return `${tagsKey}${tagsValue}`;
+  return createPair(tagsKey, tagsValue);
 }
 
 /**
