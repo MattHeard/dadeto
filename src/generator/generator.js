@@ -767,15 +767,21 @@ function combineHTMLSections(...sections) {
   return sections.join('');
 }
 
+function hasModulePath(post) {
+  return !!post?.toy?.modulePath;
+}
+
+function hasFunctionName(post) {
+  return !!post?.toy?.functionName;
+}
+
 /**
  * Check if post has a toy component
  * @param {Object} post - The blog post
  * @returns {boolean} - True if post has a toy component
  */
 function hasToy(post) {
-  const hasModulePath = post?.toy?.modulePath;
-  const hasFunctionName = post?.toy?.functionName;
-  return Boolean(hasModulePath && hasFunctionName);
+  return hasModulePath(post) && hasFunctionName(post);
 }
 
 /**
