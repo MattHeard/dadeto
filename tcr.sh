@@ -8,6 +8,9 @@ COMMIT_MESSAGE=${1:-"refactor"}
 
 echo "Running tests..."
 npm test
+echo "Running ESLint..."
+npx eslint . -f json -o eslint-report.json
+echo "ESLint report saved to eslint-report.json"
 
 # Check if tests passed
 if [ $? -eq 0 ]; then

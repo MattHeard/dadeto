@@ -9,9 +9,13 @@
     "tcr": "./tcr.sh"
   },
   "devDependencies": {
+    "@eslint/js": "^9.23.0",
     "complexity-report": "^2.0.0-alpha",
     "escomplex": "^2.0.0-alpha",
+    "eslint": "^9.23.0",
+    "globals": "^16.0.0",
     "jest": "^29.7.0",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "typhonjs-escomplex": "^0.1.0"
   }
 }
