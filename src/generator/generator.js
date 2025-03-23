@@ -691,13 +691,14 @@ function escapeRelatedLinkFields(link) {
   };
 }
 
-function formatBaseLink(type, url, title) {
-  const formattedTitle = (type === 'book')
-    ? `<em>_${title}_</em>`
-    : (type === 'microblog' || type === 'article' || type === 'report')
-    ? `"${title}"`
-    : title;
+function formatTitleByType(type, title) {
+  if (type === 'book') return `<em>_${title}_</em>`;
+  if (['microblog', 'article', 'report'].includes(type)) return `"${title}"`;
+  return title;
+}
 
+function formatBaseLink(type, url, title) {
+  const formattedTitle = formatTitleByType(type, title);
   return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>${formattedTitle}</a>`;
 }
 
