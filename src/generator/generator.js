@@ -17,8 +17,7 @@ function createParagraphs(content) {
  * @returns {string} - The blockquote HTML.
  */
 function createBlockquote(content) {
-  const paragraphs = createParagraphs(content);
-  return `<blockquote class="${CLASS.VALUE}">${BLOCKQUOTE_CORNERS}${paragraphs}</blockquote>`;
+  return `<blockquote class="${CLASS.VALUE}">${BLOCKQUOTE_CORNERS}${createParagraphs(content)}</blockquote>`;
 }
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
