@@ -678,14 +678,12 @@ function generateMediaSections(post) {
 const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
 
 function escapeRelatedLinkFields(link) {
-  return {
-    url: escapeHtml(link.url),
-    title: escapeHtml(link.title),
-    author: link.author ? escapeHtml(link.author) : '',
-    source: link.source ? escapeHtml(link.source) : '',
-    quote: link.quote ? escapeHtml(link.quote) : '',
-    type: link.type,
-  };
+  const fields = ['url', 'title', 'author', 'source', 'quote'];
+  
+  return fields.reduce((acc, field) => {
+    acc[field] = link[field] ? escapeHtml(link[field]) : '';
+    return acc;
+  }, { type: link.type });
 }
 
 function formatTitleByType(type, title) {
