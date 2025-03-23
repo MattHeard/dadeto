@@ -709,12 +709,24 @@ function joinLinkParts(parts) {
   return parts.filter(Boolean).join('');
 }
 
+function formatAuthor(author) {
+  return author ? ` by ${author}` : '';
+}
+
+function formatSource(source) {
+  return source ? `, ${source}` : '';
+}
+
+function formatQuote(quote) {
+  return quote ? ` ("${quote}")` : '';
+}
+
 function createLinkParts(baseLink, author, source, quote) {
   return [
     baseLink,
-    author ? ` by ${author}` : '',
-    source ? `, ${source}` : '',
-    quote ? ` ("${quote}")` : ''
+    formatAuthor(author),
+    formatSource(source),
+    formatQuote(quote)
   ];
 }
 
