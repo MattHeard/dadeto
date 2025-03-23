@@ -687,42 +687,19 @@ function formatRelatedLink(link) {
   const escapedTitle = escapeHtml(title);
   const escapedAuthor = author ? escapeHtml(author) : '';
   const escapedSource = source ? escapeHtml(source) : '';
-  const escapedType = type ? escapeHtml(type) : '';
   const escapedQuote = quote ? escapeHtml(quote) : '';
-
-  // Ensure proper spacing between elements by using string concatenation with explicit spaces
-  let linkText;
+  const baseLink = (type === 'microblog' || type === 'article' || type === 'report')
+    ? `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}>"${escapedTitle}"</a>`
+    : (type === 'book')
+    ? `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}><em>_${escapedTitle}_</em></a>`
+    : `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}>${escapedTitle}</a>`;
   
-  // Add special formatting based on link type
-  if (type === 'microblog' || type === 'article' || type === 'report') {
-    linkText = `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}>"${escapedTitle}"</a>`;
-  } else if (type === 'book') {
-    linkText = `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}><em>_${escapedTitle}_</em></a>`;
-  } else {
-    linkText = `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}>${escapedTitle}</a>`;
-  }
+  const authorPart = escapedAuthor ? ` by ${escapedAuthor}` : '';
+  const sourcePart = escapedSource ? `, ${escapedSource}` : '';
+  const quotePart = escapedQuote ? ` ("${escapedQuote}")` : '';
   
-  // Add author info with proper space before 'by'
-  if (escapedAuthor) {
-    linkText += ` by ${escapedAuthor}`;
-  }
-  
-  // Add source info if available as a comma separated value
-  if (escapedSource) {
-    linkText += `, ${escapedSource}`;
-  }
-  
-  // Type information is no longer displayed
-  // if (escapedType) {
-  //   linkText += ` (${escapedType})`;
-  // }
-  
-  // Add quote if available
-  if (escapedQuote) {
-    linkText += ` ("${escapedQuote}")`;
-  }
-  
-  return `<li>${linkText}</li>`;
+  const finalLink = baseLink + authorPart + sourcePart + quotePart;
+  return `<li>${finalLink}</li>`;
 }
 
 /**
