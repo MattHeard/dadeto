@@ -841,14 +841,20 @@ function createBlogContentArray(header, articles, footer) {
 }
 
 /**
- * Generate blog HTML with customizable header, footer and wrapper
+ * Build the complete HTML content for the blog from header, articles, and footer.
+ * @param {string} header - The header HTML.
+ * @param {string} articles - The articles HTML.
+ * @param {string} footer - The footer HTML.
+ * @returns {string} - Combined HTML content.
  */
+function getBlogHtmlContent(header, articles, footer) {
+  const contentArray = createBlogContentArray(header, articles, footer);
+  return contentArray.join('');
+}
+
 export function generateBlog(blog, header, footer, wrapHtml) {
   const articles = generateArticles(blog.posts);
-  const contentArray = createBlogContentArray(header, articles, footer);
-  const htmlContents = contentArray.join('');
-  
-  // Simply return the HTML contents without any minification
+  const htmlContents = getBlogHtmlContent(header, articles, footer);
   return wrapHtml(htmlContents);
 }
 
