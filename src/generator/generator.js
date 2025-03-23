@@ -708,10 +708,13 @@ function formatBaseLink(type, url, title) {
 }
 
 function composeLinkParts(baseLink, author, source, quote) {
-  const authorPart = author ? ` by ${author}` : '';
-  const sourcePart = source ? `, ${source}` : '';
-  const quotePart = quote ? ` ("${quote}")` : '';
-  return `<li>${baseLink + authorPart + sourcePart + quotePart}</li>`;
+  const optionalParts = [
+    author && ` by ${author}`,
+    source && `, ${source}`,
+    quote && ` ("${quote}")`
+  ];
+
+  return `<li>${[baseLink, ...optionalParts.filter(Boolean)].join('')}</li>`;
 }
 
 function formatRelatedLink(link) {
