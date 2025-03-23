@@ -839,13 +839,20 @@ function generateToyScriptSection(post) {
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
+  const headerSection = generateHeaderSection(post);
+  const mediaSection = generateMediaSections(post);
+  const contentSection = generateContentSections(post);
+  const toyUISection = generateToyUISection(post);
+  const relatedLinksSection = generateRelatedLinksSection(post);
+  const toyScriptSection = generateToyScriptSection(post);
+
   return combineHTMLSections(
-    generateHeaderSection(post),
-    generateMediaSections(post),
-    generateContentSections(post),
-    generateToyUISection(post),
-    generateRelatedLinksSection(post),
-    generateToyScriptSection(post)
+    headerSection,
+    mediaSection,
+    contentSection,
+    toyUISection,
+    relatedLinksSection,
+    toyScriptSection
   );
 }
 
