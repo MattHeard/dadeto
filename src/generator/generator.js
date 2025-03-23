@@ -656,26 +656,6 @@ function createYouTubeContent(post) {
   return `<p class="${CLASS.VALUE}">${iframe}</p>`;
 }
 
-/**
- * Generate the illustration section for a blog post
- */
-function generateIllustrationSection(post) {
-  return createMediaSectionGenerator('illustration', 'illus')(post);
-}
-
-/**
- * Generate the audio section for a blog post
- */
-function generateAudioSection(post) {
-  return createMediaSectionGenerator('audio', 'audio')(post);
-}
-
-/**
- * Generate the YouTube section for a blog post
- */
-function generateYouTubeSection(post) {
-  return createMediaSectionGenerator('youtube', 'video')(post);
-}
 
 /**
  * Mapping for media sections.
