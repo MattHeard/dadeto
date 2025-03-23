@@ -852,8 +852,17 @@ function getBlogHtmlContent(header, articles, footer) {
   return contentArray.join('');
 }
 
+/**
+ * Retrieve the HTML for all articles from the blog.
+ * @param {Object} blog - The blog object.
+ * @returns {string} - Combined HTML for all articles.
+ */
+function getArticles(blog) {
+  return generateArticles(blog.posts);
+}
+
 export function generateBlog(blog, header, footer, wrapHtml) {
-  const articles = generateArticles(blog.posts);
+  const articles = getArticles(blog);
   const htmlContents = getBlogHtmlContent(header, articles, footer);
   return wrapHtml(htmlContents);
 }
