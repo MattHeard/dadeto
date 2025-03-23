@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
     "generate": "node generate.js",
-    "test-watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",
-    "tcr": "./tcr.sh"
+    "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
+    "tcr": "./tcr.sh",
+    "stryker": "node --experimental-vm-modules ./node_modules/.bin/stryker run"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
     "@eslint/js": "^9.23.0",
+    "@stryker-mutator/core": "^8.7.1",
+    "@stryker-mutator/jest-runner": "^8.7.1",
     "complexity-report": "^2.0.0-alpha",
     "escomplex": "^2.0.0-alpha",
     "eslint": "^9.23.0",

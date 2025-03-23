@@ -42,3 +42,6 @@ coverage/
 # Miscellaneous
 debug/
 *.lock
+
+# stryker temp files
+.stryker-tmp
