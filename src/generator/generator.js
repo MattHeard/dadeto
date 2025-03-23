@@ -390,28 +390,35 @@ function createContentItemWithIndex(text, index) {
 }
 
 /**
+ * Normalize a content item.
+ * If content is already an object, return it unchanged;
+ * otherwise, wrap it in an object with type 'text' and content fields.
+ * @param {Object|string} content - The content item to normalize.
+ * @returns {Object} - Normalized content object.
+ */
+function normalizeContentItem(content) {
+  return (typeof content === 'object' && content !== null)
+    ? content
+    : { type: 'text', content: content };
+}
+
+/**
  * Create a content section item with exact formatting
  * @param {Object|string} content - The content object or text
  * @param {boolean} isFirst - Whether this is the first content item
  * @returns {string} - Formatted content section HTML
  */
 function createContentSectionItem(content, isFirst) {
+  const normalizedContent = normalizeContentItem(content);
   const key = isFirst ? 'text' : '';
   const keyDiv = createDiv(CLASS.KEY, key);
   
   let valueDiv;
   
-  // Check if content is an object with type and content properties
-  if (typeof content === 'object' && content !== null) {
-    if (content.type === 'quote' || (content.type === 'text' && Array.isArray(content.content))) {
-      valueDiv = createBlockquote(content.content);
-    } else {
-      // For any unrecognized content types, wrap the content in a paragraph with CLASS.VALUE
-      valueDiv = `<p class="${CLASS.VALUE}">${content.content}</p>`;
-    }
+  if (normalizedContent.type === 'quote' || (normalizedContent.type === 'text' && Array.isArray(normalizedContent.content))) {
+    valueDiv = createBlockquote(normalizedContent.content);
   } else {
-    // Plain text content is wrapped in a paragraph with CLASS.VALUE
-    valueDiv = `<p class="${CLASS.VALUE}">${content}</p>`;
+    valueDiv = `<p class="${CLASS.VALUE}">${normalizedContent.content}</p>`;
   }
 
   return formatSection(keyDiv, valueDiv);
