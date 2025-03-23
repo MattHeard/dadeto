@@ -406,11 +406,11 @@ function createContentSectionItem(content, isFirst) {
     if (content.type === 'quote' || (content.type === 'text' && Array.isArray(content.content))) {
       valueDiv = createBlockquote(content.content);
     } else {
-      // Default for other content types - can be expanded for other types
-      valueDiv = `<p class="${CLASS.VALUE}">${content.content || content}</p>`;
+      // For any unrecognized content types, wrap the content in a paragraph with CLASS.VALUE
+      valueDiv = `<p class="${CLASS.VALUE}">${content.content}</p>`;
     }
   } else {
-    // Plain text content
+    // Plain text content is wrapped in a paragraph with CLASS.VALUE
     valueDiv = `<p class="${CLASS.VALUE}">${content}</p>`;
   }
 
