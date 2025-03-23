@@ -420,15 +420,11 @@ function createContentSectionItem(content, isFirst) {
   const key = isFirst ? 'text' : '';
   const keyDiv = createDiv(CLASS.KEY, key);
   
-  let valueDiv;
-  
-  if (normalizedContent.type === 'quote') {
-    valueDiv = CONTENT_RENDERERS.quote(normalizedContent.content);
-  } else if (normalizedContent.type === 'text' && Array.isArray(normalizedContent.content)) {
-    valueDiv = createBlockquote(normalizedContent.content);
-  } else {
-    valueDiv = `<p class="${CLASS.VALUE}">${normalizedContent.content}</p>`;
-  }
+  const valueDiv = normalizedContent.type === 'quote'
+    ? CONTENT_RENDERERS.quote(normalizedContent.content)
+    : (normalizedContent.type === 'text' && Array.isArray(normalizedContent.content))
+      ? createBlockquote(normalizedContent.content)
+      : `<p class="${CLASS.VALUE}">${normalizedContent.content}</p>`;
 
   return formatSection(keyDiv, valueDiv);
 }
