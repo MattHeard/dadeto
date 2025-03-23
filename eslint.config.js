@@ -4,7 +4,7 @@ import js from "@eslint/js";
 
 
 export default defineConfig([
-  { ignores: ["public/"] },
+  { ignores: ["public/", ".stryker-tmp/"] },
   { files: ["**/*.{js,mjs,cjs}"] },
   { files: ["**/*.{js,mjs,cjs}"], languageOptions: { globals: {...globals.browser, ...globals.node} } },
   { files: ["**/*.{js,mjs,cjs}"], plugins: { js }, extends: ["js/recommended"] },
