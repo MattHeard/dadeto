@@ -1,15 +1,23 @@
 /**
+ * Create paragraphs HTML string.
+ * @param {string|string[]} content - A string or an array of strings.
+ * @returns {string} - HTML string composed of paragraph elements.
+ */
+function createParagraphs(content) {
+  if (Array.isArray(content)) {
+    return content.map(para => `<p>${para}</p>`).join('');
+  } else {
+    return `<p>${content}</p>`;
+  }
+}
+
+/**
  * Create a blockquote HTML string.
  * @param {string|string[]} content - A string or an array of strings.
  * @returns {string} - The blockquote HTML.
  */
 function createBlockquote(content) {
-  let paragraphs;
-  if (Array.isArray(content)) {
-    paragraphs = content.map(para => `<p>${para}</p>`).join('');
-  } else {
-    paragraphs = `<p>${content}</p>`;
-  }
+  const paragraphs = createParagraphs(content);
   return `<blockquote class="${CLASS.VALUE}">${BLOCKQUOTE_CORNERS}${paragraphs}</blockquote>`;
 }
 import { headElement } from './head.js';
