@@ -422,7 +422,9 @@ function createContentSectionItem(content, isFirst) {
   
   let valueDiv;
   
-  if (normalizedContent.type === 'quote' || (normalizedContent.type === 'text' && Array.isArray(normalizedContent.content))) {
+  if (normalizedContent.type === 'quote') {
+    valueDiv = CONTENT_RENDERERS.quote(normalizedContent.content);
+  } else if (normalizedContent.type === 'text' && Array.isArray(normalizedContent.content)) {
     valueDiv = createBlockquote(normalizedContent.content);
   } else {
     valueDiv = `<p class="${CLASS.VALUE}">${normalizedContent.content}</p>`;
