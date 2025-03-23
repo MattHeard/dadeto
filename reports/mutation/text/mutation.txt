@@ -1,8 +1,8 @@
-[32m20:24:20 (22749) INFO ProjectReader[39m Found 13 of 101 file(s) to be mutated.
-[32m20:24:21 (22749) INFO Instrumenter[39m Instrumented 13 source file(s) with 610 mutant(s)
-[32m20:24:21 (22749) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
-[32m20:24:22 (22749) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
-[32m20:24:23 (22749) INFO DryRunExecutor[39m Initial test run succeeded. Ran 31 tests in 1 second (net 35 ms, overhead 1523 ms).
+[32m20:40:40 (64370) INFO ProjectReader[39m Found 13 of 100 file(s) to be mutated.
+[32m20:40:40 (64370) INFO Instrumenter[39m Instrumented 13 source file(s) with 610 mutant(s)
+[32m20:40:40 (64370) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
+[32m20:40:41 (64370) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
+[32m20:40:43 (64370) INFO DryRunExecutor[39m Initial test run succeeded. Ran 31 tests in 1 second (net 41 ms, overhead 1669 ms).
 
 All tests
   generator/generator.test.js
@@ -368,6 +368,16 @@ Tests ran:
   and 6 more tests!
 
 
+[Survived] EqualityOperator
+src/generator/generator.js:523:81
+-     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
++     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length >= 0;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain related links for a post
+    Blog Generator should contain a toy component for a post
+
+
 [Survived] ConditionalExpression
 src/generator/generator.js:523:10
 -     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
@@ -377,6 +387,16 @@ Tests ran:
     Blog Generator should contain content for posts
     Blog Generator should contain an illustration for posts
   and 6 more tests!
+
+
+[Survived] ConditionalExpression
+src/generator/generator.js:523:81
+-     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
++     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && true;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain related links for a post
+    Blog Generator should contain a toy component for a post
 
 
 [Survived] LogicalOperator
@@ -390,24 +410,12 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] EqualityOperator
-src/generator/generator.js:523:81
--     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
-+     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length >= 0;
-Tests ran:
-    Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain related links for a post
-    Blog Generator should contain a toy component for a post
-
-
 [Survived] ConditionalExpression
-src/generator/generator.js:523:81
--     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
-+     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && true;
+src/generator/generator.js:532:38
+-     return Array.isArray(post.tags) && post.tags.length > 0;
++     return Array.isArray(post.tags) && true;
 Tests ran:
-    Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain related links for a post
-    Blog Generator should contain a toy component for a post
+    Blog Generator should display tags for posts
 
 
 [Survived] EqualityOperator
@@ -418,18 +426,21 @@ Tests ran:
     Blog Generator should display tags for posts
 
 
-[Survived] ConditionalExpression
-src/generator/generator.js:532:38
--     return Array.isArray(post.tags) && post.tags.length > 0;
-+     return Array.isArray(post.tags) && true;
-Tests ran:
-    Blog Generator should display tags for posts
-
-
-[Survived] ConditionalExpression
+[Survived] EqualityOperator
 src/generator/generator.js:539:10
 -     return mediaType === 'youtube' || post.publicationDate;
-+     return true;
++     return mediaType !== 'youtube' || post.publicationDate;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain an illustration for posts
+    Blog Generator should contain audio elements
+  and 1 more test!
+
+
+[Survived] StringLiteral
+src/generator/generator.js:539:24
+-     return mediaType === 'youtube' || post.publicationDate;
++     return mediaType === "" || post.publicationDate;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain an illustration for posts
@@ -448,21 +459,10 @@ Tests ran:
   and 1 more test!
 
 
-[Survived] EqualityOperator
+[Survived] ConditionalExpression
 src/generator/generator.js:539:10
 -     return mediaType === 'youtube' || post.publicationDate;
-+     return mediaType !== 'youtube' || post.publicationDate;
-Tests ran:
-    Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain an illustration for posts
-    Blog Generator should contain audio elements
-  and 1 more test!
-
-
-[Survived] StringLiteral
-src/generator/generator.js:539:24
--     return mediaType === 'youtube' || post.publicationDate;
-+     return mediaType === "" || post.publicationDate;
++     return true;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain an illustration for posts
@@ -610,24 +610,6 @@ src/generator/html.js:4:24
 +   export const DOCTYPE = "";
 Ran all tests for this mutant.
 
-[Survived] StringLiteral
-src/generator/html.js:12:30
--   export const HTML_TAG_NAME = 'html';
-+   export const HTML_TAG_NAME = "";
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/html.js:16:9
--     LANG: 'lang',
-+     LANG: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/html.js:8:7
--     EN: 'en',
-+     EN: "",
-Ran all tests for this mutant.
-
 [Survived] ObjectLiteral
 src/generator/html.js:7:25
 -   export const LANGUAGE = {
@@ -637,9 +619,33 @@ src/generator/html.js:7:25
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
+src/generator/html.js:16:9
+-     LANG: 'lang',
++     LANG: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/generator/html.js:12:30
+-   export const HTML_TAG_NAME = 'html';
++   export const HTML_TAG_NAME = "";
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/generator/html.js:8:7
+-     EN: 'en',
++     EN: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
 src/generator/html.js:25:21
 -     { from: />/g, to: '&gt;' },
 +     { from: />/g, to: "" },
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/generator/html.js:24:21
+-     { from: /</g, to: '&lt;' },
++     { from: /</g, to: "" },
 Ran all tests for this mutant.
 
 [Survived] ObjectLiteral
@@ -655,18 +661,6 @@ src/generator/html.js:24:3
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/html.js:24:21
--     { from: /</g, to: '&lt;' },
-+     { from: /</g, to: "" },
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
-src/generator/html.js:26:3
--     { from: /"/g, to: '&quot;' },
-+     {},
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/generator/html.js:26:21
 -     { from: /"/g, to: '&quot;' },
 +     { from: /"/g, to: "" },
@@ -676,6 +670,12 @@ Ran all tests for this mutant.
 src/generator/html.js:27:21
 -     { from: /'/g, to: '&#039;' },
 +     { from: /'/g, to: "" },
+Ran all tests for this mutant.
+
+[Survived] ObjectLiteral
+src/generator/html.js:26:3
+-     { from: /"/g, to: '&quot;' },
++     {},
 Ran all tests for this mutant.
 
 [Survived] ObjectLiteral
@@ -1995,10 +1995,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] OptionalChaining
+[Survived] MethodExpression
 src/toys/2025-03-21/italics.js:91:8
 -     if (!text?.trim()) return '';
-+     if (!text.trim()) return '';
++     if (!text) return '';
 Tests ran:
     italics function leaves regular text unchanged
     italics function adds <em> tags around asterisk-style italics while preserving asterisks
@@ -2017,10 +2017,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] MethodExpression
+[Survived] OptionalChaining
 src/toys/2025-03-21/italics.js:91:8
 -     if (!text?.trim()) return '';
-+     if (!text) return '';
++     if (!text.trim()) return '';
 Tests ran:
     italics function leaves regular text unchanged
     italics function adds <em> tags around asterisk-style italics while preserving asterisks
@@ -2067,4 +2067,4 @@ All files            |  64.59 |   89.55 |      386 |         8 |         46 |   
    booleanCoercer.js | 100.00 |  100.00 |       21 |         0 |          0 |        0 |        0 |
    italics.js        |  89.71 |   92.42 |       53 |         8 |          5 |        2 |        0 |
 ---------------------|--------|---------|----------|-----------|------------|----------|----------|
-[32m20:25:37 (22749) INFO MutationTestExecutor[39m Done in 1 minute 16 seconds.
+[32m20:41:58 (64370) INFO MutationTestExecutor[39m Done in 1 minute 18 seconds.
