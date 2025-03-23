@@ -308,9 +308,9 @@ function formatArticleHTML(articleHTML) {
  * Process posts and join article HTML
  */
 function processPostsToHTML(posts) {
-  const articleHTMLs = posts.map(convertPostToArticleHTML);
-  const formattedHTMLs = articleHTMLs.map(formatArticleHTML);
-  return formattedHTMLs.join('');
+  return posts.map(convertPostToArticleHTML)
+              .map(formatArticleHTML)
+              .join('');
 }
 
 /**
