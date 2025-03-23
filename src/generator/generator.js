@@ -861,9 +861,20 @@ function getArticles(blog) {
   return generateArticles(blog.posts);
 }
 
-export function generateBlog(blog, header, footer, wrapHtml) {
+/**
+ * Assemble the blog HTML content by combining header, articles, and footer.
+ * @param {string} header - The header HTML.
+ * @param {Object} blog - The blog object.
+ * @param {string} footer - The footer HTML.
+ * @returns {string} - The combined HTML content.
+ */
+function assembleBlogHTML(header, blog, footer) {
   const articles = getArticles(blog);
-  const htmlContents = getBlogHtmlContent(header, articles, footer);
+  return getBlogHtmlContent(header, articles, footer);
+}
+
+export function generateBlog(blog, header, footer, wrapHtml) {
+  const htmlContents = assembleBlogHTML(header, blog, footer);
   return wrapHtml(htmlContents);
 }
 
