@@ -335,17 +335,10 @@ function createIdAttributeIfNeeded(post) {
  * Create attributes for an article element
  */
 function createArticleAttributes(post) {
-  let classValue = CLASS.ENTRY;
-  
-  // Add tag classes if post has tags
-  if (hasTags(post)) {
-    const tagClasses = post.tags.map(tag => `tag-${tag}`).join(' ');
-    classValue = `${classValue} ${tagClasses}`;
-  }
-  
+  const tagClasses = hasTags(post) ? post.tags.map(tag => `tag-${tag}`).join(' ') : '';
+  const classValue = tagClasses ? `${CLASS.ENTRY} ${tagClasses}` : CLASS.ENTRY;
   const classAttr = createAttrPair(ATTR_NAME.CLASS, classValue);
   const idAttr = createIdAttributeIfNeeded(post);
-
   return `${classAttr}${idAttr}`;
 }
 
