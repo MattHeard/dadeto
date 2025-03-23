@@ -402,6 +402,20 @@ const CONTENT_RENDERERS = {
   quote: createBlockquote,
 };
 
+function renderValueDiv(normalizedContent) {
+  const { type, content } = normalizedContent;
+ 
+  if (type === 'quote') {
+    return CONTENT_RENDERERS.quote(content);
+  }
+ 
+  if (type === 'text' && Array.isArray(content)) {
+    return createBlockquote(content);
+  }
+ 
+  return `<p class="${CLASS.VALUE}">${content}</p>`;
+}
+
 /**
  * Create a content section item with exact formatting
  * @param {Object|string} content - The content object or text
@@ -412,13 +426,8 @@ function createContentSectionItem(content, isFirst) {
   const normalizedContent = normalizeContentItem(content);
   const key = isFirst ? 'text' : '';
   const keyDiv = createDiv(CLASS.KEY, key);
-  
-  const valueDiv = normalizedContent.type === 'quote'
-    ? CONTENT_RENDERERS.quote(normalizedContent.content)
-    : (normalizedContent.type === 'text' && Array.isArray(normalizedContent.content))
-      ? createBlockquote(normalizedContent.content)
-      : `<p class="${CLASS.VALUE}">${normalizedContent.content}</p>`;
-
+  const valueDiv = renderValueDiv(normalizedContent);
+ 
   return formatSection(keyDiv, valueDiv);
 }
 
