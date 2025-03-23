@@ -65,6 +65,14 @@ Dadeto is a lightweight, JavaScript-based static site generator designed to crea
 - **Formatting**: Consistent indentation (2 spaces)
 - **File Structure**: Modular components in separate files
 
+## Refactoring Principles
+
+- **Don't Repeat Yourself:** Eliminate duplication in content and structure.
+- **Do One Thing and Do It Well:** Each function or expression should have a single responsibility.
+- **Consistent Abstraction Layers:** Each module, function, or expression should represent only one layer of abstraction.
+- **Avoid Mutable State:** Favor immutability by not altering state once it's defined.
+- **One Expression per Statement:** Each statement should perform a single expression.
+
 ## Blog Post Format
 
 Blog posts are defined in the `src/blog.json` file with the following structure:
