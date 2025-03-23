@@ -17,8 +17,17 @@ export function coerceToBoolean(input) {
 
 function normalizeBooleanString(input) {
   if (typeof input !== 'string') return undefined;
-  const lower = input.toLowerCase();
-  if (lower === 'true') return true;
-  if (lower === 'false') return false;
-  return undefined;
+
+  return parseBooleanString(input.toLowerCase());
+}
+
+function parseBooleanString(str) {
+  switch (str) {
+    case 'true':
+      return true;
+    case 'false':
+      return false;
+    default:
+      return undefined;
+  }
 }
