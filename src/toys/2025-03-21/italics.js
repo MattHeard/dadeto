@@ -75,6 +75,23 @@ function getItalicMarkers() {
 }
 
 /**
+ * Assembles the processed segments (before, bold, after) into a single string.
+ * 
+ * @param {string} beforeText - The text before the bold segment
+ * @param {string} boldText - The bold segment text
+ * @param {string} afterText - The text after the bold segment
+ * @returns {string} - The final assembled string after processing
+ * @private
+ */
+function assembleProcessedText(beforeText, boldText, afterText) {
+  return [
+    processItalicBefore(beforeText),
+    boldText,
+    processBoldAfter(afterText)
+  ].filter(Boolean).join('');
+}
+
+/**
  * Process text recursively to handle all formatting cases, preserving bold segments.
  * This function identifies bold markdown segments and leaves them unmodified,
  * while processing the text before and after for italic formatting.
@@ -93,11 +110,7 @@ function processTextPreservingBold(text) {
   const segment = findBoldSegments(text);
   if (!segment) return processAllItalicStyles(text);
 
-  return [
-    processItalicBefore(segment.beforeText),
-    segment.boldText,
-    processBoldAfter(segment.afterText)
-  ].filter(Boolean).join('');
+  return assembleProcessedText(segment.beforeText, segment.boldText, segment.afterText);
 }
 
 function processItalicBefore(beforeText) {
