@@ -850,14 +850,16 @@ const createBlogComponents = () => ({
 });
 
 /**
- * Generate a complete blog HTML
+ * Extracts the blog generation arguments from the blog components.
+ * @returns {Object} - An object containing header, footer, and wrapFunc.
  */
-export function generateBlogOuter(blog) {
+function getBlogGenerationArgs() {
   const components = createBlogComponents();
-  return generateBlog(
-    blog,
-    components.header,
-    components.footer,
-    components.wrapFunc
-  );
+  const { header, footer, wrapFunc } = components;
+  return { header, footer, wrapFunc };
 }
+
+export const generateBlogOuter = (blog) => {
+  const { header, footer, wrapFunc } = getBlogGenerationArgs();
+  return generateBlog(blog, header, footer, wrapFunc);
+};
