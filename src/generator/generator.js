@@ -403,6 +403,13 @@ function normalizeContentItem(content) {
 }
 
 /**
+ * Mapping of content types to their renderer functions.
+ */
+const CONTENT_RENDERERS = {
+  quote: createBlockquote,
+};
+
+/**
  * Create a content section item with exact formatting
  * @param {Object|string} content - The content object or text
  * @param {boolean} isFirst - Whether this is the first content item
