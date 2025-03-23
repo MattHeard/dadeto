@@ -11,9 +11,8 @@ npm test
 TEST_EXIT_CODE=$?
 
 echo "Running ESLint..."
-npx eslint . -f json -o eslint-report.json
+npm run lint
 LINT_EXIT_CODE=$?
-echo "ESLint report saved to eslint-report.json"
 
 # Check if both tests and lint passed
 if [ $TEST_EXIT_CODE -eq 0 ] && [ $LINT_EXIT_CODE -eq 0 ]; then
