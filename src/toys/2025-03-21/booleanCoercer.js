@@ -7,16 +7,18 @@
  * @returns {string} - String representation of object with 'value' property if coercion successful, '{}' if not
  */
 export function coerceToBoolean(input) {
-  const booleanMap = {
-    true: true,
-    false: false
-  };
-
   if (typeof input === 'boolean') {
     return `{ value: ${input} }`;
   }
 
-  const normalized = (typeof input === 'string') ? booleanMap[input.toLowerCase()] : undefined;
+  const normalized = normalizeBooleanString(input);
+  return normalized !== undefined ? `{ value: ${normalized} }` : '{}';
+}
 
-  return typeof normalized === 'boolean' ? `{ value: ${normalized} }` : '{}';
+function normalizeBooleanString(input) {
+  if (typeof input !== 'string') return undefined;
+  const lower = input.toLowerCase();
+  if (lower === 'true') return true;
+  if (lower === 'false') return false;
+  return undefined;
 }
