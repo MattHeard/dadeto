@@ -843,16 +843,11 @@ export function generateBlog(blog, header, footer, wrapHtml) {
   return wrapHtml(htmlContents);
 }
 
-/**
- * Create blog components needed for generation
- */
-function createBlogComponents() {
-  return {
-    header: createPageHeader(),
-    footer: createPageFooter(),
-    wrapFunc: wrapHtml,
-  };
-}
+const createBlogComponents = () => ({
+  header: createPageHeader(),
+  footer: createPageFooter(),
+  wrapFunc: wrapHtml,
+});
 
 /**
  * Generate a complete blog HTML
