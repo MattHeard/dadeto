@@ -88,26 +88,18 @@ function getItalicMarkers() {
  * @private
  */
 function processTextPreservingBold(text) {
-  // For recursive calls with empty segments, return early
-  if (!text || text.trim() === '') {
-    return '';
-  }
-  
-  // First, identify any bold patterns
-  const boldSegments = findBoldSegments(text);
-  
-  if (!boldSegments) {
-    // No bold pattern found, process italics only
-    return processAllItalicStyles(text);
-  }
-  
-  // Extract the segments and immediately process them for the return value
-  const { boldText, beforeText, afterText } = boldSegments;
-  
-  // Combine the processed sections with the unchanged bold text in a single return statement
-  return (beforeText ? processAllItalicStyles(beforeText) : '') + 
-         boldText + 
-         (afterText ? processTextPreservingBold(afterText) : '');
+  if (!text?.trim()) return '';
+
+  const segment = findBoldSegments(text);
+  if (!segment) return processAllItalicStyles(text);
+
+  const { boldText, beforeText, afterText } = segment;
+
+  return [
+    beforeText && processAllItalicStyles(beforeText),
+    boldText,
+    afterText && processTextPreservingBold(afterText)
+  ].filter(Boolean).join('');
 }
 
 // Main exported function
@@ -237,5 +229,3 @@ function createItalicReplacementString(content, marker) {
   // First wrap content with markdown markers, then with HTML tag
   return wrapWithHtmlTag('em', wrapWithMarker(content, marker));
 }
-
-
