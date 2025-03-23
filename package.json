@@ -9,6 +9,8 @@
     "tcr": "./tcr.sh"
   },
   "devDependencies": {
+    "complexity-report": "^2.0.0-alpha",
+    "escomplex": "^2.0.0-alpha",
     "jest": "^29.7.0",
     "prettier": "^3.5.3"
   }
