@@ -670,25 +670,39 @@ function generateMediaSections(post) {
  * @returns {string} - Formatted HTML for a related link
  */
 const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
+
+function escapeRelatedLinkFields(link) {
+  return {
+    url: escapeHtml(link.url),
+    title: escapeHtml(link.title),
+    author: link.author ? escapeHtml(link.author) : '',
+    source: link.source ? escapeHtml(link.source) : '',
+    quote: link.quote ? escapeHtml(link.quote) : '',
+    type: link.type,
+  };
+}
+
+function formatBaseLink(type, url, title) {
+  if (type === 'microblog' || type === 'article' || type === 'report') {
+    return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>"${title}"</a>`;
+  }
+  if (type === 'book') {
+    return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}><em>_${title}_</em></a>`;
+  }
+  return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>${title}</a>`;
+}
+
+function composeLinkParts(baseLink, author, source, quote) {
+  const authorPart = author ? ` by ${author}` : '';
+  const sourcePart = source ? `, ${source}` : '';
+  const quotePart = quote ? ` ("${quote}")` : '';
+  return `<li>${baseLink + authorPart + sourcePart + quotePart}</li>`;
+}
+
 function formatRelatedLink(link) {
-  const { url, title, author, source, type, quote } = link;
-  const escapedUrl = escapeHtml(url);
-  const escapedTitle = escapeHtml(title);
-  const escapedAuthor = author ? escapeHtml(author) : '';
-  const escapedSource = source ? escapeHtml(source) : '';
-  const escapedQuote = quote ? escapeHtml(quote) : '';
-  const baseLink = (type === 'microblog' || type === 'article' || type === 'report')
-    ? `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}>"${escapedTitle}"</a>`
-    : (type === 'book')
-    ? `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}><em>_${escapedTitle}_</em></a>`
-    : `<a href="${escapedUrl}" ${DEFAULT_RELATED_LINK_ATTRS}>${escapedTitle}</a>`;
-  
-  const authorPart = escapedAuthor ? ` by ${escapedAuthor}` : '';
-  const sourcePart = escapedSource ? `, ${escapedSource}` : '';
-  const quotePart = escapedQuote ? ` ("${escapedQuote}")` : '';
-  
-  const finalLink = baseLink + authorPart + sourcePart + quotePart;
-  return `<li>${finalLink}</li>`;
+  const { url, title, author, source, quote, type } = escapeRelatedLinkFields(link);
+  const baseLink = formatBaseLink(type, url, title);
+  return composeLinkParts(baseLink, author, source, quote);
 }
 
 /**
