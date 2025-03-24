@@ -2,6 +2,7 @@
 
 # Test && Commit || Revert (TCR) script
 # Usage: ./tcr.sh [commit message]
+# See: https://medium.com/@kentbeck_7670/test-commit-revert-870bbd756864
 
 # Default commit message if not provided
 COMMIT_MESSAGE=${1:-"refactor"}
