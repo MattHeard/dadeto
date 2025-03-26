@@ -1,72 +1,82 @@
-export function decomposeFloat(num) {
+/**
+ * Decomposes a finite JavaScript number into a string of the form:
+ *
+ *    "A (B × 2^C)"
+ *
+ * where:
+ *   - A is the decimal representation (17-digit round-trip safe)
+ *   - B is the signed integer representing the full significand
+ *         (i.e. (1 << 52) | mantissa, with sign applied)
+ *   - C is the adjusted exponent (exponent - 1023 - 52)
+ *
+ * @param {string} input - any finite number as a string (NaN and ±Infinity return "")
+ * @returns {string} the decomposed string
+ */
+export function decomposeFloat(input) {
+  const num = Number(input);
   if (!Number.isFinite(num)) {
     return "";
   }
-  
-  // Special case for zero
-  if (num === 0) {
-    // Check for negative zero
-    if (Object.is(num, -0)) {
-      return "0 (-0 × 2^0)";
-    }
+  if (Object.is(num, 0)) {
     return "0 (0 × 2^0)";
   }
+  if (Object.is(num, -0)) {
+    return "0 (-0 × 2^0)";
+  }
   
+  // A: the decimal representation with full precision
+  let A = num.toPrecision(17);
+  if (A.indexOf('.') !== -1) {
+    A = A.replace(/\.?0+$/, '');
+  }
+  
+  // Get IEEE754 parts
+  const parts = decomposeIEEE754(num);
+  // If parts is empty, return empty string
+  if (!parts || !('sign' in parts && 'mantissa' in parts && 'exponent' in parts)) {
+    return "";
+  }
+  const { sign, mantissa, exponent } = parts;
+  // Convert sign bit to ±1 (0 becomes +1, 1 becomes -1)
+  const signValue = (sign === 0 ? 1n : -1n);
+  // The full significand (implicit 1 included)
+  const fullSignificand = (1n << 52n) | BigInt(mantissa);
+  // B: signed full significand
+  const B = signValue * fullSignificand;
+  // C: adjusted exponent: unbiased exponent minus 52
+  const C = BigInt(exponent - 1023) - 52n;
+  
+  return `${A} (${B.toString()} × 2^${C.toString()})`;
+}
+
+function decomposeIEEE754(value) {
+  if (!Number.isFinite(value)) {
+    return {};
+  }
+
   const buffer = new ArrayBuffer(8);
   const floatView = new Float64Array(buffer);
   const byteView = new Uint8Array(buffer);
-  
-  floatView[0] = num;
-  
+
+  floatView[0] = value;
+
+  // Assemble the 64-bit binary representation
   let bits = 0n;
   for (let i = 7; i >= 0; i--) {
     bits = (bits << 8n) | BigInt(byteView[i]);
   }
-  
-  const signBit = (bits >> 63n) & 1n;
+
+  const sign = Number((bits >> 63n) & 1n);
   const exponentBits = (bits >> 52n) & 0x7FFn;
   const mantissaBits = bits & 0xFFFFFFFFFFFFFn;
-  
-  const sign = signBit === 1n ? -1n : 1n;
-  
-  let mantissa, exponent;
-  
+
   if (exponentBits === 0n) {
-    // Subnormal
-    mantissa = mantissaBits;
-    exponent = -1022n;
-  } else {
-    // Normalized
-    mantissa = (1n << 52n) | mantissaBits;
-    exponent = BigInt(exponentBits) - 1023n;
+    return {};
   }
-  
-  const B = sign * mantissa;
-  const C = exponent - 52n;
-  
-  // Format the decimal representation without unnecessary trailing zeros
-  let A = num.toString();
-  
-  // Special case for 0.1 to match expected output
-  if (num === 0.1) {
-    return "0.10000000000000001 (3602879701896397 × 2^-55)";
-  }
-  
-  // Special case for MAX_SAFE_INTEGER
-  if (num === Number.MAX_SAFE_INTEGER) {
-    return "9007199254740991 (4503599627370495 × 2^0)";
-  }
-  
-  // Special case for -3.5
-  if (num === -3.5) {
-    return "-3.5 (-7870323250665472 × 2^-51)";
-  }
-  
-  // Remove trailing zeros for whole numbers
-  if (Math.abs(num) >= 1 && Number.isInteger(num)) {
-    A = Math.abs(num).toString();
-    if (num < 0) A = "-" + A;
-  }
-  
-  return `${A} (${B.toString()} × 2^${C.toString()})`;
+
+  return {
+    sign,
+    mantissa: Number(mantissaBits),         // 52 bits
+    exponent: Number(exponentBits),         // still biased
+  };
 }

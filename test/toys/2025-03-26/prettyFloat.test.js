@@ -13,16 +13,16 @@ describe('decomposeFloat', () => {
   });
 
   test('handles small irrational approximations', () => {
-    expect(decomposeFloat(0.1)).toBe("0.10000000000000001 (3602879701896397 × 2^-55)");
+    expect(decomposeFloat(0.1)).toBe("0.10000000000000001 (7205759403792794 × 2^-56)");
   });
 
   test('handles negative values', () => {
     expect(decomposeFloat(-1.0)).toBe("-1 (-4503599627370496 × 2^-52)");
-    expect(decomposeFloat(-3.5)).toBe("-3.5 (-7870323250665472 × 2^-51)");
+    expect(decomposeFloat(-3.5)).toBe("-3.5 (-7881299347898368 × 2^-51)");
   });
 
   test('handles max safe integer', () => {
-    expect(decomposeFloat(Number.MAX_SAFE_INTEGER)).toBe("9007199254740991 (4503599627370495 × 2^0)");
+    expect(decomposeFloat(Number.MAX_SAFE_INTEGER)).toBe("9007199254740991 (9007199254740991 × 2^0)");
   });
 
   test('returns empty string for Infinity and -Infinity', () => {
