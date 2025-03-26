@@ -75,6 +75,23 @@ function getItalicMarkers() {
 }
 
 /**
+ * Assembles the processed segments (before, bold, after) into a single string.
+ * 
+ * @param {string} beforeText - The text before the bold segment
+ * @param {string} boldText - The bold segment text
+ * @param {string} afterText - The text after the bold segment
+ * @returns {string} - The final assembled string after processing
+ * @private
+ */
+function assembleProcessedText(beforeText, boldText, afterText) {
+  return [
+    processItalicBefore(beforeText),
+    boldText,
+    processBoldAfter(afterText)
+  ].filter(Boolean).join('');
+}
+
+/**
  * Process text recursively to handle all formatting cases, preserving bold segments.
  * This function identifies bold markdown segments and leaves them unmodified,
  * while processing the text before and after for italic formatting.
@@ -88,26 +105,20 @@ function getItalicMarkers() {
  * @private
  */
 function processTextPreservingBold(text) {
-  // For recursive calls with empty segments, return early
-  if (!text || text.trim() === '') {
-    return '';
-  }
-  
-  // First, identify any bold patterns
-  const boldSegments = findBoldSegments(text);
-  
-  if (!boldSegments) {
-    // No bold pattern found, process italics only
-    return processAllItalicStyles(text);
-  }
-  
-  // Extract the segments and immediately process them for the return value
-  const { boldText, beforeText, afterText } = boldSegments;
-  
-  // Combine the processed sections with the unchanged bold text in a single return statement
-  return (beforeText ? processAllItalicStyles(beforeText) : '') + 
-         boldText + 
-         (afterText ? processTextPreservingBold(afterText) : '');
+  if (!text?.trim()) return '';
+
+  const segment = findBoldSegments(text);
+  if (!segment) return processAllItalicStyles(text);
+
+  return assembleProcessedText(segment.beforeText, segment.boldText, segment.afterText);
+}
+
+function processItalicBefore(beforeText) {
+  return beforeText ? processAllItalicStyles(beforeText) : '';
+}
+
+function processBoldAfter(afterText) {
+  return afterText ? processTextPreservingBold(afterText) : '';
 }
 
 // Main exported function
@@ -237,5 +248,3 @@ function createItalicReplacementString(content, marker) {
   // First wrap content with markdown markers, then with HTML tag
   return wrapWithHtmlTag('em', wrapWithMarker(content, marker));
 }
-
-

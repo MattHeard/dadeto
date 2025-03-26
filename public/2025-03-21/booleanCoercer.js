@@ -10,10 +10,24 @@ export function coerceToBoolean(input) {
   if (typeof input === 'boolean') {
     return `{ value: ${input} }`;
   }
-  if (typeof input === 'string') {
-    const lower = input.toLowerCase();
-    if (lower === 'true') return '{ value: true }';
-    if (lower === 'false') return '{ value: false }';
+
+  const normalized = normalizeBooleanString(input);
+  return normalized !== undefined ? `{ value: ${normalized} }` : '{}';
+}
+
+function normalizeBooleanString(input) {
+  if (typeof input !== 'string') return undefined;
+
+  return parseBooleanString(input.toLowerCase());
+}
+
+function parseBooleanString(str) {
+  switch (str) {
+    case 'true':
+      return true;
+    case 'false':
+      return false;
+    default:
+      return undefined;
   }
-  return '{}';
 }

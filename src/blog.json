@@ -1,6 +1,20 @@
 {
   "posts": [
     {
+      "key": "PRET1",
+      "title": "Pretty Float",
+      "publicationDate": "2025-03-26",
+      "toy": {
+        "modulePath": "/2025-03-26/prettyFloat.js",
+        "functionName": "decomposeFloat"
+      },
+      "tags": [
+        "toy",
+        "float",
+        "number"
+      ]
+    },
+    {
       "key": "BOOL1",
       "title": "Boolean Coercer",
       "publicationDate": "2025-03-21",
