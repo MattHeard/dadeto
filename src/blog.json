@@ -4,6 +4,10 @@
       "key": "PRET1",
       "title": "Pretty Float",
       "publicationDate": "2025-03-26",
+      "illustration": {
+        "fileType": "png",
+        "altText": "a minimal digital illustration showing a floating-point number transformation. at the top, a dark code-like box contains the text function prettyFloat(n) { return n.toFixed(2); } prettyFloat(0.6149). below it, a large arrow points to a blue rounded rectangle displaying the result 0.61 in bold white text. the background is a soft beige, creating a clean, abstract visual emphasizing numerical precision and transformation."
+      },
       "toy": {
         "modulePath": "/2025-03-26/prettyFloat.js",
         "functionName": "decomposeFloat"
