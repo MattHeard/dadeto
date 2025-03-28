@@ -1,6 +1,34 @@
 {
   "posts": [
     {
+      "key": "RAND1",
+      "title": "Random Function",
+      "publicationDate": "2025-03-28",
+      "illustration": {
+        "fileType": "png",
+        "altText": "a minimalist digital illustration showing the concept of randomness and dependency injection. a stylized function box labeled 'rand' has two inputs: a grayed-out string (indicating it's ignored) and a colorful map object containing a key labeled 'getRandomNumber'. an arrow flows from the function to an output displaying a random number. the background features subtle, scattered dots of varying sizes suggesting randomness and probability."
+      },
+      "content": [
+        "A function that ignores its string input and instead uses dependency injection to produce random numbers."
+      ],
+      "toy": {
+        "modulePath": "/2025-03-28/rand.js",
+        "functionName": "rand"
+      },
+      "relatedLinks": [
+        {
+          "url": "#PRET1",
+          "title": "Pretty Float",
+          "type": "article"
+        }
+      ],
+      "tags": [
+        "toy",
+        "random",
+        "dependency-injection"
+      ]
+    },
+    {
       "key": "PRET1",
       "title": "Pretty Float",
       "publicationDate": "2025-03-26",
