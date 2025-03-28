@@ -102,8 +102,20 @@ function initializeInteractiveComponent(id, processingFunction) {
     }
     const inputValue = inputElement.value;
     
-    // Use the provided processing function
-    const result = processingFunction(inputValue);
+    // Check if the processing function is named 'rand' to inject the env Map
+    let result;
+    if (processingFunction.name === 'rand') {
+      // Create an env Map with getRandomNumber defined as Math.random
+      const env = new Map([
+        ["getRandomNumber", Math.random]
+      ]);
+      
+      // Call rand with the input value and env Map
+      result = processingFunction(inputValue, env);
+    } else {
+      // For other functions, call normally with just the input value
+      result = processingFunction(inputValue);
+    }
     
     // Update the output
     outputElement.textContent = result;
