@@ -330,8 +330,16 @@ function createIdAttributeIfNeeded(post) {
 }
 
 function createArticleClassAttr(post) {
-  const tagClasses = hasTags(post) ? post.tags.map(tag => `tag-${tag}`).join(' ') : '';
-  const classValue = tagClasses ? `${CLASS.ENTRY} ${tagClasses}` : CLASS.ENTRY;
+  let tagClasses = '';
+
+  if (hasTags(post)) {
+    tagClasses = post.tags.map(tag => `tag-${tag}`).join(' ');
+  }
+
+  const classValue = tagClasses
+    ? `${CLASS.ENTRY} ${tagClasses}`
+    : CLASS.ENTRY;
+
   return createAttrPair(ATTR_NAME.CLASS, classValue);
 }
 
