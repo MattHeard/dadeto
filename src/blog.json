@@ -2,14 +2,14 @@
   "posts": [
     {
       "key": "RAND1",
-      "title": "Random Function",
+      "title": "Random",
       "publicationDate": "2025-03-28",
       "illustration": {
         "fileType": "png",
-        "altText": "a minimalist digital illustration showing the concept of randomness and dependency injection. a stylized function box labeled 'rand' has two inputs: a grayed-out string (indicating it's ignored) and a colorful map object containing a key labeled 'getRandomNumber'. an arrow flows from the function to an output displaying a random number. the background features subtle, scattered dots of varying sizes suggesting randomness and probability."
+        "altText": "a fantasy-style illustration of six personified random number generators seated around a round stone table. at the center of the table glows a large 20-sided die showing the number 20. the characters include: a robed wizard with runes (representing the mersenne twister), a stern monk with a staff (linear congruential generator), a robotic knight with copper plating (hardware rng), a translucent ghost-like figure floating behind (quantum rng), a hooded rogue with a padlock on their cloak (cryptographically secure rng), and a wide-eyed jester juggling dice into a fire (middle square method). behind them hangs a glowing bell curve tapestry. the lighting is warm and dramatic."
       },
       "content": [
-        "A function that ignores its string input and instead uses dependency injection to produce random numbers."
+        "Produces random numbers."
       ],
       "toy": {
         "modulePath": "/2025-03-28/rand.js",
@@ -25,7 +25,7 @@
       "tags": [
         "toy",
         "random",
-        "dependency-injection"
+        "number"
       ]
     },
     {
