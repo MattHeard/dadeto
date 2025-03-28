@@ -531,13 +531,17 @@ function hasMediaType(post, mediaType) {
   return !!post[mediaType];
 }
 
+function isNonEmptyArray(value) {
+  return Array.isArray(value) && value.length > 0;
+}
+
 /**
  * Check if post has related links
  * @param {Object} post - The blog post
  * @returns {boolean} - True if post has related links
  */
 function hasRelatedLinks(post) {
-  return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
+  return post.relatedLinks !== undefined && isNonEmptyArray(post.relatedLinks);
 }
 
 /**
