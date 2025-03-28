@@ -104,12 +104,16 @@ function assembleProcessedText(beforeText, boldText, afterText) {
  * @returns {string} - Processed text with HTML tags added around italics while preserving bold
  * @private
  */
+function shouldBypassBold(text) {
+  return !text?.trim() || !findBoldSegments(text);
+}
+
 function processTextPreservingBold(text) {
-  if (!text?.trim()) return '';
+  if (shouldBypassBold(text)) {
+    return processAllItalicStyles(text);
+  }
 
   const segment = findBoldSegments(text);
-  if (!segment) return processAllItalicStyles(text);
-
   return assembleProcessedText(segment.beforeText, segment.boldText, segment.afterText);
 }
 

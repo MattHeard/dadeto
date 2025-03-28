@@ -104,8 +104,9 @@ export const styles = `
     color: #00FFFF;
   }
   pre {
-    background-color: #1A1A1A;
-    color: #CCCCCC;
+    background: linear-gradient(0deg, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     padding: 10px;
     overflow-x: auto;
   }
