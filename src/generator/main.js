@@ -102,23 +102,30 @@ function initializeInteractiveComponent(id, processingFunction) {
     }
     const inputValue = inputElement.value;
     
-    // Check if the processing function is named 'rand' to inject the env Map
-    let result;
-    if (processingFunction.name === 'rand') {
-      // Create an env Map with getRandomNumber defined as a function that calls Math.random()
-      const env = new Map([
-        ["getRandomNumber", () => Math.random()]
-      ]);
+    try {
+      // Check if we're dealing with the rand function by examining the function parameters
+      // The rand function expects two parameters
+      let result;
+      if (processingFunction.length === 2) {
+        // Create an env Map with getRandomNumber defined as a function that calls Math.random()
+        const env = new Map([
+          ["getRandomNumber", () => Math.random()]
+        ]);
+        
+        // Call the function with the input value and env Map
+        result = processingFunction(inputValue, env);
+      } else {
+        // For other functions, call normally with just the input value
+        result = processingFunction(inputValue);
+      }
       
-      // Call rand with the input value and env Map
-      result = processingFunction(inputValue, env);
-    } else {
-      // For other functions, call normally with just the input value
-      result = processingFunction(inputValue);
+      // Update the output
+      outputElement.textContent = result;
+    } catch (error) {
+      console.error('Error processing input:', error);
+      outputElement.textContent = 'Error: ' + error.message;
+      outputElement.parentElement.classList.add('warning');
     }
-    
-    // Update the output
-    outputElement.textContent = result;
   }
   
   // Add event listener to the submit button
