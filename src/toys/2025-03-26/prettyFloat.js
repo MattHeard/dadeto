@@ -37,22 +37,28 @@ function getSignificandAndExponent({ sign, mantissa, exponent }) {
 }
 
 function decomposeIEEE754(value) {
-  if (!Number.isFinite(value)) {
-    return {};
-  }
+  if (!Number.isFinite(value)) return {};
 
+  const bits = getFloat64Bits(value);
+  return extractIEEEComponents(bits);
+}
+
+function getFloat64Bits(value) {
   const buffer = new ArrayBuffer(8);
   const floatView = new Float64Array(buffer);
   const byteView = new Uint8Array(buffer);
 
   floatView[0] = value;
 
-  // Assemble the 64-bit binary representation
   let bits = 0n;
   for (let i = 7; i >= 0; i--) {
     bits = (bits << 8n) | BigInt(byteView[i]);
   }
 
+  return bits;
+}
+
+function extractIEEEComponents(bits) {
   const sign = Number((bits >> 63n) & 1n);
   const exponentBits = (bits >> 52n) & 0x7FFn;
   const mantissaBits = bits & 0xFFFFFFFFFFFFFn;
@@ -63,7 +69,7 @@ function decomposeIEEE754(value) {
 
   return {
     sign,
-    mantissa: Number(mantissaBits),         // 52 bits
-    exponent: Number(exponentBits),         // still biased
+    mantissa: Number(mantissaBits),
+    exponent: Number(exponentBits),
   };
 }
