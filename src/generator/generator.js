@@ -419,8 +419,12 @@ function renderValueDiv(normalizedContent) {
   return renderAsParagraph(content);
 }
 
+function isArrayTextQuote(type, content) {
+  return type === 'text' && Array.isArray(content);
+}
+
 function shouldRenderAsBlockquote(type, content) {
-  return type === 'quote' || (type === 'text' && Array.isArray(content));
+  return type === 'quote' || isArrayTextQuote(type, content);
 }
 
 function renderAsParagraph(content) {
