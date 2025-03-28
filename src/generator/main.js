@@ -105,9 +105,9 @@ function initializeInteractiveComponent(id, processingFunction) {
     // Check if the processing function is named 'rand' to inject the env Map
     let result;
     if (processingFunction.name === 'rand') {
-      // Create an env Map with getRandomNumber defined as Math.random
+      // Create an env Map with getRandomNumber defined as a function that calls Math.random()
       const env = new Map([
-        ["getRandomNumber", Math.random]
+        ["getRandomNumber", () => Math.random()]
       ]);
       
       // Call rand with the input value and env Map
