@@ -42,14 +42,18 @@ function copyToyFiles(src, dest) {
   const entries = fs.readdirSync(src, { withFileTypes: true });
 
   for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
+    handleEntry(entry, src, dest);
+  }
+}
 
-    if (entry.isDirectory()) {
-      copyToyFiles(srcPath, dest);
-    } else if (shouldCopy(entry)) {
-      const destPath = getDestPath(srcPath);
-      copyFile(srcPath, destPath);
-    }
+function handleEntry(entry, src, dest) {
+  const srcPath = path.join(src, entry.name);
+
+  if (entry.isDirectory()) {
+    copyToyFiles(srcPath, dest);
+  } else if (shouldCopy(entry)) {
+    const destPath = getDestPath(srcPath);
+    copyFile(srcPath, destPath);
   }
 }
 
