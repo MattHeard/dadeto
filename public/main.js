@@ -103,21 +103,15 @@ function initializeInteractiveComponent(id, processingFunction) {
     const inputValue = inputElement.value;
     
     try {
-      // Check if we're dealing with the rand function by examining the function parameters
-      // The rand function expects two parameters
-      let result;
-      if (processingFunction.length === 2) {
-        // Create an env Map with getRandomNumber defined as a function that calls Math.random()
-        const env = new Map([
-          ["getRandomNumber", () => Math.random()]
-        ]);
-        
-        // Call the function with the input value and env Map
-        result = processingFunction(inputValue, env);
-      } else {
-        // For other functions, call normally with just the input value
-        result = processingFunction(inputValue);
-      }
+      // Create an env Map with utility functions that might be needed by processing functions
+      const env = new Map([
+        ["getRandomNumber", () => Math.random()]
+      ]);
+      
+      // Call the processing function with the input value
+      // If the function accepts two parameters, it will use the env Map
+      // If it only accepts one parameter, the second argument will be ignored
+      const result = processingFunction(inputValue, env);
       
       // Update the output
       outputElement.textContent = result;
