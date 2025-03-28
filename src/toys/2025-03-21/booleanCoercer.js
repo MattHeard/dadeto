@@ -7,12 +7,11 @@
  * @returns {string} - String representation of object with 'value' property if coercion successful, '{}' if not
  */
 export function coerceToBoolean(input) {
-  if (typeof input === 'boolean') {
-    return `{ value: ${input} }`;
-  }
+  const value = typeof input === 'boolean'
+    ? input
+    : normalizeBooleanString(input);
 
-  const normalized = normalizeBooleanString(input);
-  return normalized !== undefined ? `{ value: ${normalized} }` : '{}';
+  return value !== undefined ? `{ value: ${value} }` : '{}';
 }
 
 function normalizeBooleanString(input) {
