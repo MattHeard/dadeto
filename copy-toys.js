@@ -39,22 +39,27 @@ function copyFile(src, dest) {
  * @param {string} dest - Destination directory
  */
 function copyToyFiles(src, dest) {
-  // Get all files and directories in the source directory
   const entries = fs.readdirSync(src, { withFileTypes: true });
-  
+
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
-    const relativePath = path.relative(srcDir, srcPath);
-    const destPath = path.join(dest, relativePath);
-    
+
     if (entry.isDirectory()) {
-      // Recursively copy subdirectories
       copyToyFiles(srcPath, dest);
-    } else if (entry.isFile() && entry.name.endsWith('.js') && !entry.name.endsWith('.test.js')) {
-      // Copy JavaScript files but exclude test files
+    } else if (shouldCopy(entry)) {
+      const destPath = getDestPath(srcPath);
       copyFile(srcPath, destPath);
     }
   }
+}
+
+function shouldCopy(entry) {
+  return entry.isFile() && entry.name.endsWith('.js') && !entry.name.endsWith('.test.js');
+}
+
+function getDestPath(srcPath) {
+  const relativePath = path.relative(srcDir, srcPath);
+  return path.join(destDir, relativePath);
 }
 
 // Execute the copy function
