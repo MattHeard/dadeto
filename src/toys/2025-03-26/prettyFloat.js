@@ -8,9 +8,7 @@ export function decomposeFloat(input) {
   const A = formatDecimal(num);
 
   const parts = decomposeIEEE754(num);
-  if (!parts || !('sign' in parts && 'mantissa' in parts && 'exponent' in parts)) {
-    return "";
-  }
+  if (!isValidIEEEParts(parts)) return "";
 
   const { B, C } = getSignificandAndExponent(parts);
 
@@ -26,6 +24,10 @@ function isZeroVariant(num) {
 function formatDecimal(num) {
   let A = num.toPrecision(17);
   return A.includes('.') ? A.replace(/\.?0+$/, '') : A;
+}
+
+function isValidIEEEParts(parts) {
+  return parts && 'sign' in parts && 'mantissa' in parts && 'exponent' in parts;
 }
 
 function getSignificandAndExponent({ sign, mantissa, exponent }) {
