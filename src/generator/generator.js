@@ -21,7 +21,6 @@ function createBlockquote(content) {
 }
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
-import scriptTag from './script.js';
 import { HEADER_BANNER } from './title.js';
 import {
   createTag,
@@ -274,7 +273,7 @@ function createFooterContentArray(footerElement) {
     '',
     footerElement,
     createContainerDivClose(),
-    scriptTag,
+    '<script src="main.js" defer></script>',
     createBodyClose(),
   ];
 }
