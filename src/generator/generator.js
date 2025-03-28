@@ -329,13 +329,14 @@ function createIdAttributeIfNeeded(post) {
   return ' ' + createAttrPair(ATTR_NAME.ID, post.key);
 }
 
-/**
- * Create attributes for an article element
- */
-function createArticleAttributes(post) {
+function createArticleClassAttr(post) {
   const tagClasses = hasTags(post) ? post.tags.map(tag => `tag-${tag}`).join(' ') : '';
   const classValue = tagClasses ? `${CLASS.ENTRY} ${tagClasses}` : CLASS.ENTRY;
-  const classAttr = createAttrPair(ATTR_NAME.CLASS, classValue);
+  return createAttrPair(ATTR_NAME.CLASS, classValue);
+}
+
+function createArticleAttributes(post) {
+  const classAttr = createArticleClassAttr(post);
   const idAttr = createIdAttributeIfNeeded(post);
   return `${classAttr}${idAttr}`;
 }
