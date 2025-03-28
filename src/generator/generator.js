@@ -389,6 +389,10 @@ function createContentItemWithIndex(text, index) {
   return createContentSectionItem(text, isFirst);
 }
 
+function isTextContent(content) {
+  return typeof content !== 'object' || content === null;
+}
+
 /**
  * Normalize a content item.
  * If content is already an object, return it unchanged;
@@ -397,9 +401,7 @@ function createContentItemWithIndex(text, index) {
  * @returns {Object} - Normalized content object.
  */
 function normalizeContentItem(content) {
-  return (typeof content === 'object' && content !== null)
-    ? content
-    : { type: 'text', content };
+  return isTextContent(content) ? { type: 'text', content } : content;
 }
 
 /**
