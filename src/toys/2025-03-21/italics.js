@@ -5,6 +5,14 @@ const UNDERSCORE_MARKER = '_';
 // Pattern to match special regex characters that need escaping
 const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
 
+function isEmptyText(text) {
+  return !text?.trim();
+}
+
+function hasNoBoldSegments(text) {
+  return !findBoldSegments(text);
+}
+
 /**
  * Creates a doubled marker (e.g., ** or __) for bold text
  * @param {string} marker - The marker character (* or _)
@@ -105,7 +113,7 @@ function assembleProcessedText(beforeText, boldText, afterText) {
  * @private
  */
 function shouldBypassBold(text) {
-  return !text?.trim() || !findBoldSegments(text);
+  return isEmptyText(text) || hasNoBoldSegments(text);
 }
 
 function processTextPreservingBold(text) {
