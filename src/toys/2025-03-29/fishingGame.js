@@ -94,6 +94,18 @@ function getMoodDescription(season, timeOfDay) {
   return `${seasonDescriptions[season]} ${timeDescriptions[timeOfDay]}`;
 }
 
+function getFishingOutcome(effectiveChance, baitDescription, moodDescription) {
+  if (effectiveChance < 0.3) {
+    return `the water stays silent. Despite your use of ${baitDescription}, no fish disturb the ${moodDescription}.`;
+  } else if (effectiveChance < 0.6) {
+    return `a common carp surfaces gently, a modest reward for your effort with ${baitDescription}, set against ${moodDescription}.`;
+  } else if (effectiveChance < 0.85) {
+    return `a glimmering trout appears briefly, its shimmer echoing the beauty of ${moodDescription}. Your choice of ${baitDescription} worked well.`;
+  } else {
+    return `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${moodDescription}. Your ${baitDescription} has yielded a prize.`;
+  }
+}
+
 function fishingGame(input, env) {
   // Get the current time string and parse it
   const getCurrentTime = env.get("getCurrentTime");
@@ -135,16 +147,7 @@ function fishingGame(input, env) {
   const effectiveChance = Math.min(1, Math.max(0, baseChance + baitData.modifier));
 
   // Determine the outcome based on the effective chance.
-  let outcome;
-  if (effectiveChance < 0.3) {
-    outcome = `the water stays silent. Despite your use of ${baitData.description}, no fish disturb the ${moodDescription}.`;
-  } else if (effectiveChance < 0.6) {
-    outcome = `a common carp surfaces gently, a modest reward for your effort with ${baitData.description}, set against ${moodDescription}.`;
-  } else if (effectiveChance < 0.85) {
-    outcome = `a glimmering trout appears briefly, its shimmer echoing the beauty of ${moodDescription}. Your choice of ${baitData.description} worked well.`;
-  } else {
-    outcome = `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${moodDescription}. Your ${baitData.description} has yielded a prize.`;
-  }
+  const outcome = getFishingOutcome(effectiveChance, baitData.description, moodDescription);
 
   // Compose and return the final output narrative.
   return `Casting your line with ${baitData.description}, you await a catch. ${outcome}`;
