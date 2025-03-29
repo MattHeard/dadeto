@@ -789,8 +789,12 @@ function getModulePath(post) {
   return extractModulePath(post?.toy);
 }
 
+function extractFunctionName(toy) {
+  return toy?.functionName;
+}
+
 function getFunctionName(post) {
-  return post?.toy?.functionName;
+  return extractFunctionName(post?.toy);
 }
 
 function hasModulePath(post) {
