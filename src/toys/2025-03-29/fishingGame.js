@@ -16,10 +16,14 @@ function isMorningHour(hour) {
   return hour >= 5 && hour < 12;
 }
 
+function isAfternoonHour(hour) {
+  return hour >= 12 && hour < 17;
+}
+
 function getTimeOfDay(hour) {
   if (isMorningHour(hour)) {
     return "morning";
-  } else if (hour >= 12 && hour < 17) {
+  } else if (isAfternoonHour(hour)) {
     return "afternoon";
   } else if (hour >= 17 && hour < 21) {
     return "evening";
