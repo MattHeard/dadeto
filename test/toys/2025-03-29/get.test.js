@@ -1,53 +1,94 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { get } from '../../../src/toys/2025-03-29/get.js';
 
-describe('get function', () => {
+describe('get function with path traversal', () => {
   let mockGetData;
   let env;
+  const testData = {
+    user: {
+      name: 'Alice',
+      age: 30,
+      address: {
+        city: 'London',
+        zip: 'ABC 123'
+      },
+      orders: [
+        { id: 1, item: 'Book' },
+        { id: 2, item: 'Pen' }
+      ]
+    },
+    status: 'active'
+  };
 
   beforeEach(() => {
     // Reset mocks and environment before each test
-    mockGetData = jest.fn();
+    mockGetData = jest.fn().mockReturnValue(testData);
     env = new Map([
       ['getData', mockGetData]
     ]);
   });
 
-  test('should return the value for a valid key', () => {
-    const testData = { name: 'Alice', age: 30 };
-    mockGetData.mockReturnValue(testData);
-    expect(get('name', env)).toBe(JSON.stringify('Alice'));
-    expect(get('age', env)).toBe(JSON.stringify(30));
-    expect(mockGetData).toHaveBeenCalledTimes(2); // Ensure getData was called
+  test('should return the value for a top-level key', () => {
+    expect(get('status', env)).toBe(JSON.stringify('active'));
+    expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 
-  test('should return an error if the key does not exist', () => {
-    const testData = { city: 'London' };
-    mockGetData.mockReturnValue(testData);
-    const expectedErrorMessage = `Error: Key "country" not found in data. Available keys: city`;
-    expect(get('country', env)).toBe(expectedErrorMessage);
+  test('should return the value for a nested key', () => {
+    expect(get('user.name', env)).toBe(JSON.stringify('Alice'));
+    expect(get('user.address.city', env)).toBe(JSON.stringify('London'));
+    expect(mockGetData).toHaveBeenCalledTimes(2);
+  });
+
+  test('should return the value for an array index', () => {
+    expect(get('user.orders.0.item', env)).toBe(JSON.stringify('Book'));
+    expect(get('user.orders.1.id', env)).toBe(JSON.stringify(2));
+    expect(mockGetData).toHaveBeenCalledTimes(2);
+  });
+
+  test('should return the full object/array if path points to it', () => {
+    expect(get('user.address', env)).toBe(JSON.stringify({ city: 'London', zip: 'ABC 123' }));
+    expect(get('user.orders.1', env)).toBe(JSON.stringify({ id: 2, item: 'Pen' }));
+    expect(mockGetData).toHaveBeenCalledTimes(2);
+  });
+
+  test('should return an error if a path segment does not exist (object)', () => {
+    const expectedErrorMessage = `Error: Path segment 'lastName' not found at 'user.lastName'. Available keys/indices: name, age, address, orders`;
+    expect(get('user.lastName', env)).toBe(expectedErrorMessage);
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
+
+  test('should return an error if a path segment does not exist (array index)', () => {
+    const expectedErrorMessage = `Error: Path segment '2' not found at 'user.orders.2'. Available keys/indices: 0, 1`;
+    expect(get('user.orders.2', env)).toBe(expectedErrorMessage);
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
+
+  test('should return an error trying to access property on non-object', () => {
+    const expectedErrorMessage = `Error: Cannot access property 'city' on non-object value at path 'user.name'. Value is: "Alice"`;
+    expect(get('user.name.city', env)).toBe(expectedErrorMessage);
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 
   test('should return an error if getData is not a function', () => {
     env.set('getData', 'not a function');
-    expect(get('anyKey', env)).toBe("Error: 'getData' function not found in env.");
+    expect(get('user.name', env)).toBe("Error: 'getData' function not found in env.");
   });
 
   test('should return an error if env map is not provided or invalid', () => {
-    expect(get('anyKey', null)).toBe("Error: 'env' Map with 'get' method is required.");
-    expect(get('anyKey', {})).toBe("Error: 'env' Map with 'get' method is required."); // Plain object is not a Map
+    expect(get('user.name', null)).toBe("Error: 'env' Map with 'get' method is required.");
+    expect(get('user.name', {})).toBe("Error: 'env' Map with 'get' method is required."); // Plain object is not a Map
   });
 
-  test('should return an error if getData does not return a plain object', () => {
+  test('should return an error if getData does not return an object or array', () => {
     mockGetData.mockReturnValue('a string');
-    expect(get('anyKey', env)).toBe("Error: 'getData' did not return a valid plain object.");
+    expect(get('anyKey', env)).toBe("Error: 'getData' did not return a valid object or array.");
 
     mockGetData.mockReturnValue(null);
-    expect(get('anyKey', env)).toBe("Error: 'getData' did not return a valid plain object.");
+    expect(get('anyKey', env)).toBe("Error: 'getData' did not return a valid object or array.");
 
-    mockGetData.mockReturnValue([1, 2, 3]); // Array is not a plain object for this purpose
-    expect(get('anyKey', env)).toBe("Error: 'getData' did not return a valid plain object.");
+    // Note: Array is now a valid return type from getData
+    mockGetData.mockReturnValue([1, 2, 3]); 
+    expect(get('0', env)).toBe(JSON.stringify(1)); // Should be able to access array elements
 
     expect(mockGetData).toHaveBeenCalledTimes(3);
   });
@@ -57,23 +98,17 @@ describe('get function', () => {
     mockGetData.mockImplementation(() => {
       throw new Error(errorMessage);
     });
-    expect(get('anyKey', env)).toBe(`Error calling getData or accessing data: ${errorMessage}`);
+    expect(get('user.name', env)).toBe(`Error during data retrieval or path traversal for "user.name": ${errorMessage}`);
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 
-  test('should handle complex objects correctly', () => {
-    const complexData = { user: { id: 1, details: { active: true } } };
-    mockGetData.mockReturnValue(complexData);
-    expect(get('user', env)).toBe(JSON.stringify({ id: 1, details: { active: true } }));
-    expect(mockGetData).toHaveBeenCalledTimes(1);
-  });
-
-  test('should handle non-stringifiable values (like circular refs) gracefully', () => {
+  // Test for stringifying error remains similar
+  test('should handle non-stringifiable values gracefully at the end of the path', () => {
     const circular = {};
     circular.myself = circular;
-    const testData = { circularRef: circular }; // JSON.stringify will throw on this
-    mockGetData.mockReturnValue(testData);
-    expect(get('circularRef', env)).toMatch(/^Error stringifying value for key "circularRef":/);
+    const circularData = { top: { nested: circular } }; 
+    mockGetData.mockReturnValue(circularData);
+    expect(get('top.nested', env)).toMatch(/^Error stringifying final value at path "top.nested":/);
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 });
