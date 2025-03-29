@@ -1,12 +1,24 @@
+function isRecognizedBait(baitKey, baitOptions) {
+  return baitKey in baitOptions;
+}
+
+function isEmptyBait(baitKey) {
+  return baitKey.length === 0;
+}
+
+function getDefaultBaitResponse(moodDescription) {
+  return {
+    isError: true,
+    message: `You cast your line with nothing but hesitation. Without any bait, the waters remain undisturbed in their ${moodDescription}.`
+  };
+}
+
 function getBaitData(input, baitOptions, moodDescription) {
   const baitKey = input.trim().toLowerCase();
-  if (baitKey in baitOptions) {
+  if (isRecognizedBait(baitKey, baitOptions)) {
     return baitOptions[baitKey];
-  } else if (baitKey.length === 0) {
-    return {
-      isError: true,
-      message: `You cast your line with nothing but hesitation. Without any bait, the waters remain undisturbed in their ${moodDescription}.`
-    };
+  } else if (isEmptyBait(baitKey)) {
+    return getDefaultBaitResponse(moodDescription);
   } else {
     return { modifier: 0, description: "an unconventional bait" };
   }
