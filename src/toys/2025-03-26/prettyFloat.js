@@ -19,6 +19,10 @@ function getIEEEDecomposition(num) {
   return getSignificandAndExponent(parts);
 }
 
+function formatFloatDecomposition(decimal, { B, C }) {
+  return `${decimal} (${B.toString()} × 2^${C.toString()})`;
+}
+
 export function decomposeFloat(input) {
   const num = getValidNumber(input);
   if (num === null) return "";
@@ -30,8 +34,7 @@ export function decomposeFloat(input) {
   const decomposition = getIEEEDecomposition(num);
   if (!decomposition) return "";
 
-  const { B, C } = decomposition;
-  return `${A} (${B.toString()} × 2^${C.toString()})`;
+  return formatFloatDecomposition(A, decomposition);
 }
 
 function isPositiveZero(n) {
