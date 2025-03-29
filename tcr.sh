@@ -17,12 +17,20 @@ LINT_EXIT_CODE=$?
 
 # Check if both tests and lint passed
 if [ $TEST_EXIT_CODE -eq 0 ] && [ $LINT_EXIT_CODE -eq 0 ]; then
-  echo "Tests passed! Committing changes..."
+  echo "Tests and linting passed! Committing changes..."
   git add .
   git commit -m "$COMMIT_MESSAGE"
   echo "Changes committed successfully with message: '$COMMIT_MESSAGE'"
 else
-  echo "Tests failed! Reverting changes..."
+  if [ $TEST_EXIT_CODE -ne 0 ]; then
+    echo "Tests failed!"
+  fi
+
+  if [ $LINT_EXIT_CODE -ne 0 ]; then
+    echo "Linting failed!"
+  fi
+
+  echo "Reverting changes..."
   git reset --hard
   echo "Changes have been reverted."
 fi
