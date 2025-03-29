@@ -68,8 +68,16 @@ function handleEntry(entry, src, dest) {
   }
 }
 
+function isJavaScriptFile(entry) {
+  return entry.name.endsWith('.js');
+}
+
+function isTestFile(entry) {
+  return entry.name.endsWith('.test.js');
+}
+
 function shouldCopy(entry) {
-  return entry.isFile() && entry.name.endsWith('.js') && !entry.name.endsWith('.test.js');
+  return entry.isFile() && isJavaScriptFile(entry) && !isTestFile(entry);
 }
 
 function getDestPath(srcPath) {
