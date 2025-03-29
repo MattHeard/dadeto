@@ -28,6 +28,10 @@ function isNightHour(hour) {
   return hour < 5 || hour >= 21;
 }
 
+function isFallMonth(month) {
+  return month >= 8 && month <= 10;
+}
+
 function getTimeOfDay(hour) {
   if (isMorningHour(hour)) {
     return "morning";
@@ -39,6 +43,7 @@ function getTimeOfDay(hour) {
     return "night";
   }
 }
+
 function isSpringMonth(month) {
   return month >= 2 && month <= 4;
 }
@@ -54,8 +59,10 @@ function getSeason(month) {
     return "spring";
   } else if (isSummerMonth(month)) {
     return "summer";
-  } else {
+  } else if (isFallMonth(month)) {
     return "fall";
+  } else {
+    return "spring";
   }
 }
 
