@@ -24,6 +24,10 @@ function isEveningHour(hour) {
   return hour >= 17 && hour < 21;
 }
 
+function isNightHour(hour) {
+  return hour < 5 || hour >= 21;
+}
+
 function getTimeOfDay(hour) {
   if (isMorningHour(hour)) {
     return "morning";
@@ -31,7 +35,7 @@ function getTimeOfDay(hour) {
     return "afternoon";
   } else if (isEveningHour(hour)) {
     return "evening";
-  } else {
+  } else if (isNightHour(hour)) {
     return "night";
   }
 }
