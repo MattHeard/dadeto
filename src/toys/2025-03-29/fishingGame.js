@@ -121,39 +121,32 @@ function getBaitOptions() {
   };
 }
 
-function fishingGame(input, env) {
-  // Get the current time string and parse it
-  const getCurrentTime = env.get("getCurrentTime");
-  const timeStr = getCurrentTime();
-  const date = new Date(timeStr);
-  const month = date.getMonth(); // 0-indexed: 0 = Jan, 11 = Dec
+function getTimeContext(getCurrentTime) {
+  const date = new Date(getCurrentTime());
+  const month = date.getMonth();
   const hour = date.getHours();
-
-  // Determine season from month
   const season = getSeason(month);
-
-  // Determine time of day from hour
   const timeOfDay = getTimeOfDay(hour);
+  return { season, timeOfDay };
+}
+
+function fishingGame(input, env) {
+  const { season, timeOfDay } = getTimeContext(env.get("getCurrentTime"));
 
   const moodDescription = getMoodDescription(season, timeOfDay);
 
-  // Define a mapping of bait names (lower-case) to their modifiers and descriptions.
   const baitOptions = getBaitOptions();
 
-  // Clean input, and check if it matches a known bait.
   const baitDataOrError = getBaitData(input, baitOptions, moodDescription);
   if (baitDataOrError.isError) return baitDataOrError.message;
   const baitData = baitDataOrError;
 
-  // Get a base random number (0-1) and adjust it by the bait's modifier.
   const getRandomNumber = env.get("getRandomNumber");
   const baseChance = getRandomNumber();
   const effectiveChance = Math.min(1, Math.max(0, baseChance + baitData.modifier));
 
-  // Determine the outcome based on the effective chance.
   const outcome = getFishingOutcome(effectiveChance, baitData.description, moodDescription);
 
-  // Compose and return the final output narrative.
   return `Casting your line with ${baitData.description}, you await a catch. ${outcome}`;
 }
 
