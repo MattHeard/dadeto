@@ -1,111 +1,129 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { setTemporary } from '../../../src/toys/2025-03-29/setTemporary.js';
 
-describe('setTemporary function', () => {
-  let mockSetTemporaryData;
+describe('setTemporary function (JSON merge)', () => {
+  let mockGetData;
+  let mockData; // The mutable object returned by mockGetData
   let env;
 
   beforeEach(() => {
-    // Reset mocks and environment before each test
-    mockSetTemporaryData = jest.fn();
+    // Start with fresh, mutable data for each test
+    mockData = {
+      existing: 'value',
+      // 'temporary' might exist or not initially
+    };
+    mockGetData = jest.fn().mockReturnValue(mockData);
     env = new Map([
-      ['setTemporaryData', mockSetTemporaryData]
+      ['getData', mockGetData]
     ]);
   });
 
-  test('should call setTemporaryData with correct key and value', () => {
-    const input = 'myKey=myValue';
-    const expectedKey = 'myKey';
-    const expectedValue = 'myValue';
-
-    const result = setTemporary(input, env);
-
-    expect(result).toBe(`Success: Temporary value set for key "${expectedKey}".`);
-    expect(mockSetTemporaryData).toHaveBeenCalledTimes(1);
-    expect(mockSetTemporaryData).toHaveBeenCalledWith(expectedKey, expectedValue);
-  });
-
-  test('should handle values with equals signs correctly', () => {
-    const input = 'url=http://example.com?param=value';
-    const expectedKey = 'url';
-    const expectedValue = 'http://example.com?param=value';
-
-    const result = setTemporary(input, env);
-
-    expect(result).toBe(`Success: Temporary value set for key "${expectedKey}".`);
-    expect(mockSetTemporaryData).toHaveBeenCalledTimes(1);
-    expect(mockSetTemporaryData).toHaveBeenCalledWith(expectedKey, expectedValue);
-  });
-
-  test('should handle leading/trailing whitespace in key', () => {
-    const input = '  spacedKey  =some value';
-    const expectedKey = 'spacedKey';
-    const expectedValue = 'some value';
-
-    const result = setTemporary(input, env);
-
-    expect(result).toBe(`Success: Temporary value set for key "${expectedKey}".`);
-    expect(mockSetTemporaryData).toHaveBeenCalledTimes(1);
-    expect(mockSetTemporaryData).toHaveBeenCalledWith(expectedKey, expectedValue);
-  });
-  
-    test('should handle empty value', () => {
-    const input = 'emptyVal=';
-    const expectedKey = 'emptyVal';
-    const expectedValue = '';
-
-    const result = setTemporary(input, env);
-
-    expect(result).toBe(`Success: Temporary value set for key "${expectedKey}".`);
-    expect(mockSetTemporaryData).toHaveBeenCalledTimes(1);
-    expect(mockSetTemporaryData).toHaveBeenCalledWith(expectedKey, expectedValue);
-  });
-
-  test('should return error for invalid input format (no equals sign)', () => {
-    const input = 'justakey';
-    const result = setTemporary(input, env);
-    expect(result).toBe("Error: Invalid input format. Please use 'key=value'.");
-    expect(mockSetTemporaryData).not.toHaveBeenCalled();
-  });
-
-  test('should return error for empty key', () => {
-    const input = '=avalue';
-    const result = setTemporary(input, env);
-    expect(result).toBe("Error: Key cannot be empty. Please use 'key=value'.");
-    expect(mockSetTemporaryData).not.toHaveBeenCalled();
-  });
+  test('should merge valid JSON input into data.temporary (when temporary exists)', () => {
+    mockData.temporary = { initial: 'data' }; // Pre-existing temporary data
+    const inputJson = JSON.stringify({ newKey: 'newValue', initial: 'overwritten' });
     
-  test('should return error for whitespace-only key', () => {
-    const input = '   =another value';
+    const result = setTemporary(inputJson, env);
+
+    expect(result).toBe('Success: Input JSON merged into temporary data.');
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+    expect(mockData.temporary).toEqual({ initial: 'overwritten', newKey: 'newValue' });
+    expect(mockData.existing).toBe('value'); // Ensure other data is untouched
+  });
+
+  test('should create data.temporary and merge JSON if temporary does not exist', () => {
+    expect(mockData.temporary).toBeUndefined(); // Verify it doesn't exist initially
+    const inputJson = JSON.stringify({ firstKey: 123 });
+
+    const result = setTemporary(inputJson, env);
+
+    expect(result).toBe('Success: Input JSON merged into temporary data.');
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+    expect(mockData.temporary).toEqual({ firstKey: 123 });
+  });
+
+  test('should create data.temporary if it exists but is not a valid object', () => {
+    mockData.temporary = 'a string'; // Invalid temporary data
+    const inputJson = JSON.stringify({ key: 'val' });
+
+    const result = setTemporary(inputJson, env);
+
+    expect(result).toBe('Success: Input JSON merged into temporary data.');
+    expect(mockData.temporary).toEqual({ key: 'val' });
+
+    // Try with null
+    mockData.temporary = null;
+    const inputJson2 = JSON.stringify({ another: true });
+    const result2 = setTemporary(inputJson2, env);
+    expect(result2).toBe('Success: Input JSON merged into temporary data.');
+    expect(mockData.temporary).toEqual({ another: true });
+    
+    // Try with array
+    mockData.temporary = [1,2];
+    const inputJson3 = JSON.stringify({ third: 3 });
+    const result3 = setTemporary(inputJson3, env);
+    expect(result3).toBe('Success: Input JSON merged into temporary data.');
+    expect(mockData.temporary).toEqual({ third: 3 });
+    
+    expect(mockGetData).toHaveBeenCalledTimes(3);
+  });
+
+  test('should return error for invalid JSON input', () => {
+    const input = 'not json';
     const result = setTemporary(input, env);
-    expect(result).toBe("Error: Key cannot be empty. Please use 'key=value'.");
-    expect(mockSetTemporaryData).not.toHaveBeenCalled();
+    expect(result).toMatch(/^Error: Invalid JSON input./);
+    expect(mockGetData).not.toHaveBeenCalled();
   });
 
-  test('should return error if env map is missing or invalid', () => {
-    expect(setTemporary('k=v', null)).toBe("Error: 'env' Map with 'get' method is required.");
-    expect(setTemporary('k=v', {})).toBe("Error: 'env' Map with 'get' method is required.");
-    expect(mockSetTemporaryData).not.toHaveBeenCalled();
+  test('should return error if input JSON is not a plain object', () => {
+    let input = JSON.stringify([1, 2, 3]); // Array
+    expect(setTemporary(input, env)).toBe("Error: Input JSON must be a plain object.");
+
+    input = JSON.stringify('a string'); // String
+    expect(setTemporary(input, env)).toBe("Error: Input JSON must be a plain object.");
+
+    input = JSON.stringify(null); // Null
+    expect(setTemporary(input, env)).toBe("Error: Input JSON must be a plain object.");
+
+    expect(mockGetData).not.toHaveBeenCalled();
   });
 
-  test('should return error if setTemporaryData function is missing in env', () => {
-    env.delete('setTemporaryData');
-    const result = setTemporary('k=v', env);
-    expect(result).toBe("Error: 'setTemporaryData' function not found in env.");
-    expect(mockSetTemporaryData).not.toHaveBeenCalled();
+  test('should return error if getData function is missing in env', () => {
+    env.delete('getData');
+    const result = setTemporary('{}', env);
+    expect(result).toBe("Error: 'getData' function not found in env.");
   });
 
-  test('should return error if setTemporaryData throws an error', () => {
-    const errorMessage = 'Storage quota exceeded';
-    mockSetTemporaryData.mockImplementation(() => {
+  test('should return error if getData does not return an object', () => {
+    mockGetData.mockReturnValue('not an object');
+    const result = setTemporary('{}', env);
+    expect(result).toBe("Error: 'getData' did not return a valid object.");
+
+    mockGetData.mockReturnValue(null);
+    const result2 = setTemporary('{}', env);
+    expect(result2).toBe("Error: 'getData' did not return a valid object.");
+    expect(mockGetData).toHaveBeenCalledTimes(2);
+  });
+
+  test('should return error if getData throws an error', () => {
+    const errorMessage = 'Failed to retrieve data';
+    mockGetData.mockImplementation(() => {
       throw new Error(errorMessage);
     });
 
-    const input = 'largeKey=largeValue';
-    const result = setTemporary(input, env);
+    const result = setTemporary('{ "a": 1 }', env);
+    expect(result).toBe(`Error accessing or updating temporary data: ${errorMessage}`);
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
+  
+  test('should handle empty JSON object input', () => {
+    mockData.temporary = { initial: 'data' };
+    const inputJson = JSON.stringify({});
+    
+    const result = setTemporary(inputJson, env);
 
-    expect(result).toBe(`Error setting temporary data for key "largeKey": ${errorMessage}`);
-    expect(mockSetTemporaryData).toHaveBeenCalledTimes(1);
-    expect(mockSetTemporaryData).toHaveBeenCalledWith('largeKey', 'largeValue');
+    expect(result).toBe('Success: Input JSON merged into temporary data.');
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+    // Expect temporary data to remain unchanged as nothing was merged
+    expect(mockData.temporary).toEqual({ initial: 'data' });
   });
 });
