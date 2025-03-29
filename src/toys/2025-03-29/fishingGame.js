@@ -70,15 +70,17 @@ function isSummerMonth(month) {
 function getSeason(month) {
   if (isWinterMonth(month)) {
     return "winter";
-  } else if (isSpringMonth(month)) {
-    return "spring";
-  } else if (isSummerMonth(month)) {
-    return "summer";
-  } else if (isFallMonth(month)) {
-    return "fall";
-  } else {
+  }
+  if (isSpringMonth(month)) {
     return "spring";
   }
+  if (isSummerMonth(month)) {
+    return "summer";
+  }
+  if (isFallMonth(month)) {
+    return "fall";
+  }
+  throw new Error(`Unrecognized month: ${month}`);
 }
 
 function getMoodDescription(season, timeOfDay) {
