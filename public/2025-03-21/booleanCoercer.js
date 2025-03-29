@@ -1,3 +1,8 @@
+function tryBooleanCoercion(input) {
+  if (typeof input === 'boolean') return input;
+  return normalizeBooleanString(input);
+}
+
 /**
  * Coerces input to a boolean value if possible.
  * Returns a string representation of an object with a 'value' property if coercion is successful,
@@ -7,12 +12,8 @@
  * @returns {string} - String representation of object with 'value' property if coercion successful, '{}' if not
  */
 export function coerceToBoolean(input) {
-  if (typeof input === 'boolean') {
-    return `{ value: ${input} }`;
-  }
-
-  const normalized = normalizeBooleanString(input);
-  return normalized !== undefined ? `{ value: ${normalized} }` : '{}';
+  const value = tryBooleanCoercion(input);
+  return value !== undefined ? `{ value: ${value} }` : '{}';
 }
 
 function normalizeBooleanString(input) {
@@ -22,12 +23,5 @@ function normalizeBooleanString(input) {
 }
 
 function parseBooleanString(str) {
-  switch (str) {
-    case 'true':
-      return true;
-    case 'false':
-      return false;
-    default:
-      return undefined;
-  }
+  return { true: true, false: false }[str];
 }
