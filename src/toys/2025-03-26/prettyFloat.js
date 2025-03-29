@@ -40,22 +40,15 @@ function resolveZeroVariant(num) {
   return zeroResult ? zeroResult : null;
 }
 
-function resolveEarlyFloatReturn(input) {
+export function decomposeFloat(input) {
   if (isInvalidNumber(input)) return "";
-
+  
   const num = parseValidNumber(input);
   const zeroReturn = resolveZeroVariant(num);
   if (zeroReturn) return zeroReturn;
 
-  return num;
-}
-
-export function decomposeFloat(input) {
-  const result = resolveEarlyFloatReturn(input);
-  if (typeof result === "string") return result;
-
-  const A = formatDecimal(result);
-  const decomposition = getIEEEDecomposition(result);
+  const A = formatDecimal(num);
+  const decomposition = getIEEEDecomposition(num);
   if (!decomposition) return "";
 
   return formatFloatDecomposition(A, decomposition);
