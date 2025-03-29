@@ -94,12 +94,24 @@ function getMoodDescription(season, timeOfDay) {
   return `${seasonDescriptions[season]} ${timeDescriptions[timeOfDay]}`;
 }
 
+function isSilentCatch(chance) {
+  return chance < 0.3;
+}
+
+function isCommonCatch(chance) {
+  return chance < 0.6;
+}
+
+function isTroutCatch(chance) {
+  return chance < 0.85;
+}
+
 function getFishingOutcome(effectiveChance, baitDescription, moodDescription) {
-  if (effectiveChance < 0.3) {
+  if (isSilentCatch(effectiveChance)) {
     return `the water stays silent. Despite your use of ${baitDescription}, no fish disturb the ${moodDescription}.`;
-  } else if (effectiveChance < 0.6) {
+  } else if (isCommonCatch(effectiveChance)) {
     return `a common carp surfaces gently, a modest reward for your effort with ${baitDescription}, set against ${moodDescription}.`;
-  } else if (effectiveChance < 0.85) {
+  } else if (isTroutCatch(effectiveChance)) {
     return `a glimmering trout appears briefly, its shimmer echoing the beauty of ${moodDescription}. Your choice of ${baitDescription} worked well.`;
   } else {
     return `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${moodDescription}. Your ${baitDescription} has yielded a prize.`;
