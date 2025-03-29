@@ -329,17 +329,13 @@ function createIdAttributeIfNeeded(post) {
   return ' ' + createAttrPair(ATTR_NAME.ID, post.key);
 }
 
+function getTagClassList(post) {
+  return hasTags(post) ? post.tags.map(tag => `tag-${tag}`) : [];
+}
+
 function createArticleClassAttr(post) {
-  let tagClasses = '';
-
-  if (hasTags(post)) {
-    tagClasses = post.tags.map(tag => `tag-${tag}`).join(' ');
-  }
-
-  const classValue = tagClasses
-    ? `${CLASS.ENTRY} ${tagClasses}`
-    : CLASS.ENTRY;
-
+  const classes = [CLASS.ENTRY, ...getTagClassList(post)];
+  const classValue = joinClasses(classes);
   return createAttrPair(ATTR_NAME.CLASS, classValue);
 }
 
