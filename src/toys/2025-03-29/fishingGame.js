@@ -1,7 +1,8 @@
 // fishingGame.js
 function fishingGame(input, env) {
   // Get the current time string and parse it
-  const timeStr = env.getCurrentTime();
+  const getCurrentTime = env.get("getCurrentTime");
+  const timeStr = getCurrentTime();
   const date = new Date(timeStr);
   const month = date.getMonth(); // 0-indexed: 0 = Jan, 11 = Dec
   const hour = date.getHours();
@@ -73,7 +74,8 @@ function fishingGame(input, env) {
   }
 
   // Get a base random number (0-1) and adjust it by the bait's modifier.
-  const baseChance = env.getRandomNumber();
+  const getRandomNumber = env.get("getRandomNumber");
+  const baseChance = getRandomNumber();
   const effectiveChance = Math.min(1, Math.max(0, baseChance + baitData.modifier));
 
   // Determine the outcome based on the effective chance.

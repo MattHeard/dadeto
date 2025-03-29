@@ -2,10 +2,10 @@
 import { fishingGame } from '../../../src/toys/2025-03-29/fishingGame';
 
 // Helper function to create a fixed environment.
-const createEnv = (randomValue, currentTime) => ({
-  getRandomNumber: () => randomValue,
-  getCurrentTime: () => currentTime,
-});
+const createEnv = (randomValue, currentTime) => new Map([
+  ["getRandomNumber", () => randomValue],
+  ["getCurrentTime", () => currentTime],
+]);
 
 describe('fishingGame', () => {
   // Test various outcomes based on bait and random values.
