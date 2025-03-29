@@ -23,15 +23,22 @@ function formatFloatDecomposition(decimal, { B, C }) {
   return `${decimal} (${B.toString()} × 2^${C.toString()})`;
 }
 
-export function decomposeFloat(input) {
+function resolveEarlyFloatReturn(input) {
   const num = getValidNumber(input);
   if (num === null) return "";
 
   const zeroResult = getZeroVariantResult(num);
   if (zeroResult) return zeroResult;
 
-  const A = formatDecimal(num);
-  const decomposition = getIEEEDecomposition(num);
+  return num;
+}
+
+export function decomposeFloat(input) {
+  const result = resolveEarlyFloatReturn(input);
+  if (typeof result === "string") return result;
+
+  const A = formatDecimal(result);
+  const decomposition = getIEEEDecomposition(result);
   if (!decomposition) return "";
 
   return formatFloatDecomposition(A, decomposition);
