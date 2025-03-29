@@ -1,3 +1,15 @@
+function getTimeOfDay(hour) {
+  if (hour >= 5 && hour < 12) {
+    return "morning";
+  } else if (hour >= 12 && hour < 17) {
+    return "afternoon";
+  } else if (hour >= 17 && hour < 21) {
+    return "evening";
+  } else {
+    return "night";
+  }
+}
+
 function getSeason(month) {
   if (month === 11 || month === 0 || month === 1) {
     return "winter";
@@ -22,16 +34,7 @@ function fishingGame(input, env) {
   const season = getSeason(month);
 
   // Determine time of day from hour
-  let timeOfDay = "morning";
-  if (hour >= 5 && hour < 12) {
-    timeOfDay = "morning";
-  } else if (hour >= 12 && hour < 17) {
-    timeOfDay = "afternoon";
-  } else if (hour >= 17 && hour < 21) {
-    timeOfDay = "evening";
-  } else {
-    timeOfDay = "night";
-  }
+  const timeOfDay = getTimeOfDay(hour);
 
   // Mood descriptions based on season and time of day.
   const seasonDescriptions = {
