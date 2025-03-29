@@ -43,12 +43,16 @@ function isSpringMonth(month) {
   return month >= 2 && month <= 4;
 }
 
+function isSummerMonth(month) {
+  return month >= 5 && month <= 7;
+}
+
 function getSeason(month) {
   if (month === 11 || month === 0 || month === 1) {
     return "winter";
   } else if (isSpringMonth(month)) {
     return "spring";
-  } else if (month >= 5 && month <= 7) {
+  } else if (isSummerMonth(month)) {
     return "summer";
   } else {
     return "fall";
