@@ -106,6 +106,21 @@ function getFishingOutcome(effectiveChance, baitDescription, moodDescription) {
   }
 }
 
+function getBaitOptions() {
+  return {
+    "worm": { modifier: 0.0, description: "a wriggling worm" },
+    "insect": { modifier: 0.05, description: "a lively insect" },
+    "bread": { modifier: -0.05, description: "a slice of bread" },
+    "cheese": { modifier: 0.1, description: "a pungent piece of cheese" },
+    "shiny bait": { modifier: 0.15, description: "a glittering lure" },
+    "doughnut": { modifier: 0.2, description: "a tempting doughnut" },
+    "grub": { modifier: 0.05, description: "a succulent grub" },
+    "minnow": { modifier: 0.1, description: "a darting minnow" },
+    "sausage": { modifier: 0.2, description: "a savory sausage" },
+    "maggot": { modifier: -0.1, description: "a squirming maggot" },
+  };
+}
+
 function fishingGame(input, env) {
   // Get the current time string and parse it
   const getCurrentTime = env.get("getCurrentTime");
@@ -123,18 +138,7 @@ function fishingGame(input, env) {
   const moodDescription = getMoodDescription(season, timeOfDay);
 
   // Define a mapping of bait names (lower-case) to their modifiers and descriptions.
-  const baitOptions = {
-    "worm": { modifier: 0.0, description: "a wriggling worm" },
-    "insect": { modifier: 0.05, description: "a lively insect" },
-    "bread": { modifier: -0.05, description: "a slice of bread" },
-    "cheese": { modifier: 0.1, description: "a pungent piece of cheese" },
-    "shiny bait": { modifier: 0.15, description: "a glittering lure" },
-    "doughnut": { modifier: 0.2, description: "a tempting doughnut" },
-    "grub": { modifier: 0.05, description: "a succulent grub" },
-    "minnow": { modifier: 0.1, description: "a darting minnow" },
-    "sausage": { modifier: 0.2, description: "a savory sausage" },
-    "maggot": { modifier: -0.1, description: "a squirming maggot" },
-  };
+  const baitOptions = getBaitOptions();
 
   // Clean input, and check if it matches a known bait.
   const baitDataOrError = getBaitData(input, baitOptions, moodDescription);
