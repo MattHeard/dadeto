@@ -105,7 +105,8 @@ function initializeInteractiveComponent(id, processingFunction) {
     try {
       // Create an env Map with utility functions that might be needed by processing functions
       const env = new Map([
-        ["getRandomNumber", () => Math.random()]
+        ["getRandomNumber", () => Math.random()],
+        ["getCurrentTime", () => new Date().toISOString()]
       ]);
       
       // Call the processing function with the input value
