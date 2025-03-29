@@ -36,6 +36,22 @@ function getSeason(month) {
   }
 }
 
+function getMoodDescription(season, timeOfDay) {
+  const seasonDescriptions = {
+    winter: "crisp, icy waters",
+    spring: "bubbling, fresh currents",
+    summer: "warm, shimmering waves",
+    fall: "cool, reflective ponds",
+  };
+  const timeDescriptions = {
+    morning: "as dawn breaks with promise",
+    afternoon: "under a vibrant sun",
+    evening: "in the glow of twilight",
+    night: "beneath a silent, starry sky",
+  };
+  return `${seasonDescriptions[season]} ${timeDescriptions[timeOfDay]}`;
+}
+
 function fishingGame(input, env) {
   // Get the current time string and parse it
   const getCurrentTime = env.get("getCurrentTime");
@@ -50,20 +66,7 @@ function fishingGame(input, env) {
   // Determine time of day from hour
   const timeOfDay = getTimeOfDay(hour);
 
-  // Mood descriptions based on season and time of day.
-  const seasonDescriptions = {
-    winter: "crisp, icy waters",
-    spring: "bubbling, fresh currents",
-    summer: "warm, shimmering waves",
-    fall: "cool, reflective ponds",
-  };
-  const timeDescriptions = {
-    morning: "as dawn breaks with promise",
-    afternoon: "under a vibrant sun",
-    evening: "in the glow of twilight",
-    night: "beneath a silent, starry sky",
-  };
-  const moodDescription = `${seasonDescriptions[season]} ${timeDescriptions[timeOfDay]}`;
+  const moodDescription = getMoodDescription(season, timeOfDay);
 
   // Define a mapping of bait names (lower-case) to their modifiers and descriptions.
   const baitOptions = {
