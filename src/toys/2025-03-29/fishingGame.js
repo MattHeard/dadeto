@@ -1,4 +1,15 @@
-// fishingGame.js
+function getSeason(month) {
+  if (month === 11 || month === 0 || month === 1) {
+    return "winter";
+  } else if (month >= 2 && month <= 4) {
+    return "spring";
+  } else if (month >= 5 && month <= 7) {
+    return "summer";
+  } else {
+    return "fall";
+  }
+}
+
 function fishingGame(input, env) {
   // Get the current time string and parse it
   const getCurrentTime = env.get("getCurrentTime");
@@ -8,16 +19,7 @@ function fishingGame(input, env) {
   const hour = date.getHours();
 
   // Determine season from month
-  let season = "spring";
-  if (month === 11 || month === 0 || month === 1) {
-    season = "winter";
-  } else if (month >= 2 && month <= 4) {
-    season = "spring";
-  } else if (month >= 5 && month <= 7) {
-    season = "summer";
-  } else if (month >= 8 && month <= 10) {
-    season = "fall";
-  }
+  const season = getSeason(month);
 
   // Determine time of day from hour
   let timeOfDay = "morning";
