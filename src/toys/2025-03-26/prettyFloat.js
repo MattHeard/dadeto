@@ -42,10 +42,16 @@ function isNegativeZero(n) {
   return Object.is(n, -0);
 }
 
+function isPositiveZeroResult(num) {
+  return isPositiveZero(num) ? "0 (0 × 2^0)" : null;
+}
+
+function isNegativeZeroResult(num) {
+  return isNegativeZero(num) ? "0 (-0 × 2^0)" : null;
+}
+
 function isZeroVariant(num) {
-  if (isPositiveZero(num)) return "0 (0 × 2^0)";
-  if (isNegativeZero(num)) return "0 (-0 × 2^0)";
-  return null;
+  return isPositiveZeroResult(num) || isNegativeZeroResult(num);
 }
 
 function formatDecimal(num) {
