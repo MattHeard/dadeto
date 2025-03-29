@@ -1,3 +1,12 @@
+// Single global state object
+let globalState = {
+  blog: null, // Holds the fetched blog data
+  blogStatus: 'idle', // 'idle', 'loading', 'loaded', 'error'
+  blogError: null, // Stores any error during fetch
+  blogFetchPromise: null, // Tracks the ongoing fetch promise
+  temporary: {} // Holds data managed by toys like setTemporary
+};
+
 // Audio controls functionality
 (function() {
   const audioElements = document.querySelectorAll("audio");
@@ -108,23 +117,48 @@ function initializeInteractiveComponent(id, processingFunction) {
         ["getRandomNumber", () => Math.random()],
         ["getCurrentTime", () => new Date().toISOString()],
         ["getData", () => {
-          switch (blogDataCache.status) {
-            case 'idle':
-              // Initiate fetch but don't wait for it. Tell the user to try again.
-              fetchAndCacheBlogData(); 
-              throw new Error('Blog data is loading. Please try again shortly.');
-            case 'loading':
-              // Fetch is in progress.
-              throw new Error('Blog data is loading. Please try again shortly.');
-            case 'loaded':
-              // Data is ready.
-              return { blog: blogDataCache.data };
-            case 'error':
-              // An error occurred during fetch.
-              throw blogDataCache.error || new Error('Failed to load blog data.');
-            default:
-              // Should not happen, but good to have a fallback.
-              throw new Error('Unknown blog data state.');
+          // Return a deep copy of the current global state
+          // Using JSON parse/stringify for a simple deep copy
+          const stateCopy = JSON.parse(JSON.stringify(globalState));
+          
+          // Check blog status and trigger fetch if needed, but don't block
+          if (stateCopy.blogStatus === 'idle') {
+            fetchAndCacheBlogData(); // Trigger fetch (no await)
+          } else if (stateCopy.blogStatus === 'error') {
+            console.warn("Blog data previously failed to load:", stateCopy.blogError);
+          }
+          
+          // Remove fetch-related properties from the copy returned to the toy
+          delete stateCopy.blogStatus;
+          delete stateCopy.blogError;
+          delete stateCopy.blogFetchPromise;
+          
+          return stateCopy; 
+        }],
+        ["setData", (newData) => {
+          // Replace the entire global state, but validate basic structure
+          if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+            // Preserve the internal blog loading state properties when updating
+            const currentBlogStatus = globalState.blogStatus;
+            const currentBlogError = globalState.blogError;
+            const currentBlogFetchPromise = globalState.blogFetchPromise;
+            const currentBlogData = globalState.blog; // Preserve actual blog data too
+            
+            globalState = newData;
+            
+            // Restore internal properties
+            globalState.blogStatus = currentBlogStatus;
+            globalState.blogError = currentBlogError;
+            globalState.blogFetchPromise = currentBlogFetchPromise;
+            // Ensure the blog data wasn't wiped out if it wasn't included in newData
+            if (!newData.hasOwnProperty('blog')) {
+              globalState.blog = currentBlogData;
+            }
+            
+            console.log('Global state updated:', globalState);
+          } else {
+            console.error('setData received invalid data structure:', newData);
+            throw new Error('setData requires an object with at least a \'temporary\' property.');
           }
         }]
       ]);
@@ -260,30 +294,22 @@ function toggleHideLink(link, className) {
   });
 })();
 
-// Cache object to store blog data and its loading state
-const blogDataCache = {
-  status: 'idle', // 'idle', 'loading', 'loaded', 'error'
-  data: null,
-  error: null,
-  promise: null // Store the fetch promise to avoid concurrent fetches
-};
-
 /**
- * Fetches and caches blog.json data. Initiates fetch only if not already loading/loaded.
+ * Fetches blog data and updates the global state.
+ * Ensures only one fetch happens at a time.
  */
-async function fetchAndCacheBlogData() {
-  // Avoid fetching if already loaded or currently loading
-  if (blogDataCache.status === 'loaded' || blogDataCache.status === 'loading') {
-    return;
+function fetchAndCacheBlogData() {
+  // Prevent multiple simultaneous fetches
+  if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
+    console.log('Blog data fetch already in progress.');
+    return globalState.blogFetchPromise; 
   }
-
-  // Avoid concurrent fetches if one is already in progress
-  if (blogDataCache.promise) {
-    return blogDataCache.promise;
-  }
-
-  blogDataCache.status = 'loading';
-  blogDataCache.promise = fetch('/blog.json')
+  
+  console.log('Starting to fetch blog data...');
+  globalState.blogStatus = 'loading';
+  globalState.blogError = null;
+  
+  globalState.blogFetchPromise = fetch('./blog.json') 
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -291,19 +317,20 @@ async function fetchAndCacheBlogData() {
       return response.json();
     })
     .then(data => {
-      blogDataCache.data = data;
-      blogDataCache.status = 'loaded';
-      console.log('Blog data loaded successfully on demand.');
-      blogDataCache.promise = null; // Clear promise on success
+      globalState.blog = data; // Update the blog property
+      globalState.blogStatus = 'loaded';
+      console.log('Blog data loaded successfully into globalState.');
+      globalState.blogFetchPromise = null; // Clear promise on success
     })
     .catch(error => {
-      console.error('Error loading blog data on demand:', error);
-      blogDataCache.error = error;
-      blogDataCache.status = 'error';
-      blogDataCache.promise = null; // Clear promise on error
-      // Rethrow the error if needed elsewhere, though not strictly necessary here
-      // as the status check in getData will handle it
+      console.error('Error loading blog data:', error);
+      globalState.blogError = error;
+      globalState.blogStatus = 'error';
+      globalState.blogFetchPromise = null; // Clear promise on error
     });
-
-  return blogDataCache.promise;
+  
+  return globalState.blogFetchPromise;
 }
+
+// Initial fetch of blog data when the script loads
+fetchAndCacheBlogData();

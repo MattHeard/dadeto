@@ -1,6 +1,28 @@
 {
   "posts": [
     {
+      "key": "SETT1",
+      "title": "Set Temporary Data",
+      "publicationDate": "2025-03-29",
+      "content": [
+        "Parses a JSON input string and merges it into a temporary data store available to other toys."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "fileName": "2025-03-29-2", 
+        "altText": "a flat-style digital illustration depicts a young woman with red-orange hair in a ponytail, wearing a yellow shirt, working at a laptop and placing a turquoise sticky note on a nearby calendar, with a warm, textured background and bold outlines"
+      },
+      "toy": {
+        "modulePath": "/2025-03-29/setTemporary.js",
+        "functionName": "setTemporary"
+      },
+      "tags": [
+        "toy",
+        "data",
+        "state"
+      ]
+    },
+    {
       "key": "GETD1",
       "title": "Get Data Item",
       "publicationDate": "2025-03-29",
