@@ -46,14 +46,25 @@ function copyToyFiles(src, dest) {
   }
 }
 
+function handleDirectoryEntry(entry, src, dest) {
+  const srcPath = path.join(src, entry.name);
+  copyToyFiles(srcPath, dest);
+}
+
+function handleFileEntry(entry, src, dest, srcPath) {
+  if (shouldCopy(entry)) {
+    const destPath = getDestPath(srcPath);
+    copyFile(srcPath, destPath);
+  }
+}
+
 function handleEntry(entry, src, dest) {
   const srcPath = path.join(src, entry.name);
 
   if (entry.isDirectory()) {
-    copyToyFiles(srcPath, dest);
-  } else if (shouldCopy(entry)) {
-    const destPath = getDestPath(srcPath);
-    copyFile(srcPath, destPath);
+    handleDirectoryEntry(entry, src, dest);
+  } else {
+    handleFileEntry(entry, src, dest, srcPath);
   }
 }
 
