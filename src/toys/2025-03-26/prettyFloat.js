@@ -31,12 +31,21 @@ function getZeroVariantString(num) {
   return getZeroVariantResult(num);
 }
 
+function parseValidNumber(input) {
+  return Number(input);
+}
+
+function resolveZeroVariant(num) {
+  const zeroResult = getZeroVariantString(num);
+  return zeroResult ? zeroResult : null;
+}
+
 function resolveEarlyFloatReturn(input) {
   if (isInvalidNumber(input)) return "";
 
-  const num = Number(input);
-  const zeroResult = getZeroVariantString(num);
-  if (zeroResult) return zeroResult;
+  const num = parseValidNumber(input);
+  const zeroReturn = resolveZeroVariant(num);
+  if (zeroReturn) return zeroReturn;
 
   return num;
 }
