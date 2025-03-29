@@ -43,6 +43,9 @@ function isNightHour(hour) {
 function isFallMonth(month) {
   return month >= 8 && month <= 10;
 }
+function isWinterMonth(month) {
+  return month === 11 || month === 0 || month === 1;
+}
 
 function getTimeOfDay(hour) {
   if (isMorningHour(hour)) {
@@ -65,7 +68,7 @@ function isSummerMonth(month) {
 }
 
 function getSeason(month) {
-  if (month === 11 || month === 0 || month === 1) {
+  if (isWinterMonth(month)) {
     return "winter";
   } else if (isSpringMonth(month)) {
     return "spring";
