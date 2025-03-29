@@ -133,6 +133,11 @@ function processBoldAfter(afterText) {
   return afterText ? processTextPreservingBold(afterText) : '';
 }
 
+// Helper function to check if text is invalid
+function isInvalidText(text) {
+  return !text || typeof text !== 'string';
+}
+
 // Main exported function
 
 /**
@@ -158,11 +163,10 @@ function processBoldAfter(afterText) {
  * @returns {string} Text with HTML <em> tags added around Markdown-formatted italics
  */
 export function italics(text) {
-  if (!text || typeof text !== 'string') {
+  if (isInvalidText(text)) {
     return text;
   }
-  
-  // We'll use a recursive approach with special handling for bold segments
+
   return processTextPreservingBold(text);
 }
 
