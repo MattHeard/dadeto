@@ -68,6 +68,10 @@ function handleEntry(entry, src, dest) {
   }
 }
 
+function isRegularFile(entry) {
+  return entry.isFile();
+}
+
 function isJavaScriptFile(entry) {
   return entry.name.endsWith('.js');
 }
@@ -77,7 +81,7 @@ function isTestFile(entry) {
 }
 
 function shouldCopy(entry) {
-  return entry.isFile() && isJavaScriptFile(entry) && !isTestFile(entry);
+  return isRegularFile(entry) && isJavaScriptFile(entry) && !isTestFile(entry);
 }
 
 function getDestPath(srcPath) {
