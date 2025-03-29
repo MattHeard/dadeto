@@ -32,59 +32,29 @@ function getBaitData(input, baitOptions, moodDescription) {
   return getUnrecognizedBait();
 }
 
-function isMorningHour(hour) {
-  return hour >= 5 && hour < 12;
-}
-
-function isAfternoonHour(hour) {
-  return hour >= 12 && hour < 17;
-}
-
-function isEveningHour(hour) {
-  return hour >= 17 && hour < 21;
-}
-
-function isNightHour(hour) {
-  return hour < 5 || hour >= 21;
-}
-
-function isFallMonth(month) {
-  return month >= 8 && month <= 10;
-}
-function isWinterMonth(month) {
-  return month === 11 || month === 0 || month === 1;
-}
-
 function getTimeOfDay(hour) {
-  if (isMorningHour(hour)) return "morning";
-  if (isAfternoonHour(hour)) return "afternoon";
-  if (isEveningHour(hour)) return "evening";
-  if (isNightHour(hour)) return "night";
-  throw new Error(`Unrecognized hour: ${hour}`);
-}
-
-function isSpringMonth(month) {
-  return month >= 2 && month <= 4;
-}
-
-function isSummerMonth(month) {
-  return month >= 5 && month <= 7;
+  const ranges = [
+    { start: 5, end: 12, label: "morning" },
+    { start: 12, end: 17, label: "afternoon" },
+    { start: 17, end: 21, label: "evening" },
+    { start: 21, end: 24, label: "night" },
+    { start: 0, end: 5, label: "night" },
+  ];
+  const match = ranges.find(({ start, end }) => hour >= start && hour < end);
+  if (!match) throw new Error(`Unrecognized hour: ${hour}`);
+  return match.label;
 }
 
 function getSeason(month) {
-  if (isWinterMonth(month)) {
-    return "winter";
-  }
-  if (isSpringMonth(month)) {
-    return "spring";
-  }
-  if (isSummerMonth(month)) {
-    return "summer";
-  }
-  if (isFallMonth(month)) {
-    return "fall";
-  }
-  throw new Error(`Unrecognized month: ${month}`);
+  const ranges = [
+    { months: [11, 0, 1], label: "winter" },
+    { months: [2, 3, 4], label: "spring" },
+    { months: [5, 6, 7], label: "summer" },
+    { months: [8, 9, 10], label: "fall" },
+  ];
+  const match = ranges.find(({ months }) => months.includes(month));
+  if (!match) throw new Error(`Unrecognized month: ${month}`);
+  return match.label;
 }
 
 function getMoodDescription(season, timeOfDay) {
