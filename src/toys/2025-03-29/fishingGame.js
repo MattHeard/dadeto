@@ -12,8 +12,12 @@ function getBaitData(input, baitOptions, moodDescription) {
   }
 }
 
+function isMorningHour(hour) {
+  return hour >= 5 && hour < 12;
+}
+
 function getTimeOfDay(hour) {
-  if (hour >= 5 && hour < 12) {
+  if (isMorningHour(hour)) {
     return "morning";
   } else if (hour >= 12 && hour < 17) {
     return "afternoon";
