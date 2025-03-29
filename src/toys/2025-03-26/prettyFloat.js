@@ -24,9 +24,17 @@ export function decomposeFloat(input) {
   return `${A} (${B.toString()} × 2^${C.toString()})`;
 }
 
+function isPositiveZero(n) {
+  return Object.is(n, 0);
+}
+
+function isNegativeZero(n) {
+  return Object.is(n, -0);
+}
+
 function isZeroVariant(num) {
-  if (Object.is(num, 0)) return "0 (0 × 2^0)";
-  if (Object.is(num, -0)) return "0 (-0 × 2^0)";
+  if (isPositiveZero(num)) return "0 (0 × 2^0)";
+  if (isNegativeZero(num)) return "0 (-0 × 2^0)";
   return null;
 }
 
