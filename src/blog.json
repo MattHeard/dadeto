@@ -1,6 +1,27 @@
 {
   "posts": [
     {
+      "key": "FISH1",
+      "title": "Fishing",
+      "publicationDate": "2025-03-29",
+      "illustration": {
+        "fileType": "png",
+        "altText": "a pixel art digital illustration in 2d depicts a tranquil lakeside fishing scene inspired by snes and game boy aesthetics. a character in a floppy hat sits at the end of a wooden dock, holding a fishing rod over the rippling water. the lake reflects the warm tones of a setting sun, while tall reeds and trees line the far shore. soft, muted colors and low-resolution textures evoke a nostalgic, calming atmosphere. a few gentle ripples hint at unseen fish, and birds drift quietly in the sky above."
+      },
+      "content": [
+        "A fishing game. Feel free to choose your bait."
+      ],
+      "toy": {
+        "modulePath": "/2025-03-29/fishingGame.js",
+        "functionName": "fishingGame"
+      },
+      "tags": [
+        "toy",
+        "game",
+        "fishing"
+      ]
+    },
+    {
       "key": "RAND1",
       "title": "Random",
       "publicationDate": "2025-03-28",
