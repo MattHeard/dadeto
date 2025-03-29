@@ -48,15 +48,11 @@ function isWinterMonth(month) {
 }
 
 function getTimeOfDay(hour) {
-  if (isMorningHour(hour)) {
-    return "morning";
-  } else if (isAfternoonHour(hour)) {
-    return "afternoon";
-  } else if (isEveningHour(hour)) {
-    return "evening";
-  } else if (isNightHour(hour)) {
-    return "night";
-  }
+  if (isMorningHour(hour)) return "morning";
+  if (isAfternoonHour(hour)) return "afternoon";
+  if (isEveningHour(hour)) return "evening";
+  if (isNightHour(hour)) return "night";
+  throw new Error(`Unrecognized hour: ${hour}`);
 }
 
 function isSpringMonth(month) {
