@@ -13,15 +13,23 @@ function getDefaultBaitResponse(moodDescription) {
   };
 }
 
+function getRecognizedBait(baitKey, baitOptions) {
+  return baitOptions[baitKey];
+}
+
+function getUnrecognizedBait() {
+  return { modifier: 0, description: "an unconventional bait" };
+}
+
 function getBaitData(input, baitOptions, moodDescription) {
   const baitKey = input.trim().toLowerCase();
   if (isRecognizedBait(baitKey, baitOptions)) {
-    return baitOptions[baitKey];
-  } else if (isEmptyBait(baitKey)) {
-    return getDefaultBaitResponse(moodDescription);
-  } else {
-    return { modifier: 0, description: "an unconventional bait" };
+    return getRecognizedBait(baitKey, baitOptions);
   }
+  if (isEmptyBait(baitKey)) {
+    return getDefaultBaitResponse(moodDescription);
+  }
+  return getUnrecognizedBait();
 }
 
 function isMorningHour(hour) {
