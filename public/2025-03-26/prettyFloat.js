@@ -1,24 +1,77 @@
+function isNonFinite(input) {
+  const num = Number(input);
+  return !Number.isFinite(num);
+}
+
+function getZeroVariantResult(num) {
+  const result = isZeroVariant(num);
+  return result !== null ? result : null;
+}
+
+function getValidNumber(input) {
+  if (isNonFinite(input)) return null;
+  return Number(input);
+}
+
+function getIEEEDecomposition(num) {
+  const parts = decomposeIEEE754(num);
+  if (!isValidIEEEParts(parts)) return null;
+  return getSignificandAndExponent(parts);
+}
+
+function formatFloatDecomposition(decimal, { B, C }) {
+  return `${decimal} (${B.toString()} × 2^${C.toString()})`;
+}
+
+function isInvalidNumber(input) {
+  return getValidNumber(input) === null;
+}
+
+function getZeroVariantString(num) {
+  return getZeroVariantResult(num);
+}
+
+function parseValidNumber(input) {
+  return Number(input);
+}
+
+function resolveZeroVariant(num) {
+  const zeroResult = getZeroVariantString(num);
+  return zeroResult ? zeroResult : null;
+}
+
 export function decomposeFloat(input) {
   const num = Number(input);
   if (!Number.isFinite(num)) return "";
 
-  const zeroResult = isZeroVariant(num);
-  if (zeroResult !== null) return zeroResult;
+  const zeroReturn = resolveZeroVariant(num);
+  if (zeroReturn) return zeroReturn;
 
   const A = formatDecimal(num);
+  const decomposition = getIEEEDecomposition(num);
+  if (!decomposition) return "";
 
-  const parts = decomposeIEEE754(num);
-  if (!isValidIEEEParts(parts)) return "";
+  return formatFloatDecomposition(A, decomposition);
+}
 
-  const { B, C } = getSignificandAndExponent(parts);
+function isPositiveZero(n) {
+  return Object.is(n, 0);
+}
 
-  return `${A} (${B.toString()} × 2^${C.toString()})`;
+function isNegativeZero(n) {
+  return Object.is(n, -0);
+}
+
+function isPositiveZeroResult(num) {
+  return isPositiveZero(num) ? "0 (0 × 2^0)" : null;
+}
+
+function isNegativeZeroResult(num) {
+  return isNegativeZero(num) ? "0 (-0 × 2^0)" : null;
 }
 
 function isZeroVariant(num) {
-  if (Object.is(num, 0)) return "0 (0 × 2^0)";
-  if (Object.is(num, -0)) return "0 (-0 × 2^0)";
-  return null;
+  return isPositiveZeroResult(num) || isNegativeZeroResult(num);
 }
 
 function formatDecimal(num) {

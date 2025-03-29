@@ -5,6 +5,14 @@ const UNDERSCORE_MARKER = '_';
 // Pattern to match special regex characters that need escaping
 const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
 
+function isEmptyText(text) {
+  return !text?.trim();
+}
+
+function hasNoBoldSegments(text) {
+  return !findBoldSegments(text);
+}
+
 /**
  * Creates a doubled marker (e.g., ** or __) for bold text
  * @param {string} marker - The marker character (* or _)
@@ -105,7 +113,7 @@ function assembleProcessedText(beforeText, boldText, afterText) {
  * @private
  */
 function shouldBypassBold(text) {
-  return !text?.trim() || !findBoldSegments(text);
+  return isEmptyText(text) || hasNoBoldSegments(text);
 }
 
 function processTextPreservingBold(text) {
@@ -123,6 +131,11 @@ function processItalicBefore(beforeText) {
 
 function processBoldAfter(afterText) {
   return afterText ? processTextPreservingBold(afterText) : '';
+}
+
+// Helper function to check if text is invalid
+function isInvalidText(text) {
+  return !text || typeof text !== 'string';
 }
 
 // Main exported function
@@ -150,11 +163,10 @@ function processBoldAfter(afterText) {
  * @returns {string} Text with HTML <em> tags added around Markdown-formatted italics
  */
 export function italics(text) {
-  if (!text || typeof text !== 'string') {
+  if (isInvalidText(text)) {
     return text;
   }
-  
-  // We'll use a recursive approach with special handling for bold segments
+
   return processTextPreservingBold(text);
 }
 

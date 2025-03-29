@@ -106,13 +106,35 @@ function initializeInteractiveComponent(id, processingFunction) {
       // Create an env Map with utility functions that might be needed by processing functions
       const env = new Map([
         ["getRandomNumber", () => Math.random()],
-        ["getCurrentTime", () => new Date().toISOString()]
+        ["getCurrentTime", () => new Date().toISOString()],
+        ["getData", () => {
+          switch (blogDataCache.status) {
+            case 'idle':
+              // Initiate fetch but don't wait for it. Tell the user to try again.
+              fetchAndCacheBlogData(); 
+              throw new Error('Blog data is loading. Please try again shortly.');
+            case 'loading':
+              // Fetch is in progress.
+              throw new Error('Blog data is loading. Please try again shortly.');
+            case 'loaded':
+              // Data is ready.
+              return { blog: blogDataCache.data };
+            case 'error':
+              // An error occurred during fetch.
+              throw blogDataCache.error || new Error('Failed to load blog data.');
+            default:
+              // Should not happen, but good to have a fallback.
+              throw new Error('Unknown blog data state.');
+          }
+        }]
       ]);
       
       // Call the processing function with the input value
-      // If the function accepts two parameters, it will use the env Map
-      // If it only accepts one parameter, the second argument will be ignored
-      const result = processingFunction(inputValue, env);
+      // If the function accepts two parameters (length === 2), it will receive the env Map
+      // If it only accepts one parameter, the second argument (env) will be ignored by the function
+      const result = processingFunction.length === 2
+                 ? processingFunction(inputValue, env)
+                 : processingFunction(inputValue);
       
       // Update the output
       outputElement.textContent = result;
@@ -237,3 +259,51 @@ function toggleHideLink(link, className) {
     });
   });
 })();
+
+// Cache object to store blog data and its loading state
+const blogDataCache = {
+  status: 'idle', // 'idle', 'loading', 'loaded', 'error'
+  data: null,
+  error: null,
+  promise: null // Store the fetch promise to avoid concurrent fetches
+};
+
+/**
+ * Fetches and caches blog.json data. Initiates fetch only if not already loading/loaded.
+ */
+async function fetchAndCacheBlogData() {
+  // Avoid fetching if already loaded or currently loading
+  if (blogDataCache.status === 'loaded' || blogDataCache.status === 'loading') {
+    return;
+  }
+
+  // Avoid concurrent fetches if one is already in progress
+  if (blogDataCache.promise) {
+    return blogDataCache.promise;
+  }
+
+  blogDataCache.status = 'loading';
+  blogDataCache.promise = fetch('/blog.json')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      blogDataCache.data = data;
+      blogDataCache.status = 'loaded';
+      console.log('Blog data loaded successfully on demand.');
+      blogDataCache.promise = null; // Clear promise on success
+    })
+    .catch(error => {
+      console.error('Error loading blog data on demand:', error);
+      blogDataCache.error = error;
+      blogDataCache.status = 'error';
+      blogDataCache.promise = null; // Clear promise on error
+      // Rethrow the error if needed elsewhere, though not strictly necessary here
+      // as the status check in getData will handle it
+    });
+
+  return blogDataCache.promise;
+}

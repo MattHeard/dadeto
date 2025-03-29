@@ -1,37 +1,63 @@
-// fishingGame.js
-function fishingGame(input, env) {
-  // Get the current time string and parse it
-  const getCurrentTime = env.get("getCurrentTime");
-  const timeStr = getCurrentTime();
-  const date = new Date(timeStr);
-  const month = date.getMonth(); // 0-indexed: 0 = Jan, 11 = Dec
-  const hour = date.getHours();
+function isRecognizedBait(baitKey, baitOptions) {
+  return baitKey in baitOptions;
+}
 
-  // Determine season from month
-  let season = "spring";
-  if (month === 11 || month === 0 || month === 1) {
-    season = "winter";
-  } else if (month >= 2 && month <= 4) {
-    season = "spring";
-  } else if (month >= 5 && month <= 7) {
-    season = "summer";
-  } else if (month >= 8 && month <= 10) {
-    season = "fall";
+function isEmptyBait(baitKey) {
+  return baitKey.length === 0;
+}
+
+function getDefaultBaitResponse(moodDescription) {
+  return {
+    isError: true,
+    message: `You cast your line with nothing but hesitation. Without any bait, the waters remain undisturbed in their ${moodDescription}.`
+  };
+}
+
+function getRecognizedBait(baitKey, baitOptions) {
+  return baitOptions[baitKey];
+}
+
+function getUnrecognizedBait() {
+  return { modifier: 0, description: "an unconventional bait" };
+}
+
+function getBaitData(input, baitOptions, moodDescription) {
+  const baitKey = input.trim().toLowerCase();
+  if (isRecognizedBait(baitKey, baitOptions)) {
+    return getRecognizedBait(baitKey, baitOptions);
   }
-
-  // Determine time of day from hour
-  let timeOfDay = "morning";
-  if (hour >= 5 && hour < 12) {
-    timeOfDay = "morning";
-  } else if (hour >= 12 && hour < 17) {
-    timeOfDay = "afternoon";
-  } else if (hour >= 17 && hour < 21) {
-    timeOfDay = "evening";
-  } else {
-    timeOfDay = "night";
+  if (isEmptyBait(baitKey)) {
+    return getDefaultBaitResponse(moodDescription);
   }
+  return getUnrecognizedBait();
+}
 
-  // Mood descriptions based on season and time of day.
+function getTimeOfDay(hour) {
+  const ranges = [
+    { start: 5, end: 12, label: "morning" },
+    { start: 12, end: 17, label: "afternoon" },
+    { start: 17, end: 21, label: "evening" },
+    { start: 21, end: 24, label: "night" },
+    { start: 0, end: 5, label: "night" },
+  ];
+  const match = ranges.find(({ start, end }) => hour >= start && hour < end);
+  if (!match) throw new Error(`Unrecognized hour: ${hour}`);
+  return match.label;
+}
+
+function getSeason(month) {
+  const ranges = [
+    { months: [11, 0, 1], label: "winter" },
+    { months: [2, 3, 4], label: "spring" },
+    { months: [5, 6, 7], label: "summer" },
+    { months: [8, 9, 10], label: "fall" },
+  ];
+  const match = ranges.find(({ months }) => months.includes(month));
+  if (!match) throw new Error(`Unrecognized month: ${month}`);
+  return match.label;
+}
+
+function getMoodDescription(season, timeOfDay) {
   const seasonDescriptions = {
     winter: "crisp, icy waters",
     spring: "bubbling, fresh currents",
@@ -44,10 +70,50 @@ function fishingGame(input, env) {
     evening: "in the glow of twilight",
     night: "beneath a silent, starry sky",
   };
-  const moodDescription = `${seasonDescriptions[season]} ${timeDescriptions[timeOfDay]}`;
+  return `${seasonDescriptions[season]} ${timeDescriptions[timeOfDay]}`;
+}
 
-  // Define a mapping of bait names (lower-case) to their modifiers and descriptions.
-  const baitOptions = {
+function isSilentCatch(chance) {
+  return chance < 0.3;
+}
+
+function isCommonCatch(chance) {
+  return chance < 0.6;
+}
+
+function isTroutCatch(chance) {
+  return chance < 0.85;
+}
+
+const fishingOutcomes = [
+  {
+    check: isSilentCatch,
+    describe: (bait, mood) =>
+      `the water stays silent. Despite your use of ${bait}, no fish disturb the ${mood}.`,
+  },
+  {
+    check: isCommonCatch,
+    describe: (bait, mood) =>
+      `a common carp surfaces gently, a modest reward for your effort with ${bait}, set against ${mood}.`,
+  },
+  {
+    check: isTroutCatch,
+    describe: (bait, mood) =>
+      `a glimmering trout appears briefly, its shimmer echoing the beauty of ${mood}. Your choice of ${bait} worked well.`,
+  },
+  {
+    check: () => true,
+    describe: (bait, mood) =>
+      `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${mood}. Your ${bait} has yielded a prize.`,
+  },
+];
+
+function getFishingOutcome(effectiveChance, baitDescription, moodDescription) {
+  return fishingOutcomes.find(({ check }) => check(effectiveChance)).describe(baitDescription, moodDescription);
+}
+
+function getBaitOptions() {
+  return {
     "worm": { modifier: 0.0, description: "a wriggling worm" },
     "insect": { modifier: 0.05, description: "a lively insect" },
     "bread": { modifier: -0.05, description: "a slice of bread" },
@@ -59,38 +125,34 @@ function fishingGame(input, env) {
     "sausage": { modifier: 0.2, description: "a savory sausage" },
     "maggot": { modifier: -0.1, description: "a squirming maggot" },
   };
+}
 
-  // Clean input, and check if it matches a known bait.
-  const baitKey = input.trim().toLowerCase();
-  let baitData;
-  if (baitKey in baitOptions) {
-    baitData = baitOptions[baitKey];
-  } else if (baitKey.length === 0) {
-    // No bait provided.
-    return `You cast your line with nothing but hesitation. Without any bait, the waters remain undisturbed in their ${moodDescription}.`;
-  } else {
-    // Unrecognized bait: use a generic option.
-    baitData = { modifier: 0, description: "an unconventional bait" };
-  }
+function getTimeContext(getCurrentTime) {
+  const date = new Date(getCurrentTime());
+  const month = date.getMonth();
+  const hour = date.getHours();
+  const season = getSeason(month);
+  const timeOfDay = getTimeOfDay(hour);
+  return { season, timeOfDay };
+}
 
-  // Get a base random number (0-1) and adjust it by the bait's modifier.
+function fishingGame(input, env) {
+  const { season, timeOfDay } = getTimeContext(env.get("getCurrentTime"));
+
+  const moodDescription = getMoodDescription(season, timeOfDay);
+
+  const baitOptions = getBaitOptions();
+
+  const baitDataOrError = getBaitData(input, baitOptions, moodDescription);
+  if (baitDataOrError.isError) return baitDataOrError.message;
+  const baitData = baitDataOrError;
+
   const getRandomNumber = env.get("getRandomNumber");
   const baseChance = getRandomNumber();
   const effectiveChance = Math.min(1, Math.max(0, baseChance + baitData.modifier));
 
-  // Determine the outcome based on the effective chance.
-  let outcome;
-  if (effectiveChance < 0.3) {
-    outcome = `the water stays silent. Despite your use of ${baitData.description}, no fish disturb the ${moodDescription}.`;
-  } else if (effectiveChance < 0.6) {
-    outcome = `a common carp surfaces gently, a modest reward for your effort with ${baitData.description}, set against ${moodDescription}.`;
-  } else if (effectiveChance < 0.85) {
-    outcome = `a glimmering trout appears briefly, its shimmer echoing the beauty of ${moodDescription}. Your choice of ${baitData.description} worked well.`;
-  } else {
-    outcome = `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${moodDescription}. Your ${baitData.description} has yielded a prize.`;
-  }
+  const outcome = getFishingOutcome(effectiveChance, baitData.description, moodDescription);
 
-  // Compose and return the final output narrative.
   return `Casting your line with ${baitData.description}, you await a catch. ${outcome}`;
 }
 
