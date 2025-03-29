@@ -7,6 +7,11 @@
       "content": [
         "Gets specific data."
       ],
+      "illustration": {
+        "fileType": "png",
+        "fileName": "2025-03-29-1",
+        "altText": "a tarot-style illustration titled “the data” showing a black triangular prism splitting a white light beam into a rainbow, with stars, a crescent moon, and a sun in the background"
+      },
       "toy": {
         "modulePath": "/2025-03-29/get.js",
         "functionName": "get"
