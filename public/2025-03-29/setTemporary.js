@@ -1,5 +1,49 @@
 /**
- * Parses input as JSON, merges it into a 'temporary' object obtained via env.getData(),
+ * Checks if an item is a plain object (not an array or null).
+ * @param {*} item - The item to check.
+ * @returns {boolean}
+ */
+function isObject(item) {
+  return (item && typeof item === 'object' && !Array.isArray(item));
+}
+
+/**
+ * Deeply merges two objects. Creates a new object with merged properties.
+ * Properties in source will overwrite properties in target, unless both
+ * properties are plain objects, in which case they are recursively merged.
+ * Arrays and other types are overwritten, not merged.
+ * @param {object} target - The target object.
+ * @param {object} source - The source object.
+ * @returns {object} A new object representing the merged result.
+ */
+function deepMerge(target, source) {
+  const output = { ...target }; // Start with a shallow copy of the target
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach(key => {
+      const targetValue = target[key];
+      const sourceValue = source[key];
+      if (isObject(targetValue) && isObject(sourceValue)) {
+        // If both target and source values are objects, recursively merge
+        output[key] = deepMerge(targetValue, sourceValue);
+      } else {
+        // Otherwise, overwrite with the source value
+        // (If sourceValue is an object, this assignment handles the case
+        // where target[key] wasn't an object or didn't exist)
+        output[key] = sourceValue;
+      }
+    });
+  } else if (isObject(source)) {
+      // If target is not an object but source is, return a shallow copy of source
+      // (or deep copy if required, but shallow should suffice here as we merge onto it)
+      return { ...source };
+  }
+  // If source is not an object, the initial shallow copy of target is returned
+  // or target itself if it wasn't an object either (though initial checks prevent this)
+  return output;
+}
+
+/**
+ * Parses input as JSON, deep merges it into the 'temporary' object obtained via env.getData(),
  * and then passes the entire modified data structure back to env.setData().
  * @param {string} input - A JSON string to parse and merge.
  * @param {Map<string, Function>} env - Environment map. Expected: 'getData()', 'setData(data)'.
@@ -13,7 +57,7 @@ export function setTemporary(input, env) {
     return `Error: Invalid JSON input. ${parseError.message}`;
   }
 
-  if (typeof inputJson !== 'object' || inputJson === null || Array.isArray(inputJson)) {
+  if (!isObject(inputJson)) { // Use the helper
       return "Error: Input JSON must be a plain object.";
   }
 
@@ -30,35 +74,29 @@ export function setTemporary(input, env) {
   }
 
   try {
-    // 1. Get the current data state
     const currentData = getData(); 
 
-    if (typeof currentData !== 'object' || currentData === null) {
+    if (!isObject(currentData)) { // Use the helper
         return "Error: 'getData' did not return a valid object.";
     }
 
-    // 2. Create a mutable copy to avoid modifying the original potentially immutable object from getData
-    //    (Deep clone might be safer if nested objects within temporary need independent modification later)
-    const newData = { ...currentData };
+    // Deep clone currentData to create newData - JSON method is simple but has limitations (e.g., with Dates, Functions)
+    // For this use case, it should be acceptable.
+    const newData = JSON.parse(JSON.stringify(currentData));
 
-    // 3. Ensure the 'temporary' key exists and is an object in the new copy
-    if (typeof newData.temporary !== 'object' || newData.temporary === null || Array.isArray(newData.temporary)) {
-        newData.temporary = {}; // Initialize if not a valid object
-    } else {
-        // If temporary exists and is an object, make a copy of it too before merging
-        newData.temporary = { ...newData.temporary };
+    // Ensure the 'temporary' key exists and is an object in the new copy
+    if (!isObject(newData.temporary)) {
+        newData.temporary = {}; 
     }
 
-    // 4. Merge the input JSON into the temporary object copy
-    Object.assign(newData.temporary, inputJson);
+    // Perform the deep merge
+    newData.temporary = deepMerge(newData.temporary, inputJson);
 
-    // 5. Set the *entire* updated data structure back via setData
     setData(newData);
 
-    return `Success: Temporary data updated.`; 
+    return `Success: Temporary data deep merged.`; 
 
   } catch (error) {
-    // Catch errors from getData(), setData(), or other issues
     return `Error updating temporary data: ${error.message}`;
   }
 }
