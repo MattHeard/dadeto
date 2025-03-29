@@ -41,9 +41,9 @@ function resolveZeroVariant(num) {
 }
 
 export function decomposeFloat(input) {
-  if (isInvalidNumber(input)) return "";
-  
-  const num = parseValidNumber(input);
+  const num = Number(input);
+  if (!Number.isFinite(num)) return "";
+
   const zeroReturn = resolveZeroVariant(num);
   if (zeroReturn) return zeroReturn;
 
