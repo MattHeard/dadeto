@@ -85,16 +85,31 @@ function isTroutCatch(chance) {
   return chance < 0.85;
 }
 
+const fishingOutcomes = [
+  {
+    check: isSilentCatch,
+    describe: (bait, mood) =>
+      `the water stays silent. Despite your use of ${bait}, no fish disturb the ${mood}.`,
+  },
+  {
+    check: isCommonCatch,
+    describe: (bait, mood) =>
+      `a common carp surfaces gently, a modest reward for your effort with ${bait}, set against ${mood}.`,
+  },
+  {
+    check: isTroutCatch,
+    describe: (bait, mood) =>
+      `a glimmering trout appears briefly, its shimmer echoing the beauty of ${mood}. Your choice of ${bait} worked well.`,
+  },
+  {
+    check: () => true,
+    describe: (bait, mood) =>
+      `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${mood}. Your ${bait} has yielded a prize.`,
+  },
+];
+
 function getFishingOutcome(effectiveChance, baitDescription, moodDescription) {
-  if (isSilentCatch(effectiveChance)) {
-    return `the water stays silent. Despite your use of ${baitDescription}, no fish disturb the ${moodDescription}.`;
-  } else if (isCommonCatch(effectiveChance)) {
-    return `a common carp surfaces gently, a modest reward for your effort with ${baitDescription}, set against ${moodDescription}.`;
-  } else if (isTroutCatch(effectiveChance)) {
-    return `a glimmering trout appears briefly, its shimmer echoing the beauty of ${moodDescription}. Your choice of ${baitDescription} worked well.`;
-  } else {
-    return `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${moodDescription}. Your ${baitDescription} has yielded a prize.`;
-  }
+  return fishingOutcomes.find(({ check }) => check(effectiveChance)).describe(baitDescription, moodDescription);
 }
 
 function getBaitOptions() {
