@@ -1,17 +1,26 @@
-export function decomposeFloat(input) {
+function isNonFinite(input) {
   const num = Number(input);
-  if (!Number.isFinite(num)) return "";
+  return !Number.isFinite(num);
+}
 
-  const zeroResult = isZeroVariant(num);
-  if (zeroResult !== null) return zeroResult;
+function getZeroVariantResult(num) {
+  const result = isZeroVariant(num);
+  return result !== null ? result : null;
+}
+
+export function decomposeFloat(input) {
+  if (isNonFinite(input)) return "";
+
+  const num = Number(input);
+
+  const zeroResult = getZeroVariantResult(num);
+  if (zeroResult) return zeroResult;
 
   const A = formatDecimal(num);
-
   const parts = decomposeIEEE754(num);
   if (!isValidIEEEParts(parts)) return "";
 
   const { B, C } = getSignificandAndExponent(parts);
-
   return `${A} (${B.toString()} × 2^${C.toString()})`;
 }
 
