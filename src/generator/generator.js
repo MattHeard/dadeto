@@ -781,8 +781,12 @@ function combineHTMLSections(...sections) {
   return sections.join('');
 }
 
+function extractModulePath(toy) {
+  return toy?.modulePath;
+}
+
 function getModulePath(post) {
-  return post?.toy?.modulePath;
+  return extractModulePath(post?.toy);
 }
 
 function getFunctionName(post) {
