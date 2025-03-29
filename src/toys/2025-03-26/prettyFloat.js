@@ -23,11 +23,19 @@ function formatFloatDecomposition(decimal, { B, C }) {
   return `${decimal} (${B.toString()} × 2^${C.toString()})`;
 }
 
-function resolveEarlyFloatReturn(input) {
-  const num = getValidNumber(input);
-  if (num === null) return "";
+function isInvalidNumber(input) {
+  return getValidNumber(input) === null;
+}
 
-  const zeroResult = getZeroVariantResult(num);
+function getZeroVariantString(num) {
+  return getZeroVariantResult(num);
+}
+
+function resolveEarlyFloatReturn(input) {
+  if (isInvalidNumber(input)) return "";
+
+  const num = Number(input);
+  const zeroResult = getZeroVariantString(num);
   if (zeroResult) return zeroResult;
 
   return num;
