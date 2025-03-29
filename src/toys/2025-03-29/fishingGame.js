@@ -1,3 +1,17 @@
+function getBaitData(input, baitOptions, moodDescription) {
+  const baitKey = input.trim().toLowerCase();
+  if (baitKey in baitOptions) {
+    return baitOptions[baitKey];
+  } else if (baitKey.length === 0) {
+    return {
+      isError: true,
+      message: `You cast your line with nothing but hesitation. Without any bait, the waters remain undisturbed in their ${moodDescription}.`
+    };
+  } else {
+    return { modifier: 0, description: "an unconventional bait" };
+  }
+}
+
 function getTimeOfDay(hour) {
   if (hour >= 5 && hour < 12) {
     return "morning";
@@ -66,17 +80,9 @@ function fishingGame(input, env) {
   };
 
   // Clean input, and check if it matches a known bait.
-  const baitKey = input.trim().toLowerCase();
-  let baitData;
-  if (baitKey in baitOptions) {
-    baitData = baitOptions[baitKey];
-  } else if (baitKey.length === 0) {
-    // No bait provided.
-    return `You cast your line with nothing but hesitation. Without any bait, the waters remain undisturbed in their ${moodDescription}.`;
-  } else {
-    // Unrecognized bait: use a generic option.
-    baitData = { modifier: 0, description: "an unconventional bait" };
-  }
+  const baitDataOrError = getBaitData(input, baitOptions, moodDescription);
+  if (baitDataOrError.isError) return baitDataOrError.message;
+  const baitData = baitDataOrError;
 
   // Get a base random number (0-1) and adjust it by the bait's modifier.
   const getRandomNumber = env.get("getRandomNumber");
