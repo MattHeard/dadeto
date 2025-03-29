@@ -8,7 +8,7 @@
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
     "tcr": "./tcr.sh",
     "stryker": "node --experimental-vm-modules ./node_modules/.bin/stryker run > reports/mutation/text/mutation.txt",
-    "lint": "npx eslint . -f json -o reports/lint/json/lint.json",
+    "lint": "npx eslint . -f json -o reports/lint/json/lint.json && cat reports/lint/json/lint.json",
     "copy-toys": "node copy-toys.js",
     "build": "npm run copy-toys && npm run generate"
   },
