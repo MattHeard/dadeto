@@ -236,4 +236,26 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
       setTemporary(inputJson, env);
       expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining({ temporary: expectedTemporary }));
   });
+
+  test('should preserve existing temporary data if source is not object', () => {
+    initialData = Object.freeze({ existing: 'value', temporary: { key: 'val' } });
+    mockGetData.mockReturnValue(initialData);
+
+    const inputJson = JSON.stringify(null); // Valid JSON but not an object
+
+    const result = setTemporary(inputJson, env);
+    expect(result).toBe("Error: Input JSON must be a plain object.");
+    expect(mockSetData).not.toHaveBeenCalled();
+  });
+
+  test('should overwrite non-object temporary with object from input', () => {
+    initialData = Object.freeze({ existing: 'value', temporary: 42 });
+    mockGetData.mockReturnValue(initialData);
+    const inputJson = JSON.stringify({ newKey: 'newVal' });
+
+    const expected = { existing: 'value', temporary: { newKey: 'newVal' } };
+    const result = setTemporary(inputJson, env);
+    expect(result).toBe("Success: Temporary data deep merged.");
+    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expected));
+  });
 });
