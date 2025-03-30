@@ -11,7 +11,7 @@ describe('Cyberpunk Text Game', () => {
       ['getRandomNumber', () => 0.5],
       ['getCurrentTime', () => '23:59'],
       ['getData', () => ({ temporary: tempData })],
-      ['setTemporaryData', (data) => {
+      ['setData', (data) => {
         tempData = { ...tempData, ...data };
       }],
     ]);

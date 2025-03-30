@@ -23,7 +23,9 @@ export function cyberpunkAdventure(input, env) {
 
     // If we haven’t stored the name yet, do so now
     if (!temporary.name) {
+      console.log("Attempting to set name in temp data:", name);
       setTemporaryData({ name });
+      console.log("Set name complete. Returning welcome string.");
       return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
     }
 
