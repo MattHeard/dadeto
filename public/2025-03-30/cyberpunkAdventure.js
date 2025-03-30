@@ -1,7 +1,9 @@
 export function cyberpunkAdventure(input, env) {
   try {
+    console.log("cyberpunkAdventure called with input:", input);
     const { getRandomNumber, getCurrentTime, getData, setTemporaryData } = env;
     const { temporary } = getData();
+    console.log("Temporary data on load:", temporary);
 
     const name = temporary.name || input.trim() || "Stray";
     const state = temporary.state || "intro";
@@ -93,6 +95,12 @@ export function cyberpunkAdventure(input, env) {
         nextState = "intro";
     }
 
+    console.log("Saving state:", {
+      name,
+      state: nextState,
+      inventory: nextInventory,
+      visited: [...nextVisited]
+    });
     setTemporaryData({
       name,
       state: nextState,
@@ -100,6 +108,7 @@ export function cyberpunkAdventure(input, env) {
       visited: [...nextVisited]
     });
 
+    console.log("State:", state, "Input:", input, "Output:", output);
     return output;
   } catch (e) {
     return `> SYSTEM ERROR: neural link failure`;
