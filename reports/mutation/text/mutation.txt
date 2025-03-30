@@ -1,20 +1,24 @@
-[32m20:40:40 (64370) INFO ProjectReader[39m Found 13 of 100 file(s) to be mutated.
-[32m20:40:40 (64370) INFO Instrumenter[39m Instrumented 13 source file(s) with 610 mutant(s)
-[32m20:40:40 (64370) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
-[32m20:40:41 (64370) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
-[32m20:40:43 (64370) INFO DryRunExecutor[39m Initial test run succeeded. Ran 31 tests in 1 second (net 41 ms, overhead 1669 ms).
+[32m17:09:41 (84706) INFO ProjectReader[39m Found 19 of 126 file(s) to be mutated.
+[32m17:09:42 (84706) INFO Instrumenter[39m Instrumented 19 source file(s) with 1247 mutant(s)
+[32m17:09:42 (84706) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
+[32m17:09:43 (84706) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
+[32m17:09:45 (84706) INFO DryRunExecutor[39m Initial test run succeeded. Ran 80 tests in 2 seconds (net 58 ms, overhead 2349 ms).
+[33m17:09:45 (84706) WARN MutantTestPlanner[39m Detected 74 static mutants (6% of total) that are estimated to take 40% of the time running the tests!
+  You might want to enable "ignoreStatic" to ignore these static mutants for your next run. 
+  For more information about static mutants visit: https://stryker-mutator.io/docs/mutation-testing-elements/static-mutants
+  (disable "warnings.slow" to ignore this warning)
 
 All tests
   generator/generator.test.js
-    ✓ Blog Generator should generate complete HTML page with multiple posts [line 8] (killed 265)
-    ✓ Blog Generator should contain content for posts [line 103] (killed 6)
+    ✓ Blog Generator should generate complete HTML page with multiple posts [line 8] (killed 276)
+    ✓ Blog Generator should contain content for posts [line 103] (killed 4)
     ✓ Blog Generator should contain an illustration for posts [line 129] (killed 1)
-    ~ Blog Generator should contain audio elements [line 159] (covered 147)
-    ~ Blog Generator should contain related links for a post [line 186] (covered 179)
-    ~ Blog Generator should contain a YouTube video for a post [line 224] (covered 149)
-    ~ Blog Generator should contain a toy component for a post [line 245] (covered 193)
-    ✓ Blog Generator should display tags for posts [line 290] (killed 14)
-    ✓ Blog Generator should render quotes as blockquotes [line 315] (killed 23)
+    ~ Blog Generator should contain audio elements [line 159] (covered 151)
+    ~ Blog Generator should contain related links for a post [line 186] (covered 184)
+    ~ Blog Generator should contain a YouTube video for a post [line 224] (covered 153)
+    ~ Blog Generator should contain a toy component for a post [line 245] (covered 202)
+    ✓ Blog Generator should display tags for posts [line 290] (killed 12)
+    ✓ Blog Generator should render quotes as blockquotes [line 315] (killed 27)
   toys
     2024-10-02/hello.test.js
       ✓ hello should return "Hello world" [line 4] (killed 2)
@@ -24,28 +28,2186 @@ All tests
       ~ identity function keeps object values unchanged [line 23] (covered 1)
     2025-03-21
       booleanCoercer.test.js
-        ✓ coerceToBoolean returns { value: true } for input boolean true [line 5] (killed 6)
+        ✓ coerceToBoolean returns { value: true } for input boolean true [line 5] (killed 8)
         ~ coerceToBoolean returns { value: false } for input boolean false [line 9] (covered 10)
-        ✓ coerceToBoolean returns { value: true } for input string "true" [line 13] (killed 10)
+        ✓ coerceToBoolean returns { value: true } for input string "true" [line 13] (killed 8)
         ✓ coerceToBoolean returns { value: false } for input string "false" [line 17] (killed 1)
         ✓ coerceToBoolean handles case insensitivity for "TrUe" [line 21] (killed 1)
-        ~ coerceToBoolean handles case insensitivity for "FaLsE" [line 25] (covered 18)
+        ~ coerceToBoolean handles case insensitivity for "FaLsE" [line 25] (covered 20)
         ✓ coerceToBoolean returns {} for non-boolean and non-valid string input (number) [line 29] (killed 3)
-        ~ coerceToBoolean returns {} for non-boolean and non-valid string input (object) [line 33] (covered 17)
-        ~ coerceToBoolean returns {} for non-boolean and non-valid string input (null) [line 37] (covered 17)
-        ~ coerceToBoolean returns {} for non-boolean and non-valid string input (undefined) [line 41] (covered 17)
+        ~ coerceToBoolean returns {} for non-boolean and non-valid string input (object) [line 33] (covered 15)
+        ~ coerceToBoolean returns {} for non-boolean and non-valid string input (null) [line 37] (covered 15)
+        ~ coerceToBoolean returns {} for non-boolean and non-valid string input (undefined) [line 41] (covered 15)
       italics.test.js
-        ✓ italics function returns non-string values unchanged [line 4] (killed 6)
-        ✓ italics function leaves regular text unchanged [line 13] (killed 18)
-        ✓ italics function adds <em> tags around asterisk-style italics while preserving asterisks [line 18] (killed 16)
-        ~ italics function adds <em> tags around underscore-style italics while preserving underscores [line 25] (covered 52)
-        ~ italics function handles both asterisk and underscore styles in the same string [line 32] (covered 52)
-        ✓ italics function does not add <em> tags around bold double-asterisk markdown [line 39] (killed 13)
-        ~ italics function does not add <em> tags around bold double-underscore markdown [line 45] (covered 62)
-        ~ italics function handles complex mixed formatting correctly [line 51] (covered 62)
+        ✓ italics function returns non-string values unchanged [line 4] (killed 8)
+        ✓ italics function leaves regular text unchanged [line 13] (killed 21)
+        ✓ italics function adds <em> tags around asterisk-style italics while preserving asterisks [line 18] (killed 17)
+        ~ italics function adds <em> tags around underscore-style italics while preserving underscores [line 25] (covered 60)
+        ~ italics function handles both asterisk and underscore styles in the same string [line 32] (covered 60)
+        ✓ italics function does not add <em> tags around bold double-asterisk markdown [line 39] (killed 16)
+        ~ italics function does not add <em> tags around bold double-underscore markdown [line 45] (covered 71)
+        ~ italics function handles complex mixed formatting correctly [line 51] (covered 71)
+    2025-03-26/prettyFloat.test.js
+      ✓ decomposeFloat handles zero [line 4] (killed 20)
+      ✓ decomposeFloat handles positive powers of two [line 9] (killed 40)
+      ~ decomposeFloat handles small irrational approximations [line 15] (covered 70)
+      ✓ decomposeFloat handles negative values [line 19] (killed 2)
+      ~ decomposeFloat handles max safe integer [line 24] (covered 70)
+      ✓ decomposeFloat returns empty string for Infinity and -Infinity [line 28] (killed 1)
+      ~ decomposeFloat returns empty string for NaN [line 33] (covered 5)
+    2025-03-28/rand.test.js
+      ✓ rand ignores the string input and returns the result of getRandomNumber [line 4] (killed 2)
+      ~ rand works with different string inputs [line 20] (covered 2)
+      ~ rand returns different values when getRandomNumber returns different values [line 33] (covered 2)
+    2025-03-29
+      fishingGame.test.js
+        ✓ fishingGame handles empty input gracefully [line 13] (killed 43)
+        ✓ fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0) [line 20] (killed 30)
+        ✓ fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05) [line 29] (killed 18)
+        ✓ fishingGame applies positive modifier for good bait (e.g., cheese, modifier 0.1) [line 39] (killed 20)
+        ✓ fishingGame handles unrecognized bait as unconventional bait with no modifier [line 48] (killed 9)
+        ✓ fishingGame produces common carp outcome for effectiveChance between 0.3 and 0.6 [line 57] (killed 3)
+        ✓ fishingGame produces legendary outcome for very high effectiveChance [line 67] (killed 4)
+      get.test.js
+        ✓ get function with path traversal should return the value for a top-level key [line 31] (killed 25)
+        ~ get function with path traversal should return the value for a nested key [line 36] (covered 40)
+        ~ get function with path traversal should return the value for an array index [line 42] (covered 40)
+        ~ get function with path traversal should return the full object/array if path points to it [line 48] (covered 40)
+        ✓ get function with path traversal should return an error if a path segment does not exist (object) [line 54] (killed 6)
+        ~ get function with path traversal should return an error if a path segment does not exist (array index) [line 60] (covered 42)
+        ✓ get function with path traversal should return an error trying to access property on non-object [line 66] (killed 9)
+        ✓ get function with path traversal should return an error if getData is not a function [line 72] (killed 3)
+        ✓ get function with path traversal should return an error if env map is not provided or invalid [line 77] (killed 5)
+        ✓ get function with path traversal should return an error if getData does not return an object or array [line 82] (killed 7)
+        ✓ get function with path traversal should return an error if getData throws an error [line 96] (killed 2)
+        ✓ get function with path traversal should handle non-stringifiable values gracefully at the end of the path [line 106] (killed 2)
+      setTemporary.test.js
+        ✓ setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists [line 24] (killed 34)
+        ~ setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist [line 53] (covered 52)
+        ~ setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object [line 70] (covered 52)
+        ✓ setTemporary function (getData -> merge -> setData) should return error for invalid JSON input and not call setData [line 105] (killed 2)
+        ✓ setTemporary function (getData -> merge -> setData) should return error if input JSON is not a plain object and not call setData [line 113] (killed 3)
+        ✓ setTemporary function (getData -> merge -> setData) should return error if getData or setData function is missing in env [line 120] (killed 6)
+        ✓ setTemporary function (getData -> merge -> setData) should return error if getData does not return an object and not call setData [line 127] (killed 3)
+        ✓ setTemporary function (getData -> merge -> setData) should return error if getData throws an error and not call setData [line 133] (killed 2)
+        ~ setTemporary function (getData -> merge -> setData) should return error if setData throws an error [line 140] (covered 53)
+        ✓ setTemporary function (getData -> merge -> setData) should deep merge nested objects within temporary [line 149] (killed 6)
+        ~ setTemporary function (getData -> merge -> setData) should overwrite non-object properties during deep merge [line 198] (covered 51)
+        ~ setTemporary function (getData -> merge -> setData) should handle merging onto an empty initial temporary object [line 220] (covered 51)
+        ~ setTemporary function (getData -> merge -> setData) should handle merging onto a non-existent initial temporary object [line 230] (covered 52)
+        ~ setTemporary function (getData -> merge -> setData) should preserve existing temporary data if source is not object [line 240] (covered 13)
+        ~ setTemporary function (getData -> merge -> setData) should overwrite non-object temporary with object from input [line 251] (covered 52)
+    2025-03-30/cyberpunkAdventure.test.js
+      ✓ Cyberpunk Text Game initial naming and intro [line 20] (killed 33)
+      ✓ Cyberpunk Text Game goes to Hacker Den and requires password [line 25] (killed 19)
+      ✓ Cyberpunk Text Game goes to Transport Hub and trades datapad [line 34] (killed 19)
+      ✓ Cyberpunk Text Game goes to Back Alley and finds stimpack (success) [line 50] (killed 16)
+      ✓ Cyberpunk Text Game unknown input in hub [line 64] (killed 4)
+
+[NoCoverage] ObjectLiteral
+src/browser/main.js:2:19
+-   let globalState = {
+-     blog: null, // Holds the fetched blog data
+-     blogStatus: 'idle', // 'idle', 'loading', 'loaded', 'error'
+-     blogError: null, // Stores any error during fetch
+-     blogFetchPromise: null, // Tracks the ongoing fetch promise
+-     temporary: {} // Holds data managed by toys like setTemporary
+-   };
++   let globalState = {};
+
+[NoCoverage] StringLiteral
+src/browser/main.js:4:15
+-     blogStatus: 'idle', // 'idle', 'loading', 'loaded', 'error'
++     blogStatus: "", // 'idle', 'loading', 'loaded', 'error'
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:163:39
+src/browser/main.js:11:13
+-   (function() {
+-     const audioElements = document.querySelectorAll("audio");
+-     
+-     audioElements.forEach(function(audio, index) {
+-       audio.removeAttribute("controls");
+-       
+-       if (!audio.id) {
+-         audio.id = "audio-" + index;
+-       }
+-       
+-       const controlsContainer = document.createElement("div");
+-       controlsContainer.className = "audio-controls";
+-       controlsContainer.id = "controls-" + audio.id;
+-       
+-       const timeDisplay = document.createElement("span");
+-       timeDisplay.className = "audio-time";
+-       timeDisplay.textContent = "0:00";
+-       
+-       const playButton = document.createElement("a");
+-       playButton.href = "#";
+-       playButton.textContent = "PLAY";
+-       playButton.addEventListener("click", function(e) {
+-         e.preventDefault();
+-         audio.play();
+-       });
+-       
+-       const pauseButton = document.createElement("a");
+-       pauseButton.href = "#";
+-       pauseButton.textContent = "PAUSE";
+-       pauseButton.addEventListener("click", function(e) {
+-         e.preventDefault();
+-         audio.pause();
+-       });
+-       
+-       const stopButton = document.createElement("a");
+-       stopButton.href = "#";
+-       stopButton.textContent = "STOP";
+-       stopButton.addEventListener("click", function(e) {
+-         e.preventDefault();
+-         audio.pause();
+-         audio.currentTime = 0;
+-       });
+-       
+-       audio.addEventListener("timeupdate", function() {
+-         const minutes = Math.floor(audio.currentTime / 60);
+-         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
+-         timeDisplay.textContent = minutes + ":" + seconds;
+-       });
+-       
+-       controlsContainer.appendChild(playButton);
+-       controlsContainer.appendChild(document.createTextNode(" "));
+-       controlsContainer.appendChild(pauseButton);
+-       controlsContainer.appendChild(document.createTextNode(" "));
+-       controlsContainer.appendChild(stopButton);
+-       controlsContainer.appendChild(document.createTextNode(" "));
+-       controlsContainer.appendChild(timeDisplay);
+-       
+-       audio.parentNode.insertBefore(controlsContainer, audio.nextSibling);
+-     });
+-   })();
++   (function() {})();
+
+[NoCoverage] StringLiteral
+src/browser/main.js:12:51
+-     const audioElements = document.querySelectorAll("audio");
++     const audioElements = document.querySelectorAll("");
+
+[NoCoverage] BlockStatement
+src/browser/main.js:14:48
+-     audioElements.forEach(function(audio, index) {
+-       audio.removeAttribute("controls");
+-       
+-       if (!audio.id) {
+-         audio.id = "audio-" + index;
+-       }
+-       
+-       const controlsContainer = document.createElement("div");
+-       controlsContainer.className = "audio-controls";
+-       controlsContainer.id = "controls-" + audio.id;
+-       
+-       const timeDisplay = document.createElement("span");
+-       timeDisplay.className = "audio-time";
+-       timeDisplay.textContent = "0:00";
+-       
+-       const playButton = document.createElement("a");
+-       playButton.href = "#";
+-       playButton.textContent = "PLAY";
+-       playButton.addEventListener("click", function(e) {
+-         e.preventDefault();
+-         audio.play();
+-       });
+-       
+-       const pauseButton = document.createElement("a");
+-       pauseButton.href = "#";
+-       pauseButton.textContent = "PAUSE";
+-       pauseButton.addEventListener("click", function(e) {
+-         e.preventDefault();
+-         audio.pause();
+-       });
+-       
+-       const stopButton = document.createElement("a");
+-       stopButton.href = "#";
+-       stopButton.textContent = "STOP";
+-       stopButton.addEventListener("click", function(e) {
+-         e.preventDefault();
+-         audio.pause();
+-         audio.currentTime = 0;
+-       });
+-       
+-       audio.addEventListener("timeupdate", function() {
+-         const minutes = Math.floor(audio.currentTime / 60);
+-         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
+-         timeDisplay.textContent = minutes + ":" + seconds;
+-       });
+-       
+-       controlsContainer.appendChild(playButton);
+-       controlsContainer.appendChild(document.createTextNode(" "));
+-       controlsContainer.appendChild(pauseButton);
+-       controlsContainer.appendChild(document.createTextNode(" "));
+-       controlsContainer.appendChild(stopButton);
+-       controlsContainer.appendChild(document.createTextNode(" "));
+-       controlsContainer.appendChild(timeDisplay);
+-       
+-       audio.parentNode.insertBefore(controlsContainer, audio.nextSibling);
+-     });
++     audioElements.forEach(function(audio, index) {});
+
+[NoCoverage] StringLiteral
+src/browser/main.js:15:27
+-       audio.removeAttribute("controls");
++       audio.removeAttribute("");
+
+[NoCoverage] BooleanLiteral
+src/browser/main.js:17:9
+-       if (!audio.id) {
++       if (audio.id) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:17:9
+-       if (!audio.id) {
++       if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:17:9
+-       if (!audio.id) {
++       if (false) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:17:20
+-       if (!audio.id) {
+-         audio.id = "audio-" + index;
+-       }
++       if (!audio.id) {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:18:18
+-         audio.id = "audio-" + index;
++         audio.id = "" + index;
+
+[NoCoverage] StringLiteral
+src/browser/main.js:21:54
+-       const controlsContainer = document.createElement("div");
++       const controlsContainer = document.createElement("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:22:35
+-       controlsContainer.className = "audio-controls";
++       controlsContainer.className = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:23:28
+-       controlsContainer.id = "controls-" + audio.id;
++       controlsContainer.id = "" + audio.id;
+
+[NoCoverage] StringLiteral
+src/browser/main.js:25:48
+-       const timeDisplay = document.createElement("span");
++       const timeDisplay = document.createElement("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:26:29
+-       timeDisplay.className = "audio-time";
++       timeDisplay.className = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:27:31
+-       timeDisplay.textContent = "0:00";
++       timeDisplay.textContent = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:29:47
+-       const playButton = document.createElement("a");
++       const playButton = document.createElement("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:30:23
+-       playButton.href = "#";
++       playButton.href = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:31:30
+-       playButton.textContent = "PLAY";
++       playButton.textContent = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:32:33
+-       playButton.addEventListener("click", function(e) {
++       playButton.addEventListener("", function(e) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:32:54
+-       playButton.addEventListener("click", function(e) {
+-         e.preventDefault();
+-         audio.play();
+-       });
++       playButton.addEventListener("click", function(e) {});
+
+[NoCoverage] StringLiteral
+src/browser/main.js:37:48
+-       const pauseButton = document.createElement("a");
++       const pauseButton = document.createElement("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:38:24
+-       pauseButton.href = "#";
++       pauseButton.href = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:39:31
+-       pauseButton.textContent = "PAUSE";
++       pauseButton.textContent = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:40:34
+-       pauseButton.addEventListener("click", function(e) {
++       pauseButton.addEventListener("", function(e) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:40:55
+-       pauseButton.addEventListener("click", function(e) {
+-         e.preventDefault();
+-         audio.pause();
+-       });
++       pauseButton.addEventListener("click", function(e) {});
+
+[NoCoverage] StringLiteral
+src/browser/main.js:45:47
+-       const stopButton = document.createElement("a");
++       const stopButton = document.createElement("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:46:23
+-       stopButton.href = "#";
++       stopButton.href = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:47:30
+-       stopButton.textContent = "STOP";
++       stopButton.textContent = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:48:33
+-       stopButton.addEventListener("click", function(e) {
++       stopButton.addEventListener("", function(e) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:48:54
+-       stopButton.addEventListener("click", function(e) {
+-         e.preventDefault();
+-         audio.pause();
+-         audio.currentTime = 0;
+-       });
++       stopButton.addEventListener("click", function(e) {});
+
+[NoCoverage] StringLiteral
+src/browser/main.js:54:28
+-       audio.addEventListener("timeupdate", function() {
++       audio.addEventListener("", function() {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:54:53
+-       audio.addEventListener("timeupdate", function() {
+-         const minutes = Math.floor(audio.currentTime / 60);
+-         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
+-         timeDisplay.textContent = minutes + ":" + seconds;
+-       });
++       audio.addEventListener("timeupdate", function() {});
+
+[NoCoverage] ArithmeticOperator
+src/browser/main.js:55:34
+-         const minutes = Math.floor(audio.currentTime / 60);
++         const minutes = Math.floor(audio.currentTime * 60);
+
+[NoCoverage] ArithmeticOperator
+src/browser/main.js:56:34
+-         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
++         const seconds = Math.floor(audio.currentTime * 60).toString().padStart(2, "0");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:56:81
+-         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
++         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:57:43
+-         timeDisplay.textContent = minutes + ":" + seconds;
++         timeDisplay.textContent = minutes + "" + seconds;
+
+[NoCoverage] StringLiteral
+src/browser/main.js:61:59
+-       controlsContainer.appendChild(document.createTextNode(" "));
++       controlsContainer.appendChild(document.createTextNode(""));
+
+[NoCoverage] StringLiteral
+src/browser/main.js:63:59
+-       controlsContainer.appendChild(document.createTextNode(" "));
++       controlsContainer.appendChild(document.createTextNode(""));
+
+[NoCoverage] StringLiteral
+src/browser/main.js:65:59
+-       controlsContainer.appendChild(document.createTextNode(" "));
++       controlsContainer.appendChild(document.createTextNode(""));
+
+[NoCoverage] BlockStatement
+src/browser/main.js:78:65
+-   function initializeInteractiveComponent(id, processingFunction) {
+-     // Get the article element
+-     const article = document.getElementById(id);
+-     
+-     // Get the elements within the article
+-     const inputElement = article.querySelector('input');
+-     const submitButton = article.querySelector('button');
+-     const outputElement = article.querySelector('p.output');
+-     
+-     // Disable controls during initialization
+-     inputElement.disabled = true;
+-     submitButton.disabled = true;
+-     
+-     // Update message to show JS is running
+-     outputElement.textContent = 'Initialising...';
+-     
+-     /**
+-      * Enable controls and update status message
+-      */
+-     function enableControls() {
+-       inputElement.disabled = false;
+-       submitButton.disabled = false;
+-       outputElement.textContent = 'Ready for input';
+-       outputElement.parentElement.classList.remove('warning');
+-     }
+-     
+-     /**
+-      * Handle form submission events
+-      * @param {Event} event - The submission event
+-      */
+-     function handleSubmit(event) {
+-       if (event) {
+-         event.preventDefault();
+-       }
+-       const inputValue = inputElement.value;
+-       
+-       try {
+-         // Create an env Map with utility functions that might be needed by processing functions
+-         const env = new Map([
+-           ["getRandomNumber", () => Math.random()],
+-           ["getCurrentTime", () => new Date().toISOString()],
+-           ["getData", () => {
+-             // Return a deep copy of the current global state
+-             // Using JSON parse/stringify for a simple deep copy
+-             const stateCopy = JSON.parse(JSON.stringify(globalState));
+-             
+-             // Check blog status and trigger fetch if needed, but don't block
+-             if (stateCopy.blogStatus === 'idle') {
+-               fetchAndCacheBlogData(); // Trigger fetch (no await)
+-             } else if (stateCopy.blogStatus === 'error') {
+-               console.warn("Blog data previously failed to load:", stateCopy.blogError);
+-             }
+-             
+-             // Remove fetch-related properties from the copy returned to the toy
+-             delete stateCopy.blogStatus;
+-             delete stateCopy.blogError;
+-             delete stateCopy.blogFetchPromise;
+-             
+-             return stateCopy; 
+-           }],
+-           ["setData", (newData) => {
+-             // Replace the entire global state, but validate basic structure
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+-               // Preserve the internal blog loading state properties when updating
+-               const currentBlogStatus = globalState.blogStatus;
+-               const currentBlogError = globalState.blogError;
+-               const currentBlogFetchPromise = globalState.blogFetchPromise;
+-               const currentBlogData = globalState.blog; // Preserve actual blog data too
+-               
+-               globalState = newData;
+-               
+-               // Restore internal properties
+-               globalState.blogStatus = currentBlogStatus;
+-               globalState.blogError = currentBlogError;
+-               globalState.blogFetchPromise = currentBlogFetchPromise;
+-               // Ensure the blog data wasn't wiped out if it wasn't included in newData
+-               if (!newData.hasOwnProperty('blog')) {
+-                 globalState.blog = currentBlogData;
+-               }
+-               
+-               console.log('Global state updated:', globalState);
+-             } else {
+-               console.error('setData received invalid data structure:', newData);
+-               throw new Error('setData requires an object with at least a \'temporary\' property.');
+-             }
+-           }]
+-         ]);
+-         
+-         // Call the processing function with the input value
+-         // If the function accepts two parameters (length === 2), it will receive the env Map
+-         // If it only accepts one parameter, the second argument (env) will be ignored by the function
+-         const result = processingFunction.length === 2
+-                    ? processingFunction(inputValue, env)
+-                    : processingFunction(inputValue);
+-         
+-         // Update the output
+-         outputElement.textContent = result;
+-       } catch (error) {
+-         console.error('Error processing input:', error);
+-         outputElement.textContent = 'Error: ' + error.message;
+-         outputElement.parentElement.classList.add('warning');
+-       }
+-     }
+-     
+-     // Add event listener to the submit button
+-     submitButton.addEventListener('click', handleSubmit);
+-     
+-     // Add event listener for Enter key in the input field
+-     inputElement.addEventListener('keypress', (event) => {
+-       if (event.key === 'Enter') {
+-         handleSubmit(event);
+-       }
+-     });
+-     
+-     // Enable controls when initialization is complete
+-     enableControls();
+-   }
++   function initializeInteractiveComponent(id, processingFunction) {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:83:46
+-     const inputElement = article.querySelector('input');
++     const inputElement = article.querySelector("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:84:46
+-     const submitButton = article.querySelector('button');
++     const submitButton = article.querySelector("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:85:47
+-     const outputElement = article.querySelector('p.output');
++     const outputElement = article.querySelector("");
+
+[NoCoverage] BooleanLiteral
+src/browser/main.js:88:27
+-     inputElement.disabled = true;
++     inputElement.disabled = false;
+
+[NoCoverage] BooleanLiteral
+src/browser/main.js:89:27
+-     submitButton.disabled = true;
++     submitButton.disabled = false;
+
+[NoCoverage] StringLiteral
+src/browser/main.js:92:31
+-     outputElement.textContent = 'Initialising...';
++     outputElement.textContent = "";
+
+[NoCoverage] BlockStatement
+src/browser/main.js:97:29
+-     function enableControls() {
+-       inputElement.disabled = false;
+-       submitButton.disabled = false;
+-       outputElement.textContent = 'Ready for input';
+-       outputElement.parentElement.classList.remove('warning');
+-     }
++     function enableControls() {}
+
+[NoCoverage] BooleanLiteral
+src/browser/main.js:98:29
+-       inputElement.disabled = false;
++       inputElement.disabled = true;
+
+[NoCoverage] BooleanLiteral
+src/browser/main.js:99:29
+-       submitButton.disabled = false;
++       submitButton.disabled = true;
+
+[NoCoverage] StringLiteral
+src/browser/main.js:100:33
+-       outputElement.textContent = 'Ready for input';
++       outputElement.textContent = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:101:50
+-       outputElement.parentElement.classList.remove('warning');
++       outputElement.parentElement.classList.remove("");
+
+[NoCoverage] BlockStatement
+src/browser/main.js:108:32
+-     function handleSubmit(event) {
+-       if (event) {
+-         event.preventDefault();
+-       }
+-       const inputValue = inputElement.value;
+-       
+-       try {
+-         // Create an env Map with utility functions that might be needed by processing functions
+-         const env = new Map([
+-           ["getRandomNumber", () => Math.random()],
+-           ["getCurrentTime", () => new Date().toISOString()],
+-           ["getData", () => {
+-             // Return a deep copy of the current global state
+-             // Using JSON parse/stringify for a simple deep copy
+-             const stateCopy = JSON.parse(JSON.stringify(globalState));
+-             
+-             // Check blog status and trigger fetch if needed, but don't block
+-             if (stateCopy.blogStatus === 'idle') {
+-               fetchAndCacheBlogData(); // Trigger fetch (no await)
+-             } else if (stateCopy.blogStatus === 'error') {
+-               console.warn("Blog data previously failed to load:", stateCopy.blogError);
+-             }
+-             
+-             // Remove fetch-related properties from the copy returned to the toy
+-             delete stateCopy.blogStatus;
+-             delete stateCopy.blogError;
+-             delete stateCopy.blogFetchPromise;
+-             
+-             return stateCopy; 
+-           }],
+-           ["setData", (newData) => {
+-             // Replace the entire global state, but validate basic structure
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+-               // Preserve the internal blog loading state properties when updating
+-               const currentBlogStatus = globalState.blogStatus;
+-               const currentBlogError = globalState.blogError;
+-               const currentBlogFetchPromise = globalState.blogFetchPromise;
+-               const currentBlogData = globalState.blog; // Preserve actual blog data too
+-               
+-               globalState = newData;
+-               
+-               // Restore internal properties
+-               globalState.blogStatus = currentBlogStatus;
+-               globalState.blogError = currentBlogError;
+-               globalState.blogFetchPromise = currentBlogFetchPromise;
+-               // Ensure the blog data wasn't wiped out if it wasn't included in newData
+-               if (!newData.hasOwnProperty('blog')) {
+-                 globalState.blog = currentBlogData;
+-               }
+-               
+-               console.log('Global state updated:', globalState);
+-             } else {
+-               console.error('setData received invalid data structure:', newData);
+-               throw new Error('setData requires an object with at least a \'temporary\' property.');
+-             }
+-           }]
+-         ]);
+-         
+-         // Call the processing function with the input value
+-         // If the function accepts two parameters (length === 2), it will receive the env Map
+-         // If it only accepts one parameter, the second argument (env) will be ignored by the function
+-         const result = processingFunction.length === 2
+-                    ? processingFunction(inputValue, env)
+-                    : processingFunction(inputValue);
+-         
+-         // Update the output
+-         outputElement.textContent = result;
+-       } catch (error) {
+-         console.error('Error processing input:', error);
+-         outputElement.textContent = 'Error: ' + error.message;
+-         outputElement.parentElement.classList.add('warning');
+-       }
+-     }
++     function handleSubmit(event) {}
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:109:9
+-       if (event) {
++       if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:109:9
+-       if (event) {
++       if (false) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:109:16
+-       if (event) {
+-         event.preventDefault();
+-       }
++       if (event) {}
+
+[NoCoverage] BlockStatement
+src/browser/main.js:114:9
+-       try {
+-         // Create an env Map with utility functions that might be needed by processing functions
+-         const env = new Map([
+-           ["getRandomNumber", () => Math.random()],
+-           ["getCurrentTime", () => new Date().toISOString()],
+-           ["getData", () => {
+-             // Return a deep copy of the current global state
+-             // Using JSON parse/stringify for a simple deep copy
+-             const stateCopy = JSON.parse(JSON.stringify(globalState));
+-             
+-             // Check blog status and trigger fetch if needed, but don't block
+-             if (stateCopy.blogStatus === 'idle') {
+-               fetchAndCacheBlogData(); // Trigger fetch (no await)
+-             } else if (stateCopy.blogStatus === 'error') {
+-               console.warn("Blog data previously failed to load:", stateCopy.blogError);
+-             }
+-             
+-             // Remove fetch-related properties from the copy returned to the toy
+-             delete stateCopy.blogStatus;
+-             delete stateCopy.blogError;
+-             delete stateCopy.blogFetchPromise;
+-             
+-             return stateCopy; 
+-           }],
+-           ["setData", (newData) => {
+-             // Replace the entire global state, but validate basic structure
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+-               // Preserve the internal blog loading state properties when updating
+-               const currentBlogStatus = globalState.blogStatus;
+-               const currentBlogError = globalState.blogError;
+-               const currentBlogFetchPromise = globalState.blogFetchPromise;
+-               const currentBlogData = globalState.blog; // Preserve actual blog data too
+-               
+-               globalState = newData;
+-               
+-               // Restore internal properties
+-               globalState.blogStatus = currentBlogStatus;
+-               globalState.blogError = currentBlogError;
+-               globalState.blogFetchPromise = currentBlogFetchPromise;
+-               // Ensure the blog data wasn't wiped out if it wasn't included in newData
+-               if (!newData.hasOwnProperty('blog')) {
+-                 globalState.blog = currentBlogData;
+-               }
+-               
+-               console.log('Global state updated:', globalState);
+-             } else {
+-               console.error('setData received invalid data structure:', newData);
+-               throw new Error('setData requires an object with at least a \'temporary\' property.');
+-             }
+-           }]
+-         ]);
+-         
+-         // Call the processing function with the input value
+-         // If the function accepts two parameters (length === 2), it will receive the env Map
+-         // If it only accepts one parameter, the second argument (env) will be ignored by the function
+-         const result = processingFunction.length === 2
+-                    ? processingFunction(inputValue, env)
+-                    : processingFunction(inputValue);
+-         
+-         // Update the output
+-         outputElement.textContent = result;
+-       } catch (error) {
++       try {} catch (error) {
+
+[NoCoverage] ArrayDeclaration
+src/browser/main.js:116:27
+-         const env = new Map([
+-           ["getRandomNumber", () => Math.random()],
+-           ["getCurrentTime", () => new Date().toISOString()],
+-           ["getData", () => {
+-             // Return a deep copy of the current global state
+-             // Using JSON parse/stringify for a simple deep copy
+-             const stateCopy = JSON.parse(JSON.stringify(globalState));
+-             
+-             // Check blog status and trigger fetch if needed, but don't block
+-             if (stateCopy.blogStatus === 'idle') {
+-               fetchAndCacheBlogData(); // Trigger fetch (no await)
+-             } else if (stateCopy.blogStatus === 'error') {
+-               console.warn("Blog data previously failed to load:", stateCopy.blogError);
+-             }
+-             
+-             // Remove fetch-related properties from the copy returned to the toy
+-             delete stateCopy.blogStatus;
+-             delete stateCopy.blogError;
+-             delete stateCopy.blogFetchPromise;
+-             
+-             return stateCopy; 
+-           }],
+-           ["setData", (newData) => {
+-             // Replace the entire global state, but validate basic structure
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+-               // Preserve the internal blog loading state properties when updating
+-               const currentBlogStatus = globalState.blogStatus;
+-               const currentBlogError = globalState.blogError;
+-               const currentBlogFetchPromise = globalState.blogFetchPromise;
+-               const currentBlogData = globalState.blog; // Preserve actual blog data too
+-               
+-               globalState = newData;
+-               
+-               // Restore internal properties
+-               globalState.blogStatus = currentBlogStatus;
+-               globalState.blogError = currentBlogError;
+-               globalState.blogFetchPromise = currentBlogFetchPromise;
+-               // Ensure the blog data wasn't wiped out if it wasn't included in newData
+-               if (!newData.hasOwnProperty('blog')) {
+-                 globalState.blog = currentBlogData;
+-               }
+-               
+-               console.log('Global state updated:', globalState);
+-             } else {
+-               console.error('setData received invalid data structure:', newData);
+-               throw new Error('setData requires an object with at least a \'temporary\' property.');
+-             }
+-           }]
+-         ]);
++         const env = new Map([]);
+
+[NoCoverage] ArrayDeclaration
+src/browser/main.js:117:9
+-           ["getRandomNumber", () => Math.random()],
++           [],
+
+[NoCoverage] StringLiteral
+src/browser/main.js:117:10
+-           ["getRandomNumber", () => Math.random()],
++           ["", () => Math.random()],
+
+[NoCoverage] ArrowFunction
+src/browser/main.js:117:29
+-           ["getRandomNumber", () => Math.random()],
++           ["getRandomNumber", () => undefined],
+
+[NoCoverage] ArrayDeclaration
+src/browser/main.js:118:9
+-           ["getCurrentTime", () => new Date().toISOString()],
++           [],
+
+[NoCoverage] StringLiteral
+src/browser/main.js:118:10
+-           ["getCurrentTime", () => new Date().toISOString()],
++           ["", () => new Date().toISOString()],
+
+[NoCoverage] ArrowFunction
+src/browser/main.js:118:28
+-           ["getCurrentTime", () => new Date().toISOString()],
++           ["getCurrentTime", () => undefined],
+
+[NoCoverage] ArrayDeclaration
+src/browser/main.js:119:9
+-           ["getData", () => {
+-             // Return a deep copy of the current global state
+-             // Using JSON parse/stringify for a simple deep copy
+-             const stateCopy = JSON.parse(JSON.stringify(globalState));
+-             
+-             // Check blog status and trigger fetch if needed, but don't block
+-             if (stateCopy.blogStatus === 'idle') {
+-               fetchAndCacheBlogData(); // Trigger fetch (no await)
+-             } else if (stateCopy.blogStatus === 'error') {
+-               console.warn("Blog data previously failed to load:", stateCopy.blogError);
+-             }
+-             
+-             // Remove fetch-related properties from the copy returned to the toy
+-             delete stateCopy.blogStatus;
+-             delete stateCopy.blogError;
+-             delete stateCopy.blogFetchPromise;
+-             
+-             return stateCopy; 
+-           }],
++           [],
+
+[NoCoverage] StringLiteral
+src/browser/main.js:119:10
+-           ["getData", () => {
++           ["", () => {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:119:27
+-           ["getData", () => {
+-             // Return a deep copy of the current global state
+-             // Using JSON parse/stringify for a simple deep copy
+-             const stateCopy = JSON.parse(JSON.stringify(globalState));
+-             
+-             // Check blog status and trigger fetch if needed, but don't block
+-             if (stateCopy.blogStatus === 'idle') {
+-               fetchAndCacheBlogData(); // Trigger fetch (no await)
+-             } else if (stateCopy.blogStatus === 'error') {
+-               console.warn("Blog data previously failed to load:", stateCopy.blogError);
+-             }
+-             
+-             // Remove fetch-related properties from the copy returned to the toy
+-             delete stateCopy.blogStatus;
+-             delete stateCopy.blogError;
+-             delete stateCopy.blogFetchPromise;
+-             
+-             return stateCopy; 
+-           }],
++           ["getData", () => {}],
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:125:15
+-             if (stateCopy.blogStatus === 'idle') {
++             if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:125:15
+-             if (stateCopy.blogStatus === 'idle') {
++             if (false) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:125:15
+-             if (stateCopy.blogStatus === 'idle') {
++             if (stateCopy.blogStatus !== 'idle') {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:125:40
+-             if (stateCopy.blogStatus === 'idle') {
++             if (stateCopy.blogStatus === "") {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:125:48
+-             if (stateCopy.blogStatus === 'idle') {
+-               fetchAndCacheBlogData(); // Trigger fetch (no await)
+-             } else if (stateCopy.blogStatus === 'error') {
++             if (stateCopy.blogStatus === 'idle') {} else if (stateCopy.blogStatus === 'error') {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:127:22
+-             } else if (stateCopy.blogStatus === 'error') {
++             } else if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:127:22
+-             } else if (stateCopy.blogStatus === 'error') {
++             } else if (false) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:127:22
+-             } else if (stateCopy.blogStatus === 'error') {
++             } else if (stateCopy.blogStatus !== 'error') {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:127:47
+-             } else if (stateCopy.blogStatus === 'error') {
++             } else if (stateCopy.blogStatus === "") {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:127:56
+-             } else if (stateCopy.blogStatus === 'error') {
+-               console.warn("Blog data previously failed to load:", stateCopy.blogError);
+-             }
++             } else if (stateCopy.blogStatus === 'error') {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:128:26
+-               console.warn("Blog data previously failed to load:", stateCopy.blogError);
++               console.warn("", stateCopy.blogError);
+
+[NoCoverage] ArrayDeclaration
+src/browser/main.js:138:9
+-           ["setData", (newData) => {
+-             // Replace the entire global state, but validate basic structure
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+-               // Preserve the internal blog loading state properties when updating
+-               const currentBlogStatus = globalState.blogStatus;
+-               const currentBlogError = globalState.blogError;
+-               const currentBlogFetchPromise = globalState.blogFetchPromise;
+-               const currentBlogData = globalState.blog; // Preserve actual blog data too
+-               
+-               globalState = newData;
+-               
+-               // Restore internal properties
+-               globalState.blogStatus = currentBlogStatus;
+-               globalState.blogError = currentBlogError;
+-               globalState.blogFetchPromise = currentBlogFetchPromise;
+-               // Ensure the blog data wasn't wiped out if it wasn't included in newData
+-               if (!newData.hasOwnProperty('blog')) {
+-                 globalState.blog = currentBlogData;
+-               }
+-               
+-               console.log('Global state updated:', globalState);
+-             } else {
+-               console.error('setData received invalid data structure:', newData);
+-               throw new Error('setData requires an object with at least a \'temporary\' property.');
+-             }
+-           }]
++           []
+
+[NoCoverage] StringLiteral
+src/browser/main.js:138:10
+-           ["setData", (newData) => {
++           ["", (newData) => {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:138:34
+-           ["setData", (newData) => {
+-             // Replace the entire global state, but validate basic structure
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+-               // Preserve the internal blog loading state properties when updating
+-               const currentBlogStatus = globalState.blogStatus;
+-               const currentBlogError = globalState.blogError;
+-               const currentBlogFetchPromise = globalState.blogFetchPromise;
+-               const currentBlogData = globalState.blog; // Preserve actual blog data too
+-               
+-               globalState = newData;
+-               
+-               // Restore internal properties
+-               globalState.blogStatus = currentBlogStatus;
+-               globalState.blogError = currentBlogError;
+-               globalState.blogFetchPromise = currentBlogFetchPromise;
+-               // Ensure the blog data wasn't wiped out if it wasn't included in newData
+-               if (!newData.hasOwnProperty('blog')) {
+-                 globalState.blog = currentBlogData;
+-               }
+-               
+-               console.log('Global state updated:', globalState);
+-             } else {
+-               console.error('setData received invalid data structure:', newData);
+-               throw new Error('setData requires an object with at least a \'temporary\' property.');
+-             }
+-           }]
++           ["setData", (newData) => {}]
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:140:15
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:140:15
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (false) {
+
+[NoCoverage] LogicalOperator
+src/browser/main.js:140:15
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (typeof newData === 'object' && newData !== null || newData.hasOwnProperty('temporary')) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:140:15
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (true && newData.hasOwnProperty('temporary')) {
+
+[NoCoverage] LogicalOperator
+src/browser/main.js:140:15
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (typeof newData === 'object' || newData !== null && newData.hasOwnProperty('temporary')) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:140:15
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (true && newData !== null && newData.hasOwnProperty('temporary')) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:140:15
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (typeof newData !== 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:140:34
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (typeof newData === "" && newData !== null && newData.hasOwnProperty('temporary')) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:140:46
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (typeof newData === 'object' && true && newData.hasOwnProperty('temporary')) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:140:46
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (typeof newData === 'object' && newData === null && newData.hasOwnProperty('temporary')) {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:140:89
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
++             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty("")) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:140:103
+-             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+-               // Preserve the internal blog loading state properties when updating
+-               const currentBlogStatus = globalState.blogStatus;
+-               const currentBlogError = globalState.blogError;
+-               const currentBlogFetchPromise = globalState.blogFetchPromise;
+-               const currentBlogData = globalState.blog; // Preserve actual blog data too
+-               
+-               globalState = newData;
+-               
+-               // Restore internal properties
+-               globalState.blogStatus = currentBlogStatus;
+-               globalState.blogError = currentBlogError;
+-               globalState.blogFetchPromise = currentBlogFetchPromise;
+-               // Ensure the blog data wasn't wiped out if it wasn't included in newData
+-               if (!newData.hasOwnProperty('blog')) {
+-                 globalState.blog = currentBlogData;
+-               }
+-               
+-               console.log('Global state updated:', globalState);
+-             } else {
++             if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {} else {
+
+[NoCoverage] BooleanLiteral
+src/browser/main.js:154:17
+-               if (!newData.hasOwnProperty('blog')) {
++               if (newData.hasOwnProperty('blog')) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:154:17
+-               if (!newData.hasOwnProperty('blog')) {
++               if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:154:17
+-               if (!newData.hasOwnProperty('blog')) {
++               if (false) {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:154:41
+-               if (!newData.hasOwnProperty('blog')) {
++               if (!newData.hasOwnProperty("")) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:154:50
+-               if (!newData.hasOwnProperty('blog')) {
+-                 globalState.blog = currentBlogData;
+-               }
++               if (!newData.hasOwnProperty('blog')) {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:158:25
+-               console.log('Global state updated:', globalState);
++               console.log("", globalState);
+
+[NoCoverage] BlockStatement
+src/browser/main.js:159:18
+-             } else {
+-               console.error('setData received invalid data structure:', newData);
+-               throw new Error('setData requires an object with at least a \'temporary\' property.');
+-             }
++             } else {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:160:27
+-               console.error('setData received invalid data structure:', newData);
++               console.error("", newData);
+
+[NoCoverage] StringLiteral
+src/browser/main.js:161:29
+-               throw new Error('setData requires an object with at least a \'temporary\' property.');
++               throw new Error("");
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:169:22
+-         const result = processingFunction.length === 2
++         const result = true
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:169:22
+-         const result = processingFunction.length === 2
++         const result = false
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:169:22
+-         const result = processingFunction.length === 2
++         const result = processingFunction.length !== 2
+
+[NoCoverage] BlockStatement
+src/browser/main.js:175:21
+-       } catch (error) {
+-         console.error('Error processing input:', error);
+-         outputElement.textContent = 'Error: ' + error.message;
+-         outputElement.parentElement.classList.add('warning');
+-       }
++       } catch (error) {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:176:21
+-         console.error('Error processing input:', error);
++         console.error("", error);
+
+[NoCoverage] StringLiteral
+src/browser/main.js:177:35
+-         outputElement.textContent = 'Error: ' + error.message;
++         outputElement.textContent = "" + error.message;
+
+[NoCoverage] StringLiteral
+src/browser/main.js:178:49
+-         outputElement.parentElement.classList.add('warning');
++         outputElement.parentElement.classList.add("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:183:33
+-     submitButton.addEventListener('click', handleSubmit);
++     submitButton.addEventListener("", handleSubmit);
+
+[NoCoverage] StringLiteral
+src/browser/main.js:186:33
+-     inputElement.addEventListener('keypress', (event) => {
++     inputElement.addEventListener("", (event) => {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:186:56
+-     inputElement.addEventListener('keypress', (event) => {
+-       if (event.key === 'Enter') {
+-         handleSubmit(event);
+-       }
+-     });
++     inputElement.addEventListener('keypress', (event) => {});
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:187:9
+-       if (event.key === 'Enter') {
++       if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:187:9
+-       if (event.key === 'Enter') {
++       if (false) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:187:9
+-       if (event.key === 'Enter') {
++       if (event.key !== 'Enter') {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:187:23
+-       if (event.key === 'Enter') {
++       if (event.key === "") {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:187:32
+-       if (event.key === 'Enter') {
+-         handleSubmit(event);
+-       }
++       if (event.key === 'Enter') {}
+
+[NoCoverage] BlockStatement
+src/browser/main.js:202:62
+-   function initializeWhenVisible(id, modulePath, functionName) {
+-     const article = document.getElementById(id);
+-     
+-     // Create an observer instance
+-     const observer = new IntersectionObserver((entries, observer) => {
+-       entries.forEach(entry => {
+-         // If the article is visible
+-         if (entry.isIntersecting) {
+-           // Dynamically import the module only when the article is visible
+-           import(modulePath).then((module) => {
+-             const processingFunction = module[functionName];
+-             
+-             // Initialize the component with the imported function
+-             initializeInteractiveComponent(id, processingFunction);
+-           }).catch(error => {
+-             console.error('Error loading module ' + modulePath + ':', error);
+-           });
+-           
+-           // Stop observing once initialized
+-           observer.disconnect();
+-         }
+-       });
+-     }, {
+-       // Options for the observer
+-       root: null, // viewport
+-       threshold: 0.1 // 10% visibility is enough to trigger
+-     });
+-     
+-     // Start observing the article
+-     observer.observe(article);
+-   }
++   function initializeWhenVisible(id, modulePath, functionName) {}
+
+[NoCoverage] BlockStatement
+src/browser/main.js:206:68
+-     const observer = new IntersectionObserver((entries, observer) => {
+-       entries.forEach(entry => {
+-         // If the article is visible
+-         if (entry.isIntersecting) {
+-           // Dynamically import the module only when the article is visible
+-           import(modulePath).then((module) => {
+-             const processingFunction = module[functionName];
+-             
+-             // Initialize the component with the imported function
+-             initializeInteractiveComponent(id, processingFunction);
+-           }).catch(error => {
+-             console.error('Error loading module ' + modulePath + ':', error);
+-           });
+-           
+-           // Stop observing once initialized
+-           observer.disconnect();
+-         }
+-       });
+-     }, {
++     const observer = new IntersectionObserver((entries, observer) => {}, {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:207:30
+-       entries.forEach(entry => {
+-         // If the article is visible
+-         if (entry.isIntersecting) {
+-           // Dynamically import the module only when the article is visible
+-           import(modulePath).then((module) => {
+-             const processingFunction = module[functionName];
+-             
+-             // Initialize the component with the imported function
+-             initializeInteractiveComponent(id, processingFunction);
+-           }).catch(error => {
+-             console.error('Error loading module ' + modulePath + ':', error);
+-           });
+-           
+-           // Stop observing once initialized
+-           observer.disconnect();
+-         }
+-       });
++       entries.forEach(entry => {});
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:209:11
+-         if (entry.isIntersecting) {
++         if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:209:11
+-         if (entry.isIntersecting) {
++         if (false) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:209:33
+-         if (entry.isIntersecting) {
+-           // Dynamically import the module only when the article is visible
+-           import(modulePath).then((module) => {
+-             const processingFunction = module[functionName];
+-             
+-             // Initialize the component with the imported function
+-             initializeInteractiveComponent(id, processingFunction);
+-           }).catch(error => {
+-             console.error('Error loading module ' + modulePath + ':', error);
+-           });
+-           
+-           // Stop observing once initialized
+-           observer.disconnect();
+-         }
++         if (entry.isIntersecting) {}
+
+[NoCoverage] BlockStatement
+src/browser/main.js:211:45
+-           import(modulePath).then((module) => {
+-             const processingFunction = module[functionName];
+-             
+-             // Initialize the component with the imported function
+-             initializeInteractiveComponent(id, processingFunction);
+-           }).catch(error => {
++           import(modulePath).then((module) => {}).catch(error => {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:216:27
+-           }).catch(error => {
+-             console.error('Error loading module ' + modulePath + ':', error);
+-           });
++           }).catch(error => {});
+
+[NoCoverage] StringLiteral
+src/browser/main.js:217:25
+-             console.error('Error loading module ' + modulePath + ':', error);
++             console.error("" + modulePath + ':', error);
+
+[NoCoverage] StringLiteral
+src/browser/main.js:217:64
+-             console.error('Error loading module ' + modulePath + ':', error);
++             console.error('Error loading module ' + modulePath + "", error);
+
+[NoCoverage] ObjectLiteral
+src/browser/main.js:224:6
+-     }, {
+-       // Options for the observer
+-       root: null, // viewport
+-       threshold: 0.1 // 10% visibility is enough to trigger
+-     });
++     }, {});
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:235:5
+-   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
++   if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:235:5
+-   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
++   if (false) {
+
+[NoCoverage] LogicalOperator
+src/browser/main.js:235:5
+-   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
++   if (window.interactiveComponents || window.interactiveComponents.length > 0) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:235:37
+-   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
++   if (window.interactiveComponents && true) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:235:37
+-   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
++   if (window.interactiveComponents && window.interactiveComponents.length >= 0) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:235:37
+-   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
++   if (window.interactiveComponents && window.interactiveComponents.length <= 0) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:235:78
+-   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
+-     console.log('Initializing', window.interactiveComponents.length, 'interactive components');
+-     window.interactiveComponents.forEach(component => {
+-       initializeWhenVisible(component.id, component.modulePath, component.functionName);
+-     });
+-   } else {
++   if (window.interactiveComponents && window.interactiveComponents.length > 0) {} else {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:236:15
+-     console.log('Initializing', window.interactiveComponents.length, 'interactive components');
++     console.log("", window.interactiveComponents.length, 'interactive components');
+
+[NoCoverage] StringLiteral
+src/browser/main.js:236:68
+-     console.log('Initializing', window.interactiveComponents.length, 'interactive components');
++     console.log('Initializing', window.interactiveComponents.length, "");
+
+[NoCoverage] BlockStatement
+src/browser/main.js:237:53
+-     window.interactiveComponents.forEach(component => {
+-       initializeWhenVisible(component.id, component.modulePath, component.functionName);
+-     });
++     window.interactiveComponents.forEach(component => {});
+
+[NoCoverage] BlockStatement
+src/browser/main.js:240:8
+-   } else {
+-     console.warn('No interactive components found to initialize');
+-   }
++   } else {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:241:16
+-     console.warn('No interactive components found to initialize');
++     console.warn("");
+
+[NoCoverage] BlockStatement
+src/browser/main.js:245:41
+-   function hideArticlesByClass(className) {
+-     var articles = document.getElementsByTagName('article');
+-     for (var i = 0; i < articles.length; i++) {
+-       if (articles[i].classList.contains(className)) {
+-         articles[i].style.display = 'none';
+-       }
+-     }
+-   }
++   function hideArticlesByClass(className) {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:246:48
+-     var articles = document.getElementsByTagName('article');
++     var articles = document.getElementsByTagName("");
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:247:19
+-     for (var i = 0; i < articles.length; i++) {
++     for (var i = 0; false; i++) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:247:19
+-     for (var i = 0; i < articles.length; i++) {
++     for (var i = 0; i <= articles.length; i++) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:247:19
+-     for (var i = 0; i < articles.length; i++) {
++     for (var i = 0; i >= articles.length; i++) {
+
+[NoCoverage] UpdateOperator
+src/browser/main.js:247:40
+-     for (var i = 0; i < articles.length; i++) {
++     for (var i = 0; i < articles.length; i--) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:247:45
+-     for (var i = 0; i < articles.length; i++) {
+-       if (articles[i].classList.contains(className)) {
+-         articles[i].style.display = 'none';
+-       }
+-     }
++     for (var i = 0; i < articles.length; i++) {}
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:248:9
+-       if (articles[i].classList.contains(className)) {
++       if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:248:9
+-       if (articles[i].classList.contains(className)) {
++       if (false) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:248:52
+-       if (articles[i].classList.contains(className)) {
+-         articles[i].style.display = 'none';
+-       }
++       if (articles[i].classList.contains(className)) {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:249:35
+-         articles[i].style.display = 'none';
++         articles[i].style.display = "";
+
+[NoCoverage] BlockStatement
+src/browser/main.js:254:42
+-   function toggleHideLink(link, className) {
+-     // Check if a span with the hide link already exists immediately after the link.
+-     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
+-       // Remove the span if it exists.
+-       link.nextElementSibling.remove();
+-     } else {
+-       // Create a new span element.
+-       var span = document.createElement('span');
+-       span.classList.add('hide-span');
+-       // Append the opening text node.
+-       span.appendChild(document.createTextNode(" ("));
+-       // Create the hide anchor element.
+-       var hideLink = document.createElement('a');
+-       hideLink.textContent = "hide";
+-       // Add click listener to trigger hideArticlesByClass.
+-       hideLink.addEventListener('click', function(event) {
+-         event.preventDefault();
+-         hideArticlesByClass(className);
+-       });
+-       span.appendChild(hideLink);
+-       // Append the closing text node.
+-       span.appendChild(document.createTextNode(")"));
+-       // Insert the span immediately after the link.
+-       link.parentNode.insertBefore(span, link.nextSibling);
+-     }
+-   }
++   function toggleHideLink(link, className) {}
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:256:7
+-     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
++     if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:256:7
+-     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
++     if (false) {
+
+[NoCoverage] LogicalOperator
+src/browser/main.js:256:7
+-     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
++     if (link.nextElementSibling || link.nextElementSibling.classList.contains('hide-span')) {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:256:77
+-     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
++     if (link.nextElementSibling && link.nextElementSibling.classList.contains("")) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:256:91
+-     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
+-       // Remove the span if it exists.
+-       link.nextElementSibling.remove();
+-     } else {
++     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {} else {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:259:10
+-     } else {
+-       // Create a new span element.
+-       var span = document.createElement('span');
+-       span.classList.add('hide-span');
+-       // Append the opening text node.
+-       span.appendChild(document.createTextNode(" ("));
+-       // Create the hide anchor element.
+-       var hideLink = document.createElement('a');
+-       hideLink.textContent = "hide";
+-       // Add click listener to trigger hideArticlesByClass.
+-       hideLink.addEventListener('click', function(event) {
+-         event.preventDefault();
+-         hideArticlesByClass(className);
+-       });
+-       span.appendChild(hideLink);
+-       // Append the closing text node.
+-       span.appendChild(document.createTextNode(")"));
+-       // Insert the span immediately after the link.
+-       link.parentNode.insertBefore(span, link.nextSibling);
+-     }
++     } else {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:261:39
+-       var span = document.createElement('span');
++       var span = document.createElement("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:262:24
+-       span.classList.add('hide-span');
++       span.classList.add("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:264:46
+-       span.appendChild(document.createTextNode(" ("));
++       span.appendChild(document.createTextNode(""));
+
+[NoCoverage] StringLiteral
+src/browser/main.js:267:43
+-       var hideLink = document.createElement('a');
++       var hideLink = document.createElement("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:268:28
+-       hideLink.textContent = "hide";
++       hideLink.textContent = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:270:31
+-       hideLink.addEventListener('click', function(event) {
++       hideLink.addEventListener("", function(event) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:270:56
+-       hideLink.addEventListener('click', function(event) {
+-         event.preventDefault();
+-         hideArticlesByClass(className);
+-       });
++       hideLink.addEventListener('click', function(event) {});
+
+[NoCoverage] StringLiteral
+src/browser/main.js:276:46
+-       span.appendChild(document.createTextNode(")"));
++       span.appendChild(document.createTextNode(""));
+
+[NoCoverage] BlockStatement
+src/browser/main.js:283:13
+-   (function() {
+-     Array.from(document.getElementsByTagName('a')).forEach(function(link) {
+-       Array.from(link.classList).forEach(function(className) {
+-         if (className.indexOf('tag-') === 0) {
+-           link.addEventListener('click', function(event) {
+-             event.preventDefault();
+-             toggleHideLink(link, className);
+-           });
+-           return; // exit after first tag- match
+-         }
+-       });
+-     });
+-   })();
++   (function() {})();
+
+[NoCoverage] StringLiteral
+src/browser/main.js:284:44
+-     Array.from(document.getElementsByTagName('a')).forEach(function(link) {
++     Array.from(document.getElementsByTagName("")).forEach(function(link) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:284:73
+-     Array.from(document.getElementsByTagName('a')).forEach(function(link) {
+-       Array.from(link.classList).forEach(function(className) {
+-         if (className.indexOf('tag-') === 0) {
+-           link.addEventListener('click', function(event) {
+-             event.preventDefault();
+-             toggleHideLink(link, className);
+-           });
+-           return; // exit after first tag- match
+-         }
+-       });
+-     });
++     Array.from(document.getElementsByTagName('a')).forEach(function(link) {});
+
+[NoCoverage] BlockStatement
+src/browser/main.js:285:60
+-       Array.from(link.classList).forEach(function(className) {
+-         if (className.indexOf('tag-') === 0) {
+-           link.addEventListener('click', function(event) {
+-             event.preventDefault();
+-             toggleHideLink(link, className);
+-           });
+-           return; // exit after first tag- match
+-         }
+-       });
++       Array.from(link.classList).forEach(function(className) {});
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:286:11
+-         if (className.indexOf('tag-') === 0) {
++         if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:286:11
+-         if (className.indexOf('tag-') === 0) {
++         if (false) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:286:11
+-         if (className.indexOf('tag-') === 0) {
++         if (className.indexOf('tag-') !== 0) {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:286:29
+-         if (className.indexOf('tag-') === 0) {
++         if (className.indexOf("") === 0) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:286:44
+-         if (className.indexOf('tag-') === 0) {
+-           link.addEventListener('click', function(event) {
+-             event.preventDefault();
+-             toggleHideLink(link, className);
+-           });
+-           return; // exit after first tag- match
+-         }
++         if (className.indexOf('tag-') === 0) {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:287:31
+-           link.addEventListener('click', function(event) {
++           link.addEventListener("", function(event) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:287:56
+-           link.addEventListener('click', function(event) {
+-             event.preventDefault();
+-             toggleHideLink(link, className);
+-           });
++           link.addEventListener('click', function(event) {});
+
+[NoCoverage] BlockStatement
+src/browser/main.js:301:34
+-   function fetchAndCacheBlogData() {
+-     // Prevent multiple simultaneous fetches
+-     if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
+-       console.log('Blog data fetch already in progress.');
+-       return globalState.blogFetchPromise; 
+-     }
+-     
+-     console.log('Starting to fetch blog data...');
+-     globalState.blogStatus = 'loading';
+-     globalState.blogError = null;
+-     
+-     globalState.blogFetchPromise = fetch('./blog.json') 
+-       .then(response => {
+-         if (!response.ok) {
+-           throw new Error(`HTTP error! status: ${response.status}`);
+-         }
+-         return response.json();
+-       })
+-       .then(data => {
+-         globalState.blog = data; // Update the blog property
+-         globalState.blogStatus = 'loaded';
+-         console.log('Blog data loaded successfully into globalState.');
+-         globalState.blogFetchPromise = null; // Clear promise on success
+-       })
+-       .catch(error => {
+-         console.error('Error loading blog data:', error);
+-         globalState.blogError = error;
+-         globalState.blogStatus = 'error';
+-         globalState.blogFetchPromise = null; // Clear promise on error
+-       });
+-     
+-     return globalState.blogFetchPromise;
+-   }
++   function fetchAndCacheBlogData() {}
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:303:7
+-     if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
++     if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:303:7
+-     if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
++     if (false) {
+
+[NoCoverage] LogicalOperator
+src/browser/main.js:303:7
+-     if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
++     if (globalState.blogStatus === 'loading' || globalState.blogFetchPromise) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:303:7
+-     if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
++     if (true && globalState.blogFetchPromise) {
+
+[NoCoverage] EqualityOperator
+src/browser/main.js:303:7
+-     if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
++     if (globalState.blogStatus !== 'loading' && globalState.blogFetchPromise) {
+
+[NoCoverage] StringLiteral
+src/browser/main.js:303:34
+-     if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
++     if (globalState.blogStatus === "" && globalState.blogFetchPromise) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:303:77
+-     if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
+-       console.log('Blog data fetch already in progress.');
+-       return globalState.blogFetchPromise; 
+-     }
++     if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:304:17
+-       console.log('Blog data fetch already in progress.');
++       console.log("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:308:15
+-     console.log('Starting to fetch blog data...');
++     console.log("");
+
+[NoCoverage] StringLiteral
+src/browser/main.js:309:28
+-     globalState.blogStatus = 'loading';
++     globalState.blogStatus = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:312:40
+-     globalState.blogFetchPromise = fetch('./blog.json') 
++     globalState.blogFetchPromise = fetch("") 
+
+[NoCoverage] BlockStatement
+src/browser/main.js:313:23
+-       .then(response => {
+-         if (!response.ok) {
+-           throw new Error(`HTTP error! status: ${response.status}`);
+-         }
+-         return response.json();
+-       })
++       .then(response => {})
+
+[NoCoverage] BooleanLiteral
+src/browser/main.js:314:11
+-         if (!response.ok) {
++         if (response.ok) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:314:11
+-         if (!response.ok) {
++         if (true) {
+
+[NoCoverage] ConditionalExpression
+src/browser/main.js:314:11
+-         if (!response.ok) {
++         if (false) {
+
+[NoCoverage] BlockStatement
+src/browser/main.js:314:25
+-         if (!response.ok) {
+-           throw new Error(`HTTP error! status: ${response.status}`);
+-         }
++         if (!response.ok) {}
+
+[NoCoverage] StringLiteral
+src/browser/main.js:315:25
+-           throw new Error(`HTTP error! status: ${response.status}`);
++           throw new Error(``);
+
+[NoCoverage] BlockStatement
+src/browser/main.js:319:19
+-       .then(data => {
+-         globalState.blog = data; // Update the blog property
+-         globalState.blogStatus = 'loaded';
+-         console.log('Blog data loaded successfully into globalState.');
+-         globalState.blogFetchPromise = null; // Clear promise on success
+-       })
++       .then(data => {})
+
+[NoCoverage] StringLiteral
+src/browser/main.js:321:32
+-         globalState.blogStatus = 'loaded';
++         globalState.blogStatus = "";
+
+[NoCoverage] StringLiteral
+src/browser/main.js:322:19
+-         console.log('Blog data loaded successfully into globalState.');
++         console.log("");
+
+[NoCoverage] BlockStatement
+src/browser/main.js:325:21
+-       .catch(error => {
+-         console.error('Error loading blog data:', error);
+-         globalState.blogError = error;
+-         globalState.blogStatus = 'error';
+-         globalState.blogFetchPromise = null; // Clear promise on error
+-       });
++       .catch(error => {});
+
+[NoCoverage] StringLiteral
+src/browser/main.js:326:21
+-         console.error('Error loading blog data:', error);
++         console.error("", error);
+
+[NoCoverage] StringLiteral
+src/browser/main.js:328:32
+-         globalState.blogStatus = 'error';
++         globalState.blogStatus = "";
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:16:37
+-   const srcDir = path.join(__dirname, '..', '..', 'src', 'toys');
++   const srcDir = path.join(__dirname, "", '..', 'src', 'toys');
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:16:43
+-   const srcDir = path.join(__dirname, '..', '..', 'src', 'toys');
++   const srcDir = path.join(__dirname, '..', "", 'src', 'toys');
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:16:49
+-   const srcDir = path.join(__dirname, '..', '..', 'src', 'toys');
++   const srcDir = path.join(__dirname, '..', '..', "", 'toys');
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:16:56
+-   const srcDir = path.join(__dirname, '..', '..', 'src', 'toys');
++   const srcDir = path.join(__dirname, '..', '..', 'src', "");
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:17:38
+-   const destDir = path.join(__dirname, '..', '..', 'public');
++   const destDir = path.join(__dirname, "", '..', 'public');
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:17:44
+-   const destDir = path.join(__dirname, '..', '..', 'public');
++   const destDir = path.join(__dirname, '..', "", 'public');
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:17:50
+-   const destDir = path.join(__dirname, '..', '..', 'public');
++   const destDir = path.join(__dirname, '..', '..', "");
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:24:30
+-   function copyFile(src, dest) {
+-     // Create destination directory if it doesn't exist
+-     const destDir = path.dirname(dest);
+-     if (!fs.existsSync(destDir)) {
+-       fs.mkdirSync(destDir, { recursive: true });
+-     }
+-     
+-     // Copy the file
+-     fs.copyFileSync(src, dest);
+-     console.log(`Copied: ${src} -> ${dest}`);
+-   }
++   function copyFile(src, dest) {}
+
+[NoCoverage] BooleanLiteral
+src/generator/copy-toys.js:27:7
+-     if (!fs.existsSync(destDir)) {
++     if (fs.existsSync(destDir)) {
+
+[NoCoverage] ConditionalExpression
+src/generator/copy-toys.js:27:7
+-     if (!fs.existsSync(destDir)) {
++     if (true) {
+
+[NoCoverage] ConditionalExpression
+src/generator/copy-toys.js:27:7
+-     if (!fs.existsSync(destDir)) {
++     if (false) {
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:27:32
+-     if (!fs.existsSync(destDir)) {
+-       fs.mkdirSync(destDir, { recursive: true });
+-     }
++     if (!fs.existsSync(destDir)) {}
+
+[NoCoverage] ObjectLiteral
+src/generator/copy-toys.js:28:27
+-       fs.mkdirSync(destDir, { recursive: true });
++       fs.mkdirSync(destDir, {});
+
+[NoCoverage] BooleanLiteral
+src/generator/copy-toys.js:28:40
+-       fs.mkdirSync(destDir, { recursive: true });
++       fs.mkdirSync(destDir, { recursive: false });
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:33:15
+-     console.log(`Copied: ${src} -> ${dest}`);
++     console.log(``);
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:41:34
+-   function copyToyFiles(src, dest) {
+-     const entries = fs.readdirSync(src, { withFileTypes: true });
+-     for (const entry of entries) {
+-       handleEntry(entry, src, dest);
+-     }
+-   }
++   function copyToyFiles(src, dest) {}
+
+[NoCoverage] ObjectLiteral
+src/generator/copy-toys.js:42:39
+-     const entries = fs.readdirSync(src, { withFileTypes: true });
++     const entries = fs.readdirSync(src, {});
+
+[NoCoverage] BooleanLiteral
+src/generator/copy-toys.js:42:56
+-     const entries = fs.readdirSync(src, { withFileTypes: true });
++     const entries = fs.readdirSync(src, { withFileTypes: false });
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:44:32
+-     for (const entry of entries) {
+-       handleEntry(entry, src, dest);
+-     }
++     for (const entry of entries) {}
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:49:49
+-   function handleDirectoryEntry(entry, src, dest) {
+-     const srcPath = path.join(src, entry.name);
+-     copyToyFiles(srcPath, dest);
+-   }
++   function handleDirectoryEntry(entry, src, dest) {}
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:54:53
+-   function handleFileEntry(entry, src, dest, srcPath) {
+-     if (shouldCopy(entry)) {
+-       const destPath = getDestPath(srcPath);
+-       copyFile(srcPath, destPath);
+-     }
+-   }
++   function handleFileEntry(entry, src, dest, srcPath) {}
+
+[NoCoverage] ConditionalExpression
+src/generator/copy-toys.js:55:7
+-     if (shouldCopy(entry)) {
++     if (true) {
+
+[NoCoverage] ConditionalExpression
+src/generator/copy-toys.js:55:7
+-     if (shouldCopy(entry)) {
++     if (false) {
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:55:26
+-     if (shouldCopy(entry)) {
+-       const destPath = getDestPath(srcPath);
+-       copyFile(srcPath, destPath);
+-     }
++     if (shouldCopy(entry)) {}
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:61:40
+-   function handleEntry(entry, src, dest) {
+-     const srcPath = path.join(src, entry.name);
+-     if (entry.isDirectory()) {
+-       handleDirectoryEntry(entry, src, dest);
+-     } else {
+-       handleFileEntry(entry, src, dest, srcPath);
+-     }
+-   }
++   function handleEntry(entry, src, dest) {}
+
+[NoCoverage] ConditionalExpression
+src/generator/copy-toys.js:64:7
+-     if (entry.isDirectory()) {
++     if (true) {
+
+[NoCoverage] ConditionalExpression
+src/generator/copy-toys.js:64:7
+-     if (entry.isDirectory()) {
++     if (false) {
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:64:28
+-     if (entry.isDirectory()) {
+-       handleDirectoryEntry(entry, src, dest);
+-     } else {
++     if (entry.isDirectory()) {} else {
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:66:10
+-     } else {
+-       handleFileEntry(entry, src, dest, srcPath);
+-     }
++     } else {}
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:71:31
+-   function isRegularFile(entry) {
+-     return entry.isFile();
+-   }
++   function isRegularFile(entry) {}
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:75:34
+-   function isJavaScriptFile(entry) {
+-     return entry.name.endsWith('.js');
+-   }
++   function isJavaScriptFile(entry) {}
+
+[NoCoverage] MethodExpression
+src/generator/copy-toys.js:76:10
+-     return entry.name.endsWith('.js');
++     return entry.name.startsWith('.js');
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:76:30
+-     return entry.name.endsWith('.js');
++     return entry.name.endsWith("");
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:79:28
+-   function isTestFile(entry) {
+-     return entry.name.endsWith('.test.js');
+-   }
++   function isTestFile(entry) {}
+
+[NoCoverage] MethodExpression
+src/generator/copy-toys.js:80:10
+-     return entry.name.endsWith('.test.js');
++     return entry.name.startsWith('.test.js');
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:80:30
+-     return entry.name.endsWith('.test.js');
++     return entry.name.endsWith("");
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:83:28
+-   function shouldCopy(entry) {
+-     return isRegularFile(entry) && isJavaScriptFile(entry) && !isTestFile(entry);
+-   }
++   function shouldCopy(entry) {}
+
+[NoCoverage] ConditionalExpression
+src/generator/copy-toys.js:84:10
+-     return isRegularFile(entry) && isJavaScriptFile(entry) && !isTestFile(entry);
++     return true;
+
+[NoCoverage] ConditionalExpression
+src/generator/copy-toys.js:84:10
+-     return isRegularFile(entry) && isJavaScriptFile(entry) && !isTestFile(entry);
++     return false;
+
+[NoCoverage] LogicalOperator
+src/generator/copy-toys.js:84:10
+-     return isRegularFile(entry) && isJavaScriptFile(entry) && !isTestFile(entry);
++     return isRegularFile(entry) && isJavaScriptFile(entry) || !isTestFile(entry);
+
+[NoCoverage] ConditionalExpression
+src/generator/copy-toys.js:84:10
+-     return isRegularFile(entry) && isJavaScriptFile(entry) && !isTestFile(entry);
++     return true && !isTestFile(entry);
+
+[NoCoverage] LogicalOperator
+src/generator/copy-toys.js:84:10
+-     return isRegularFile(entry) && isJavaScriptFile(entry) && !isTestFile(entry);
++     return isRegularFile(entry) || isJavaScriptFile(entry) && !isTestFile(entry);
+
+[NoCoverage] BooleanLiteral
+src/generator/copy-toys.js:84:61
+-     return isRegularFile(entry) && isJavaScriptFile(entry) && !isTestFile(entry);
++     return isRegularFile(entry) && isJavaScriptFile(entry) && isTestFile(entry);
+
+[NoCoverage] BlockStatement
+src/generator/copy-toys.js:87:31
+-   function getDestPath(srcPath) {
+-     const relativePath = path.relative(srcDir, srcPath);
+-     return path.join(destDir, relativePath);
+-   }
++   function getDestPath(srcPath) {}
+
+[NoCoverage] StringLiteral
+src/generator/copy-toys.js:94:13
+-   console.log('Toy files copied successfully!');
++   console.log("");
+
+[NoCoverage] BlockStatement
+src/generator/generator.js:161:39
 -   function prefixWithEmptyKey(valueDiv) {
 -     const emptyKeyDiv = createEmptyKeyDiv();
 -     return createPair(emptyKeyDiv, valueDiv);
@@ -53,7 +2215,7 @@ src/generator/generator.js:163:39
 +   function prefixWithEmptyKey(valueDiv) {}
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:171:32
+src/generator/generator.js:169:32
 -   function createHeaderContent() {
 -     const valueDivs = [
 -       createValueDiv(HEADER_BANNER),
@@ -66,7 +2228,7 @@ src/generator/generator.js:171:32
 +   function createHeaderContent() {}
 
 [NoCoverage] ArrayDeclaration
-src/generator/generator.js:172:21
+src/generator/generator.js:170:21
 -     const valueDivs = [
 -       createValueDiv(HEADER_BANNER),
 -       createValueDiv(METADATA_TEXT, [CLASS.METADATA])
@@ -74,19 +2236,19 @@ src/generator/generator.js:172:21
 +     const valueDivs = [];
 
 [NoCoverage] ArrayDeclaration
-src/generator/generator.js:174:35
+src/generator/generator.js:172:35
 -       createValueDiv(METADATA_TEXT, [CLASS.METADATA])
 +       createValueDiv(METADATA_TEXT, [])
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:187:33
+src/generator/generator.js:185:33
 -   function createSection(content) {
 -     return createDiv(CLASS.ENTRY, content);
 -   }
 +   function createSection(content) {}
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:195:32
+src/generator/generator.js:193:32
 -   function createHeaderSection() {
 -     const headerContent = createHeaderContent();
 -     return createSection(headerContent);
@@ -94,7 +2256,7 @@ src/generator/generator.js:195:32
 +   function createHeaderSection() {}
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:208:32
+src/generator/generator.js:206:32
 -   function createFooterContent() {
 -     const classes = joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]);
 -     const footerDiv = createDiv(classes, WARNING_MESSAGE);
@@ -103,12 +2265,12 @@ src/generator/generator.js:208:32
 +   function createFooterContent() {}
 
 [NoCoverage] ArrayDeclaration
-src/generator/generator.js:209:31
+src/generator/generator.js:207:31
 -     const classes = joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]);
 +     const classes = joinClasses([]);
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:218:32
+src/generator/generator.js:216:32
 -   function createFooterSection() {
 -     const footerContent = createFooterContent();
 -     return createSection(footerContent);
@@ -116,7 +2278,7 @@ src/generator/generator.js:218:32
 +   function createFooterSection() {}
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:228:35
+src/generator/generator.js:226:35
 -   function createContainerDivOpen() {
 -     const idAttr = createAttrPair(ATTR_NAME.ID, CONTAINER_ID);
 -     return `<${DIV_TAG_NAME} ${idAttr}>`;
@@ -124,12 +2286,12 @@ src/generator/generator.js:228:35
 +   function createContainerDivOpen() {}
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:230:10
+src/generator/generator.js:228:10
 -     return `<${DIV_TAG_NAME} ${idAttr}>`;
 +     return ``;
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:236:50
+src/generator/generator.js:234:50
 -   function createHeaderContentArray(headerElement) {
 -     return [
 -       headElement,
@@ -142,7 +2304,7 @@ src/generator/generator.js:236:50
 +   function createHeaderContentArray(headerElement) {}
 
 [NoCoverage] ArrayDeclaration
-src/generator/generator.js:237:10
+src/generator/generator.js:235:10
 -     return [
 -       headElement,
 -       '<body>',
@@ -153,17 +2315,17 @@ src/generator/generator.js:237:10
 +     return [];
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:239:5
+src/generator/generator.js:237:5
 -       '<body>',
 +       "",
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:241:5
+src/generator/generator.js:239:5
 -       '<!-- Header -->',
 +       "",
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:249:29
+src/generator/generator.js:247:29
 -   function createPageHeader() {
 -     const headerElement = createHeaderSection();
 -     const contentArray = createHeaderContentArray(headerElement);
@@ -172,65 +2334,70 @@ src/generator/generator.js:249:29
 +   function createPageHeader() {}
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:253:28
+src/generator/generator.js:251:28
 -     return contentArray.join('');
 +     return contentArray.join("Stryker was here!");
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:259:36
+src/generator/generator.js:257:36
 -   function createContainerDivClose() {
 -     return '</div>';
 -   }
 +   function createContainerDivClose() {}
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:260:10
+src/generator/generator.js:258:10
 -     return '</div>';
 +     return "";
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:266:28
+src/generator/generator.js:264:28
 -   function createBodyClose() {
 -     return '</body>';
 -   }
 +   function createBodyClose() {}
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:267:10
+src/generator/generator.js:265:10
 -     return '</body>';
 +     return "";
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:273:50
+src/generator/generator.js:271:50
 -   function createFooterContentArray(footerElement) {
 -     return [
 -       '',
 -       footerElement,
 -       createContainerDivClose(),
--       scriptTag,
+-       '<script src="main.js" defer></script>',
 -       createBodyClose(),
 -     ];
 -   }
 +   function createFooterContentArray(footerElement) {}
 
 [NoCoverage] ArrayDeclaration
-src/generator/generator.js:274:10
+src/generator/generator.js:272:10
 -     return [
 -       '',
 -       footerElement,
 -       createContainerDivClose(),
--       scriptTag,
+-       '<script src="main.js" defer></script>',
 -       createBodyClose(),
 -     ];
 +     return [];
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:275:5
+src/generator/generator.js:273:5
 -       '',
 +       "Stryker was here!",
 
+[NoCoverage] StringLiteral
+src/generator/generator.js:276:5
+-       '<script src="main.js" defer></script>',
++       "",
+
 [NoCoverage] BlockStatement
-src/generator/generator.js:286:29
+src/generator/generator.js:284:29
 -   function createPageFooter() {
 -     const footerElement = createFooterSection();
 -     const contentArray = createFooterContentArray(footerElement);
@@ -239,46 +2406,46 @@ src/generator/generator.js:286:29
 +   function createPageFooter() {}
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:290:28
+src/generator/generator.js:288:28
 -     return contentArray.join('');
 +     return contentArray.join("Stryker was here!");
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:327:18
+src/generator/generator.js:325:18
 -     if (!post.key) {
 -       return '';
 -     }
 +     if (!post.key) {}
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:328:12
+src/generator/generator.js:326:12
 -       return '';
 +       return "Stryker was here!";
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:480:30
+src/generator/generator.js:493:30
 -     if (!post.publicationDate) {
 -       return '';
 -     }
 +     if (!post.publicationDate) {}
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:481:12
+src/generator/generator.js:494:12
 -       return '';
 +       return "Stryker was here!";
 
 [NoCoverage] ArrowFunction
-src/generator/generator.js:577:37
+src/generator/generator.js:594:37
 -     return (generators[mediaType] || (() => ''))(post);
 +     return (generators[mediaType] || (() => undefined))(post);
 
 [NoCoverage] StringLiteral
-src/generator/generator.js:577:43
+src/generator/generator.js:594:43
 -     return (generators[mediaType] || (() => ''))(post);
 +     return (generators[mediaType] || (() => "Stryker was here!"))(post);
 
 [NoCoverage] ObjectLiteral
-src/generator/generator.js:908:37
+src/generator/generator.js:969:37
 -   const createBlogComponents = () => ({
 -     header: createPageHeader(),
 -     footer: createPageFooter(),
@@ -287,7 +2454,7 @@ src/generator/generator.js:908:37
 +   const createBlogComponents = () => ({});
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:918:34
+src/generator/generator.js:979:34
 -   function getBlogGenerationArgs() {
 -     const components = createBlogComponents();
 -     const { header, footer, wrapFunc } = components;
@@ -296,12 +2463,12 @@ src/generator/generator.js:918:34
 +   function getBlogGenerationArgs() {}
 
 [NoCoverage] ObjectLiteral
-src/generator/generator.js:921:10
+src/generator/generator.js:982:10
 -     return { header, footer, wrapFunc };
 +     return {};
 
 [NoCoverage] BlockStatement
-src/generator/generator.js:924:44
+src/generator/generator.js:985:44
 -   export const generateBlogOuter = (blog) => {
 -     const { header, footer, wrapFunc } = getBlogGenerationArgs();
 -     return generateBlog(blog, header, footer, wrapFunc);
@@ -309,7 +2476,7 @@ src/generator/generator.js:924:44
 +   export const generateBlogOuter = (blog) => {};
 
 [Survived] MethodExpression
-src/generator/generator.js:95:19
+src/generator/generator.js:93:19
 -     const classes = [CLASS.VALUE, ...additionalClasses].filter(Boolean);
 +     const classes = [CLASS.VALUE, ...additionalClasses];
 Tests ran:
@@ -318,7 +2485,7 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/generator/generator.js:327:7
+src/generator/generator.js:325:7
 -     if (!post.key) {
 +     if (false) {
 Tests ran:
@@ -329,17 +2496,17 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/generator/generator.js:393:42
--     return (typeof content === 'object' && content !== null)
-+     return (typeof content === 'object' && true)
+src/generator/generator.js:389:41
+-     return typeof content !== 'object' || content === null;
++     return typeof content !== 'object' || false;
 Tests ran:
     Blog Generator should render quotes as blockquotes
 
 
 [Survived] StringLiteral
-src/generator/generator.js:395:15
--       : { type: 'text', content };
-+       : { type: "", content };
+src/generator/generator.js:400:43
+-     return isTextContent(content) ? { type: 'text', content } : content;
++     return isTextContent(content) ? { type: "", content } : content;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain content for posts
@@ -347,9 +2514,9 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/generator/generator.js:412:7
--     if (type === 'text' && Array.isArray(content)) {
-+     if (true && Array.isArray(content)) {
+src/generator/generator.js:421:10
+-     return type === 'text' && Array.isArray(content);
++     return true && Array.isArray(content);
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain content for posts
@@ -358,7 +2525,7 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/generator/generator.js:480:7
+src/generator/generator.js:493:7
 -     if (!post.publicationDate) {
 +     if (false) {
 Tests ran:
@@ -368,10 +2535,20 @@ Tests ran:
   and 6 more tests!
 
 
+[Survived] ConditionalExpression
+src/generator/generator.js:531:10
+-     return Array.isArray(value) && value.length > 0;
++     return true;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain related links for a post
+    Blog Generator should contain a toy component for a post
+
+
 [Survived] EqualityOperator
-src/generator/generator.js:523:81
--     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
-+     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length >= 0;
+src/generator/generator.js:531:34
+-     return Array.isArray(value) && value.length > 0;
++     return Array.isArray(value) && value.length >= 0;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain related links for a post
@@ -379,20 +2556,9 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/generator/generator.js:523:10
--     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
-+     return true && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
-Tests ran:
-    Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain content for posts
-    Blog Generator should contain an illustration for posts
-  and 6 more tests!
-
-
-[Survived] ConditionalExpression
-src/generator/generator.js:523:81
--     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
-+     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && true;
+src/generator/generator.js:531:34
+-     return Array.isArray(value) && value.length > 0;
++     return Array.isArray(value) && true;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain related links for a post
@@ -400,9 +2566,19 @@ Tests ran:
 
 
 [Survived] LogicalOperator
-src/generator/generator.js:523:10
--     return post.relatedLinks !== undefined && Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
-+     return post.relatedLinks !== undefined || Array.isArray(post.relatedLinks) && post.relatedLinks.length > 0;
+src/generator/generator.js:531:10
+-     return Array.isArray(value) && value.length > 0;
++     return Array.isArray(value) || value.length > 0;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain related links for a post
+    Blog Generator should contain a toy component for a post
+
+
+[Survived] LogicalOperator
+src/generator/generator.js:540:10
+-     return post.relatedLinks !== undefined && isNonEmptyArray(post.relatedLinks);
++     return post.relatedLinks !== undefined || isNonEmptyArray(post.relatedLinks);
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain content for posts
@@ -411,7 +2587,18 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/generator/generator.js:532:38
+src/generator/generator.js:540:10
+-     return post.relatedLinks !== undefined && isNonEmptyArray(post.relatedLinks);
++     return true && isNonEmptyArray(post.relatedLinks);
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain content for posts
+    Blog Generator should contain an illustration for posts
+  and 6 more tests!
+
+
+[Survived] ConditionalExpression
+src/generator/generator.js:549:38
 -     return Array.isArray(post.tags) && post.tags.length > 0;
 +     return Array.isArray(post.tags) && true;
 Tests ran:
@@ -419,15 +2606,37 @@ Tests ran:
 
 
 [Survived] EqualityOperator
-src/generator/generator.js:532:38
+src/generator/generator.js:549:38
 -     return Array.isArray(post.tags) && post.tags.length > 0;
 +     return Array.isArray(post.tags) && post.tags.length >= 0;
 Tests ran:
     Blog Generator should display tags for posts
 
 
+[Survived] ConditionalExpression
+src/generator/generator.js:556:10
+-     return mediaType === 'youtube' || post.publicationDate;
++     return true;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain an illustration for posts
+    Blog Generator should contain audio elements
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/generator/generator.js:556:10
+-     return mediaType === 'youtube' || post.publicationDate;
++     return false || post.publicationDate;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain an illustration for posts
+    Blog Generator should contain audio elements
+  and 1 more test!
+
+
 [Survived] EqualityOperator
-src/generator/generator.js:539:10
+src/generator/generator.js:556:10
 -     return mediaType === 'youtube' || post.publicationDate;
 +     return mediaType !== 'youtube' || post.publicationDate;
 Tests ran:
@@ -438,7 +2647,7 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/generator/generator.js:539:24
+src/generator/generator.js:556:24
 -     return mediaType === 'youtube' || post.publicationDate;
 +     return mediaType === "" || post.publicationDate;
 Tests ran:
@@ -448,32 +2657,10 @@ Tests ran:
   and 1 more test!
 
 
-[Survived] ConditionalExpression
-src/generator/generator.js:539:10
--     return mediaType === 'youtube' || post.publicationDate;
-+     return false || post.publicationDate;
-Tests ran:
-    Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain an illustration for posts
-    Blog Generator should contain audio elements
-  and 1 more test!
-
-
-[Survived] ConditionalExpression
-src/generator/generator.js:539:10
--     return mediaType === 'youtube' || post.publicationDate;
-+     return true;
-Tests ran:
-    Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain an illustration for posts
-    Blog Generator should contain audio elements
-  and 1 more test!
-
-
 [Survived] MethodExpression
-src/generator/generator.js:712:31
--     return `<li>${[baseLink, ...optionalParts.filter(Boolean)].join('')}</li>`;
-+     return `<li>${[baseLink, ...optionalParts].join('')}</li>`;
+src/generator/generator.js:723:10
+-     return parts.filter(Boolean).join('');
++     return parts.join('');
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain related links for a post
@@ -481,9 +2668,38 @@ Tests ran:
 
 
 [Survived] OptionalChaining
-src/generator/generator.js:753:10
--     return post?.toy?.modulePath && post.toy.functionName;
-+     return post.toy?.modulePath && post.toy.functionName;
+src/generator/generator.js:789:28
+-     return extractModulePath(post?.toy);
++     return extractModulePath(post.toy);
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain content for posts
+    Blog Generator should contain an illustration for posts
+  and 6 more tests!
+
+
+[Survived] OptionalChaining
+src/generator/generator.js:797:30
+-     return extractFunctionName(post?.toy);
++     return extractFunctionName(post.toy);
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain a toy component for a post
+
+
+[Survived] OptionalChaining
+src/generator/generator.js:793:10
+-     return toy?.functionName;
++     return toy.functionName;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain a toy component for a post
+
+
+[Survived] LogicalOperator
+src/generator/generator.js:814:10
+-     return hasModulePath(post) && hasFunctionName(post);
++     return hasModulePath(post) || hasFunctionName(post);
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain content for posts
@@ -492,37 +2708,37 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/generator/generator.js:46:15
--     FULL_WIDTH: 'full-width',
-+     FULL_WIDTH: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/generator.js:43:11
+src/generator/generator.js:41:11
 -     FOOTER: 'footer',
 +     FOOTER: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:64:22
+src/generator/generator.js:44:15
+-     FULL_WIDTH: 'full-width',
++     FULL_WIDTH: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/generator/generator.js:62:22
 -   const CONTAINER_ID = 'container';
 +   const CONTAINER_ID = "";
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:153:23
+src/generator/generator.js:151:23
 -   const METADATA_TEXT = `Software developer and philosopher in Berlin`;
 +   const METADATA_TEXT = ``;
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:202:3
+src/generator/generator.js:200:3
 -     'All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.';
 +     "";
 Ran all tests for this mutant.
 
 [Survived] ArrowFunction
-src/generator/generator.js:908:30
+src/generator/generator.js:969:30
 -   const createBlogComponents = () => ({
 -     header: createPageHeader(),
 -     footer: createPageFooter(),
@@ -619,9 +2835,9 @@ src/generator/html.js:7:25
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/html.js:16:9
--     LANG: 'lang',
-+     LANG: "",
+src/generator/html.js:8:7
+-     EN: 'en',
++     EN: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -631,15 +2847,15 @@ src/generator/html.js:12:30
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/html.js:8:7
--     EN: 'en',
-+     EN: "",
+src/generator/html.js:16:9
+-     LANG: 'lang',
++     LANG: "",
 Ran all tests for this mutant.
 
-[Survived] StringLiteral
-src/generator/html.js:25:21
--     { from: />/g, to: '&gt;' },
-+     { from: />/g, to: "" },
+[Survived] ObjectLiteral
+src/generator/html.js:24:3
+-     { from: /</g, to: '&lt;' },
++     {},
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -654,9 +2870,21 @@ src/generator/html.js:25:3
 +     {},
 Ran all tests for this mutant.
 
+[Survived] StringLiteral
+src/generator/html.js:25:21
+-     { from: />/g, to: '&gt;' },
++     { from: />/g, to: "" },
+Ran all tests for this mutant.
+
 [Survived] ObjectLiteral
-src/generator/html.js:24:3
--     { from: /</g, to: '&lt;' },
+src/generator/html.js:26:3
+-     { from: /"/g, to: '&quot;' },
++     {},
+Ran all tests for this mutant.
+
+[Survived] ObjectLiteral
+src/generator/html.js:27:3
+-     { from: /'/g, to: '&#039;' },
 +     {},
 Ran all tests for this mutant.
 
@@ -670,18 +2898,6 @@ Ran all tests for this mutant.
 src/generator/html.js:27:21
 -     { from: /'/g, to: '&#039;' },
 +     { from: /'/g, to: "" },
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
-src/generator/html.js:26:3
--     { from: /"/g, to: '&quot;' },
-+     {},
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
-src/generator/html.js:27:3
--     { from: /'/g, to: '&#039;' },
-+     {},
 Ran all tests for this mutant.
 
 [NoCoverage] BlockStatement
@@ -722,1035 +2938,6 @@ src/generator/interactive.js:30:91
 src/generator/interactive.js:34:10
 -     return structure + script;
 +     return structure - script;
-
-[NoCoverage] BlockStatement
-src/generator/main.js:2:13
--   (function() {
--     const audioElements = document.querySelectorAll("audio");
--     
--     audioElements.forEach(function(audio, index) {
--       audio.removeAttribute("controls");
--       
--       if (!audio.id) {
--         audio.id = "audio-" + index;
--       }
--       
--       const controlsContainer = document.createElement("div");
--       controlsContainer.className = "audio-controls";
--       controlsContainer.id = "controls-" + audio.id;
--       
--       const timeDisplay = document.createElement("span");
--       timeDisplay.className = "audio-time";
--       timeDisplay.textContent = "0:00";
--       
--       const playButton = document.createElement("a");
--       playButton.href = "#";
--       playButton.textContent = "PLAY";
--       playButton.addEventListener("click", function(e) {
--         e.preventDefault();
--         audio.play();
--       });
--       
--       const pauseButton = document.createElement("a");
--       pauseButton.href = "#";
--       pauseButton.textContent = "PAUSE";
--       pauseButton.addEventListener("click", function(e) {
--         e.preventDefault();
--         audio.pause();
--       });
--       
--       const stopButton = document.createElement("a");
--       stopButton.href = "#";
--       stopButton.textContent = "STOP";
--       stopButton.addEventListener("click", function(e) {
--         e.preventDefault();
--         audio.pause();
--         audio.currentTime = 0;
--       });
--       
--       audio.addEventListener("timeupdate", function() {
--         const minutes = Math.floor(audio.currentTime / 60);
--         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
--         timeDisplay.textContent = minutes + ":" + seconds;
--       });
--       
--       controlsContainer.appendChild(playButton);
--       controlsContainer.appendChild(document.createTextNode(" "));
--       controlsContainer.appendChild(pauseButton);
--       controlsContainer.appendChild(document.createTextNode(" "));
--       controlsContainer.appendChild(stopButton);
--       controlsContainer.appendChild(document.createTextNode(" "));
--       controlsContainer.appendChild(timeDisplay);
--       
--       audio.parentNode.insertBefore(controlsContainer, audio.nextSibling);
--     });
--   })();
-+   (function() {})();
-
-[NoCoverage] StringLiteral
-src/generator/main.js:3:51
--     const audioElements = document.querySelectorAll("audio");
-+     const audioElements = document.querySelectorAll("");
-
-[NoCoverage] BlockStatement
-src/generator/main.js:5:48
--     audioElements.forEach(function(audio, index) {
--       audio.removeAttribute("controls");
--       
--       if (!audio.id) {
--         audio.id = "audio-" + index;
--       }
--       
--       const controlsContainer = document.createElement("div");
--       controlsContainer.className = "audio-controls";
--       controlsContainer.id = "controls-" + audio.id;
--       
--       const timeDisplay = document.createElement("span");
--       timeDisplay.className = "audio-time";
--       timeDisplay.textContent = "0:00";
--       
--       const playButton = document.createElement("a");
--       playButton.href = "#";
--       playButton.textContent = "PLAY";
--       playButton.addEventListener("click", function(e) {
--         e.preventDefault();
--         audio.play();
--       });
--       
--       const pauseButton = document.createElement("a");
--       pauseButton.href = "#";
--       pauseButton.textContent = "PAUSE";
--       pauseButton.addEventListener("click", function(e) {
--         e.preventDefault();
--         audio.pause();
--       });
--       
--       const stopButton = document.createElement("a");
--       stopButton.href = "#";
--       stopButton.textContent = "STOP";
--       stopButton.addEventListener("click", function(e) {
--         e.preventDefault();
--         audio.pause();
--         audio.currentTime = 0;
--       });
--       
--       audio.addEventListener("timeupdate", function() {
--         const minutes = Math.floor(audio.currentTime / 60);
--         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
--         timeDisplay.textContent = minutes + ":" + seconds;
--       });
--       
--       controlsContainer.appendChild(playButton);
--       controlsContainer.appendChild(document.createTextNode(" "));
--       controlsContainer.appendChild(pauseButton);
--       controlsContainer.appendChild(document.createTextNode(" "));
--       controlsContainer.appendChild(stopButton);
--       controlsContainer.appendChild(document.createTextNode(" "));
--       controlsContainer.appendChild(timeDisplay);
--       
--       audio.parentNode.insertBefore(controlsContainer, audio.nextSibling);
--     });
-+     audioElements.forEach(function(audio, index) {});
-
-[NoCoverage] StringLiteral
-src/generator/main.js:6:27
--       audio.removeAttribute("controls");
-+       audio.removeAttribute("");
-
-[NoCoverage] BooleanLiteral
-src/generator/main.js:8:9
--       if (!audio.id) {
-+       if (audio.id) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:8:9
--       if (!audio.id) {
-+       if (true) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:8:9
--       if (!audio.id) {
-+       if (false) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:8:20
--       if (!audio.id) {
--         audio.id = "audio-" + index;
--       }
-+       if (!audio.id) {}
-
-[NoCoverage] StringLiteral
-src/generator/main.js:9:18
--         audio.id = "audio-" + index;
-+         audio.id = "" + index;
-
-[NoCoverage] StringLiteral
-src/generator/main.js:12:54
--       const controlsContainer = document.createElement("div");
-+       const controlsContainer = document.createElement("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:13:35
--       controlsContainer.className = "audio-controls";
-+       controlsContainer.className = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:14:28
--       controlsContainer.id = "controls-" + audio.id;
-+       controlsContainer.id = "" + audio.id;
-
-[NoCoverage] StringLiteral
-src/generator/main.js:16:48
--       const timeDisplay = document.createElement("span");
-+       const timeDisplay = document.createElement("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:17:29
--       timeDisplay.className = "audio-time";
-+       timeDisplay.className = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:18:31
--       timeDisplay.textContent = "0:00";
-+       timeDisplay.textContent = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:20:47
--       const playButton = document.createElement("a");
-+       const playButton = document.createElement("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:21:23
--       playButton.href = "#";
-+       playButton.href = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:22:30
--       playButton.textContent = "PLAY";
-+       playButton.textContent = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:23:33
--       playButton.addEventListener("click", function(e) {
-+       playButton.addEventListener("", function(e) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:23:54
--       playButton.addEventListener("click", function(e) {
--         e.preventDefault();
--         audio.play();
--       });
-+       playButton.addEventListener("click", function(e) {});
-
-[NoCoverage] StringLiteral
-src/generator/main.js:28:48
--       const pauseButton = document.createElement("a");
-+       const pauseButton = document.createElement("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:29:24
--       pauseButton.href = "#";
-+       pauseButton.href = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:30:31
--       pauseButton.textContent = "PAUSE";
-+       pauseButton.textContent = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:31:34
--       pauseButton.addEventListener("click", function(e) {
-+       pauseButton.addEventListener("", function(e) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:31:55
--       pauseButton.addEventListener("click", function(e) {
--         e.preventDefault();
--         audio.pause();
--       });
-+       pauseButton.addEventListener("click", function(e) {});
-
-[NoCoverage] StringLiteral
-src/generator/main.js:36:47
--       const stopButton = document.createElement("a");
-+       const stopButton = document.createElement("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:37:23
--       stopButton.href = "#";
-+       stopButton.href = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:38:30
--       stopButton.textContent = "STOP";
-+       stopButton.textContent = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:39:33
--       stopButton.addEventListener("click", function(e) {
-+       stopButton.addEventListener("", function(e) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:39:54
--       stopButton.addEventListener("click", function(e) {
--         e.preventDefault();
--         audio.pause();
--         audio.currentTime = 0;
--       });
-+       stopButton.addEventListener("click", function(e) {});
-
-[NoCoverage] StringLiteral
-src/generator/main.js:45:28
--       audio.addEventListener("timeupdate", function() {
-+       audio.addEventListener("", function() {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:45:53
--       audio.addEventListener("timeupdate", function() {
--         const minutes = Math.floor(audio.currentTime / 60);
--         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
--         timeDisplay.textContent = minutes + ":" + seconds;
--       });
-+       audio.addEventListener("timeupdate", function() {});
-
-[NoCoverage] ArithmeticOperator
-src/generator/main.js:46:34
--         const minutes = Math.floor(audio.currentTime / 60);
-+         const minutes = Math.floor(audio.currentTime * 60);
-
-[NoCoverage] ArithmeticOperator
-src/generator/main.js:47:34
--         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
-+         const seconds = Math.floor(audio.currentTime * 60).toString().padStart(2, "0");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:47:81
--         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
-+         const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:48:43
--         timeDisplay.textContent = minutes + ":" + seconds;
-+         timeDisplay.textContent = minutes + "" + seconds;
-
-[NoCoverage] StringLiteral
-src/generator/main.js:52:59
--       controlsContainer.appendChild(document.createTextNode(" "));
-+       controlsContainer.appendChild(document.createTextNode(""));
-
-[NoCoverage] StringLiteral
-src/generator/main.js:54:59
--       controlsContainer.appendChild(document.createTextNode(" "));
-+       controlsContainer.appendChild(document.createTextNode(""));
-
-[NoCoverage] StringLiteral
-src/generator/main.js:56:59
--       controlsContainer.appendChild(document.createTextNode(" "));
-+       controlsContainer.appendChild(document.createTextNode(""));
-
-[NoCoverage] BlockStatement
-src/generator/main.js:69:65
--   function initializeInteractiveComponent(id, processingFunction) {
--     // Get the article element
--     const article = document.getElementById(id);
--     
--     // Get the elements within the article
--     const inputElement = article.querySelector('input');
--     const submitButton = article.querySelector('button');
--     const outputElement = article.querySelector('p.output');
--     
--     // Disable controls during initialization
--     inputElement.disabled = true;
--     submitButton.disabled = true;
--     
--     // Update message to show JS is running
--     outputElement.textContent = 'Initialising...';
--     
--     /**
--      * Enable controls and update status message
--      */
--     function enableControls() {
--       inputElement.disabled = false;
--       submitButton.disabled = false;
--       outputElement.textContent = 'Ready for input';
--       outputElement.parentElement.classList.remove('warning');
--     }
--     
--     /**
--      * Handle form submission events
--      * @param {Event} event - The submission event
--      */
--     function handleSubmit(event) {
--       if (event) {
--         event.preventDefault();
--       }
--       const inputValue = inputElement.value;
--       
--       // Use the provided processing function
--       const result = processingFunction(inputValue);
--       
--       // Update the output
--       outputElement.textContent = result;
--     }
--     
--     // Add event listener to the submit button
--     submitButton.addEventListener('click', handleSubmit);
--     
--     // Add event listener for Enter key in the input field
--     inputElement.addEventListener('keypress', (event) => {
--       if (event.key === 'Enter') {
--         handleSubmit(event);
--       }
--     });
--     
--     // Enable controls when initialization is complete
--     enableControls();
--   }
-+   function initializeInteractiveComponent(id, processingFunction) {}
-
-[NoCoverage] StringLiteral
-src/generator/main.js:74:46
--     const inputElement = article.querySelector('input');
-+     const inputElement = article.querySelector("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:75:46
--     const submitButton = article.querySelector('button');
-+     const submitButton = article.querySelector("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:76:47
--     const outputElement = article.querySelector('p.output');
-+     const outputElement = article.querySelector("");
-
-[NoCoverage] BooleanLiteral
-src/generator/main.js:79:27
--     inputElement.disabled = true;
-+     inputElement.disabled = false;
-
-[NoCoverage] BooleanLiteral
-src/generator/main.js:80:27
--     submitButton.disabled = true;
-+     submitButton.disabled = false;
-
-[NoCoverage] StringLiteral
-src/generator/main.js:83:31
--     outputElement.textContent = 'Initialising...';
-+     outputElement.textContent = "";
-
-[NoCoverage] BlockStatement
-src/generator/main.js:88:29
--     function enableControls() {
--       inputElement.disabled = false;
--       submitButton.disabled = false;
--       outputElement.textContent = 'Ready for input';
--       outputElement.parentElement.classList.remove('warning');
--     }
-+     function enableControls() {}
-
-[NoCoverage] BooleanLiteral
-src/generator/main.js:89:29
--       inputElement.disabled = false;
-+       inputElement.disabled = true;
-
-[NoCoverage] BooleanLiteral
-src/generator/main.js:90:29
--       submitButton.disabled = false;
-+       submitButton.disabled = true;
-
-[NoCoverage] StringLiteral
-src/generator/main.js:91:33
--       outputElement.textContent = 'Ready for input';
-+       outputElement.textContent = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:92:50
--       outputElement.parentElement.classList.remove('warning');
-+       outputElement.parentElement.classList.remove("");
-
-[NoCoverage] BlockStatement
-src/generator/main.js:99:32
--     function handleSubmit(event) {
--       if (event) {
--         event.preventDefault();
--       }
--       const inputValue = inputElement.value;
--       
--       // Use the provided processing function
--       const result = processingFunction(inputValue);
--       
--       // Update the output
--       outputElement.textContent = result;
--     }
-+     function handleSubmit(event) {}
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:100:9
--       if (event) {
-+       if (true) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:100:9
--       if (event) {
-+       if (false) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:100:16
--       if (event) {
--         event.preventDefault();
--       }
-+       if (event) {}
-
-[NoCoverage] StringLiteral
-src/generator/main.js:113:33
--     submitButton.addEventListener('click', handleSubmit);
-+     submitButton.addEventListener("", handleSubmit);
-
-[NoCoverage] StringLiteral
-src/generator/main.js:116:33
--     inputElement.addEventListener('keypress', (event) => {
-+     inputElement.addEventListener("", (event) => {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:116:56
--     inputElement.addEventListener('keypress', (event) => {
--       if (event.key === 'Enter') {
--         handleSubmit(event);
--       }
--     });
-+     inputElement.addEventListener('keypress', (event) => {});
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:117:9
--       if (event.key === 'Enter') {
-+       if (true) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:117:9
--       if (event.key === 'Enter') {
-+       if (false) {
-
-[NoCoverage] EqualityOperator
-src/generator/main.js:117:9
--       if (event.key === 'Enter') {
-+       if (event.key !== 'Enter') {
-
-[NoCoverage] StringLiteral
-src/generator/main.js:117:23
--       if (event.key === 'Enter') {
-+       if (event.key === "") {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:117:32
--       if (event.key === 'Enter') {
--         handleSubmit(event);
--       }
-+       if (event.key === 'Enter') {}
-
-[NoCoverage] BlockStatement
-src/generator/main.js:132:62
--   function initializeWhenVisible(id, modulePath, functionName) {
--     const article = document.getElementById(id);
--     
--     // Create an observer instance
--     const observer = new IntersectionObserver((entries, observer) => {
--       entries.forEach(entry => {
--         // If the article is visible
--         if (entry.isIntersecting) {
--           // Dynamically import the module only when the article is visible
--           import(modulePath).then((module) => {
--             const processingFunction = module[functionName];
--             
--             // Initialize the component with the imported function
--             initializeInteractiveComponent(id, processingFunction);
--           }).catch(error => {
--             console.error('Error loading module ' + modulePath + ':', error);
--           });
--           
--           // Stop observing once initialized
--           observer.disconnect();
--         }
--       });
--     }, {
--       // Options for the observer
--       root: null, // viewport
--       threshold: 0.1 // 10% visibility is enough to trigger
--     });
--     
--     // Start observing the article
--     observer.observe(article);
--   }
-+   function initializeWhenVisible(id, modulePath, functionName) {}
-
-[NoCoverage] BlockStatement
-src/generator/main.js:136:68
--     const observer = new IntersectionObserver((entries, observer) => {
--       entries.forEach(entry => {
--         // If the article is visible
--         if (entry.isIntersecting) {
--           // Dynamically import the module only when the article is visible
--           import(modulePath).then((module) => {
--             const processingFunction = module[functionName];
--             
--             // Initialize the component with the imported function
--             initializeInteractiveComponent(id, processingFunction);
--           }).catch(error => {
--             console.error('Error loading module ' + modulePath + ':', error);
--           });
--           
--           // Stop observing once initialized
--           observer.disconnect();
--         }
--       });
--     }, {
-+     const observer = new IntersectionObserver((entries, observer) => {}, {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:137:30
--       entries.forEach(entry => {
--         // If the article is visible
--         if (entry.isIntersecting) {
--           // Dynamically import the module only when the article is visible
--           import(modulePath).then((module) => {
--             const processingFunction = module[functionName];
--             
--             // Initialize the component with the imported function
--             initializeInteractiveComponent(id, processingFunction);
--           }).catch(error => {
--             console.error('Error loading module ' + modulePath + ':', error);
--           });
--           
--           // Stop observing once initialized
--           observer.disconnect();
--         }
--       });
-+       entries.forEach(entry => {});
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:139:11
--         if (entry.isIntersecting) {
-+         if (true) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:139:11
--         if (entry.isIntersecting) {
-+         if (false) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:139:33
--         if (entry.isIntersecting) {
--           // Dynamically import the module only when the article is visible
--           import(modulePath).then((module) => {
--             const processingFunction = module[functionName];
--             
--             // Initialize the component with the imported function
--             initializeInteractiveComponent(id, processingFunction);
--           }).catch(error => {
--             console.error('Error loading module ' + modulePath + ':', error);
--           });
--           
--           // Stop observing once initialized
--           observer.disconnect();
--         }
-+         if (entry.isIntersecting) {}
-
-[NoCoverage] BlockStatement
-src/generator/main.js:141:45
--           import(modulePath).then((module) => {
--             const processingFunction = module[functionName];
--             
--             // Initialize the component with the imported function
--             initializeInteractiveComponent(id, processingFunction);
--           }).catch(error => {
-+           import(modulePath).then((module) => {}).catch(error => {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:146:27
--           }).catch(error => {
--             console.error('Error loading module ' + modulePath + ':', error);
--           });
-+           }).catch(error => {});
-
-[NoCoverage] StringLiteral
-src/generator/main.js:147:25
--             console.error('Error loading module ' + modulePath + ':', error);
-+             console.error("" + modulePath + ':', error);
-
-[NoCoverage] StringLiteral
-src/generator/main.js:147:64
--             console.error('Error loading module ' + modulePath + ':', error);
-+             console.error('Error loading module ' + modulePath + "", error);
-
-[NoCoverage] ObjectLiteral
-src/generator/main.js:154:6
--     }, {
--       // Options for the observer
--       root: null, // viewport
--       threshold: 0.1 // 10% visibility is enough to trigger
--     });
-+     }, {});
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:165:5
--   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
-+   if (true) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:165:5
--   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
-+   if (false) {
-
-[NoCoverage] LogicalOperator
-src/generator/main.js:165:5
--   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
-+   if (window.interactiveComponents || window.interactiveComponents.length > 0) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:165:37
--   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
-+   if (window.interactiveComponents && true) {
-
-[NoCoverage] EqualityOperator
-src/generator/main.js:165:37
--   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
-+   if (window.interactiveComponents && window.interactiveComponents.length >= 0) {
-
-[NoCoverage] EqualityOperator
-src/generator/main.js:165:37
--   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
-+   if (window.interactiveComponents && window.interactiveComponents.length <= 0) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:165:78
--   if (window.interactiveComponents && window.interactiveComponents.length > 0) {
--     console.log('Initializing', window.interactiveComponents.length, 'interactive components');
--     window.interactiveComponents.forEach(component => {
--       initializeWhenVisible(component.id, component.modulePath, component.functionName);
--     });
--   } else {
-+   if (window.interactiveComponents && window.interactiveComponents.length > 0) {} else {
-
-[NoCoverage] StringLiteral
-src/generator/main.js:166:15
--     console.log('Initializing', window.interactiveComponents.length, 'interactive components');
-+     console.log("", window.interactiveComponents.length, 'interactive components');
-
-[NoCoverage] StringLiteral
-src/generator/main.js:166:68
--     console.log('Initializing', window.interactiveComponents.length, 'interactive components');
-+     console.log('Initializing', window.interactiveComponents.length, "");
-
-[NoCoverage] BlockStatement
-src/generator/main.js:167:53
--     window.interactiveComponents.forEach(component => {
--       initializeWhenVisible(component.id, component.modulePath, component.functionName);
--     });
-+     window.interactiveComponents.forEach(component => {});
-
-[NoCoverage] BlockStatement
-src/generator/main.js:170:8
--   } else {
--     console.warn('No interactive components found to initialize');
--   }
-+   } else {}
-
-[NoCoverage] StringLiteral
-src/generator/main.js:171:16
--     console.warn('No interactive components found to initialize');
-+     console.warn("");
-
-[NoCoverage] BlockStatement
-src/generator/main.js:175:41
--   function hideArticlesByClass(className) {
--     var articles = document.getElementsByTagName('article');
--     for (var i = 0; i < articles.length; i++) {
--       if (articles[i].classList.contains(className)) {
--         articles[i].style.display = 'none';
--       }
--     }
--   }
-+   function hideArticlesByClass(className) {}
-
-[NoCoverage] StringLiteral
-src/generator/main.js:176:48
--     var articles = document.getElementsByTagName('article');
-+     var articles = document.getElementsByTagName("");
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:177:19
--     for (var i = 0; i < articles.length; i++) {
-+     for (var i = 0; false; i++) {
-
-[NoCoverage] EqualityOperator
-src/generator/main.js:177:19
--     for (var i = 0; i < articles.length; i++) {
-+     for (var i = 0; i <= articles.length; i++) {
-
-[NoCoverage] EqualityOperator
-src/generator/main.js:177:19
--     for (var i = 0; i < articles.length; i++) {
-+     for (var i = 0; i >= articles.length; i++) {
-
-[NoCoverage] UpdateOperator
-src/generator/main.js:177:40
--     for (var i = 0; i < articles.length; i++) {
-+     for (var i = 0; i < articles.length; i--) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:177:45
--     for (var i = 0; i < articles.length; i++) {
--       if (articles[i].classList.contains(className)) {
--         articles[i].style.display = 'none';
--       }
--     }
-+     for (var i = 0; i < articles.length; i++) {}
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:178:9
--       if (articles[i].classList.contains(className)) {
-+       if (true) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:178:9
--       if (articles[i].classList.contains(className)) {
-+       if (false) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:178:52
--       if (articles[i].classList.contains(className)) {
--         articles[i].style.display = 'none';
--       }
-+       if (articles[i].classList.contains(className)) {}
-
-[NoCoverage] StringLiteral
-src/generator/main.js:179:35
--         articles[i].style.display = 'none';
-+         articles[i].style.display = "";
-
-[NoCoverage] BlockStatement
-src/generator/main.js:184:42
--   function toggleHideLink(link, className) {
--     // Check if a span with the hide link already exists immediately after the link.
--     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
--       // Remove the span if it exists.
--       link.nextElementSibling.remove();
--     } else {
--       // Create a new span element.
--       var span = document.createElement('span');
--       span.classList.add('hide-span');
--       // Append the opening text node.
--       span.appendChild(document.createTextNode(" ("));
--       // Create the hide anchor element.
--       var hideLink = document.createElement('a');
--       hideLink.textContent = "hide";
--       // Add click listener to trigger hideArticlesByClass.
--       hideLink.addEventListener('click', function(event) {
--         event.preventDefault();
--         hideArticlesByClass(className);
--       });
--       span.appendChild(hideLink);
--       // Append the closing text node.
--       span.appendChild(document.createTextNode(")"));
--       // Insert the span immediately after the link.
--       link.parentNode.insertBefore(span, link.nextSibling);
--     }
--   }
-+   function toggleHideLink(link, className) {}
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:186:7
--     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
-+     if (true) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:186:7
--     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
-+     if (false) {
-
-[NoCoverage] LogicalOperator
-src/generator/main.js:186:7
--     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
-+     if (link.nextElementSibling || link.nextElementSibling.classList.contains('hide-span')) {
-
-[NoCoverage] StringLiteral
-src/generator/main.js:186:77
--     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
-+     if (link.nextElementSibling && link.nextElementSibling.classList.contains("")) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:186:91
--     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
--       // Remove the span if it exists.
--       link.nextElementSibling.remove();
--     } else {
-+     if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {} else {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:189:10
--     } else {
--       // Create a new span element.
--       var span = document.createElement('span');
--       span.classList.add('hide-span');
--       // Append the opening text node.
--       span.appendChild(document.createTextNode(" ("));
--       // Create the hide anchor element.
--       var hideLink = document.createElement('a');
--       hideLink.textContent = "hide";
--       // Add click listener to trigger hideArticlesByClass.
--       hideLink.addEventListener('click', function(event) {
--         event.preventDefault();
--         hideArticlesByClass(className);
--       });
--       span.appendChild(hideLink);
--       // Append the closing text node.
--       span.appendChild(document.createTextNode(")"));
--       // Insert the span immediately after the link.
--       link.parentNode.insertBefore(span, link.nextSibling);
--     }
-+     } else {}
-
-[NoCoverage] StringLiteral
-src/generator/main.js:191:39
--       var span = document.createElement('span');
-+       var span = document.createElement("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:192:24
--       span.classList.add('hide-span');
-+       span.classList.add("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:194:46
--       span.appendChild(document.createTextNode(" ("));
-+       span.appendChild(document.createTextNode(""));
-
-[NoCoverage] StringLiteral
-src/generator/main.js:197:43
--       var hideLink = document.createElement('a');
-+       var hideLink = document.createElement("");
-
-[NoCoverage] StringLiteral
-src/generator/main.js:198:28
--       hideLink.textContent = "hide";
-+       hideLink.textContent = "";
-
-[NoCoverage] StringLiteral
-src/generator/main.js:200:31
--       hideLink.addEventListener('click', function(event) {
-+       hideLink.addEventListener("", function(event) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:200:56
--       hideLink.addEventListener('click', function(event) {
--         event.preventDefault();
--         hideArticlesByClass(className);
--       });
-+       hideLink.addEventListener('click', function(event) {});
-
-[NoCoverage] StringLiteral
-src/generator/main.js:206:46
--       span.appendChild(document.createTextNode(")"));
-+       span.appendChild(document.createTextNode(""));
-
-[NoCoverage] BlockStatement
-src/generator/main.js:213:13
--   (function() {
--     Array.from(document.getElementsByTagName('a')).forEach(function(link) {
--       Array.from(link.classList).forEach(function(className) {
--         if (className.indexOf('tag-') === 0) {
--           link.addEventListener('click', function(event) {
--             event.preventDefault();
--             toggleHideLink(link, className);
--           });
--           return; // exit after first tag- match
--         }
--       });
--     });
--   })();
-+   (function() {})();
-
-[NoCoverage] StringLiteral
-src/generator/main.js:214:44
--     Array.from(document.getElementsByTagName('a')).forEach(function(link) {
-+     Array.from(document.getElementsByTagName("")).forEach(function(link) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:214:73
--     Array.from(document.getElementsByTagName('a')).forEach(function(link) {
--       Array.from(link.classList).forEach(function(className) {
--         if (className.indexOf('tag-') === 0) {
--           link.addEventListener('click', function(event) {
--             event.preventDefault();
--             toggleHideLink(link, className);
--           });
--           return; // exit after first tag- match
--         }
--       });
--     });
-+     Array.from(document.getElementsByTagName('a')).forEach(function(link) {});
-
-[NoCoverage] BlockStatement
-src/generator/main.js:215:60
--       Array.from(link.classList).forEach(function(className) {
--         if (className.indexOf('tag-') === 0) {
--           link.addEventListener('click', function(event) {
--             event.preventDefault();
--             toggleHideLink(link, className);
--           });
--           return; // exit after first tag- match
--         }
--       });
-+       Array.from(link.classList).forEach(function(className) {});
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:216:11
--         if (className.indexOf('tag-') === 0) {
-+         if (true) {
-
-[NoCoverage] ConditionalExpression
-src/generator/main.js:216:11
--         if (className.indexOf('tag-') === 0) {
-+         if (false) {
-
-[NoCoverage] EqualityOperator
-src/generator/main.js:216:11
--         if (className.indexOf('tag-') === 0) {
-+         if (className.indexOf('tag-') !== 0) {
-
-[NoCoverage] StringLiteral
-src/generator/main.js:216:29
--         if (className.indexOf('tag-') === 0) {
-+         if (className.indexOf("") === 0) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:216:44
--         if (className.indexOf('tag-') === 0) {
--           link.addEventListener('click', function(event) {
--             event.preventDefault();
--             toggleHideLink(link, className);
--           });
--           return; // exit after first tag- match
--         }
-+         if (className.indexOf('tag-') === 0) {}
-
-[NoCoverage] StringLiteral
-src/generator/main.js:217:31
--           link.addEventListener('click', function(event) {
-+           link.addEventListener("", function(event) {
-
-[NoCoverage] BlockStatement
-src/generator/main.js:217:56
--           link.addEventListener('click', function(event) {
--             event.preventDefault();
--             toggleHideLink(link, className);
--           });
-+           link.addEventListener('click', function(event) {});
-
-[Survived] StringLiteral
-src/generator/script.js:2:19
--   const scriptTag = `<script src="main.js" defer></script>`;
-+   const scriptTag = ``;
-Ran all tests for this mutant.
 
 [Survived] StringLiteral
 src/generator/styles.js:1:23
@@ -1857,8 +3044,9 @@ src/generator/styles.js:1:23
 -       color: #00FFFF;
 -     }
 -     pre {
--       background-color: #1A1A1A;
--       color: #CCCCCC;
+-       background: linear-gradient(0deg, #00ffff, #ff00ff);
+-       -webkit-background-clip: text;
+-       -webkit-text-fill-color: transparent;
 -       padding: 10px;
 -       overflow-x: auto;
 -     }
@@ -1975,17 +3163,47 @@ src/generator/title.js:10:30
 Ran all tests for this mutant.
 
 [NoCoverage] StringLiteral
-src/toys/2025-03-21/italics.js:91:29
--     if (!text?.trim()) return '';
-+     if (!text?.trim()) return "Stryker was here!";
-
-[NoCoverage] StringLiteral
-src/toys/2025-03-21/italics.js:108:61
+src/toys/2025-03-21/italics.js:133:61
 -     return afterText ? processTextPreservingBold(afterText) : '';
 +     return afterText ? processTextPreservingBold(afterText) : "Stryker was here!";
 
+[Survived] MethodExpression
+src/toys/2025-03-21/italics.js:9:11
+-     return !text?.trim();
++     return !text;
+Tests ran:
+    italics function leaves regular text unchanged
+    italics function adds <em> tags around asterisk-style italics while preserving asterisks
+    italics function adds <em> tags around underscore-style italics while preserving underscores
+  and 4 more tests!
+
+
+[Survived] OptionalChaining
+src/toys/2025-03-21/italics.js:9:11
+-     return !text?.trim();
++     return !text.trim();
+Tests ran:
+    italics function leaves regular text unchanged
+    italics function adds <em> tags around asterisk-style italics while preserving asterisks
+    italics function adds <em> tags around underscore-style italics while preserving underscores
+  and 4 more tests!
+
+
+[Survived] BlockStatement
+src/toys/2025-03-21/italics.js:8:28
+-   function isEmptyText(text) {
+-     return !text?.trim();
+-   }
++   function isEmptyText(text) {}
+Tests ran:
+    italics function leaves regular text unchanged
+    italics function adds <em> tags around asterisk-style italics while preserving asterisks
+    italics function adds <em> tags around underscore-style italics while preserving underscores
+  and 4 more tests!
+
+
 [Survived] StringLiteral
-src/toys/2025-03-21/italics.js:53:30
+src/toys/2025-03-21/italics.js:61:30
 -     return new RegExp(pattern, 's');
 +     return new RegExp(pattern, "");
 Tests ran:
@@ -1996,75 +3214,833 @@ Tests ran:
 
 
 [Survived] MethodExpression
-src/toys/2025-03-21/italics.js:91:8
--     if (!text?.trim()) return '';
-+     if (!text) return '';
-Tests ran:
-    italics function leaves regular text unchanged
-    italics function adds <em> tags around asterisk-style italics while preserving asterisks
-    italics function adds <em> tags around underscore-style italics while preserving underscores
-  and 4 more tests!
-
-
-[Survived] ConditionalExpression
-src/toys/2025-03-21/italics.js:91:7
--     if (!text?.trim()) return '';
-+     if (false) return '';
-Tests ran:
-    italics function leaves regular text unchanged
-    italics function adds <em> tags around asterisk-style italics while preserving asterisks
-    italics function adds <em> tags around underscore-style italics while preserving underscores
-  and 4 more tests!
-
-
-[Survived] OptionalChaining
-src/toys/2025-03-21/italics.js:91:8
--     if (!text?.trim()) return '';
-+     if (!text.trim()) return '';
-Tests ran:
-    italics function leaves regular text unchanged
-    italics function adds <em> tags around asterisk-style italics while preserving asterisks
-    italics function adds <em> tags around underscore-style italics while preserving underscores
-  and 4 more tests!
-
-
-[Survived] MethodExpression
-src/toys/2025-03-21/italics.js:96:10
+src/toys/2025-03-21/italics.js:95:10
 -     return [
--       processItalicBefore(segment.beforeText),
--       segment.boldText,
--       processBoldAfter(segment.afterText)
+-       processItalicBefore(beforeText),
+-       boldText,
+-       processBoldAfter(afterText)
 -     ].filter(Boolean).join('');
-+     return [processItalicBefore(segment.beforeText), segment.boldText, processBoldAfter(segment.afterText)].join('');
++     return [processItalicBefore(beforeText), boldText, processBoldAfter(afterText)].join('');
 Tests ran:
     italics function does not add <em> tags around bold double-asterisk markdown
     italics function does not add <em> tags around bold double-underscore markdown
     italics function handles complex mixed formatting correctly
 
 
-Ran 4.36 tests per mutant on average.
----------------------|------------------|----------|-----------|------------|----------|----------|
-                     | % Mutation score |          |           |            |          |          |
-File                 |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
----------------------|--------|---------|----------|-----------|------------|----------|----------|
-All files            |  64.59 |   89.55 |      386 |         8 |         46 |      170 |        0 |
- generator           |  59.65 |   88.29 |      309 |         0 |         41 |      168 |        0 |
-  full-width.js      | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
-  generator.js       |  82.35 |   92.11 |      280 |         0 |         24 |       36 |        0 |
-  head.js            |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
-  html.js            |  63.64 |   68.29 |       28 |         0 |         13 |        3 |        0 |
-  interactive.js     |   0.00 |    0.00 |        0 |         0 |          0 |        6 |        0 |
-  main.js            |   0.00 |    0.00 |        0 |         0 |          0 |      123 |        0 |
-  script.js          |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
-  styles.js          |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
-  title.js           |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
- toys                |  92.39 |   94.44 |       77 |         8 |          5 |        2 |        0 |
-  2024-10-02         | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
-   hello.js          | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
-  2025-03-19         | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
-   identity.js       | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
-  2025-03-21         |  92.13 |   94.25 |       74 |         8 |          5 |        2 |        0 |
-   booleanCoercer.js | 100.00 |  100.00 |       21 |         0 |          0 |        0 |        0 |
-   italics.js        |  89.71 |   92.42 |       53 |         8 |          5 |        2 |        0 |
----------------------|--------|---------|----------|-----------|------------|----------|----------|
-[32m20:41:58 (64370) INFO MutationTestExecutor[39m Done in 1 minute 18 seconds.
+[NoCoverage] BlockStatement
+src/toys/2025-03-26/prettyFloat.js:1:29
+-   function isNonFinite(input) {
+-     const num = Number(input);
+-     return !Number.isFinite(num);
+-   }
++   function isNonFinite(input) {}
+
+[NoCoverage] BooleanLiteral
+src/toys/2025-03-26/prettyFloat.js:3:10
+-     return !Number.isFinite(num);
++     return Number.isFinite(num);
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-26/prettyFloat.js:11:32
+-   function getValidNumber(input) {
+-     if (isNonFinite(input)) return null;
+-     return Number(input);
+-   }
++   function getValidNumber(input) {}
+
+[NoCoverage] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:12:7
+-     if (isNonFinite(input)) return null;
++     if (true) return null;
+
+[NoCoverage] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:12:7
+-     if (isNonFinite(input)) return null;
++     if (false) return null;
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-26/prettyFloat.js:26:33
+-   function isInvalidNumber(input) {
+-     return getValidNumber(input) === null;
+-   }
++   function isInvalidNumber(input) {}
+
+[NoCoverage] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:27:10
+-     return getValidNumber(input) === null;
++     return true;
+
+[NoCoverage] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:27:10
+-     return getValidNumber(input) === null;
++     return false;
+
+[NoCoverage] EqualityOperator
+src/toys/2025-03-26/prettyFloat.js:27:10
+-     return getValidNumber(input) === null;
++     return getValidNumber(input) !== null;
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-26/prettyFloat.js:34:34
+-   function parseValidNumber(input) {
+-     return Number(input);
+-   }
++   function parseValidNumber(input) {}
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-26/prettyFloat.js:52:30
+-     if (!decomposition) return "";
++     if (!decomposition) return "Stryker was here!";
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-26/prettyFloat.js:125:28
+-     if (exponentBits === 0n) {
+-       return {};
+-     }
++     if (exponentBits === 0n) {}
+
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:18:7
+-     if (!isValidIEEEParts(parts)) return null;
++     if (false) return null;
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:8:10
+-     return result !== null ? result : null;
++     return true ? result : null;
+Tests ran:
+    decomposeFloat handles zero
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+  and 2 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:52:7
+-     if (!decomposition) return "";
++     if (false) return "";
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:45:7
+-     if (!Number.isFinite(num)) return "";
++     if (false) return "";
+Tests ran:
+    decomposeFloat handles zero
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/toys/2025-03-26/prettyFloat.js:79:21
+-     return A.includes('.') ? A.replace(/\.?0+$/, '') : A;
++     return A.includes("") ? A.replace(/\.?0+$/, '') : A;
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[Survived] MethodExpression
+src/toys/2025-03-26/prettyFloat.js:83:10
+-     return ['sign', 'mantissa', 'exponent'].every(key => key in parts);
++     return ['sign', 'mantissa', 'exponent'].some(key => key in parts);
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[Survived] ArrayDeclaration
+src/toys/2025-03-26/prettyFloat.js:83:10
+-     return ['sign', 'mantissa', 'exponent'].every(key => key in parts);
++     return [].every(key => key in parts);
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[Survived] LogicalOperator
+src/toys/2025-03-26/prettyFloat.js:87:10
+-     return Boolean(parts) && hasIEEEFields(parts);
++     return Boolean(parts) || hasIEEEFields(parts);
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:87:10
+-     return Boolean(parts) && hasIEEEFields(parts);
++     return true;
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:99:7
+-     if (!Number.isFinite(value)) return {};
++     if (false) return {};
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:125:7
+-     if (exponentBits === 0n) {
++     if (false) {
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-29/fishingGame.js:44:31
+-     if (!match) throw new Error(`Unrecognized hour: ${hour}`);
++     if (!match) throw new Error(``);
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-29/fishingGame.js:56:31
+-     if (!match) throw new Error(`Unrecognized month: ${month}`);
++     if (!match) throw new Error(``);
+
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:41:5
+-       { start: 0, end: 5, label: "night" },
++       {},
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:41:32
+-       { start: 0, end: 5, label: "night" },
++       { start: 0, end: 5, label: "" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-29/fishingGame.js:43:49
+-     const match = ranges.find(({ start, end }) => hour >= start && hour < end);
++     const match = ranges.find(({ start, end }) => true && hour < end);
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-29/fishingGame.js:44:7
+-     if (!match) throw new Error(`Unrecognized hour: ${hour}`);
++     if (false) throw new Error(`Unrecognized hour: ${hour}`);
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-29/fishingGame.js:56:7
+-     if (!match) throw new Error(`Unrecognized month: ${month}`);
++     if (false) throw new Error(`Unrecognized month: ${month}`);
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] UnaryOperator
+src/toys/2025-03-29/fishingGame.js:119:26
+-       "bread": { modifier: -0.05, description: "a slice of bread" },
++       "bread": { modifier: +0.05, description: "a slice of bread" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:118:15
+-       "insect": { modifier: 0.05, description: "a lively insect" },
++       "insect": {},
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:118:46
+-       "insect": { modifier: 0.05, description: "a lively insect" },
++       "insect": { modifier: 0.05, description: "" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:121:19
+-       "shiny bait": { modifier: 0.15, description: "a glittering lure" },
++       "shiny bait": {},
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:123:13
+-       "grub": { modifier: 0.05, description: "a succulent grub" },
++       "grub": {},
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:121:50
+-       "shiny bait": { modifier: 0.15, description: "a glittering lure" },
++       "shiny bait": { modifier: 0.15, description: "" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:123:44
+-       "grub": { modifier: 0.05, description: "a succulent grub" },
++       "grub": { modifier: 0.05, description: "" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:126:46
+-       "maggot": { modifier: -0.1, description: "a squirming maggot" },
++       "maggot": { modifier: -0.1, description: "" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:125:16
+-       "sausage": { modifier: 0.2, description: "a savory sausage" },
++       "sausage": {},
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:126:15
+-       "maggot": { modifier: -0.1, description: "a squirming maggot" },
++       "maggot": {},
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:125:46
+-       "sausage": { modifier: 0.2, description: "a savory sausage" },
++       "sausage": { modifier: 0.2, description: "" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] UnaryOperator
+src/toys/2025-03-29/fishingGame.js:126:27
+-       "maggot": { modifier: -0.1, description: "a squirming maggot" },
++       "maggot": { modifier: +0.1, description: "a squirming maggot" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-29/get.js:31:11
+-         if (currentValue === null || typeof currentValue !== 'object') {
++         if (false || typeof currentValue !== 'object') {
+Tests ran:
+    get function with path traversal should return the value for a top-level key
+    get function with path traversal should return the value for a nested key
+    get function with path traversal should return the value for an array index
+  and 6 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-29/get.js:32:116
+-           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
++           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, true ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
+Tests ran:
+    get function with path traversal should return an error trying to access property on non-object
+
+
+[Survived] StringLiteral
+src/toys/2025-03-29/get.js:32:140
+-           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
++           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf("") !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
+Tests ran:
+    get function with path traversal should return an error trying to access property on non-object
+
+
+[Survived] UnaryOperator
+src/toys/2025-03-29/get.js:32:149
+-           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
++           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== +1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
+Tests ran:
+    get function with path traversal should return an error trying to access property on non-object
+
+
+[NoCoverage] ConditionalExpression
+src/toys/2025-03-29/setTemporary.js:35:14
+-     } else if (isObject(source)) {
++     } else if (true) {
+
+[NoCoverage] ConditionalExpression
+src/toys/2025-03-29/setTemporary.js:35:14
+-     } else if (isObject(source)) {
++     } else if (false) {
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-29/setTemporary.js:35:32
+-     } else if (isObject(source)) {
+-         // If target is not an object but source is, return a shallow copy of source
+-         // (or deep copy if required, but shallow should suffice here as we merge onto it)
+-         return { ...source };
+-     }
++     } else if (isObject(source)) {}
+
+[NoCoverage] ObjectLiteral
+src/toys/2025-03-29/setTemporary.js:38:14
+-         return { ...source };
++         return {};
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-29/setTemporary.js:64:46
+-     if (!env || typeof env.get !== 'function') {
+-       return "Error: 'env' Map with 'get' method is required.";
+-     }
++     if (!env || typeof env.get !== 'function') {}
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-29/setTemporary.js:65:12
+-       return "Error: 'env' Map with 'get' method is required.";
++       return "";
+
+[Survived] ConditionalExpression
+src/toys/2025-03-29/setTemporary.js:21:7
+-     if (isObject(target) && isObject(source)) {
++     if (true) {
+Tests ran:
+    setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
+  and 6 more tests!
+
+
+[Survived] LogicalOperator
+src/toys/2025-03-29/setTemporary.js:21:7
+-     if (isObject(target) && isObject(source)) {
++     if (isObject(target) || isObject(source)) {
+Tests ran:
+    setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
+  and 6 more tests!
+
+
+[Survived] LogicalOperator
+src/toys/2025-03-29/setTemporary.js:25:11
+-         if (isObject(targetValue) && isObject(sourceValue)) {
++         if (isObject(targetValue) || isObject(sourceValue)) {
+Tests ran:
+    setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
+  and 6 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-29/setTemporary.js:64:7
+-     if (!env || typeof env.get !== 'function') {
++     if (false) {
+Tests ran:
+    setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
+  and 9 more tests!
+
+
+[Survived] LogicalOperator
+src/toys/2025-03-29/setTemporary.js:64:7
+-     if (!env || typeof env.get !== 'function') {
++     if (!env && typeof env.get !== 'function') {
+Tests ran:
+    setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
+  and 9 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-29/setTemporary.js:64:15
+-     if (!env || typeof env.get !== 'function') {
++     if (!env || false) {
+Tests ran:
+    setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
+  and 9 more tests!
+
+
+[Survived] BlockStatement
+src/toys/2025-03-29/setTemporary.js:88:39
+-       if (!isObject(newData.temporary)) {
+-           newData.temporary = {}; 
+-       }
++       if (!isObject(newData.temporary)) {}
+Tests ran:
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
+    setTemporary function (getData -> merge -> setData) should return error if setData throws an error
+  and 2 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-29/setTemporary.js:88:9
+-       if (!isObject(newData.temporary)) {
++       if (false) {
+Tests ran:
+    setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
+  and 6 more tests!
+
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:10:49
+-       const name = scoped.name || input.trim() || "Stray";
++       const name = scoped.name || input.trim() || "";
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-30/cyberpunkAdventure.js:58:16
+-           } else {
+-             output = `> Hint: the password is a number and a name...`;
+-           }
++           } else {}
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:59:20
+-             output = `> Hint: the password is a number and a name...`;
++             output = ``;
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-30/cyberpunkAdventure.js:76:16
+-           } else {
+-             output = `> Do you want to trade? Type 'trade datapad'.`;
+-           }
++           } else {}
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:77:20
+-             output = `> Do you want to trade? Type 'trade datapad'.`;
++             output = ``;
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-30/cyberpunkAdventure.js:89:16
+-           } else {
+-             output = `> You trip a wire. Sirens start up. You sprint back to the Market.`;
+-           }
++           } else {}
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:90:20
+-             output = `> You trip a wire. Sirens start up. You sprint back to the Market.`;
++             output = ``;
+
+[NoCoverage] ConditionalExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:95:7
+-         default:
+-           output = `> Glitch in the grid. Resetting...`;
+-           nextState = "intro";
++         default:
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:96:18
+-           output = `> Glitch in the grid. Resetting...`;
++           output = ``;
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:97:21
+-           nextState = "intro";
++           nextState = "";
+
+[NoCoverage] BlockStatement
+src/toys/2025-03-30/cyberpunkAdventure.js:112:15
+-     } catch (e) {
+-       return `> SYSTEM ERROR: neural link failure`;
+-     }
++     } catch (e) {}
+
+[NoCoverage] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:113:12
+-       return `> SYSTEM ERROR: neural link failure`;
++       return ``;
+
+[Survived] MethodExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:10:33
+-       const name = scoped.name || input.trim() || "Stray";
++       const name = scoped.name || input || "Stray";
+Tests ran:
+    Cyberpunk Text Game initial naming and intro
+    Cyberpunk Text Game goes to Hacker Den and requires password
+    Cyberpunk Text Game unknown input in hub
+
+
+[Survived] LogicalOperator
+src/toys/2025-03-30/cyberpunkAdventure.js:13:29
+-       const visited = new Set(scoped.visited || []);
++       const visited = new Set(scoped.visited && []);
+Tests ran:
+    Cyberpunk Text Game initial naming and intro
+    Cyberpunk Text Game goes to Hacker Den and requires password
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+  and 2 more tests!
+
+
+[Survived] ArrayDeclaration
+src/toys/2025-03-30/cyberpunkAdventure.js:12:43
+-       const inventory = scoped.inventory || [];
++       const inventory = scoped.inventory || ["Stryker was here"];
+Tests ran:
+    Cyberpunk Text Game initial naming and intro
+    Cyberpunk Text Game goes to Hacker Den and requires password
+    Cyberpunk Text Game unknown input in hub
+
+
+[Survived] ArrayDeclaration
+src/toys/2025-03-30/cyberpunkAdventure.js:13:47
+-       const visited = new Set(scoped.visited || []);
++       const visited = new Set(scoped.visited || ["Stryker was here"]);
+Tests ran:
+    Cyberpunk Text Game initial naming and intro
+    Cyberpunk Text Game goes to Hacker Den and requires password
+    Cyberpunk Text Game unknown input in hub
+
+
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:18:18
+-       let output = "";
++       let output = "Stryker was here!";
+Tests ran:
+    Cyberpunk Text Game initial naming and intro
+    Cyberpunk Text Game goes to Hacker Den and requires password
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+  and 2 more tests!
+
+
+[Survived] MethodExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:15:24
+-       const lowerInput = input.trim().toLowerCase();
++       const lowerInput = input.toLowerCase();
+Tests ran:
+    Cyberpunk Text Game initial naming and intro
+    Cyberpunk Text Game goes to Hacker Den and requires password
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+  and 2 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:53:13
+-           if (lowerInput.includes("zero")) {
++           if (true) {
+Tests ran:
+    Cyberpunk Text Game goes to Hacker Den and requires password
+
+
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:53:33
+-           if (lowerInput.includes("zero")) {
++           if (lowerInput.includes("")) {
+Tests ran:
+    Cyberpunk Text Game goes to Hacker Den and requires password
+
+
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:57:23
+-             nextState = "hub";
++             nextState = "";
+Tests ran:
+    Cyberpunk Text Game goes to Hacker Den and requires password
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:70:13
+-           if (nextInventory.includes("datapad") && lowerInput.includes("trade")) {
++           if (true) {
+Tests ran:
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+
+
+[Survived] LogicalOperator
+src/toys/2025-03-30/cyberpunkAdventure.js:70:13
+-           if (nextInventory.includes("datapad") && lowerInput.includes("trade")) {
++           if (nextInventory.includes("datapad") || lowerInput.includes("trade")) {
+Tests ran:
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+
+
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:70:70
+-           if (nextInventory.includes("datapad") && lowerInput.includes("trade")) {
++           if (nextInventory.includes("datapad") && lowerInput.includes("")) {
+Tests ran:
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+
+
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:72:54
+-             nextInventory.splice(nextInventory.indexOf("datapad"), 1);
++             nextInventory.splice(nextInventory.indexOf(""), 1);
+Tests ran:
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:84:25
+-           const success = stealthCheck > 0.3;
++           const success = true;
+Tests ran:
+    Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
+
+
+[Survived] EqualityOperator
+src/toys/2025-03-30/cyberpunkAdventure.js:84:25
+-           const success = stealthCheck > 0.3;
++           const success = stealthCheck >= 0.3;
+Tests ran:
+    Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
+
+
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:75:23
+-             nextState = "hub";
++             nextState = "";
+Tests ran:
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:85:13
+-           if (success) {
++           if (true) {
+Tests ran:
+    Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
+
+
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:92:21
+-           nextState = "hub";
++           nextState = "";
+Tests ran:
+    Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
+
+
+Ran 4.24 tests per mutant on average.
+-------------------------|------------------|----------|-----------|------------|----------|----------|
+                         | % Mutation score |          |           |            |          |          |
+File                     |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+-------------------------|--------|---------|----------|-----------|------------|----------|----------|
+All files                |  65.20 |   88.27 |      804 |         9 |        108 |      326 |        0 |
+ browser                 |   0.00 |    0.00 |        0 |         0 |          0 |      202 |        0 |
+  main.js                |   0.00 |    0.00 |        0 |         0 |          0 |      202 |        0 |
+ generator               |  70.18 |   87.67 |      320 |         0 |         45 |       91 |        0 |
+  copy-toys.js           |   0.00 |    0.00 |        0 |         0 |          0 |       45 |        0 |
+  full-width.js          | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
+  generator.js           |  81.51 |   90.94 |      291 |         0 |         29 |       37 |        0 |
+  head.js                |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
+  html.js                |  63.64 |   68.29 |       28 |         0 |         13 |        3 |        0 |
+  interactive.js         |   0.00 |    0.00 |        0 |         0 |          0 |        6 |        0 |
+  styles.js              |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
+  title.js               |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
+ toys                    |  83.70 |   88.67 |      484 |         9 |         63 |       33 |        0 |
+  2024-10-02             | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
+   hello.js              | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
+  2025-03-19             | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
+   identity.js           | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
+  2025-03-21             |  93.81 |   94.79 |       83 |         8 |          5 |        1 |        0 |
+   booleanCoercer.js     | 100.00 |  100.00 |       21 |         0 |          0 |        0 |        0 |
+   italics.js            |  92.11 |   93.33 |       62 |         8 |          5 |        1 |        0 |
+  2025-03-26             |  73.26 |   85.14 |       63 |         0 |         11 |       12 |        0 |
+   prettyFloat.js        |  73.26 |   85.14 |       63 |         0 |         11 |       12 |        0 |
+  2025-03-28             | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
+   rand.js               | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
+  2025-03-29             |  86.79 |   89.34 |      242 |         1 |         29 |        8 |        0 |
+   fishingGame.js        |  86.99 |   88.19 |      127 |         0 |         17 |        2 |        0 |
+   get.js                |  93.65 |   93.65 |       59 |         0 |          4 |        0 |        0 |
+   setTemporary.js       |  80.28 |   87.69 |       56 |         1 |          8 |        6 |        0 |
+  2025-03-30             |  75.21 |   83.49 |       91 |         0 |         18 |       12 |        0 |
+   cyberpunkAdventure.js |  75.21 |   83.49 |       91 |         0 |         18 |       12 |        0 |
+-------------------------|--------|---------|----------|-----------|------------|----------|----------|
+[32m17:12:24 (84706) INFO MutationTestExecutor[39m Done in 2 minutes 42 seconds.

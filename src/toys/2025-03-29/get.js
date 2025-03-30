@@ -15,6 +15,9 @@ export function get(input, env) {
 
   try {
     const data = getData();
+    if (input.trim() === '') {
+      return JSON.stringify(data);
+    }
     // Basic check if initial data is an object or array
     if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
         return "Error: 'getData' did not return a valid object or array.";

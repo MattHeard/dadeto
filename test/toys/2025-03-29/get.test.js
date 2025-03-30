@@ -111,4 +111,38 @@ describe('get function with path traversal', () => {
     expect(get('top.nested', env)).toMatch(/^Error stringifying final value at path "top.nested":/);
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
+
+  test('should return undefined for valid path to undefined value', () => {
+    const dataWithUndefined = {
+      user: {
+        settings: {
+          theme: undefined
+        }
+      }
+    };
+    mockGetData.mockReturnValue(dataWithUndefined);
+    expect(get('user.settings.theme', env)).toBe(JSON.stringify(undefined));
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
+
+  test('should handle empty input string by returning full object', () => {
+    mockGetData.mockReturnValue(testData);
+    expect(get('', env)).toBe(JSON.stringify(testData));
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
+
+  test('should handle numeric string keys in object', () => {
+    const objWithNumericKeys = { "2025": { value: "future" } };
+    mockGetData.mockReturnValue(objWithNumericKeys);
+    expect(get('2025.value', env)).toBe(JSON.stringify('future'));
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
+
+  test('should return error when accessing deep property on null', () => {
+    const nestedNull = { user: { profile: null } };
+    mockGetData.mockReturnValue(nestedNull);
+    const expectedMessage = `Error: Cannot access property 'name' on non-object value at path 'user.profile'. Value is: null`;
+    expect(get('user.profile.name', env)).toBe(expectedMessage);
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
 });
