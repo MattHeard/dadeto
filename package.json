@@ -10,7 +10,8 @@
     "stryker": "node --experimental-vm-modules ./node_modules/.bin/stryker run > reports/mutation/text/mutation.txt",
     "lint": "npx eslint . -f json -o reports/lint/json/lint.json || cat reports/lint/json/lint.json",
     "copy-toys": "node src/generator/copy-toys.js",
-    "build": "npm run copy-toys && cp path.join(rootDir, 'src/blog.json') path.join(rootDir, 'public/') && npm run generate"
+    "copy-assets": "cp src/blog.json public/ && cp src/browser/main.js public/",
+    "build": "npm run copy-toys && npm run copy-assets && npm run generate"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.9",
