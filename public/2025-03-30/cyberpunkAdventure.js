@@ -21,6 +21,10 @@ export function cyberpunkAdventure(input, env) {
     // If we haven’t stored the name yet, do so now
     if (!temporary.name) {
       setTemporaryData({ name });
+      const confirmSet = getData().temporary.name;
+      if (!confirmSet) {
+        console.warn("Temporary data not persisting after setTemporaryData!");
+      }
       return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
     }
 

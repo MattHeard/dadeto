@@ -1,7 +1,10 @@
 export function cyberpunkAdventure(input, env) {
   try {
     console.log("cyberpunkAdventure called with input:", input);
-    const { getRandomNumber, getCurrentTime, getData, setTemporaryData } = env;
+    const getRandomNumber = env.get("getRandomNumber");
+    const getCurrentTime = env.get("getCurrentTime");
+    const getData = env.get("getData");
+    const setTemporaryData = env.get("setTemporaryData");
     const { temporary } = getData();
     console.log("Temporary data on load:", temporary);
 

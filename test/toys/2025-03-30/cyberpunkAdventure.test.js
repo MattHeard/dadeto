@@ -7,14 +7,14 @@ describe('Cyberpunk Text Game', () => {
 
   beforeEach(() => {
     tempData = {};
-    env = {
-      getRandomNumber: () => 0.5,
-      getCurrentTime: () => '23:59',
-      getData: () => ({ temporary: tempData }),
-      setTemporaryData: (data) => {
+    env = new Map([
+      ['getRandomNumber', () => 0.5],
+      ['getCurrentTime', () => '23:59'],
+      ['getData', () => ({ temporary: tempData })],
+      ['setTemporaryData', (data) => {
         tempData = { ...tempData, ...data };
-      },
-    };
+      }],
+    ]);
   });
 
   test('initial naming and intro', () => {
