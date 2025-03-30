@@ -1,16 +1,12 @@
-[32m17:09:41 (84706) INFO ProjectReader[39m Found 19 of 126 file(s) to be mutated.
-[32m17:09:42 (84706) INFO Instrumenter[39m Instrumented 19 source file(s) with 1247 mutant(s)
-[32m17:09:42 (84706) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
-[32m17:09:43 (84706) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
-[32m17:09:45 (84706) INFO DryRunExecutor[39m Initial test run succeeded. Ran 80 tests in 2 seconds (net 58 ms, overhead 2349 ms).
-[33m17:09:45 (84706) WARN MutantTestPlanner[39m Detected 74 static mutants (6% of total) that are estimated to take 40% of the time running the tests!
-  You might want to enable "ignoreStatic" to ignore these static mutants for your next run. 
-  For more information about static mutants visit: https://stryker-mutator.io/docs/mutation-testing-elements/static-mutants
-  (disable "warnings.slow" to ignore this warning)
+[32m17:20:21 (21769) INFO ProjectReader[39m Found 19 of 126 file(s) to be mutated.
+[32m17:20:21 (21769) INFO Instrumenter[39m Instrumented 19 source file(s) with 1253 mutant(s)
+[32m17:20:21 (21769) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
+[32m17:20:22 (21769) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
+[32m17:20:25 (21769) INFO DryRunExecutor[39m Initial test run succeeded. Ran 84 tests in 2 seconds (net 58 ms, overhead 2595 ms).
 
 All tests
   generator/generator.test.js
-    ✓ Blog Generator should generate complete HTML page with multiple posts [line 8] (killed 276)
+    ✓ Blog Generator should generate complete HTML page with multiple posts [line 8] (killed 274)
     ✓ Blog Generator should contain content for posts [line 103] (killed 4)
     ✓ Blog Generator should contain an illustration for posts [line 129] (killed 1)
     ~ Blog Generator should contain audio elements [line 159] (covered 151)
@@ -40,11 +36,11 @@ All tests
         ~ coerceToBoolean returns {} for non-boolean and non-valid string input (undefined) [line 41] (covered 15)
       italics.test.js
         ✓ italics function returns non-string values unchanged [line 4] (killed 8)
-        ✓ italics function leaves regular text unchanged [line 13] (killed 21)
+        ✓ italics function leaves regular text unchanged [line 13] (killed 16)
         ✓ italics function adds <em> tags around asterisk-style italics while preserving asterisks [line 18] (killed 17)
         ~ italics function adds <em> tags around underscore-style italics while preserving underscores [line 25] (covered 60)
         ~ italics function handles both asterisk and underscore styles in the same string [line 32] (covered 60)
-        ✓ italics function does not add <em> tags around bold double-asterisk markdown [line 39] (killed 16)
+        ✓ italics function does not add <em> tags around bold double-asterisk markdown [line 39] (killed 14)
         ~ italics function does not add <em> tags around bold double-underscore markdown [line 45] (covered 71)
         ~ italics function handles complex mixed formatting correctly [line 51] (covered 71)
     2025-03-26/prettyFloat.test.js
@@ -69,18 +65,22 @@ All tests
         ✓ fishingGame produces common carp outcome for effectiveChance between 0.3 and 0.6 [line 57] (killed 3)
         ✓ fishingGame produces legendary outcome for very high effectiveChance [line 67] (killed 4)
       get.test.js
-        ✓ get function with path traversal should return the value for a top-level key [line 31] (killed 25)
-        ~ get function with path traversal should return the value for a nested key [line 36] (covered 40)
-        ~ get function with path traversal should return the value for an array index [line 42] (covered 40)
-        ~ get function with path traversal should return the full object/array if path points to it [line 48] (covered 40)
+        ✓ get function with path traversal should return the value for a top-level key [line 31] (killed 24)
+        ~ get function with path traversal should return the value for a nested key [line 36] (covered 45)
+        ~ get function with path traversal should return the value for an array index [line 42] (covered 45)
+        ~ get function with path traversal should return the full object/array if path points to it [line 48] (covered 45)
         ✓ get function with path traversal should return an error if a path segment does not exist (object) [line 54] (killed 6)
-        ~ get function with path traversal should return an error if a path segment does not exist (array index) [line 60] (covered 42)
+        ~ get function with path traversal should return an error if a path segment does not exist (array index) [line 60] (covered 47)
         ✓ get function with path traversal should return an error trying to access property on non-object [line 66] (killed 9)
         ✓ get function with path traversal should return an error if getData is not a function [line 72] (killed 3)
         ✓ get function with path traversal should return an error if env map is not provided or invalid [line 77] (killed 5)
         ✓ get function with path traversal should return an error if getData does not return an object or array [line 82] (killed 7)
         ✓ get function with path traversal should return an error if getData throws an error [line 96] (killed 2)
         ✓ get function with path traversal should handle non-stringifiable values gracefully at the end of the path [line 106] (killed 2)
+        ~ get function with path traversal should return undefined for valid path to undefined value [line 115] (covered 45)
+        ~ get function with path traversal should handle empty input string by returning full object [line 128] (covered 20)
+        ~ get function with path traversal should handle numeric string keys in object [line 134] (covered 45)
+        ✓ get function with path traversal should return error when accessing deep property on null [line 141] (killed 1)
       setTemporary.test.js
         ✓ setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists [line 24] (killed 34)
         ~ setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist [line 53] (covered 52)
@@ -2495,14 +2495,6 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] ConditionalExpression
-src/generator/generator.js:389:41
--     return typeof content !== 'object' || content === null;
-+     return typeof content !== 'object' || false;
-Tests ran:
-    Blog Generator should render quotes as blockquotes
-
-
 [Survived] StringLiteral
 src/generator/generator.js:400:43
 -     return isTextContent(content) ? { type: 'text', content } : content;
@@ -2511,6 +2503,14 @@ Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain content for posts
     Blog Generator should display tags for posts
+
+
+[Survived] ConditionalExpression
+src/generator/generator.js:389:41
+-     return typeof content !== 'object' || content === null;
++     return typeof content !== 'object' || false;
+Tests ran:
+    Blog Generator should render quotes as blockquotes
 
 
 [Survived] ConditionalExpression
@@ -2545,10 +2545,10 @@ Tests ran:
     Blog Generator should contain a toy component for a post
 
 
-[Survived] EqualityOperator
-src/generator/generator.js:531:34
+[Survived] LogicalOperator
+src/generator/generator.js:531:10
 -     return Array.isArray(value) && value.length > 0;
-+     return Array.isArray(value) && value.length >= 0;
++     return Array.isArray(value) || value.length > 0;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain related links for a post
@@ -2565,20 +2565,20 @@ Tests ran:
     Blog Generator should contain a toy component for a post
 
 
-[Survived] LogicalOperator
-src/generator/generator.js:531:10
+[Survived] EqualityOperator
+src/generator/generator.js:531:34
 -     return Array.isArray(value) && value.length > 0;
-+     return Array.isArray(value) || value.length > 0;
++     return Array.isArray(value) && value.length >= 0;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain related links for a post
     Blog Generator should contain a toy component for a post
 
 
-[Survived] LogicalOperator
+[Survived] ConditionalExpression
 src/generator/generator.js:540:10
 -     return post.relatedLinks !== undefined && isNonEmptyArray(post.relatedLinks);
-+     return post.relatedLinks !== undefined || isNonEmptyArray(post.relatedLinks);
++     return true && isNonEmptyArray(post.relatedLinks);
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain content for posts
@@ -2586,10 +2586,10 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] ConditionalExpression
+[Survived] LogicalOperator
 src/generator/generator.js:540:10
 -     return post.relatedLinks !== undefined && isNonEmptyArray(post.relatedLinks);
-+     return true && isNonEmptyArray(post.relatedLinks);
++     return post.relatedLinks !== undefined || isNonEmptyArray(post.relatedLinks);
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain content for posts
@@ -2679,18 +2679,18 @@ Tests ran:
 
 
 [Survived] OptionalChaining
-src/generator/generator.js:797:30
--     return extractFunctionName(post?.toy);
-+     return extractFunctionName(post.toy);
+src/generator/generator.js:793:10
+-     return toy?.functionName;
++     return toy.functionName;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain a toy component for a post
 
 
 [Survived] OptionalChaining
-src/generator/generator.js:793:10
--     return toy?.functionName;
-+     return toy.functionName;
+src/generator/generator.js:797:30
+-     return extractFunctionName(post?.toy);
++     return extractFunctionName(post.toy);
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain a toy component for a post
@@ -2835,12 +2835,6 @@ src/generator/html.js:7:25
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/html.js:8:7
--     EN: 'en',
-+     EN: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/generator/html.js:12:30
 -   export const HTML_TAG_NAME = 'html';
 +   export const HTML_TAG_NAME = "";
@@ -2852,46 +2846,22 @@ src/generator/html.js:16:9
 +     LANG: "",
 Ran all tests for this mutant.
 
-[Survived] ObjectLiteral
-src/generator/html.js:24:3
--     { from: /</g, to: '&lt;' },
-+     {},
-Ran all tests for this mutant.
-
 [Survived] StringLiteral
-src/generator/html.js:24:21
--     { from: /</g, to: '&lt;' },
-+     { from: /</g, to: "" },
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
-src/generator/html.js:25:3
--     { from: />/g, to: '&gt;' },
-+     {},
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/html.js:25:21
--     { from: />/g, to: '&gt;' },
-+     { from: />/g, to: "" },
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
-src/generator/html.js:26:3
--     { from: /"/g, to: '&quot;' },
-+     {},
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
-src/generator/html.js:27:3
--     { from: /'/g, to: '&#039;' },
-+     {},
+src/generator/html.js:8:7
+-     EN: 'en',
++     EN: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
 src/generator/html.js:26:21
 -     { from: /"/g, to: '&quot;' },
 +     { from: /"/g, to: "" },
+Ran all tests for this mutant.
+
+[Survived] ObjectLiteral
+src/generator/html.js:27:3
+-     { from: /'/g, to: '&#039;' },
++     {},
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -3167,6 +3137,19 @@ src/toys/2025-03-21/italics.js:133:61
 -     return afterText ? processTextPreservingBold(afterText) : '';
 +     return afterText ? processTextPreservingBold(afterText) : "Stryker was here!";
 
+[Survived] BlockStatement
+src/toys/2025-03-21/italics.js:8:28
+-   function isEmptyText(text) {
+-     return !text?.trim();
+-   }
++   function isEmptyText(text) {}
+Tests ran:
+    italics function leaves regular text unchanged
+    italics function adds <em> tags around asterisk-style italics while preserving asterisks
+    italics function adds <em> tags around underscore-style italics while preserving underscores
+  and 4 more tests!
+
+
 [Survived] MethodExpression
 src/toys/2025-03-21/italics.js:9:11
 -     return !text?.trim();
@@ -3182,19 +3165,6 @@ Tests ran:
 src/toys/2025-03-21/italics.js:9:11
 -     return !text?.trim();
 +     return !text.trim();
-Tests ran:
-    italics function leaves regular text unchanged
-    italics function adds <em> tags around asterisk-style italics while preserving asterisks
-    italics function adds <em> tags around underscore-style italics while preserving underscores
-  and 4 more tests!
-
-
-[Survived] BlockStatement
-src/toys/2025-03-21/italics.js:8:28
--   function isEmptyText(text) {
--     return !text?.trim();
--   }
-+   function isEmptyText(text) {}
 Tests ran:
     italics function leaves regular text unchanged
     italics function adds <em> tags around asterisk-style italics while preserving asterisks
@@ -3300,17 +3270,6 @@ src/toys/2025-03-26/prettyFloat.js:125:28
 +     if (exponentBits === 0n) {}
 
 [Survived] ConditionalExpression
-src/toys/2025-03-26/prettyFloat.js:18:7
--     if (!isValidIEEEParts(parts)) return null;
-+     if (false) return null;
-Tests ran:
-    decomposeFloat handles positive powers of two
-    decomposeFloat handles small irrational approximations
-    decomposeFloat handles negative values
-  and 1 more test!
-
-
-[Survived] ConditionalExpression
 src/toys/2025-03-26/prettyFloat.js:8:10
 -     return result !== null ? result : null;
 +     return true ? result : null;
@@ -3322,9 +3281,9 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/toys/2025-03-26/prettyFloat.js:52:7
--     if (!decomposition) return "";
-+     if (false) return "";
+src/toys/2025-03-26/prettyFloat.js:18:7
+-     if (!isValidIEEEParts(parts)) return null;
++     if (false) return null;
 Tests ran:
     decomposeFloat handles positive powers of two
     decomposeFloat handles small irrational approximations
@@ -3341,6 +3300,17 @@ Tests ran:
     decomposeFloat handles positive powers of two
     decomposeFloat handles small irrational approximations
   and 4 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:52:7
+-     if (!decomposition) return "";
++     if (false) return "";
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
 
 
 [Survived] StringLiteral
@@ -3376,10 +3346,10 @@ Tests ran:
   and 1 more test!
 
 
-[Survived] LogicalOperator
+[Survived] ConditionalExpression
 src/toys/2025-03-26/prettyFloat.js:87:10
 -     return Boolean(parts) && hasIEEEFields(parts);
-+     return Boolean(parts) || hasIEEEFields(parts);
++     return true;
 Tests ran:
     decomposeFloat handles positive powers of two
     decomposeFloat handles small irrational approximations
@@ -3387,10 +3357,10 @@ Tests ran:
   and 1 more test!
 
 
-[Survived] ConditionalExpression
+[Survived] LogicalOperator
 src/toys/2025-03-26/prettyFloat.js:87:10
 -     return Boolean(parts) && hasIEEEFields(parts);
-+     return true;
++     return Boolean(parts) || hasIEEEFields(parts);
 Tests ran:
     decomposeFloat handles positive powers of two
     decomposeFloat handles small irrational approximations
@@ -3485,10 +3455,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] UnaryOperator
-src/toys/2025-03-29/fishingGame.js:119:26
--       "bread": { modifier: -0.05, description: "a slice of bread" },
-+       "bread": { modifier: +0.05, description: "a slice of bread" },
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:118:46
+-       "insect": { modifier: 0.05, description: "a lively insect" },
++       "insect": { modifier: 0.05, description: "" },
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -3507,21 +3477,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] StringLiteral
-src/toys/2025-03-29/fishingGame.js:118:46
--       "insect": { modifier: 0.05, description: "a lively insect" },
-+       "insect": { modifier: 0.05, description: "" },
-Tests ran:
-    fishingGame handles empty input gracefully
-    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
-    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
-  and 4 more tests!
-
-
-[Survived] ObjectLiteral
-src/toys/2025-03-29/fishingGame.js:121:19
--       "shiny bait": { modifier: 0.15, description: "a glittering lure" },
-+       "shiny bait": {},
+[Survived] UnaryOperator
+src/toys/2025-03-29/fishingGame.js:119:26
+-       "bread": { modifier: -0.05, description: "a slice of bread" },
++       "bread": { modifier: +0.05, description: "a slice of bread" },
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -3541,6 +3500,28 @@ Tests ran:
 
 
 [Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:123:44
+-       "grub": { modifier: 0.05, description: "a succulent grub" },
++       "grub": { modifier: 0.05, description: "" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:121:19
+-       "shiny bait": { modifier: 0.15, description: "a glittering lure" },
++       "shiny bait": {},
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] StringLiteral
 src/toys/2025-03-29/fishingGame.js:121:50
 -       "shiny bait": { modifier: 0.15, description: "a glittering lure" },
 +       "shiny bait": { modifier: 0.15, description: "" },
@@ -3551,10 +3532,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] StringLiteral
-src/toys/2025-03-29/fishingGame.js:123:44
--       "grub": { modifier: 0.05, description: "a succulent grub" },
-+       "grub": { modifier: 0.05, description: "" },
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:126:15
+-       "maggot": { modifier: -0.1, description: "a squirming maggot" },
++       "maggot": {},
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -3577,17 +3558,6 @@ Tests ran:
 src/toys/2025-03-29/fishingGame.js:125:16
 -       "sausage": { modifier: 0.2, description: "a savory sausage" },
 +       "sausage": {},
-Tests ran:
-    fishingGame handles empty input gracefully
-    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
-    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
-  and 4 more tests!
-
-
-[Survived] ObjectLiteral
-src/toys/2025-03-29/fishingGame.js:126:15
--       "maggot": { modifier: -0.1, description: "a squirming maggot" },
-+       "maggot": {},
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -3618,38 +3588,30 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/toys/2025-03-29/get.js:31:11
--         if (currentValue === null || typeof currentValue !== 'object') {
-+         if (false || typeof currentValue !== 'object') {
-Tests ran:
-    get function with path traversal should return the value for a top-level key
-    get function with path traversal should return the value for a nested key
-    get function with path traversal should return the value for an array index
-  and 6 more tests!
-
-
-[Survived] ConditionalExpression
-src/toys/2025-03-29/get.js:32:116
+src/toys/2025-03-29/get.js:35:116
 -           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
 +           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, true ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
 Tests ran:
     get function with path traversal should return an error trying to access property on non-object
+    get function with path traversal should return error when accessing deep property on null
 
 
 [Survived] StringLiteral
-src/toys/2025-03-29/get.js:32:140
+src/toys/2025-03-29/get.js:35:140
 -           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
 +           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf("") !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
 Tests ran:
     get function with path traversal should return an error trying to access property on non-object
+    get function with path traversal should return error when accessing deep property on null
 
 
 [Survived] UnaryOperator
-src/toys/2025-03-29/get.js:32:149
+src/toys/2025-03-29/get.js:35:149
 -           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
 +           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== +1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
 Tests ran:
     get function with path traversal should return an error trying to access property on non-object
+    get function with path traversal should return error when accessing deep property on null
 
 
 [NoCoverage] ConditionalExpression
@@ -3688,10 +3650,10 @@ src/toys/2025-03-29/setTemporary.js:65:12
 -       return "Error: 'env' Map with 'get' method is required.";
 +       return "";
 
-[Survived] ConditionalExpression
+[Survived] LogicalOperator
 src/toys/2025-03-29/setTemporary.js:21:7
 -     if (isObject(target) && isObject(source)) {
-+     if (true) {
++     if (isObject(target) || isObject(source)) {
 Tests ran:
     setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
     setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
@@ -3699,10 +3661,10 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] LogicalOperator
+[Survived] ConditionalExpression
 src/toys/2025-03-29/setTemporary.js:21:7
 -     if (isObject(target) && isObject(source)) {
-+     if (isObject(target) || isObject(source)) {
++     if (true) {
 Tests ran:
     setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
     setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
@@ -3858,17 +3820,6 @@ Tests ran:
     Cyberpunk Text Game unknown input in hub
 
 
-[Survived] LogicalOperator
-src/toys/2025-03-30/cyberpunkAdventure.js:13:29
--       const visited = new Set(scoped.visited || []);
-+       const visited = new Set(scoped.visited && []);
-Tests ran:
-    Cyberpunk Text Game initial naming and intro
-    Cyberpunk Text Game goes to Hacker Den and requires password
-    Cyberpunk Text Game goes to Transport Hub and trades datapad
-  and 2 more tests!
-
-
 [Survived] ArrayDeclaration
 src/toys/2025-03-30/cyberpunkAdventure.js:12:43
 -       const inventory = scoped.inventory || [];
@@ -3889,10 +3840,10 @@ Tests ran:
     Cyberpunk Text Game unknown input in hub
 
 
-[Survived] StringLiteral
-src/toys/2025-03-30/cyberpunkAdventure.js:18:18
--       let output = "";
-+       let output = "Stryker was here!";
+[Survived] LogicalOperator
+src/toys/2025-03-30/cyberpunkAdventure.js:13:29
+-       const visited = new Set(scoped.visited || []);
++       const visited = new Set(scoped.visited && []);
 Tests ran:
     Cyberpunk Text Game initial naming and intro
     Cyberpunk Text Game goes to Hacker Den and requires password
@@ -3911,6 +3862,17 @@ Tests ran:
   and 2 more tests!
 
 
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:18:18
+-       let output = "";
++       let output = "Stryker was here!";
+Tests ran:
+    Cyberpunk Text Game initial naming and intro
+    Cyberpunk Text Game goes to Hacker Den and requires password
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+  and 2 more tests!
+
+
 [Survived] ConditionalExpression
 src/toys/2025-03-30/cyberpunkAdventure.js:53:13
 -           if (lowerInput.includes("zero")) {
@@ -3920,17 +3882,17 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/toys/2025-03-30/cyberpunkAdventure.js:53:33
--           if (lowerInput.includes("zero")) {
-+           if (lowerInput.includes("")) {
+src/toys/2025-03-30/cyberpunkAdventure.js:57:23
+-             nextState = "hub";
++             nextState = "";
 Tests ran:
     Cyberpunk Text Game goes to Hacker Den and requires password
 
 
 [Survived] StringLiteral
-src/toys/2025-03-30/cyberpunkAdventure.js:57:23
--             nextState = "hub";
-+             nextState = "";
+src/toys/2025-03-30/cyberpunkAdventure.js:53:33
+-           if (lowerInput.includes("zero")) {
++           if (lowerInput.includes("")) {
 Tests ran:
     Cyberpunk Text Game goes to Hacker Den and requires password
 
@@ -3967,12 +3929,12 @@ Tests ran:
     Cyberpunk Text Game goes to Transport Hub and trades datapad
 
 
-[Survived] ConditionalExpression
-src/toys/2025-03-30/cyberpunkAdventure.js:84:25
--           const success = stealthCheck > 0.3;
-+           const success = true;
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:75:23
+-             nextState = "hub";
++             nextState = "";
 Tests ran:
-    Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
 
 
 [Survived] EqualityOperator
@@ -3983,12 +3945,12 @@ Tests ran:
     Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
 
 
-[Survived] StringLiteral
-src/toys/2025-03-30/cyberpunkAdventure.js:75:23
--             nextState = "hub";
-+             nextState = "";
+[Survived] ConditionalExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:84:25
+-           const success = stealthCheck > 0.3;
++           const success = true;
 Tests ran:
-    Cyberpunk Text Game goes to Transport Hub and trades datapad
+    Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
 
 
 [Survived] ConditionalExpression
@@ -4007,40 +3969,40 @@ Tests ran:
     Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
 
 
-Ran 4.24 tests per mutant on average.
+Ran 4.23 tests per mutant on average.
 -------------------------|------------------|----------|-----------|------------|----------|----------|
                          | % Mutation score |          |           |            |          |          |
 File                     |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
 -------------------------|--------|---------|----------|-----------|------------|----------|----------|
-All files                |  65.20 |   88.27 |      804 |         9 |        108 |      326 |        0 |
+All files                |  65.84 |   89.00 |      795 |        30 |        102 |      326 |        0 |
  browser                 |   0.00 |    0.00 |        0 |         0 |          0 |      202 |        0 |
   main.js                |   0.00 |    0.00 |        0 |         0 |          0 |      202 |        0 |
- generator               |  70.18 |   87.67 |      320 |         0 |         45 |       91 |        0 |
+ generator               |  71.27 |   89.04 |      318 |         7 |         40 |       91 |        0 |
   copy-toys.js           |   0.00 |    0.00 |        0 |         0 |          0 |       45 |        0 |
   full-width.js          | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
   generator.js           |  81.51 |   90.94 |      291 |         0 |         29 |       37 |        0 |
   head.js                |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
-  html.js                |  63.64 |   68.29 |       28 |         0 |         13 |        3 |        0 |
+  html.js                |  75.00 |   80.49 |       26 |         7 |          8 |        3 |        0 |
   interactive.js         |   0.00 |    0.00 |        0 |         0 |          0 |        6 |        0 |
   styles.js              |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
   title.js               |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
- toys                    |  83.70 |   88.67 |      484 |         9 |         63 |       33 |        0 |
+ toys                    |  84.03 |   88.97 |      477 |        23 |         62 |       33 |        0 |
   2024-10-02             | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
    hello.js              | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
   2025-03-19             | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
    identity.js           | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
-  2025-03-21             |  93.81 |   94.79 |       83 |         8 |          5 |        1 |        0 |
+  2025-03-21             |  93.81 |   94.79 |       76 |        15 |          5 |        1 |        0 |
    booleanCoercer.js     | 100.00 |  100.00 |       21 |         0 |          0 |        0 |        0 |
-   italics.js            |  92.11 |   93.33 |       62 |         8 |          5 |        1 |        0 |
+   italics.js            |  92.11 |   93.33 |       55 |        15 |          5 |        1 |        0 |
   2025-03-26             |  73.26 |   85.14 |       63 |         0 |         11 |       12 |        0 |
    prettyFloat.js        |  73.26 |   85.14 |       63 |         0 |         11 |       12 |        0 |
   2025-03-28             | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
    rand.js               | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
-  2025-03-29             |  86.79 |   89.34 |      242 |         1 |         29 |        8 |        0 |
+  2025-03-29             |  87.41 |   89.93 |      242 |         8 |         28 |        8 |        0 |
    fishingGame.js        |  86.99 |   88.19 |      127 |         0 |         17 |        2 |        0 |
-   get.js                |  93.65 |   93.65 |       59 |         0 |          4 |        0 |        0 |
+   get.js                |  95.65 |   95.65 |       59 |         7 |          3 |        0 |        0 |
    setTemporary.js       |  80.28 |   87.69 |       56 |         1 |          8 |        6 |        0 |
   2025-03-30             |  75.21 |   83.49 |       91 |         0 |         18 |       12 |        0 |
    cyberpunkAdventure.js |  75.21 |   83.49 |       91 |         0 |         18 |       12 |        0 |
 -------------------------|--------|---------|----------|-----------|------------|----------|----------|
-[32m17:12:24 (84706) INFO MutationTestExecutor[39m Done in 2 minutes 42 seconds.
+[32m17:30:06 (21769) INFO MutationTestExecutor[39m Done in 9 minutes 44 seconds.
