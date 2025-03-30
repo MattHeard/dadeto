@@ -13,8 +13,8 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Source and destination directories
-const srcDir = path.join(__dirname, 'src', 'toys');
-const destDir = path.join(__dirname, 'public');
+const srcDir = path.join(__dirname, '..', '..', 'src', 'toys');
+const destDir = path.join(__dirname, '..', '..', 'public');
 
 /**
  * Copy a file from source to destination
