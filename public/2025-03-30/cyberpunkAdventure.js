@@ -76,7 +76,8 @@ export function cyberpunkAdventure(input, env) {
 
       // Back Alley phases
       case "alley:stealth":
-        const success = getRandomNumber() > 0.3;
+        const stealthCheck = getRandomNumber();
+        const success = stealthCheck > 0.3;
         if (success) {
           output = `> You dodge the shadows and find a hidden stash: a stimpack.`;
           nextInventory.push("stimpack");
