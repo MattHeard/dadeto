@@ -6,12 +6,13 @@ export function cyberpunkAdventure(input, env) {
     const getData = env.get("getData");
     const setTemporaryData = env.get("setData");
     const { temporary } = getData();
-    console.log("Temporary data on load:", temporary);
+    const scoped = temporary.CYBE1 || {};
+    console.log("Temporary data on load:", scoped);
 
-    const name = temporary.name || input.trim() || "Stray";
-    const state = temporary.state || "intro";
-    const inventory = temporary.inventory || [];
-    const visited = new Set(temporary.visited || []);
+    const name = scoped.name || input.trim() || "Stray";
+    const state = scoped.state || "intro";
+    const inventory = scoped.inventory || [];
+    const visited = new Set(scoped.visited || []);
 
     const lowerInput = input.trim().toLowerCase();
     const time = getCurrentTime();
@@ -22,9 +23,9 @@ export function cyberpunkAdventure(input, env) {
     let nextVisited = new Set(visited);
 
     // If we haven’t stored the name yet, do so now
-    if (!temporary.name) {
+    if (!scoped.name) {
       console.log("Attempting to set name in temp data:", name);
-      setTemporaryData({ name });
+      setTemporaryData({ temporary: { CYBE1: { name } } });
       console.log("Set name complete. Returning welcome string.");
       return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
     }
@@ -107,10 +108,14 @@ export function cyberpunkAdventure(input, env) {
       visited: [...nextVisited]
     });
     setTemporaryData({
-      name,
-      state: nextState,
-      inventory: nextInventory,
-      visited: [...nextVisited]
+      temporary: {
+        CYBE1: {
+          name,
+          state: nextState,
+          inventory: nextInventory,
+          visited: [...nextVisited]
+        }
+      }
     });
 
     console.log("State:", state, "Input:", input, "Output:", output);
