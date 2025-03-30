@@ -8,8 +8,11 @@ let globalState = {
 };
 
 // Audio controls functionality
-(function() {
-  const audioElements = document.querySelectorAll("audio");
+const getAudioElements = (doc) => doc.querySelectorAll("audio");
+const createElement = (doc, tag) => doc.createElement(tag);
+
+(function(doc) {
+  const audioElements = getAudioElements(doc);
   
   audioElements.forEach(function(audio, index) {
     audio.removeAttribute("controls");
@@ -18,15 +21,15 @@ let globalState = {
       audio.id = "audio-" + index;
     }
     
-    const controlsContainer = document.createElement("div");
+    const controlsContainer = createElement(doc, "div");
     controlsContainer.className = "audio-controls";
     controlsContainer.id = "controls-" + audio.id;
     
-    const timeDisplay = document.createElement("span");
+    const timeDisplay = createElement(doc, "span");
     timeDisplay.className = "audio-time";
     timeDisplay.textContent = "0:00";
     
-    const playButton = document.createElement("a");
+    const playButton = createElement(doc, "a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
     playButton.addEventListener("click", function(e) {
@@ -34,7 +37,7 @@ let globalState = {
       audio.play();
     });
     
-    const pauseButton = document.createElement("a");
+    const pauseButton = createElement(doc, "a");
     pauseButton.href = "#";
     pauseButton.textContent = "PAUSE";
     pauseButton.addEventListener("click", function(e) {
@@ -42,7 +45,7 @@ let globalState = {
       audio.pause();
     });
     
-    const stopButton = document.createElement("a");
+    const stopButton = createElement(doc, "a");
     stopButton.href = "#";
     stopButton.textContent = "STOP";
     stopButton.addEventListener("click", function(e) {
@@ -58,16 +61,16 @@ let globalState = {
     });
     
     controlsContainer.appendChild(playButton);
-    controlsContainer.appendChild(document.createTextNode(" "));
+    controlsContainer.appendChild(doc.createTextNode(" "));
     controlsContainer.appendChild(pauseButton);
-    controlsContainer.appendChild(document.createTextNode(" "));
+    controlsContainer.appendChild(doc.createTextNode(" "));
     controlsContainer.appendChild(stopButton);
-    controlsContainer.appendChild(document.createTextNode(" "));
+    controlsContainer.appendChild(doc.createTextNode(" "));
     controlsContainer.appendChild(timeDisplay);
     
     audio.parentNode.insertBefore(controlsContainer, audio.nextSibling);
   });
-})();
+})(document);
 
 // Interactive components functionality
 /**

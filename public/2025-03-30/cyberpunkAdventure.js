@@ -1,13 +1,11 @@
 export function cyberpunkAdventure(input, env) {
   try {
-    console.log("cyberpunkAdventure called with input:", input);
     const getRandomNumber = env.get("getRandomNumber");
     const getCurrentTime = env.get("getCurrentTime");
     const getData = env.get("getData");
     const setTemporaryData = env.get("setData");
     const { temporary } = getData();
     const scoped = temporary.CYBE1 || {};
-    console.log("Temporary data on load:", scoped);
 
     const name = scoped.name || input.trim() || "Stray";
     const state = scoped.state || "intro";
@@ -24,9 +22,7 @@ export function cyberpunkAdventure(input, env) {
 
     // If we haven’t stored the name yet, do so now
     if (!scoped.name) {
-      console.log("Attempting to set name in temp data:", name);
       setTemporaryData({ temporary: { CYBE1: { name } } });
-      console.log("Set name complete. Returning welcome string.");
       return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
     }
 
@@ -101,12 +97,6 @@ export function cyberpunkAdventure(input, env) {
         nextState = "intro";
     }
 
-    console.log("Saving state:", {
-      name,
-      state: nextState,
-      inventory: nextInventory,
-      visited: [...nextVisited]
-    });
     setTemporaryData({
       temporary: {
         CYBE1: {
@@ -118,7 +108,6 @@ export function cyberpunkAdventure(input, env) {
       }
     });
 
-    console.log("State:", state, "Input:", input, "Output:", output);
     return output;
   } catch (e) {
     return `> SYSTEM ERROR: neural link failure`;
