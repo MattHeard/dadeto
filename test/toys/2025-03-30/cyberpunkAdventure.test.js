@@ -10,9 +10,9 @@ describe('Cyberpunk Text Game', () => {
     env = new Map([
       ['getRandomNumber', () => 0.5],
       ['getCurrentTime', () => '23:59'],
-      ['getData', () => ({ temporary: tempData })],
+      ['getData', () => ({ temporary: { CYBE1: tempData } })],
       ['setData', (data) => {
-        tempData = { ...tempData, ...data };
+        tempData = { ...tempData, ...data.temporary?.CYBE1 };
       }],
     ]);
   });
@@ -38,6 +38,7 @@ describe('Cyberpunk Text Game', () => {
       inventory: ['datapad'],
       visited: []
     };
+    env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
     expect(cyberpunkAdventure('transport', env)).toMatch(/Trains screech overhead./); 
     expect(cyberpunkAdventure(' ', env)).toMatch(/vendor offers/); 
     expect(cyberpunkAdventure('trade datapad', env)).toMatch(/neural ticket/); 
@@ -53,6 +54,7 @@ describe('Cyberpunk Text Game', () => {
       inventory: [],
       visited: []
     };
+    env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
     expect(cyberpunkAdventure('alley', env)).toMatch(/shadows move with you./); 
     expect(cyberpunkAdventure(' ', env)).toMatch(/hidden stash: a stimpack/); 
     expect(tempData.inventory).toContain('stimpack');

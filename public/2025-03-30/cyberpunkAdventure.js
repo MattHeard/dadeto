@@ -4,7 +4,7 @@ export function cyberpunkAdventure(input, env) {
     const getRandomNumber = env.get("getRandomNumber");
     const getCurrentTime = env.get("getCurrentTime");
     const getData = env.get("getData");
-    const setTemporaryData = env.get("setTemporaryData");
+    const setTemporaryData = env.get("setData");
     const { temporary } = getData();
     console.log("Temporary data on load:", temporary);
 
