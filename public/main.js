@@ -10,12 +10,38 @@ let globalState = {
 // Audio controls functionality
 const getAudioElements = (doc) => doc.querySelectorAll("audio");
 const createElement = (doc, tag) => doc.createElement(tag);
+const playAudio = (audio) => audio.play();
+const pauseAudio = (audio) => audio.pause();
+const addEventListener = (element, event, func) => {
+  element.addEventListener(event, func);
+};
+const createTextNode = (doc) => doc.createTextNode(" ");
+const stopDefault = (e) => e.preventDefault();
+const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
+const appendChild = (parentNode, newChild) => {
+  parentNode.appendChild(newChild);
+};
+const insertBefore = (parentNode, newChild, refChild) => {
+  parentNode.insertBefore(newChild, refChild);
+};
 
-(function(doc) {
+export function setupAudio(
+  doc,
+  getAudioElements,
+  removeControlsAttribute,
+  createElement,
+  createTextNode,
+  stopDefault,
+  playAudio,
+  pauseAudio,
+  addEventListener,
+  appendChild,
+  insertBefore
+) {
   const audioElements = getAudioElements(doc);
   
   audioElements.forEach(function(audio, index) {
-    audio.removeAttribute("controls");
+    removeControlsAttribute(audio);
     
     if (!audio.id) {
       audio.id = "audio-" + index;
@@ -32,45 +58,64 @@ const createElement = (doc, tag) => doc.createElement(tag);
     const playButton = createElement(doc, "a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
-    playButton.addEventListener("click", function(e) {
-      e.preventDefault();
-      audio.play();
-    });
+    const onPlayClick = (e) => {
+      stopDefault(e);
+      playAudio(audio);
+    };
+    addEventListener(playButton, "click", onPlayClick);
+    
+    const onPauseClick = (e) => {
+      stopDefault(e);
+      pauseAudio(audio);
+    };
     
     const pauseButton = createElement(doc, "a");
     pauseButton.href = "#";
     pauseButton.textContent = "PAUSE";
-    pauseButton.addEventListener("click", function(e) {
-      e.preventDefault();
-      audio.pause();
-    });
+    addEventListener(pauseButton, "click", onPauseClick);
     
+    const onStopClick = (e) => {
+      stopDefault(e);
+      pauseAudio(audio);
+      audio.currentTime = 0;
+    };
     const stopButton = createElement(doc, "a");
     stopButton.href = "#";
     stopButton.textContent = "STOP";
-    stopButton.addEventListener("click", function(e) {
-      e.preventDefault();
-      audio.pause();
-      audio.currentTime = 0;
-    });
+    addEventListener(stopButton, "click", onStopClick);
     
-    audio.addEventListener("timeupdate", function() {
+    const updateTimeDisplay = () => {
       const minutes = Math.floor(audio.currentTime / 60);
       const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
       timeDisplay.textContent = minutes + ":" + seconds;
-    });
+    };
+    addEventListener(audio, "timeupdate", updateTimeDisplay);
+     
+    appendChild(controlsContainer, playButton);
+    appendChild(controlsContainer, createTextNode(doc));
+    appendChild(controlsContainer, pauseButton);
+    appendChild(controlsContainer, createTextNode(doc));
+    appendChild(controlsContainer, stopButton);
+    appendChild(controlsContainer, createTextNode(doc));
+    appendChild(controlsContainer, timeDisplay);
     
-    controlsContainer.appendChild(playButton);
-    controlsContainer.appendChild(doc.createTextNode(" "));
-    controlsContainer.appendChild(pauseButton);
-    controlsContainer.appendChild(doc.createTextNode(" "));
-    controlsContainer.appendChild(stopButton);
-    controlsContainer.appendChild(doc.createTextNode(" "));
-    controlsContainer.appendChild(timeDisplay);
-    
-    audio.parentNode.insertBefore(controlsContainer, audio.nextSibling);
+    insertBefore(audio.parentNode, controlsContainer, audio.nextSibling);
   });
-})(document);
+}
+
+setupAudio(
+  document,
+  getAudioElements,
+  removeControlsAttribute,
+  createElement,
+  createTextNode,
+  stopDefault,
+  playAudio,
+  pauseAudio,
+  addEventListener,
+  appendChild,
+  insertBefore
+);
 
 // Interactive components functionality
 /**
