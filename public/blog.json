@@ -7,6 +7,10 @@
       "content": [
         "A cyberpunk text adventure."
       ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a neon-lit cyberpunk market with glowing signs in blues and purples, crowded with blurred figures and a silhouetted man in a high-collared jacket in the foreground"
+      },
       "toy": {
         "modulePath": "/2025-03-30/cyberpunkAdventure.js",
         "functionName": "cyberpunkAdventure"
