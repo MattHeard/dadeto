@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "CYBE1",
+      "title": "Cyberpunk Adventure",
+      "publicationDate": "2025-03-30",
+      "content": [
+        "A cyberpunk text adventure."
+      ],
+      "toy": {
+        "modulePath": "/2025-03-30/cyberpunkAdventure.js",
+        "functionName": "cyberpunkAdventure"
+      },
+      "tags": [
+        "toy",
+        "game",
+        "text-adventure",
+        "cyberpunk"
+      ]
+    },
+    {
       "key": "SETT1",
       "title": "Set Temporary Data",
       "publicationDate": "2025-03-29",
