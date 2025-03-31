@@ -65,9 +65,10 @@ function initializeInteractiveComponent(id, processingFunction) {
     
     try {
       // Create an env Map with utility functions that might be needed by processing functions
+      const getCurrentTime = () => new Date().toISOString();
       const env = new Map([
         ["getRandomNumber", getRandomNumber],
-        ["getCurrentTime", () => new Date().toISOString()],
+        ["getCurrentTime", getCurrentTime],
         ["getData", () => {
           // Return a deep copy of the current global state
           // Using JSON parse/stringify for a simple deep copy
