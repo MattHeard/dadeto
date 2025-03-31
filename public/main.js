@@ -45,17 +45,7 @@ function initializeInteractiveComponent(id, processingFunction) {
   
   // Update message to show JS is running
   outputElement.textContent = 'Initialising...';
-  
-  /**
-   * Enable controls and update status message
-   */
-  function enableControls() {
-    inputElement.disabled = false;
-    submitButton.disabled = false;
-    outputElement.textContent = 'Ready for input';
-    outputElement.parentElement.classList.remove('warning');
-  }
-  
+
   /**
    * Handle form submission events
    * @param {Event} event - The submission event
@@ -143,7 +133,17 @@ function initializeInteractiveComponent(id, processingFunction) {
       handleSubmit(event);
     }
   });
-  
+
+  /**
+   * Enable controls and update status message
+   */
+  function enableControls() {
+    inputElement.disabled = false;
+    submitButton.disabled = false;
+    outputElement.textContent = 'Ready for input';
+    outputElement.parentElement.classList.remove('warning');
+  }
+
   // Enable controls when initialization is complete
   enableControls();
 }
