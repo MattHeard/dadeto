@@ -66,28 +66,29 @@ function initializeInteractiveComponent(id, processingFunction) {
     try {
       // Create an env Map with utility functions that might be needed by processing functions
       const getCurrentTime = () => new Date().toISOString();
+      const getData = () => {
+        // Return a deep copy of the current global state
+        // Using JSON parse/stringify for a simple deep copy
+        const stateCopy = JSON.parse(JSON.stringify(globalState));
+        
+        // Check blog status and trigger fetch if needed, but don't block
+        if (stateCopy.blogStatus === 'idle') {
+          fetchAndCacheBlogData(); // Trigger fetch (no await)
+        } else if (stateCopy.blogStatus === 'error') {
+          warn("Blog data previously failed to load:", stateCopy.blogError);
+        }
+        
+        // Remove fetch-related properties from the copy returned to the toy
+        delete stateCopy.blogStatus;
+        delete stateCopy.blogError;
+        delete stateCopy.blogFetchPromise;
+        
+        return stateCopy;
+      };
       const env = new Map([
         ["getRandomNumber", getRandomNumber],
         ["getCurrentTime", getCurrentTime],
-        ["getData", () => {
-          // Return a deep copy of the current global state
-          // Using JSON parse/stringify for a simple deep copy
-          const stateCopy = JSON.parse(JSON.stringify(globalState));
-          
-          // Check blog status and trigger fetch if needed, but don't block
-          if (stateCopy.blogStatus === 'idle') {
-            fetchAndCacheBlogData(); // Trigger fetch (no await)
-          } else if (stateCopy.blogStatus === 'error') {
-            warn("Blog data previously failed to load:", stateCopy.blogError);
-          }
-          
-          // Remove fetch-related properties from the copy returned to the toy
-          delete stateCopy.blogStatus;
-          delete stateCopy.blogError;
-          delete stateCopy.blogFetchPromise;
-          
-          return stateCopy; 
-        }],
+        ["getData", getData],
         ["setData", (newData) => {
           // Replace the entire global state, but validate basic structure
           if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
