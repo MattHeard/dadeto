@@ -74,7 +74,7 @@ function initializeInteractiveComponent(id, processingFunction) {
         
         // Check blog status and trigger fetch if needed, but don't block
         if (stateCopy.blogStatus === 'idle') {
-          fetchAndCacheBlogData(globalState); // Trigger fetch (no await)
+          fetchAndCacheBlogData(globalState, fetch); // Trigger fetch (no await)
         } else if (stateCopy.blogStatus === 'error') {
           warn("Blog data previously failed to load:", stateCopy.blogError);
         }
@@ -256,8 +256,10 @@ handleTagLinks();
 /**
  * Fetches blog data and updates the global state.
  * Ensures only one fetch happens at a time.
+ * @param {object} state - The global state object.
+ * @param {function} fetchFn - The fetch function to use.
  */
-function fetchAndCacheBlogData(state) {
+function fetchAndCacheBlogData(state, fetchFn) {
   // Prevent multiple simultaneous fetches
   if (state.blogStatus === 'loading' && state.blogFetchPromise) {
     log('Blog data fetch already in progress.');
@@ -268,7 +270,7 @@ function fetchAndCacheBlogData(state) {
   state.blogStatus = 'loading';
   state.blogError = null;
   
-  state.blogFetchPromise = fetch('./blog.json') 
+  state.blogFetchPromise = fetchFn('./blog.json') 
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -293,7 +295,7 @@ function fetchAndCacheBlogData(state) {
 }
 
 // Initial fetch of blog data when the script loads
-fetchAndCacheBlogData(globalState);
+fetchAndCacheBlogData(globalState, fetch);
 
 setupAudio(
   document,
