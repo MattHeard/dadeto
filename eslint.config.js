@@ -1,18 +1,32 @@
-import { defineConfig } from "eslint/config";
+import eslintJs from "@eslint/js";
 import globals from "globals";
-import js from "@eslint/js";
 
-
-export default defineConfig([
+export default [
   { ignores: ["public/", ".stryker-tmp/"] },
-  { files: ["**/*.{js,mjs,cjs}"] },
-  { files: ["**/*.{js,mjs,cjs}"], languageOptions: { globals: {...globals.browser, ...globals.node} } },
-  { files: ["**/*.{js,mjs,cjs}"], plugins: { js }, extends: ["js/recommended"] },
-  { rules: { complexity: ["warn", { max: 2 }] } },
   {
+    // Apply recommended rules and configure general JS settings
+    ...eslintJs.configs.recommended,
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      }
+    },
+    rules: {
+      complexity: ["warn", { max: 2 }], // Keep existing complexity rule
+      "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
+      // Add other project-specific rules here if needed
+    }
+  },
+  {
+    // Specific configuration for test files
     files: ["**/*.test.js"],
     languageOptions: {
-      globals: globals.jest
+      globals: {
+        ...globals.jest,
+      }
     }
   }
-]);
+];
