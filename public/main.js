@@ -23,8 +23,25 @@ const pauseAudio = (audio) => audio.pause();
 const addEventListener = (element, event, func) => element.addEventListener(event, func);
 const appendChild = (parentNode, newChild) => parentNode.appendChild(newChild);
 const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
+const log = (...args) => console.log(...args);
+const warn = (...args) => console.warn(...args);
+const error = (...args) => console.error(...args);
 
 // Interactive components functionality
+
+/**
+ * Enable controls and update status message for an interactive component
+ * @param {HTMLInputElement} inputElement
+ * @param {HTMLButtonElement} submitButton
+ * @param {HTMLElement} outputElement
+ */
+function enableInteractiveControls(inputElement, submitButton, outputElement) {
+  inputElement.disabled = false;
+  submitButton.disabled = false;
+  outputElement.textContent = 'Ready for input';
+  outputElement.parentElement.classList.remove('warning');
+}
+
 /**
  * Initialize an interactive component with a processing function
  * @param {string} id - The ID of the article element
@@ -50,7 +67,7 @@ function initializeInteractiveComponent(id, processingFunction) {
    * Handle form submission events
    * @param {Event} event - The submission event
    */
-  function handleSubmit(event) {
+  const createHandleSubmit = (inputElement, globalState) => (event) => {
     if (event) {
       stopDefault(event);
     }
@@ -70,7 +87,7 @@ function initializeInteractiveComponent(id, processingFunction) {
           if (stateCopy.blogStatus === 'idle') {
             fetchAndCacheBlogData(); // Trigger fetch (no await)
           } else if (stateCopy.blogStatus === 'error') {
-            console.warn("Blog data previously failed to load:", stateCopy.blogError);
+            warn("Blog data previously failed to load:", stateCopy.blogError);
           }
           
           // Remove fetch-related properties from the copy returned to the toy
@@ -100,9 +117,9 @@ function initializeInteractiveComponent(id, processingFunction) {
               globalState.blog = currentBlogData;
             }
             
-            console.log('Global state updated:', globalState);
+            log('Global state updated:', globalState);
           } else {
-            console.error('setData received invalid data structure:', newData);
+            error('setData received invalid data structure:', newData);
             throw new Error('setData requires an object with at least a \'temporary\' property.');
           }
         }]
@@ -118,12 +135,13 @@ function initializeInteractiveComponent(id, processingFunction) {
       // Update the output
       outputElement.textContent = result;
     } catch (error) {
-      console.error('Error processing input:', error);
+      error('Error processing input:', error);
       outputElement.textContent = 'Error: ' + error.message;
       outputElement.parentElement.classList.add('warning');
     }
-  }
-  
+  };
+  const handleSubmit = createHandleSubmit(inputElement, globalState);
+
   // Add event listener to the submit button
   addEventListener(submitButton, 'click', handleSubmit);
   
@@ -134,21 +152,8 @@ function initializeInteractiveComponent(id, processingFunction) {
     }
   });
 
-  /**
-   * Enable controls and update status message
-   * @param {HTMLInputElement} inputElement
-   * @param {HTMLButtonElement} submitButton
-   * @param {HTMLElement} outputElement
-   */
-  function enableControls(inputElement, submitButton, outputElement) {
-    inputElement.disabled = false;
-    submitButton.disabled = false;
-    outputElement.textContent = 'Ready for input';
-    outputElement.parentElement.classList.remove('warning');
-  }
-
   // Enable controls when initialization is complete
-  enableControls(inputElement, submitButton, outputElement);
+  enableInteractiveControls(inputElement, submitButton, outputElement);
 }
 
 /**
@@ -172,7 +177,7 @@ function initializeWhenVisible(id, modulePath, functionName) {
           // Initialize the component with the imported function
           initializeInteractiveComponent(id, processingFunction);
         }).catch(error => {
-          console.error('Error loading module ' + modulePath + ':', error);
+          error('Error loading module ' + modulePath + ':', error);
         });
         
         // Stop observing once initialized
@@ -191,12 +196,12 @@ function initializeWhenVisible(id, modulePath, functionName) {
 
 // Initialize all registered components when they become visible
 if (window.interactiveComponents && window.interactiveComponents.length > 0) {
-  console.log('Initializing', window.interactiveComponents.length, 'interactive components');
+  log('Initializing', window.interactiveComponents.length, 'interactive components');
   window.interactiveComponents.forEach(component => {
     initializeWhenVisible(component.id, component.modulePath, component.functionName);
   });
 } else {
-  console.warn('No interactive components found to initialize');
+  warn('No interactive components found to initialize');
 }
 
 // Tag filtering functionality
@@ -261,11 +266,11 @@ handleTagLinks();
 function fetchAndCacheBlogData() {
   // Prevent multiple simultaneous fetches
   if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
-    console.log('Blog data fetch already in progress.');
+    log('Blog data fetch already in progress.');
     return globalState.blogFetchPromise; 
   }
   
-  console.log('Starting to fetch blog data...');
+  log('Starting to fetch blog data...');
   globalState.blogStatus = 'loading';
   globalState.blogError = null;
   
@@ -279,11 +284,11 @@ function fetchAndCacheBlogData() {
     .then(data => {
       globalState.blog = data; // Update the blog property
       globalState.blogStatus = 'loaded';
-      console.log('Blog data loaded successfully into globalState.');
+      log('Blog data loaded successfully into globalState.');
       globalState.blogFetchPromise = null; // Clear promise on success
     })
     .catch(error => {
-      console.error('Error loading blog data:', error);
+      error('Error loading blog data:', error);
       globalState.blogError = error;
       globalState.blogStatus = 'error';
       globalState.blogFetchPromise = null; // Clear promise on error
