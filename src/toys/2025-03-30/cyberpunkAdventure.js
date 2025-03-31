@@ -109,7 +109,7 @@ export function cyberpunkAdventure(input, env) {
     });
 
     return output;
-  } catch (e) {
+  } catch {
     return `> SYSTEM ERROR: neural link failure`;
   }
 }

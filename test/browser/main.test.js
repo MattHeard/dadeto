@@ -1,5 +1,5 @@
 import { setupAudio } from '../../src/browser/audio-controls.js';
-import { describe, test, expect, jest } from '@jest/globals';
+import { describe, test, jest } from '@jest/globals';
 
 // Mock DOM elements and functions
 describe('setupAudio', () => {
@@ -75,10 +75,8 @@ describe('setupAudio', () => {
     const mockStopDefault = jest.fn();
     const mockPlayAudio = jest.fn();
     const mockPauseAudio = jest.fn();
-    const mockAddEventListener = jest.fn((element, event, func) => {
-      if (element === mockPlayButton) {
-        func = jest.fn();
-      }
+    const mockAddEventListener = jest.fn(() => {
+      // Event listener setup
     });
     const mockAppendChild = jest.fn();
     const mockInsertBefore = jest.fn();

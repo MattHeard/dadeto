@@ -1,17 +1,9 @@
-function isNonFinite(input) {
-  const num = Number(input);
-  return !Number.isFinite(num);
-}
 
 function getZeroVariantResult(num) {
   const result = isZeroVariant(num);
   return result !== null ? result : null;
 }
 
-function getValidNumber(input) {
-  if (isNonFinite(input)) return null;
-  return Number(input);
-}
 
 function getIEEEDecomposition(num) {
   const parts = decomposeIEEE754(num);
@@ -23,16 +15,8 @@ function formatFloatDecomposition(decimal, { B, C }) {
   return `${decimal} (${B.toString()} × 2^${C.toString()})`;
 }
 
-function isInvalidNumber(input) {
-  return getValidNumber(input) === null;
-}
-
 function getZeroVariantString(num) {
   return getZeroVariantResult(num);
-}
-
-function parseValidNumber(input) {
-  return Number(input);
 }
 
 function resolveZeroVariant(num) {
