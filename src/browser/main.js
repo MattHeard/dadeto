@@ -28,6 +28,8 @@ const log = (...args) => console.log(...args);
 const warn = (...args) => console.warn(...args);
 const error = (...args) => console.error(...args);
 
+const getRandomNumber = () => Math.random();
+
 // Interactive components functionality
 
 /**
@@ -64,7 +66,7 @@ function initializeInteractiveComponent(id, processingFunction) {
     try {
       // Create an env Map with utility functions that might be needed by processing functions
       const env = new Map([
-        ["getRandomNumber", () => Math.random()],
+        ["getRandomNumber", getRandomNumber],
         ["getCurrentTime", () => new Date().toISOString()],
         ["getData", () => {
           // Return a deep copy of the current global state
