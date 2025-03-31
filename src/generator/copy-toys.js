@@ -1,94 +1,79 @@
 #!/usr/bin/env node
 
-/**
- * This script copies toy JavaScript files from src/toys to public
- * It preserves the directory structure
- */
-
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Get the directory name of the current module
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Get __dirname equivalent in ES module scope
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Source and destination directories
-const srcDir = path.join(__dirname, '..', '..', 'src', 'toys');
-const destDir = path.join(__dirname, '..', '..', 'public');
+// Define base directories
+const projectRoot = path.resolve(__dirname, '../..'); // Adjust based on script location
+const srcDir = path.resolve(projectRoot, 'src');
+const publicDir = path.resolve(projectRoot, 'public');
+const srcToysDir = path.resolve(srcDir, 'toys');
+const srcBrowserDir = path.resolve(srcDir, 'browser');
 
-/**
- * Copy a file from source to destination
- * @param {string} src - Source file path
- * @param {string} dest - Destination file path
- */
-function copyFile(src, dest) {
-  // Create destination directory if it doesn't exist
-  const destDir = path.dirname(dest);
+// Ensure public directory exists
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
+}
+
+// --- Copy Toy Files --- 
+
+// Function to recursively find JS files in the toys directory
+function findJsFiles(dir) {
+  let jsFiles = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      jsFiles = jsFiles.concat(findJsFiles(fullPath));
+    } else if (entry.isFile() && entry.name.endsWith('.js') && !entry.name.endsWith('.test.js')) {
+      jsFiles.push(fullPath);
+    }
+  }
+  return jsFiles;
+}
+
+// Find all JS files in src/toys
+const toyFiles = findJsFiles(srcToysDir);
+
+// Copy each toy file to the corresponding path in public
+toyFiles.forEach(filePath => {
+  const relativePath = path.relative(srcToysDir, filePath);
+  const destPath = path.join(publicDir, relativePath);
+  const destDir = path.dirname(destPath);
+
+  // Ensure the destination directory exists
   if (!fs.existsSync(destDir)) {
     fs.mkdirSync(destDir, { recursive: true });
   }
-  
+
   // Copy the file
-  fs.copyFileSync(src, dest);
-  console.log(`Copied: ${src} -> ${dest}`);
-}
+  fs.copyFileSync(filePath, destPath);
+  console.log(`Copied: ${filePath} -> ${destPath}`);
+});
 
-/**
- * Recursively copy files from source to destination
- * @param {string} src - Source directory
- * @param {string} dest - Destination directory
- */
-function copyToyFiles(src, dest) {
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-
-  for (const entry of entries) {
-    handleEntry(entry, src, dest);
-  }
-}
-
-function handleDirectoryEntry(entry, src, dest) {
-  const srcPath = path.join(src, entry.name);
-  copyToyFiles(srcPath, dest);
-}
-
-function handleFileEntry(entry, src, dest, srcPath) {
-  if (shouldCopy(entry)) {
-    const destPath = getDestPath(srcPath);
-    copyFile(srcPath, destPath);
-  }
-}
-
-function handleEntry(entry, src, dest) {
-  const srcPath = path.join(src, entry.name);
-
-  if (entry.isDirectory()) {
-    handleDirectoryEntry(entry, src, dest);
-  } else {
-    handleFileEntry(entry, src, dest, srcPath);
-  }
-}
-
-function isRegularFile(entry) {
-  return entry.isFile();
-}
-
-function isJavaScriptFile(entry) {
-  return entry.name.endsWith('.js');
-}
-
-function isTestFile(entry) {
-  return entry.name.endsWith('.test.js');
-}
-
-function shouldCopy(entry) {
-  return isRegularFile(entry) && isJavaScriptFile(entry) && !isTestFile(entry);
-}
-
-function getDestPath(srcPath) {
-  const relativePath = path.relative(srcDir, srcPath);
-  return path.join(destDir, relativePath);
-}
-
-// Execute the copy function
-copyToyFiles(srcDir, destDir);
 console.log('Toy files copied successfully!');
+
+// --- Copy Specific Assets --- 
+
+const assetsToCopy = [
+  { src: path.join(srcDir, 'blog.json'), dest: path.join(publicDir, 'blog.json') },
+  { src: path.join(srcBrowserDir, 'main.js'), dest: path.join(publicDir, 'main.js') },
+  { src: path.join(srcBrowserDir, 'toy-controls.js'), dest: path.join(publicDir, 'toy-controls.js') },
+  { src: path.join(srcBrowserDir, 'audio-controls.js'), dest: path.join(publicDir, 'audio-controls.js') }
+];
+
+assetsToCopy.forEach(asset => {
+  if (fs.existsSync(asset.src)) {
+    fs.copyFileSync(asset.src, asset.dest);
+    console.log(`Copied: ${asset.src} -> ${asset.dest}`);
+  } else {
+    console.warn(`Warning: Asset not found, skipping copy: ${asset.src}`);
+  }
+});
+
+console.log('Specific assets copied successfully!');
