@@ -68,8 +68,8 @@ function initializeInteractiveComponent(id, processingFunction) {
       const getCurrentTime = () => new Date().toISOString();
       const getData = () => {
         // Return a deep copy of the current global state
-        const getDeepStateCopy = () => JSON.parse(JSON.stringify(globalState));
-        const stateCopy = getDeepStateCopy();
+        const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
+        const stateCopy = getDeepStateCopy(globalState);
         
         // Check blog status and trigger fetch if needed, but don't block
         if (stateCopy.blogStatus === 'idle') {
