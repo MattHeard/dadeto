@@ -74,7 +74,7 @@ function initializeInteractiveComponent(id, processingFunction) {
         
         // Check blog status and trigger fetch if needed, but don't block
         if (stateCopy.blogStatus === 'idle') {
-          fetchAndCacheBlogData(); // Trigger fetch (no await)
+          fetchAndCacheBlogData(globalState); // Trigger fetch (no await)
         } else if (stateCopy.blogStatus === 'error') {
           warn("Blog data previously failed to load:", stateCopy.blogError);
         }
@@ -257,18 +257,18 @@ handleTagLinks();
  * Fetches blog data and updates the global state.
  * Ensures only one fetch happens at a time.
  */
-function fetchAndCacheBlogData() {
+function fetchAndCacheBlogData(state) {
   // Prevent multiple simultaneous fetches
-  if (globalState.blogStatus === 'loading' && globalState.blogFetchPromise) {
+  if (state.blogStatus === 'loading' && state.blogFetchPromise) {
     log('Blog data fetch already in progress.');
-    return globalState.blogFetchPromise; 
+    return state.blogFetchPromise; 
   }
   
   log('Starting to fetch blog data...');
-  globalState.blogStatus = 'loading';
-  globalState.blogError = null;
+  state.blogStatus = 'loading';
+  state.blogError = null;
   
-  globalState.blogFetchPromise = fetch('./blog.json') 
+  state.blogFetchPromise = fetch('./blog.json') 
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -276,23 +276,24 @@ function fetchAndCacheBlogData() {
       return response.json();
     })
     .then(data => {
-      globalState.blog = data; // Update the blog property
-      globalState.blogStatus = 'loaded';
-      log('Blog data loaded successfully into globalState.');
-      globalState.blogFetchPromise = null; // Clear promise on success
+      state.blog = data; // Update the blog property
+      state.blogStatus = 'loaded';
+      log('Blog data loaded successfully:', data);
     })
     .catch(error => {
-      error('Error loading blog data:', error);
-      globalState.blogError = error;
-      globalState.blogStatus = 'error';
-      globalState.blogFetchPromise = null; // Clear promise on error
+      state.blogStatus = 'error';
+      state.blogError = error;
+      error('Error fetching blog data:', error);
+    })
+    .finally(() => {
+      state.blogFetchPromise = null; // Clear the promise tracking
     });
   
-  return globalState.blogFetchPromise;
+  return state.blogFetchPromise; // Return the promise for potential chaining
 }
 
 // Initial fetch of blog data when the script loads
-fetchAndCacheBlogData();
+fetchAndCacheBlogData(globalState);
 
 setupAudio(
   document,
