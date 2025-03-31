@@ -220,11 +220,11 @@ function toggleHideLink(link, className) {
   }
 }
 
-(function() {
-  Array.from(document.getElementsByTagName('a')).forEach(function(link) {
-    Array.from(link.classList).forEach(function(className) {
+const handleTagLinks = () => {
+  Array.from(document.getElementsByTagName('a')).forEach(link => {
+    Array.from(link.classList).forEach(className => {
       if (className.indexOf('tag-') === 0) {
-        link.addEventListener('click', function(event) {
+        link.addEventListener('click', event => {
           event.preventDefault();
           toggleHideLink(link, className);
         });
@@ -232,7 +232,9 @@ function toggleHideLink(link, className) {
       }
     });
   });
-})();
+};
+
+handleTagLinks();
 
 /**
  * Fetches blog data and updates the global state.
