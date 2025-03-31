@@ -11,7 +11,9 @@ import { setupAudio } from './audio-controls.js';
 
 // Helper Functions (moved to top level for broader scope)
 const getElementById = (doc, id) => doc.getElementById(id);
-const getAudioElements = (doc) => doc.querySelectorAll("audio");
+const getAudioElements = (doc) => querySelectorAll(doc, "audio"); // Use querySelectorAll helper
+const querySelector = (el, selector) => el.querySelector(selector);
+const querySelectorAll = (docOrEl, selector) => docOrEl.querySelectorAll(selector);
 const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
 const createElement = (doc, tag) => doc.createElement(tag);
 const createTextNode = (doc) => doc.createTextNode(" ");
@@ -33,9 +35,9 @@ function initializeInteractiveComponent(id, processingFunction) {
   const article = getElementById(document, id);
   
   // Get the elements within the article
-  const inputElement = article.querySelector('input');
-  const submitButton = article.querySelector('button');
-  const outputElement = article.querySelector('p.output');
+  const inputElement = querySelector(article, 'input');
+  const submitButton = querySelector(article, 'button');
+  const outputElement = querySelector(article, 'p.output');
   
   // Disable controls during initialization
   inputElement.disabled = true;
