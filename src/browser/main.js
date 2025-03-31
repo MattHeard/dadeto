@@ -277,16 +277,28 @@ function fetchAndCacheBlogData() {
 // Initial fetch of blog data when the script loads
 fetchAndCacheBlogData();
 
+// Define helper functions locally before passing to setupAudio
+const getAudioElements = (doc) => doc.querySelectorAll("audio");
+const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
+const createElement = (doc, tag) => doc.createElement(tag);
+const createTextNode = (doc) => doc.createTextNode(" ");
+const stopDefault = (e) => e.preventDefault();
+const playAudio = (audio) => audio.play();
+const pauseAudio = (audio) => audio.pause();
+const addEventListener = (element, event, func) => element.addEventListener(event, func);
+const appendChild = (parentNode, newChild) => parentNode.appendChild(newChild);
+const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
+
 setupAudio(
   document,
-  (doc) => doc.querySelectorAll("audio"),
-  (audio) => audio.removeAttribute("controls"),
-  (doc, tag) => doc.createElement(tag),
-  (doc) => doc.createTextNode(" "),
-  (e) => e.preventDefault(),
-  (audio) => audio.play(),
-  (audio) => audio.pause(),
-  (element, event, func) => element.addEventListener(event, func),
-  (parentNode, newChild) => parentNode.appendChild(newChild),
-  (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild)
+  getAudioElements,
+  removeControlsAttribute,
+  createElement,
+  createTextNode,
+  stopDefault,
+  playAudio,
+  pauseAudio,
+  addEventListener,
+  appendChild,
+  insertBefore
 );
