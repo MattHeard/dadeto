@@ -8,6 +8,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
+import { enableInteractiveControls } from './toy-controls.js';
 
 // Helper Functions (moved to top level for broader scope)
 const getElementById = (doc, id) => doc.getElementById(id);
@@ -28,19 +29,6 @@ const warn = (...args) => console.warn(...args);
 const error = (...args) => console.error(...args);
 
 // Interactive components functionality
-
-/**
- * Enable controls and update status message for an interactive component
- * @param {HTMLInputElement} inputElement
- * @param {HTMLButtonElement} submitButton
- * @param {HTMLElement} outputElement
- */
-function enableInteractiveControls(inputElement, submitButton, outputElement) {
-  inputElement.disabled = false;
-  submitButton.disabled = false;
-  outputElement.textContent = 'Ready for input';
-  outputElement.parentElement.classList.remove('warning');
-}
 
 /**
  * Initialize an interactive component with a processing function

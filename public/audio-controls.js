@@ -1,20 +1,4 @@
 // Audio controls functionality
-const getAudioElements = (doc) => doc.querySelectorAll("audio");
-const createElement = (doc, tag) => doc.createElement(tag);
-const playAudio = (audio) => audio.play();
-const pauseAudio = (audio) => audio.pause();
-const addEventListener = (element, event, func) => {
-  element.addEventListener(event, func);
-};
-const createTextNode = (doc) => doc.createTextNode(" ");
-const stopDefault = (e) => e.preventDefault();
-const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
-const appendChild = (parentNode, newChild) => {
-  parentNode.appendChild(newChild);
-};
-const insertBefore = (parentNode, newChild, refChild) => {
-  parentNode.insertBefore(newChild, refChild);
-};
 
 export function setupAudio(
   doc,
