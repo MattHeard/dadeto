@@ -30,6 +30,8 @@ const error = (...args) => console.error(...args);
 
 const getRandomNumber = () => Math.random();
 
+const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
+
 // Interactive components functionality
 
 /**
@@ -68,7 +70,6 @@ function initializeInteractiveComponent(id, processingFunction) {
       const getCurrentTime = () => new Date().toISOString();
       const getData = () => {
         // Return a deep copy of the current global state
-        const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
         const stateCopy = getDeepStateCopy(globalState);
         
         // Check blog status and trigger fetch if needed, but don't block
