@@ -9,6 +9,19 @@ let globalState = {
 
 import { setupAudio } from './audio-controls.js';
 
+// Helper Functions (moved to top level for broader scope)
+const getElementById = (doc, id) => doc.getElementById(id);
+const getAudioElements = (doc) => doc.querySelectorAll("audio");
+const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
+const createElement = (doc, tag) => doc.createElement(tag);
+const createTextNode = (doc) => doc.createTextNode(" ");
+const stopDefault = (e) => e.preventDefault();
+const playAudio = (audio) => audio.play();
+const pauseAudio = (audio) => audio.pause();
+const addEventListener = (element, event, func) => element.addEventListener(event, func);
+const appendChild = (parentNode, newChild) => parentNode.appendChild(newChild);
+const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
+
 // Interactive components functionality
 /**
  * Initialize an interactive component with a processing function
@@ -17,7 +30,7 @@ import { setupAudio } from './audio-controls.js';
  */
 function initializeInteractiveComponent(id, processingFunction) {
   // Get the article element
-  const article = document.getElementById(id);
+  const article = getElementById(document, id);
   
   // Get the elements within the article
   const inputElement = article.querySelector('input');
@@ -47,7 +60,7 @@ function initializeInteractiveComponent(id, processingFunction) {
    */
   function handleSubmit(event) {
     if (event) {
-      event.preventDefault();
+      stopDefault(event);
     }
     const inputValue = inputElement.value;
     
@@ -120,10 +133,10 @@ function initializeInteractiveComponent(id, processingFunction) {
   }
   
   // Add event listener to the submit button
-  submitButton.addEventListener('click', handleSubmit);
+  addEventListener(submitButton, 'click', handleSubmit);
   
   // Add event listener for Enter key in the input field
-  inputElement.addEventListener('keypress', (event) => {
+  addEventListener(inputElement, 'keypress', (event) => {
     if (event.key === 'Enter') {
       handleSubmit(event);
     }
@@ -140,7 +153,7 @@ function initializeInteractiveComponent(id, processingFunction) {
  * @param {string} functionName - Name of the function to import from the module
  */
 function initializeWhenVisible(id, modulePath, functionName) {
-  const article = document.getElementById(id);
+  const article = getElementById(document, id);
   
   // Create an observer instance
   const observer = new IntersectionObserver((entries, observer) => {
@@ -198,25 +211,25 @@ function toggleHideLink(link, className) {
     link.nextElementSibling.remove();
   } else {
     // Create a new span element.
-    var span = document.createElement('span');
+    var span = createElement(document, 'span');
     span.classList.add('hide-span');
     // Append the opening text node.
-    span.appendChild(document.createTextNode(" ("));
+    appendChild(span, document.createTextNode(" ("));
 
     // Create the hide anchor element.
-    var hideLink = document.createElement('a');
+    var hideLink = createElement(document, 'a');
     hideLink.textContent = "hide";
     // Add click listener to trigger hideArticlesByClass.
-    hideLink.addEventListener('click', function(event) {
-      event.preventDefault();
+    addEventListener(hideLink, 'click', function(event) {
+      stopDefault(event);
       hideArticlesByClass(className);
     });
-    span.appendChild(hideLink);
+    appendChild(span, hideLink);
     // Append the closing text node.
-    span.appendChild(document.createTextNode(")"));
+    appendChild(span, document.createTextNode(")"));
 
     // Insert the span immediately after the link.
-    link.parentNode.insertBefore(span, link.nextSibling);
+    insertBefore(link.parentNode, span, link.nextSibling);
   }
 }
 
@@ -224,8 +237,8 @@ const handleTagLinks = () => {
   Array.from(document.getElementsByTagName('a')).forEach(link => {
     Array.from(link.classList).forEach(className => {
       if (className.indexOf('tag-') === 0) {
-        link.addEventListener('click', event => {
-          event.preventDefault();
+        addEventListener(link, 'click', event => {
+          stopDefault(event);
           toggleHideLink(link, className);
         });
         return; // exit after first tag- match
@@ -276,18 +289,6 @@ function fetchAndCacheBlogData() {
 
 // Initial fetch of blog data when the script loads
 fetchAndCacheBlogData();
-
-// Define helper functions locally before passing to setupAudio
-const getAudioElements = (doc) => doc.querySelectorAll("audio");
-const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
-const createElement = (doc, tag) => doc.createElement(tag);
-const createTextNode = (doc) => doc.createTextNode(" ");
-const stopDefault = (e) => e.preventDefault();
-const playAudio = (audio) => audio.play();
-const pauseAudio = (audio) => audio.pause();
-const addEventListener = (element, event, func) => element.addEventListener(event, func);
-const appendChild = (parentNode, newChild) => parentNode.appendChild(newChild);
-const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
 
 setupAudio(
   document,
