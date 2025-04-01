@@ -74,11 +74,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
       ]);
       
       // Call the processing function with the input value
-      // If the function accepts two parameters (length === 2), it will receive the env Map
-      // If it only accepts one parameter, the second argument (env) will be ignored by the function
-      const result = processingFunction.length === 2
-                 ? processingFunction(inputValue, env)
-                 : processingFunction(inputValue);
+      const result = processingFunction(inputValue, env);
       
       // Update the output
       outputElement.textContent = result;
