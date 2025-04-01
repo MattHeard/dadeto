@@ -88,10 +88,10 @@ function handleIntersectionEntries(entries, observer, modulePath, article, funct
 
 // Interactive components functionality
 
-function initializeVisibleComponents() {
-  if (window.interactiveComponents && window.interactiveComponents.length > 0) {
-    log('Initializing', window.interactiveComponents.length, 'interactive components');
-    window.interactiveComponents.forEach(component => {
+function initializeVisibleComponents(win, getElementById) {
+  if (win.interactiveComponents && win.interactiveComponents.length > 0) {
+    log('Initializing', win.interactiveComponents.length, 'interactive components');
+    win.interactiveComponents.forEach(component => {
       const article = getElementById(document, component.id);
       const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
       observer.observe(article);
@@ -101,7 +101,7 @@ function initializeVisibleComponents() {
   }
 }
 
-initializeVisibleComponents();
+initializeVisibleComponents(window, getElementById);
 
 // Tag filtering functionality
 function hideArticlesByClass(className) {
