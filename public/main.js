@@ -31,6 +31,15 @@ const error = (...args) => console.error(...args);
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 
+function createEnv(globalState) {
+  return new Map([
+    ["getRandomNumber", getRandomNumber],
+    ["getCurrentTime", getCurrentTime],
+    ["getData", () => getData(globalState, fetch, log, error, warn)],
+    ["setData", (newData) => setData(newData, globalState, log, error)]
+  ]);
+}
+
 // Interactive components functionality
 
 /**
@@ -66,12 +75,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
     const inputValue = inputElement.value;
     
     try {
-      const env = new Map([
-        ["getRandomNumber", getRandomNumber],
-        ["getCurrentTime", getCurrentTime],
-        ["getData", () => getData(globalState, fetch, log, error, warn)],
-        ["setData", (newData) => setData(newData, globalState, log, error)]
-      ]);
+      const env = createEnv(globalState);
       
       // Call the processing function with the input value
       const result = processingFunction(inputValue, env);
