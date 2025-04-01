@@ -34,6 +34,12 @@ const addWarning = (outputElement) => {
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 
+function handleModuleError(modulePath) {
+  return (e) => {
+    error('Error loading module ' + modulePath + ':', e);
+  };
+}
+
 function createEnv(globalState) {
   return new Map([
     ["getRandomNumber", getRandomNumber],
@@ -78,9 +84,7 @@ function initializeWhenVisible(id, modulePath, functionName) {
       if (entry.isIntersecting) {
         // Dynamically import the module only when the article is visible
         import(modulePath).then(initialiseModule(article, functionName))
-        .catch(error => {
-          error('Error loading module ' + modulePath + ':', error);
-        });
+        .catch(handleModuleError(modulePath));
         
         // Stop observing once initialized
         observer.disconnect();
