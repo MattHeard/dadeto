@@ -37,10 +37,11 @@ const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
 
 /**
  * Initialize an interactive component with a processing function
+ * @param {Document} document - The document object
  * @param {string} id - The ID of the article element
  * @param {Function} processingFunction - The function to process input values
  */
-function initializeInteractiveComponent(id, processingFunction) {
+function initializeInteractiveComponent(document, id, processingFunction) {
   // Get the article element
   const article = getElementById(document, id);
   
@@ -170,7 +171,7 @@ function initializeWhenVisible(id, modulePath, functionName) {
           const processingFunction = module[functionName];
           
           // Initialize the component with the imported function
-          initializeInteractiveComponent(id, processingFunction);
+          initializeInteractiveComponent(document, id, processingFunction);
         }).catch(error => {
           error('Error loading module ' + modulePath + ':', error);
         });
