@@ -95,7 +95,7 @@ function handleIntersectionEntries(entries, observer, modulePath, article, funct
  * @param {string} modulePath - Path to the module containing the processing function
  * @param {string} functionName - Name of the function to import from the module
  */
-function initializeWhenVisible(document, id, modulePath, functionName) {
+function initializeWhenVisible(document, id, modulePath, functionName, getElementById) {
   const article = getElementById(document, id);
   
   const observer = createIntersectionObserver(article, modulePath, functionName);
@@ -108,7 +108,7 @@ function initializeWhenVisible(document, id, modulePath, functionName) {
 if (window.interactiveComponents && window.interactiveComponents.length > 0) {
   log('Initializing', window.interactiveComponents.length, 'interactive components');
   window.interactiveComponents.forEach(component => {
-    initializeWhenVisible(document, component.id, component.modulePath, component.functionName);
+    initializeWhenVisible(document, component.id, component.modulePath, component.functionName, getElementById);
   });
 } else {
   warn('No interactive components found to initialize');
