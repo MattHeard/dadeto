@@ -48,9 +48,9 @@ const createHandleSubmit = (inputElement, outputElement, globalState, processing
     
     // Update the output
     outputElement.textContent = result;
-  } catch (error) {
-    error('Error processing input:', error);
-    outputElement.textContent = 'Error: ' + error.message;
+  } catch (e) {
+    error('Error processing input:', e);
+    outputElement.textContent = 'Error: ' + e.message;
     addWarning(outputElement);
   }
 };
