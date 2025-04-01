@@ -31,15 +31,15 @@ const error = (...args) => console.error(...args);
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
-const getData = (globalState, fetchFn) => {
+const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
   // Return a deep copy of the current global state
   const stateCopy = getDeepStateCopy(globalState);
   
   // Check blog status and trigger fetch if needed, but don't block
   if (stateCopy.blogStatus === 'idle') {
-    fetchAndCacheBlogData(globalState, fetchFn, log, error); // Trigger fetch (no await)
+    fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn); // Trigger fetch (no await)
   } else if (stateCopy.blogStatus === 'error') {
-    warn("Blog data previously failed to load:", stateCopy.blogError);
+    warnFn("Blog data previously failed to load:", stateCopy.blogError);
   }
   
   // Remove fetch-related properties from the copy returned to the toy
@@ -114,7 +114,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
       const env = new Map([
         ["getRandomNumber", getRandomNumber],
         ["getCurrentTime", getCurrentTime],
-        ["getData", () => getData(globalState, fetch)],
+        ["getData", () => getData(globalState, fetch, log, error, warn)],
         ["setData", setData]
       ]);
       
