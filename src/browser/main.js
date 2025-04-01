@@ -27,7 +27,6 @@ const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore
 const log = (...args) => console.log(...args);
 const warn = (...args) => console.warn(...args);
 const error = (...args) => console.error(...args);
-const setDataWrapper = (newData, globalState) => setData(newData, globalState, log, error);
 
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
@@ -71,7 +70,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
         ["getRandomNumber", getRandomNumber],
         ["getCurrentTime", getCurrentTime],
         ["getData", () => getData(globalState, fetch, log, error, warn)],
-        ["setData", (newData) => setDataWrapper(newData, globalState)]
+        ["setData", (newData) => setData(newData, globalState, log, error)]
       ]);
       
       // Call the processing function with the input value
