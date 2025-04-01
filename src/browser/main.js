@@ -31,6 +31,33 @@ const error = (...args) => console.error(...args);
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 
+const setData = (newData, globalState) => {
+  // Replace the entire global state, but validate basic structure
+  if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+    // Preserve the internal blog loading state properties when updating
+    const currentBlogStatus = globalState.blogStatus;
+    const currentBlogError = globalState.blogError;
+    const currentBlogFetchPromise = globalState.blogFetchPromise;
+    const currentBlogData = globalState.blog; // Preserve actual blog data too
+    
+    globalState = newData;
+    
+    // Restore internal properties
+    globalState.blogStatus = currentBlogStatus;
+    globalState.blogError = currentBlogError;
+    globalState.blogFetchPromise = currentBlogFetchPromise;
+    // Ensure the blog data wasn't wiped out if it wasn't included in newData
+    if (!newData.hasOwnProperty('blog')) {
+      globalState.blog = currentBlogData;
+    }
+    
+    log('Global state updated:', globalState);
+  } else {
+    error('setData received invalid data structure:', newData);
+    throw new Error('setData requires an object with at least a \'temporary\' property.');
+  }
+};
+
 // Interactive components functionality
 
 /**
@@ -66,37 +93,12 @@ function initializeInteractiveComponent(document, id, processingFunction) {
     const inputValue = inputElement.value;
     
     try {
-      const setData = (newData) => {
-        // Replace the entire global state, but validate basic structure
-        if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
-          // Preserve the internal blog loading state properties when updating
-          const currentBlogStatus = globalState.blogStatus;
-          const currentBlogError = globalState.blogError;
-          const currentBlogFetchPromise = globalState.blogFetchPromise;
-          const currentBlogData = globalState.blog; // Preserve actual blog data too
-          
-          globalState = newData;
-          
-          // Restore internal properties
-          globalState.blogStatus = currentBlogStatus;
-          globalState.blogError = currentBlogError;
-          globalState.blogFetchPromise = currentBlogFetchPromise;
-          // Ensure the blog data wasn't wiped out if it wasn't included in newData
-          if (!newData.hasOwnProperty('blog')) {
-            globalState.blog = currentBlogData;
-          }
-          
-          log('Global state updated:', globalState);
-        } else {
-          error('setData received invalid data structure:', newData);
-          throw new Error('setData requires an object with at least a \'temporary\' property.');
-        }
-      };
+      const setDataWrapper = (newData) => setData(newData, globalState);
       const env = new Map([
         ["getRandomNumber", getRandomNumber],
         ["getCurrentTime", getCurrentTime],
         ["getData", () => getData(globalState, fetch, log, error, warn)],
-        ["setData", setData]
+        ["setData", setDataWrapper]
       ]);
       
       // Call the processing function with the input value
