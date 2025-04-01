@@ -8,7 +8,7 @@ let globalState = {
 
 import { setupAudio } from './audio-controls.js';
 import { enableInteractiveControls } from './toy-controls.js';
-import { fetchAndCacheBlogData } from './data.js';
+import { fetchAndCacheBlogData, getData } from './data.js';
 
 // Helper Functions (moved to top level for broader scope)
 const getElementById = (doc, id) => doc.getElementById(id);
@@ -30,25 +30,6 @@ const error = (...args) => console.error(...args);
 
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
-const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
-const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
-  // Return a deep copy of the current global state
-  const stateCopy = getDeepStateCopy(globalState);
-  
-  // Check blog status and trigger fetch if needed, but don't block
-  if (stateCopy.blogStatus === 'idle') {
-    fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn); // Trigger fetch (no await)
-  } else if (stateCopy.blogStatus === 'error') {
-    warnFn("Blog data previously failed to load:", stateCopy.blogError);
-  }
-  
-  // Remove fetch-related properties from the copy returned to the toy
-  delete stateCopy.blogStatus;
-  delete stateCopy.blogError;
-  delete stateCopy.blogFetchPromise;
-  
-  return stateCopy;
-};
 
 // Interactive components functionality
 
