@@ -71,7 +71,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
    * Handle form submission events
    * @param {Event} event - The submission event
    */
-  const createHandleSubmit = (inputElement, globalState) => (event) => {
+  const createHandleSubmit = (inputElement, outputElement, globalState) => (event) => {
     if (event) {
       stopDefault(event);
     }
@@ -91,7 +91,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
       addWarning(outputElement);
     }
   };
-  const handleSubmit = createHandleSubmit(inputElement, globalState);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState);
 
   // Add event listener to the submit button
   addEventListener(submitButton, 'click', handleSubmit);
