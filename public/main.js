@@ -43,6 +43,23 @@ function createEnv(globalState) {
   ]);
 }
 
+function initialiseModule(article, functionName) {
+  return (module) => {
+    const processingFunction = module[functionName];
+    initializeInteractiveComponent(
+      article,
+      processingFunction,
+      querySelector,
+      globalState,
+      stopDefault,
+      createEnv,
+      error,
+      addWarning,
+      addEventListener
+    );
+  };
+}
+
 // Interactive components functionality
 
 /**
@@ -60,22 +77,8 @@ function initializeWhenVisible(id, modulePath, functionName) {
       // If the article is visible
       if (entry.isIntersecting) {
         // Dynamically import the module only when the article is visible
-        import(modulePath).then((module) => {
-          const processingFunction = module[functionName];
-          
-          // Initialize the component with the imported function
-          initializeInteractiveComponent(
-            article, 
-            processingFunction, 
-            querySelector, 
-            globalState, 
-            stopDefault, 
-            createEnv, 
-            error, 
-            addWarning, 
-            addEventListener
-          );
-        }).catch(error => {
+        import(modulePath).then(initialiseModule(article, functionName))
+        .catch(error => {
           error('Error loading module ' + modulePath + ':', error);
         });
         
