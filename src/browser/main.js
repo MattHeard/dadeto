@@ -88,11 +88,11 @@ function handleIntersectionEntries(entries, observer, modulePath, article, funct
 
 // Interactive components functionality
 
-function initializeVisibleComponents(win, getElementById) {
+function initializeVisibleComponents(win, doc, getElementById) {
   if (win.interactiveComponents && win.interactiveComponents.length > 0) {
     log('Initializing', win.interactiveComponents.length, 'interactive components');
     win.interactiveComponents.forEach(component => {
-      const article = getElementById(document, component.id);
+      const article = getElementById(doc, component.id);
       const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
       observer.observe(article);
     });
@@ -101,7 +101,7 @@ function initializeVisibleComponents(win, getElementById) {
   }
 }
 
-initializeVisibleComponents(window, getElementById);
+initializeVisibleComponents(window, document, getElementById);
 
 // Tag filtering functionality
 function hideArticlesByClass(className) {
