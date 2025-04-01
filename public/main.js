@@ -1,4 +1,3 @@
-// Single global state object
 let globalState = {
   blog: null, // Holds the fetched blog data
   blogStatus: 'idle', // 'idle', 'loading', 'loaded', 'error'
@@ -32,6 +31,24 @@ const error = (...args) => console.error(...args);
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
+const getData = (globalState) => {
+  // Return a deep copy of the current global state
+  const stateCopy = getDeepStateCopy(globalState);
+  
+  // Check blog status and trigger fetch if needed, but don't block
+  if (stateCopy.blogStatus === 'idle') {
+    fetchAndCacheBlogData(globalState, fetch, log, error); // Trigger fetch (no await)
+  } else if (stateCopy.blogStatus === 'error') {
+    warn("Blog data previously failed to load:", stateCopy.blogError);
+  }
+  
+  // Remove fetch-related properties from the copy returned to the toy
+  delete stateCopy.blogStatus;
+  delete stateCopy.blogError;
+  delete stateCopy.blogFetchPromise;
+  
+  return stateCopy;
+};
 
 // Interactive components functionality
 
@@ -68,25 +85,6 @@ function initializeInteractiveComponent(document, id, processingFunction) {
     const inputValue = inputElement.value;
     
     try {
-      // Create an env Map with utility functions that might be needed by processing functions
-      const getData = () => {
-        // Return a deep copy of the current global state
-        const stateCopy = getDeepStateCopy(globalState);
-        
-        // Check blog status and trigger fetch if needed, but don't block
-        if (stateCopy.blogStatus === 'idle') {
-          fetchAndCacheBlogData(globalState, fetch, log, error); // Trigger fetch (no await)
-        } else if (stateCopy.blogStatus === 'error') {
-          warn("Blog data previously failed to load:", stateCopy.blogError);
-        }
-        
-        // Remove fetch-related properties from the copy returned to the toy
-        delete stateCopy.blogStatus;
-        delete stateCopy.blogError;
-        delete stateCopy.blogFetchPromise;
-        
-        return stateCopy;
-      };
       const setData = (newData) => {
         // Replace the entire global state, but validate basic structure
         if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
@@ -116,7 +114,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
       const env = new Map([
         ["getRandomNumber", getRandomNumber],
         ["getCurrentTime", getCurrentTime],
-        ["getData", getData],
+        ["getData", () => getData(globalState)],
         ["setData", setData]
       ]);
       
