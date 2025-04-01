@@ -7,4 +7,9 @@ export default {
   },
   testEnvironment: 'node',
   testPathIgnorePatterns: ['<rootDir>/.stryker-tmp/'],
+  collectCoverageFrom: [
+    "src/**/*.js",
+    "!**/node_modules/**",
+    "!**/vendor/**"
+  ]
 };
