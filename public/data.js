@@ -73,3 +73,43 @@ export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
   
   return stateCopy;
 };
+
+/**
+ * Updates the global state, preserving internal fetch/blog properties.
+ * @param {object} newData - The new state object (must have 'temporary').
+ * @param {object} globalState - The current global state to modify.
+ * @param {function} logFn - The logging function.
+ * @param {function} errorFn - The error logging function.
+ */
+export const setData = (newData, globalState, logFn, errorFn) => {
+  // Replace the entire global state, but validate basic structure
+  if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+    // Preserve the internal blog loading state properties when updating
+    const currentBlogStatus = globalState.blogStatus;
+    const currentBlogError = globalState.blogError;
+    const currentBlogFetchPromise = globalState.blogFetchPromise;
+    const currentBlogData = globalState.blog; // Preserve actual blog data too
+    
+    // Overwrite the globalState reference with newData
+    // WARNING: This might not modify the original object in the caller's scope 
+    // if globalState was passed by value (which objects usually aren't, but be mindful).
+    // A safer pattern might be to mutate properties directly: globalState.temporary = newData.temporary, etc.
+    // Or return the new state and let the caller assign it.
+    // For now, assuming this reassignment works as intended in the current structure.
+    Object.assign(globalState, newData); // More robust way to merge/update
+    
+    // Restore internal properties that shouldn't be overwritten by toys
+    globalState.blogStatus = currentBlogStatus;
+    globalState.blogError = currentBlogError;
+    globalState.blogFetchPromise = currentBlogFetchPromise;
+    // Ensure the blog data wasn't wiped out if it wasn't included in newData
+    if (!newData.hasOwnProperty('blog')) {
+      globalState.blog = currentBlogData;
+    }
+    
+    logFn('Global state updated:', globalState);
+  } else {
+    errorFn('setData received invalid data structure:', newData);
+    throw new Error('setData requires an object with at least a \'temporary\' property.');
+  }
+};

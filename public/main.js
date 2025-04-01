@@ -8,7 +8,7 @@ let globalState = {
 
 import { setupAudio } from './audio-controls.js';
 import { enableInteractiveControls } from './toy-controls.js';
-import { fetchAndCacheBlogData, getData } from './data.js';
+import { fetchAndCacheBlogData, getData, setData } from './data.js';
 
 // Helper Functions (moved to top level for broader scope)
 const getElementById = (doc, id) => doc.getElementById(id);
@@ -30,33 +30,6 @@ const error = (...args) => console.error(...args);
 
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
-
-const setData = (newData, globalState, logFn, errorFn) => {
-  // Replace the entire global state, but validate basic structure
-  if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
-    // Preserve the internal blog loading state properties when updating
-    const currentBlogStatus = globalState.blogStatus;
-    const currentBlogError = globalState.blogError;
-    const currentBlogFetchPromise = globalState.blogFetchPromise;
-    const currentBlogData = globalState.blog; // Preserve actual blog data too
-    
-    globalState = newData;
-    
-    // Restore internal properties
-    globalState.blogStatus = currentBlogStatus;
-    globalState.blogError = currentBlogError;
-    globalState.blogFetchPromise = currentBlogFetchPromise;
-    // Ensure the blog data wasn't wiped out if it wasn't included in newData
-    if (!newData.hasOwnProperty('blog')) {
-      globalState.blog = currentBlogData;
-    }
-    
-    logFn('Global state updated:', globalState);
-  } else {
-    errorFn('setData received invalid data structure:', newData);
-    throw new Error('setData requires an object with at least a \'temporary\' property.');
-  }
-};
 
 // Interactive components functionality
 
