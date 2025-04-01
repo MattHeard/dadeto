@@ -31,7 +31,7 @@ const error = (...args) => console.error(...args);
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 
-const setData = (newData, globalState) => {
+const setData = (newData, globalState, logFn, errorFn) => {
   // Replace the entire global state, but validate basic structure
   if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
     // Preserve the internal blog loading state properties when updating
@@ -51,9 +51,9 @@ const setData = (newData, globalState) => {
       globalState.blog = currentBlogData;
     }
     
-    log('Global state updated:', globalState);
+    logFn('Global state updated:', globalState);
   } else {
-    error('setData received invalid data structure:', newData);
+    errorFn('setData received invalid data structure:', newData);
     throw new Error('setData requires an object with at least a \'temporary\' property.');
   }
 };
@@ -93,7 +93,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
     const inputValue = inputElement.value;
     
     try {
-      const setDataWrapper = (newData) => setData(newData, globalState);
+      const setDataWrapper = (newData) => setData(newData, globalState, log, error);
       const env = new Map([
         ["getRandomNumber", getRandomNumber],
         ["getCurrentTime", getCurrentTime],
