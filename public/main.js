@@ -34,7 +34,7 @@ const addWarning = (outputElement) => {
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 
-const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv) => (event) => {
+const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, errorFn) => (event) => {
   if (event) {
     stopDefault(event);
   }
@@ -48,9 +48,9 @@ const createHandleSubmit = (inputElement, outputElement, globalState, processing
     
     // Update the output
     outputElement.textContent = result;
-  } catch (error) {
-    error('Error processing input:', error);
-    outputElement.textContent = 'Error: ' + error.message;
+  } catch (e) {
+    errorFn('Error processing input:', e);
+    outputElement.textContent = 'Error: ' + e.message;
     addWarning(outputElement);
   }
 };
@@ -85,7 +85,7 @@ function initializeInteractiveComponent(article, processingFunction, querySelect
   // Update message to show JS is running
   outputElement.textContent = 'Initialising...';
 
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, error);
 
   // Add event listener to the submit button
   addEventListener(submitButton, 'click', handleSubmit);
