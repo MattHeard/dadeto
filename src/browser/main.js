@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { initializeInteractiveComponent } from './toy-controls.js';
+import { initializeInteractiveComponent, initializeVisibleComponents } from './toy-controls.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 
 // Helper Functions (moved to top level for broader scope)
@@ -87,21 +87,14 @@ function handleIntersectionEntries(entries, observer, modulePath, article, funct
 }
 
 // Interactive components functionality
-
-function initializeVisibleComponents(win, doc, getElementById) {
-  if (win.interactiveComponents && win.interactiveComponents.length > 0) {
-    log('Initializing', win.interactiveComponents.length, 'interactive components');
-    win.interactiveComponents.forEach(component => {
-      const article = getElementById(doc, component.id);
-      const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
-      observer.observe(article);
-    });
-  } else {
-    warn('No interactive components found to initialize');
-  }
-}
-
-initializeVisibleComponents(window, document, getElementById);
+initializeVisibleComponents(
+  window, 
+  document, 
+  log, 
+  warn, 
+  getElementById, 
+  createIntersectionObserver // Pass the function defined in main.js
+);
 
 // Tag filtering functionality
 function hideArticlesByClass(className) {

@@ -86,3 +86,31 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   // Enable controls when initialization is complete using the function from this module
   enableInteractiveControls(inputElement, submitButton, outputElement);
 }
+
+/**
+ * Finds all interactive components registered on the window and sets up
+ * IntersectionObservers (via the provided creator function) to lazy-load
+ * and initialize them when they enter the viewport.
+ * @param {Window} win - The window object.
+ * @param {Document} doc - The document object.
+ * @param {Function} logFn - Logging function.
+ * @param {Function} warnFn - Warning function.
+ * @param {Function} getElementByIdFn - Function to get element by ID.
+ * @param {Function} createIntersectionObserverFn - Function that creates an IntersectionObserver for a given article, module path, and function name.
+ */
+export function initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn) {
+  if (win.interactiveComponents && win.interactiveComponents.length > 0) {
+    logFn('Initializing', win.interactiveComponents.length, 'interactive components via IntersectionObserver');
+    win.interactiveComponents.forEach(component => {
+      const article = getElementByIdFn(doc, component.id);
+      if (article) {
+        const observer = createIntersectionObserverFn(article, component.modulePath, component.functionName);
+        observer.observe(article);
+      } else {
+        warnFn(`Could not find article element with ID: ${component.id} for component initialization.`);
+      }
+    });
+  } else {
+    warnFn('No interactive components found to initialize');
+  }
+}
