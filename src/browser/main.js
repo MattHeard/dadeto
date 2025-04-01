@@ -66,6 +66,14 @@ function initialiseModule(article, functionName) {
   };
 }
 
+function handleIntersection(entry, observer, modulePath, article, functionName) {
+  if (entry.isIntersecting) {
+    import(modulePath).then(initialiseModule(article, functionName))
+    .catch(handleModuleError(modulePath));
+    observer.disconnect();
+  }
+}
+
 // Interactive components functionality
 
 /**
@@ -79,17 +87,7 @@ function initializeWhenVisible(id, modulePath, functionName) {
   
   // Create an observer instance
   const observer = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      // If the article is visible
-      if (entry.isIntersecting) {
-        // Dynamically import the module only when the article is visible
-        import(modulePath).then(initialiseModule(article, functionName))
-        .catch(handleModuleError(modulePath));
-        
-        // Stop observing once initialized
-        observer.disconnect();
-      }
-    });
+    entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName));
   }, {
     // Options for the observer
     root: null, // viewport
