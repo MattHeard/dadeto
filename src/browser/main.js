@@ -68,15 +68,11 @@ function createEnv(globalState) {
 
 /**
  * Initialize an interactive component with a processing function
- * @param {Document} document - The document object
- * @param {string} id - The ID of the article element
+ * @param {HTMLElement} article - The article element
  * @param {Function} processingFunction - The function to process input values
  * @param {Function} querySelector - The querySelector function to use
  */
-function initializeInteractiveComponent(document, id, processingFunction, querySelector) {
-  // Get the article element
-  const article = getElementById(document, id);
-  
+function initializeInteractiveComponent(article, processingFunction, querySelector) {
   // Get the elements within the article
   const inputElement = querySelector(article, 'input');
   const submitButton = querySelector(article, 'button');
@@ -124,7 +120,7 @@ function initializeWhenVisible(id, modulePath, functionName) {
           const processingFunction = module[functionName];
           
           // Initialize the component with the imported function
-          initializeInteractiveComponent(document, id, processingFunction, querySelector);
+          initializeInteractiveComponent(article, processingFunction, querySelector);
         }).catch(error => {
           error('Error loading module ' + modulePath + ':', error);
         });
