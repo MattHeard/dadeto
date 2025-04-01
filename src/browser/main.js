@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { enableInteractiveControls, createHandleSubmit, initializeInteractiveComponent } from './toy-controls.js';
+import { initializeInteractiveComponent } from './toy-controls.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 
 // Helper Functions (moved to top level for broader scope)
@@ -88,31 +88,20 @@ function handleIntersectionEntries(entries, observer, modulePath, article, funct
 
 // Interactive components functionality
 
-/**
- * Initialize a component when it enters the viewport
- * @param {Document} document - The document object
- * @param {string} id - The ID of the article element to observe
- * @param {string} modulePath - Path to the module containing the processing function
- * @param {string} functionName - Name of the function to import from the module
- */
-function initializeWhenVisible(document, id, modulePath, functionName, getElementById) {
-  const article = getElementById(document, id);
-  
-  const observer = createIntersectionObserver(article, modulePath, functionName);
-  
-  // Start observing the article
-  observer.observe(article);
+function initializeVisibleComponents() {
+  if (window.interactiveComponents && window.interactiveComponents.length > 0) {
+    log('Initializing', window.interactiveComponents.length, 'interactive components');
+    window.interactiveComponents.forEach(component => {
+      const article = getElementById(document, component.id);
+      const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
+      observer.observe(article);
+    });
+  } else {
+    warn('No interactive components found to initialize');
+  }
 }
 
-// Initialize all registered components when they become visible
-if (window.interactiveComponents && window.interactiveComponents.length > 0) {
-  log('Initializing', window.interactiveComponents.length, 'interactive components');
-  window.interactiveComponents.forEach(component => {
-    initializeWhenVisible(document, component.id, component.modulePath, component.functionName, getElementById);
-  });
-} else {
-  warn('No interactive components found to initialize');
-}
+initializeVisibleComponents();
 
 // Tag filtering functionality
 function hideArticlesByClass(className) {
