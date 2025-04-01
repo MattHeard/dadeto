@@ -66,6 +66,14 @@ function initialiseModule(article, functionName) {
   };
 }
 
+function createIntersectionObserver(article, modulePath, functionName) {
+  return new IntersectionObserver((entries, observer) =>
+    handleIntersectionEntries(entries, observer, modulePath, article, functionName), {
+    root: null,
+    threshold: 0.1
+  });
+}
+
 function handleIntersection(entry, observer, modulePath, article, functionName) {
   if (entry.isIntersecting) {
     import(modulePath).then(initialiseModule(article, functionName))
@@ -74,25 +82,23 @@ function handleIntersection(entry, observer, modulePath, article, functionName) 
   }
 }
 
+function handleIntersectionEntries(entries, observer, modulePath, article, functionName) {
+  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName));
+}
+
 // Interactive components functionality
 
 /**
  * Initialize a component when it enters the viewport
+ * @param {Document} document - The document object
  * @param {string} id - The ID of the article element to observe
  * @param {string} modulePath - Path to the module containing the processing function
  * @param {string} functionName - Name of the function to import from the module
  */
-function initializeWhenVisible(id, modulePath, functionName) {
+function initializeWhenVisible(document, id, modulePath, functionName) {
   const article = getElementById(document, id);
   
-  // Create an observer instance
-  const observer = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName));
-  }, {
-    // Options for the observer
-    root: null, // viewport
-    threshold: 0.1 // 10% visibility is enough to trigger
-  });
+  const observer = createIntersectionObserver(article, modulePath, functionName);
   
   // Start observing the article
   observer.observe(article);
@@ -102,7 +108,7 @@ function initializeWhenVisible(id, modulePath, functionName) {
 if (window.interactiveComponents && window.interactiveComponents.length > 0) {
   log('Initializing', window.interactiveComponents.length, 'interactive components');
   window.interactiveComponents.forEach(component => {
-    initializeWhenVisible(component.id, component.modulePath, component.functionName);
+    initializeWhenVisible(document, component.id, component.modulePath, component.functionName);
   });
 } else {
   warn('No interactive components found to initialize');
