@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { enableInteractiveControls, createHandleSubmit } from './toy-controls.js';
+import { enableInteractiveControls, createHandleSubmit, initializeInteractiveComponent } from './toy-controls.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 
 // Helper Functions (moved to top level for broader scope)
@@ -46,41 +46,6 @@ function createEnv(globalState) {
 // Interactive components functionality
 
 /**
- * Initialize an interactive component with a processing function
- * @param {HTMLElement} article - The article element
- * @param {Function} processingFunction - The function to process input values
- * @param {Function} querySelector - The querySelector function to use
- */
-function initializeInteractiveComponent(article, processingFunction, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener) {
-  // Get the elements within the article
-  const inputElement = querySelector(article, 'input');
-  const submitButton = querySelector(article, 'button');
-  const outputElement = querySelector(article, 'p.output');
-  
-  // Disable controls during initialization
-  inputElement.disabled = true;
-  submitButton.disabled = true;
-  
-  // Update message to show JS is running
-  outputElement.textContent = 'Initialising...';
-
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, error, addWarning);
-
-  // Add event listener to the submit button
-  addEventListener(submitButton, 'click', handleSubmit);
-  
-  // Add event listener for Enter key in the input field
-  addEventListener(inputElement, 'keypress', (event) => {
-    if (event.key === 'Enter') {
-      handleSubmit(event);
-    }
-  });
-
-  // Enable controls when initialization is complete
-  enableInteractiveControls(inputElement, submitButton, outputElement);
-}
-
-/**
  * Initialize a component when it enters the viewport
  * @param {string} id - The ID of the article element to observe
  * @param {string} modulePath - Path to the module containing the processing function
@@ -99,7 +64,17 @@ function initializeWhenVisible(id, modulePath, functionName) {
           const processingFunction = module[functionName];
           
           // Initialize the component with the imported function
-          initializeInteractiveComponent(article, processingFunction, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener);
+          initializeInteractiveComponent(
+            article, 
+            processingFunction, 
+            querySelector, 
+            globalState, 
+            stopDefault, 
+            createEnv, 
+            error, 
+            addWarning, 
+            addEventListener
+          );
         }).catch(error => {
           error('Error loading module ' + modulePath + ':', error);
         });
