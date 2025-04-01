@@ -30,7 +30,7 @@ const warn = (...args) => console.warn(...args);
 const error = (...args) => console.error(...args);
 
 const getRandomNumber = () => Math.random();
-
+const getCurrentTime = () => new Date().toISOString();
 const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
 
 // Interactive components functionality
@@ -69,7 +69,6 @@ function initializeInteractiveComponent(document, id, processingFunction) {
     
     try {
       // Create an env Map with utility functions that might be needed by processing functions
-      const getCurrentTime = () => new Date().toISOString();
       const getData = () => {
         // Return a deep copy of the current global state
         const stateCopy = getDeepStateCopy(globalState);
