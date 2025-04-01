@@ -34,7 +34,7 @@ const addWarning = (outputElement) => {
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 
-const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, errorFn) => (event) => {
+const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarning) => (event) => {
   if (event) {
     stopDefault(event);
   }
@@ -85,7 +85,7 @@ function initializeInteractiveComponent(article, processingFunction, querySelect
   // Update message to show JS is running
   outputElement.textContent = 'Initialising...';
 
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, error);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, error, addWarning);
 
   // Add event listener to the submit button
   addEventListener(submitButton, 'click', handleSubmit);
