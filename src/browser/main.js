@@ -27,6 +27,9 @@ const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore
 const log = (...args) => console.log(...args);
 const warn = (...args) => console.warn(...args);
 const error = (...args) => console.error(...args);
+const addWarning = (outputElement) => {
+  outputElement.parentElement.classList.add('warning');
+};
 
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
@@ -85,7 +88,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
     } catch (error) {
       error('Error processing input:', error);
       outputElement.textContent = 'Error: ' + error.message;
-      outputElement.parentElement.classList.add('warning');
+      addWarning(outputElement);
     }
   };
   const handleSubmit = createHandleSubmit(inputElement, globalState);
