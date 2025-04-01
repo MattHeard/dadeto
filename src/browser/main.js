@@ -34,6 +34,27 @@ const addWarning = (outputElement) => {
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 
+const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction) => (event) => {
+  if (event) {
+    stopDefault(event);
+  }
+  const inputValue = inputElement.value;
+  
+  try {
+    const env = createEnv(globalState);
+    
+    // Call the processing function with the input value
+    const result = processingFunction(inputValue, env);
+    
+    // Update the output
+    outputElement.textContent = result;
+  } catch (error) {
+    error('Error processing input:', error);
+    outputElement.textContent = 'Error: ' + error.message;
+    addWarning(outputElement);
+  }
+};
+
 function createEnv(globalState) {
   return new Map([
     ["getRandomNumber", getRandomNumber],
@@ -67,31 +88,7 @@ function initializeInteractiveComponent(document, id, processingFunction) {
   // Update message to show JS is running
   outputElement.textContent = 'Initialising...';
 
-  /**
-   * Handle form submission events
-   * @param {Event} event - The submission event
-   */
-  const createHandleSubmit = (inputElement, outputElement, globalState) => (event) => {
-    if (event) {
-      stopDefault(event);
-    }
-    const inputValue = inputElement.value;
-    
-    try {
-      const env = createEnv(globalState);
-      
-      // Call the processing function with the input value
-      const result = processingFunction(inputValue, env);
-      
-      // Update the output
-      outputElement.textContent = result;
-    } catch (error) {
-      error('Error processing input:', error);
-      outputElement.textContent = 'Error: ' + error.message;
-      addWarning(outputElement);
-    }
-  };
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction);
 
   // Add event listener to the submit button
   addEventListener(submitButton, 'click', handleSubmit);
