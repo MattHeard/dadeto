@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { enableInteractiveControls } from './toy-controls.js';
+import { enableInteractiveControls, createHandleSubmit } from './toy-controls.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 
 // Helper Functions (moved to top level for broader scope)
@@ -33,27 +33,6 @@ const addWarning = (outputElement) => {
 
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
-
-const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarning) => (event) => {
-  if (event) {
-    stopDefault(event);
-  }
-  const inputValue = inputElement.value;
-  
-  try {
-    const env = createEnv(globalState);
-    
-    // Call the processing function with the input value
-    const result = processingFunction(inputValue, env);
-    
-    // Update the output
-    outputElement.textContent = result;
-  } catch (e) {
-    errorFn('Error processing input:', e);
-    outputElement.textContent = 'Error: ' + e.message;
-    addWarning(outputElement);
-  }
-};
 
 function createEnv(globalState) {
   return new Map([
