@@ -76,3 +76,67 @@ describe('fetchAndCacheBlogData', () => {
     expect(mockError).toHaveBeenCalledWith('Error fetching blog data:', error);
   });
 });
+
+import { getData, setData, getDeepStateCopy } from '../../src/browser/data.js';
+
+describe('getData, setData, and getDeepStateCopy', () => {
+  let state;
+  let logFn;
+  let errorFn;
+  let warnFn;
+  let fetchFn;
+
+  beforeEach(() => {
+    state = {
+      blog: null,
+      blogStatus: 'idle',
+      blogError: null,
+      blogFetchPromise: null,
+    };
+    logFn = jest.fn();
+    errorFn = jest.fn();
+    warnFn = jest.fn();
+    fetchFn = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ blog: 'content' }) }));
+  });
+
+  it('getDeepStateCopy returns a deep copy', () => {
+    const original = { blog: { content: 'x' } };
+    const copy = getDeepStateCopy(original);
+    expect(copy).toEqual(original);
+    expect(copy).not.toBe(original);
+    expect(copy.blog).not.toBe(original.blog);
+  });
+
+  it('getData triggers fetch if status is idle', () => {
+    getData(state, fetchFn, logFn, errorFn, warnFn);
+    expect(fetchFn).toHaveBeenCalled();
+  });
+
+  it('getData logs warning on error state', () => {
+    state.blogStatus = 'error';
+    getData(state, fetchFn, logFn, errorFn, warnFn);
+    expect(warnFn).toHaveBeenCalledWith('Blog data previously failed to load:', state.blogError);
+  });
+
+  it('getData omits internal state fields', async () => {
+    state.blog = { title: 'x' };
+    state.blogStatus = 'loaded';
+    const result = getData(state, fetchFn, logFn, errorFn, warnFn);
+    expect(result.blog).toEqual({ title: 'x' });
+    expect(result).not.toHaveProperty('blogStatus');
+    expect(result).not.toHaveProperty('blogError');
+    expect(result).not.toHaveProperty('blogFetchPromise');
+  });
+
+  it('setData updates state correctly', () => {
+    setData({ blog: 'data', temporary: true }, state, logFn, errorFn);
+    expect(state.blog).toEqual('data');
+    expect(state.blogStatus).toBe('idle'); // preserved value
+    expect(logFn).toHaveBeenCalledWith('Global state updated:', state);
+  });
+
+  it('setData throws and logs error if blog missing', () => {
+    expect(() => setData({}, state, logFn, errorFn)).toThrow();
+    expect(errorFn).toHaveBeenCalled();
+  });
+});
