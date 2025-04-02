@@ -11,5 +11,6 @@ export default {
     "src/**/*.js",
     "!**/node_modules/**",
     "!**/vendor/**"
-  ]
+  ],
+  coverageDirectory: 'reports/coverage',
 };
