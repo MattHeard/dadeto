@@ -42,7 +42,7 @@ export function fetchAndCacheBlogData(state, fetchFn, logFn, errorFn) {
 }
 
 // Helper function needed by getData
-const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
+export const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
 
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.

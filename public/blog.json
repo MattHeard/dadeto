@@ -1,6 +1,23 @@
 {
   "posts": [
     {
+      "key": "FLUS1",
+      "title": "Flushing Out Ideas",
+      "publicationDate": "2025-04-04",
+      "content": [
+        "Since 2012, my blog posts have followed a constrained writing format. Exactly three word titles. Exactly one-hundred word bodies. The idea was to reduce the friction to writing blog posts. I remember hearing once that all your good ideas are stuck in a queue behind a thousand bad ideas. To get to the good ideas, you must flush out the bad ideas first. You have to iterate and not get attached. If you are prolific enough, you'll get them out and then you'll finally start getting good ideas coming out. My blog generator is now getting rid of more friction."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a person sitting at a desk writing on paper, surrounded by crumpled pages and a glowing lightbulb above their head, symbolizing the creative process of refining ideas"
+      },
+      "tags": [
+        "writing",
+        "quality",
+        "ideas"
+      ]
+    },
+    {
       "key": "CYBE1",
       "title": "Cyberpunk Adventure",
       "publicationDate": "2025-03-30",
