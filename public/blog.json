@@ -1,6 +1,23 @@
 {
   "posts": [
     {
+      "key": "HTTP1",
+      "title": "HTTP Request",
+      "publicationDate": "2025-04-05",
+      "content": [
+        "Presents a representation of an HTTP request."
+      ],
+      "toy": {
+        "modulePath": "/2025-04-05/httpRequest.js",
+        "functionName": "httpRequest"
+      },
+      "tags": [
+        "toy",
+        "http",
+        "web"
+      ]
+    },
+    {
       "key": "FLUS1",
       "title": "Flushing Out Ideas",
       "publicationDate": "2025-04-04",
