@@ -1,6 +1,23 @@
 {
   "posts": [
     {
+      "key": "JIRA1",
+      "title": "Jira Ticket",
+      "publicationDate": "2025-04-05",
+      "content": [
+        "Fetches and prints information about a Jira ticket."
+      ],
+      "toy": {
+        "modulePath": "/2025-04-05/jiraTicket.js",
+        "functionName": "jiraTicket"
+      },
+      "tags": [
+        "toy",
+        "jira",
+        "http"
+      ]
+    },
+    {
       "key": "HTTP1",
       "title": "HTTP Request",
       "publicationDate": "2025-04-05",
