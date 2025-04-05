@@ -31,12 +31,32 @@ export const createHandleSubmit = (inputElement, outputElement, globalState, pro
   
   try {
     const env = createEnv(globalState);
-    
+
     // Call the processing function with the input value
     const result = processingFunction(inputValue, env);
-    
-    // Update the output
-    outputElement.textContent = result;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result);
+    } catch (_) {
+      parsed = null;
+    }
+
+    if (parsed && typeof parsed === 'object' && parsed.request && typeof parsed.request.url === 'string') {
+      fetch(parsed.request.url)
+        .then(response => response.text())
+        .then(body => {
+          outputElement.textContent = body;
+        })
+        .catch(fetchError => {
+          errorFn('Error fetching request URL:', fetchError);
+          outputElement.textContent = 'Error fetching URL: ' + fetchError.message;
+          addWarningFn(outputElement);
+        });
+    } else {
+      // Default behavior
+      outputElement.textContent = result;
+    }
   } catch (e) {
     errorFn('Error processing input:', e);
     outputElement.textContent = 'Error: ' + e.message;
