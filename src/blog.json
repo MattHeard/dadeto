@@ -4,6 +4,10 @@
       "key": "HTTP1",
       "title": "HTTP Request",
       "publicationDate": "2025-04-05",
+      "illustration": {
+        "fileType": "png",
+        "altText": "an abstract geometric illustration featuring a dynamic orange circle with radiating black curves, a purple triangle, linked teal circles, and a rounded black rectangle, all set against a textured off-white background with a balanced composition and a sense of visual flow"
+      },
       "content": [
         "Sends a GET request and prints the response."
       ],
