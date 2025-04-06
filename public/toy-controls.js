@@ -21,9 +21,10 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
  * @param {Function} createEnv - Function to create the environment map for the toy.
  * @param {Function} errorFn - Function for logging errors.
  * @param {Function} addWarningFn - Function to add a warning style to the output.
+ * @param {Function} fetchFn - Function to fetch data from a URL.
  * @returns {Function} An event handler function.
  */
-export const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn) => (event) => {
+export const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn, fetchFn) => (event) => {
   if (event) {
     stopDefault(event);
   }
@@ -38,12 +39,12 @@ export const createHandleSubmit = (inputElement, outputElement, globalState, pro
     let parsed;
     try {
       parsed = JSON.parse(result);
-    } catch (_) {
+    } catch {
       parsed = null;
     }
 
     if (parsed && typeof parsed === 'object' && parsed.request && typeof parsed.request.url === 'string') {
-      fetch(parsed.request.url)
+      fetchFn(parsed.request.url)
         .then(response => response.text())
         .then(body => {
           outputElement.textContent = body;

@@ -1,9 +1,21 @@
+function buildDecomposedResult(num) {
+  const A = formatDecimal(num);
+  const decomposition = getIEEEDecomposition(num);
+  if (!decomposition) return "";
+  return formatFloatDecomposition(A, decomposition);
+}
+
+export function decomposeFloat(input) {
+  const num = Number(input);
+  const simple = handleSimpleCases(num);
+  if (simple !== null) return simple;
+  return buildDecomposedResult(num);
+}
 
 function getZeroVariantResult(num) {
   const result = isZeroVariant(num);
   return result !== null ? result : null;
 }
-
 
 function getIEEEDecomposition(num) {
   const parts = decomposeIEEE754(num);
@@ -24,18 +36,10 @@ function resolveZeroVariant(num) {
   return zeroResult ? zeroResult : null;
 }
 
-export function decomposeFloat(input) {
-  const num = Number(input);
+function handleSimpleCases(num) {
   if (!Number.isFinite(num)) return "";
-
-  const zeroReturn = resolveZeroVariant(num);
-  if (zeroReturn) return zeroReturn;
-
-  const A = formatDecimal(num);
-  const decomposition = getIEEEDecomposition(num);
-  if (!decomposition) return "";
-
-  return formatFloatDecomposition(A, decomposition);
+  if (resolveZeroVariant(num)) return resolveZeroVariant(num);
+  return null;
 }
 
 function isPositiveZero(n) {

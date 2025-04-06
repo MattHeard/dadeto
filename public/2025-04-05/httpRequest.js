@@ -1,4 +1,4 @@
-export function httpRequest(input, env) {
+export function httpRequest(input) {
   const result = {
     request: {
       url: input
