@@ -102,3 +102,20 @@ test('detects full board with no remaining moves', () => {
   const output = JSON.parse(result);
   expect(output.moves).toEqual(input.moves);
 });
+
+test('detects win for O and returns no additional move', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 0 } },
+      { player: 'O', position: { row: 1, column: 0 } },
+      { player: 'X', position: { row: 0, column: 1 } },
+      { player: 'O', position: { row: 1, column: 1 } },
+      { player: 'X', position: { row: 2, column: 2 } },
+      { player: 'O', position: { row: 1, column: 2 } } // O wins across the middle row
+    ]
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toEqual(input.moves); // game is over, no extra move
+});
