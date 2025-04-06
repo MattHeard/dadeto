@@ -63,7 +63,7 @@ describe('enableInteractiveControls', () => {
   });
 });
 
-import { createHandleSubmit, initializeInteractiveComponent } from '../../src/browser/toy-controls.js';
+import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents } from '../../src/browser/toy-controls.js';
 
 describe('createHandleSubmit', () => {
   let mockFetch;
@@ -292,5 +292,20 @@ describe('initializeInteractiveComponent', () => {
     listeners.keypress({ key: 'Enter', preventDefault: jest.fn() });
 
     expect(processingFunction).toHaveBeenCalledWith('test', expect.any(Object));
+  });
+});
+
+describe('initializeVisibleComponents', () => {
+  it('warns if there are no interactive components', () => {
+    const win = { interactiveComponents: [] };
+    const doc = {};
+    const logFn = jest.fn();
+    const warnFn = jest.fn();
+    const getElementByIdFn = jest.fn();
+    const createIntersectionObserverFn = jest.fn();
+
+    initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
+
+    expect(warnFn).toHaveBeenCalledWith('No interactive components found to initialize');
   });
 });
