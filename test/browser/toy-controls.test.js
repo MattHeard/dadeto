@@ -293,6 +293,52 @@ describe('initializeInteractiveComponent', () => {
 
     expect(processingFunction).toHaveBeenCalledWith('test', expect.any(Object));
   });
+
+  it('does not call handleSubmit when a non-Enter key is pressed', () => {
+    const article = {};
+    const inputElement = { value: 'test', disabled: false };
+    const submitButton = { disabled: false };
+    const outputElement = { textContent: '', parentElement: { classList: { remove: jest.fn() } } };
+
+    const querySelectorFn = jest.fn((el, selector) => {
+      if (selector === 'input') return inputElement;
+      if (selector === 'button') return submitButton;
+      if (selector === 'p.output') return outputElement;
+    });
+
+    const globalState = {};
+    const stopDefaultFn = jest.fn();
+    const createEnvFn = () => ({});
+    const errorFn = jest.fn();
+    const addWarningFn = jest.fn();
+    const fetchFn = jest.fn();
+
+    const processingFunction = jest.fn(() => 'processed result');
+    const listeners = {};
+
+    const addEventListenerFn = jest.fn((element, event, handler) => {
+      if (element === inputElement && event === 'keypress') {
+        listeners.keypress = handler;
+      }
+    });
+
+    initializeInteractiveComponent(
+      article,
+      processingFunction,
+      querySelectorFn,
+      globalState,
+      stopDefaultFn,
+      createEnvFn,
+      errorFn,
+      addWarningFn,
+      addEventListenerFn,
+      fetchFn
+    );
+
+    listeners.keypress({ key: 'a', preventDefault: jest.fn() });
+
+    expect(processingFunction).not.toHaveBeenCalled();
+  });
 });
 
 describe('initializeVisibleComponents', () => {
