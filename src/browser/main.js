@@ -26,10 +26,10 @@ import {
   log,
   warn,
   error,
-  addWarning
+  addWarning,
+  getRandomNumber
 } from './document.js';
 
-const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 
 function handleModuleError(modulePath, errorFn) {
