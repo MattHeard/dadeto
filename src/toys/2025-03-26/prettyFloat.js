@@ -1,4 +1,3 @@
-
 function getZeroVariantResult(num) {
   const result = isZeroVariant(num);
   return result !== null ? result : null;
@@ -24,12 +23,16 @@ function resolveZeroVariant(num) {
   return zeroResult ? zeroResult : null;
 }
 
+function handleSimpleCases(num) {
+  if (!Number.isFinite(num)) return "";
+  const zeroReturn = resolveZeroVariant(num);
+  return zeroReturn ? zeroReturn : null;
+}
+
 export function decomposeFloat(input) {
   const num = Number(input);
-  if (!Number.isFinite(num)) return "";
-
-  const zeroReturn = resolveZeroVariant(num);
-  if (zeroReturn) return zeroReturn;
+  const simple = handleSimpleCases(num);
+  if (simple !== null) return simple;
 
   const A = formatDecimal(num);
   const decomposition = getIEEEDecomposition(num);
