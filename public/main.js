@@ -71,10 +71,10 @@ initializeVisibleComponents(
 );
 
 // Tag filtering functionality
-function hideArticlesByClass(className, getElementsByTagName) {
+function hideArticlesByClass(className, getElementsByTagName, hasClassFn) {
   var articles = getElementsByTagName('article');
   for (var i = 0; i < articles.length; i++) {
-    if (articles[i].classList.contains(className)) {
+    if (hasClassFn(articles[i], className)) {
       articles[i].style.display = 'none';
     }
   }
@@ -98,7 +98,11 @@ function toggleHideLink(link, className) {
     // Add click listener to trigger hideArticlesByClass.
     addEventListener(hideLink, 'click', function(event) {
       stopDefault(event);
-      hideArticlesByClass(className, tagName => document.getElementsByTagName(tagName));
+      hideArticlesByClass(
+        className,
+        tagName => document.getElementsByTagName(tagName),
+        (element, cls) => element.classList.contains(cls)
+      );
     });
     appendChild(span, hideLink);
     // Append the closing text node.
