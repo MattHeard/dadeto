@@ -80,7 +80,7 @@ const handleTagLinks = () => {
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
-        addEventListener(link, 'click', event => {
+        const handleClick = event => {
           stopDefault(event);
           toggleHideLink(
             link,
@@ -109,7 +109,9 @@ const handleTagLinks = () => {
               insertBefore(link.parentNode, span, link.nextSibling);
             }
           );
-        });
+        };
+
+        addEventListener(link, 'click', handleClick);
         return; // exit after first tag- match
       }
     };
