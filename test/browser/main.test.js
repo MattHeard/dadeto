@@ -8,8 +8,6 @@ describe('setupAudio', () => {
   let mockAudioElements;
   let mockControlsContainer;
   let mockPlayButton;
-  let mockPauseButton;
-  let mockStopButton;
   let mockTimeDisplay;
 
   beforeEach(() => {
@@ -41,16 +39,6 @@ describe('setupAudio', () => {
     mockDoc.createElement.mockReturnValue(mockControlsContainer);
 
     mockPlayButton = {
-      href: '#',
-      textContent: '',
-      addEventListener: jest.fn()
-    };
-    mockPauseButton = {
-      href: '#',
-      textContent: '',
-      addEventListener: jest.fn()
-    };
-    mockStopButton = {
       href: '#',
       textContent: '',
       addEventListener: jest.fn()
