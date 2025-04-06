@@ -34,6 +34,17 @@ import {
   removeNextSibling
 } from './document.js';
 
+const createHandleClick = (link, className) => event => {
+  stopDefault(event);
+  toggleHideLink(
+    link,
+    className,
+    hasNextSiblingClass,
+    removeNextSibling,
+    createHideSpan
+  );
+};
+
 const createHideSpan = (link, className) => {
   var span = createElement(document, 'span');
   span.classList.add('hide-span');
@@ -101,17 +112,6 @@ initializeVisibleComponents(
 // Tag filtering functionality
 
 const handleTagLinks = () => {
-  const createHandleClick = (link, className) => event => {
-    stopDefault(event);
-    toggleHideLink(
-      link,
-      className,
-      hasNextSiblingClass,
-      removeNextSibling,
-      createHideSpan
-    );
-  };
-
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
