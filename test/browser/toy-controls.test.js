@@ -176,4 +176,36 @@ describe('createHandleSubmit', () => {
     expect(outputElement.textContent).toMatch(/Error fetching URL: Network failure/);
     expect(addWarningFn).toHaveBeenCalledWith(outputElement);
   });
+
+  it('handles error thrown by processingFunction', async () => {
+    const mockFetchFn = jest.fn(); // Should not be called
+
+    processingFunction = jest.fn(() => {
+      throw new Error('processing error');
+    });
+
+    const stopDefault = (e) => e.preventDefault();
+    const createEnv = () => ({});
+    const errorFn = jest.fn();
+    const addWarningFn = jest.fn();
+
+    const handleSubmitThrowing = createHandleSubmit(
+      inputElement,
+      outputElement,
+      {},
+      processingFunction,
+      stopDefault,
+      createEnv,
+      errorFn,
+      addWarningFn,
+      mockFetchFn
+    );
+
+    await handleSubmitThrowing(new Event('submit'));
+
+    expect(mockFetchFn).not.toHaveBeenCalled();
+    expect(errorFn).toHaveBeenCalledWith('Error processing input:', expect.any(Error));
+    expect(outputElement.textContent).toMatch(/Error: processing error/);
+    expect(addWarningFn).toHaveBeenCalledWith(outputElement);
+  });
 });
