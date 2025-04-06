@@ -20,6 +20,10 @@ export const log = (...args) => console.log(...args);
 export const warn = (...args) => console.warn(...args);
 export const error = (...args) => console.error(...args);
 
+// Utility functions
+export const getRandomNumber = () => Math.random();
+export const getCurrentTime = () => new Date().toISOString();
+
 // DOM manipulation functions
 export const addWarning = (outputElement) => {
   outputElement.parentElement.classList.add('warning');

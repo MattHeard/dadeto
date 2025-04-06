@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { initializeInteractiveComponent, initializeVisibleComponents } from './toys.js';
+import { initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
@@ -26,17 +26,10 @@ import {
   log,
   warn,
   error,
-  addWarning
+  addWarning,
+  getRandomNumber,
+  getCurrentTime
 } from './document.js';
-
-const getRandomNumber = () => Math.random();
-const getCurrentTime = () => new Date().toISOString();
-
-function handleModuleError(modulePath, errorFn) {
-  return (e) => {
-    errorFn('Error loading module ' + modulePath + ':', e);
-  };
-}
 
 function createEnv(globalState, fetch, log, error, warn) {
   return new Map([
@@ -47,7 +40,7 @@ function createEnv(globalState, fetch, log, error, warn) {
   ]);
 }
 
-function initialiseModule(article, functionName) {
+function initialiseModule(article, functionName, querySelector) {
   return (module) => {
     const processingFunction = module[functionName];
     initializeInteractiveComponent(
@@ -75,7 +68,7 @@ function createIntersectionObserver(article, modulePath, functionName) {
 
 function handleIntersection(entry, observer, modulePath, article, functionName) {
   if (entry.isIntersecting) {
-    import(modulePath).then(initialiseModule(article, functionName))
+    import(modulePath).then(initialiseModule(article, functionName, querySelector))
     .catch(handleModuleError(modulePath, error));
     observer.disconnect();
   }

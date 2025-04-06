@@ -1,4 +1,16 @@
 /**
+ * Creates an error handler for module loading errors
+ * @param {string} modulePath - Path to the module that failed to load
+ * @param {Function} errorFn - Error logging function
+ * @returns {Function} Error handler function
+ */
+export function handleModuleError(modulePath, errorFn) {
+  return (e) => {
+    errorFn('Error loading module ' + modulePath + ':', e);
+  };
+}
+
+/**
  * Enable controls and update status message for an interactive component
  * @param {HTMLInputElement} inputElement
  * @param {HTMLButtonElement} submitButton
