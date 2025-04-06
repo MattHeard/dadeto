@@ -78,7 +78,7 @@ initializeVisibleComponents(
 
 const handleTagLinks = () => {
   Array.from(document.getElementsByTagName('a')).forEach(link => {
-    Array.from(link.classList).forEach(className => {
+    const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
         addEventListener(link, 'click', event => {
           stopDefault(event);
@@ -112,7 +112,9 @@ const handleTagLinks = () => {
         });
         return; // exit after first tag- match
       }
-    });
+    };
+
+    Array.from(link.classList).forEach(handleClassName);
   });
 };
 
