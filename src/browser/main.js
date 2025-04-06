@@ -77,7 +77,7 @@ initializeVisibleComponents(
 // Tag filtering functionality
 
 const handleTagLinks = () => {
-  Array.from(document.getElementsByTagName('a')).forEach(link => {
+  const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
         addEventListener(link, 'click', event => {
@@ -115,7 +115,9 @@ const handleTagLinks = () => {
     };
 
     Array.from(link.classList).forEach(handleClassName);
-  });
+  };
+
+  Array.from(document.getElementsByTagName('a')).forEach(handleLink);
 };
 
 handleTagLinks();
