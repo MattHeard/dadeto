@@ -62,3 +62,50 @@ describe('enableInteractiveControls', () => {
     expect(parentElement.classList.contains('warning')).toBe(false);
   });
 });
+
+import { createHandleSubmit } from '../../src/browser/toy-controls.js';
+
+describe('createHandleSubmit', () => {
+  let mockFetch;
+  let inputElement;
+  let outputElement;
+  let handleSubmit;
+  let processingFunction;
+
+  beforeEach(() => {
+    inputElement = { value: 'hello', disabled: false };
+    outputElement = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
+
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+
+    const noop = () => {};
+    const globalState = {};
+    processingFunction = jest.fn(async (input) => 'transformed');
+    const stopDefault = (e) => e.preventDefault();
+    const createEnv = () => ({});
+    const errorFn = noop;
+    const addWarningFn = noop;
+
+    handleSubmit = createHandleSubmit(
+      inputElement,
+      outputElement,
+      globalState,
+      processingFunction,
+      stopDefault,
+      createEnv,
+      errorFn,
+      addWarningFn
+    );
+  });
+
+  it('characterizes current basic behavior on submit', async () => {
+    await handleSubmit(new Event('submit'));
+
+    // Characterization: ensure processingFunction is called
+    expect(processingFunction).toHaveBeenCalled();
+
+    // Characterization: ensure output is updated with result
+    await expect(outputElement.textContent).resolves.toEqual('transformed');
+  });
+});
