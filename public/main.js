@@ -40,7 +40,7 @@ function createEnv(globalState, fetch, log, error, warn) {
   ]);
 }
 
-function initialiseModule(article, functionName, querySelector, globalState) {
+function initialiseModule(article, functionName, querySelector, globalState, stopDefault) {
   return (module) => {
     const processingFunction = module[functionName];
     initializeInteractiveComponent(
@@ -68,7 +68,7 @@ function createIntersectionObserver(article, modulePath, functionName) {
 
 function handleIntersection(entry, observer, modulePath, article, functionName) {
   if (entry.isIntersecting) {
-    import(modulePath).then(initialiseModule(article, functionName, querySelector, globalState))
+    import(modulePath).then(initialiseModule(article, functionName, querySelector, globalState, stopDefault))
     .catch(handleModuleError(modulePath, error));
     observer.disconnect();
   }
