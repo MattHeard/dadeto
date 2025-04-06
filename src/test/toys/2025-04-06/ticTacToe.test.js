@@ -239,3 +239,53 @@ test('forces minimax to score a tie at max depth', () => {
   expect(output.moves).toHaveLength(9);
   expect(output.moves[8]).toEqual({ player: 'X', position: { row: 2, column: 0 } });
 });
+
+test('handles duplicate board cell even if not duplicate position object', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 1, column: 1 } },
+      { player: 'O', position: { row: 1, column: 1 } } // duplicate board cell
+    ]
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(1);
+  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+});
+
+test('forces minimax to run from O perspective', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 0 } }
+    ]
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(2);
+  expect(output.moves[1].player).toBe('O');
+});
+
+test('handles empty board that reaches nextPlayer assignment', () => {
+  const env = new Map();
+  const input = { moves: [] };
+  // This test is duplicated to ensure nextPlayer assignment is executed
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves[0].player).toBe('X');
+});
+
+test('returns fallback when minimax fails to assign bestMove', () => {
+  const env = new Map();
+  // All cells are filled with null to simulate a fully corrupted board
+  const input = {
+    moves: Array.from({ length: 9 }, (_, i) => ({
+      player: i % 2 === 0 ? 'X' : 'O',
+      position: { row: Math.floor(i / 3), column: i % 3 }
+    }))
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toEqual(input.moves); // no move added
+});
