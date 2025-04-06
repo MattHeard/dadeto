@@ -61,7 +61,8 @@ function initialiseModule(article, functionName) {
       createEnv,
       error,
       addWarning,
-      addEventListener
+      addEventListener,
+      fetch
     );
   };
 }
