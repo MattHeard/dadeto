@@ -63,7 +63,7 @@ describe('enableInteractiveControls', () => {
   });
 });
 
-import { createHandleSubmit } from '../../src/browser/toy-controls.js';
+import { createHandleSubmit, initializeInteractiveComponent } from '../../src/browser/toy-controls.js';
 
 describe('createHandleSubmit', () => {
   let mockFetch;
@@ -207,5 +207,47 @@ describe('createHandleSubmit', () => {
     expect(errorFn).toHaveBeenCalledWith('Error processing input:', expect.any(Error));
     expect(outputElement.textContent).toMatch(/Error: processing error/);
     expect(addWarningFn).toHaveBeenCalledWith(outputElement);
+  });
+});
+
+describe('initializeInteractiveComponent', () => {
+  it('initializes component with input, button, and output setup', () => {
+    const article = {};
+    const inputElement = { disabled: false };
+    const submitButton = { disabled: false };
+    const outputElement = { textContent: '', parentElement: { classList: { remove: jest.fn() } } };
+
+    const querySelectorFn = jest.fn((el, selector) => {
+      if (selector === 'input') return inputElement;
+      if (selector === 'button') return submitButton;
+      if (selector === 'p.output') return outputElement;
+    });
+
+    const globalState = {};
+    const stopDefaultFn = jest.fn();
+    const createEnvFn = jest.fn();
+    const errorFn = jest.fn();
+    const addWarningFn = jest.fn();
+    const addEventListenerFn = jest.fn();
+    const fetchFn = jest.fn();
+
+    initializeInteractiveComponent(
+      article,
+      jest.fn(),
+      querySelectorFn,
+      globalState,
+      stopDefaultFn,
+      createEnvFn,
+      errorFn,
+      addWarningFn,
+      addEventListenerFn,
+      fetchFn
+    );
+
+    expect(querySelectorFn).toHaveBeenCalledWith(article, 'input');
+    expect(querySelectorFn).toHaveBeenCalledWith(article, 'button');
+    expect(querySelectorFn).toHaveBeenCalledWith(article, 'p.output');
+    expect(addEventListenerFn).toHaveBeenCalledTimes(2); // click and keypress
+    expect(outputElement.textContent).toBe('Ready for input');
   });
 });
