@@ -28,6 +28,11 @@ export function ticTacToeMove(input, env) {
 
       if (i > 0 && player === moves[i - 1].player) return returnInitialOptimalMove();
       if (i === 0) expectedPlayer = player;
+
+      // Early exit if the game is already won
+      if (isWin(board, "X") || isWin(board, "O")) {
+        return JSON.stringify({ moves });
+      }
     }
 
     if (moves.length >= 9) return JSON.stringify({ moves });
