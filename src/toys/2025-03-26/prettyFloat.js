@@ -25,8 +25,8 @@ function resolveZeroVariant(num) {
 
 function handleSimpleCases(num) {
   if (!Number.isFinite(num)) return "";
-  const zeroReturn = resolveZeroVariant(num);
-  return zeroReturn ? zeroReturn : null;
+  if (resolveZeroVariant(num)) return resolveZeroVariant(num);
+  return null;
 }
 
 export function decomposeFloat(input) {
