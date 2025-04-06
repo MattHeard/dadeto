@@ -30,11 +30,9 @@ import {
   addWarning,
   getRandomNumber,
   getCurrentTime,
-  hasNextSiblingClass
+  hasNextSiblingClass,
+  removeNextSibling
 } from './document.js';
-
-const removeNextSibling = link =>
-  link.nextElementSibling && link.nextElementSibling.remove();
 
 function createEnv() {
   return new Map([
