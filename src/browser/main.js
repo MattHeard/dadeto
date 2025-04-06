@@ -27,10 +27,9 @@ import {
   warn,
   error,
   addWarning,
-  getRandomNumber
+  getRandomNumber,
+  getCurrentTime
 } from './document.js';
-
-const getCurrentTime = () => new Date().toISOString();
 
 function handleModuleError(modulePath, errorFn) {
   return (e) => {
