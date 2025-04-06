@@ -5,7 +5,6 @@ export function ticTacToeMove(input, env) {
     if (!Array.isArray(moves) || moves.length > 9) return returnInitialOptimalMove();
 
     const board = Array.from({ length: 3 }, () => Array(3).fill(null));
-    let expectedPlayer = null;
     const seen = new Set();
 
     for (let i = 0; i < moves.length; i++) {
@@ -27,7 +26,6 @@ export function ticTacToeMove(input, env) {
       board[row][column] = player;
 
       if (i > 0 && player === moves[i - 1].player) return returnInitialOptimalMove();
-      if (i === 0) expectedPlayer = player;
 
       // Early exit if the game is already won
       if (isWin(board, "X") || isWin(board, "O")) {
