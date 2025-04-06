@@ -32,6 +32,10 @@ import {
   getCurrentTime
 } from './document.js';
 
+function importModule(modulePath, onSuccess, onError) {
+  import(modulePath).then(onSuccess).catch(onError);
+}
+
 function createEnv() {
   return new Map([
     ["getRandomNumber", getRandomNumber],
@@ -43,22 +47,25 @@ function createEnv() {
 
 function createIntersectionObserver(article, modulePath, functionName) {
   return new IntersectionObserver((entries, observer) =>
-    handleIntersectionEntries(entries, observer, modulePath, article, functionName), {
+    handleIntersectionEntries(entries, observer, modulePath, article, functionName, importModule), {
     root: null,
     threshold: 0.1
   });
 }
 
-function handleIntersection(entry, observer, modulePath, article, functionName) {
+function handleIntersection(entry, observer, modulePath, article, functionName, importModule) {
   if (entry.isIntersecting) {
-    import(modulePath).then(initialiseModule(article, functionName, querySelector, globalState, stopDefault, () => createEnv(), error, addWarning, addEventListener, fetch))
-    .catch(handleModuleError(modulePath, error));
+    importModule(
+      modulePath,
+      initialiseModule(article, functionName, querySelector, globalState, stopDefault, () => createEnv(), error, addWarning, addEventListener, fetch),
+      handleModuleError(modulePath, error)
+    );
     observer.disconnect();
   }
 }
 
 function handleIntersectionEntries(entries, observer, modulePath, article, functionName) {
-  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName));
+  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, importModule));
 }
 
 // Interactive components functionality
