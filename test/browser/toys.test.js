@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { enableInteractiveControls } from '../../src/browser/toy-controls.js'; // Adjust path as needed
+import { enableInteractiveControls } from '../../src/browser/toys.js'; // Adjust path as needed
 
 describe('enableInteractiveControls', () => {
   let inputElement;
@@ -63,7 +63,7 @@ describe('enableInteractiveControls', () => {
   });
 });
 
-import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents } from '../../src/browser/toy-controls.js';
+import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents } from '../../src/browser/toys.js';
 
 describe('createHandleSubmit', () => {
   let mockFetch;
