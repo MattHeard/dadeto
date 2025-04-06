@@ -335,4 +335,25 @@ describe('initializeVisibleComponents', () => {
     expect(createIntersectionObserverFn).toHaveBeenCalledWith(mockArticle, 'path/to/module', 'initFunction');
     expect(mockObserver.observe).toHaveBeenCalledWith(mockArticle);
   });
+
+  it('warns when article element is missing for a component', () => {
+    const win = {
+      interactiveComponents: [
+        { id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' }
+      ]
+    };
+    const doc = {};
+    const logFn = jest.fn();
+    const warnFn = jest.fn();
+    const getElementByIdFn = jest.fn(() => null);
+    const createIntersectionObserverFn = jest.fn();
+
+    initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
+
+    expect(getElementByIdFn).toHaveBeenCalledWith(doc, 'missing-id');
+    expect(createIntersectionObserverFn).not.toHaveBeenCalled();
+    expect(warnFn).toHaveBeenCalledWith(
+      'Could not find article element with ID: missing-id for component initialization.'
+    );
+  });
 });
