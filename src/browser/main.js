@@ -26,9 +26,7 @@ import {
   log,
   warn,
   error,
-  addWarning,
-  hideArticlesByClass,
-  toggleHideLink
+  addWarning
 } from './document.js';
 
 const getRandomNumber = () => Math.random();
@@ -96,6 +94,45 @@ initializeVisibleComponents(
   getElementById, 
   createIntersectionObserver // Pass the function defined in main.js
 );
+
+// Tag filtering functionality
+function hideArticlesByClass(className) {
+  var articles = document.getElementsByTagName('article');
+  for (var i = 0; i < articles.length; i++) {
+    if (articles[i].classList.contains(className)) {
+      articles[i].style.display = 'none';
+    }
+  }
+}
+
+function toggleHideLink(link, className) {
+  // Check if a span with the hide link already exists immediately after the link.
+  if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
+    // Remove the span if it exists.
+    link.nextElementSibling.remove();
+  } else {
+    // Create a new span element.
+    var span = createElement(document, 'span');
+    span.classList.add('hide-span');
+    // Append the opening text node.
+    appendChild(span, document.createTextNode(" ("));
+
+    // Create the hide anchor element.
+    var hideLink = createElement(document, 'a');
+    hideLink.textContent = "hide";
+    // Add click listener to trigger hideArticlesByClass.
+    addEventListener(hideLink, 'click', function(event) {
+      stopDefault(event);
+      hideArticlesByClass(className);
+    });
+    appendChild(span, hideLink);
+    // Append the closing text node.
+    appendChild(span, document.createTextNode(")"));
+
+    // Insert the span immediately after the link.
+    insertBefore(link.parentNode, span, link.nextSibling);
+  }
+}
 
 const handleTagLinks = () => {
   Array.from(document.getElementsByTagName('a')).forEach(link => {
