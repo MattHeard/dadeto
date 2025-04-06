@@ -76,9 +76,9 @@ initializeVisibleComponents(
 
 // Tag filtering functionality
 
-function toggleHideLink(link, className) {
+function toggleHideLink(link, className, hasNextSiblingClass) {
   // Check if a span with the hide link already exists immediately after the link.
-  if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
+  if (hasNextSiblingClass(link, 'hide-span')) {
     // Remove the span if it exists.
     link.nextElementSibling.remove();
   } else {
@@ -116,7 +116,7 @@ const handleTagLinks = () => {
       if (className.indexOf('tag-') === 0) {
         addEventListener(link, 'click', event => {
           stopDefault(event);
-          toggleHideLink(link, className);
+          toggleHideLink(link, className, (link, cls) => link.nextElementSibling && link.nextElementSibling.classList.contains(cls));
         });
         return; // exit after first tag- match
       }
