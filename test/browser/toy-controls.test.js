@@ -141,4 +141,39 @@ describe('createHandleSubmit', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(outputElement.textContent).toBe('fetched content');
   });
+
+  it('handles fetch failure if request URL is unreachable', async () => {
+    const mockFetchFn = jest.fn(() =>
+      Promise.reject(new Error('Network failure'))
+    );
+
+    processingFunction = jest.fn(() =>
+      JSON.stringify({ request: { url: 'https://example.com/fail' } })
+    );
+
+    const stopDefault = (e) => e.preventDefault();
+    const createEnv = () => ({});
+    const errorFn = jest.fn();
+    const addWarningFn = jest.fn();
+
+    const handleSubmitWithFailingFetch = createHandleSubmit(
+      inputElement,
+      outputElement,
+      {},
+      processingFunction,
+      stopDefault,
+      createEnv,
+      errorFn,
+      addWarningFn,
+      mockFetchFn
+    );
+
+    await handleSubmitWithFailingFetch(new Event('submit'));
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/fail');
+    expect(errorFn).toHaveBeenCalledWith('Error fetching request URL:', expect.any(Error));
+    expect(outputElement.textContent).toMatch(/Error fetching URL: Network failure/);
+    expect(addWarningFn).toHaveBeenCalledWith(outputElement);
+  });
 });
