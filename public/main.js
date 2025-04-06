@@ -33,6 +33,9 @@ import {
   hasNextSiblingClass
 } from './document.js';
 
+const removeNextSibling = link =>
+  link.nextElementSibling && link.nextElementSibling.remove();
+
 function createEnv() {
   return new Map([
     ["getRandomNumber", getRandomNumber],
@@ -81,9 +84,6 @@ const handleTagLinks = () => {
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
-        const removeNextSibling = link =>
-          link.nextElementSibling && link.nextElementSibling.remove();
-
         const handleClick = event => {
           stopDefault(event);
           toggleHideLink(
