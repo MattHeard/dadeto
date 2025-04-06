@@ -137,5 +137,23 @@ test('detects tie game with no remaining moves', () => {
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
-  expect(output.moves).toEqual(input.moves); // board is full, no move added
+    expect(output.moves).toEqual(input.moves); // board is full, no move added
+});
+
+test('selects optimal move in mid-game scenario', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 0 } },
+      { player: 'O', position: { row: 1, column: 1 } },
+      { player: 'X', position: { row: 0, column: 1 } },
+      { player: 'O', position: { row: 2, column: 1 } }
+    ]
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(5);
+  expect(output.moves[4].player).toBe('X');
+  // X can win by taking (0, 2)
+  expect(output.moves[4].position).toEqual({ row: 0, column: 2 });
 });
