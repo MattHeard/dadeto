@@ -32,6 +32,9 @@ import {
   getCurrentTime
 } from './document.js';
 
+const hasNextSiblingClass = (link, cls) =>
+  link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
+
 function createEnv() {
   return new Map([
     ["getRandomNumber", getRandomNumber],
@@ -80,9 +83,6 @@ const handleTagLinks = () => {
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
-        const hasNextSiblingClass = (link, cls) =>
-          link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
-
         const handleClick = event => {
           stopDefault(event);
           toggleHideLink(
