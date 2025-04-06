@@ -1,6 +1,27 @@
 {
   "posts": [
     {
+      "key": "TICT1",
+      "title": "Tic Tac Toe",
+      "publicationDate": "2025-04-06",
+      "content": [
+        "A tic-tac-toe game."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a flat, graphic digital illustration depicts a tic-tac-toe game on a slightly irregular 3x3 grid with bold 'x' and 'o' symbols in textured navy-blue and orange-yellow hues; a stylized hand points to an empty square, indicating the next move with a curved arrow, all set against a vintage off-white background"
+      },
+      "toy": {
+        "modulePath": "/2025-04-06/ticTacToe.js",
+        "functionName": "ticTacToe"
+      },
+      "tags": [
+        "toy",
+        "game",
+        "tic-tac-toe"
+      ]
+    },
+    {
       "key": "HTTP1",
       "title": "HTTP Request",
       "publicationDate": "2025-04-05",
