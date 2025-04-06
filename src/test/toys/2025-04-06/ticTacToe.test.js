@@ -9,6 +9,26 @@ test('returns optimal move for invalid input', () => {
   expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
 });
 
+test('minimax early tie return is triggered', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 0 } },
+      { player: 'O', position: { row: 0, column: 1 } },
+      { player: 'X', position: { row: 0, column: 2 } },
+      { player: 'O', position: { row: 1, column: 0 } },
+      { player: 'X', position: { row: 1, column: 2 } },
+      { player: 'O', position: { row: 1, column: 1 } },
+      { player: 'X', position: { row: 2, column: 1 } },
+      { player: 'O', position: { row: 2, column: 0 } }
+    ]
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(9);
+  expect(output.moves[8]).toEqual({ player: 'X', position: { row: 2, column: 2 } });
+});
+
 test('detects win for X and returns no additional move', () => {
   const env = new Map();
   const input = {
