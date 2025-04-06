@@ -308,4 +308,31 @@ describe('initializeVisibleComponents', () => {
 
     expect(warnFn).toHaveBeenCalledWith('No interactive components found to initialize');
   });
+
+  it('initializes and observes a valid interactive component', () => {
+    const mockArticle = {};
+    const mockObserver = { observe: jest.fn() };
+
+    const win = {
+      interactiveComponents: [
+        { id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' }
+      ]
+    };
+    const doc = {};
+    const logFn = jest.fn();
+    const warnFn = jest.fn();
+    const getElementByIdFn = jest.fn(() => mockArticle);
+    const createIntersectionObserverFn = jest.fn(() => mockObserver);
+
+    initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
+
+    expect(logFn).toHaveBeenCalledWith(
+      'Initializing',
+      1,
+      'interactive components via IntersectionObserver'
+    );
+    expect(getElementByIdFn).toHaveBeenCalledWith(doc, 'test-id');
+    expect(createIntersectionObserverFn).toHaveBeenCalledWith(mockArticle, 'path/to/module', 'initFunction');
+    expect(mockObserver.observe).toHaveBeenCalledWith(mockArticle);
+  });
 });
