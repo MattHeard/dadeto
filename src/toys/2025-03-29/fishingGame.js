@@ -23,12 +23,9 @@ function getUnrecognizedBait() {
 
 function getBaitData(input, baitOptions, moodDescription) {
   const baitKey = input.trim().toLowerCase();
-  if (isRecognizedBait(baitKey, baitOptions)) {
-    return getRecognizedBait(baitKey, baitOptions);
-  }
-  if (isEmptyBait(baitKey)) {
-    return getDefaultBaitResponse(moodDescription);
-  }
+  const recognized = isRecognizedBait(baitKey, baitOptions);
+  if (recognized) return getRecognizedBait(baitKey, baitOptions);
+  if (isEmptyBait(baitKey)) return getDefaultBaitResponse(moodDescription);
   return getUnrecognizedBait();
 }
 
