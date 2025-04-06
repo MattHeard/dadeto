@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from './toys.js';
+import { initializeInteractiveComponent, initializeVisibleComponents, handleModuleError, initialiseModule } from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
@@ -38,24 +38,6 @@ function createEnv(globalState, fetch, log, error, warn) {
     ["getData", () => getData(globalState, fetch, log, error, warn)],
     ["setData", (newData) => setData(newData, globalState, log, error)]
   ]);
-}
-
-function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch) {
-  return (module) => {
-    const processingFunction = module[functionName];
-    initializeInteractiveComponent(
-      article,
-      processingFunction,
-      querySelector,
-      globalState,
-      stopDefault,
-      createEnv,
-      error,
-      addWarning,
-      addEventListener,
-      fetch
-    );
-  };
 }
 
 function createIntersectionObserver(article, modulePath, functionName) {

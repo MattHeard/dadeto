@@ -11,6 +11,38 @@ export function handleModuleError(modulePath, errorFn) {
 }
 
 /**
+ * Creates a module initializer function that will be called when a dynamic import completes
+ * @param {HTMLElement} article - The article element containing the toy
+ * @param {string} functionName - The name of the exported function to use from the module
+ * @param {Function} querySelector - Function to find elements within the article
+ * @param {object} globalState - The shared application state
+ * @param {Function} stopDefault - Function to prevent default event action
+ * @param {Function} createEnv - Function to create the environment map for the toy
+ * @param {Function} error - Function for logging errors
+ * @param {Function} addWarning - Function to add a warning style to the output
+ * @param {Function} addEventListener - Function to add event listeners
+ * @param {Function} fetch - Function for making HTTP requests
+ * @returns {Function} A function that takes a module and initializes the interactive component
+ */
+export function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch) {
+  return (module) => {
+    const processingFunction = module[functionName];
+    initializeInteractiveComponent(
+      article,
+      processingFunction,
+      querySelector,
+      globalState,
+      stopDefault,
+      createEnv,
+      error,
+      addWarning,
+      addEventListener,
+      fetch
+    );
+  };
+}
+
+/**
  * Enable controls and update status message for an interactive component
  * @param {HTMLInputElement} inputElement
  * @param {HTMLButtonElement} submitButton
