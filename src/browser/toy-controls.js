@@ -38,7 +38,7 @@ export const createHandleSubmit = (inputElement, outputElement, globalState, pro
     let parsed;
     try {
       parsed = JSON.parse(result);
-    } catch (_) {
+    } catch {
       parsed = null;
     }
 
