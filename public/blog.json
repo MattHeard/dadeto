@@ -13,7 +13,7 @@
       },
       "toy": {
         "modulePath": "/2025-04-06/ticTacToe.js",
-        "functionName": "ticTacToe"
+        "functionName": "ticTacToeMove"
       },
       "tags": [
         "toy",
