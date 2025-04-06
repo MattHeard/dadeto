@@ -101,20 +101,21 @@ initializeVisibleComponents(
 // Tag filtering functionality
 
 const handleTagLinks = () => {
+  const createHandleClick = (link, className) => event => {
+    stopDefault(event);
+    toggleHideLink(
+      link,
+      className,
+      hasNextSiblingClass,
+      removeNextSibling,
+      createHideSpan
+    );
+  };
+
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
-        const handleClick = event => {
-          stopDefault(event);
-          toggleHideLink(
-            link,
-            className,
-            hasNextSiblingClass,
-            removeNextSibling,
-            createHideSpan // Reference the top-level createHideSpan
-          );
-        };
-
+        const handleClick = createHandleClick(link, className);
         addEventListener(link, 'click', handleClick);
         return; // exit after first tag- match
       }
