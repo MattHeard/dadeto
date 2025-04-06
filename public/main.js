@@ -84,32 +84,34 @@ const handleTagLinks = () => {
       if (className.indexOf('tag-') === 0) {
         const handleClick = event => {
           stopDefault(event);
+          const createHideSpan = (link, className) => {
+            var span = createElement(document, 'span');
+            span.classList.add('hide-span');
+            appendChild(span, document.createTextNode(" ("));
+
+            var hideLink = createElement(document, 'a');
+            hideLink.textContent = "hide";
+            addEventListener(hideLink, 'click', function(event) {
+              stopDefault(event);
+              hideArticlesByClass(
+                className,
+                tagName => document.getElementsByTagName(tagName),
+                (element, cls) => element.classList.contains(cls),
+                element => element.style.display = 'none'
+              );
+            });
+
+            appendChild(span, hideLink);
+            appendChild(span, document.createTextNode(")"));
+            insertBefore(link.parentNode, span, link.nextSibling);
+          };
+
           toggleHideLink(
             link,
             className,
             hasNextSiblingClass,
             removeNextSibling,
-            (link, className) => {
-              var span = createElement(document, 'span');
-              span.classList.add('hide-span');
-              appendChild(span, document.createTextNode(" ("));
-
-              var hideLink = createElement(document, 'a');
-              hideLink.textContent = "hide";
-              addEventListener(hideLink, 'click', function(event) {
-                stopDefault(event);
-                hideArticlesByClass(
-                  className,
-                  tagName => document.getElementsByTagName(tagName),
-                  (element, cls) => element.classList.contains(cls),
-                  element => element.style.display = 'none'
-                );
-              });
-
-              appendChild(span, hideLink);
-              appendChild(span, document.createTextNode(")"));
-              insertBefore(link.parentNode, span, link.nextSibling);
-            }
+            createHideSpan
           );
         };
 
