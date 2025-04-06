@@ -8,6 +8,7 @@ let globalState = {
 
 import { setupAudio } from './audio-controls.js';
 import { initializeVisibleComponents, handleModuleError, initialiseModule } from './toys.js';
+import { hideArticlesByClass } from './tags.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
@@ -71,14 +72,6 @@ initializeVisibleComponents(
 );
 
 // Tag filtering functionality
-function hideArticlesByClass(className, getElementsByTagName, hasClassFn, hideElementFn) {
-  var articles = getElementsByTagName('article');
-  for (var i = 0; i < articles.length; i++) {
-    if (hasClassFn(articles[i], className)) {
-      hideElementFn(articles[i]);
-    }
-  }
-}
 
 function toggleHideLink(link, className) {
   // Check if a span with the hide link already exists immediately after the link.

@@ -66,7 +66,8 @@ const assetsToCopy = [
   { src: path.join(srcBrowserDir, 'main.js'), dest: path.join(publicDir, 'main.js') },
   { src: path.join(srcBrowserDir, 'toys.js'), dest: path.join(publicDir, 'toys.js') },
   { src: path.join(srcBrowserDir, 'audio-controls.js'), dest: path.join(publicDir, 'audio-controls.js') },
-  { src: path.join(srcBrowserDir, 'document.js'), dest: path.join(publicDir, 'document.js') }
+  { src: path.join(srcBrowserDir, 'document.js'), dest: path.join(publicDir, 'document.js') },
+  { src: path.join(srcBrowserDir, 'tags.js'), dest: path.join(publicDir, 'tags.js') }
 ];
 
 assetsToCopy.forEach(asset => {
