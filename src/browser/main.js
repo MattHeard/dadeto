@@ -71,8 +71,8 @@ initializeVisibleComponents(
 );
 
 // Tag filtering functionality
-function hideArticlesByClass(className) {
-  var articles = document.getElementsByTagName('article');
+function hideArticlesByClass(className, getElementsByTagName) {
+  var articles = getElementsByTagName('article');
   for (var i = 0; i < articles.length; i++) {
     if (articles[i].classList.contains(className)) {
       articles[i].style.display = 'none';
@@ -98,7 +98,7 @@ function toggleHideLink(link, className) {
     // Add click listener to trigger hideArticlesByClass.
     addEventListener(hideLink, 'click', function(event) {
       stopDefault(event);
-      hideArticlesByClass(className);
+      hideArticlesByClass(className, tagName => document.getElementsByTagName(tagName));
     });
     appendChild(span, hideLink);
     // Append the closing text node.
