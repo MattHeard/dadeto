@@ -29,11 +29,9 @@ import {
   error,
   addWarning,
   getRandomNumber,
-  getCurrentTime
+  getCurrentTime,
+  hasNextSiblingClass
 } from './document.js';
-
-const hasNextSiblingClass = (link, cls) =>
-  link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
 
 function createEnv() {
   return new Map([

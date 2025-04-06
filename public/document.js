@@ -23,6 +23,8 @@ export const error = (...args) => console.error(...args);
 // Utility functions
 export const getRandomNumber = () => Math.random();
 export const getCurrentTime = () => new Date().toISOString();
+export const hasNextSiblingClass = (link, cls) =>
+  link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
 
 // DOM manipulation functions
 export const addWarning = (outputElement) => {
