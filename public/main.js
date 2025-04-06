@@ -80,12 +80,15 @@ const handleTagLinks = () => {
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
+        const hasNextSiblingClass = (link, cls) =>
+          link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
+
         const handleClick = event => {
           stopDefault(event);
           toggleHideLink(
             link,
             className,
-            (link, cls) => link.nextElementSibling && link.nextElementSibling.classList.contains(cls),
+            hasNextSiblingClass,
             link => link.nextElementSibling && link.nextElementSibling.remove(),
             (link, className) => {
               var span = createElement(document, 'span');
