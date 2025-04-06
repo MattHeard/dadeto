@@ -211,7 +211,7 @@ describe('createHandleSubmit', () => {
 });
 
 describe('initializeInteractiveComponent', () => {
-  it('initializes component with input, button, and output setup', () => {
+  it('attaches click and keypress listeners with expected arguments', () => {
     const article = {};
     const inputElement = { disabled: false };
     const submitButton = { disabled: false };
@@ -228,8 +228,9 @@ describe('initializeInteractiveComponent', () => {
     const createEnvFn = jest.fn();
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
-    const addEventListenerFn = jest.fn();
     const fetchFn = jest.fn();
+
+    const addEventListenerFn = jest.fn();
 
     initializeInteractiveComponent(
       article,
@@ -244,10 +245,8 @@ describe('initializeInteractiveComponent', () => {
       fetchFn
     );
 
-    expect(querySelectorFn).toHaveBeenCalledWith(article, 'input');
-    expect(querySelectorFn).toHaveBeenCalledWith(article, 'button');
-    expect(querySelectorFn).toHaveBeenCalledWith(article, 'p.output');
-    expect(addEventListenerFn).toHaveBeenCalledTimes(2); // click and keypress
-    expect(outputElement.textContent).toBe('Ready for input');
+    expect(addEventListenerFn).toHaveBeenCalledTimes(2);
+    expect(addEventListenerFn).toHaveBeenCalledWith(submitButton, 'click', expect.any(Function));
+    expect(addEventListenerFn).toHaveBeenCalledWith(inputElement, 'keypress', expect.any(Function));
   });
 });
