@@ -71,11 +71,11 @@ initializeVisibleComponents(
 );
 
 // Tag filtering functionality
-function hideArticlesByClass(className, getElementsByTagName, hasClassFn) {
+function hideArticlesByClass(className, getElementsByTagName, hasClassFn, hideElementFn) {
   var articles = getElementsByTagName('article');
   for (var i = 0; i < articles.length; i++) {
     if (hasClassFn(articles[i], className)) {
-      articles[i].style.display = 'none';
+      hideElementFn(articles[i]);
     }
   }
 }
@@ -101,7 +101,8 @@ function toggleHideLink(link, className) {
       hideArticlesByClass(
         className,
         tagName => document.getElementsByTagName(tagName),
-        (element, cls) => element.classList.contains(cls)
+        (element, cls) => element.classList.contains(cls),
+        element => element.style.display = 'none'
       );
     });
     appendChild(span, hideLink);
