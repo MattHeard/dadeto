@@ -76,37 +76,13 @@ initializeVisibleComponents(
 
 // Tag filtering functionality
 
-function toggleHideLink(link, className, hasNextSiblingClass, removeNextSibling) {
+function toggleHideLink(link, className, hasNextSiblingClass, removeNextSibling, createHideSpan) {
   // Check if a span with the hide link already exists immediately after the link.
   if (hasNextSiblingClass(link, 'hide-span')) {
     // Remove the span if it exists.
     removeNextSibling(link);
   } else {
-    // Create a new span element.
-    var span = createElement(document, 'span');
-    span.classList.add('hide-span');
-    // Append the opening text node.
-    appendChild(span, document.createTextNode(" ("));
-
-    // Create the hide anchor element.
-    var hideLink = createElement(document, 'a');
-    hideLink.textContent = "hide";
-    // Add click listener to trigger hideArticlesByClass.
-    addEventListener(hideLink, 'click', function(event) {
-      stopDefault(event);
-      hideArticlesByClass(
-        className,
-        tagName => document.getElementsByTagName(tagName),
-        (element, cls) => element.classList.contains(cls),
-        element => element.style.display = 'none'
-      );
-    });
-    appendChild(span, hideLink);
-    // Append the closing text node.
-    appendChild(span, document.createTextNode(")"));
-
-    // Insert the span immediately after the link.
-    insertBefore(link.parentNode, span, link.nextSibling);
+    createHideSpan(link, className);
   }
 }
 
@@ -120,7 +96,28 @@ const handleTagLinks = () => {
             link,
             className,
             (link, cls) => link.nextElementSibling && link.nextElementSibling.classList.contains(cls),
-            link => link.nextElementSibling && link.nextElementSibling.remove()
+            link => link.nextElementSibling && link.nextElementSibling.remove(),
+            (link, className) => {
+              var span = createElement(document, 'span');
+              span.classList.add('hide-span');
+              appendChild(span, document.createTextNode(" ("));
+
+              var hideLink = createElement(document, 'a');
+              hideLink.textContent = "hide";
+              addEventListener(hideLink, 'click', function(event) {
+                stopDefault(event);
+                hideArticlesByClass(
+                  className,
+                  tagName => document.getElementsByTagName(tagName),
+                  (element, cls) => element.classList.contains(cls),
+                  element => element.style.display = 'none'
+                );
+              });
+
+              appendChild(span, hideLink);
+              appendChild(span, document.createTextNode(")"));
+              insertBefore(link.parentNode, span, link.nextSibling);
+            }
           );
         });
         return; // exit after first tag- match
