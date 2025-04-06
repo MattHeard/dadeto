@@ -32,7 +32,7 @@ import {
   getCurrentTime
 } from './document.js';
 
-function createEnv(globalState, fetch, log, error, warn) {
+function createEnv() {
   return new Map([
     ["getRandomNumber", getRandomNumber],
     ["getCurrentTime", getCurrentTime],
@@ -51,7 +51,7 @@ function createIntersectionObserver(article, modulePath, functionName) {
 
 function handleIntersection(entry, observer, modulePath, article, functionName) {
   if (entry.isIntersecting) {
-    import(modulePath).then(initialiseModule(article, functionName, querySelector, globalState, stopDefault, (globalState) => createEnv(globalState, fetch, log, error, warn), error, addWarning, addEventListener, fetch))
+    import(modulePath).then(initialiseModule(article, functionName, querySelector, globalState, stopDefault, () => createEnv(), error, addWarning, addEventListener, fetch))
     .catch(handleModuleError(modulePath, error));
     observer.disconnect();
   }
