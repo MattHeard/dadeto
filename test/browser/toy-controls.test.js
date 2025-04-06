@@ -213,7 +213,7 @@ describe('createHandleSubmit', () => {
 describe('initializeInteractiveComponent', () => {
   it('attaches click and keypress listeners with expected arguments', () => {
     const article = {};
-    const inputElement = { disabled: false };
+    const inputElement = { value: 'test', disabled: false };
     const submitButton = { disabled: false };
     const outputElement = { textContent: '', parentElement: { classList: { remove: jest.fn() } } };
 
@@ -225,16 +225,26 @@ describe('initializeInteractiveComponent', () => {
 
     const globalState = {};
     const stopDefaultFn = jest.fn();
-    const createEnvFn = jest.fn();
+    const createEnvFn = () => ({});
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
     const fetchFn = jest.fn();
 
-    const addEventListenerFn = jest.fn();
+    const processingFunction = jest.fn(() => 'processed result');
+    const listeners = {};
+
+    const addEventListenerFn = jest.fn((element, event, handler) => {
+      if (element === inputElement && event === 'keypress') {
+        listeners.keypress = handler;
+      }
+      if (element === submitButton && event === 'click') {
+        listeners.click = handler;
+      }
+    });
 
     initializeInteractiveComponent(
       article,
-      jest.fn(),
+      processingFunction,
       querySelectorFn,
       globalState,
       stopDefaultFn,
@@ -248,5 +258,9 @@ describe('initializeInteractiveComponent', () => {
     expect(addEventListenerFn).toHaveBeenCalledTimes(2);
     expect(addEventListenerFn).toHaveBeenCalledWith(submitButton, 'click', expect.any(Function));
     expect(addEventListenerFn).toHaveBeenCalledWith(inputElement, 'keypress', expect.any(Function));
+
+    listeners.keypress({ key: 'Enter', preventDefault: jest.fn() });
+
+    expect(processingFunction).toHaveBeenCalledWith('test', expect.any(Object));
   });
 });
