@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { initializeInteractiveComponent, initializeVisibleComponents, handleModuleError, initialiseModule } from './toys.js';
+import { initializeVisibleComponents, handleModuleError, initialiseModule } from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
