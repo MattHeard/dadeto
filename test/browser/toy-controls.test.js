@@ -108,4 +108,37 @@ describe('createHandleSubmit', () => {
     // Characterization: ensure output is updated with result
     await expect(outputElement.textContent).resolves.toEqual('transformed');
   });
+
+  it('fetches from URL if processingFunction returns a request object', async () => {
+    const mockFetchFn = jest.fn(() =>
+      Promise.resolve({ text: () => Promise.resolve('fetched content') })
+    );
+
+    processingFunction = jest.fn(() =>
+      JSON.stringify({ request: { url: 'https://example.com/data' } })
+    );
+
+    const stopDefault = (e) => e.preventDefault();
+    const createEnv = () => ({});
+    const errorFn = jest.fn();
+    const addWarningFn = jest.fn();
+
+    const handleSubmitWithFetch = createHandleSubmit(
+      inputElement,
+      outputElement,
+      {},
+      processingFunction,
+      stopDefault,
+      createEnv,
+      errorFn,
+      addWarningFn,
+      mockFetchFn
+    );
+
+    await handleSubmitWithFetch(new Event('submit'));
+
+    expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/data');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(outputElement.textContent).toBe('fetched content');
+  });
 });
