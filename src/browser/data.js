@@ -1,3 +1,11 @@
+function shouldUseExistingFetch(state, logFn) {
+  if (state.blogStatus === 'loading' && state.blogFetchPromise) {
+    logFn('Blog data fetch already in progress.');
+    return true;
+  }
+  return false;
+}
+
 /**
  * Fetches blog data and updates the global state.
  * Ensures only one fetch happens at a time.
@@ -8,8 +16,7 @@
  */
 export function fetchAndCacheBlogData(state, fetchFn, logFn, errorFn) {
   // Prevent multiple simultaneous fetches
-  if (state.blogStatus === 'loading' && state.blogFetchPromise) {
-    logFn('Blog data fetch already in progress.');
+  if (shouldUseExistingFetch(state, logFn)) {
     return state.blogFetchPromise; 
   }
   
