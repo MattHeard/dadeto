@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { initializeInteractiveComponent, initializeVisibleComponents } from './toys.js';
+import { initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
@@ -30,12 +30,6 @@ import {
   getRandomNumber,
   getCurrentTime
 } from './document.js';
-
-function handleModuleError(modulePath, errorFn) {
-  return (e) => {
-    errorFn('Error loading module ' + modulePath + ':', e);
-  };
-}
 
 function createEnv(globalState, fetch, log, error, warn) {
   return new Map([
