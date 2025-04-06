@@ -23,7 +23,7 @@ export function ticTacToeMove(input, env) {
       if (seen.has(key)) return returnInitialOptimalMove();
       seen.add(key);
 
-      if (board[row][column] !== null) return returnInitialOptimalMove();
+      // Removed unreachable guard clause
       board[row][column] = player;
 
       if (i > 0 && player === moves[i - 1].player) return returnInitialOptimalMove();
@@ -85,8 +85,6 @@ export function ticTacToeMove(input, env) {
         }
       }
     }
-
-    if (!bestMove) return "";
 
     const newMove = { player: nextPlayer, position: bestMove };
     return JSON.stringify({ moves: [...moves, newMove] });
