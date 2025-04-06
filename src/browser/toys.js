@@ -1,4 +1,14 @@
 /**
+ * Imports a module dynamically with success and error handling
+ * @param {string} modulePath - Path to the module to import
+ * @param {Function} onSuccess - Function to call when import succeeds
+ * @param {Function} onError - Function to call when import fails
+ */
+export function importModule(modulePath, onSuccess, onError) {
+  import(modulePath).then(onSuccess).catch(onError);
+}
+
+/**
  * Creates an error handler for module loading errors
  * @param {string} modulePath - Path to the module that failed to load
  * @param {Function} errorFn - Error logging function

@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { initializeVisibleComponents, handleModuleError, initialiseModule } from './toys.js';
+import { initializeVisibleComponents, handleModuleError, initialiseModule, importModule } from './toys.js';
 import { hideArticlesByClass } from './tags.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
@@ -31,10 +31,6 @@ import {
   getRandomNumber,
   getCurrentTime
 } from './document.js';
-
-function importModule(modulePath, onSuccess, onError) {
-  import(modulePath).then(onSuccess).catch(onError);
-}
 
 function createEnv() {
   return new Map([
