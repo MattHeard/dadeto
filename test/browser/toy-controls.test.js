@@ -208,6 +208,36 @@ describe('createHandleSubmit', () => {
     expect(outputElement.textContent).toMatch(/Error: processing error/);
     expect(addWarningFn).toHaveBeenCalledWith(outputElement);
   });
+
+  it('handles being called without an event', async () => {
+    const stopDefault = jest.fn();
+    const createEnv = () => ({});
+    const errorFn = jest.fn();
+    const addWarningFn = jest.fn();
+    const fetchFn = jest.fn();
+    const processingFunction = jest.fn(() => 'result from no-event');
+
+    const input = { value: 'input without event' };
+    const output = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
+
+    const handleSubmitNoEvent = createHandleSubmit(
+      input,
+      output,
+      {},
+      processingFunction,
+      stopDefault,
+      createEnv,
+      errorFn,
+      addWarningFn,
+      fetchFn
+    );
+
+    await handleSubmitNoEvent(); // no event passed
+
+    expect(stopDefault).not.toHaveBeenCalled();
+    expect(processingFunction).toHaveBeenCalledWith('input without event', expect.any(Object));
+    expect(output.textContent).toBe('result from no-event');
+  });
 });
 
 describe('initializeInteractiveComponent', () => {
