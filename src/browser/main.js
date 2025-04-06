@@ -32,13 +32,13 @@ import {
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
 
-function handleModuleError(modulePath) {
+function handleModuleError(modulePath, errorFn) {
   return (e) => {
-    error('Error loading module ' + modulePath + ':', e);
+    errorFn('Error loading module ' + modulePath + ':', e);
   };
 }
 
-function createEnv(globalState) {
+function createEnv(globalState, fetch, log, error, warn) {
   return new Map([
     ["getRandomNumber", getRandomNumber],
     ["getCurrentTime", getCurrentTime],
@@ -56,7 +56,7 @@ function initialiseModule(article, functionName) {
       querySelector,
       globalState,
       stopDefault,
-      createEnv,
+      (globalState) => createEnv(globalState, fetch, log, error, warn),
       error,
       addWarning,
       addEventListener,
@@ -76,7 +76,7 @@ function createIntersectionObserver(article, modulePath, functionName) {
 function handleIntersection(entry, observer, modulePath, article, functionName) {
   if (entry.isIntersecting) {
     import(modulePath).then(initialiseModule(article, functionName))
-    .catch(handleModuleError(modulePath));
+    .catch(handleModuleError(modulePath, error));
     observer.disconnect();
   }
 }
