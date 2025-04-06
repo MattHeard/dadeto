@@ -1,4 +1,4 @@
-export function ticTacToeMove(input, env) {
+export function ticTacToeMove(input) {
   try {
     const parsed = JSON.parse(input);
     const { moves } = parsed;
