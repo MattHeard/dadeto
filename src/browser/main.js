@@ -9,27 +9,27 @@ let globalState = {
 import { setupAudio } from './audio-controls.js';
 import { initializeInteractiveComponent, initializeVisibleComponents } from './toy-controls.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
-
-// Helper Functions (moved to top level for broader scope)
-const getElementById = (doc, id) => doc.getElementById(id);
-const getAudioElements = (doc) => querySelectorAll(doc, "audio"); // Use querySelectorAll helper
-const querySelector = (el, selector) => el.querySelector(selector);
-const querySelectorAll = (docOrEl, selector) => docOrEl.querySelectorAll(selector);
-const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
-const createElement = (doc, tag) => doc.createElement(tag);
-const createTextNode = (doc) => doc.createTextNode(" ");
-const stopDefault = (e) => e.preventDefault();
-const playAudio = (audio) => audio.play();
-const pauseAudio = (audio) => audio.pause();
-const addEventListener = (element, event, func) => element.addEventListener(event, func);
-const appendChild = (parentNode, newChild) => parentNode.appendChild(newChild);
-const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
-const log = (...args) => console.log(...args);
-const warn = (...args) => console.warn(...args);
-const error = (...args) => console.error(...args);
-const addWarning = (outputElement) => {
-  outputElement.parentElement.classList.add('warning');
-};
+import {
+  getElementById,
+  getAudioElements,
+  querySelector,
+  querySelectorAll,
+  removeControlsAttribute,
+  createElement,
+  createTextNode,
+  stopDefault,
+  playAudio,
+  pauseAudio,
+  addEventListener,
+  appendChild,
+  insertBefore,
+  log,
+  warn,
+  error,
+  addWarning,
+  hideArticlesByClass,
+  toggleHideLink
+} from './document.js';
 
 const getRandomNumber = () => Math.random();
 const getCurrentTime = () => new Date().toISOString();
@@ -96,45 +96,6 @@ initializeVisibleComponents(
   getElementById, 
   createIntersectionObserver // Pass the function defined in main.js
 );
-
-// Tag filtering functionality
-function hideArticlesByClass(className) {
-  var articles = document.getElementsByTagName('article');
-  for (var i = 0; i < articles.length; i++) {
-    if (articles[i].classList.contains(className)) {
-      articles[i].style.display = 'none';
-    }
-  }
-}
-
-function toggleHideLink(link, className) {
-  // Check if a span with the hide link already exists immediately after the link.
-  if (link.nextElementSibling && link.nextElementSibling.classList.contains('hide-span')) {
-    // Remove the span if it exists.
-    link.nextElementSibling.remove();
-  } else {
-    // Create a new span element.
-    var span = createElement(document, 'span');
-    span.classList.add('hide-span');
-    // Append the opening text node.
-    appendChild(span, document.createTextNode(" ("));
-
-    // Create the hide anchor element.
-    var hideLink = createElement(document, 'a');
-    hideLink.textContent = "hide";
-    // Add click listener to trigger hideArticlesByClass.
-    addEventListener(hideLink, 'click', function(event) {
-      stopDefault(event);
-      hideArticlesByClass(className);
-    });
-    appendChild(span, hideLink);
-    // Append the closing text node.
-    appendChild(span, document.createTextNode(")"));
-
-    // Insert the span immediately after the link.
-    insertBefore(link.parentNode, span, link.nextSibling);
-  }
-}
 
 const handleTagLinks = () => {
   Array.from(document.getElementsByTagName('a')).forEach(link => {
