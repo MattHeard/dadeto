@@ -78,7 +78,7 @@ export const createHandleSubmit = (inputElement, outputElement, globalState, pro
  * @param {Function} addWarningFn - Function to add a warning style to the output.
  * @param {Function} addEventListenerFn - Function to add event listeners.
  */
-export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, stopDefaultFn, createEnvFn, errorFn, addWarningFn, addEventListenerFn) {
+export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, stopDefaultFn, createEnvFn, errorFn, addWarningFn, addEventListenerFn, fetchFn) {
   // Get the elements within the article
   const inputElement = querySelectorFn(article, 'input');
   const submitButton = querySelectorFn(article, 'button');
@@ -92,7 +92,7 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   outputElement.textContent = 'Initialising...';
 
   // Create the submit handler using the function from this module
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn, fetchFn);
 
   // Add event listener to the submit button
   addEventListenerFn(submitButton, 'click', handleSubmit);
