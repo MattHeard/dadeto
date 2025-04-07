@@ -1,6 +1,23 @@
 {
   "posts": [
     {
+      "key": "VIBE1",
+      "title": "Vibe Coding Tools",
+      "publicationDate": "2025-04-07",
+      "content": [
+        "I've been exploring vibe coding patterns. I have built my 'dadeto' blog generator without any lines coded by hand. I have a few different tools for different phases. I use 4o or o3-mini in ChatGPT to build a one-shot prototype and its first test suite. I then insert it into new files in Windsurf and have Claude 3.7 or Gemini 2.5 integrate it into my project. I then use Stryker and Jest to tell 4o what tests to add to get logical coverage to 100%. Finally, I refactor, using 4o for single-file changes and Windsurf for multi-file changes."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a digital illustration in a modern, geometric, and futuristic style showing a conductor orchestrating a glowing ai-powered pipeline with symbols and icons, against a dark background with blue and purple gradients"
+      },
+      "tags": [
+        "ai",
+        "vibe-coding",
+        "tools"
+      ]
+    },
+    {
       "key": "TICT1",
       "title": "Tic Tac Toe",
       "publicationDate": "2025-04-06",
