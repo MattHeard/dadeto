@@ -91,6 +91,8 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
   }
   const inputValue = inputElement.value;
   
+  const elementUtils = { createElement, setTextContent };
+
   try {
     const env = createEnv(globalState);
 
@@ -108,20 +110,20 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
       fetchFn(parsed.request.url)
         .then(response => response.text())
         .then(body => {
-          outputElement.textContent = body;
+          elementUtils.setTextContent(outputElement, body);
         })
         .catch(fetchError => {
           errorFn('Error fetching request URL:', fetchError);
-          outputElement.textContent = 'Error fetching URL: ' + fetchError.message;
+          elementUtils.setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message);
           addWarningFn(outputElement);
         });
     } else {
       // Default behavior
-      outputElement.textContent = result;
+      elementUtils.setTextContent(outputElement, result);
     }
   } catch (e) {
     errorFn('Error processing input:', e);
-    outputElement.textContent = 'Error: ' + e.message;
+    elementUtils.setTextContent(outputElement, 'Error: ' + e.message);
     addWarningFn(outputElement);
   }
 };

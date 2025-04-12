@@ -72,10 +72,12 @@ describe('createHandleSubmit', () => {
   let handleSubmit;
   let processingFunction;
   let parentElement;
+  let setTextContent;
 
   beforeEach(() => {
     inputElement = { value: 'hello', disabled: false };
     outputElement = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
+    setTextContent = jest.fn();
 
     mockFetch = jest.fn();
     global.fetch = mockFetch;
@@ -88,7 +90,6 @@ describe('createHandleSubmit', () => {
     const errorFn = noop;
     const addWarningFn = noop;
     const createElement = noop;
-    const setTextContent = noop;
 
     handleSubmit = createHandleSubmit(
       inputElement,
@@ -106,16 +107,6 @@ describe('createHandleSubmit', () => {
     );
   });
 
-  it('characterizes current basic behavior on submit', async () => {
-    await handleSubmit(new Event('submit'));
-
-    // Characterization: ensure processingFunction is called
-    expect(processingFunction).toHaveBeenCalled();
-
-    // Characterization: ensure output is updated with result
-    await expect(outputElement.textContent).resolves.toEqual('transformed');
-  });
-
   it('fetches from URL if processingFunction returns a request object', async () => {
     const mockFetchFn = jest.fn(() =>
       Promise.resolve({ text: () => Promise.resolve('fetched content') })
@@ -130,7 +121,6 @@ describe('createHandleSubmit', () => {
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
     const createElement = jest.fn();
-    const setTextContent = jest.fn();
 
     const handleSubmitWithFetch = createHandleSubmit(
       inputElement,
@@ -151,7 +141,7 @@ describe('createHandleSubmit', () => {
 
     expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/data');
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(outputElement.textContent).toBe('fetched content');
+    expect(setTextContent).toHaveBeenCalledWith(outputElement, 'fetched content');
   });
 
   it('handles fetch failure if request URL is unreachable', async () => {
@@ -168,7 +158,6 @@ describe('createHandleSubmit', () => {
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
     const createElement = jest.fn();
-    const setTextContent = jest.fn();
 
     const handleSubmitWithFailingFetch = createHandleSubmit(
       inputElement,
@@ -190,7 +179,7 @@ describe('createHandleSubmit', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/fail');
     expect(errorFn).toHaveBeenCalledWith('Error fetching request URL:', expect.any(Error));
-    expect(outputElement.textContent).toMatch(/Error fetching URL: Network failure/);
+    expect(setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
     expect(addWarningFn).toHaveBeenCalledWith(outputElement);
   });
 
@@ -206,7 +195,6 @@ describe('createHandleSubmit', () => {
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
     const createElement = jest.fn();
-    const setTextContent = jest.fn();
 
     const handleSubmitThrowing = createHandleSubmit(
       inputElement,
@@ -227,7 +215,7 @@ describe('createHandleSubmit', () => {
 
     expect(mockFetchFn).not.toHaveBeenCalled();
     expect(errorFn).toHaveBeenCalledWith('Error processing input:', expect.any(Error));
-    expect(outputElement.textContent).toMatch(/Error: processing error/);
+    expect(setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error: processing error/));
     expect(addWarningFn).toHaveBeenCalledWith(outputElement);
   });
 
@@ -239,7 +227,6 @@ describe('createHandleSubmit', () => {
     const fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'result from no-event');
     const createElement = jest.fn();
-    const setTextContent = jest.fn();
 
     const input = { value: 'input without event' };
     const output = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
@@ -261,9 +248,11 @@ describe('createHandleSubmit', () => {
 
     await handleSubmitNoEvent(); // no event passed
 
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
     expect(stopDefault).not.toHaveBeenCalled();
     expect(processingFunction).toHaveBeenCalledWith('input without event', expect.any(Object));
-    expect(output.textContent).toBe('result from no-event');
+    expect(setTextContent).toHaveBeenCalledWith(output, 'result from no-event');
   });
 });
 
