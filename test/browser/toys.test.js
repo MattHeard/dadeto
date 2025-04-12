@@ -275,7 +275,6 @@ describe('initializeInteractiveComponent', () => {
       globalState,
       createEnvFn,
       errorFn,
-      addEventListener,
       fetchFn,
       dom
     );
@@ -327,7 +326,6 @@ describe('initializeInteractiveComponent', () => {
       globalState,
       createEnvFn,
       errorFn,
-      addEventListener,
       fetchFn,
       dom
     );
