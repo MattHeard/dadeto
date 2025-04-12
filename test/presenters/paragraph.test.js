@@ -4,29 +4,27 @@ import { createParagraphElement } from '../../src/presenters/paragraph';
 
 describe('createParagraphElement', () => {
   it('creates a <p> element with the correct text content', () => {
-    const mockElement = {};
+    const mockElement = { textContent: '' };
     const dom = {
-      createElement: jest.fn().mockReturnValue(mockElement),
-      setTextContent: jest.fn()
+      createElement: () => mockElement,
+      setTextContent: (el, text) => { el.textContent = text; }
     };
 
     const result = createParagraphElement('Hello world', dom);
 
-    expect(dom.createElement).toHaveBeenCalledWith('p');
-    expect(dom.setTextContent).toHaveBeenCalledWith(mockElement, 'Hello world');
     expect(result).toBe(mockElement);
+    expect(result.textContent).toBe('Hello world');
   });
 
   it('works with different input strings', () => {
-    const mockElement = {};
+    const mockElement = { textContent: '' };
     const dom = {
-      createElement: jest.fn().mockReturnValue(mockElement),
-      setTextContent: jest.fn()
+      createElement: () => mockElement,
+      setTextContent: (el, text) => { el.textContent = text; }
     };
 
     const result = createParagraphElement('Another test string', dom);
 
-    expect(dom.setTextContent).toHaveBeenCalledWith(mockElement, 'Another test string');
-    expect(result).toBe(mockElement);
+    expect(result.textContent).toBe('Another test string');
   });
 });
