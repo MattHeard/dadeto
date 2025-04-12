@@ -271,7 +271,6 @@ describe('initializeInteractiveComponent', () => {
     initializeInteractiveComponent(
       article,
       processingFunction,
-      querySelector,
       globalState,
       createEnvFn,
       errorFn,
@@ -322,7 +321,6 @@ describe('initializeInteractiveComponent', () => {
     initializeInteractiveComponent(
       article,
       processingFunction,
-      querySelector,
       globalState,
       createEnvFn,
       errorFn,

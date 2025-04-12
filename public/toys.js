@@ -43,7 +43,6 @@ export function initialiseModule(article, functionName, querySelector, globalSta
     initializeInteractiveComponent(
       article,
       processingFunction,
-      querySelector,
       globalState,
       createEnv,
       error,
@@ -128,14 +127,13 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
  * Sets up event listeners and initial state.
  * @param {HTMLElement} article - The article element containing the toy.
  * @param {Function} processingFunction - The toy's core logic function.
- * @param {Function} querySelector - Function to find elements within the article.
  * @param {object} globalState - The shared application state.
  * @param {Function} createEnvFn - Function to create the environment map for the toy.
  * @param {Function} errorFn - Function for logging errors.
  * @param {Function} fetchFn - Function for making HTTP requests.
  * @param {object} dom - Object containing DOM functions.
  */
-export function initializeInteractiveComponent(article, processingFunction, querySelector, globalState, createEnvFn, errorFn, fetchFn, dom) {
+export function initializeInteractiveComponent(article, processingFunction, globalState, createEnvFn, errorFn, fetchFn, dom) {
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
   const submitButton = dom.querySelector(article, 'button');
