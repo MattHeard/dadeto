@@ -32,23 +32,18 @@ export function handleModuleError(modulePath, errorFn) {
  * @param {Function} addWarning - Function to add a warning style to the output
  * @param {Function} addEventListener - Function to add event listeners
  * @param {Function} fetch - Function for making HTTP requests
+ * @param {Function} createElement - Function to create an element
+ * @param {Function} setTextContent - Function to set the text content of an element
  * @returns {Function} A function that takes a module and initializes the interactive component
  */
-export function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch) {
+export function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch, createElement = () => {}, setTextContent = () => {}) {
   return (module) => {
     const processingFunction = module[functionName];
-    initializeInteractiveComponent(
-      article,
-      processingFunction,
-      querySelector,
-      globalState,
-      stopDefault,
-      createEnv,
-      error,
-      addWarning,
-      addEventListener,
-      fetch
-    );
+    if (typeof processingFunction === 'function') {
+      initializeInteractiveComponent(article, processingFunction, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch, createElement, setTextContent);
+    } else {
+      error(`Module does not export function ${functionName}`);
+    }
   };
 }
 
@@ -77,9 +72,11 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
  * @param {Function} errorFn - Function for logging errors.
  * @param {Function} addWarningFn - Function to add a warning style to the output.
  * @param {Function} fetchFn - Function to fetch data from a URL.
+ * @param {Function} createElement - Function to create an element.
+ * @param {Function} setTextContent - Function to set the text content of an element.
  * @returns {Function} An event handler function.
  */
-export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn, fetchFn) => (event) => {
+export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn, fetchFn, createElement = () => {}, setTextContent = () => {}) => (event) => {
   if (event) {
     stopDefault(event);
   }
@@ -133,8 +130,10 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
  * @param {Function} addWarningFn - Function to add a warning style to the output.
  * @param {Function} addEventListenerFn - Function to add event listeners.
  * @param {Function} fetchFn - Function for making HTTP requests.
+ * @param {Function} createElement - Function to create an element.
+ * @param {Function} setTextContent - Function to set the text content of an element.
  */
-export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, stopDefaultFn, createEnvFn, errorFn, addWarningFn, addEventListenerFn, fetchFn) {
+export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, stopDefaultFn, createEnvFn, errorFn, addWarningFn, addEventListenerFn, fetchFn, createElement = () => {}, setTextContent = () => {}) {
   // Get the elements within the article
   const inputElement = querySelectorFn(article, 'input');
   const submitButton = querySelectorFn(article, 'button');
@@ -149,7 +148,7 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   outputElement.textContent = 'Initialising...';
 
   // Create the submit handler using the function from this module
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, outputParent, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn, fetchFn);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, outputParent, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn, fetchFn, createElement, setTextContent);
 
   // Add event listener to the submit button
   addEventListenerFn(submitButton, 'click', handleSubmit);

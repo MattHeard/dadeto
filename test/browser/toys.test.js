@@ -87,6 +87,8 @@ describe('createHandleSubmit', () => {
     const createEnv = () => ({});
     const errorFn = noop;
     const addWarningFn = noop;
+    const createElement = noop;
+    const setTextContent = noop;
 
     handleSubmit = createHandleSubmit(
       inputElement,
@@ -98,7 +100,9 @@ describe('createHandleSubmit', () => {
       createEnv,
       errorFn,
       addWarningFn,
-      mockFetch
+      mockFetch,
+      createElement,
+      setTextContent
     );
   });
 
@@ -125,6 +129,8 @@ describe('createHandleSubmit', () => {
     const createEnv = () => ({});
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
+    const createElement = jest.fn();
+    const setTextContent = jest.fn();
 
     const handleSubmitWithFetch = createHandleSubmit(
       inputElement,
@@ -136,7 +142,9 @@ describe('createHandleSubmit', () => {
       createEnv,
       errorFn,
       addWarningFn,
-      mockFetchFn
+      mockFetchFn,
+      createElement,
+      setTextContent
     );
 
     await handleSubmitWithFetch(new Event('submit'));
@@ -159,6 +167,8 @@ describe('createHandleSubmit', () => {
     const createEnv = () => ({});
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
+    const createElement = jest.fn();
+    const setTextContent = jest.fn();
 
     const handleSubmitWithFailingFetch = createHandleSubmit(
       inputElement,
@@ -170,7 +180,9 @@ describe('createHandleSubmit', () => {
       createEnv,
       errorFn,
       addWarningFn,
-      mockFetchFn
+      mockFetchFn,
+      createElement,
+      setTextContent
     );
 
     await handleSubmitWithFailingFetch(new Event('submit'));
@@ -193,6 +205,8 @@ describe('createHandleSubmit', () => {
     const createEnv = () => ({});
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
+    const createElement = jest.fn();
+    const setTextContent = jest.fn();
 
     const handleSubmitThrowing = createHandleSubmit(
       inputElement,
@@ -204,7 +218,9 @@ describe('createHandleSubmit', () => {
       createEnv,
       errorFn,
       addWarningFn,
-      mockFetchFn
+      mockFetchFn,
+      createElement,
+      setTextContent
     );
 
     await handleSubmitThrowing(new Event('submit'));
@@ -222,6 +238,8 @@ describe('createHandleSubmit', () => {
     const addWarningFn = jest.fn();
     const fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'result from no-event');
+    const createElement = jest.fn();
+    const setTextContent = jest.fn();
 
     const input = { value: 'input without event' };
     const output = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
@@ -236,7 +254,9 @@ describe('createHandleSubmit', () => {
       createEnv,
       errorFn,
       addWarningFn,
-      fetchFn
+      fetchFn,
+      createElement,
+      setTextContent
     );
 
     await handleSubmitNoEvent(); // no event passed
@@ -267,6 +287,8 @@ describe('initializeInteractiveComponent', () => {
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
     const fetchFn = jest.fn();
+    const createElement = jest.fn();
+    const setTextContent = jest.fn();
 
     const processingFunction = jest.fn(() => 'processed result');
     const listeners = {};
@@ -290,7 +312,9 @@ describe('initializeInteractiveComponent', () => {
       errorFn,
       addWarningFn,
       addEventListenerFn,
-      fetchFn
+      fetchFn,
+      createElement,
+      setTextContent
     );
 
     expect(addEventListenerFn).toHaveBeenCalledTimes(2);
@@ -321,6 +345,8 @@ describe('initializeInteractiveComponent', () => {
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
     const fetchFn = jest.fn();
+    const createElement = jest.fn();
+    const setTextContent = jest.fn();
 
     const processingFunction = jest.fn(() => 'processed result');
     const listeners = {};
@@ -341,7 +367,9 @@ describe('initializeInteractiveComponent', () => {
       errorFn,
       addWarningFn,
       addEventListenerFn,
-      fetchFn
+      fetchFn,
+      createElement,
+      setTextContent
     );
 
     listeners.keypress({ key: 'a', preventDefault: jest.fn() });
