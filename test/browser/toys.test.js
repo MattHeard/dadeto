@@ -239,7 +239,7 @@ describe('initializeInteractiveComponent', () => {
     const submitButton = { disabled: false };
     const outputElement = { textContent: '', parentElement: { classList: { remove: jest.fn() } } };
 
-    const querySelectorFn = jest.fn((el, selector) => {
+    const querySelector = jest.fn((el, selector) => {
       if (selector === 'input') return inputElement;
       if (selector === 'button') return submitButton;
       if (selector === 'p.output') return outputElement;
@@ -264,14 +264,14 @@ describe('initializeInteractiveComponent', () => {
         listeners.click = handler;
       }
     });
-    const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener };
+    const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector };
 
     const processingFunction = jest.fn(() => 'processed result');
 
     initializeInteractiveComponent(
       article,
       processingFunction,
-      querySelectorFn,
+      querySelector,
       globalState,
       createEnvFn,
       errorFn,
@@ -294,7 +294,7 @@ describe('initializeInteractiveComponent', () => {
     const submitButton = { disabled: false };
     const outputElement = { textContent: '', parentElement: { classList: { remove: jest.fn() } } };
 
-    const querySelectorFn = jest.fn((el, selector) => {
+    const querySelector = jest.fn((el, selector) => {
       if (selector === 'input') return inputElement;
       if (selector === 'button') return submitButton;
       if (selector === 'p.output') return outputElement;
@@ -317,12 +317,12 @@ describe('initializeInteractiveComponent', () => {
         listeners.keypress = handler;
       }
     });
-    const dom = { createElement, setTextContent, stopDefaultFn, addWarningFn, addEventListener };
+    const dom = { createElement, setTextContent, stopDefaultFn, addWarningFn, addEventListener, querySelector };
 
     initializeInteractiveComponent(
       article,
       processingFunction,
-      querySelectorFn,
+      querySelector,
       globalState,
       createEnvFn,
       errorFn,

@@ -39,7 +39,7 @@ export function handleModuleError(modulePath, errorFn) {
 export function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch, createElement, setTextContent) {
   return (module) => {
     const processingFunction = module[functionName];
-    const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener };
+    const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector };
     initializeInteractiveComponent(
       article,
       processingFunction,
@@ -128,19 +128,19 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
  * Sets up event listeners and initial state.
  * @param {HTMLElement} article - The article element containing the toy.
  * @param {Function} processingFunction - The toy's core logic function.
- * @param {Function} querySelectorFn - Function to find elements within the article.
+ * @param {Function} querySelector - Function to find elements within the article.
  * @param {object} globalState - The shared application state.
  * @param {Function} createEnvFn - Function to create the environment map for the toy.
  * @param {Function} errorFn - Function for logging errors.
  * @param {Function} fetchFn - Function for making HTTP requests.
  * @param {object} dom - Object containing DOM functions.
  */
-export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, createEnvFn, errorFn, fetchFn, dom) {
+export function initializeInteractiveComponent(article, processingFunction, querySelector, globalState, createEnvFn, errorFn, fetchFn, dom) {
   // Get the elements within the article
-  const inputElement = querySelectorFn(article, 'input');
-  const submitButton = querySelectorFn(article, 'button');
-  const outputElement = querySelectorFn(article, 'p.output');
-  const outputParent = querySelectorFn(article, 'div.output'); // Get the parent element
+  const inputElement = dom.querySelector(article, 'input');
+  const submitButton = dom.querySelector(article, 'button');
+  const outputElement = dom.querySelector(article, 'p.output');
+  const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
   
   // Disable controls during initialization
   inputElement.disabled = true;
