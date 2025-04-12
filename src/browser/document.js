@@ -33,3 +33,7 @@ export const addWarning = (outputElement) => {
 
 export const removeNextSibling = link =>
   link.nextElementSibling && link.nextElementSibling.remove();
+
+export function setTextContent(element, content) {
+  element.textContent = content;
+}
