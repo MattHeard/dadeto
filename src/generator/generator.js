@@ -844,7 +844,7 @@ function generateToyButtonSection() {
  */
 function generateToyOutputSection() {
   const keyDiv = createDiv(CLASS.KEY, 'out');
-  const valueContent = '<select disabled><option value="text">text</option></select><p class="output">This toy requires Javascript to run.</p>';
+  const valueContent = '<select disabled><option value="text">text</option></select><div class="output"><p class="output">This toy requires Javascript to run.</p></div>';
   const valueDiv = createValueDiv(valueContent, [CLASS.WARNING]);
   
   return formatSection(keyDiv, valueDiv);

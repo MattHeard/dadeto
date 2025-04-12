@@ -251,7 +251,7 @@ describe('initializeInteractiveComponent', () => {
       if (selector === 'input') return inputElement;
       if (selector === 'button') return submitButton;
       if (selector === 'p.output') return outputElement;
-      if (selector === '.output-container') return outputElement.parentElement; // Return the parent element when asked for output container
+      if (selector === 'div.output') return outputElement.parentElement; // Return the parent element when asked for output container
     });
 
     const globalState = {};
@@ -305,7 +305,7 @@ describe('initializeInteractiveComponent', () => {
       if (selector === 'input') return inputElement;
       if (selector === 'button') return submitButton;
       if (selector === 'p.output') return outputElement;
-      if (selector === '.output-container') return outputElement.parentElement; // Return the parent element when asked for output container
+      if (selector === 'div.output') return outputElement.parentElement; // Return the parent element when asked for output container
     });
 
     const globalState = {};
