@@ -78,16 +78,16 @@ describe('createHandleSubmit', () => {
   let errorFn;
   let addWarningFn;
   let createElement;
-  let stopDefaultFn;
+  let stopDefault;
 
   beforeEach(() => {
     inputElement = { value: 'hello', disabled: false };
     outputElement = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
     setTextContent = jest.fn();
-    stopDefaultFn = jest.fn();
+    stopDefault = jest.fn();
     addWarningFn = jest.fn();
     createElement = jest.fn();
-    dom = { createElement, setTextContent, stopDefaultFn, addWarningFn };
+    dom = { createElement, setTextContent, stopDefault, addWarningFn };
     mockFetch = jest.fn();
     global.fetch = mockFetch;
 
@@ -102,7 +102,7 @@ describe('createHandleSubmit', () => {
       parentElement, // Pass the mock parent element
       globalState,
       processingFunction,
-      stopDefaultFn,
+      stopDefault,
       createEnv,
       errorFn,
       addWarningFn,
@@ -128,13 +128,9 @@ describe('createHandleSubmit', () => {
       parentElement,
       {},
       processingFunction,
-      stopDefaultFn,
       createEnv,
       errorFn,
-      addWarningFn,
       mockFetchFn,
-      createElement,
-      setTextContent,
       dom
     );
 
@@ -160,13 +156,9 @@ describe('createHandleSubmit', () => {
       parentElement,
       {},
       processingFunction,
-      stopDefaultFn,
       createEnv,
       errorFn,
-      addWarningFn,
       mockFetchFn,
-      createElement,
-      setTextContent,
       dom
     );
 
@@ -192,13 +184,9 @@ describe('createHandleSubmit', () => {
       parentElement,
       {},
       processingFunction,
-      stopDefaultFn,
       createEnv,
       errorFn,
-      addWarningFn,
       mockFetchFn,
-      createElement,
-      setTextContent,
       dom
     );
 
@@ -228,13 +216,9 @@ describe('createHandleSubmit', () => {
       parentElement,
       {},
       processingFunction,
-      stopDefaultFn,
       createEnv,
       errorFn,
-      addWarningFn,
       fetchFn,
-      createElement,
-      setTextContent,
       dom
     );
 
