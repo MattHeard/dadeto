@@ -137,6 +137,7 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   const inputElement = querySelectorFn(article, 'input');
   const submitButton = querySelectorFn(article, 'button');
   const outputElement = querySelectorFn(article, 'p.output');
+  const outputParent = querySelectorFn(article, '.output-container'); // Get the parent element
   
   // Disable controls during initialization
   inputElement.disabled = true;
