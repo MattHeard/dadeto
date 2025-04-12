@@ -87,9 +87,10 @@ function createIntersectionObserver(article, modulePath, functionName) {
 
 function handleIntersection(entry, observer, modulePath, article, functionName, importModule) {
   if (entry.isIntersecting) {
+    const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector };
     importModule(
       modulePath,
-      initialiseModule(article, functionName, querySelector, globalState, stopDefault, () => createEnv(), error, addWarning, addEventListener, fetch, createElement, setTextContent),
+      initialiseModule(article, functionName, globalState, createEnv, error, fetch, dom),
       handleModuleError(modulePath, error)
     );
     observer.disconnect();
