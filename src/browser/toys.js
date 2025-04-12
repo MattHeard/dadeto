@@ -69,6 +69,7 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
  * Creates a submit handler function for an interactive toy.
  * @param {HTMLInputElement} inputElement - The input field.
  * @param {HTMLElement} outputElement - The element to display output/errors.
+ * @param {HTMLElement} outputParent - The parent element of the output element.
  * @param {object} globalState - The shared application state.
  * @param {Function} processingFunction - The toy's core logic function.
  * @param {Function} stopDefault - Function to prevent default event action.
@@ -78,7 +79,7 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
  * @param {Function} fetchFn - Function to fetch data from a URL.
  * @returns {Function} An event handler function.
  */
-export const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn, fetchFn) => (event) => {
+export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn, fetchFn) => (event) => {
   if (event) {
     stopDefault(event);
   }
@@ -131,6 +132,7 @@ export const createHandleSubmit = (inputElement, outputElement, globalState, pro
  * @param {Function} errorFn - Function for logging errors.
  * @param {Function} addWarningFn - Function to add a warning style to the output.
  * @param {Function} addEventListenerFn - Function to add event listeners.
+ * @param {Function} fetchFn - Function for making HTTP requests.
  */
 export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, stopDefaultFn, createEnvFn, errorFn, addWarningFn, addEventListenerFn, fetchFn) {
   // Get the elements within the article
@@ -147,7 +149,7 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   outputElement.textContent = 'Initialising...';
 
   // Create the submit handler using the function from this module
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn, fetchFn);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, outputParent, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn, fetchFn);
 
   // Add event listener to the submit button
   addEventListenerFn(submitButton, 'click', handleSubmit);

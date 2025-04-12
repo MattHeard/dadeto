@@ -71,6 +71,7 @@ describe('createHandleSubmit', () => {
   let outputElement;
   let handleSubmit;
   let processingFunction;
+  let parentElement;
 
   beforeEach(() => {
     inputElement = { value: 'hello', disabled: false };
@@ -87,15 +88,36 @@ describe('createHandleSubmit', () => {
     const errorFn = noop;
     const addWarningFn = noop;
 
+    // Mock parent element with classList mock
+    const mockParentClassList = {
+      containsWarning: true, // Simple state to track the class
+      add: jest.fn(), // Not strictly needed for this test, but good practice
+      remove: jest.fn((className) => {
+        if (className === 'warning') {
+          mockParentClassList.containsWarning = false;
+        }
+      }),
+      contains: jest.fn((className) => {
+        return className === 'warning' && mockParentClassList.containsWarning;
+      })
+    };
+    parentElement = { 
+      classList: mockParentClassList,
+      appendChild: jest.fn() // Not needed, but completes the mock
+    };
+
+    // Create the submit handler
     handleSubmit = createHandleSubmit(
       inputElement,
       outputElement,
+      parentElement, // Pass the mock parent element
       globalState,
       processingFunction,
       stopDefault,
       createEnv,
       errorFn,
-      addWarningFn
+      addWarningFn,
+      mockFetch
     );
   });
 
@@ -126,6 +148,7 @@ describe('createHandleSubmit', () => {
     const handleSubmitWithFetch = createHandleSubmit(
       inputElement,
       outputElement,
+      parentElement,
       {},
       processingFunction,
       stopDefault,
@@ -159,6 +182,7 @@ describe('createHandleSubmit', () => {
     const handleSubmitWithFailingFetch = createHandleSubmit(
       inputElement,
       outputElement,
+      parentElement,
       {},
       processingFunction,
       stopDefault,
@@ -192,6 +216,7 @@ describe('createHandleSubmit', () => {
     const handleSubmitThrowing = createHandleSubmit(
       inputElement,
       outputElement,
+      parentElement,
       {},
       processingFunction,
       stopDefault,
@@ -223,6 +248,7 @@ describe('createHandleSubmit', () => {
     const handleSubmitNoEvent = createHandleSubmit(
       input,
       output,
+      parentElement,
       {},
       processingFunction,
       stopDefault,
