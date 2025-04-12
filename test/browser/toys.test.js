@@ -247,13 +247,14 @@ describe('initializeInteractiveComponent', () => {
     });
 
     const globalState = {};
-    const stopDefaultFn = jest.fn();
     const createEnvFn = () => ({});
     const errorFn = jest.fn();
-    const addWarningFn = jest.fn();
     const fetchFn = jest.fn();
     const createElement = jest.fn();
     const setTextContent = jest.fn();
+    const stopDefault = jest.fn();
+    const addWarning = jest.fn();
+    const dom = { createElement, setTextContent, stopDefault, addWarning };
 
     const processingFunction = jest.fn(() => 'processed result');
     const listeners = {};
@@ -272,14 +273,11 @@ describe('initializeInteractiveComponent', () => {
       processingFunction,
       querySelectorFn,
       globalState,
-      stopDefaultFn,
       createEnvFn,
       errorFn,
-      addWarningFn,
       addEventListenerFn,
       fetchFn,
-      createElement,
-      setTextContent
+      dom
     );
 
     expect(addEventListenerFn).toHaveBeenCalledTimes(2);
@@ -310,11 +308,11 @@ describe('initializeInteractiveComponent', () => {
     const errorFn = jest.fn();
     const addWarningFn = jest.fn();
     const fetchFn = jest.fn();
-    const createElement = jest.fn();
-    const setTextContent = jest.fn();
-
     const processingFunction = jest.fn(() => 'processed result');
     const listeners = {};
+    const createElement = jest.fn();
+    const setTextContent = jest.fn();
+    const dom = { createElement, setTextContent, stopDefaultFn, addWarningFn };
 
     const addEventListenerFn = jest.fn((element, event, handler) => {
       if (element === inputElement && event === 'keypress') {
@@ -327,14 +325,11 @@ describe('initializeInteractiveComponent', () => {
       processingFunction,
       querySelectorFn,
       globalState,
-      stopDefaultFn,
       createEnvFn,
       errorFn,
-      addWarningFn,
       addEventListenerFn,
       fetchFn,
-      createElement,
-      setTextContent
+      dom
     );
 
     listeners.keypress({ key: 'a', preventDefault: jest.fn() });

@@ -44,14 +44,11 @@ export function initialiseModule(article, functionName, querySelector, globalSta
       processingFunction,
       querySelector,
       globalState,
-      stopDefault,
       createEnv,
       error,
-      addWarning,
       addEventListener,
       fetch,
-      createElement,
-      setTextContent
+      { createElement, setTextContent, stopDefault, addWarning }
     );
   };
 }
@@ -139,10 +136,9 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
  * @param {Function} addWarningFn - Function to add a warning style to the output.
  * @param {Function} addEventListenerFn - Function to add event listeners.
  * @param {Function} fetchFn - Function for making HTTP requests.
- * @param {Function} createElement - Function to create an element.
- * @param {Function} setTextContent - Function to set the text content of an element.
+ * @param {object} dom - Object containing DOM functions.
  */
-export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, stopDefault, createEnvFn, errorFn, addWarningFn, addEventListenerFn, fetchFn, createElement, setTextContent) {
+export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, createEnvFn, errorFn, addEventListenerFn, fetchFn, dom) {
   // Get the elements within the article
   const inputElement = querySelectorFn(article, 'input');
   const submitButton = querySelectorFn(article, 'button');
@@ -155,8 +151,6 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   
   // Update message to show JS is running
   outputElement.textContent = 'Initialising...';
-
-  const dom = { createElement, setTextContent, stopDefault, addWarningFn };
 
   // Create the submit handler using the function from this module
   const handleSubmit = createHandleSubmit(inputElement, outputElement, outputParent, globalState, processingFunction, createEnvFn, errorFn, fetchFn, dom);
