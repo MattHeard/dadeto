@@ -88,25 +88,6 @@ describe('createHandleSubmit', () => {
     const errorFn = noop;
     const addWarningFn = noop;
 
-    // Mock parent element with classList mock
-    const mockParentClassList = {
-      containsWarning: true, // Simple state to track the class
-      add: jest.fn(), // Not strictly needed for this test, but good practice
-      remove: jest.fn((className) => {
-        if (className === 'warning') {
-          mockParentClassList.containsWarning = false;
-        }
-      }),
-      contains: jest.fn((className) => {
-        return className === 'warning' && mockParentClassList.containsWarning;
-      })
-    };
-    parentElement = { 
-      classList: mockParentClassList,
-      appendChild: jest.fn() // Not needed, but completes the mock
-    };
-
-    // Create the submit handler
     handleSubmit = createHandleSubmit(
       inputElement,
       outputElement,
