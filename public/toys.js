@@ -32,9 +32,11 @@ export function handleModuleError(modulePath, errorFn) {
  * @param {Function} addWarning - Function to add a warning style to the output
  * @param {Function} addEventListener - Function to add event listeners
  * @param {Function} fetch - Function for making HTTP requests
+ * @param {Function} createElement - Function to create an element
+ * @param {Function} setTextContent - Function to set the text content of an element
  * @returns {Function} A function that takes a module and initializes the interactive component
  */
-export function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch) {
+export function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch, createElement, setTextContent) {
   return (module) => {
     const processingFunction = module[functionName];
     initializeInteractiveComponent(
@@ -47,7 +49,9 @@ export function initialiseModule(article, functionName, querySelector, globalSta
       error,
       addWarning,
       addEventListener,
-      fetch
+      fetch,
+      createElement,
+      setTextContent
     );
   };
 }
@@ -69,6 +73,7 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
  * Creates a submit handler function for an interactive toy.
  * @param {HTMLInputElement} inputElement - The input field.
  * @param {HTMLElement} outputElement - The element to display output/errors.
+ * @param {HTMLElement} outputParent - The parent element of the output element.
  * @param {object} globalState - The shared application state.
  * @param {Function} processingFunction - The toy's core logic function.
  * @param {Function} stopDefault - Function to prevent default event action.
@@ -76,14 +81,18 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
  * @param {Function} errorFn - Function for logging errors.
  * @param {Function} addWarningFn - Function to add a warning style to the output.
  * @param {Function} fetchFn - Function to fetch data from a URL.
+ * @param {Function} createElement - Function to create an element.
+ * @param {Function} setTextContent - Function to set the text content of an element.
  * @returns {Function} An event handler function.
  */
-export const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn, fetchFn) => (event) => {
+export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn, fetchFn, createElement, setTextContent) => (event) => {
   if (event) {
     stopDefault(event);
   }
   const inputValue = inputElement.value;
   
+  const dom = { createElement, setTextContent };
+
   try {
     const env = createEnv(globalState);
 
@@ -101,20 +110,20 @@ export const createHandleSubmit = (inputElement, outputElement, globalState, pro
       fetchFn(parsed.request.url)
         .then(response => response.text())
         .then(body => {
-          outputElement.textContent = body;
+          dom.setTextContent(outputElement, body);
         })
         .catch(fetchError => {
           errorFn('Error fetching request URL:', fetchError);
-          outputElement.textContent = 'Error fetching URL: ' + fetchError.message;
+          dom.setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message);
           addWarningFn(outputElement);
         });
     } else {
       // Default behavior
-      outputElement.textContent = result;
+      dom.setTextContent(outputElement, result);
     }
   } catch (e) {
     errorFn('Error processing input:', e);
-    outputElement.textContent = 'Error: ' + e.message;
+    dom.setTextContent(outputElement, 'Error: ' + e.message);
     addWarningFn(outputElement);
   }
 };
@@ -131,12 +140,16 @@ export const createHandleSubmit = (inputElement, outputElement, globalState, pro
  * @param {Function} errorFn - Function for logging errors.
  * @param {Function} addWarningFn - Function to add a warning style to the output.
  * @param {Function} addEventListenerFn - Function to add event listeners.
+ * @param {Function} fetchFn - Function for making HTTP requests.
+ * @param {Function} createElement - Function to create an element.
+ * @param {Function} setTextContent - Function to set the text content of an element.
  */
-export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, stopDefaultFn, createEnvFn, errorFn, addWarningFn, addEventListenerFn, fetchFn) {
+export function initializeInteractiveComponent(article, processingFunction, querySelectorFn, globalState, stopDefaultFn, createEnvFn, errorFn, addWarningFn, addEventListenerFn, fetchFn, createElement, setTextContent) {
   // Get the elements within the article
   const inputElement = querySelectorFn(article, 'input');
   const submitButton = querySelectorFn(article, 'button');
   const outputElement = querySelectorFn(article, 'p.output');
+  const outputParent = querySelectorFn(article, 'div.output'); // Get the parent element
   
   // Disable controls during initialization
   inputElement.disabled = true;
@@ -146,7 +159,7 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   outputElement.textContent = 'Initialising...';
 
   // Create the submit handler using the function from this module
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn, fetchFn);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, outputParent, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn, fetchFn, createElement, setTextContent);
 
   // Add event listener to the submit button
   addEventListenerFn(submitButton, 'click', handleSubmit);
