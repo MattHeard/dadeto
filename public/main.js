@@ -31,7 +31,8 @@ import {
   getRandomNumber,
   getCurrentTime,
   hasNextSiblingClass,
-  removeNextSibling
+  removeNextSibling,
+  setTextContent
 } from './document.js';
 
 const createHandleClick = (link, className) => event => {
@@ -88,7 +89,7 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
   if (entry.isIntersecting) {
     importModule(
       modulePath,
-      initialiseModule(article, functionName, querySelector, globalState, stopDefault, () => createEnv(), error, addWarning, addEventListener, fetch),
+      initialiseModule(article, functionName, querySelector, globalState, stopDefault, () => createEnv(), error, addWarning, addEventListener, fetch, createElement, setTextContent),
       handleModuleError(modulePath, error)
     );
     observer.disconnect();
