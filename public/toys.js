@@ -85,14 +85,12 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
  * @param {Function} setTextContent - Function to set the text content of an element.
  * @returns {Function} An event handler function.
  */
-export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn, fetchFn, createElement, setTextContent) => (event) => {
+export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, stopDefault, createEnv, errorFn, addWarningFn, fetchFn, createElement, setTextContent, dom) => (event) => {
   if (event) {
     stopDefault(event);
   }
   const inputValue = inputElement.value;
   
-  const dom = { createElement, setTextContent };
-
   try {
     const env = createEnv(globalState);
 
@@ -158,8 +156,10 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   // Update message to show JS is running
   outputElement.textContent = 'Initialising...';
 
+  const dom = { createElement, setTextContent, stopDefaultFn, addWarningFn };
+
   // Create the submit handler using the function from this module
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, outputParent, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn, fetchFn, createElement, setTextContent);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, outputParent, globalState, processingFunction, stopDefaultFn, createEnvFn, errorFn, addWarningFn, fetchFn, createElement, setTextContent, dom);
 
   // Add event listener to the submit button
   addEventListenerFn(submitButton, 'click', handleSubmit);

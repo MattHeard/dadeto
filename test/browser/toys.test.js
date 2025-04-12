@@ -73,23 +73,28 @@ describe('createHandleSubmit', () => {
   let processingFunction;
   let parentElement;
   let setTextContent;
+  let dom;
+  let createEnv;
+  let errorFn;
+  let addWarningFn;
+  let createElement;
+  let stopDefaultFn;
 
   beforeEach(() => {
     inputElement = { value: 'hello', disabled: false };
     outputElement = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
     setTextContent = jest.fn();
-
+    stopDefaultFn = jest.fn();
+    addWarningFn = jest.fn();
+    createElement = jest.fn();
+    dom = { createElement, setTextContent, stopDefaultFn, addWarningFn };
     mockFetch = jest.fn();
     global.fetch = mockFetch;
 
-    const noop = () => {};
     const globalState = {};
     processingFunction = jest.fn(async (input) => 'transformed');
-    const stopDefault = (e) => e.preventDefault();
-    const createEnv = () => ({});
-    const errorFn = noop;
-    const addWarningFn = noop;
-    const createElement = noop;
+    createEnv = () => ({});
+    errorFn = jest.fn();
 
     handleSubmit = createHandleSubmit(
       inputElement,
@@ -97,13 +102,14 @@ describe('createHandleSubmit', () => {
       parentElement, // Pass the mock parent element
       globalState,
       processingFunction,
-      stopDefault,
+      stopDefaultFn,
       createEnv,
       errorFn,
       addWarningFn,
       mockFetch,
       createElement,
-      setTextContent
+      setTextContent,
+      dom
     );
   });
 
@@ -116,25 +122,20 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/data' } })
     );
 
-    const stopDefault = (e) => e.preventDefault();
-    const createEnv = () => ({});
-    const errorFn = jest.fn();
-    const addWarningFn = jest.fn();
-    const createElement = jest.fn();
-
     const handleSubmitWithFetch = createHandleSubmit(
       inputElement,
       outputElement,
       parentElement,
       {},
       processingFunction,
-      stopDefault,
+      stopDefaultFn,
       createEnv,
       errorFn,
       addWarningFn,
       mockFetchFn,
       createElement,
-      setTextContent
+      setTextContent,
+      dom
     );
 
     await handleSubmitWithFetch(new Event('submit'));
@@ -153,25 +154,20 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/fail' } })
     );
 
-    const stopDefault = (e) => e.preventDefault();
-    const createEnv = () => ({});
-    const errorFn = jest.fn();
-    const addWarningFn = jest.fn();
-    const createElement = jest.fn();
-
     const handleSubmitWithFailingFetch = createHandleSubmit(
       inputElement,
       outputElement,
       parentElement,
       {},
       processingFunction,
-      stopDefault,
+      stopDefaultFn,
       createEnv,
       errorFn,
       addWarningFn,
       mockFetchFn,
       createElement,
-      setTextContent
+      setTextContent,
+      dom
     );
 
     await handleSubmitWithFailingFetch(new Event('submit'));
@@ -190,25 +186,20 @@ describe('createHandleSubmit', () => {
       throw new Error('processing error');
     });
 
-    const stopDefault = (e) => e.preventDefault();
-    const createEnv = () => ({});
-    const errorFn = jest.fn();
-    const addWarningFn = jest.fn();
-    const createElement = jest.fn();
-
     const handleSubmitThrowing = createHandleSubmit(
       inputElement,
       outputElement,
       parentElement,
       {},
       processingFunction,
-      stopDefault,
+      stopDefaultFn,
       createEnv,
       errorFn,
       addWarningFn,
       mockFetchFn,
       createElement,
-      setTextContent
+      setTextContent,
+      dom
     );
 
     await handleSubmitThrowing(new Event('submit'));
@@ -237,13 +228,14 @@ describe('createHandleSubmit', () => {
       parentElement,
       {},
       processingFunction,
-      stopDefault,
+      stopDefaultFn,
       createEnv,
       errorFn,
       addWarningFn,
       fetchFn,
       createElement,
-      setTextContent
+      setTextContent,
+      dom
     );
 
     await handleSubmitNoEvent(); // no event passed
