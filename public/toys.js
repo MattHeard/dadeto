@@ -158,11 +158,13 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   dom.addEventListener(submitButton, 'click', handleSubmit);
   
   // Add event listener for Enter key in the input field
-  dom.addEventListener(inputElement, 'keypress', (event) => {
+  const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
-      handleSubmit(event); // Use the created handleSubmit
+      handleSubmit(event);
     }
-  });
+  };
+  
+  dom.addEventListener(inputElement, 'keypress', handleKeyPress);
 
   // Enable controls when initialization is complete using the function from this module
   enableInteractiveControls(inputElement, submitButton, outputElement);
