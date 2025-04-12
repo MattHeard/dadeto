@@ -39,7 +39,7 @@ export function handleModuleError(modulePath, errorFn) {
 export function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch, createElement, setTextContent) {
   return (module) => {
     const processingFunction = module[functionName];
-    const dom = { createElement, setTextContent, stopDefault, addWarning };
+    const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener };
     initializeInteractiveComponent(
       article,
       processingFunction,
@@ -155,10 +155,10 @@ export function initializeInteractiveComponent(article, processingFunction, quer
   const handleSubmit = createHandleSubmit(inputElement, outputElement, outputParent, globalState, processingFunction, createEnvFn, errorFn, fetchFn, dom);
 
   // Add event listener to the submit button
-  addEventListenerFn(submitButton, 'click', handleSubmit);
+  dom.addEventListener(submitButton, 'click', handleSubmit);
   
   // Add event listener for Enter key in the input field
-  addEventListenerFn(inputElement, 'keypress', (event) => {
+  dom.addEventListener(inputElement, 'keypress', (event) => {
     if (event.key === 'Enter') {
       handleSubmit(event); // Use the created handleSubmit
     }

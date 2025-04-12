@@ -254,12 +254,9 @@ describe('initializeInteractiveComponent', () => {
     const setTextContent = jest.fn();
     const stopDefault = jest.fn();
     const addWarning = jest.fn();
-    const dom = { createElement, setTextContent, stopDefault, addWarning };
-
-    const processingFunction = jest.fn(() => 'processed result');
     const listeners = {};
 
-    const addEventListenerFn = jest.fn((element, event, handler) => {
+    const addEventListener = jest.fn((element, event, handler) => {
       if (element === inputElement && event === 'keypress') {
         listeners.keypress = handler;
       }
@@ -267,6 +264,9 @@ describe('initializeInteractiveComponent', () => {
         listeners.click = handler;
       }
     });
+    const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener };
+
+    const processingFunction = jest.fn(() => 'processed result');
 
     initializeInteractiveComponent(
       article,
@@ -275,14 +275,14 @@ describe('initializeInteractiveComponent', () => {
       globalState,
       createEnvFn,
       errorFn,
-      addEventListenerFn,
+      addEventListener,
       fetchFn,
       dom
     );
 
-    expect(addEventListenerFn).toHaveBeenCalledTimes(2);
-    expect(addEventListenerFn).toHaveBeenCalledWith(submitButton, 'click', expect.any(Function));
-    expect(addEventListenerFn).toHaveBeenCalledWith(inputElement, 'keypress', expect.any(Function));
+    expect(addEventListener).toHaveBeenCalledTimes(2);
+    expect(addEventListener).toHaveBeenCalledWith(submitButton, 'click', expect.any(Function));
+    expect(addEventListener).toHaveBeenCalledWith(inputElement, 'keypress', expect.any(Function));
 
     listeners.keypress({ key: 'Enter', preventDefault: jest.fn() });
 
@@ -312,13 +312,13 @@ describe('initializeInteractiveComponent', () => {
     const listeners = {};
     const createElement = jest.fn();
     const setTextContent = jest.fn();
-    const dom = { createElement, setTextContent, stopDefaultFn, addWarningFn };
 
-    const addEventListenerFn = jest.fn((element, event, handler) => {
+    const addEventListener = jest.fn((element, event, handler) => {
       if (element === inputElement && event === 'keypress') {
         listeners.keypress = handler;
       }
     });
+    const dom = { createElement, setTextContent, stopDefaultFn, addWarningFn, addEventListener };
 
     initializeInteractiveComponent(
       article,
@@ -327,7 +327,7 @@ describe('initializeInteractiveComponent', () => {
       globalState,
       createEnvFn,
       errorFn,
-      addEventListenerFn,
+      addEventListener,
       fetchFn,
       dom
     );
