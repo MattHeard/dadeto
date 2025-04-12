@@ -39,6 +39,7 @@ export function handleModuleError(modulePath, errorFn) {
 export function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch, createElement, setTextContent) {
   return (module) => {
     const processingFunction = module[functionName];
+    const dom = { createElement, setTextContent, stopDefault, addWarning };
     initializeInteractiveComponent(
       article,
       processingFunction,
@@ -48,7 +49,7 @@ export function initialiseModule(article, functionName, querySelector, globalSta
       error,
       addEventListener,
       fetch,
-      { createElement, setTextContent, stopDefault, addWarning }
+      dom
     );
   };
 }
@@ -130,10 +131,8 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
  * @param {Function} processingFunction - The toy's core logic function.
  * @param {Function} querySelectorFn - Function to find elements within the article.
  * @param {object} globalState - The shared application state.
- * @param {Function} stopDefaultFn - Function to prevent default event action.
  * @param {Function} createEnvFn - Function to create the environment map for the toy.
  * @param {Function} errorFn - Function for logging errors.
- * @param {Function} addWarningFn - Function to add a warning style to the output.
  * @param {Function} addEventListenerFn - Function to add event listeners.
  * @param {Function} fetchFn - Function for making HTTP requests.
  * @param {object} dom - Object containing DOM functions.
