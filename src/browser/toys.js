@@ -39,11 +39,18 @@ export function handleModuleError(modulePath, errorFn) {
 export function initialiseModule(article, functionName, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch, createElement = () => {}, setTextContent = () => {}) {
   return (module) => {
     const processingFunction = module[functionName];
-    if (typeof processingFunction === 'function') {
-      initializeInteractiveComponent(article, processingFunction, querySelector, globalState, stopDefault, createEnv, error, addWarning, addEventListener, fetch, createElement, setTextContent);
-    } else {
-      error(`Module does not export function ${functionName}`);
-    }
+    initializeInteractiveComponent(
+      article,
+      processingFunction,
+      querySelector,
+      globalState,
+      stopDefault,
+      createEnv,
+      error,
+      addWarning,
+      addEventListener,
+      fetch
+    );
   };
 }
 
