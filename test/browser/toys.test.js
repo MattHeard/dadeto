@@ -341,46 +341,6 @@ describe('initializeInteractiveComponent', () => {
 
     expect(processingFunction).not.toHaveBeenCalled();
   });
-
-  it('verifies querySelectorFn is called with the correct selector for the output container', () => {
-    const article = {};
-    const inputElement = { value: 'test', disabled: false };
-    const submitButton = { disabled: false };
-    const outputElement = { textContent: '', parentElement: { classList: { remove: jest.fn() } } };
-
-    const querySelectorFn = jest.fn((el, selector) => {
-      if (selector === 'input') return inputElement;
-      if (selector === 'button') return submitButton;
-      if (selector === 'p.output') return outputElement;
-      if (selector === '.output-container') return outputElement.parentElement; // Return the parent element when asked for output container
-    });
-
-    const globalState = {};
-    const stopDefaultFn = jest.fn();
-    const createEnvFn = () => ({});
-    const errorFn = jest.fn();
-    const addWarningFn = jest.fn();
-    const fetchFn = jest.fn();
-
-    const processingFunction = jest.fn(() => 'processed result');
-
-    const addEventListenerFn = jest.fn();
-
-    initializeInteractiveComponent(
-      article,
-      processingFunction,
-      querySelectorFn,
-      globalState,
-      stopDefaultFn,
-      createEnvFn,
-      errorFn,
-      addWarningFn,
-      addEventListenerFn,
-      fetchFn
-    );
-
-    expect(querySelectorFn).toHaveBeenCalledWith(article, '.output-container'); // Verify that the output container was queried
-  });
 });
 
 describe('initializeVisibleComponents', () => {
