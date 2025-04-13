@@ -1,5 +1,3 @@
-// Audio controls functionality
-
 export function setupAudio(
   doc,
   getAudioElements,
@@ -15,7 +13,7 @@ export function setupAudio(
 ) {
   const audioElements = getAudioElements(doc);
 
-  const createPlayClickHandler = (audio) => {
+  const createPlayClickHandler = (audio, stopDefault) => {
     return (e) => {
       stopDefault(e);
       playAudio(audio);
@@ -40,7 +38,7 @@ export function setupAudio(
     const playButton = createElement(doc, "a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
-    const onPlayClick = createPlayClickHandler(audio);
+    const onPlayClick = createPlayClickHandler(audio, stopDefault);
     addEventListener(playButton, "click", onPlayClick);
     
     const onPauseClick = (e) => {
