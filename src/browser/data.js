@@ -88,6 +88,10 @@ function restoreBlogState(globalState, blogState) {
   globalState.blog = blogState.data;
 }
 
+function shouldCopyStateForFetch(status) {
+  return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
+}
+
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
@@ -100,8 +104,7 @@ function restoreBlogState(globalState, blogState) {
  */
 export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
   const { status, error } = getBlogState(globalState);
-  const shouldCopy = status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
-  const stateCopy = shouldCopy ? getDeepStateCopy(globalState) : globalState;
+  const stateCopy = shouldCopyStateForFetch(status) ? getDeepStateCopy(globalState) : globalState;
 
   if (status === BLOG_STATUS.IDLE) {
     fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn);
