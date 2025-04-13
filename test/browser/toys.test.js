@@ -65,9 +65,30 @@ describe('enableInteractiveControls', () => {
 });
 
 describe('initialiseModule', () => {
-  it('can be invoked with no arguments', () => {
-    const result = initialiseModule();
-    expect(typeof result).toBe('function');
+  it('can be invoked with minimal arguments', () => {
+    const article = {};
+    const functionName = 'process';
+    const globalState = {};
+    const createEnv = () => ({});
+    const error = () => {};
+    const fetch = () => {};
+    const mockClassList = { remove: jest.fn() };
+    const outputElement = { textContent: '', parentElement: { classList: mockClassList } };
+    const dom = {
+      querySelector: (el, selector) => {
+        if (selector === 'input' || selector === 'button') return {};
+        if (selector === 'p.output') return outputElement;
+        if (selector === 'div.output') return outputElement.parentElement;
+        return {};
+      },
+      addEventListener: jest.fn()
+    };
+
+    const result = initialiseModule(article, functionName, globalState, createEnv, error, fetch, dom);
+    const module = { process: () => 'ok' };
+    const response = result(module);
+
+    expect(response).toBeUndefined();
   });
 });
 
