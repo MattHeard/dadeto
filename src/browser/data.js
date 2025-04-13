@@ -103,6 +103,14 @@ function validateIncomingState(incomingState, errorFn) {
   }
 }
 
+function handleBlogFetchState(status, error, globalState, fetchFn, logFn, errorFn, warnFn) {
+  if (status === BLOG_STATUS.IDLE) {
+    fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn);
+  } else if (status === BLOG_STATUS.ERROR) {
+    warnFn("Blog data previously failed to load:", error);
+  }
+}
+
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
@@ -117,11 +125,7 @@ export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
   const { status, error } = getBlogState(globalState);
   const stateCopy = shouldCopyStateForFetch(status) ? getDeepStateCopy(globalState) : globalState;
 
-  if (status === BLOG_STATUS.IDLE) {
-    fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn);
-  } else if (status === BLOG_STATUS.ERROR) {
-    warnFn("Blog data previously failed to load:", error);
-  }
+  handleBlogFetchState(status, error, globalState, fetchFn, logFn, errorFn, warnFn);
 
   stripInternalFields(stateCopy);
   return stateCopy;
