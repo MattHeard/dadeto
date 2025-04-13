@@ -63,7 +63,7 @@ describe('enableInteractiveControls', () => {
   });
 });
 
-import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents } from '../../src/browser/toys.js';
+import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from '../../src/browser/toys.js';
 
 describe('createHandleSubmit', () => {
   let mockFetch;
