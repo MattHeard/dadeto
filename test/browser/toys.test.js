@@ -395,4 +395,24 @@ describe('initializeVisibleComponents', () => {
       'Could not find article element with ID: missing-id for component initialization.'
     );
   });
+
+  it('attempts to initialize all interactive components, regardless of missing fields', () => {
+    const win = {
+      interactiveComponents: [
+        { id: 'a', modulePath: 'valid/path', functionName: '' },
+        { id: 'b', modulePath: '', functionName: 'fn' },
+        { id: 'c', modulePath: null, functionName: 'fn' },
+        { id: 'd', modulePath: 'valid', functionName: 'fn' }
+      ]
+    };
+    const doc = {};
+    const logFn = jest.fn();
+    const warnFn = jest.fn();
+    const getElementByIdFn = jest.fn(() => ({}));
+    const createIntersectionObserverFn = jest.fn(() => ({ observe: jest.fn() }));
+
+    initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
+
+    expect(createIntersectionObserverFn).toHaveBeenCalledTimes(4);
+  });
 });
