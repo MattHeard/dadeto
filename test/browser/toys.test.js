@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { initialiseModule } from '../../src/browser/toys.js';
 import { enableInteractiveControls } from '../../src/browser/toys.js'; // Adjust path as needed
 
 describe('enableInteractiveControls', () => {
@@ -60,6 +61,12 @@ describe('enableInteractiveControls', () => {
     expect(parentElement.classList.remove).toHaveBeenCalledWith('warning');
     // Check final state using the mock
     expect(parentElement.classList.contains('warning')).toBe(false);
+  });
+});
+
+describe('initialiseModule', () => {
+  it('can be invoked with no arguments', () => {
+    initialiseModule();
   });
 });
 
