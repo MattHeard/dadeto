@@ -77,7 +77,7 @@ describe('fetchAndCacheBlogData', () => {
   });
 });
 
-import { getData, setData, getDeepStateCopy } from '../../src/browser/data.js';
+import { getData, setData, getDeepStateCopy, shouldUseExistingFetch } from '../../src/browser/data.js';
 
 describe('getData, setData, and getDeepStateCopy', () => {
   let state;
@@ -145,5 +145,27 @@ describe('getData, setData, and getDeepStateCopy', () => {
   it('setData throws and logs error if blog missing', () => {
     expect(() => setData({}, state, logFn, errorFn)).toThrow();
     expect(errorFn).toHaveBeenCalled();
+  });
+
+  it('shouldUseExistingFetch returns true and logs when loading and promise exists', () => {
+    const state = {
+      blogStatus: 'loading',
+      blogFetchPromise: Promise.resolve(),
+    };
+    const logFn = jest.fn();
+    const result = shouldUseExistingFetch(state, logFn);
+    expect(result).toBe(true);
+    expect(logFn).toHaveBeenCalledWith('Blog data fetch already in progress.');
+  });
+
+  it('shouldUseExistingFetch returns false if status is not loading', () => {
+    const state = {
+      blogStatus: 'idle',
+      blogFetchPromise: Promise.resolve(),
+    };
+    const logFn = jest.fn();
+    const result = shouldUseExistingFetch(state, logFn);
+    expect(result).toBe(false);
+    expect(logFn).not.toHaveBeenCalled();
   });
 });

@@ -14,7 +14,7 @@ function getBlogState(globalState) {
   };
 }
 
-function shouldUseExistingFetch(globalState, logFn) {
+export function shouldUseExistingFetch(globalState, logFn) {
   const { status, fetchPromise } = getBlogState(globalState);
   return status === BLOG_STATUS.LOADING && fetchPromise && (logFn('Blog data fetch already in progress.'), true);
 } 
