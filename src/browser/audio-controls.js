@@ -14,7 +14,14 @@ export function setupAudio(
   insertBefore
 ) {
   const audioElements = getAudioElements(doc);
-  
+
+  const createPlayClickHandler = (audio) => {
+    return (e) => {
+      stopDefault(e);
+      playAudio(audio);
+    };
+  };
+
   audioElements.forEach(function(audio, index) {
     removeControlsAttribute(audio);
     
@@ -33,12 +40,6 @@ export function setupAudio(
     const playButton = createElement(doc, "a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
-    const createPlayClickHandler = (audio) => {
-      return (e) => {
-        stopDefault(e);
-        playAudio(audio);
-      };
-    };
     const onPlayClick = createPlayClickHandler(audio);
     addEventListener(playButton, "click", onPlayClick);
     
