@@ -12,6 +12,14 @@ export const createPauseClickHandler = (audio, stopDefault, pauseAudio) => {
   };
 };
 
+export const createStopClickHandler = (audio, stopDefault, pauseAudio) => {
+  return (e) => {
+    stopDefault(e);
+    pauseAudio(audio);
+    audio.currentTime = 0;
+  };
+};
+
 export function setupAudio(
   doc,
   getAudioElements,
@@ -55,11 +63,7 @@ export function setupAudio(
     pauseButton.textContent = "PAUSE";
     addEventListener(pauseButton, "click", onPauseClick);
     
-    const onStopClick = (e) => {
-      stopDefault(e);
-      pauseAudio(audio);
-      audio.currentTime = 0;
-    };
+    const onStopClick = createStopClickHandler(audio, stopDefault, pauseAudio);
     const stopButton = createElement(doc, "a");
     stopButton.href = "#";
     stopButton.textContent = "STOP";
