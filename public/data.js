@@ -92,6 +92,17 @@ function shouldCopyStateForFetch(status) {
   return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
 }
 
+function validateIncomingState(incomingState, errorFn) {
+  if (
+    typeof incomingState !== 'object' ||
+    incomingState === null ||
+    !incomingState.hasOwnProperty('temporary')
+  ) {
+    errorFn('setData received invalid data structure:', incomingState);
+    throw new Error("setData requires an object with at least a 'temporary' property.");
+  }
+}
+
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
@@ -125,14 +136,10 @@ export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
  */
 export const setData = (incomingState, globalState, logFn, errorFn) => {
   // Replace the entire global state, but validate basic structure
-  if (typeof incomingState === 'object' && incomingState !== null && incomingState.hasOwnProperty('temporary')) {
-    const oldBlogState = getBlogState(globalState);
-    Object.assign(globalState, incomingState);
-    restoreBlogState(globalState, oldBlogState);
-    
-    logFn('Global state updated:', globalState);
-  } else {
-    errorFn('setData received invalid data structure:', incomingState);
-    throw new Error('setData requires an object with at least a \'temporary\' property.');
-  }
+  validateIncomingState(incomingState, errorFn);
+  const oldBlogState = getBlogState(globalState);
+  Object.assign(globalState, incomingState);
+  restoreBlogState(globalState, oldBlogState);
+  
+  logFn('Global state updated:', globalState);
 };
