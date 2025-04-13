@@ -40,4 +40,16 @@ describe('toggleHideLink', () => {
     expect(removeNextSibling).toHaveBeenCalledWith(link);
     expect(createHideSpan).not.toHaveBeenCalled();
   });
+
+  it('creates a hide span when there is no next sibling with the hide-span class', () => {
+    const link = {};
+    const hasNextSiblingClass = () => false;
+    const removeNextSibling = jest.fn();
+    const createHideSpan = jest.fn();
+
+    toggleHideLink(link, 'some-class', hasNextSiblingClass, removeNextSibling, createHideSpan);
+
+    expect(createHideSpan).toHaveBeenCalledWith(link, 'some-class');
+    expect(removeNextSibling).not.toHaveBeenCalled();
+  });
 });
