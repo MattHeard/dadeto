@@ -99,25 +99,17 @@ function restoreBlogState(globalState, blogState) {
  * @returns {object} A deep copy of the relevant state for the toy.
  */
 export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
-  // Return a deep copy of the current global state
-  let stateCopy = globalState;
-  const { status: globalStatus } = getBlogState(globalState);
-  if (globalStatus === BLOG_STATUS.IDLE || globalStatus === BLOG_STATUS.ERROR) {
-    stateCopy = getDeepStateCopy(globalState);
+  const { status, error } = getBlogState(globalState);
+  const shouldCopy = status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
+  const stateCopy = shouldCopy ? getDeepStateCopy(globalState) : globalState;
+
+  if (status === BLOG_STATUS.IDLE) {
+    fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn);
+  } else if (status === BLOG_STATUS.ERROR) {
+    warnFn("Blog data previously failed to load:", error);
   }
-  
-  // Check blog status and trigger fetch if needed, but don't block
-  const { status: copyStatus, error: copyError } = getBlogState(stateCopy);
-  if (copyStatus === BLOG_STATUS.IDLE) {
-    // Use the exported fetchAndCacheBlogData function from this module
-    fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn); // Trigger fetch (no await)
-  } else if (copyStatus === BLOG_STATUS.ERROR) {
-    warnFn("Blog data previously failed to load:", copyError);
-  }
-  
-  // Remove fetch-related properties from the copy returned to the toy
+
   stripInternalFields(stateCopy);
-  
   return stateCopy;
 };
 
