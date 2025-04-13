@@ -1,10 +1,6 @@
 function shouldUseExistingFetch(state, logFn) {
-  if (state.blogStatus === 'loading' && state.blogFetchPromise) {
-    logFn('Blog data fetch already in progress.');
-    return true;
-  }
-  return false;
-}
+  return state.blogStatus === 'loading' && state.blogFetchPromise && (logFn('Blog data fetch already in progress.'), true);
+} 
 
 /**
  * Fetches blog data and updates the global state.
@@ -63,7 +59,10 @@ export const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
  */
 export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
   // Return a deep copy of the current global state
-  const stateCopy = getDeepStateCopy(globalState);
+  let stateCopy = globalState;
+  if (globalState.blogStatus === 'idle' || globalState.blogStatus === 'error') {
+    stateCopy = getDeepStateCopy(globalState);
+  }
   
   // Check blog status and trigger fetch if needed, but don't block
   if (stateCopy.blogStatus === 'idle') {
