@@ -63,6 +63,31 @@ describe('enableInteractiveControls', () => {
   });
 });
 
+import { getDeepStateCopy } from '../../src/browser/toys.js';
+
+describe('getDeepStateCopy', () => {
+  it('returns a deep copy of the global state object', () => {
+    const globalState = {
+      level1: {
+        level2: {
+          value: 'original'
+        }
+      }
+    };
+
+    const copy = getDeepStateCopy(globalState);
+
+    expect(copy).toEqual(globalState);
+    expect(copy).not.toBe(globalState);
+    expect(copy.level1).not.toBe(globalState.level1);
+    expect(copy.level1.level2).not.toBe(globalState.level1.level2);
+
+    // Modify copy to ensure it's a deep copy
+    copy.level1.level2.value = 'modified';
+    expect(globalState.level1.level2.value).toBe('original');
+  });
+});
+
 import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from '../../src/browser/toys.js';
 
 describe('createHandleSubmit', () => {
