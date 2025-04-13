@@ -1,4 +1,4 @@
-const createPlayClickHandler = (audio, stopDefault) => {
+export const createPlayClickHandler = (audio, stopDefault, playAudio) => {
   return (e) => {
     stopDefault(e);
     playAudio(audio);
@@ -38,7 +38,7 @@ export function setupAudio(
     const playButton = createElement(doc, "a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
-    const onPlayClick = createPlayClickHandler(audio, stopDefault);
+    const onPlayClick = createPlayClickHandler(audio, stopDefault, playAudio);
     addEventListener(playButton, "click", onPlayClick);
     
     const onPauseClick = (e) => {
