@@ -5,6 +5,13 @@ export const createPlayClickHandler = (audio, stopDefault, playAudio) => {
   };
 };
 
+export const createPauseClickHandler = (audio, stopDefault, pauseAudio) => {
+  return (e) => {
+    stopDefault(e);
+    pauseAudio(audio);
+  };
+};
+
 export function setupAudio(
   doc,
   getAudioElements,
@@ -41,10 +48,7 @@ export function setupAudio(
     const onPlayClick = createPlayClickHandler(audio, stopDefault, playAudio);
     addEventListener(playButton, "click", onPlayClick);
     
-    const onPauseClick = (e) => {
-      stopDefault(e);
-      pauseAudio(audio);
-    };
+    const onPauseClick = createPauseClickHandler(audio, stopDefault, pauseAudio);
     
     const pauseButton = createElement(doc, "a");
     pauseButton.href = "#";
