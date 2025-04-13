@@ -33,10 +33,13 @@ export function setupAudio(
     const playButton = createElement(doc, "a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
-    const onPlayClick = (e) => {
-      stopDefault(e);
-      playAudio(audio);
+    const createPlayClickHandler = (audio) => {
+      return (e) => {
+        stopDefault(e);
+        playAudio(audio);
+      };
     };
+    const onPlayClick = createPlayClickHandler(audio);
     addEventListener(playButton, "click", onPlayClick);
     
     const onPauseClick = (e) => {
