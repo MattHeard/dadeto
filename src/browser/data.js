@@ -1,37 +1,37 @@
-function getBlogState(state) {
+function getBlogState(globalState) {
   return {
-    status: state.blogStatus,
-    error: state.blogError,
-    fetchPromise: state.blogFetchPromise,
-    data: state.blog,
+    status: globalState.blogStatus,
+    error: globalState.blogError,
+    fetchPromise: globalState.blogFetchPromise,
+    data: globalState.blog,
   };
 }
 
-function shouldUseExistingFetch(state, logFn) {
-  const { status, fetchPromise } = getBlogState(state);
+function shouldUseExistingFetch(globalState, logFn) {
+  const { status, fetchPromise } = getBlogState(globalState);
   return status === 'loading' && fetchPromise && (logFn('Blog data fetch already in progress.'), true);
 } 
 
 /**
  * Fetches blog data and updates the global state.
  * Ensures only one fetch happens at a time.
- * @param {object} state - The global state object.
+ * @param {object} globalState - The global state object.
  * @param {function} fetchFn - The fetch function to use.
  * @param {function} logFn - The logging function to use.
  * @param {function} errorFn - The error logging function to use.
  */
-export function fetchAndCacheBlogData(state, fetchFn, logFn, errorFn) {
+export function fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn) {
   // Prevent multiple simultaneous fetches
-  const { status, fetchPromise } = getBlogState(state);
+  const { status, fetchPromise } = getBlogState(globalState);
   if (status === 'loading' && fetchPromise && (logFn('Blog data fetch already in progress.'), true)) {
     return fetchPromise; 
   }
   
   logFn('Starting to fetch blog data...');
-  state.blogStatus = 'loading';
-  state.blogError = null;
+  globalState.blogStatus = 'loading';
+  globalState.blogError = null;
   
-  state.blogFetchPromise = fetchFn('./blog.json') 
+  globalState.blogFetchPromise = fetchFn('./blog.json') 
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -39,38 +39,38 @@ export function fetchAndCacheBlogData(state, fetchFn, logFn, errorFn) {
       return response.json();
     })
     .then(data => {
-      state.blog = data; // Update the blog property
-      state.blogStatus = 'loaded';
+      globalState.blog = data; // Update the blog property
+      globalState.blogStatus = 'loaded';
       logFn('Blog data loaded successfully:', data);
     })
     .catch(err => {
-      state.blogStatus = 'error';
-      state.blogError = err;
+      globalState.blogStatus = 'error';
+      globalState.blogError = err;
       errorFn('Error fetching blog data:', err);
     })
     .finally(() => {
-      state.blogFetchPromise = null; // Clear the promise tracking
+      globalState.blogFetchPromise = null; // Clear the promise tracking
     });
   
-  return state.blogFetchPromise; // Return the promise for potential chaining
+  return globalState.blogFetchPromise; // Return the promise for potential chaining
 }
 
 // Helper function needed by getData
-export const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
+export const getDeepStateCopy = (globalState) => JSON.parse(JSON.stringify(globalState));
 
-function stripInternalFields(state) {
+function stripInternalFields(stateCopy) {
   const internalKeys = ['blogStatus', 'blogError', 'blogFetchPromise'];
   for (const key of internalKeys) {
-    delete state[key];
+    delete stateCopy[key];
   }
 }
 
-function restoreBlogState(state, blogState) {
-  state.blogStatus = blogState.status;
-  state.blogError = blogState.error;
-  state.blogFetchPromise = blogState.fetchPromise;
-  if (!state.hasOwnProperty('blog')) {
-    state.blog = blogState.data;
+function restoreBlogState(globalState, blogState) {
+  globalState.blogStatus = blogState.status;
+  globalState.blogError = blogState.error;
+  globalState.blogFetchPromise = blogState.fetchPromise;
+  if (!globalState.hasOwnProperty('blog')) {
+    globalState.blog = blogState.data;
   }
 }
 
@@ -109,21 +109,21 @@ export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
 
 /**
  * Updates the global state, preserving internal fetch/blog properties.
- * @param {object} newData - The new state object (must have 'temporary').
+ * @param {object} incomingState - The new state object (must have 'temporary').
  * @param {object} globalState - The current global state to modify.
  * @param {function} logFn - The logging function.
  * @param {function} errorFn - The error logging function.
  */
-export const setData = (newData, globalState, logFn, errorFn) => {
+export const setData = (incomingState, globalState, logFn, errorFn) => {
   // Replace the entire global state, but validate basic structure
-  if (typeof newData === 'object' && newData !== null && newData.hasOwnProperty('temporary')) {
+  if (typeof incomingState === 'object' && incomingState !== null && incomingState.hasOwnProperty('temporary')) {
     const oldBlogState = getBlogState(globalState);
-    Object.assign(globalState, newData);
+    Object.assign(globalState, incomingState);
     restoreBlogState(globalState, oldBlogState);
     
     logFn('Global state updated:', globalState);
   } else {
-    errorFn('setData received invalid data structure:', newData);
+    errorFn('setData received invalid data structure:', incomingState);
     throw new Error('setData requires an object with at least a \'temporary\' property.');
   }
 };
