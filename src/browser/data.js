@@ -1,5 +1,15 @@
+function getBlogState(state) {
+  return {
+    status: state.blogStatus,
+    error: state.blogError,
+    fetchPromise: state.blogFetchPromise,
+    data: state.blog,
+  };
+}
+
 function shouldUseExistingFetch(state, logFn) {
-  return state.blogStatus === 'loading' && state.blogFetchPromise && (logFn('Blog data fetch already in progress.'), true);
+  const { status, fetchPromise } = getBlogState(state);
+  return status === 'loading' && fetchPromise && (logFn('Blog data fetch already in progress.'), true);
 } 
 
 /**
@@ -12,8 +22,9 @@ function shouldUseExistingFetch(state, logFn) {
  */
 export function fetchAndCacheBlogData(state, fetchFn, logFn, errorFn) {
   // Prevent multiple simultaneous fetches
-  if (shouldUseExistingFetch(state, logFn)) {
-    return state.blogFetchPromise; 
+  const { status, fetchPromise } = getBlogState(state);
+  if (status === 'loading' && fetchPromise && (logFn('Blog data fetch already in progress.'), true)) {
+    return fetchPromise; 
   }
   
   logFn('Starting to fetch blog data...');
@@ -60,16 +71,18 @@ export const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
 export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
   // Return a deep copy of the current global state
   let stateCopy = globalState;
-  if (globalState.blogStatus === 'idle' || globalState.blogStatus === 'error') {
+  const { status: globalStatus } = getBlogState(globalState);
+  if (globalStatus === 'idle' || globalStatus === 'error') {
     stateCopy = getDeepStateCopy(globalState);
   }
   
   // Check blog status and trigger fetch if needed, but don't block
-  if (stateCopy.blogStatus === 'idle') {
+  const { status: copyStatus, error: copyError } = getBlogState(stateCopy);
+  if (copyStatus === 'idle') {
     // Use the exported fetchAndCacheBlogData function from this module
     fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn); // Trigger fetch (no await)
-  } else if (stateCopy.blogStatus === 'error') {
-    warnFn("Blog data previously failed to load:", stateCopy.blogError);
+  } else if (copyStatus === 'error') {
+    warnFn("Blog data previously failed to load:", copyError);
   }
   
   // Remove fetch-related properties from the copy returned to the toy
