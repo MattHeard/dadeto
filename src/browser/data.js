@@ -92,12 +92,16 @@ function shouldCopyStateForFetch(status) {
   return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
 }
 
+function isInvalidState(value) {
+  return (
+    typeof value !== 'object' ||
+    value === null ||
+    !value.hasOwnProperty('temporary')
+  );
+}
+
 function validateIncomingState(incomingState, errorFn) {
-  if (
-    typeof incomingState !== 'object' ||
-    incomingState === null ||
-    !incomingState.hasOwnProperty('temporary')
-  ) {
+  if (isInvalidState(incomingState)) {
     errorFn('setData received invalid data structure:', incomingState);
     throw new Error("setData requires an object with at least a 'temporary' property.");
   }
