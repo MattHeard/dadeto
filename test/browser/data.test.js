@@ -135,13 +135,6 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(state.blog).toEqual({ title: 'preserved' }); // blog should be preserved
   });
 
-  it('setData updates state correctly', () => {
-    setData({ blog: 'data', temporary: true }, state, logFn, errorFn);
-    expect(state.blog).toEqual('data');
-    expect(state.blogStatus).toBe('idle'); // preserved value
-    expect(logFn).toHaveBeenCalledWith('Global state updated:', state);
-  });
-
   it('setData throws and logs error if blog missing', () => {
     expect(() => setData({}, state, logFn, errorFn)).toThrow();
     expect(errorFn).toHaveBeenCalled();

@@ -76,9 +76,7 @@ function restoreBlogState(globalState, blogState) {
   globalState.blogStatus = blogState.status;
   globalState.blogError = blogState.error;
   globalState.blogFetchPromise = blogState.fetchPromise;
-  if (!globalState.hasOwnProperty('blog')) {
-    globalState.blog = blogState.data;
-  }
+  globalState.blog = blogState.data;
 }
 
 /**
