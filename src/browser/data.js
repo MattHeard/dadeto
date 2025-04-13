@@ -1,3 +1,5 @@
+const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
+
 const BLOG_STATUS = {
   IDLE: 'idle',
   LOADING: 'loading',
@@ -74,8 +76,7 @@ export function fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn) {
 export const getDeepStateCopy = (globalState) => JSON.parse(JSON.stringify(globalState));
 
 function stripInternalFields(stateCopy) {
-  const internalKeys = ['blogStatus', 'blogError', 'blogFetchPromise'];
-  for (const key of internalKeys) {
+  for (const key of INTERNAL_STATE_KEYS) {
     delete stateCopy[key];
   }
 }
