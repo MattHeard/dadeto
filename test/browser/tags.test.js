@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { hideArticlesByClass } from '../../src/browser/tags.js';
+import { hideArticlesByClass, toggleHideLink } from '../../src/browser/tags.js';
 
 describe('hideArticlesByClass', () => {
   it('does not throw when given a class and no matching elements', () => {
@@ -25,5 +25,19 @@ describe('hideArticlesByClass', () => {
 
     expect(hideElementFn).toHaveBeenCalledTimes(1);
     expect(hideElementFn).toHaveBeenCalledWith(article1);
+  });
+});
+
+describe('toggleHideLink', () => {
+  it('removes the next sibling when it has the hide-span class', () => {
+    const link = {};
+    const hasNextSiblingClass = () => true;
+    const removeNextSibling = jest.fn();
+    const createHideSpan = jest.fn();
+
+    toggleHideLink(link, 'some-class', hasNextSiblingClass, removeNextSibling, createHideSpan);
+
+    expect(removeNextSibling).toHaveBeenCalledWith(link);
+    expect(createHideSpan).not.toHaveBeenCalled();
   });
 });
