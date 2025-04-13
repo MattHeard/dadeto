@@ -66,7 +66,8 @@ describe('enableInteractiveControls', () => {
 
 describe('initialiseModule', () => {
   it('can be invoked with no arguments', () => {
-    initialiseModule();
+    const result = initialiseModule();
+    expect(typeof result).toBe('function');
   });
 });
 
