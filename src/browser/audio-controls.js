@@ -33,6 +33,14 @@ export function setupAudio(
   appendChild,
   insertBefore
 ) {
+  const createUpdateTimeDisplay = (audio, timeDisplay) => {
+    return () => {
+      const minutes = Math.floor(audio.currentTime / 60);
+      const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
+      timeDisplay.textContent = minutes + ":" + seconds;
+    };
+  };
+
   const audioElements = getAudioElements(doc);
 
   audioElements.forEach(function(audio, index) {
@@ -69,11 +77,7 @@ export function setupAudio(
     stopButton.textContent = "STOP";
     addEventListener(stopButton, "click", onStopClick);
     
-    const updateTimeDisplay = () => {
-      const minutes = Math.floor(audio.currentTime / 60);
-      const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
-      timeDisplay.textContent = minutes + ":" + seconds;
-    };
+    const updateTimeDisplay = createUpdateTimeDisplay(audio, timeDisplay);
     addEventListener(audio, "timeupdate", updateTimeDisplay);
      
     appendChild(controlsContainer, playButton);
