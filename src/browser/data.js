@@ -14,9 +14,13 @@ function getBlogState(globalState) {
   };
 }
 
-export function shouldUseExistingFetch(globalState, logFn) {
+function isFetchInProgress(globalState) {
   const { status, fetchPromise } = getBlogState(globalState);
-  if (status === BLOG_STATUS.LOADING && fetchPromise) {
+  return status === BLOG_STATUS.LOADING && fetchPromise;
+}
+
+export function shouldUseExistingFetch(globalState, logFn) {
+  if (isFetchInProgress(globalState)) {
     logFn('Blog data fetch already in progress.');
     return true;
   }
@@ -33,9 +37,9 @@ export function shouldUseExistingFetch(globalState, logFn) {
  */
 export function fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn) {
   // Prevent multiple simultaneous fetches
-  const { status, fetchPromise } = getBlogState(globalState);
-  if (status === BLOG_STATUS.LOADING && fetchPromise && (logFn('Blog data fetch already in progress.'), true)) {
-    return fetchPromise; 
+  if (isFetchInProgress(globalState)) {
+    logFn('Blog data fetch already in progress.');
+    return globalState.blogFetchPromise; 
   }
   
   logFn('Starting to fetch blog data...');
