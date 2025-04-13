@@ -1,3 +1,10 @@
+const BLOG_STATUS = {
+  IDLE: 'idle',
+  LOADING: 'loading',
+  LOADED: 'loaded',
+  ERROR: 'error'
+};
+
 function getBlogState(globalState) {
   return {
     status: globalState.blogStatus,
@@ -9,7 +16,7 @@ function getBlogState(globalState) {
 
 function shouldUseExistingFetch(globalState, logFn) {
   const { status, fetchPromise } = getBlogState(globalState);
-  return status === 'loading' && fetchPromise && (logFn('Blog data fetch already in progress.'), true);
+  return status === BLOG_STATUS.LOADING && fetchPromise && (logFn('Blog data fetch already in progress.'), true);
 } 
 
 /**
@@ -23,12 +30,12 @@ function shouldUseExistingFetch(globalState, logFn) {
 export function fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn) {
   // Prevent multiple simultaneous fetches
   const { status, fetchPromise } = getBlogState(globalState);
-  if (status === 'loading' && fetchPromise && (logFn('Blog data fetch already in progress.'), true)) {
+  if (status === BLOG_STATUS.LOADING && fetchPromise && (logFn('Blog data fetch already in progress.'), true)) {
     return fetchPromise; 
   }
   
   logFn('Starting to fetch blog data...');
-  globalState.blogStatus = 'loading';
+  globalState.blogStatus = BLOG_STATUS.LOADING;
   globalState.blogError = null;
   
   globalState.blogFetchPromise = fetchFn('./blog.json') 
@@ -40,11 +47,11 @@ export function fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn) {
     })
     .then(data => {
       globalState.blog = data; // Update the blog property
-      globalState.blogStatus = 'loaded';
+      globalState.blogStatus = BLOG_STATUS.LOADED;
       logFn('Blog data loaded successfully:', data);
     })
     .catch(err => {
-      globalState.blogStatus = 'error';
+      globalState.blogStatus = BLOG_STATUS.ERROR;
       globalState.blogError = err;
       errorFn('Error fetching blog data:', err);
     })
@@ -88,16 +95,16 @@ export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
   // Return a deep copy of the current global state
   let stateCopy = globalState;
   const { status: globalStatus } = getBlogState(globalState);
-  if (globalStatus === 'idle' || globalStatus === 'error') {
+  if (globalStatus === BLOG_STATUS.IDLE || globalStatus === BLOG_STATUS.ERROR) {
     stateCopy = getDeepStateCopy(globalState);
   }
   
   // Check blog status and trigger fetch if needed, but don't block
   const { status: copyStatus, error: copyError } = getBlogState(stateCopy);
-  if (copyStatus === 'idle') {
+  if (copyStatus === BLOG_STATUS.IDLE) {
     // Use the exported fetchAndCacheBlogData function from this module
     fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn); // Trigger fetch (no await)
-  } else if (copyStatus === 'error') {
+  } else if (copyStatus === BLOG_STATUS.ERROR) {
     warnFn("Blog data previously failed to load:", copyError);
   }
   
