@@ -128,6 +128,13 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(result).not.toHaveProperty('blogFetchPromise');
   });
 
+  it('setData preserves existing blog if incoming state omits it', () => {
+    state.blog = { title: 'preserved' };
+    const incomingState = { temporary: true }; // no blog field
+    setData(incomingState, state, logFn, errorFn);
+    expect(state.blog).toEqual({ title: 'preserved' }); // blog should be preserved
+  });
+
   it('setData updates state correctly', () => {
     setData({ blog: 'data', temporary: true }, state, logFn, errorFn);
     expect(state.blog).toEqual('data');
