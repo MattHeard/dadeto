@@ -92,23 +92,36 @@ function shouldCopyStateForFetch(status) {
   return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
 }
 
+function isInvalidState(value) {
+  return (
+    typeof value !== 'object' ||
+    value === null ||
+    !value.hasOwnProperty('temporary')
+  );
+}
+
 function validateIncomingState(incomingState, errorFn) {
-  if (
-    typeof incomingState !== 'object' ||
-    incomingState === null ||
-    !incomingState.hasOwnProperty('temporary')
-  ) {
+  if (isInvalidState(incomingState)) {
     errorFn('setData received invalid data structure:', incomingState);
     throw new Error("setData requires an object with at least a 'temporary' property.");
   }
 }
 
-function handleBlogFetchState(status, error, globalState, fetchFn, logFn, errorFn, warnFn) {
+function tryFetchingBlog(status, globalState, fetchFn, logFn, errorFn) {
   if (status === BLOG_STATUS.IDLE) {
     fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn);
-  } else if (status === BLOG_STATUS.ERROR) {
+  }
+}
+
+function maybeLogFetchError(status, error, warnFn) {
+  if (status === BLOG_STATUS.ERROR) {
     warnFn("Blog data previously failed to load:", error);
   }
+}
+
+function handleBlogFetchState(status, error, globalState, fetchFn, logFn, errorFn, warnFn) {
+  tryFetchingBlog(status, globalState, fetchFn, logFn, errorFn);
+  maybeLogFetchError(status, error, warnFn);
 }
 
 /**

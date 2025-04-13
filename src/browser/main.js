@@ -7,7 +7,7 @@ let globalState = {
 };
 
 import { setupAudio } from './audio-controls.js';
-import { initializeVisibleComponents, handleModuleError, initialiseModule, importModule } from './toys.js';
+import { initializeVisibleComponents, handleModuleError, initialiseModule } from './toys.js';
 import { hideArticlesByClass, toggleHideLink } from './tags.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
@@ -34,6 +34,16 @@ import {
   removeNextSibling,
   setTextContent
 } from './document.js';
+
+/**
+ * Imports a module dynamically with success and error handling
+ * @param {string} modulePath - Path to the module to import
+ * @param {Function} onSuccess - Function to call when import succeeds
+ * @param {Function} onError - Function to call when import fails
+ */
+function importModule(modulePath, onSuccess, onError) {
+  import(modulePath).then(onSuccess).catch(onError);
+}
 
 const createHandleClick = (link, className) => event => {
   stopDefault(event);
@@ -79,13 +89,13 @@ function createEnv() {
 
 function createIntersectionObserver(article, modulePath, functionName) {
   return new IntersectionObserver((entries, observer) =>
-    handleIntersectionEntries(entries, observer, modulePath, article, functionName, importModule), {
+    handleIntersectionEntries(entries, observer, modulePath, article, functionName), {
     root: null,
     threshold: 0.1
   });
 }
 
-function handleIntersection(entry, observer, modulePath, article, functionName, importModule) {
+function handleIntersection(entry, observer, modulePath, article, functionName) {
   if (entry.isIntersecting) {
     const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector };
     importModule(
@@ -98,7 +108,7 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
 }
 
 function handleIntersectionEntries(entries, observer, modulePath, article, functionName) {
-  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, importModule));
+  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName));
 }
 
 // Interactive components functionality
