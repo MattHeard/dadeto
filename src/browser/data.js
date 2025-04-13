@@ -58,6 +58,13 @@ export function fetchAndCacheBlogData(state, fetchFn, logFn, errorFn) {
 // Helper function needed by getData
 export const getDeepStateCopy = (state) => JSON.parse(JSON.stringify(state));
 
+function stripInternalFields(state) {
+  const internalKeys = ['blogStatus', 'blogError', 'blogFetchPromise'];
+  for (const key of internalKeys) {
+    delete state[key];
+  }
+}
+
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
@@ -86,9 +93,7 @@ export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
   }
   
   // Remove fetch-related properties from the copy returned to the toy
-  delete stateCopy.blogStatus;
-  delete stateCopy.blogError;
-  delete stateCopy.blogFetchPromise;
+  stripInternalFields(stateCopy);
   
   return stateCopy;
 };
