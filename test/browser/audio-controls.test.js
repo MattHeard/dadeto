@@ -107,4 +107,33 @@ describe('setupAudio', () => {
     expect(audioElements[0].id).toBe('audio-0');
     expect(audioElements[1].id).toBe('audio-1');
   });
+
+  it('does not overwrite existing audio element ids', () => {
+    const audioElements = [
+      { id: 'custom-id', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
+    ];
+    const buttons = [];
+    const querySelectorAll = jest.fn((selector) => {
+      if (selector === 'audio') return audioElements;
+      if (selector === 'button') return buttons;
+      return [];
+    });
+    const container = { querySelectorAll };
+
+    setupAudio(
+      container,
+      () => audioElements,
+      () => {},
+      () => ({ className: '', id: '', textContent: '', href: '' }),
+      () => '',
+      () => {},
+      () => {},
+      () => {},
+      () => {},
+      () => {},
+      () => {}
+    );
+
+    expect(audioElements[0].id).toBe('custom-id');
+  });
 });
