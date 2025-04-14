@@ -144,7 +144,7 @@ function handleInputProcessing(inputElement, outputElement, globalState, process
   }
 }
 
-export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) => (event) => {
+export const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) => (event) => {
   if (event) {
     dom.stopDefault(event);
   }
@@ -181,7 +181,7 @@ export function initializeInteractiveComponent(article, processingFunction, glob
   outputElement.textContent = 'Initialising...';
 
   // Create the submit handler using the function from this module
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, outputParent, globalState, processingFunction, createEnvFn, errorFn, fetchFn, dom);
+  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, createEnvFn, errorFn, fetchFn, dom);
 
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);

@@ -153,16 +153,11 @@ describe('createHandleSubmit', () => {
     handleSubmit = createHandleSubmit(
       inputElement,
       outputElement,
-      parentElement, // Pass the mock parent element
       globalState,
       processingFunction,
-      stopDefault,
       createEnv,
       errorFn,
-      addWarningFn,
       mockFetch,
-      createElement,
-      setTextContent,
       dom
     );
   });
@@ -179,7 +174,6 @@ describe('createHandleSubmit', () => {
     const handleSubmitWithFetch = createHandleSubmit(
       inputElement,
       outputElement,
-      parentElement,
       {},
       processingFunction,
       createEnv,
@@ -207,7 +201,6 @@ describe('createHandleSubmit', () => {
     const handleSubmitWithFailingFetch = createHandleSubmit(
       inputElement,
       outputElement,
-      parentElement,
       {},
       processingFunction,
       createEnv,
@@ -235,7 +228,6 @@ describe('createHandleSubmit', () => {
     const handleSubmitThrowing = createHandleSubmit(
       inputElement,
       outputElement,
-      parentElement,
       {},
       processingFunction,
       createEnv,
@@ -267,7 +259,6 @@ describe('createHandleSubmit', () => {
     const handleSubmitNoEvent = createHandleSubmit(
       input,
       output,
-      parentElement,
       {},
       processingFunction,
       createEnv,
