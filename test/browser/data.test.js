@@ -80,11 +80,24 @@ describe('fetchAndCacheBlogData', () => {
     mockFetch = jest.fn(() =>
       Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
     );
-
+ 
     await fetchAndCacheBlogData(state, mockFetch, mockLog, mockError);
-
+ 
     expect(mockFetch).toHaveBeenCalledWith('./blog.json');
     expect(mockLog).toHaveBeenCalledWith('Starting to fetch blog data...');
+  });
+
+  it('throws specific error when response is not ok', async () => {
+    mockFetch = jest.fn(() => Promise.resolve({ ok: false, status: 418 }));
+ 
+    const promise = fetchAndCacheBlogData(state, mockFetch, mockLog, mockError);
+    await promise;
+ 
+    expect(state.blogStatus).toBe('error');
+    expect(mockError).toHaveBeenCalledWith(
+      'Error fetching blog data:',
+      expect.objectContaining({ message: 'HTTP error! status: 418' })
+    );
   });
 });
 
