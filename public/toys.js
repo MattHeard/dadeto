@@ -46,8 +46,8 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
   outputElement.parentElement.classList.remove('warning');
 }
 
-function handleRequestResponse(url, outputElement, error, fetchFn, dom) {
-  fetchFn(url)
+function handleRequestResponse(url, outputElement, error, fetch, dom) {
+  fetch(url)
     .then(response => response.text())
     .then(body => {
       dom.setTextContent(outputElement, body);
