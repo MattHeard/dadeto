@@ -45,4 +45,14 @@ describe('createUpdateTimeDisplay', () => {
 
     expect(display.textContent).toContain('42');
   });
+
+  it('handles when audio currentTime is 0', () => {
+    const audio = { currentTime: 0 };
+    const display = { textContent: '' };
+
+    const updateTimeDisplay = createUpdateTimeDisplay(audio, display);
+    updateTimeDisplay();
+
+    expect(display.textContent).toContain('0');
+  });
 });
