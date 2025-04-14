@@ -54,7 +54,6 @@
 [0m  [2m101:1[22m    [33mwarning[39m  Function 'handleInputError' has too many parameters (4). Maximum allowed is 3                [2mmax-params[22m[0m
 [0m  [2m107:1[22m    [33mwarning[39m  Function 'handleInputProcessing' has too many parameters (8). Maximum allowed is 3           [2mmax-params[22m[0m
 [0m  [2m107:1[22m    [33mwarning[39m  Function 'handleInputProcessing' has a complexity of 3. Maximum allowed is 2                 [2mcomplexity[22m[0m
-[0m  [2m113:5[22m    [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                                       [2mmax-depth[22m[0m
 [0m  [2m121:146[22m  [33mwarning[39m  Arrow function has too many parameters (9). Maximum allowed is 3                             [2mmax-params[22m[0m
 [0m  [2m144:8[22m    [33mwarning[39m  Function 'initializeInteractiveComponent' has too many parameters (7). Maximum allowed is 3  [2mmax-params[22m[0m
 [0m  [2m150:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
@@ -66,7 +65,6 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m23:26[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
 [0m  [2m26:1[22m   [33mwarning[39m  Function 'findJsFiles' has a complexity of 6. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m31:5[22m   [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1              [2mmax-depth[22m[0m
 [0m  [2m61:32[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js[24m[0m
@@ -140,13 +138,7 @@
 [0m  [2m144:32[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js[24m[0m
-[0m   [2m7:8[22m  [33mwarning[39m  Function 'get' has a complexity of 16. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m18:5[22m  [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1       [2mmax-depth[22m[0m
-[0m  [2m22:5[22m  [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1       [2mmax-depth[22m[0m
-[0m  [2m32:5[22m  [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1       [2mmax-depth[22m[0m
-[0m  [2m34:7[22m  [33mwarning[39m  Blocks are nested too deeply (3). Maximum allowed is 1       [2mmax-depth[22m[0m
-[0m  [2m38:7[22m  [33mwarning[39m  Blocks are nested too deeply (3). Maximum allowed is 1       [2mmax-depth[22m[0m
-[0m  [2m46:5[22m  [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1       [2mmax-depth[22m[0m
+[0m  [2m7:8[22m  [33mwarning[39m  Function 'get' has a complexity of 16. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
 [0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
@@ -154,17 +146,13 @@
 [0m  [2m22:33[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2            [2mcomplexity[22m[0m
 [0m  [2m52:8[22m   [33mwarning[39m  Function 'setTemporary' has a complexity of 10. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m  [2m77:35[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
-[0m  [2m79:5[22m   [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                [2mmax-depth[22m[0m
-[0m  [2m88:5[22m   [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                [2mmax-depth[22m[0m
 [0m  [2m89:32[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
 [0m  [2m97:51[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js[24m[0m
-[0m   [2m19:1[22m  [33mwarning[39m  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
-[0m   [2m50:1[22m  [33mwarning[39m  Function 'handleTransportTrade' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m   [2m93:8[22m  [33mwarning[39m  Function 'cyberpunkAdventure' has a complexity of 18. Maximum allowed is 2   [2mcomplexity[22m[0m
-[0m  [2m115:5[22m  [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                       [2mmax-depth[22m[0m
-[0m  [2m121:5[22m  [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                       [2mmax-depth[22m[0m
+[0m  [2m19:1[22m  [33mwarning[39m  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
+[0m  [2m50:1[22m  [33mwarning[39m  Function 'handleTransportTrade' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m93:8[22m  [33mwarning[39m  Function 'cyberpunkAdventure' has a complexity of 18. Maximum allowed is 2   [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js[24m[0m
 [0m   [2m17:1[22m   [33mwarning[39m  Function 'validateParsedMoves' has a complexity of 4. Maximum allowed is 2          [2mcomplexity[22m[0m
@@ -178,23 +166,16 @@
 [0m   [2m59:41[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m   [2m60:45[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m   [2m64:1[22m   [33mwarning[39m  Function 'applyMovesSequentially' has a complexity of 4. Maximum allowed is 2       [2mcomplexity[22m[0m
-[0m   [2m67:5[22m   [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                              [2mmax-depth[22m[0m
 [0m   [2m67:52[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m68:5[22m   [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                              [2mmax-depth[22m[0m
 [0m   [2m68:31[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m   [2m73:1[22m   [33mwarning[39m  Function 'validateAndApplyMoves' has a complexity of 4. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m   [2m74:50[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m   [2m78:22[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m   [2m83:1[22m   [33mwarning[39m  Function 'scoreMove' has too many parameters (5). Maximum allowed is 3              [2mmax-params[22m[0m
 [0m   [2m90:1[22m   [33mwarning[39m  Function 'findBestMove' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
-[0m   [2m95:5[22m   [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                              [2mmax-depth[22m[0m
-[0m   [2m96:7[22m   [33mwarning[39m  Blocks are nested too deeply (3). Maximum allowed is 1                              [2mmax-depth[22m[0m
-[0m   [2m98:9[22m   [33mwarning[39m  Blocks are nested too deeply (4). Maximum allowed is 1                              [2mmax-depth[22m[0m
 [0m  [2m110:27[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m  [2m114:1[22m   [33mwarning[39m  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                    [2mcomplexity[22m[0m
-[0m  [2m116:5[22m   [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                              [2mmax-depth[22m[0m
 [0m  [2m123:1[22m   [33mwarning[39m  Function 'checkColumns' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
-[0m  [2m125:5[22m   [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                              [2mmax-depth[22m[0m
 [0m  [2m132:1[22m   [33mwarning[39m  Function 'checkDiagonals' has a complexity of 6. Maximum allowed is 2               [2mcomplexity[22m[0m
 [0m  [2m148:22[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m  [2m155:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
@@ -203,8 +184,6 @@
 [0m  [2m157:31[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m  [2m158:35[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m  [2m162:1[22m   [33mwarning[39m  Function 'getAvailableMoves' has a complexity of 4. Maximum allowed is 2            [2mcomplexity[22m[0m
-[0m  [2m165:5[22m   [33mwarning[39m  Blocks are nested too deeply (2). Maximum allowed is 1                              [2mmax-depth[22m[0m
-[0m  [2m166:7[22m   [33mwarning[39m  Blocks are nested too deeply (3). Maximum allowed is 1                              [2mmax-depth[22m[0m
 [0m  [2m166:25[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m  [2m172:1[22m   [33mwarning[39m  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3          [2mmax-params[22m[0m
 [0m  [2m172:1[22m   [33mwarning[39m  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2                [2mcomplexity[22m[0m
@@ -325,6 +304,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 270 problems (0 errors, 270 warnings)[22m[39m[0m
+[0m[33m[1m✖ 249 problems (0 errors, 249 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 165 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
