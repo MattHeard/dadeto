@@ -62,9 +62,17 @@ function handleRequestResponse(url, outputElement, errorFn, fetchFn, dom) {
     });
 }
 
+function isValidParsedRequest(parsed) {
+  return (
+    parsed &&
+    typeof parsed === 'object' &&
+    parsed.request &&
+    typeof parsed.request.url === 'string'
+  );
+}
+
 function handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom) {
-  if (!parsed || typeof parsed !== 'object') return false;
-  if (!parsed.request || typeof parsed.request.url !== 'string') return false;
+  if (!isValidParsedRequest(parsed)) return false;
   handleRequestResponse(parsed.request.url, outputElement, errorFn, fetchFn, dom);
   return true;
 }

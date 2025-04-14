@@ -47,20 +47,19 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
 [0m   [2m24:8[22m    [33mwarning[39m  Function 'initialiseModule' has too many parameters (7). Maximum allowed is 3                [2mmax-params[22m[0m
 [0m   [2m52:1[22m    [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m   [2m65:1[22m    [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3              [2mmax-params[22m[0m
-[0m   [2m65:1[22m    [33mwarning[39m  Function 'handleParsedResult' has a complexity of 5. Maximum allowed is 2                    [2mcomplexity[22m[0m
-[0m   [2m66:46[22m   [33mwarning[39m  Expected { after 'if' condition                                                              [2mcurly[22m[0m
-[0m   [2m67:66[22m   [33mwarning[39m  Expected { after 'if' condition                                                              [2mcurly[22m[0m
-[0m  [2m101:1[22m    [33mwarning[39m  Function 'handleInputError' has too many parameters (4). Maximum allowed is 3                [2mmax-params[22m[0m
-[0m  [2m107:1[22m    [33mwarning[39m  Function 'handleInputProcessing' has too many parameters (8). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m  [2m107:1[22m    [33mwarning[39m  Function 'handleInputProcessing' has a complexity of 3. Maximum allowed is 2                 [2mcomplexity[22m[0m
-[0m  [2m121:146[22m  [33mwarning[39m  Arrow function has too many parameters (9). Maximum allowed is 3                             [2mmax-params[22m[0m
-[0m  [2m144:8[22m    [33mwarning[39m  Function 'initializeInteractiveComponent' has too many parameters (7). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m150:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
-[0m  [2m153:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
-[0m  [2m162:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
-[0m  [2m194:8[22m    [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3     [2mmax-params[22m[0m
-[0m  [2m194:8[22m    [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2           [2mcomplexity[22m[0m
+[0m   [2m65:1[22m    [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 4. Maximum allowed is 2                  [2mcomplexity[22m[0m
+[0m   [2m74:1[22m    [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3              [2mmax-params[22m[0m
+[0m   [2m75:38[22m   [33mwarning[39m  Expected { after 'if' condition                                                              [2mcurly[22m[0m
+[0m  [2m109:1[22m    [33mwarning[39m  Function 'handleInputError' has too many parameters (4). Maximum allowed is 3                [2mmax-params[22m[0m
+[0m  [2m115:1[22m    [33mwarning[39m  Function 'handleInputProcessing' has too many parameters (8). Maximum allowed is 3           [2mmax-params[22m[0m
+[0m  [2m115:1[22m    [33mwarning[39m  Function 'handleInputProcessing' has a complexity of 3. Maximum allowed is 2                 [2mcomplexity[22m[0m
+[0m  [2m129:146[22m  [33mwarning[39m  Arrow function has too many parameters (9). Maximum allowed is 3                             [2mmax-params[22m[0m
+[0m  [2m152:8[22m    [33mwarning[39m  Function 'initializeInteractiveComponent' has too many parameters (7). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m158:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
+[0m  [2m161:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
+[0m  [2m170:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
+[0m  [2m202:8[22m    [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3     [2mmax-params[22m[0m
+[0m  [2m202:8[22m    [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2           [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m23:26[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
@@ -303,6 +302,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 248 problems (0 errors, 248 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 165 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m✖ 247 problems (0 errors, 247 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 164 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
