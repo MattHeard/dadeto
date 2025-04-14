@@ -24,6 +24,7 @@ export default [
       "prefer-const": "warn",
       "no-multi-spaces": "warn",
       "no-trailing-spaces": "warn",
+      "no-duplicate-imports": "warn",
       // Add other project-specific rules here if needed
     }
   },
