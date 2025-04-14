@@ -10,10 +10,10 @@
  * @param {Function} hideElementFn - Function to hide an element
  */
 export function hideArticlesByClass(className, getElementsByTagName, hasClassFn, hideElementFn) {
-  var articles = getElementsByTagName('article');
-  for (var i = 0; i < articles.length; i++) {
-    if (hasClassFn(articles[i], className)) {
-      hideElementFn(articles[i]);
+  const articles = getElementsByTagName('article');
+  for (const article of articles) {
+    if (hasClassFn(article, className)) {
+      hideElementFn(article);
     }
   }
 }
