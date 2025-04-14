@@ -6,6 +6,10 @@ function tryParseJSON(input) {
   }
 }
 
+function respectsTurnOrder(index, player, moves) {
+  return index === 0 || player !== moves[index - 1].player;
+}
+
 function validateParsedMoves(parsed) {
   return parsed && typeof parsed === "object" && Array.isArray(parsed.moves)
     ? parsed.moves
@@ -118,7 +122,7 @@ function isValidMove(move, index, moves) {
   if (!hasValidPlayer(player)) return false;
   if (!hasValidPosition(position)) return false;
 
-  if (index > 0 && player === moves[index - 1].player) return false;
+  if (!respectsTurnOrder(index, player, moves)) return false;
 
   return true;
 }
