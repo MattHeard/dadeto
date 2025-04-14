@@ -17,6 +17,7 @@ export default [
     rules: {
       complexity: ["warn", { max: 2 }], // Keep existing complexity rule
       "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
+      "no-console": "off",
       // Add other project-specific rules here if needed
     }
   },
