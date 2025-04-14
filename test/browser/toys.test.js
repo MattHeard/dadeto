@@ -151,8 +151,7 @@ describe('createHandleSubmit', () => {
     errorFn = jest.fn();
 
     handleSubmit = createHandleSubmit(
-      inputElement,
-      outputElement,
+      { inputElement, outputElement },
       globalState,
       processingFunction,
       createEnv,
@@ -172,8 +171,7 @@ describe('createHandleSubmit', () => {
     );
 
     const handleSubmitWithFetch = createHandleSubmit(
-      inputElement,
-      outputElement,
+      { inputElement, outputElement },
       {},
       processingFunction,
       createEnv,
@@ -199,8 +197,7 @@ describe('createHandleSubmit', () => {
     );
 
     const handleSubmitWithFailingFetch = createHandleSubmit(
-      inputElement,
-      outputElement,
+      { inputElement, outputElement },
       {},
       processingFunction,
       createEnv,
@@ -226,8 +223,7 @@ describe('createHandleSubmit', () => {
     });
 
     const handleSubmitThrowing = createHandleSubmit(
-      inputElement,
-      outputElement,
+      { inputElement, outputElement },
       {},
       processingFunction,
       createEnv,
@@ -257,8 +253,7 @@ describe('createHandleSubmit', () => {
     const output = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
 
     const handleSubmitNoEvent = createHandleSubmit(
-      input,
-      output,
+      { inputElement: input, outputElement: output },
       {},
       processingFunction,
       createEnv,

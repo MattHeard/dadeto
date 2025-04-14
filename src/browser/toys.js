@@ -135,7 +135,8 @@ function processInputAndSetOutput(inputElement, outputElement, globalState, proc
   }
 }
 
-function handleInputProcessing(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) {
+function handleInputProcessing(elements, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) {
+  const { inputElement, outputElement } = elements;
   const handleInputError = createHandleInputError(outputElement, errorFn, dom);
   try {
     processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom);
@@ -144,11 +145,11 @@ function handleInputProcessing(inputElement, outputElement, globalState, process
   }
 }
 
-export const createHandleSubmit = (inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) => (event) => {
+export const createHandleSubmit = (elements, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) => (event) => {
   if (event) {
     dom.stopDefault(event);
   }
-  handleInputProcessing(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom);
+  handleInputProcessing(elements, globalState, processingFunction, createEnv, errorFn, fetchFn, dom);
 };
 
 /**
@@ -181,7 +182,7 @@ export function initializeInteractiveComponent(article, processingFunction, glob
   outputElement.textContent = 'Initialising...';
 
   // Create the submit handler using the function from this module
-  const handleSubmit = createHandleSubmit(inputElement, outputElement, globalState, processingFunction, createEnvFn, errorFn, fetchFn, dom);
+  const handleSubmit = createHandleSubmit({ inputElement, outputElement }, globalState, processingFunction, createEnvFn, errorFn, fetchFn, dom);
 
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);
