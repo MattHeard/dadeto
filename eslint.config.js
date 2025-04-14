@@ -20,6 +20,7 @@ export default [
       "no-console": "off",
       "eqeqeq": ["warn", "always"],
       "curly": ["warn", "all"],
+      "no-var": "warn",
       // Add other project-specific rules here if needed
     }
   },
