@@ -23,6 +23,7 @@ export default [
       "no-var": "warn",
       "prefer-const": "warn",
       "no-multi-spaces": "warn",
+      "no-trailing-spaces": "warn",
       // Add other project-specific rules here if needed
     }
   },
