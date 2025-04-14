@@ -38,7 +38,8 @@ function resolveZeroVariant(num) {
 
 function handleSimpleCases(num) {
   if (!Number.isFinite(num)) return "";
-  if (resolveZeroVariant(num)) return resolveZeroVariant(num);
+  const zeroVariant = resolveZeroVariant(num);
+  if (zeroVariant) return zeroVariant;
   return null;
 }
 
