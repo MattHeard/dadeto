@@ -63,11 +63,10 @@ function handleRequestResponse(url, outputElement, errorFn, fetchFn, dom) {
 }
 
 function handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom) {
-  if (parsed && typeof parsed === 'object' && parsed.request && typeof parsed.request.url === 'string') {
-    handleRequestResponse(parsed.request.url, outputElement, errorFn, fetchFn, dom);
-    return true;
-  }
-  return false;
+  if (!parsed || typeof parsed !== 'object') return false;
+  if (!parsed.request || typeof parsed.request.url !== 'string') return false;
+  handleRequestResponse(parsed.request.url, outputElement, errorFn, fetchFn, dom);
+  return true;
 }
 
 /**
@@ -99,28 +98,31 @@ function parseJSONResult(result) {
  * @param {Function} setTextContent - Function to set the text content of an element.
  * @returns {Function} An event handler function.
  */
-export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) => (event) => {
-  if (event) {
-    dom.stopDefault(event);
-  }
+function handleInputError(outputElement, errorFn, dom, e) {
+  errorFn('Error processing input:', e);
+  dom.setTextContent(outputElement, 'Error: ' + e.message);
+  dom.addWarningFn(outputElement);
+}
+
+function handleInputProcessing(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) {
   const inputValue = inputElement.value;
-  
   try {
     const env = createEnv(globalState);
-
-    // Call the processing function with the input value
     const result = processingFunction(inputValue, env);
-
     const parsed = parseJSONResult(result);
-
     if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom)) {
       dom.setTextContent(outputElement, result);
     }
   } catch (e) {
-    errorFn('Error processing input:', e);
-    dom.setTextContent(outputElement, 'Error: ' + e.message);
-    dom.addWarningFn(outputElement);
+    handleInputError(outputElement, errorFn, dom, e);
   }
+}
+
+export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) => (event) => {
+  if (event) {
+    dom.stopDefault(event);
+  }
+  handleInputProcessing(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom);
 };
 
 /**
@@ -190,20 +192,20 @@ function createHandleKeyPress(handleSubmit) {
  * @param {Function} createIntersectionObserverFn - Function that creates an IntersectionObserver for a given article, module path, and function name.
  */
 export function initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn) {
-  if (win.interactiveComponents && win.interactiveComponents.length > 0) {
-    logFn('Initializing', win.interactiveComponents.length, 'interactive components via IntersectionObserver');
-    win.interactiveComponents.forEach(component => {
-      const article = getElementByIdFn(doc, component.id);
-      if (article) {
-        const observer = createIntersectionObserverFn(article, component.modulePath, component.functionName);
-        observer.observe(article);
-      } else {
-        warnFn(`Could not find article element with ID: ${component.id} for component initialization.`);
-      }
-    });
-  } else {
+  if (!win.interactiveComponents || win.interactiveComponents.length === 0) {
     warnFn('No interactive components found to initialize');
+    return;
   }
+  logFn('Initializing', win.interactiveComponents.length, 'interactive components via IntersectionObserver');
+  win.interactiveComponents.forEach(component => {
+    const article = getElementByIdFn(doc, component.id);
+    if (!article) {
+      warnFn(`Could not find article element with ID: ${component.id} for component initialization.`);
+      return;
+    }
+    const observer = createIntersectionObserverFn(article, component.modulePath, component.functionName);
+    observer.observe(article);
+  });
 }
 
 /**

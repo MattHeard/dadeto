@@ -92,11 +92,13 @@ function shouldCopyStateForFetch(status) {
   return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
 }
 
+function hasTemporaryProperty(obj) {
+  return Object.prototype.hasOwnProperty.call(obj, 'temporary');
+}
+
 function isInvalidState(value) {
-  if (!value) return true;
-  if (typeof value !== 'object') return true;
-  if (!Object.prototype.hasOwnProperty.call(value, 'temporary')) return true;
-  return false;
+  if (!value || typeof value !== 'object') return true;
+  return !hasTemporaryProperty(value);
 }
 
 function validateIncomingState(incomingState, errorFn) {
