@@ -106,7 +106,7 @@ function findBestMove(board, nextPlayer, moves) {
 
 function determineNextPlayer(moves) {
   if (moves.length === 0) return "X";
-  return moves[moves.length - 1].player === "X" ? "O" : "X";
+  return getOpponent(moves[moves.length - 1].player);
 }
 
 function checkRows(board, player) {
