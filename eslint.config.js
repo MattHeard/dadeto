@@ -27,6 +27,7 @@ export default [
       "no-duplicate-imports": "warn",
       "no-implicit-coercion": "warn",
       "dot-notation": "warn",
+      "max-depth": ["warn", 4],
       // Add other project-specific rules here if needed
     }
   },
