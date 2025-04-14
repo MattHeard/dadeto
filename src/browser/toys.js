@@ -63,11 +63,10 @@ function handleRequestResponse(url, outputElement, errorFn, fetchFn, dom) {
 }
 
 function handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom) {
-  if (parsed && typeof parsed === 'object' && parsed.request && typeof parsed.request.url === 'string') {
-    handleRequestResponse(parsed.request.url, outputElement, errorFn, fetchFn, dom);
-    return true;
-  }
-  return false;
+  if (!parsed || typeof parsed !== 'object') return false;
+  if (!parsed.request || typeof parsed.request.url !== 'string') return false;
+  handleRequestResponse(parsed.request.url, outputElement, errorFn, fetchFn, dom);
+  return true;
 }
 
 /**
