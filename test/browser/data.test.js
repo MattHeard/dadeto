@@ -180,4 +180,15 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(result).toBe(false);
     expect(logFn).not.toHaveBeenCalled();
   });
+
+  it('shouldUseExistingFetch returns false if status is loading but no fetchPromise exists', () => {
+    const state = {
+      blogStatus: 'loading',
+      blogFetchPromise: null,
+    };
+    const logFn = jest.fn();
+    const result = shouldUseExistingFetch(state, logFn);
+    expect(result).toBe(false);
+    expect(logFn).not.toHaveBeenCalled();
+  });
 });
