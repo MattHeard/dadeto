@@ -218,13 +218,12 @@
 [0m  [2m200:34[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
-[0m   [2m83:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m   [2m85:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m   [2m92:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m   [2m95:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m104:1[22m   [33mwarning[39m  '../../src/browser/data.js' import is duplicated  [2mno-duplicate-imports[22m[0m
-[0m  [2m173:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used                     [2mno-unused-vars[22m[0m
+[0m   [2m83:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
+[0m   [2m85:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
+[0m   [2m92:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
+[0m   [2m95:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
+[0m  [2m173:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
+[0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/main.test.js[24m[0m
 [0m  [2m57:39[22m  [33mwarning[39m  Arrow function has a complexity of 4. Maximum allowed is 2  [2mcomplexity[22m[0m
@@ -304,6 +303,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 249 problems (0 errors, 249 warnings)[22m[39m[0m
+[0m[33m[1m✖ 248 problems (0 errors, 248 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 165 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
