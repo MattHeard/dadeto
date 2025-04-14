@@ -49,6 +49,19 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
   outputElement.parentElement.classList.remove('warning');
 }
 
+function handleRequestResponse(url, outputElement, errorFn, fetchFn, dom) {
+  fetchFn(url)
+    .then(response => response.text())
+    .then(body => {
+      dom.setTextContent(outputElement, body);
+    })
+    .catch(fetchError => {
+      errorFn('Error fetching request URL:', fetchError);
+      dom.setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message);
+      dom.addWarningFn(outputElement);
+    });
+}
+
 /**
  * Creates a submit handler function for an interactive toy.
  * @param {HTMLInputElement} inputElement - The input field.
@@ -85,16 +98,7 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
     }
 
     if (parsed && typeof parsed === 'object' && parsed.request && typeof parsed.request.url === 'string') {
-      fetchFn(parsed.request.url)
-        .then(response => response.text())
-        .then(body => {
-          dom.setTextContent(outputElement, body);
-        })
-        .catch(fetchError => {
-          errorFn('Error fetching request URL:', fetchError);
-          dom.setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message);
-          dom.addWarningFn(outputElement);
-        });
+      handleRequestResponse(parsed.request.url, outputElement, errorFn, fetchFn, dom);
     } else {
       // Default behavior
       dom.setTextContent(outputElement, result);
