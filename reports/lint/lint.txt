@@ -45,19 +45,18 @@
 [0m  [2m33:8[22m  [33mwarning[39m  Function 'toggleHideLink' has too many parameters (5). Maximum allowed is 3       [2mmax-params[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
-[0m   [2m24:8[22m   [33mwarning[39m  Function 'initialiseModule' has too many parameters (7). Maximum allowed is 3                [2mmax-params[22m[0m
-[0m   [2m52:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m   [2m77:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2                  [2mcomplexity[22m[0m
-[0m   [2m85:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3              [2mmax-params[22m[0m
-[0m   [2m86:38[22m  [33mwarning[39m  Expected { after 'if' condition                                                              [2mcurly[22m[0m
-[0m  [2m128:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3        [2mmax-params[22m[0m
-[0m  [2m173:8[22m   [33mwarning[39m  Function 'initializeInteractiveComponent' has too many parameters (7). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m178:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                            [2mno-unused-vars[22m[0m
-[0m  [2m179:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
-[0m  [2m182:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
-[0m  [2m192:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
-[0m  [2m224:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3     [2mmax-params[22m[0m
-[0m  [2m224:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2           [2mcomplexity[22m[0m
+[0m   [2m24:8[22m   [33mwarning[39m  Function 'initialiseModule' has too many parameters (7). Maximum allowed is 3             [2mmax-params[22m[0m
+[0m   [2m49:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
+[0m   [2m74:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
+[0m   [2m82:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
+[0m   [2m83:38[22m  [33mwarning[39m  Expected { after 'if' condition                                                           [2mcurly[22m[0m
+[0m  [2m125:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
+[0m  [2m183:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
+[0m  [2m184:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m187:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m197:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m229:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m229:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m23:26[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
@@ -251,12 +250,12 @@
 [0m  [2m270:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
 [0m  [2m271:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
 [0m  [2m284:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m321:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m322:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m323:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m324:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m325:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m339:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m318:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m319:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m320:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m321:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m322:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m336:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/presenters/paragraph.test.js[24m[0m
 [0m  [2m2:24[22m  [33mwarning[39m  'jest' is defined but never used  [2mno-unused-vars[22m[0m
@@ -301,6 +300,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 246 problems (0 errors, 246 warnings)[22m[39m[0m
+[0m[33m[1m✖ 245 problems (0 errors, 245 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 164 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

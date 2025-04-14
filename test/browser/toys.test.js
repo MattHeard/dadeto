@@ -293,14 +293,11 @@ describe('initializeInteractiveComponent', () => {
 
     const processingFunction = jest.fn(() => 'processed result');
 
+    const config = { globalState, createEnvFn, errorFn, fetchFn, dom };
     initializeInteractiveComponent(
       article,
       processingFunction,
-      globalState,
-      createEnvFn,
-      errorFn,
-      fetchFn,
-      dom
+      config
     );
 
     expect(addEventListener).toHaveBeenCalledTimes(2);
@@ -343,14 +340,11 @@ describe('initializeInteractiveComponent', () => {
     });
     const dom = { createElement, setTextContent, stopDefaultFn, addWarningFn, addEventListener, querySelector };
 
+    const config = { globalState, createEnvFn, errorFn, fetchFn, dom };
     initializeInteractiveComponent(
       article,
       processingFunction,
-      globalState,
-      createEnvFn,
-      errorFn,
-      fetchFn,
-      dom
+      config
     );
 
     listeners.keypress({ key: 'a', preventDefault: jest.fn() });

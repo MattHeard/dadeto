@@ -24,14 +24,11 @@ export function handleModuleError(modulePath, errorFn) {
 export function initialiseModule(article, functionName, globalState, createEnv, error, fetch, dom) {
   return (module) => {
     const processingFunction = module[functionName];
+    const config = { globalState, createEnvFn: createEnv, errorFn: error, fetchFn: fetch, dom };
     initializeInteractiveComponent(
       article,
       processingFunction,
-      globalState,
-      createEnv,
-      error,
-      fetch,
-      dom
+      config
     );
   };
 }
@@ -170,7 +167,15 @@ function disableInputAndButton(inputElement, submitButton) {
   submitButton.disabled = true;
 }
 
-export function initializeInteractiveComponent(article, processingFunction, globalState, createEnvFn, errorFn, fetchFn, dom) {
+/**
+ * Initializes the interactive elements (input, button, output) within a toy's article element.
+ * Sets up event listeners and initial state.
+ * @param {HTMLElement} article - The article element containing the toy.
+ * @param {Function} processingFunction - The toy's core logic function.
+ * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, and dom.
+ */
+export function initializeInteractiveComponent(article, processingFunction, config) {
+  const { globalState, createEnvFn, errorFn, fetchFn, dom } = config;
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
   const submitButton = dom.querySelector(article, 'button');
