@@ -215,4 +215,15 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(result).toBe(false);
     expect(logFn).not.toHaveBeenCalled();
   });
+
+  it('getData returns cached blog data when already loaded', () => {
+    const blog = { title: 'Cached' };
+    state.blog = blog;
+    state.blogStatus = 'loaded';
+
+    const result = getData(state, fetchFn, logFn, errorFn, warnFn);
+
+    expect(result.blog).toEqual(blog);
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
 });
