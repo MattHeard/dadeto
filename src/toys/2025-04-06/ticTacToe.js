@@ -36,6 +36,18 @@ export function ticTacToeMove(input) {
   }
 }
 
+function applyMoveToBoard(board, move, seen) {
+  const { player, position } = move;
+  const { row, column } = position;
+
+  const key = `${row},${column}`;
+  if (seen.has(key)) return false;
+  seen.add(key);
+
+  board[row][column] = player;
+  return true;
+}
+
 function minimax(b, depth, isMax, player, moves) {
   const opp = player === "X" ? "O" : "X";
   if (isWin(b, player)) return 10 - depth;
@@ -80,14 +92,7 @@ function validateAndApplyMoves(moves) {
     const move = moves[i];
     if (!isValidMove(move, i, moves)) return null;
 
-    const { player, position } = move;
-
-    const { row, column } = position;
-    const key = `${row},${column}`;
-    if (seen.has(key)) return null;
-    seen.add(key);
-
-    board[row][column] = player;
+    if (!applyMoveToBoard(board, move, seen)) return null;
 
     if (isWin(board, "X") || isWin(board, "O")) {
       return { board, earlyWin: true };
