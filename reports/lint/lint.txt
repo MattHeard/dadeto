@@ -19,13 +19,13 @@
 [0m   [2m50:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
 [0m   [2m51:56[22m  [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
 [0m   [2m71:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m95:1[22m   [33mwarning[39m  Function 'isInvalidState' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
-[0m   [2m96:44[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m107:1[22m   [33mwarning[39m  Function 'tryFetchingBlog' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
-[0m  [2m119:1[22m   [33mwarning[39m  Function 'handleBlogFetchState' has too many parameters (7). Maximum allowed is 3   [2mmax-params[22m[0m
-[0m  [2m134:71[22m  [33mwarning[39m  Arrow function has too many parameters (5). Maximum allowed is 3                    [2mmax-params[22m[0m
-[0m  [2m151:69[22m  [33mwarning[39m  Arrow function has too many parameters (4). Maximum allowed is 3                    [2mmax-params[22m[0m
-[0m  [2m157:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
+[0m   [2m99:1[22m   [33mwarning[39m  Function 'isInvalidState' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
+[0m  [2m100:44[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
+[0m  [2m111:1[22m   [33mwarning[39m  Function 'tryFetchingBlog' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
+[0m  [2m123:1[22m   [33mwarning[39m  Function 'handleBlogFetchState' has too many parameters (7). Maximum allowed is 3   [2mmax-params[22m[0m
+[0m  [2m138:71[22m  [33mwarning[39m  Arrow function has too many parameters (5). Maximum allowed is 3                    [2mmax-params[22m[0m
+[0m  [2m155:69[22m  [33mwarning[39m  Arrow function has too many parameters (4). Maximum allowed is 3                    [2mmax-params[22m[0m
+[0m  [2m161:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js[24m[0m
 [0m    [2m1:5[22m   [33mwarning[39m  'globalState' is never reassigned. Use 'const' instead                                  [2mprefer-const[22m[0m
