@@ -79,9 +79,9 @@ function isValidParsedRequest(parsed) {
   );
 }
 
-function handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom) {
+function handleParsedResult(parsed, outputElement, error, fetch, dom) {
   if (!isValidParsedRequest(parsed)) return false;
-  handleRequestResponse(parsed.request.url, outputElement, errorFn, fetchFn, dom);
+  handleRequestResponse(parsed.request.url, outputElement, error, fetch, dom);
   return true;
 }
 
