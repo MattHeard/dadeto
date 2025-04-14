@@ -26,6 +26,7 @@ export default [
       "no-trailing-spaces": "warn",
       "no-duplicate-imports": "warn",
       "no-implicit-coercion": "warn",
+      "dot-notation": "warn",
       // Add other project-specific rules here if needed
     }
   },
