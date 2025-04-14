@@ -99,20 +99,12 @@ function parseJSONResult(result) {
  * @param {Function} setTextContent - Function to set the text content of an element.
  * @returns {Function} An event handler function.
  */
-export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) => (event) => {
-  if (event) {
-    dom.stopDefault(event);
-  }
+function handleInputProcessing(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) {
   const inputValue = inputElement.value;
-  
   try {
     const env = createEnv(globalState);
-
-    // Call the processing function with the input value
     const result = processingFunction(inputValue, env);
-
     const parsed = parseJSONResult(result);
-
     if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom)) {
       dom.setTextContent(outputElement, result);
     }
@@ -121,6 +113,13 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
     dom.setTextContent(outputElement, 'Error: ' + e.message);
     dom.addWarningFn(outputElement);
   }
+}
+
+export const createHandleSubmit = (inputElement, outputElement, outputParent, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) => (event) => {
+  if (event) {
+    dom.stopDefault(event);
+  }
+  handleInputProcessing(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom);
 };
 
 /**
