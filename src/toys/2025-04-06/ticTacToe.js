@@ -10,6 +10,10 @@ function parseInputSafely(input) {
   }
 }
 
+function buildMoveResponse(moves, newMove = null) {
+  return JSON.stringify({ moves: newMove ? [...moves, newMove] : moves });
+}
+
 export function ticTacToeMove(input) {
   const moves = parseInputSafely(input);
   if (!moves) return returnInitialOptimalMove();
@@ -17,14 +21,12 @@ export function ticTacToeMove(input) {
   const result = validateAndApplyMoves(moves);
   if (!result) return returnInitialOptimalMove();
   const { board, earlyWin } = result;
-  if (earlyWin) return JSON.stringify({ moves });
-
-  if (moves.length >= 9) return JSON.stringify({ moves });
+  if (earlyWin || moves.length >= 9) return buildMoveResponse(moves);
 
   const nextPlayer = determineNextPlayer(moves);
   const bestMove = findBestMove(board, nextPlayer, moves);
   const newMove = { player: nextPlayer, position: bestMove };
-  return JSON.stringify({ moves: [...moves, newMove] });
+  return buildMoveResponse(moves, newMove);
 }
 
 function findBestMove(board, nextPlayer, moves) {
