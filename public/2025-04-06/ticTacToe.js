@@ -55,6 +55,21 @@ function minimax(b, depth, isMax, player, moves) {
   return isMax ? Math.max(...scores) : Math.min(...scores);
 }
 
+function isValidMove(move, index, moves) {
+  if (!move || typeof move !== "object") return false;
+
+  const { player, position } = move;
+  if (!["X", "O"].includes(player)) return false;
+  if (!position || typeof position !== "object") return false;
+
+  const { row, column } = position;
+  if (![0, 1, 2].includes(row) || ![0, 1, 2].includes(column)) return false;
+
+  if (index > 0 && player === moves[index - 1].player) return false;
+
+  return true;
+}
+
 function validateAndApplyMoves(moves) {
   if (!Array.isArray(moves) || moves.length > 9) return null;
 
@@ -63,22 +78,16 @@ function validateAndApplyMoves(moves) {
 
   for (let i = 0; i < moves.length; i++) {
     const move = moves[i];
-    if (!move || typeof move !== "object") return null;
+    if (!isValidMove(move, i, moves)) return null;
 
     const { player, position } = move;
-    if (!["X", "O"].includes(player)) return null;
-    if (!position || typeof position !== "object") return null;
 
     const { row, column } = position;
-    if (![0, 1, 2].includes(row) || ![0, 1, 2].includes(column)) return null;
-
     const key = `${row},${column}`;
     if (seen.has(key)) return null;
     seen.add(key);
 
     board[row][column] = player;
-
-    if (i > 0 && player === moves[i - 1].player) return null;
 
     if (isWin(board, "X") || isWin(board, "O")) {
       return { board, earlyWin: true };
