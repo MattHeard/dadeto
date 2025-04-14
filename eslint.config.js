@@ -22,6 +22,7 @@ export default [
       "curly": ["warn", "all"],
       "no-var": "warn",
       "prefer-const": "warn",
+      "no-multi-spaces": "warn",
       // Add other project-specific rules here if needed
     }
   },
