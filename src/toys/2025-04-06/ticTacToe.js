@@ -39,16 +39,6 @@ export function ticTacToeMove(input) {
       ? "X"
       : moves[moves.length - 1].player === "X" ? "O" : "X";
 
-    function isWin(b, p) {
-      for (let i = 0; i < 3; i++) {
-        if (b[i][0] === p && b[i][1] === p && b[i][2] === p) return true;
-        if (b[0][i] === p && b[1][i] === p && b[2][i] === p) return true;
-      }
-      if (b[0][0] === p && b[1][1] === p && b[2][2] === p) return true;
-      if (b[0][2] === p && b[1][1] === p && b[2][0] === p) return true;
-      return false;
-    }
-
     function minimax(b, depth, isMax, player) {
       const opp = player === "X" ? "O" : "X";
       if (isWin(b, player)) return 10 - depth;
@@ -89,6 +79,16 @@ export function ticTacToeMove(input) {
   } catch {
     return returnInitialOptimalMove();
   }
+}
+
+function isWin(b, p) {
+  for (let i = 0; i < 3; i++) {
+    if (b[i][0] === p && b[i][1] === p && b[i][2] === p) return true;
+    if (b[0][i] === p && b[1][i] === p && b[2][i] === p) return true;
+  }
+  if (b[0][0] === p && b[1][1] === p && b[2][2] === p) return true;
+  if (b[0][2] === p && b[1][1] === p && b[2][0] === p) return true;
+  return false;
 }
 
 function returnInitialOptimalMove() {
