@@ -62,12 +62,23 @@ function handleRequestResponse(url, outputElement, errorFn, fetchFn, dom) {
     });
 }
 
+function isObject(val) {
+  return typeof val === 'object' && val !== null;
+}
+
+function hasRequestField(val) {
+  return Object.prototype.hasOwnProperty.call(val, 'request');
+}
+
+function hasStringUrl(val) {
+  return val.request && typeof val.request.url === 'string';
+}
+
 function isValidParsedRequest(parsed) {
   return (
-    parsed &&
-    typeof parsed === 'object' &&
-    parsed.request &&
-    typeof parsed.request.url === 'string'
+    isObject(parsed) &&
+    hasRequestField(parsed) &&
+    hasStringUrl(parsed)
   );
 }
 
