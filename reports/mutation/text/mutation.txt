@@ -1,9 +1,9 @@
-[32m09:50:12 (69473) INFO ProjectReader[39m Found 28 of 211 file(s) to be mutated.
-[32m09:50:12 (69473) INFO Instrumenter[39m Instrumented 28 source file(s) with 1963 mutant(s)
-[32m09:50:12 (69473) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
-[32m09:50:14 (69473) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
-[32m09:50:50 (69473) INFO DryRunExecutor[39m Initial test run succeeded. Ran 154 tests in 36 seconds (net 33233 ms, overhead 3079 ms).
-[33m09:50:50 (69473) WARN MutantTestPlanner[39m Detected 109 static mutants (6% of total) that are estimated to take 43% of the time running the tests!
+[32m14:02:30 (50311) INFO ProjectReader[39m Found 28 of 211 file(s) to be mutated.
+[32m14:02:30 (50311) INFO Instrumenter[39m Instrumented 28 source file(s) with 1963 mutant(s)
+[32m14:02:30 (50311) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
+[32m14:02:31 (50311) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
+[32m14:03:06 (50311) INFO DryRunExecutor[39m Initial test run succeeded. Ran 160 tests in 34 seconds (net 31485 ms, overhead 2879 ms).
+[33m14:03:06 (50311) WARN MutantTestPlanner[39m Detected 109 static mutants (6% of total) that are estimated to take 43% of the time running the tests!
   You might want to enable "ignoreStatic" to ignore these static mutants for your next run. 
   For more information about static mutants visit: https://stryker-mutator.io/docs/mutation-testing-elements/static-mutants
   (disable "warnings.slow" to ignore this warning)
@@ -41,21 +41,27 @@ All tests
         ✓ createStopClickHandler calls stopDefault, pauseAudio, and resets audio.currentTime [line 38] (killed 2)
         ✓ createUpdateTimeDisplay updates the time display with the current time of the audio [line 56] (killed 3)
         ~ createUpdateTimeDisplay handles when audio currentTime is 0 [line 66] (covered 6)
-        ✓ setupAudio assigns a default id to audio elements without an id [line 80] (killed 6)
-        ✓ setupAudio does not overwrite existing audio element ids [line 111] (killed 1)
+        ✓ createUpdateTimeDisplay displays minutes and seconds when currentTime is 60 [line 76] (killed 3)
+        ✓ setupAudio assigns a default id to audio elements without an id [line 90] (killed 6)
+        ✓ setupAudio does not overwrite existing audio element ids [line 121] (killed 1)
       data.test.js
         ✓ fetchAndCacheBlogData should prevent multiple simultaneous fetches [line 21] (killed 11)
         ✓ fetchAndCacheBlogData should start fetching blog data and update state on success [line 31] (killed 9)
         ✓ fetchAndCacheBlogData should handle HTTP errors properly [line 49] (killed 3)
         ~ fetchAndCacheBlogData should handle fetch exceptions [line 65] (covered 16)
-        ✓ getData, setData, and getDeepStateCopy getDeepStateCopy returns a deep copy [line 102] (killed 1)
-        ✓ getData, setData, and getDeepStateCopy getData triggers fetch if status is idle [line 110] (killed 7)
-        ✓ getData, setData, and getDeepStateCopy getData logs warning on error state [line 115] (killed 10)
-        ✓ getData, setData, and getDeepStateCopy getData omits internal state fields [line 121] (killed 6)
-        ✓ getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it [line 131] (killed 7)
-        ✓ getData, setData, and getDeepStateCopy setData throws and logs error if blog missing [line 138] (killed 7)
-        ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns true and logs when loading and promise exists [line 143] (killed 5)
-        ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is not loading [line 154] (killed 4)
+        ✓ fetchAndCacheBlogData calls fetch with the correct URL and logs starting message [line 79] (killed 2)
+        ✓ fetchAndCacheBlogData throws specific error when response is not ok [line 90] (killed 3)
+        ✓ getData, setData, and getDeepStateCopy getDeepStateCopy returns a deep copy [line 126] (killed 1)
+        ✓ getData, setData, and getDeepStateCopy getData triggers fetch if status is idle [line 134] (killed 7)
+        ✓ getData, setData, and getDeepStateCopy getData logs warning on error state [line 139] (killed 10)
+        ✓ getData, setData, and getDeepStateCopy getData does nothing when status is loaded [line 145] (killed 2)
+        ✓ getData, setData, and getDeepStateCopy getData omits internal state fields [line 152] (killed 6)
+        ✓ getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it [line 162] (killed 7)
+        ✓ getData, setData, and getDeepStateCopy setData throws and logs error if blog missing [line 169] (killed 7)
+        ✓ getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing [line 174] (killed 1)
+        ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns true and logs when loading and promise exists [line 186] (killed 5)
+        ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is not loading [line 197] (killed 4)
+        ~ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is loading but no fetchPromise exists [line 208] (covered 12)
       main.test.js
         ✓ setupAudio sets up audio controls correctly [line 53] (killed 5)
       tags.test.js
@@ -188,31 +194,14 @@ All tests
         ~ httpRequest contains only the expected structure [line 27] (covered 3)
         ~ httpRequest throws or handles invalid URLs gracefully [line 35] (covered 3)
 
-[Survived] ArithmeticOperator
-src/browser/audio-controls.js:25:32
--       const minutes = Math.floor(audio.currentTime / 60);
-+       const minutes = Math.floor(audio.currentTime * 60);
-Tests ran:
-    createUpdateTimeDisplay updates the time display with the current time of the audio
-    createUpdateTimeDisplay handles when audio currentTime is 0
-
-
 [Survived] StringLiteral
-src/browser/audio-controls.js:27:41
--       timeDisplay.textContent = minutes + ":" + seconds;
-+       timeDisplay.textContent = minutes + "" + seconds;
+src/browser/audio-controls.js:55:28
+-       controlsContainer.id = "controls-" + audio.id;
++       controlsContainer.id = "" + audio.id;
 Tests ran:
-    createUpdateTimeDisplay updates the time display with the current time of the audio
-    createUpdateTimeDisplay handles when audio currentTime is 0
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:26:79
--       const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
-+       const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "");
-Tests ran:
-    createUpdateTimeDisplay updates the time display with the current time of the audio
-    createUpdateTimeDisplay handles when audio currentTime is 0
+    setupAudio assigns a default id to audio elements without an id
+    setupAudio does not overwrite existing audio element ids
+    setupAudio sets up audio controls correctly
 
 
 [Survived] StringLiteral
@@ -226,9 +215,19 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/audio-controls.js:55:28
--       controlsContainer.id = "controls-" + audio.id;
-+       controlsContainer.id = "" + audio.id;
+src/browser/audio-controls.js:65:34
+-       addEventListener(playButton, "click", onPlayClick);
++       addEventListener(playButton, "", onPlayClick);
+Tests ran:
+    setupAudio assigns a default id to audio elements without an id
+    setupAudio does not overwrite existing audio element ids
+    setupAudio sets up audio controls correctly
+
+
+[Survived] StringLiteral
+src/browser/audio-controls.js:59:31
+-       timeDisplay.textContent = "0:00";
++       timeDisplay.textContent = "";
 Tests ran:
     setupAudio assigns a default id to audio elements without an id
     setupAudio does not overwrite existing audio element ids
@@ -266,66 +265,6 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/audio-controls.js:65:34
--       addEventListener(playButton, "click", onPlayClick);
-+       addEventListener(playButton, "", onPlayClick);
-Tests ran:
-    setupAudio assigns a default id to audio elements without an id
-    setupAudio does not overwrite existing audio element ids
-    setupAudio sets up audio controls correctly
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:59:31
--       timeDisplay.textContent = "0:00";
-+       timeDisplay.textContent = "";
-Tests ran:
-    setupAudio assigns a default id to audio elements without an id
-    setupAudio does not overwrite existing audio element ids
-    setupAudio sets up audio controls correctly
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:71:31
--       pauseButton.textContent = "PAUSE";
-+       pauseButton.textContent = "";
-Tests ran:
-    setupAudio assigns a default id to audio elements without an id
-    setupAudio does not overwrite existing audio element ids
-    setupAudio sets up audio controls correctly
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:72:35
--       addEventListener(pauseButton, "click", onPauseClick);
-+       addEventListener(pauseButton, "", onPauseClick);
-Tests ran:
-    setupAudio assigns a default id to audio elements without an id
-    setupAudio does not overwrite existing audio element ids
-    setupAudio sets up audio controls correctly
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:78:34
--       addEventListener(stopButton, "click", onStopClick);
-+       addEventListener(stopButton, "", onStopClick);
-Tests ran:
-    setupAudio assigns a default id to audio elements without an id
-    setupAudio does not overwrite existing audio element ids
-    setupAudio sets up audio controls correctly
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:77:30
--       stopButton.textContent = "STOP";
-+       stopButton.textContent = "";
-Tests ran:
-    setupAudio assigns a default id to audio elements without an id
-    setupAudio does not overwrite existing audio element ids
-    setupAudio sets up audio controls correctly
-
-
-[Survived] StringLiteral
 src/browser/audio-controls.js:70:24
 -       pauseButton.href = "#";
 +       pauseButton.href = "";
@@ -346,9 +285,9 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/audio-controls.js:81:29
--       addEventListener(audio, "timeupdate", updateTimeDisplay);
-+       addEventListener(audio, "", updateTimeDisplay);
+src/browser/audio-controls.js:71:31
+-       pauseButton.textContent = "PAUSE";
++       pauseButton.textContent = "";
 Tests ran:
     setupAudio assigns a default id to audio elements without an id
     setupAudio does not overwrite existing audio element ids
@@ -356,53 +295,43 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/data.js:47:9
--     logFn('Starting to fetch blog data...');
-+     logFn("");
+src/browser/audio-controls.js:78:34
+-       addEventListener(stopButton, "click", onStopClick);
++       addEventListener(stopButton, "", onStopClick);
 Tests ran:
-    fetchAndCacheBlogData should start fetching blog data and update state on success
-    fetchAndCacheBlogData should handle HTTP errors properly
-    fetchAndCacheBlogData should handle fetch exceptions
-  and 1 more test!
+    setupAudio assigns a default id to audio elements without an id
+    setupAudio does not overwrite existing audio element ids
+    setupAudio sets up audio controls correctly
 
 
 [Survived] StringLiteral
-src/browser/data.js:51:42
--     globalState.blogFetchPromise = fetchFn('./blog.json') 
-+     globalState.blogFetchPromise = fetchFn("") 
+src/browser/audio-controls.js:72:35
+-       addEventListener(pauseButton, "click", onPauseClick);
++       addEventListener(pauseButton, "", onPauseClick);
 Tests ran:
-    fetchAndCacheBlogData should start fetching blog data and update state on success
-    fetchAndCacheBlogData should handle HTTP errors properly
-    fetchAndCacheBlogData should handle fetch exceptions
-  and 1 more test!
+    setupAudio assigns a default id to audio elements without an id
+    setupAudio does not overwrite existing audio element ids
+    setupAudio sets up audio controls correctly
 
 
 [Survived] StringLiteral
-src/browser/data.js:54:25
--           throw new Error(`HTTP error! status: ${response.status}`);
-+           throw new Error(``);
+src/browser/audio-controls.js:77:30
+-       stopButton.textContent = "STOP";
++       stopButton.textContent = "";
 Tests ran:
-    fetchAndCacheBlogData should handle HTTP errors properly
+    setupAudio assigns a default id to audio elements without an id
+    setupAudio does not overwrite existing audio element ids
+    setupAudio sets up audio controls correctly
 
 
-[Survived] ConditionalExpression
-src/browser/data.js:53:11
--         if (!response.ok) {
-+         if (false) {
+[Survived] StringLiteral
+src/browser/audio-controls.js:81:29
+-       addEventListener(audio, "timeupdate", updateTimeDisplay);
++       addEventListener(audio, "", updateTimeDisplay);
 Tests ran:
-    fetchAndCacheBlogData should start fetching blog data and update state on success
-    fetchAndCacheBlogData should handle HTTP errors properly
-    getData, setData, and getDeepStateCopy getData triggers fetch if status is idle
-
-
-[Survived] BlockStatement
-src/browser/data.js:53:25
--         if (!response.ok) {
--           throw new Error(`HTTP error! status: ${response.status}`);
--         }
-+         if (!response.ok) {}
-Tests ran:
-    fetchAndCacheBlogData should handle HTTP errors properly
+    setupAudio assigns a default id to audio elements without an id
+    setupAudio does not overwrite existing audio element ids
+    setupAudio sets up audio controls correctly
 
 
 [Survived] BlockStatement
@@ -418,14 +347,15 @@ Tests ran:
     getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it
 
 
-[Survived] EqualityOperator
+[Survived] ConditionalExpression
 src/browser/data.js:92:10
 -     return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
-+     return status !== BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
++     return true;
 Tests ran:
     getData, setData, and getDeepStateCopy getData triggers fetch if status is idle
     getData, setData, and getDeepStateCopy getData logs warning on error state
-    getData, setData, and getDeepStateCopy getData omits internal state fields
+    getData, setData, and getDeepStateCopy getData does nothing when status is loaded
+  and 1 more test!
 
 
 [Survived] ConditionalExpression
@@ -435,17 +365,40 @@ src/browser/data.js:92:10
 Tests ran:
     getData, setData, and getDeepStateCopy getData triggers fetch if status is idle
     getData, setData, and getDeepStateCopy getData logs warning on error state
-    getData, setData, and getDeepStateCopy getData omits internal state fields
+    getData, setData, and getDeepStateCopy getData does nothing when status is loaded
+  and 1 more test!
 
 
-[Survived] ConditionalExpression
+[Survived] EqualityOperator
 src/browser/data.js:92:10
 -     return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
-+     return true;
++     return status !== BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
 Tests ran:
     getData, setData, and getDeepStateCopy getData triggers fetch if status is idle
     getData, setData, and getDeepStateCopy getData logs warning on error state
-    getData, setData, and getDeepStateCopy getData omits internal state fields
+    getData, setData, and getDeepStateCopy getData does nothing when status is loaded
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/browser/data.js:97:5
+-       typeof value !== 'object' ||
+-       value === null ||
++       false ||
+Tests ran:
+    getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it
+    getData, setData, and getDeepStateCopy setData throws and logs error if blog missing
+    getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing
+
+
+[Survived] ConditionalExpression
+src/browser/data.js:97:5
+-       typeof value !== 'object' ||
++       false ||
+Tests ran:
+    getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it
+    getData, setData, and getDeepStateCopy setData throws and logs error if blog missing
+    getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing
 
 
 [Survived] LogicalOperator
@@ -456,16 +409,7 @@ src/browser/data.js:97:5
 Tests ran:
     getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it
     getData, setData, and getDeepStateCopy setData throws and logs error if blog missing
-
-
-[Survived] ConditionalExpression
-src/browser/data.js:97:5
--       typeof value !== 'object' ||
--       value === null ||
-+       false ||
-Tests ran:
-    getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it
-    getData, setData, and getDeepStateCopy setData throws and logs error if blog missing
+    getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing
 
 
 [Survived] ConditionalExpression
@@ -475,23 +419,7 @@ src/browser/data.js:98:5
 Tests ran:
     getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it
     getData, setData, and getDeepStateCopy setData throws and logs error if blog missing
-
-
-[Survived] ConditionalExpression
-src/browser/data.js:97:5
--       typeof value !== 'object' ||
-+       false ||
-Tests ran:
-    getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it
-    getData, setData, and getDeepStateCopy setData throws and logs error if blog missing
-
-
-[Survived] StringLiteral
-src/browser/data.js:105:13
--       errorFn('setData received invalid data structure:', incomingState);
-+       errorFn("", incomingState);
-Tests ran:
-    getData, setData, and getDeepStateCopy setData throws and logs error if blog missing
+    getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing
 
 
 [Survived] StringLiteral
@@ -500,26 +428,7 @@ src/browser/data.js:106:21
 +       throw new Error("");
 Tests ran:
     getData, setData, and getDeepStateCopy setData throws and logs error if blog missing
-
-
-[Survived] ConditionalExpression
-src/browser/data.js:111:7
--     if (status === BLOG_STATUS.IDLE) {
-+     if (true) {
-Tests ran:
-    getData, setData, and getDeepStateCopy getData triggers fetch if status is idle
-    getData, setData, and getDeepStateCopy getData logs warning on error state
-    getData, setData, and getDeepStateCopy getData omits internal state fields
-
-
-[Survived] ConditionalExpression
-src/browser/data.js:117:7
--     if (status === BLOG_STATUS.ERROR) {
-+     if (true) {
-Tests ran:
-    getData, setData, and getDeepStateCopy getData triggers fetch if status is idle
-    getData, setData, and getDeepStateCopy getData logs warning on error state
-    getData, setData, and getDeepStateCopy getData omits internal state fields
+    getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing
 
 
 [Survived] StringLiteral
@@ -1128,19 +1037,6 @@ Tests ran:
   and 2 more tests!
 
 
-[Survived] BlockStatement
-src/browser/toys.js:69:14
--     if (event) {
--       dom.stopDefault(event);
--     }
-+     if (event) {}
-Tests ran:
-    createHandleSubmit fetches from URL if processingFunction returns a request object
-    createHandleSubmit handles fetch failure if request URL is unreachable
-    createHandleSubmit handles error thrown by processingFunction
-  and 1 more test!
-
-
 [Survived] ConditionalExpression
 src/browser/toys.js:69:7
 -     if (event) {
@@ -1163,6 +1059,19 @@ Tests ran:
     initializeInteractiveComponent attaches click and keypress listeners with expected arguments
 
 
+[Survived] BlockStatement
+src/browser/toys.js:69:14
+-     if (event) {
+-       dom.stopDefault(event);
+-     }
++     if (event) {}
+Tests ran:
+    createHandleSubmit fetches from URL if processingFunction returns a request object
+    createHandleSubmit handles fetch failure if request URL is unreachable
+    createHandleSubmit handles error thrown by processingFunction
+  and 1 more test!
+
+
 [Survived] ConditionalExpression
 src/browser/toys.js:87:19
 -       if (parsed && typeof parsed === 'object' && parsed.request && typeof parsed.request.url === 'string') {
@@ -1182,19 +1091,9 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/toys.js:125:51
--     const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
-+     const outputParent = dom.querySelector(article, ""); // Get the parent element
-Tests ran:
-    initialiseModule can be invoked with minimal arguments
-    initializeInteractiveComponent attaches click and keypress listeners with expected arguments
-    initializeInteractiveComponent does not call handleSubmit when a non-Enter key is pressed
-
-
-[Survived] BooleanLiteral
-src/browser/toys.js:129:27
--     submitButton.disabled = true;
-+     submitButton.disabled = false;
+src/browser/toys.js:132:31
+-     outputElement.textContent = 'Initialising...';
++     outputElement.textContent = "";
 Tests ran:
     initialiseModule can be invoked with minimal arguments
     initializeInteractiveComponent attaches click and keypress listeners with expected arguments
@@ -1212,9 +1111,19 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/toys.js:132:31
--     outputElement.textContent = 'Initialising...';
-+     outputElement.textContent = "";
+src/browser/toys.js:125:51
+-     const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
++     const outputParent = dom.querySelector(article, ""); // Get the parent element
+Tests ran:
+    initialiseModule can be invoked with minimal arguments
+    initializeInteractiveComponent attaches click and keypress listeners with expected arguments
+    initializeInteractiveComponent does not call handleSubmit when a non-Enter key is pressed
+
+
+[Survived] BooleanLiteral
+src/browser/toys.js:129:27
+-     submitButton.disabled = true;
++     submitButton.disabled = false;
 Tests ran:
     initialiseModule can be invoked with minimal arguments
     initializeInteractiveComponent attaches click and keypress listeners with expected arguments
@@ -1954,29 +1863,9 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/generator/generator.js:531:34
--     return Array.isArray(value) && value.length > 0;
-+     return Array.isArray(value) && true;
-Tests ran:
-    Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain related links for a post
-    Blog Generator should contain a toy component for a post
-
-
-[Survived] ConditionalExpression
 src/generator/generator.js:531:10
 -     return Array.isArray(value) && value.length > 0;
 +     return true;
-Tests ran:
-    Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain related links for a post
-    Blog Generator should contain a toy component for a post
-
-
-[Survived] EqualityOperator
-src/generator/generator.js:531:34
--     return Array.isArray(value) && value.length > 0;
-+     return Array.isArray(value) && value.length >= 0;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain related links for a post
@@ -1994,14 +1883,23 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/generator/generator.js:540:10
--     return post.relatedLinks !== undefined && isNonEmptyArray(post.relatedLinks);
-+     return true && isNonEmptyArray(post.relatedLinks);
+src/generator/generator.js:531:34
+-     return Array.isArray(value) && value.length > 0;
++     return Array.isArray(value) && true;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain content for posts
-    Blog Generator should contain an illustration for posts
-  and 6 more tests!
+    Blog Generator should contain related links for a post
+    Blog Generator should contain a toy component for a post
+
+
+[Survived] EqualityOperator
+src/generator/generator.js:531:34
+-     return Array.isArray(value) && value.length > 0;
++     return Array.isArray(value) && value.length >= 0;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain related links for a post
+    Blog Generator should contain a toy component for a post
 
 
 [Survived] LogicalOperator
@@ -2016,9 +1914,20 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
+src/generator/generator.js:540:10
+-     return post.relatedLinks !== undefined && isNonEmptyArray(post.relatedLinks);
++     return true && isNonEmptyArray(post.relatedLinks);
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain content for posts
+    Blog Generator should contain an illustration for posts
+  and 6 more tests!
+
+
+[Survived] EqualityOperator
 src/generator/generator.js:549:38
 -     return Array.isArray(post.tags) && post.tags.length > 0;
-+     return Array.isArray(post.tags) && true;
++     return Array.isArray(post.tags) && post.tags.length >= 0;
 Tests ran:
     Blog Generator should display tags for posts
 
@@ -2034,10 +1943,10 @@ Tests ran:
   and 1 more test!
 
 
-[Survived] EqualityOperator
+[Survived] ConditionalExpression
 src/generator/generator.js:549:38
 -     return Array.isArray(post.tags) && post.tags.length > 0;
-+     return Array.isArray(post.tags) && post.tags.length >= 0;
++     return Array.isArray(post.tags) && true;
 Tests ran:
     Blog Generator should display tags for posts
 
@@ -2144,15 +2053,15 @@ src/generator/generator.js:62:22
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:151:23
--   const METADATA_TEXT = `Software developer and philosopher in Berlin`;
-+   const METADATA_TEXT = ``;
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/generator/generator.js:200:3
 -     'All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.';
 +     "";
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/generator/generator.js:151:23
+-   const METADATA_TEXT = `Software developer and philosopher in Berlin`;
++   const METADATA_TEXT = ``;
 Ran all tests for this mutant.
 
 [Survived] ArrowFunction
@@ -2238,6 +2147,12 @@ src/generator/html.js:173:15
 -     return join([DOCTYPE, htmlTag]);
 +     return join([]);
 
+[Survived] StringLiteral
+src/generator/html.js:4:24
+-   export const DOCTYPE = '<!DOCTYPE html>';
++   export const DOCTYPE = "";
+Ran all tests for this mutant.
+
 [Survived] ObjectLiteral
 src/generator/html.js:7:25
 -   export const LANGUAGE = {
@@ -2253,21 +2168,15 @@ src/generator/html.js:12:30
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/html.js:16:9
--     LANG: 'lang',
-+     LANG: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/html.js:4:24
--   export const DOCTYPE = '<!DOCTYPE html>';
-+   export const DOCTYPE = "";
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/generator/html.js:8:7
 -     EN: 'en',
 +     EN: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/generator/html.js:16:9
+-     LANG: 'lang',
++     LANG: "",
 Ran all tests for this mutant.
 
 [Survived] ObjectLiteral
@@ -2301,12 +2210,6 @@ src/generator/html.js:26:21
 Ran all tests for this mutant.
 
 [Survived] ObjectLiteral
-src/generator/html.js:27:3
--     { from: /'/g, to: '&#039;' },
-+     {},
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
 src/generator/html.js:26:3
 -     { from: /"/g, to: '&quot;' },
 +     {},
@@ -2316,6 +2219,12 @@ Ran all tests for this mutant.
 src/generator/html.js:27:21
 -     { from: /'/g, to: '&#039;' },
 +     { from: /'/g, to: "" },
+Ran all tests for this mutant.
+
+[Survived] ObjectLiteral
+src/generator/html.js:27:3
+-     { from: /'/g, to: '&#039;' },
++     {},
 Ran all tests for this mutant.
 
 [NoCoverage] BlockStatement
@@ -2589,14 +2498,6 @@ Tests ran:
     createParagraphElement works with different input strings
 
 
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:6:32
--     const result = ticTacToeMove('invalid json', env);
-+     const result = ticTacToeMove("", env);
-Tests ran:
-    returns optimal move for invalid input
-
-
 [Survived] BlockStatement
 src/test/toys/2025-04-06/ticTacToe.test.js:4:54
 -   test('returns optimal move for invalid input', () => {
@@ -2607,6 +2508,14 @@ src/test/toys/2025-04-06/ticTacToe.test.js:4:54
 -     expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
 -   });
 +   test('returns optimal move for invalid input', () => {});
+Tests ran:
+    returns optimal move for invalid input
+
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:6:32
+-     const result = ticTacToeMove('invalid json', env);
++     const result = ticTacToeMove("", env);
 Tests ran:
     returns optimal move for invalid input
 
@@ -2659,20 +2568,6 @@ Tests ran:
     detects win for X and returns no additional move
 
 
-[Survived] BlockStatement
-src/test/toys/2025-04-06/ticTacToe.test.js:48:57
--   test('returns optimal move for malformed schema', () => {
--     const env = new Map();
--     const result = ticTacToeMove(JSON.stringify({ badKey: [] }), env);
--     const output = JSON.parse(result);
--     expect(output.moves).toHaveLength(1);
--     expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
--   });
-+   test('returns optimal move for malformed schema', () => {});
-Tests ran:
-    returns optimal move for malformed schema
-
-
 [Survived] ArrayDeclaration
 src/test/toys/2025-04-06/ticTacToe.test.js:50:57
 -     const result = ticTacToeMove(JSON.stringify({ badKey: [] }), env);
@@ -2685,6 +2580,20 @@ Tests ran:
 src/test/toys/2025-04-06/ticTacToe.test.js:50:47
 -     const result = ticTacToeMove(JSON.stringify({ badKey: [] }), env);
 +     const result = ticTacToeMove(JSON.stringify({}), env);
+Tests ran:
+    returns optimal move for malformed schema
+
+
+[Survived] BlockStatement
+src/test/toys/2025-04-06/ticTacToe.test.js:48:57
+-   test('returns optimal move for malformed schema', () => {
+-     const env = new Map();
+-     const result = ticTacToeMove(JSON.stringify({ badKey: [] }), env);
+-     const output = JSON.parse(result);
+-     expect(output.moves).toHaveLength(1);
+-     expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+-   });
++   test('returns optimal move for malformed schema', () => {});
 Tests ran:
     returns optimal move for malformed schema
 
@@ -2709,34 +2618,10 @@ Tests ran:
     detects invalid player alternation
 
 
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:61:17
--         { player: 'X', position: { row: 0, column: 1 } }
-+         { player: "", position: { row: 0, column: 1 } }
-Tests ran:
-    detects invalid player alternation
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:61:7
--         { player: 'X', position: { row: 0, column: 1 } }
-+         {}
-Tests ran:
-    detects invalid player alternation
-
-
 [Survived] ObjectLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:60:7
 -         { player: 'X', position: { row: 0, column: 0 } },
 +         {},
-Tests ran:
-    detects invalid player alternation
-
-
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:60:17
--         { player: 'X', position: { row: 0, column: 0 } },
-+         { player: "", position: { row: 0, column: 0 } },
 Tests ran:
     detects invalid player alternation
 
@@ -2750,6 +2635,30 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:61:7
+-         { player: 'X', position: { row: 0, column: 1 } }
++         {}
+Tests ran:
+    detects invalid player alternation
+
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:61:17
+-         { player: 'X', position: { row: 0, column: 1 } }
++         { player: "", position: { row: 0, column: 1 } }
+Tests ran:
+    detects invalid player alternation
+
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:60:17
+-         { player: 'X', position: { row: 0, column: 0 } },
++         { player: "", position: { row: 0, column: 0 } },
+Tests ran:
+    detects invalid player alternation
+
+
+[Survived] ObjectLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:58:17
 -     const input = {
 -       moves: [
@@ -2758,14 +2667,6 @@ src/test/toys/2025-04-06/ticTacToe.test.js:58:17
 -       ]
 -     };
 +     const input = {};
-Tests ran:
-    detects invalid player alternation
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:61:32
--         { player: 'X', position: { row: 0, column: 1 } }
-+         { player: 'X', position: {} }
 Tests ran:
     detects invalid player alternation
 
@@ -2804,27 +2705,11 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:74:32
--         { player: 'X', position: { row: 0, column: 0 } },
-+         { player: 'X', position: {} },
+src/test/toys/2025-04-06/ticTacToe.test.js:61:32
+-         { player: 'X', position: { row: 0, column: 1 } }
++         { player: 'X', position: {} }
 Tests ran:
-    detects duplicate positions
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:75:7
--         { player: 'O', position: { row: 0, column: 0 } }
-+         {}
-Tests ran:
-    detects duplicate positions
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:74:7
--         { player: 'X', position: { row: 0, column: 0 } },
-+         {},
-Tests ran:
-    detects duplicate positions
+    detects invalid player alternation
 
 
 [Survived] StringLiteral
@@ -2839,6 +2724,30 @@ Tests ran:
 src/test/toys/2025-04-06/ticTacToe.test.js:74:17
 -         { player: 'X', position: { row: 0, column: 0 } },
 +         { player: "", position: { row: 0, column: 0 } },
+Tests ran:
+    detects duplicate positions
+
+
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:74:7
+-         { player: 'X', position: { row: 0, column: 0 } },
++         {},
+Tests ran:
+    detects duplicate positions
+
+
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:75:7
+-         { player: 'O', position: { row: 0, column: 0 } }
++         {}
+Tests ran:
+    detects duplicate positions
+
+
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:74:32
+-         { player: 'X', position: { row: 0, column: 0 } },
++         { player: 'X', position: {} },
 Tests ran:
     detects duplicate positions
 
@@ -2901,32 +2810,8 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:88:32
--         { player: 'X', position: { row: 0, column: 0 } },
-+         { player: 'X', position: {} },
-Tests ran:
-    detects too many moves on the board
-
-
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:88:17
--         { player: 'X', position: { row: 0, column: 0 } },
-+         { player: "", position: { row: 0, column: 0 } },
-Tests ran:
-    detects too many moves on the board
-
-
-[Survived] ObjectLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:88:7
 -         { player: 'X', position: { row: 0, column: 0 } },
-+         {},
-Tests ran:
-    detects too many moves on the board
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:89:7
--         { player: 'O', position: { row: 0, column: 1 } },
 +         {},
 Tests ran:
     detects too many moves on the board
@@ -2941,9 +2826,49 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:89:7
+-         { player: 'O', position: { row: 0, column: 1 } },
++         {},
+Tests ran:
+    detects too many moves on the board
+
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:88:17
+-         { player: 'X', position: { row: 0, column: 0 } },
++         { player: "", position: { row: 0, column: 0 } },
+Tests ran:
+    detects too many moves on the board
+
+
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:88:32
+-         { player: 'X', position: { row: 0, column: 0 } },
++         { player: 'X', position: {} },
+Tests ran:
+    detects too many moves on the board
+
+
+[Survived] ObjectLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:89:32
 -         { player: 'O', position: { row: 0, column: 1 } },
 +         { player: 'O', position: {} },
+Tests ran:
+    detects too many moves on the board
+
+
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:90:32
+-         { player: 'X', position: { row: 0, column: 2 } },
++         { player: 'X', position: {} },
+Tests ran:
+    detects too many moves on the board
+
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:90:17
+-         { player: 'X', position: { row: 0, column: 2 } },
++         { player: "", position: { row: 0, column: 2 } },
 Tests ran:
     detects too many moves on the board
 
@@ -2965,41 +2890,9 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:90:17
--         { player: 'X', position: { row: 0, column: 2 } },
-+         { player: "", position: { row: 0, column: 2 } },
-Tests ran:
-    detects too many moves on the board
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:90:32
--         { player: 'X', position: { row: 0, column: 2 } },
-+         { player: 'X', position: {} },
-Tests ran:
-    detects too many moves on the board
-
-
-[Survived] StringLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:91:17
 -         { player: 'O', position: { row: 1, column: 0 } },
 +         { player: "", position: { row: 1, column: 0 } },
-Tests ran:
-    detects too many moves on the board
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:92:7
--         { player: 'X', position: { row: 1, column: 1 } },
-+         {},
-Tests ran:
-    detects too many moves on the board
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:92:32
--         { player: 'X', position: { row: 1, column: 1 } },
-+         { player: 'X', position: {} },
 Tests ran:
     detects too many moves on the board
 
@@ -3013,8 +2906,8 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:93:7
--         { player: 'O', position: { row: 1, column: 2 } },
+src/test/toys/2025-04-06/ticTacToe.test.js:92:7
+-         { player: 'X', position: { row: 1, column: 1 } },
 +         {},
 Tests ran:
     detects too many moves on the board
@@ -3028,10 +2921,18 @@ Tests ran:
     detects too many moves on the board
 
 
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:92:17
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:92:32
 -         { player: 'X', position: { row: 1, column: 1 } },
-+         { player: "", position: { row: 1, column: 1 } },
++         { player: 'X', position: {} },
+Tests ran:
+    detects too many moves on the board
+
+
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:93:7
+-         { player: 'O', position: { row: 1, column: 2 } },
++         {},
 Tests ran:
     detects too many moves on the board
 
@@ -3044,6 +2945,14 @@ Tests ran:
     detects too many moves on the board
 
 
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:92:17
+-         { player: 'X', position: { row: 1, column: 1 } },
++         { player: "", position: { row: 1, column: 1 } },
+Tests ran:
+    detects too many moves on the board
+
+
 [Survived] ObjectLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:94:7
 -         { player: 'X', position: { row: 2, column: 0 } },
@@ -3052,10 +2961,10 @@ Tests ran:
     detects too many moves on the board
 
 
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:94:32
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:94:17
 -         { player: 'X', position: { row: 2, column: 0 } },
-+         { player: 'X', position: {} },
++         { player: "", position: { row: 2, column: 0 } },
 Tests ran:
     detects too many moves on the board
 
@@ -3077,17 +2986,17 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:95:32
--         { player: 'O', position: { row: 2, column: 1 } },
-+         { player: 'O', position: {} },
+src/test/toys/2025-04-06/ticTacToe.test.js:94:32
+-         { player: 'X', position: { row: 2, column: 0 } },
++         { player: 'X', position: {} },
 Tests ran:
     detects too many moves on the board
 
 
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:94:17
--         { player: 'X', position: { row: 2, column: 0 } },
-+         { player: "", position: { row: 2, column: 0 } },
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:95:32
+-         { player: 'O', position: { row: 2, column: 1 } },
++         { player: 'O', position: {} },
 Tests ran:
     detects too many moves on the board
 
@@ -3109,9 +3018,9 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:97:32
--         { player: 'O', position: { row: 0, column: 0 } }
-+         { player: 'O', position: {} }
+src/test/toys/2025-04-06/ticTacToe.test.js:96:32
+-         { player: 'X', position: { row: 2, column: 2 } },
++         { player: 'X', position: {} },
 Tests ran:
     detects too many moves on the board
 
@@ -3124,18 +3033,18 @@ Tests ran:
     detects too many moves on the board
 
 
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:97:17
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:97:32
 -         { player: 'O', position: { row: 0, column: 0 } }
-+         { player: "", position: { row: 0, column: 0 } }
++         { player: 'O', position: {} }
 Tests ran:
     detects too many moves on the board
 
 
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:96:32
--         { player: 'X', position: { row: 2, column: 2 } },
-+         { player: 'X', position: {} },
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:97:17
+-         { player: 'O', position: { row: 0, column: 0 } }
++         { player: "", position: { row: 0, column: 0 } }
 Tests ran:
     detects too many moves on the board
 
@@ -3174,6 +3083,14 @@ Tests ran:
     detects full board with no remaining moves
 
 
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:117:32
+-         { player: 'O', position: { row: 2, column: 1 } },
++         { player: 'O', position: {} },
+Tests ran:
+    detects full board with no remaining moves
+
+
 [Survived] StringLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:117:17
 -         { player: 'O', position: { row: 2, column: 1 } },
@@ -3186,6 +3103,14 @@ Tests ran:
 src/test/toys/2025-04-06/ticTacToe.test.js:118:7
 -         { player: 'X', position: { row: 2, column: 2 } }
 +         {}
+Tests ran:
+    detects full board with no remaining moves
+
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:118:17
+-         { player: 'X', position: { row: 2, column: 2 } }
++         { player: "", position: { row: 2, column: 2 } }
 Tests ran:
     detects full board with no remaining moves
 
@@ -3219,22 +3144,6 @@ src/test/toys/2025-04-06/ticTacToe.test.js:126:64
 +   test('detects win for O and returns no additional move', () => {});
 Tests ran:
     detects win for O and returns no additional move
-
-
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:118:17
--         { player: 'X', position: { row: 2, column: 2 } }
-+         { player: "", position: { row: 2, column: 2 } }
-Tests ran:
-    detects full board with no remaining moves
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:117:32
--         { player: 'O', position: { row: 2, column: 1 } },
-+         { player: 'O', position: {} },
-Tests ran:
-    detects full board with no remaining moves
 
 
 [Survived] BlockStatement
@@ -3287,6 +3196,16 @@ Tests ran:
     selects optimal move in mid-game scenario
 
 
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:183:17
+-     const input = {
+-       moves: [null]
+-     };
++     const input = {};
+Tests ran:
+    handles null move entry gracefully
+
+
 [Survived] BlockStatement
 src/test/toys/2025-04-06/ticTacToe.test.js:181:50
 -   test('handles null move entry gracefully', () => {
@@ -3300,16 +3219,6 @@ src/test/toys/2025-04-06/ticTacToe.test.js:181:50
 -     expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
 -   });
 +   test('handles null move entry gracefully', () => {});
-Tests ran:
-    handles null move entry gracefully
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:183:17
--     const input = {
--       moves: [null]
--     };
-+     const input = {};
 Tests ran:
     handles null move entry gracefully
 
@@ -3369,18 +3278,6 @@ Tests ran:
     handles invalid player
 
 
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:207:17
--     const input = {
--       moves: [
--         { player: 'X', position: { row: 5, column: -1 } }
--       ]
--     };
-+     const input = {};
-Tests ran:
-    handles out-of-bounds position
-
-
 [Survived] BlockStatement
 src/test/toys/2025-04-06/ticTacToe.test.js:205:46
 -   test('handles out-of-bounds position', () => {
@@ -3400,10 +3297,22 @@ Tests ran:
     handles out-of-bounds position
 
 
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:209:7
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:209:17
 -         { player: 'X', position: { row: 5, column: -1 } }
-+         {}
++         { player: "", position: { row: 5, column: -1 } }
+Tests ran:
+    handles out-of-bounds position
+
+
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:207:17
+-     const input = {
+-       moves: [
+-         { player: 'X', position: { row: 5, column: -1 } }
+-       ]
+-     };
++     const input = {};
 Tests ran:
     handles out-of-bounds position
 
@@ -3416,10 +3325,10 @@ Tests ran:
     handles out-of-bounds position
 
 
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:209:17
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:209:7
 -         { player: 'X', position: { row: 5, column: -1 } }
-+         { player: "", position: { row: 5, column: -1 } }
++         {}
 Tests ran:
     handles out-of-bounds position
 
@@ -3430,16 +3339,6 @@ src/test/toys/2025-04-06/ticTacToe.test.js:209:50
 +         { player: 'X', position: { row: 5, column: +1 } }
 Tests ran:
     handles out-of-bounds position
-
-
-[Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:220:17
--     const input = {
--       moves: []
--     };
-+     const input = {};
-Tests ran:
-    assigns X to first move when moves list is empty
 
 
 [Survived] BlockStatement
@@ -3459,12 +3358,16 @@ Tests ran:
     assigns X to first move when moves list is empty
 
 
-[Survived] ArrayDeclaration
-src/test/toys/2025-04-06/ticTacToe.test.js:221:12
--       moves: []
-+       moves: ["Stryker was here"]
+[Survived] ObjectLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:231:17
+-     const input = {
+-       moves: [
+-         { player: 'X', position: "invalid" }
+-       ]
+-     };
++     const input = {};
 Tests ran:
-    assigns X to first move when moves list is empty
+    handles position as non-object
 
 
 [Survived] BlockStatement
@@ -3487,15 +3390,21 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:231:17
+src/test/toys/2025-04-06/ticTacToe.test.js:220:17
 -     const input = {
--       moves: [
--         { player: 'X', position: "invalid" }
--       ]
+-       moves: []
 -     };
 +     const input = {};
 Tests ran:
-    handles position as non-object
+    assigns X to first move when moves list is empty
+
+
+[Survived] ArrayDeclaration
+src/test/toys/2025-04-06/ticTacToe.test.js:221:12
+-       moves: []
++       moves: ["Stryker was here"]
+Tests ran:
+    assigns X to first move when moves list is empty
 
 
 [Survived] ObjectLiteral
@@ -3507,17 +3416,17 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:233:17
+src/test/toys/2025-04-06/ticTacToe.test.js:233:32
 -         { player: 'X', position: "invalid" }
-+         { player: "", position: "invalid" }
++         { player: 'X', position: "" }
 Tests ran:
     handles position as non-object
 
 
 [Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:233:32
+src/test/toys/2025-04-06/ticTacToe.test.js:233:17
 -         { player: 'X', position: "invalid" }
-+         { player: 'X', position: "" }
++         { player: "", position: "invalid" }
 Tests ran:
     handles position as non-object
 
@@ -3582,6 +3491,14 @@ Tests ran:
     handles duplicate board cell even if not duplicate position object
 
 
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:267:17
+-         { player: 'X', position: { row: 1, column: 1 } },
++         { player: "", position: { row: 1, column: 1 } },
+Tests ran:
+    handles duplicate board cell even if not duplicate position object
+
+
 [Survived] ObjectLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:267:7
 -         { player: 'X', position: { row: 1, column: 1 } },
@@ -3591,17 +3508,9 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:267:32
--         { player: 'X', position: { row: 1, column: 1 } },
-+         { player: 'X', position: {} },
-Tests ran:
-    handles duplicate board cell even if not duplicate position object
-
-
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:267:17
--         { player: 'X', position: { row: 1, column: 1 } },
-+         { player: "", position: { row: 1, column: 1 } },
+src/test/toys/2025-04-06/ticTacToe.test.js:268:32
+-         { player: 'O', position: { row: 1, column: 1 } } // duplicate board cell
++         { player: 'O', position: {} } // duplicate board cell
 Tests ran:
     handles duplicate board cell even if not duplicate position object
 
@@ -3615,17 +3524,17 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:268:7
--         { player: 'O', position: { row: 1, column: 1 } } // duplicate board cell
-+         {} // duplicate board cell
+src/test/toys/2025-04-06/ticTacToe.test.js:267:32
+-         { player: 'X', position: { row: 1, column: 1 } },
++         { player: 'X', position: {} },
 Tests ran:
     handles duplicate board cell even if not duplicate position object
 
 
 [Survived] ObjectLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:268:32
+src/test/toys/2025-04-06/ticTacToe.test.js:268:7
 -         { player: 'O', position: { row: 1, column: 1 } } // duplicate board cell
-+         { player: 'O', position: {} } // duplicate board cell
++         {} // duplicate board cell
 Tests ran:
     handles duplicate board cell even if not duplicate position object
 
@@ -3649,17 +3558,10 @@ Tests ran:
     forces minimax to run from O perspective
 
 
-[Survived] BlockStatement
-src/test/toys/2025-04-06/ticTacToe.test.js:290:70
--   test('handles empty board that reaches nextPlayer assignment', () => {
--     const env = new Map();
+[Survived] ArrayDeclaration
+src/test/toys/2025-04-06/ticTacToe.test.js:292:26
 -     const input = { moves: [] };
--     // This test is duplicated to ensure nextPlayer assignment is executed
--     const result = ticTacToeMove(JSON.stringify(input), env);
--     const output = JSON.parse(result);
--     expect(output.moves[0].player).toBe('X');
--   });
-+   test('handles empty board that reaches nextPlayer assignment', () => {});
++     const input = { moves: ["Stryker was here"] };
 Tests ran:
     handles empty board that reaches nextPlayer assignment
 
@@ -3672,10 +3574,17 @@ Tests ran:
     handles empty board that reaches nextPlayer assignment
 
 
-[Survived] ArrayDeclaration
-src/test/toys/2025-04-06/ticTacToe.test.js:292:26
+[Survived] BlockStatement
+src/test/toys/2025-04-06/ticTacToe.test.js:290:70
+-   test('handles empty board that reaches nextPlayer assignment', () => {
+-     const env = new Map();
 -     const input = { moves: [] };
-+     const input = { moves: ["Stryker was here"] };
+-     // This test is duplicated to ensure nextPlayer assignment is executed
+-     const result = ticTacToeMove(JSON.stringify(input), env);
+-     const output = JSON.parse(result);
+-     expect(output.moves[0].player).toBe('X');
+-   });
++   test('handles empty board that reaches nextPlayer assignment', () => {});
 Tests ran:
     handles empty board that reaches nextPlayer assignment
 
@@ -3776,18 +3685,18 @@ Tests ran:
     returns early if board cell is already filled but not caught by seen
 
 
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:319:17
--         { player: 'O', position: JSON.parse(JSON.stringify({ row: 1, column: 1 })) }
-+         { player: "", position: JSON.parse(JSON.stringify({ row: 1, column: 1 })) }
-Tests ran:
-    returns early if board cell is already filled but not caught by seen
-
-
 [Survived] ObjectLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:319:58
 -         { player: 'O', position: JSON.parse(JSON.stringify({ row: 1, column: 1 })) }
 +         { player: 'O', position: JSON.parse(JSON.stringify({})) }
+Tests ran:
+    returns early if board cell is already filled but not caught by seen
+
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:319:17
+-         { player: 'O', position: JSON.parse(JSON.stringify({ row: 1, column: 1 })) }
++         { player: "", position: JSON.parse(JSON.stringify({ row: 1, column: 1 })) }
 Tests ran:
     returns early if board cell is already filled but not caught by seen
 
@@ -3819,26 +3728,8 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:12:6
--   test('minimax early tie return is triggered', () => {
-+   test("", () => {
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:4:6
 -   test('returns optimal move for invalid input', () => {
-+   test("", () => {
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:70:6
--   test('detects duplicate positions', () => {
-+   test("", () => {
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:84:6
--   test('detects too many moves on the board', () => {
 +   test("", () => {
 Ran all tests for this mutant.
 
@@ -3855,6 +3746,24 @@ src/test/toys/2025-04-06/ticTacToe.test.js:32:6
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:12:6
+-   test('minimax early tie return is triggered', () => {
++   test("", () => {
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:84:6
+-   test('detects too many moves on the board', () => {
++   test("", () => {
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:70:6
+-   test('detects duplicate positions', () => {
++   test("", () => {
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:56:6
 -   test('detects invalid player alternation', () => {
 +   test("", () => {
@@ -3863,6 +3772,12 @@ Ran all tests for this mutant.
 [Survived] StringLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:106:6
 -   test('detects full board with no remaining moves', () => {
++   test("", () => {
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:126:6
+-   test('detects win for O and returns no additional move', () => {
 +   test("", () => {
 Ran all tests for this mutant.
 
@@ -3879,20 +3794,8 @@ src/test/toys/2025-04-06/ticTacToe.test.js:163:6
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:126:6
--   test('detects win for O and returns no additional move', () => {
-+   test("", () => {
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:181:6
 -   test('handles null move entry gracefully', () => {
-+   test("", () => {
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:192:6
--   test('handles invalid player', () => {
 +   test("", () => {
 Ran all tests for this mutant.
 
@@ -3903,14 +3806,20 @@ src/test/toys/2025-04-06/ticTacToe.test.js:205:6
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/test/toys/2025-04-06/ticTacToe.test.js:229:6
--   test('handles position as non-object', () => {
+src/test/toys/2025-04-06/ticTacToe.test.js:192:6
+-   test('handles invalid player', () => {
 +   test("", () => {
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
 src/test/toys/2025-04-06/ticTacToe.test.js:218:6
 -   test('assigns X to first move when moves list is empty', () => {
++   test("", () => {
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/test/toys/2025-04-06/ticTacToe.test.js:229:6
+-   test('handles position as non-object', () => {
 +   test("", () => {
 Ran all tests for this mutant.
 
@@ -3961,17 +3870,6 @@ src/toys/2025-03-21/italics.js:133:61
 -     return afterText ? processTextPreservingBold(afterText) : '';
 +     return afterText ? processTextPreservingBold(afterText) : "Stryker was here!";
 
-[Survived] MethodExpression
-src/toys/2025-03-21/italics.js:9:11
--     return !text?.trim();
-+     return !text;
-Tests ran:
-    italics function leaves regular text unchanged
-    italics function adds <em> tags around asterisk-style italics while preserving asterisks
-    italics function adds <em> tags around underscore-style italics while preserving underscores
-  and 4 more tests!
-
-
 [Survived] BlockStatement
 src/toys/2025-03-21/italics.js:8:28
 -   function isEmptyText(text) {
@@ -3989,6 +3887,17 @@ Tests ran:
 src/toys/2025-03-21/italics.js:9:11
 -     return !text?.trim();
 +     return !text.trim();
+Tests ran:
+    italics function leaves regular text unchanged
+    italics function adds <em> tags around asterisk-style italics while preserving asterisks
+    italics function adds <em> tags around underscore-style italics while preserving underscores
+  and 4 more tests!
+
+
+[Survived] MethodExpression
+src/toys/2025-03-21/italics.js:9:11
+-     return !text?.trim();
++     return !text;
 Tests ran:
     italics function leaves regular text unchanged
     italics function adds <em> tags around asterisk-style italics while preserving asterisks
@@ -4067,17 +3976,6 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/toys/2025-03-26/prettyFloat.js:41:7
--     if (resolveZeroVariant(num)) return resolveZeroVariant(num);
-+     if (true) return resolveZeroVariant(num);
-Tests ran:
-    decomposeFloat handles zero
-    decomposeFloat handles positive powers of two
-    decomposeFloat handles small irrational approximations
-  and 2 more tests!
-
-
-[Survived] ConditionalExpression
 src/toys/2025-03-26/prettyFloat.js:40:7
 -     if (!Number.isFinite(num)) return "";
 +     if (false) return "";
@@ -4088,21 +3986,21 @@ Tests ran:
   and 4 more tests!
 
 
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:41:7
+-     if (resolveZeroVariant(num)) return resolveZeroVariant(num);
++     if (true) return resolveZeroVariant(num);
+Tests ran:
+    decomposeFloat handles zero
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+  and 2 more tests!
+
+
 [Survived] StringLiteral
 src/toys/2025-03-26/prettyFloat.js:67:21
 -     return A.includes('.') ? A.replace(/\.?0+$/, '') : A;
 +     return A.includes("") ? A.replace(/\.?0+$/, '') : A;
-Tests ran:
-    decomposeFloat handles positive powers of two
-    decomposeFloat handles small irrational approximations
-    decomposeFloat handles negative values
-  and 1 more test!
-
-
-[Survived] ArrayDeclaration
-src/toys/2025-03-26/prettyFloat.js:71:10
--     return ['sign', 'mantissa', 'exponent'].every(key => key in parts);
-+     return [].every(key => key in parts);
 Tests ran:
     decomposeFloat handles positive powers of two
     decomposeFloat handles small irrational approximations
@@ -4121,10 +4019,10 @@ Tests ran:
   and 1 more test!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-03-26/prettyFloat.js:75:10
--     return Boolean(parts) && hasIEEEFields(parts);
-+     return true;
+[Survived] ArrayDeclaration
+src/toys/2025-03-26/prettyFloat.js:71:10
+-     return ['sign', 'mantissa', 'exponent'].every(key => key in parts);
++     return [].every(key => key in parts);
 Tests ran:
     decomposeFloat handles positive powers of two
     decomposeFloat handles small irrational approximations
@@ -4136,6 +4034,17 @@ Tests ran:
 src/toys/2025-03-26/prettyFloat.js:75:10
 -     return Boolean(parts) && hasIEEEFields(parts);
 +     return Boolean(parts) || hasIEEEFields(parts);
+Tests ran:
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+    decomposeFloat handles negative values
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-03-26/prettyFloat.js:75:10
+-     return Boolean(parts) && hasIEEEFields(parts);
++     return true;
 Tests ran:
     decomposeFloat handles positive powers of two
     decomposeFloat handles small irrational approximations
@@ -4175,10 +4084,10 @@ src/toys/2025-03-29/fishingGame.js:53:31
 -     if (!match) throw new Error(`Unrecognized month: ${month}`);
 +     if (!match) throw new Error(``);
 
-[Survived] ObjectLiteral
-src/toys/2025-03-29/fishingGame.js:38:5
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:38:32
 -       { start: 0, end: 5, label: "night" },
-+       {},
++       { start: 0, end: 5, label: "" },
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -4186,10 +4095,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] StringLiteral
-src/toys/2025-03-29/fishingGame.js:38:32
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:38:5
 -       { start: 0, end: 5, label: "night" },
-+       { start: 0, end: 5, label: "" },
++       {},
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -4230,17 +4139,6 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] StringLiteral
-src/toys/2025-03-29/fishingGame.js:115:46
--       "insect": { modifier: 0.05, description: "a lively insect" },
-+       "insect": { modifier: 0.05, description: "" },
-Tests ran:
-    fishingGame handles empty input gracefully
-    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
-    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
-  and 4 more tests!
-
-
 [Survived] ObjectLiteral
 src/toys/2025-03-29/fishingGame.js:115:15
 -       "insect": { modifier: 0.05, description: "a lively insect" },
@@ -4252,10 +4150,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] UnaryOperator
-src/toys/2025-03-29/fishingGame.js:116:26
--       "bread": { modifier: -0.05, description: "a slice of bread" },
-+       "bread": { modifier: +0.05, description: "a slice of bread" },
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:115:46
+-       "insect": { modifier: 0.05, description: "a lively insect" },
++       "insect": { modifier: 0.05, description: "" },
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -4263,10 +4161,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] ObjectLiteral
-src/toys/2025-03-29/fishingGame.js:118:19
--       "shiny bait": { modifier: 0.15, description: "a glittering lure" },
-+       "shiny bait": {},
+[Survived] UnaryOperator
+src/toys/2025-03-29/fishingGame.js:116:26
+-       "bread": { modifier: -0.05, description: "a slice of bread" },
++       "bread": { modifier: +0.05, description: "a slice of bread" },
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -4297,17 +4195,6 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/toys/2025-03-29/fishingGame.js:122:46
--       "sausage": { modifier: 0.2, description: "a savory sausage" },
-+       "sausage": { modifier: 0.2, description: "" },
-Tests ran:
-    fishingGame handles empty input gracefully
-    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
-    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
-  and 4 more tests!
-
-
-[Survived] StringLiteral
 src/toys/2025-03-29/fishingGame.js:120:44
 -       "grub": { modifier: 0.05, description: "a succulent grub" },
 +       "grub": { modifier: 0.05, description: "" },
@@ -4318,10 +4205,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] UnaryOperator
-src/toys/2025-03-29/fishingGame.js:123:27
--       "maggot": { modifier: -0.1, description: "a squirming maggot" },
-+       "maggot": { modifier: +0.1, description: "a squirming maggot" },
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:118:19
+-       "shiny bait": { modifier: 0.15, description: "a glittering lure" },
++       "shiny bait": {},
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -4340,10 +4227,21 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] ObjectLiteral
-src/toys/2025-03-29/fishingGame.js:123:15
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:122:46
+-       "sausage": { modifier: 0.2, description: "a savory sausage" },
++       "sausage": { modifier: 0.2, description: "" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] UnaryOperator
+src/toys/2025-03-29/fishingGame.js:123:27
 -       "maggot": { modifier: -0.1, description: "a squirming maggot" },
-+       "maggot": {},
++       "maggot": { modifier: +0.1, description: "a squirming maggot" },
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -4362,6 +4260,17 @@ Tests ran:
   and 4 more tests!
 
 
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:123:15
+-       "maggot": { modifier: -0.1, description: "a squirming maggot" },
++       "maggot": {},
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
 [Survived] MethodExpression
 src/toys/2025-03-29/get.js:18:9
 -       if (input.trim() === '') {
@@ -4373,19 +4282,19 @@ Tests ran:
   and 10 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-03-29/get.js:35:116
+[Survived] StringLiteral
+src/toys/2025-03-29/get.js:35:140
 -           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
-+           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, true ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
++           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf("") !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
 Tests ran:
     get function with path traversal should return an error trying to access property on non-object
     get function with path traversal should return error when accessing deep property on null
 
 
-[Survived] StringLiteral
-src/toys/2025-03-29/get.js:35:140
+[Survived] ConditionalExpression
+src/toys/2025-03-29/get.js:35:116
 -           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
-+           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf("") !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
++           return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, true ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
 Tests ran:
     get function with path traversal should return an error trying to access property on non-object
     get function with path traversal should return error when accessing deep property on null
@@ -4436,10 +4345,10 @@ src/toys/2025-03-29/setTemporary.js:65:12
 -       return "Error: 'env' Map with 'get' method is required.";
 +       return "";
 
-[Survived] LogicalOperator
+[Survived] ConditionalExpression
 src/toys/2025-03-29/setTemporary.js:21:7
 -     if (isObject(target) && isObject(source)) {
-+     if (isObject(target) || isObject(source)) {
++     if (true) {
 Tests ran:
     setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
     setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
@@ -4447,10 +4356,10 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] ConditionalExpression
+[Survived] LogicalOperator
 src/toys/2025-03-29/setTemporary.js:21:7
 -     if (isObject(target) && isObject(source)) {
-+     if (true) {
++     if (isObject(target) || isObject(source)) {
 Tests ran:
     setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
     setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
@@ -4469,10 +4378,10 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] LogicalOperator
-src/toys/2025-03-29/setTemporary.js:64:7
+[Survived] ConditionalExpression
+src/toys/2025-03-29/setTemporary.js:64:15
 -     if (!env || typeof env.get !== 'function') {
-+     if (!env && typeof env.get !== 'function') {
++     if (!env || false) {
 Tests ran:
     setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
     setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
@@ -4480,10 +4389,10 @@ Tests ran:
   and 9 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-03-29/setTemporary.js:64:15
+[Survived] LogicalOperator
+src/toys/2025-03-29/setTemporary.js:64:7
 -     if (!env || typeof env.get !== 'function') {
-+     if (!env || false) {
++     if (!env && typeof env.get !== 'function') {
 Tests ran:
     setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
     setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
@@ -4502,6 +4411,17 @@ Tests ran:
   and 9 more tests!
 
 
+[Survived] ConditionalExpression
+src/toys/2025-03-29/setTemporary.js:88:9
+-       if (!isObject(newData.temporary)) {
++       if (false) {
+Tests ran:
+    setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
+    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
+  and 6 more tests!
+
+
 [Survived] BlockStatement
 src/toys/2025-03-29/setTemporary.js:88:39
 -       if (!isObject(newData.temporary)) {
@@ -4513,17 +4433,6 @@ Tests ran:
     setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
     setTemporary function (getData -> merge -> setData) should return error if setData throws an error
   and 2 more tests!
-
-
-[Survived] ConditionalExpression
-src/toys/2025-03-29/setTemporary.js:88:9
--       if (!isObject(newData.temporary)) {
-+       if (false) {
-Tests ran:
-    setTemporary function (getData -> merge -> setData) should call setData with merged JSON when temporary exists
-    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it does not exist
-    setTemporary function (getData -> merge -> setData) should call setData creating temporary if it exists but is not a valid object
-  and 6 more tests!
 
 
 [NoCoverage] StringLiteral
@@ -4606,17 +4515,6 @@ Tests ran:
     Cyberpunk Text Game unknown input in hub
 
 
-[Survived] LogicalOperator
-src/toys/2025-03-30/cyberpunkAdventure.js:13:29
--       const visited = new Set(scoped.visited || []);
-+       const visited = new Set(scoped.visited && []);
-Tests ran:
-    Cyberpunk Text Game initial naming and intro
-    Cyberpunk Text Game goes to Hacker Den and requires password
-    Cyberpunk Text Game goes to Transport Hub and trades datapad
-  and 2 more tests!
-
-
 [Survived] ArrayDeclaration
 src/toys/2025-03-30/cyberpunkAdventure.js:12:43
 -       const inventory = scoped.inventory || [];
@@ -4637,10 +4535,10 @@ Tests ran:
     Cyberpunk Text Game unknown input in hub
 
 
-[Survived] MethodExpression
-src/toys/2025-03-30/cyberpunkAdventure.js:15:24
--       const lowerInput = input.trim().toLowerCase();
-+       const lowerInput = input.toLowerCase();
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:18:18
+-       let output = "";
++       let output = "Stryker was here!";
 Tests ran:
     Cyberpunk Text Game initial naming and intro
     Cyberpunk Text Game goes to Hacker Den and requires password
@@ -4648,10 +4546,21 @@ Tests ran:
   and 2 more tests!
 
 
-[Survived] StringLiteral
-src/toys/2025-03-30/cyberpunkAdventure.js:18:18
--       let output = "";
-+       let output = "Stryker was here!";
+[Survived] LogicalOperator
+src/toys/2025-03-30/cyberpunkAdventure.js:13:29
+-       const visited = new Set(scoped.visited || []);
++       const visited = new Set(scoped.visited && []);
+Tests ran:
+    Cyberpunk Text Game initial naming and intro
+    Cyberpunk Text Game goes to Hacker Den and requires password
+    Cyberpunk Text Game goes to Transport Hub and trades datapad
+  and 2 more tests!
+
+
+[Survived] MethodExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:15:24
+-       const lowerInput = input.trim().toLowerCase();
++       const lowerInput = input.toLowerCase();
 Tests ran:
     Cyberpunk Text Game initial naming and intro
     Cyberpunk Text Game goes to Hacker Den and requires password
@@ -4723,14 +4632,6 @@ Tests ran:
     Cyberpunk Text Game goes to Transport Hub and trades datapad
 
 
-[Survived] ConditionalExpression
-src/toys/2025-03-30/cyberpunkAdventure.js:85:13
--           if (success) {
-+           if (true) {
-Tests ran:
-    Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
-
-
 [Survived] EqualityOperator
 src/toys/2025-03-30/cyberpunkAdventure.js:84:25
 -           const success = stealthCheck > 0.3;
@@ -4747,12 +4648,31 @@ Tests ran:
     Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
 
 
+[Survived] ConditionalExpression
+src/toys/2025-03-30/cyberpunkAdventure.js:85:13
+-           if (success) {
++           if (true) {
+Tests ran:
+    Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
+
+
 [Survived] StringLiteral
 src/toys/2025-03-30/cyberpunkAdventure.js:92:21
 -           nextState = "hub";
 +           nextState = "";
 Tests ran:
     Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
+
+
+[Survived] ArrayDeclaration
+src/toys/2025-04-06/ticTacToe.js:7:51
+-       const board = Array.from({ length: 3 }, () => Array(3).fill(null));
++       const board = Array.from({ length: 3 }, () => Array().fill(null));
+Tests ran:
+    minimax early tie return is triggered
+    detects win for X and returns no additional move
+    detects invalid player alternation
+  and 17 more tests!
 
 
 [Survived] ConditionalExpression
@@ -4786,17 +4706,6 @@ Tests ran:
     detects win for X and returns no additional move
     detects invalid player alternation
   and 14 more tests!
-
-
-[Survived] ArrayDeclaration
-src/toys/2025-04-06/ticTacToe.js:7:51
--       const board = Array.from({ length: 3 }, () => Array(3).fill(null));
-+       const board = Array.from({ length: 3 }, () => Array().fill(null));
-Tests ran:
-    minimax early tie return is triggered
-    detects win for X and returns no additional move
-    detects invalid player alternation
-  and 17 more tests!
 
 
 [Survived] ConditionalExpression
@@ -5007,17 +4916,6 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] EqualityOperator
-src/toys/2025-04-06/ticTacToe.js:53:19
--         const opp = player === "X" ? "O" : "X";
-+         const opp = player !== "X" ? "O" : "X";
-Tests ran:
-    minimax early tie return is triggered
-    selects optimal move in mid-game scenario
-    assigns X to first move when moves list is empty
-  and 4 more tests!
-
-
 [Survived] ConditionalExpression
 src/toys/2025-04-06/ticTacToe.js:48:45
 -         if (b[0][2] === p && b[1][1] === p && b[2][0] === p) return true;
@@ -5029,6 +4927,17 @@ Tests ran:
   and 3 more tests!
 
 
+[Survived] EqualityOperator
+src/toys/2025-04-06/ticTacToe.js:53:19
+-         const opp = player === "X" ? "O" : "X";
++         const opp = player !== "X" ? "O" : "X";
+Tests ran:
+    minimax early tie return is triggered
+    selects optimal move in mid-game scenario
+    assigns X to first move when moves list is empty
+  and 4 more tests!
+
+
 [Survived] StringLiteral
 src/toys/2025-04-06/ticTacToe.js:53:30
 -         const opp = player === "X" ? "O" : "X";
@@ -5038,6 +4947,17 @@ Tests ran:
     selects optimal move in mid-game scenario
     assigns X to first move when moves list is empty
   and 4 more tests!
+
+
+[Survived] EqualityOperator
+src/toys/2025-04-06/ticTacToe.js:48:45
+-         if (b[0][2] === p && b[1][1] === p && b[2][0] === p) return true;
++         if (b[0][2] === p && b[1][1] === p && b[2][0] !== p) return true;
+Tests ran:
+    detects full board with no remaining moves
+    selects optimal move in mid-game scenario
+    assigns X to first move when moves list is empty
+  and 3 more tests!
 
 
 [Survived] EqualityOperator
@@ -5062,17 +4982,6 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] EqualityOperator
-src/toys/2025-04-06/ticTacToe.js:48:45
--         if (b[0][2] === p && b[1][1] === p && b[2][0] === p) return true;
-+         if (b[0][2] === p && b[1][1] === p && b[2][0] !== p) return true;
-Tests ran:
-    detects full board with no remaining moves
-    selects optimal move in mid-game scenario
-    assigns X to first move when moves list is empty
-  and 3 more tests!
-
-
 [Survived] BooleanLiteral
 src/toys/2025-04-06/ticTacToe.js:48:67
 -         if (b[0][2] === p && b[1][1] === p && b[2][0] === p) return true;
@@ -5081,6 +4990,17 @@ Tests ran:
     detects full board with no remaining moves
     selects optimal move in mid-game scenario
     assigns X to first move when moves list is empty
+  and 3 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-04-06/ticTacToe.js:55:11
+-         if (isWin(b, opp)) return depth - 10;
++         if (true) return depth - 10;
+Tests ran:
+    selects optimal move in mid-game scenario
+    assigns X to first move when moves list is empty
+    forces minimax to score a tie at max depth
   and 3 more tests!
 
 
@@ -5096,9 +5016,9 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/toys/2025-04-06/ticTacToe.js:55:11
--         if (isWin(b, opp)) return depth - 10;
-+         if (true) return depth - 10;
+src/toys/2025-04-06/ticTacToe.js:56:11
+-         if (depth + moves.length === 9) return 0;
++         if (true) return 0;
 Tests ran:
     selects optimal move in mid-game scenario
     assigns X to first move when moves list is empty
@@ -5106,10 +5026,10 @@ Tests ran:
   and 3 more tests!
 
 
-[Survived] ConditionalExpression
+[Survived] EqualityOperator
 src/toys/2025-04-06/ticTacToe.js:56:11
 -         if (depth + moves.length === 9) return 0;
-+         if (true) return 0;
++         if (depth + moves.length !== 9) return 0;
 Tests ran:
     selects optimal move in mid-game scenario
     assigns X to first move when moves list is empty
@@ -5126,17 +5046,6 @@ Tests ran:
     selects optimal move in mid-game scenario
     assigns X to first move when moves list is empty
   and 4 more tests!
-
-
-[Survived] EqualityOperator
-src/toys/2025-04-06/ticTacToe.js:56:11
--         if (depth + moves.length === 9) return 0;
-+         if (depth + moves.length !== 9) return 0;
-Tests ran:
-    selects optimal move in mid-game scenario
-    assigns X to first move when moves list is empty
-    forces minimax to score a tie at max depth
-  and 3 more tests!
 
 
 [Survived] ConditionalExpression
@@ -5227,15 +5136,15 @@ Tests ran:
   and 4 more tests!
 
 
-Ran 4.78 tests per mutant on average.
+Ran 4.86 tests per mutant on average.
 -------------------------|------------------|----------|-----------|------------|----------|----------|
                          | % Mutation score |          |           |            |          |          |
 File                     |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
 -------------------------|--------|---------|----------|-----------|------------|----------|----------|
-All files                |  71.73 |   80.78 |     1388 |        20 |        335 |      220 |        0 |
- browser                 |  56.48 |   77.63 |      168 |         2 |         49 |       82 |        0 |
-  audio-controls.js      |  55.26 |   55.26 |       21 |         0 |         17 |        0 |        0 |
-  data.js                |  79.55 |   79.55 |       70 |         0 |         18 |        0 |        0 |
+All files                |  72.29 |   81.41 |     1399 |        20 |        324 |      220 |        0 |
+ browser                 |  60.13 |   82.65 |      179 |         2 |         38 |       82 |        0 |
+  audio-controls.js      |  63.16 |   63.16 |       24 |         0 |         14 |        0 |        0 |
+  data.js                |  88.64 |   88.64 |       78 |         0 |         10 |        0 |        0 |
   document.js            |   0.00 |    0.00 |        0 |         0 |          0 |       32 |        0 |
   main.js                |   0.00 |    0.00 |        0 |         0 |          0 |       50 |        0 |
   tags.js                |  81.25 |   81.25 |       11 |         2 |          3 |        0 |        0 |
@@ -5278,4 +5187,4 @@ All files                |  71.73 |   80.78 |     1388 |        20 |        335 
   2025-04-06             |  78.71 |   78.71 |      150 |         9 |         43 |        0 |        0 |
    ticTacToe.js          |  78.71 |   78.71 |      150 |         9 |         43 |        0 |        0 |
 -------------------------|--------|---------|----------|-----------|------------|----------|----------|
-[32m09:57:58 (69473) INFO MutationTestExecutor[39m Done in 7 minutes 46 seconds.
+[32m14:10:00 (50311) INFO MutationTestExecutor[39m Done in 7 minutes 30 seconds.
