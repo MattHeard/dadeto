@@ -86,21 +86,33 @@ function applyMoveToBoard(board, move, seen) {
   return true;
 }
 
-function minimax(b, depth, isMax, player, moves) {
-  const opp = player === "X" ? "O" : "X";
-  if (isWin(b, player)) return 10 - depth;
-  if (isWin(b, opp)) return depth - 10;
+function evaluateTerminalState(board, player, opponent, depth, moves) {
+  if (isWin(board, player)) return 10 - depth;
+  if (isWin(board, opponent)) return depth - 10;
   if (depth + moves.length === 9) return 0;
+  return null;
+}
 
-  const scores = [];
+function getAvailableMoves(board) {
+  const moves = [];
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 3; c++) {
-      if (!b[r][c]) {
-        b[r][c] = isMax ? player : opp;
-        scores.push(minimax(b, depth + 1, !isMax, player, moves));
-        b[r][c] = null;
-      }
+      if (!board[r][c]) moves.push([r, c]);
     }
+  }
+  return moves;
+}
+
+function minimax(board, depth, isMax, player, moves) {
+  const opponent = player === "X" ? "O" : "X";
+  const terminalScore = evaluateTerminalState(board, player, opponent, depth, moves);
+  if (terminalScore !== null) return terminalScore;
+
+  const scores = [];
+  for (const [r, c] of getAvailableMoves(board)) {
+    board[r][c] = isMax ? player : opponent;
+    scores.push(minimax(board, depth + 1, !isMax, player, moves));
+    board[r][c] = null;
   }
   return isMax ? Math.max(...scores) : Math.min(...scores);
 }
