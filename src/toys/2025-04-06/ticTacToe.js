@@ -9,9 +9,7 @@ export function ticTacToeMove(input) {
 
     if (moves.length >= 9) return JSON.stringify({ moves });
 
-    const nextPlayer = moves.length === 0
-      ? "X"
-      : moves[moves.length - 1].player === "X" ? "O" : "X";
+    const nextPlayer = determineNextPlayer(moves);
 
     let best = -Infinity;
     let bestMove = null;
@@ -34,6 +32,11 @@ export function ticTacToeMove(input) {
   } catch {
     return returnInitialOptimalMove();
   }
+}
+
+function determineNextPlayer(moves) {
+  if (moves.length === 0) return "X";
+  return moves[moves.length - 1].player === "X" ? "O" : "X";
 }
 
 function checkEarlyWin(board) {
