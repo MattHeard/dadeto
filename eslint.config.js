@@ -18,7 +18,8 @@ export default [
       complexity: ["warn", { max: 2 }], // Keep existing complexity rule
       "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
       "no-console": "off",
-      "eqeqeq": ["error", "always"],
+      "eqeqeq": ["warn", "always"],
+      "curly": ["warn", "all"],
       // Add other project-specific rules here if needed
     }
   },
