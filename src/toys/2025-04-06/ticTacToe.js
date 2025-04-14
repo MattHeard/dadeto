@@ -13,32 +13,13 @@ export function ticTacToeMove(input) {
       ? "X"
       : moves[moves.length - 1].player === "X" ? "O" : "X";
 
-    function minimax(b, depth, isMax, player) {
-      const opp = player === "X" ? "O" : "X";
-      if (isWin(b, player)) return 10 - depth;
-      if (isWin(b, opp)) return depth - 10;
-      if (depth + moves.length === 9) return 0;
-
-      const scores = [];
-      for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
-          if (!b[r][c]) {
-            b[r][c] = isMax ? player : opp;
-            scores.push(minimax(b, depth + 1, !isMax, player));
-            b[r][c] = null;
-          }
-        }
-      }
-      return isMax ? Math.max(...scores) : Math.min(...scores);
-    }
-
     let best = -Infinity;
     let bestMove = null;
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < 3; c++) {
         if (!board[r][c]) {
           board[r][c] = nextPlayer;
-          const score = minimax(board, 0, false, nextPlayer);
+          const score = minimax(board, 0, false, nextPlayer, moves);
           board[r][c] = null;
           if (score > best) {
             best = score;
@@ -53,6 +34,25 @@ export function ticTacToeMove(input) {
   } catch {
     return returnInitialOptimalMove();
   }
+}
+
+function minimax(b, depth, isMax, player, moves) {
+  const opp = player === "X" ? "O" : "X";
+  if (isWin(b, player)) return 10 - depth;
+  if (isWin(b, opp)) return depth - 10;
+  if (depth + moves.length === 9) return 0;
+
+  const scores = [];
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      if (!b[r][c]) {
+        b[r][c] = isMax ? player : opp;
+        scores.push(minimax(b, depth + 1, !isMax, player, moves));
+        b[r][c] = null;
+      }
+    }
+  }
+  return isMax ? Math.max(...scores) : Math.min(...scores);
 }
 
 function validateAndApplyMoves(moves) {
