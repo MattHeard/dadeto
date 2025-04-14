@@ -183,4 +183,40 @@ describe('setupAudio', () => {
     const texts = createdElements.map(el => el.textContent).filter(Boolean);
     expect(texts).toEqual(expect.arrayContaining(['PLAY', 'PAUSE', 'STOP']));
   });
+
+  it('adds a time display element with class "audio-time"', () => {
+    const audioElements = [
+      { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
+    ];
+    const buttons = [];
+    const createdElements = [];
+    const createElement = () => {
+      const element = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
+      createdElements.push(element);
+      return element;
+    };
+    const querySelectorAll = jest.fn((selector) => {
+      if (selector === 'audio') return audioElements;
+      if (selector === 'button') return buttons;
+      return [];
+    });
+    const container = { querySelectorAll };
+
+    setupAudio(
+      container,
+      () => audioElements,
+      () => {},
+      createElement,
+      () => '',
+      () => {},
+      () => {},
+      () => {},
+      () => {},
+      () => {},
+      () => {}
+    );
+
+    const timeElements = createdElements.filter(el => el.className === 'audio-time');
+    expect(timeElements.length).toBeGreaterThan(0);
+  });
 });
