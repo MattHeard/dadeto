@@ -121,6 +121,11 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
  * @param {Function} fetchFn - Function for making HTTP requests.
  * @param {object} dom - Object containing DOM functions.
  */
+function disableInputAndButton(inputElement, submitButton) {
+  inputElement.disabled = true;
+  submitButton.disabled = true;
+}
+
 export function initializeInteractiveComponent(article, processingFunction, globalState, createEnvFn, errorFn, fetchFn, dom) {
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
@@ -128,9 +133,8 @@ export function initializeInteractiveComponent(article, processingFunction, glob
   const outputElement = dom.querySelector(article, 'p.output');
   const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
   
-  // Disable controls during initialization
-  inputElement.disabled = true;
-  submitButton.disabled = true;
+  // Disable input and submit during initialization
+  disableInputAndButton(inputElement, submitButton);
   
   // Update message to show JS is running
   outputElement.textContent = 'Initialising...';
