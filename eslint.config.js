@@ -21,6 +21,7 @@ export default [
       "eqeqeq": ["warn", "always"],
       "curly": ["warn", "all"],
       "no-var": "warn",
+      "prefer-const": "warn",
       // Add other project-specific rules here if needed
     }
   },
