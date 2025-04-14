@@ -2,36 +2,10 @@ export function ticTacToeMove(input) {
   try {
     const parsed = JSON.parse(input);
     const { moves } = parsed;
-    if (!Array.isArray(moves) || moves.length > 9) return returnInitialOptimalMove();
-
-    const board = Array.from({ length: 3 }, () => Array(3).fill(null));
-    const seen = new Set();
-
-    for (let i = 0; i < moves.length; i++) {
-      const move = moves[i];
-      if (!move || typeof move !== "object") return returnInitialOptimalMove();
-
-      const { player, position } = move;
-      if (!["X", "O"].includes(player)) return returnInitialOptimalMove();
-      if (!position || typeof position !== "object") return returnInitialOptimalMove();
-
-      const { row, column } = position;
-      if (![0, 1, 2].includes(row) || ![0, 1, 2].includes(column)) return returnInitialOptimalMove();
-
-      const key = `${row},${column}`;
-      if (seen.has(key)) return returnInitialOptimalMove();
-      seen.add(key);
-
-      // Removed unreachable guard clause
-      board[row][column] = player;
-
-      if (i > 0 && player === moves[i - 1].player) return returnInitialOptimalMove();
-
-      // Early exit if the game is already won
-      if (isWin(board, "X") || isWin(board, "O")) {
-        return JSON.stringify({ moves });
-      }
-    }
+    const result = validateAndApplyMoves(moves);
+    if (!result) return returnInitialOptimalMove();
+    const { board, earlyWin } = result;
+    if (earlyWin) return JSON.stringify({ moves });
 
     if (moves.length >= 9) return JSON.stringify({ moves });
 
@@ -79,6 +53,39 @@ export function ticTacToeMove(input) {
   } catch {
     return returnInitialOptimalMove();
   }
+}
+
+function validateAndApplyMoves(moves) {
+  if (!Array.isArray(moves) || moves.length > 9) return null;
+
+  const board = Array.from({ length: 3 }, () => Array(3).fill(null));
+  const seen = new Set();
+
+  for (let i = 0; i < moves.length; i++) {
+    const move = moves[i];
+    if (!move || typeof move !== "object") return null;
+
+    const { player, position } = move;
+    if (!["X", "O"].includes(player)) return null;
+    if (!position || typeof position !== "object") return null;
+
+    const { row, column } = position;
+    if (![0, 1, 2].includes(row) || ![0, 1, 2].includes(column)) return null;
+
+    const key = `${row},${column}`;
+    if (seen.has(key)) return null;
+    seen.add(key);
+
+    board[row][column] = player;
+
+    if (i > 0 && player === moves[i - 1].player) return null;
+
+    if (isWin(board, "X") || isWin(board, "O")) {
+      return { board, earlyWin: true };
+    }
+  }
+
+  return { board, earlyWin: false };
 }
 
 function isWin(b, p) {
