@@ -11,27 +11,34 @@ export function ticTacToeMove(input) {
 
     const nextPlayer = determineNextPlayer(moves);
 
-    let best = -Infinity;
-    let bestMove = null;
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
-        if (!board[r][c]) {
-          board[r][c] = nextPlayer;
-          const score = minimax(board, 0, false, nextPlayer, moves);
-          board[r][c] = null;
-          if (score > best) {
-            best = score;
-            bestMove = { row: r, column: c };
-          }
-        }
-      }
-    }
+    const bestMove = findBestMove(board, nextPlayer, moves);
 
     const newMove = { player: nextPlayer, position: bestMove };
     return JSON.stringify({ moves: [...moves, newMove] });
   } catch {
     return returnInitialOptimalMove();
   }
+}
+
+function findBestMove(board, nextPlayer, moves) {
+  let best = -Infinity;
+  let bestMove = null;
+
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      if (!board[r][c]) {
+        board[r][c] = nextPlayer;
+        const score = minimax(board, 0, false, nextPlayer, moves);
+        board[r][c] = null;
+        if (score > best) {
+          best = score;
+          bestMove = { row: r, column: c };
+        }
+      }
+    }
+  }
+
+  return bestMove;
 }
 
 function determineNextPlayer(moves) {
