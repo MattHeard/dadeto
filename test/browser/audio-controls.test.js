@@ -146,4 +146,41 @@ describe('setupAudio', () => {
 
     expect(audioElements[0].id).toBe('custom-id');
   });
+
+  it('adds audio-controls class and sets correct text on control buttons', () => {
+    const audioElements = [
+      { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
+    ];
+    const buttons = [];
+    const createdElements = [];
+    const createElement = () => {
+      const element = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
+      createdElements.push(element);
+      return element;
+    };
+    const querySelectorAll = jest.fn((selector) => {
+      if (selector === 'audio') return audioElements;
+      if (selector === 'button') return buttons;
+      return [];
+    });
+    const container = { querySelectorAll };
+
+    setupAudio(
+      container,
+      () => audioElements,
+      () => {},
+      createElement,
+      () => '',
+      () => {},
+      () => {},
+      () => {},
+      () => {},
+      () => {},
+      () => {}
+    );
+
+    expect(createdElements[0].className).toBe('audio-controls');
+    const texts = createdElements.map(el => el.textContent).filter(Boolean);
+    expect(texts).toEqual(expect.arrayContaining(['PLAY', 'PAUSE', 'STOP']));
+  });
 });
