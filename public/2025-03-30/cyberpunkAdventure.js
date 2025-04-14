@@ -1,3 +1,14 @@
+function handleHackerDoor(lowerInput, nextInventory, nextVisited) {
+  if (lowerInput.includes("zero")) {
+    const output = `> Password accepted. Inside, a rogue AI offers you a cracked implant.`;
+    nextInventory.push("cracked implant");
+    nextVisited.add("hacker");
+    return { output, nextState: "hub", nextInventory, nextVisited };
+  } else {
+    return { output: `> Hint: the password is a number and a name...`, nextState: "hacker:door", nextInventory, nextVisited };
+  }
+}
+
 export function cyberpunkAdventure(input, env) {
   try {
     const getRandomNumber = env.get("getRandomNumber");
@@ -49,16 +60,14 @@ export function cyberpunkAdventure(input, env) {
         break;
 
       // Hacker Den phases
-      case "hacker:door":
-        if (lowerInput.includes("zero")) {
-          output = `> Password accepted. Inside, a rogue AI offers you a cracked implant.`;
-          nextInventory.push("cracked implant");
-          nextVisited.add("hacker");
-          nextState = "hub";
-        } else {
-          output = `> Hint: the password is a number and a name...`;
-        }
+      case "hacker:door": {
+        const result = handleHackerDoor(lowerInput, nextInventory, nextVisited);
+        output = result.output;
+        nextState = result.nextState;
+        nextInventory = result.nextInventory;
+        nextVisited = result.nextVisited;
         break;
+      }
 
       // Transport Hub phases
       case "transport:platform":
