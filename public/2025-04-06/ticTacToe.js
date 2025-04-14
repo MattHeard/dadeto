@@ -45,6 +45,35 @@ export function ticTacToeMove(input) {
   return buildMoveResponse(moves, newMove);
 }
 
+function initializeBoardAndSeen() {
+  const board = Array.from({ length: 3 }, () => Array(3).fill(null));
+  const seen = new Set();
+  return { board, seen };
+}
+
+function processMove(move, index, moves, board, seen) {
+  if (!isValidMove(move, index, moves)) return false;
+  if (!applyMoveToBoard(board, move, seen)) return false;
+  return true;
+}
+
+function validateAndApplyMoves(moves) {
+  if (!Array.isArray(moves) || moves.length > 9) return null;
+
+  const { board, seen } = initializeBoardAndSeen();
+
+  for (let i = 0; i < moves.length; i++) {
+    const move = moves[i];
+    if (!processMove(move, i, moves, board, seen)) return null;
+
+    if (checkEarlyWin(board)) {
+      return { board, earlyWin: true };
+    }
+  }
+
+  return { board, earlyWin: false };
+}
+
 function findBestMove(board, nextPlayer, moves) {
   let best = -Infinity;
   let bestMove = null;
@@ -163,26 +192,6 @@ function isValidMove(move, index, moves) {
   if (!respectsTurnOrder(index, player, moves)) return false;
 
   return true;
-}
-
-function validateAndApplyMoves(moves) {
-  if (!Array.isArray(moves) || moves.length > 9) return null;
-
-  const board = Array.from({ length: 3 }, () => Array(3).fill(null));
-  const seen = new Set();
-
-  for (let i = 0; i < moves.length; i++) {
-    const move = moves[i];
-    if (!isValidMove(move, i, moves)) return null;
-
-    if (!applyMoveToBoard(board, move, seen)) return null;
-
-    if (checkEarlyWin(board)) {
-      return { board, earlyWin: true };
-    }
-  }
-
-  return { board, earlyWin: false };
 }
 
 function isWin(board, player) {
