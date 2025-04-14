@@ -139,6 +139,18 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(() => setData({}, state, logFn, errorFn)).toThrow();
     expect(errorFn).toHaveBeenCalled();
   });
+  
+  it('setData logs specific error message when blog is missing', () => {
+    try {
+      setData({}, state, logFn, errorFn);
+    } catch (e) {
+      // expected to throw
+    }
+    expect(errorFn).toHaveBeenCalledWith(
+      'setData received invalid data structure:',
+      {}
+    );
+  });
 
   it('shouldUseExistingFetch returns true and logs when loading and promise exists', () => {
     const state = {
