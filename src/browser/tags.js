@@ -1,3 +1,9 @@
+function hideIfHasClass(article, className, hasClassFn, hideElementFn) {
+  if (hasClassFn(article, className)) {
+    hideElementFn(article);
+  }
+}
+
 /**
  * Functions for handling tags and filtering articles
  */
@@ -12,9 +18,7 @@
 export function hideArticlesByClass(className, getElementsByTagName, hasClassFn, hideElementFn) {
   const articles = getElementsByTagName('article');
   for (const article of articles) {
-    if (hasClassFn(article, className)) {
-      hideElementFn(article);
-    }
+    hideIfHasClass(article, className, hasClassFn, hideElementFn);
   }
 }
 
