@@ -150,14 +150,11 @@ describe('createHandleSubmit', () => {
     createEnv = () => ({});
     errorFn = jest.fn();
 
+    const env = { globalState, createEnv, errorFn, fetchFn: mockFetch, dom };
     handleSubmit = createHandleSubmit(
       { inputElement, outputElement },
-      globalState,
       processingFunction,
-      createEnv,
-      errorFn,
-      mockFetch,
-      dom
+      env
     );
   });
 
@@ -170,14 +167,11 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/data' } })
     );
 
+    const env = { globalState: {}, createEnv, errorFn, fetchFn: mockFetchFn, dom };
     const handleSubmitWithFetch = createHandleSubmit(
       { inputElement, outputElement },
-      {},
       processingFunction,
-      createEnv,
-      errorFn,
-      mockFetchFn,
-      dom
+      env
     );
 
     await handleSubmitWithFetch(new Event('submit'));
@@ -196,14 +190,11 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/fail' } })
     );
 
+    const env = { globalState: {}, createEnv, errorFn, fetchFn: mockFetchFn, dom };
     const handleSubmitWithFailingFetch = createHandleSubmit(
       { inputElement, outputElement },
-      {},
       processingFunction,
-      createEnv,
-      errorFn,
-      mockFetchFn,
-      dom
+      env
     );
 
     await handleSubmitWithFailingFetch(new Event('submit'));
@@ -222,14 +213,11 @@ describe('createHandleSubmit', () => {
       throw new Error('processing error');
     });
 
+    const env = { globalState: {}, createEnv, errorFn, fetchFn: mockFetchFn, dom };
     const handleSubmitThrowing = createHandleSubmit(
       { inputElement, outputElement },
-      {},
       processingFunction,
-      createEnv,
-      errorFn,
-      mockFetchFn,
-      dom
+      env
     );
 
     await handleSubmitThrowing(new Event('submit'));
@@ -252,14 +240,11 @@ describe('createHandleSubmit', () => {
     const input = { value: 'input without event' };
     const output = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
 
+    const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
     const handleSubmitNoEvent = createHandleSubmit(
       { inputElement: input, outputElement: output },
-      {},
       processingFunction,
-      createEnv,
-      errorFn,
-      fetchFn,
-      dom
+      env
     );
 
     await handleSubmitNoEvent(); // no event passed
