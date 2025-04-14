@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { createPlayClickHandler } from '../../src/browser/audio-controls.js';
+import { createStopClickHandler } from '../../src/browser/audio-controls.js';
 
 describe('createPlayClickHandler', () => {
   it('calls stopDefault and playAudio with the correct arguments', () => {
@@ -30,6 +31,22 @@ describe('createPauseClickHandler', () => {
 
     expect(stopDefault).toHaveBeenCalledWith(event);
     expect(pauseAudio).toHaveBeenCalledWith(audio);
+  });
+});
+
+describe('createStopClickHandler', () => {
+  it('calls stopDefault, pauseAudio, and resets audio.currentTime', () => {
+    const audio = { currentTime: 123 };
+    const stopDefault = jest.fn();
+    const pauseAudio = jest.fn();
+    const event = { type: 'click' };
+
+    const handler = createStopClickHandler(audio, stopDefault, pauseAudio);
+    handler(event);
+
+    expect(stopDefault).toHaveBeenCalledWith(event);
+    expect(pauseAudio).toHaveBeenCalledWith(audio);
+    expect(audio.currentTime).toBe(0);
   });
 });
 
