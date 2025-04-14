@@ -163,17 +163,23 @@ function getAvailableMoves(board) {
   return moves;
 }
 
-function minimax(board, depth, isMax, player, moves) {
-  const opponent = player === "X" ? "O" : "X";
-  const terminalScore = evaluateTerminalState(board, player, opponent, depth, moves);
-  if (terminalScore !== null) return terminalScore;
-
+function simulateMoves(board, depth, isMax, player, moves) {
   const scores = [];
+  const opponent = player === "X" ? "O" : "X";
   for (const [r, c] of getAvailableMoves(board)) {
     board[r][c] = isMax ? player : opponent;
     scores.push(minimax(board, depth + 1, !isMax, player, moves));
     board[r][c] = null;
   }
+  return scores;
+}
+
+function minimax(board, depth, isMax, player, moves) {
+  const opponent = player === "X" ? "O" : "X";
+  const terminalScore = evaluateTerminalState(board, player, opponent, depth, moves);
+  if (terminalScore !== null) return terminalScore;
+
+  const scores = simulateMoves(board, depth, isMax, player, moves);
   return isMax ? Math.max(...scores) : Math.min(...scores);
 }
 
