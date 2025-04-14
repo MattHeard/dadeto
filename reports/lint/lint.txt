@@ -50,16 +50,15 @@
 [0m   [2m77:1[22m    [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2                  [2mcomplexity[22m[0m
 [0m   [2m85:1[22m    [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3              [2mmax-params[22m[0m
 [0m   [2m86:38[22m   [33mwarning[39m  Expected { after 'if' condition                                                              [2mcurly[22m[0m
-[0m  [2m120:1[22m    [33mwarning[39m  Function 'handleInputError' has too many parameters (4). Maximum allowed is 3                [2mmax-params[22m[0m
-[0m  [2m126:1[22m    [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3        [2mmax-params[22m[0m
-[0m  [2m136:1[22m    [33mwarning[39m  Function 'handleInputProcessing' has too many parameters (8). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m  [2m144:146[22m  [33mwarning[39m  Arrow function has too many parameters (9). Maximum allowed is 3                             [2mmax-params[22m[0m
-[0m  [2m167:8[22m    [33mwarning[39m  Function 'initializeInteractiveComponent' has too many parameters (7). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m173:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
+[0m  [2m128:1[22m    [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3        [2mmax-params[22m[0m
+[0m  [2m138:1[22m    [33mwarning[39m  Function 'handleInputProcessing' has too many parameters (8). Maximum allowed is 3           [2mmax-params[22m[0m
+[0m  [2m147:146[22m  [33mwarning[39m  Arrow function has too many parameters (9). Maximum allowed is 3                             [2mmax-params[22m[0m
+[0m  [2m170:8[22m    [33mwarning[39m  Function 'initializeInteractiveComponent' has too many parameters (7). Maximum allowed is 3  [2mmax-params[22m[0m
 [0m  [2m176:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
-[0m  [2m185:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
-[0m  [2m217:8[22m    [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3     [2mmax-params[22m[0m
-[0m  [2m217:8[22m    [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2           [2mcomplexity[22m[0m
+[0m  [2m179:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
+[0m  [2m188:1[22m    [33mwarning[39m  Trailing spaces not allowed                                                                  [2mno-trailing-spaces[22m[0m
+[0m  [2m220:8[22m    [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3     [2mmax-params[22m[0m
+[0m  [2m220:8[22m    [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2           [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m23:26[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
@@ -302,6 +301,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 247 problems (0 errors, 247 warnings)[22m[39m[0m
+[0m[33m[1m✖ 246 problems (0 errors, 246 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 164 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
