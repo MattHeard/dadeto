@@ -1,23 +1,30 @@
-export function ticTacToeMove(input) {
+function parseInputSafely(input) {
   try {
     const parsed = JSON.parse(input);
-    const { moves } = parsed;
-    const result = validateAndApplyMoves(moves);
-    if (!result) return returnInitialOptimalMove();
-    const { board, earlyWin } = result;
-    if (earlyWin) return JSON.stringify({ moves });
-
-    if (moves.length >= 9) return JSON.stringify({ moves });
-
-    const nextPlayer = determineNextPlayer(moves);
-
-    const bestMove = findBestMove(board, nextPlayer, moves);
-
-    const newMove = { player: nextPlayer, position: bestMove };
-    return JSON.stringify({ moves: [...moves, newMove] });
+    if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.moves)) {
+      return null;
+    }
+    return parsed.moves;
   } catch {
-    return returnInitialOptimalMove();
+    return null;
   }
+}
+
+export function ticTacToeMove(input) {
+  const moves = parseInputSafely(input);
+  if (!moves) return returnInitialOptimalMove();
+
+  const result = validateAndApplyMoves(moves);
+  if (!result) return returnInitialOptimalMove();
+  const { board, earlyWin } = result;
+  if (earlyWin) return JSON.stringify({ moves });
+
+  if (moves.length >= 9) return JSON.stringify({ moves });
+
+  const nextPlayer = determineNextPlayer(moves);
+  const bestMove = findBestMove(board, nextPlayer, moves);
+  const newMove = { player: nextPlayer, position: bestMove };
+  return JSON.stringify({ moves: [...moves, newMove] });
 }
 
 function findBestMove(board, nextPlayer, moves) {
