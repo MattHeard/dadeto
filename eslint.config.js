@@ -28,6 +28,7 @@ export default [
       "no-implicit-coercion": "warn",
       "dot-notation": "warn",
       "max-depth": ["warn", 1],
+      "max-params": ["warn", 3],
       // Add other project-specific rules here if needed
     }
   },
