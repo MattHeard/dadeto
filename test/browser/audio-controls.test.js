@@ -72,6 +72,16 @@ describe('createUpdateTimeDisplay', () => {
 
     expect(display.textContent).toContain('0');
   });
+
+  it('displays minutes and seconds when currentTime is 60', () => {
+    const audio = { currentTime: 60 };
+    const display = { textContent: '' };
+
+    const updateTimeDisplay = createUpdateTimeDisplay(audio, display);
+    updateTimeDisplay();
+
+    expect(display.textContent).toBe("1:00");
+  });
 });
 
 import { setupAudio } from '../../src/browser/audio-controls.js';
