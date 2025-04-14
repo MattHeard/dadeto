@@ -36,6 +36,10 @@ export function ticTacToeMove(input) {
   }
 }
 
+function checkEarlyWin(board) {
+  return isWin(board, "X") || isWin(board, "O");
+}
+
 function applyMoveToBoard(board, move, seen) {
   const { player, position } = move;
   const { row, column } = position;
@@ -94,7 +98,7 @@ function validateAndApplyMoves(moves) {
 
     if (!applyMoveToBoard(board, move, seen)) return null;
 
-    if (isWin(board, "X") || isWin(board, "O")) {
+    if (checkEarlyWin(board)) {
       return { board, earlyWin: true };
     }
   }
