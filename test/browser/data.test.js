@@ -75,6 +75,17 @@ describe('fetchAndCacheBlogData', () => {
     expect(state.blogError).toBe(error);
     expect(mockError).toHaveBeenCalledWith('Error fetching blog data:', error);
   });
+
+  it('calls fetch with the correct URL and logs starting message', async () => {
+    mockFetch = jest.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
+    );
+
+    await fetchAndCacheBlogData(state, mockFetch, mockLog, mockError);
+
+    expect(mockFetch).toHaveBeenCalledWith('./blog.json');
+    expect(mockLog).toHaveBeenCalledWith('Starting to fetch blog data...');
+  });
 });
 
 import { getData, setData, getDeepStateCopy, shouldUseExistingFetch } from '../../src/browser/data.js';
