@@ -9,6 +9,87 @@ function handleHackerDoor(lowerInput, nextInventory, nextVisited) {
   }
 }
 
+function handleIntro({ name, time }) {
+  return {
+    output: `> ${time}\n> ${name}, you're in the Neon Market. Lights hum. Faces blur.\n> You see paths to: Hacker Den, Transport Hub, and Back Alley.\n> Where do you go? (hacker / transport / alley)`,
+    nextState: "hub"
+  };
+}
+
+function handleHub({ lowerInput }) {
+  if (lowerInput.includes("hacker")) {
+    return {
+      output: `> You approach the Hacker Den. The door requires a password.`,
+      nextState: "hacker:door"
+    };
+  } else if (lowerInput.includes("transport")) {
+    return {
+      output: `> You head to the Transport Hub. Trains screech overhead.`,
+      nextState: "transport:platform"
+    };
+  } else if (lowerInput.includes("alley")) {
+    return {
+      output: `> You slip into the Back Alley. The shadows move with you.`,
+      nextState: "alley:stealth"
+    };
+  } else {
+    return {
+      output: `> Unclear direction. Options: hacker / transport / alley`,
+      nextState: "hub"
+    };
+  }
+}
+
+function handleTransportPlatform() {
+  return {
+    output: `> A vendor offers you a neural ticket in exchange for your datapad.`,
+    nextState: "transport:trade"
+  };
+}
+
+function handleTransportTrade({ nextInventory, nextVisited, lowerInput }) {
+  if (nextInventory.includes("datapad") && lowerInput.includes("trade")) {
+    const newInventory = nextInventory.filter(item => item !== "datapad");
+    newInventory.push("neural ticket");
+    nextVisited.add("transport");
+    return {
+      output: `> You hand over the datapad. The vendor grins and slips you the neural ticket.`,
+      nextState: "hub",
+      nextInventory: newInventory,
+      nextVisited
+    };
+  } else {
+    return {
+      output: `> Do you want to trade? Type 'trade datapad'.`,
+      nextState: "transport:trade",
+      nextInventory,
+      nextVisited
+    };
+  }
+}
+
+function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
+  const stealthCheck = getRandomNumber();
+  const success = stealthCheck > 0.3;
+  if (success) {
+    nextInventory.push("stimpack");
+    nextVisited.add("alley");
+    return {
+      output: `> You dodge the shadows and find a hidden stash: a stimpack.`,
+      nextState: "hub",
+      nextInventory,
+      nextVisited
+    };
+  } else {
+    return {
+      output: `> You trip a wire. Sirens start up. You sprint back to the Market.`,
+      nextState: "hub",
+      nextInventory,
+      nextVisited
+    };
+  }
+}
+
 export function cyberpunkAdventure(input, env) {
   try {
     const getRandomNumber = env.get("getRandomNumber");
@@ -31,80 +112,39 @@ export function cyberpunkAdventure(input, env) {
     let nextInventory = [...inventory];
     let nextVisited = new Set(visited);
 
-    // If we haven’t stored the name yet, do so now
     if (!scoped.name) {
       setTemporaryData({ temporary: { CYBE1: { name } } });
       return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
     }
 
-    // Game logic
+    let result;
     switch (state) {
       case "intro":
-        output = `> ${time}\n> ${name}, you're in the Neon Market. Lights hum. Faces blur.\n> You see paths to: Hacker Den, Transport Hub, and Back Alley.\n> Where do you go? (hacker / transport / alley)`;
-        nextState = "hub";
+        result = handleIntro({ name, time });
         break;
-
       case "hub":
-        if (lowerInput.includes("hacker")) {
-          output = `> You approach the Hacker Den. The door requires a password.`;
-          nextState = "hacker:door";
-        } else if (lowerInput.includes("transport")) {
-          output = `> You head to the Transport Hub. Trains screech overhead.`;
-          nextState = "transport:platform";
-        } else if (lowerInput.includes("alley")) {
-          output = `> You slip into the Back Alley. The shadows move with you.`;
-          nextState = "alley:stealth";
-        } else {
-          output = `> Unclear direction. Options: hacker / transport / alley`;
-        }
+        result = handleHub({ lowerInput });
         break;
-
-      // Hacker Den phases
-      case "hacker:door": {
-        const result = handleHackerDoor(lowerInput, nextInventory, nextVisited);
-        output = result.output;
-        nextState = result.nextState;
-        nextInventory = result.nextInventory;
-        nextVisited = result.nextVisited;
+      case "hacker:door":
+        result = handleHackerDoor(lowerInput, nextInventory, nextVisited);
         break;
-      }
-
-      // Transport Hub phases
       case "transport:platform":
-        output = `> A vendor offers you a neural ticket in exchange for your datapad.`;
-        nextState = "transport:trade";
+        result = handleTransportPlatform();
         break;
-
       case "transport:trade":
-        if (nextInventory.includes("datapad") && lowerInput.includes("trade")) {
-          output = `> You hand over the datapad. The vendor grins and slips you the neural ticket.`;
-          nextInventory.splice(nextInventory.indexOf("datapad"), 1);
-          nextInventory.push("neural ticket");
-          nextVisited.add("transport");
-          nextState = "hub";
-        } else {
-          output = `> Do you want to trade? Type 'trade datapad'.`;
-        }
+        result = handleTransportTrade({ nextInventory, nextVisited, lowerInput });
         break;
-
-      // Back Alley phases
       case "alley:stealth":
-        const stealthCheck = getRandomNumber();
-        const success = stealthCheck > 0.3;
-        if (success) {
-          output = `> You dodge the shadows and find a hidden stash: a stimpack.`;
-          nextInventory.push("stimpack");
-          nextVisited.add("alley");
-        } else {
-          output = `> You trip a wire. Sirens start up. You sprint back to the Market.`;
-        }
-        nextState = "hub";
+        result = handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited });
         break;
-
       default:
-        output = `> Glitch in the grid. Resetting...`;
-        nextState = "intro";
+        result = { output: `> Glitch in the grid. Resetting...`, nextState: "intro" };
     }
+
+    output = result.output;
+    nextState = result.nextState || nextState;
+    nextInventory = result.nextInventory || nextInventory;
+    nextVisited = result.nextVisited || nextVisited;
 
     setTemporaryData({
       temporary: {
