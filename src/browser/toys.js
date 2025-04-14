@@ -107,16 +107,16 @@ function parseJSONResult(result) {
  * @param {Function} processingFunction - The toy's core logic function.
  * @param {Function} stopDefault - Function to prevent default event action.
  * @param {Function} createEnv - Function to create the environment map for the toy.
- * @param {Function} errorFn - Function for logging errors.
+ * @param {Function} error - Function for logging errors.
  * @param {Function} addWarningFn - Function to add a warning style to the output.
  * @param {Function} fetchFn - Function to fetch data from a URL.
  * @param {Function} createElement - Function to create an element.
  * @param {Function} setTextContent - Function to set the text content of an element.
  * @returns {Function} An event handler function.
  */
-function createHandleInputError(outputElement, errorFn, dom) {
+function createHandleInputError(outputElement, error, dom) {
   return function(e) {
-    errorFn('Error processing input:', e);
+    error('Error processing input:', e);
     dom.setTextContent(outputElement, 'Error: ' + e.message);
     dom.addWarningFn(outputElement);
   };
@@ -158,7 +158,7 @@ export const createHandleSubmit = (elements, processingFunction, env) => (event)
  * @param {Function} processingFunction - The toy's core logic function.
  * @param {object} globalState - The shared application state.
  * @param {Function} createEnvFn - Function to create the environment map for the toy.
- * @param {Function} errorFn - Function for logging errors.
+ * @param {Function} error - Function for logging errors.
  * @param {Function} fetchFn - Function for making HTTP requests.
  * @param {object} dom - Object containing DOM functions.
  */
