@@ -101,15 +101,22 @@ function minimax(b, depth, isMax, player, moves) {
   return isMax ? Math.max(...scores) : Math.min(...scores);
 }
 
+function hasValidPlayer(player) {
+  return ["X", "O"].includes(player);
+}
+
+function hasValidPosition(position) {
+  if (!position || typeof position !== "object") return false;
+  const { row, column } = position;
+  return [0, 1, 2].includes(row) && [0, 1, 2].includes(column);
+}
+
 function isValidMove(move, index, moves) {
   if (!move || typeof move !== "object") return false;
 
   const { player, position } = move;
-  if (!["X", "O"].includes(player)) return false;
-  if (!position || typeof position !== "object") return false;
-
-  const { row, column } = position;
-  if (![0, 1, 2].includes(row) || ![0, 1, 2].includes(column)) return false;
+  if (!hasValidPlayer(player)) return false;
+  if (!hasValidPosition(position)) return false;
 
   if (index > 0 && player === moves[index - 1].player) return false;
 
