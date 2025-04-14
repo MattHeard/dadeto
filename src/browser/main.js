@@ -14,7 +14,6 @@ import {
   getElementById,
   getAudioElements,
   querySelector,
-  querySelectorAll,
   removeControlsAttribute,
   createElement,
   createTextNode,
