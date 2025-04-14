@@ -4,9 +4,9 @@
  * @param {Function} errorFn - Error logging function
  * @returns {Function} Error handler function
  */
-export function handleModuleError(modulePath, errorFn) {
+export function handleModuleError(modulePath, error) {
   return (e) => {
-    errorFn('Error loading module ' + modulePath + ':', e);
+    error('Error loading module ' + modulePath + ':', e);
   };
 }
 
