@@ -93,11 +93,7 @@ function shouldCopyStateForFetch(status) {
 }
 
 function isInvalidState(value) {
-  return (
-    typeof value !== 'object' ||
-    value === null ||
-    !value.hasOwnProperty('temporary')
-  );
+  return !(value && typeof value === 'object' && value.hasOwnProperty('temporary'));
 }
 
 function validateIncomingState(incomingState, errorFn) {
