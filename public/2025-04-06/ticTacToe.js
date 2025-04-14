@@ -1,3 +1,7 @@
+function getOpponent(player) {
+  return player === "X" ? "O" : "X";
+}
+
 function tryParseJSON(input) {
   try {
     return JSON.parse(input);
@@ -165,7 +169,7 @@ function getAvailableMoves(board) {
 
 function simulateMoves(board, depth, isMax, player, moves) {
   const scores = [];
-  const opponent = player === "X" ? "O" : "X";
+  const opponent = getOpponent(player);
   for (const [r, c] of getAvailableMoves(board)) {
     board[r][c] = isMax ? player : opponent;
     scores.push(minimax(board, depth + 1, !isMax, player, moves));
@@ -175,7 +179,7 @@ function simulateMoves(board, depth, isMax, player, moves) {
 }
 
 function minimax(board, depth, isMax, player, moves) {
-  const opponent = player === "X" ? "O" : "X";
+  const opponent = getOpponent(player);
   const terminalScore = evaluateTerminalState(board, player, opponent, depth, moves);
   if (terminalScore !== null) return terminalScore;
 
