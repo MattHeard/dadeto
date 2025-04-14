@@ -62,6 +62,14 @@ function handleRequestResponse(url, outputElement, errorFn, fetchFn, dom) {
     });
 }
 
+function handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom) {
+  if (parsed && typeof parsed === 'object' && parsed.request && typeof parsed.request.url === 'string') {
+    handleRequestResponse(parsed.request.url, outputElement, errorFn, fetchFn, dom);
+    return true;
+  }
+  return false;
+}
+
 /**
  * Creates a submit handler function for an interactive toy.
  * @param {HTMLInputElement} inputElement - The input field.
@@ -97,10 +105,7 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
       parsed = null;
     }
 
-    if (parsed && typeof parsed === 'object' && parsed.request && typeof parsed.request.url === 'string') {
-      handleRequestResponse(parsed.request.url, outputElement, errorFn, fetchFn, dom);
-    } else {
-      // Default behavior
+    if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom)) {
       dom.setTextContent(outputElement, result);
     }
   } catch (e) {
