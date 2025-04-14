@@ -1,13 +1,20 @@
-function parseInputSafely(input) {
+function tryParseJSON(input) {
   try {
-    const parsed = JSON.parse(input);
-    if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.moves)) {
-      return null;
-    }
-    return parsed.moves;
+    return JSON.parse(input);
   } catch {
     return null;
   }
+}
+
+function validateParsedMoves(parsed) {
+  return parsed && typeof parsed === "object" && Array.isArray(parsed.moves)
+    ? parsed.moves
+    : null;
+}
+
+function parseInputSafely(input) {
+  const parsed = tryParseJSON(input);
+  return validateParsedMoves(parsed);
 }
 
 function shouldSkipMove(earlyWin, moves) {
