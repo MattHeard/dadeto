@@ -123,15 +123,19 @@ function handleInputError(outputElement, errorFn, dom, e) {
   dom.addWarningFn(outputElement);
 }
 
-function handleInputProcessing(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) {
+function processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) {
+  const env = createEnv(globalState);
   const inputValue = inputElement.value;
+  const result = processingFunction(inputValue, env);
+  const parsed = parseJSONResult(result);
+  if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom)) {
+    dom.setTextContent(outputElement, result);
+  }
+}
+
+function handleInputProcessing(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) {
   try {
-    const env = createEnv(globalState);
-    const result = processingFunction(inputValue, env);
-    const parsed = parseJSONResult(result);
-    if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom)) {
-      dom.setTextContent(outputElement, result);
-    }
+    processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom);
   } catch (e) {
     handleInputError(outputElement, errorFn, dom, e);
   }
