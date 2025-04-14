@@ -118,6 +118,13 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(warnFn).toHaveBeenCalledWith('Blog data previously failed to load:', state.blogError);
   });
 
+  it('getData does nothing when status is loaded', () => {
+    state.blogStatus = 'loaded';
+    getData(state, fetchFn, logFn, errorFn, warnFn);
+    expect(fetchFn).not.toHaveBeenCalled();
+    expect(warnFn).not.toHaveBeenCalled();
+  });
+
   it('getData omits internal state fields', async () => {
     state.blog = { title: 'x' };
     state.blogStatus = 'loaded';
