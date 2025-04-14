@@ -71,6 +71,19 @@ function handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom) {
 }
 
 /**
+ * Parses the JSON result and returns the parsed object or null if parsing fails.
+ * @param {string} result - The JSON string to parse.
+ * @returns {object|null} The parsed object or null.
+ */
+function parseJSONResult(result) {
+  try {
+    return JSON.parse(result);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Creates a submit handler function for an interactive toy.
  * @param {HTMLInputElement} inputElement - The input field.
  * @param {HTMLElement} outputElement - The element to display output/errors.
@@ -98,12 +111,7 @@ export const createHandleSubmit = (inputElement, outputElement, outputParent, gl
     // Call the processing function with the input value
     const result = processingFunction(inputValue, env);
 
-    let parsed;
-    try {
-      parsed = JSON.parse(result);
-    } catch {
-      parsed = null;
-    }
+    const parsed = parseJSONResult(result);
 
     if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom)) {
       dom.setTextContent(outputElement, result);
