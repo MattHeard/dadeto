@@ -61,21 +61,23 @@ function processMove(move, index, moves, board, seen) {
   return true;
 }
 
+function applyMovesSequentially(moves, board, seen) {
+  for (let i = 0; i < moves.length; i++) {
+    const move = moves[i];
+    if (!processMove(move, i, moves, board, seen)) return { valid: false };
+    if (checkEarlyWin(board)) return { valid: true, earlyWin: true };
+  }
+  return { valid: true, earlyWin: false };
+}
+
 function validateAndApplyMoves(moves) {
   if (!Array.isArray(moves) || moves.length > 9) return null;
 
   const { board, seen } = initializeBoardAndSeen();
+  const result = applyMovesSequentially(moves, board, seen);
+  if (!result.valid) return null;
 
-  for (let i = 0; i < moves.length; i++) {
-    const move = moves[i];
-    if (!processMove(move, i, moves, board, seen)) return null;
-
-    if (checkEarlyWin(board)) {
-      return { board, earlyWin: true };
-    }
-  }
-
-  return { board, earlyWin: false };
+  return { board, earlyWin: result.earlyWin };
 }
 
 function scoreMove(board, r, c, player, moves) {
