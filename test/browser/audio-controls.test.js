@@ -73,3 +73,38 @@ describe('createUpdateTimeDisplay', () => {
     expect(display.textContent).toContain('0');
   });
 });
+
+import { setupAudio } from '../../src/browser/audio-controls.js';
+
+describe('setupAudio', () => {
+  it('assigns a default id to audio elements without an id', () => {
+    const audioElements = [
+      { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() },
+      { parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
+    ];
+    const buttons = [];
+    const querySelectorAll = jest.fn((selector) => {
+      if (selector === 'audio') return audioElements;
+      if (selector === 'button') return buttons;
+      return [];
+    });
+    const container = { querySelectorAll };
+
+    setupAudio(
+      container,
+      () => audioElements,
+      () => {},
+      () => ({ className: '', id: '', textContent: '', href: '' }),
+      () => '',
+      () => {},
+      () => {},
+      () => {},
+      () => {},
+      () => {},
+      () => {}
+    );
+
+    expect(audioElements[0].id).toBe('audio-0');
+    expect(audioElements[1].id).toBe('audio-1');
+  });
+});
