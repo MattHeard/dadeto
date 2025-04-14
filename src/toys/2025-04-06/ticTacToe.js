@@ -74,6 +74,13 @@ function validateAndApplyMoves(moves) {
   return { board, earlyWin: false };
 }
 
+function scoreMove(board, r, c, player, moves) {
+  board[r][c] = player;
+  const score = minimax(board, 0, false, player, moves);
+  board[r][c] = null;
+  return score;
+}
+
 function findBestMove(board, nextPlayer, moves) {
   let best = -Infinity;
   let bestMove = null;
@@ -81,9 +88,7 @@ function findBestMove(board, nextPlayer, moves) {
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 3; c++) {
       if (!board[r][c]) {
-        board[r][c] = nextPlayer;
-        const score = minimax(board, 0, false, nextPlayer, moves);
-        board[r][c] = null;
+        const score = scoreMove(board, r, c, nextPlayer, moves);
         if (score > best) {
           best = score;
           bestMove = { row: r, column: c };
