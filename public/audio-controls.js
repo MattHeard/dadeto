@@ -45,6 +45,10 @@ export function setupAudio(
 
   audioElements.forEach(function(audio, index) {
     removeControlsAttribute(audio);
+
+    if (!audio.id) {
+      audio.id = "audio-" + index;
+    }
     
     const controlsContainer = createElement(doc, "div");
     controlsContainer.className = "audio-controls";
