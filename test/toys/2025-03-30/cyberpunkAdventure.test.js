@@ -135,4 +135,10 @@ describe('Cyberpunk Text Game', () => {
       expect(result).toMatch(/Glitch in the grid/);
     }
   });
+
+  test('returns SYSTEM ERROR if an exception is thrown (catch block)', () => {
+    env.set('getData', () => { throw new Error('fail!'); });
+    const result = cyberpunkAdventure('anything', env);
+    expect(result).toMatch(/SYSTEM ERROR: neural link failure/);
+  });
 });
