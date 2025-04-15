@@ -124,10 +124,10 @@ const handleTagLinks = () => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
         const dom = {
-          createElement: (doc, tag) => createElement(doc, tag),
-          addClass: (el, cls) => addClass(el, cls),
-          appendChild: (parent, child) => appendChild(parent, child),
-          createTextNode: (doc, text) => doc.createTextNode(text)
+          createElement,
+          addClass,
+          appendChild,
+          createTextNode
         };
         const createHideSpan = makeCreateHideSpan(dom);
         const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan }, link, className);
