@@ -92,7 +92,7 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
 }
 
 function handleIntersectionEntries(entries, observer, modulePath, article, functionName) {
-  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector };
+  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver };
   const env = { globalState, createEnv, error, fetch };
   entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, env, dom));
 }
