@@ -47,6 +47,18 @@ export function initialiseModule(article, functionName, env, dom) {
   };
 }
 
+export function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
+  if (dom.isIntersecting(entry)) {
+    console.log("handleIntersection: ", modulePath, functionName);
+    dom.importModule(
+      modulePath,
+      initialiseModule(article, functionName, env, dom),
+      handleModuleError(modulePath, error)
+    );
+    dom.disconnectObserver(observer);
+  }
+}
+
 
 /**
  * Enable controls and update status message for an interactive component

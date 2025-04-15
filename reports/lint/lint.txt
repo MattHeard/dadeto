@@ -28,19 +28,21 @@
 [0m  [2m161:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js[24m[0m
-[0m    [2m1:5[22m   [33mwarning[39m  'globalState' is never reassigned. Use 'const' instead                                  [2mprefer-const[22m[0m
-[0m   [2m11:10[22m  [33mwarning[39m  'hideArticlesByClass' is defined but never used                                         [2mno-unused-vars[22m[0m
-[0m   [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used                                              [2mno-unused-vars[22m[0m
-[0m   [2m55:1[22m   [33mwarning[39m  './tags.js' import is duplicated                                                        [2mno-duplicate-imports[22m[0m
-[0m   [2m55:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used                                         [2mno-unused-vars[22m[0m
-[0m   [2m78:1[22m   [33mwarning[39m  './document.js' import is duplicated                                                    [2mno-duplicate-imports[22m[0m
-[0m   [2m82:1[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (7). Maximum allowed is 3         [2mmax-params[22m[0m
-[0m   [2m94:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m102:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m103:12[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m104:7[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m105:8[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m106:18[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m   [2m1:5[22m   [33mwarning[39m  'globalState' is never reassigned. Use 'const' instead                                  [2mprefer-const[22m[0m
+[0m  [2m10:39[22m  [33mwarning[39m  'handleModuleError' is defined but never used                                           [2mno-unused-vars[22m[0m
+[0m  [2m10:58[22m  [33mwarning[39m  'initialiseModule' is defined but never used                                            [2mno-unused-vars[22m[0m
+[0m  [2m11:10[22m  [33mwarning[39m  'hideArticlesByClass' is defined but never used                                         [2mno-unused-vars[22m[0m
+[0m  [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used                                              [2mno-unused-vars[22m[0m
+[0m  [2m55:1[22m   [33mwarning[39m  './tags.js' import is duplicated                                                        [2mno-duplicate-imports[22m[0m
+[0m  [2m55:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used                                         [2mno-unused-vars[22m[0m
+[0m  [2m78:1[22m   [33mwarning[39m  './document.js' import is duplicated                                                    [2mno-duplicate-imports[22m[0m
+[0m  [2m82:1[22m   [33mwarning[39m  './toys.js' import is duplicated                                                        [2mno-duplicate-imports[22m[0m
+[0m  [2m84:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m92:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m93:12[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m94:7[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m95:8[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m96:18[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
 [0m   [2m1:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
@@ -49,18 +51,19 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
 [0m   [2m32:8[22m   [33mwarning[39m  Function 'initialiseModule' has too many parameters (4). Maximum allowed is 3             [2mmax-params[22m[0m
-[0m   [2m64:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
-[0m   [2m89:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
-[0m   [2m97:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m   [2m98:38[22m  [33mwarning[39m  Expected { after 'if' condition                                                           [2mcurly[22m[0m
-[0m  [2m132:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
-[0m  [2m140:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
-[0m  [2m198:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
-[0m  [2m199:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m202:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m212:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m244:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m244:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m   [2m50:8[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (7). Maximum allowed is 3           [2mmax-params[22m[0m
+[0m   [2m76:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
+[0m  [2m101:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
+[0m  [2m109:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
+[0m  [2m110:38[22m  [33mwarning[39m  Expected { after 'if' condition                                                           [2mcurly[22m[0m
+[0m  [2m144:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
+[0m  [2m152:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
+[0m  [2m210:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
+[0m  [2m211:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m214:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m224:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m256:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m256:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m23:26[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
@@ -308,6 +311,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 253 problems (0 errors, 253 warnings)[22m[39m[0m
+[0m[33m[1m✖ 256 problems (0 errors, 256 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 164 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

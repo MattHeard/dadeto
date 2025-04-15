@@ -79,17 +79,7 @@ import { isIntersecting, disconnectObserver } from './document.js';
 // isIntersecting and disconnectObserver moved to document.js
 
 
-function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
-  if (dom.isIntersecting(entry)) {
-    console.log("handleIntersection: ", modulePath, functionName);
-    dom.importModule(
-      modulePath,
-      initialiseModule(article, functionName, env, dom),
-      handleModuleError(modulePath, error)
-    );
-    dom.disconnectObserver(observer);
-  }
-}
+import { handleIntersection } from './toys.js';
 
 function handleIntersectionEntries(entries, observer, modulePath, article, functionName) {
   const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule };
