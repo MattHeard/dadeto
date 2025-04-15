@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1744738747281" clover="3.2.0">
-  <project timestamp="1744738747281" name="All files">
-    <metrics statements="902" coveredstatements="877" conditionals="355" coveredconditionals="331" methods="328" coveredmethods="318" elements="1585" coveredelements="1526" complexity="0" loc="902" ncloc="902" packages="12" files="24" classes="24"/>
+<coverage generated="1744739137819" clover="3.2.0">
+  <project timestamp="1744739137819" name="All files">
+    <metrics statements="902" coveredstatements="879" conditionals="355" coveredconditionals="331" methods="328" coveredmethods="319" elements="1585" coveredelements="1529" complexity="0" loc="902" ncloc="902" packages="12" files="24" classes="24"/>
     <package name="browser">
-      <metrics statements="238" coveredstatements="222" conditionals="53" coveredconditionals="50" methods="80" coveredmethods="70"/>
+      <metrics statements="238" coveredstatements="224" conditionals="53" coveredconditionals="50" methods="80" coveredmethods="71"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="2" type="stmt"/>
@@ -124,27 +124,27 @@
         <line num="162" count="1" type="stmt"/>
       </file>
       <file name="tags.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js">
-        <metrics statements="39" coveredstatements="33" conditionals="6" coveredconditionals="6" methods="15" coveredmethods="12"/>
-        <line num="2" count="2" type="stmt"/>
+        <metrics statements="39" coveredstatements="35" conditionals="6" coveredconditionals="6" methods="15" coveredmethods="13"/>
+        <line num="2" count="4" type="stmt"/>
         <line num="6" count="2" type="cond" truecount="2" falsecount="0"/>
         <line num="7" count="1" type="stmt"/>
-        <line num="21" count="3" type="stmt"/>
-        <line num="22" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="23" count="1" type="stmt"/>
-        <line num="24" count="1" type="stmt"/>
-        <line num="25" count="1" type="stmt"/>
-        <line num="26" count="1" type="stmt"/>
-        <line num="27" count="1" type="stmt"/>
-        <line num="36" count="1" type="stmt"/>
-        <line num="37" count="1" type="stmt"/>
-        <line num="38" count="1" type="stmt"/>
-        <line num="45" count="1" type="stmt"/>
-        <line num="46" count="0" type="stmt"/>
-        <line num="47" count="0" type="stmt"/>
+        <line num="21" count="5" type="stmt"/>
+        <line num="22" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="25" count="3" type="stmt"/>
+        <line num="26" count="3" type="stmt"/>
+        <line num="27" count="3" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="37" count="3" type="stmt"/>
+        <line num="38" count="3" type="stmt"/>
+        <line num="45" count="2" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="47" count="1" type="stmt"/>
         <line num="56" count="1" type="stmt"/>
         <line num="57" count="0" type="stmt"/>
         <line num="58" count="0" type="stmt"/>
-        <line num="68" count="2" type="stmt"/>
+        <line num="68" count="4" type="stmt"/>
         <line num="69" count="1" type="stmt"/>
         <line num="70" count="1" type="stmt"/>
         <line num="71" count="1" type="stmt"/>
@@ -161,7 +161,7 @@
         <line num="100" count="2" type="cond" truecount="2" falsecount="0"/>
         <line num="102" count="1" type="stmt"/>
         <line num="104" count="1" type="stmt"/>
-        <line num="115" count="1" type="stmt"/>
+        <line num="115" count="3" type="stmt"/>
         <line num="116" count="0" type="stmt"/>
         <line num="117" count="0" type="stmt"/>
       </file>
