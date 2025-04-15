@@ -91,6 +91,7 @@ initializeVisibleComponents(
 // Tag filtering functionality
 
 import { startsWith, makeHandleClassName } from './tags.js';
+import { getClasses } from './document.js';
 
 const handleTagLinks = () => {
   const handleLink = link => {
@@ -110,7 +111,6 @@ const handleTagLinks = () => {
       removeNextSibling
     };
     const handleClassName = makeHandleClassName(dom, link);
-    const getClasses = el => Array.from(el.classList);
     getClasses(link).forEach(handleClassName);
   };
 

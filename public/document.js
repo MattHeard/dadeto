@@ -25,6 +25,7 @@ export const warn = (...args) => console.warn(...args);
 export const error = (...args) => console.error(...args);
 
 // Utility functions
+export const getClasses = (el) => Array.from(el.classList);
 export const getRandomNumber = () => Math.random();
 export const getCurrentTime = () => new Date().toISOString();
 export const hasNextSiblingClass = (link, cls) =>
