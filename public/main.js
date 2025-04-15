@@ -50,7 +50,7 @@ const createHandleClick = (dom, link, className) => event => {
     link,
     className,
     dom.hasNextSiblingClass,
-    removeNextSibling,
+    dom.removeNextSibling,
     createHideSpan
   );
 };
@@ -126,7 +126,7 @@ const handleTagLinks = () => {
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
-        const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass }, link, className);
+        const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass, removeNextSibling }, link, className);
         addEventListener(link, 'click', handleClick);
         return; // exit after first tag- match
       }
