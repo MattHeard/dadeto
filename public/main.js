@@ -114,7 +114,7 @@ const handleTagLinks = () => {
         const createHideSpan = makeHandleHideSpan(dom);
         const clickDeps = { ...dom, createHideSpan };
         const handleClick = createHandleClick(clickDeps, link, className);
-        addEventListener(link, 'click', handleClick);
+        dom.addEventListener(link, 'click', handleClick);
         return; // exit after first tag- match
       }
     };
