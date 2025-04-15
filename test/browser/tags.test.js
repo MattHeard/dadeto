@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { hideArticlesByClass, toggleHideLink, makeHandleClassName, makeHandleLink } from '../../src/browser/tags.js';
+import { hideArticlesByClass, toggleHideLink, makeHandleClassName, makeHandleLink, makeHandleHideSpan } from '../../src/browser/tags.js';
 
 describe('hideArticlesByClass', () => {
   it('does not throw when given a class and no matching elements', () => {
@@ -85,5 +85,22 @@ describe('makeHandleLink', () => {
     const result = makeHandleLink(dom);
     const value = result();
     expect(value).toBeUndefined();
+  });
+});
+
+describe('makeHandleHideSpan', () => {
+  it('invokes makeHandleHideSpan and its returned function with minimal mock dom', () => {
+    const dom = {
+      createElement: () => ({}),
+      addClass: () => {},
+      appendChild: () => {},
+      createTextNode: () => ({}),
+      setTextContent: () => {},
+      addEventListener: () => {},
+      insertBefore: () => {},
+    };
+    const createHideSpan = makeHandleHideSpan(dom);
+    const result = createHideSpan({}, 'some-class');
+    expect(result).toBeUndefined();
   });
 });
