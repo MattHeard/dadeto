@@ -48,31 +48,36 @@ function importModule(modulePath, onSuccess, onError) {
 // createHandleClick has been moved to tags.js
 
 
-const createHideSpan = (link, className) => {
-  const dom = {
-    createElement: (doc, tag) => createElement(doc, tag),
-    addClass: (el, cls) => addClass(el, cls)
+function makeCreateHideSpan(dom) {
+  return function createHideSpan(link, className) {
+    var span = dom.createElement(document, 'span');
+    dom.addClass(span, 'hide-span');
+    appendChild(span, document.createTextNode(" ("));
+
+    var hideLink = dom.createElement(document, 'a');
+    hideLink.textContent = "hide";
+    addEventListener(hideLink, 'click', function(event) {
+      stopDefault(event);
+      hideArticlesByClass(
+        className,
+        tagName => document.getElementsByTagName(tagName),
+        (element, cls) => element.classList.contains(cls),
+        element => element.style.display = 'none'
+      );
+    });
+
+    appendChild(span, hideLink);
+    appendChild(span, document.createTextNode(")"));
+    insertBefore(link.parentNode, span, link.nextSibling);
   };
-  var span = dom.createElement(document, 'span');
-  dom.addClass(span, 'hide-span');
-  appendChild(span, document.createTextNode(" ("));
+}
 
-  var hideLink = dom.createElement(document, 'a');
-  hideLink.textContent = "hide";
-  addEventListener(hideLink, 'click', function(event) {
-    stopDefault(event);
-    hideArticlesByClass(
-      className,
-      tagName => document.getElementsByTagName(tagName),
-      (element, cls) => element.classList.contains(cls),
-      element => element.style.display = 'none'
-    );
-  });
-
-  appendChild(span, hideLink);
-  appendChild(span, document.createTextNode(")"));
-  insertBefore(link.parentNode, span, link.nextSibling);
+const dom = {
+  createElement: (doc, tag) => createElement(doc, tag),
+  addClass: (el, cls) => addClass(el, cls)
 };
+
+const createHideSpan = makeCreateHideSpan(dom);
 
 function createEnv() {
   return new Map([

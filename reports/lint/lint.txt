@@ -30,15 +30,15 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js[24m[0m
 [0m    [2m1:5[22m   [33mwarning[39m  'globalState' is never reassigned. Use 'const' instead                                  [2mprefer-const[22m[0m
 [0m   [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used                                              [2mno-unused-vars[22m[0m
-[0m   [2m56:3[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
-[0m   [2m60:3[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
-[0m   [2m94:1[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
-[0m  [2m106:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m112:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m113:12[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m114:7[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m115:8[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m116:18[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m   [2m53:5[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
+[0m   [2m57:5[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
+[0m   [2m99:1[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
+[0m  [2m111:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m117:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m118:12[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m119:7[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m120:8[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m121:18[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
 [0m   [2m1:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
