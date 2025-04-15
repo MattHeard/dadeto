@@ -142,7 +142,7 @@ export function cyberpunkAdventure(input, env) {
     }
 
     output = result.output;
-    nextState = result.nextState || nextState;
+    nextState = result.nextState;
     nextInventory = result.nextInventory || nextInventory;
     nextVisited = result.nextVisited || nextVisited;
 

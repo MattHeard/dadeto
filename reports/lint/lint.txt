@@ -165,7 +165,7 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js[24m[0m
 [0m  [2m19:1[22m  [33mwarning[39m  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
 [0m  [2m50:1[22m  [33mwarning[39m  Function 'handleTransportTrade' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m93:8[22m  [33mwarning[39m  Function 'cyberpunkAdventure' has a complexity of 18. Maximum allowed is 2   [2mcomplexity[22m[0m
+[0m  [2m93:8[22m  [33mwarning[39m  Function 'cyberpunkAdventure' has a complexity of 17. Maximum allowed is 2   [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js[24m[0m
 [0m   [2m17:1[22m   [33mwarning[39m  Function 'validateParsedMoves' has a complexity of 4. Maximum allowed is 2          [2mcomplexity[22m[0m

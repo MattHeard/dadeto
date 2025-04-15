@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1744743124306" clover="3.2.0">
-  <project timestamp="1744743124306" name="All files">
-    <metrics statements="902" coveredstatements="888" conditionals="355" coveredconditionals="337" methods="328" coveredmethods="321" elements="1585" coveredelements="1546" complexity="0" loc="902" ncloc="902" packages="12" files="24" classes="24"/>
+<coverage generated="1744743537177" clover="3.2.0">
+  <project timestamp="1744743537177" name="All files">
+    <metrics statements="902" coveredstatements="888" conditionals="353" coveredconditionals="336" methods="328" coveredmethods="321" elements="1583" coveredelements="1545" complexity="0" loc="902" ncloc="902" packages="12" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="238" coveredstatements="228" conditionals="53" coveredconditionals="50" methods="80" coveredmethods="73"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -820,9 +820,9 @@
       </file>
     </package>
     <package name="toys.2025-03-30">
-      <metrics statements="69" coveredstatements="69" conditionals="40" coveredconditionals="39" methods="8" coveredmethods="8"/>
+      <metrics statements="69" coveredstatements="69" conditionals="38" coveredconditionals="38" methods="8" coveredmethods="8"/>
       <file name="cyberpunkAdventure.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js">
-        <metrics statements="69" coveredstatements="69" conditionals="40" coveredconditionals="39" methods="8" coveredmethods="8"/>
+        <metrics statements="69" coveredstatements="69" conditionals="38" coveredconditionals="38" methods="8" coveredmethods="8"/>
         <line num="2" count="2" type="cond" truecount="2" falsecount="0"/>
         <line num="3" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
@@ -886,7 +886,7 @@
         <line num="139" count="2" type="stmt"/>
         <line num="141" count="1" type="stmt"/>
         <line num="144" count="15" type="stmt"/>
-        <line num="145" count="15" type="cond" truecount="1" falsecount="1"/>
+        <line num="145" count="15" type="stmt"/>
         <line num="146" count="15" type="cond" truecount="2" falsecount="0"/>
         <line num="147" count="15" type="cond" truecount="2" falsecount="0"/>
         <line num="149" count="15" type="stmt"/>
