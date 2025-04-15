@@ -6,7 +6,7 @@ export const addClass = (element, className) => element.classList.add(className)
 export const getAudioElements = () => querySelectorAll(document, "audio");
 export const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
 export const createElement = (tag) => document.createElement(tag);
-export const createTextNode = (value = " ") => document.createTextNode(value);
+export const createTextNode = (value) => document.createTextNode(value);
 export const addEventListener = (element, event, func) => element.addEventListener(event, func);
 export const appendChild = (parentNode, newChild) => parentNode.appendChild(newChild);
 export const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
