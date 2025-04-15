@@ -20,6 +20,29 @@ export function makeHandleHideClick(dom, className) {
   };
 }
 
+/**
+ * Factory to create a function that adds a hide-span to a tag link
+ * @param {object} dom - DOM helpers
+ * @returns {Function}
+ */
+export function makeHandleHideSpan(dom) {
+  return function createHideSpan(link, className) {
+    var span = dom.createElement('span');
+    dom.addClass(span, 'hide-span');
+    dom.appendChild(span, dom.createTextNode(" ("));
+
+    var hideLink = dom.createElement('a');
+    dom.setTextContent(hideLink, "hide");
+
+    const handleHideClick = makeHandleHideClick(dom, className);
+    dom.addEventListener(hideLink, 'click', handleHideClick);
+
+    dom.appendChild(span, hideLink);
+    dom.appendChild(span, dom.createTextNode(")"));
+    dom.insertBefore(link.parentNode, span, link.nextSibling);
+  };
+}
+
 export function hideArticlesByClass(className, dom) {
   const articles = dom.getElementsByTagName('article');
   for (const article of articles) {

@@ -51,26 +51,7 @@ function importModule(modulePath, onSuccess, onError) {
 // createHandleClick has been moved to tags.js
 
 
-import { makeHandleHideClick } from './tags.js';
-
-function makeCreateHideSpan(dom) {
-  return function createHideSpan(link, className) {
-    var span = dom.createElement('span');
-    dom.addClass(span, 'hide-span');
-    dom.appendChild(span, dom.createTextNode(" ("));
-
-    var hideLink = dom.createElement('a');
-    dom.setTextContent(hideLink, "hide");
-
-
-    const handleHideClick = makeHandleHideClick(dom, className);
-    dom.addEventListener(hideLink, 'click', handleHideClick);
-
-    dom.appendChild(span, hideLink);
-    dom.appendChild(span, dom.createTextNode(")"));
-    dom.insertBefore(link.parentNode, span, link.nextSibling);
-  };
-}
+import { makeHandleHideSpan, makeHandleHideClick } from './tags.js';
 
 
 
@@ -136,7 +117,7 @@ const handleTagLinks = () => {
           getElementsByTagName,
           insertBefore
         };
-        const createHideSpan = makeCreateHideSpan(dom);
+        const createHideSpan = makeHandleHideSpan(dom);
         const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan }, link, className);
         addEventListener(link, 'click', handleClick);
         return; // exit after first tag- match
