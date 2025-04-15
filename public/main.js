@@ -94,23 +94,23 @@ import { startsWith } from './tags.js';
 
 const handleTagLinks = () => {
   const handleLink = link => {
+    const dom = {
+      createElement,
+      addClass,
+      appendChild,
+      createTextNode,
+      setTextContent,
+      addEventListener,
+      stopDefault,
+      hasClass,
+      hide,
+      getElementsByTagName,
+      insertBefore,
+      hasNextSiblingClass,
+      removeNextSibling
+    };
     const handleClassName = className => {
       if (startsWith(className, 'tag-')) {
-        const dom = {
-          createElement,
-          addClass,
-          appendChild,
-          createTextNode,
-          setTextContent,
-          addEventListener,
-          stopDefault,
-          hasClass,
-          hide,
-          getElementsByTagName,
-          insertBefore,
-          hasNextSiblingClass,
-          removeNextSibling
-        };
         const createHideSpan = makeHandleHideSpan(dom);
         const clickDeps = { ...dom, createHideSpan };
         const handleClick = createHandleClick(clickDeps, link, className);
@@ -118,6 +118,7 @@ const handleTagLinks = () => {
         return; // exit after first tag- match
       }
     };
+
 
     Array.from(link.classList).forEach(handleClassName);
   };
