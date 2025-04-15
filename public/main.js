@@ -66,12 +66,10 @@ function createEnv() {
 }
 
 
-function createIntersectionObserver(article, modulePath, functionName) {
-  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule, error, makeIntersectionObserver };
-  const env = { globalState, createEnv, error, fetch };
-  const observerCallback = makeObserverCallback(modulePath, article, functionName, env, dom);
-  return dom.makeIntersectionObserver(observerCallback);
-}
+const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule, error, makeIntersectionObserver };
+const env = { globalState, createEnv, error, fetch };
+import { makeCreateIntersectionObserver } from './toys.js';
+const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 import { isIntersecting, disconnectObserver } from './document.js';
 // isIntersecting and disconnectObserver moved to document.js

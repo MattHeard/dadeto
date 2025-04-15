@@ -68,6 +68,13 @@ export function makeObserverCallback(modulePath, article, functionName, env, dom
     handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom);
 }
 
+export function makeCreateIntersectionObserver(dom, env) {
+  return function createIntersectionObserver(article, modulePath, functionName) {
+    const observerCallback = makeObserverCallback(modulePath, article, functionName, env, dom);
+    return dom.makeIntersectionObserver(observerCallback);
+  };
+}
+
 
 /**
  * Enable controls and update status message for an interactive component
