@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { hideArticlesByClass, toggleHideLink } from '../../src/browser/tags.js';
+import { hideArticlesByClass, toggleHideLink, makeHandleClassName } from '../../src/browser/tags.js';
 
 describe('hideArticlesByClass', () => {
   it('does not throw when given a class and no matching elements', () => {
@@ -64,6 +64,6 @@ describe('toggleHideLink', () => {
 
 describe('makeHandleClassName', () => {
   it('placeholder test', () => {
-    expect(true).toBe(true);
+    makeHandleClassName();
   });
 });
