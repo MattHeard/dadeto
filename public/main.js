@@ -93,6 +93,11 @@ initializeVisibleComponents(
 import { startsWith, makeHandleClassName } from './tags.js';
 import { getClasses } from './document.js';
 
+const makeHandleLink = dom => link => {
+  const handleClassName = makeHandleClassName(dom, link);
+  dom.getClasses(link).forEach(handleClassName);
+};
+
 const handleTagLinks = () => {
   const dom = {
     createElement,
@@ -110,11 +115,7 @@ const handleTagLinks = () => {
     removeNextSibling,
     getClasses
   };
-  const handleLink = link => {
-    const handleClassName = makeHandleClassName(dom, link);
-    dom.getClasses(link).forEach(handleClassName);
-  };
-
+  const handleLink = makeHandleLink(dom);
   Array.from(document.getElementsByTagName('a')).forEach(handleLink);
 };
 
