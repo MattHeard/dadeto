@@ -1,5 +1,5 @@
 // DOM helper functions
-export const getElementById = (doc, id) => doc.getElementById(id);
+export const getElementById = (id) => document.getElementById(id);
 export const querySelector = (el, selector) => el.querySelector(selector);
 export const querySelectorAll = (docOrEl, selector) => docOrEl.querySelectorAll(selector);
 export const addClass = (element, className) => element.classList.add(className);
