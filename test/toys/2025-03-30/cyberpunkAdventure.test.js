@@ -141,4 +141,10 @@ describe('Cyberpunk Text Game', () => {
     const result = cyberpunkAdventure('anything', env);
     expect(result).toMatch(/SYSTEM ERROR: neural link failure/);
   });
+
+  test('starts new game if CYBE1 data is missing', () => {
+    env.set('getData', () => ({ temporary: {} }));
+    const result = cyberpunkAdventure('Blaze', env);
+    expect(result).toMatch(/Welcome, Blaze|your story begins|start to continue|Neon Market/i);
+  });
 });
