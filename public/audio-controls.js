@@ -81,11 +81,11 @@ export function setupAudio(
     addEventListener(audio, "timeupdate", updateTimeDisplay);
      
     appendChild(controlsContainer, playButton);
-    appendChild(controlsContainer, createTextNode());
+    appendChild(controlsContainer, createTextNode(" "));
     appendChild(controlsContainer, pauseButton);
-    appendChild(controlsContainer, createTextNode());
+    appendChild(controlsContainer, createTextNode(" "));
     appendChild(controlsContainer, stopButton);
-    appendChild(controlsContainer, createTextNode());
+    appendChild(controlsContainer, createTextNode(" "));
     appendChild(controlsContainer, timeDisplay);
     
     insertBefore(audio.parentNode, controlsContainer, audio.nextSibling);
