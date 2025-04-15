@@ -66,7 +66,35 @@ function createEnv() {
 }
 
 
-const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule, error, makeIntersectionObserver };
+const dom = {
+  createElement,
+  setTextContent,
+  stopDefault,
+  addWarning,
+  addEventListener,
+  querySelector,
+  disconnectObserver,
+  isIntersecting,
+  importModule,
+  error,
+  makeIntersectionObserver,
+  addClass,
+  appendChild,
+  createTextNode,
+  getElementsByTagName,
+  getClasses,
+  getRandomNumber,
+  getCurrentTime,
+  hasClass,
+  hasNextSiblingClass,
+  hide,
+  insertBefore,
+  log,
+  pauseAudio,
+  playAudio,
+  removeControlsAttribute,
+  removeNextSibling
+};
 const env = { globalState, createEnv, error, fetch };
 import { makeCreateIntersectionObserver } from './toys.js';
 const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
@@ -95,22 +123,6 @@ import { getClasses } from './document.js';
 
 
 const handleTagLinks = () => {
-  const dom = {
-    createElement,
-    addClass,
-    appendChild,
-    createTextNode,
-    setTextContent,
-    addEventListener,
-    stopDefault,
-    hasClass,
-    hide,
-    getElementsByTagName,
-    insertBefore,
-    hasNextSiblingClass,
-    removeNextSibling,
-    getClasses
-  };
   const handleLink = makeHandleLink(dom);
   Array.from(document.getElementsByTagName('a')).forEach(handleLink);
 };
