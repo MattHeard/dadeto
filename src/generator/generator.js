@@ -486,10 +486,6 @@ function generateTitleSection(post) {
  * Generate the date section for a blog post
  */
 function generateDateSection(post) {
-  if (!post.publicationDate) {
-    return '';
-  }
-
   const dateKey = createDiv(CLASS.KEY, 'pubAt');
   const dateValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
 
