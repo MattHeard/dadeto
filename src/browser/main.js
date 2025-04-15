@@ -82,9 +82,10 @@ import { isIntersecting } from './document.js';
 function handleIntersection(entry, observer, modulePath, article, functionName, dom) {
   if (isIntersecting(entry)) {
     console.log("handleIntersection: ", modulePath, functionName);
+    const env = { globalState, createEnv, error, fetch };
     importModule(
       modulePath,
-      initialiseModule(article, functionName, globalState, createEnv, error, fetch, dom),
+      initialiseModule(article, functionName, env, dom),
       handleModuleError(modulePath, error)
     );
     observer.disconnect();

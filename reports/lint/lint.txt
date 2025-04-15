@@ -35,12 +35,12 @@
 [0m   [2m55:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used                                         [2mno-unused-vars[22m[0m
 [0m   [2m78:1[22m   [33mwarning[39m  './document.js' import is duplicated                                                    [2mno-duplicate-imports[22m[0m
 [0m   [2m82:1[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (6). Maximum allowed is 3         [2mmax-params[22m[0m
-[0m   [2m94:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m101:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m102:12[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m103:7[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m104:8[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m105:18[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m   [2m95:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m102:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m103:12[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m104:7[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m105:8[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m106:18[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
 [0m   [2m1:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
