@@ -31,7 +31,8 @@ import {
   getCurrentTime,
   hasNextSiblingClass,
   removeNextSibling,
-  setTextContent
+  setTextContent,
+  addClass
 } from './document.js';
 
 /**
