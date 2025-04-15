@@ -64,8 +64,8 @@ function makeCreateHideSpan(dom) {
       hideArticlesByClass(
         className,
         dom.getElementsByTagName,
-        hasClass,
-        hide
+        dom.hasClass,
+        dom.hide
       );
     };
 
