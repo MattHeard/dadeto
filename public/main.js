@@ -82,7 +82,7 @@ import { isIntersecting, disconnectObserver } from './document.js';
 import { handleIntersection } from './toys.js';
 
 function handleIntersectionEntries(entries, observer, modulePath, article, functionName) {
-  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule };
+  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule, error };
   const env = { globalState, createEnv, error, fetch };
   entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, env, dom));
 }

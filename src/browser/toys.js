@@ -53,7 +53,7 @@ export function handleIntersection(entry, observer, modulePath, article, functio
     dom.importModule(
       modulePath,
       initialiseModule(article, functionName, env, dom),
-      handleModuleError(modulePath, error)
+      handleModuleError(modulePath, dom.error)
     );
     dom.disconnectObserver(observer);
   }
