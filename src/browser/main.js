@@ -68,7 +68,7 @@ function makeCreateHideSpan(dom) {
 
     dom.appendChild(span, hideLink);
     dom.appendChild(span, dom.createTextNode(")"));
-    insertBefore(link.parentNode, span, link.nextSibling);
+    dom.insertBefore(link.parentNode, span, link.nextSibling);
   };
 }
 
