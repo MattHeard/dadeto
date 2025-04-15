@@ -8,7 +8,7 @@ let globalState = {
 
 import { setupAudio } from './audio-controls.js';
 import { initializeVisibleComponents, handleModuleError, initialiseModule } from './toys.js';
-import { hideArticlesByClass, toggleHideLink } from './tags.js';
+import { hideArticlesByClass, toggleHideLink, createHandleClick } from './tags.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
@@ -44,10 +44,8 @@ function importModule(modulePath, onSuccess, onError) {
   import(modulePath).then(onSuccess).catch(onError);
 }
 
-const createHandleClick = (dom, link, className) => event => {
-  dom.stopDefault(event);
-  toggleHideLink(link, className, dom);
-};
+// createHandleClick has been moved to tags.js
+
 
 const createHideSpan = (link, className) => {
   var span = createElement(document, 'span');

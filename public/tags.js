@@ -37,3 +37,15 @@ export function toggleHideLink(link, className, dom) {
     dom.createHideSpan(link, className);
   }
 }
+
+/**
+ * Returns a click handler for tag links that toggles the hide link using the provided dom helpers
+ * @param {object} dom - Object containing DOM helpers: stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan
+ * @param {HTMLElement} link - The tag link element
+ * @param {string} className - The CSS class to filter by
+ * @returns {Function} Event handler
+ */
+export const createHandleClick = (dom, link, className) => event => {
+  dom.stopDefault(event);
+  toggleHideLink(link, className, dom);
+};
