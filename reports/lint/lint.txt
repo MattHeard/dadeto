@@ -30,8 +30,8 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js[24m[0m
 [0m    [2m1:5[22m   [33mwarning[39m  'globalState' is never reassigned. Use 'const' instead                                  [2mprefer-const[22m[0m
 [0m   [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used                                              [2mno-unused-vars[22m[0m
-[0m   [2m53:5[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
-[0m   [2m57:5[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
+[0m   [2m54:5[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
+[0m   [2m58:5[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
 [0m   [2m98:1[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
 [0m  [2m110:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
 [0m  [2m116:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m

@@ -13,6 +13,7 @@ import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
   getAudioElements,
+  getElementsByTagName,
   querySelector,
   removeControlsAttribute,
   createElement,
@@ -56,7 +57,6 @@ function makeCreateHideSpan(dom) {
 
     var hideLink = dom.createElement('a');
     dom.setTextContent(hideLink, "hide");
-    const getElementsByTagName = tagName => document.getElementsByTagName(tagName);
     const handleHideClick = function(event) {
       dom.stopDefault(event);
       hideArticlesByClass(
