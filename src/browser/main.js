@@ -87,7 +87,7 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
       initialiseModule(article, functionName, env, dom),
       handleModuleError(modulePath, error)
     );
-    disconnectObserver(observer);
+    dom.disconnectObserver(observer);
   }
 }
 
