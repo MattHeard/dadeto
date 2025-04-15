@@ -69,6 +69,9 @@ function formatDecimal(num) {
 
 
 function getSignificandAndExponent({ sign, mantissa, exponent }) {
+  if ([sign, mantissa, exponent].some(v => v === undefined)) {
+    throw new Error('Invalid IEEE decomposition: missing sign, mantissa, or exponent');
+  }
   const signValue = sign === 0 ? 1n : -1n;
   const fullSignificand = (1n << 52n) | BigInt(mantissa);
   const B = signValue * fullSignificand;
