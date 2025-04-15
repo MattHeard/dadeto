@@ -31,25 +31,29 @@ describe('hideArticlesByClass', () => {
 describe('toggleHideLink', () => {
   it('removes the next sibling when it has the hide-span class', () => {
     const link = {};
-    const hasNextSiblingClass = () => true;
-    const removeNextSibling = jest.fn();
-    const createHideSpan = jest.fn();
+    const dom = {
+      hasNextSiblingClass: () => true,
+      removeNextSibling: jest.fn(),
+      createHideSpan: jest.fn()
+    };
 
-    toggleHideLink(link, 'some-class', hasNextSiblingClass, removeNextSibling, createHideSpan);
+    toggleHideLink(link, 'some-class', dom);
 
-    expect(removeNextSibling).toHaveBeenCalledWith(link);
-    expect(createHideSpan).not.toHaveBeenCalled();
+    expect(dom.removeNextSibling).toHaveBeenCalledWith(link);
+    expect(dom.createHideSpan).not.toHaveBeenCalled();
   });
 
   it('creates a hide span when there is no next sibling with the hide-span class', () => {
     const link = {};
-    const hasNextSiblingClass = () => false;
-    const removeNextSibling = jest.fn();
-    const createHideSpan = jest.fn();
+    const dom = {
+      hasNextSiblingClass: () => false,
+      removeNextSibling: jest.fn(),
+      createHideSpan: jest.fn()
+    };
 
-    toggleHideLink(link, 'some-class', hasNextSiblingClass, removeNextSibling, createHideSpan);
+    toggleHideLink(link, 'some-class', dom);
 
-    expect(createHideSpan).toHaveBeenCalledWith(link, 'some-class');
-    expect(removeNextSibling).not.toHaveBeenCalled();
+    expect(dom.createHideSpan).toHaveBeenCalledWith(link, 'some-class');
+    expect(dom.removeNextSibling).not.toHaveBeenCalled();
   });
 });

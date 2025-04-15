@@ -46,13 +46,7 @@ function importModule(modulePath, onSuccess, onError) {
 
 const createHandleClick = (dom, link, className) => event => {
   dom.stopDefault(event);
-  toggleHideLink(
-    link,
-    className,
-    dom.hasNextSiblingClass,
-    dom.removeNextSibling,
-    dom.createHideSpan
-  );
+  toggleHideLink(link, className, dom);
 };
 
 const createHideSpan = (link, className) => {
