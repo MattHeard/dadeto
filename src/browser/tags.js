@@ -1,3 +1,7 @@
+export function startsWith(str, prefix) {
+  return str.indexOf(prefix) === 0;
+}
+
 function hideIfHasClass(article, className, hasClassFn, hideElementFn) {
   if (hasClassFn(article, className)) {
     hideElementFn(article);

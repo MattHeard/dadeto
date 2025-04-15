@@ -90,9 +90,10 @@ initializeVisibleComponents(
 
 // Tag filtering functionality
 
+import { startsWith } from './tags.js';
+
 const handleTagLinks = () => {
   const handleLink = link => {
-    const startsWith = (str, prefix) => str.indexOf(prefix) === 0;
     const handleClassName = className => {
       if (startsWith(className, 'tag-')) {
         const dom = {
