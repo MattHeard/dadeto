@@ -49,7 +49,7 @@ function importModule(modulePath, onSuccess, onError) {
 
 const createHideSpan = (link, className) => {
   var span = createElement(document, 'span');
-  span.classList.add('hide-span');
+  addClass(span, 'hide-span');
   appendChild(span, document.createTextNode(" ("));
 
   var hideLink = createElement(document, 'a');
