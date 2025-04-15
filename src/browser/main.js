@@ -52,7 +52,7 @@ function makeCreateHideSpan(dom) {
   return function createHideSpan(link, className) {
     var span = dom.createElement(document, 'span');
     dom.addClass(span, 'hide-span');
-    appendChild(span, document.createTextNode(" ("));
+    dom.appendChild(span, document.createTextNode(" ("));
 
     var hideLink = dom.createElement(document, 'a');
     hideLink.textContent = "hide";
@@ -66,8 +66,8 @@ function makeCreateHideSpan(dom) {
       );
     });
 
-    appendChild(span, hideLink);
-    appendChild(span, document.createTextNode(")"));
+    dom.appendChild(span, hideLink);
+    dom.appendChild(span, document.createTextNode(")"));
     insertBefore(link.parentNode, span, link.nextSibling);
   };
 }
@@ -125,7 +125,8 @@ const handleTagLinks = () => {
       if (className.indexOf('tag-') === 0) {
         const dom = {
           createElement: (doc, tag) => createElement(doc, tag),
-          addClass: (el, cls) => addClass(el, cls)
+          addClass: (el, cls) => addClass(el, cls),
+          appendChild: (parent, child) => appendChild(parent, child)
         };
         const createHideSpan = makeCreateHideSpan(dom);
         const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan }, link, className);
