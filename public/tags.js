@@ -13,6 +13,22 @@ function hideIfHasClass(article, className, hasClassFn, hideElementFn) {
  */
 
 /**
+ * Returns a className handler for tag links (used in handleTagLinks)
+ * @param {object} dom - DOM helpers
+ * @param {HTMLElement} link - The tag link element
+ * @returns {Function} Handler for className
+ */
+export const makeHandleClassName = (dom, link) => className => {
+  if (startsWith(className, 'tag-')) {
+    const createHideSpan = makeHandleHideSpan(dom);
+    const clickDeps = { ...dom, createHideSpan };
+    const handleClick = createHandleClick(clickDeps, link, className);
+    dom.addEventListener(link, 'click', handleClick);
+    return; // exit after first tag- match
+  }
+};
+
+/**
  * Hides articles that contain a specific CSS class
  * @param {string} className - The CSS class to filter by
  * @param {object} dom - Object containing DOM helper functions: getElementsByTagName, hasClass, hide

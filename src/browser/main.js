@@ -90,7 +90,7 @@ initializeVisibleComponents(
 
 // Tag filtering functionality
 
-import { startsWith } from './tags.js';
+import { startsWith, makeHandleClassName } from './tags.js';
 
 const handleTagLinks = () => {
   const handleLink = link => {
@@ -109,16 +109,6 @@ const handleTagLinks = () => {
       hasNextSiblingClass,
       removeNextSibling
     };
-    const makeHandleClassName = (dom, link) => className => {
-      if (startsWith(className, 'tag-')) {
-        const createHideSpan = makeHandleHideSpan(dom);
-        const clickDeps = { ...dom, createHideSpan };
-        const handleClick = createHandleClick(clickDeps, link, className);
-        dom.addEventListener(link, 'click', handleClick);
-        return; // exit after first tag- match
-      }
-    };
-
     const handleClassName = makeHandleClassName(dom, link);
     Array.from(link.classList).forEach(handleClassName);
   };
