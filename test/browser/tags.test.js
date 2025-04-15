@@ -64,6 +64,8 @@ describe('toggleHideLink', () => {
 
 describe('makeHandleClassName', () => {
   it('returns a function when called with no arguments', () => {
-    expect(typeof makeHandleClassName()).toBe('function');
+    const handler = makeHandleClassName();
+    expect(typeof handler).toBe('function');
+    handler('foo');
   });
 });
