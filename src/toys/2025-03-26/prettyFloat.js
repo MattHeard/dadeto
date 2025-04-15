@@ -61,7 +61,7 @@ function isZeroVariant(num) {
   return isPositiveZeroResult(num) || isNegativeZeroResult(num);
 }
 
-function formatDecimal(num) {
+export function formatDecimal(num) {
   let A = num.toPrecision(17);
   return A.includes('.') ? A.replace(/\.?0+$/, '') : A;
 }

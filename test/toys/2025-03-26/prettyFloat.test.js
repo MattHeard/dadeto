@@ -1,4 +1,4 @@
-import { decomposeFloat } from '../../../src/toys/2025-03-26/prettyFloat.js';
+import { decomposeFloat, formatDecimal } from '../../../src/toys/2025-03-26/prettyFloat.js';
 
 describe('decomposeFloat', () => {
   test('handles zero', () => {
