@@ -39,6 +39,15 @@ export const makeHandleLink = dom => link => {
 };
 
 /**
+ * Handles all tag links on the page by applying makeHandleLink(dom) to each 'a' element.
+ * @param {object} dom - DOM helpers
+ */
+export const handleTagLinks = dom => {
+  const handleLink = makeHandleLink(dom);
+  Array.from(dom.getElementsByTagName('a')).forEach(handleLink);
+};
+
+/**
  * Hides articles that contain a specific CSS class
  * @param {string} className - The CSS class to filter by
  * @param {object} dom - Object containing DOM helper functions: getElementsByTagName, hasClass, hide

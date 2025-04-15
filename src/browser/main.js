@@ -118,14 +118,9 @@ initializeVisibleComponents(
 
 // Tag filtering functionality
 
-import { startsWith, makeHandleClassName, makeHandleLink } from './tags.js';
+import { startsWith, makeHandleClassName, makeHandleLink, handleTagLinks } from './tags.js';
 import { getClasses } from './document.js';
 
-
-const handleTagLinks = dom => {
-  const handleLink = makeHandleLink(dom);
-  Array.from(dom.getElementsByTagName('a')).forEach(handleLink);
-};
 
 handleTagLinks(dom);
 
