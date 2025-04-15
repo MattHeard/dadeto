@@ -51,12 +51,7 @@ function importModule(modulePath, onSuccess, onError) {
 // createHandleClick has been moved to tags.js
 
 
-function makeHandleHideClick(dom, className) {
-  return function(event) {
-    dom.stopDefault(event);
-    hideArticlesByClass(className, dom);
-  };
-}
+import { makeHandleHideClick } from './tags.js';
 
 function makeCreateHideSpan(dom) {
   return function createHideSpan(link, className) {

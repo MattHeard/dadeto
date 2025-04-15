@@ -13,6 +13,13 @@ function hideIfHasClass(article, className, hasClassFn, hideElementFn) {
  * @param {string} className - The CSS class to filter by
  * @param {object} dom - Object containing DOM helper functions: getElementsByTagName, hasClass, hide
  */
+export function makeHandleHideClick(dom, className) {
+  return function(event) {
+    dom.stopDefault(event);
+    hideArticlesByClass(className, dom);
+  };
+}
+
 export function hideArticlesByClass(className, dom) {
   const articles = dom.getElementsByTagName('article');
   for (const article of articles) {
