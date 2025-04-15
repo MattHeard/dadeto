@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { hideArticlesByClass, toggleHideLink, makeHandleClassName } from '../../src/browser/tags.js';
+import { hideArticlesByClass, toggleHideLink, makeHandleClassName, makeHandleLink } from '../../src/browser/tags.js';
 
 describe('hideArticlesByClass', () => {
   it('does not throw when given a class and no matching elements', () => {
@@ -76,5 +76,12 @@ describe('makeHandleClassName', () => {
     const handler = makeHandleClassName(dom, link);
     handler('tag-sample');
     expect(addEventListener).toHaveBeenCalledWith(link, 'click', expect.any(Function));
+  });
+});
+
+describe('makeHandleLink', () => {
+  it('invokes makeHandleLink with no arguments', () => {
+    makeHandleLink();
+    // No assertions
   });
 });
