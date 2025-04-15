@@ -64,12 +64,18 @@ function createEnv() {
   ]);
 }
 
+function makeIntersectionObserver(callback, options) {
+  return new IntersectionObserver(callback, options);
+}
+
 function createIntersectionObserver(article, modulePath, functionName) {
-  return new IntersectionObserver((entries, observer) =>
-    handleIntersectionEntries(entries, observer, modulePath, article, functionName), {
-    root: null,
-    threshold: 0.1
-  });
+  return makeIntersectionObserver(
+    (entries, observer) => handleIntersectionEntries(entries, observer, modulePath, article, functionName),
+    {
+      root: null,
+      threshold: 0.1
+    }
+  );
 }
 
 function handleIntersection(entry, observer, modulePath, article, functionName) {
