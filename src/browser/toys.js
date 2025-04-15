@@ -21,10 +21,24 @@ export function handleModuleError(modulePath, error) {
  * @param {object} dom - Object containing DOM functions
  * @returns {Function} A function that takes a module and initializes the interactive component
  */
-export function initialiseModule(article, functionName, globalState, createEnv, error, fetch, dom) {
+/**
+ * Creates a module initializer function that will be called when a dynamic import completes
+ * @param {HTMLElement} article - The article element containing the toy
+ * @param {string} functionName - The name of the exported function to use from the module
+ * @param {object} env - Environment object containing globalState, createEnv, error, and fetch
+ * @param {object} dom - Object containing DOM functions
+ * @returns {Function} A function that takes a module and initializes the interactive component
+ */
+export function initialiseModule(article, functionName, env, dom) {
   return (module) => {
     const processingFunction = module[functionName];
-    const config = { globalState, createEnvFn: createEnv, errorFn: error, fetchFn: fetch, dom };
+    const config = {
+      globalState: env.globalState,
+      createEnvFn: env.createEnv,
+      errorFn: env.error,
+      fetchFn: env.fetch,
+      dom
+    };
     initializeInteractiveComponent(
       article,
       processingFunction,
@@ -32,6 +46,7 @@ export function initialiseModule(article, functionName, globalState, createEnv, 
     );
   };
 }
+
 
 /**
  * Enable controls and update status message for an interactive component

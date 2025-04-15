@@ -84,7 +84,13 @@ describe('initialiseModule', () => {
       addEventListener: jest.fn()
     };
 
-    const result = initialiseModule(article, functionName, globalState, createEnv, error, fetch, dom);
+    const env = {
+      globalState,
+      createEnv,
+      error,
+      fetch
+    };
+    const result = initialiseModule(article, functionName, env, dom);
     const module = { process: () => 'ok' };
     const response = result(module);
 
