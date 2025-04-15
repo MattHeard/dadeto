@@ -103,7 +103,7 @@ function extractIEEEComponents(bits) {
   const mantissaBits = bits & 0xFFFFFFFFFFFFFn;
 
   if (exponentBits === 0n) {
-    // Subnormal number (mantissaBits !== 0n), zero is handled by handleSimpleCases
+    // Subnormal number
     return {
       sign,
       mantissa: Number(mantissaBits),
