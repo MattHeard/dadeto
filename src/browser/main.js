@@ -108,10 +108,11 @@ const handleTagLinks = () => {
           hide,
           getElementsByTagName,
           insertBefore,
-          hasNextSiblingClass
+          hasNextSiblingClass,
+          removeNextSibling
         };
         const createHideSpan = makeHandleHideSpan(dom);
-        const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan }, link, className);
+        const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass, removeNextSibling: dom.removeNextSibling, createHideSpan }, link, className);
         addEventListener(link, 'click', handleClick);
         return; // exit after first tag- match
       }
