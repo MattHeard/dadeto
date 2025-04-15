@@ -34,7 +34,8 @@ import {
   hasNextSiblingClass,
   removeNextSibling,
   setTextContent,
-  addClass
+  addClass,
+  hide
 } from './document.js';
 
 /**
