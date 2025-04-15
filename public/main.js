@@ -65,23 +65,19 @@ function createEnv() {
   ]);
 }
 
-function makeObserverCallback(modulePath, article, functionName, env, dom) {
-  return (entries, observer) =>
-    handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom);
-}
 
 function createIntersectionObserver(article, modulePath, functionName) {
-  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule, error };
+  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule, error, makeIntersectionObserver };
   const env = { globalState, createEnv, error, fetch };
   const observerCallback = makeObserverCallback(modulePath, article, functionName, env, dom);
-  return makeIntersectionObserver(observerCallback);
+  return dom.makeIntersectionObserver(observerCallback);
 }
 
 import { isIntersecting, disconnectObserver } from './document.js';
 // isIntersecting and disconnectObserver moved to document.js
 
 
-import { handleIntersection, handleIntersectionEntries } from './toys.js';
+import { handleIntersection, handleIntersectionEntries, makeObserverCallback } from './toys.js';
 
 
 // Interactive components functionality

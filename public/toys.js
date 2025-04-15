@@ -63,6 +63,11 @@ export function handleIntersectionEntries(entries, observer, modulePath, article
   entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, env, dom));
 }
 
+export function makeObserverCallback(modulePath, article, functionName, env, dom) {
+  return (entries, observer) =>
+    handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom);
+}
+
 
 /**
  * Enable controls and update status message for an interactive component
