@@ -31,6 +31,23 @@ describe('Cyberpunk Text Game', () => {
     expect(tempData.visited).toContain('hacker');
   });
 
+  test('shows hint if incorrect hacker password is given', () => {
+    tempData = {
+      name: 'Blaze',
+      state: 'hacker:door',
+      inventory: [],
+      visited: []
+    };
+    env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
+    const result = cyberpunkAdventure('foobar', env);
+    if (typeof result === 'object') {
+      expect(result.output).toMatch(/Hint: the password is a number and a name/);
+      expect(result.nextState).toBe('hacker:door');
+    } else {
+      expect(result).toMatch(/Hint: the password is a number and a name/);
+    }
+  });
+
   test('goes to Transport Hub and trades datapad', () => {
     tempData = {
       name: 'Blaze',
