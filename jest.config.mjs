@@ -10,7 +10,9 @@ export default {
   collectCoverageFrom: [
     "src/**/*.js",
     "!**/node_modules/**",
-    "!**/vendor/**"
+    "!**/vendor/**",
+    "!src/browser/main.js",
+    "!src/browser/document.js"
   ],
   coverageDirectory: 'reports/coverage',
 };
