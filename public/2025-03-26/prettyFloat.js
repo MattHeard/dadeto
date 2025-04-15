@@ -102,14 +102,7 @@ function extractIEEEComponents(bits) {
   const exponentBits = (bits >> 52n) & 0x7FFn;
   const mantissaBits = bits & 0xFFFFFFFFFFFFFn;
 
-  if (exponentBits === 0n) {
-    // Subnormal number
-    return {
-      sign,
-      mantissa: Number(mantissaBits),
-      exponent: 1 // Will be interpreted as exponent - 1023 = -1022
-    };
-  }
+
 
   return {
     sign,
