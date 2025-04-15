@@ -80,8 +80,10 @@ describe('makeHandleClassName', () => {
 });
 
 describe('makeHandleLink', () => {
-  it('returns a function when called with no arguments', () => {
-    const result = makeHandleLink();
-    expect(typeof result).toBe('function');
+  it('invokes the returned function with a mock dom and asserts its value is undefined', () => {
+    const dom = { getClasses: () => [] };
+    const result = makeHandleLink(dom);
+    const value = result();
+    expect(value).toBeUndefined();
   });
 });
