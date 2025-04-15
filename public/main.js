@@ -49,11 +49,15 @@ function importModule(modulePath, onSuccess, onError) {
 
 
 const createHideSpan = (link, className) => {
-  var span = createElement(document, 'span');
-  addClass(span, 'hide-span');
+  const dom = {
+    createElement: (doc, tag) => createElement(doc, tag),
+    addClass: (el, cls) => addClass(el, cls)
+  };
+  var span = dom.createElement(document, 'span');
+  dom.addClass(span, 'hide-span');
   appendChild(span, document.createTextNode(" ("));
 
-  var hideLink = createElement(document, 'a');
+  var hideLink = dom.createElement(document, 'a');
   hideLink.textContent = "hide";
   addEventListener(hideLink, 'click', function(event) {
     stopDefault(event);
