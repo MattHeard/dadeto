@@ -44,12 +44,12 @@ function importModule(modulePath, onSuccess, onError) {
   import(modulePath).then(onSuccess).catch(onError);
 }
 
-const createHandleClick = (stopDefault, hasNextSiblingClass, link, className) => event => {
-  stopDefault(event);
+const createHandleClick = (dom, link, className) => event => {
+  dom.stopDefault(event);
   toggleHideLink(
     link,
     className,
-    hasNextSiblingClass,
+    dom.hasNextSiblingClass,
     removeNextSibling,
     createHideSpan
   );
@@ -126,7 +126,7 @@ const handleTagLinks = () => {
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
-        const handleClick = createHandleClick(stopDefault, hasNextSiblingClass, link, className);
+        const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass }, link, className);
         addEventListener(link, 'click', handleClick);
         return; // exit after first tag- match
       }

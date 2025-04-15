@@ -29,7 +29,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js[24m[0m
 [0m    [2m1:5[22m   [33mwarning[39m  'globalState' is never reassigned. Use 'const' instead                                  [2mprefer-const[22m[0m
-[0m   [2m47:79[22m  [33mwarning[39m  Arrow function has too many parameters (4). Maximum allowed is 3                        [2mmax-params[22m[0m
 [0m   [2m59:3[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
 [0m   [2m63:3[22m   [33mwarning[39m  Unexpected var, use let or const instead                                                [2mno-var[22m[0m
 [0m   [2m97:1[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
@@ -302,6 +301,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 247 problems (0 errors, 247 warnings)[22m[39m[0m
+[0m[33m[1m✖ 246 problems (0 errors, 246 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 164 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
