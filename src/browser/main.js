@@ -124,7 +124,7 @@ import { getClasses } from './document.js';
 
 const handleTagLinks = () => {
   const handleLink = makeHandleLink(dom);
-  Array.from(document.getElementsByTagName('a')).forEach(handleLink);
+  Array.from(dom.getElementsByTagName('a')).forEach(handleLink);
 };
 
 handleTagLinks();
