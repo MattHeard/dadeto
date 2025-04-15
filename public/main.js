@@ -44,7 +44,7 @@ function importModule(modulePath, onSuccess, onError) {
   import(modulePath).then(onSuccess).catch(onError);
 }
 
-const createHandleClick = (link, className) => event => {
+const createHandleClick = (stopDefault, link, className) => event => {
   stopDefault(event);
   toggleHideLink(
     link,
@@ -126,7 +126,7 @@ const handleTagLinks = () => {
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
-        const handleClick = createHandleClick(link, className);
+        const handleClick = createHandleClick(stopDefault, link, className);
         addEventListener(link, 'click', handleClick);
         return; // exit after first tag- match
       }
