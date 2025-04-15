@@ -41,7 +41,7 @@ export function setupAudio(
   appendChild,
   insertBefore
 ) {
-  const audioElements = getAudioElements(doc);
+  const audioElements = getAudioElements();
 
   audioElements.forEach(function(audio, index) {
     removeControlsAttribute(audio);

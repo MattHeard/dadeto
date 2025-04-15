@@ -3,7 +3,7 @@ export const getElementById = (id) => document.getElementById(id);
 export const querySelector = (el, selector) => el.querySelector(selector);
 export const querySelectorAll = (docOrEl, selector) => docOrEl.querySelectorAll(selector);
 export const addClass = (element, className) => element.classList.add(className);
-export const getAudioElements = (doc) => querySelectorAll(doc, "audio");
+export const getAudioElements = () => querySelectorAll(document, "audio");
 export const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
 export const createElement = (doc, tag) => doc.createElement(tag);
 export const createTextNode = (doc, value = " ") => doc.createTextNode(value);
