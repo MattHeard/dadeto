@@ -29,6 +29,16 @@ export const makeHandleClassName = (dom, link) => className => {
 };
 
 /**
+ * Returns a handler for a tag link (used in handleTagLinks)
+ * @param {object} dom - DOM helpers
+ * @returns {Function} Handler for a link
+ */
+export const makeHandleLink = dom => link => {
+  const handleClassName = makeHandleClassName(dom, link);
+  dom.getClasses(link).forEach(handleClassName);
+};
+
+/**
  * Hides articles that contain a specific CSS class
  * @param {string} className - The CSS class to filter by
  * @param {object} dom - Object containing DOM helper functions: getElementsByTagName, hasClass, hide

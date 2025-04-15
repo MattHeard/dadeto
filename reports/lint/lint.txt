@@ -50,12 +50,13 @@
 [0m  [2m87:18[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
 [0m  [2m93:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
 [0m  [2m93:10[22m  [33mwarning[39m  'startsWith' is defined but never used                  [2mno-unused-vars[22m[0m
+[0m  [2m93:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used         [2mno-unused-vars[22m[0m
 [0m  [2m94:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
 [0m   [2m5:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m50:5[22m  [33mwarning[39m  Unexpected var, use let or const instead                                     [2mno-var[22m[0m
-[0m  [2m54:5[22m  [33mwarning[39m  Unexpected var, use let or const instead                                     [2mno-var[22m[0m
+[0m  [2m60:5[22m  [33mwarning[39m  Unexpected var, use let or const instead                                     [2mno-var[22m[0m
+[0m  [2m64:5[22m  [33mwarning[39m  Unexpected var, use let or const instead                                     [2mno-var[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
 [0m   [2m32:8[22m   [33mwarning[39m  Function 'initialiseModule' has too many parameters (4). Maximum allowed is 3             [2mmax-params[22m[0m
@@ -321,6 +322,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 266 problems (0 errors, 266 warnings)[22m[39m[0m
+[0m[33m[1m✖ 267 problems (0 errors, 267 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 164 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
