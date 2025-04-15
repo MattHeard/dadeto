@@ -80,8 +80,8 @@ describe('makeHandleClassName', () => {
 });
 
 describe('makeHandleLink', () => {
-  it('invokes makeHandleLink with no arguments', () => {
-    makeHandleLink();
-    // No assertions
+  it('returns a function when called with no arguments', () => {
+    const result = makeHandleLink();
+    expect(typeof result).toBe('function');
   });
 });
