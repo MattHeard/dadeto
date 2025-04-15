@@ -95,6 +95,24 @@ describe('Cyberpunk Text Game', () => {
     expect(tempData.visited).toContain('alley');
   });
 
+  test('trips wire in alley if stealth check fails', () => {
+    tempData = {
+      name: 'Blaze',
+      state: 'alley:stealth',
+      inventory: [],
+      visited: []
+    };
+    env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
+    env.set('getRandomNumber', () => 0.1); // fail
+    const result = cyberpunkAdventure('sneak', env);
+    if (typeof result === 'object') {
+      expect(result.output).toMatch(/trip a wire|Sirens start up|sprint back to the Market/i);
+      expect(result.nextState).toBe('hub');
+    } else {
+      expect(result).toMatch(/trip a wire|Sirens start up|sprint back to the Market/i);
+    }
+  });
+
   test('unknown input in hub', () => {
     cyberpunkAdventure('Blaze', env);
     cyberpunkAdventure('start', env);
