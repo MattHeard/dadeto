@@ -109,7 +109,7 @@ const handleTagLinks = () => {
       hasNextSiblingClass,
       removeNextSibling
     };
-    const handleClassName = className => {
+    const makeHandleClassName = (dom, link) => className => {
       if (startsWith(className, 'tag-')) {
         const createHideSpan = makeHandleHideSpan(dom);
         const clickDeps = { ...dom, createHideSpan };
@@ -119,7 +119,7 @@ const handleTagLinks = () => {
       }
     };
 
-
+    const handleClassName = makeHandleClassName(dom, link);
     Array.from(link.classList).forEach(handleClassName);
   };
 
