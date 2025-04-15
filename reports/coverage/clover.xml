@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1744743985489" clover="3.2.0">
-  <project timestamp="1744743985489" name="All files">
-    <metrics statements="900" coveredstatements="884" conditionals="349" coveredconditionals="332" methods="328" coveredmethods="318" elements="1577" coveredelements="1534" complexity="0" loc="900" ncloc="900" packages="12" files="24" classes="24"/>
+<coverage generated="1744744162877" clover="3.2.0">
+  <project timestamp="1744744162878" name="All files">
+    <metrics statements="898" coveredstatements="884" conditionals="347" coveredconditionals="332" methods="325" coveredmethods="318" elements="1570" coveredelements="1534" complexity="0" loc="898" ncloc="898" packages="12" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="238" coveredstatements="228" conditionals="53" coveredconditionals="50" methods="80" coveredmethods="73"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -634,9 +634,9 @@
       </file>
     </package>
     <package name="toys.2025-03-26">
-      <metrics statements="50" coveredstatements="47" conditionals="26" coveredconditionals="21" methods="21" coveredmethods="18"/>
+      <metrics statements="48" coveredstatements="47" conditionals="24" coveredconditionals="21" methods="18" coveredmethods="18"/>
       <file name="prettyFloat.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-26/prettyFloat.js">
-        <metrics statements="50" coveredstatements="47" conditionals="26" coveredconditionals="21" methods="21" coveredmethods="18"/>
+        <metrics statements="48" coveredstatements="47" conditionals="24" coveredconditionals="21" methods="18" coveredmethods="18"/>
         <line num="2" count="7" type="stmt"/>
         <line num="3" count="7" type="stmt"/>
         <line num="4" count="7" type="stmt"/>
@@ -663,30 +663,28 @@
         <line num="61" count="9" type="cond" truecount="2" falsecount="0"/>
         <line num="65" count="7" type="stmt"/>
         <line num="66" count="7" type="cond" truecount="1" falsecount="1"/>
-        <line num="70" count="0" type="stmt"/>
-        <line num="74" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="78" count="7" type="cond" truecount="2" falsecount="0"/>
-        <line num="79" count="7" type="stmt"/>
-        <line num="80" count="7" type="stmt"/>
-        <line num="81" count="7" type="stmt"/>
+        <line num="72" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="73" count="7" type="stmt"/>
+        <line num="74" count="7" type="stmt"/>
+        <line num="75" count="7" type="stmt"/>
+        <line num="76" count="7" type="stmt"/>
+        <line num="80" count="7" type="cond" truecount="1" falsecount="1"/>
         <line num="82" count="7" type="stmt"/>
-        <line num="86" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="83" count="7" type="stmt"/>
+        <line num="87" count="7" type="stmt"/>
         <line num="88" count="7" type="stmt"/>
         <line num="89" count="7" type="stmt"/>
+        <line num="91" count="7" type="stmt"/>
         <line num="93" count="7" type="stmt"/>
         <line num="94" count="7" type="stmt"/>
-        <line num="95" count="7" type="stmt"/>
-        <line num="97" count="7" type="stmt"/>
-        <line num="99" count="7" type="stmt"/>
-        <line num="100" count="7" type="stmt"/>
-        <line num="101" count="56" type="stmt"/>
+        <line num="95" count="56" type="stmt"/>
+        <line num="98" count="7" type="stmt"/>
+        <line num="102" count="7" type="stmt"/>
+        <line num="103" count="7" type="stmt"/>
         <line num="104" count="7" type="stmt"/>
-        <line num="108" count="7" type="stmt"/>
-        <line num="109" count="7" type="stmt"/>
+        <line num="106" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="107" count="0" type="stmt"/>
         <line num="110" count="7" type="stmt"/>
-        <line num="112" count="7" type="cond" truecount="1" falsecount="1"/>
-        <line num="113" count="0" type="stmt"/>
-        <line num="116" count="7" type="stmt"/>
       </file>
     </package>
     <package name="toys.2025-03-28">

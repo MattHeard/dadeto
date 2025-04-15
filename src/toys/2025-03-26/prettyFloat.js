@@ -66,13 +66,7 @@ function formatDecimal(num) {
   return A.includes('.') ? A.replace(/\.?0+$/, '') : A;
 }
 
-function hasIEEEFields(parts) {
-  return ['sign', 'mantissa', 'exponent'].every(key => key in parts);
-}
 
-function isValidIEEEParts(parts) {
-  return Boolean(parts) && hasIEEEFields(parts);
-}
 
 function getSignificandAndExponent({ sign, mantissa, exponent }) {
   const signValue = sign === 0 ? 1n : -1n;
