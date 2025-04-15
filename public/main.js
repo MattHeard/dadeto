@@ -79,12 +79,12 @@ import { isIntersecting } from './document.js';
 // isIntersecting moved to document.js
 
 
-function handleIntersection(entry, observer, modulePath, article, functionName, dom) {
+function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
   if (isIntersecting(entry)) {
     console.log("handleIntersection: ", modulePath, functionName);
     importModule(
       modulePath,
-      initialiseModule(article, functionName, globalState, createEnv, error, fetch, dom),
+      initialiseModule(article, functionName, env, dom),
       handleModuleError(modulePath, error)
     );
     observer.disconnect();
@@ -93,7 +93,8 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
 
 function handleIntersectionEntries(entries, observer, modulePath, article, functionName) {
   const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector };
-  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, dom));
+  const env = { globalState, createEnv, error, fetch };
+  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, env, dom));
 }
 
 // Interactive components functionality
