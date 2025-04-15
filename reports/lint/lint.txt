@@ -132,12 +132,12 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-26/prettyFloat.js[24m[0m
 [0m  [2m10:24[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
-[0m  [2m21:33[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
-[0m  [2m38:1[22m   [33mwarning[39m  Function 'handleSimpleCases' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m39:30[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
-[0m  [2m41:20[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
-[0m  [2m66:7[22m   [33mwarning[39m  'A' is never reassigned. Use 'const' instead                              [2mprefer-const[22m[0m
-[0m  [2m87:32[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
+[0m  [2m37:1[22m   [33mwarning[39m  Function 'handleSimpleCases' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m38:30[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
+[0m  [2m40:20[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
+[0m  [2m65:7[22m   [33mwarning[39m  'A' is never reassigned. Use 'const' instead                              [2mprefer-const[22m[0m
+[0m  [2m73:10[22m  [33mwarning[39m  'isValidIEEEParts' is defined but never used                              [2mno-unused-vars[22m[0m
+[0m  [2m86:32[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-28/rand.js[24m[0m
 [0m  [2m13:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
@@ -327,5 +327,5 @@
 [0m  [2m93:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[33m[1m✖ 267 problems (0 errors, 267 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 163 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 162 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

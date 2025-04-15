@@ -18,7 +18,6 @@ function getZeroVariantResult(num) {
 
 function getIEEEDecomposition(num) {
   const parts = decomposeIEEE754(num);
-  if (!isValidIEEEParts(parts)) return null;
   return getSignificandAndExponent(parts);
 }
 
