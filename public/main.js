@@ -35,7 +35,8 @@ import {
   removeNextSibling,
   setTextContent,
   addClass,
-  hide
+  hide,
+  makeIntersectionObserver
 } from './document.js';
 
 /**
