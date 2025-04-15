@@ -51,6 +51,13 @@ function importModule(modulePath, onSuccess, onError) {
 // createHandleClick has been moved to tags.js
 
 
+function makeHandleHideClick(dom, className) {
+  return function(event) {
+    dom.stopDefault(event);
+    hideArticlesByClass(className, dom);
+  };
+}
+
 function makeCreateHideSpan(dom) {
   return function createHideSpan(link, className) {
     var span = dom.createElement('span');
@@ -59,15 +66,9 @@ function makeCreateHideSpan(dom) {
 
     var hideLink = dom.createElement('a');
     dom.setTextContent(hideLink, "hide");
-    function makeHandleHideClick(dom, className) {
-      return function(event) {
-        dom.stopDefault(event);
-        hideArticlesByClass(className, dom);
-      };
-    }
+
+
     const handleHideClick = makeHandleHideClick(dom, className);
-
-
     dom.addEventListener(hideLink, 'click', handleHideClick);
 
     dom.appendChild(span, hideLink);
