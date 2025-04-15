@@ -65,15 +65,15 @@ function createEnv() {
   ]);
 }
 
-function makeObserverCallback(modulePath, article, functionName) {
-  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule, error };
-  const env = { globalState, createEnv, error, fetch };
+function makeObserverCallback(modulePath, article, functionName, env, dom) {
   return (entries, observer) =>
     handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom);
 }
 
 function createIntersectionObserver(article, modulePath, functionName) {
-  const observerCallback = makeObserverCallback(modulePath, article, functionName);
+  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting, importModule, error };
+  const env = { globalState, createEnv, error, fetch };
+  const observerCallback = makeObserverCallback(modulePath, article, functionName, env, dom);
   return makeIntersectionObserver(observerCallback);
 }
 
