@@ -122,12 +122,12 @@ import { startsWith, makeHandleClassName, makeHandleLink } from './tags.js';
 import { getClasses } from './document.js';
 
 
-const handleTagLinks = () => {
+const handleTagLinks = dom => {
   const handleLink = makeHandleLink(dom);
   Array.from(dom.getElementsByTagName('a')).forEach(handleLink);
 };
 
-handleTagLinks();
+handleTagLinks(dom);
 
 // Initial fetch of blog data when the script loads
 fetchAndCacheBlogData(globalState, fetch, log, error);
