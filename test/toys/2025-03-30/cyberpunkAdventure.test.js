@@ -118,4 +118,21 @@ describe('Cyberpunk Text Game', () => {
     cyberpunkAdventure('start', env);
     expect(cyberpunkAdventure('xyz', env)).toMatch(/Unclear direction/);
   });
+
+  test('resets on unknown state (default switch case)', () => {
+    tempData = {
+      name: 'Blaze',
+      state: 'bogus:state',
+      inventory: [],
+      visited: []
+    };
+    env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
+    const result = cyberpunkAdventure('anything', env);
+    if (typeof result === 'object') {
+      expect(result.output).toMatch(/Glitch in the grid/);
+      expect(result.nextState).toBe('intro');
+    } else {
+      expect(result).toMatch(/Glitch in the grid/);
+    }
+  });
 });
