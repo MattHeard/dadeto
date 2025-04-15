@@ -78,6 +78,10 @@ function createIntersectionObserver(article, modulePath, functionName) {
 import { isIntersecting } from './document.js';
 // isIntersecting moved to document.js
 
+function disconnectObserver(observer) {
+  observer.disconnect();
+}
+
 
 function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
   if (isIntersecting(entry)) {
@@ -87,7 +91,7 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
       initialiseModule(article, functionName, env, dom),
       handleModuleError(modulePath, error)
     );
-    observer.disconnect();
+    disconnectObserver(observer);
   }
 }
 
