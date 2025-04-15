@@ -28,18 +28,18 @@
 [0m  [2m161:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js[24m[0m
-[0m   [2m1:5[22m   [33mwarning[39m  'globalState' is never reassigned. Use 'const' instead                                  [2mprefer-const[22m[0m
-[0m  [2m11:10[22m  [33mwarning[39m  'hideArticlesByClass' is defined but never used                                         [2mno-unused-vars[22m[0m
-[0m  [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used                                              [2mno-unused-vars[22m[0m
-[0m  [2m55:1[22m   [33mwarning[39m  './tags.js' import is duplicated                                                        [2mno-duplicate-imports[22m[0m
-[0m  [2m55:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used                                         [2mno-unused-vars[22m[0m
-[0m  [2m74:1[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
-[0m  [2m87:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m93:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m94:12[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m95:7[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m96:8[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
-[0m  [2m97:18[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m    [2m1:5[22m   [33mwarning[39m  'globalState' is never reassigned. Use 'const' instead                                  [2mprefer-const[22m[0m
+[0m   [2m11:10[22m  [33mwarning[39m  'hideArticlesByClass' is defined but never used                                         [2mno-unused-vars[22m[0m
+[0m   [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used                                              [2mno-unused-vars[22m[0m
+[0m   [2m55:1[22m   [33mwarning[39m  './tags.js' import is duplicated                                                        [2mno-duplicate-imports[22m[0m
+[0m   [2m55:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used                                         [2mno-unused-vars[22m[0m
+[0m   [2m78:1[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
+[0m   [2m91:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m   [2m97:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m   [2m98:12[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m   [2m99:7[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m100:8[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
+[0m  [2m101:18[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
 [0m   [2m1:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
