@@ -583,7 +583,7 @@ function generateMediaContent(post, mediaType) {
     youtube: createYouTubeContent
   };
 
-  return (generators[mediaType] || (() => ''))(post);
+  return generators[mediaType](post);
 }
 
 /**
