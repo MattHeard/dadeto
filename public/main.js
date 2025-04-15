@@ -72,12 +72,7 @@ function makeCreateHideSpan(dom) {
   };
 }
 
-const dom = {
-  createElement: (doc, tag) => createElement(doc, tag),
-  addClass: (el, cls) => addClass(el, cls)
-};
 
-const createHideSpan = makeCreateHideSpan(dom);
 
 function createEnv() {
   return new Map([
@@ -128,6 +123,10 @@ const handleTagLinks = () => {
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
+        const dom = {
+          createElement: (doc, tag) => createElement(doc, tag),
+          addClass: (el, cls) => addClass(el, cls)
+        };
         const createHideSpan = makeCreateHideSpan(dom);
         const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan }, link, className);
         addEventListener(link, 'click', handleClick);
