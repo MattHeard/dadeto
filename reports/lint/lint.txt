@@ -246,6 +246,9 @@
 [0m  [2m59:24[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
 [0m  [2m60:27[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
 [0m[0m
+[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js[24m[0m
+[0m  [2m2:104[22m  [33mwarning[39m  'handleTagLinks' is defined but never used  [2mno-unused-vars[22m[0m
+[0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js[24m[0m
 [0m    [2m3:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
 [0m   [2m32:22[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
@@ -324,6 +327,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 267 problems (0 errors, 267 warnings)[22m[39m[0m
+[0m[33m[1m✖ 268 problems (0 errors, 268 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 164 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
