@@ -12,7 +12,8 @@ export default {
     "!**/node_modules/**",
     "!**/vendor/**",
     "!src/browser/main.js",
-    "!src/browser/document.js"
+    "!src/browser/document.js",
+    "!src/generator/copy.js"
   ],
   coverageDirectory: 'reports/coverage',
 };
