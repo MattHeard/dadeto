@@ -66,6 +66,7 @@ describe('makeHandleClassName', () => {
   it('returns a function when called with no arguments', () => {
     const handler = makeHandleClassName();
     expect(typeof handler).toBe('function');
-    handler('foo');
+    const result = handler('foo');
+    expect(result).toBeUndefined();
   });
 });
