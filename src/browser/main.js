@@ -107,11 +107,12 @@ const handleTagLinks = () => {
     getElementsByTagName,
     insertBefore,
     hasNextSiblingClass,
-    removeNextSibling
+    removeNextSibling,
+    getClasses
   };
   const handleLink = link => {
     const handleClassName = makeHandleClassName(dom, link);
-    getClasses(link).forEach(handleClassName);
+    dom.getClasses(link).forEach(handleClassName);
   };
 
   Array.from(document.getElementsByTagName('a')).forEach(handleLink);
