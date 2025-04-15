@@ -66,9 +66,9 @@ function createEnv() {
 }
 
 function createIntersectionObserver(article, modulePath, functionName) {
-  return makeIntersectionObserver(
-    (entries, observer) => handleIntersectionEntries(entries, observer, modulePath, article, functionName)
-  );
+  const observerCallback = (entries, observer) =>
+    handleIntersectionEntries(entries, observer, modulePath, article, functionName);
+  return makeIntersectionObserver(observerCallback);
 }
 
 function handleIntersection(entry, observer, modulePath, article, functionName) {
