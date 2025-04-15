@@ -107,7 +107,6 @@ export const styles = `
     background: linear-gradient(0deg, #00ffff, #ff00ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    padding: 10px;
     overflow-x: auto;
   }
   #audio-controls {
