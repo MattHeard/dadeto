@@ -1,5 +1,17 @@
 import { decomposeFloat, formatDecimal } from '../../../src/toys/2025-03-26/prettyFloat.js';
 
+describe('formatDecimal', () => {
+  test('toPrecision(17) can return a string without a decimal point for large integers', () => {
+    // This value is not exactly representable, so JS rounds it and outputs all digits, no decimal
+    const value = 12345678901234567;
+    const asPrecision = value.toPrecision(17);
+    expect(asPrecision).toBe('12345678901234568');
+    expect(asPrecision.includes('.')).toBe(false);
+    // formatDecimal should return the same string, as there is no . or trailing zeros to strip
+    expect(formatDecimal(value)).toBe('12345678901234568');
+  });
+});
+
 describe('decomposeFloat', () => {
   test('handles zero', () => {
     expect(decomposeFloat(0.0)).toBe("0 (0 × 2^0)");

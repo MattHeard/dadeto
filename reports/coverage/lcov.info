@@ -1348,7 +1348,7 @@ FNDA:8,isNegativeZero
 FNDA:9,isPositiveZeroResult
 FNDA:8,isNegativeZeroResult
 FNDA:9,isZeroVariant
-FNDA:7,formatDecimal
+FNDA:8,formatDecimal
 FNDA:7,getSignificandAndExponent
 FNDA:7,decomposeIEEE754
 FNDA:7,getFloat64Bits
@@ -1377,8 +1377,8 @@ DA:49,8
 DA:53,9
 DA:57,8
 DA:61,9
-DA:65,7
-DA:66,7
+DA:65,8
+DA:66,8
 DA:73,7
 DA:74,7
 DA:75,7
@@ -1417,11 +1417,11 @@ BRDA:57,6,1,7
 BRDA:61,7,0,9
 BRDA:61,7,1,8
 BRDA:66,8,0,7
-BRDA:66,8,1,0
+BRDA:66,8,1,1
 BRDA:73,9,0,5
 BRDA:73,9,1,2
 BRF:20
-BRH:19
+BRH:20
 end_of_record
 TN:
 SF:src/toys/2025-03-28/rand.js
