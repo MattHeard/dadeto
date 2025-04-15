@@ -1,7 +1,6 @@
 function buildDecomposedResult(num) {
   const A = formatDecimal(num);
   const decomposition = getIEEEDecomposition(num);
-  if (!decomposition) return "";
   return formatFloatDecomposition(A, decomposition);
 }
 
