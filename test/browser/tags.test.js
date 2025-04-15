@@ -3,12 +3,14 @@ import { hideArticlesByClass, toggleHideLink } from '../../src/browser/tags.js';
 
 describe('hideArticlesByClass', () => {
   it('does not throw when given a class and no matching elements', () => {
-    const getElementsByTagName = () => [];
-    const hasClassFn = () => false;
-    const hideElementFn = () => {};
+    const dom = {
+      getElementsByTagName: () => [],
+      hasClass: () => false,
+      hide: () => {}
+    };
 
     expect(() => {
-      hideArticlesByClass('some-class', getElementsByTagName, hasClassFn, hideElementFn);
+      hideArticlesByClass('some-class', dom);
     }).not.toThrow();
   });
 
@@ -17,14 +19,16 @@ describe('hideArticlesByClass', () => {
     const article2 = {};
     const articles = [article1, article2];
 
-    const getElementsByTagName = () => articles;
-    const hasClassFn = (el, className) => el === article1 && className === 'target-class';
-    const hideElementFn = jest.fn();
+    const dom = {
+      getElementsByTagName: () => articles,
+      hasClass: (el, className) => el === article1 && className === 'target-class',
+      hide: jest.fn()
+    };
 
-    hideArticlesByClass('target-class', getElementsByTagName, hasClassFn, hideElementFn);
+    hideArticlesByClass('target-class', dom);
 
-    expect(hideElementFn).toHaveBeenCalledTimes(1);
-    expect(hideElementFn).toHaveBeenCalledWith(article1);
+    expect(dom.hide).toHaveBeenCalledTimes(1);
+    expect(dom.hide).toHaveBeenCalledWith(article1);
   });
 });
 

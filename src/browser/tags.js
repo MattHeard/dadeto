@@ -11,14 +11,12 @@ function hideIfHasClass(article, className, hasClassFn, hideElementFn) {
 /**
  * Hides articles that contain a specific CSS class
  * @param {string} className - The CSS class to filter by
- * @param {Function} getElementsByTagName - Function to get elements by tag name
- * @param {Function} hasClassFn - Function to check if an element has a class
- * @param {Function} hideElementFn - Function to hide an element
+ * @param {object} dom - Object containing DOM helper functions: getElementsByTagName, hasClass, hide
  */
-export function hideArticlesByClass(className, getElementsByTagName, hasClassFn, hideElementFn) {
-  const articles = getElementsByTagName('article');
+export function hideArticlesByClass(className, dom) {
+  const articles = dom.getElementsByTagName('article');
   for (const article of articles) {
-    hideIfHasClass(article, className, hasClassFn, hideElementFn);
+    hideIfHasClass(article, className, dom.hasClass, dom.hide);
   }
 }
 

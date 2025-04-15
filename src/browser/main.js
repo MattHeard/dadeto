@@ -61,12 +61,7 @@ function makeCreateHideSpan(dom) {
     dom.setTextContent(hideLink, "hide");
     const handleHideClick = function(event) {
       dom.stopDefault(event);
-      hideArticlesByClass(
-        className,
-        dom.getElementsByTagName,
-        dom.hasClass,
-        dom.hide
-      );
+      hideArticlesByClass(className, dom);
     };
 
 
