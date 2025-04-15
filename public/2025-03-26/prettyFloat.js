@@ -77,8 +77,6 @@ function getSignificandAndExponent({ sign, mantissa, exponent }) {
 }
 
 function decomposeIEEE754(value) {
-  if (!Number.isFinite(value)) return {};
-
   const bits = getFloat64Bits(value);
   return extractIEEEComponents(bits);
 }
