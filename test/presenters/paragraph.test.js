@@ -6,7 +6,7 @@ describe('createParagraphElement', () => {
   it('creates a <p> element with the correct text content', () => {
     const mockElement = { textContent: '' };
     const dom = {
-      createElement: () => mockElement,
+      createElement: (tag) => mockElement,
       setTextContent: (el, text) => { el.textContent = text; }
     };
 
@@ -19,7 +19,7 @@ describe('createParagraphElement', () => {
   it('works with different input strings', () => {
     const mockElement = { textContent: '' };
     const dom = {
-      createElement: () => mockElement,
+      createElement: (tag) => mockElement,
       setTextContent: (el, text) => { el.textContent = text; }
     };
 

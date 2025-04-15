@@ -54,7 +54,7 @@ describe('setupAudio', () => {
     // Mock utility functions
     const mockGetAudioElements = jest.fn(() => mockAudioElements);
     const mockRemoveControlsAttribute = jest.fn();
-    const mockCreateElement = jest.fn((doc, tag) => {
+    const mockCreateElement = jest.fn((tag) => {
       if (tag === 'div') return mockControlsContainer;
       if (tag === 'a') return mockPlayButton;
       if (tag === 'span') return mockTimeDisplay;

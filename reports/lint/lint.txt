@@ -207,9 +207,11 @@
 [0m  [2m126:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m  [2m127:33[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
 [0m  [2m128:34[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
+[0m  [2m156:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
 [0m  [2m161:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m  [2m162:33[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
 [0m  [2m163:34[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
+[0m  [2m193:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
 [0m  [2m198:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m  [2m199:33[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
 [0m  [2m200:34[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
@@ -259,7 +261,9 @@
 [0m  [2m336:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/presenters/paragraph.test.js[24m[0m
-[0m  [2m2:24[22m  [33mwarning[39m  'jest' is defined but never used  [2mno-unused-vars[22m[0m
+[0m   [2m2:24[22m  [33mwarning[39m  'jest' is defined but never used  [2mno-unused-vars[22m[0m
+[0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
+[0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-19/identity.test.js[24m[0m
 [0m  [2m17:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
@@ -301,6 +305,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 246 problems (0 errors, 246 warnings)[22m[39m[0m
+[0m[33m[1m✖ 250 problems (0 errors, 250 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 164 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

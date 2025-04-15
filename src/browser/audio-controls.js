@@ -50,15 +50,15 @@ export function setupAudio(
       audio.id = "audio-" + index;
     }
     
-    const controlsContainer = createElement(doc, "div");
+    const controlsContainer = createElement("div");
     controlsContainer.className = "audio-controls";
     controlsContainer.id = "controls-" + audio.id;
     
-    const timeDisplay = createElement(doc, "span");
+    const timeDisplay = createElement("span");
     timeDisplay.className = "audio-time";
     timeDisplay.textContent = "0:00";
     
-    const playButton = createElement(doc, "a");
+    const playButton = createElement("a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
     const onPlayClick = createPlayClickHandler(audio, stopDefault, playAudio);
@@ -66,13 +66,13 @@ export function setupAudio(
     
     const onPauseClick = createPauseClickHandler(audio, stopDefault, pauseAudio);
     
-    const pauseButton = createElement(doc, "a");
+    const pauseButton = createElement("a");
     pauseButton.href = "#";
     pauseButton.textContent = "PAUSE";
     addEventListener(pauseButton, "click", onPauseClick);
     
     const onStopClick = createStopClickHandler(audio, stopDefault, pauseAudio);
-    const stopButton = createElement(doc, "a");
+    const stopButton = createElement("a");
     stopButton.href = "#";
     stopButton.textContent = "STOP";
     addEventListener(stopButton, "click", onStopClick);

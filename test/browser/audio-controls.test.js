@@ -153,7 +153,7 @@ describe('setupAudio', () => {
     ];
     const buttons = [];
     const createdElements = [];
-    const createElement = () => {
+    const createElement = (tag) => {
       const element = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
       createdElements.push(element);
       return element;
@@ -190,7 +190,7 @@ describe('setupAudio', () => {
     ];
     const buttons = [];
     const createdElements = [];
-    const createElement = () => {
+    const createElement = (tag) => {
       const element = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
       createdElements.push(element);
       return element;
