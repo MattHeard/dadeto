@@ -61,3 +61,9 @@ describe('toggleHideLink', () => {
     expect(dom.removeNextSibling).not.toHaveBeenCalled();
   });
 });
+
+describe('makeHandleClassName', () => {
+  it('placeholder test', () => {
+    expect(true).toBe(true);
+  });
+});
