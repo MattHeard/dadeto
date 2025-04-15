@@ -1,4 +1,12 @@
-import { getBlogGenerationArgs } from '../../src/generator/generator.js';
+import { getBlogGenerationArgs, generateBlogOuter } from '../../src/generator/generator.js';
+
+describe('generateBlogOuter', () => {
+  it('returns a string of HTML when given a blog object with an empty posts array', () => {
+    const result = generateBlogOuter({ posts: [] });
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
+  });
+});
 
 describe('getBlogGenerationArgs', () => {
   it('returns an object with header, footer, and wrapFunc', () => {
