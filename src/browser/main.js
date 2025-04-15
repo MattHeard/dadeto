@@ -80,6 +80,7 @@ function createIntersectionObserver(article, modulePath, functionName) {
 
 function handleIntersection(entry, observer, modulePath, article, functionName) {
   if (entry.isIntersecting) {
+    console.log("handleIntersection: ", modulePath, article, functionName);
     const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector };
     importModule(
       modulePath,
