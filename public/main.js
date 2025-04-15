@@ -52,7 +52,7 @@ function makeCreateHideSpan(dom) {
   return function createHideSpan(link, className) {
     var span = dom.createElement('span');
     dom.addClass(span, 'hide-span');
-    dom.appendChild(span, dom.createTextNode(document, " ("));
+    dom.appendChild(span, dom.createTextNode(" ("));
 
     var hideLink = dom.createElement('a');
     hideLink.textContent = "hide";
@@ -67,7 +67,7 @@ function makeCreateHideSpan(dom) {
     });
 
     dom.appendChild(span, hideLink);
-    dom.appendChild(span, dom.createTextNode(document, ")"));
+    dom.appendChild(span, dom.createTextNode(")"));
     insertBefore(link.parentNode, span, link.nextSibling);
   };
 }
