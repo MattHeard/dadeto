@@ -233,7 +233,7 @@ export function initializeVisibleComponents(win, doc, logFn, warnFn, getElementB
   }
   logFn('Initializing', win.interactiveComponents.length, 'interactive components via IntersectionObserver');
   win.interactiveComponents.forEach(component => {
-    const article = getElementByIdFn(doc, component.id);
+    const article = getElementByIdFn(component.id);
     if (!article) {
       warnFn(`Could not find article element with ID: ${component.id} for component initialization.`);
       return;

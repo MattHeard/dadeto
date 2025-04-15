@@ -389,7 +389,7 @@ describe('initializeVisibleComponents', () => {
       1,
       'interactive components via IntersectionObserver'
     );
-    expect(getElementByIdFn).toHaveBeenCalledWith(doc, 'test-id');
+    expect(getElementByIdFn).toHaveBeenCalledWith('test-id');
     expect(createIntersectionObserverFn).toHaveBeenCalledWith(mockArticle, 'path/to/module', 'initFunction');
     expect(mockObserver.observe).toHaveBeenCalledWith(mockArticle);
   });
@@ -408,7 +408,7 @@ describe('initializeVisibleComponents', () => {
 
     initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
 
-    expect(getElementByIdFn).toHaveBeenCalledWith(doc, 'missing-id');
+    expect(getElementByIdFn).toHaveBeenCalledWith('missing-id');
     expect(createIntersectionObserverFn).not.toHaveBeenCalled();
     expect(warnFn).toHaveBeenCalledWith(
       'Could not find article element with ID: missing-id for component initialization.'
