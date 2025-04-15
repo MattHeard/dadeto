@@ -147,4 +147,10 @@ describe('Cyberpunk Text Game', () => {
     const result = cyberpunkAdventure('Blaze', env);
     expect(result).toMatch(/Welcome, Blaze|your story begins|start to continue|Neon Market/i);
   });
+
+  test("defaults name to 'Stray' if no input and no name in temporary data", () => {
+    env.set('getData', () => ({ temporary: {} }));
+    const result = cyberpunkAdventure('   ', env);
+    expect(result).toMatch(/Stray/);
+  });
 });
