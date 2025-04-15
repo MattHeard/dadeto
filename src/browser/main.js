@@ -64,10 +64,6 @@ function createEnv() {
   ]);
 }
 
-function makeIntersectionObserver(callback, options) {
-  return new IntersectionObserver(callback, options);
-}
-
 function createIntersectionObserver(article, modulePath, functionName) {
   return makeIntersectionObserver(
     (entries, observer) => handleIntersectionEntries(entries, observer, modulePath, article, functionName),
@@ -80,7 +76,7 @@ function createIntersectionObserver(article, modulePath, functionName) {
 
 function handleIntersection(entry, observer, modulePath, article, functionName) {
   if (entry.isIntersecting) {
-    console.log("handleIntersection: ", modulePath, article, functionName);
+    console.log("handleIntersection: ", modulePath, functionName);
     const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector };
     importModule(
       modulePath,

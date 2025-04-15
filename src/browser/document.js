@@ -41,3 +41,13 @@ export const removeNextSibling = link =>
 export function setTextContent(element, content) {
   element.textContent = content;
 }
+
+/**
+ * Wrapper for IntersectionObserver constructor
+ * @param {Function} callback - IntersectionObserver callback
+ * @param {Object} options - IntersectionObserver options
+ * @returns {IntersectionObserver}
+ */
+export function makeIntersectionObserver(callback, options) {
+  return new IntersectionObserver(callback, options);
+}
