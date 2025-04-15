@@ -67,11 +67,7 @@ function createEnv() {
 
 function createIntersectionObserver(article, modulePath, functionName) {
   return makeIntersectionObserver(
-    (entries, observer) => handleIntersectionEntries(entries, observer, modulePath, article, functionName),
-    {
-      root: null,
-      threshold: 0.1
-    }
+    (entries, observer) => handleIntersectionEntries(entries, observer, modulePath, article, functionName)
   );
 }
 

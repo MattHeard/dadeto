@@ -48,6 +48,6 @@ export function setTextContent(element, content) {
  * @param {Object} options - IntersectionObserver options
  * @returns {IntersectionObserver}
  */
-export function makeIntersectionObserver(callback, options) {
-  return new IntersectionObserver(callback, options);
+export function makeIntersectionObserver(callback) {
+  return new IntersectionObserver(callback, { root: null, threshold: 0.1 });
 }
