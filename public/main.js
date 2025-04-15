@@ -81,11 +81,8 @@ import { isIntersecting, disconnectObserver } from './document.js';
 // isIntersecting and disconnectObserver moved to document.js
 
 
-import { handleIntersection } from './toys.js';
+import { handleIntersection, handleIntersectionEntries } from './toys.js';
 
-function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
-  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, env, dom));
-}
 
 // Interactive components functionality
 initializeVisibleComponents(

@@ -59,6 +59,10 @@ export function handleIntersection(entry, observer, modulePath, article, functio
   }
 }
 
+export function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
+  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, env, dom));
+}
+
 
 /**
  * Enable controls and update status message for an interactive component
