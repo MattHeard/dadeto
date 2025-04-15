@@ -68,4 +68,13 @@ describe('makeHandleClassName', () => {
     const result = handler('foo');
     expect(result).toBeUndefined();
   });
+
+  it('calls addEventListener when className starts with tag-', () => {
+    const addEventListener = jest.fn();
+    const dom = { addEventListener };
+    const link = {};
+    const handler = makeHandleClassName(dom, link);
+    handler('tag-sample');
+    expect(addEventListener).toHaveBeenCalledWith(link, 'click', expect.any(Function));
+  });
 });
