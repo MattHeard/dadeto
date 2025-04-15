@@ -105,7 +105,8 @@ const handleTagLinks = () => {
           hasClass,
           hide,
           getElementsByTagName,
-          insertBefore
+          insertBefore,
+          hasNextSiblingClass
         };
         const createHideSpan = makeHandleHideSpan(dom);
         const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan }, link, className);
