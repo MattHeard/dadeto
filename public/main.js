@@ -92,8 +92,9 @@ initializeVisibleComponents(
 
 const handleTagLinks = () => {
   const handleLink = link => {
+    const startsWith = (str, prefix) => str.indexOf(prefix) === 0;
     const handleClassName = className => {
-      if (className.indexOf('tag-') === 0) {
+      if (startsWith(className, 'tag-')) {
         const dom = {
           createElement,
           addClass,
