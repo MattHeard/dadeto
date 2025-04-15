@@ -51,3 +51,8 @@ export function setTextContent(element, content) {
 export function makeIntersectionObserver(callback) {
   return new IntersectionObserver(callback, { root: null, threshold: 0.1 });
 }
+
+export function isIntersecting(entry) {
+  return entry.isIntersecting;
+}
+
