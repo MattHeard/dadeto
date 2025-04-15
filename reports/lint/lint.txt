@@ -35,9 +35,9 @@
 [0m  [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used                                              [2mno-unused-vars[22m[0m
 [0m  [2m55:1[22m   [33mwarning[39m  './tags.js' import is duplicated                                                        [2mno-duplicate-imports[22m[0m
 [0m  [2m55:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used                                         [2mno-unused-vars[22m[0m
-[0m  [2m78:1[22m   [33mwarning[39m  './document.js' import is duplicated                                                    [2mno-duplicate-imports[22m[0m
-[0m  [2m82:1[22m   [33mwarning[39m  './toys.js' import is duplicated                                                        [2mno-duplicate-imports[22m[0m
-[0m  [2m84:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m80:1[22m   [33mwarning[39m  './document.js' import is duplicated                                                    [2mno-duplicate-imports[22m[0m
+[0m  [2m84:1[22m   [33mwarning[39m  './toys.js' import is duplicated                                                        [2mno-duplicate-imports[22m[0m
+[0m  [2m86:1[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (7). Maximum allowed is 3  [2mmax-params[22m[0m
 [0m  [2m92:10[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
 [0m  [2m93:12[22m  [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
 [0m  [2m94:7[22m   [33mwarning[39m  Trailing spaces not allowed                                                             [2mno-trailing-spaces[22m[0m
