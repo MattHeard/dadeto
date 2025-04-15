@@ -82,20 +82,20 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js[24m[0m
 [0m  [2m176:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
+[0m  [2m408:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
 [0m  [2m412:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m416:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m443:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m527:10[22m  [33mwarning[39m  Unexpected implicit coercion encountered. Use `Boolean(post[mediaType])` instead  [2mno-implicit-coercion[22m[0m
-[0m  [2m699:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m738:1[22m   [33mwarning[39m  Function 'createLinkParts' has too many parameters (4). Maximum allowed is 3      [2mmax-params[22m[0m
-[0m  [2m747:1[22m   [33mwarning[39m  Function 'composeLinkParts' has too many parameters (4). Maximum allowed is 3     [2mmax-params[22m[0m
-[0m  [2m825:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m837:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m849:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m872:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m889:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m905:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m964:8[22m   [33mwarning[39m  Function 'generateBlog' has too many parameters (4). Maximum allowed is 3         [2mmax-params[22m[0m
+[0m  [2m439:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
+[0m  [2m523:10[22m  [33mwarning[39m  Unexpected implicit coercion encountered. Use `Boolean(post[mediaType])` instead  [2mno-implicit-coercion[22m[0m
+[0m  [2m695:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
+[0m  [2m734:1[22m   [33mwarning[39m  Function 'createLinkParts' has too many parameters (4). Maximum allowed is 3      [2mmax-params[22m[0m
+[0m  [2m743:1[22m   [33mwarning[39m  Function 'composeLinkParts' has too many parameters (4). Maximum allowed is 3     [2mmax-params[22m[0m
+[0m  [2m821:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
+[0m  [2m833:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
+[0m  [2m845:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
+[0m  [2m868:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
+[0m  [2m885:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
+[0m  [2m901:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
+[0m  [2m960:8[22m   [33mwarning[39m  Function 'generateBlog' has too many parameters (4). Maximum allowed is 3         [2mmax-params[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/interactive.js[24m[0m
 [0m  [2m30:8[22m  [33mwarning[39m  Function 'generateCompleteInteractiveComponent' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m

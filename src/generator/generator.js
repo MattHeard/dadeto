@@ -322,10 +322,6 @@ function generateArticles(posts) {
  * Create attributes for an article element
  */
 export function createIdAttributeIfNeeded(post) {
-  if (!post.key) {
-    return '';
-  }
-
   return ' ' + createAttrPair(ATTR_NAME.ID, post.key);
 }
 
