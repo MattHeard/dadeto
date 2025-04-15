@@ -80,7 +80,7 @@ import { isIntersecting, disconnectObserver } from './document.js';
 
 
 function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
-  if (isIntersecting(entry)) {
+  if (dom.isIntersecting(entry)) {
     console.log("handleIntersection: ", modulePath, functionName);
     importModule(
       modulePath,
@@ -92,7 +92,7 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
 }
 
 function handleIntersectionEntries(entries, observer, modulePath, article, functionName) {
-  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver };
+  const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector, disconnectObserver, isIntersecting };
   const env = { globalState, createEnv, error, fetch };
   entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, env, dom));
 }
