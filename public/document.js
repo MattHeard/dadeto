@@ -56,3 +56,7 @@ export function isIntersecting(entry) {
   return entry.isIntersecting;
 }
 
+export function disconnectObserver(observer) {
+  observer.disconnect();
+}
+

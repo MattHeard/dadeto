@@ -75,12 +75,8 @@ function createIntersectionObserver(article, modulePath, functionName) {
   return makeIntersectionObserver(observerCallback);
 }
 
-import { isIntersecting } from './document.js';
-// isIntersecting moved to document.js
-
-function disconnectObserver(observer) {
-  observer.disconnect();
-}
+import { isIntersecting, disconnectObserver } from './document.js';
+// isIntersecting and disconnectObserver moved to document.js
 
 
 function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
