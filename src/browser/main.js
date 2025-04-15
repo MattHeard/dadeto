@@ -64,7 +64,7 @@ function makeCreateHideSpan(dom) {
         className,
         getElementsByTagName,
         hasClass,
-        element => element.style.display = 'none'
+        hide
       );
     };
 

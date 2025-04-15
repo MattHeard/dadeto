@@ -9,6 +9,7 @@ export const createElement = (tag) => document.createElement(tag);
 export const createTextNode = (value) => document.createTextNode(value);
 export const getElementsByTagName = (tagName) => document.getElementsByTagName(tagName);
 export const hasClass = (element, cls) => element.classList.contains(cls);
+export const hide = (element) => { element.style.display = 'none'; };
 export const addEventListener = (element, event, func) => element.addEventListener(event, func);
 export const appendChild = (parentNode, newChild) => parentNode.appendChild(newChild);
 export const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
