@@ -14,6 +14,7 @@ import {
   getElementById,
   getAudioElements,
   getElementsByTagName,
+  hasClass,
   querySelector,
   removeControlsAttribute,
   createElement,
@@ -62,7 +63,7 @@ function makeCreateHideSpan(dom) {
       hideArticlesByClass(
         className,
         getElementsByTagName,
-        (element, cls) => element.classList.contains(cls),
+        hasClass,
         element => element.style.display = 'none'
       );
     };
