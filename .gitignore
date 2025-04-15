@@ -32,9 +32,6 @@ build/
 *.bak
 tmp/
 
-# Coverage reports
-coverage/
-
 # Generated files
 *.class
 *.min.*

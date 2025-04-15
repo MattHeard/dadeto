@@ -976,7 +976,7 @@ const createBlogComponents = () => ({
  * Extracts the blog generation arguments from the blog components.
  * @returns {Object} - An object containing header, footer, and wrapFunc.
  */
-function getBlogGenerationArgs() {
+export function getBlogGenerationArgs() {
   const components = createBlogComponents();
   const { header, footer, wrapFunc } = components;
   return { header, footer, wrapFunc };

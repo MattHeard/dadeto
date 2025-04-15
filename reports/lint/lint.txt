@@ -276,6 +276,9 @@
 [0m  [2m328:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
 [0m  [2m342:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
 [0m[0m
+[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
+[0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
+[0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/presenters/paragraph.test.js[24m[0m
 [0m   [2m2:24[22m  [33mwarning[39m  'jest' is defined but never used  [2mno-unused-vars[22m[0m
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
@@ -321,6 +324,6 @@
 [0m  [2m58:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m59:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 266 problems (0 errors, 266 warnings)[22m[39m[0m
+[0m[33m[1m✖ 267 problems (0 errors, 267 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 164 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
