@@ -94,22 +94,22 @@ import { startsWith, makeHandleClassName } from './tags.js';
 import { getClasses } from './document.js';
 
 const handleTagLinks = () => {
+  const dom = {
+    createElement,
+    addClass,
+    appendChild,
+    createTextNode,
+    setTextContent,
+    addEventListener,
+    stopDefault,
+    hasClass,
+    hide,
+    getElementsByTagName,
+    insertBefore,
+    hasNextSiblingClass,
+    removeNextSibling
+  };
   const handleLink = link => {
-    const dom = {
-      createElement,
-      addClass,
-      appendChild,
-      createTextNode,
-      setTextContent,
-      addEventListener,
-      stopDefault,
-      hasClass,
-      hide,
-      getElementsByTagName,
-      insertBefore,
-      hasNextSiblingClass,
-      removeNextSibling
-    };
     const handleClassName = makeHandleClassName(dom, link);
     getClasses(link).forEach(handleClassName);
   };
