@@ -63,7 +63,7 @@ describe('toggleHideLink', () => {
 });
 
 describe('makeHandleClassName', () => {
-  it('placeholder test', () => {
-    makeHandleClassName();
+  it('returns a function when called with no arguments', () => {
+    expect(typeof makeHandleClassName()).toBe('function');
   });
 });
