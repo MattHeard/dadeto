@@ -128,6 +128,7 @@ const handleTagLinks = () => {
   const handleLink = link => {
     const handleClassName = className => {
       if (className.indexOf('tag-') === 0) {
+        const createHideSpan = makeCreateHideSpan(dom);
         const handleClick = createHandleClick({ stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan }, link, className);
         addEventListener(link, 'click', handleClick);
         return; // exit after first tag- match
