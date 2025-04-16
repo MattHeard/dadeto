@@ -1,11 +1,11 @@
 {
   "posts": [
     {
-      "key": "COLU1",
-      "title": "colour palette",
+      "key": "COLO1",
+      "title": "Colour Palette",
       "publicationDate": "2025-04-16",
       "content": [
-        "Generates a random color palette of hex codes."
+        "Generates a random colour palette of hex codes."
       ],
       "illustration": {
         "fileType": "png",
@@ -446,7 +446,7 @@
     {
       "key": "HELL1",
       "publicationDate": "2024-10-02",
-      "title": "Hello world",
+      "title": "Hello World",
       "illustration": {
         "fileType": "png",
         "altText": "a kawaii techno-pop illustration of a smiling cartoon computer displaying “hello world” in colorful pixel text. the computer has blushing cheeks, big shiny eyes, and sits against a pastel background filled with sparkles, hearts, stars, and floating digital icons like a floppy disk and keyboard. the overall vibe is cheerful, playful, and digitally cute."
@@ -1316,7 +1316,7 @@
     },
     {
       "key": "VICT1",
-      "title": "Victim-blaming and consequentialism",
+      "title": "Victim-blaming and Consequentialism",
       "publicationDate": "2015-03-24",
       "content": [
         "A student wishes to take a shortcut through a dark alleyway and knows they risk being attacked. They take the shortcut anyway, and get mugged. Deontologists blame the aggressor entirely: the victim had a right to not be harmed. Consequentialists might argue that the student knew the risks and is partially responsible for the consequences of their choice. This is uncomfortable logic. In response we can either (1) reject consequentialism, (2) accept that we should blame victims (at least privately), or (3) refine the consequentialist calculus to stop victim-blaming. Maybe we could argue that optimal consequences require systems of rights?"
