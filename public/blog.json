@@ -1,6 +1,27 @@
 {
   "posts": [
     {
+      "key": "COLP1",
+      "title": "Random Color Palette",
+      "publicationDate": "2025-04-15",
+      "content": [
+        "Generates a random color palette of hex codes."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a digital illustration of a horizontal row of colored swatches showcasing a random palette, each square a different hue on a white background"
+      },
+      "toy": {
+        "modulePath": "/2025-04-15/colorPalette.js",
+        "functionName": "generatePalette"
+      },
+      "tags": [
+        "toy",
+        "color",
+        "palette"
+      ]
+    },
+    {
       "key": "VIBE1",
       "title": "Vibe Coding Tools",
       "publicationDate": "2025-04-07",
@@ -1816,6 +1837,11 @@
       "publicationDate": "2012-11-28",
       "content": [
         "My understanding of compassion in free market economics is that reducing the prices of goods and services through increasing market efficiency will help poor _consumers_ more than government intervention will help poor _workers_. But there are barriers to entry which are avoidable and are not caused by government intervention. Does aversion to multiculturalism act as a barrier to entry? When a fat, white woman yells \"Speak English!\" at a Chinese shopkeeper, the shopkeeper pays a hidden cost to continue working. In a maximally competitive market, where race shouldn't affect labour, neither should foreign cultural expression. More tolerance brings more competition."
+      ],
+      "tags": [
+        "economics",
+        "multiculturalism",
+        "tolerance"
       ]
     },
     {
@@ -1824,6 +1850,11 @@
       "publicationDate": "2012-11-28",
       "content": [
         "I took some photos of actors I like when I visited the red carpet today for the premiere of the first _Hobbit_ film. When I was in high school, I rushed with my friends down Kent Terrace towards the Embassy Theatre to see if we could get a good spot to see Viggo Mortensen, Ian McKellan, Elijah Wood and others at the premiere of _The Return of the King_. It was good fun: I remember yelling \"Viggo! Viggo! Viggo!\" in adoration at the top of my lungs. My reaction was more subdued today, but I enjoyed seeing glamourous actors again."
+      ],
+      "tags": [
+        "film",
+        "celebrities",
+        "wellington"
       ]
     },
     {
@@ -1832,6 +1863,11 @@
       "publicationDate": "2012-11-11",
       "content": [
         "My future wife and I took a scenic rafting trip down the Rangitikei River for Christmas last year and earlier this year we picked a random weekend to take the trip. That random weekend turned out to be warm and sunny, and perfect for a relaxing drift down a river a few hours away from home.  As expected, the escape from the city made us consider quitting our day jobs, even though I haven't even properly started mine yet. I'm definitely more at home where there are paved roads and cellphone service, but I need adventures too."
+      ],
+      "tags": [
+        "adventure",
+        "nature",
+        "relaxation"
       ]
     },
     {
@@ -1840,6 +1876,11 @@
       "publicationDate": "2012-11-08",
       "content": [
         "Whether their leaders admit it or not, Republican losses across the board in US elections of legislative and executive branches indicate a shift away from the Tea Party.  But considering the issues needing immediate attention, the Democrat gains are not enough to deserve substantial celebration: the election doesn't solve the problems with the ongoing political stalemate.  But there was one clear winner: Nate Silver, who stood at the foreground of the battle between statisticians and pundits, led the number-crunchers to an overwhelming victory.  I feel more vindicated as long-time reader of Silver's blog than as an Obama supporter."
+      ],
+      "tags": [
+        "politics",
+        "statistics",
+        "prediction"
       ]
     },
     {
@@ -1848,6 +1889,11 @@
       "publicationDate": "2012-11-06",
       "content": [
         "After closely following the US presidential election for at least the last year, I am actively avoiding reading any news about the results today.  I am attending an \"election party\" this evening where we will watch the news and tally electoral votes ourselves as the states report their results.  Unfortunately, because I live in New Zealand, the party is effectively time-shifted several hours after the actual election. Our party starts at 6pm, when the election will actually be wrapping up (waiting only for inconsequential results from a few West Coast states, Alaska and Hawaii).  Thank god for the DVR!"
+      ],
+      "tags": [
+        "politics",
+        "elections",
+        "avoidance"
       ]
     },
     {
@@ -1856,6 +1902,11 @@
       "publicationDate": "2012-11-06",
       "content": [
         "As I showered this morning, I imagined how I would act as police chief in charge of maintaining law and order during an \"Occupy Wall Street\"-style protest. Balancing the goals of prosecuting trespassers and keeping the peace is undeniably a difficult task, but I think that \"perception\" of police brutality against protesters creates a Streisand effect by rallying more support for the protesters and encouraging rioters and violent opportunists.  Wouldn't it be better to videotape any non-violent crimes (like trespassing) and not evict protesters, waiting for them leave out of boredom? The police can then prosecute peacefully later."
+      ],
+      "tags": [
+        "politics",
+        "protests",
+        "policing"
       ]
     },
     {
@@ -1864,6 +1915,11 @@
       "publicationDate": "2012-09-06",
       "content": [
         "Reading Joseph Romm's Language Intelligence has led me to pick up my previously put-aside interest in practicing effective rhetoric. With my background in philosophy and computer science, I have overvalued the role that unemotional logic has to play in crafting convincing speech. Just as I repeated my lines again and again and again when learning to play Friar Lawrence in school, I have been repeating the lines of Martin Luther King Jr's  \"I Have a Dream\". Starting with _anaphora_ and alliteration, I am keeping a keen eye on figures of speech that focus my future approaches to effective arguing."
+      ],
+      "tags": [
+        "rhetoric",
+        "language",
+        "persuasion"
       ]
     },
     {
@@ -1872,6 +1928,11 @@
       "publicationDate": "2012-08-29",
       "content": [
         "This Arctic summer has broken records for the least sea ice in recent history. Lots of that melted ice will return this winter, but the total thick ice is decreasing. There are two issues to note. First, this melting trend exemplifies the clarity of the physical evidence for global warming. While Arctic sea ice levels alone do not establish human attribution, they identify much-needed climatic research. Second, the distinction between single- and multi-year ice highlights feedback loops. As more ice thaws and refreezes, less remains thick enough to maintain the albedo needed to prevent extra absorption of sunlight, accelerating warming."
+      ],
+      "tags": [
+        "climate",
+        "arctic",
+        "sea-ice"
       ]
     },
     {
@@ -1880,6 +1941,11 @@
       "publicationDate": "2012-08-28",
       "content": [
         "Wouldn't only a narcissist create a website about themselves? I benefit and suffer from an inflated ego, of course. I wouldn't consider my opinions worth blogging about if I didn't. But I don't think that my blog was intended as a soapbox for me to grab attention. 21st century identities are forged much more so on the internet than 20th century identities, and with a blog and a Twitter handle and a Facebook wall and a Google+ profile, I can manage the definition of \"Matt Heard\" more effectively. If I don't, computers will deduce my personality from my search terms."
+      ],
+      "tags": [
+        "blogging",
+        "identity",
+        "self-promotion"
       ]
     },
     {
@@ -1888,6 +1954,11 @@
       "publicationDate": "2012-08-24",
       "content": [
         "I have a habit of reading in sprints, consuming several books in one month and then not picking up any for the next several months. My future wife and I challenged each other to read more by starting from one end of our bookcase and reading each book one at a time. I just finished my second book: _Introducing Political Philosophy_. I was cheating, though, because it is short and each page has a large picture. But it's interesting and seems to be a good summary of the history of political thought. My next is _Brave New World_ by Aldous Huxley."
+      ],
+      "tags": [
+        "philosophy",
+        "politics",
+        "reading"
       ]
     },
     {
