@@ -1,7 +1,7 @@
 import { describe, test, expect } from '@jest/globals';
-import { generatePalette } from '../../../src/toys/2025-04-15/colorPalette.js';
+import { generatePalette } from '../../../src/toys/2025-04-16/colorPalette.js';
 
-describe('generatePalette', () => {
+describe('generatePalette (2025-04-16)', () => {
   test('returns default 5 colors when input is invalid', () => {
     const mockEnv = new Map([['getRandomNumber', () => 0]]);
     const result = JSON.parse(generatePalette('foo', mockEnv));
