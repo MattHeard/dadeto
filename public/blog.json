@@ -1,8 +1,8 @@
 {
   "posts": [
     {
-      "key": "COLP1",
-      "title": "Random Color Palette",
+      "key": "COLU1",
+      "title": "colour palette",
       "publicationDate": "2025-04-16",
       "content": [
         "Generates a random color palette of hex codes."
