@@ -1,329 +1,328 @@
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js[24m[0m
-[0m  [2m31:8[22m  [33mwarning[39m  Function 'setupAudio' has too many parameters (11). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m52:1[22m  [33mwarning[39m  Trailing spaces not allowed                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m56:1[22m  [33mwarning[39m  Trailing spaces not allowed                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m60:1[22m  [33mwarning[39m  Trailing spaces not allowed                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m66:1[22m  [33mwarning[39m  Trailing spaces not allowed                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m68:1[22m  [33mwarning[39m  Trailing spaces not allowed                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m73:1[22m  [33mwarning[39m  Trailing spaces not allowed                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m79:1[22m  [33mwarning[39m  Trailing spaces not allowed                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m82:1[22m  [33mwarning[39m  Trailing spaces not allowed                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m90:1[22m  [33mwarning[39m  Trailing spaces not allowed                                               [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js[24m[0m
-[0m   [2m30:2[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m40:8[22m   [33mwarning[39m  Function 'fetchAndCacheBlogData' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m   [2m44:41[22m  [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m46:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m50:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m51:56[22m  [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m71:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m99:1[22m   [33mwarning[39m  Function 'isInvalidState' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
-[0m  [2m100:44[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m111:1[22m   [33mwarning[39m  Function 'tryFetchingBlog' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
-[0m  [2m123:1[22m   [33mwarning[39m  Function 'handleBlogFetchState' has too many parameters (7). Maximum allowed is 3   [2mmax-params[22m[0m
-[0m  [2m138:71[22m  [33mwarning[39m  Arrow function has too many parameters (5). Maximum allowed is 3                    [2mmax-params[22m[0m
-[0m  [2m155:69[22m  [33mwarning[39m  Arrow function has too many parameters (4). Maximum allowed is 3                    [2mmax-params[22m[0m
-[0m  [2m161:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                         [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js[24m[0m
-[0m    [2m1:5[22m   [33mwarning[39m  'globalState' is never reassigned. Use 'const' instead  [2mprefer-const[22m[0m
-[0m   [2m11:10[22m  [33mwarning[39m  'hideArticlesByClass' is defined but never used         [2mno-unused-vars[22m[0m
-[0m   [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used              [2mno-unused-vars[22m[0m
-[0m   [2m11:47[22m  [33mwarning[39m  'createHandleClick' is defined but never used           [2mno-unused-vars[22m[0m
-[0m   [2m55:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m   [2m55:10[22m  [33mwarning[39m  'makeHandleHideSpan' is defined but never used          [2mno-unused-vars[22m[0m
-[0m   [2m55:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used         [2mno-unused-vars[22m[0m
-[0m   [2m99:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m  [2m102:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m106:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m  [2m106:10[22m  [33mwarning[39m  'handleIntersection' is defined but never used          [2mno-unused-vars[22m[0m
-[0m  [2m106:30[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used   [2mno-unused-vars[22m[0m
-[0m  [2m106:57[22m  [33mwarning[39m  'makeObserverCallback' is defined but never used        [2mno-unused-vars[22m[0m
-[0m  [2m111:10[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m112:12[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m113:7[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m114:8[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m115:18[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m121:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m  [2m121:10[22m  [33mwarning[39m  'startsWith' is defined but never used                  [2mno-unused-vars[22m[0m
-[0m  [2m121:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used         [2mno-unused-vars[22m[0m
-[0m  [2m121:43[22m  [33mwarning[39m  'makeHandleLink' is defined but never used              [2mno-unused-vars[22m[0m
-[0m  [2m122:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
-[0m   [2m5:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m69:5[22m  [33mwarning[39m  Unexpected var, use let or const instead                                     [2mno-var[22m[0m
-[0m  [2m73:5[22m  [33mwarning[39m  Unexpected var, use let or const instead                                     [2mno-var[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
-[0m   [2m32:8[22m   [33mwarning[39m  Function 'initialiseModule' has too many parameters (4). Maximum allowed is 3             [2mmax-params[22m[0m
-[0m   [2m50:8[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (7). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m   [2m62:8[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (7). Maximum allowed is 3    [2mmax-params[22m[0m
-[0m   [2m66:8[22m   [33mwarning[39m  Function 'makeObserverCallback' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
-[0m   [2m92:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
-[0m  [2m117:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
-[0m  [2m125:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m  [2m126:38[22m  [33mwarning[39m  Expected { after 'if' condition                                                           [2mcurly[22m[0m
-[0m  [2m160:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
-[0m  [2m168:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
-[0m  [2m226:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
-[0m  [2m227:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m230:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m240:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m272:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m272:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
-[0m  [2m23:26[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m26:1[22m   [33mwarning[39m  Function 'findJsFiles' has a complexity of 6. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m61:32[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js[24m[0m
-[0m  [2m176:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m408:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m412:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m439:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m519:10[22m  [33mwarning[39m  Unexpected implicit coercion encountered. Use `Boolean(post[mediaType])` instead  [2mno-implicit-coercion[22m[0m
-[0m  [2m691:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m730:1[22m   [33mwarning[39m  Function 'createLinkParts' has too many parameters (4). Maximum allowed is 3      [2mmax-params[22m[0m
-[0m  [2m739:1[22m   [33mwarning[39m  Function 'composeLinkParts' has too many parameters (4). Maximum allowed is 3     [2mmax-params[22m[0m
-[0m  [2m817:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m829:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m841:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m864:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m881:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m897:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                       [2mno-trailing-spaces[22m[0m
-[0m  [2m956:8[22m   [33mwarning[39m  Function 'generateBlog' has too many parameters (4). Maximum allowed is 3         [2mmax-params[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/interactive.js[24m[0m
-[0m  [2m30:8[22m  [33mwarning[39m  Function 'generateCompleteInteractiveComponent' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m33:1[22m  [33mwarning[39m  Trailing spaces not allowed                                                                        [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-19/identity.js[24m[0m
-[0m  [2m3:3[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/booleanCoercer.js[24m[0m
-[0m   [2m2:35[22m  [33mwarning[39m  Expected { after 'if' condition  [2mcurly[22m[0m
-[0m  [2m20:34[22m  [33mwarning[39m  Expected { after 'if' condition  [2mcurly[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/italics.js[24m[0m
-[0m   [2m36:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m   [2m45:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m   [2m57:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m   [2m60:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m   [2m87:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m106:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m110:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m146:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m149:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m153:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m157:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m161:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m177:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m184:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m188:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m192:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m216:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m220:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m224:3[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m225:46[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-26/prettyFloat.js[24m[0m
-[0m  [2m10:24[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
-[0m  [2m37:1[22m   [33mwarning[39m  Function 'handleSimpleCases' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m38:30[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
-[0m  [2m40:20[22m  [33mwarning[39m  Expected { after 'if' condition                                           [2mcurly[22m[0m
-[0m  [2m65:7[22m   [33mwarning[39m  'A' is never reassigned. Use 'const' instead                              [2mprefer-const[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-28/rand.js[24m[0m
-[0m  [2m13:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/fishingGame.js[24m[0m
-[0m   [2m24:1[22m   [33mwarning[39m  Function 'getBaitData' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m   [2m26:47[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m   [2m41:15[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m   [2m53:15[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m144:32[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js[24m[0m
-[0m  [2m7:8[22m  [33mwarning[39m  Function 'get' has a complexity of 16. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
-[0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
-[0m  [2m19:1[22m   [33mwarning[39m  Function 'deepMerge' has a complexity of 4. Maximum allowed is 2      [2mcomplexity[22m[0m
-[0m  [2m22:33[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2            [2mcomplexity[22m[0m
-[0m  [2m52:8[22m   [33mwarning[39m  Function 'setTemporary' has a complexity of 10. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m77:35[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
-[0m  [2m89:32[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
-[0m  [2m97:51[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js[24m[0m
-[0m  [2m19:1[22m  [33mwarning[39m  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
-[0m  [2m50:1[22m  [33mwarning[39m  Function 'handleTransportTrade' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m93:8[22m  [33mwarning[39m  Function 'cyberpunkAdventure' has a complexity of 17. Maximum allowed is 2   [2mcomplexity[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js[24m[0m
-[0m   [2m17:1[22m   [33mwarning[39m  Function 'validateParsedMoves' has a complexity of 4. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m   [2m32:1[22m   [33mwarning[39m  Function 'buildMoveResponse' has a complexity of 3. Maximum allowed is 2            [2mcomplexity[22m[0m
-[0m   [2m37:8[22m   [33mwarning[39m  Function 'ticTacToeMove' has a complexity of 4. Maximum allowed is 2                [2mcomplexity[22m[0m
-[0m   [2m39:15[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m42:16[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m44:40[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m58:1[22m   [33mwarning[39m  Function 'processMove' has too many parameters (5). Maximum allowed is 3            [2mmax-params[22m[0m
-[0m   [2m58:1[22m   [33mwarning[39m  Function 'processMove' has a complexity of 3. Maximum allowed is 2                  [2mcomplexity[22m[0m
-[0m   [2m59:41[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m60:45[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m64:1[22m   [33mwarning[39m  Function 'applyMovesSequentially' has a complexity of 4. Maximum allowed is 2       [2mcomplexity[22m[0m
-[0m   [2m67:52[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m68:31[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m73:1[22m   [33mwarning[39m  Function 'validateAndApplyMoves' has a complexity of 4. Maximum allowed is 2        [2mcomplexity[22m[0m
-[0m   [2m74:50[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m78:22[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m   [2m83:1[22m   [33mwarning[39m  Function 'scoreMove' has too many parameters (5). Maximum allowed is 3              [2mmax-params[22m[0m
-[0m   [2m90:1[22m   [33mwarning[39m  Function 'findBestMove' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
-[0m  [2m110:27[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m114:1[22m   [33mwarning[39m  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                    [2mcomplexity[22m[0m
-[0m  [2m123:1[22m   [33mwarning[39m  Function 'checkColumns' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
-[0m  [2m132:1[22m   [33mwarning[39m  Function 'checkDiagonals' has a complexity of 6. Maximum allowed is 2               [2mcomplexity[22m[0m
-[0m  [2m148:22[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m155:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m155:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has a complexity of 4. Maximum allowed is 2        [2mcomplexity[22m[0m
-[0m  [2m156:29[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m157:31[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m158:35[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m162:1[22m   [33mwarning[39m  Function 'getAvailableMoves' has a complexity of 4. Maximum allowed is 2            [2mcomplexity[22m[0m
-[0m  [2m166:25[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m172:1[22m   [33mwarning[39m  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3          [2mmax-params[22m[0m
-[0m  [2m172:1[22m   [33mwarning[39m  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2                [2mcomplexity[22m[0m
-[0m  [2m183:1[22m   [33mwarning[39m  Function 'minimax' has too many parameters (5). Maximum allowed is 3                [2mmax-params[22m[0m
-[0m  [2m183:1[22m   [33mwarning[39m  Function 'minimax' has a complexity of 3. Maximum allowed is 2                      [2mcomplexity[22m[0m
-[0m  [2m186:31[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m196:1[22m   [33mwarning[39m  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
-[0m  [2m197:50[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m202:1[22m   [33mwarning[39m  Function 'isValidMove' has a complexity of 6. Maximum allowed is 2                  [2mcomplexity[22m[0m
-[0m  [2m203:42[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m206:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m207:36[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m209:49[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m214:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
-[0m    [2m3:1[22m   [33mwarning[39m  '../../src/browser/audio-controls.js' import is duplicated  [2mno-duplicate-imports[22m[0m
-[0m   [2m20:1[22m   [33mwarning[39m  '../../src/browser/audio-controls.js' import is duplicated  [2mno-duplicate-imports[22m[0m
-[0m   [2m53:1[22m   [33mwarning[39m  '../../src/browser/audio-controls.js' import is duplicated  [2mno-duplicate-imports[22m[0m
-[0m   [2m87:1[22m   [33mwarning[39m  '../../src/browser/audio-controls.js' import is duplicated  [2mno-duplicate-imports[22m[0m
-[0m   [2m96:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m   [2m97:33[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m   [2m98:34[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m  [2m126:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m127:33[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m  [2m128:34[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m  [2m156:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
-[0m  [2m161:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m162:33[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m  [2m163:34[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m  [2m193:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
-[0m  [2m198:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m199:33[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m  [2m200:34[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
-[0m   [2m83:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
-[0m   [2m85:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
-[0m   [2m92:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
-[0m   [2m95:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
-[0m  [2m173:1[22m   [33mwarning[39m  Trailing spaces not allowed    [2mno-trailing-spaces[22m[0m
-[0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/main.test.js[24m[0m
-[0m  [2m57:39[22m  [33mwarning[39m  Arrow function has a complexity of 4. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m58:26[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m  [2m59:24[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m  [2m60:27[22m  [33mwarning[39m  Expected { after 'if' condition                             [2mcurly[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js[24m[0m
-[0m  [2m2:104[22m  [33mwarning[39m  'handleTagLinks' is defined but never used  [2mno-unused-vars[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js[24m[0m
-[0m    [2m3:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m   [2m32:22[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m38:22[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m42:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m78:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m   [2m79:60[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m   [2m80:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m   [2m81:40[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m101:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m126:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m132:7[22m   [33mwarning[39m  'handleSubmit' is assigned a value but never used                   [2mno-unused-vars[22m[0m
-[0m  [2m134:7[22m   [33mwarning[39m  'parentElement' is defined but never used                           [2mno-unused-vars[22m[0m
-[0m  [2m155:41[22m  [33mwarning[39m  'input' is defined but never used                                   [2mno-unused-vars[22m[0m
-[0m  [2m241:11[22m  [33mwarning[39m  'addWarningFn' is assigned a value but never used                   [2mno-unused-vars[22m[0m
-[0m  [2m244:11[22m  [33mwarning[39m  'createElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
-[0m  [2m259:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m273:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m274:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m275:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m276:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m277:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m290:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m324:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m325:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m326:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m327:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m328:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m342:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
-[0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/presenters/paragraph.test.js[24m[0m
-[0m   [2m2:24[22m  [33mwarning[39m  'jest' is defined but never used  [2mno-unused-vars[22m[0m
-[0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
-[0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-19/identity.test.js[24m[0m
-[0m  [2m17:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m24:25[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m29:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m31:1[22m   [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-28/rand.test.js[24m[0m
-[0m   [2m7:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m12:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m15:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m19:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m26:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m32:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m40:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m44:1[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-29/get.test.js[24m[0m
-[0m   [2m90:44[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m109:56[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-29/setTemporary.test.js[24m[0m
-[0m   [2m37:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m   [2m90:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m100:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m114:9[22m   [33mwarning[39m  'input' is never reassigned. Use 'const' instead  [2mprefer-const[22m[0m
-[0m  [2m165:13[22m  [33mwarning[39m  Multiple spaces found before '// This should...'  [2mno-multi-spaces[22m[0m
-[0m  [2m169:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m174:16[22m  [33mwarning[39m  Multiple spaces found before '// Preserved f...'  [2mno-multi-spaces[22m[0m
-[0m  [2m176:15[22m  [33mwarning[39m  Multiple spaces found before '// Added'           [2mno-multi-spaces[22m[0m
-[0m  [2m206:12[22m  [33mwarning[39m  Multiple spaces found before '// Overwrite s...'  [2mno-multi-spaces[22m[0m
-[0m  [2m207:18[22m  [33mwarning[39m  Multiple spaces found before '// Overwrite a...'  [2mno-multi-spaces[22m[0m
-[0m  [2m209:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-30/cyberpunkAdventure.test.js[24m[0m
-[0m  [2m59:86[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m60:67[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m61:79[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m92:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m  [2m93:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
-[0m[0m
-[0m[33m[1m✖ 265 problems (0 errors, 265 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 161 warnings potentially fixable with the `--fix` option.[22m[39m[0m
-[0m[33m[1m[22m[39m[0m
+
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js
+  31:8  warning  Function 'setupAudio' has too many parameters (11). Maximum allowed is 3  max-params
+  52:1  warning  Trailing spaces not allowed                                               no-trailing-spaces
+  56:1  warning  Trailing spaces not allowed                                               no-trailing-spaces
+  60:1  warning  Trailing spaces not allowed                                               no-trailing-spaces
+  66:1  warning  Trailing spaces not allowed                                               no-trailing-spaces
+  68:1  warning  Trailing spaces not allowed                                               no-trailing-spaces
+  73:1  warning  Trailing spaces not allowed                                               no-trailing-spaces
+  79:1  warning  Trailing spaces not allowed                                               no-trailing-spaces
+  82:1  warning  Trailing spaces not allowed                                               no-trailing-spaces
+  90:1  warning  Trailing spaces not allowed                                               no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js
+   30:2   warning  Trailing spaces not allowed                                                         no-trailing-spaces
+   40:8   warning  Function 'fetchAndCacheBlogData' has too many parameters (4). Maximum allowed is 3  max-params
+   44:41  warning  Trailing spaces not allowed                                                         no-trailing-spaces
+   46:1   warning  Trailing spaces not allowed                                                         no-trailing-spaces
+   50:1   warning  Trailing spaces not allowed                                                         no-trailing-spaces
+   51:56  warning  Trailing spaces not allowed                                                         no-trailing-spaces
+   71:1   warning  Trailing spaces not allowed                                                         no-trailing-spaces
+   99:1   warning  Function 'isInvalidState' has a complexity of 3. Maximum allowed is 2               complexity
+  100:44  warning  Expected { after 'if' condition                                                     curly
+  111:1   warning  Function 'tryFetchingBlog' has too many parameters (5). Maximum allowed is 3        max-params
+  123:1   warning  Function 'handleBlogFetchState' has too many parameters (7). Maximum allowed is 3   max-params
+  138:71  warning  Arrow function has too many parameters (5). Maximum allowed is 3                    max-params
+  155:69  warning  Arrow function has too many parameters (4). Maximum allowed is 3                    max-params
+  161:1   warning  Trailing spaces not allowed                                                         no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
+    1:5   warning  'globalState' is never reassigned. Use 'const' instead  prefer-const
+   11:10  warning  'hideArticlesByClass' is defined but never used         no-unused-vars
+   11:31  warning  'toggleHideLink' is defined but never used              no-unused-vars
+   11:47  warning  'createHandleClick' is defined but never used           no-unused-vars
+   55:1   warning  './tags.js' import is duplicated                        no-duplicate-imports
+   55:10  warning  'makeHandleHideSpan' is defined but never used          no-unused-vars
+   55:30  warning  'makeHandleHideClick' is defined but never used         no-unused-vars
+   99:1   warning  './toys.js' import is duplicated                        no-duplicate-imports
+  102:1   warning  './document.js' import is duplicated                    no-duplicate-imports
+  106:1   warning  './toys.js' import is duplicated                        no-duplicate-imports
+  106:10  warning  'handleIntersection' is defined but never used          no-unused-vars
+  106:30  warning  'handleIntersectionEntries' is defined but never used   no-unused-vars
+  106:57  warning  'makeObserverCallback' is defined but never used        no-unused-vars
+  111:10  warning  Trailing spaces not allowed                             no-trailing-spaces
+  112:12  warning  Trailing spaces not allowed                             no-trailing-spaces
+  113:7   warning  Trailing spaces not allowed                             no-trailing-spaces
+  114:8   warning  Trailing spaces not allowed                             no-trailing-spaces
+  115:18  warning  Trailing spaces not allowed                             no-trailing-spaces
+  121:1   warning  './tags.js' import is duplicated                        no-duplicate-imports
+  121:10  warning  'startsWith' is defined but never used                  no-unused-vars
+  121:22  warning  'makeHandleClassName' is defined but never used         no-unused-vars
+  121:43  warning  'makeHandleLink' is defined but never used              no-unused-vars
+  122:1   warning  './document.js' import is duplicated                    no-duplicate-imports
+
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js
+   5:1  warning  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  max-params
+  69:5  warning  Unexpected var, use let or const instead                                     no-var
+  73:5  warning  Unexpected var, use let or const instead                                     no-var
+
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
+   32:8   warning  Function 'initialiseModule' has too many parameters (4). Maximum allowed is 3             max-params
+   50:8   warning  Function 'handleIntersection' has too many parameters (7). Maximum allowed is 3           max-params
+   62:8   warning  Function 'handleIntersectionEntries' has too many parameters (7). Maximum allowed is 3    max-params
+   66:8   warning  Function 'makeObserverCallback' has too many parameters (5). Maximum allowed is 3         max-params
+   92:1   warning  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        max-params
+  117:1   warning  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               complexity
+  125:1   warning  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           max-params
+  126:38  warning  Expected { after 'if' condition                                                           curly
+  160:1   warning  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       max-params
+  168:1   warning  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     max-params
+  226:9   warning  'outputParent' is assigned a value but never used                                         no-unused-vars
+  227:1   warning  Trailing spaces not allowed                                                               no-trailing-spaces
+  230:1   warning  Trailing spaces not allowed                                                               no-trailing-spaces
+  240:1   warning  Trailing spaces not allowed                                                               no-trailing-spaces
+  272:8   warning  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  max-params
+  272:8   warning  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js
+  23:26  warning  Trailing spaces not allowed                                         no-trailing-spaces
+  26:1   warning  Function 'findJsFiles' has a complexity of 6. Maximum allowed is 2  complexity
+  61:32  warning  Trailing spaces not allowed                                         no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
+  176:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  408:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  412:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  439:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  519:10  warning  Unexpected implicit coercion encountered. Use `Boolean(post[mediaType])` instead  no-implicit-coercion
+  691:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  730:1   warning  Function 'createLinkParts' has too many parameters (4). Maximum allowed is 3      max-params
+  739:1   warning  Function 'composeLinkParts' has too many parameters (4). Maximum allowed is 3     max-params
+  817:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  829:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  841:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  864:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  881:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  897:1   warning  Trailing spaces not allowed                                                       no-trailing-spaces
+  956:8   warning  Function 'generateBlog' has too many parameters (4). Maximum allowed is 3         max-params
+
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/interactive.js
+  30:8  warning  Function 'generateCompleteInteractiveComponent' has too many parameters (4). Maximum allowed is 3  max-params
+  33:1  warning  Trailing spaces not allowed                                                                        no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-19/identity.js
+  3:3  warning  Trailing spaces not allowed  no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/booleanCoercer.js
+   2:35  warning  Expected { after 'if' condition  curly
+  20:34  warning  Expected { after 'if' condition  curly
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/italics.js
+   36:1   warning  Trailing spaces not allowed  no-trailing-spaces
+   45:1   warning  Trailing spaces not allowed  no-trailing-spaces
+   57:1   warning  Trailing spaces not allowed  no-trailing-spaces
+   60:1   warning  Trailing spaces not allowed  no-trailing-spaces
+   87:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  106:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  110:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  146:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  149:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  153:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  157:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  161:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  177:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  184:1   warning  Trailing spaces not allowed  no-trailing-spaces
+  188:1   warning  Trailing spaces not allowed  no-trailing-spaces
+  192:1   warning  Trailing spaces not allowed  no-trailing-spaces
+  216:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  220:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  224:3   warning  Trailing spaces not allowed  no-trailing-spaces
+  225:46  warning  Trailing spaces not allowed  no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-26/prettyFloat.js
+  10:24  warning  Expected { after 'if' condition                                           curly
+  37:1   warning  Function 'handleSimpleCases' has a complexity of 3. Maximum allowed is 2  complexity
+  38:30  warning  Expected { after 'if' condition                                           curly
+  40:20  warning  Expected { after 'if' condition                                           curly
+  65:7   warning  'A' is never reassigned. Use 'const' instead                              prefer-const
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-28/rand.js
+  13:1  warning  Trailing spaces not allowed  no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/fishingGame.js
+   24:1   warning  Function 'getBaitData' has a complexity of 3. Maximum allowed is 2  complexity
+   26:47  warning  Expected { after 'if' condition                                     curly
+   41:15  warning  Expected { after 'if' condition                                     curly
+   53:15  warning  Expected { after 'if' condition                                     curly
+  144:32  warning  Expected { after 'if' condition                                     curly
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js
+  7:8  warning  Function 'get' has a complexity of 16. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js
+   6:1   warning  Function 'isObject' has a complexity of 3. Maximum allowed is 2       complexity
+  19:1   warning  Function 'deepMerge' has a complexity of 4. Maximum allowed is 2      complexity
+  22:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2            complexity
+  52:8   warning  Function 'setTemporary' has a complexity of 10. Maximum allowed is 2  complexity
+  77:35  warning  Trailing spaces not allowed                                           no-trailing-spaces
+  89:32  warning  Trailing spaces not allowed                                           no-trailing-spaces
+  97:51  warning  Trailing spaces not allowed                                           no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js
+  19:1  warning  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             complexity
+  50:1  warning  Function 'handleTransportTrade' has a complexity of 3. Maximum allowed is 2  complexity
+  93:8  warning  Function 'cyberpunkAdventure' has a complexity of 17. Maximum allowed is 2   complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
+   17:1   warning  Function 'validateParsedMoves' has a complexity of 4. Maximum allowed is 2          complexity
+   32:1   warning  Function 'buildMoveResponse' has a complexity of 3. Maximum allowed is 2            complexity
+   37:8   warning  Function 'ticTacToeMove' has a complexity of 4. Maximum allowed is 2                complexity
+   39:15  warning  Expected { after 'if' condition                                                     curly
+   42:16  warning  Expected { after 'if' condition                                                     curly
+   44:40  warning  Expected { after 'if' condition                                                     curly
+   58:1   warning  Function 'processMove' has too many parameters (5). Maximum allowed is 3            max-params
+   58:1   warning  Function 'processMove' has a complexity of 3. Maximum allowed is 2                  complexity
+   59:41  warning  Expected { after 'if' condition                                                     curly
+   60:45  warning  Expected { after 'if' condition                                                     curly
+   64:1   warning  Function 'applyMovesSequentially' has a complexity of 4. Maximum allowed is 2       complexity
+   67:52  warning  Expected { after 'if' condition                                                     curly
+   68:31  warning  Expected { after 'if' condition                                                     curly
+   73:1   warning  Function 'validateAndApplyMoves' has a complexity of 4. Maximum allowed is 2        complexity
+   74:50  warning  Expected { after 'if' condition                                                     curly
+   78:22  warning  Expected { after 'if' condition                                                     curly
+   83:1   warning  Function 'scoreMove' has too many parameters (5). Maximum allowed is 3              max-params
+   90:1   warning  Function 'findBestMove' has a complexity of 5. Maximum allowed is 2                 complexity
+  110:27  warning  Expected { after 'if' condition                                                     curly
+  114:1   warning  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                    complexity
+  123:1   warning  Function 'checkColumns' has a complexity of 5. Maximum allowed is 2                 complexity
+  132:1   warning  Function 'checkDiagonals' has a complexity of 6. Maximum allowed is 2               complexity
+  148:22  warning  Expected { after 'if' condition                                                     curly
+  155:1   warning  Function 'evaluateTerminalState' has too many parameters (5). Maximum allowed is 3  max-params
+  155:1   warning  Function 'evaluateTerminalState' has a complexity of 4. Maximum allowed is 2        complexity
+  156:29  warning  Expected { after 'if' condition                                                     curly
+  157:31  warning  Expected { after 'if' condition                                                     curly
+  158:35  warning  Expected { after 'if' condition                                                     curly
+  162:1   warning  Function 'getAvailableMoves' has a complexity of 4. Maximum allowed is 2            complexity
+  166:25  warning  Expected { after 'if' condition                                                     curly
+  172:1   warning  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3          max-params
+  172:1   warning  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2                complexity
+  183:1   warning  Function 'minimax' has too many parameters (5). Maximum allowed is 3                max-params
+  183:1   warning  Function 'minimax' has a complexity of 3. Maximum allowed is 2                      complexity
+  186:31  warning  Expected { after 'if' condition                                                     curly
+  196:1   warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2             complexity
+  197:50  warning  Expected { after 'if' condition                                                     curly
+  202:1   warning  Function 'isValidMove' has a complexity of 6. Maximum allowed is 2                  complexity
+  203:42  warning  Expected { after 'if' condition                                                     curly
+  206:32  warning  Expected { after 'if' condition                                                     curly
+  207:36  warning  Expected { after 'if' condition                                                     curly
+  209:49  warning  Expected { after 'if' condition                                                     curly
+  214:1   warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js
+    3:1   warning  '../../src/browser/audio-controls.js' import is duplicated  no-duplicate-imports
+   20:1   warning  '../../src/browser/audio-controls.js' import is duplicated  no-duplicate-imports
+   53:1   warning  '../../src/browser/audio-controls.js' import is duplicated  no-duplicate-imports
+   87:1   warning  '../../src/browser/audio-controls.js' import is duplicated  no-duplicate-imports
+   96:38  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+   97:33  warning  Expected { after 'if' condition                             curly
+   98:34  warning  Expected { after 'if' condition                             curly
+  126:38  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  127:33  warning  Expected { after 'if' condition                             curly
+  128:34  warning  Expected { after 'if' condition                             curly
+  156:28  warning  'tag' is defined but never used                             no-unused-vars
+  161:38  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  162:33  warning  Expected { after 'if' condition                             curly
+  163:34  warning  Expected { after 'if' condition                             curly
+  193:28  warning  'tag' is defined but never used                             no-unused-vars
+  198:38  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  199:33  warning  Expected { after 'if' condition                             curly
+  200:34  warning  Expected { after 'if' condition                             curly
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
+   83:1   warning  Trailing spaces not allowed    no-trailing-spaces
+   85:1   warning  Trailing spaces not allowed    no-trailing-spaces
+   92:1   warning  Trailing spaces not allowed    no-trailing-spaces
+   95:1   warning  Trailing spaces not allowed    no-trailing-spaces
+  173:1   warning  Trailing spaces not allowed    no-trailing-spaces
+  177:14  warning  'e' is defined but never used  no-unused-vars
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/main.test.js
+  57:39  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+  58:26  warning  Expected { after 'if' condition                             curly
+  59:24  warning  Expected { after 'if' condition                             curly
+  60:27  warning  Expected { after 'if' condition                             curly
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js
+  2:104  warning  'handleTagLinks' is defined but never used  no-unused-vars
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
+    3:1   warning  '../../src/browser/toys.js' import is duplicated                    no-duplicate-imports
+   32:22  warning  Trailing spaces not allowed                                         no-trailing-spaces
+   38:22  warning  Trailing spaces not allowed                                         no-trailing-spaces
+   42:1   warning  Trailing spaces not allowed                                         no-trailing-spaces
+   78:22  warning  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  complexity
+   79:60  warning  Expected { after 'if' condition                                     curly
+   80:38  warning  Expected { after 'if' condition                                     curly
+   81:40  warning  Expected { after 'if' condition                                     curly
+  101:1   warning  '../../src/browser/toys.js' import is duplicated                    no-duplicate-imports
+  126:1   warning  '../../src/browser/toys.js' import is duplicated                    no-duplicate-imports
+  132:7   warning  'handleSubmit' is assigned a value but never used                   no-unused-vars
+  134:7   warning  'parentElement' is defined but never used                           no-unused-vars
+  155:41  warning  'input' is defined but never used                                   no-unused-vars
+  241:11  warning  'addWarningFn' is assigned a value but never used                   no-unused-vars
+  244:11  warning  'createElement' is assigned a value but never used                  no-unused-vars
+  259:1   warning  Trailing spaces not allowed                                         no-trailing-spaces
+  273:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
+  274:33  warning  Expected { after 'if' condition                                     curly
+  275:34  warning  Expected { after 'if' condition                                     curly
+  276:36  warning  Expected { after 'if' condition                                     curly
+  277:38  warning  Expected { after 'if' condition                                     curly
+  290:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
+  324:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
+  325:33  warning  Expected { after 'if' condition                                     curly
+  326:34  warning  Expected { after 'if' condition                                     curly
+  327:36  warning  Expected { after 'if' condition                                     curly
+  328:38  warning  Expected { after 'if' condition                                     curly
+  342:38  warning  Arrow function has a complexity of 3. Maximum allowed is 2          complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js
+  1:24  warning  'getBlogGenerationArgs' is defined but never used  no-unused-vars
+
+/Users/matthew.heard/Code/Matt/dadeto/test/presenters/paragraph.test.js
+   2:24  warning  'jest' is defined but never used  no-unused-vars
+   9:23  warning  'tag' is defined but never used   no-unused-vars
+  22:23  warning  'tag' is defined but never used   no-unused-vars
+
+/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-19/identity.test.js
+  17:1   warning  Trailing spaces not allowed  no-trailing-spaces
+  24:25  warning  Trailing spaces not allowed  no-trailing-spaces
+  29:1   warning  Trailing spaces not allowed  no-trailing-spaces
+  31:1   warning  Trailing spaces not allowed  no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-28/rand.test.js
+   7:1  warning  Trailing spaces not allowed  no-trailing-spaces
+  12:1  warning  Trailing spaces not allowed  no-trailing-spaces
+  15:1  warning  Trailing spaces not allowed  no-trailing-spaces
+  19:1  warning  Trailing spaces not allowed  no-trailing-spaces
+  26:1  warning  Trailing spaces not allowed  no-trailing-spaces
+  32:1  warning  Trailing spaces not allowed  no-trailing-spaces
+  40:1  warning  Trailing spaces not allowed  no-trailing-spaces
+  44:1  warning  Trailing spaces not allowed  no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-29/get.test.js
+   90:44  warning  Trailing spaces not allowed  no-trailing-spaces
+  109:56  warning  Trailing spaces not allowed  no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-29/setTemporary.test.js
+   37:1   warning  Trailing spaces not allowed                       no-trailing-spaces
+   90:1   warning  Trailing spaces not allowed                       no-trailing-spaces
+  100:1   warning  Trailing spaces not allowed                       no-trailing-spaces
+  114:9   warning  'input' is never reassigned. Use 'const' instead  prefer-const
+  165:13  warning  Multiple spaces found before '// This should...'  no-multi-spaces
+  169:1   warning  Trailing spaces not allowed                       no-trailing-spaces
+  174:16  warning  Multiple spaces found before '// Preserved f...'  no-multi-spaces
+  176:15  warning  Multiple spaces found before '// Added'           no-multi-spaces
+  206:12  warning  Multiple spaces found before '// Overwrite s...'  no-multi-spaces
+  207:18  warning  Multiple spaces found before '// Overwrite a...'  no-multi-spaces
+  209:1   warning  Trailing spaces not allowed                       no-trailing-spaces
+
+/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-30/cyberpunkAdventure.test.js
+  59:86  warning  Trailing spaces not allowed  no-trailing-spaces
+  60:67  warning  Trailing spaces not allowed  no-trailing-spaces
+  61:79  warning  Trailing spaces not allowed  no-trailing-spaces
+  92:80  warning  Trailing spaces not allowed  no-trailing-spaces
+  93:78  warning  Trailing spaces not allowed  no-trailing-spaces
+
+✖ 265 problems (0 errors, 265 warnings)
+  0 errors and 161 warnings potentially fixable with the `--fix` option.
