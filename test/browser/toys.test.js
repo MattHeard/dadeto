@@ -47,6 +47,32 @@ describe('function coverage: direct invocation', () => {
     expect(dom.importModule).toHaveBeenCalled();
     expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
   });
+
+  it('does not call importModule or disconnectObserver when not intersecting', () => {
+    let observerCallback;
+    const dom = {
+      makeIntersectionObserver: (cb) => {
+        observerCallback = cb;
+        return 'observer-instance';
+      },
+      importModule: jest.fn(),
+      disconnectObserver: jest.fn(),
+      error: jest.fn(),
+      isIntersecting: () => false
+    };
+    const env = {};
+    const article = {};
+    const modulePath = 'mod';
+    const functionName = 'fn';
+    const createObs = makeCreateIntersectionObserver(dom, env);
+    createObs(article, modulePath, functionName);
+    // Simulate the intersection observer callback with a non-intersecting entry
+    const entry = { isIntersecting: false };
+    const observer = {};
+    observerCallback([entry], observer);
+    expect(dom.importModule).not.toHaveBeenCalled();
+    expect(dom.disconnectObserver).not.toHaveBeenCalled();
+  });
 });
 
 it('covers handleModuleError error handler', () => {

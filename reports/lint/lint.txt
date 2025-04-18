@@ -60,20 +60,20 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
 [0m   [2m32:8[22m   [33mwarning[39m  Function 'initialiseModule' has too many parameters (4). Maximum allowed is 3             [2mmax-params[22m[0m
 [0m   [2m50:8[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (7). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m   [2m62:8[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (7). Maximum allowed is 3    [2mmax-params[22m[0m
-[0m   [2m66:8[22m   [33mwarning[39m  Function 'makeObserverCallback' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
-[0m   [2m92:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
-[0m  [2m117:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
-[0m  [2m125:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m  [2m126:38[22m  [33mwarning[39m  Expected { after 'if' condition                                                           [2mcurly[22m[0m
-[0m  [2m160:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
-[0m  [2m168:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
-[0m  [2m226:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
-[0m  [2m227:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m230:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m240:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m272:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m272:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m   [2m61:8[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (7). Maximum allowed is 3    [2mmax-params[22m[0m
+[0m   [2m65:8[22m   [33mwarning[39m  Function 'makeObserverCallback' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
+[0m   [2m91:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
+[0m  [2m116:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
+[0m  [2m124:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
+[0m  [2m125:38[22m  [33mwarning[39m  Expected { after 'if' condition                                                           [2mcurly[22m[0m
+[0m  [2m159:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
+[0m  [2m167:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
+[0m  [2m225:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
+[0m  [2m226:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m229:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m239:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m271:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m271:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m23:26[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
@@ -247,33 +247,33 @@
 [0m  [2m2:104[22m  [33mwarning[39m  'handleTagLinks' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js[24m[0m
-[0m   [2m91:22[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m   [2m97:22[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m101:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m137:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m138:60[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m139:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m140:40[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m160:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m185:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m191:7[22m   [33mwarning[39m  'handleSubmit' is assigned a value but never used                   [2mno-unused-vars[22m[0m
-[0m  [2m193:7[22m   [33mwarning[39m  'parentElement' is defined but never used                           [2mno-unused-vars[22m[0m
-[0m  [2m214:41[22m  [33mwarning[39m  'input' is defined but never used                                   [2mno-unused-vars[22m[0m
-[0m  [2m300:11[22m  [33mwarning[39m  'addWarningFn' is assigned a value but never used                   [2mno-unused-vars[22m[0m
-[0m  [2m303:11[22m  [33mwarning[39m  'createElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
-[0m  [2m318:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m332:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m333:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m334:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m335:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m336:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m349:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m383:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m384:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m385:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m386:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m387:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m401:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m117:22[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
+[0m  [2m123:22[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
+[0m  [2m127:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
+[0m  [2m163:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m164:60[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m165:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m166:40[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m186:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m  [2m211:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m  [2m217:7[22m   [33mwarning[39m  'handleSubmit' is assigned a value but never used                   [2mno-unused-vars[22m[0m
+[0m  [2m219:7[22m   [33mwarning[39m  'parentElement' is defined but never used                           [2mno-unused-vars[22m[0m
+[0m  [2m240:41[22m  [33mwarning[39m  'input' is defined but never used                                   [2mno-unused-vars[22m[0m
+[0m  [2m326:11[22m  [33mwarning[39m  'addWarningFn' is assigned a value but never used                   [2mno-unused-vars[22m[0m
+[0m  [2m329:11[22m  [33mwarning[39m  'createElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
+[0m  [2m344:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
+[0m  [2m358:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m359:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m360:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m361:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m362:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m375:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m409:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m410:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m411:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m412:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m413:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m427:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
