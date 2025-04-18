@@ -235,7 +235,9 @@ describe('createHandleSubmit', () => {
       createElement,
       stopDefault,
       addWarningFn,
-      setTextContent: jest.fn((el, text) => { el.textContent = text; })
+      setTextContent: jest.fn((el, text) => { el.textContent = text; }),
+      removeChild: jest.fn(),
+      appendChild: jest.fn()
     };
     mockFetch = jest.fn();
     global.fetch = mockFetch;
