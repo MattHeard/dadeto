@@ -1,5 +1,4 @@
 export default {
-  coverageReporters: ['html', 'text', 'text-summary'],
   transform: {
     '^.+\\.js$': 'babel-jest'
   },
