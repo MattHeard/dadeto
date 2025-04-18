@@ -354,7 +354,10 @@ describe('initializeInteractiveComponent', () => {
     const article = {};
     const inputElement = { value: 'test', disabled: false };
     const submitButton = { disabled: false };
-    const outputElement = { textContent: '', parentElement: { classList: { remove: jest.fn() } } };
+    const outputElement = {
+      textContent: '',
+      parentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
+    };
 
     const querySelector = jest.fn((el, selector) => {
       if (selector === 'input') return inputElement;
@@ -411,7 +414,10 @@ describe('initializeInteractiveComponent', () => {
     const article = {};
     const inputElement = { value: 'test', disabled: false };
     const submitButton = { disabled: false };
-    const outputElement = { textContent: '', parentElement: { classList: { remove: jest.fn() } } };
+    const outputElement = {
+      textContent: '',
+      parentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
+    };
 
     const querySelector = jest.fn((el, selector) => {
       if (selector === 'input') return inputElement;
