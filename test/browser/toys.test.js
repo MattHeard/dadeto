@@ -6,13 +6,21 @@ describe('function coverage: direct invocation', () => {
     handleIntersectionEntries([], {}, '', '', '', {}, {});
     const cb = makeObserverCallback('mod', 'art', 'fn', {}, {});
     expect(typeof cb).toBe('function');
-    const dom = { makeIntersectionObserver: () => {} };
+    const dom = {
+      makeIntersectionObserver: (cb) => {
+        callbackArgs = cb;
+        return 'observer-instance';
+      },
+      importModule: jest.fn(),
+      disconnectObserver: jest.fn(),
+      error: jest.fn(),
+      isIntersecting: (entry) => entry.isIntersecting
+    };
     const env = {};
     const createObs = makeCreateIntersectionObserver(dom, env);
     expect(typeof createObs).toBe('function');
   });
 });
-
 
 describe('enableInteractiveControls', () => {
   let inputElement;
