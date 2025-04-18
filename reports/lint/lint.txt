@@ -186,25 +186,25 @@
 [0m  [2m132:1[22m   [33mwarning[39m  Function 'checkDiagonals' has a complexity of 6. Maximum allowed is 2               [2mcomplexity[22m[0m
 [0m  [2m148:22[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m  [2m155:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m155:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has a complexity of 5. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m  [2m155:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m  [2m155:64[22m  [33mwarning[39m  'moves' is defined but never used                                                   [2mno-unused-vars[22m[0m
 [0m  [2m156:29[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
 [0m  [2m157:31[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m161:35[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m165:1[22m   [33mwarning[39m  Function 'getAvailableMoves' has a complexity of 4. Maximum allowed is 2            [2mcomplexity[22m[0m
-[0m  [2m169:25[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m175:1[22m   [33mwarning[39m  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3          [2mmax-params[22m[0m
-[0m  [2m175:1[22m   [33mwarning[39m  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2                [2mcomplexity[22m[0m
-[0m  [2m186:1[22m   [33mwarning[39m  Function 'minimax' has too many parameters (5). Maximum allowed is 3                [2mmax-params[22m[0m
-[0m  [2m186:1[22m   [33mwarning[39m  Function 'minimax' has a complexity of 3. Maximum allowed is 2                      [2mcomplexity[22m[0m
-[0m  [2m189:31[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m199:1[22m   [33mwarning[39m  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
-[0m  [2m200:50[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m205:1[22m   [33mwarning[39m  Function 'isValidMove' has a complexity of 6. Maximum allowed is 2                  [2mcomplexity[22m[0m
-[0m  [2m206:42[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m209:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m210:36[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m212:49[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
-[0m  [2m217:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
+[0m  [2m162:1[22m   [33mwarning[39m  Function 'getAvailableMoves' has a complexity of 4. Maximum allowed is 2            [2mcomplexity[22m[0m
+[0m  [2m166:25[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
+[0m  [2m172:1[22m   [33mwarning[39m  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3          [2mmax-params[22m[0m
+[0m  [2m172:1[22m   [33mwarning[39m  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2                [2mcomplexity[22m[0m
+[0m  [2m183:1[22m   [33mwarning[39m  Function 'minimax' has too many parameters (5). Maximum allowed is 3                [2mmax-params[22m[0m
+[0m  [2m183:1[22m   [33mwarning[39m  Function 'minimax' has a complexity of 3. Maximum allowed is 2                      [2mcomplexity[22m[0m
+[0m  [2m186:31[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
+[0m  [2m196:1[22m   [33mwarning[39m  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
+[0m  [2m197:50[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
+[0m  [2m202:1[22m   [33mwarning[39m  Function 'isValidMove' has a complexity of 6. Maximum allowed is 2                  [2mcomplexity[22m[0m
+[0m  [2m203:42[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
+[0m  [2m206:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
+[0m  [2m207:36[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
+[0m  [2m209:49[22m  [33mwarning[39m  Expected { after 'if' condition                                                     [2mcurly[22m[0m
+[0m  [2m214:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
 [0m    [2m3:1[22m   [33mwarning[39m  '../../src/browser/audio-controls.js' import is duplicated  [2mno-duplicate-imports[22m[0m
@@ -321,5 +321,5 @@
 [0m  [2m93:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[33m[1m✖ 261 problems (0 errors, 261 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 159 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 158 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

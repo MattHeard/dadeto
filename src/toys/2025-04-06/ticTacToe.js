@@ -155,10 +155,7 @@ function applyMoveToBoard(board, move, seen) {
 function evaluateTerminalState(board, player, opponent, depth, moves) {
   if (isWin(board, player)) return 10 - depth;
   if (isWin(board, opponent)) return depth - 10;
-  if (moves.length === 8) {
-    console.log('[evaluateTerminalState] depth + moves.length =', depth + moves.length);
-  }
-  if (depth + moves.length === 9) return 0;
+
   return null;
 }
 
