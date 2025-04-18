@@ -174,9 +174,9 @@ function parseJSONResult(result) {
  * @returns {Function} An event handler function.
  */
 function createHandleInputError(outputElement, error, addWarning, setTextContent) {
-  return function(e, parent = null) {
+  return function(e) {
     error('Error processing input:', e);
-    setTextContent(outputElement, 'Error: ' + e.message, undefined, parent);
+    setTextContent(outputElement, 'Error: ' + e.message);
     addWarning(outputElement);
   };
 }
