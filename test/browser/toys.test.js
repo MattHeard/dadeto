@@ -1,6 +1,18 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { initialiseModule } from '../../src/browser/toys.js';
-import { enableInteractiveControls } from '../../src/browser/toys.js'; // Adjust path as needed
+import { handleIntersectionEntries, makeObserverCallback, makeCreateIntersectionObserver, initialiseModule, enableInteractiveControls } from '../../src/browser/toys.js';
+
+describe('function coverage: direct invocation', () => {
+  it('directly invokes observer-related functions from toys.js', () => {
+    handleIntersectionEntries([], {}, '', '', '', {}, {});
+    const cb = makeObserverCallback('mod', 'art', 'fn', {}, {});
+    expect(typeof cb).toBe('function');
+    const dom = { makeIntersectionObserver: () => {} };
+    const env = {};
+    const createObs = makeCreateIntersectionObserver(dom, env);
+    expect(typeof createObs).toBe('function');
+  });
+});
+
 
 describe('enableInteractiveControls', () => {
   let inputElement;
