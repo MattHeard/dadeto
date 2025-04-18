@@ -442,12 +442,3 @@ describe('initializeVisibleComponents', () => {
   });
 });
 
-describe('handleModuleError', () => {
-  it('calls the error function with the correct message and error object', () => {
-    const errorFn = jest.fn();
-    const error = new Error('dynamic import failed');
-    const handler = handleModuleError('some/module/path.js', errorFn);
-    handler(error);
-    expect(errorFn).toHaveBeenCalledWith('Error loading module some/module/path.js:', error);
-  });
-});

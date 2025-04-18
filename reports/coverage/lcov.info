@@ -335,9 +335,9 @@ FN:272,initializeVisibleComponents
 FN:278,(anonymous_33)
 FN:292,(anonymous_34)
 FNF:35
-FNH:28
-FNDA:1,handleModuleError
-FNDA:1,(anonymous_1)
+FNH:26
+FNDA:0,handleModuleError
+FNDA:0,(anonymous_1)
 FNDA:1,initialiseModule
 FNDA:1,(anonymous_3)
 FNDA:0,handleIntersection
@@ -371,8 +371,8 @@ FNDA:2,(anonymous_31)
 FNDA:4,initializeVisibleComponents
 FNDA:6,(anonymous_33)
 FNDA:1,(anonymous_34)
-DA:8,1
-DA:9,1
+DA:8,0
+DA:9,0
 DA:33,1
 DA:34,1
 DA:35,1
@@ -458,7 +458,7 @@ DA:284,5
 DA:285,5
 DA:292,1
 LF:86
-LH:76
+LH:74
 BRDA:51,0,0,0
 BRDA:51,0,1,0
 BRDA:106,1,0,4

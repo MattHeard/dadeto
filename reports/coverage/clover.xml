@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1744977697665" clover="3.2.0">
-  <project timestamp="1744977697665" name="All files">
-    <metrics statements="902" coveredstatements="889" conditionals="345" coveredconditionals="333" methods="328" coveredmethods="321" elements="1575" coveredelements="1543" complexity="0" loc="902" ncloc="902" packages="13" files="25" classes="25"/>
+<coverage generated="1744978045730" clover="3.2.0">
+  <project timestamp="1744978045730" name="All files">
+    <metrics statements="902" coveredstatements="887" conditionals="345" coveredconditionals="333" methods="328" coveredmethods="319" elements="1575" coveredelements="1539" complexity="0" loc="902" ncloc="902" packages="13" files="25" classes="25"/>
     <package name="browser">
-      <metrics statements="238" coveredstatements="228" conditionals="53" coveredconditionals="50" methods="80" coveredmethods="73"/>
+      <metrics statements="238" coveredstatements="226" conditionals="53" coveredconditionals="50" methods="80" coveredmethods="71"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="2" type="stmt"/>
@@ -166,9 +166,9 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="86" coveredstatements="76" conditionals="23" coveredconditionals="21" methods="35" coveredmethods="28"/>
-        <line num="8" count="1" type="stmt"/>
-        <line num="9" count="1" type="stmt"/>
+        <metrics statements="86" coveredstatements="74" conditionals="23" coveredconditionals="21" methods="35" coveredmethods="26"/>
+        <line num="8" count="0" type="stmt"/>
+        <line num="9" count="0" type="stmt"/>
         <line num="33" count="1" type="stmt"/>
         <line num="34" count="1" type="stmt"/>
         <line num="35" count="1" type="stmt"/>
