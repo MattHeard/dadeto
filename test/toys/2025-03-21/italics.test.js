@@ -48,6 +48,11 @@ describe('italics function', () => {
     expect(italics('Mixed __bold__ and _italic_')).toBe('Mixed __bold__ and <em>_italic_</em>');
   });
 
+  test('handles bold at end of string (afterText empty)', () => {
+    expect(italics('foo **bold**')).toBe('foo **bold**');
+    expect(italics('**justbold**')).toBe('**justbold**');
+  });
+
   test('handles complex mixed formatting correctly', () => {
     expect(italics('**Bold** and *italic* mixed')).toBe('**Bold** and <em>*italic*</em> mixed');
     expect(italics('__Bold__ and _italic_ mixed')).toBe('__Bold__ and <em>_italic_</em> mixed');
