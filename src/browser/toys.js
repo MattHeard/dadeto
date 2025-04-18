@@ -1,3 +1,5 @@
+import { createParagraphElement } from '../presenters/paragraph.js';
+
 /**
  * Creates an error handler for module loading errors
  * @param {string} modulePath - Path to the module that failed to load
