@@ -15,8 +15,6 @@ function setTextContent(element, content, dom, parent) {
     const child = createParagraphElement(content, dom);
     if (typeof dom.appendChild === 'function') {
       dom.appendChild(parent, child);
-    } else if (parent.appendChild) {
-      parent.appendChild(child);
     }
   } else {
     dom.setTextContent(element, content);
