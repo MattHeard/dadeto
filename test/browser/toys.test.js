@@ -213,6 +213,7 @@ describe('getDeepStateCopy', () => {
 import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from '../../src/browser/toys.js';
 
 describe('createHandleSubmit', () => {
+  let parent;
   let mockFetch;
   let inputElement;
   let outputElement;
