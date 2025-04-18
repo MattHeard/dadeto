@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1745008806433" clover="3.2.0">
-  <project timestamp="1745008806433" name="All files">
-    <metrics statements="903" coveredstatements="899" conditionals="339" coveredconditionals="336" methods="330" coveredmethods="330" elements="1572" coveredelements="1565" complexity="0" loc="903" ncloc="903" packages="13" files="25" classes="25"/>
+<coverage generated="1745009330539" clover="3.2.0">
+  <project timestamp="1745009330539" name="All files">
+    <metrics statements="903" coveredstatements="899" conditionals="340" coveredconditionals="337" methods="330" coveredmethods="330" elements="1573" coveredelements="1566" complexity="0" loc="903" ncloc="903" packages="13" files="25" classes="25"/>
     <package name="browser">
-      <metrics statements="242" coveredstatements="239" conditionals="55" coveredconditionals="54" methods="82" coveredmethods="82"/>
+      <metrics statements="242" coveredstatements="239" conditionals="56" coveredconditionals="55" methods="82" coveredmethods="82"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="2" type="stmt"/>
@@ -166,7 +166,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="90" coveredstatements="87" conditionals="25" coveredconditionals="24" methods="37" coveredmethods="37"/>
+        <metrics statements="90" coveredstatements="87" conditionals="26" coveredconditionals="25" methods="37" coveredmethods="37"/>
         <line num="10" count="8" type="cond" truecount="1" falsecount="1"/>
         <line num="11" count="0" type="stmt"/>
         <line num="12" count="0" type="stmt"/>

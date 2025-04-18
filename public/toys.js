@@ -105,15 +105,15 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
   outputElement.parentElement.classList.remove('warning');
 }
 
-function handleRequestResponse(url, outputElement, error, fetch, dom) {
+function handleRequestResponse(url, outputElement, error, fetch, dom, parent = null) {
   fetch(url)
     .then(response => response.text())
     .then(body => {
-      setTextContent(outputElement, body, dom);
+      setTextContent(outputElement, body, dom, parent);
     })
     .catch(fetchError => {
       error('Error fetching request URL:', fetchError);
-      setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message, dom);
+      setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message, dom, parent);
       dom.addWarningFn(outputElement);
     });
 }
