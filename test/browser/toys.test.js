@@ -49,6 +49,18 @@ describe('function coverage: direct invocation', () => {
   });
 });
 
+it('covers handleModuleError error handler', () => {
+  const errorMock = jest.fn();
+  const modulePath = 'toyModule';
+  const handler = handleModuleError(modulePath, errorMock);
+  const fakeError = new Error('fail');
+  handler(fakeError);
+  expect(errorMock).toHaveBeenCalledWith(
+    'Error loading module ' + modulePath + ':',
+    fakeError
+  );
+});
+
 describe('enableInteractiveControls', () => {
   let inputElement;
   let submitButton;
