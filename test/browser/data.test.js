@@ -195,6 +195,28 @@ describe('getData, setData, and getDeepStateCopy', () => {
     );
   });
 
+  it('setData throws and logs error if incoming state is null', () => {
+    const state = { blog: { title: 'preserved' } };
+    const logFn = jest.fn();
+    const errorFn = jest.fn();
+    expect(() => setData(null, state, logFn, errorFn)).toThrow();
+    expect(errorFn).toHaveBeenCalledWith(
+      'setData received invalid data structure:',
+      null
+    );
+  });
+
+  it('setData throws and logs error if incoming state is undefined', () => {
+    const state = { blog: { title: 'preserved' } };
+    const logFn = jest.fn();
+    const errorFn = jest.fn();
+    expect(() => setData(undefined, state, logFn, errorFn)).toThrow();
+    expect(errorFn).toHaveBeenCalledWith(
+      'setData received invalid data structure:',
+      undefined
+    );
+  });
+
   it('setData throws and logs error if incoming state is an object with no prototype and no properties', () => {
     const state = { blog: { title: 'preserved' } };
     const logFn = jest.fn();
