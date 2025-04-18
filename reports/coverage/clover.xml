@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1745012102707" clover="3.2.0">
-  <project timestamp="1745012102707" name="All files">
+<coverage generated="1745013076518" clover="3.2.0">
+  <project timestamp="1745013076519" name="All files">
     <metrics statements="906" coveredstatements="904" conditionals="344" coveredconditionals="340" methods="330" coveredmethods="330" elements="1580" coveredelements="1574" complexity="0" loc="906" ncloc="906" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="245" coveredstatements="244" conditionals="60" coveredconditionals="58" methods="82" coveredmethods="82"/>
@@ -168,10 +168,10 @@
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
         <metrics statements="93" coveredstatements="92" conditionals="30" coveredconditionals="28" methods="37" coveredmethods="37"/>
         <line num="10" count="8" type="cond" truecount="2" falsecount="0"/>
-        <line num="11" count="1" type="stmt"/>
-        <line num="12" count="1" type="stmt"/>
-        <line num="13" count="1" type="stmt"/>
-        <line num="15" count="7" type="stmt"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="15" count="6" type="stmt"/>
         <line num="26" count="2" type="stmt"/>
         <line num="27" count="1" type="stmt"/>
         <line num="51" count="2" type="stmt"/>
@@ -211,8 +211,8 @@
         <line num="178" count="1" type="stmt"/>
         <line num="179" count="1" type="stmt"/>
         <line num="180" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="181" count="0" type="stmt"/>
-        <line num="183" count="1" type="stmt"/>
+        <line num="181" count="1" type="stmt"/>
+        <line num="183" count="0" type="stmt"/>
         <line num="189" count="5" type="stmt"/>
         <line num="190" count="5" type="stmt"/>
         <line num="191" count="5" type="stmt"/>
@@ -562,12 +562,12 @@
       <metrics statements="6" coveredstatements="5" conditionals="6" coveredconditionals="4" methods="1" coveredmethods="1"/>
       <file name="paragraph.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js">
         <metrics statements="6" coveredstatements="5" conditionals="6" coveredconditionals="4" methods="1" coveredmethods="1"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="3" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="4" count="3" type="cond" truecount="3" falsecount="1"/>
-        <line num="5" count="3" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="4" count="4" type="cond" truecount="3" falsecount="1"/>
+        <line num="5" count="4" type="stmt"/>
         <line num="7" count="0" type="stmt"/>
-        <line num="10" count="3" type="stmt"/>
+        <line num="10" count="4" type="stmt"/>
       </file>
     </package>
     <package name="toys.2024-10-02">

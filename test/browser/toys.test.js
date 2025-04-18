@@ -305,14 +305,20 @@ describe('createHandleSubmit', () => {
 
   it('handles error thrown by processingFunction', async () => {
     const mockFetchFn = jest.fn(); // Should not be called
+    // Create and inject a parent element
+    const parentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
+
 
     processingFunction = jest.fn(() => {
       throw new Error('processing error');
     });
 
+    // Add createElement to dom mock
+    const mockElement = { textContent: '' };
+    dom.createElement = jest.fn(() => mockElement);
     const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: mockFetchFn, dom };
     const handleSubmitThrowing = createHandleSubmit(
-      { inputElement, outputElement },
+      { inputElement, outputElement, outputParentElement: parentElement },
       processingFunction,
       env
     );
@@ -320,8 +326,8 @@ describe('createHandleSubmit', () => {
     await handleSubmitThrowing(new Event('submit'));
 
     expect(mockFetchFn).not.toHaveBeenCalled();
-    expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error: processing error/));
-    expect(addWarningFn).toHaveBeenCalledWith(outputElement);
+    expect(dom.setTextContent).toHaveBeenCalledWith(mockElement, expect.stringMatching(/Error: processing error/));
+    expect(addWarningFn).toHaveBeenCalledWith(parentElement);
   });
 
   it('handles being called without an event', async () => {
