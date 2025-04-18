@@ -69,7 +69,8 @@
 [0m  [2m141:1[22m   [33mwarning[39m  Function 'handleParsedResult' has a complexity of 3. Maximum allowed is 2                 [2mcomplexity[22m[0m
 [0m  [2m142:38[22m  [33mwarning[39m  Expected { after 'if' condition                                                           [2mcurly[22m[0m
 [0m  [2m176:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
-[0m  [2m184:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
+[0m  [2m184:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (9). Maximum allowed is 3     [2mmax-params[22m[0m
+[0m  [2m184:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has a complexity of 3. Maximum allowed is 2           [2mcomplexity[22m[0m
 [0m  [2m242:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
 [0m  [2m243:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
 [0m  [2m246:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
@@ -326,6 +327,6 @@
 [0m  [2m92:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m93:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 265 problems (0 errors, 265 warnings)[22m[39m[0m
+[0m[33m[1m✖ 266 problems (0 errors, 266 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 158 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

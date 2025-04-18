@@ -181,13 +181,13 @@ function createHandleInputError(outputElement, error, addWarning, setTextContent
   };
 }
 
-function processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom) {
+function processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent = null) {
   const env = createEnv(globalState);
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, env);
   const parsed = parseJSONResult(result);
-  if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom)) {
-    setTextContent(outputElement, result, dom);
+  if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom, parent)) {
+    setTextContent(outputElement, result, dom, parent);
   }
 }
 
