@@ -305,13 +305,13 @@
 [0m   [2m90:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m100:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m114:9[22m   [33mwarning[39m  'input' is never reassigned. Use 'const' instead  [2mprefer-const[22m[0m
-[0m  [2m165:13[22m  [33mwarning[39m  Multiple spaces found before '// This should...'  [2mno-multi-spaces[22m[0m
-[0m  [2m169:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m174:16[22m  [33mwarning[39m  Multiple spaces found before '// Preserved f...'  [2mno-multi-spaces[22m[0m
-[0m  [2m176:15[22m  [33mwarning[39m  Multiple spaces found before '// Added'           [2mno-multi-spaces[22m[0m
-[0m  [2m206:12[22m  [33mwarning[39m  Multiple spaces found before '// Overwrite s...'  [2mno-multi-spaces[22m[0m
-[0m  [2m207:18[22m  [33mwarning[39m  Multiple spaces found before '// Overwrite a...'  [2mno-multi-spaces[22m[0m
-[0m  [2m209:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
+[0m  [2m172:13[22m  [33mwarning[39m  Multiple spaces found before '// This should...'  [2mno-multi-spaces[22m[0m
+[0m  [2m176:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
+[0m  [2m181:16[22m  [33mwarning[39m  Multiple spaces found before '// Preserved f...'  [2mno-multi-spaces[22m[0m
+[0m  [2m183:15[22m  [33mwarning[39m  Multiple spaces found before '// Added'           [2mno-multi-spaces[22m[0m
+[0m  [2m213:12[22m  [33mwarning[39m  Multiple spaces found before '// Overwrite s...'  [2mno-multi-spaces[22m[0m
+[0m  [2m214:18[22m  [33mwarning[39m  Multiple spaces found before '// Overwrite a...'  [2mno-multi-spaces[22m[0m
+[0m  [2m216:1[22m   [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-03-30/cyberpunkAdventure.test.js[24m[0m
 [0m  [2m59:86[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
