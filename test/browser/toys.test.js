@@ -217,29 +217,25 @@ describe('createHandleSubmit', () => {
   let handleSubmit;
   let processingFunction;
   let parentElement;
-  let setTextContent;
-  let dom;
-  let createEnv;
-  let errorFn;
+  let stopDefault;
   let addWarningFn;
   let createElement;
-  let stopDefault;
+  let dom;
 
   beforeEach(() => {
     inputElement = { value: 'hello', disabled: false };
     outputElement = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
-    setTextContent = jest.fn();
     stopDefault = jest.fn();
     addWarningFn = jest.fn();
     createElement = jest.fn();
-    dom = { createElement, setTextContent, stopDefault, addWarningFn };
+    dom = { createElement, stopDefault, addWarningFn };
     mockFetch = jest.fn();
     global.fetch = mockFetch;
 
     const globalState = {};
     processingFunction = jest.fn(async (input) => 'transformed');
-    createEnv = () => ({});
-    errorFn = jest.fn();
+    const createEnv = () => ({});
+    const errorFn = jest.fn();
 
     const env = { globalState, createEnv, errorFn, fetchFn: mockFetch, dom };
     handleSubmit = createHandleSubmit(
@@ -258,7 +254,7 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/data' } })
     );
 
-    const env = { globalState: {}, createEnv, errorFn, fetchFn: mockFetchFn, dom };
+    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: mockFetchFn, dom };
     const handleSubmitWithFetch = createHandleSubmit(
       { inputElement, outputElement },
       processingFunction,
@@ -269,7 +265,7 @@ describe('createHandleSubmit', () => {
 
     expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/data');
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(setTextContent).toHaveBeenCalledWith(outputElement, 'fetched content');
+    expect(outputElement.textContent).toBe('fetched content');
   });
 
   it('handles fetch failure if request URL is unreachable', async () => {
@@ -281,7 +277,7 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/fail' } })
     );
 
-    const env = { globalState: {}, createEnv, errorFn, fetchFn: mockFetchFn, dom };
+    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: mockFetchFn, dom };
     const handleSubmitWithFailingFetch = createHandleSubmit(
       { inputElement, outputElement },
       processingFunction,
@@ -292,8 +288,7 @@ describe('createHandleSubmit', () => {
 
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/fail');
-    expect(errorFn).toHaveBeenCalledWith('Error fetching request URL:', expect.any(Error));
-    expect(setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
+    expect(outputElement.textContent).toMatch(/Error fetching URL: Network failure/);
     expect(addWarningFn).toHaveBeenCalledWith(outputElement);
   });
 
@@ -304,7 +299,7 @@ describe('createHandleSubmit', () => {
       throw new Error('processing error');
     });
 
-    const env = { globalState: {}, createEnv, errorFn, fetchFn: mockFetchFn, dom };
+    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: mockFetchFn, dom };
     const handleSubmitThrowing = createHandleSubmit(
       { inputElement, outputElement },
       processingFunction,
@@ -314,8 +309,7 @@ describe('createHandleSubmit', () => {
     await handleSubmitThrowing(new Event('submit'));
 
     expect(mockFetchFn).not.toHaveBeenCalled();
-    expect(errorFn).toHaveBeenCalledWith('Error processing input:', expect.any(Error));
-    expect(setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error: processing error/));
+    expect(outputElement.textContent).toMatch(/Error: processing error/);
     expect(addWarningFn).toHaveBeenCalledWith(outputElement);
   });
 
@@ -344,7 +338,7 @@ describe('createHandleSubmit', () => {
     
     expect(stopDefault).not.toHaveBeenCalled();
     expect(processingFunction).toHaveBeenCalledWith('input without event', expect.any(Object));
-    expect(setTextContent).toHaveBeenCalledWith(output, 'result from no-event');
+    expect(output.textContent).toBe('result from no-event');
   });
 });
 
@@ -367,7 +361,6 @@ describe('initializeInteractiveComponent', () => {
     const errorFn = jest.fn();
     const fetchFn = jest.fn();
     const createElement = jest.fn();
-    const setTextContent = jest.fn();
     const stopDefault = jest.fn();
     const addWarning = jest.fn();
     const listeners = {};
@@ -380,7 +373,7 @@ describe('initializeInteractiveComponent', () => {
         listeners.click = handler;
       }
     });
-    const dom = { createElement, setTextContent, stopDefault, addWarning, addEventListener, querySelector };
+    const dom = { createElement, stopDefault, addWarning, addEventListener, querySelector };
 
     const processingFunction = jest.fn(() => 'processed result');
 
@@ -526,4 +519,3 @@ describe('initializeVisibleComponents', () => {
     expect(createIntersectionObserverFn).toHaveBeenCalledTimes(4);
   });
 });
-

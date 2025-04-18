@@ -1,6 +1,20 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 
 /**
+ * Sets text content on an element using dom helper or fallback
+ * @param {HTMLElement} element
+ * @param {string} content
+ * @param {object} dom - DOM helpers (optional)
+ */
+function setTextContent(element, content, dom) {
+  if (dom && typeof dom.setTextContent === 'function') {
+    dom.setTextContent(element, content);
+  } else {
+    element.textContent = content;
+  }
+}
+
+/**
  * Creates an error handler for module loading errors
  * @param {string} modulePath - Path to the module that failed to load
  * @param {Function} errorFn - Error logging function
@@ -16,10 +30,7 @@ export function handleModuleError(modulePath, error) {
  * Creates a module initializer function that will be called when a dynamic import completes
  * @param {HTMLElement} article - The article element containing the toy
  * @param {string} functionName - The name of the exported function to use from the module
- * @param {object} globalState - The shared application state
- * @param {Function} createEnv - Function to create the environment map for the toy
- * @param {Function} error - Function for logging errors
- * @param {Function} fetch - Function for making HTTP requests
+ * @param {object} env - Environment object containing globalState, createEnv, error, and fetch
  * @param {object} dom - Object containing DOM functions
  * @returns {Function} A function that takes a module and initializes the interactive component
  */
@@ -27,7 +38,10 @@ export function handleModuleError(modulePath, error) {
  * Creates a module initializer function that will be called when a dynamic import completes
  * @param {HTMLElement} article - The article element containing the toy
  * @param {string} functionName - The name of the exported function to use from the module
- * @param {object} env - Environment object containing globalState, createEnv, error, and fetch
+ * @param {object} globalState - The shared application state
+ * @param {Function} createEnv - Function to create the environment map for the toy
+ * @param {Function} error - Function for logging errors
+ * @param {Function} fetch - Function for making HTTP requests
  * @param {object} dom - Object containing DOM functions
  * @returns {Function} A function that takes a module and initializes the interactive component
  */
@@ -76,7 +90,6 @@ export function makeCreateIntersectionObserver(dom, env) {
   };
 }
 
-
 /**
  * Enable controls and update status message for an interactive component
  * @param {HTMLInputElement} inputElement
@@ -94,11 +107,11 @@ function handleRequestResponse(url, outputElement, error, fetch, dom) {
   fetch(url)
     .then(response => response.text())
     .then(body => {
-      dom.setTextContent(outputElement, body);
+      setTextContent(outputElement, body, dom);
     })
     .catch(fetchError => {
       error('Error fetching request URL:', fetchError);
-      dom.setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message);
+      setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message, dom);
       dom.addWarningFn(outputElement);
     });
 }
@@ -172,14 +185,14 @@ function processInputAndSetOutput(inputElement, outputElement, globalState, proc
   const result = processingFunction(inputValue, env);
   const parsed = parseJSONResult(result);
   if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom)) {
-    dom.setTextContent(outputElement, result);
+    setTextContent(outputElement, result, dom);
   }
 }
 
 function handleInputProcessing(elements, processingFunction, env) {
   const { inputElement, outputElement } = elements;
   const { globalState, createEnv, errorFn, fetchFn, dom } = env;
-  const handleInputError = createHandleInputError(outputElement, errorFn, dom.addWarningFn, dom.setTextContent);
+  const handleInputError = createHandleInputError(outputElement, errorFn, dom.addWarningFn, (element, content) => setTextContent(element, content, dom));
   try {
     processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom);
   } catch (e) {
@@ -230,7 +243,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   disableInputAndButton(inputElement, submitButton);
   
   // Update message to show JS is running
-  outputElement.textContent = 'Initialising...';
+  setTextContent(outputElement, 'Initialising...', dom);
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
