@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1745010173799" clover="3.2.0">
-  <project timestamp="1745010173799" name="All files">
-    <metrics statements="904" coveredstatements="900" conditionals="341" coveredconditionals="337" methods="330" coveredmethods="330" elements="1575" coveredelements="1567" complexity="0" loc="904" ncloc="904" packages="13" files="25" classes="25"/>
+<coverage generated="1745010213843" clover="3.2.0">
+  <project timestamp="1745010213843" name="All files">
+    <metrics statements="904" coveredstatements="901" conditionals="341" coveredconditionals="338" methods="330" coveredmethods="330" elements="1575" coveredelements="1569" complexity="0" loc="904" ncloc="904" packages="13" files="25" classes="25"/>
     <package name="browser">
-      <metrics statements="243" coveredstatements="240" conditionals="57" coveredconditionals="55" methods="82" coveredmethods="82"/>
+      <metrics statements="243" coveredstatements="241" conditionals="57" coveredconditionals="56" methods="82" coveredmethods="82"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="2" type="stmt"/>
@@ -166,9 +166,9 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="91" coveredstatements="88" conditionals="27" coveredconditionals="25" methods="37" coveredmethods="37"/>
-        <line num="10" count="8" type="cond" truecount="1" falsecount="1"/>
-        <line num="11" count="0" type="stmt"/>
+        <metrics statements="91" coveredstatements="89" conditionals="27" coveredconditionals="26" methods="37" coveredmethods="37"/>
+        <line num="10" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="11" count="1" type="stmt"/>
         <line num="12" count="0" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
         <line num="15" count="8" type="stmt"/>
@@ -208,9 +208,9 @@
         <line num="154" count="4" type="stmt"/>
         <line num="156" count="2" type="stmt"/>
         <line num="177" count="5" type="stmt"/>
-        <line num="178" count="1" type="stmt"/>
-        <line num="179" count="1" type="stmt"/>
-        <line num="180" count="1" type="stmt"/>
+        <line num="178" count="2" type="stmt"/>
+        <line num="179" count="2" type="stmt"/>
+        <line num="180" count="2" type="stmt"/>
         <line num="185" count="5" type="stmt"/>
         <line num="186" count="5" type="stmt"/>
         <line num="187" count="5" type="stmt"/>
@@ -223,7 +223,7 @@
         <line num="198" count="5" type="stmt"/>
         <line num="199" count="5" type="stmt"/>
         <line num="200" count="5" type="stmt"/>
-        <line num="202" count="1" type="stmt"/>
+        <line num="202" count="2" type="stmt"/>
         <line num="206" count="11" type="stmt"/>
         <line num="207" count="5" type="stmt"/>
         <line num="208" count="5" type="cond" truecount="2" falsecount="0"/>

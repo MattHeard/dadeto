@@ -338,7 +338,7 @@ FN:295,(anonymous_35)
 FN:309,(anonymous_36)
 FNF:37
 FNH:37
-FNDA:8,setTextContent
+FNDA:9,setTextContent
 FNDA:2,handleModuleError
 FNDA:1,(anonymous_2)
 FNDA:2,initialiseModule
@@ -362,10 +362,10 @@ FNDA:4,isValidParsedRequest
 FNDA:4,handleParsedResult
 FNDA:4,parseJSONResult
 FNDA:5,createHandleInputError
-FNDA:1,(anonymous_24)
+FNDA:2,(anonymous_24)
 FNDA:5,processInputAndSetOutput
 FNDA:5,handleInputProcessing
-FNDA:1,(anonymous_27)
+FNDA:2,(anonymous_27)
 FNDA:11,(anonymous_28)
 FNDA:5,(anonymous_29)
 FNDA:3,disableInputAndButton
@@ -375,8 +375,8 @@ FNDA:2,(anonymous_33)
 FNDA:4,initializeVisibleComponents
 FNDA:6,(anonymous_35)
 FNDA:1,(anonymous_36)
-DA:10,8
-DA:11,0
+DA:10,9
+DA:11,1
 DA:12,0
 DA:13,0
 DA:15,8
@@ -416,9 +416,9 @@ DA:153,4
 DA:154,4
 DA:156,2
 DA:177,5
-DA:178,1
-DA:179,1
-DA:180,1
+DA:178,2
+DA:179,2
+DA:180,2
 DA:185,5
 DA:186,5
 DA:187,5
@@ -431,7 +431,7 @@ DA:197,5
 DA:198,5
 DA:199,5
 DA:200,5
-DA:202,1
+DA:202,2
 DA:206,11
 DA:207,5
 DA:208,5
@@ -467,8 +467,8 @@ DA:301,5
 DA:302,5
 DA:309,1
 LF:91
-LH:88
-BRDA:10,0,0,0
+LH:89
+BRDA:10,0,0,1
 BRDA:10,0,1,8
 BRDA:69,1,0,1
 BRDA:69,1,1,1
@@ -482,7 +482,7 @@ BRDA:135,4,2,2
 BRDA:141,5,0,0
 BRDA:142,6,0,2
 BRDA:142,6,1,2
-BRDA:184,7,0,5
+BRDA:184,7,0,4
 BRDA:189,8,0,2
 BRDA:189,8,1,2
 BRDA:208,9,0,4
@@ -496,7 +496,7 @@ BRDA:290,12,1,4
 BRDA:297,13,0,1
 BRDA:297,13,1,5
 BRF:27
-BRH:25
+BRH:26
 end_of_record
 TN:
 SF:src/generator/full-width.js
