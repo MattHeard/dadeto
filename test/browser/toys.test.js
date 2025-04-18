@@ -166,7 +166,8 @@ describe('initialiseModule', () => {
         if (selector === 'div.output') return outputElement.parentElement;
         return {};
       },
-      addEventListener: jest.fn()
+      addEventListener: jest.fn(),
+      setTextContent: jest.fn()
     };
 
     const env = {
@@ -180,6 +181,7 @@ describe('initialiseModule', () => {
     const response = result(module);
 
     expect(response).toBeUndefined();
+    expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, 'Initialising...');
   });
 });
 

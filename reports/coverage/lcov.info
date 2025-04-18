@@ -376,8 +376,8 @@ FNDA:4,initializeVisibleComponents
 FNDA:6,(anonymous_35)
 FNDA:1,(anonymous_36)
 DA:10,8
-DA:11,1
-DA:13,7
+DA:11,2
+DA:13,6
 DA:24,2
 DA:25,1
 DA:49,2
@@ -465,8 +465,8 @@ DA:299,5
 DA:306,1
 LF:88
 LH:88
-BRDA:10,0,0,1
-BRDA:10,0,1,7
+BRDA:10,0,0,2
+BRDA:10,0,1,6
 BRDA:10,1,0,8
 BRDA:10,1,1,8
 BRDA:67,2,0,1
