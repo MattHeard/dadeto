@@ -229,7 +229,7 @@ describe('createHandleSubmit', () => {
     outputElement = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
     stopDefault = jest.fn();
     addWarningFn = jest.fn();
-    createElement = jest.fn();
+    createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
     dom = {
       createElement,
       stopDefault,
@@ -327,7 +327,7 @@ describe('createHandleSubmit', () => {
     const addWarningFn = jest.fn();
     const fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'result from no-event');
-    const createElement = jest.fn();
+    const createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
 
     const input = { value: 'input without event' };
     const output = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
@@ -370,7 +370,7 @@ describe('initializeInteractiveComponent', () => {
     const createEnvFn = () => ({});
     const errorFn = jest.fn();
     const fetchFn = jest.fn();
-    const createElement = jest.fn();
+    const createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
     const stopDefault = jest.fn();
     const addWarning = jest.fn();
     const listeners = {};
@@ -434,7 +434,7 @@ describe('initializeInteractiveComponent', () => {
     const fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'processed result');
     const listeners = {};
-    const createElement = jest.fn();
+    const createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
     const setTextContent = jest.fn();
 
     const addEventListener = jest.fn((element, event, handler) => {
