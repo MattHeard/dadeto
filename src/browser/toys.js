@@ -138,9 +138,9 @@ function isValidParsedRequest(parsed) {
   );
 }
 
-function handleParsedResult(parsed, outputElement, error, fetch, dom) {
+function handleParsedResult(parsed, outputElement, error, fetch, dom, parent = null) {
   if (!isValidParsedRequest(parsed)) return false;
-  handleRequestResponse(parsed.request.url, outputElement, error, fetch, dom);
+  handleRequestResponse(parsed.request.url, outputElement, error, fetch, dom, parent);
   return true;
 }
 
