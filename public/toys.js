@@ -1,17 +1,15 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 
 /**
- * Sets text content on an element using dom helper or fallback
- * @param {HTMLElement} element
- * @param {string} content
- * @param {object} dom - DOM helpers (optional)
+ * Sets text content on an element or its parent via dom.setTextContent
+ * @param {HTMLElement} element - Element whose content to set
+ * @param {string} content - Text to set
+ * @param {object} dom - DOM helpers
+ * @param {HTMLElement} [parentOverride] - Optional parent element to set content on
  */
-function setTextContent(element, content, dom) {
-  if (dom && typeof dom.setTextContent === 'function') {
-    dom.setTextContent(element, content);
-  } else {
-    element.textContent = content;
-  }
+function setTextContent(element, content, dom, parentOverride) {
+  const target = parentOverride || element;
+  dom.setTextContent(target, content);
 }
 
 /**
@@ -243,7 +241,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   disableInputAndButton(inputElement, submitButton);
   
   // Update message to show JS is running
-  setTextContent(outputElement, 'Initialising...', dom);
+  setTextContent(outputElement, 'Initialising...', dom, outputParent);
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };

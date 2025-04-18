@@ -1,21 +1,22 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 
 /**
- * Sets text content on an element via dom helper or via wrapper
- * @param {HTMLElement} element
- * @param {string} content
+ * Sets text content on an element; if a parentOverride is provided, replaces the
+ * element with a paragraph child created via createParagraphElement. Otherwise
+ * falls back to dom.setTextContent on the element.
+ * @param {HTMLElement} element - The target element whose content to set
+ * @param {string} content - The text content to set
  * @param {object} dom - DOM helpers
- * @param {Function} [wrapper] - Optional function(content, dom) => HTMLElement
+ * @param {HTMLElement} [parentOverride] - Optional parent element to use for replacement
  */
-function setTextContent(element, content, dom, wrapper) {
-  if (typeof wrapper === 'function') {
-    // clear existing content
-    element.textContent = '';
-    const child = wrapper(content, dom);
+function setTextContent(element, content, dom, parentOverride) {
+  if (parentOverride && typeof parentOverride.removeChild === 'function') {
+    parentOverride.removeChild(element);
+    const child = createParagraphElement(content, dom);
     if (dom && typeof dom.appendChild === 'function') {
-      dom.appendChild(element, child);
-    } else if (element.appendChild) {
-      element.appendChild(child);
+      dom.appendChild(parentOverride, child);
+    } else if (parentOverride.appendChild) {
+      parentOverride.appendChild(child);
     }
   } else {
     dom.setTextContent(element, content);
@@ -250,8 +251,8 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   // Disable input and submit during initialization
   disableInputAndButton(inputElement, submitButton);
   
-  // Update message to show JS is running
-  setTextContent(outputElement, 'Initialising...', dom);
+  // Update message to show JS is running, replacing <p.output> with paragraph
+  setTextContent(outputElement, 'Initialising...', dom, outputParent);
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
