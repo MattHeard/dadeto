@@ -1,19 +1,19 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 
 /**
- * Sets text content on an element; if a parentOverride is provided, replaces the
- * element with a paragraph child created via createParagraphElement. Otherwise
- * falls back to dom.setTextContent on the element.
+ * Sets text content on an element; if a parent is provided and dom.removeChild
+ * exists, uses dom.removeChild to remove the element and creates a paragraph
+ * child via createParagraphElement; otherwise falls back to dom.setTextContent.
  * @param {HTMLElement} element - The target element whose content to set
  * @param {string} content - The text content to set
  * @param {object} dom - DOM helpers
- * @param {HTMLElement} [parent] - Optional parent element to use for replacement
+ * @param {HTMLElement} [parent] - Optional parent element to use for removal/appending
  */
 function setTextContent(element, content, dom, parent) {
-  if (parent && typeof parent.removeChild === 'function') {
-    parent.removeChild(element);
+  if (parent && typeof dom.removeChild === 'function') {
+    dom.removeChild(parent, element);
     const child = createParagraphElement(content, dom);
-    if (dom && typeof dom.appendChild === 'function') {
+    if (typeof dom.appendChild === 'function') {
       dom.appendChild(parent, child);
     } else if (parent.appendChild) {
       parent.appendChild(child);

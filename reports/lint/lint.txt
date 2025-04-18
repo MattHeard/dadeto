@@ -59,7 +59,7 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
 [0m   [2m12:1[22m   [33mwarning[39m  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3               [2mmax-params[22m[0m
-[0m   [2m12:1[22m   [33mwarning[39m  Function 'setTextContent' has a complexity of 6. Maximum allowed is 2                     [2mcomplexity[22m[0m
+[0m   [2m12:1[22m   [33mwarning[39m  Function 'setTextContent' has a complexity of 5. Maximum allowed is 2                     [2mcomplexity[22m[0m
 [0m   [2m57:8[22m   [33mwarning[39m  Function 'initialiseModule' has too many parameters (4). Maximum allowed is 3             [2mmax-params[22m[0m
 [0m   [2m75:8[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (7). Maximum allowed is 3           [2mmax-params[22m[0m
 [0m   [2m86:8[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (7). Maximum allowed is 3    [2mmax-params[22m[0m
