@@ -143,9 +143,7 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/fishingGame.js[24m[0m
 [0m   [2m24:1[22m   [33mwarning[39m  Function 'getBaitData' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m   [2m26:47[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m   [2m41:15[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m   [2m53:15[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m144:32[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m142:32[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js[24m[0m
 [0m  [2m7:8[22m  [33mwarning[39m  Function 'get' has a complexity of 16. Maximum allowed is 2  [2mcomplexity[22m[0m
@@ -323,6 +321,6 @@
 [0m  [2m92:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m93:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 264 problems (0 errors, 264 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 161 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m✖ 262 problems (0 errors, 262 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 159 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

@@ -38,7 +38,6 @@ function getTimeOfDay(hour) {
     { start: 0, end: 5, label: "night" },
   ];
   const match = ranges.find(({ start, end }) => hour >= start && hour < end);
-  if (!match) throw new Error(`Unrecognized hour: ${hour}`);
   return match.label;
 }
 
@@ -50,7 +49,6 @@ function getSeason(month) {
     { months: [8, 9, 10], label: "fall" },
   ];
   const match = ranges.find(({ months }) => months.includes(month));
-  if (!match) throw new Error(`Unrecognized month: ${month}`);
   return match.label;
 }
 
