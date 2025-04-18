@@ -32,7 +32,7 @@ export function get(input, env) {
     for (const segment of pathSegments) {
       currentPath = currentPath ? `${currentPath}.${segment}` : segment;
       if (currentValue === null || typeof currentValue !== 'object') {
-        return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.') !== -1 ? currentPath.lastIndexOf('.') : 0)}'. Value is: ${JSON.stringify(currentValue)}`;
+        return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
       }
 
       if (Object.prototype.hasOwnProperty.call(currentValue, segment)) {
