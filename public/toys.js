@@ -5,8 +5,15 @@
  * @param {object} dom - DOM helper functions.
  * @param {HTMLElement} [parent] - Optional parent element (unused).
  */
+import { createParagraphElement } from '../presenters/paragraph.js';
 function setTextContent(element, content, dom, parent) {
-  dom.setTextContent(element, content);
+  if (parent) {
+    dom.removeChild(parent, element);
+    const child = createParagraphElement(content, dom);
+    dom.appendChild(parent, child);
+  } else {
+    dom.setTextContent(element, content);
+  }
 }
 
 /**
