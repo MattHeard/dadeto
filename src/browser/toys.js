@@ -3,8 +3,9 @@
  * @param {HTMLElement} element - The target element.
  * @param {string} content - The text content to set.
  * @param {object} dom - DOM helper functions.
+ * @param {HTMLElement} [parent] - Optional parent element (unused).
  */
-function setTextContent(element, content, dom) {
+function setTextContent(element, content, dom, parent) {
   dom.setTextContent(element, content);
 }
 
