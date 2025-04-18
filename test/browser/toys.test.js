@@ -158,7 +158,8 @@ describe('initialiseModule', () => {
     const error = () => {};
     const fetch = () => {};
     const mockClassList = { remove: jest.fn() };
-    const outputElement = { textContent: '', parentElement: { classList: mockClassList } };
+    const parentElement = { classList: mockClassList, textContent: '' };
+    const outputElement = { textContent: '', parentElement };
     const dom = {
       querySelector: (el, selector) => {
         if (selector === 'input' || selector === 'button') return {};
