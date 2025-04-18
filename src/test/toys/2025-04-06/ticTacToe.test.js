@@ -178,6 +178,25 @@ test('selects optimal move in mid-game scenario', () => {
   expect(output.moves[4].position).toEqual({ row: 0, column: 2 });
 });
 
+test('covers non-terminal state in minimax search', () => {
+  // Board state: X in center, O in top-left, X in bottom-right
+  // No winner, not full, minimax will recurse and hit 'return null' in evaluateTerminalState
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 1, column: 1 } },
+      { player: 'O', position: { row: 0, column: 0 } },
+      { player: 'X', position: { row: 2, column: 2 } }
+    ]
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  // Should return a valid next move, and moves should increase by 1
+  expect(output.moves.length).toBe(input.moves.length + 1);
+  // The next move should be for O
+  expect(output.moves[output.moves.length - 1].player).toBe('O');
+});
+
 test('handles null move entry gracefully', () => {
   const env = new Map();
   const input = {
