@@ -387,6 +387,7 @@ describe('initializeInteractiveComponent', () => {
       createElement,
       stopDefault,
       addWarning,
+      addWarningFn: addWarning,
       addEventListener,
       querySelector,
       setTextContent: jest.fn((el, text) => { el.textContent = text; })
