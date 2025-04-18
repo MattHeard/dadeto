@@ -7,16 +7,16 @@ import { createParagraphElement } from '../presenters/paragraph.js';
  * @param {HTMLElement} element - The target element whose content to set
  * @param {string} content - The text content to set
  * @param {object} dom - DOM helpers
- * @param {HTMLElement} [parentOverride] - Optional parent element to use for replacement
+ * @param {HTMLElement} [parent] - Optional parent element to use for replacement
  */
-function setTextContent(element, content, dom, parentOverride) {
-  if (parentOverride && typeof parentOverride.removeChild === 'function') {
-    parentOverride.removeChild(element);
+function setTextContent(element, content, dom, parent) {
+  if (parent && typeof parent.removeChild === 'function') {
+    parent.removeChild(element);
     const child = createParagraphElement(content, dom);
     if (dom && typeof dom.appendChild === 'function') {
-      dom.appendChild(parentOverride, child);
-    } else if (parentOverride.appendChild) {
-      parentOverride.appendChild(child);
+      dom.appendChild(parent, child);
+    } else if (parent.appendChild) {
+      parent.appendChild(child);
     }
   } else {
     dom.setTextContent(element, content);

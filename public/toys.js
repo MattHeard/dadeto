@@ -1,15 +1,26 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 
 /**
- * Sets text content on an element or its parent via dom.setTextContent
- * @param {HTMLElement} element - Element whose content to set
- * @param {string} content - Text to set
+ * Sets text content on an element; if a parentOverride is provided, replaces the
+ * element with a paragraph child created via createParagraphElement. Otherwise
+ * falls back to dom.setTextContent on the element.
+ * @param {HTMLElement} element - The target element whose content to set
+ * @param {string} content - The text content to set
  * @param {object} dom - DOM helpers
- * @param {HTMLElement} [parentOverride] - Optional parent element to set content on
+ * @param {HTMLElement} [parent] - Optional parent element to use for replacement
  */
-function setTextContent(element, content, dom, parentOverride) {
-  const target = parentOverride || element;
-  dom.setTextContent(target, content);
+function setTextContent(element, content, dom, parent) {
+  if (parent && typeof parent.removeChild === 'function') {
+    parent.removeChild(element);
+    const child = createParagraphElement(content, dom);
+    if (dom && typeof dom.appendChild === 'function') {
+      dom.appendChild(parent, child);
+    } else if (parent.appendChild) {
+      parent.appendChild(child);
+    }
+  } else {
+    dom.setTextContent(element, content);
+  }
 }
 
 /**
@@ -240,7 +251,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   // Disable input and submit during initialization
   disableInputAndButton(inputElement, submitButton);
   
-  // Update message to show JS is running
+  // Update message to show JS is running, replacing <p.output> with paragraph
   setTextContent(outputElement, 'Initialising...', dom, outputParent);
 
   // Create the submit handler using the function from this module
