@@ -149,13 +149,13 @@
 [0m  [2m7:8[22m  [33mwarning[39m  Function 'get' has a complexity of 16. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
-[0m    [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
-[0m   [2m19:1[22m   [33mwarning[39m  Function 'deepMerge' has a complexity of 4. Maximum allowed is 2      [2mcomplexity[22m[0m
-[0m   [2m24:33[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2            [2mcomplexity[22m[0m
-[0m   [2m56:8[22m   [33mwarning[39m  Function 'setTemporary' has a complexity of 10. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m   [2m81:35[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
-[0m   [2m93:32[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
-[0m  [2m101:51[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
+[0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
+[0m  [2m19:1[22m   [33mwarning[39m  Function 'deepMerge' has a complexity of 3. Maximum allowed is 2      [2mcomplexity[22m[0m
+[0m  [2m24:33[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2            [2mcomplexity[22m[0m
+[0m  [2m52:8[22m   [33mwarning[39m  Function 'setTemporary' has a complexity of 10. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m77:35[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
+[0m  [2m89:32[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
+[0m  [2m97:51[22m  [33mwarning[39m  Trailing spaces not allowed                                           [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js[24m[0m
 [0m  [2m19:1[22m  [33mwarning[39m  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m

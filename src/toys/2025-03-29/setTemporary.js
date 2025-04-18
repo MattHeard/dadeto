@@ -34,17 +34,13 @@ function deepMerge(target, source) {
         output[key] = sourceValue;
       }
     });
-  } else if (isObject(source)) {
-    console.log('[deepMerge] Target is not object, but source is object. Returning shallow copy of source.');
-      // If target is not an object but source is, return a shallow copy of source
-      // (or deep copy if required, but shallow should suffice here as we merge onto it)
-      return { ...source };
   }
   // If source is not an object, the initial shallow copy of target is returned
   // or target itself if it wasn't an object either (though initial checks prevent this)
   console.log('[deepMerge] Returning output:', output);
   return output;
 }
+
 
 /**
  * Parses input as JSON, deep merges it into the 'temporary' object obtained via env.getData(),

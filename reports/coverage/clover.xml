@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1744981517427" clover="3.2.0">
-  <project timestamp="1744981517428" name="All files">
-    <metrics statements="903" coveredstatements="899" conditionals="341" coveredconditionals="334" methods="328" coveredmethods="328" elements="1572" coveredelements="1561" complexity="0" loc="903" ncloc="903" packages="13" files="25" classes="25"/>
+<coverage generated="1744982186058" clover="3.2.0">
+  <project timestamp="1744982186058" name="All files">
+    <metrics statements="900" coveredstatements="899" conditionals="339" coveredconditionals="334" methods="328" coveredmethods="328" elements="1567" coveredelements="1561" complexity="0" loc="900" ncloc="900" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="237" coveredstatements="237" conditionals="53" coveredconditionals="53" methods="80" coveredmethods="80"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -692,7 +692,7 @@
       </file>
     </package>
     <package name="toys.2025-03-29">
-      <metrics statements="110" coveredstatements="106" conditionals="58" coveredconditionals="53" methods="29" coveredmethods="29"/>
+      <metrics statements="107" coveredstatements="106" conditionals="56" coveredconditionals="53" methods="29" coveredmethods="29"/>
       <file name="fishingGame.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/fishingGame.js">
         <metrics statements="45" coveredstatements="45" conditionals="8" coveredconditionals="8" methods="24" coveredmethods="24"/>
         <line num="2" count="7" type="stmt"/>
@@ -770,7 +770,7 @@
         <line num="53" count="1" type="stmt"/>
       </file>
       <file name="setTemporary.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js">
-        <metrics statements="40" coveredstatements="36" conditionals="27" coveredconditionals="23" methods="4" coveredmethods="4"/>
+        <metrics statements="37" coveredstatements="36" conditionals="25" coveredconditionals="23" methods="4" coveredmethods="4"/>
         <line num="7" count="86" type="cond" truecount="3" falsecount="0"/>
         <line num="20" count="13" type="stmt"/>
         <line num="21" count="13" type="stmt"/>
@@ -782,35 +782,32 @@
         <line num="27" count="18" type="cond" truecount="4" falsecount="0"/>
         <line num="29" count="2" type="stmt"/>
         <line num="34" count="16" type="stmt"/>
-        <line num="37" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="38" count="0" type="stmt"/>
-        <line num="41" count="0" type="stmt"/>
-        <line num="45" count="13" type="stmt"/>
-        <line num="46" count="13" type="stmt"/>
-        <line num="58" count="18" type="stmt"/>
-        <line num="59" count="18" type="stmt"/>
-        <line num="61" count="1" type="stmt"/>
-        <line num="64" count="17" type="cond" truecount="2" falsecount="0"/>
-        <line num="65" count="2" type="stmt"/>
-        <line num="68" count="15" type="cond" truecount="3" falsecount="1"/>
-        <line num="69" count="0" type="stmt"/>
-        <line num="71" count="15" type="stmt"/>
-        <line num="72" count="15" type="stmt"/>
-        <line num="73" count="15" type="cond" truecount="2" falsecount="0"/>
-        <line num="74" count="1" type="stmt"/>
-        <line num="76" count="14" type="cond" truecount="2" falsecount="0"/>
-        <line num="77" count="1" type="stmt"/>
-        <line num="80" count="13" type="stmt"/>
-        <line num="81" count="13" type="stmt"/>
-        <line num="83" count="12" type="cond" truecount="2" falsecount="0"/>
-        <line num="84" count="1" type="stmt"/>
-        <line num="89" count="11" type="stmt"/>
-        <line num="92" count="11" type="cond" truecount="2" falsecount="0"/>
-        <line num="93" count="7" type="stmt"/>
-        <line num="97" count="11" type="stmt"/>
-        <line num="99" count="11" type="stmt"/>
-        <line num="101" count="10" type="stmt"/>
-        <line num="104" count="2" type="stmt"/>
+        <line num="40" count="13" type="stmt"/>
+        <line num="41" count="13" type="stmt"/>
+        <line num="54" count="18" type="stmt"/>
+        <line num="55" count="18" type="stmt"/>
+        <line num="57" count="1" type="stmt"/>
+        <line num="60" count="17" type="cond" truecount="2" falsecount="0"/>
+        <line num="61" count="2" type="stmt"/>
+        <line num="64" count="15" type="cond" truecount="3" falsecount="1"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="67" count="15" type="stmt"/>
+        <line num="68" count="15" type="stmt"/>
+        <line num="69" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="72" count="14" type="cond" truecount="2" falsecount="0"/>
+        <line num="73" count="1" type="stmt"/>
+        <line num="76" count="13" type="stmt"/>
+        <line num="77" count="13" type="stmt"/>
+        <line num="79" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="80" count="1" type="stmt"/>
+        <line num="85" count="11" type="stmt"/>
+        <line num="88" count="11" type="cond" truecount="2" falsecount="0"/>
+        <line num="89" count="7" type="stmt"/>
+        <line num="93" count="11" type="stmt"/>
+        <line num="95" count="11" type="stmt"/>
+        <line num="97" count="10" type="stmt"/>
+        <line num="100" count="2" type="stmt"/>
       </file>
     </package>
     <package name="toys.2025-03-30">
