@@ -177,7 +177,11 @@ function createHandleInputError(outputElement, error, addWarning, setTextContent
   return function(e) {
     error('Error processing input:', e);
     setTextContent(outputElement, 'Error: ' + e.message);
-    addWarning(outputElement);
+    if (parent) {
+      addWarning(parent);
+    } else {
+      addWarning(outputElement);
+    }
   };
 }
 
