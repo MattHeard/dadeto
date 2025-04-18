@@ -1,17 +1,13 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 
 /**
- * Sets text content on an element using dom helper or fallback
+ * Sets text content on an element via dom helper
  * @param {HTMLElement} element
  * @param {string} content
- * @param {object} dom - DOM helpers (optional)
+ * @param {object} dom - DOM helpers
  */
 function setTextContent(element, content, dom) {
-  if (dom && typeof dom.setTextContent === 'function') {
-    dom.setTextContent(element, content);
-  } else {
-    element.textContent = content;
-  }
+  dom.setTextContent(element, content);
 }
 
 /**

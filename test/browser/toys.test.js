@@ -230,7 +230,12 @@ describe('createHandleSubmit', () => {
     stopDefault = jest.fn();
     addWarningFn = jest.fn();
     createElement = jest.fn();
-    dom = { createElement, stopDefault, addWarningFn };
+    dom = {
+      createElement,
+      stopDefault,
+      addWarningFn,
+      setTextContent: jest.fn((el, text) => { el.textContent = text; })
+    };
     mockFetch = jest.fn();
     global.fetch = mockFetch;
 
@@ -267,7 +272,7 @@ describe('createHandleSubmit', () => {
 
     expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/data');
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(outputElement.textContent).toBe('fetched content');
+    expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, 'fetched content');
   });
 
   it('handles fetch failure if request URL is unreachable', async () => {
@@ -290,7 +295,7 @@ describe('createHandleSubmit', () => {
 
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/fail');
-    expect(outputElement.textContent).toMatch(/Error fetching URL: Network failure/);
+    expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
     expect(addWarningFn).toHaveBeenCalledWith(outputElement);
   });
 
@@ -311,7 +316,7 @@ describe('createHandleSubmit', () => {
     await handleSubmitThrowing(new Event('submit'));
 
     expect(mockFetchFn).not.toHaveBeenCalled();
-    expect(outputElement.textContent).toMatch(/Error: processing error/);
+    expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error: processing error/));
     expect(addWarningFn).toHaveBeenCalledWith(outputElement);
   });
 
@@ -340,7 +345,7 @@ describe('createHandleSubmit', () => {
     
     expect(stopDefault).not.toHaveBeenCalled();
     expect(processingFunction).toHaveBeenCalledWith('input without event', expect.any(Object));
-    expect(output.textContent).toBe('result from no-event');
+    expect(dom.setTextContent).toHaveBeenCalledWith(output, 'result from no-event');
   });
 });
 
@@ -375,7 +380,14 @@ describe('initializeInteractiveComponent', () => {
         listeners.click = handler;
       }
     });
-    const dom = { createElement, stopDefault, addWarning, addEventListener, querySelector };
+    const dom = {
+      createElement,
+      stopDefault,
+      addWarning,
+      addEventListener,
+      querySelector,
+      setTextContent: jest.fn((el, text) => { el.textContent = text; })
+    };
 
     const processingFunction = jest.fn(() => 'processed result');
 
@@ -424,7 +436,14 @@ describe('initializeInteractiveComponent', () => {
         listeners.keypress = handler;
       }
     });
-    const dom = { createElement, setTextContent, stopDefaultFn, addWarningFn, addEventListener, querySelector };
+    const dom = {
+      createElement,
+      setTextContent: jest.fn((el, text) => { el.textContent = text; }),
+      stopDefault: stopDefaultFn,
+      addWarningFn,
+      addEventListener,
+      querySelector
+    };
 
     const config = { globalState, createEnvFn, errorFn, fetchFn, dom };
     initializeInteractiveComponent(
