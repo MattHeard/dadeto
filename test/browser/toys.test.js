@@ -389,6 +389,8 @@ describe('initializeInteractiveComponent', () => {
       addWarning,
       addWarningFn: addWarning,
       addEventListener,
+      removeChild: jest.fn(),
+      appendChild: jest.fn(),
       querySelector,
       setTextContent: jest.fn((el, text) => { el.textContent = text; })
     };
