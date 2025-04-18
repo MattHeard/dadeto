@@ -20,6 +20,33 @@ describe('function coverage: direct invocation', () => {
     const createObs = makeCreateIntersectionObserver(dom, env);
     expect(typeof createObs).toBe('function');
   });
+
+  it('covers the intersection observer callback chain', () => {
+    let observerCallback;
+    const dom = {
+      makeIntersectionObserver: (cb) => {
+        observerCallback = cb;
+        return 'observer-instance';
+      },
+      importModule: jest.fn(),
+      disconnectObserver: jest.fn(),
+      error: jest.fn(),
+      isIntersecting: (entry) => entry.isIntersecting
+    };
+    const env = {};
+    const article = {};
+    const modulePath = 'mod';
+    const functionName = 'fn';
+    const createObs = makeCreateIntersectionObserver(dom, env);
+    const observerInstance = createObs(article, modulePath, functionName);
+    expect(observerInstance).toBe('observer-instance');
+    // Simulate the intersection observer callback with an intersecting entry
+    const entry = { isIntersecting: true };
+    const observer = {};
+    observerCallback([entry], observer);
+    expect(dom.importModule).toHaveBeenCalled();
+    expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
+  });
 });
 
 describe('enableInteractiveControls', () => {
