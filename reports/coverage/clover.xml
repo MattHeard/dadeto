@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1744979578969" clover="3.2.0">
-  <project timestamp="1744979578969" name="All files">
+<coverage generated="1744980176883" clover="3.2.0">
+  <project timestamp="1744980176884" name="All files">
     <metrics statements="901" coveredstatements="898" conditionals="345" coveredconditionals="335" methods="328" coveredmethods="328" elements="1574" coveredelements="1561" complexity="0" loc="901" ncloc="901" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="237" coveredstatements="237" conditionals="53" coveredconditionals="52" methods="80" coveredmethods="80"/>
@@ -98,12 +98,12 @@
         <line num="87" count="1" type="stmt"/>
         <line num="88" count="1" type="stmt"/>
         <line num="92" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="96" count="3" type="stmt"/>
-        <line num="100" count="3" type="cond" truecount="3" falsecount="1"/>
-        <line num="101" count="3" type="stmt"/>
-        <line num="105" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="106" count="2" type="stmt"/>
-        <line num="107" count="2" type="stmt"/>
+        <line num="96" count="5" type="stmt"/>
+        <line num="100" count="5" type="cond" truecount="3" falsecount="1"/>
+        <line num="101" count="5" type="stmt"/>
+        <line num="105" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="106" count="4" type="stmt"/>
+        <line num="107" count="4" type="stmt"/>
         <line num="112" count="5" type="cond" truecount="2" falsecount="0"/>
         <line num="113" count="1" type="stmt"/>
         <line num="118" count="5" type="cond" truecount="2" falsecount="0"/>
@@ -117,7 +117,7 @@
         <line num="144" count="5" type="stmt"/>
         <line num="145" count="5" type="stmt"/>
         <line num="155" count="1" type="stmt"/>
-        <line num="157" count="3" type="stmt"/>
+        <line num="157" count="5" type="stmt"/>
         <line num="158" count="1" type="stmt"/>
         <line num="159" count="1" type="stmt"/>
         <line num="160" count="1" type="stmt"/>

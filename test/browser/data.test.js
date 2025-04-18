@@ -183,6 +183,30 @@ describe('getData, setData, and getDeepStateCopy', () => {
     );
   });
 
+  it('setData throws and logs error if incoming state is object but lacks temporary property', () => {
+    const state = { blog: { title: 'preserved' } };
+    const logFn = jest.fn();
+    const errorFn = jest.fn();
+    const invalidState = { foo: 1 };
+    expect(() => setData(invalidState, state, logFn, errorFn)).toThrow();
+    expect(errorFn).toHaveBeenCalledWith(
+      'setData received invalid data structure:',
+      invalidState
+    );
+  });
+
+  it('setData throws and logs error if incoming state is an object with no prototype and no properties', () => {
+    const state = { blog: { title: 'preserved' } };
+    const logFn = jest.fn();
+    const errorFn = jest.fn();
+    const invalidState = Object.create(null);
+    expect(() => setData(invalidState, state, logFn, errorFn)).toThrow();
+    expect(errorFn).toHaveBeenCalledWith(
+      'setData received invalid data structure:',
+      invalidState
+    );
+  });
+
   it('shouldUseExistingFetch returns true and logs when loading and promise exists', () => {
     const state = {
       blogStatus: 'loading',
