@@ -71,12 +71,12 @@
 [0m  [2m176:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
 [0m  [2m184:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (9). Maximum allowed is 3     [2mmax-params[22m[0m
 [0m  [2m184:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has a complexity of 3. Maximum allowed is 2           [2mcomplexity[22m[0m
-[0m  [2m242:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
-[0m  [2m243:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m246:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m256:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
-[0m  [2m288:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m288:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m  [2m243:9[22m   [33mwarning[39m  'outputParent' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
+[0m  [2m244:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m247:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m257:1[22m   [33mwarning[39m  Trailing spaces not allowed                                                               [2mno-trailing-spaces[22m[0m
+[0m  [2m289:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m289:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m23:26[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m

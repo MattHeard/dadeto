@@ -192,11 +192,12 @@ function processInputAndSetOutput(inputElement, outputElement, globalState, proc
 }
 
 function handleInputProcessing(elements, processingFunction, env) {
+  const parent = elements.outputParentElement;
   const { inputElement, outputElement } = elements;
   const { globalState, createEnv, errorFn, fetchFn, dom } = env;
   const handleInputError = createHandleInputError(outputElement, errorFn, dom.addWarningFn, (element, content) => setTextContent(element, content, dom));
   try {
-    processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom);
+    processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent);
   } catch (e) {
     handleInputError(e);
   }
