@@ -202,7 +202,8 @@ function handleInputProcessing(elements, processingFunction, env) {
     outputElement,
     errorFn,
     dom.addWarningFn,
-    (element, content) => setTextContent(element, content, dom, outputParentElement)
+    (element, content) => setTextContent(element, content, dom, outputParentElement),
+    outputParentElement
   );
   try {
     processInputAndSetOutput(
