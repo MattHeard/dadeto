@@ -229,7 +229,7 @@ describe('createHandleSubmit', () => {
     inputElement = {};
     outputElement = {};
     outputParentElement = {};
-    createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
+    createElement = jest.fn().mockImplementation(() => newParagraph);
     newParagraph = { textContent: '' };
     dom = {
       createElement,
