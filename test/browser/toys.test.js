@@ -405,7 +405,8 @@ describe('initializeInteractiveComponent', () => {
       removeChild: jest.fn(),
       appendChild: jest.fn(),
       querySelector,
-      setTextContent: jest.fn((el, text) => { el.textContent = text; })
+      setTextContent: jest.fn((el, text) => { el.textContent = text; }),
+      removeWarning: jest.fn()
     };
 
     const processingFunction = jest.fn(() => 'processed result');
