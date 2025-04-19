@@ -465,7 +465,8 @@ describe('initializeInteractiveComponent', () => {
       stopDefault: stopDefaultFn,
       addWarningFn,
       addEventListener,
-      querySelector
+      querySelector,
+      removeWarning: jest.fn()
     };
 
     const config = { globalState, createEnvFn, errorFn, fetchFn, dom };
