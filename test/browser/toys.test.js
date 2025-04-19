@@ -238,10 +238,7 @@ describe('createHandleSubmit', () => {
     };
     mockFetch = jest.fn();
 
-    const globalState = {};
     processingFunction = jest.fn(async (input) => 'transformed');
-    const createEnv = () => ({});
-    const errorFn = jest.fn();
 
 
 
