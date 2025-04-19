@@ -91,7 +91,7 @@ describe('enableInteractiveControls', () => {
   let inputElement;
   let submitButton;
   let outputElement;
-  let parentElement;
+  let outputParentElement;
   let mockParentClassList;
 
   beforeEach(() => {
@@ -114,7 +114,7 @@ describe('enableInteractiveControls', () => {
         return className === 'warning' && mockParentClassList.containsWarning;
       })
     };
-    parentElement = { 
+    outputParentElement = { 
       classList: mockParentClassList,
       appendChild: jest.fn() // Not needed, but completes the mock
     };
@@ -122,7 +122,7 @@ describe('enableInteractiveControls', () => {
     // Mock output element and link its parent
     outputElement = { 
       textContent: '',
-      parentElement: parentElement
+      outputParentElement: outputParentElement
     };
     
   });
@@ -156,13 +156,13 @@ describe('initialiseModule', () => {
     const error = () => {};
     const fetch = () => {};
     const mockClassList = { remove: jest.fn() };
-    const parentElement = { classList: mockClassList, textContent: '' };
-    const outputElement = { textContent: '', parentElement };
+    const outputParentElement = { classList: mockClassList, textContent: '' };
+    const outputElement = { textContent: '', outputParentElement };
     const dom = {
       querySelector: (el, selector) => {
         if (selector === 'input' || selector === 'button') return {};
         if (selector === 'p.output') return outputElement;
-        if (selector === 'div.output') return outputElement.parentElement;
+        if (selector === 'div.output') return outputElement.outputParentElement;
         return {};
       },
       addEventListener: jest.fn(),
@@ -213,13 +213,12 @@ describe('getDeepStateCopy', () => {
 import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from '../../src/browser/toys.js';
 
 describe('createHandleSubmit', () => {
-  let parent;
   let mockFetch;
   let inputElement;
   let outputElement;
   let handleSubmit;
   let processingFunction;
-  let parentElement;
+  let outputParentElement;
   let stopDefault;
   let addWarningFn;
   let createElement;
@@ -227,7 +226,7 @@ describe('createHandleSubmit', () => {
 
   beforeEach(() => {
     inputElement = { value: 'hello', disabled: false };
-    outputElement = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
+    outputElement = { textContent: '', outputParentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
     stopDefault = jest.fn();
     addWarningFn = jest.fn();
     createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
@@ -305,7 +304,7 @@ describe('createHandleSubmit', () => {
   it('handles error thrown by processingFunction', async () => {
     const mockFetchFn = jest.fn(); // Should not be called
     // Create and inject a parent element
-    const parentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
+    const outputParentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
 
 
     processingFunction = jest.fn(() => {
@@ -317,7 +316,7 @@ describe('createHandleSubmit', () => {
     dom.createElement = jest.fn(() => mockElement);
     const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: mockFetchFn, dom };
     const handleSubmitThrowing = createHandleSubmit(
-      { inputElement, outputElement, outputParentElement: parentElement },
+      { inputElement, outputElement, outputParentElement: outputParentElement },
       processingFunction,
       env
     );
@@ -326,20 +325,19 @@ describe('createHandleSubmit', () => {
 
     expect(mockFetchFn).not.toHaveBeenCalled();
     expect(dom.setTextContent).toHaveBeenCalledWith(mockElement, expect.stringMatching(/Error: processing error/));
-    expect(addWarningFn).toHaveBeenCalledWith(parentElement);
+    expect(addWarningFn).toHaveBeenCalledWith(outputParentElement);
   });
 
   it('handles being called without an event', async () => {
     const stopDefault = jest.fn();
     const createEnv = () => ({});
     const errorFn = jest.fn();
-    const addWarningFn = jest.fn();
     const fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'result from no-event');
     const createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
 
     const input = { value: 'input without event' };
-    const output = { textContent: '', parentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
+    const output = { textContent: '', outputParentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
 
     const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
     const handleSubmitNoEvent = createHandleSubmit(
@@ -365,14 +363,14 @@ describe('initializeInteractiveComponent', () => {
     const submitButton = { disabled: false };
     const outputElement = {
       textContent: '',
-      parentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
+      outputParentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
     };
 
     const querySelector = jest.fn((el, selector) => {
       if (selector === 'input') return inputElement;
       if (selector === 'button') return submitButton;
       if (selector === 'p.output') return outputElement;
-      if (selector === 'div.output') return outputElement.parentElement; // Return the parent element when asked for output container
+      if (selector === 'div.output') return outputElement.outputParentElement; // Return the parent element when asked for output container
     });
 
     const globalState = {};
@@ -429,14 +427,14 @@ describe('initializeInteractiveComponent', () => {
     const submitButton = { disabled: false };
     const outputElement = {
       textContent: '',
-      parentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
+      outputParentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
     };
 
     const querySelector = jest.fn((el, selector) => {
       if (selector === 'input') return inputElement;
       if (selector === 'button') return submitButton;
       if (selector === 'p.output') return outputElement;
-      if (selector === 'div.output') return outputElement.parentElement; // Return the parent element when asked for output container
+      if (selector === 'div.output') return outputElement.outputParentElement; // Return the parent element when asked for output container
     });
 
     const globalState = {};
