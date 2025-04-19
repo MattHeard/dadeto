@@ -273,9 +273,9 @@ describe('createHandleSubmit', () => {
       Promise.reject(new Error('Network failure'))
     );
 
-    processingFunction = jest.fn(() =>
-      JSON.stringify({ request: { url: 'https://example.com/fail' } })
-    );
+    const url = 'https://example.com/fail';
+    const request = { request: { url } };
+    processingFunction = jest.fn(() => JSON.stringify(request));
 
     const env = {
   globalState: {},
@@ -293,7 +293,7 @@ describe('createHandleSubmit', () => {
     await handleSubmitWithFailingFetch(new Event('submit'));
 
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(fetchFn).toHaveBeenCalledWith('https://example.com/fail');
+    expect(fetchFn).toHaveBeenCalledWith(url);
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
     expect(dom.addWarning).toHaveBeenCalledWith(outputElement);
   });
