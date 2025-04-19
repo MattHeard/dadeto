@@ -238,7 +238,6 @@ describe('createHandleSubmit', () => {
       appendChild: jest.fn()
     };
     mockFetch = jest.fn();
-    global.fetch = mockFetch;
 
     const globalState = {};
     processingFunction = jest.fn(async (input) => 'transformed');
