@@ -141,14 +141,9 @@ describe('enableInteractiveControls', () => {
   });
 
   it('removes "warning" class from parent element', () => {
-    // Check initial state using the mock
-    expect(parentElement.classList.contains('warning')).toBe(true);
     const dom = { setTextContent: (el, text) => { el.textContent = text; }, removeWarning: jest.fn() };
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
-    // Check that remove was called
-    expect(parentElement.classList.remove).toHaveBeenCalledWith('warning');
-    // Check final state using the mock
-    expect(parentElement.classList.contains('warning')).toBe(false);
+    expect(dom.removeWarning).toHaveBeenCalledWith(outputElement);
   });
 });
 
@@ -171,7 +166,8 @@ describe('initialiseModule', () => {
         return {};
       },
       addEventListener: jest.fn(),
-      setTextContent: jest.fn()
+      setTextContent: jest.fn(),
+      removeWarning: jest.fn()
     };
 
     const env = {
