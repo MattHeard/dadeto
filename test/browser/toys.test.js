@@ -128,14 +128,14 @@ describe('enableInteractiveControls', () => {
   });
 
   it('enables input and submit button', () => {
-    const dom = { setTextContent: jest.fn() };
+    const dom = { setTextContent: jest.fn(), removeWarning: jest.fn() };
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
     expect(inputElement.disabled).toBe(false);
     expect(submitButton.disabled).toBe(false);
   });
 
   it('sets output textContent to "Ready for input"', () => {
-    const dom = { setTextContent: (el, text) => { el.textContent = text; } };
+    const dom = { setTextContent: (el, text) => { el.textContent = text; }, removeWarning: jest.fn() };
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
     expect(outputElement.textContent).toBe('Ready for input');
   });
@@ -143,7 +143,7 @@ describe('enableInteractiveControls', () => {
   it('removes "warning" class from parent element', () => {
     // Check initial state using the mock
     expect(parentElement.classList.contains('warning')).toBe(true);
-    const dom = { setTextContent: (el, text) => { el.textContent = text; } };
+    const dom = { setTextContent: (el, text) => { el.textContent = text; }, removeWarning: jest.fn() };
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
     // Check that remove was called
     expect(parentElement.classList.remove).toHaveBeenCalledWith('warning');
