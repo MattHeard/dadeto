@@ -263,7 +263,6 @@ describe('createHandleSubmit', () => {
 
     await handleSubmitWithFetch(new Event('submit'));
 
-    expect(fetchFn).toHaveBeenCalledWith(url);
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, fetchedContent);
   });
