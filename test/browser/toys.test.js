@@ -245,7 +245,7 @@ describe('createHandleSubmit', () => {
   });
 
   it('fetches from URL if processingFunction returns a request object', async () => {
-    const mockFetchFn = jest.fn(() =>
+    const fetchFn = jest.fn(() =>
       Promise.resolve({ text: () => Promise.resolve('fetched content') })
     );
 
@@ -253,7 +253,7 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/data' } })
     );
 
-    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: mockFetchFn, dom };
+    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: fetchFn, dom };
     const handleSubmitWithFetch = createHandleSubmit(
       { inputElement, outputElement },
       processingFunction,
@@ -262,13 +262,13 @@ describe('createHandleSubmit', () => {
 
     await handleSubmitWithFetch(new Event('submit'));
 
-    expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/data');
+    expect(fetchFn).toHaveBeenCalledWith('https://example.com/data');
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, 'fetched content');
   });
 
   it('handles fetch failure if request URL is unreachable', async () => {
-    const mockFetchFn = jest.fn(() =>
+    const fetchFn = jest.fn(() =>
       Promise.reject(new Error('Network failure'))
     );
 
@@ -276,7 +276,7 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/fail' } })
     );
 
-    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: mockFetchFn, dom };
+    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: fetchFn, dom };
     const handleSubmitWithFailingFetch = createHandleSubmit(
       { inputElement, outputElement },
       processingFunction,
@@ -286,13 +286,13 @@ describe('createHandleSubmit', () => {
     await handleSubmitWithFailingFetch(new Event('submit'));
 
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/fail');
+    expect(fetchFn).toHaveBeenCalledWith('https://example.com/fail');
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
     expect(dom.addWarning).toHaveBeenCalledWith(outputElement);
   });
 
   it('handles error thrown by processingFunction', async () => {
-    const mockFetchFn = jest.fn(); // Should not be called
+    const fetchFn = jest.fn(); // Should not be called
     // Create and inject a parent element
     const outputParentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
 
@@ -304,7 +304,7 @@ describe('createHandleSubmit', () => {
     // Add createElement to dom mock
     const mockElement = { textContent: '' };
     dom.createElement = jest.fn(() => mockElement);
-    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: mockFetchFn, dom };
+    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: fetchFn, dom };
     const handleSubmitThrowing = createHandleSubmit(
       { inputElement, outputElement, outputParentElement: outputParentElement },
       processingFunction,
@@ -313,7 +313,7 @@ describe('createHandleSubmit', () => {
 
     await handleSubmitThrowing(new Event('submit'));
 
-    expect(mockFetchFn).not.toHaveBeenCalled();
+    expect(fetchFn).not.toHaveBeenCalled();
     expect(dom.setTextContent).toHaveBeenCalledWith(mockElement, expect.stringMatching(/Error: processing error/));
     expect(dom.addWarning).toHaveBeenCalledWith(outputParentElement);
   });
