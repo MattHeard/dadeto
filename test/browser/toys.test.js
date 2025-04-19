@@ -220,7 +220,7 @@ describe('createHandleSubmit', () => {
   let processingFunction;
   let outputParentElement;
 
-  let addWarningFn;
+
   let createElement;
   let dom;
 
@@ -228,12 +228,11 @@ describe('createHandleSubmit', () => {
     inputElement = {};
     outputElement = {};
     outputParentElement = {};
-    addWarningFn = jest.fn();
     createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
     dom = {
       createElement,
       stopDefault: jest.fn(),
-      addWarningFn,
+      addWarning: jest.fn(),
       setTextContent: jest.fn((el, text) => { el.textContent = text; }),
       removeChild: jest.fn(),
       appendChild: jest.fn()
@@ -299,7 +298,7 @@ describe('createHandleSubmit', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(mockFetchFn).toHaveBeenCalledWith('https://example.com/fail');
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
-    expect(addWarningFn).toHaveBeenCalledWith(outputElement);
+    expect(dom.addWarning).toHaveBeenCalledWith(outputElement);
   });
 
   it('handles error thrown by processingFunction', async () => {
@@ -326,7 +325,7 @@ describe('createHandleSubmit', () => {
 
     expect(mockFetchFn).not.toHaveBeenCalled();
     expect(dom.setTextContent).toHaveBeenCalledWith(mockElement, expect.stringMatching(/Error: processing error/));
-    expect(addWarningFn).toHaveBeenCalledWith(outputParentElement);
+    expect(dom.addWarning).toHaveBeenCalledWith(outputParentElement);
   });
 
   it('handles being called without an event', async () => {
@@ -442,7 +441,7 @@ describe('initializeInteractiveComponent', () => {
     const stopDefaultFn = jest.fn();
     const createEnvFn = () => ({});
     const errorFn = jest.fn();
-    const addWarningFn = jest.fn();
+    const addWarning = jest.fn();
     const fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'processed result');
     const listeners = {};
@@ -458,7 +457,7 @@ describe('initializeInteractiveComponent', () => {
       createElement,
       setTextContent: jest.fn((el, text) => { el.textContent = text; }),
       stopDefault: stopDefaultFn,
-      addWarningFn,
+      addWarning: jest.fn(),
       addEventListener,
       querySelector,
       removeWarning: jest.fn()

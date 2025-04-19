@@ -121,7 +121,7 @@ function handleRequestResponse(url, outputElement, error, fetch, dom, parent) {
     .catch(fetchError => {
       error('Error fetching request URL:', fetchError);
       setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message, dom, parent);
-      dom.addWarningFn(outputElement);
+      dom.addWarning(outputElement);
     });
 }
 
@@ -204,7 +204,7 @@ function handleInputProcessing(elements, processingFunction, env) {
   const handleInputError = createHandleInputError(
     outputElement,
     errorFn,
-    dom.addWarningFn,
+    dom.addWarning,
     (element, content) => setTextContent(element, content, dom, outputParentElement),
     outputParentElement
   );
