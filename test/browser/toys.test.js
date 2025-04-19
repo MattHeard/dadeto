@@ -260,7 +260,7 @@ describe('createHandleSubmit', () => {
   dom
 };
     const handleSubmitWithFetch = createHandleSubmit(
-      { inputElement, outputElement },
+      elements,
       processingFunction,
       env
     );
