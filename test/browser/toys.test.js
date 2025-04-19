@@ -304,7 +304,7 @@ describe('createHandleSubmit', () => {
       dom
     };
     const handleSubmitThrowing = createHandleSubmit(
-      { inputElement, outputElement, outputParentElement: outputParentElement },
+      elements,
       processingFunction,
       env
     );
