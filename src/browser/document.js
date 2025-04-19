@@ -36,6 +36,10 @@ export const addWarning = (outputElement) => {
   outputElement.parentElement.classList.add('warning');
 };
 
+export const removeWarning = (outputElement) => {
+  outputElement.parentElement.classList.remove('warning');
+};
+
 export const removeNextSibling = link =>
   link.nextElementSibling && link.nextElementSibling.remove();
 
