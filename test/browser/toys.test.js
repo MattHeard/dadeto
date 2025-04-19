@@ -244,8 +244,9 @@ describe('createHandleSubmit', () => {
   });
 
   it('fetches from URL if processingFunction returns a request object', async () => {
+    const fetchedContent = 'fetched content';
     const fetchFn = jest.fn(() =>
-      Promise.resolve({ text: () => Promise.resolve('fetched content') })
+      Promise.resolve({ text: () => Promise.resolve(fetchedContent) })
     );
 
     const url = 'https://example.com/data';
@@ -264,7 +265,7 @@ describe('createHandleSubmit', () => {
 
     expect(fetchFn).toHaveBeenCalledWith(url);
     await new Promise(resolve => setTimeout(resolve, 0));
-    expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, 'fetched content');
+    expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, fetchedContent);
   });
 
   it('handles fetch failure if request URL is unreachable', async () => {
