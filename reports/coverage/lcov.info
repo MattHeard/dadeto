@@ -366,7 +366,7 @@ FNDA:1,(anonymous_24)
 FNDA:5,processInputAndSetOutput
 FNDA:5,handleInputProcessing
 FNDA:1,(anonymous_27)
-FNDA:11,(anonymous_28)
+FNDA:7,(anonymous_28)
 FNDA:5,(anonymous_29)
 FNDA:3,disableInputAndButton
 FNDA:3,initializeInteractiveComponent
@@ -432,7 +432,7 @@ DA:208,1
 DA:211,5
 DA:212,5
 DA:224,1
-DA:228,11
+DA:228,7
 DA:229,5
 DA:230,5
 DA:231,4

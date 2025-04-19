@@ -216,7 +216,6 @@ describe('createHandleSubmit', () => {
   let mockFetch;
   let inputElement;
   let outputElement;
-  let handleSubmit;
   let processingFunction;
   let outputParentElement;
 
@@ -246,11 +245,7 @@ describe('createHandleSubmit', () => {
 
     const env = { globalState, createEnv, errorFn, fetchFn: mockFetch, dom };
     const elements = { inputElement, outputElement, outputParentElement };
-    handleSubmit = createHandleSubmit(
-      elements,
-      processingFunction,
-      env
-    );
+
   });
 
   it('fetches from URL if processingFunction returns a request object', async () => {
