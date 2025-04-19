@@ -232,7 +232,7 @@ describe('createHandleSubmit', () => {
       createElement: jest.fn().mockImplementation(() => newParagraph),
       stopDefault: jest.fn(),
       addWarning: jest.fn(),
-      setTextContent: jest.fn((el, text) => { el.textContent = text; return newParagraph; }),
+      setTextContent: jest.fn(),
       removeChild: jest.fn(),
       appendChild: jest.fn()
     };
