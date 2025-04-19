@@ -249,8 +249,9 @@ describe('createHandleSubmit', () => {
     );
 
     const url = 'https://example.com/data';
+    const request = { request: { url } };
     processingFunction = jest.fn(() =>
-      JSON.stringify({ request: { url } })
+      JSON.stringify(request)
     );
 
     const globalState = {};
