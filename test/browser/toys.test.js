@@ -219,7 +219,7 @@ describe('createHandleSubmit', () => {
   let handleSubmit;
   let processingFunction;
   let outputParentElement;
-  let stopDefault;
+
   let addWarningFn;
   let createElement;
   let dom;
@@ -228,12 +228,11 @@ describe('createHandleSubmit', () => {
     inputElement = {};
     outputElement = {};
     outputParentElement = {};
-    stopDefault = jest.fn();
     addWarningFn = jest.fn();
     createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
     dom = {
       createElement,
-      stopDefault,
+      stopDefault: jest.fn(),
       addWarningFn,
       setTextContent: jest.fn((el, text) => { el.textContent = text; }),
       removeChild: jest.fn(),
