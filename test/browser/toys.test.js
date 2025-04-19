@@ -253,7 +253,13 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/data' } })
     );
 
-    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: fetchFn, dom };
+    const env = {
+      globalState: {},
+      createEnv: () => ({}),
+      errorFn: jest.fn(),
+      fetchFn: fetchFn,
+  dom
+};
     const handleSubmitWithFetch = createHandleSubmit(
       { inputElement, outputElement },
       processingFunction,
@@ -276,7 +282,13 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/fail' } })
     );
 
-    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: fetchFn, dom };
+    const env = {
+  globalState: {},
+  createEnv: () => ({}),
+  errorFn: jest.fn(),
+  fetchFn: fetchFn,
+  dom
+};
     const handleSubmitWithFailingFetch = createHandleSubmit(
       { inputElement, outputElement },
       processingFunction,
@@ -304,7 +316,13 @@ describe('createHandleSubmit', () => {
     // Add createElement to dom mock
     const mockElement = { textContent: '' };
     dom.createElement = jest.fn(() => mockElement);
-    const env = { globalState: {}, createEnv: () => ({}), errorFn: jest.fn(), fetchFn: fetchFn, dom };
+    const env = {
+  globalState: {},
+  createEnv: () => ({}),
+  errorFn: jest.fn(),
+  fetchFn: fetchFn,
+  dom
+};
     const handleSubmitThrowing = createHandleSubmit(
       { inputElement, outputElement, outputParentElement: outputParentElement },
       processingFunction,
