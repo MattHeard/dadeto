@@ -296,8 +296,7 @@ describe('createHandleSubmit', () => {
     });
 
     // Add createElement to dom mock
-    const mockElement = { textContent: '' };
-    dom.createElement = jest.fn(() => mockElement);
+    dom.createElement = jest.fn(() => newParagraph);
     const env = {
       globalState: {},
       createEnv: () => ({}),
@@ -314,7 +313,7 @@ describe('createHandleSubmit', () => {
     await handleSubmitThrowing(new Event('submit'));
 
     expect(fetchFn).not.toHaveBeenCalled();
-    expect(dom.setTextContent).toHaveBeenCalledWith(mockElement, expect.stringMatching(/Error: processing error/));
+    expect(dom.setTextContent).toHaveBeenCalledWith(newParagraph, expect.stringMatching(/Error: processing error/));
     expect(dom.addWarning).toHaveBeenCalledWith(outputParentElement);
   });
 
