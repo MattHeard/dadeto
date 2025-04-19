@@ -98,10 +98,17 @@ export function makeCreateIntersectionObserver(dom, env) {
  * @param {HTMLButtonElement} submitButton
  * @param {HTMLElement} outputElement
  */
-export function enableInteractiveControls(inputElement, submitButton, outputElement) {
+/**
+ * Enable controls and update status message for an interactive component
+ * @param {HTMLInputElement} inputElement
+ * @param {HTMLButtonElement} submitButton
+ * @param {HTMLElement} outputElement
+ * @param {object} dom - DOM helper object
+ */
+export function enableInteractiveControls(inputElement, submitButton, outputElement, dom) {
   inputElement.disabled = false;
   submitButton.disabled = false;
-  outputElement.textContent = 'Ready for input';
+  setTextContent(outputElement, 'Ready for input', dom);
   outputElement.parentElement.classList.remove('warning');
 }
 
