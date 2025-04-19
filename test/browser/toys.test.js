@@ -252,15 +252,13 @@ describe('createHandleSubmit', () => {
       JSON.stringify({ request: { url: 'https://example.com/data' } })
     );
 
-    const globalState = {}, createEnv = () => ({}), errorFn = jest.fn();
+    const globalState = {};
+    const createEnv = () => ({});
+    const errorFn = jest.fn();
     // fetchFn and dom are already defined above
     const env = { globalState, createEnv, errorFn, fetchFn, dom };
 
-    const handleSubmitWithFetch = createHandleSubmit(
-      elements,
-      processingFunction,
-      env
-    );
+    const handleSubmitWithFetch = createHandleSubmit(elements, processingFunction, env);
 
     await handleSubmitWithFetch(new Event('submit'));
 
