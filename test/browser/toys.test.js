@@ -248,8 +248,9 @@ describe('createHandleSubmit', () => {
       Promise.resolve({ text: () => Promise.resolve('fetched content') })
     );
 
+    const url = 'https://example.com/data';
     processingFunction = jest.fn(() =>
-      JSON.stringify({ request: { url: 'https://example.com/data' } })
+      JSON.stringify({ request: { url } })
     );
 
     const globalState = {};
@@ -262,7 +263,7 @@ describe('createHandleSubmit', () => {
 
     await handleSubmitWithFetch(new Event('submit'));
 
-    expect(fetchFn).toHaveBeenCalledWith('https://example.com/data');
+    expect(fetchFn).toHaveBeenCalledWith(url);
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, 'fetched content');
   });
