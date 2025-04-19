@@ -295,8 +295,7 @@ describe('createHandleSubmit', () => {
       throw new Error('processing error');
     });
 
-    // Add createElement to dom mock
-    dom.createElement = jest.fn(() => newParagraph);
+
     const env = {
       globalState: {},
       createEnv: () => ({}),
