@@ -223,17 +223,19 @@ describe('createHandleSubmit', () => {
 
   let createElement;
   let dom;
+  let newParagraph;
 
   beforeEach(() => {
     inputElement = {};
     outputElement = {};
     outputParentElement = {};
     createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
+    newParagraph = { textContent: '' };
     dom = {
       createElement,
       stopDefault: jest.fn(),
       addWarning: jest.fn(),
-      setTextContent: jest.fn((el, text) => { el.textContent = text; }),
+      setTextContent: jest.fn((el, text) => { el.textContent = text; return newParagraph; }),
       removeChild: jest.fn(),
       appendChild: jest.fn()
     };
