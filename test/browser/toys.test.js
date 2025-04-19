@@ -225,7 +225,7 @@ describe('createHandleSubmit', () => {
   let dom;
 
   beforeEach(() => {
-    inputElement = { value: 'hello', disabled: false };
+    inputElement = {};
     outputElement = { textContent: '', outputParentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
     stopDefault = jest.fn();
     addWarningFn = jest.fn();
