@@ -227,6 +227,7 @@ describe('createHandleSubmit', () => {
   beforeEach(() => {
     inputElement = {};
     outputElement = {};
+    outputParentElement = {};
     stopDefault = jest.fn();
     addWarningFn = jest.fn();
     createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
