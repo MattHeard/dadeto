@@ -248,7 +248,7 @@ describe('createHandleSubmit', () => {
     const errorFn = jest.fn();
 
     const env = { globalState, createEnv, errorFn, fetchFn: mockFetch, dom };
-    const elements = { inputElement, outputElement };
+    const elements = { inputElement, outputElement, outputParentElement };
     handleSubmit = createHandleSubmit(
       elements,
       processingFunction,
