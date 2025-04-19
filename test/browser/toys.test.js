@@ -213,7 +213,7 @@ describe('getDeepStateCopy', () => {
 import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from '../../src/browser/toys.js';
 
 describe('createHandleSubmit', () => {
-  let mockFetch;
+  let fetchFn;
   let inputElement;
   let outputElement;
   let processingFunction;
@@ -236,7 +236,7 @@ describe('createHandleSubmit', () => {
       removeChild: jest.fn(),
       appendChild: jest.fn()
     };
-    mockFetch = jest.fn();
+    fetchFn = jest.fn();
 
     processingFunction = jest.fn(async (input) => 'transformed');
 
@@ -245,7 +245,7 @@ describe('createHandleSubmit', () => {
 
   it('fetches from URL if processingFunction returns a request object', async () => {
     const fetchedContent = 'fetched content';
-    const fetchFn = jest.fn(() =>
+    fetchFn = jest.fn(() =>
       Promise.resolve({ text: () => Promise.resolve(fetchedContent) })
     );
 
@@ -268,7 +268,7 @@ describe('createHandleSubmit', () => {
   });
 
   it('handles fetch failure if request URL is unreachable', async () => {
-    const fetchFn = jest.fn(() =>
+    fetchFn = jest.fn(() =>
       Promise.reject(new Error('Network failure'))
     );
 
@@ -291,8 +291,6 @@ describe('createHandleSubmit', () => {
   });
 
   it('handles error thrown by processingFunction', async () => {
-    const fetchFn = jest.fn(); // Should not be called
-
     processingFunction = jest.fn(() => {
       throw new Error('processing error');
     });
@@ -324,7 +322,6 @@ describe('createHandleSubmit', () => {
     const stopDefault = jest.fn();
     const createEnv = () => ({});
     const errorFn = jest.fn();
-    const fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'result from no-event');
     const createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
 
