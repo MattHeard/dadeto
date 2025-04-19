@@ -282,11 +282,7 @@ describe('createHandleSubmit', () => {
     const errorFn = jest.fn();
     const env = { globalState, createEnv, errorFn, fetchFn, dom };
 
-    const handleSubmitWithFailingFetch = createHandleSubmit(
-      elements,
-      processingFunction,
-      env
-    );
+    const handleSubmitWithFailingFetch = createHandleSubmit(elements, processingFunction, env);
 
     await handleSubmitWithFailingFetch(new Event('submit'));
 
