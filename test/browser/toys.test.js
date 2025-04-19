@@ -292,9 +292,6 @@ describe('createHandleSubmit', () => {
 
   it('handles error thrown by processingFunction', async () => {
     const fetchFn = jest.fn(); // Should not be called
-    // Create and inject a parent element
-    const outputParentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
-
 
     processingFunction = jest.fn(() => {
       throw new Error('processing error');
@@ -304,12 +301,12 @@ describe('createHandleSubmit', () => {
     const mockElement = { textContent: '' };
     dom.createElement = jest.fn(() => mockElement);
     const env = {
-  globalState: {},
-  createEnv: () => ({}),
-  errorFn: jest.fn(),
-  fetchFn: fetchFn,
-  dom
-};
+      globalState: {},
+      createEnv: () => ({}),
+      errorFn: jest.fn(),
+      fetchFn: fetchFn,
+      dom
+    };
     const handleSubmitThrowing = createHandleSubmit(
       { inputElement, outputElement, outputParentElement: outputParentElement },
       processingFunction,
