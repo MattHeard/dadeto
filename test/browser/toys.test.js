@@ -277,15 +277,13 @@ describe('createHandleSubmit', () => {
     const request = { request: { url } };
     processingFunction = jest.fn(() => JSON.stringify(request));
 
-    const env = {
-  globalState: {},
-  createEnv: () => ({}),
-  errorFn: jest.fn(),
-  fetchFn: fetchFn,
-  dom
-};
+    const globalState = {};
+    const createEnv = () => ({});
+    const errorFn = jest.fn();
+    const env = { globalState, createEnv, errorFn, fetchFn, dom };
+
     const handleSubmitWithFailingFetch = createHandleSubmit(
-      { inputElement, outputElement },
+      elements,
       processingFunction,
       env
     );
