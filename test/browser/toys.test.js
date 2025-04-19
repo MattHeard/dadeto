@@ -218,7 +218,7 @@ describe('createHandleSubmit', () => {
   let outputElement;
   let processingFunction;
   let outputParentElement;
-
+  let elements;
 
   let dom;
   let newParagraph;
@@ -240,8 +240,7 @@ describe('createHandleSubmit', () => {
 
     processingFunction = jest.fn(async (input) => 'transformed');
 
-
-
+    elements = { inputElement, outputElement, outputParentElement };
   });
 
   it('fetches from URL if processingFunction returns a request object', async () => {
