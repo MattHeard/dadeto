@@ -3,6 +3,7 @@ import { handleIntersectionEntries, makeObserverCallback, makeCreateIntersection
 
 describe('function coverage: direct invocation', () => {
   it('makeObserverCallback triggers dom side effects when entry is intersecting', () => {
+    // --- GIVEN ---
     const importModule = jest.fn();
     const disconnectObserver = jest.fn();
     const isIntersecting = jest.fn(() => true);
@@ -12,7 +13,11 @@ describe('function coverage: direct invocation', () => {
     const cb = makeObserverCallback('mod', 'art', 'fn', env, dom);
     const entry = { isIntersecting: true };
     const observer = {};
+
+    // --- WHEN ---
     cb([entry], observer);
+
+    // --- THEN ---
     expect(importModule).toHaveBeenCalledWith(
       'mod',
       expect.any(Function),

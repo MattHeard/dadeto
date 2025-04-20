@@ -1,4 +1,5 @@
 /**
+ * @command
  * Sets text content on an element.
  * @param {HTMLElement} element - The target element.
  * @param {string} content - The text content to set.
@@ -17,6 +18,7 @@ function setTextContent(element, content, dom, parent) {
 }
 
 /**
+ * @query
  * Creates an error handler for module loading errors
  * @param {string} modulePath - Path to the module that failed to load
  * @param {Function} errorFn - Error logging function
@@ -47,6 +49,15 @@ export function handleModuleError(modulePath, error) {
  * @param {object} dom - Object containing DOM functions
  * @returns {Function} A function that takes a module and initializes the interactive component
  */
+/**
+ * @command
+ * Creates a module initializer function that will be called when a dynamic import completes
+ * @param {HTMLElement} article - The article element containing the toy
+ * @param {string} functionName - The name of the exported function to use from the module
+ * @param {object} env - Environment object containing globalState, createEnv, error, and fetch
+ * @param {object} dom - Object containing DOM functions
+ * @returns {Function} A function that takes a module and initializes the interactive component
+ */
 export function initialiseModule(article, functionName, env, dom) {
   return (module) => {
     const processingFunction = module[functionName];
@@ -65,6 +76,17 @@ export function initialiseModule(article, functionName, env, dom) {
   };
 }
 
+/**
+ * @command
+ * Handles a single intersection event, triggering module import and observer disconnect if intersecting
+ * @param {object} entry - The intersection entry
+ * @param {object} observer - The observer instance
+ * @param {string} modulePath - Path to module
+ * @param {HTMLElement} article - The article element
+ * @param {string} functionName - Exported function name
+ * @param {object} env - Environment
+ * @param {object} dom - DOM helpers
+ */
 export function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
   if (dom.isIntersecting(entry)) {
     dom.importModule(
@@ -76,15 +98,43 @@ export function handleIntersection(entry, observer, modulePath, article, functio
   }
 }
 
+/**
+ * @command
+ * Handles multiple intersection entries
+ * @param {Array} entries - The intersection entries
+ * @param {object} observer - The observer instance
+ * @param {string} modulePath - Path to module
+ * @param {HTMLElement} article - The article element
+ * @param {string} functionName - Exported function name
+ * @param {object} env - Environment
+ * @param {object} dom - DOM helpers
+ */
 export function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
   entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, env, dom));
 }
 
+/**
+ * @query
+ * Returns a callback for IntersectionObserver that handles intersection entries
+ * @param {string} modulePath - Path to module
+ * @param {HTMLElement} article - The article element
+ * @param {string} functionName - Exported function name
+ * @param {object} env - Environment
+ * @param {object} dom - DOM helpers
+ * @returns {Function} IntersectionObserver callback
+ */
 export function makeObserverCallback(modulePath, article, functionName, env, dom) {
   return (entries, observer) =>
     handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom);
 }
 
+/**
+ * @query
+ * Returns a function that creates an IntersectionObserver for an article
+ * @param {object} dom - DOM helpers
+ * @param {object} env - Environment
+ * @returns {Function} Function to create an IntersectionObserver
+ */
 export function makeCreateIntersectionObserver(dom, env) {
   return function createIntersectionObserver(article, modulePath, functionName) {
     const observerCallback = makeObserverCallback(modulePath, article, functionName, env, dom);
