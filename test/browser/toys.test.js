@@ -5,25 +5,12 @@ describe('function coverage: direct invocation', () => {
   it('makeObserverCallback returns a function', () => {
     handleIntersectionEntries([], {}, '', '', '', {}, {});
     const cb = makeObserverCallback('mod', 'art', 'fn', {}, {});
-    const dom = {
-      makeIntersectionObserver: (cb) => {
-        callbackArgs = cb;
-        return 'observer-instance';
-      },
-      importModule: jest.fn(),
-      disconnectObserver: jest.fn(),
-      error: jest.fn(),
-      isIntersecting: (entry) => entry.isIntersecting
-    };
-    const env = {};
-    const createObs = makeCreateIntersectionObserver(dom, env);
     // Expectation: cb is a function
     expect(typeof cb).toBe('function');
   });
 
   it('makeCreateIntersectionObserver returns a function', () => {
     handleIntersectionEntries([], {}, '', '', '', {}, {});
-    const cb = makeObserverCallback('mod', 'art', 'fn', {}, {});
     const dom = {
       makeIntersectionObserver: (cb) => {
         callbackArgs = cb;
@@ -264,7 +251,7 @@ describe('createHandleSubmit', () => {
     };
     fetchFn = jest.fn();
 
-    processingFunction = jest.fn(async (input) => 'transformed');
+    processingFunction = jest.fn(async () => 'transformed');
 
     elements = { inputElement, outputElement, outputParentElement };
   });
@@ -347,7 +334,6 @@ describe('createHandleSubmit', () => {
     const createEnv = () => ({});
     const errorFn = jest.fn();
     const processingFunction = jest.fn(() => 'result from no-event');
-    const createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
 
     const input = { value: 'input without event' };
     const output = { textContent: '', outputParentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
@@ -452,12 +438,10 @@ describe('initializeInteractiveComponent', () => {
     const stopDefaultFn = jest.fn();
     const createEnvFn = () => ({});
     const errorFn = jest.fn();
-    const addWarning = jest.fn();
     const fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'processed result');
     const listeners = {};
     const createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
-    const setTextContent = jest.fn();
 
     const addEventListener = jest.fn((element, event, handler) => {
       if (element === inputElement && event === 'keypress') {
