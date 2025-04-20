@@ -13,7 +13,11 @@ describe('function coverage: direct invocation', () => {
     const entry = { isIntersecting: true };
     const observer = {};
     cb([entry], observer);
-    expect(importModule).toHaveBeenCalled();
+    expect(importModule).toHaveBeenCalledWith(
+      'mod',
+      expect.any(Function),
+      expect.any(Function)
+    );
     expect(disconnectObserver).toHaveBeenCalledWith(observer);
   });
 
