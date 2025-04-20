@@ -2,11 +2,19 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { handleIntersectionEntries, makeObserverCallback, makeCreateIntersectionObserver, initialiseModule, enableInteractiveControls } from '../../src/browser/toys.js';
 
 describe('function coverage: direct invocation', () => {
-  it('makeObserverCallback returns a function', () => {
-    handleIntersectionEntries([], {}, '', '', '', {}, {});
-    const cb = makeObserverCallback('mod', 'art', 'fn', {}, {});
-    // Expectation: cb is a function
-    expect(typeof cb).toBe('function');
+  it('makeObserverCallback triggers dom side effects when entry is intersecting', () => {
+    const importModule = jest.fn();
+    const disconnectObserver = jest.fn();
+    const isIntersecting = jest.fn(() => true);
+    const error = jest.fn();
+    const dom = { importModule, disconnectObserver, isIntersecting, error };
+    const env = {};
+    const cb = makeObserverCallback('mod', 'art', 'fn', env, dom);
+    const entry = { isIntersecting: true };
+    const observer = {};
+    cb([entry], observer);
+    expect(importModule).toHaveBeenCalled();
+    expect(disconnectObserver).toHaveBeenCalledWith(observer);
   });
 
   it('makeCreateIntersectionObserver returns a function', () => {
