@@ -40,6 +40,7 @@ import {
 } from './document.js';
 
 /**
+ * @command
  * Imports a module dynamically with success and error handling
  * @param {string} modulePath - Path to the module to import
  * @param {Function} onSuccess - Function to call when import succeeds
@@ -56,6 +57,11 @@ import { makeHandleHideSpan, makeHandleHideClick } from './tags.js';
 
 
 
+/**
+ * @query
+ * Creates and returns a new environment map for dependency injection
+ * @returns {Map<string, Function>} Map of environment functions
+ */
 function createEnv() {
   return new Map([
     ["getRandomNumber", getRandomNumber],
