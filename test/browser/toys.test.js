@@ -5,7 +5,6 @@ describe('function coverage: direct invocation', () => {
   it('directly invokes observer-related functions from toys.js', () => {
     handleIntersectionEntries([], {}, '', '', '', {}, {});
     const cb = makeObserverCallback('mod', 'art', 'fn', {}, {});
-    expect(typeof cb).toBe('function');
     const dom = {
       makeIntersectionObserver: (cb) => {
         callbackArgs = cb;
@@ -18,6 +17,8 @@ describe('function coverage: direct invocation', () => {
     };
     const env = {};
     const createObs = makeCreateIntersectionObserver(dom, env);
+    // Expectations at end
+    expect(typeof cb).toBe('function');
     expect(typeof createObs).toBe('function');
   });
 
@@ -39,11 +40,12 @@ describe('function coverage: direct invocation', () => {
     const functionName = 'fn';
     const createObs = makeCreateIntersectionObserver(dom, env);
     const observerInstance = createObs(article, modulePath, functionName);
-    expect(observerInstance).toBe('observer-instance');
     // Simulate the intersection observer callback with an intersecting entry
     const entry = { isIntersecting: true };
     const observer = {};
     observerCallback([entry], observer);
+    // Expectations at end
+    expect(observerInstance).toBe('observer-instance');
     expect(dom.importModule).toHaveBeenCalled();
     expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
   });
@@ -70,6 +72,7 @@ describe('function coverage: direct invocation', () => {
     const entry = { isIntersecting: false };
     const observer = {};
     observerCallback([entry], observer);
+    // Expectations at end
     expect(dom.importModule).not.toHaveBeenCalled();
     expect(dom.disconnectObserver).not.toHaveBeenCalled();
   });
@@ -81,6 +84,7 @@ it('covers handleModuleError error handler', () => {
   const handler = handleModuleError(modulePath, errorMock);
   const fakeError = new Error('fail');
   handler(fakeError);
+  // Expectations at end
   expect(errorMock).toHaveBeenCalledWith(
     'Error loading module ' + modulePath + ':',
     fakeError
@@ -130,6 +134,7 @@ describe('enableInteractiveControls', () => {
   it('enables input and submit button', () => {
     const dom = { setTextContent: jest.fn(), removeWarning: jest.fn() };
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
+    // Expectations at end
     expect(inputElement.disabled).toBe(false);
     expect(submitButton.disabled).toBe(false);
   });
@@ -137,12 +142,14 @@ describe('enableInteractiveControls', () => {
   it('sets output textContent to "Ready for input"', () => {
     const dom = { setTextContent: (el, text) => { el.textContent = text; }, removeWarning: jest.fn() };
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
+    // Expectations at end
     expect(outputElement.textContent).toBe('Ready for input');
   });
 
   it('removes "warning" class from parent element', () => {
     const dom = { setTextContent: (el, text) => { el.textContent = text; }, removeWarning: jest.fn() };
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
+    // Expectations at end
     expect(dom.removeWarning).toHaveBeenCalledWith(outputElement);
   });
 });
@@ -179,7 +186,7 @@ describe('initialiseModule', () => {
     const result = initialiseModule(article, functionName, env, dom);
     const module = { process: () => 'ok' };
     const response = result(module);
-
+    // Expectations at end
     expect(response).toBeUndefined();
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, 'Initialising...');
   });
@@ -199,6 +206,7 @@ describe('getDeepStateCopy', () => {
 
     const copy = getDeepStateCopy(globalState);
 
+    // Expectations at end
     expect(copy).toEqual(globalState);
     expect(copy).not.toBe(globalState);
     expect(copy.level1).not.toBe(globalState.level1);
@@ -262,8 +270,8 @@ describe('createHandleSubmit', () => {
     const handleSubmitWithFetch = createHandleSubmit(elements, processingFunction, env);
 
     await handleSubmitWithFetch(new Event('submit'));
-
     await new Promise(resolve => setTimeout(resolve, 0));
+    // Expectations at end
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, fetchedContent);
   });
 
@@ -284,8 +292,8 @@ describe('createHandleSubmit', () => {
     const handleSubmitWithFailingFetch = createHandleSubmit(elements, processingFunction, env);
 
     await handleSubmitWithFailingFetch(new Event('submit'));
-
     await new Promise(resolve => setTimeout(resolve, 0));
+    // Expectations at end
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
     expect(dom.addWarning).toHaveBeenCalledWith(outputElement);
   });
@@ -310,7 +318,7 @@ describe('createHandleSubmit', () => {
     );
 
     await handleSubmitThrowing(new Event('submit'));
-
+    // Expectations at end
     expect(fetchFn).not.toHaveBeenCalled();
     expect(dom.setTextContent).toHaveBeenCalledWith(newParagraph, expect.stringMatching(/Error: processing error/));
     expect(dom.addWarning).toHaveBeenCalledWith(outputParentElement);
@@ -334,9 +342,8 @@ describe('createHandleSubmit', () => {
     );
 
     await handleSubmitNoEvent(); // no event passed
-
     await new Promise(resolve => setTimeout(resolve, 0));
-    
+    // Expectations at end
     expect(stopDefault).not.toHaveBeenCalled();
     expect(processingFunction).toHaveBeenCalledWith('input without event', expect.any(Object));
     expect(dom.setTextContent).toHaveBeenCalledWith(output, 'result from no-event');
@@ -399,12 +406,11 @@ describe('initializeInteractiveComponent', () => {
       config
     );
 
+    listeners.keypress({ key: 'Enter', preventDefault: jest.fn() });
+    // Expectations at end
     expect(addEventListener).toHaveBeenCalledTimes(2);
     expect(addEventListener).toHaveBeenCalledWith(submitButton, 'click', expect.any(Function));
     expect(addEventListener).toHaveBeenCalledWith(inputElement, 'keypress', expect.any(Function));
-
-    listeners.keypress({ key: 'Enter', preventDefault: jest.fn() });
-
     expect(processingFunction).toHaveBeenCalledWith('test', expect.any(Object));
   });
 
@@ -458,7 +464,7 @@ describe('initializeInteractiveComponent', () => {
     );
 
     listeners.keypress({ key: 'a', preventDefault: jest.fn() });
-
+    // Expectations at end
     expect(processingFunction).not.toHaveBeenCalled();
   });
 });
@@ -473,7 +479,7 @@ describe('initializeVisibleComponents', () => {
     const createIntersectionObserverFn = jest.fn();
 
     initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
-
+    // Expectations at end
     expect(warnFn).toHaveBeenCalledWith('No interactive components found to initialize');
   });
 
@@ -493,7 +499,7 @@ describe('initializeVisibleComponents', () => {
     const createIntersectionObserverFn = jest.fn(() => mockObserver);
 
     initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
-
+    // Expectations at end
     expect(logFn).toHaveBeenCalledWith(
       'Initializing',
       1,
@@ -517,7 +523,7 @@ describe('initializeVisibleComponents', () => {
     const createIntersectionObserverFn = jest.fn();
 
     initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
-
+    // Expectations at end
     expect(getElementByIdFn).toHaveBeenCalledWith('missing-id');
     expect(createIntersectionObserverFn).not.toHaveBeenCalled();
     expect(warnFn).toHaveBeenCalledWith(
@@ -541,7 +547,7 @@ describe('initializeVisibleComponents', () => {
     const createIntersectionObserverFn = jest.fn(() => ({ observe: jest.fn() }));
 
     initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
-
+    // Expectations at end
     expect(createIntersectionObserverFn).toHaveBeenCalledTimes(4);
   });
 });
