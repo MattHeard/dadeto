@@ -36,7 +36,10 @@ describe('makeObserverCallback', () => {
     expect(disconnectObserver).toHaveBeenCalledWith(observer);
   });
 
-  it('makeCreateIntersectionObserver returns a function', () => {
+});
+
+describe('makeCreateIntersectionObserver', () => {
+  it('returns a function', () => {
     handleIntersectionEntries([], {}, '', '', '', {}, {});
     const dom = {
       makeIntersectionObserver: (cb) => {
