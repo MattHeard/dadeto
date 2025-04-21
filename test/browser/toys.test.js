@@ -44,6 +44,8 @@ describe('makeObserverCallback', () => {
 describe('makeCreateIntersectionObserver', () => {
   let expectedResult;
   let dom;
+  let f;
+  let env;
 
   beforeEach(() => {
     expectedResult = {};
@@ -54,12 +56,12 @@ describe('makeCreateIntersectionObserver', () => {
       error: jest.fn(),
       isIntersecting: () => {}
     };
+    env = {};
+    f = makeCreateIntersectionObserver(dom, env);
   });
 
   it('returns the result of makeIntersectionObserver', () => {
     // --- GIVEN ---
-    const env = {};
-    const f = makeCreateIntersectionObserver(dom, env);
     const article = {};
     const modulePath = 'mod';
     const functionName = 'fn';
