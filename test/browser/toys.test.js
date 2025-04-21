@@ -53,8 +53,6 @@ describe('makeCreateIntersectionObserver', () => {
     };
     const env = {};
     const f = makeCreateIntersectionObserver(dom, env);
-
-    // --- GIVEN (args) ---
     const article = {};
     const modulePath = 'mod';
     const functionName = 'fn';
