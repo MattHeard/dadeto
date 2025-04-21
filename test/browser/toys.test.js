@@ -112,6 +112,7 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('does not call importModule or disconnectObserver when not intersecting', () => {
     
+    const isIntersecting = () => false;
     const dom = {
       makeIntersectionObserver: (cb) => {
         g = cb;
@@ -120,7 +121,7 @@ describe('makeCreateIntersectionObserver', () => {
       importModule: jest.fn(),
       disconnectObserver: jest.fn(),
       error: jest.fn(),
-      isIntersecting: () => false
+      isIntersecting
     };
     const env = {};
     const article = {};
