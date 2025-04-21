@@ -174,16 +174,9 @@ describe('enableInteractiveControls', () => {
 
     // Mock parent element with classList mock
     mockParentClassList = {
-      containsWarning: true, // Simple state to track the class
-      add: jest.fn(), // Not strictly needed for this test, but good practice
-      remove: jest.fn((className) => {
-        if (className === 'warning') {
-          mockParentClassList.containsWarning = false;
-        }
-      }),
-      contains: jest.fn((className) => {
-        return className === 'warning' && mockParentClassList.containsWarning;
-      })
+      add: jest.fn(),
+      remove: jest.fn(),
+      contains: jest.fn(() => true)
     };
     outputParentElement = { 
       classList: mockParentClassList,
@@ -195,12 +188,13 @@ describe('enableInteractiveControls', () => {
       textContent: '',
       outputParentElement: outputParentElement
     };
-    
+
+    // Reset enable mock for each test
+    enable = jest.fn();
   });
 
   it('enables input and submit button', () => {
     // --- GIVEN ---
-    enable = jest.fn();
     const dom = { setTextContent: jest.fn(), removeWarning: jest.fn(), enable };
     // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
