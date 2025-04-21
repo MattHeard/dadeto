@@ -254,26 +254,24 @@
 [0m  [2m187:28[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
 [0m  [2m193:22[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
 [0m  [2m197:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m205:11[22m  [33mwarning[39m  'expectedInputDisabled' is assigned a value but never used          [2mno-unused-vars[22m[0m
-[0m  [2m206:11[22m  [33mwarning[39m  'expectedSubmitDisabled' is assigned a value but never used         [2mno-unused-vars[22m[0m
-[0m  [2m243:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m244:60[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m245:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m246:40[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m269:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m295:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m436:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m437:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m438:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m439:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m440:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m452:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m499:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m500:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m501:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m502:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m503:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m515:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m240:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m241:60[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m242:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m243:40[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m266:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m  [2m292:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m  [2m433:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m434:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m435:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m436:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m437:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m449:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m496:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m497:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m498:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m499:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m500:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m512:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
@@ -323,6 +321,6 @@
 [0m  [2m92:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m93:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 262 problems (0 errors, 262 warnings)[22m[39m[0m
+[0m[33m[1m✖ 260 problems (0 errors, 260 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 157 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

@@ -202,9 +202,6 @@ describe('enableInteractiveControls', () => {
     const dom = { setTextContent: jest.fn(), removeWarning: jest.fn() };
     inputElement.disabled = true;
     submitButton.disabled = true;
-    const expectedInputDisabled = false;
-    const expectedSubmitDisabled = false;
-
     // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
 
