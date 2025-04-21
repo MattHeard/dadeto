@@ -52,8 +52,9 @@ describe('makeCreateIntersectionObserver', () => {
 
   beforeEach(() => {
     expectedResult = {};
+    const makeIntersectionObserver = jest.fn(() => expectedResult);
     dom = {
-      makeIntersectionObserver: jest.fn(() => expectedResult),
+      makeIntersectionObserver,
       importModule: jest.fn(),
       disconnectObserver: jest.fn(),
       error: jest.fn(),
