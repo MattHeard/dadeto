@@ -43,20 +43,21 @@ describe('makeObserverCallback', () => {
 
 describe('makeCreateIntersectionObserver', () => {
   let expectedResult;
+  let dom;
 
   beforeEach(() => {
     expectedResult = {};
-  });
-
-  it('returns the result of makeIntersectionObserver', () => {
-    // --- GIVEN ---
-    const dom = {
+    dom = {
       makeIntersectionObserver: jest.fn(() => expectedResult),
       importModule: jest.fn(),
       disconnectObserver: jest.fn(),
       error: jest.fn(),
       isIntersecting: () => {}
     };
+  });
+
+  it('returns the result of makeIntersectionObserver', () => {
+    // --- GIVEN ---
     const env = {};
     const f = makeCreateIntersectionObserver(dom, env);
     const article = {};
@@ -72,13 +73,6 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('calls makeIntersectionObserver with a callback', () => {
     // --- GIVEN ---
-    const dom = {
-      makeIntersectionObserver: jest.fn(),
-      importModule: jest.fn(),
-      disconnectObserver: jest.fn(),
-      error: jest.fn(),
-      isIntersecting: () => {}
-    };
     const env = {};
     const f = makeCreateIntersectionObserver(dom, env);
     const article = {};
