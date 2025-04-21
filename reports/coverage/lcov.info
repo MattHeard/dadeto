@@ -348,7 +348,7 @@ FNDA:5,handleIntersectionEntries
 FNDA:5,(anonymous_7)
 FNDA:7,makeObserverCallback
 FNDA:5,(anonymous_9)
-FNDA:9,makeCreateIntersectionObserver
+FNDA:8,makeCreateIntersectionObserver
 FNDA:5,createIntersectionObserver
 FNDA:6,enableInteractiveControls
 FNDA:2,handleRequestResponse
@@ -392,7 +392,7 @@ DA:97,4
 DA:113,5
 DA:127,7
 DA:128,5
-DA:139,9
+DA:139,8
 DA:140,5
 DA:141,5
 DA:159,6

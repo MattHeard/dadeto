@@ -46,6 +46,9 @@ describe('makeCreateIntersectionObserver', () => {
   let dom;
   let f;
   let env;
+  let article;
+  let modulePath;
+  let functionName;
 
   beforeEach(() => {
     expectedResult = {};
@@ -58,13 +61,14 @@ describe('makeCreateIntersectionObserver', () => {
     };
     env = {};
     f = makeCreateIntersectionObserver(dom, env);
+    article = {};
+    modulePath = 'mod';
+    functionName = 'fn';
   });
 
   it('returns the result of makeIntersectionObserver', () => {
     // --- GIVEN ---
-    const article = {};
-    const modulePath = 'mod';
-    const functionName = 'fn';
+    // (setup handled in beforeEach)
 
     // --- WHEN ---
     const result = f(article, modulePath, functionName);
@@ -75,11 +79,8 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('calls makeIntersectionObserver with a callback', () => {
     // --- GIVEN ---
-    const env = {};
-    const f = makeCreateIntersectionObserver(dom, env);
-    const article = {};
-    const modulePath = 'mod';
-    const functionName = 'fn';
+    // (setup handled in beforeEach)
+
 
     // --- WHEN ---
     f(article, modulePath, functionName);
