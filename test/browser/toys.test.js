@@ -26,7 +26,7 @@ describe('makeObserverCallback', () => {
 
     // --- THEN ---
     expect(importModule).toHaveBeenCalledWith(
-      'mod',
+      modulePath,
       expect.any(Function),
       expect.any(Function)
     );
