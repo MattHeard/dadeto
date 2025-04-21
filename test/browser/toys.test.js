@@ -135,22 +135,24 @@ describe('makeCreateIntersectionObserver', () => {
   });
 });
 
-it('calls errorMock with the correct message for handleModuleError', () => {
-  // --- GIVEN ---
-  const errorMock = jest.fn();
-  const modulePath = 'toyModule';
-  const handler = handleModuleError(modulePath, errorMock);
-  const fakeError = new Error('fail');
-  const expectedMessage = 'Error loading module ' + modulePath + ':';
+describe('handleModuleError', () => {
+  it('calls errorMock with the correct message', () => {
+    // --- GIVEN ---
+    const errorMock = jest.fn();
+    const modulePath = 'toyModule';
+    const handler = handleModuleError(modulePath, errorMock);
+    const fakeError = new Error('fail');
+    const expectedMessage = 'Error loading module ' + modulePath + ':';
 
-  // --- WHEN ---
-  handler(fakeError);
+    // --- WHEN ---
+    handler(fakeError);
 
-  // --- THEN ---
-  expect(errorMock).toHaveBeenCalledWith(
-    expectedMessage,
-    fakeError
-  );
+    // --- THEN ---
+    expect(errorMock).toHaveBeenCalledWith(
+      expectedMessage,
+      fakeError
+    );
+  });
 });
 
 
