@@ -163,6 +163,7 @@ describe('enableInteractiveControls', () => {
   let outputElement;
   let outputParentElement;
   let mockParentClassList;
+  let enable;
 
   beforeEach(() => {
     // Mock input element
@@ -199,7 +200,7 @@ describe('enableInteractiveControls', () => {
 
   it('enables input and submit button', () => {
     // --- GIVEN ---
-    const enable = jest.fn();
+    enable = jest.fn();
     const dom = { setTextContent: jest.fn(), removeWarning: jest.fn(), enable };
     // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
