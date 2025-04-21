@@ -91,7 +91,7 @@ describe('makeCreateIntersectionObserver', () => {
     // --- GIVEN ---
 
 
-    dom.isIntersecting = () => true;
+
     const env = {};
     const article = {};
     const modulePath = 'mod';
