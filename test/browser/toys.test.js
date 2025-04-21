@@ -199,14 +199,14 @@ describe('enableInteractiveControls', () => {
 
   it('enables input and submit button', () => {
     // --- GIVEN ---
-    const enableMock = jest.fn();
-    const dom = { setTextContent: jest.fn(), removeWarning: jest.fn(), enable: enableMock };
+    const enable = jest.fn();
+    const dom = { setTextContent: jest.fn(), removeWarning: jest.fn(), enable };
     // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
 
     // --- THEN ---
-    expect(enableMock).toHaveBeenCalledWith(inputElement);
-    expect(enableMock).toHaveBeenCalledWith(submitButton);
+    expect(enable).toHaveBeenCalledWith(inputElement);
+    expect(enable).toHaveBeenCalledWith(submitButton);
   });
 
   it('sets output textContent to "Ready for input"', () => {
