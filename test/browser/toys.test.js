@@ -12,7 +12,7 @@ describe('makeObserverCallback', () => {
     dom = { importModule, disconnectObserver, isIntersecting, error };
     env = {};
     cb = makeObserverCallback('mod', 'art', 'fn', env, dom);
-    entry = { isIntersecting: true };
+    entry = {};
     observer = {};
   });
 
