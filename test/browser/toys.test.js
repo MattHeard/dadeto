@@ -67,9 +67,6 @@ describe('makeCreateIntersectionObserver', () => {
   });
 
   it('returns the result of makeIntersectionObserver', () => {
-    // --- GIVEN ---
-    // (setup handled in beforeEach)
-
     // --- WHEN ---
     const result = f(article, modulePath, functionName);
 
@@ -78,10 +75,6 @@ describe('makeCreateIntersectionObserver', () => {
   });
 
   it('calls makeIntersectionObserver with a callback', () => {
-    // --- GIVEN ---
-    // (setup handled in beforeEach)
-
-
     // --- WHEN ---
     f(article, modulePath, functionName);
 
