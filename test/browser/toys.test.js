@@ -42,6 +42,7 @@ describe('makeObserverCallback', () => {
 });
 
 describe('makeCreateIntersectionObserver', () => {
+  let entry, observer;
   let expectedResult;
   let dom;
   let f;
@@ -69,6 +70,8 @@ describe('makeCreateIntersectionObserver', () => {
     article = {};
     modulePath = 'mod';
     functionName = 'fn';
+    entry = {};
+    observer = {};
   });
 
   it('returns the result of makeIntersectionObserver', () => {
@@ -90,8 +93,7 @@ describe('makeCreateIntersectionObserver', () => {
   it('calls importModule when entry is intersecting', () => {
     // --- GIVEN ---
     f(article, modulePath, functionName);
-    const entry = {};
-    const observer = {};
+
 
     // --- WHEN ---
     g([entry], observer);
@@ -103,8 +105,7 @@ describe('makeCreateIntersectionObserver', () => {
   it('calls disconnectObserver when entry is intersecting', () => {
     // --- GIVEN ---
     f(article, modulePath, functionName);
-    const entry = {};
-    const observer = {};
+
 
     // --- WHEN ---
     g([entry], observer);
