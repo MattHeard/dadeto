@@ -85,10 +85,10 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('calls importModule when entry is intersecting', () => {
     // --- GIVEN ---
-    let observerCallback;
+    let g;
     const dom = {
       makeIntersectionObserver: (cb) => {
-        observerCallback = cb;
+        g = cb;
         return 'observer-instance';
       },
       importModule: jest.fn(),
@@ -106,7 +106,7 @@ describe('makeCreateIntersectionObserver', () => {
     const observer = {};
 
     // --- WHEN ---
-    observerCallback([entry], observer);
+    g([entry], observer);
 
     // --- THEN ---
     expect(dom.importModule).toHaveBeenCalled();
@@ -114,10 +114,10 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('calls disconnectObserver when entry is intersecting', () => {
     // --- GIVEN ---
-    let observerCallback;
+    let g;
     const dom = {
       makeIntersectionObserver: (cb) => {
-        observerCallback = cb;
+        g = cb;
         return 'observer-instance';
       },
       importModule: jest.fn(),
@@ -135,17 +135,17 @@ describe('makeCreateIntersectionObserver', () => {
     const observer = {};
 
     // --- WHEN ---
-    observerCallback([entry], observer);
+    g([entry], observer);
 
     // --- THEN ---
     expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
   });
 
   it('does not call importModule or disconnectObserver when not intersecting', () => {
-    let observerCallback;
+    let g;
     const dom = {
       makeIntersectionObserver: (cb) => {
-        observerCallback = cb;
+        g = cb;
         return 'observer-instance';
       },
       importModule: jest.fn(),
@@ -162,7 +162,7 @@ describe('makeCreateIntersectionObserver', () => {
     // Simulate the intersection observer callback with a non-intersecting entry
     const entry = { isIntersecting: false };
     const observer = {};
-    observerCallback([entry], observer);
+    g([entry], observer);
     // Expectations at end
     expect(dom.importModule).not.toHaveBeenCalled();
     expect(dom.disconnectObserver).not.toHaveBeenCalled();
