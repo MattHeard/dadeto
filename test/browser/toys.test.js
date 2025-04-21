@@ -209,8 +209,8 @@ describe('enableInteractiveControls', () => {
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
 
     // --- THEN ---
-    expect(inputElement.disabled).toBe(expectedInputDisabled);
-    expect(submitButton.disabled).toBe(expectedSubmitDisabled);
+    expect(inputElement.disabled).toBe(false);
+    expect(submitButton.disabled).toBe(false);
   });
 
   it('sets output textContent to "Ready for input"', () => {
