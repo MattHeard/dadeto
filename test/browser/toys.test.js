@@ -169,7 +169,7 @@ describe('enableInteractiveControls', () => {
     inputElement = {};
 
     // Mock submit button
-    submitButton = { disabled: true };
+    submitButton = {};
 
     // Mock parent element with classList mock
     mockParentClassList = {
