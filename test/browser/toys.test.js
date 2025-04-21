@@ -43,7 +43,6 @@ describe('makeObserverCallback', () => {
 
 describe('makeCreateIntersectionObserver', () => {
   it('returns a function', () => {
-    handleIntersectionEntries([], {}, '', '', '', {}, {});
     const dom = {
       makeIntersectionObserver: (cb) => {
         callbackArgs = cb;
