@@ -198,11 +198,19 @@ describe('enableInteractiveControls', () => {
   });
 
   it('enables input and submit button', () => {
+    // --- GIVEN ---
     const dom = { setTextContent: jest.fn(), removeWarning: jest.fn() };
+    inputElement.disabled = true;
+    submitButton.disabled = true;
+    const expectedInputDisabled = false;
+    const expectedSubmitDisabled = false;
+
+    // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
-    // Expectations at end
-    expect(inputElement.disabled).toBe(false);
-    expect(submitButton.disabled).toBe(false);
+
+    // --- THEN ---
+    expect(inputElement.disabled).toBe(expectedInputDisabled);
+    expect(submitButton.disabled).toBe(expectedSubmitDisabled);
   });
 
   it('sets output textContent to "Ready for input"', () => {
