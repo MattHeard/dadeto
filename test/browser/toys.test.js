@@ -43,6 +43,7 @@ describe('makeObserverCallback', () => {
 
 describe('makeCreateIntersectionObserver', () => {
   it('returns a function', () => {
+    // --- GIVEN ---
     const dom = {
       makeIntersectionObserver: jest.fn(),
       importModule: jest.fn(),
@@ -52,8 +53,11 @@ describe('makeCreateIntersectionObserver', () => {
     };
     const env = {};
     const f = makeCreateIntersectionObserver(dom, env);
-    // Call f with dummy args
+
+    // --- WHEN ---
     f({}, 'mod', 'fn');
+
+    // --- THEN ---
     expect(dom.makeIntersectionObserver).toHaveBeenCalledWith(expect.any(Function));
   });
 
