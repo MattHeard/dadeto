@@ -165,6 +165,7 @@ describe('enableInteractiveControls', () => {
   let mockParentClassList;
   let enable;
   let setTextContent;
+  let removeWarning;
   let dom;
 
   beforeEach(() => {
@@ -201,7 +202,8 @@ describe('enableInteractiveControls', () => {
     // Reset enable and setTextContent mocks for each test
     enable = jest.fn();
     setTextContent = jest.fn();
-    dom = { setTextContent, removeWarning: jest.fn(), enable };
+    removeWarning = jest.fn();
+    dom = { setTextContent, removeWarning, enable };
   });
 
   it('enables input and submit button', () => {
