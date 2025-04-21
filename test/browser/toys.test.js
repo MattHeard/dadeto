@@ -166,7 +166,7 @@ describe('enableInteractiveControls', () => {
 
   beforeEach(() => {
     // Mock input element
-    inputElement = { disabled: true };
+    inputElement = {};
 
     // Mock submit button
     submitButton = { disabled: true };
