@@ -251,7 +251,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js[24m[0m
 [0m    [2m2:10[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used               [2mno-unused-vars[22m[0m
-[0m   [2m95:11[22m  [33mwarning[39m  'env' is assigned a value but never used                            [2mno-unused-vars[22m[0m
 [0m  [2m113:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
 [0m  [2m141:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
 [0m  [2m208:28[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
@@ -324,6 +323,6 @@
 [0m  [2m92:80[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m  [2m93:78[22m  [33mwarning[39m  Trailing spaces not allowed  [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[33m[1m✖ 263 problems (0 errors, 263 warnings)[22m[39m[0m
+[0m[33m[1m✖ 262 problems (0 errors, 262 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 159 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
