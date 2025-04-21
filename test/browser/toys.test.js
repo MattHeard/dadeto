@@ -102,22 +102,6 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('calls disconnectObserver when entry is intersecting', () => {
     // --- GIVEN ---
-    
-    const dom = {
-      makeIntersectionObserver: (cb) => {
-        g = cb;
-        return 'observer-instance';
-      },
-      importModule: jest.fn(),
-      disconnectObserver: jest.fn(),
-      error: jest.fn(),
-      isIntersecting: () => true
-    };
-    const env = {};
-    const article = {};
-    const modulePath = 'mod';
-    const functionName = 'fn';
-    const f = makeCreateIntersectionObserver(dom, env);
     f(article, modulePath, functionName);
     const entry = {};
     const observer = {};
