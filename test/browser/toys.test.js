@@ -19,7 +19,7 @@ describe('makeObserverCallback', () => {
     observer = {};
   });
 
-  it('makeObserverCallback calls importModule when entry is intersecting', () => {
+  it('calls importModule when entry is intersecting', () => {
     // --- WHEN ---
     f([entry], observer);
 
@@ -31,7 +31,7 @@ describe('makeObserverCallback', () => {
     );
   });
 
-  it('makeObserverCallback calls disconnectObserver when entry is intersecting', () => {
+  it('calls disconnectObserver when entry is intersecting', () => {
     // --- WHEN ---
     f([entry], observer);
 
