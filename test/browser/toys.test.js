@@ -51,6 +51,7 @@ describe('makeCreateIntersectionObserver', () => {
   let modulePath;
   let functionName;
   let g;
+  let isIntersecting;
 
   beforeEach(() => {
     expectedResult = {};
@@ -58,12 +59,13 @@ describe('makeCreateIntersectionObserver', () => {
       g = fn;
       return expectedResult;
     });
+    isIntersecting = () => true;
     dom = {
       makeIntersectionObserver,
       importModule: jest.fn(),
       disconnectObserver: jest.fn(),
       error: jest.fn(),
-      isIntersecting: () => true
+      isIntersecting
     };
     env = {};
     f = makeCreateIntersectionObserver(dom, env);
