@@ -96,8 +96,8 @@ describe('makeCreateIntersectionObserver', () => {
     const article = {};
     const modulePath = 'mod';
     const functionName = 'fn';
-    const createObs = makeCreateIntersectionObserver(dom, env);
-    createObs(article, modulePath, functionName);
+    const f = makeCreateIntersectionObserver(dom, env);
+    f(article, modulePath, functionName);
     const entry = { isIntersecting: true };
     const observer = {};
 
@@ -125,8 +125,8 @@ describe('makeCreateIntersectionObserver', () => {
     const article = {};
     const modulePath = 'mod';
     const functionName = 'fn';
-    const createObs = makeCreateIntersectionObserver(dom, env);
-    createObs(article, modulePath, functionName);
+    const f = makeCreateIntersectionObserver(dom, env);
+    f(article, modulePath, functionName);
     const entry = { isIntersecting: true };
     const observer = {};
 
@@ -153,8 +153,8 @@ describe('makeCreateIntersectionObserver', () => {
     const article = {};
     const modulePath = 'mod';
     const functionName = 'fn';
-    const createObs = makeCreateIntersectionObserver(dom, env);
-    createObs(article, modulePath, functionName);
+    const f = makeCreateIntersectionObserver(dom, env);
+    f(article, modulePath, functionName);
     // Simulate the intersection observer callback with a non-intersecting entry
     const entry = { isIntersecting: false };
     const observer = {};
