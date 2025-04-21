@@ -113,7 +113,6 @@ describe('makeCreateIntersectionObserver', () => {
   it('does not call importModule or disconnectObserver when not intersecting', () => {
     isIntersecting = () => false;
     dom.isIntersecting = isIntersecting;
-    const env = {};
     const article = {};
     const modulePath = 'mod';
     const functionName = 'fn';
