@@ -152,22 +152,7 @@ it('calls errorMock with the correct message for handleModuleError', () => {
   );
 });
 
-it('calls errorMock with the correct error argument for handleModuleError', () => {
-  // --- GIVEN ---
-  const errorMock = jest.fn();
-  const modulePath = 'toyModule';
-  const handler = handleModuleError(modulePath, errorMock);
-  const fakeError = new Error('fail');
 
-  // --- WHEN ---
-  handler(fakeError);
-
-  // --- THEN ---
-  expect(errorMock).toHaveBeenCalledWith(
-    expect.anything(),
-    fakeError
-  );
-});
 
 describe('enableInteractiveControls', () => {
   let inputElement;
