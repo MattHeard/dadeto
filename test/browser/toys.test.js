@@ -89,7 +89,7 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('calls importModule when entry is intersecting', () => {
     // --- GIVEN ---
-    dom.makeIntersectionObserver = (cb) => { g = cb; return 'observer-instance'; };
+
     dom.importModule = jest.fn();
     dom.disconnectObserver = jest.fn();
     dom.error = jest.fn();
