@@ -3,6 +3,7 @@ import { handleIntersectionEntries, makeObserverCallback, makeCreateIntersection
 
 describe('makeObserverCallback', () => {
   let importModule, disconnectObserver, isIntersecting, error, dom, env, f, entry, observer;
+  let modulePath, article, functionName;
 
   beforeEach(() => {
     importModule = jest.fn();
@@ -11,7 +12,10 @@ describe('makeObserverCallback', () => {
     error = jest.fn();
     dom = { importModule, disconnectObserver, isIntersecting, error };
     env = {};
-    f = makeObserverCallback('mod', 'art', 'fn', env, dom);
+    modulePath = 'mod';
+    article = 'art';
+    functionName = 'fn';
+    f = makeObserverCallback(modulePath, article, functionName, env, dom);
     entry = {};
     observer = {};
   });
