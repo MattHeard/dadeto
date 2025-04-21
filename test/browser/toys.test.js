@@ -112,16 +112,7 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('does not call importModule or disconnectObserver when not intersecting', () => {
     isIntersecting = () => false;
-    const dom = {
-      makeIntersectionObserver: (cb) => {
-        g = cb;
-        return 'observer-instance';
-      },
-      importModule: jest.fn(),
-      disconnectObserver: jest.fn(),
-      error: jest.fn(),
-      isIntersecting
-    };
+    dom.isIntersecting = isIntersecting;
     const env = {};
     const article = {};
     const modulePath = 'mod';
