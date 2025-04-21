@@ -98,7 +98,7 @@ describe('makeCreateIntersectionObserver', () => {
       importModule: jest.fn(),
       disconnectObserver: jest.fn(),
       error: jest.fn(),
-      isIntersecting: (entry) => entry.isIntersecting
+      isIntersecting: () => true
     };
     const env = {};
     const article = {};
@@ -127,7 +127,7 @@ describe('makeCreateIntersectionObserver', () => {
       importModule: jest.fn(),
       disconnectObserver: jest.fn(),
       error: jest.fn(),
-      isIntersecting: (entry) => entry.isIntersecting
+      isIntersecting: () => true
     };
     const env = {};
     const article = {};
