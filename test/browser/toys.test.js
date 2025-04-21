@@ -98,7 +98,7 @@ describe('makeCreateIntersectionObserver', () => {
 
 
     f(article, modulePath, functionName);
-    const entry = { isIntersecting: true };
+    const entry = {};
     const observer = {};
 
     // --- WHEN ---
@@ -127,7 +127,7 @@ describe('makeCreateIntersectionObserver', () => {
     const functionName = 'fn';
     const f = makeCreateIntersectionObserver(dom, env);
     f(article, modulePath, functionName);
-    const entry = { isIntersecting: true };
+    const entry = {};
     const observer = {};
 
     // --- WHEN ---
