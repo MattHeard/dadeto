@@ -111,15 +111,14 @@ describe('makeCreateIntersectionObserver', () => {
   });
 
   it('does not call importModule or disconnectObserver when not intersecting', () => {
+    // --- GIVEN ---
     isIntersecting = () => false;
     dom.isIntersecting = isIntersecting;
     const f = makeCreateIntersectionObserver(dom, env);
     f(article, modulePath, functionName);
-    // Simulate the intersection observer callback with a non-intersecting entry
-    const entry = { isIntersecting: false };
-    const observer = {};
+    // --- WHEN ---
     g([entry], observer);
-    // Expectations at end
+    // --- THEN ---
     expect(dom.importModule).not.toHaveBeenCalled();
     expect(dom.disconnectObserver).not.toHaveBeenCalled();
   });
