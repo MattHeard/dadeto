@@ -89,14 +89,6 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('calls importModule when entry is intersecting', () => {
     // --- GIVEN ---
-
-
-
-
-
-
-
-
     f(article, modulePath, functionName);
     const entry = {};
     const observer = {};
