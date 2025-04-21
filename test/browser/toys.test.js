@@ -51,9 +51,9 @@ describe('makeCreateIntersectionObserver', () => {
       isIntersecting: () => {}
     };
     const env = {};
-    const createObs = makeCreateIntersectionObserver(dom, env);
-    // Call createObs with dummy args
-    createObs({}, 'mod', 'fn');
+    const f = makeCreateIntersectionObserver(dom, env);
+    // Call f with dummy args
+    f({}, 'mod', 'fn');
     expect(dom.makeIntersectionObserver).toHaveBeenCalledWith(expect.any(Function));
   });
 
