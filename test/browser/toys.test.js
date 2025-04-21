@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { handleIntersectionEntries, makeObserverCallback, makeCreateIntersectionObserver, initialiseModule, enableInteractiveControls } from '../../src/browser/toys.js';
 
-describe('function coverage: direct invocation', () => {
+describe('makeObserverCallback', () => {
   it('makeObserverCallback calls importModule when entry is intersecting', () => {
     // --- GIVEN ---
     const importModule = jest.fn();
