@@ -44,7 +44,7 @@ describe('makeObserverCallback', () => {
 describe('makeCreateIntersectionObserver', () => {
   it('returns the result of makeIntersectionObserver', () => {
     // --- GIVEN ---
-    const expectedResult = { observer: true };
+    const expectedResult = {};
     const dom = {
       makeIntersectionObserver: jest.fn(() => expectedResult),
       importModule: jest.fn(),
