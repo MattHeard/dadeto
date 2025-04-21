@@ -111,8 +111,7 @@ describe('makeCreateIntersectionObserver', () => {
   });
 
   it('does not call importModule or disconnectObserver when not intersecting', () => {
-    
-    const isIntersecting = () => false;
+    isIntersecting = () => false;
     const dom = {
       makeIntersectionObserver: (cb) => {
         g = cb;
