@@ -148,7 +148,7 @@ it('calls errorMock with the correct message for handleModuleError', () => {
   // --- THEN ---
   expect(errorMock).toHaveBeenCalledWith(
     'Error loading module ' + modulePath + ':',
-    expect.anything()
+    fakeError
   );
 });
 
