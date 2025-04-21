@@ -49,6 +49,7 @@ describe('makeCreateIntersectionObserver', () => {
   let article;
   let modulePath;
   let functionName;
+  let g;
 
   beforeEach(() => {
     expectedResult = {};
@@ -85,7 +86,7 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('calls importModule when entry is intersecting', () => {
     // --- GIVEN ---
-    let g;
+    
     const dom = {
       makeIntersectionObserver: (cb) => {
         g = cb;
@@ -114,7 +115,7 @@ describe('makeCreateIntersectionObserver', () => {
 
   it('calls disconnectObserver when entry is intersecting', () => {
     // --- GIVEN ---
-    let g;
+    
     const dom = {
       makeIntersectionObserver: (cb) => {
         g = cb;
@@ -142,7 +143,7 @@ describe('makeCreateIntersectionObserver', () => {
   });
 
   it('does not call importModule or disconnectObserver when not intersecting', () => {
-    let g;
+    
     const dom = {
       makeIntersectionObserver: (cb) => {
         g = cb;
