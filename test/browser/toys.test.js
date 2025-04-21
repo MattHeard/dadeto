@@ -212,12 +212,12 @@ describe('enableInteractiveControls', () => {
   it('sets output textContent to "Ready for input"', () => {
     // --- GIVEN ---
     const expectedText = 'Ready for input';
-    const setTextContent = (el, text) => { el.textContent = text; };
+    const setTextContent = jest.fn();
     const dom = { setTextContent, removeWarning: jest.fn(), enable: jest.fn() };
     // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
     // --- THEN ---
-    expect(outputElement.textContent).toBe(expectedText);
+    expect(setTextContent).toHaveBeenCalledWith(outputElement, expectedText);
   });
 
   it('removes "warning" class from parent element', () => {
