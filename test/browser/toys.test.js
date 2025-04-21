@@ -93,11 +93,8 @@ describe('makeCreateIntersectionObserver', () => {
   it('calls importModule when entry is intersecting', () => {
     // --- GIVEN ---
     f(article, modulePath, functionName);
-
-
     // --- WHEN ---
     g([entry], observer);
-
     // --- THEN ---
     expect(dom.importModule).toHaveBeenCalled();
   });
@@ -105,11 +102,8 @@ describe('makeCreateIntersectionObserver', () => {
   it('calls disconnectObserver when entry is intersecting', () => {
     // --- GIVEN ---
     f(article, modulePath, functionName);
-
-
     // --- WHEN ---
     g([entry], observer);
-
     // --- THEN ---
     expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
   });
