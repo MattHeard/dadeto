@@ -165,6 +165,7 @@ describe('enableInteractiveControls', () => {
   let mockParentClassList;
   let enable;
   let setTextContent;
+  let dom;
 
   beforeEach(() => {
     // Mock input element
@@ -200,11 +201,10 @@ describe('enableInteractiveControls', () => {
     // Reset enable and setTextContent mocks for each test
     enable = jest.fn();
     setTextContent = jest.fn();
+    dom = { setTextContent, removeWarning: jest.fn(), enable };
   });
 
   it('enables input and submit button', () => {
-    // --- GIVEN ---
-    const dom = { setTextContent: jest.fn(), removeWarning: jest.fn(), enable };
     // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
 
@@ -216,7 +216,6 @@ describe('enableInteractiveControls', () => {
   it('sets output textContent to "Ready for input"', () => {
     // --- GIVEN ---
     const expectedText = 'Ready for input';
-    const dom = { setTextContent, removeWarning: jest.fn(), enable: jest.fn() };
     // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
     // --- THEN ---
