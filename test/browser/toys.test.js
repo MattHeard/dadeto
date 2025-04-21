@@ -42,9 +42,14 @@ describe('makeObserverCallback', () => {
 });
 
 describe('makeCreateIntersectionObserver', () => {
+  let expectedResult;
+
+  beforeEach(() => {
+    expectedResult = {};
+  });
+
   it('returns the result of makeIntersectionObserver', () => {
     // --- GIVEN ---
-    const expectedResult = {};
     const dom = {
       makeIntersectionObserver: jest.fn(() => expectedResult),
       importModule: jest.fn(),
@@ -65,7 +70,7 @@ describe('makeCreateIntersectionObserver', () => {
     expect(result).toBe(expectedResult);
   });
 
-  it('returns a function', () => {
+  it('calls makeIntersectionObserver with a callback', () => {
     // --- GIVEN ---
     const dom = {
       makeIntersectionObserver: jest.fn(),
