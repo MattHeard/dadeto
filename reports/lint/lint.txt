@@ -35,22 +35,22 @@
 [0m   [2m56:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
 [0m   [2m56:10[22m  [33mwarning[39m  'makeHandleHideSpan' is defined but never used          [2mno-unused-vars[22m[0m
 [0m   [2m56:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used         [2mno-unused-vars[22m[0m
-[0m  [2m105:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m  [2m108:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m112:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m  [2m112:10[22m  [33mwarning[39m  'handleIntersection' is defined but never used          [2mno-unused-vars[22m[0m
-[0m  [2m112:30[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used   [2mno-unused-vars[22m[0m
-[0m  [2m112:57[22m  [33mwarning[39m  'makeObserverCallback' is defined but never used        [2mno-unused-vars[22m[0m
-[0m  [2m117:10[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m118:12[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m119:7[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m120:8[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m121:18[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m127:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m  [2m127:10[22m  [33mwarning[39m  'startsWith' is defined but never used                  [2mno-unused-vars[22m[0m
-[0m  [2m127:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used         [2mno-unused-vars[22m[0m
-[0m  [2m127:43[22m  [33mwarning[39m  'makeHandleLink' is defined but never used              [2mno-unused-vars[22m[0m
-[0m  [2m128:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m  [2m106:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
+[0m  [2m109:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m  [2m113:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
+[0m  [2m113:10[22m  [33mwarning[39m  'handleIntersection' is defined but never used          [2mno-unused-vars[22m[0m
+[0m  [2m113:30[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used   [2mno-unused-vars[22m[0m
+[0m  [2m113:57[22m  [33mwarning[39m  'makeObserverCallback' is defined but never used        [2mno-unused-vars[22m[0m
+[0m  [2m118:10[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m119:12[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m120:7[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m121:8[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m122:18[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m128:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
+[0m  [2m128:10[22m  [33mwarning[39m  'startsWith' is defined but never used                  [2mno-unused-vars[22m[0m
+[0m  [2m128:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used         [2mno-unused-vars[22m[0m
+[0m  [2m128:43[22m  [33mwarning[39m  'makeHandleLink' is defined but never used              [2mno-unused-vars[22m[0m
+[0m  [2m129:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
 [0m   [2m5:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
@@ -254,10 +254,10 @@
 [0m  [2m187:28[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
 [0m  [2m193:22[22m  [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
 [0m  [2m197:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m240:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m241:60[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m242:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m243:40[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m239:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m240:60[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m241:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m242:40[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
 [0m  [2m266:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
 [0m  [2m292:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
 [0m  [2m433:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
@@ -266,12 +266,12 @@
 [0m  [2m436:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
 [0m  [2m437:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
 [0m  [2m449:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m496:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m497:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m498:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m499:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m500:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
-[0m  [2m512:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m497:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m498:33[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m499:34[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m500:36[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m501:38[22m  [33mwarning[39m  Expected { after 'if' condition                                     [2mcurly[22m[0m
+[0m  [2m513:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2          [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m

@@ -199,26 +199,25 @@ describe('enableInteractiveControls', () => {
 
   it('enables input and submit button', () => {
     // --- GIVEN ---
-    const dom = { setTextContent: jest.fn(), removeWarning: jest.fn() };
-    inputElement.disabled = true;
-    submitButton.disabled = true;
+    const enableMock = jest.fn();
+    const dom = { setTextContent: jest.fn(), removeWarning: jest.fn(), enable: enableMock };
     // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
 
     // --- THEN ---
-    expect(inputElement.disabled).toBe(false);
-    expect(submitButton.disabled).toBe(false);
+    expect(enableMock).toHaveBeenCalledWith(inputElement);
+    expect(enableMock).toHaveBeenCalledWith(submitButton);
   });
 
   it('sets output textContent to "Ready for input"', () => {
-    const dom = { setTextContent: (el, text) => { el.textContent = text; }, removeWarning: jest.fn() };
+    const dom = { setTextContent: (el, text) => { el.textContent = text; }, removeWarning: jest.fn(), enable: jest.fn() };
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
     // Expectations at end
     expect(outputElement.textContent).toBe('Ready for input');
   });
 
   it('removes "warning" class from parent element', () => {
-    const dom = { setTextContent: (el, text) => { el.textContent = text; }, removeWarning: jest.fn() };
+    const dom = { setTextContent: (el, text) => { el.textContent = text; }, removeWarning: jest.fn(), enable: jest.fn() };
     enableInteractiveControls(inputElement, submitButton, outputElement, dom);
     // Expectations at end
     expect(dom.removeWarning).toHaveBeenCalledWith(outputElement);
@@ -245,7 +244,8 @@ describe('initialiseModule', () => {
       },
       addEventListener: jest.fn(),
       setTextContent: jest.fn(),
-      removeWarning: jest.fn()
+      removeWarning: jest.fn(),
+      enable: jest.fn()
     };
 
     const env = {
@@ -464,7 +464,8 @@ describe('initializeInteractiveComponent', () => {
       appendChild: jest.fn(),
       querySelector,
       setTextContent: jest.fn((el, text) => { el.textContent = text; }),
-      removeWarning: jest.fn()
+      removeWarning: jest.fn(),
+      enable: jest.fn()
     };
 
     const processingFunction = jest.fn(() => 'processed result');
@@ -521,7 +522,8 @@ describe('initializeInteractiveComponent', () => {
       addWarning: jest.fn(),
       addEventListener,
       querySelector,
-      removeWarning: jest.fn()
+      removeWarning: jest.fn(),
+      enable: jest.fn()
     };
 
     const config = { globalState, createEnvFn, errorFn, fetchFn, dom };

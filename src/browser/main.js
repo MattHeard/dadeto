@@ -99,7 +99,8 @@ const dom = {
   pauseAudio,
   playAudio,
   removeControlsAttribute,
-  removeNextSibling
+  removeNextSibling,
+  enable
 };
 const env = { globalState, createEnv, error, fetch };
 import { makeCreateIntersectionObserver } from './toys.js';
