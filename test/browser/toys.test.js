@@ -44,8 +44,7 @@ describe('makeObserverCallback', () => {
 describe('makeCreateIntersectionObserver', () => {
   it('returns a function', () => {
     const dom = {
-      makeIntersectionObserver: () => {},
-
+      makeIntersectionObserver: jest.fn(),
       importModule: jest.fn(),
       disconnectObserver: jest.fn(),
       error: jest.fn(),
@@ -53,8 +52,9 @@ describe('makeCreateIntersectionObserver', () => {
     };
     const env = {};
     const createObs = makeCreateIntersectionObserver(dom, env);
-    // Expectation: createObs is a function
-    expect(typeof createObs).toBe('function');
+    // Call createObs with dummy args
+    createObs({}, 'mod', 'fn');
+    expect(dom.makeIntersectionObserver).toHaveBeenCalledWith(expect.any(Function));
   });
 
   it('covers the intersection observer callback chain', () => {
