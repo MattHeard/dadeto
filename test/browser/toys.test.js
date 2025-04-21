@@ -110,7 +110,7 @@ describe('makeCreateIntersectionObserver', () => {
     expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
   });
 
-  it('does not call importModule or disconnectObserver when not intersecting', () => {
+  it('does not call importModule when not intersecting', () => {
     // --- GIVEN ---
     isIntersecting = () => false;
     dom.isIntersecting = isIntersecting;
@@ -120,6 +120,17 @@ describe('makeCreateIntersectionObserver', () => {
     g([entry], observer);
     // --- THEN ---
     expect(dom.importModule).not.toHaveBeenCalled();
+  });
+
+  it('does not call disconnectObserver when not intersecting', () => {
+    // --- GIVEN ---
+    isIntersecting = () => false;
+    dom.isIntersecting = isIntersecting;
+    const f = makeCreateIntersectionObserver(dom, env);
+    f(article, modulePath, functionName);
+    // --- WHEN ---
+    g([entry], observer);
+    // --- THEN ---
     expect(dom.disconnectObserver).not.toHaveBeenCalled();
   });
 });
