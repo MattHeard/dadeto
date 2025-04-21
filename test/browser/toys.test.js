@@ -54,8 +54,13 @@ describe('makeCreateIntersectionObserver', () => {
     const env = {};
     const f = makeCreateIntersectionObserver(dom, env);
 
+    // --- GIVEN (args) ---
+    const article = {};
+    const modulePath = 'mod';
+    const functionName = 'fn';
+
     // --- WHEN ---
-    f({}, 'mod', 'fn');
+    f(article, modulePath, functionName);
 
     // --- THEN ---
     expect(dom.makeIntersectionObserver).toHaveBeenCalledWith(expect.any(Function));
