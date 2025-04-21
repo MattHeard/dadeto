@@ -93,7 +93,7 @@ describe('makeCreateIntersectionObserver', () => {
 
 
 
-    const article = {};
+
     const modulePath = 'mod';
     const functionName = 'fn';
 
