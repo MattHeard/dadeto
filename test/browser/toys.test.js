@@ -2,18 +2,21 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { handleIntersectionEntries, makeObserverCallback, makeCreateIntersectionObserver, initialiseModule, enableInteractiveControls } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
-  it('makeObserverCallback calls importModule when entry is intersecting', () => {
-    // --- GIVEN ---
-    const importModule = jest.fn();
-    const disconnectObserver = jest.fn();
-    const isIntersecting = jest.fn(() => true);
-    const error = jest.fn();
-    const dom = { importModule, disconnectObserver, isIntersecting, error };
-    const env = {};
-    const cb = makeObserverCallback('mod', 'art', 'fn', env, dom);
-    const entry = { isIntersecting: true };
-    const observer = {};
+  let importModule, disconnectObserver, isIntersecting, error, dom, env, cb, entry, observer;
 
+  beforeEach(() => {
+    importModule = jest.fn();
+    disconnectObserver = jest.fn();
+    isIntersecting = jest.fn(() => true);
+    error = jest.fn();
+    dom = { importModule, disconnectObserver, isIntersecting, error };
+    env = {};
+    cb = makeObserverCallback('mod', 'art', 'fn', env, dom);
+    entry = { isIntersecting: true };
+    observer = {};
+  });
+
+  it('makeObserverCallback calls importModule when entry is intersecting', () => {
     // --- WHEN ---
     cb([entry], observer);
 
@@ -26,17 +29,6 @@ describe('makeObserverCallback', () => {
   });
 
   it('makeObserverCallback calls disconnectObserver when entry is intersecting', () => {
-    // --- GIVEN ---
-    const importModule = jest.fn();
-    const disconnectObserver = jest.fn();
-    const isIntersecting = jest.fn(() => true);
-    const error = jest.fn();
-    const dom = { importModule, disconnectObserver, isIntersecting, error };
-    const env = {};
-    const cb = makeObserverCallback('mod', 'art', 'fn', env, dom);
-    const entry = { isIntersecting: true };
-    const observer = {};
-
     // --- WHEN ---
     cb([entry], observer);
 
