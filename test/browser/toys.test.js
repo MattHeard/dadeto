@@ -44,10 +44,8 @@ describe('makeObserverCallback', () => {
 describe('makeCreateIntersectionObserver', () => {
   it('returns a function', () => {
     const dom = {
-      makeIntersectionObserver: (cb) => {
-        callbackArgs = cb;
-        return 'observer-instance';
-      },
+      makeIntersectionObserver: () => {},
+
       importModule: jest.fn(),
       disconnectObserver: jest.fn(),
       error: jest.fn(),
