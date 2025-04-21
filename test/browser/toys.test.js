@@ -64,7 +64,7 @@ describe('makeCreateIntersectionObserver', () => {
     expect(dom.makeIntersectionObserver).toHaveBeenCalledWith(expect.any(Function));
   });
 
-  it('covers the intersection observer callback chain', () => {
+  it('returns the observer instance from createObs', () => {
     let observerCallback;
     const dom = {
       makeIntersectionObserver: (cb) => {
@@ -86,9 +86,56 @@ describe('makeCreateIntersectionObserver', () => {
     const entry = { isIntersecting: true };
     const observer = {};
     observerCallback([entry], observer);
-    // Expectations at end
     expect(observerInstance).toBe('observer-instance');
+  });
+
+  it('calls importModule when entry is intersecting', () => {
+    let observerCallback;
+    const dom = {
+      makeIntersectionObserver: (cb) => {
+        observerCallback = cb;
+        return 'observer-instance';
+      },
+      importModule: jest.fn(),
+      disconnectObserver: jest.fn(),
+      error: jest.fn(),
+      isIntersecting: (entry) => entry.isIntersecting
+    };
+    const env = {};
+    const article = {};
+    const modulePath = 'mod';
+    const functionName = 'fn';
+    const createObs = makeCreateIntersectionObserver(dom, env);
+    createObs(article, modulePath, functionName);
+    // Simulate the intersection observer callback with an intersecting entry
+    const entry = { isIntersecting: true };
+    const observer = {};
+    observerCallback([entry], observer);
     expect(dom.importModule).toHaveBeenCalled();
+  });
+
+  it('calls disconnectObserver when entry is intersecting', () => {
+    let observerCallback;
+    const dom = {
+      makeIntersectionObserver: (cb) => {
+        observerCallback = cb;
+        return 'observer-instance';
+      },
+      importModule: jest.fn(),
+      disconnectObserver: jest.fn(),
+      error: jest.fn(),
+      isIntersecting: (entry) => entry.isIntersecting
+    };
+    const env = {};
+    const article = {};
+    const modulePath = 'mod';
+    const functionName = 'fn';
+    const createObs = makeCreateIntersectionObserver(dom, env);
+    createObs(article, modulePath, functionName);
+    // Simulate the intersection observer callback with an intersecting entry
+    const entry = { isIntersecting: true };
+    const observer = {};
+    observerCallback([entry], observer);
     expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
   });
 
