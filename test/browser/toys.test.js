@@ -141,13 +141,14 @@ it('calls errorMock with the correct message for handleModuleError', () => {
   const modulePath = 'toyModule';
   const handler = handleModuleError(modulePath, errorMock);
   const fakeError = new Error('fail');
+  const expectedMessage = 'Error loading module ' + modulePath + ':';
 
   // --- WHEN ---
   handler(fakeError);
 
   // --- THEN ---
   expect(errorMock).toHaveBeenCalledWith(
-    'Error loading module ' + modulePath + ':',
+    expectedMessage,
     fakeError
   );
 });
