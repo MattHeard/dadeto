@@ -203,13 +203,22 @@ describe('enableInteractiveControls', () => {
     expect(enable).toHaveBeenCalledWith(submitButton);
   });
 
-  it('sets output textContent to "Ready for input"', () => {
+  it('sets output textContent to "Ready for input" using parent branch', () => {
     // --- GIVEN ---
     const expectedText = 'Ready for input';
+    const parent = {};
+    const removeChild = jest.fn();
+    const appendChild = jest.fn();
+    dom.removeChild = removeChild;
+    dom.appendChild = appendChild;
+    const paragraph = {};
+    dom.createElement = jest.fn(() => paragraph);
     // --- WHEN ---
-    enableInteractiveControls(inputElement, submitButton, outputElement, dom);
+    enableInteractiveControls(inputElement, submitButton, outputElement, dom, parent);
     // --- THEN ---
-    expect(setTextContent).toHaveBeenCalledWith(outputElement, expectedText);
+    expect(removeChild).toHaveBeenCalledWith(parent, outputElement);
+    expect(appendChild).toHaveBeenCalledWith(parent, paragraph);
+    expect(setTextContent).toHaveBeenCalledWith(paragraph, expectedText);
   });
 
   it('removes "warning" class from parent element', () => {
@@ -228,8 +237,8 @@ describe('initialiseModule', () => {
     const createEnv = () => ({});
     const error = () => {};
     const fetch = () => {};
-    const mockClassList = { remove: jest.fn() };
-    const outputParentElement = { classList: mockClassList, textContent: '' };
+    const paragraph = {};
+    const outputParentElement = {};
     const outputElement = { textContent: '', outputParentElement };
     const dom = {
       querySelector: (el, selector) => {
@@ -241,7 +250,10 @@ describe('initialiseModule', () => {
       addEventListener: jest.fn(),
       setTextContent: jest.fn(),
       removeWarning: jest.fn(),
-      enable: jest.fn()
+      enable: jest.fn(),
+      removeChild: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(() => paragraph)
     };
 
     const env = {
@@ -255,7 +267,9 @@ describe('initialiseModule', () => {
     const response = result(module);
     // Expectations at end
     expect(response).toBeUndefined();
-    expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, 'Initialising...');
+    expect(dom.removeChild).toHaveBeenCalledWith(outputParentElement, outputElement);
+    expect(dom.createElement).toHaveBeenCalledWith('p');
+    expect(dom.appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
   });
 });
 
@@ -398,11 +412,20 @@ describe('createHandleSubmit', () => {
     const processingFunction = jest.fn(() => 'result from no-event');
 
     const input = { value: 'input without event' };
-    const output = { textContent: '', outputParentElement: { classList: { add: jest.fn(), remove: jest.fn() } } };
-
+    const paragraph = {};
+    const outputParentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
+    const output = { textContent: '', outputParentElement };
+    const dom = {
+      createElement: jest.fn(() => paragraph),
+      stopDefault: jest.fn(),
+      addWarning: jest.fn(),
+      removeChild: jest.fn(),
+      appendChild: jest.fn(),
+      setTextContent: jest.fn()
+    };
     const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
     const handleSubmitNoEvent = createHandleSubmit(
-      { inputElement: input, outputElement: output },
+      { inputElement: input, outputElement: output, outputParentElement },
       processingFunction,
       env
     );
@@ -412,7 +435,9 @@ describe('createHandleSubmit', () => {
     // Expectations at end
     expect(stopDefault).not.toHaveBeenCalled();
     expect(processingFunction).toHaveBeenCalledWith('input without event', expect.any(Object));
-    expect(dom.setTextContent).toHaveBeenCalledWith(output, 'result from no-event');
+    expect(dom.removeChild).toHaveBeenCalledWith(outputParentElement, output);
+    expect(dom.createElement).toHaveBeenCalledWith('p');
+    expect(dom.appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
   });
 });
 
@@ -487,7 +512,7 @@ describe('initializeInteractiveComponent', () => {
     const submitButton = { disabled: false };
     const outputElement = {
       textContent: '',
-      outputParentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
+      outputParentElement: { classList: { remove: jest.fn() } }
     };
 
     const querySelector = jest.fn((el, selector) => {
@@ -499,6 +524,25 @@ describe('initializeInteractiveComponent', () => {
 
     const globalState = {};
     const stopDefaultFn = jest.fn();
+    const listeners2 = {};
+    const addEventListener = jest.fn((element, event, handler) => {
+      if (element === inputElement && event === 'keypress') {
+        listeners2.keypress = handler;
+      }
+      if (element === submitButton && event === 'click') {
+        listeners2.click = handler;
+      }
+    });
+    const dom = {
+      querySelector,
+      addEventListener,
+      setTextContent: jest.fn(),
+      removeWarning: jest.fn(),
+      enable: jest.fn(),
+      removeChild: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(() => ({}))
+    };
     const createEnvFn = () => ({});
     const errorFn = jest.fn();
     const fetchFn = jest.fn();
@@ -506,21 +550,7 @@ describe('initializeInteractiveComponent', () => {
     const listeners = {};
     const createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
 
-    const addEventListener = jest.fn((element, event, handler) => {
-      if (element === inputElement && event === 'keypress') {
-        listeners.keypress = handler;
-      }
-    });
-    const dom = {
-      createElement,
-      setTextContent: jest.fn((el, text) => { el.textContent = text; }),
-      stopDefault: stopDefaultFn,
-      addWarning: jest.fn(),
-      addEventListener,
-      querySelector,
-      removeWarning: jest.fn(),
-      enable: jest.fn()
-    };
+
 
     const config = { globalState, createEnvFn, errorFn, fetchFn, dom };
     initializeInteractiveComponent(
@@ -529,7 +559,7 @@ describe('initializeInteractiveComponent', () => {
       config
     );
 
-    listeners.keypress({ key: 'a', preventDefault: jest.fn() });
+    listeners2.keypress({ key: 'a', preventDefault: jest.fn() });
     // Expectations at end
     expect(processingFunction).not.toHaveBeenCalled();
   });

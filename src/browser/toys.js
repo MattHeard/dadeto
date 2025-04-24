@@ -12,8 +12,6 @@ function setTextContent(element, content, dom, parent) {
     dom.removeChild(parent, element);
     const child = createParagraphElement(content, dom);
     dom.appendChild(parent, child);
-  } else {
-    dom.setTextContent(element, content);
   }
 }
 
@@ -155,10 +153,10 @@ export function makeCreateIntersectionObserver(dom, env) {
  * @param {HTMLElement} outputElement
  * @param {object} dom - DOM helper object
  */
-export function enableInteractiveControls(inputElement, submitButton, outputElement, dom) {
+export function enableInteractiveControls(inputElement, submitButton, outputElement, dom, parent) {
   dom.enable(inputElement);
   dom.enable(submitButton);
-  setTextContent(outputElement, 'Ready for input', dom);
+  setTextContent(outputElement, 'Ready for input', dom, parent);
   dom.removeWarning(outputElement);
 }
 
@@ -318,7 +316,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   disableInputAndButton(inputElement, submitButton);
   
   // Update message to show JS is running, replacing <p.output> with paragraph
-  setTextContent(outputElement, 'Initialising...', dom);
+  setTextContent(outputElement, 'Initialising...', dom, outputParent);
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
