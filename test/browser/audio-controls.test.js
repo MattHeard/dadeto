@@ -251,29 +251,29 @@ describe('setupAudio', () => {
 
   it('adds audio-controls class and sets correct text on control buttons', () => {
     // Given
-    const audioElements = [
-      { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
-    ];
-        const createdElements = [];
-    const createElement = (tag) => {
-      const element = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
-      createdElements.push(element);
-      return element;
+    const element = { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
+    const audioElements = [element];
+    const getAudioElements = () => audioElements;
+    const dom = { getAudioElements, removeControlsAttribute };
+    const createdElements = [];
+    const createElementOverride = (tag) => {
+      const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
+      createdElements.push(el);
+      return el;
     };
-    
 
     // When
     setupAudio(
-      { getAudioElements: () => audioElements, removeControlsAttribute: () => {} },
-      () => {},
-      createElement,
-      () => '',
-      () => {},
-      () => {},
-      () => {},
-      () => {},
-      () => {},
-      () => {}
+      dom,
+      removeControlsAttribute,
+      createElementOverride,
+      createTextNode,
+      stopDefault,
+      playAudio,
+      pauseAudio,
+      addEventListener,
+      appendChild,
+      insertBefore
     );
 
     // Then
