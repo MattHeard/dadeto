@@ -256,7 +256,8 @@ describe('setupAudio', () => {
 
   it('adds audio-controls class to the created control element', () => {
     // Given
-    const element = { id: '' };
+    const element = {};
+
     const audioElements = [element];
     const getAudioElements = () => audioElements;
     const dom = { getAudioElements, removeControlsAttribute };
@@ -281,7 +282,8 @@ describe('setupAudio', () => {
 
   it('sets correct text on control buttons', () => {
     // Given
-    const element = { id: '' };
+    const element = {};
+
     const audioElements = [element];
     const getAudioElements = () => audioElements;
     const dom = { getAudioElements, removeControlsAttribute };
@@ -307,7 +309,7 @@ describe('setupAudio', () => {
 
   it('adds a time display element with class "audio-time"', () => {
     // Given
-    const audioElement = { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
+    const audioElement = { parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
     const audioElements = [audioElement];
     const dom = { getAudioElements: () => audioElements, removeControlsAttribute };
 
