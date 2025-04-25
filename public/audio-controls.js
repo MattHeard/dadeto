@@ -29,7 +29,7 @@ export const createUpdateTimeDisplay = (audio, timeDisplay) => {
 };
 
 export function setupAudio(
-  getAudioElements,
+  dom,
   removeControlsAttribute,
   createElement,
   createTextNode,
@@ -40,7 +40,7 @@ export function setupAudio(
   appendChild,
   insertBefore
 ) {
-  const audioElements = getAudioElements();
+  const audioElements = dom.getAudioElements();
 
   audioElements.forEach(function(audio, index) {
     removeControlsAttribute(audio);

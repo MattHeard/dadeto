@@ -144,7 +144,7 @@ handleTagLinks(dom);
 fetchAndCacheBlogData(globalState, fetch, log, error);
 
 setupAudio(
-  getAudioElements,
+  { getAudioElements },
   removeControlsAttribute,
   createElement,
   createTextNode,

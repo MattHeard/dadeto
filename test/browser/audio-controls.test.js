@@ -101,7 +101,7 @@ describe('setupAudio', () => {
     const container = { querySelectorAll };
 
     setupAudio(
-      () => audioElements,
+      { getAudioElements: () => audioElements },
       () => {},
       () => ({ className: '', id: '', textContent: '', href: '' }),
       () => '',
@@ -130,7 +130,7 @@ describe('setupAudio', () => {
     const container = { querySelectorAll };
 
     setupAudio(
-      () => audioElements,
+      { getAudioElements: () => audioElements },
       () => {},
       () => ({ className: '', id: '', textContent: '', href: '' }),
       () => '',
@@ -164,7 +164,7 @@ describe('setupAudio', () => {
     const container = { querySelectorAll };
 
     setupAudio(
-      () => audioElements,
+      { getAudioElements: () => audioElements },
       () => {},
       createElement,
       () => '',
@@ -200,7 +200,7 @@ describe('setupAudio', () => {
     const container = { querySelectorAll };
 
     setupAudio(
-      () => audioElements,
+      { getAudioElements: () => audioElements },
       () => {},
       createElement,
       () => '',
