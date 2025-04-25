@@ -111,12 +111,14 @@
 [0m  [2m214:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
-[0m  [2m167:22[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m185:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m264:36[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m295:36[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m326:28[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m331:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
+[0m  [2m167:22[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
+[0m  [2m185:1[22m   [33mwarning[39m  Trailing spaces not allowed                                 [2mno-trailing-spaces[22m[0m
+[0m  [2m263:11[22m  [33mwarning[39m  'createElementOverride' is assigned a value but never used  [2mno-unused-vars[22m[0m
+[0m  [2m263:36[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
+[0m  [2m293:11[22m  [33mwarning[39m  'createElementOverride' is assigned a value but never used  [2mno-unused-vars[22m[0m
+[0m  [2m293:36[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
+[0m  [2m323:32[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
+[0m  [2m328:1[22m   [33mwarning[39m  Trailing spaces not allowed                                 [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
 [0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m
@@ -145,6 +147,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 102 problems (0 errors, 102 warnings)[22m[39m[0m
+[0m[33m[1m✖ 104 problems (0 errors, 104 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 2 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

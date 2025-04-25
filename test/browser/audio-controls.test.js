@@ -260,7 +260,6 @@ describe('setupAudio', () => {
     const audioElements = [element];
     const getAudioElements = () => audioElements;
     const dom = { getAudioElements, removeControlsAttribute };
-    const createdElements = [];
     const createElementOverride = (tag) => {
       const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
       createdElements.push(el);
@@ -271,7 +270,7 @@ describe('setupAudio', () => {
     setupAudio(
       dom,
       removeControlsAttribute,
-      createElementOverride,
+      createElement,
       createTextNode,
       stopDefault,
       playAudio,
@@ -291,7 +290,6 @@ describe('setupAudio', () => {
     const audioElements = [element];
     const getAudioElements = () => audioElements;
     const dom = { getAudioElements, removeControlsAttribute };
-    const createdElements = [];
     const createElementOverride = (tag) => {
       const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
       createdElements.push(el);
@@ -302,7 +300,7 @@ describe('setupAudio', () => {
     setupAudio(
       dom,
       removeControlsAttribute,
-      createElementOverride,
+      createElement,
       createTextNode,
       stopDefault,
       playAudio,
@@ -322,8 +320,7 @@ describe('setupAudio', () => {
     const audioElements = [
       { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
     ];
-        const createdElements = [];
-    const createElement = (tag) => {
+        const createElement = (tag) => {
       const element = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
       createdElements.push(element);
       return element;
