@@ -212,12 +212,13 @@ describe('enableInteractiveControls', () => {
     const appendChild = jest.fn();
     dom.removeChild = removeChild;
     dom.appendChild = appendChild;
+    dom.removeAllChildren = jest.fn();
     const paragraph = {};
     dom.createElement = jest.fn(() => paragraph);
     // --- WHEN ---
     enableInteractiveControls(inputElement, submitButton, outputElement, dom, parent);
     // --- THEN ---
-    expect(removeChild).toHaveBeenCalledWith(parent, outputElement);
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
     expect(appendChild).toHaveBeenCalledWith(parent, paragraph);
     expect(setTextContent).toHaveBeenCalledWith(paragraph, expectedText);
   });
@@ -255,7 +256,8 @@ describe('initialiseModule', () => {
       removeChild: jest.fn(),
       appendChild: jest.fn(),
       createElement: jest.fn(() => paragraph),
-      contains: () => true
+      contains: () => true,
+      removeAllChildren: jest.fn()
     };
 
     const env = {
@@ -269,7 +271,7 @@ describe('initialiseModule', () => {
     const response = result(module);
     // Expectations at end
     expect(response).toBeUndefined();
-    expect(dom.removeChild).toHaveBeenCalledWith(outputParentElement, outputElement);
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
     expect(dom.createElement).toHaveBeenCalledWith('p');
     expect(dom.appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
   });
@@ -326,8 +328,10 @@ describe('createHandleSubmit', () => {
       setTextContent: jest.fn(),
       removeChild: jest.fn(),
       appendChild: jest.fn(),
-      contains: () => true
+      contains: () => true,
+      removeAllChildren: jest.fn()
     };
+
     fetchFn = jest.fn();
 
     processingFunction = jest.fn(async () => 'transformed');
@@ -425,7 +429,8 @@ describe('createHandleSubmit', () => {
       removeChild: jest.fn(),
       appendChild: jest.fn(),
       setTextContent: jest.fn(),
-      contains: () => true
+      contains: () => true,
+      removeAllChildren: jest.fn()
     };
     const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
     const handleSubmitNoEvent = createHandleSubmit(
@@ -439,7 +444,7 @@ describe('createHandleSubmit', () => {
     // Expectations at end
     expect(stopDefault).not.toHaveBeenCalled();
     expect(processingFunction).toHaveBeenCalledWith('input without event', expect.any(Object));
-    expect(dom.removeChild).toHaveBeenCalledWith(outputParentElement, output);
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
     expect(dom.createElement).toHaveBeenCalledWith('p');
     expect(dom.appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
   });
@@ -491,7 +496,8 @@ describe('initializeInteractiveComponent', () => {
       setTextContent: jest.fn((el, text) => { el.textContent = text; }),
       removeWarning: jest.fn(),
       enable: jest.fn(),
-      contains: () => true
+      contains: () => true,
+      removeAllChildren: jest.fn()
     };
 
     const processingFunction = jest.fn(() => 'processed result');
@@ -547,7 +553,8 @@ describe('initializeInteractiveComponent', () => {
       removeChild: jest.fn(),
       appendChild: jest.fn(),
       createElement: jest.fn(() => ({})),
-      contains: () => true
+      contains: () => true,
+      removeAllChildren: jest.fn()
     };
     const createEnvFn = () => ({});
     const errorFn = jest.fn();
