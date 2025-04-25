@@ -301,7 +301,7 @@ describe('setupAudio', () => {
     );
 
     // Then
-    const texts = createdElements.map(el => el.textContent).filter(Boolean);
+    const texts = createdElements.map(el => el.textContent);
     expect(texts).toEqual(expect.arrayContaining(['PLAY', 'PAUSE', 'STOP']));
   });
 
