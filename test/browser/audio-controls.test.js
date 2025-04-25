@@ -196,7 +196,8 @@ describe('setupAudio', () => {
 
   it('assigns a default id to an audio element with undefined id', () => {
     // Given
-    const audioElement = { parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
+    const audioElement = { addEventListener: jest.fn() };
+
     const audioElements = [audioElement];
         
     const getAudioElements = () => audioElements;
