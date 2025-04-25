@@ -159,12 +159,10 @@ describe('createUpdateTimeDisplay', () => {
 
 
 describe('setupAudio', () => {
-  it('assigns a default id to audio elements without an id', () => {
+  it('assigns a default id to an audio element with an empty id', () => {
     // Given
-    const audioElements = [
-      { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() },
-      { parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
-    ];
+    const audioElement = { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
+    const audioElements = [audioElement];
     const buttons = [];
     const querySelectorAll = jest.fn((selector) => {
       if (selector === 'audio') {return audioElements;}
@@ -199,8 +197,48 @@ describe('setupAudio', () => {
     );
 
     // Then
-    expect(audioElements[0].id).toBe('audio-0');
-    expect(audioElements[1].id).toBe('audio-1');
+    expect(audioElement.id).toBe('audio-0');
+  });
+
+  it('assigns a default id to an audio element with undefined id', () => {
+    // Given
+    const audioElement = { parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
+    const audioElements = [audioElement];
+    const buttons = [];
+    const querySelectorAll = jest.fn((selector) => {
+      if (selector === 'audio') {return audioElements;}
+      if (selector === 'button') {return buttons;}
+      return [];
+    });
+    const container = { querySelectorAll, removeControlsAttribute: () => {} };
+    const getAudioElements = () => audioElements;
+    const removeControlsAttribute = () => {};
+    const dom = { getAudioElements, removeControlsAttribute };
+    const createElement = () => ({ className: '', id: '', textContent: '', href: '' });
+    const createTextNode = () => '';
+    const stopDefault = () => {};
+    const playAudio = () => {};
+    const pauseAudio = () => {};
+    const addEventListener = () => {};
+    const appendChild = () => {};
+    const insertBefore = () => {};
+
+    // When
+    setupAudio(
+      dom,
+      removeControlsAttribute,
+      createElement,
+      createTextNode,
+      stopDefault,
+      playAudio,
+      pauseAudio,
+      addEventListener,
+      appendChild,
+      insertBefore
+    );
+
+    // Then
+    expect(audioElement.id).toBe('audio-0');
   });
 
   it('does not overwrite existing audio element ids', () => {
