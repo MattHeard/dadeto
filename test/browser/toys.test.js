@@ -193,11 +193,14 @@ describe('enableInteractiveControls', () => {
     setTextContent = jest.fn();
     removeWarning = jest.fn();
     dom = { setTextContent, removeWarning, enable, contains: () => true };
+    dom.removeAllChildren = jest.fn();
+    dom.createElement = jest.fn(() => ({}));
+    dom.appendChild = jest.fn();
   });
 
   it('enables input and submit button', () => {
     // --- WHEN ---
-    enableInteractiveControls(inputElement, submitButton, outputElement, dom);
+    enableInteractiveControls(inputElement, submitButton, outputElement, dom, outputParentElement);
 
     // --- THEN ---
     expect(enable).toHaveBeenCalledWith(inputElement);
@@ -226,9 +229,9 @@ describe('enableInteractiveControls', () => {
 
   it('removes "warning" class from parent element', () => {
     // --- WHEN ---
-    enableInteractiveControls(inputElement, submitButton, outputElement, dom);
+    enableInteractiveControls(inputElement, submitButton, outputElement, dom, outputParentElement);
     // --- THEN ---
-    expect(removeWarning).toHaveBeenCalledWith(outputElement);
+    expect(removeWarning).toHaveBeenCalledWith(outputParentElement);
   });
 });
 

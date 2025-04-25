@@ -158,7 +158,7 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
   dom.enable(inputElement);
   dom.enable(submitButton);
   setTextContent(outputElement, 'Ready for input', dom, parent);
-  dom.removeWarning(outputElement);
+  dom.removeWarning(parent);
 }
 
 function handleRequestResponse(url, outputElement, error, fetch, dom, parent) {
