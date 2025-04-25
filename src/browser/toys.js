@@ -9,9 +9,14 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 function setTextContent(element, content, dom, parent) {
   if (parent) {
+    if (!dom.contains(parent, element)) {
+      dom.error('setTextContent: parent does not contain the element to be replaced. DOM structure bug.', { element, parent });
+      return null;
+    }
     dom.removeChild(parent, element);
     const child = createParagraphElement(content, dom);
     dom.appendChild(parent, child);
+    return child;
   }
 }
 

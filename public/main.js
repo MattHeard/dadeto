@@ -39,7 +39,8 @@ import {
   makeIntersectionObserver,
   enable,
   removeChild,
-  removeWarning
+  removeWarning,
+  contains
 } from './document.js';
 
 /**
@@ -105,7 +106,8 @@ const dom = {
   removeNextSibling,
   enable,
   removeChild,
-  removeWarning
+  removeWarning,
+  contains
 };
 const env = { globalState, createEnv, error, fetch };
 import { makeCreateIntersectionObserver } from './toys.js';

@@ -9,7 +9,7 @@ describe('makeObserverCallback', () => {
     disconnectObserver = jest.fn();
     const isIntersecting = jest.fn(() => true);
     const error = jest.fn();
-    const dom = { importModule, disconnectObserver, isIntersecting, error };
+    const dom = { importModule, disconnectObserver, isIntersecting, error, contains: () => true };
     const env = {};
     modulePath = 'mod';
     const article = 'art';
@@ -65,7 +65,8 @@ describe('makeCreateIntersectionObserver', () => {
       importModule: jest.fn(),
       disconnectObserver: jest.fn(),
       error: jest.fn(),
-      isIntersecting
+      isIntersecting,
+      contains: () => true
     };
     env = {};
     f = makeCreateIntersectionObserver(dom, env);
@@ -191,7 +192,7 @@ describe('enableInteractiveControls', () => {
     enable = jest.fn();
     setTextContent = jest.fn();
     removeWarning = jest.fn();
-    dom = { setTextContent, removeWarning, enable };
+    dom = { setTextContent, removeWarning, enable, contains: () => true };
   });
 
   it('enables input and submit button', () => {
@@ -253,7 +254,8 @@ describe('initialiseModule', () => {
       enable: jest.fn(),
       removeChild: jest.fn(),
       appendChild: jest.fn(),
-      createElement: jest.fn(() => paragraph)
+      createElement: jest.fn(() => paragraph),
+      contains: () => true
     };
 
     const env = {
@@ -323,7 +325,8 @@ describe('createHandleSubmit', () => {
       addWarning: jest.fn(),
       setTextContent: jest.fn(),
       removeChild: jest.fn(),
-      appendChild: jest.fn()
+      appendChild: jest.fn(),
+      contains: () => true
     };
     fetchFn = jest.fn();
 
@@ -421,7 +424,8 @@ describe('createHandleSubmit', () => {
       addWarning: jest.fn(),
       removeChild: jest.fn(),
       appendChild: jest.fn(),
-      setTextContent: jest.fn()
+      setTextContent: jest.fn(),
+      contains: () => true
     };
     const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
     const handleSubmitNoEvent = createHandleSubmit(
@@ -486,7 +490,8 @@ describe('initializeInteractiveComponent', () => {
       querySelector,
       setTextContent: jest.fn((el, text) => { el.textContent = text; }),
       removeWarning: jest.fn(),
-      enable: jest.fn()
+      enable: jest.fn(),
+      contains: () => true
     };
 
     const processingFunction = jest.fn(() => 'processed result');
@@ -541,7 +546,8 @@ describe('initializeInteractiveComponent', () => {
       enable: jest.fn(),
       removeChild: jest.fn(),
       appendChild: jest.fn(),
-      createElement: jest.fn(() => ({}))
+      createElement: jest.fn(() => ({})),
+      contains: () => true
     };
     const createEnvFn = () => ({});
     const errorFn = jest.fn();

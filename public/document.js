@@ -15,6 +15,10 @@ export const appendChild = (parentNode, newChild) => parentNode.appendChild(newC
 export const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
 export const removeChild = (parentNode, child) => parentNode.removeChild(child);
 
+export function contains(parent, child) {
+  return parent && typeof parent.contains === 'function' ? parent.contains(child) : false;
+}
+
 // Event handlers
 export const stopDefault = (e) => e.preventDefault();
 export const playAudio = (audio) => audio.play();
