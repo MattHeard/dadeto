@@ -174,8 +174,9 @@ describe('setupAudio', () => {
     const container = { querySelectorAll, removeControlsAttribute: () => {} };
 
     // When
-    const dom = { getAudioElements: () => audioElements, removeControlsAttribute: () => {} };
+    const getAudioElements = () => audioElements;
     const removeControlsAttribute = () => {};
+    const dom = { getAudioElements, removeControlsAttribute };
     const createElement = () => ({ className: '', id: '', textContent: '', href: '' });
     const createTextNode = () => '';
     const stopDefault = () => {};
@@ -185,6 +186,7 @@ describe('setupAudio', () => {
     const appendChild = () => {};
     const insertBefore = () => {};
 
+    // When
     setupAudio(
       dom,
       removeControlsAttribute,
