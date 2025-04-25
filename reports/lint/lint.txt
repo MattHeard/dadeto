@@ -111,11 +111,12 @@
 [0m  [2m214:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
-[0m  [2m180:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m259:36[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m290:36[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m321:28[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m326:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
+[0m  [2m162:7[22m   [33mwarning[39m  'createdElements' is assigned a value but never used  [2mno-unused-vars[22m[0m
+[0m  [2m184:1[22m   [33mwarning[39m  Trailing spaces not allowed                           [2mno-trailing-spaces[22m[0m
+[0m  [2m263:36[22m  [33mwarning[39m  'tag' is defined but never used                       [2mno-unused-vars[22m[0m
+[0m  [2m294:36[22m  [33mwarning[39m  'tag' is defined but never used                       [2mno-unused-vars[22m[0m
+[0m  [2m325:28[22m  [33mwarning[39m  'tag' is defined but never used                       [2mno-unused-vars[22m[0m
+[0m  [2m330:1[22m   [33mwarning[39m  Trailing spaces not allowed                           [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
 [0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m
@@ -144,6 +145,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 101 problems (0 errors, 101 warnings)[22m[39m[0m
+[0m[33m[1m✖ 102 problems (0 errors, 102 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 2 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
