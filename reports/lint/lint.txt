@@ -112,12 +112,11 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
 [0m  [2m180:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m208:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m236:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m262:28[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m267:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m295:28[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m300:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
+[0m  [2m233:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
+[0m  [2m259:28[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
+[0m  [2m264:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
+[0m  [2m292:28[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
+[0m  [2m297:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
 [0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m
@@ -146,6 +145,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 103 problems (0 errors, 103 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 5 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m✖ 102 problems (0 errors, 102 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 4 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

@@ -202,10 +202,7 @@ describe('setupAudio', () => {
   it('assigns a default id to an audio element with undefined id', () => {
     // Given
     const audioElement = {};
-
-
     const audioElements = [audioElement];
-        
     const getAudioElements = () => audioElements;
     const removeControlsAttribute = () => {};
     const dom = { getAudioElements, removeControlsAttribute };
