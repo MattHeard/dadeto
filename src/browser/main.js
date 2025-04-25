@@ -79,6 +79,7 @@ function createEnv() {
 
 const dom = {
   createElement,
+  getAudioElements,
   setTextContent,
   stopDefault,
   addWarning,
@@ -144,7 +145,7 @@ handleTagLinks(dom);
 fetchAndCacheBlogData(globalState, fetch, log, error);
 
 setupAudio(
-  { getAudioElements },
+  dom,
   removeControlsAttribute,
   createElement,
   createTextNode,
