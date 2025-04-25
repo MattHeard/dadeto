@@ -20,11 +20,13 @@ export const createStopClickHandler = (audio, stopDefault, pauseAudio) => {
   };
 };
 
+import { setTextContent } from './document.js';
+
 export const createUpdateTimeDisplay = (audio, timeDisplay) => {
   return () => {
     const minutes = Math.floor(audio.currentTime / 60);
     const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
-    timeDisplay.textContent = minutes + ":" + seconds;
+    setTextContent(timeDisplay, minutes + ":" + seconds);
   };
 };
 
