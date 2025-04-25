@@ -4,7 +4,6 @@ export const querySelector = (el, selector) => el.querySelector(selector);
 export const querySelectorAll = (docOrEl, selector) => docOrEl.querySelectorAll(selector);
 export const addClass = (element, className) => element.classList.add(className);
 export const getAudioElements = () => querySelectorAll(document, "audio");
-export const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
 export const createElement = (tag) => document.createElement(tag);
 export const createTextNode = (value) => document.createTextNode(value);
 export const getElementsByTagName = (tagName) => document.getElementsByTagName(tagName);
