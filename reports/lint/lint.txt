@@ -111,8 +111,8 @@
 [0m  [2m214:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
-[0m  [2m167:22[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m185:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
+[0m  [2m168:22[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
+[0m  [2m189:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
 [0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m

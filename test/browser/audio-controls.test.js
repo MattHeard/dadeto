@@ -161,6 +161,7 @@ describe('createUpdateTimeDisplay', () => {
 describe('setupAudio', () => {
   let createdElements;
   let removeControlsAttribute, createElement, createTextNode, stopDefault, playAudio, pauseAudio, addEventListener, appendChild, insertBefore;
+  let audioElement, audioElements, dom;
   beforeEach(() => {
     createdElements = [];
     removeControlsAttribute = () => {};
@@ -176,6 +177,9 @@ describe('setupAudio', () => {
     addEventListener = () => {};
     appendChild = () => {};
     insertBefore = () => {};
+    audioElement = {};
+    audioElements = [audioElement];
+    dom = { getAudioElements: () => audioElements, removeControlsAttribute };
   });
 
   it('assigns a default id to an audio element with an empty id', () => {
@@ -309,10 +313,6 @@ describe('setupAudio', () => {
 
   it('adds a time display element with class "audio-time"', () => {
     // Given
-    const audioElement = {};
-    const audioElements = [audioElement];
-    const dom = { getAudioElements: () => audioElements, removeControlsAttribute };
-
     // When
     setupAudio(
       dom,
