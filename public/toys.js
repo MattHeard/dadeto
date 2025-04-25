@@ -321,7 +321,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   disableInputAndButton(inputElement, submitButton);
   
   // Update message to show JS is running, replacing <p.output> with paragraph
-  setTextContent(needsJavascriptWarning, 'Initialising...', dom, outputParent);
+  const initialisingWarning = setTextContent(needsJavascriptWarning, 'Initialising...', dom, outputParent);
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
