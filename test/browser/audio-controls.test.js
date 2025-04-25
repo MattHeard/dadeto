@@ -236,15 +236,15 @@ describe('setupAudio', () => {
     // When
     setupAudio(
       dom,
-      () => {},
-      () => ({ className: '', id: '', textContent: '', href: '' }),
-      () => '',
-      () => {},
-      () => {},
-      () => {},
-      () => {},
-      () => {},
-      () => {}
+      removeControlsAttribute,
+      createElement,
+      createTextNode,
+      stopDefault,
+      playAudio,
+      pauseAudio,
+      addEventListener,
+      appendChild,
+      insertBefore
     );
 
     // Then
