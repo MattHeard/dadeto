@@ -15,6 +15,16 @@ export const appendChild = (parentNode, newChild) => parentNode.appendChild(newC
 export const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
 export const removeChild = (parentNode, child) => parentNode.removeChild(child);
 
+/**
+ * Removes all children from the given DOM element.
+ * @param {HTMLElement} element - The parent element to clear.
+ */
+export function removeAllChildren(element) {
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
+}
+
 export function contains(parent, child) {
   return parent && typeof parent.contains === 'function' ? parent.contains(child) : false;
 }
