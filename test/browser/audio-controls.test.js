@@ -312,7 +312,6 @@ describe('setupAudio', () => {
   });
 
   it('adds a time display element with class "audio-time"', () => {
-    // Given
     // When
     setupAudio(
       dom,
