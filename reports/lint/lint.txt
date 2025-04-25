@@ -1,6 +1,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js[24m[0m
-[0m  [2m33:8[22m  [33mwarning[39m  Function 'setupAudio' has too many parameters (10). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m33:8[22m  [33mwarning[39m  Function 'setupAudio' has too many parameters (9). Maximum allowed is 3  [2mmax-params[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js[24m[0m
 [0m   [2m40:8[22m   [33mwarning[39m  Function 'fetchAndCacheBlogData' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m

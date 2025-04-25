@@ -32,7 +32,6 @@ export const createUpdateTimeDisplay = (audio, timeDisplay) => {
 
 export function setupAudio(
   dom,
-  removeControlsAttribute,
   createElement,
   createTextNode,
   stopDefault,
@@ -46,7 +45,6 @@ export function setupAudio(
 
   audioElements.forEach(function(audio, index) {
     dom.removeControlsAttribute(audio);
-
     if (!audio.id) {
       audio.id = "audio-" + index;
     }

@@ -193,7 +193,6 @@ describe('setupAudio', () => {
     // When
     setupAudio(
       dom,
-      removeControlsAttribute,
       createElement,
       createTextNode,
       stopDefault,
@@ -218,7 +217,6 @@ describe('setupAudio', () => {
     // When
     setupAudio(
       dom,
-      removeControlsAttribute,
       createElement,
       createTextNode,
       stopDefault,
@@ -243,7 +241,6 @@ describe('setupAudio', () => {
     // When
     setupAudio(
       dom,
-      removeControlsAttribute,
       createElement,
       createTextNode,
       stopDefault,
@@ -269,7 +266,6 @@ describe('setupAudio', () => {
     // When
     setupAudio(
       dom,
-      removeControlsAttribute,
       createElement,
       createTextNode,
       stopDefault,
@@ -295,7 +291,6 @@ describe('setupAudio', () => {
     // When
     setupAudio(
       dom,
-      removeControlsAttribute,
       createElement,
       createTextNode,
       stopDefault,
@@ -315,7 +310,6 @@ describe('setupAudio', () => {
     // When
     setupAudio(
       dom,
-      removeControlsAttribute,
       createElement,
       createTextNode,
       stopDefault,
