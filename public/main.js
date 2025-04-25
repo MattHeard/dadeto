@@ -36,7 +36,8 @@ import {
   setTextContent,
   addClass,
   hide,
-  makeIntersectionObserver
+  makeIntersectionObserver,
+  enable
 } from './document.js';
 
 /**
