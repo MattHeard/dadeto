@@ -107,7 +107,12 @@ const dom = {
   enable,
   removeChild,
   removeWarning,
-  contains
+  contains,
+  removeAllChildren(parent) {
+    while (parent.firstChild) {
+      parent.removeChild(parent.firstChild);
+    }
+  }
 };
 const env = { globalState, createEnv, error, fetch };
 import { makeCreateIntersectionObserver } from './toys.js';
