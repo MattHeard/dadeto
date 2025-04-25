@@ -180,13 +180,6 @@ describe('setupAudio', () => {
         
     const getAudioElements = () => audioElements;
     const dom = { getAudioElements, removeControlsAttribute };
-    const createTextNode = () => '';
-    const stopDefault = () => {};
-    const playAudio = () => {};
-    const pauseAudio = () => {};
-    const addEventListener = () => {};
-    const appendChild = () => {};
-    const insertBefore = () => {};
 
     // When
     setupAudio(
@@ -216,13 +209,6 @@ describe('setupAudio', () => {
     const getAudioElements = () => audioElements;
     const removeControlsAttribute = () => {};
     const dom = { getAudioElements, removeControlsAttribute };
-    const createTextNode = () => '';
-    const stopDefault = () => {};
-    const playAudio = () => {};
-    const pauseAudio = () => {};
-    const addEventListener = () => {};
-    const appendChild = () => {};
-    const insertBefore = () => {};
 
     // When
     setupAudio(
