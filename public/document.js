@@ -40,6 +40,11 @@ export const removeWarning = (outputElement) => {
   outputElement.parentElement.classList.remove('warning');
 };
 
+// Enables the given input element by setting its disabled property to false
+export function enable(input) {
+  input.disabled = false;
+}
+
 export const removeNextSibling = link =>
   link.nextElementSibling && link.nextElementSibling.remove();
 

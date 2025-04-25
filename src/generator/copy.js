@@ -22,7 +22,7 @@ if (!fs.existsSync(publicDir)) {
 
 // --- Copy Toy Files --- 
 
-// Function to recursively find JS files in the toys directory
+// Function to recursively find JS files in a directory (excluding .test.js)
 function findJsFiles(dir) {
   let jsFiles = [];
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -57,6 +57,28 @@ toyFiles.forEach(filePath => {
 });
 
 console.log('Toy files copied successfully!');
+
+// --- Copy Presenter Files ---
+const srcPresentersDir = path.resolve(srcDir, 'presenters');
+const publicPresentersDir = path.join(publicDir, 'presenters');
+
+if (fs.existsSync(srcPresentersDir)) {
+  const presenterFiles = findJsFiles(srcPresentersDir);
+  presenterFiles.forEach(filePath => {
+    const relativePath = path.relative(srcPresentersDir, filePath);
+    const destPath = path.join(publicPresentersDir, relativePath);
+    const destDir = path.dirname(destPath);
+
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    fs.copyFileSync(filePath, destPath);
+    console.log(`Copied presenter: ${filePath} -> ${destPath}`);
+  });
+  console.log('Presenter files copied successfully!');
+} else {
+  console.warn(`Warning: presenters directory not found at ${srcPresentersDir}`);
+}
 
 // --- Copy Specific Assets --- 
 
