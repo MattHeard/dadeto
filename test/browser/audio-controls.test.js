@@ -73,15 +73,22 @@ describe('createPauseClickHandler', () => {
 });
 
 describe('createStopClickHandler', () => {
-  it('calls stopDefault, pauseAudio, and resets audio.currentTime', () => {
-    // Given
-    const audio = { currentTime: 123 };
-    const stopDefault = jest.fn();
-    const pauseAudio = jest.fn();
-    const event = { type: 'click' };
+  let audio;
+  let stopDefault;
+  let pauseAudio;
+  let event;
+  let handler;
 
+  beforeEach(() => {
+    audio = { currentTime: 123 };
+    stopDefault = jest.fn();
+    pauseAudio = jest.fn();
+    event = { type: 'click' };
+    handler = createStopClickHandler(audio, stopDefault, pauseAudio);
+  });
+
+  it('calls stopDefault, pauseAudio, and resets audio.currentTime', () => {
     // When
-    const handler = createStopClickHandler(audio, stopDefault, pauseAudio);
     handler(event);
 
     // Then
