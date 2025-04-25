@@ -29,7 +29,6 @@ export const createUpdateTimeDisplay = (audio, timeDisplay) => {
 };
 
 export function setupAudio(
-  doc,
   getAudioElements,
   removeControlsAttribute,
   createElement,

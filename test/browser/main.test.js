@@ -71,7 +71,6 @@ describe('setupAudio', () => {
 
     // Call setupAudio
     setupAudio(
-      mockDoc,
       mockGetAudioElements,
       mockRemoveControlsAttribute,
       mockCreateElement,
