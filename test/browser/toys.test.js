@@ -213,6 +213,7 @@ describe('enableInteractiveControls', () => {
     dom.removeChild = removeChild;
     dom.appendChild = appendChild;
     dom.removeAllChildren = jest.fn();
+    dom.createElement = jest.fn(() => ({}));
     const paragraph = {};
     dom.createElement = jest.fn(() => paragraph);
     // --- WHEN ---
