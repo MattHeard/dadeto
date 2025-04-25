@@ -164,7 +164,11 @@ describe('setupAudio', () => {
   beforeEach(() => {
     createdElements = [];
     removeControlsAttribute = () => {};
-    createElement = () => ({ className: '', id: '', textContent: '', href: '' });
+    createElement = (tag) => {
+      const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
+      createdElements.push(el);
+      return el;
+    };
     createTextNode = () => '';
     stopDefault = () => {};
     playAudio = () => {};
