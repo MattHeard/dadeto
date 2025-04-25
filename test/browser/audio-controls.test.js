@@ -164,11 +164,6 @@ describe('setupAudio', () => {
     const audioElement = { id: '' };
     const audioElements = [audioElement];
     const buttons = [];
-    const querySelectorAll = jest.fn((selector) => {
-      if (selector === 'audio') {return audioElements;}
-      if (selector === 'button') {return buttons;}
-      return [];
-    });
     
     const getAudioElements = () => audioElements;
     const removeControlsAttribute = () => {};
@@ -205,11 +200,6 @@ describe('setupAudio', () => {
     const audioElement = { parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
     const audioElements = [audioElement];
     const buttons = [];
-    const querySelectorAll = jest.fn((selector) => {
-      if (selector === 'audio') {return audioElements;}
-      if (selector === 'button') {return buttons;}
-      return [];
-    });
     
     const getAudioElements = () => audioElements;
     const removeControlsAttribute = () => {};
@@ -247,11 +237,6 @@ describe('setupAudio', () => {
       { id: 'custom-id', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
     ];
     const buttons = [];
-    const querySelectorAll = jest.fn((selector) => {
-      if (selector === 'audio') {return audioElements;}
-      if (selector === 'button') {return buttons;}
-      return [];
-    });
     
 
     // When
@@ -284,11 +269,6 @@ describe('setupAudio', () => {
       createdElements.push(element);
       return element;
     };
-    const querySelectorAll = jest.fn((selector) => {
-      if (selector === 'audio') {return audioElements;}
-      if (selector === 'button') {return buttons;}
-      return [];
-    });
     
 
     // When
@@ -323,11 +303,6 @@ describe('setupAudio', () => {
       createdElements.push(element);
       return element;
     };
-    const querySelectorAll = jest.fn((selector) => {
-      if (selector === 'audio') {return audioElements;}
-      if (selector === 'button') {return buttons;}
-      return [];
-    });
     
 
     // When
