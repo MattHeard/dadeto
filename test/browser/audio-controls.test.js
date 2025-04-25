@@ -98,7 +98,7 @@ describe('setupAudio', () => {
       if (selector === 'button') {return buttons;}
       return [];
     });
-    const container = { querySelectorAll };
+    const container = { querySelectorAll, removeControlsAttribute: () => {} };
 
     setupAudio(
       { getAudioElements: () => audioElements, removeControlsAttribute: () => {} },
@@ -127,7 +127,7 @@ describe('setupAudio', () => {
       if (selector === 'button') {return buttons;}
       return [];
     });
-    const container = { querySelectorAll };
+    const container = { querySelectorAll, removeControlsAttribute: () => {} };
 
     setupAudio(
       { getAudioElements: () => audioElements, removeControlsAttribute: () => {} },
@@ -161,7 +161,7 @@ describe('setupAudio', () => {
       if (selector === 'button') {return buttons;}
       return [];
     });
-    const container = { querySelectorAll };
+    const container = { querySelectorAll, removeControlsAttribute: () => {} };
 
     setupAudio(
       { getAudioElements: () => audioElements, removeControlsAttribute: () => {} },
@@ -197,7 +197,7 @@ describe('setupAudio', () => {
       if (selector === 'button') {return buttons;}
       return [];
     });
-    const container = { querySelectorAll };
+    const container = { querySelectorAll, removeControlsAttribute: () => {} };
 
     setupAudio(
       { getAudioElements: () => audioElements, removeControlsAttribute: () => {} },
