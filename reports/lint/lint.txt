@@ -111,16 +111,16 @@
 [0m  [2m214:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
-[0m  [2m131:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m136:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
-[0m  [2m163:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m168:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
-[0m  [2m195:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
-[0m  [2m200:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m205:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
-[0m  [2m234:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
-[0m  [2m239:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m244:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
+[0m  [2m145:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m150:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
+[0m  [2m177:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m182:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
+[0m  [2m209:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
+[0m  [2m214:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m219:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
+[0m  [2m248:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
+[0m  [2m253:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m258:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
 [0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m
