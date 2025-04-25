@@ -40,7 +40,8 @@ import {
   enable,
   removeChild,
   removeWarning,
-  contains
+  contains,
+  removeAllChildren
 } from './document.js';
 
 /**
