@@ -232,7 +232,7 @@ describe('setupAudio', () => {
         
 
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute: () => {} };
+    const dom = { getAudioElements, removeControlsAttribute };
     // When
     setupAudio(
       dom,
