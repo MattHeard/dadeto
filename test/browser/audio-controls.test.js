@@ -161,7 +161,7 @@ describe('createUpdateTimeDisplay', () => {
 describe('setupAudio', () => {
   it('assigns a default id to an audio element with an empty id', () => {
     // Given
-    const audioElement = { id: '', addEventListener: jest.fn() };
+    const audioElement = { id: '' };
     const audioElements = [audioElement];
     const buttons = [];
     const querySelectorAll = jest.fn((selector) => {
