@@ -251,7 +251,7 @@ describe('setupAudio', () => {
 
   it('adds audio-controls class and sets correct text on control buttons', () => {
     // Given
-    const element = { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
+    const element = { id: '' };
     const audioElements = [element];
     const getAudioElements = () => audioElements;
     const dom = { getAudioElements, removeControlsAttribute };
