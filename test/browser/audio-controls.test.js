@@ -80,10 +80,10 @@ describe('createStopClickHandler', () => {
   let handler;
 
   beforeEach(() => {
-    audio = { currentTime: 123 };
+    audio = {};
     stopDefault = jest.fn();
     pauseAudio = jest.fn();
-    event = { type: 'click' };
+    event = {};
     handler = createStopClickHandler(audio, stopDefault, pauseAudio);
   });
 
