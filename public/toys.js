@@ -158,7 +158,9 @@ export function enableInteractiveControls(inputElement, submitButton, outputElem
   dom.enable(inputElement);
   dom.enable(submitButton);
   setTextContent(outputElement, 'Ready for input', dom, parent);
-  dom.removeWarning(outputElement);
+  // Remove warning from the .output div, not the <p>
+  let outputDiv = outputElement.closest ? outputElement.closest('.output') : parent;
+  if (outputDiv) dom.removeWarning(outputDiv);
 }
 
 function handleRequestResponse(url, outputElement, error, fetch, dom, parent) {
