@@ -260,11 +260,6 @@ describe('setupAudio', () => {
     const audioElements = [element];
     const getAudioElements = () => audioElements;
     const dom = { getAudioElements, removeControlsAttribute };
-    const createElementOverride = (tag) => {
-      const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
-      createdElements.push(el);
-      return el;
-    };
 
     // When
     setupAudio(
@@ -290,11 +285,6 @@ describe('setupAudio', () => {
     const audioElements = [element];
     const getAudioElements = () => audioElements;
     const dom = { getAudioElements, removeControlsAttribute };
-    const createElementOverride = (tag) => {
-      const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
-      createdElements.push(el);
-      return el;
-    };
 
     // When
     setupAudio(
