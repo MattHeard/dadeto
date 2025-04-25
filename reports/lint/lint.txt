@@ -32,25 +32,25 @@
 [0m   [2m11:10[22m  [33mwarning[39m  'hideArticlesByClass' is defined but never used         [2mno-unused-vars[22m[0m
 [0m   [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used              [2mno-unused-vars[22m[0m
 [0m   [2m11:47[22m  [33mwarning[39m  'createHandleClick' is defined but never used           [2mno-unused-vars[22m[0m
-[0m   [2m57:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m   [2m57:10[22m  [33mwarning[39m  'makeHandleHideSpan' is defined but never used          [2mno-unused-vars[22m[0m
-[0m   [2m57:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used         [2mno-unused-vars[22m[0m
-[0m  [2m107:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m  [2m110:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m114:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m  [2m114:10[22m  [33mwarning[39m  'handleIntersection' is defined but never used          [2mno-unused-vars[22m[0m
-[0m  [2m114:30[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used   [2mno-unused-vars[22m[0m
-[0m  [2m114:57[22m  [33mwarning[39m  'makeObserverCallback' is defined but never used        [2mno-unused-vars[22m[0m
-[0m  [2m119:10[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m120:12[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m121:7[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m122:8[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m123:18[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
-[0m  [2m129:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
-[0m  [2m129:10[22m  [33mwarning[39m  'startsWith' is defined but never used                  [2mno-unused-vars[22m[0m
-[0m  [2m129:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used         [2mno-unused-vars[22m[0m
-[0m  [2m129:43[22m  [33mwarning[39m  'makeHandleLink' is defined but never used              [2mno-unused-vars[22m[0m
-[0m  [2m130:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m   [2m58:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
+[0m   [2m58:10[22m  [33mwarning[39m  'makeHandleHideSpan' is defined but never used          [2mno-unused-vars[22m[0m
+[0m   [2m58:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used         [2mno-unused-vars[22m[0m
+[0m  [2m109:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
+[0m  [2m112:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m  [2m116:1[22m   [33mwarning[39m  './toys.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
+[0m  [2m116:10[22m  [33mwarning[39m  'handleIntersection' is defined but never used          [2mno-unused-vars[22m[0m
+[0m  [2m116:30[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used   [2mno-unused-vars[22m[0m
+[0m  [2m116:57[22m  [33mwarning[39m  'makeObserverCallback' is defined but never used        [2mno-unused-vars[22m[0m
+[0m  [2m121:10[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m122:12[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m123:7[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m124:8[22m   [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m125:18[22m  [33mwarning[39m  Trailing spaces not allowed                             [2mno-trailing-spaces[22m[0m
+[0m  [2m131:1[22m   [33mwarning[39m  './tags.js' import is duplicated                        [2mno-duplicate-imports[22m[0m
+[0m  [2m131:10[22m  [33mwarning[39m  'startsWith' is defined but never used                  [2mno-unused-vars[22m[0m
+[0m  [2m131:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used         [2mno-unused-vars[22m[0m
+[0m  [2m131:43[22m  [33mwarning[39m  'makeHandleLink' is defined but never used              [2mno-unused-vars[22m[0m
+[0m  [2m132:1[22m   [33mwarning[39m  './document.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
 [0m   [2m5:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m

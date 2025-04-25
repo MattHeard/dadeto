@@ -37,7 +37,8 @@ import {
   addClass,
   hide,
   makeIntersectionObserver,
-  enable
+  enable,
+  removeChild
 } from './document.js';
 
 /**
@@ -101,7 +102,8 @@ const dom = {
   playAudio,
   removeControlsAttribute,
   removeNextSibling,
-  enable
+  enable,
+  removeChild
 };
 const env = { globalState, createEnv, error, fetch };
 import { makeCreateIntersectionObserver } from './toys.js';

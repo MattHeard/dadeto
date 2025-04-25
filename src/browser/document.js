@@ -13,6 +13,7 @@ export const hide = (element) => { element.style.display = 'none'; };
 export const addEventListener = (element, event, func) => element.addEventListener(event, func);
 export const appendChild = (parentNode, newChild) => parentNode.appendChild(newChild);
 export const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
+export const removeChild = (parentNode, child) => parentNode.removeChild(child);
 
 // Event handlers
 export const stopDefault = (e) => e.preventDefault();
