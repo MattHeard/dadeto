@@ -112,11 +112,11 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
 [0m  [2m162:7[22m   [33mwarning[39m  'createdElements' is assigned a value but never used  [2mno-unused-vars[22m[0m
-[0m  [2m184:1[22m   [33mwarning[39m  Trailing spaces not allowed                           [2mno-trailing-spaces[22m[0m
-[0m  [2m263:36[22m  [33mwarning[39m  'tag' is defined but never used                       [2mno-unused-vars[22m[0m
-[0m  [2m294:36[22m  [33mwarning[39m  'tag' is defined but never used                       [2mno-unused-vars[22m[0m
-[0m  [2m325:28[22m  [33mwarning[39m  'tag' is defined but never used                       [2mno-unused-vars[22m[0m
-[0m  [2m330:1[22m   [33mwarning[39m  Trailing spaces not allowed                           [2mno-trailing-spaces[22m[0m
+[0m  [2m181:1[22m   [33mwarning[39m  Trailing spaces not allowed                           [2mno-trailing-spaces[22m[0m
+[0m  [2m260:36[22m  [33mwarning[39m  'tag' is defined but never used                       [2mno-unused-vars[22m[0m
+[0m  [2m291:36[22m  [33mwarning[39m  'tag' is defined but never used                       [2mno-unused-vars[22m[0m
+[0m  [2m322:28[22m  [33mwarning[39m  'tag' is defined but never used                       [2mno-unused-vars[22m[0m
+[0m  [2m327:1[22m   [33mwarning[39m  Trailing spaces not allowed                           [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
 [0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m

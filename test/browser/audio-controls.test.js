@@ -160,12 +160,9 @@ describe('createUpdateTimeDisplay', () => {
 
 describe('setupAudio', () => {
   let createdElements;
+  let removeControlsAttribute, createElement, createTextNode, stopDefault, playAudio, pauseAudio, addEventListener, appendChild, insertBefore;
   beforeEach(() => {
     createdElements = [];
-  });
-  let removeControlsAttribute, createElement, createTextNode, stopDefault, playAudio, pauseAudio, addEventListener, appendChild, insertBefore;
-
-  beforeEach(() => {
     removeControlsAttribute = () => {};
     createElement = () => ({ className: '', id: '', textContent: '', href: '' });
     createTextNode = () => '';
