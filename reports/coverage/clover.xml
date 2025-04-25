@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1745592424892" clover="3.2.0">
-  <project timestamp="1745592424892" name="All files">
+<coverage generated="1745592638333" clover="3.2.0">
+  <project timestamp="1745592638333" name="All files">
     <metrics statements="904" coveredstatements="903" conditionals="341" coveredconditionals="336" methods="330" coveredmethods="330" elements="1575" coveredelements="1569" complexity="0" loc="904" ncloc="904" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="243" coveredstatements="243" conditionals="57" coveredconditionals="54" methods="82" coveredmethods="82"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
-        <line num="2" count="6" type="stmt"/>
-        <line num="3" count="1" type="stmt"/>
-        <line num="4" count="1" type="stmt"/>
+        <line num="2" count="7" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
         <line num="8" count="1" type="stmt"/>
         <line num="9" count="6" type="stmt"/>
         <line num="10" count="1" type="stmt"/>
