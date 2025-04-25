@@ -114,13 +114,21 @@ describe('createStopClickHandler', () => {
 
 
 describe('createUpdateTimeDisplay', () => {
+  let audio;
+  let display;
+  let updateTimeDisplay;
+
+  beforeEach(() => {
+    audio = {};
+    display = { textContent: '' };
+    updateTimeDisplay = createUpdateTimeDisplay(audio, display);
+  });
+
   it('updates the time display with the current time of the audio', () => {
     // Given
-    const audio = { currentTime: 42 };
-    const display = { textContent: '' };
+    audio.currentTime = 42;
 
     // When
-    const updateTimeDisplay = createUpdateTimeDisplay(audio, display);
     updateTimeDisplay();
 
     // Then
@@ -129,11 +137,9 @@ describe('createUpdateTimeDisplay', () => {
 
   it('handles when audio currentTime is 0', () => {
     // Given
-    const audio = { currentTime: 0 };
-    const display = { textContent: '' };
+    audio.currentTime = 0;
 
     // When
-    const updateTimeDisplay = createUpdateTimeDisplay(audio, display);
     updateTimeDisplay();
 
     // Then
@@ -142,11 +148,9 @@ describe('createUpdateTimeDisplay', () => {
 
   it('displays minutes and seconds when currentTime is 60', () => {
     // Given
-    const audio = { currentTime: 60 };
-    const display = { textContent: '' };
+    audio.currentTime = 60;
 
     // When
-    const updateTimeDisplay = createUpdateTimeDisplay(audio, display);
     updateTimeDisplay();
 
     // Then
