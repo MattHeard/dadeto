@@ -231,7 +231,8 @@ describe('setupAudio', () => {
     ];
         
 
-    const dom = { getAudioElements: () => audioElements, removeControlsAttribute: () => {} };
+    const getAudioElements = () => audioElements;
+    const dom = { getAudioElements, removeControlsAttribute: () => {} };
     // When
     setupAudio(
       dom,
