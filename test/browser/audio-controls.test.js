@@ -3,7 +3,7 @@ import { createPlayClickHandler } from '../../src/browser/audio-controls.js';
 import { createStopClickHandler } from '../../src/browser/audio-controls.js';
 
 describe('createPlayClickHandler', () => {
-  it('calls stopDefault with the correct argument', () => {
+  it('invokes stopDefault when the play button is clicked', () => {
     // Given
     const audio = {};
     const stopDefault = jest.fn();
@@ -18,7 +18,7 @@ describe('createPlayClickHandler', () => {
     expect(stopDefault).toHaveBeenCalledWith(event);
   });
 
-  it('calls playAudio with the correct argument', () => {
+  it('invokes playAudio to start playback when the play button is clicked', () => {
     // Given
     const audio = {};
     const stopDefault = jest.fn();
