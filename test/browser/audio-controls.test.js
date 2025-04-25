@@ -226,7 +226,7 @@ describe('setupAudio', () => {
 
   it('does not overwrite existing audio element ids', () => {
     // Given
-    const element = { id: 'custom-id', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
+    const element = { id: 'custom-id' };
     const audioElements = [element];
 
     const getAudioElements = () => audioElements;
