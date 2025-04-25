@@ -34,15 +34,11 @@ export const hasNextSiblingClass = (link, cls) =>
 
 // DOM manipulation functions
 export const addWarning = (outputElement) => {
-  if (outputElement.parentElement) {
-    outputElement.parentElement.classList.add('warning');
-  }
+  outputElement.parentElement.classList.add('warning');
 };
 
 export const removeWarning = (outputElement) => {
-  if (outputElement.parentElement) {
-    outputElement.parentElement.classList.remove('warning');
-  }
+  outputElement.parentElement.classList.remove('warning');
 };
 
 // Enables the given input element by setting its disabled property to false
