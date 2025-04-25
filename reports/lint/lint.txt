@@ -111,13 +111,22 @@
 [0m  [2m214:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
-[0m  [2m166:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m203:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m239:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m265:28[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m270:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
-[0m  [2m298:28[22m  [33mwarning[39m  'tag' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m303:1[22m   [33mwarning[39m  Trailing spaces not allowed      [2mno-trailing-spaces[22m[0m
+[0m  [2m162:32[22m   [33mwarning[39m  'dom' is assigned a value but never used               [2mno-unused-vars[22m[0m
+[0m  [2m162:37[22m   [33mwarning[39m  'createElement' is assigned a value but never used     [2mno-unused-vars[22m[0m
+[0m  [2m162:52[22m   [33mwarning[39m  'createTextNode' is assigned a value but never used    [2mno-unused-vars[22m[0m
+[0m  [2m162:68[22m   [33mwarning[39m  'stopDefault' is assigned a value but never used       [2mno-unused-vars[22m[0m
+[0m  [2m162:81[22m   [33mwarning[39m  'playAudio' is assigned a value but never used         [2mno-unused-vars[22m[0m
+[0m  [2m162:92[22m   [33mwarning[39m  'pauseAudio' is assigned a value but never used        [2mno-unused-vars[22m[0m
+[0m  [2m162:104[22m  [33mwarning[39m  'addEventListener' is assigned a value but never used  [2mno-unused-vars[22m[0m
+[0m  [2m162:122[22m  [33mwarning[39m  'appendChild' is assigned a value but never used       [2mno-unused-vars[22m[0m
+[0m  [2m162:135[22m  [33mwarning[39m  'insertBefore' is assigned a value but never used      [2mno-unused-vars[22m[0m
+[0m  [2m181:1[22m    [33mwarning[39m  Trailing spaces not allowed                            [2mno-trailing-spaces[22m[0m
+[0m  [2m218:1[22m    [33mwarning[39m  Trailing spaces not allowed                            [2mno-trailing-spaces[22m[0m
+[0m  [2m254:1[22m    [33mwarning[39m  Trailing spaces not allowed                            [2mno-trailing-spaces[22m[0m
+[0m  [2m280:28[22m   [33mwarning[39m  'tag' is defined but never used                        [2mno-unused-vars[22m[0m
+[0m  [2m285:1[22m    [33mwarning[39m  Trailing spaces not allowed                            [2mno-trailing-spaces[22m[0m
+[0m  [2m313:28[22m   [33mwarning[39m  'tag' is defined but never used                        [2mno-unused-vars[22m[0m
+[0m  [2m318:1[22m    [33mwarning[39m  Trailing spaces not allowed                            [2mno-trailing-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
 [0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m
@@ -146,6 +155,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 103 problems (0 errors, 103 warnings)[22m[39m[0m
+[0m[33m[1m✖ 112 problems (0 errors, 112 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 5 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
