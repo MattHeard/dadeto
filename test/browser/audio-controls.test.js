@@ -310,25 +310,20 @@ describe('setupAudio', () => {
     const audioElements = [
       { id: '', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
     ];
-        const createElement = (tag) => {
-      const element = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
-      createdElements.push(element);
-      return element;
-    };
-    
+    const dom = { getAudioElements: () => audioElements, removeControlsAttribute };
 
     // When
     setupAudio(
-      { getAudioElements: () => audioElements, removeControlsAttribute: () => {} },
-      () => {},
+      dom,
+      removeControlsAttribute,
       createElement,
-      () => '',
-      () => {},
-      () => {},
-      () => {},
-      () => {},
-      () => {},
-      () => {}
+      createTextNode,
+      stopDefault,
+      playAudio,
+      pauseAudio,
+      addEventListener,
+      appendChild,
+      insertBefore
     );
 
     // Then
