@@ -79,6 +79,7 @@ function createEnv() {
 
 const dom = {
   createElement,
+  removeControlsAttribute,
   getAudioElements,
   setTextContent,
   stopDefault,
