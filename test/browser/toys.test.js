@@ -244,7 +244,7 @@ describe('initialiseModule', () => {
     const dom = {
       querySelector: (el, selector) => {
         if (selector === 'input' || selector === 'button') return {};
-        if (selector === 'p.output') return outputElement;
+        if (selector === 'div.output > p') return outputElement;
         if (selector === 'div.output') return outputElement.outputParentElement;
         return {};
       },
@@ -458,7 +458,7 @@ describe('initializeInteractiveComponent', () => {
     const querySelector = jest.fn((el, selector) => {
       if (selector === 'input') return inputElement;
       if (selector === 'button') return submitButton;
-      if (selector === 'p.output') return outputElement;
+      if (selector === 'div.output > p') return outputElement;
       if (selector === 'div.output') return outputElement.outputParentElement; // Return the parent element when asked for output container
     });
 
@@ -523,7 +523,7 @@ describe('initializeInteractiveComponent', () => {
     const querySelector = jest.fn((el, selector) => {
       if (selector === 'input') return inputElement;
       if (selector === 'button') return submitButton;
-      if (selector === 'p.output') return outputElement;
+      if (selector === 'div.output > p') return outputElement;
       if (selector === 'div.output') return outputElement.outputParentElement; // Return the parent element when asked for output container
     });
 

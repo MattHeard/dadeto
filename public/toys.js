@@ -314,7 +314,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
   const submitButton = dom.querySelector(article, 'button');
-  const needsJavascriptWarning = dom.querySelector(article, 'p.output');
+  const needsJavascriptWarning = dom.querySelector(article, 'div.output > p');
   const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
   
   // Disable input and submit during initialization
