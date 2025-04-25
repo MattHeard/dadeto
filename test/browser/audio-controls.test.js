@@ -172,8 +172,6 @@ describe('setupAudio', () => {
       return [];
     });
     const container = { querySelectorAll, removeControlsAttribute: () => {} };
-
-    // When
     const getAudioElements = () => audioElements;
     const removeControlsAttribute = () => {};
     const dom = { getAudioElements, removeControlsAttribute };
