@@ -334,7 +334,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   dom.addEventListener(inputElement, 'keypress', createHandleKeyPress(handleSubmit));
 
   // Enable controls when initialization is complete using the function from this module
-  enableInteractiveControls(inputElement, submitButton, needsJavascriptWarning, dom, outputParent);
+  enableInteractiveControls(inputElement, submitButton, initialisingWarning, dom, outputParent);
 }
 
 /**
