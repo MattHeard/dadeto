@@ -18,7 +18,7 @@ describe('createPlayClickHandler', () => {
     audio = {};
     stopDefault = jest.fn();
     playAudio = jest.fn();
-    event = { type: 'click' };
+    event = {};
     handler = createPlayClickHandler(audio, stopDefault, playAudio);
   });
 
@@ -51,7 +51,7 @@ describe('createPauseClickHandler', () => {
     audio = {};
     stopDefault = jest.fn();
     pauseAudio = jest.fn();
-    event = { type: 'click' };
+    event = {};
     handler = createPauseClickHandler(audio, stopDefault, pauseAudio);
   });
 
