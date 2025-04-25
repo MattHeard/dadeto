@@ -41,14 +41,21 @@ describe('createPlayClickHandler', () => {
 
 
 describe('createPauseClickHandler', () => {
-  it('invokes stopDefault when the pause button is clicked', () => {
-    // Given
-    const audio = {};
-    const stopDefault = jest.fn();
-    const pauseAudio = jest.fn();
-    const event = { type: 'click' };
-    const handler = createPauseClickHandler(audio, stopDefault, pauseAudio);
+  let audio;
+  let stopDefault;
+  let pauseAudio;
+  let event;
+  let handler;
 
+  beforeEach(() => {
+    audio = {};
+    stopDefault = jest.fn();
+    pauseAudio = jest.fn();
+    event = { type: 'click' };
+    handler = createPauseClickHandler(audio, stopDefault, pauseAudio);
+  });
+
+  it('invokes stopDefault when the pause button is clicked', () => {
     // When
     handler(event);
 
@@ -57,13 +64,6 @@ describe('createPauseClickHandler', () => {
   });
 
   it('invokes pauseAudio to pause playback when the pause button is clicked', () => {
-    // Given
-    const audio = {};
-    const stopDefault = jest.fn();
-    const pauseAudio = jest.fn();
-    const event = { type: 'click' };
-    const handler = createPauseClickHandler(audio, stopDefault, pauseAudio);
-
     // When
     handler(event);
 
