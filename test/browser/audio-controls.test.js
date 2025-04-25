@@ -8,14 +8,21 @@ import {
 } from '../../src/browser/audio-controls.js';
 
 describe('createPlayClickHandler', () => {
-  it('invokes stopDefault when the play button is clicked', () => {
-    // Given
-    const audio = {};
-    const stopDefault = jest.fn();
-    const playAudio = jest.fn();
-    const event = { type: 'click' };
-    const handler = createPlayClickHandler(audio, stopDefault, playAudio);
+  let audio;
+  let stopDefault;
+  let playAudio;
+  let event;
+  let handler;
 
+  beforeEach(() => {
+    audio = {};
+    stopDefault = jest.fn();
+    playAudio = jest.fn();
+    event = { type: 'click' };
+    handler = createPlayClickHandler(audio, stopDefault, playAudio);
+  });
+
+  it('invokes stopDefault when the play button is clicked', () => {
     // When
     handler(event);
 
@@ -24,13 +31,6 @@ describe('createPlayClickHandler', () => {
   });
 
   it('invokes playAudio to start playback when the play button is clicked', () => {
-    // Given
-    const audio = {};
-    const stopDefault = jest.fn();
-    const playAudio = jest.fn();
-    const event = { type: 'click' };
-    const handler = createPlayClickHandler(audio, stopDefault, playAudio);
-
     // When
     handler(event);
 
