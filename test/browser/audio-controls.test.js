@@ -179,9 +179,7 @@ describe('setupAudio', () => {
     const audioElements = [audioElement];
         
     const getAudioElements = () => audioElements;
-    const removeControlsAttribute = () => {};
     const dom = { getAudioElements, removeControlsAttribute };
-    const createElement = () => ({ className: '', id: '', textContent: '', href: '' });
     const createTextNode = () => '';
     const stopDefault = () => {};
     const playAudio = () => {};
@@ -218,7 +216,6 @@ describe('setupAudio', () => {
     const getAudioElements = () => audioElements;
     const removeControlsAttribute = () => {};
     const dom = { getAudioElements, removeControlsAttribute };
-    const createElement = () => ({ className: '', id: '', textContent: '', href: '' });
     const createTextNode = () => '';
     const stopDefault = () => {};
     const playAudio = () => {};
