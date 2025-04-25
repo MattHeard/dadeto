@@ -174,17 +174,28 @@ describe('setupAudio', () => {
     const container = { querySelectorAll, removeControlsAttribute: () => {} };
 
     // When
+    const dom = { getAudioElements: () => audioElements, removeControlsAttribute: () => {} };
+    const removeControlsAttribute = () => {};
+    const createElement = () => ({ className: '', id: '', textContent: '', href: '' });
+    const createTextNode = () => '';
+    const stopDefault = () => {};
+    const playAudio = () => {};
+    const pauseAudio = () => {};
+    const addEventListener = () => {};
+    const appendChild = () => {};
+    const insertBefore = () => {};
+
     setupAudio(
-      { getAudioElements: () => audioElements, removeControlsAttribute: () => {} },
-      () => {},
-      () => ({ className: '', id: '', textContent: '', href: '' }),
-      () => '',
-      () => {},
-      () => {},
-      () => {},
-      () => {},
-      () => {},
-      () => {}
+      dom,
+      removeControlsAttribute,
+      createElement,
+      createTextNode,
+      stopDefault,
+      playAudio,
+      pauseAudio,
+      addEventListener,
+      appendChild,
+      insertBefore
     );
 
     // Then
