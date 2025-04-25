@@ -87,13 +87,27 @@ describe('createStopClickHandler', () => {
     handler = createStopClickHandler(audio, stopDefault, pauseAudio);
   });
 
-  it('calls stopDefault, pauseAudio, and resets audio.currentTime', () => {
+  it('calls stopDefault when the stop button is clicked', () => {
     // When
     handler(event);
 
     // Then
     expect(stopDefault).toHaveBeenCalledWith(event);
+  });
+
+  it('calls pauseAudio to pause playback when the stop button is clicked', () => {
+    // When
+    handler(event);
+
+    // Then
     expect(pauseAudio).toHaveBeenCalledWith(audio);
+  });
+
+  it('resets audio.currentTime to 0 when the stop button is clicked', () => {
+    // When
+    handler(event);
+
+    // Then
     expect(audio.currentTime).toBe(0);
   });
 });
