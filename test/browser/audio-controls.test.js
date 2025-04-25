@@ -232,8 +232,9 @@ describe('setupAudio', () => {
         
 
     // When
+    const dom = { getAudioElements: () => audioElements, removeControlsAttribute: () => {} };
     setupAudio(
-      { getAudioElements: () => audioElements, removeControlsAttribute: () => {} },
+      dom,
       () => {},
       () => ({ className: '', id: '', textContent: '', href: '' }),
       () => '',
