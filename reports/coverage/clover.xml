@@ -1,65 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1745608858171" clover="3.2.0">
-  <project timestamp="1745608858171" name="All files">
+<coverage generated="1745609436575" clover="3.2.0">
+  <project timestamp="1745609436575" name="All files">
     <metrics statements="904" coveredstatements="903" conditionals="341" coveredconditionals="336" methods="330" coveredmethods="330" elements="1575" coveredelements="1569" complexity="0" loc="904" ncloc="904" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="243" coveredstatements="243" conditionals="57" coveredconditionals="54" methods="82" coveredmethods="82"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
-        <line num="2" count="7" type="stmt"/>
+        <line num="2" count="8" type="stmt"/>
         <line num="3" count="2" type="stmt"/>
         <line num="4" count="2" type="stmt"/>
         <line num="8" count="1" type="stmt"/>
-        <line num="9" count="7" type="stmt"/>
+        <line num="9" count="8" type="stmt"/>
         <line num="10" count="2" type="stmt"/>
         <line num="11" count="2" type="stmt"/>
         <line num="15" count="1" type="stmt"/>
-        <line num="16" count="8" type="stmt"/>
+        <line num="16" count="9" type="stmt"/>
         <line num="17" count="3" type="stmt"/>
         <line num="18" count="3" type="stmt"/>
         <line num="19" count="3" type="stmt"/>
         <line num="25" count="1" type="stmt"/>
-        <line num="26" count="8" type="stmt"/>
+        <line num="26" count="9" type="stmt"/>
         <line num="27" count="3" type="stmt"/>
         <line num="28" count="3" type="stmt"/>
         <line num="29" count="3" type="stmt"/>
-        <line num="45" count="5" type="stmt"/>
-        <line num="47" count="5" type="stmt"/>
-        <line num="48" count="5" type="stmt"/>
-        <line num="50" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="51" count="4" type="stmt"/>
-        <line num="54" count="5" type="stmt"/>
-        <line num="55" count="5" type="stmt"/>
-        <line num="56" count="5" type="stmt"/>
-        <line num="58" count="5" type="stmt"/>
-        <line num="59" count="5" type="stmt"/>
-        <line num="60" count="5" type="stmt"/>
-        <line num="62" count="5" type="stmt"/>
-        <line num="63" count="5" type="stmt"/>
-        <line num="64" count="5" type="stmt"/>
-        <line num="65" count="5" type="stmt"/>
-        <line num="66" count="5" type="stmt"/>
-        <line num="68" count="5" type="stmt"/>
-        <line num="70" count="5" type="stmt"/>
-        <line num="71" count="5" type="stmt"/>
-        <line num="72" count="5" type="stmt"/>
-        <line num="73" count="5" type="stmt"/>
-        <line num="75" count="5" type="stmt"/>
-        <line num="76" count="5" type="stmt"/>
-        <line num="77" count="5" type="stmt"/>
-        <line num="78" count="5" type="stmt"/>
-        <line num="79" count="5" type="stmt"/>
-        <line num="81" count="5" type="stmt"/>
-        <line num="82" count="5" type="stmt"/>
-        <line num="84" count="5" type="stmt"/>
-        <line num="85" count="5" type="stmt"/>
-        <line num="86" count="5" type="stmt"/>
-        <line num="87" count="5" type="stmt"/>
-        <line num="88" count="5" type="stmt"/>
-        <line num="89" count="5" type="stmt"/>
-        <line num="90" count="5" type="stmt"/>
-        <line num="92" count="5" type="stmt"/>
+        <line num="45" count="6" type="stmt"/>
+        <line num="47" count="6" type="stmt"/>
+        <line num="48" count="6" type="stmt"/>
+        <line num="50" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="51" count="5" type="stmt"/>
+        <line num="54" count="6" type="stmt"/>
+        <line num="55" count="6" type="stmt"/>
+        <line num="56" count="6" type="stmt"/>
+        <line num="58" count="6" type="stmt"/>
+        <line num="59" count="6" type="stmt"/>
+        <line num="60" count="6" type="stmt"/>
+        <line num="62" count="6" type="stmt"/>
+        <line num="63" count="6" type="stmt"/>
+        <line num="64" count="6" type="stmt"/>
+        <line num="65" count="6" type="stmt"/>
+        <line num="66" count="6" type="stmt"/>
+        <line num="68" count="6" type="stmt"/>
+        <line num="70" count="6" type="stmt"/>
+        <line num="71" count="6" type="stmt"/>
+        <line num="72" count="6" type="stmt"/>
+        <line num="73" count="6" type="stmt"/>
+        <line num="75" count="6" type="stmt"/>
+        <line num="76" count="6" type="stmt"/>
+        <line num="77" count="6" type="stmt"/>
+        <line num="78" count="6" type="stmt"/>
+        <line num="79" count="6" type="stmt"/>
+        <line num="81" count="6" type="stmt"/>
+        <line num="82" count="6" type="stmt"/>
+        <line num="84" count="6" type="stmt"/>
+        <line num="85" count="6" type="stmt"/>
+        <line num="86" count="6" type="stmt"/>
+        <line num="87" count="6" type="stmt"/>
+        <line num="88" count="6" type="stmt"/>
+        <line num="89" count="6" type="stmt"/>
+        <line num="90" count="6" type="stmt"/>
+        <line num="92" count="6" type="stmt"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
         <metrics statements="59" coveredstatements="59" conditionals="22" coveredconditionals="22" methods="20" coveredmethods="20"/>

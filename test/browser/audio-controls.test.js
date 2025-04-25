@@ -249,7 +249,7 @@ describe('setupAudio', () => {
     expect(element.id).toBe('custom-id');
   });
 
-  it('adds audio-controls class and sets correct text on control buttons', () => {
+  it('adds audio-controls class to the created control element', () => {
     // Given
     const element = { id: '' };
     const audioElements = [element];
@@ -278,6 +278,36 @@ describe('setupAudio', () => {
 
     // Then
     expect(createdElements[0].className).toBe('audio-controls');
+  });
+
+  it('sets correct text on control buttons', () => {
+    // Given
+    const element = { id: '' };
+    const audioElements = [element];
+    const getAudioElements = () => audioElements;
+    const dom = { getAudioElements, removeControlsAttribute };
+    const createdElements = [];
+    const createElementOverride = (tag) => {
+      const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
+      createdElements.push(el);
+      return el;
+    };
+
+    // When
+    setupAudio(
+      dom,
+      removeControlsAttribute,
+      createElementOverride,
+      createTextNode,
+      stopDefault,
+      playAudio,
+      pauseAudio,
+      addEventListener,
+      appendChild,
+      insertBefore
+    );
+
+    // Then
     const texts = createdElements.map(el => el.textContent).filter(Boolean);
     expect(texts).toEqual(expect.arrayContaining(['PLAY', 'PAUSE', 'STOP']));
   });
