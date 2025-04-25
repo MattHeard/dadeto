@@ -309,7 +309,7 @@ describe('setupAudio', () => {
 
   it('adds a time display element with class "audio-time"', () => {
     // Given
-    const audioElement = { parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
+    const audioElement = {};
     const audioElements = [audioElement];
     const dom = { getAudioElements: () => audioElements, removeControlsAttribute };
 
