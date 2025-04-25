@@ -1,6 +1,11 @@
 import { jest } from '@jest/globals';
-import { createPlayClickHandler } from '../../src/browser/audio-controls.js';
-import { createStopClickHandler } from '../../src/browser/audio-controls.js';
+import {
+  createPlayClickHandler,
+  createPauseClickHandler,
+  createStopClickHandler,
+  createUpdateTimeDisplay,
+  setupAudio
+} from '../../src/browser/audio-controls.js';
 
 describe('createPlayClickHandler', () => {
   it('invokes stopDefault when the play button is clicked', () => {
@@ -34,7 +39,6 @@ describe('createPlayClickHandler', () => {
   });
 });
 
-import { createPauseClickHandler } from '../../src/browser/audio-controls.js';
 
 describe('createPauseClickHandler', () => {
   it('calls stopDefault and pauseAudio with the correct arguments', () => {
@@ -73,7 +77,6 @@ describe('createStopClickHandler', () => {
   });
 });
 
-import { createUpdateTimeDisplay } from '../../src/browser/audio-controls.js';
 
 describe('createUpdateTimeDisplay', () => {
   it('updates the time display with the current time of the audio', () => {
@@ -116,7 +119,6 @@ describe('createUpdateTimeDisplay', () => {
   });
 });
 
-import { setupAudio } from '../../src/browser/audio-controls.js';
 
 describe('setupAudio', () => {
   it('assigns a default id to audio elements without an id', () => {

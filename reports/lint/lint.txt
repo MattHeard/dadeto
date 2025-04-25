@@ -111,20 +111,16 @@
 [0m  [2m214:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
-[0m    [2m3:1[22m   [33mwarning[39m  '../../src/browser/audio-controls.js' import is duplicated  [2mno-duplicate-imports[22m[0m
-[0m   [2m37:1[22m   [33mwarning[39m  '../../src/browser/audio-controls.js' import is duplicated  [2mno-duplicate-imports[22m[0m
-[0m   [2m76:1[22m   [33mwarning[39m  '../../src/browser/audio-controls.js' import is duplicated  [2mno-duplicate-imports[22m[0m
-[0m  [2m119:1[22m   [33mwarning[39m  '../../src/browser/audio-controls.js' import is duplicated  [2mno-duplicate-imports[22m[0m
-[0m  [2m129:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m134:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
-[0m  [2m161:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m166:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
-[0m  [2m193:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
-[0m  [2m198:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m203:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
-[0m  [2m232:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
-[0m  [2m237:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m242:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
+[0m  [2m131:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m136:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
+[0m  [2m163:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m168:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
+[0m  [2m195:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
+[0m  [2m200:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m205:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
+[0m  [2m234:28[22m  [33mwarning[39m  'tag' is defined but never used                             [2mno-unused-vars[22m[0m
+[0m  [2m239:38[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m244:11[22m  [33mwarning[39m  'container' is assigned a value but never used              [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
 [0m  [2m177:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m
@@ -153,5 +149,5 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 110 problems (0 errors, 110 warnings)[22m[39m[0m
+[0m[33m[1m✖ 106 problems (0 errors, 106 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
