@@ -9,9 +9,9 @@ describe('createPlayClickHandler', () => {
     const stopDefault = jest.fn();
     const playAudio = jest.fn();
     const event = { type: 'click' };
+    const handler = createPlayClickHandler(audio, stopDefault, playAudio);
 
     // When
-    const handler = createPlayClickHandler(audio, stopDefault, playAudio);
     handler(event);
 
     // Then
