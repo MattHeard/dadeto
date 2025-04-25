@@ -226,10 +226,8 @@ describe('setupAudio', () => {
 
   it('does not overwrite existing audio element ids', () => {
     // Given
-    const audioElements = [
-      { id: 'custom-id', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() }
-    ];
-        
+    const element = { id: 'custom-id', parentNode: { insertBefore: jest.fn() }, addEventListener: jest.fn() };
+    const audioElements = [element];
 
     const getAudioElements = () => audioElements;
     const dom = { getAudioElements, removeControlsAttribute };
@@ -248,7 +246,7 @@ describe('setupAudio', () => {
     );
 
     // Then
-    expect(audioElements[0].id).toBe('custom-id');
+    expect(element.id).toBe('custom-id');
   });
 
   it('adds audio-controls class and sets correct text on control buttons', () => {
