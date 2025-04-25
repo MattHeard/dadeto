@@ -30,6 +30,6 @@ export function generateInteractiveComponentHTML(id, title) {
 export function generateCompleteInteractiveComponent(id, title, modulePath, functionName) {
   const structure = generateInteractiveComponentHTML(id, title);
   const script = generateInteractiveComponentScript(id, modulePath, functionName);
-  
+
   return structure + script;
 }

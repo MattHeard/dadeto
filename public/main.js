@@ -1,4 +1,4 @@
-let globalState = {
+const globalState = {
   blog: null, // Holds the fetched blog data
   blogStatus: 'idle', // 'idle', 'loading', 'loaded', 'error'
   blogError: null, // Stores any error during fetch
@@ -124,11 +124,11 @@ import { handleIntersection, handleIntersectionEntries, makeObserverCallback } f
 
 // Interactive components functionality
 initializeVisibleComponents(
-  window, 
-  document, 
-  log, 
-  warn, 
-  getElementById, 
+  window,
+  document,
+  log,
+  warn,
+  getElementById,
   createIntersectionObserver // Pass the function defined in main.js
 );
 

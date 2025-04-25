@@ -14,21 +14,21 @@ describe('identity function', () => {
     const obj = { foo: 'bar' };
     const arr = [1, 2, 3];
     const func = () => {};
-    
+
     expect(identity(obj)).toBe(obj);
     expect(identity(arr)).toBe(arr);
     expect(identity(func)).toBe(func);
   });
 
   test('keeps object values unchanged', () => {
-    const complexObj = { 
+    const complexObj = {
       name: 'test',
       nested: { value: 123 },
       array: [1, 2, { key: 'value' }]
     };
-    
+
     const result = identity(complexObj);
-    
+
     expect(result).toEqual(complexObj);
     expect(result.nested.value).toBe(123);
     expect(result.array[2].key).toBe('value');

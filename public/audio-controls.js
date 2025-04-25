@@ -49,37 +49,37 @@ export function setupAudio(
     if (!audio.id) {
       audio.id = "audio-" + index;
     }
-    
+
     const controlsContainer = createElement("div");
     controlsContainer.className = "audio-controls";
     controlsContainer.id = "controls-" + audio.id;
-    
+
     const timeDisplay = createElement("span");
     timeDisplay.className = "audio-time";
     timeDisplay.textContent = "0:00";
-    
+
     const playButton = createElement("a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
     const onPlayClick = createPlayClickHandler(audio, stopDefault, playAudio);
     addEventListener(playButton, "click", onPlayClick);
-    
+
     const onPauseClick = createPauseClickHandler(audio, stopDefault, pauseAudio);
-    
+
     const pauseButton = createElement("a");
     pauseButton.href = "#";
     pauseButton.textContent = "PAUSE";
     addEventListener(pauseButton, "click", onPauseClick);
-    
+
     const onStopClick = createStopClickHandler(audio, stopDefault, pauseAudio);
     const stopButton = createElement("a");
     stopButton.href = "#";
     stopButton.textContent = "STOP";
     addEventListener(stopButton, "click", onStopClick);
-    
+
     const updateTimeDisplay = createUpdateTimeDisplay(audio, timeDisplay);
     addEventListener(audio, "timeupdate", updateTimeDisplay);
-     
+
     appendChild(controlsContainer, playButton);
     appendChild(controlsContainer, createTextNode(" "));
     appendChild(controlsContainer, pauseButton);
@@ -87,7 +87,7 @@ export function setupAudio(
     appendChild(controlsContainer, stopButton);
     appendChild(controlsContainer, createTextNode(" "));
     appendChild(controlsContainer, timeDisplay);
-    
+
     insertBefore(audio.parentNode, controlsContainer, audio.nextSibling);
   });
 }

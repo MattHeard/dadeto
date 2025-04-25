@@ -33,7 +33,7 @@ function createBoldPatternPart(marker) {
   // Escape marker if it's a special regex character
   const escapedMarker = REGEX_SPECIAL_CHARS.test(marker) ? `\\${marker}` : marker;
   const doubledMarker = createDoubledMarker(escapedMarker);
-  
+
   // Break the pattern into its constituent parts
   const patternParts = [
     '(?:', // Opening non-capturing group
@@ -42,7 +42,7 @@ function createBoldPatternPart(marker) {
     doubledMarker, // Closing doubled marker
     ')' // Closing group
   ];
-  
+
   return patternParts.join('');
 }
 
@@ -54,10 +54,10 @@ function createBoldPatternPart(marker) {
 function createBoldPattern() {
   const boldMarkers = [ASTERISK_MARKER, UNDERSCORE_MARKER];
   const patternParts = boldMarkers.map(createBoldPatternPart);
-  
+
   // Combine with OR operator for alternative matching
   const pattern = patternParts.join('|');
-  
+
   return new RegExp(pattern, 's');
 }
 
@@ -84,7 +84,7 @@ function getItalicMarkers() {
 
 /**
  * Assembles the processed segments (before, bold, after) into a single string.
- * 
+ *
  * @param {string} beforeText - The text before the bold segment
  * @param {string} boldText - The bold segment text
  * @param {string} afterText - The text after the bold segment
@@ -103,11 +103,11 @@ function assembleProcessedText(beforeText, boldText, afterText) {
  * Process text recursively to handle all formatting cases, preserving bold segments.
  * This function identifies bold markdown segments and leaves them unmodified,
  * while processing the text before and after for italic formatting.
- * 
+ *
  * @example
  * // Returns: '**bold** <em>*italic*</em>'
  * processTextPreservingBold('**bold** *italic*');
- * 
+ *
  * @param {string} text - The text to process
  * @returns {string} - Processed text with HTML tags added around italics while preserving bold
  * @private
@@ -143,22 +143,22 @@ function isInvalidText(text) {
 /**
  * Adds HTML <em> tags around text marked with Markdown italics while preserving
  * the original Markdown characters.
- * 
+ *
  * Handles both *single asterisk* and _underscore_ style Markdown italics.
  * Does NOT add <em> tags around bold markdown syntax (** or __).
- * 
+ *
  * @example
  * // Returns: '<em>*italic*</em> text'
  * italics('*italic* text');
- * 
+ *
  * @example
  * // Returns: '<em>_italic_</em> text'
  * italics('_italic_ text');
- * 
+ *
  * @example
  * // Returns: '**bold** and <em>*italic*</em>'
  * italics('**bold** and *italic*');
- * 
+ *
  * @param {string} text - The input text that may contain Markdown italics syntax
  * @returns {string} Text with HTML <em> tags added around Markdown-formatted italics
  */
@@ -174,22 +174,22 @@ export function italics(text) {
 
 /**
  * Find bold segments in text and split into bold text and surrounding text
- * 
+ *
  * @param {string} text - The text to process
  * @returns {Object|null} - Object with boldText, beforeText, and afterText properties, or null if no bold found
  * @private
  */
 function findBoldSegments(text) {
   const boldMatch = text.match(createBoldPattern());
-  
+
   if (!boldMatch) {
     return null;
   }
-  
+
   const boldText = boldMatch[0];
   const boldStartIndex = boldMatch.index;
   const boldEndIndex = boldStartIndex + boldText.length;
-  
+
   return {
     boldText,
     beforeText: text.substring(0, boldStartIndex),
@@ -213,16 +213,16 @@ function applyItalicFormatting(text, marker) {
 
 /**
  * Process text through all italic style types (asterisk and underscore)
- * 
+ *
  * @example
  * // Returns: '<em>*text*</em>'
  * processAllItalicStyles('*text*');
- * 
+ *
  * @example
  * // Returns: '<em>_text_</em>'
  * processAllItalicStyles('_text_');
- * 
- * @param {string} text - The text to process 
+ *
+ * @param {string} text - The text to process
  * @returns {string} - Text with all italic styles formatted
  * @private
  */

@@ -7,7 +7,7 @@ function buildDecomposedResult(num) {
 export function decomposeFloat(input) {
   const num = Number(input);
   const simple = handleSimpleCases(num);
-  if (simple !== null) return simple;
+  if (simple !== null) {return simple;}
   return buildDecomposedResult(num);
 }
 
@@ -35,9 +35,9 @@ function resolveZeroVariant(num) {
 }
 
 function handleSimpleCases(num) {
-  if (!Number.isFinite(num)) return "";
+  if (!Number.isFinite(num)) {return "";}
   const zeroVariant = resolveZeroVariant(num);
-  if (zeroVariant) return zeroVariant;
+  if (zeroVariant) {return zeroVariant;}
   return null;
 }
 
@@ -62,7 +62,7 @@ function isZeroVariant(num) {
 }
 
 export function formatDecimal(num) {
-  let A = num.toPrecision(17);
+  const A = num.toPrecision(17);
   return A.includes('.') ? A.replace(/\.?0+$/, '') : A;
 }
 

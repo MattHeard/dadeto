@@ -1,5 +1,5 @@
 function tryBooleanCoercion(input) {
-  if (typeof input === 'boolean') return input;
+  if (typeof input === 'boolean') {return input;}
   return normalizeBooleanString(input);
 }
 
@@ -17,7 +17,7 @@ export function coerceToBoolean(input) {
 }
 
 function normalizeBooleanString(input) {
-  if (typeof input !== 'string') return undefined;
+  if (typeof input !== 'string') {return undefined;}
 
   return parseBooleanString(input.toLowerCase());
 }

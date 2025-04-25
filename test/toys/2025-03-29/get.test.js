@@ -87,7 +87,7 @@ describe('get function with path traversal', () => {
     expect(get('anyKey', env)).toBe("Error: 'getData' did not return a valid object or array.");
 
     // Note: Array is now a valid return type from getData
-    mockGetData.mockReturnValue([1, 2, 3]); 
+    mockGetData.mockReturnValue([1, 2, 3]);
     expect(get('0', env)).toBe(JSON.stringify(1)); // Should be able to access array elements
 
     expect(mockGetData).toHaveBeenCalledTimes(3);
@@ -106,7 +106,7 @@ describe('get function with path traversal', () => {
   test('should handle non-stringifiable values gracefully at the end of the path', () => {
     const circular = {};
     circular.myself = circular;
-    const circularData = { top: { nested: circular } }; 
+    const circularData = { top: { nested: circular } };
     mockGetData.mockReturnValue(circularData);
     expect(get('top.nested', env)).toMatch(/^Error stringifying final value at path "top.nested":/);
     expect(mockGetData).toHaveBeenCalledTimes(1);

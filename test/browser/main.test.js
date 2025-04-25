@@ -55,9 +55,9 @@ describe('setupAudio', () => {
     const mockGetAudioElements = jest.fn(() => mockAudioElements);
     const mockRemoveControlsAttribute = jest.fn();
     const mockCreateElement = jest.fn((tag) => {
-      if (tag === 'div') return mockControlsContainer;
-      if (tag === 'a') return mockPlayButton;
-      if (tag === 'span') return mockTimeDisplay;
+      if (tag === 'div') {return mockControlsContainer;}
+      if (tag === 'a') {return mockPlayButton;}
+      if (tag === 'span') {return mockTimeDisplay;}
     });
     const mockCreateTextNode = jest.fn();
     const mockStopDefault = jest.fn();

@@ -20,7 +20,7 @@ if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
 }
 
-// --- Copy Toy Files --- 
+// --- Copy Toy Files ---
 
 // Function to recursively find JS files in a directory (excluding .test.js)
 function findJsFiles(dir) {
@@ -80,7 +80,7 @@ if (fs.existsSync(srcPresentersDir)) {
   console.warn(`Warning: presenters directory not found at ${srcPresentersDir}`);
 }
 
-// --- Copy Specific Assets --- 
+// --- Copy Specific Assets ---
 
 const assetsToCopy = [
   { src: path.join(srcDir, 'blog.json'), dest: path.join(publicDir, 'blog.json') },

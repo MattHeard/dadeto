@@ -56,9 +56,9 @@ describe('Cyberpunk Text Game', () => {
       visited: []
     };
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
-    expect(cyberpunkAdventure('transport', env)).toMatch(/Trains screech overhead./); 
-    expect(cyberpunkAdventure(' ', env)).toMatch(/vendor offers/); 
-    expect(cyberpunkAdventure('trade datapad', env)).toMatch(/neural ticket/); 
+    expect(cyberpunkAdventure('transport', env)).toMatch(/Trains screech overhead./);
+    expect(cyberpunkAdventure(' ', env)).toMatch(/vendor offers/);
+    expect(cyberpunkAdventure('trade datapad', env)).toMatch(/neural ticket/);
     expect(tempData.inventory).toContain('neural ticket');
     expect(tempData.inventory).not.toContain('datapad');
     expect(tempData.visited).toContain('transport');
@@ -89,8 +89,8 @@ describe('Cyberpunk Text Game', () => {
       visited: []
     };
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
-    expect(cyberpunkAdventure('alley', env)).toMatch(/shadows move with you./); 
-    expect(cyberpunkAdventure(' ', env)).toMatch(/hidden stash: a stimpack/); 
+    expect(cyberpunkAdventure('alley', env)).toMatch(/shadows move with you./);
+    expect(cyberpunkAdventure(' ', env)).toMatch(/hidden stash: a stimpack/);
     expect(tempData.inventory).toContain('stimpack');
     expect(tempData.visited).toContain('alley');
   });

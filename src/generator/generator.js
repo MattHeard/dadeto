@@ -173,7 +173,7 @@ function createHeaderContent() {
   ];
 
   const parts = valueDivs.map(prefixWithEmptyKey);
-  
+
   return join(parts);
 }
 
@@ -405,11 +405,11 @@ const CONTENT_RENDERERS = {
 
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
- 
+
   if (shouldRenderAsBlockquote(type, content)) {
     return CONTENT_RENDERERS.quote(content);
   }
- 
+
   return renderAsParagraph(content);
 }
 
@@ -436,7 +436,7 @@ function createContentSectionItem(content, isFirst) {
   const key = isFirst ? 'text' : '';
   const keyDiv = createDiv(CLASS.KEY, key);
   const valueDiv = renderValueDiv(normalizedContent);
- 
+
   return formatSection(keyDiv, valueDiv);
 }
 
@@ -516,7 +516,7 @@ function generateTagsSection(post) {
  * Check if post has the specified media type
  */
 function hasMediaType(post, mediaType) {
-  return !!post[mediaType];
+  return Boolean(post[mediaType]);
 }
 
 function isNonEmptyArray(value) {
@@ -688,7 +688,7 @@ const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
 
 function escapeRelatedLinkFields(link) {
   const fields = ['url', 'title', 'author', 'source', 'quote'];
-  
+
   return fields.reduce((acc, field) => {
     acc[field] = link[field] ? escapeHtml(link[field]) : '';
     return acc;
@@ -814,7 +814,7 @@ function generateToyInputSection() {
   const keyDiv = createDiv(CLASS.KEY, 'in');
   const valueContent = '<form><input type="text" disabled></form>';
   const valueDiv = createValueDiv(valueContent);
-  
+
   return formatSection(keyDiv, valueDiv);
 }
 
@@ -826,7 +826,7 @@ function generateToyButtonSection() {
   const keyDiv = createEmptyKeyDiv();
   const valueContent = '<button type="submit" disabled>Submit</button>';
   const valueDiv = createValueDiv(valueContent);
-  
+
   return formatSection(keyDiv, valueDiv);
 }
 
@@ -838,7 +838,7 @@ function generateToyOutputSection() {
   const keyDiv = createDiv(CLASS.KEY, 'out');
   const valueContent = '<select disabled><option value="text">text</option></select><div class="output warning"><p>This toy requires Javascript to run.</p></div>';
   const valueDiv = createValueDiv(valueContent);
-  
+
   return formatSection(keyDiv, valueDiv);
 }
 
@@ -861,7 +861,7 @@ function generateToyUISection(post) {
   if (!hasToy(post)) {
     return '';
   }
-  
+
   return combineHTMLSections(
     generateToyInputSection(),
     generateToyButtonSection(),
@@ -878,7 +878,7 @@ function generateToyScriptSection(post) {
   if (!hasToy(post)) {
     return '';
   }
-  
+
   return generateToyScript(post);
 }
 
@@ -894,7 +894,7 @@ function getArticleSections(post) {
   const toyUISection = generateToyUISection(post);
   const relatedLinksSection = generateRelatedLinksSection(post);
   const toyScriptSection = generateToyScriptSection(post);
- 
+
   return [
     headerSection,
     mediaSection,

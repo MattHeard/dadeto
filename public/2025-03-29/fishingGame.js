@@ -23,7 +23,7 @@ function getUnrecognizedBait() {
 
 function getBaitData(input, baitOptions, moodDescription) {
   const baitKey = input.trim().toLowerCase();
-  if (isRecognizedBait(baitKey, baitOptions)) return getRecognizedBait(baitKey, baitOptions);
+  if (isRecognizedBait(baitKey, baitOptions)) {return getRecognizedBait(baitKey, baitOptions);}
   return isEmptyBait(baitKey)
     ? getDefaultBaitResponse(moodDescription)
     : getUnrecognizedBait();
@@ -139,7 +139,7 @@ function fishingGame(input, env) {
   const baitOptions = getBaitOptions();
 
   const baitDataOrError = getBaitData(input, baitOptions, moodDescription);
-  if (baitDataOrError.isError) return baitDataOrError.message;
+  if (baitDataOrError.isError) {return baitDataOrError.message;}
   const baitData = baitDataOrError;
 
   const getRandomNumber = env.get("getRandomNumber");

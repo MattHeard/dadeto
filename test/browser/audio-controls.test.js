@@ -94,8 +94,8 @@ describe('setupAudio', () => {
     ];
     const buttons = [];
     const querySelectorAll = jest.fn((selector) => {
-      if (selector === 'audio') return audioElements;
-      if (selector === 'button') return buttons;
+      if (selector === 'audio') {return audioElements;}
+      if (selector === 'button') {return buttons;}
       return [];
     });
     const container = { querySelectorAll };
@@ -124,8 +124,8 @@ describe('setupAudio', () => {
     ];
     const buttons = [];
     const querySelectorAll = jest.fn((selector) => {
-      if (selector === 'audio') return audioElements;
-      if (selector === 'button') return buttons;
+      if (selector === 'audio') {return audioElements;}
+      if (selector === 'button') {return buttons;}
       return [];
     });
     const container = { querySelectorAll };
@@ -159,8 +159,8 @@ describe('setupAudio', () => {
       return element;
     };
     const querySelectorAll = jest.fn((selector) => {
-      if (selector === 'audio') return audioElements;
-      if (selector === 'button') return buttons;
+      if (selector === 'audio') {return audioElements;}
+      if (selector === 'button') {return buttons;}
       return [];
     });
     const container = { querySelectorAll };
@@ -196,8 +196,8 @@ describe('setupAudio', () => {
       return element;
     };
     const querySelectorAll = jest.fn((selector) => {
-      if (selector === 'audio') return audioElements;
-      if (selector === 'button') return buttons;
+      if (selector === 'audio') {return audioElements;}
+      if (selector === 'button') {return buttons;}
       return [];
     });
     const container = { querySelectorAll };

@@ -66,11 +66,11 @@ export function makeHandleHideClick(dom, className) {
  */
 export function makeHandleHideSpan(dom) {
   return function createHideSpan(link, className) {
-    var span = dom.createElement('span');
+    const span = dom.createElement('span');
     dom.addClass(span, 'hide-span');
     dom.appendChild(span, dom.createTextNode(" ("));
 
-    var hideLink = dom.createElement('a');
+    const hideLink = dom.createElement('a');
     dom.setTextContent(hideLink, "hide");
 
     const handleHideClick = makeHandleHideClick(dom, className);

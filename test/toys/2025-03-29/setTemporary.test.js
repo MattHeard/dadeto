@@ -34,7 +34,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
       existing: 'value',
       temporary: { initial: 'overwritten', newKey: 'newValue' }
     };
-    
+
     const result = setTemporary(inputJson, env);
 
     expect(result).toBe('Success: Temporary data deep merged.'); // Updated message
@@ -87,7 +87,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(result2).toBe('Success: Temporary data deep merged.'); // Updated message
     expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expectedFinalData2));
     expect(mockSetData.mock.calls[1][0]).not.toBe(initialData);
-    
+
     // Try with array
     initialData = Object.freeze({ existing: 'value', temporary: [1,2] });
     mockGetData.mockReturnValue(initialData);
@@ -97,7 +97,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(result3).toBe('Success: Temporary data deep merged.'); // Updated message
     expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expectedFinalData3));
     expect(mockSetData.mock.calls[2][0]).not.toBe(initialData);
-    
+
     expect(mockGetData).toHaveBeenCalledTimes(3);
     expect(mockSetData).toHaveBeenCalledTimes(3);
   });
@@ -111,7 +111,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
   });
 
   test('should return error if input JSON is not a plain object and not call setData', () => {
-    let input = JSON.stringify([1, 2, 3]); // Array
+    const input = JSON.stringify([1, 2, 3]); // Array
     expect(setTemporary(input, env)).toBe("Error: Input JSON must be a plain object.");
     expect(mockGetData).not.toHaveBeenCalled();
     expect(mockSetData).not.toHaveBeenCalled();
@@ -169,18 +169,18 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     const inputJson = JSON.stringify({
       level1: {
         b: { d: 3 }, // This should merge with existing level1.b, not replace it
-        e: 4        // This should be added to level1
+        e: 4 // This should be added to level1
       },
       newProp: true // Add a new top-level prop to temporary
     });
-    
+
     const expectedFinalData = {
       existing: 'value',
       temporary: {
         level1: {
-          a: 1,       // Preserved from initial
+          a: 1, // Preserved from initial
           b: { c: 2, d: 3 }, // Merged
-          e: 4        // Added
+          e: 4 // Added
         },
         other: 'abc', // Preserved from initial
         newProp: true // Added
@@ -210,10 +210,10 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
 
     const inputJson = JSON.stringify({
       a: { nested: true }, // Overwrite number with object
-      b: 2,               // Overwrite string with number
-      c: { d: 3 }         // Overwrite array with object
+      b: 2, // Overwrite string with number
+      c: { d: 3 } // Overwrite array with object
     });
-    
+
     const expectedTemporary = {
       a: { nested: true },
       b: 2,

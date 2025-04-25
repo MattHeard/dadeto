@@ -27,7 +27,7 @@ export function shouldUseExistingFetch(globalState, logFn) {
     return true;
   }
   return false;
-} 
+}
 
 /**
  * Fetches blog data and updates the global state.
@@ -41,14 +41,14 @@ export function fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn) {
   // Prevent multiple simultaneous fetches
   if (isFetchInProgress(globalState)) {
     logFn('Blog data fetch already in progress.');
-    return globalState.blogFetchPromise; 
+    return globalState.blogFetchPromise;
   }
-  
+
   logFn('Starting to fetch blog data...');
   globalState.blogStatus = BLOG_STATUS.LOADING;
   globalState.blogError = null;
-  
-  globalState.blogFetchPromise = fetchFn('./blog.json') 
+
+  globalState.blogFetchPromise = fetchFn('./blog.json')
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -68,7 +68,7 @@ export function fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn) {
     .finally(() => {
       globalState.blogFetchPromise = null; // Clear the promise tracking
     });
-  
+
   return globalState.blogFetchPromise; // Return the promise for potential chaining
 }
 
@@ -97,7 +97,7 @@ function hasTemporaryProperty(obj) {
 }
 
 function isInvalidState(value) {
-  if (!value || typeof value !== 'object') return true;
+  if (!value || typeof value !== 'object') {return true;}
   return !hasTemporaryProperty(value);
 }
 
@@ -158,6 +158,6 @@ export const setData = (incomingState, globalState, logFn, errorFn) => {
   const oldBlogState = getBlogState(globalState);
   Object.assign(globalState, incomingState);
   restoreBlogState(globalState, oldBlogState);
-  
+
   logFn('Global state updated:', globalState);
 };

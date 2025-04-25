@@ -177,13 +177,13 @@ describe('enableInteractiveControls', () => {
     submitButton = {};
 
     // Mock parent element with simple classList mock
-    outputParentElement = { 
+    outputParentElement = {
       classList: {},
       appendChild: jest.fn() // Not needed, but completes the mock
     };
 
     // Mock output element and link its parent
-    outputElement = { 
+    outputElement = {
       textContent: '',
       outputParentElement: outputParentElement
     };
@@ -248,9 +248,9 @@ describe('initialiseModule', () => {
     const outputElement = { textContent: '', outputParentElement };
     const dom = {
       querySelector: (el, selector) => {
-        if (selector === 'input' || selector === 'button') return {};
-        if (selector === 'div.output > p') return outputElement;
-        if (selector === 'div.output') return outputElement.outputParentElement;
+        if (selector === 'input' || selector === 'button') {return {};}
+        if (selector === 'div.output > p') {return outputElement;}
+        if (selector === 'div.output') {return outputElement.outputParentElement;}
         return {};
       },
       addEventListener: jest.fn(),
@@ -465,10 +465,10 @@ describe('initializeInteractiveComponent', () => {
     };
 
     const querySelector = jest.fn((el, selector) => {
-      if (selector === 'input') return inputElement;
-      if (selector === 'button') return submitButton;
-      if (selector === 'div.output > p') return outputElement;
-      if (selector === 'div.output') return outputElement.outputParentElement; // Return the parent element when asked for output container
+      if (selector === 'input') {return inputElement;}
+      if (selector === 'button') {return submitButton;}
+      if (selector === 'div.output > p') {return outputElement;}
+      if (selector === 'div.output') {return outputElement.outputParentElement;} // Return the parent element when asked for output container
     });
 
     const globalState = {};
@@ -531,10 +531,10 @@ describe('initializeInteractiveComponent', () => {
     };
 
     const querySelector = jest.fn((el, selector) => {
-      if (selector === 'input') return inputElement;
-      if (selector === 'button') return submitButton;
-      if (selector === 'div.output > p') return outputElement;
-      if (selector === 'div.output') return outputElement.outputParentElement; // Return the parent element when asked for output container
+      if (selector === 'input') {return inputElement;}
+      if (selector === 'button') {return submitButton;}
+      if (selector === 'div.output > p') {return outputElement;}
+      if (selector === 'div.output') {return outputElement.outputParentElement;} // Return the parent element when asked for output container
     });
 
     const globalState = {};

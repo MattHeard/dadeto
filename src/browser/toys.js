@@ -195,7 +195,7 @@ function isValidParsedRequest(parsed) {
 }
 
 function handleParsedResult(parsed, outputElement, error, fetch, dom, parent = null) {
-  if (!isValidParsedRequest(parsed)) return false;
+  if (!isValidParsedRequest(parsed)) {return false;}
   handleRequestResponse(parsed.request.url, outputElement, error, fetch, dom, parent);
   return true;
 }
@@ -312,10 +312,10 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   const submitButton = dom.querySelector(article, 'button');
   const needsJavascriptWarning = dom.querySelector(article, 'div.output > p');
   const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
-  
+
   // Disable input and submit during initialization
   disableInputAndButton(inputElement, submitButton);
-  
+
   // Update message to show JS is running, replacing <p.output> with paragraph
   const initialisingWarning = setTextContent(needsJavascriptWarning, 'Initialising...', dom, outputParent);
 
@@ -325,7 +325,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
 
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);
-  
+
   // Add event listener for Enter key in the input field
   dom.addEventListener(inputElement, 'keypress', createHandleKeyPress(handleSubmit));
 

@@ -69,7 +69,7 @@ export function setTemporary(input, env) {
   }
 
   try {
-    const currentData = getData(); 
+    const currentData = getData();
 
     if (!isObject(currentData)) { // Use the helper
         return "Error: 'getData' did not return a valid object.";
@@ -81,7 +81,7 @@ export function setTemporary(input, env) {
 
     // Ensure the 'temporary' key exists and is an object in the new copy
     if (!isObject(newData.temporary)) {
-        newData.temporary = {}; 
+        newData.temporary = {};
     }
 
     // Perform the deep merge
@@ -89,7 +89,7 @@ export function setTemporary(input, env) {
 
     setData(newData);
 
-    return `Success: Temporary data deep merged.`; 
+    return `Success: Temporary data deep merged.`;
 
   } catch (error) {
     return `Error updating temporary data: ${error.message}`;
