@@ -314,18 +314,18 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
   const submitButton = dom.querySelector(article, 'button');
-  const outputElement = dom.querySelector(article, 'p.output');
+  const needsJavascriptWarning = dom.querySelector(article, 'p.output');
   const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
   
   // Disable input and submit during initialization
   disableInputAndButton(inputElement, submitButton);
   
   // Update message to show JS is running, replacing <p.output> with paragraph
-  setTextContent(outputElement, 'Initialising...', dom, outputParent);
+  setTextContent(needsJavascriptWarning, 'Initialising...', dom, outputParent);
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
-  const handleSubmit = createHandleSubmit({ inputElement, outputElement, outputParent, outputParentElement: outputParent }, processingFunction, env);
+  const handleSubmit = createHandleSubmit({ inputElement, outputElement: needsJavascriptWarning, outputParent, outputParentElement: outputParent }, processingFunction, env);
 
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);
@@ -334,7 +334,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   dom.addEventListener(inputElement, 'keypress', createHandleKeyPress(handleSubmit));
 
   // Enable controls when initialization is complete using the function from this module
-  enableInteractiveControls(inputElement, submitButton, outputElement, dom);
+  enableInteractiveControls(inputElement, submitButton, needsJavascriptWarning, dom, outputParent);
 }
 
 /**

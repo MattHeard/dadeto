@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1745582841386" clover="3.2.0">
-  <project timestamp="1745582841386" name="All files">
+<coverage generated="1745583957849" clover="3.2.0">
+  <project timestamp="1745583957849" name="All files">
     <metrics statements="907" coveredstatements="904" conditionals="343" coveredconditionals="338" methods="330" coveredmethods="330" elements="1580" coveredelements="1572" complexity="0" loc="907" ncloc="907" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="246" coveredstatements="244" conditionals="59" coveredconditionals="56" methods="82" coveredmethods="82"/>
@@ -168,13 +168,13 @@
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
         <metrics statements="94" coveredstatements="92" conditionals="29" coveredconditionals="26" methods="37" coveredmethods="37"/>
         <line num="11" count="14" type="cond" truecount="2" falsecount="0"/>
-        <line num="12" count="9" type="cond" truecount="1" falsecount="1"/>
+        <line num="12" count="12" type="cond" truecount="1" falsecount="1"/>
         <line num="13" count="0" type="stmt"/>
         <line num="14" count="0" type="stmt"/>
-        <line num="16" count="9" type="stmt"/>
-        <line num="17" count="9" type="stmt"/>
-        <line num="18" count="9" type="stmt"/>
-        <line num="19" count="9" type="stmt"/>
+        <line num="16" count="12" type="stmt"/>
+        <line num="17" count="12" type="stmt"/>
+        <line num="18" count="12" type="stmt"/>
+        <line num="19" count="12" type="stmt"/>
         <line num="31" count="5" type="stmt"/>
         <line num="32" count="1" type="stmt"/>
         <line num="65" count="5" type="stmt"/>
@@ -563,12 +563,12 @@
       <metrics statements="6" coveredstatements="5" conditionals="6" coveredconditionals="4" methods="1" coveredmethods="1"/>
       <file name="paragraph.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js">
         <metrics statements="6" coveredstatements="5" conditionals="6" coveredconditionals="4" methods="1" coveredmethods="1"/>
-        <line num="2" count="11" type="stmt"/>
-        <line num="3" count="11" type="cond" truecount="1" falsecount="1"/>
-        <line num="4" count="11" type="cond" truecount="3" falsecount="1"/>
-        <line num="5" count="11" type="stmt"/>
+        <line num="2" count="14" type="stmt"/>
+        <line num="3" count="14" type="cond" truecount="1" falsecount="1"/>
+        <line num="4" count="14" type="cond" truecount="3" falsecount="1"/>
+        <line num="5" count="14" type="stmt"/>
         <line num="7" count="0" type="stmt"/>
-        <line num="10" count="11" type="stmt"/>
+        <line num="10" count="14" type="stmt"/>
       </file>
     </package>
     <package name="toys.2024-10-02">
