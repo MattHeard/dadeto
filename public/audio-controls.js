@@ -59,23 +59,23 @@ export function setupAudio(
     playButton.href = "#";
     playButton.textContent = "PLAY";
     const onPlayClick = createPlayClickHandler(audio, stopDefault, playAudio);
-    addEventListener(playButton, "click", onPlayClick);
+    dom.addEventListener(playButton, "click", onPlayClick);
 
     const onPauseClick = createPauseClickHandler(audio, stopDefault, pauseAudio);
 
     const pauseButton = dom.createElement("a");
     pauseButton.href = "#";
     pauseButton.textContent = "PAUSE";
-    addEventListener(pauseButton, "click", onPauseClick);
+    dom.addEventListener(pauseButton, "click", onPauseClick);
 
     const onStopClick = createStopClickHandler(audio, stopDefault, pauseAudio);
     const stopButton = dom.createElement("a");
     stopButton.href = "#";
     stopButton.textContent = "STOP";
-    addEventListener(stopButton, "click", onStopClick);
+    dom.addEventListener(stopButton, "click", onStopClick);
 
     const updateTimeDisplay = createUpdateTimeDisplay(audio, timeDisplay);
-    addEventListener(audio, "timeupdate", updateTimeDisplay);
+    dom.addEventListener(audio, "timeupdate", updateTimeDisplay);
 
     dom.appendChild(controlsContainer, playButton);
     dom.appendChild(controlsContainer, createTextNode(" "));
