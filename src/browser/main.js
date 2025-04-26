@@ -116,7 +116,7 @@ const dom = {
 };
 const env = { globalState, createEnv, error, fetch };
 // Only keep one import from './toys.js' and combine symbols if needed
-import { makeCreateIntersectionObserver, handleIntersection, handleIntersectionEntries, makeObserverCallback } from './toys.js';
+import { makeCreateIntersectionObserver } from './toys.js';
 const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 // Only keep one import from './document.js' and combine symbols if needed
@@ -139,7 +139,7 @@ initializeVisibleComponents(
 // Tag filtering functionality
 
 // Only keep one import from './tags.js' and combine symbols if needed
-import { startsWith, makeHandleClassName, makeHandleLink, handleTagLinks } from './tags.js';
+import { handleTagLinks } from './tags.js';
 
 
 handleTagLinks(dom);
