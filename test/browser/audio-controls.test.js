@@ -188,7 +188,7 @@ describe('setupAudio', () => {
     const audioElements = [audioElement];
         
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn() };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio };
 
     // When
     setupAudio(
@@ -209,7 +209,7 @@ describe('setupAudio', () => {
     const audioElement = {};
     const audioElements = [audioElement];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener, pauseAudio };
 
     // When
     setupAudio(
@@ -231,7 +231,7 @@ describe('setupAudio', () => {
     const audioElements = [element];
 
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn() };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio };
 
     // When
     setupAudio(
@@ -253,7 +253,7 @@ describe('setupAudio', () => {
 
     const audioElements = [element];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn() };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio };
 
     // When
     setupAudio(
@@ -275,7 +275,7 @@ describe('setupAudio', () => {
 
     const audioElements = [element];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn() };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio };
 
     // When
     setupAudio(
