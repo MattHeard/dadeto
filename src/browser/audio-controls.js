@@ -65,13 +65,13 @@ export function setupAudio(
 
     const onPauseClick = createPauseClickHandler(audio, stopDefault, pauseAudio);
 
-    const pauseButton = createElement("a");
+    const pauseButton = dom.createElement("a");
     pauseButton.href = "#";
     pauseButton.textContent = "PAUSE";
     addEventListener(pauseButton, "click", onPauseClick);
 
     const onStopClick = createStopClickHandler(audio, stopDefault, pauseAudio);
-    const stopButton = createElement("a");
+    const stopButton = dom.createElement("a");
     stopButton.href = "#";
     stopButton.textContent = "STOP";
     addEventListener(stopButton, "click", onStopClick);
