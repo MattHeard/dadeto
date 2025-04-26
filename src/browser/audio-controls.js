@@ -38,8 +38,7 @@ export function setupAudio(
   playAudio,
   pauseAudio,
   addEventListener,
-  appendChild,
-  insertBefore
+  appendChild
 ) {
   const audioElements = dom.getAudioElements();
 
@@ -87,6 +86,6 @@ export function setupAudio(
     appendChild(controlsContainer, createTextNode(" "));
     appendChild(controlsContainer, timeDisplay);
 
-    insertBefore(audio.parentNode, controlsContainer, audio.nextSibling);
+    dom.insertBefore(audio.parentNode, controlsContainer, audio.nextSibling);
   });
 }
