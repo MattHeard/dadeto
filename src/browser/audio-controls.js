@@ -34,8 +34,7 @@ export function setupAudio(
   dom,
   createElement,
   createTextNode,
-  stopDefault,
-  playAudio
+  stopDefault
 ) {
   const audioElements = dom.getAudioElements();
 
@@ -56,7 +55,7 @@ export function setupAudio(
     const playButton = dom.createElement("a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
-    const onPlayClick = createPlayClickHandler(audio, stopDefault, playAudio);
+    const onPlayClick = createPlayClickHandler(audio, stopDefault, dom.playAudio);
     dom.addEventListener(playButton, "click", onPlayClick);
 
     const onPauseClick = createPauseClickHandler(audio, stopDefault, dom.pauseAudio);

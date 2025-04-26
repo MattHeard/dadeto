@@ -150,6 +150,5 @@ setupAudio(
   dom,
   createElement,
   createTextNode,
-  stopDefault,
-  playAudio
+  stopDefault
 );
