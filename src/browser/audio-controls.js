@@ -53,7 +53,7 @@ export function setupAudio(
     controlsContainer.className = "audio-controls";
     controlsContainer.id = "controls-" + audio.id;
 
-    const timeDisplay = createElement("span");
+    const timeDisplay = dom.createElement("span");
     timeDisplay.className = "audio-time";
     timeDisplay.textContent = "0:00";
 
