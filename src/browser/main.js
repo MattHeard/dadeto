@@ -8,7 +8,8 @@ const globalState = {
 
 import { setupAudio } from './audio-controls.js';
 import { initializeVisibleComponents } from './toys.js';
-import { hideArticlesByClass, toggleHideLink, createHandleClick } from './tags.js';
+// Removed unused: hideArticlesByClass, toggleHideLink, createHandleClick
+// import { hideArticlesByClass, toggleHideLink, createHandleClick } from './tags.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
@@ -58,7 +59,8 @@ function importModule(modulePath, onSuccess, onError) {
 // createHandleClick has been moved to tags.js
 
 
-import { makeHandleHideSpan, makeHandleHideClick } from './tags.js';
+// Removed unused: makeHandleHideSpan, makeHandleHideClick
+// import { makeHandleHideSpan, makeHandleHideClick } from './tags.js';
 
 
 

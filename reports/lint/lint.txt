@@ -11,23 +11,16 @@
 [0m  [2m30:25[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js[24m[0m
-[0m   [2m11:10[22m  [33mwarning[39m  'hideArticlesByClass' is defined but never used        [2mno-unused-vars[22m[0m
-[0m   [2m11:31[22m  [33mwarning[39m  'toggleHideLink' is defined but never used             [2mno-unused-vars[22m[0m
-[0m   [2m11:47[22m  [33mwarning[39m  'createHandleClick' is defined but never used          [2mno-unused-vars[22m[0m
-[0m   [2m61:1[22m   [33mwarning[39m  './tags.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
-[0m   [2m61:10[22m  [33mwarning[39m  'makeHandleHideSpan' is defined but never used         [2mno-unused-vars[22m[0m
-[0m   [2m61:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used        [2mno-unused-vars[22m[0m
-[0m  [2m118:1[22m   [33mwarning[39m  './toys.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
-[0m  [2m121:1[22m   [33mwarning[39m  './document.js' import is duplicated                   [2mno-duplicate-imports[22m[0m
-[0m  [2m125:1[22m   [33mwarning[39m  './toys.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
-[0m  [2m125:10[22m  [33mwarning[39m  'handleIntersection' is defined but never used         [2mno-unused-vars[22m[0m
-[0m  [2m125:30[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m125:57[22m  [33mwarning[39m  'makeObserverCallback' is defined but never used       [2mno-unused-vars[22m[0m
-[0m  [2m140:1[22m   [33mwarning[39m  './tags.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
-[0m  [2m140:10[22m  [33mwarning[39m  'startsWith' is defined but never used                 [2mno-unused-vars[22m[0m
-[0m  [2m140:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used        [2mno-unused-vars[22m[0m
-[0m  [2m140:43[22m  [33mwarning[39m  'makeHandleLink' is defined but never used             [2mno-unused-vars[22m[0m
-[0m  [2m141:1[22m   [33mwarning[39m  './document.js' import is duplicated                   [2mno-duplicate-imports[22m[0m
+[0m  [2m120:1[22m   [33mwarning[39m  './toys.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
+[0m  [2m123:1[22m   [33mwarning[39m  './document.js' import is duplicated                   [2mno-duplicate-imports[22m[0m
+[0m  [2m127:1[22m   [33mwarning[39m  './toys.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
+[0m  [2m127:10[22m  [33mwarning[39m  'handleIntersection' is defined but never used         [2mno-unused-vars[22m[0m
+[0m  [2m127:30[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used  [2mno-unused-vars[22m[0m
+[0m  [2m127:57[22m  [33mwarning[39m  'makeObserverCallback' is defined but never used       [2mno-unused-vars[22m[0m
+[0m  [2m142:10[22m  [33mwarning[39m  'startsWith' is defined but never used                 [2mno-unused-vars[22m[0m
+[0m  [2m142:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used        [2mno-unused-vars[22m[0m
+[0m  [2m142:43[22m  [33mwarning[39m  'makeHandleLink' is defined but never used             [2mno-unused-vars[22m[0m
+[0m  [2m143:1[22m   [33mwarning[39m  './document.js' import is duplicated                   [2mno-duplicate-imports[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
 [0m  [2m5:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
@@ -195,6 +188,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 154 problems (0 errors, 154 warnings)[22m[39m[0m
+[0m[33m[1m✖ 147 problems (0 errors, 147 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
