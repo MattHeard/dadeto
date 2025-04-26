@@ -49,15 +49,15 @@ export function setupAudio(
       audio.id = "audio-" + index;
     }
 
-    const controlsContainer = createElement("div");
+    const controlsContainer = dom.createElement("div");
     controlsContainer.className = "audio-controls";
     controlsContainer.id = "controls-" + audio.id;
 
-    const timeDisplay = createElement("span");
+    const timeDisplay = dom.createElement("span");
     timeDisplay.className = "audio-time";
     timeDisplay.textContent = "0:00";
 
-    const playButton = createElement("a");
+    const playButton = dom.createElement("a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
     const onPlayClick = createPlayClickHandler(audio, stopDefault, playAudio);

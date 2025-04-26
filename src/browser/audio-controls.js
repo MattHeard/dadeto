@@ -57,7 +57,7 @@ export function setupAudio(
     timeDisplay.className = "audio-time";
     timeDisplay.textContent = "0:00";
 
-    const playButton = createElement("a");
+    const playButton = dom.createElement("a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
     const onPlayClick = createPlayClickHandler(audio, stopDefault, playAudio);
