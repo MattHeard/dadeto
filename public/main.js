@@ -148,6 +148,8 @@ handleTagLinks(dom);
 const logInfo = log;
 // Alias logError to error for compatibility with fetchAndCacheBlogData
 const logError = error;
-fetchAndCacheBlogData(globalState, fetch, logInfo, logError);
+// Alias state to globalState for compatibility with fetchAndCacheBlogData
+const state = globalState;
+fetchAndCacheBlogData(state, fetch, logInfo, logError);
 
 setupAudio(dom);

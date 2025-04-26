@@ -32,23 +32,23 @@ export function shouldUseExistingFetch(globalState, logFn) {
 /**
  * Fetches blog data and updates the global state.
  * Ensures only one fetch happens at a time.
- * @param {object} globalState - The global state object.
+ * @param {object} state - The global state object.
  * @param {function} fetch - The fetch function to use.
  * @param {function} logInfo - The logging function to use.
  * @param {function} logError - The error logging function to use.
  */
-export function fetchAndCacheBlogData(globalState, fetch, logInfo, logError) {
+export function fetchAndCacheBlogData(state, fetch, logInfo, logError) {
   // Prevent multiple simultaneous fetches
-  if (isFetchInProgress(globalState)) {
+  if (isFetchInProgress(state)) {
     logInfo('Blog data fetch already in progress.');
-    return globalState.blogFetchPromise;
+    return state.blogFetchPromise;
   }
 
   logInfo('Starting to fetch blog data...');
-  globalState.blogStatus = BLOG_STATUS.LOADING;
-  globalState.blogError = null;
+  state.blogStatus = BLOG_STATUS.LOADING;
+  state.blogError = null;
 
-  globalState.blogFetchPromise = fetch('./blog.json')
+  state.blogFetchPromise = fetch('./blog.json')
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -56,20 +56,20 @@ export function fetchAndCacheBlogData(globalState, fetch, logInfo, logError) {
       return response.json();
     })
     .then(data => {
-      globalState.blog = data; // Update the blog property
-      globalState.blogStatus = BLOG_STATUS.LOADED;
+      state.blog = data; // Update the blog property
+      state.blogStatus = BLOG_STATUS.LOADED;
       logInfo('Blog data loaded successfully:', data);
     })
     .catch(err => {
-      globalState.blogStatus = BLOG_STATUS.ERROR;
-      globalState.blogError = err;
+      state.blogStatus = BLOG_STATUS.ERROR;
+      state.blogError = err;
       logError('Error fetching blog data:', err);
     })
     .finally(() => {
-      globalState.blogFetchPromise = null; // Clear the promise tracking
+      state.blogFetchPromise = null; // Clear the promise tracking
     });
 
-  return globalState.blogFetchPromise; // Return the promise for potential chaining
+  return state.blogFetchPromise; // Return the promise for potential chaining
 }
 
 // Helper function needed by getData
