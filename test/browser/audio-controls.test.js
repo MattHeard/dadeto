@@ -203,11 +203,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(
-      dom,
-      createElement,
-      createTextNode,
-    );
+    setupAudio(dom);
 
     // Then
     expect(audioElement.id).toBe('audio-0');
@@ -232,11 +228,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(
-      dom,
-      createElement,
-      createTextNode,
-    );
+    setupAudio(dom);
 
     // Then
     expect(audioElement.id).toBe('audio-0');
@@ -262,11 +254,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(
-      dom,
-      createElement,
-      createTextNode,
-    );
+    setupAudio(dom);
 
     // Then
     expect(element.id).toBe('custom-id');
@@ -292,11 +280,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(
-      dom,
-      createElement,
-      createTextNode,
-    );
+    setupAudio(dom);
 
     // Then
     expect(createdElements[0].className).toBe('audio-controls');
@@ -322,11 +306,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(
-      dom,
-      createElement,
-      createTextNode,
-    );
+    setupAudio(dom);
 
     // Then
     const texts = createdElements.map(el => el.textContent);
@@ -335,11 +315,7 @@ describe('setupAudio', () => {
 
   it('adds a time display element with class "audio-time"', () => {
     // When
-    setupAudio(
-      dom,
-      createElement,
-      createTextNode,
-    );
+    setupAudio(dom);
 
     // Then
     const timeElements = createdElements.filter(el => el.className === 'audio-time');
