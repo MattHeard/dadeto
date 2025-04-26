@@ -179,7 +179,8 @@ describe('setupAudio', () => {
     insertBefore = jest.fn();
     audioElement = {};
     audioElements = [audioElement];
-    dom = { getAudioElements: () => audioElements, removeControlsAttribute, createElement, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn() };
+    dom = { getAudioElements: () => audioElements, removeControlsAttribute, createElement, createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })), insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn() };
+
   });
 
   it('assigns a default id to an audio element with an empty id', () => {
