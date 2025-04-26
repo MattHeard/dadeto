@@ -11,7 +11,7 @@
 [0m  [2m155:69[22m  [33mwarning[39m  Arrow function has too many parameters (4). Maximum allowed is 3                    [2mmax-params[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/document.js[24m[0m
-[0m  [2m27:8[22m  [33mwarning[39m  Function 'contains' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m28:8[22m  [33mwarning[39m  Function 'contains' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js[24m[0m
 [0m   [2m11:10[22m  [33mwarning[39m  'hideArticlesByClass' is defined but never used        [2mno-unused-vars[22m[0m
