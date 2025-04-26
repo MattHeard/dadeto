@@ -74,11 +74,11 @@ export function setupAudio(
     dom.addEventListener(audio, "timeupdate", updateTimeDisplay);
 
     dom.appendChild(controlsContainer, playButton);
-    dom.appendChild(controlsContainer, createTextNode(" "));
+    dom.appendChild(controlsContainer, dom.createTextNode(" "));
     dom.appendChild(controlsContainer, pauseButton);
-    dom.appendChild(controlsContainer, createTextNode(" "));
+    dom.appendChild(controlsContainer, dom.createTextNode(" "));
     dom.appendChild(controlsContainer, stopButton);
-    dom.appendChild(controlsContainer, createTextNode(" "));
+    dom.appendChild(controlsContainer, dom.createTextNode(" "));
     dom.appendChild(controlsContainer, timeDisplay);
 
     dom.insertBefore(audio.parentNode, controlsContainer, audio.nextSibling);
