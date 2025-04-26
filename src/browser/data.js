@@ -33,11 +33,11 @@ export function shouldUseExistingFetch(globalState, logFn) {
  * Fetches blog data and updates the global state.
  * Ensures only one fetch happens at a time.
  * @param {object} globalState - The global state object.
- * @param {function} fetchFn - The fetch function to use.
+ * @param {function} fetch - The fetch function to use.
  * @param {function} logInfo - The logging function to use.
  * @param {function} logError - The error logging function to use.
  */
-export function fetchAndCacheBlogData(globalState, fetchFn, logInfo, logError) {
+export function fetchAndCacheBlogData(globalState, fetch, logInfo, logError) {
   // Prevent multiple simultaneous fetches
   if (isFetchInProgress(globalState)) {
     logInfo('Blog data fetch already in progress.');
@@ -48,7 +48,7 @@ export function fetchAndCacheBlogData(globalState, fetchFn, logInfo, logError) {
   globalState.blogStatus = BLOG_STATUS.LOADING;
   globalState.blogError = null;
 
-  globalState.blogFetchPromise = fetchFn('./blog.json')
+  globalState.blogFetchPromise = fetch('./blog.json')
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
