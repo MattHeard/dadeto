@@ -49,7 +49,7 @@ export function setupAudio(
       audio.id = "audio-" + index;
     }
 
-    const controlsContainer = createElement("div");
+    const controlsContainer = dom.createElement("div");
     controlsContainer.className = "audio-controls";
     controlsContainer.id = "controls-" + audio.id;
 
