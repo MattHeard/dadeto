@@ -114,7 +114,7 @@
 [0m  [2m191:18[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m192:24[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m193:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m194:21[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
+[0m  [2m194:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
 [0m  [2m195:79[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m196:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m197:30[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
@@ -125,7 +125,7 @@
 [0m  [2m220:18[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m221:24[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m222:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m223:21[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
+[0m  [2m223:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
 [0m  [2m224:79[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m225:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m226:30[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
@@ -136,7 +136,7 @@
 [0m  [2m250:18[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m251:24[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m252:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m253:21[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
+[0m  [2m253:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
 [0m  [2m254:79[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m255:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m256:30[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
@@ -147,7 +147,7 @@
 [0m  [2m280:18[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m281:24[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m282:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m283:21[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
+[0m  [2m283:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
 [0m  [2m284:79[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m285:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m286:30[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
@@ -158,7 +158,7 @@
 [0m  [2m310:18[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m311:24[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m312:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
-[0m  [2m313:21[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
+[0m  [2m313:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
 [0m  [2m314:79[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m315:31[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m316:30[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
@@ -195,5 +195,5 @@
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[33m[1m✖ 153 problems (0 errors, 153 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 56 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

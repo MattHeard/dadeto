@@ -191,7 +191,7 @@ describe('setupAudio', () => {
     const dom = { 
       getAudioElements, 
       removeControlsAttribute, 
-      createElement, 
+      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })), 
       insertBefore: jest.fn(), 
       appendChild: jest.fn(), 
@@ -220,7 +220,7 @@ describe('setupAudio', () => {
     const dom = { 
       getAudioElements, 
       removeControlsAttribute, 
-      createElement, 
+      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })), 
       insertBefore: jest.fn(), 
       appendChild: jest.fn(), 
@@ -250,7 +250,7 @@ describe('setupAudio', () => {
     const dom = { 
       getAudioElements, 
       removeControlsAttribute, 
-      createElement, 
+      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })), 
       insertBefore: jest.fn(), 
       appendChild: jest.fn(), 
@@ -280,7 +280,7 @@ describe('setupAudio', () => {
     const dom = { 
       getAudioElements, 
       removeControlsAttribute, 
-      createElement, 
+      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })), 
       insertBefore: jest.fn(), 
       appendChild: jest.fn(), 
@@ -310,7 +310,7 @@ describe('setupAudio', () => {
     const dom = { 
       getAudioElements, 
       removeControlsAttribute, 
-      createElement, 
+      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })), 
       insertBefore: jest.fn(), 
       appendChild: jest.fn(), 
