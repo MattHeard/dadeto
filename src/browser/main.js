@@ -144,12 +144,6 @@ import { handleTagLinks } from './tags.js';
 handleTagLinks(dom);
 
 // Initial fetch of blog data when the script loads
-// Alias logInfo to log for compatibility with fetchAndCacheBlogData
-const logInfo = log;
-// Alias logError to error for compatibility with fetchAndCacheBlogData
-const logError = error;
-// Alias state to globalState for compatibility with fetchAndCacheBlogData
-const state = globalState;
-fetchAndCacheBlogData(state, fetch, logInfo, logError);
+fetchAndCacheBlogData(globalState, fetch, log, error);
 
 setupAudio(dom);
