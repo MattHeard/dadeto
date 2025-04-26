@@ -146,8 +146,4 @@ handleTagLinks(dom);
 // Initial fetch of blog data when the script loads
 fetchAndCacheBlogData(globalState, fetch, log, error);
 
-setupAudio(
-  dom,
-  createElement,
-  createTextNode
-);
+setupAudio(dom);

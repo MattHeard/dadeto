@@ -31,9 +31,7 @@ export const createUpdateTimeDisplay = (audio, timeDisplay) => {
 };
 
 export function setupAudio(
-  dom,
-  createElement,
-  createTextNode
+  dom
 ) {
   const audioElements = dom.getAudioElements();
 
