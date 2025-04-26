@@ -19,9 +19,11 @@ export const removeChild = (parentNode, child) => parentNode.removeChild(child);
  * Removes all children from the given DOM element.
  * @param {HTMLElement} element - The parent element to clear.
  */
+const removeChildNode = (element) => element.removeChild(element.firstChild);
+
 export const removeAllChildren = (element) => {
   while (element.firstChild) {
-    element.removeChild(element.firstChild);
+    removeChildNode(element);
   }
 };
 
