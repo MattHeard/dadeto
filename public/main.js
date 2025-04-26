@@ -124,7 +124,6 @@ import { isIntersecting, disconnectObserver, getClasses } from './document.js';
 // isIntersecting and disconnectObserver moved to document.js
 
 
-import { handleIntersection, handleIntersectionEntries, makeObserverCallback } from './toys.js';
 
 
 // Interactive components functionality
