@@ -34,17 +34,17 @@ export function shouldUseExistingFetch(globalState, logFn) {
  * Ensures only one fetch happens at a time.
  * @param {object} globalState - The global state object.
  * @param {function} fetchFn - The fetch function to use.
- * @param {function} logFn - The logging function to use.
+ * @param {function} logInfo - The logging function to use.
  * @param {function} errorFn - The error logging function to use.
  */
-export function fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn) {
+export function fetchAndCacheBlogData(globalState, fetchFn, logInfo, errorFn) {
   // Prevent multiple simultaneous fetches
   if (isFetchInProgress(globalState)) {
-    logFn('Blog data fetch already in progress.');
+    logInfo('Blog data fetch already in progress.');
     return globalState.blogFetchPromise;
   }
 
-  logFn('Starting to fetch blog data...');
+  logInfo('Starting to fetch blog data...');
   globalState.blogStatus = BLOG_STATUS.LOADING;
   globalState.blogError = null;
 
@@ -58,7 +58,7 @@ export function fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn) {
     .then(data => {
       globalState.blog = data; // Update the blog property
       globalState.blogStatus = BLOG_STATUS.LOADED;
-      logFn('Blog data loaded successfully:', data);
+      logInfo('Blog data loaded successfully:', data);
     })
     .catch(err => {
       globalState.blogStatus = BLOG_STATUS.ERROR;

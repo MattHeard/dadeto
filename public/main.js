@@ -144,6 +144,8 @@ import { handleTagLinks } from './tags.js';
 handleTagLinks(dom);
 
 // Initial fetch of blog data when the script loads
-fetchAndCacheBlogData(globalState, fetch, log, error);
+// Alias logInfo to log for compatibility with fetchAndCacheBlogData
+const logInfo = log;
+fetchAndCacheBlogData(globalState, fetch, logInfo, error);
 
 setupAudio(dom);
