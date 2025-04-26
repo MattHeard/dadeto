@@ -179,7 +179,7 @@ describe('setupAudio', () => {
     insertBefore = () => {};
     audioElement = {};
     audioElements = [audioElement];
-    dom = { getAudioElements: () => audioElements, removeControlsAttribute };
+    dom = { getAudioElements: () => audioElements, removeControlsAttribute, createElement };
   });
 
   it('assigns a default id to an audio element with an empty id', () => {
@@ -188,7 +188,7 @@ describe('setupAudio', () => {
     const audioElements = [audioElement];
         
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode };
 
     // When
     setupAudio(
@@ -212,7 +212,7 @@ describe('setupAudio', () => {
     const audioElement = {};
     const audioElements = [audioElement];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode };
 
     // When
     setupAudio(
@@ -237,7 +237,7 @@ describe('setupAudio', () => {
     const audioElements = [element];
 
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode };
     // When
     setupAudio(
       dom,
@@ -261,7 +261,7 @@ describe('setupAudio', () => {
 
     const audioElements = [element];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode };
 
     // When
     setupAudio(
@@ -286,7 +286,7 @@ describe('setupAudio', () => {
 
     const audioElements = [element];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode };
 
     // When
     setupAudio(

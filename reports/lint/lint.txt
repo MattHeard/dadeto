@@ -20,17 +20,17 @@
 [0m   [2m61:1[22m   [33mwarning[39m  './tags.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
 [0m   [2m61:10[22m  [33mwarning[39m  'makeHandleHideSpan' is defined but never used         [2mno-unused-vars[22m[0m
 [0m   [2m61:30[22m  [33mwarning[39m  'makeHandleHideClick' is defined but never used        [2mno-unused-vars[22m[0m
-[0m  [2m117:1[22m   [33mwarning[39m  './toys.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
-[0m  [2m120:1[22m   [33mwarning[39m  './document.js' import is duplicated                   [2mno-duplicate-imports[22m[0m
-[0m  [2m124:1[22m   [33mwarning[39m  './toys.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
-[0m  [2m124:10[22m  [33mwarning[39m  'handleIntersection' is defined but never used         [2mno-unused-vars[22m[0m
-[0m  [2m124:30[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used  [2mno-unused-vars[22m[0m
-[0m  [2m124:57[22m  [33mwarning[39m  'makeObserverCallback' is defined but never used       [2mno-unused-vars[22m[0m
-[0m  [2m139:1[22m   [33mwarning[39m  './tags.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
-[0m  [2m139:10[22m  [33mwarning[39m  'startsWith' is defined but never used                 [2mno-unused-vars[22m[0m
-[0m  [2m139:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used        [2mno-unused-vars[22m[0m
-[0m  [2m139:43[22m  [33mwarning[39m  'makeHandleLink' is defined but never used             [2mno-unused-vars[22m[0m
-[0m  [2m140:1[22m   [33mwarning[39m  './document.js' import is duplicated                   [2mno-duplicate-imports[22m[0m
+[0m  [2m118:1[22m   [33mwarning[39m  './toys.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
+[0m  [2m121:1[22m   [33mwarning[39m  './document.js' import is duplicated                   [2mno-duplicate-imports[22m[0m
+[0m  [2m125:1[22m   [33mwarning[39m  './toys.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
+[0m  [2m125:10[22m  [33mwarning[39m  'handleIntersection' is defined but never used         [2mno-unused-vars[22m[0m
+[0m  [2m125:30[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used  [2mno-unused-vars[22m[0m
+[0m  [2m125:57[22m  [33mwarning[39m  'makeObserverCallback' is defined but never used       [2mno-unused-vars[22m[0m
+[0m  [2m140:1[22m   [33mwarning[39m  './tags.js' import is duplicated                       [2mno-duplicate-imports[22m[0m
+[0m  [2m140:10[22m  [33mwarning[39m  'startsWith' is defined but never used                 [2mno-unused-vars[22m[0m
+[0m  [2m140:22[22m  [33mwarning[39m  'makeHandleClassName' is defined but never used        [2mno-unused-vars[22m[0m
+[0m  [2m140:43[22m  [33mwarning[39m  'makeHandleLink' is defined but never used             [2mno-unused-vars[22m[0m
+[0m  [2m141:1[22m   [33mwarning[39m  './document.js' import is duplicated                   [2mno-duplicate-imports[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js[24m[0m
 [0m  [2m5:1[22m  [33mwarning[39m  Function 'hideIfHasClass' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
