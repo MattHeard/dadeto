@@ -210,7 +210,7 @@ describe('setupAudio', () => {
     const audioElement = {};
     const audioElements = [audioElement];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn() };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener };
 
     // When
     setupAudio(
