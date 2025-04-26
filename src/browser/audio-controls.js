@@ -37,8 +37,7 @@ export function setupAudio(
   stopDefault,
   playAudio,
   pauseAudio,
-  addEventListener,
-  appendChild
+  addEventListener
 ) {
   const audioElements = dom.getAudioElements();
 
@@ -78,13 +77,13 @@ export function setupAudio(
     const updateTimeDisplay = createUpdateTimeDisplay(audio, timeDisplay);
     addEventListener(audio, "timeupdate", updateTimeDisplay);
 
-    appendChild(controlsContainer, playButton);
-    appendChild(controlsContainer, createTextNode(" "));
-    appendChild(controlsContainer, pauseButton);
-    appendChild(controlsContainer, createTextNode(" "));
-    appendChild(controlsContainer, stopButton);
-    appendChild(controlsContainer, createTextNode(" "));
-    appendChild(controlsContainer, timeDisplay);
+    dom.appendChild(controlsContainer, playButton);
+    dom.appendChild(controlsContainer, createTextNode(" "));
+    dom.appendChild(controlsContainer, pauseButton);
+    dom.appendChild(controlsContainer, createTextNode(" "));
+    dom.appendChild(controlsContainer, stopButton);
+    dom.appendChild(controlsContainer, createTextNode(" "));
+    dom.appendChild(controlsContainer, timeDisplay);
 
     dom.insertBefore(audio.parentNode, controlsContainer, audio.nextSibling);
   });
