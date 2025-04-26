@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1745688772092" clover="3.2.0">
-  <project timestamp="1745688772092" name="All files">
+<coverage generated="1745688825836" clover="3.2.0">
+  <project timestamp="1745688825836" name="All files">
     <metrics statements="904" coveredstatements="903" conditionals="341" coveredconditionals="336" methods="330" coveredmethods="330" elements="1575" coveredelements="1569" complexity="0" loc="904" ncloc="904" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="243" coveredstatements="243" conditionals="57" coveredconditionals="54" methods="82" coveredmethods="82"/>
@@ -24,42 +24,42 @@
         <line num="27" count="3" type="stmt"/>
         <line num="28" count="3" type="stmt"/>
         <line num="29" count="3" type="stmt"/>
-        <line num="41" count="6" type="stmt"/>
+        <line num="40" count="6" type="stmt"/>
+        <line num="42" count="6" type="stmt"/>
         <line num="43" count="6" type="stmt"/>
-        <line num="44" count="6" type="stmt"/>
-        <line num="45" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="46" count="5" type="stmt"/>
+        <line num="44" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="45" count="5" type="stmt"/>
+        <line num="48" count="6" type="stmt"/>
         <line num="49" count="6" type="stmt"/>
         <line num="50" count="6" type="stmt"/>
-        <line num="51" count="6" type="stmt"/>
+        <line num="52" count="6" type="stmt"/>
         <line num="53" count="6" type="stmt"/>
         <line num="54" count="6" type="stmt"/>
-        <line num="55" count="6" type="stmt"/>
+        <line num="56" count="6" type="stmt"/>
         <line num="57" count="6" type="stmt"/>
         <line num="58" count="6" type="stmt"/>
         <line num="59" count="6" type="stmt"/>
         <line num="60" count="6" type="stmt"/>
-        <line num="61" count="6" type="stmt"/>
-        <line num="63" count="6" type="stmt"/>
+        <line num="62" count="6" type="stmt"/>
+        <line num="64" count="6" type="stmt"/>
         <line num="65" count="6" type="stmt"/>
         <line num="66" count="6" type="stmt"/>
         <line num="67" count="6" type="stmt"/>
-        <line num="68" count="6" type="stmt"/>
+        <line num="69" count="6" type="stmt"/>
         <line num="70" count="6" type="stmt"/>
         <line num="71" count="6" type="stmt"/>
         <line num="72" count="6" type="stmt"/>
         <line num="73" count="6" type="stmt"/>
-        <line num="74" count="6" type="stmt"/>
+        <line num="75" count="6" type="stmt"/>
         <line num="76" count="6" type="stmt"/>
-        <line num="77" count="6" type="stmt"/>
+        <line num="78" count="6" type="stmt"/>
         <line num="79" count="6" type="stmt"/>
         <line num="80" count="6" type="stmt"/>
         <line num="81" count="6" type="stmt"/>
         <line num="82" count="6" type="stmt"/>
         <line num="83" count="6" type="stmt"/>
         <line num="84" count="6" type="stmt"/>
-        <line num="85" count="6" type="stmt"/>
-        <line num="87" count="6" type="stmt"/>
+        <line num="86" count="6" type="stmt"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
         <metrics statements="59" coveredstatements="59" conditionals="22" coveredconditionals="22" methods="20" coveredmethods="20"/>

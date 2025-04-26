@@ -151,6 +151,5 @@ setupAudio(
   createElement,
   createTextNode,
   stopDefault,
-  playAudio,
-  pauseAudio
+  playAudio
 );

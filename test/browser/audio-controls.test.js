@@ -196,8 +196,7 @@ describe('setupAudio', () => {
       createElement,
       createTextNode,
       stopDefault,
-      playAudio,
-      pauseAudio
+      playAudio
     );
 
     // Then
@@ -217,8 +216,7 @@ describe('setupAudio', () => {
       createElement,
       createTextNode,
       stopDefault,
-      playAudio,
-      pauseAudio
+      playAudio
     );
 
     // Then
@@ -239,8 +237,7 @@ describe('setupAudio', () => {
       createElement,
       createTextNode,
       stopDefault,
-      playAudio,
-      pauseAudio
+      playAudio
     );
 
     // Then
@@ -261,8 +258,7 @@ describe('setupAudio', () => {
       createElement,
       createTextNode,
       stopDefault,
-      playAudio,
-      pauseAudio
+      playAudio
     );
 
     // Then
@@ -283,8 +279,7 @@ describe('setupAudio', () => {
       createElement,
       createTextNode,
       stopDefault,
-      playAudio,
-      pauseAudio
+      playAudio
     );
 
     // Then
@@ -299,8 +294,7 @@ describe('setupAudio', () => {
       createElement,
       createTextNode,
       stopDefault,
-      playAudio,
-      pauseAudio
+      playAudio
     );
 
     // Then

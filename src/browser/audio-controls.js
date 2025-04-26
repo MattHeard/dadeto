@@ -35,8 +35,7 @@ export function setupAudio(
   createElement,
   createTextNode,
   stopDefault,
-  playAudio,
-  pauseAudio
+  playAudio
 ) {
   const audioElements = dom.getAudioElements();
 
