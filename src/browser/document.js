@@ -45,8 +45,7 @@ export const error = (...args) => console.error(...args);
 export const getClasses = (el) => Array.from(el.classList);
 export const getRandomNumber = () => Math.random();
 export const getCurrentTime = () => new Date().toISOString();
-export const hasNextSiblingClass = (link, cls) =>
-  link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
+export const hasNextSiblingClass = (link, cls) => link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
 
 // DOM manipulation functions
 export const addWarning = (outputElement) => outputElement.classList.add('warning');
@@ -57,8 +56,7 @@ export const enable = (input) => {
   input.disabled = false;
 };
 
-export const removeNextSibling = link =>
-  link.nextElementSibling && link.nextElementSibling.remove();
+export const removeNextSibling = link => link.nextElementSibling && link.nextElementSibling.remove();
 
 export const setTextContent = (element, content) => {
   element.textContent = content;
