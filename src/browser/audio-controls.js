@@ -33,8 +33,7 @@ export const createUpdateTimeDisplay = (audio, timeDisplay) => {
 export function setupAudio(
   dom,
   createElement,
-  createTextNode,
-  stopDefault
+  createTextNode
 ) {
   const audioElements = dom.getAudioElements();
 
@@ -55,17 +54,17 @@ export function setupAudio(
     const playButton = dom.createElement("a");
     playButton.href = "#";
     playButton.textContent = "PLAY";
-    const onPlayClick = createPlayClickHandler(audio, stopDefault, dom.playAudio);
+    const onPlayClick = createPlayClickHandler(audio, dom.stopDefault, dom.playAudio);
     dom.addEventListener(playButton, "click", onPlayClick);
 
-    const onPauseClick = createPauseClickHandler(audio, stopDefault, dom.pauseAudio);
+    const onPauseClick = createPauseClickHandler(audio, dom.stopDefault, dom.pauseAudio);
 
     const pauseButton = dom.createElement("a");
     pauseButton.href = "#";
     pauseButton.textContent = "PAUSE";
     dom.addEventListener(pauseButton, "click", onPauseClick);
 
-    const onStopClick = createStopClickHandler(audio, stopDefault, dom.pauseAudio);
+    const onStopClick = createStopClickHandler(audio, dom.stopDefault, dom.pauseAudio);
     const stopButton = dom.createElement("a");
     stopButton.href = "#";
     stopButton.textContent = "STOP";

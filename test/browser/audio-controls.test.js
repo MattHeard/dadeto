@@ -188,14 +188,13 @@ describe('setupAudio', () => {
     const audioElements = [audioElement];
         
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio, playAudio };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio, playAudio, stopDefault };
 
     // When
     setupAudio(
       dom,
       createElement,
       createTextNode,
-      stopDefault,
     );
 
     // Then
@@ -207,14 +206,13 @@ describe('setupAudio', () => {
     const audioElement = {};
     const audioElements = [audioElement];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener, pauseAudio, playAudio };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener, pauseAudio, playAudio, stopDefault };
 
     // When
     setupAudio(
       dom,
       createElement,
       createTextNode,
-      stopDefault,
     );
 
     // Then
@@ -227,14 +225,13 @@ describe('setupAudio', () => {
     const audioElements = [element];
 
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio, playAudio };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio, playAudio, stopDefault };
 
     // When
     setupAudio(
       dom,
       createElement,
       createTextNode,
-      stopDefault,
     );
 
     // Then
@@ -247,14 +244,13 @@ describe('setupAudio', () => {
 
     const audioElements = [element];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio, playAudio };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio, playAudio, stopDefault };
 
     // When
     setupAudio(
       dom,
       createElement,
       createTextNode,
-      stopDefault,
     );
 
     // Then
@@ -267,14 +263,13 @@ describe('setupAudio', () => {
 
     const audioElements = [element];
     const getAudioElements = () => audioElements;
-    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio, playAudio };
+    const dom = { getAudioElements, removeControlsAttribute, createElement, createTextNode, insertBefore: jest.fn(), appendChild: jest.fn(), addEventListener: jest.fn(), pauseAudio, playAudio, stopDefault };
 
     // When
     setupAudio(
       dom,
       createElement,
       createTextNode,
-      stopDefault,
     );
 
     // Then
@@ -288,7 +283,6 @@ describe('setupAudio', () => {
       dom,
       createElement,
       createTextNode,
-      stopDefault,
     );
 
     // Then
