@@ -19,15 +19,15 @@ export const removeChild = (parentNode, child) => parentNode.removeChild(child);
  * Removes all children from the given DOM element.
  * @param {HTMLElement} element - The parent element to clear.
  */
-export function removeAllChildren(element) {
+export const removeAllChildren = (element) => {
   while (element.firstChild) {
     element.removeChild(element.firstChild);
   }
-}
+};
 
-export function contains(parent, child) {
-  return parent && typeof parent.contains === 'function' ? parent.contains(child) : false;
-}
+export const contains = (parent, child) =>
+  parent && typeof parent.contains === 'function' ? parent.contains(child) : false;
+
 
 // Event handlers
 export const stopDefault = (e) => e.preventDefault();
@@ -51,16 +51,16 @@ export const addWarning = (outputElement) => outputElement.classList.add('warnin
 export const removeWarning = (outputElement) => outputElement.classList.remove('warning');
 
 // Enables the given input element by setting its disabled property to false
-export function enable(input) {
+export const enable = (input) => {
   input.disabled = false;
-}
+};
 
 export const removeNextSibling = link =>
   link.nextElementSibling && link.nextElementSibling.remove();
 
-export function setTextContent(element, content) {
+export const setTextContent = (element, content) => {
   element.textContent = content;
-}
+};
 
 /**
  * Wrapper for IntersectionObserver constructor
@@ -68,15 +68,12 @@ export function setTextContent(element, content) {
  * @param {Object} options - IntersectionObserver options
  * @returns {IntersectionObserver}
  */
-export function makeIntersectionObserver(callback) {
-  return new IntersectionObserver(callback, { root: null, threshold: 0.1 });
-}
+export const makeIntersectionObserver = (callback) =>
+  new IntersectionObserver(callback, { root: null, threshold: 0.1 });
 
-export function isIntersecting(entry) {
-  return entry.isIntersecting;
-}
+export const isIntersecting = (entry) => entry.isIntersecting;
 
-export function disconnectObserver(observer) {
+export const disconnectObserver = (observer) => {
   observer.disconnect();
-}
+};
 
