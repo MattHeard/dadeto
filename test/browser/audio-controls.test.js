@@ -198,8 +198,7 @@ describe('setupAudio', () => {
       stopDefault,
       playAudio,
       pauseAudio,
-      addEventListener,
-      appendChild
+      addEventListener
     );
 
     // Then
@@ -221,8 +220,7 @@ describe('setupAudio', () => {
       stopDefault,
       playAudio,
       pauseAudio,
-      addEventListener,
-      appendChild
+      addEventListener
     );
 
     // Then
@@ -245,8 +243,7 @@ describe('setupAudio', () => {
       stopDefault,
       playAudio,
       pauseAudio,
-      addEventListener,
-      appendChild
+      addEventListener
     );
 
     // Then
@@ -269,8 +266,7 @@ describe('setupAudio', () => {
       stopDefault,
       playAudio,
       pauseAudio,
-      addEventListener,
-      appendChild
+      addEventListener
     );
 
     // Then
@@ -293,8 +289,7 @@ describe('setupAudio', () => {
       stopDefault,
       playAudio,
       pauseAudio,
-      addEventListener,
-      appendChild
+      addEventListener
     );
 
     // Then
@@ -311,8 +306,7 @@ describe('setupAudio', () => {
       stopDefault,
       playAudio,
       pauseAudio,
-      addEventListener,
-      appendChild
+      addEventListener
     );
 
     // Then

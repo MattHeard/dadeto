@@ -153,6 +153,5 @@ setupAudio(
   stopDefault,
   playAudio,
   pauseAudio,
-  addEventListener,
-  appendChild
+  addEventListener
 );
