@@ -146,6 +146,8 @@ handleTagLinks(dom);
 // Initial fetch of blog data when the script loads
 // Alias logInfo to log for compatibility with fetchAndCacheBlogData
 const logInfo = log;
-fetchAndCacheBlogData(globalState, fetch, logInfo, error);
+// Alias logError to error for compatibility with fetchAndCacheBlogData
+const logError = error;
+fetchAndCacheBlogData(globalState, fetch, logInfo, logError);
 
 setupAudio(dom);
