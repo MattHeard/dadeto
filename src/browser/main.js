@@ -148,6 +148,8 @@ fetchAndCacheBlogData(globalState, fetch, log, error);
 
 setupAudio(
   dom,
+  createElement,
+  createTextNode,
   stopDefault,
   playAudio,
   pauseAudio
