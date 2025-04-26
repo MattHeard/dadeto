@@ -10,7 +10,8 @@
     "stryker": "node --experimental-vm-modules ./node_modules/.bin/stryker run > reports/mutation/text/mutation.txt",
     "lint": "npx eslint . --format=stylish -o reports/lint/lint.txt || cat reports/lint/lint.txt",
     "copy": "node src/generator/copy.js",
-    "build": "npm run copy && npm run generate"
+    "build": "npm run copy && npm run generate",
+    "start": "npx serve public"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.9",
