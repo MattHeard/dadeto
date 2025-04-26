@@ -160,7 +160,7 @@ describe('createUpdateTimeDisplay', () => {
 
 describe('setupAudio', () => {
   let createdElements;
-  let removeControlsAttribute, createElement, createTextNode, stopDefault, playAudio, pauseAudio, addEventListener, appendChild;
+  let removeControlsAttribute, createElement, createTextNode, stopDefault, playAudio, pauseAudio, appendChild;
   let audioElement, audioElements, dom;
   beforeEach(() => {
     createdElements = [];
@@ -197,8 +197,7 @@ describe('setupAudio', () => {
       createTextNode,
       stopDefault,
       playAudio,
-      pauseAudio,
-      addEventListener
+      pauseAudio
     );
 
     // Then
@@ -219,8 +218,7 @@ describe('setupAudio', () => {
       createTextNode,
       stopDefault,
       playAudio,
-      pauseAudio,
-      addEventListener
+      pauseAudio
     );
 
     // Then
@@ -242,8 +240,7 @@ describe('setupAudio', () => {
       createTextNode,
       stopDefault,
       playAudio,
-      pauseAudio,
-      addEventListener
+      pauseAudio
     );
 
     // Then
@@ -265,8 +262,7 @@ describe('setupAudio', () => {
       createTextNode,
       stopDefault,
       playAudio,
-      pauseAudio,
-      addEventListener
+      pauseAudio
     );
 
     // Then
@@ -288,8 +284,7 @@ describe('setupAudio', () => {
       createTextNode,
       stopDefault,
       playAudio,
-      pauseAudio,
-      addEventListener
+      pauseAudio
     );
 
     // Then
@@ -305,8 +300,7 @@ describe('setupAudio', () => {
       createTextNode,
       stopDefault,
       playAudio,
-      pauseAudio,
-      addEventListener
+      pauseAudio
     );
 
     // Then
