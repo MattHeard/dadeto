@@ -7,13 +7,6 @@
  * @param {HTMLElement} parent - The parent element to append to.
  */
 import { createParagraphElement } from '../presenters/paragraph.js';
-function setTextContent(element, content, dom, parent) {
-  dom.removeAllChildren(parent);
-  const child = createParagraphElement(content, dom);
-  dom.appendChild(parent, child);
-  return child;
-}
-
 /**
  * Sets text content in a parent element using the new signature (no element argument).
  * @param {string} content - The text content to set.
