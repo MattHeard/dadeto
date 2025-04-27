@@ -431,17 +431,16 @@ describe('createHandleSubmit', () => {
     const outputParentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
     const output = { textContent: '', outputParentElement };
     const dom = {
-      removeAllChildren: jest.fn(),
       createElement: jest.fn(() => paragraph),
       stopDefault: jest.fn(),
       addWarning: jest.fn(),
       removeChild: jest.fn(),
       appendChild: jest.fn(),
       setTextContent: jest.fn(),
-      removeAllChildren: jest.fn(),
       contains: () => true,
       removeAllChildren: jest.fn()
     };
+
     const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
     const handleSubmitNoEvent = createHandleSubmit(
       { inputElement: input, outputElement: output, outputParentElement },
