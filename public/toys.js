@@ -174,11 +174,11 @@ function handleRequestResponse(url, outputElement, error, fetch, dom, parent) {
   fetch(url)
     .then(response => response.text())
     .then(body => {
-      setTextContent(outputElement, body, dom, parent);
+      setTextContentNew(body, dom, parent);
     })
     .catch(fetchError => {
       error('Error fetching request URL:', fetchError);
-      setTextContent(outputElement, 'Error fetching URL: ' + fetchError.message, dom, parent);
+      setTextContentNew('Error fetching URL: ' + fetchError.message, dom, parent);
       dom.addWarning(outputElement);
     });
 }
