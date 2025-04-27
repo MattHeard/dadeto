@@ -118,16 +118,16 @@ function tryFetchingBlog(status, globalState, fetchFn, loggers) {
   }
 }
 
-function maybeLogFetchError(status, error, warnFn) {
+function maybeLogFetchError(status, error, logWarningFn) {
   if (status === BLOG_STATUS.ERROR) {
-    warnFn("Blog data previously failed to load:", error);
+    logWarningFn("Blog data previously failed to load:", error);
   }
 }
 
 function handleBlogFetchState(status, error, globalState, fetchFn, loggers) {
-  const { logInfo, logError, warn } = loggers;
+  const { logInfo, logError, logWarning } = loggers;
   tryFetchingBlog(status, globalState, fetchFn, { logInfo, logError });
-  maybeLogFetchError(status, error, warn);
+  maybeLogFetchError(status, error, logWarning);
 }
 
 /**
@@ -137,14 +137,14 @@ function handleBlogFetchState(status, error, globalState, fetchFn, loggers) {
  * @param {function} fetchFn - The fetch function.
  * @param {function} logFn - The logging function.
  * @param {function} errorFn - The error logging function.
- * @param {function} warnFn - The warning logging function.
+ * @param {function} logWarningFn - The logWarninging logging function.
  * @returns {object} A deep copy of the relevant state for the toy.
  */
-export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
+export const getData = (globalState, fetchFn, logFn, errorFn, logWarningFn) => {
   const { status, error } = getBlogState(globalState);
   const stateCopy = shouldCopyStateForFetch(status) ? getDeepStateCopy(globalState) : globalState;
 
-  handleBlogFetchState(status, error, globalState, fetchFn, { logInfo: logFn, logError: errorFn, warn: warnFn });
+  handleBlogFetchState(status, error, globalState, fetchFn, { logInfo: logFn, logError: errorFn, logWarning: logWarningFn });
 
   stripInternalFields(stateCopy);
   return stateCopy;
