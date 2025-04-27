@@ -42,18 +42,7 @@ export function shouldUseExistingFetch(globalState, logFn) {
  */
 export function fetchAndCacheBlogData_new(state, fetch, loggers) {
   const { logInfo, logError } = loggers;
-  return fetchAndCacheBlogData(state, fetch, logInfo, logError);
-}
 
-/**
- * Fetches blog data and updates the global state.
- * Ensures only one fetch happens at a time.
- * @param {object} state - The global state object.
- * @param {function} fetch - The fetch function to use.
- * @param {function} logInfo - The logging function to use.
- * @param {function} logError - The error logging function to use.
- */
-export function fetchAndCacheBlogData(state, fetch, logInfo, logError) {
   // Prevent multiple simultaneous fetches
   if (isFetchInProgress(state)) {
     logInfo('Blog data fetch already in progress.');
