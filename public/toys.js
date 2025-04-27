@@ -96,7 +96,7 @@ function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
   dom.disconnectObserver(observer);
 }
 
-function createHandleEntryFactory(moduleInfo, moduleConfig) {
+function getEntryHandler(moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
   return function(observer) {
     return function(entry) {
@@ -129,7 +129,7 @@ export function makeObserverCallback(modulePath, article, functionName, env, dom
     fetchFn: env.fetch,
     dom
   };
-  const handleEntryFactory = createHandleEntryFactory(moduleInfo, moduleConfig);
+  const handleEntryFactory = getEntryHandler(moduleInfo, moduleConfig);
   return (entries, observer) => {
     const handleEntry = handleEntryFactory(observer);
     entries.forEach(handleEntry);

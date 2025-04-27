@@ -327,7 +327,7 @@ FN:60,(anonymous_8)
 FN:65,runModuleInitializer
 FN:71,importModuleForIntersection
 FN:93,handleIntersectingEntry
-FN:99,createHandleEntryFactory
+FN:99,getEntryHandler
 FN:101,(anonymous_13)
 FN:102,(anonymous_14)
 FN:123,makeObserverCallback
@@ -374,7 +374,7 @@ FNDA:1,(anonymous_8)
 FNDA:1,runModuleInitializer
 FNDA:4,importModuleForIntersection
 FNDA:4,handleIntersectingEntry
-FNDA:8,createHandleEntryFactory
+FNDA:8,getEntryHandler
 FNDA:6,(anonymous_13)
 FNDA:6,(anonymous_14)
 FNDA:8,makeObserverCallback
