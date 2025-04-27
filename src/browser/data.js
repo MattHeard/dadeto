@@ -142,10 +142,7 @@ function handleBlogFetchState(status, error, state, fetch, loggers) {
 
 // New signature: (error, state, fetch, loggers)
 function handleBlogFetchState_new(error, state, fetch, loggers) {
-  const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
-  tryFetchingBlog(state, doFetch);
-  const { logWarning } = loggers;
-  maybeLogFetchError(state, logWarning);
+  return handleBlogFetchState(null, error, state, fetch, loggers);
 }
 
 
@@ -163,7 +160,7 @@ export const getData = (globalState, fetchFn, logFn, errorFn, logWarning) => {
   const { status, error } = getBlogState(globalState);
   const stateCopy = shouldCopyStateForFetch(status) ? getDeepStateCopy(globalState) : globalState;
 
-  handleBlogFetchState(status, error, globalState, fetchFn, { logInfo: logFn, logError: errorFn, logWarning: logWarning });
+  handleBlogFetchState_new(error, globalState, fetchFn, { logInfo: logFn, logError: errorFn, logWarning: logWarning });
 
   stripInternalFields(stateCopy);
   return stateCopy;
