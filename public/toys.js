@@ -22,7 +22,10 @@ function setTextContent(element, content, dom, parent) {
  * @returns {HTMLElement} The created paragraph element.
  */
 function setTextContentNew(content, dom, parent) {
-  return setTextContent(null, content, dom, parent);
+  dom.removeAllChildren(parent);
+  const child = createParagraphElement(content, dom);
+  dom.appendChild(parent, child);
+  return child;
 }
 
 /**
