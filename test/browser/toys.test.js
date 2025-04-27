@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import * as toysModule from '../../src/browser/toys.js';
 import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, initialiseModule } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
