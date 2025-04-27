@@ -87,15 +87,8 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
  * @param {string} functionName - Exported function name
  * @param {object} config - Object containing env and dom
  */
-function handleIntersection(entry, observer, moduleInfo, config) {
-  const { env, dom } = config;
-  const moduleConfig = {
-    globalState: env.globalState,
-    createEnvFn: env.createEnv,
-    errorFn: env.error,
-    fetchFn: env.fetch,
-    dom
-  };
+function handleIntersection(entry, observer, moduleInfo, moduleConfig) {
+  const { dom } = moduleConfig;
   if (dom.isIntersecting(entry)) {
     importModuleForIntersection(moduleInfo, moduleConfig);
     dom.disconnectObserver(observer);
@@ -114,9 +107,15 @@ function handleIntersection(entry, observer, moduleInfo, config) {
  * @param {object} dom - DOM helpers
  */
 export function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
-  const config = { env, dom };
   const moduleInfo = { article, modulePath, functionName };
-  entries.forEach(entry => handleIntersection(entry, observer, moduleInfo, config));
+  const moduleConfig = {
+    globalState: env.globalState,
+    createEnvFn: env.createEnv,
+    errorFn: env.error,
+    fetchFn: env.fetch,
+    dom
+  };
+  entries.forEach(entry => handleIntersection(entry, observer, moduleInfo, moduleConfig));
 }
 
 /**
