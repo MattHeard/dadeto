@@ -80,6 +80,7 @@ function runModuleInitializer(module, getProcessing, initialize) {
  */
 function handleIntersectionNew(entry, observer, modulePath, article, functionName, config) {
   const { env, dom } = config;
+  const moduleInfo = { article, modulePath, functionName };
   if (dom.isIntersecting(entry)) {
     const moduleConfig = {
       globalState: env.globalState,
@@ -89,9 +90,9 @@ function handleIntersectionNew(entry, observer, modulePath, article, functionNam
       dom
     };
     dom.importModule(
-      modulePath,
-      getModuleInitializer(article, functionName, moduleConfig),
-      handleModuleError(modulePath, dom.error)
+      moduleInfo.modulePath,
+      getModuleInitializer(moduleInfo.article, moduleInfo.functionName, moduleConfig),
+      handleModuleError(moduleInfo.modulePath, dom.error)
     );
     dom.disconnectObserver(observer);
   }
