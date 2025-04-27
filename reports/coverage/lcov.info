@@ -319,10 +319,10 @@ FN:17,setTextContent
 FN:32,handleModuleError
 FN:33,(anonymous_2)
 FN:47,getModuleInitializer
-FN:48,(anonymous_4)
-FN:51,makeProcessingFunction
-FN:52,(anonymous_6)
-FN:57,runModuleInitializer
+FN:49,(anonymous_4)
+FN:52,makeProcessingFunction
+FN:53,(anonymous_6)
+FN:58,runModuleInitializer
 FN:75,handleIntersection
 FN:104,handleIntersectionEntries
 FN:105,(anonymous_10)
@@ -362,7 +362,7 @@ FNDA:5,handleModuleError
 FNDA:1,(anonymous_2)
 FNDA:5,getModuleInitializer
 FNDA:1,(anonymous_4)
-FNDA:1,makeProcessingFunction
+FNDA:5,makeProcessingFunction
 FNDA:1,(anonymous_6)
 FNDA:1,runModuleInitializer
 FNDA:6,handleIntersection
@@ -404,9 +404,9 @@ DA:21,14
 DA:33,5
 DA:34,1
 DA:48,5
-DA:52,1
-DA:53,1
-DA:58,1
+DA:49,5
+DA:53,5
+DA:54,1
 DA:59,1
 DA:60,1
 DA:76,6

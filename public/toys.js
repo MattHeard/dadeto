@@ -45,7 +45,8 @@ export function handleModuleError(modulePath, error) {
  * @returns {Function} A function that takes a module and initializes the interactive component.
  */
 export function getModuleInitializer(article, functionName, config) {
-  return (module) => runModuleInitializer(module, article, functionName, config);
+  const getProcessing = makeProcessingFunction(functionName);
+  return (module) => runModuleInitializer(module, article, getProcessing, config);
 }
 
 function makeProcessingFunction(functionName) {
@@ -54,8 +55,7 @@ function makeProcessingFunction(functionName) {
   };
 }
 
-function runModuleInitializer(module, article, functionName, config) {
-  const getProcessing = makeProcessingFunction(functionName);
+function runModuleInitializer(module, article, getProcessing, config) {
   const processingFunction = getProcessing(module);
   initializeInteractiveComponent(article, processingFunction, config);
 }
