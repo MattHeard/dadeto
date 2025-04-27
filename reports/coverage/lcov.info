@@ -88,7 +88,7 @@ SF:src/browser/data.js
 FN:10,getBlogState
 FN:19,isFetchInProgress
 FN:24,shouldUseExistingFetch
-FN:43,fetchAndCacheBlogData_new
+FN:43,fetchAndCacheBlogData
 FN:57,(anonymous_4)
 FN:63,(anonymous_5)
 FN:68,(anonymous_6)
@@ -110,7 +110,7 @@ FNH:20
 FNDA:16,getBlogState
 FNDA:10,isFetchInProgress
 FNDA:3,shouldUseExistingFetch
-FNDA:7,fetchAndCacheBlogData_new
+FNDA:7,fetchAndCacheBlogData
 FNDA:5,(anonymous_4)
 FNDA:3,(anonymous_5)
 FNDA:3,(anonymous_6)

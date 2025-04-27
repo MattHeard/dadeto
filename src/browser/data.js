@@ -40,7 +40,7 @@ export function shouldUseExistingFetch(globalState, logFn) {
  * @param {function} loggers.logInfo - The logging function to use.
  * @param {function} loggers.logError - The error logging function to use.
  */
-export function fetchAndCacheBlogData_new(state, fetch, loggers) {
+export function fetchAndCacheBlogData(state, fetch, loggers) {
   const { logInfo, logError } = loggers;
 
   // Prevent multiple simultaneous fetches
@@ -115,7 +115,7 @@ function validateIncomingState(incomingState, errorFn) {
 
 function tryFetchingBlog(status, globalState, fetchFn, logFn, errorFn) {
   if (status === BLOG_STATUS.IDLE) {
-    fetchAndCacheBlogData_new(globalState, fetchFn, { logInfo: logFn, logError: errorFn });
+    fetchAndCacheBlogData(globalState, fetchFn, { logInfo: logFn, logError: errorFn });
   }
 }
 
