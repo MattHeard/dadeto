@@ -118,7 +118,8 @@ function validateIncomingState(incomingState, errorFn) {
 
 function tryFetchingBlog(status, state, fetch, loggers) {
   if (status === BLOG_STATUS.IDLE) {
-    fetchAndCacheBlogData(state, fetch, loggers);
+    const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
+    doFetch();
   }
 }
 
