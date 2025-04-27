@@ -110,7 +110,7 @@ FN:144,handleBlogFetchState
 FN:159,(anonymous_22)
 FN:176,(anonymous_23)
 FNF:24
-FNH:23
+FNH:24
 FNDA:26,getBlogState
 FNDA:10,isFetchInProgress
 FNDA:3,shouldUseExistingFetch
@@ -132,7 +132,7 @@ FNDA:5,tryFetchingBlog
 FNDA:5,maybeLogFetchError
 FNDA:5,handleBlogFetchState_new
 FNDA:1,(anonymous_20)
-FNDA:0,handleBlogFetchState
+FNDA:5,handleBlogFetchState
 FNDA:5,(anonymous_22)
 FNDA:7,(anonymous_23)
 DA:1,1
@@ -187,7 +187,7 @@ DA:138,5
 DA:139,5
 DA:140,5
 DA:141,5
-DA:145,0
+DA:145,5
 DA:159,1
 DA:160,5
 DA:161,5
@@ -201,7 +201,7 @@ DA:180,1
 DA:181,1
 DA:183,1
 LF:65
-LH:64
+LH:65
 BRDA:21,0,0,10
 BRDA:21,0,1,3
 BRDA:25,1,0,1

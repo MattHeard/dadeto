@@ -160,7 +160,7 @@ export const getData = (globalState, fetchFn, logFn, errorFn, logWarning) => {
   const { status, error } = getBlogState(globalState);
   const stateCopy = shouldCopyStateForFetch(status) ? getDeepStateCopy(globalState) : globalState;
 
-  handleBlogFetchState_new(error, globalState, fetchFn, { logInfo: logFn, logError: errorFn, logWarning: logWarning });
+  handleBlogFetchState(globalState, fetchFn, { logInfo: logFn, logError: errorFn, logWarning: logWarning });
 
   stripInternalFields(stateCopy);
   return stateCopy;
