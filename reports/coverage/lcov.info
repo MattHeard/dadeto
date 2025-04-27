@@ -111,7 +111,7 @@ FNH:21
 FNDA:16,getBlogState
 FNDA:10,isFetchInProgress
 FNDA:3,shouldUseExistingFetch
-FNDA:1,fetchAndCacheBlogData_new
+FNDA:7,fetchAndCacheBlogData_new
 FNDA:7,fetchAndCacheBlogData
 FNDA:5,(anonymous_5)
 FNDA:3,(anonymous_6)
@@ -138,8 +138,8 @@ DA:25,3
 DA:26,1
 DA:27,1
 DA:29,2
-DA:44,1
-DA:45,1
+DA:44,7
+DA:45,7
 DA:58,7
 DA:59,1
 DA:60,1

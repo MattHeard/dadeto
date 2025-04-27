@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { fetchAndCacheBlogData_new, fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch } from '../../src/browser/data.js';
+import { fetchAndCacheBlogData_new, getData, setData, getDeepStateCopy, shouldUseExistingFetch } from '../../src/browser/data.js';
 
 describe('fetchAndCacheBlogData', () => {
   let state;
@@ -23,7 +23,7 @@ describe('fetchAndCacheBlogData', () => {
     state.blogStatus = 'loading';
     state.blogFetchPromise = promise;
 
-    const result = fetchAndCacheBlogData(state, mockFetch, mockLog, mockError);
+    const result = fetchAndCacheBlogData_new(state, mockFetch, { logInfo: mockLog, logError: mockError });
     expect(result).toBe(promise);
     expect(mockLog).toHaveBeenCalledWith('Blog data fetch already in progress.');
   });
@@ -34,7 +34,7 @@ describe('fetchAndCacheBlogData', () => {
       Promise.resolve({ ok: true, json: () => Promise.resolve(blogData) })
     );
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, mockLog, mockError);
+    const promise = fetchAndCacheBlogData_new(state, mockFetch, { logInfo: mockLog, logError: mockError });
     expect(state.blogStatus).toBe('loading');
     expect(state.blogError).toBeNull();
 
@@ -49,7 +49,7 @@ describe('fetchAndCacheBlogData', () => {
   it('should handle HTTP errors properly', async () => {
     mockFetch = jest.fn(() => Promise.resolve({ ok: false, status: 500 }));
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, mockLog, mockError);
+    const promise = fetchAndCacheBlogData_new(state, mockFetch, { logInfo: mockLog, logError: mockError });
     await promise;
 
     expect(state.blogStatus).toBe('error');
@@ -66,7 +66,7 @@ describe('fetchAndCacheBlogData', () => {
     const error = new Error('Network failure');
     mockFetch = jest.fn(() => Promise.reject(error));
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, mockLog, mockError);
+    const promise = fetchAndCacheBlogData_new(state, mockFetch, { logInfo: mockLog, logError: mockError });
     await promise;
 
     expect(state.blogStatus).toBe('error');
@@ -81,7 +81,7 @@ describe('fetchAndCacheBlogData', () => {
       Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
     );
 
-    await fetchAndCacheBlogData(state, mockFetch, mockLog, mockError);
+    await fetchAndCacheBlogData_new(state, mockFetch, { logInfo: mockLog, logError: mockError });
 
     expect(mockFetch).toHaveBeenCalledWith('./blog.json');
     expect(mockLog).toHaveBeenCalledWith('Starting to fetch blog data...');
@@ -90,7 +90,7 @@ describe('fetchAndCacheBlogData', () => {
   it('throws specific error when response is not ok', async () => {
     mockFetch = jest.fn(() => Promise.resolve({ ok: false, status: 418 }));
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, mockLog, mockError);
+    const promise = fetchAndCacheBlogData_new(state, mockFetch, { logInfo: mockLog, logError: mockError });
     await promise;
 
     expect(state.blogStatus).toBe('error');
