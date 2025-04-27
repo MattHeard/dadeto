@@ -267,21 +267,16 @@ describe('initialiseModule', () => {
       removeAllChildren: jest.fn()
     };
 
-    const env = {
-      globalState,
-      createEnv,
-      error,
-      fetch
-    };
+    // Pass globalState, createEnv, error, and fetch directly
     // Create config object as passed to initializeAndRenderComponent
     const config = {
-      globalState: env.globalState,
-      createEnvFn: env.createEnv,
-      errorFn: env.error,
-      fetchFn: env.fetch,
+      globalState,
+      createEnvFn: createEnv,
+      errorFn: error,
+      fetchFn: fetch,
       dom
     };
-    const result = initialiseModule(article, functionName, env, dom);
+    const result = initialiseModule(article, functionName, { globalState, createEnv, error, fetch }, dom);
     const module = { process: () => 'ok' };
     const response = result(module);
     // Expectations at end
