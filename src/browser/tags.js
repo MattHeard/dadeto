@@ -2,9 +2,9 @@ export function startsWith(str, prefix) {
   return str.indexOf(prefix) === 0;
 }
 
-function hideIfHasClass(article, className, hasClassFn, hideElementFn) {
-  if (hasClassFn(article, className)) {
-    hideElementFn(article);
+function hideIfHasClass(article, className, dom) {
+  if (dom.hasClass(article, className)) {
+    dom.hide(article);
   }
 }
 
@@ -85,7 +85,7 @@ export function makeHandleHideSpan(dom) {
 export function hideArticlesByClass(className, dom) {
   const articles = dom.getElementsByTagName('article');
   for (const article of articles) {
-    hideIfHasClass(article, className, dom.hasClass, dom.hide);
+    hideIfHasClass(article, className, dom);
   }
 }
 
