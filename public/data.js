@@ -165,12 +165,11 @@ export const getData = (state, fetch, logInfo, logError, logWarning) => {
  * Wrapper for getData. Calls getData with the same arguments.
  * @param {object} state
  * @param {function} fetch
- * @param {function} logInfo
- * @param {function} logError
- * @param {function} logWarning
+ * @param {object} loggers - An object with logInfo, logError, and logWarning functions.
  * @returns {object}
  */
-export const getData_new = (state, fetch, logInfo, logError, logWarning) => {
+export const getData_new = (state, fetch, loggers) => {
+  const { logInfo, logError, logWarning } = loggers;
   return getData(state, fetch, logInfo, logError, logWarning);
 };
 
