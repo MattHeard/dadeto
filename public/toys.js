@@ -78,7 +78,7 @@ function runModuleInitializer(module, getProcessing, initialize) {
  * @param {string} functionName - Exported function name
  * @param {object} config - Object containing env and dom
  */
-function handleIntersectionNew(entry, observer, modulePath, article, functionName, config) {
+function handleIntersection(entry, observer, modulePath, article, functionName, config) {
   const { env, dom } = config;
   const moduleInfo = { article, modulePath, functionName };
   if (dom.isIntersecting(entry)) {
@@ -111,7 +111,7 @@ function handleIntersectionNew(entry, observer, modulePath, article, functionNam
  */
 export function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
   const config = { env, dom };
-  entries.forEach(entry => handleIntersectionNew(entry, observer, modulePath, article, functionName, config));
+  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, config));
 }
 
 /**
