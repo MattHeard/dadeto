@@ -73,7 +73,7 @@ function createEnv() {
     ["getRandomNumber", getRandomNumber],
     ["getCurrentTime", getCurrentTime],
     ["getData", () => getData(globalState, fetch, loggers)],
-    ["setData", (newData) => setData(newData, globalState, log, error)]
+    ["setData", (newData) => setData(newData, globalState, loggers.logInfo, error)]
   ]);
 }
 

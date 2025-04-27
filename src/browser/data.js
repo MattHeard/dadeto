@@ -184,15 +184,15 @@ function getRelevantStateCopy(state) {
  * Updates the global state, preserving internal fetch/blog properties.
  * @param {object} incomingState - The new state object (must have 'temporary').
  * @param {object} globalState - The current global state to modify.
- * @param {function} logFn - The logging function.
+ * @param {function} logInfo - The logging function.
  * @param {function} errorFn - The error logging function.
  */
-export const setData = (incomingState, globalState, logFn, errorFn) => {
+export const setData = (incomingState, globalState, logInfo, errorFn) => {
   // Replace the entire global state, but validate basic structure
   validateIncomingState(incomingState, errorFn);
   const oldBlogState = getBlogState(globalState);
   Object.assign(globalState, incomingState);
   restoreBlogState(globalState, oldBlogState);
 
-  logFn('Global state updated:', globalState);
+  logInfo('Global state updated:', globalState);
 };
