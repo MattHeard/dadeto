@@ -98,8 +98,16 @@ function handleIntersection(entry, observer, moduleInfo, env) {
 /**
  * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
  */
-export function handleIntersectionEntriesNew(entries, observer, modulePath, article, functionName, env, dom) {
-  return handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom);
+export function handleIntersectionEntriesNew(entries, observer, moduleInfo, env, dom) {
+  return handleIntersectionEntries(
+    entries,
+    observer,
+    moduleInfo.modulePath,
+    moduleInfo.article,
+    moduleInfo.functionName,
+    env,
+    dom
+  );
 }
 
 /**
