@@ -112,9 +112,9 @@ function validateIncomingState(incomingState, errorFn) {
   }
 }
 
-function tryFetchingBlog(status, globalState, fetchFn, logFn, errorFn) {
+function tryFetchingBlog(status, globalState, fetchFn, loggers) {
   if (status === BLOG_STATUS.IDLE) {
-    fetchAndCacheBlogData(globalState, fetchFn, { logInfo: logFn, logError: errorFn });
+    fetchAndCacheBlogData(globalState, fetchFn, loggers);
   }
 }
 
@@ -125,7 +125,7 @@ function maybeLogFetchError(status, error, warnFn) {
 }
 
 function handleBlogFetchState(status, error, globalState, fetchFn, logFn, errorFn, warnFn) {
-  tryFetchingBlog(status, globalState, fetchFn, logFn, errorFn);
+  tryFetchingBlog(status, globalState, fetchFn, { logInfo: logFn, logError: errorFn });
   maybeLogFetchError(status, error, warnFn);
 }
 
