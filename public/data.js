@@ -102,8 +102,7 @@ function hasTemporaryProperty(obj) {
 }
 
 function isInvalidState(value) {
-  if (!value || typeof value !== 'object') {return true;}
-  return !hasTemporaryProperty(value);
+  return (!value || typeof value !== 'object') || !hasTemporaryProperty(value);
 }
 
 function validateIncomingState(incomingState, errorFn) {
