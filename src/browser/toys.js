@@ -1,19 +1,17 @@
 /**
  * @command
- * Sets text content on an element.
- * @param {HTMLElement} element - The target element.
+ * Sets text content in a parent element by creating a paragraph element.
+ * @param {HTMLElement} element - The target element. (DEPRECATED, will be removed)
  * @param {string} content - The text content to set.
  * @param {object} dom - DOM helper functions.
- * @param {HTMLElement} [parent] - Optional parent element (unused).
+ * @param {HTMLElement} parent - The parent element to append to.
  */
 import { createParagraphElement } from '../presenters/paragraph.js';
 function setTextContent(element, content, dom, parent) {
-  if (parent) {
-    dom.removeAllChildren(parent);
-    const child = createParagraphElement(content, dom);
-    dom.appendChild(parent, child);
-    return child;
-  }
+  dom.removeAllChildren(parent);
+  const child = createParagraphElement(content, dom);
+  dom.appendChild(parent, child);
+  return child;
 }
 
 /**
