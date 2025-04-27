@@ -92,12 +92,13 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
  */
 function createHandleEntry(observer, moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
-  return entry => {
+  const handleEntry = entry => {
     if (dom.isIntersecting(entry)) {
       importModuleForIntersection(moduleInfo, moduleConfig);
       dom.disconnectObserver(observer);
     }
   };
+  return handleEntry;
 }
 
 function handleIntersectionEntries(entries, observer, moduleInfo, moduleConfig) {
