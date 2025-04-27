@@ -97,6 +97,10 @@ export function handleIntersection(entry, observer, modulePath, article, functio
   }
 }
 
+export function handleIntersectionNew(entry, observer, modulePath, article, functionName, env, dom) {
+  return handleIntersection(entry, observer, modulePath, article, functionName, env, dom);
+}
+
 /**
  * @command
  * Handles multiple intersection entries
