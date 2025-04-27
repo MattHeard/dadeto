@@ -101,8 +101,12 @@ function hasTemporaryProperty(obj) {
   return Object.prototype.hasOwnProperty.call(obj, 'temporary');
 }
 
+function isNonNullObject(value) {
+  return !!value && typeof value === 'object';
+}
+
 function isInvalidState(value) {
-  return (!value || typeof value !== 'object') || !hasTemporaryProperty(value);
+  return !isNonNullObject(value) || !hasTemporaryProperty(value);
 }
 
 function validateIncomingState(incomingState, errorFn) {
