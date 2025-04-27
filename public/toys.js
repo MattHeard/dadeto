@@ -64,7 +64,7 @@ export function initialiseModule(article, functionName, env, dom) {
  * @param {Function} processingFunction - The function to process input.
  * @param {object} config - Configuration object for the component.
  */
-function initializeAndRenderComponent(article, processingFunction, config) {
+export function initializeAndRenderComponent(article, processingFunction, config) {
   initializeInteractiveComponent(article, processingFunction, config);
 }
 
