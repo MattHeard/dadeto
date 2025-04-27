@@ -140,6 +140,15 @@ function handleBlogFetchState(status, error, state, fetch, loggers) {
   maybeLogFetchError(state, logWarning);
 }
 
+// New signature: (error, state, fetch, loggers)
+function handleBlogFetchState_new(error, state, fetch, loggers) {
+  const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
+  tryFetchingBlog(state, doFetch);
+  const { logWarning } = loggers;
+  maybeLogFetchError(state, logWarning);
+}
+
+
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
