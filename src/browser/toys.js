@@ -238,10 +238,10 @@ function parseJSONResult(result) {
  * @param {Function} setTextContent - Function to set the text content of an element.
  * @returns {Function} An event handler function.
  */
-function createHandleInputError(outputElement, error, addWarning, setTextContent, parent) {
+function createHandleInputError(error, addWarning, setTextContent, parent) {
   return function(e) {
     error('Error processing input:', e);
-    setTextContent(outputElement, 'Error: ' + e.message);
+    setTextContent('Error: ' + e.message);
     addWarning(parent);
   };
 }
@@ -260,10 +260,9 @@ function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement, inputElement, outputElement } = elements;
   const { globalState, createEnv, errorFn, fetchFn, dom } = env;
   const handleInputError = createHandleInputError(
-    outputElement,
     errorFn,
     dom.addWarning,
-    (element, content) => setTextContent(element, content, dom, outputParentElement),
+    (content) => setTextContentNew(content, dom, outputParentElement),
     outputParentElement
   );
   try {
