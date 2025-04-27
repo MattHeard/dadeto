@@ -116,9 +116,9 @@ function validateIncomingState(incomingState, errorFn) {
   }
 }
 
-function tryFetchingBlog(status, globalState, fetchFn, loggers) {
+function tryFetchingBlog(status, state, fetchFn, loggers) {
   if (status === BLOG_STATUS.IDLE) {
-    fetchAndCacheBlogData(globalState, fetchFn, loggers);
+    fetchAndCacheBlogData(state, fetchFn, loggers);
   }
 }
 
