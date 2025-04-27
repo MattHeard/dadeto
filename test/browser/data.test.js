@@ -132,19 +132,22 @@ describe('getData, setData, and getDeepStateCopy', () => {
   });
 
   it('getData triggers fetch if status is idle', () => {
-    getData(state, fetchFn, logFn, errorFn, warnFn);
+    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
+    getData_new(state, fetchFn, loggers);
     expect(fetchFn).toHaveBeenCalled();
   });
 
   it('getData logs warning on error state', () => {
     state.blogStatus = 'error';
-    getData(state, fetchFn, logFn, errorFn, warnFn);
+    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
+    getData_new(state, fetchFn, loggers);
     expect(warnFn).toHaveBeenCalledWith('Blog data previously failed to load:', state.blogError);
   });
 
   it('getData does nothing when status is loaded', () => {
     state.blogStatus = 'loaded';
-    getData(state, fetchFn, logFn, errorFn, warnFn);
+    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
+    getData_new(state, fetchFn, loggers);
     expect(fetchFn).not.toHaveBeenCalled();
     expect(warnFn).not.toHaveBeenCalled();
   });
@@ -152,7 +155,8 @@ describe('getData, setData, and getDeepStateCopy', () => {
   it('getData omits internal state fields', async () => {
     state.blog = { title: 'x' };
     state.blogStatus = 'loaded';
-    const result = getData(state, fetchFn, logFn, errorFn, warnFn);
+    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
+    const result = getData_new(state, fetchFn, loggers);
     expect(result.blog).toEqual({ title: 'x' });
     expect(result).not.toHaveProperty('blogStatus');
     expect(result).not.toHaveProperty('blogError');
@@ -267,7 +271,8 @@ describe('getData, setData, and getDeepStateCopy', () => {
     state.blog = blog;
     state.blogStatus = 'loaded';
 
-    const result = getData(state, fetchFn, logFn, errorFn, warnFn);
+    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
+    const result = getData_new(state, fetchFn, loggers);
 
     expect(result.blog).toEqual(blog);
     expect(fetchFn).not.toHaveBeenCalled();
