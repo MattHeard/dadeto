@@ -107,11 +107,11 @@ FN:139,handleBlogFetchState
 FN:154,(anonymous_19)
 FN:171,(anonymous_20)
 FNF:21
-FNH:20
+FNH:21
 FNDA:16,getBlogState
 FNDA:10,isFetchInProgress
 FNDA:3,shouldUseExistingFetch
-FNDA:0,fetchAndCacheBlogData_new
+FNDA:1,fetchAndCacheBlogData_new
 FNDA:7,fetchAndCacheBlogData
 FNDA:5,(anonymous_5)
 FNDA:3,(anonymous_6)
@@ -138,8 +138,8 @@ DA:25,3
 DA:26,1
 DA:27,1
 DA:29,2
-DA:44,0
-DA:45,0
+DA:44,1
+DA:45,1
 DA:58,7
 DA:59,1
 DA:60,1
@@ -191,7 +191,7 @@ DA:175,1
 DA:176,1
 DA:178,1
 LF:61
-LH:59
+LH:61
 BRDA:21,0,0,10
 BRDA:21,0,1,3
 BRDA:25,1,0,1

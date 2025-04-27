@@ -126,7 +126,7 @@ function validateIncomingState(incomingState, errorFn) {
 
 function tryFetchingBlog(status, globalState, fetchFn, logFn, errorFn) {
   if (status === BLOG_STATUS.IDLE) {
-    fetchAndCacheBlogData(globalState, fetchFn, logFn, errorFn);
+    fetchAndCacheBlogData_new(globalState, fetchFn, { logInfo: logFn, logError: errorFn });
   }
 }
 
