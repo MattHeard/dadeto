@@ -125,8 +125,8 @@ function maybeLogFetchError(status, error, logWarning) {
 }
 
 function handleBlogFetchState(status, error, globalState, fetchFn, loggers) {
-  const { logWarning } = loggers;
   tryFetchingBlog(status, globalState, fetchFn, loggers);
+  const { logWarning } = loggers;
   maybeLogFetchError(status, error, logWarning);
 }
 
