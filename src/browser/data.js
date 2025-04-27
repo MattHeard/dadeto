@@ -116,9 +116,9 @@ function validateIncomingState(incomingState, errorFn) {
   }
 }
 
-function tryFetchingBlog(status, state, fetchFn, loggers) {
+function tryFetchingBlog(status, state, fetch, loggers) {
   if (status === BLOG_STATUS.IDLE) {
-    fetchAndCacheBlogData(state, fetchFn, loggers);
+    fetchAndCacheBlogData(state, fetch, loggers);
   }
 }
 
@@ -128,8 +128,8 @@ function maybeLogFetchError(status, error, logWarning) {
   }
 }
 
-function handleBlogFetchState(status, error, globalState, fetchFn, loggers) {
-  tryFetchingBlog(status, globalState, fetchFn, loggers);
+function handleBlogFetchState(status, error, globalState, fetch, loggers) {
+  tryFetchingBlog(status, globalState, fetch, loggers);
   const { logWarning } = loggers;
   maybeLogFetchError(status, error, logWarning);
 }
