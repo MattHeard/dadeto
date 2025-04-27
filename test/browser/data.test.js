@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { fetchAndCacheBlogData, getData, setData_new, getDeepStateCopy, shouldUseExistingFetch } from '../../src/browser/data.js';
+import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch } from '../../src/browser/data.js';
 
 describe('fetchAndCacheBlogData', () => {
   let state;
@@ -166,18 +166,18 @@ describe('getData, setData, and getDeepStateCopy', () => {
   it('setData preserves existing blog if incoming state omits it', () => {
     state.blog = { title: 'preserved' };
     const incomingState = { temporary: true }; // no blog field
-    setData_new({ desired: incomingState, current: state }, { logInfo: logFn, logError: errorFn });
+    setData({ desired: incomingState, current: state }, { logInfo: logFn, logError: errorFn });
     expect(state.blog).toEqual({ title: 'preserved' }); // blog should be preserved
   });
 
   it('setData throws and logs error if blog missing', () => {
-    expect(() => setData_new({ desired: {}, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
+    expect(() => setData({ desired: {}, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
     expect(errorFn).toHaveBeenCalled();
   });
 
   it('setData logs specific error message when blog is missing', () => {
     try {
-      setData_new({ desired: {}, current: state }, { logInfo: logFn, logError: errorFn });
+      setData({ desired: {}, current: state }, { logInfo: logFn, logError: errorFn });
     } catch (e) {
       // expected to throw
     }
@@ -192,7 +192,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
     const logFn = jest.fn();
     const errorFn = jest.fn();
     const invalidState = { foo: 1 };
-    expect(() => setData_new({ desired: invalidState, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
+    expect(() => setData({ desired: invalidState, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       invalidState
@@ -203,7 +203,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
     const state = { blog: { title: 'preserved' } };
     const logFn = jest.fn();
     const errorFn = jest.fn();
-    expect(() => setData_new({ desired: null, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
+    expect(() => setData({ desired: null, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       null
@@ -214,7 +214,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
     const state = { blog: { title: 'preserved' } };
     const logFn = jest.fn();
     const errorFn = jest.fn();
-    expect(() => setData_new({ desired: undefined, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
+    expect(() => setData({ desired: undefined, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       undefined
@@ -226,7 +226,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
     const logFn = jest.fn();
     const errorFn = jest.fn();
     const invalidState = Object.create(null);
-    expect(() => setData_new({ desired: invalidState, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
+    expect(() => setData({ desired: invalidState, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       invalidState

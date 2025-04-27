@@ -9,7 +9,7 @@ const globalState = {
 import { setupAudio } from './audio-controls.js';
 import { initializeVisibleComponents, makeCreateIntersectionObserver } from './toys.js';
 
-import { fetchAndCacheBlogData, getData, setData_new } from './data.js';
+import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
   getAudioElements,
@@ -76,7 +76,7 @@ function createEnv() {
     ["getRandomNumber", getRandomNumber],
     ["getCurrentTime", getCurrentTime],
     ["getData", () => getData(globalState, fetch, loggers)],
-    ["setData", (newData) => setData_new({ desired: newData, current: globalState }, loggers)]
+    ["setData", (newData) => setData({ desired: newData, current: globalState }, loggers)]
   ]);
 }
 
