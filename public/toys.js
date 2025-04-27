@@ -121,7 +121,7 @@ export function handleIntersectionEntriesNew(entries, observer, moduleInfo, env,
  * @param {object} env - Environment
  * @param {object} dom - DOM helpers
  */
-export function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
+function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
   const moduleInfo = { article, modulePath, functionName };
   const moduleConfig = {
     globalState: env.globalState,
