@@ -276,10 +276,12 @@ describe('initialiseModule', () => {
       fetchFn: fetch,
       dom
     };
-    // Define a processing function to simulate the module's exported function
-    const processingFunction = jest.fn();
-    initializeAndRenderComponent(article, processingFunction, config);
+    // Use initialiseModule to create an initializer and invoke with a module
+    const result = initialiseModule(article, functionName, { globalState, createEnv, error, fetch }, dom);
+    const module = { [functionName]: jest.fn() };
+    const response = result(module);
     // Expectations at end
+    expect(response).toBeUndefined();
     expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
     expect(dom.createElement).toHaveBeenCalledWith('p');
     expect(dom.appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
