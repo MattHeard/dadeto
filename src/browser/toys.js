@@ -97,9 +97,20 @@ export function handleIntersection(entry, observer, modulePath, article, functio
   }
 }
 
-export function handleIntersectionNew(entry, observer, modulePath, article, functionName, env, dom) {
+/**
+ * Calls handleIntersection with a config object instead of env and dom.
+ * @param {object} entry - The intersection entry
+ * @param {object} observer - The observer instance
+ * @param {string} modulePath - Path to module
+ * @param {HTMLElement} article - The article element
+ * @param {string} functionName - Exported function name
+ * @param {object} config - Object containing env and dom
+ */
+export function handleIntersectionNew(entry, observer, modulePath, article, functionName, config) {
+  const { env, dom } = config;
   return handleIntersection(entry, observer, modulePath, article, functionName, env, dom);
 }
+
 
 /**
  * @command
