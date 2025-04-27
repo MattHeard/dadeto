@@ -9,7 +9,7 @@ const globalState = {
 import { setupAudio } from './audio-controls.js';
 import { initializeVisibleComponents, makeCreateIntersectionObserver } from './toys.js';
 
-import { fetchAndCacheBlogData, getData, setData } from './data.js';
+import { fetchAndCacheBlogData, getData, setData_new } from './data.js';
 import {
   getElementById,
   getAudioElements,
