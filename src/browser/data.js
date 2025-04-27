@@ -159,7 +159,7 @@ function handleBlogFetchState(state, fetch, loggers) {
  * @param {object} loggers - An object with logInfo, logError, and logWarning functions.
  * @returns {object} A deep copy of the relevant state for the toy.
  */
-export const getData_new = (state, fetch, loggers) => {
+export const getData = (state, fetch, loggers) => {
   const stateCopy = getRelevantStateCopy(state);
   handleBlogFetchState(state, fetch, loggers);
   stripInternalFields(stateCopy);

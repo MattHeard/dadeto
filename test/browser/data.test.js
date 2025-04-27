@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { fetchAndCacheBlogData, getData_new, setData, getDeepStateCopy, shouldUseExistingFetch } from '../../src/browser/data.js';
+import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch } from '../../src/browser/data.js';
 
 describe('fetchAndCacheBlogData', () => {
   let state;
@@ -133,21 +133,21 @@ describe('getData, setData, and getDeepStateCopy', () => {
 
   it('getData triggers fetch if status is idle', () => {
     const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    getData_new(state, fetchFn, loggers);
+    getData(state, fetchFn, loggers);
     expect(fetchFn).toHaveBeenCalled();
   });
 
   it('getData logs warning on error state', () => {
     state.blogStatus = 'error';
     const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    getData_new(state, fetchFn, loggers);
+    getData(state, fetchFn, loggers);
     expect(warnFn).toHaveBeenCalledWith('Blog data previously failed to load:', state.blogError);
   });
 
   it('getData does nothing when status is loaded', () => {
     state.blogStatus = 'loaded';
     const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    getData_new(state, fetchFn, loggers);
+    getData(state, fetchFn, loggers);
     expect(fetchFn).not.toHaveBeenCalled();
     expect(warnFn).not.toHaveBeenCalled();
   });
@@ -156,7 +156,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
     state.blog = { title: 'x' };
     state.blogStatus = 'loaded';
     const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    const result = getData_new(state, fetchFn, loggers);
+    const result = getData(state, fetchFn, loggers);
     expect(result.blog).toEqual({ title: 'x' });
     expect(result).not.toHaveProperty('blogStatus');
     expect(result).not.toHaveProperty('blogError');
@@ -272,7 +272,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
     state.blogStatus = 'loaded';
 
     const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    const result = getData_new(state, fetchFn, loggers);
+    const result = getData(state, fetchFn, loggers);
 
     expect(result.blog).toEqual(blog);
     expect(fetchFn).not.toHaveBeenCalled();
