@@ -124,9 +124,10 @@ function maybeLogFetchError(status, error, warnFn) {
   }
 }
 
-function handleBlogFetchState(status, error, globalState, fetchFn, logFn, errorFn, warnFn) {
-  tryFetchingBlog(status, globalState, fetchFn, { logInfo: logFn, logError: errorFn });
-  maybeLogFetchError(status, error, warnFn);
+function handleBlogFetchState(status, error, globalState, fetchFn, loggers) {
+  const { logInfo, logError, warn } = loggers;
+  tryFetchingBlog(status, globalState, fetchFn, { logInfo, logError });
+  maybeLogFetchError(status, error, warn);
 }
 
 /**
@@ -143,7 +144,7 @@ export const getData = (globalState, fetchFn, logFn, errorFn, warnFn) => {
   const { status, error } = getBlogState(globalState);
   const stateCopy = shouldCopyStateForFetch(status) ? getDeepStateCopy(globalState) : globalState;
 
-  handleBlogFetchState(status, error, globalState, fetchFn, logFn, errorFn, warnFn);
+  handleBlogFetchState(status, error, globalState, fetchFn, { logInfo: logFn, logError: errorFn, warn: warnFn });
 
   stripInternalFields(stateCopy);
   return stateCopy;
