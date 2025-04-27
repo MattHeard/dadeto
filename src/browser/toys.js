@@ -118,8 +118,8 @@ function getEntryHandler(moduleInfo, moduleConfig) {
  * @param {object} dom - DOM helpers
  * @returns {Function} IntersectionObserver callback
  */
-function makeObserverCallback(modulePath, article, functionName, env, dom) {
-  const moduleInfo = { article, modulePath, functionName };
+export function makeObserverCallbackNew(moduleInfo, env, dom) {
+  const { modulePath, article, functionName } = moduleInfo;
   const moduleConfig = {
     globalState: env.globalState,
     createEnvFn: env.createEnv,
@@ -132,11 +132,6 @@ function makeObserverCallback(modulePath, article, functionName, env, dom) {
     const handleEntry = handleEntryFactory(observer);
     entries.forEach(handleEntry);
   };
-}
-
-export function makeObserverCallbackNew(moduleInfo, env, dom) {
-  const { modulePath, article, functionName } = moduleInfo;
-  return makeObserverCallback(modulePath, article, functionName, env, dom);
 }
 
 /**
