@@ -41,7 +41,10 @@ import {
   removeChild,
   removeWarning,
   contains,
-  removeAllChildren
+  removeAllChildren,
+  isIntersecting,
+  disconnectObserver,
+  getClasses
 } from './document.js';
 
 /**
@@ -119,8 +122,7 @@ const env = { globalState, createEnv, error, fetch };
 // Only keep one import from './toys.js' and combine symbols if needed
 const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
-// Only keep one import from './document.js' and combine symbols if needed
-import { isIntersecting, disconnectObserver, getClasses } from './document.js';
+
 // isIntersecting and disconnectObserver moved to document.js
 
 
