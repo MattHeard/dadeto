@@ -29,6 +29,17 @@ function setTextContentNew(content, dom, parent) {
 }
 
 /**
+ * Calls setTextContentNew with the provided arguments.
+ * @param {string} content - The text content to set.
+ * @param {object} dom - DOM helper functions.
+ * @param {HTMLElement} parent - The parent element to append to.
+ * @returns {HTMLElement} The created paragraph element.
+ */
+function set_text_content(content, dom, parent) {
+  return setTextContentNew(content, dom, parent);
+}
+
+/**
  * @query
  * Creates an error handler for module loading errors
  * @param {string} modulePath - Path to the module that failed to load
