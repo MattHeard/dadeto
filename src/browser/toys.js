@@ -124,7 +124,8 @@ function handleIntersectionNew(entry, observer, modulePath, article, functionNam
  * @param {object} dom - DOM helpers
  */
 export function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
-  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, env, dom));
+  const config = { env, dom };
+  entries.forEach(entry => handleIntersectionNew(entry, observer, modulePath, article, functionName, config));
 }
 
 /**
