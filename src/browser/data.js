@@ -116,12 +116,12 @@ function validateIncomingState(incomingState, errorFn) {
   }
 }
 
-function isIdleStatus(status) {
+function isIdleStatus(status, state) {
   return status === BLOG_STATUS.IDLE;
 }
 
 function tryFetchingBlog(status, state, fetch) {
-  if (isIdleStatus(status)) {
+  if (isIdleStatus(status, state)) {
     fetch();
   }
 }

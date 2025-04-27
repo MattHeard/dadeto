@@ -1,5 +1,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js[24m[0m
+[0m  [2m119:31[22m  [33mwarning[39m  'state' is defined but never used                                                  [2mno-unused-vars[22m[0m
 [0m  [2m135:1[22m   [33mwarning[39m  Function 'handleBlogFetchState' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
 [0m  [2m152:75[22m  [33mwarning[39m  Arrow function has too many parameters (5). Maximum allowed is 3                   [2mmax-params[22m[0m
 [0m  [2m169:69[22m  [33mwarning[39m  Arrow function has too many parameters (4). Maximum allowed is 3                   [2mmax-params[22m[0m
@@ -176,6 +177,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 135 problems (0 errors, 135 warnings)[22m[39m[0m
+[0m[33m[1m✖ 136 problems (0 errors, 136 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
