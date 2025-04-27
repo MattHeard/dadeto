@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import * as toysModule from '../../src/browser/toys.js';
-import { makeObserverCallback } from '../../src/browser/toys.js';
+import { makeObserverCallback, makeCreateIntersectionObserver } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
   let importModule, disconnectObserver, f, modulePath, entry, observer;
@@ -71,7 +71,7 @@ describe('makeCreateIntersectionObserver', () => {
       contains: () => true
     };
     env = {};
-    f = toysModule.makeCreateIntersectionObserver(dom, env);
+    f = makeCreateIntersectionObserver(dom, env);
     article = {};
     modulePath = 'mod';
     functionName = 'fn';
@@ -117,7 +117,7 @@ describe('makeCreateIntersectionObserver', () => {
     // --- GIVEN ---
     isIntersecting = () => false;
     dom.isIntersecting = isIntersecting;
-    const f = toysModule.makeCreateIntersectionObserver(dom, env);
+    const f = makeCreateIntersectionObserver(dom, env);
     f(article, modulePath, functionName);
     // --- WHEN ---
     g([entry], observer);
@@ -129,7 +129,7 @@ describe('makeCreateIntersectionObserver', () => {
     // --- GIVEN ---
     isIntersecting = () => false;
     dom.isIntersecting = isIntersecting;
-    const f = toysModule.makeCreateIntersectionObserver(dom, env);
+    const f = makeCreateIntersectionObserver(dom, env);
     f(article, modulePath, functionName);
     // --- WHEN ---
     g([entry], observer);
