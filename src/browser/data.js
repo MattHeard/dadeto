@@ -207,12 +207,12 @@ function getRelevantStateCopy(state) {
  * @param {function} loggers.logError - The error logging function.
  */
 export const setData_new = (state, loggers) => {
-  const { desired, globalState } = state;
+  const { desired, current } = state;
   const { logInfo, logError } = loggers;
   // Validate incoming state
   validateIncomingState(desired, logError);
-  const oldBlogState = getBlogState(globalState);
-  Object.assign(globalState, desired);
-  restoreBlogState(globalState, oldBlogState);
-  logInfo('Global state updated:', globalState);
+  const oldBlogState = getBlogState(current);
+  Object.assign(current, desired);
+  restoreBlogState(current, oldBlogState);
+  logInfo('Global state updated:', current);
 };
