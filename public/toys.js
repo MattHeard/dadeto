@@ -98,8 +98,8 @@ function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
 
 function getEntryHandler(moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
-  return function(observer) {
-    return function(entry) {
+  return (observer) => {
+    return (entry) => {
       if (dom.isIntersecting(entry)) {
         handleIntersectingEntry(observer, moduleInfo, moduleConfig);
       }
