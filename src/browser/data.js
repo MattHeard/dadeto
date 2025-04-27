@@ -32,8 +32,17 @@ export function shouldUseExistingFetch(globalState, logFn) {
 /**
  * Wrapper for fetchAndCacheBlogData (for migration/testing).
  */
-export function fetchAndCacheBlogData_new(...args) {
-  return fetchAndCacheBlogData(...args);
+/**
+ * Wrapper for fetchAndCacheBlogData with explicit arguments.
+ * @param {object} state - The global state object.
+ * @param {function} fetch - The fetch function to use.
+ * @param {object} loggers - The logging functions object.
+ * @param {function} loggers.logInfo - The logging function to use.
+ * @param {function} loggers.logError - The error logging function to use.
+ */
+export function fetchAndCacheBlogData_new(state, fetch, loggers) {
+  const { logInfo, logError } = loggers;
+  return fetchAndCacheBlogData(state, fetch, logInfo, logError);
 }
 
 /**
