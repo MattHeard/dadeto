@@ -79,7 +79,7 @@ function runModuleInitializer(module, getProcessing, initialize) {
  * @param {object} env - Environment
  * @param {object} dom - DOM helpers
  */
-export function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
+function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
   if (dom.isIntersecting(entry)) {
     const config = {
       globalState: env.globalState,
