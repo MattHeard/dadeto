@@ -102,7 +102,7 @@ function hasTemporaryProperty(obj) {
 }
 
 function isNonNullObject(value) {
-  return !!value && typeof value === 'object';
+  return Boolean(value) && typeof value === 'object';
 }
 
 function isInvalidState(value) {
