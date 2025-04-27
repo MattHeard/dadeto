@@ -87,10 +87,10 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
  * @param {string} functionName - Exported function name
  * @param {object} config - Object containing env and dom
  */
-function handleIntersection(entry, observer, moduleInfo, config) {
-  const { dom } = config;
+function handleIntersection(entry, observer, moduleInfo, env) {
+  const { dom } = env;
   if (dom.isIntersecting(entry)) {
-    importModuleForIntersection(moduleInfo, config);
+    importModuleForIntersection(moduleInfo, env);
     dom.disconnectObserver(observer);
   }
 }
