@@ -147,7 +147,8 @@ export function makeObserverCallbackNew(moduleInfo, env, dom) {
  */
 export function makeCreateIntersectionObserver(dom, env) {
   return function createIntersectionObserver(article, modulePath, functionName) {
-    const observerCallback = makeObserverCallback(modulePath, article, functionName, env, dom);
+    const moduleInfo = { article, modulePath, functionName };
+    const observerCallback = makeObserverCallbackNew(moduleInfo, env, dom);
     return dom.makeIntersectionObserver(observerCallback);
   };
 }
