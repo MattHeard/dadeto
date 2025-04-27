@@ -48,8 +48,12 @@ export function getModuleInitializer(article, functionName, config) {
   return (module) => runModuleInitializer(module, article, functionName, config);
 }
 
+function getProcessingFunction(module, functionName) {
+  return module[functionName];
+}
+
 function runModuleInitializer(module, article, functionName, config) {
-  const processingFunction = module[functionName];
+  const processingFunction = getProcessingFunction(module, functionName);
   initializeInteractiveComponent(article, processingFunction, config);
 }
 
