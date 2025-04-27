@@ -273,6 +273,14 @@ describe('initialiseModule', () => {
       error,
       fetch
     };
+    // Create config object as passed to initializeAndRenderComponent
+    const config = {
+      globalState: env.globalState,
+      createEnvFn: env.createEnv,
+      errorFn: env.error,
+      fetchFn: env.fetch,
+      dom
+    };
     const result = initialiseModule(article, functionName, env, dom);
     const module = { process: () => 'ok' };
     const response = result(module);
