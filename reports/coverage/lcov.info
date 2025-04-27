@@ -111,7 +111,7 @@ FN:178,getRelevantStateCopy
 FN:190,(anonymous_23)
 FN:210,(anonymous_24)
 FNF:25
-FNH:24
+FNH:25
 FNDA:26,getBlogState
 FNDA:10,isFetchInProgress
 FNDA:3,shouldUseExistingFetch
@@ -136,7 +136,7 @@ FNDA:1,(anonymous_20)
 FNDA:5,(anonymous_21)
 FNDA:5,getRelevantStateCopy
 FNDA:7,(anonymous_23)
-FNDA:0,(anonymous_24)
+FNDA:7,(anonymous_24)
 DA:1,1
 DA:3,1
 DA:11,26
@@ -204,11 +204,11 @@ DA:195,1
 DA:196,1
 DA:198,1
 DA:210,1
-DA:211,0
-DA:212,0
-DA:213,0
+DA:211,7
+DA:212,7
+DA:213,7
 LF:70
-LH:67
+LH:70
 BRDA:21,0,0,10
 BRDA:21,0,1,3
 BRDA:25,1,0,1
