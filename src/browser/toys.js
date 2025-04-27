@@ -98,8 +98,12 @@ function handleIntersection(entry, observer, moduleInfo, env) {
 /**
  * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
  */
+function createHandleEntry(observer, moduleInfo, moduleConfig) {
+  return entry => handleIntersection(entry, observer, moduleInfo, moduleConfig);
+}
+
 function handleIntersectionEntriesNew(entries, observer, moduleInfo, moduleConfig) {
-  const handleEntry = entry => handleIntersection(entry, observer, moduleInfo, moduleConfig);
+  const handleEntry = createHandleEntry(observer, moduleInfo, moduleConfig);
   entries.forEach(handleEntry);
 }
 
