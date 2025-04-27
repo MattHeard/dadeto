@@ -162,7 +162,7 @@ function handleBlogFetchState(state, fetch, loggers) {
 export const getData_new = (state, fetch, loggers) => {
   const { logInfo, logError, logWarning } = loggers;
   const stateCopy = getRelevantStateCopy(state);
-  handleBlogFetchState(state, fetch, { logInfo, logError, logWarning });
+  handleBlogFetchState(state, fetch, loggers);
   stripInternalFields(stateCopy);
   return stateCopy;
 };
