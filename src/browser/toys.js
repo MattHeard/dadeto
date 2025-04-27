@@ -52,10 +52,12 @@ export function initialiseModule(article, functionName, env, dom) {
     fetchFn: env.fetch,
     dom
   };
-  return (module) => {
-    const processingFunction = module[functionName];
-    initializeInteractiveComponent(article, processingFunction, config);
-  };
+  return (module) => runModuleInitializer(module, article, functionName, config);
+}
+
+function runModuleInitializer(module, article, functionName, config) {
+  const processingFunction = module[functionName];
+  initializeInteractiveComponent(article, processingFunction, config);
 }
 
 
