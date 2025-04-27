@@ -141,8 +141,8 @@ function handleBlogFetchState_new(error, state, fetch, loggers) {
   maybeLogFetchError(state, logWarning);
 }
 
-function handleBlogFetchState(error, state, fetch, loggers) {
-  return handleBlogFetchState_new(error, state, fetch, loggers);
+function handleBlogFetchState(state, fetch, loggers) {
+  return handleBlogFetchState_new(null, state, fetch, loggers);
 }
 
 
