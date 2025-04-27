@@ -72,7 +72,7 @@ function createEnv() {
   return new Map([
     ["getRandomNumber", getRandomNumber],
     ["getCurrentTime", getCurrentTime],
-    ["getData", () => getData_new(globalState, fetch, loggers)],
+    ["getData", () => getData(globalState, fetch, loggers)],
     ["setData", (newData) => setData(newData, globalState, log, error)]
   ]);
 }
