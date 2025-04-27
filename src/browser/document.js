@@ -27,8 +27,7 @@ export const removeAllChildren = (element) => {
   }
 };
 
-export const contains = (parent, child) =>
-  parent && typeof parent.contains === 'function' ? parent.contains(child) : false;
+export const contains = (parent, child) => parent.contains(child);
 
 
 // Event handlers
