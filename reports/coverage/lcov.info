@@ -319,7 +319,7 @@ FN:17,setTextContent
 FN:32,handleModuleError
 FN:33,(anonymous_2)
 FN:47,initialiseModule
-FN:58,createModuleInitializer
+FN:58,getModuleInitializer
 FN:59,(anonymous_5)
 FN:62,runModuleInitializer
 FN:79,handleIntersection
@@ -360,7 +360,7 @@ FNDA:14,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_2)
 FNDA:5,initialiseModule
-FNDA:5,createModuleInitializer
+FNDA:5,getModuleInitializer
 FNDA:1,(anonymous_5)
 FNDA:1,runModuleInitializer
 FNDA:6,handleIntersection

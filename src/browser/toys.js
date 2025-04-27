@@ -52,10 +52,10 @@ export function initialiseModule(article, functionName, env, dom) {
     fetchFn: env.fetch,
     dom
   };
-  return createModuleInitializer(article, functionName, config);
+  return getModuleInitializer(article, functionName, config);
 }
 
-function createModuleInitializer(article, functionName, config) {
+function getModuleInitializer(article, functionName, config) {
   return (module) => runModuleInitializer(module, article, functionName, config);
 }
 
