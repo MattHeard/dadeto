@@ -98,14 +98,7 @@ function handleIntersection(entry, observer, moduleInfo, env) {
 /**
  * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
  */
-function handleIntersectionEntriesNew(entries, observer, moduleInfo, env, dom) {
-  const moduleConfig = {
-    globalState: env.globalState,
-    createEnvFn: env.createEnv,
-    errorFn: env.error,
-    fetchFn: env.fetch,
-    dom
-  };
+function handleIntersectionEntriesNew(entries, observer, moduleInfo, moduleConfig) {
   entries.forEach(entry => handleIntersection(entry, observer, moduleInfo, moduleConfig));
 }
 
@@ -122,8 +115,15 @@ function handleIntersectionEntriesNew(entries, observer, moduleInfo, env, dom) {
  */
 export function makeObserverCallback(modulePath, article, functionName, env, dom) {
   const moduleInfo = { article, modulePath, functionName };
+  const moduleConfig = {
+    globalState: env.globalState,
+    createEnvFn: env.createEnv,
+    errorFn: env.error,
+    fetchFn: env.fetch,
+    dom
+  };
   return (entries, observer) =>
-    handleIntersectionEntriesNew(entries, observer, moduleInfo, env, dom);
+    handleIntersectionEntriesNew(entries, observer, moduleInfo, moduleConfig);
 }
 
 /**

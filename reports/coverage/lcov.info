@@ -328,8 +328,8 @@ FN:65,runModuleInitializer
 FN:71,importModuleForIntersection
 FN:90,handleIntersection
 FN:101,handleIntersectionEntriesNew
-FN:109,(anonymous_13)
-FN:123,makeObserverCallback
+FN:102,(anonymous_13)
+FN:116,makeObserverCallback
 FN:125,(anonymous_15)
 FN:136,makeCreateIntersectionObserver
 FN:137,createIntersectionObserver
@@ -425,8 +425,8 @@ DA:92,6
 DA:93,4
 DA:94,4
 DA:102,6
-DA:109,6
-DA:124,8
+DA:117,8
+DA:118,8
 DA:125,8
 DA:126,6
 DA:137,8
