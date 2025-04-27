@@ -360,7 +360,7 @@ FN:381,initializeVisibleComponents
 FN:387,(anonymous_42)
 FN:401,(anonymous_43)
 FNF:44
-FNH:43
+FNH:44
 FNDA:14,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_2)
@@ -373,7 +373,7 @@ FNDA:1,(anonymous_8)
 FNDA:1,runModuleInitializer
 FNDA:4,importModuleForIntersection
 FNDA:6,handleIntersection
-FNDA:0,handleIntersectionEntriesNew
+FNDA:6,handleIntersectionEntriesNew
 FNDA:6,handleIntersectionEntries
 FNDA:6,(anonymous_14)
 FNDA:8,makeObserverCallback
@@ -426,7 +426,7 @@ DA:91,6
 DA:92,6
 DA:93,4
 DA:94,4
-DA:102,0
+DA:102,6
 DA:125,6
 DA:126,6
 DA:133,6
@@ -508,7 +508,7 @@ DA:393,5
 DA:394,5
 DA:401,1
 LF:102
-LH:101
+LH:102
 BRDA:92,0,0,4
 BRDA:92,0,1,2
 BRDA:200,1,0,4
