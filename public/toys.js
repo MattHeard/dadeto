@@ -44,6 +44,13 @@ export function handleModuleError(modulePath, error) {
  * @param {object} dom - Object containing DOM helper functions.
  * @returns {Function} A function that takes a module and initializes the interactive component.
  */
+function createModuleInitializer(article, processingFunction, config) {
+  return (module) => {
+    // processingFunction may be provided or looked up
+    initializeInteractiveComponent(article, processingFunction, config);
+  };
+}
+
 export function initialiseModule(article, functionName, env, dom) {
   const config = {
     globalState: env.globalState,
@@ -52,9 +59,10 @@ export function initialiseModule(article, functionName, env, dom) {
     fetchFn: env.fetch,
     dom
   };
+  // The closure needs to look up the processing function from the module
   return (module) => {
     const processingFunction = module[functionName];
-    initializeInteractiveComponent(article, processingFunction, config);
+    return createModuleInitializer(article, processingFunction, config)(module);
   };
 }
 
