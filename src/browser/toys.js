@@ -98,12 +98,11 @@ function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
 
 function createHandleEntry(observer, moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
-  const handleEntry = entry => {
+  return entry => {
     if (dom.isIntersecting(entry)) {
       handleIntersectingEntry(observer, moduleInfo, moduleConfig);
     }
   };
-  return handleEntry;
 }
 
 function handleIntersectionEntries(entries, observer, moduleInfo, moduleConfig) {
