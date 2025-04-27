@@ -152,14 +152,23 @@ function handleBlogFetchState(state, fetch, loggers) {
  * @returns {object} A deep copy of the relevant state for the toy.
  */
 export const getData = (globalState, fetchFn, logInfo, logError, logWarning) => {
-  const { status, error } = getBlogState(globalState);
-  const stateCopy = shouldCopyStateForFetch(status) ? getDeepStateCopy(globalState) : globalState;
+  const stateCopy = getRelevantStateCopy(globalState);
 
   const loggers = { logInfo, logError, logWarning };
   handleBlogFetchState(globalState, fetchFn, loggers);
 
   stripInternalFields(stateCopy);
   return stateCopy;
+}
+
+/**
+ * Returns a deep copy of globalState if needed for fetch, otherwise returns globalState itself.
+ * @param {object} globalState
+ * @returns {object}
+ */
+function getRelevantStateCopy(globalState) {
+  const { status } = getBlogState(globalState);
+  return shouldCopyStateForFetch(status) ? getDeepStateCopy(globalState) : globalState;
 };
 
 /**

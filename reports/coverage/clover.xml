@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1745744019698" clover="3.2.0">
-  <project timestamp="1745744019698" name="All files">
-    <metrics statements="910" coveredstatements="909" conditionals="341" coveredconditionals="336" methods="333" coveredmethods="333" elements="1584" coveredelements="1578" complexity="0" loc="910" ncloc="910" packages="13" files="25" classes="25"/>
+<coverage generated="1745744105771" clover="3.2.0">
+  <project timestamp="1745744105771" name="All files">
+    <metrics statements="911" coveredstatements="910" conditionals="341" coveredconditionals="336" methods="334" coveredmethods="334" elements="1586" coveredelements="1580" complexity="0" loc="911" ncloc="911" packages="13" files="25" classes="25"/>
     <package name="browser">
-      <metrics statements="249" coveredstatements="249" conditionals="57" coveredconditionals="54" methods="85" coveredmethods="85"/>
+      <metrics statements="250" coveredstatements="250" conditionals="57" coveredconditionals="54" methods="86" coveredmethods="86"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -62,7 +62,7 @@
         <line num="82" count="6" type="stmt"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
-        <metrics statements="65" coveredstatements="65" conditionals="22" coveredconditionals="22" methods="23" coveredmethods="23"/>
+        <metrics statements="66" coveredstatements="66" conditionals="22" coveredconditionals="22" methods="24" coveredmethods="24"/>
         <line num="1" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
         <line num="11" count="26" type="stmt"/>
@@ -117,17 +117,18 @@
         <line num="140" count="5" type="stmt"/>
         <line num="154" count="1" type="stmt"/>
         <line num="155" count="5" type="stmt"/>
-        <line num="156" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="157" count="5" type="stmt"/>
         <line num="158" count="5" type="stmt"/>
-        <line num="159" count="5" type="stmt"/>
+        <line num="160" count="5" type="stmt"/>
         <line num="161" count="5" type="stmt"/>
-        <line num="162" count="5" type="stmt"/>
-        <line num="172" count="1" type="stmt"/>
-        <line num="174" count="7" type="stmt"/>
-        <line num="175" count="1" type="stmt"/>
-        <line num="176" count="1" type="stmt"/>
-        <line num="177" count="1" type="stmt"/>
-        <line num="179" count="1" type="stmt"/>
+        <line num="170" count="5" type="stmt"/>
+        <line num="171" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="181" count="1" type="stmt"/>
+        <line num="183" count="7" type="stmt"/>
+        <line num="184" count="1" type="stmt"/>
+        <line num="185" count="1" type="stmt"/>
+        <line num="186" count="1" type="stmt"/>
+        <line num="188" count="1" type="stmt"/>
       </file>
       <file name="tags.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js">
         <metrics statements="39" coveredstatements="39" conditionals="6" coveredconditionals="6" methods="15" coveredmethods="15"/>
