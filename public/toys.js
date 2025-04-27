@@ -99,30 +99,6 @@ function handleIntersection(entry, observer, moduleInfo, env) {
  * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
  */
 function handleIntersectionEntriesNew(entries, observer, moduleInfo, env, dom) {
-  return handleIntersectionEntries(
-    entries,
-    observer,
-    moduleInfo.modulePath,
-    moduleInfo.article,
-    moduleInfo.functionName,
-    env,
-    dom
-  );
-}
-
-/**
- * @command
- * Handles multiple intersection entries
- * @param {Array} entries - The intersection entries
- * @param {object} observer - The observer instance
- * @param {string} modulePath - Path to module
- * @param {HTMLElement} article - The article element
- * @param {string} functionName - Exported function name
- * @param {object} env - Environment
- * @param {object} dom - DOM helpers
- */
-function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
-  const moduleInfo = { article, modulePath, functionName };
   const moduleConfig = {
     globalState: env.globalState,
     createEnvFn: env.createEnv,
@@ -132,6 +108,7 @@ function handleIntersectionEntries(entries, observer, modulePath, article, funct
   };
   entries.forEach(entry => handleIntersection(entry, observer, moduleInfo, moduleConfig));
 }
+
 
 /**
  * @query
