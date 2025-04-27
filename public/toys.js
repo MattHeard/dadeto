@@ -87,9 +87,8 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
  * @param {string} functionName - Exported function name
  * @param {object} config - Object containing env and dom
  */
-function handleIntersection(entry, observer, modulePath, article, functionName, config) {
+function handleIntersection(entry, observer, moduleInfo, config) {
   const { env, dom } = config;
-  const moduleInfo = { article, modulePath, functionName };
   const moduleConfig = {
     globalState: env.globalState,
     createEnvFn: env.createEnv,
@@ -116,7 +115,8 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
  */
 export function handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom) {
   const config = { env, dom };
-  entries.forEach(entry => handleIntersection(entry, observer, modulePath, article, functionName, config));
+  const moduleInfo = { article, modulePath, functionName };
+  entries.forEach(entry => handleIntersection(entry, observer, moduleInfo, config));
 }
 
 /**
