@@ -187,7 +187,7 @@ function getRelevantStateCopy(state) {
  * @param {function} logInfo - The logging function.
  * @param {function} logError - The error logging function.
  */
-export const setData = (incomingState, globalState, logInfo, logError) => {
+const setData = (incomingState, globalState, logInfo, logError) => {
   const loggers = { logInfo, logError };
   // Replace the entire global state, but validate basic structure
   validateIncomingState(incomingState, loggers.logError);
