@@ -246,7 +246,7 @@ function createHandleInputError(outputElement, error, addWarning, setTextContent
   };
 }
 
-function processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent = null) {
+function processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent) {
   const env = createEnv(globalState);
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, env);
