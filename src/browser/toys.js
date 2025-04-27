@@ -252,7 +252,7 @@ function processInputAndSetOutput(inputElement, outputElement, globalState, proc
   const result = processingFunction(inputValue, env);
   const parsed = parseJSONResult(result);
   if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom, parent)) {
-    setTextContent(outputElement, result, dom, parent);
+    setTextContentNew(result, dom, parent);
   }
 }
 

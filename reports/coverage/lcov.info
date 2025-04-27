@@ -356,7 +356,7 @@ FN:389,(anonymous_37)
 FNF:38
 FNH:38
 FNDA:14,setTextContent
-FNDA:8,setTextContentNew
+FNDA:10,setTextContentNew
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_3)
 FNDA:5,initialiseModule
@@ -397,7 +397,7 @@ DA:11,14
 DA:12,14
 DA:13,14
 DA:14,14
-DA:25,8
+DA:25,10
 DA:36,5
 DA:37,1
 DA:70,5
