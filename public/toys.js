@@ -106,7 +106,7 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
  * @param {string} functionName - Exported function name
  * @param {object} config - Object containing env and dom
  */
-export function handleIntersectionNew(entry, observer, modulePath, article, functionName, config) {
+function handleIntersectionNew(entry, observer, modulePath, article, functionName, config) {
   const { env, dom } = config;
   return handleIntersection(entry, observer, modulePath, article, functionName, env, dom);
 }
