@@ -119,14 +119,24 @@ export function makeObserverCallback(moduleInfo, moduleConfig) {
   return makeObserverCallbackNew(moduleInfo, env, dom);
 }
 
-export function makeObserverCallbackNew(moduleInfo, env, dom) {
-  const moduleConfig = {
+/**
+ * Creates a moduleConfig object from env and dom
+ * @param {object} env - Environment
+ * @param {object} dom - DOM helpers
+ * @returns {object} moduleConfig
+ */
+export function makeModuleConfig(env, dom) {
+  return {
     globalState: env.globalState,
     createEnvFn: env.createEnv,
     errorFn: env.error,
     fetchFn: env.fetch,
     dom
   };
+}
+
+export function makeObserverCallbackNew(moduleInfo, env, dom) {
+  const moduleConfig = makeModuleConfig(env, dom);
   const handleEntryFactory = getEntryHandler(moduleInfo, moduleConfig);
   return (entries, observer) => {
     const handleEntry = handleEntryFactory(observer);
