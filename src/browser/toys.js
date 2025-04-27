@@ -55,9 +55,16 @@ function makeProcessingFunction(functionName) {
   };
 }
 
+function makeInteractiveInitializer(article, config) {
+  return function(processingFunction) {
+    initializeInteractiveComponent(article, processingFunction, config);
+  };
+}
+
 function runModuleInitializer(module, article, getProcessing, config) {
   const processingFunction = getProcessing(module);
-  initializeInteractiveComponent(article, processingFunction, config);
+  const initialize = makeInteractiveInitializer(article, config);
+  initialize(processingFunction);
 }
 
 
