@@ -185,11 +185,11 @@ function getRelevantStateCopy(state) {
  * @param {object} incomingState - The new state object (must have 'temporary').
  * @param {object} globalState - The current global state to modify.
  * @param {function} logInfo - The logging function.
- * @param {function} errorFn - The error logging function.
+ * @param {function} logError - The error logging function.
  */
-export const setData = (incomingState, globalState, logInfo, errorFn) => {
+export const setData = (incomingState, globalState, logInfo, logError) => {
   // Replace the entire global state, but validate basic structure
-  validateIncomingState(incomingState, errorFn);
+  validateIncomingState(incomingState, logError);
   const oldBlogState = getBlogState(globalState);
   Object.assign(globalState, incomingState);
   restoreBlogState(globalState, oldBlogState);
