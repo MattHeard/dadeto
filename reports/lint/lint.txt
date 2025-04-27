@@ -141,9 +141,7 @@
 [0m  [2m2:104[22m  [33mwarning[39m  'handleTagLinks' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js[24m[0m
-[0m    [2m2:10[22m  [33mwarning[39m  'handleIntersectionEntries' is defined but never used               [2mno-unused-vars[22m[0m
 [0m  [2m252:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m287:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
 [0m  [2m313:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
 [0m  [2m472:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
 [0m  [2m488:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
@@ -161,6 +159,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 128 problems (0 errors, 128 warnings)[22m[39m[0m
+[0m[33m[1m✖ 126 problems (0 errors, 126 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
