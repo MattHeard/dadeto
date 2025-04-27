@@ -133,16 +133,11 @@ function maybeLogFetchError(state, logWarning) {
   }
 }
 
-// New signature: (error, state, fetch, loggers)
-function handleBlogFetchState_new(error, state, fetch, loggers) {
+function handleBlogFetchState(state, fetch, loggers) {
   const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
   tryFetchingBlog(state, doFetch);
   const { logWarning } = loggers;
   maybeLogFetchError(state, logWarning);
-}
-
-function handleBlogFetchState(state, fetch, loggers) {
-  return handleBlogFetchState_new(null, state, fetch, loggers);
 }
 
 
