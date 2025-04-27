@@ -45,15 +45,15 @@ export function handleModuleError(modulePath, error) {
  * @returns {Function} A function that takes a module and initializes the interactive component.
  */
 export function initialiseModule(article, functionName, env, dom) {
+  const config = {
+    globalState: env.globalState,
+    createEnvFn: env.createEnv,
+    errorFn: env.error,
+    fetchFn: env.fetch,
+    dom
+  };
   return (module) => {
     const processingFunction = module[functionName];
-    const config = {
-      globalState: env.globalState,
-      createEnvFn: env.createEnv,
-      errorFn: env.error,
-      fetchFn: env.fetch,
-      dom
-    };
     initializeInteractiveComponent(
       article,
       processingFunction,

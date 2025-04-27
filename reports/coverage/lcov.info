@@ -319,7 +319,7 @@ FN:17,setTextContent
 FN:32,handleModuleError
 FN:33,(anonymous_2)
 FN:47,initialiseModule
-FN:48,(anonymous_4)
+FN:55,(anonymous_4)
 FN:76,handleIntersection
 FN:98,handleIntersectionEntries
 FN:99,(anonymous_7)
@@ -398,8 +398,8 @@ DA:21,14
 DA:33,5
 DA:34,1
 DA:48,5
-DA:49,1
-DA:50,1
+DA:55,5
+DA:56,1
 DA:57,1
 DA:77,6
 DA:78,4
