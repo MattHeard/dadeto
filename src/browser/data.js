@@ -141,6 +141,10 @@ function handleBlogFetchState_new(error, state, fetch, loggers) {
   maybeLogFetchError(state, logWarning);
 }
 
+function handleBlogFetchState(error, state, fetch, loggers) {
+  return handleBlogFetchState_new(error, state, fetch, loggers);
+}
+
 
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
