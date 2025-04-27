@@ -112,11 +112,10 @@ function getEntryHandler(moduleInfo, moduleConfig) {
  * @query
  * Returns a callback for IntersectionObserver that handles intersection entries
  * @param {object} moduleInfo - Object with modulePath, article, functionName
- * @param {object} env - Environment
- * @param {object} dom - DOM helpers
+ * @param {object} moduleConfig - Configuration object (globalState, createEnvFn, errorFn, fetchFn, dom)
  * @returns {Function} IntersectionObserver callback
  */
-export function makeObserverCallback(moduleInfo, env, dom) {
+export function makeObserverCallback(moduleInfo, moduleConfig) {
   return makeObserverCallbackNew(moduleInfo, env, dom);
 }
 
