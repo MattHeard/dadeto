@@ -99,10 +99,10 @@ function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
 function getEntryHandler(moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
   return (observer) => (entry) => {
-      if (dom.isIntersecting(entry)) {
-        handleIntersectingEntry(observer, moduleInfo, moduleConfig);
-      }
-    };
+    if (dom.isIntersecting(entry)) {
+      handleIntersectingEntry(observer, moduleInfo, moduleConfig);
+    }
+  };
 }
 
 
@@ -118,7 +118,7 @@ function getEntryHandler(moduleInfo, moduleConfig) {
  * @param {object} dom - DOM helpers
  * @returns {Function} IntersectionObserver callback
  */
-export function makeObserverCallback(modulePath, article, functionName, env, dom) {
+function makeObserverCallback(modulePath, article, functionName, env, dom) {
   const moduleInfo = { article, modulePath, functionName };
   const moduleConfig = {
     globalState: env.globalState,

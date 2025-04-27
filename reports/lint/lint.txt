@@ -1,6 +1,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
-[0m  [2m121:8[22m  [33mwarning[39m  Function 'makeObserverCallback' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
+[0m  [2m121:1[22m  [33mwarning[39m  Function 'makeObserverCallback' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
 [0m  [2m170:8[22m  [33mwarning[39m  Function 'enableInteractiveControls' has too many parameters (5). Maximum allowed is 3    [2mmax-params[22m[0m
 [0m  [2m177:1[22m  [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (6). Maximum allowed is 3        [2mmax-params[22m[0m
 [0m  [2m202:1[22m  [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
