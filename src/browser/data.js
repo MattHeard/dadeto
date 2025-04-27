@@ -120,9 +120,9 @@ function isIdleStatus(status) {
   return status === BLOG_STATUS.IDLE;
 }
 
-function tryFetchingBlog(status, doFetch) {
+function tryFetchingBlog(status, fetch) {
   if (isIdleStatus(status)) {
-    doFetch();
+    fetch();
   }
 }
 
