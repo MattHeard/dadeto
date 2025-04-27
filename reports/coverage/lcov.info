@@ -317,7 +317,7 @@ TN:
 SF:src/browser/toys.js
 FN:10,setTextContent
 FN:24,setTextContentNew
-FN:38,set_text_content
+FN:38,setTextContentAlias
 FN:49,handleModuleError
 FN:50,(anonymous_4)
 FN:83,initialiseModule
@@ -358,7 +358,7 @@ FNF:39
 FNH:37
 FNDA:0,setTextContent
 FNDA:14,setTextContentNew
-FNDA:0,set_text_content
+FNDA:0,setTextContentAlias
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_4)
 FNDA:5,initialiseModule

@@ -2,7 +2,7 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
 [0m   [2m10:1[22m   [33mwarning[39m  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3               [2mmax-params[22m[0m
 [0m   [2m10:10[22m  [33mwarning[39m  'setTextContent' is defined but never used                                                [2mno-unused-vars[22m[0m
-[0m   [2m38:10[22m  [33mwarning[39m  'set_text_content' is defined but never used                                              [2mno-unused-vars[22m[0m
+[0m   [2m38:10[22m  [33mwarning[39m  'setTextContentAlias' is defined but never used                                           [2mno-unused-vars[22m[0m
 [0m   [2m83:8[22m   [33mwarning[39m  Function 'initialiseModule' has too many parameters (4). Maximum allowed is 3             [2mmax-params[22m[0m
 [0m  [2m112:8[22m   [33mwarning[39m  Function 'handleIntersection' has too many parameters (7). Maximum allowed is 3           [2mmax-params[22m[0m
 [0m  [2m134:8[22m   [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (7). Maximum allowed is 3    [2mmax-params[22m[0m

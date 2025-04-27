@@ -35,7 +35,7 @@ function setTextContentNew(content, dom, parent) {
  * @param {HTMLElement} parent - The parent element to append to.
  * @returns {HTMLElement} The created paragraph element.
  */
-function set_text_content(content, dom, parent) {
+function setTextContentAlias(content, dom, parent) {
   return setTextContentNew(content, dom, parent);
 }
 
