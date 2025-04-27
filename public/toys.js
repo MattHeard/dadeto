@@ -81,14 +81,14 @@ function runModuleInitializer(module, getProcessing, initialize) {
 function handleIntersection(entry, observer, modulePath, article, functionName, config) {
   const { env, dom } = config;
   const moduleInfo = { article, modulePath, functionName };
+  const moduleConfig = {
+    globalState: env.globalState,
+    createEnvFn: env.createEnv,
+    errorFn: env.error,
+    fetchFn: env.fetch,
+    dom
+  };
   if (dom.isIntersecting(entry)) {
-    const moduleConfig = {
-      globalState: env.globalState,
-      createEnvFn: env.createEnv,
-      errorFn: env.error,
-      fetchFn: env.fetch,
-      dom
-    };
     dom.importModule(
       moduleInfo.modulePath,
       getModuleInitializer(moduleInfo.article, moduleInfo.functionName, moduleConfig),
