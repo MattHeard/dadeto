@@ -46,7 +46,8 @@ export function handleModuleError(modulePath, error) {
  */
 export function getModuleInitializer(article, functionName, config) {
   const getProcessing = makeProcessingFunction(functionName);
-  return (module) => runModuleInitializer(module, article, getProcessing, config);
+  const initialize = makeInteractiveInitializer(article, config);
+  return (module) => runModuleInitializer(module, getProcessing, initialize);
 }
 
 function makeProcessingFunction(functionName) {
@@ -61,9 +62,8 @@ function makeInteractiveInitializer(article, config) {
   };
 }
 
-function runModuleInitializer(module, article, getProcessing, config) {
+function runModuleInitializer(module, getProcessing, initialize) {
   const processingFunction = getProcessing(module);
-  const initialize = makeInteractiveInitializer(article, config);
   initialize(processingFunction);
 }
 

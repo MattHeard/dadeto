@@ -1,6 +1,5 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
-[0m   [2m64:1[22m  [33mwarning[39m  Function 'runModuleInitializer' has too many parameters (4). Maximum allowed is 3         [2mmax-params[22m[0m
 [0m   [2m82:8[22m  [33mwarning[39m  Function 'handleIntersection' has too many parameters (7). Maximum allowed is 3           [2mmax-params[22m[0m
 [0m  [2m111:8[22m  [33mwarning[39m  Function 'handleIntersectionEntries' has too many parameters (7). Maximum allowed is 3    [2mmax-params[22m[0m
 [0m  [2m125:8[22m  [33mwarning[39m  Function 'makeObserverCallback' has too many parameters (5). Maximum allowed is 3         [2mmax-params[22m[0m
@@ -160,6 +159,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 127 problems (0 errors, 127 warnings)[22m[39m[0m
+[0m[33m[1m✖ 126 problems (0 errors, 126 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
