@@ -120,7 +120,7 @@ function isIdleStatus(status) {
   return status === BLOG_STATUS.IDLE;
 }
 
-function tryFetchingBlog(status, fetch) {
+function tryFetchingBlog(status, state, fetch) {
   if (isIdleStatus(status)) {
     fetch();
   }
@@ -134,7 +134,7 @@ function maybeLogFetchError(status, error, logWarning) {
 
 function handleBlogFetchState(status, error, state, fetch, loggers) {
   const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
-  tryFetchingBlog(status, doFetch);
+  tryFetchingBlog(status, state, doFetch);
   const { logWarning } = loggers;
   maybeLogFetchError(status, error, logWarning);
 }
