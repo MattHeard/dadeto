@@ -44,17 +44,6 @@ export function handleModuleError(modulePath, error) {
  * @param {object} dom - Object containing DOM helper functions.
  * @returns {Function} A function that takes a module and initializes the interactive component.
  */
-function initialiseModule(article, functionName, env, dom) {
-  const config = {
-    globalState: env.globalState,
-    createEnvFn: env.createEnv,
-    errorFn: env.error,
-    fetchFn: env.fetch,
-    dom
-  };
-  return getModuleInitializer(article, functionName, config);
-}
-
 export function getModuleInitializer(article, functionName, config) {
   return (module) => runModuleInitializer(module, article, functionName, config);
 }
