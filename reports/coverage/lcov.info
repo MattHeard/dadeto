@@ -327,7 +327,7 @@ FN:60,(anonymous_8)
 FN:65,runModuleInitializer
 FN:71,importModuleForIntersection
 FN:93,createHandleEntry
-FN:94,(anonymous_12)
+FN:95,(anonymous_12)
 FN:103,handleIntersectionEntries
 FN:119,makeObserverCallback
 FN:128,(anonymous_15)

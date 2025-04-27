@@ -91,8 +91,8 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
  * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
  */
 function createHandleEntry(observer, moduleInfo, moduleConfig) {
+  const { dom } = moduleConfig;
   return entry => {
-    const { dom } = moduleConfig;
     if (dom.isIntersecting(entry)) {
       importModuleForIntersection(moduleInfo, moduleConfig);
       dom.disconnectObserver(observer);
