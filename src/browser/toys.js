@@ -44,7 +44,7 @@ export function handleModuleError(modulePath, error) {
  * @param {object} dom - Object containing DOM helper functions.
  * @returns {Function} A function that takes a module and initializes the interactive component.
  */
-function initialiseModule(article, functionName, env, dom) {
+export function initialiseModule(article, functionName, env, dom) {
   const config = {
     globalState: env.globalState,
     createEnvFn: env.createEnv,
