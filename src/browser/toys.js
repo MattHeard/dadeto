@@ -96,12 +96,14 @@ function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
   dom.disconnectObserver(observer);
 }
 
-function createHandleEntry(observer, moduleInfo, moduleConfig) {
+function createHandleEntryFactory(moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
-  return entry => {
-    if (dom.isIntersecting(entry)) {
-      handleIntersectingEntry(observer, moduleInfo, moduleConfig);
-    }
+  return function(observer) {
+    return function(entry) {
+      if (dom.isIntersecting(entry)) {
+        handleIntersectingEntry(observer, moduleInfo, moduleConfig);
+      }
+    };
   };
 }
 
@@ -127,8 +129,9 @@ export function makeObserverCallback(modulePath, article, functionName, env, dom
     fetchFn: env.fetch,
     dom
   };
+  const handleEntryFactory = createHandleEntryFactory(moduleInfo, moduleConfig);
   return (entries, observer) => {
-    const handleEntry = createHandleEntry(observer, moduleInfo, moduleConfig);
+    const handleEntry = handleEntryFactory(observer);
     entries.forEach(handleEntry);
   };
 }
