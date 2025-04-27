@@ -170,7 +170,7 @@ export const getData = (state, fetch, logInfo, logError, logWarning) => {
  */
 export const getData_new = (state, fetch, loggers) => {
   const { logInfo, logError, logWarning } = loggers;
-  return getData(state, fetch, logInfo, logError, logWarning);
+  return getDataNew(state, fetch, logInfo, logError, logWarning);
 };
 
 // Alias for test compatibility
