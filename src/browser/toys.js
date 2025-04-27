@@ -68,7 +68,8 @@ function runModuleInitializer(module, getProcessing, initialize) {
 }
 
 
-function importModuleForIntersection(dom, moduleInfo, moduleConfig) {
+function importModuleForIntersection(moduleInfo, moduleConfig) {
+  const { dom } = moduleConfig;
   dom.importModule(
     moduleInfo.modulePath,
     getModuleInitializer(moduleInfo.article, moduleInfo.functionName, moduleConfig),
@@ -97,7 +98,7 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
     dom
   };
   if (dom.isIntersecting(entry)) {
-    importModuleForIntersection(dom, moduleInfo, moduleConfig);
+    importModuleForIntersection(moduleInfo, moduleConfig);
     dom.disconnectObserver(observer);
   }
 }
