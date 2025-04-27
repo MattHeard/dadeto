@@ -377,7 +377,7 @@ FNDA:6,createHandleEntry
 FNDA:6,(anonymous_13)
 FNDA:8,makeObserverCallback
 FNDA:6,(anonymous_15)
-FNDA:6,makeObserverCallbackNew
+FNDA:8,makeObserverCallbackNew
 FNDA:8,makeCreateIntersectionObserver
 FNDA:6,createIntersectionObserver
 FNDA:6,enableInteractiveControls
@@ -434,8 +434,8 @@ DA:123,8
 DA:130,8
 DA:131,6
 DA:132,6
-DA:137,6
-DA:138,6
+DA:137,8
+DA:138,8
 DA:149,8
 DA:150,6
 DA:151,6
