@@ -30,6 +30,13 @@ export function shouldUseExistingFetch(globalState, logFn) {
 }
 
 /**
+ * Wrapper for fetchAndCacheBlogData (for migration/testing).
+ */
+export function fetchAndCacheBlogData_new(...args) {
+  return fetchAndCacheBlogData(...args);
+}
+
+/**
  * Fetches blog data and updates the global state.
  * Ensures only one fetch happens at a time.
  * @param {object} state - The global state object.
