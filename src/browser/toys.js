@@ -36,23 +36,6 @@ export function handleModuleError(modulePath, error) {
 }
 
 /**
- * Creates a module initializer function that will be called when a dynamic import completes
- * @param {HTMLElement} article - The article element containing the toy
- * @param {string} functionName - The name of the exported function to use from the module
- * @param {object} env - Environment object containing globalState, createEnv, error, and fetch
- * @param {object} dom - Object containing DOM functions
- * @returns {Function} A function that takes a module and initializes the interactive component
- */
-/**
- * Creates a module initializer function that will be called when a dynamic import completes
- * @param {HTMLElement} article - The article element containing the toy
- * @param {string} functionName - The name of the exported function to use from the module
- * @param {object} globalState - The shared application state
- * @param {Function} createEnv - Function to create the environment map for the toy
- * @param {Function} error - Function for logging errors
- * @param {Function} fetch - Function for making HTTP requests
- * @param {object} dom - Object containing DOM functions
-/**
  * Creates a module initializer function to be called when a dynamic import completes.
  *
  * @param {HTMLElement} article - The article element containing the toy.
