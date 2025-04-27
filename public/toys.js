@@ -144,8 +144,9 @@ function handleIntersectionEntries(entries, observer, modulePath, article, funct
  * @returns {Function} IntersectionObserver callback
  */
 export function makeObserverCallback(modulePath, article, functionName, env, dom) {
+  const moduleInfo = { article, modulePath, functionName };
   return (entries, observer) =>
-    handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom);
+    handleIntersectionEntries(entries, observer, moduleInfo.modulePath, moduleInfo.article, moduleInfo.functionName, env, dom);
 }
 
 /**
