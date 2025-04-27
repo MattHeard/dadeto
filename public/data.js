@@ -120,9 +120,8 @@ function isIdleStatus(status) {
   return status === BLOG_STATUS.IDLE;
 }
 
-function tryFetchingBlog(status, state, fetch, loggers) {
+function tryFetchingBlog(status, doFetch) {
   if (isIdleStatus(status)) {
-    const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
     doFetch();
   }
 }
@@ -133,8 +132,9 @@ function maybeLogFetchError(status, error, logWarning) {
   }
 }
 
-function handleBlogFetchState(status, error, globalState, fetch, loggers) {
-  tryFetchingBlog(status, globalState, fetch, loggers);
+function handleBlogFetchState(status, error, state, fetch, loggers) {
+  const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
+  tryFetchingBlog(status, doFetch);
   const { logWarning } = loggers;
   maybeLogFetchError(status, error, logWarning);
 }
