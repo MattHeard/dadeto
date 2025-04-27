@@ -90,12 +90,17 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
 /**
  * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
  */
+function handleIntersectingEntry(entry, observer, moduleInfo, moduleConfig) {
+  const { dom } = moduleConfig;
+  importModuleForIntersection(moduleInfo, moduleConfig);
+  dom.disconnectObserver(observer);
+}
+
 function createHandleEntry(observer, moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
   const handleEntry = entry => {
     if (dom.isIntersecting(entry)) {
-      importModuleForIntersection(moduleInfo, moduleConfig);
-      dom.disconnectObserver(observer);
+      handleIntersectingEntry(entry, observer, moduleInfo, moduleConfig);
     }
   };
   return handleEntry;
