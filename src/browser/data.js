@@ -174,7 +174,7 @@ export const getData_new = (state, fetch, loggers) => {
 };
 
 // Alias for test compatibility
-export { getData_new as getDataNew };
+
 
 
 /**
