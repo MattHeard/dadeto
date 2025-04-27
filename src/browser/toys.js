@@ -102,7 +102,7 @@ function createHandleEntry(observer, moduleInfo, moduleConfig) {
   return entry => handleIntersection(entry, observer, moduleInfo, moduleConfig);
 }
 
-function handleIntersectionEntriesNew(entries, observer, moduleInfo, moduleConfig) {
+function handleIntersectionEntries(entries, observer, moduleInfo, moduleConfig) {
   const handleEntry = createHandleEntry(observer, moduleInfo, moduleConfig);
   entries.forEach(handleEntry);
 }
@@ -128,7 +128,7 @@ export function makeObserverCallback(modulePath, article, functionName, env, dom
     dom
   };
   return (entries, observer) =>
-    handleIntersectionEntriesNew(entries, observer, moduleInfo, moduleConfig);
+    handleIntersectionEntries(entries, observer, moduleInfo, moduleConfig);
 }
 
 /**

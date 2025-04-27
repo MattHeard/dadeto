@@ -329,7 +329,7 @@ FN:71,importModuleForIntersection
 FN:90,handleIntersection
 FN:101,createHandleEntry
 FN:102,(anonymous_13)
-FN:105,handleIntersectionEntriesNew
+FN:105,handleIntersectionEntries
 FN:121,makeObserverCallback
 FN:130,(anonymous_16)
 FN:141,makeCreateIntersectionObserver
@@ -375,7 +375,7 @@ FNDA:4,importModuleForIntersection
 FNDA:6,handleIntersection
 FNDA:6,createHandleEntry
 FNDA:6,(anonymous_13)
-FNDA:6,handleIntersectionEntriesNew
+FNDA:6,handleIntersectionEntries
 FNDA:8,makeObserverCallback
 FNDA:6,(anonymous_16)
 FNDA:8,makeCreateIntersectionObserver
