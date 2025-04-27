@@ -118,6 +118,11 @@ function getEntryHandler(moduleInfo, moduleConfig) {
  * @param {object} dom - DOM helpers
  * @returns {Function} IntersectionObserver callback
  */
+export function makeObserverCallback(modulePath, article, functionName, env, dom) {
+  const moduleInfo = { modulePath, article, functionName };
+  return makeObserverCallbackNew(moduleInfo, env, dom);
+}
+
 export function makeObserverCallbackNew(moduleInfo, env, dom) {
   const moduleConfig = {
     globalState: env.globalState,
