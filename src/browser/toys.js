@@ -76,12 +76,12 @@ function runModuleInitializer(module, getProcessing, initialize) {
  * @param {string} modulePath - Path to module
  * @param {HTMLElement} article - The article element
  * @param {string} functionName - Exported function name
- * @param {object} env - Environment
- * @param {object} dom - DOM helpers
+ * @param {object} config - Object containing env and dom
  */
-function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
+function handleIntersectionNew(entry, observer, modulePath, article, functionName, config) {
+  const { env, dom } = config;
   if (dom.isIntersecting(entry)) {
-    const config = {
+    const moduleConfig = {
       globalState: env.globalState,
       createEnvFn: env.createEnv,
       errorFn: env.error,
@@ -90,27 +90,12 @@ function handleIntersection(entry, observer, modulePath, article, functionName, 
     };
     dom.importModule(
       modulePath,
-      getModuleInitializer(article, functionName, config),
+      getModuleInitializer(article, functionName, moduleConfig),
       handleModuleError(modulePath, dom.error)
     );
     dom.disconnectObserver(observer);
   }
 }
-
-/**
- * Calls handleIntersection with a config object instead of env and dom.
- * @param {object} entry - The intersection entry
- * @param {object} observer - The observer instance
- * @param {string} modulePath - Path to module
- * @param {HTMLElement} article - The article element
- * @param {string} functionName - Exported function name
- * @param {object} config - Object containing env and dom
- */
-function handleIntersectionNew(entry, observer, modulePath, article, functionName, config) {
-  const { env, dom } = config;
-  return handleIntersection(entry, observer, modulePath, article, functionName, env, dom);
-}
-
 
 /**
  * @command
