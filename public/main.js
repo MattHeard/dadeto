@@ -1,14 +1,5 @@
-const globalState = {
-  blog: null, // Holds the fetched blog data
-  blogStatus: 'idle', // 'idle', 'loading', 'loaded', 'error'
-  blogError: null, // Stores any error during fetch
-  blogFetchPromise: null, // Tracks the ongoing fetch promise
-  temporary: {} // Holds data managed by toys like setTemporary
-};
-
 import { setupAudio } from './audio-controls.js';
 import { initializeVisibleComponents, makeCreateIntersectionObserver } from './toys.js';
-
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
@@ -46,6 +37,14 @@ import {
   disconnectObserver,
   getClasses
 } from './document.js';
+
+const globalState = {
+  blog: null, // Holds the fetched blog data
+  blogStatus: 'idle', // 'idle', 'loading', 'loaded', 'error'
+  blogError: null, // Stores any error during fetch
+  blogFetchPromise: null, // Tracks the ongoing fetch promise
+  temporary: {} // Holds data managed by toys like setTemporary
+};
 
 /**
  * @command
