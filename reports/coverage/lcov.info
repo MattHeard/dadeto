@@ -327,7 +327,7 @@ FN:60,(anonymous_8)
 FN:65,runModuleInitializer
 FN:71,importModuleForIntersection
 FN:90,handleIntersection
-FN:101,handle_intersection_entries_new
+FN:101,handleIntersectionEntriesNew
 FN:116,handleIntersectionEntries
 FN:125,(anonymous_14)
 FN:138,makeObserverCallback
@@ -373,7 +373,7 @@ FNDA:1,(anonymous_8)
 FNDA:1,runModuleInitializer
 FNDA:4,importModuleForIntersection
 FNDA:6,handleIntersection
-FNDA:0,handle_intersection_entries_new
+FNDA:0,handleIntersectionEntriesNew
 FNDA:6,handleIntersectionEntries
 FNDA:6,(anonymous_14)
 FNDA:8,makeObserverCallback
