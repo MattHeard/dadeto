@@ -202,9 +202,11 @@ export const setData = (incomingState, globalState, logInfo, logError) => {
  * Wrapper for setData, for migration/testing.
  * @param {object} incomingState - The new state object.
  * @param {object} globalState - The current global state to modify.
- * @param {function} logInfo - The logging function.
- * @param {function} logError - The error logging function.
+ * @param {object} loggers - The logging functions object.
+ * @param {function} loggers.logInfo - The logging function.
+ * @param {function} loggers.logError - The error logging function.
  */
-export const setData_new = (incomingState, globalState, logInfo, logError) => {
+export const setData_new = (incomingState, globalState, loggers) => {
+  const { logInfo, logError } = loggers;
   return setData(incomingState, globalState, logInfo, logError);
 };

@@ -109,7 +109,7 @@ FN:137,(anonymous_20)
 FN:162,(anonymous_21)
 FN:178,getRelevantStateCopy
 FN:190,(anonymous_23)
-FN:208,(anonymous_24)
+FN:209,(anonymous_24)
 FNF:25
 FNH:24
 FNDA:26,getBlogState
@@ -203,9 +203,10 @@ DA:194,1
 DA:195,1
 DA:196,1
 DA:198,1
-DA:208,1
-DA:209,0
-LF:68
+DA:209,1
+DA:210,0
+DA:211,0
+LF:69
 LH:67
 BRDA:21,0,0,10
 BRDA:21,0,1,3
