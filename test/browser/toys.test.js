@@ -9,7 +9,8 @@ describe('makeObserverCallback', () => {
     disconnectObserver = jest.fn();
     const isIntersecting = jest.fn(() => true);
     const error = jest.fn();
-    const dom = { importModule, disconnectObserver, isIntersecting, error, contains: () => true };
+    const dom = {
+      removeAllChildren: jest.fn(), importModule, disconnectObserver, isIntersecting, error, contains: () => true };
     const env = {};
     modulePath = 'mod';
     const article = 'art';
@@ -247,6 +248,7 @@ describe('initialiseModule', () => {
     const outputParentElement = {};
     const outputElement = { textContent: '', outputParentElement };
     const dom = {
+      removeAllChildren: jest.fn(),
       querySelector: (el, selector) => {
         if (selector === 'input' || selector === 'button') {return {};}
         if (selector === 'div.output > p') {return outputElement;}
@@ -255,6 +257,7 @@ describe('initialiseModule', () => {
       },
       addEventListener: jest.fn(),
       setTextContent: jest.fn(),
+      removeAllChildren: jest.fn(),
       removeWarning: jest.fn(),
       enable: jest.fn(),
       removeChild: jest.fn(),
@@ -330,6 +333,7 @@ describe('createHandleSubmit', () => {
       stopDefault: jest.fn(),
       addWarning: jest.fn(),
       setTextContent: jest.fn(),
+      removeAllChildren: jest.fn(),
       removeChild: jest.fn(),
       appendChild: jest.fn(),
       contains: () => true,
@@ -427,12 +431,14 @@ describe('createHandleSubmit', () => {
     const outputParentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
     const output = { textContent: '', outputParentElement };
     const dom = {
+      removeAllChildren: jest.fn(),
       createElement: jest.fn(() => paragraph),
       stopDefault: jest.fn(),
       addWarning: jest.fn(),
       removeChild: jest.fn(),
       appendChild: jest.fn(),
       setTextContent: jest.fn(),
+      removeAllChildren: jest.fn(),
       contains: () => true,
       removeAllChildren: jest.fn()
     };
@@ -489,6 +495,7 @@ describe('initializeInteractiveComponent', () => {
       }
     });
     const dom = {
+      removeAllChildren: jest.fn(),
       createElement,
       stopDefault,
       addWarning,
@@ -498,6 +505,7 @@ describe('initializeInteractiveComponent', () => {
       appendChild: jest.fn(),
       querySelector,
       setTextContent: jest.fn((el, text) => { el.textContent = text; }),
+      removeAllChildren: jest.fn(),
       removeWarning: jest.fn(),
       enable: jest.fn(),
       contains: () => true,
@@ -549,9 +557,11 @@ describe('initializeInteractiveComponent', () => {
       }
     });
     const dom = {
+      removeAllChildren: jest.fn(),
       querySelector,
       addEventListener,
       setTextContent: jest.fn(),
+      removeAllChildren: jest.fn(),
       removeWarning: jest.fn(),
       enable: jest.fn(),
       removeChild: jest.fn(),
