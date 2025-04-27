@@ -151,11 +151,11 @@ function handleBlogFetchState(state, fetch, loggers) {
  * @param {function} logWarning - The logWarninging logging function.
  * @returns {object} A deep copy of the relevant state for the toy.
  */
-export const getData = (globalState, fetchFn, logFn, errorFn, logWarning) => {
+export const getData = (globalState, fetchFn, logInfo, errorFn, logWarning) => {
   const { status, error } = getBlogState(globalState);
   const stateCopy = shouldCopyStateForFetch(status) ? getDeepStateCopy(globalState) : globalState;
 
-  handleBlogFetchState(globalState, fetchFn, { logInfo: logFn, logError: errorFn, logWarning: logWarning });
+  handleBlogFetchState(globalState, fetchFn, { logInfo, logError: errorFn, logWarning });
 
   stripInternalFields(stateCopy);
   return stateCopy;
