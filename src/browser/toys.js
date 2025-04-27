@@ -55,7 +55,7 @@ export function initialiseModule(article, functionName, env, dom) {
   return getModuleInitializer(article, functionName, config);
 }
 
-function getModuleInitializer(article, functionName, config) {
+export function getModuleInitializer(article, functionName, config) {
   return (module) => runModuleInitializer(module, article, functionName, config);
 }
 
