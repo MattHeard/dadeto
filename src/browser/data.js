@@ -173,6 +173,10 @@ export const getData_new = (state, fetch, loggers) => {
   return getData(state, fetch, logInfo, logError, logWarning);
 };
 
+// Alias for test compatibility
+export { getData_new as getDataNew };
+
+
 /**
  * Returns a deep copy of state if needed for fetch, otherwise returns state itself.
  * @param {object} state
