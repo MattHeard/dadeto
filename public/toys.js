@@ -78,15 +78,16 @@ function runModuleInitializer(module, article, functionName, config) {
  */
 export function handleIntersection(entry, observer, modulePath, article, functionName, env, dom) {
   if (dom.isIntersecting(entry)) {
+    const config = {
+      globalState: env.globalState,
+      createEnvFn: env.createEnv,
+      errorFn: env.error,
+      fetchFn: env.fetch,
+      dom
+    };
     dom.importModule(
       modulePath,
-      getModuleInitializer(article, functionName, {
-        globalState: env.globalState,
-        createEnvFn: env.createEnv,
-        errorFn: env.error,
-        fetchFn: env.fetch,
-        dom
-      }),
+      getModuleInitializer(article, functionName, config),
       handleModuleError(modulePath, dom.error)
     );
     dom.disconnectObserver(observer);
