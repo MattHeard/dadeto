@@ -90,7 +90,7 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
 /**
  * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
  */
-function handleIntersectingEntry(entry, observer, moduleInfo, moduleConfig) {
+function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
   importModuleForIntersection(moduleInfo, moduleConfig);
   dom.disconnectObserver(observer);
@@ -100,7 +100,7 @@ function createHandleEntry(observer, moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
   const handleEntry = entry => {
     if (dom.isIntersecting(entry)) {
-      handleIntersectingEntry(entry, observer, moduleInfo, moduleConfig);
+      handleIntersectingEntry(observer, moduleInfo, moduleConfig);
     }
   };
   return handleEntry;
