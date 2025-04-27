@@ -133,6 +133,10 @@ export function makeObserverCallback(modulePath, article, functionName, env, dom
   };
 }
 
+export function makeObserverCallbackNew(modulePath, article, functionName, env, dom) {
+  return makeObserverCallback(modulePath, article, functionName, env, dom);
+}
+
 /**
  * @query
  * Returns a function that creates an IntersectionObserver for an article
