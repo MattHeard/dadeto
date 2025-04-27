@@ -54,19 +54,10 @@ export function initialiseModule(article, functionName, env, dom) {
   };
   return (module) => {
     const processingFunction = module[functionName];
-    initializeAndRenderComponent(article, processingFunction, config);
+    initializeInteractiveComponent(article, processingFunction, config);
   };
 }
 
-/**
- * Initializes and renders an interactive component.
- * @param {HTMLElement} article - The article element containing the toy.
- * @param {Function} processingFunction - The function to process input.
- * @param {object} config - Configuration object for the component.
- */
-function initializeAndRenderComponent(article, processingFunction, config) {
-  initializeInteractiveComponent(article, processingFunction, config);
-}
 
 /**
  * @command
