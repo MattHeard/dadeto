@@ -105,10 +105,7 @@ function createHandleEntry(observer, moduleInfo, moduleConfig) {
   };
 }
 
-function handleIntersectionEntries(entries, observer, moduleInfo, moduleConfig) {
-  const handleEntry = createHandleEntry(observer, moduleInfo, moduleConfig);
-  entries.forEach(handleEntry);
-}
+
 
 
 /**
@@ -130,8 +127,10 @@ export function makeObserverCallback(modulePath, article, functionName, env, dom
     fetchFn: env.fetch,
     dom
   };
-  return (entries, observer) =>
-    handleIntersectionEntries(entries, observer, moduleInfo, moduleConfig);
+  return (entries, observer) => {
+    const handleEntry = createHandleEntry(observer, moduleInfo, moduleConfig);
+    entries.forEach(handleEntry);
+  };
 }
 
 /**
