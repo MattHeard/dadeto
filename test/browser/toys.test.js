@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import * as toysModule from '../../src/browser/toys.js';
-import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls } from '../../src/browser/toys.js';
+import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, initialiseModule } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
   let importModule, disconnectObserver, f, modulePath, entry, observer;
@@ -274,7 +274,7 @@ describe('initialiseModule', () => {
       error,
       fetch
     };
-    const result = toysModule.initialiseModule(article, functionName, env, dom);
+    const result = initialiseModule(article, functionName, env, dom);
     const module = { process: () => 'ok' };
     const response = result(module);
     // Expectations at end
