@@ -52,16 +52,14 @@ export function handleModuleError(modulePath, error) {
  * @param {Function} error - Function for logging errors
  * @param {Function} fetch - Function for making HTTP requests
  * @param {object} dom - Object containing DOM functions
- * @returns {Function} A function that takes a module and initializes the interactive component
- */
 /**
- * @command
- * Creates a module initializer function that will be called when a dynamic import completes
- * @param {HTMLElement} article - The article element containing the toy
- * @param {string} functionName - The name of the exported function to use from the module
- * @param {object} env - Environment object containing globalState, createEnv, error, and fetch
- * @param {object} dom - Object containing DOM functions
- * @returns {Function} A function that takes a module and initializes the interactive component
+ * Creates a module initializer function to be called when a dynamic import completes.
+ *
+ * @param {HTMLElement} article - The article element containing the toy.
+ * @param {string} functionName - The name of the exported function to use from the module.
+ * @param {object} env - Environment object containing globalState, createEnv, error, and fetch.
+ * @param {object} dom - Object containing DOM helper functions.
+ * @returns {Function} A function that takes a module and initializes the interactive component.
  */
 export function initialiseModule(article, functionName, env, dom) {
   return (module) => {
