@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, initialiseModule } from '../../src/browser/toys.js';
+import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, initialiseModule, getModuleInitializer } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
   let importModule, disconnectObserver, f, modulePath, entry, observer;
@@ -276,8 +276,8 @@ describe('initialiseModule', () => {
       fetchFn: fetch,
       dom
     };
-    // Use initialiseModule to create an initializer and invoke with a module
-    const result = initialiseModule(article, functionName, { globalState, createEnv, error, fetch }, dom);
+    // Use getModuleInitializer to create an initializer and invoke with a module
+    const result = getModuleInitializer(article, functionName, config);
     const module = { [functionName]: jest.fn() };
     const response = result(module);
     // Expectations at end
