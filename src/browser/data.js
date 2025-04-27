@@ -151,26 +151,20 @@ function handleBlogFetchState(state, fetch, loggers) {
  * @param {function} logWarning - The logWarninging logging function.
  * @returns {object} A deep copy of the relevant state for the toy.
  */
-const getData = (state, fetch, logInfo, logError, logWarning) => {
-  const stateCopy = getRelevantStateCopy(state);
-
-  const loggers = { logInfo, logError, logWarning };
-  handleBlogFetchState(state, fetch, loggers);
-
-  stripInternalFields(stateCopy);
-  return stateCopy;
-}
-
 /**
- * Wrapper for getData. Calls getData with the same arguments.
- * @param {object} state
- * @param {function} fetch
+ * Gets a deep copy of the current global state, suitable for passing to toys.
+ * It also handles initiating the blog data fetch if needed.
+ * @param {object} state - The main application state.
+ * @param {function} fetch - The fetch function.
  * @param {object} loggers - An object with logInfo, logError, and logWarning functions.
- * @returns {object}
+ * @returns {object} A deep copy of the relevant state for the toy.
  */
 export const getData_new = (state, fetch, loggers) => {
   const { logInfo, logError, logWarning } = loggers;
-  return getData(state, fetch, logInfo, logError, logWarning);
+  const stateCopy = getRelevantStateCopy(state);
+  handleBlogFetchState(state, fetch, { logInfo, logError, logWarning });
+  stripInternalFields(stateCopy);
+  return stateCopy;
 };
 
 // Alias for test compatibility
