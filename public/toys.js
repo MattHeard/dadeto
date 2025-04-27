@@ -111,15 +111,12 @@ function getEntryHandler(moduleInfo, moduleConfig) {
 /**
  * @query
  * Returns a callback for IntersectionObserver that handles intersection entries
- * @param {string} modulePath - Path to module
- * @param {HTMLElement} article - The article element
- * @param {string} functionName - Exported function name
+ * @param {object} moduleInfo - Object with modulePath, article, functionName
  * @param {object} env - Environment
  * @param {object} dom - DOM helpers
  * @returns {Function} IntersectionObserver callback
  */
-export function makeObserverCallback(modulePath, article, functionName, env, dom) {
-  const moduleInfo = { modulePath, article, functionName };
+export function makeObserverCallback(moduleInfo, env, dom) {
   return makeObserverCallbackNew(moduleInfo, env, dom);
 }
 
