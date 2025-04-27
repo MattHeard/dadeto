@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.94% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>94/95</span>
+                <span class='fraction'>94/94</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.36% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>37/38</span>
+                <span class='fraction'>37/37</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.9% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>90/91</span>
+                <span class='fraction'>90/90</span>
             </div>
         
             
@@ -448,17 +448,7 @@
 <a name='L383'></a><a href='#L383'>383</a>
 <a name='L384'></a><a href='#L384'>384</a>
 <a name='L385'></a><a href='#L385'>385</a>
-<a name='L386'></a><a href='#L386'>386</a>
-<a name='L387'></a><a href='#L387'>387</a>
-<a name='L388'></a><a href='#L388'>388</a>
-<a name='L389'></a><a href='#L389'>389</a>
-<a name='L390'></a><a href='#L390'>390</a>
-<a name='L391'></a><a href='#L391'>391</a>
-<a name='L392'></a><a href='#L392'>392</a>
-<a name='L393'></a><a href='#L393'>393</a>
-<a name='L394'></a><a href='#L394'>394</a>
-<a name='L395'></a><a href='#L395'>395</a>
-<a name='L396'></a><a href='#L396'>396</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L386'></a><a href='#L386'>386</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -480,16 +470,6 @@
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -869,7 +849,7 @@ import { createParagraphElement } from '../presenters/paragraph.js';
  * @param {HTMLElement} parent - The parent element to append to.
  * @returns {HTMLElement} The created paragraph element.
  */
-function setTextContentNew(content, dom, parent) {
+function setTextContent(content, dom, parent) {
   dom.removeAllChildren(parent);
   const child = createParagraphElement(content, dom);
   dom.appendChild(parent, child);
@@ -877,17 +857,7 @@ function setTextContentNew(content, dom, parent) {
 }
 &nbsp;
 /**
- * Calls setTextContentNew with the provided arguments.
- * @param {string} content - The text content to set.
- * @param {object} dom - DOM helper functions.
- * @param {HTMLElement} parent - The parent element to append to.
- * @returns {HTMLElement} The created paragraph element.
- */
-function <span class="fstat-no" title="function not covered" >setTextContent(</span>content, dom, parent) {
-<span class="cstat-no" title="statement not covered" >  return setTextContentNew(content, dom, parent);</span>
-}
 &nbsp;
-/**
  * @query
  * Creates an error handler for module loading errors
  * @param {string} modulePath - Path to the module that failed to load
@@ -1028,7 +998,7 @@ export function makeCreateIntersectionObserver(dom, env) {
 export function enableInteractiveControls(inputElement, submitButton, outputElement, dom, parent) {
   dom.enable(inputElement);
   dom.enable(submitButton);
-  setTextContentNew('Ready for input', dom, parent);
+  setTextContent('Ready for input', dom, parent);
   dom.removeWarning(parent);
 }
 &nbsp;
@@ -1036,11 +1006,11 @@ function handleRequestResponse(url, outputElement, error, fetch, dom, parent) {
   fetch(url)
     .then(response =&gt; response.text())
     .then(body =&gt; {
-      setTextContentNew(body, dom, parent);
+      setTextContent(body, dom, parent);
     })
     .catch(fetchError =&gt; {
       error('Error fetching request URL:', fetchError);
-      setTextContentNew('Error fetching URL: ' + fetchError.message, dom, parent);
+      setTextContent('Error fetching URL: ' + fetchError.message, dom, parent);
       dom.addWarning(outputElement);
     });
 }
@@ -1114,7 +1084,7 @@ function processInputAndSetOutput(inputElement, outputElement, globalState, proc
   const result = processingFunction(inputValue, env);
   const parsed = parseJSONResult(result);
   if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom, parent)) {
-    setTextContentNew(result, dom, parent);
+    setTextContent(result, dom, parent);
   }
 }
 &nbsp;
@@ -1124,7 +1094,7 @@ function handleInputProcessing(elements, processingFunction, env) {
   const handleInputError = createHandleInputError(
     errorFn,
     dom.addWarning,
-    (content) =&gt; setTextContentNew(content, dom, outputParentElement),
+    (content) =&gt; setTextContent(content, dom, outputParentElement),
     outputParentElement
   );
   try {
@@ -1187,7 +1157,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   disableInputAndButton(inputElement, submitButton);
 &nbsp;
   // Update message to show JS is running, replacing &lt;p.output&gt; with paragraph
-  const initialisingWarning = setTextContentNew('Initialising...', dom, outputParent);
+  const initialisingWarning = setTextContent('Initialising...', dom, outputParent);
 &nbsp;
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
@@ -1255,7 +1225,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-04-27T13:04:09.669Z
+                at 2025-04-27T13:05:08.332Z
             </div>
         <script src="../prettify.js"></script>
         <script>

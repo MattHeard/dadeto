@@ -14,7 +14,7 @@ import { createParagraphElement } from '../presenters/paragraph.js';
  * @param {HTMLElement} parent - The parent element to append to.
  * @returns {HTMLElement} The created paragraph element.
  */
-function setTextContentNew(content, dom, parent) {
+function setTextContent(content, dom, parent) {
   dom.removeAllChildren(parent);
   const child = createParagraphElement(content, dom);
   dom.appendChild(parent, child);
@@ -22,17 +22,7 @@ function setTextContentNew(content, dom, parent) {
 }
 
 /**
- * Calls setTextContentNew with the provided arguments.
- * @param {string} content - The text content to set.
- * @param {object} dom - DOM helper functions.
- * @param {HTMLElement} parent - The parent element to append to.
- * @returns {HTMLElement} The created paragraph element.
- */
-function setTextContent(content, dom, parent) {
-  return setTextContentNew(content, dom, parent);
-}
 
-/**
  * @query
  * Creates an error handler for module loading errors
  * @param {string} modulePath - Path to the module that failed to load
@@ -173,7 +163,7 @@ export function makeCreateIntersectionObserver(dom, env) {
 export function enableInteractiveControls(inputElement, submitButton, outputElement, dom, parent) {
   dom.enable(inputElement);
   dom.enable(submitButton);
-  setTextContentNew('Ready for input', dom, parent);
+  setTextContent('Ready for input', dom, parent);
   dom.removeWarning(parent);
 }
 
@@ -181,11 +171,11 @@ function handleRequestResponse(url, outputElement, error, fetch, dom, parent) {
   fetch(url)
     .then(response => response.text())
     .then(body => {
-      setTextContentNew(body, dom, parent);
+      setTextContent(body, dom, parent);
     })
     .catch(fetchError => {
       error('Error fetching request URL:', fetchError);
-      setTextContentNew('Error fetching URL: ' + fetchError.message, dom, parent);
+      setTextContent('Error fetching URL: ' + fetchError.message, dom, parent);
       dom.addWarning(outputElement);
     });
 }
@@ -259,7 +249,7 @@ function processInputAndSetOutput(inputElement, outputElement, globalState, proc
   const result = processingFunction(inputValue, env);
   const parsed = parseJSONResult(result);
   if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom, parent)) {
-    setTextContentNew(result, dom, parent);
+    setTextContent(result, dom, parent);
   }
 }
 
@@ -269,7 +259,7 @@ function handleInputProcessing(elements, processingFunction, env) {
   const handleInputError = createHandleInputError(
     errorFn,
     dom.addWarning,
-    (content) => setTextContentNew(content, dom, outputParentElement),
+    (content) => setTextContent(content, dom, outputParentElement),
     outputParentElement
   );
   try {
@@ -332,7 +322,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   disableInputAndButton(inputElement, submitButton);
 
   // Update message to show JS is running, replacing <p.output> with paragraph
-  const initialisingWarning = setTextContentNew('Initialising...', dom, outputParent);
+  const initialisingWarning = setTextContent('Initialising...', dom, outputParent);
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
