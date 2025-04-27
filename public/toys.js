@@ -96,6 +96,13 @@ function handleIntersection(entry, observer, moduleInfo, env) {
 }
 
 /**
+ * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
+ */
+export function handle_intersection_entries_new(entries, observer, modulePath, article, functionName, env, dom) {
+  return handleIntersectionEntries(entries, observer, modulePath, article, functionName, env, dom);
+}
+
+/**
  * @command
  * Handles multiple intersection entries
  * @param {Array} entries - The intersection entries
