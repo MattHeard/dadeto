@@ -9,7 +9,7 @@ const globalState = {
 import { setupAudio } from './audio-controls.js';
 import { initializeVisibleComponents, makeCreateIntersectionObserver } from './toys.js';
 
-import { fetchAndCacheBlogData, getData, setData } from './data.js';
+import { fetchAndCacheBlogData, getData_new, setData } from './data.js';
 import {
   getElementById,
   getAudioElements,
@@ -68,10 +68,11 @@ function importModule(modulePath, onSuccess, onError) {
  * @returns {Map<string, Function>} Map of environment functions
  */
 function createEnv() {
+  const loggers = { logInfo: log, logError: error, logWarning: warn };
   return new Map([
     ["getRandomNumber", getRandomNumber],
     ["getCurrentTime", getCurrentTime],
-    ["getData", () => getData(globalState, fetch, log, error, warn)],
+    ["getData", () => getData_new(globalState, fetch, loggers)],
     ["setData", (newData) => setData(newData, globalState, log, error)]
   ]);
 }
