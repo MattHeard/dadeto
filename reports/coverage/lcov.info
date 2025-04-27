@@ -316,7 +316,7 @@ end_of_record
 TN:
 SF:src/browser/toys.js
 FN:17,setTextContentNew
-FN:31,setTextContentAlias
+FN:31,setTextContent
 FN:42,handleModuleError
 FN:43,(anonymous_3)
 FN:76,initialiseModule
@@ -356,7 +356,7 @@ FN:395,(anonymous_37)
 FNF:38
 FNH:37
 FNDA:14,setTextContentNew
-FNDA:0,setTextContentAlias
+FNDA:0,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_3)
 FNDA:5,initialiseModule
