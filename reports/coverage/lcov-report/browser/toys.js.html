@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">97.91% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>96/96</span>
+                <span class='fraction'>94/96</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">97.43% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>39/39</span>
+                <span class='fraction'>38/39</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">97.8% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>91/91</span>
+                <span class='fraction'>89/91</span>
             </div>
         
             
@@ -432,7 +432,13 @@
 <a name='L367'></a><a href='#L367'>367</a>
 <a name='L368'></a><a href='#L368'>368</a>
 <a name='L369'></a><a href='#L369'>369</a>
-<a name='L370'></a><a href='#L370'>370</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L370'></a><a href='#L370'>370</a>
+<a name='L371'></a><a href='#L371'>371</a>
+<a name='L372'></a><a href='#L372'>372</a>
+<a name='L373'></a><a href='#L373'>373</a>
+<a name='L374'></a><a href='#L374'>374</a>
+<a name='L375'></a><a href='#L375'>375</a>
+<a name='L376'></a><a href='#L376'>376</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -479,14 +485,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -513,6 +519,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -847,15 +859,15 @@ export function handleModuleError(modulePath, error) {
  * @param {object} dom - Object containing DOM helper functions.
  * @returns {Function} A function that takes a module and initializes the interactive component.
  */
-function initialiseModule(article, functionName, env, dom) {
-  const config = {
+function <span class="fstat-no" title="function not covered" >initialiseModule(</span>article, functionName, env, dom) {
+  const config = <span class="cstat-no" title="statement not covered" >{</span>
     globalState: env.globalState,
     createEnvFn: env.createEnv,
     errorFn: env.error,
     fetchFn: env.fetch,
     dom
   };
-  return getModuleInitializer(article, functionName, config);
+<span class="cstat-no" title="statement not covered" >  return getModuleInitializer(article, functionName, config);</span>
 }
 &nbsp;
 export function getModuleInitializer(article, functionName, config) {
@@ -883,7 +895,13 @@ export function handleIntersection(entry, observer, modulePath, article, functio
   if (dom.isIntersecting(entry)) {
     dom.importModule(
       modulePath,
-      initialiseModule(article, functionName, env, dom),
+      getModuleInitializer(article, functionName, {
+        globalState: env.globalState,
+        createEnvFn: env.createEnv,
+        errorFn: env.error,
+        fetchFn: env.fetch,
+        dom
+      }),
       handleModuleError(modulePath, dom.error)
     );
     dom.disconnectObserver(observer);
@@ -1177,7 +1195,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-04-27T14:08:21.427Z
+                at 2025-04-27T14:10:39.547Z
             </div>
         <script src="../prettify.js"></script>
         <script>

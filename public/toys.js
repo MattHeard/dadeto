@@ -80,7 +80,13 @@ export function handleIntersection(entry, observer, modulePath, article, functio
   if (dom.isIntersecting(entry)) {
     dom.importModule(
       modulePath,
-      initialiseModule(article, functionName, env, dom),
+      getModuleInitializer(article, functionName, {
+        globalState: env.globalState,
+        createEnvFn: env.createEnv,
+        errorFn: env.error,
+        fetchFn: env.fetch,
+        dom
+      }),
       handleModuleError(modulePath, dom.error)
     );
     dom.disconnectObserver(observer);
