@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import * as toysModule from '../../src/browser/toys.js';
-import { makeObserverCallback, makeCreateIntersectionObserver } from '../../src/browser/toys.js';
+import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
   let importModule, disconnectObserver, f, modulePath, entry, observer;
@@ -202,7 +202,7 @@ describe('enableInteractiveControls', () => {
 
   it('enables input and submit button', () => {
     // --- WHEN ---
-    toysModule.enableInteractiveControls(inputElement, submitButton, outputElement, dom, outputParentElement);
+    enableInteractiveControls(inputElement, submitButton, outputElement, dom, outputParentElement);
 
     // --- THEN ---
     expect(enable).toHaveBeenCalledWith(inputElement);
@@ -222,7 +222,7 @@ describe('enableInteractiveControls', () => {
     const paragraph = {};
     dom.createElement = jest.fn(() => paragraph);
     // --- WHEN ---
-    toysModule.enableInteractiveControls(inputElement, submitButton, outputElement, dom, parent);
+    enableInteractiveControls(inputElement, submitButton, outputElement, dom, parent);
     // --- THEN ---
     expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
     expect(appendChild).toHaveBeenCalledWith(parent, paragraph);
@@ -231,7 +231,7 @@ describe('enableInteractiveControls', () => {
 
   it('removes "warning" class from parent element', () => {
     // --- WHEN ---
-    toysModule.enableInteractiveControls(inputElement, submitButton, outputElement, dom, outputParentElement);
+    enableInteractiveControls(inputElement, submitButton, outputElement, dom, outputParentElement);
     // --- THEN ---
     expect(removeWarning).toHaveBeenCalledWith(outputParentElement);
   });
