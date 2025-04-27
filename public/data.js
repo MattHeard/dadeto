@@ -187,16 +187,6 @@ function getRelevantStateCopy(state) {
  * @param {function} logInfo - The logging function.
  * @param {function} logError - The error logging function.
  */
-const setData = (incomingState, globalState, logInfo, logError) => {
-  const loggers = { logInfo, logError };
-  // Replace the entire global state, but validate basic structure
-  validateIncomingState(incomingState, loggers.logError);
-  const oldBlogState = getBlogState(globalState);
-  Object.assign(globalState, incomingState);
-  restoreBlogState(globalState, oldBlogState);
-
-  loggers.logInfo('Global state updated:', globalState);
-};
 
 /**
  * Wrapper for setData, for migration/testing.
@@ -207,8 +197,22 @@ const setData = (incomingState, globalState, logInfo, logError) => {
  * @param {function} loggers.logInfo - The logging function.
  * @param {function} loggers.logError - The error logging function.
  */
+/**
+ * Updates the global state with incoming state, with logging and validation.
+ * @param {object} state - The state object containing both incomingState and globalState.
+ * @param {object} state.incomingState - The new state object.
+ * @param {object} state.globalState - The current global state to modify.
+ * @param {object} loggers - The logging functions object.
+ * @param {function} loggers.logInfo - The logging function.
+ * @param {function} loggers.logError - The error logging function.
+ */
 export const setData_new = (state, loggers) => {
   const { incomingState, globalState } = state;
   const { logInfo, logError } = loggers;
-  return setData(incomingState, globalState, logInfo, logError);
+  // Validate incoming state
+  validateIncomingState(incomingState, logError);
+  const oldBlogState = getBlogState(globalState);
+  Object.assign(globalState, incomingState);
+  restoreBlogState(globalState, oldBlogState);
+  logInfo('Global state updated:', globalState);
 };
