@@ -110,7 +110,7 @@ FN:152,(anonymous_21)
 FN:169,(anonymous_22)
 FNF:23
 FNH:23
-FNDA:21,getBlogState
+FNDA:26,getBlogState
 FNDA:10,isFetchInProgress
 FNDA:3,shouldUseExistingFetch
 FNDA:7,fetchAndCacheBlogData
@@ -135,7 +135,7 @@ FNDA:5,(anonymous_21)
 FNDA:7,(anonymous_22)
 DA:1,1
 DA:3,1
-DA:11,21
+DA:11,26
 DA:20,10
 DA:21,10
 DA:25,3

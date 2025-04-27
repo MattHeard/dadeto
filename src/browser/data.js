@@ -126,8 +126,8 @@ function tryFetchingBlog(state, fetch) {
   }
 }
 
-function maybeLogFetchError(status, error, logWarning) {
-  if (status === BLOG_STATUS.ERROR) {
+function maybeLogFetchError(state, error, logWarning) {
+  if (getBlogState(state).status === BLOG_STATUS.ERROR) {
     logWarning("Blog data previously failed to load:", error);
   }
 }
@@ -136,7 +136,7 @@ function handleBlogFetchState(status, error, state, fetch, loggers) {
   const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
   tryFetchingBlog(state, doFetch);
   const { logWarning } = loggers;
-  maybeLogFetchError(status, error, logWarning);
+  maybeLogFetchError(state, error, logWarning);
 }
 
 /**
