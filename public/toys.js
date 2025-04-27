@@ -133,7 +133,8 @@ export function makeObserverCallback(modulePath, article, functionName, env, dom
   };
 }
 
-export function makeObserverCallbackNew(modulePath, article, functionName, env, dom) {
+export function makeObserverCallbackNew(moduleInfo, env, dom) {
+  const { modulePath, article, functionName } = moduleInfo;
   return makeObserverCallback(modulePath, article, functionName, env, dom);
 }
 
