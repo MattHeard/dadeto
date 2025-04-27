@@ -15,7 +15,8 @@ describe('makeObserverCallback', () => {
     modulePath = 'mod';
     const article = 'art';
     const functionName = 'fn';
-    f = makeObserverCallbackNew({ modulePath, article, functionName }, env, dom);
+    const moduleInfo = { modulePath, article, functionName };
+    f = makeObserverCallbackNew(moduleInfo, env, dom);
     entry = {};
     observer = {};
   });
