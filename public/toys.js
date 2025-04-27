@@ -52,8 +52,11 @@ export function initialiseModule(article, functionName, env, dom) {
     fetchFn: env.fetch,
     dom
   };
-  const moduleInitializer = (module) => runModuleInitializer(module, article, functionName, config);
-  return moduleInitializer;
+  return createModuleInitializer(article, functionName, config);
+}
+
+function createModuleInitializer(article, functionName, config) {
+  return (module) => runModuleInitializer(module, article, functionName, config);
 }
 
 function runModuleInitializer(module, article, functionName, config) {
