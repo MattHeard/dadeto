@@ -170,7 +170,7 @@ export function enableInteractiveControls(elements, dom) {
   dom.removeWarning(parent);
 }
 
-function handleRequestResponse(url, outputElement, error, fetch, dom, parent) {
+function handleRequestResponse(url, error, fetch, dom, parent) {
   fetch(url)
     .then(response => response.text())
     .then(body => {
@@ -203,9 +203,9 @@ function isValidParsedRequest(parsed) {
   );
 }
 
-function handleParsedResult(parsed, outputElement, error, fetch, dom, parent = null) {
+function handleParsedResult(parsed, error, fetch, dom, parent = null) {
   if (!isValidParsedRequest(parsed)) {return false;}
-  handleRequestResponse(parsed.request.url, outputElement, error, fetch, dom, parent);
+  handleRequestResponse(parsed.request.url, error, fetch, dom, parent);
   return true;
 }
 
@@ -225,7 +225,7 @@ function parseJSONResult(result) {
 /**
  * Creates a submit handler function for an interactive toy.
  * @param {HTMLInputElement} inputElement - The input field.
- * @param {HTMLElement} outputElement - The element to display output/errors.
+
  * @param {HTMLElement} outputParent - The parent element of the output element.
  * @param {object} globalState - The shared application state.
  * @param {Function} processingFunction - The toy's core logic function.
@@ -246,12 +246,12 @@ function createHandleInputError(error, addWarning, setTextContent, parent) {
   };
 }
 
-function processInputAndSetOutput(inputElement, outputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent) {
+function processInputAndSetOutput(inputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent) {
   const env = createEnv(globalState);
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, env);
   const parsed = parseJSONResult(result);
-  if (!handleParsedResult(parsed, outputElement, errorFn, fetchFn, dom, parent)) {
+  if (!handleParsedResult(parsed, errorFn, fetchFn, dom, parent)) {
     setTextContent(result, dom, parent);
   }
 }
@@ -268,7 +268,6 @@ function handleInputProcessing(elements, processingFunction, env) {
   try {
     processInputAndSetOutput(
       inputElement,
-      outputElement,
       globalState,
       processingFunction,
       createEnv,
