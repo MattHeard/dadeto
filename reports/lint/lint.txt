@@ -1,15 +1,15 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
 [0m  [2m177:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
-[0m  [2m202:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
-[0m  [2m210:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m  [2m210:1[22m   [33mwarning[39m  Function 'handleParsedResult' has a complexity of 3. Maximum allowed is 2                 [2mcomplexity[22m[0m
-[0m  [2m245:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
-[0m  [2m253:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
-[0m  [2m264:46[22m  [33mwarning[39m  'outputElement' is assigned a value but never used                                        [2mno-unused-vars[22m[0m
-[0m  [2m324:9[22m   [33mwarning[39m  'needsJavascriptWarning' is assigned a value but never used                               [2mno-unused-vars[22m[0m
-[0m  [2m371:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m371:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m  [2m203:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
+[0m  [2m211:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
+[0m  [2m211:1[22m   [33mwarning[39m  Function 'handleParsedResult' has a complexity of 3. Maximum allowed is 2                 [2mcomplexity[22m[0m
+[0m  [2m246:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
+[0m  [2m254:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
+[0m  [2m265:46[22m  [33mwarning[39m  'outputElement' is assigned a value but never used                                        [2mno-unused-vars[22m[0m
+[0m  [2m325:9[22m   [33mwarning[39m  'needsJavascriptWarning' is assigned a value but never used                               [2mno-unused-vars[22m[0m
+[0m  [2m372:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m372:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m26:1[22m  [33mwarning[39m  Function 'findJsFiles' has a complexity of 6. Maximum allowed is 2  [2mcomplexity[22m[0m
