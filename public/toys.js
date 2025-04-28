@@ -162,7 +162,8 @@ export function makeCreateIntersectionObserver(dom, env) {
  * @param {object} dom - DOM helper object
  * @param {HTMLElement} parent
  */
-export function enableInteractiveControls(inputElement, submitButton, dom, parent) {
+export function enableInteractiveControls(elements, submitButton, dom, parent) {
+  const { inputElement } = elements;
   dom.enable(inputElement);
   dom.enable(submitButton);
   setTextContent('Ready for input', dom, parent);
@@ -337,7 +338,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   dom.addEventListener(inputElement, 'keypress', createHandleKeyPress(handleSubmit));
 
   // Enable controls when initialization is complete using the function from this module
-  enableInteractiveControls(inputElement, submitButton, dom, outputParent);
+  enableInteractiveControls({ inputElement }, submitButton, dom, outputParent);
 }
 
 /**
