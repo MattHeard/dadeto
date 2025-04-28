@@ -125,7 +125,7 @@ export function makeModuleConfig(env, dom) {
   };
 }
 
-export function makeObserverCallbackNew(moduleInfo, env, dom) {
+export function makeObserverCallback(moduleInfo, env, dom) {
   const moduleConfig = makeModuleConfig(env, dom);
   const handleEntryFactory = getEntryHandler(moduleInfo, moduleConfig);
   return (entries, observer) => {
@@ -144,7 +144,7 @@ export function makeObserverCallbackNew(moduleInfo, env, dom) {
 export function makeCreateIntersectionObserver(dom, env) {
   return function createIntersectionObserver(article, modulePath, functionName) {
     const moduleInfo = { article, modulePath, functionName };
-    const observerCallback = makeObserverCallbackNew(moduleInfo, env, dom);
+    const observerCallback = makeObserverCallback(moduleInfo, env, dom);
     return dom.makeIntersectionObserver(observerCallback);
   };
 }

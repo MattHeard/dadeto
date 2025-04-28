@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { makeObserverCallbackNew, makeCreateIntersectionObserver, enableInteractiveControls, getModuleInitializer } from '../../src/browser/toys.js';
+import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, getModuleInitializer } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
   let importModule, disconnectObserver, f, modulePath, entry, observer;
@@ -16,7 +16,7 @@ describe('makeObserverCallback', () => {
     const article = 'art';
     const functionName = 'fn';
     const moduleInfo = { modulePath, article, functionName };
-    f = makeObserverCallbackNew(moduleInfo, env, dom);
+    f = makeObserverCallback(moduleInfo, env, dom);
     entry = {};
     observer = {};
   });

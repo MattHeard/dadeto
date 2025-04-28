@@ -331,7 +331,7 @@ FN:99,getEntryHandler
 FN:101,(anonymous_13)
 FN:101,(anonymous_14)
 FN:118,makeModuleConfig
-FN:128,makeObserverCallbackNew
+FN:128,makeObserverCallback
 FN:131,(anonymous_17)
 FN:144,makeCreateIntersectionObserver
 FN:145,createIntersectionObserver
@@ -378,7 +378,7 @@ FNDA:8,getEntryHandler
 FNDA:6,(anonymous_13)
 FNDA:6,(anonymous_14)
 FNDA:8,makeModuleConfig
-FNDA:8,makeObserverCallbackNew
+FNDA:8,makeObserverCallback
 FNDA:6,(anonymous_17)
 FNDA:8,makeCreateIntersectionObserver
 FNDA:6,createIntersectionObserver
