@@ -69,8 +69,9 @@ function importModule(modulePath, onSuccess, onError) {
  * Creates and returns a new environment map for dependency injection
  * @returns {Map<string, Function>} Map of environment functions
  */
+const loggers = { logInfo: log, logError: error, logWarning: warn };
+
 function createEnv() {
-  const loggers = { logInfo: log, logError: error, logWarning: warn };
   return new Map([
     ["getRandomNumber", getRandomNumber],
     ["getCurrentTime", getCurrentTime],
