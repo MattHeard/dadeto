@@ -174,15 +174,11 @@ function getText(response) {
   return response.text();
 }
 
-function displayResponseBody(body, dom, parent) {
-  setTextContent(body, dom, parent);
-}
-
 function handleRequestResponse(url, error, fetch, dom, parent) {
   fetch(url)
     .then(getText)
     .then(body => {
-      displayResponseBody(body, dom, parent);
+      setTextContent(body, dom, parent);
     })
     .catch(fetchError => {
       error('Error fetching request URL:', fetchError);
