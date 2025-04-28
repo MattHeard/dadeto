@@ -118,7 +118,7 @@ const dom = {
   contains,
   removeAllChildren
 };
-const env = { globalState, createEnv, error, fetch };
+const env = { globalState, createEnv, error, fetch, loggers };
 // Only keep one import from './toys.js' and combine symbols if needed
 const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
