@@ -69,7 +69,7 @@ function runModuleInitializer(module, getProcessing, initialize) {
 
 
 function importModuleForIntersection(moduleInfo, moduleConfig) {
-  const { dom } = moduleConfig;
+  const { dom, loggers } = moduleConfig;
   dom.importModule(
     moduleInfo.modulePath,
     getModuleInitializer(moduleInfo.article, moduleInfo.functionName, moduleConfig),
