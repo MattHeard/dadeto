@@ -174,10 +174,14 @@ function getText(response) {
   return response.text();
 }
 
-function handleRequestResponse(url, error, fetch, dom, parent) {
-  const displayBody = body => {
+function makeDisplayBody(dom, parent) {
+  return body => {
     setTextContent(body, dom, parent);
   };
+}
+
+function handleRequestResponse(url, error, fetch, dom, parent) {
+  const displayBody = makeDisplayBody(dom, parent);
   fetch(url)
     .then(getText)
     .then(displayBody)
