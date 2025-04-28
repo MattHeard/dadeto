@@ -121,6 +121,7 @@ export function makeModuleConfig(env, dom) {
     createEnvFn: env.createEnv,
     errorFn: env.error,
     fetchFn: env.fetch,
+    loggers: env.loggers,
     dom
   };
 }
