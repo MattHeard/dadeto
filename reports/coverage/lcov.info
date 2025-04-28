@@ -336,7 +336,7 @@ FN:131,(anonymous_17)
 FN:144,makeCreateIntersectionObserver
 FN:145,createIntersectionObserver
 FN:165,enableInteractiveControls
-FN:173,gettext
+FN:173,getText
 FN:177,handleRequestResponse
 FN:180,(anonymous_23)
 FN:183,(anonymous_24)
@@ -383,7 +383,7 @@ FNDA:6,(anonymous_17)
 FNDA:8,makeCreateIntersectionObserver
 FNDA:6,createIntersectionObserver
 FNDA:6,enableInteractiveControls
-FNDA:1,gettext
+FNDA:1,getText
 FNDA:2,handleRequestResponse
 FNDA:1,(anonymous_23)
 FNDA:1,(anonymous_24)

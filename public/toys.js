@@ -170,13 +170,13 @@ export function enableInteractiveControls(elements, dom) {
   dom.removeWarning(parent);
 }
 
-function gettext(response) {
+function getText(response) {
   return response.text();
 }
 
 function handleRequestResponse(url, error, fetch, dom, parent) {
   fetch(url)
-    .then(gettext)
+    .then(getText)
     .then(body => {
       setTextContent(body, dom, parent);
     })
