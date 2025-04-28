@@ -16,6 +16,8 @@ describe('makeObserverCallback', () => {
     const article = 'art';
     const functionName = 'fn';
     const moduleInfo = { modulePath, article, functionName };
+    // Add loggers for moduleConfig compatibility
+    dom.loggers = { logError: jest.fn() };
     f = makeObserverCallback(moduleInfo, env, dom);
     entry = {};
     observer = {};
