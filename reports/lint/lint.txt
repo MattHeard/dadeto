@@ -1,6 +1,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
-[0m  [2m165:8[22m  [33mwarning[39m  Function 'enableInteractiveControls' has too many parameters (5). Maximum allowed is 3    [2mmax-params[22m[0m
+[0m  [2m165:8[22m  [33mwarning[39m  Function 'enableInteractiveControls' has too many parameters (4). Maximum allowed is 3    [2mmax-params[22m[0m
 [0m  [2m172:1[22m  [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (6). Maximum allowed is 3        [2mmax-params[22m[0m
 [0m  [2m197:1[22m  [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
 [0m  [2m205:1[22m  [33mwarning[39m  Function 'handleParsedResult' has too many parameters (6). Maximum allowed is 3           [2mmax-params[22m[0m
@@ -137,6 +137,7 @@
 [0m  [2m2:104[22m  [33mwarning[39m  'handleTagLinks' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js[24m[0m
+[0m  [2m166:7[22m   [33mwarning[39m  'outputElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
 [0m  [2m253:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m  [2m292:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
 [0m  [2m318:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
@@ -156,6 +157,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 123 problems (0 errors, 123 warnings)[22m[39m[0m
+[0m[33m[1m✖ 124 problems (0 errors, 124 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
