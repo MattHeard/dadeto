@@ -396,7 +396,7 @@ describe('createHandleSubmit', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
     // Expectations at end
     expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
-    expect(dom.addWarning).toHaveBeenCalledWith(outputElement);
+    expect(dom.addWarning).toHaveBeenCalledWith(outputParentElement);
   });
 
   it('handles error thrown by processingFunction', async () => {

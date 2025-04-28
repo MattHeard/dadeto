@@ -47,7 +47,7 @@ export const getCurrentTime = () => new Date().toISOString();
 export const hasNextSiblingClass = (link, cls) => link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
 
 // DOM manipulation functions
-export const addWarning = (outputElement) => outputElement.classList.add('warning');
+export const addWarning = (parent) => parent.classList.add('warning');
 export const removeWarning = (outputElement) => outputElement.classList.remove('warning');
 
 // Enables the given input element by setting its disabled property to false
