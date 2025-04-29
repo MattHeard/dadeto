@@ -70,7 +70,8 @@ describe('makeCreateIntersectionObserver', () => {
       disconnectObserver: jest.fn(),
       error: jest.fn(),
       isIntersecting,
-      contains: () => true
+      contains: () => true,
+      loggers: { logError: jest.fn() }
     };
     env = {};
     f = makeCreateIntersectionObserver(dom, env);
