@@ -122,6 +122,7 @@ describe('makeCreateIntersectionObserver', () => {
     // --- GIVEN ---
     isIntersecting = () => false;
     dom.isIntersecting = isIntersecting;
+    dom.loggers = { logError: jest.fn() };
     const f = makeCreateIntersectionObserver(dom, env);
     f(article, modulePath, functionName);
     // --- WHEN ---
@@ -134,6 +135,7 @@ describe('makeCreateIntersectionObserver', () => {
     // --- GIVEN ---
     isIntersecting = () => false;
     dom.isIntersecting = isIntersecting;
+    dom.loggers = { logError: jest.fn() };
     const f = makeCreateIntersectionObserver(dom, env);
     f(article, modulePath, functionName);
     // --- WHEN ---
