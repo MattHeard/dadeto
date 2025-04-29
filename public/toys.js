@@ -70,10 +70,11 @@ function runModuleInitializer(module, getProcessing, initialize) {
 
 function importModuleForIntersection(moduleInfo, moduleConfig) {
   const { dom, loggers } = moduleConfig;
+  const logError = loggers?.logError || dom.error;
   dom.importModule(
     moduleInfo.modulePath,
     getModuleInitializer(moduleInfo.article, moduleInfo.functionName, moduleConfig),
-    handleModuleError(moduleInfo.modulePath, dom.error)
+    handleModuleError(moduleInfo.modulePath, logError)
   );
 }
 
