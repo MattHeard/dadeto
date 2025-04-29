@@ -29,9 +29,9 @@ function setTextContent(content, dom, parent) {
  * @param {Function} errorFn - Error logging function
  * @returns {Function} Error handler function
  */
-export function handleModuleError(modulePath, error) {
+export function handleModuleError(modulePath, logError) {
   return (e) => {
-    error('Error loading module ' + modulePath + ':', e);
+    logError('Error loading module ' + modulePath + ':', e);
   };
 }
 
