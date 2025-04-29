@@ -17,7 +17,7 @@ describe('makeObserverCallback', () => {
     const functionName = 'fn';
     const moduleInfo = { modulePath, article, functionName };
     // Add loggers for moduleConfig compatibility
-    dom.loggers = { logError: jest.fn() };
+
     f = makeObserverCallback(moduleInfo, env, dom);
     entry = {};
     observer = {};
@@ -70,10 +70,12 @@ describe('makeCreateIntersectionObserver', () => {
       disconnectObserver: jest.fn(),
       error: jest.fn(),
       isIntersecting,
+      loggers: { logError: jest.fn() },
+    
       contains: () => true
     };
     // Always provide loggers for moduleConfig compatibility
-    dom.loggers = { logError: jest.fn() };
+
 
     env = {};
     f = makeCreateIntersectionObserver(dom, env);
@@ -122,9 +124,9 @@ describe('makeCreateIntersectionObserver', () => {
     // --- GIVEN ---
     isIntersecting = () => false;
     dom.isIntersecting = isIntersecting;
-    dom.loggers = { logError: jest.fn() };
 
-    dom.loggers = { logError: jest.fn() };
+
+
     const f = makeCreateIntersectionObserver(dom, env);
     f(article, modulePath, functionName);
     // --- WHEN ---
@@ -137,9 +139,9 @@ describe('makeCreateIntersectionObserver', () => {
     // --- GIVEN ---
     isIntersecting = () => false;
     dom.isIntersecting = isIntersecting;
-    dom.loggers = { logError: jest.fn() };
 
-    dom.loggers = { logError: jest.fn() };
+
+
     const f = makeCreateIntersectionObserver(dom, env);
     f(article, modulePath, functionName);
     // --- WHEN ---
