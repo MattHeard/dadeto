@@ -70,9 +70,11 @@ describe('makeCreateIntersectionObserver', () => {
       disconnectObserver: jest.fn(),
       error: jest.fn(),
       isIntersecting,
-      contains: () => true,
-      loggers: { logError: jest.fn() }
+      contains: () => true
     };
+    // Always provide loggers for moduleConfig compatibility
+    dom.loggers = { logError: jest.fn() };
+
     env = {};
     f = makeCreateIntersectionObserver(dom, env);
     article = {};
