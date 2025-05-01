@@ -296,16 +296,7 @@ function handleInputProcessing(elements, processingFunction, env) {
   const { globalState, createEnv, fetchFn, dom } = env;
   const handleInputError = createHandleInputError(env, outputParentElement);
   try {
-    processInputAndSetOutput(
-      inputElement,
-      globalState,
-      processingFunction,
-      createEnv,
-      logError,
-      fetchFn,
-      dom,
-      outputParentElement
-    );
+    processInputAndSetOutput_new(elements, processingFunction, env);
   } catch (e) {
     handleInputError(e);
   }
