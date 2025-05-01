@@ -258,6 +258,11 @@ function createHandleInputError(logError, addWarning, setTextContent, parent) {
   };
 }
 
+// New wrapper function
+function createHandleInputError_new(logError, addWarning, setTextContent, parent) {
+  return createHandleInputError(logError, addWarning, setTextContent, parent);
+}
+
 function processInputAndSetOutput(inputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent) {
   const env = createEnv(globalState);
   const inputValue = inputElement.value;
