@@ -261,8 +261,9 @@ function createHandleInputError(logError, addWarning, setTextContent, parent) {
 // New wrapper function
 function createHandleInputError_new(env, parent) {
   const logError = env.errorFn;
-  const addWarning = env.dom.addWarning;
-  const setText = (content) => setTextContent(content, env.dom, parent);
+  const dom = env.dom;
+  const addWarning = dom.addWarning;
+  const setText = (content) => setTextContent(content, dom, parent);
   return createHandleInputError(logError, addWarning, setText, parent);
 }
 
