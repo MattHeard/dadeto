@@ -215,15 +215,15 @@ function isValidParsedRequest(parsed) {
   );
 }
 
-function handleParsedResult(parsed, error, fetch, dom, parent) {
+function handleParsedResult(parsed, logerror, fetch, dom, parent) {
   if (!isValidParsedRequest(parsed)) {return false;}
-  handleRequestResponse(parsed.request.url, error, fetch, dom, parent);
+  handleRequestResponse(parsed.request.url, logerror, fetch, dom, parent);
   return true;
 }
 
 function handleParsedResult_new(parsed, parent, env) {
-  const { error, fetch, dom } = env;
-  return handleParsedResult(parsed, error, fetch, dom, parent);
+  const { error: logerror, fetch, dom } = env;
+  return handleParsedResult(parsed, logerror, fetch, dom, parent);
 }
 
 /**
