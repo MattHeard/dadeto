@@ -270,9 +270,10 @@ function processInputAndSetOutput(inputElement, globalState, processingFunction,
 
 function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement, inputElement, outputElement } = elements;
-  const { globalState, createEnv, errorFn, fetchFn, dom } = env;
+  const logError = env.errorFn;
+  const { globalState, createEnv, fetchFn, dom } = env;
   const handleInputError = createHandleInputError(
-    errorFn,
+    logError,
     dom.addWarning,
     (content) => setTextContent(content, dom, outputParentElement),
     outputParentElement
@@ -283,7 +284,7 @@ function handleInputProcessing(elements, processingFunction, env) {
       globalState,
       processingFunction,
       createEnv,
-      errorFn,
+      logError,
       fetchFn,
       dom,
       outputParentElement
