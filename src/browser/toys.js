@@ -221,7 +221,8 @@ function handleParsedResult(parsed, error, fetch, dom, parent) {
   return true;
 }
 
-function handleParsedResult_new(parsed, error, fetch, dom, parent) {
+function handleParsedResult_new(parsed, parent, env) {
+  const { error, fetch, dom } = env;
   return handleParsedResult(parsed, error, fetch, dom, parent);
 }
 
