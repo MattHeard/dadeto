@@ -277,12 +277,7 @@ function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement, inputElement, outputElement } = elements;
   const logError = env.errorFn;
   const { globalState, createEnv, fetchFn, dom } = env;
-  const handleInputError = createHandleInputError(
-    logError,
-    dom.addWarning,
-    (content) => setTextContent(content, dom, outputParentElement),
-    outputParentElement
-  );
+  const handleInputError = createHandleInputError_new(env, outputParentElement);
   try {
     processInputAndSetOutput(
       inputElement,
