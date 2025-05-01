@@ -259,8 +259,8 @@ function createHandleInputError(logError, addWarning, setTextContent, parent) {
 }
 
 // New wrapper function
-function createHandleInputError_new(logError, addWarning, setTextContent, parent) {
-  return createHandleInputError(logError, addWarning, setTextContent, parent);
+function createHandleInputError_new(env, parent) {
+  return createHandleInputError(env.errorFn, env.dom.addWarning, (content) => setTextContent(content, env.dom, parent), parent);
 }
 
 function processInputAndSetOutput(inputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent) {

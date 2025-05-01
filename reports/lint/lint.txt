@@ -4,7 +4,6 @@
 [0m  [2m210:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
 [0m  [2m218:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
 [0m  [2m253:1[22m   [33mwarning[39m  Function 'createHandleInputError' has too many parameters (4). Maximum allowed is 3       [2mmax-params[22m[0m
-[0m  [2m262:1[22m   [33mwarning[39m  Function 'createHandleInputError_new' has too many parameters (4). Maximum allowed is 3   [2mmax-params[22m[0m
 [0m  [2m262:10[22m  [33mwarning[39m  'createHandleInputError_new' is defined but never used                                    [2mno-unused-vars[22m[0m
 [0m  [2m266:1[22m   [33mwarning[39m  Function 'processInputAndSetOutput' has too many parameters (8). Maximum allowed is 3     [2mmax-params[22m[0m
 [0m  [2m277:46[22m  [33mwarning[39m  'outputElement' is assigned a value but never used                                        [2mno-unused-vars[22m[0m
@@ -158,6 +157,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 125 problems (0 errors, 125 warnings)[22m[39m[0m
+[0m[33m[1m✖ 124 problems (0 errors, 124 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
