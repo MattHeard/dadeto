@@ -1,6 +1,5 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
-[0m   [2m71:1[22m   [33mwarning[39m  Function 'importModuleForIntersection' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m  [2m185:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
 [0m  [2m210:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
 [0m  [2m218:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
@@ -138,18 +137,17 @@
 [0m  [2m2:104[22m  [33mwarning[39m  'handleTagLinks' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js[24m[0m
-[0m   [2m74:1[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m179:7[22m   [33mwarning[39m  'outputElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
-[0m  [2m266:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m305:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m331:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
-[0m  [2m490:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m506:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m558:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m566:11[22m  [33mwarning[39m  'stopDefaultFn' is assigned a value but never used                  [2mno-unused-vars[22m[0m
-[0m  [2m568:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
-[0m  [2m594:11[22m  [33mwarning[39m  'listeners' is assigned a value but never used                      [2mno-unused-vars[22m[0m
-[0m  [2m595:11[22m  [33mwarning[39m  'createElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
+[0m  [2m177:7[22m   [33mwarning[39m  'outputElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
+[0m  [2m264:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m303:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m  [2m329:1[22m   [33mwarning[39m  '../../src/browser/toys.js' import is duplicated                    [2mno-duplicate-imports[22m[0m
+[0m  [2m488:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m504:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m556:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m564:11[22m  [33mwarning[39m  'stopDefaultFn' is assigned a value but never used                  [2mno-unused-vars[22m[0m
+[0m  [2m566:38[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
+[0m  [2m592:11[22m  [33mwarning[39m  'listeners' is assigned a value but never used                      [2mno-unused-vars[22m[0m
+[0m  [2m593:11[22m  [33mwarning[39m  'createElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
@@ -159,6 +157,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 126 problems (0 errors, 126 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 52 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m✖ 124 problems (0 errors, 124 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

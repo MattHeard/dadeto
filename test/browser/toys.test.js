@@ -11,7 +11,7 @@ describe('makeObserverCallback', () => {
     const error = jest.fn();
     const dom = {
       removeAllChildren: jest.fn(), importModule, disconnectObserver, isIntersecting, error, contains: () => true };
-    const env = {};
+    const env = { loggers: { logError: jest.fn() } };
     modulePath = 'mod';
     const article = 'art';
     const functionName = 'fn';
@@ -70,14 +70,12 @@ describe('makeCreateIntersectionObserver', () => {
       disconnectObserver: jest.fn(),
       error: jest.fn(),
       isIntersecting,
-      loggers: { logError: jest.fn() },
-    
       contains: () => true
     };
     // Always provide loggers for moduleConfig compatibility
 
 
-    env = {};
+    env = { loggers: { logError: jest.fn() } };
     f = makeCreateIntersectionObserver(dom, env);
     article = {};
     modulePath = 'mod';
