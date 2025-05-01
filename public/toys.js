@@ -250,9 +250,9 @@ function parseJSONResult(result) {
  * @param {Function} setTextContent - Function to set the text content of an element.
  * @returns {Function} An event handler function.
  */
-function createHandleInputError(error, addWarning, setTextContent, parent) {
+function createHandleInputError(logError, addWarning, setTextContent, parent) {
   return function(e) {
-    error('Error processing input:', e);
+    logError('Error processing input:', e);
     setTextContent('Error: ' + e.message);
     addWarning(parent);
   };
