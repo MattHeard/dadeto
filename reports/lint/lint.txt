@@ -3,16 +3,18 @@
 [0m  [2m185:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
 [0m  [2m210:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
 [0m  [2m218:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m  [2m280:32[22m  [33mwarning[39m  'inputElement' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
-[0m  [2m280:46[22m  [33mwarning[39m  'outputElement' is assigned a value but never used                                        [2mno-unused-vars[22m[0m
-[0m  [2m281:9[22m   [33mwarning[39m  'logError' is assigned a value but never used                                             [2mno-unused-vars[22m[0m
-[0m  [2m282:11[22m  [33mwarning[39m  'globalState' is assigned a value but never used                                          [2mno-unused-vars[22m[0m
-[0m  [2m282:24[22m  [33mwarning[39m  'createEnv' is assigned a value but never used                                            [2mno-unused-vars[22m[0m
-[0m  [2m282:35[22m  [33mwarning[39m  'fetchFn' is assigned a value but never used                                              [2mno-unused-vars[22m[0m
-[0m  [2m282:44[22m  [33mwarning[39m  'dom' is assigned a value but never used                                                  [2mno-unused-vars[22m[0m
-[0m  [2m327:9[22m   [33mwarning[39m  'needsJavascriptWarning' is assigned a value but never used                               [2mno-unused-vars[22m[0m
-[0m  [2m374:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m374:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m  [2m224:1[22m   [33mwarning[39m  Function 'handleParsedResult_new' has too many parameters (5). Maximum allowed is 3       [2mmax-params[22m[0m
+[0m  [2m224:10[22m  [33mwarning[39m  'handleParsedResult_new' is defined but never used                                        [2mno-unused-vars[22m[0m
+[0m  [2m284:32[22m  [33mwarning[39m  'inputElement' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
+[0m  [2m284:46[22m  [33mwarning[39m  'outputElement' is assigned a value but never used                                        [2mno-unused-vars[22m[0m
+[0m  [2m285:9[22m   [33mwarning[39m  'logError' is assigned a value but never used                                             [2mno-unused-vars[22m[0m
+[0m  [2m286:11[22m  [33mwarning[39m  'globalState' is assigned a value but never used                                          [2mno-unused-vars[22m[0m
+[0m  [2m286:24[22m  [33mwarning[39m  'createEnv' is assigned a value but never used                                            [2mno-unused-vars[22m[0m
+[0m  [2m286:35[22m  [33mwarning[39m  'fetchFn' is assigned a value but never used                                              [2mno-unused-vars[22m[0m
+[0m  [2m286:44[22m  [33mwarning[39m  'dom' is assigned a value but never used                                                  [2mno-unused-vars[22m[0m
+[0m  [2m331:9[22m   [33mwarning[39m  'needsJavascriptWarning' is assigned a value but never used                               [2mno-unused-vars[22m[0m
+[0m  [2m378:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m378:8[22m   [33mwarning[39m  Function 'initializeVisibleComponents' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m26:1[22m  [33mwarning[39m  Function 'findJsFiles' has a complexity of 6. Maximum allowed is 2  [2mcomplexity[22m[0m
@@ -160,6 +162,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 127 problems (0 errors, 127 warnings)[22m[39m[0m
+[0m[33m[1m✖ 129 problems (0 errors, 129 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

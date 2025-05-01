@@ -221,6 +221,10 @@ function handleParsedResult(parsed, error, fetch, env, parent) {
   return true;
 }
 
+function handleParsedResult_new(parsed, error, fetch, env, parent) {
+  return handleParsedResult(parsed, error, fetch, env, parent);
+}
+
 /**
  * Parses the JSON result and returns the parsed object or null if parsing fails.
  * @param {string} result - The JSON string to parse.
