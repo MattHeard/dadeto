@@ -182,12 +182,12 @@ function makeDisplayBody(dom, parent) {
   };
 }
 
-function handleRequestResponse(url, error, fetch, dom, parent) {
-  const displayBody = makeDisplayBody(dom, parent);
+function handleRequestResponse(url, error, fetch, env, parent) {
+  const displayBody = makeDisplayBody(env, parent);
   const handleFetchError = fetchError => {
     error('Error fetching request URL:', fetchError);
-    setTextContent('Error fetching URL: ' + fetchError.message, dom, parent);
-    dom.addWarning(parent);
+    setTextContent('Error fetching URL: ' + fetchError.message, env, parent);
+    env.addWarning(parent);
   };
   fetch(url)
     .then(getText)
