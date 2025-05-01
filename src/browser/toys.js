@@ -215,7 +215,7 @@ function isValidParsedRequest(parsed) {
   );
 }
 
-function handleParsedResult(parsed, error, fetch, env, parent = null) {
+function handleParsedResult(parsed, error, fetch, env, parent) {
   if (!isValidParsedRequest(parsed)) {return false;}
   handleRequestResponse(parsed.request.url, error, fetch, env, parent);
   return true;
