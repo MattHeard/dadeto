@@ -264,30 +264,16 @@ function createHandleInputError(env, parent) {
   };
 }
 
-function processInputAndSetOutput(inputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent) {
+function processInputAndSetOutput_new(elements, processingFunction, env) {
+  const { inputElement, outputParentElement } = elements;
+  const { globalState, createEnv, errorFn, fetchFn, dom } = env;
   const toyEnv = createEnv(globalState);
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
-  if (!handleParsedResult(parsed, errorFn, fetchFn, dom, parent)) {
-    setTextContent(result, dom, parent);
+  if (!handleParsedResult(parsed, errorFn, fetchFn, dom, outputParentElement)) {
+    setTextContent(result, dom, outputParentElement);
   }
-}
-
-// Wrapper function for future refactoring
-function processInputAndSetOutput_new(elements, processingFunction, env) {
-  const { inputElement, outputParentElement } = elements;
-  const { globalState, createEnv, errorFn, fetchFn, dom } = env;
-  return processInputAndSetOutput(
-    inputElement,
-    globalState,
-    processingFunction,
-    createEnv,
-    errorFn,
-    fetchFn,
-    dom,
-    outputParentElement
-  );
 }
 
 function handleInputProcessing(elements, processingFunction, env) {
