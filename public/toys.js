@@ -275,8 +275,19 @@ function processInputAndSetOutput(inputElement, globalState, processingFunction,
 }
 
 // Wrapper function for future refactoring
-function processInputAndSetOutput_new(inputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent) {
-  return processInputAndSetOutput(inputElement, globalState, processingFunction, createEnv, errorFn, fetchFn, dom, parent);
+function processInputAndSetOutput_new(elements, processingFunction, env) {
+  const { inputElement, outputParentElement } = elements;
+  const { globalState, createEnv, errorFn, fetchFn, dom } = env;
+  return processInputAndSetOutput(
+    inputElement,
+    globalState,
+    processingFunction,
+    createEnv,
+    errorFn,
+    fetchFn,
+    dom,
+    outputParentElement
+  );
 }
 
 function handleInputProcessing(elements, processingFunction, env) {
