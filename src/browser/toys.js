@@ -253,7 +253,7 @@ function parseJSONResult(result) {
 
 
 // New wrapper function
-function createHandleInputError_new(env, parent) {
+function createHandleInputError(env, parent) {
   const logError = env.errorFn;
   const dom = env.dom;
   const addWarning = dom.addWarning;
@@ -278,7 +278,7 @@ function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement, inputElement, outputElement } = elements;
   const logError = env.errorFn;
   const { globalState, createEnv, fetchFn, dom } = env;
-  const handleInputError = createHandleInputError_new(env, outputParentElement);
+  const handleInputError = createHandleInputError(env, outputParentElement);
   try {
     processInputAndSetOutput(
       inputElement,

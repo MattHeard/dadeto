@@ -347,7 +347,7 @@ FN:206,hasStringUrl
 FN:210,isValidParsedRequest
 FN:218,handleParsedResult
 FN:229,parseJSONResult
-FN:256,createHandleInputError_new
+FN:256,createHandleInputError
 FN:260,(anonymous_33)
 FN:267,processInputAndSetOutput
 FN:277,handleInputProcessing
@@ -394,7 +394,7 @@ FNDA:2,hasStringUrl
 FNDA:4,isValidParsedRequest
 FNDA:4,handleParsedResult
 FNDA:4,parseJSONResult
-FNDA:5,createHandleInputError_new
+FNDA:5,createHandleInputError
 FNDA:1,(anonymous_33)
 FNDA:5,processInputAndSetOutput
 FNDA:5,handleInputProcessing
