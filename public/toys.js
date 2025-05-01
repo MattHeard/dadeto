@@ -215,14 +215,14 @@ function isValidParsedRequest(parsed) {
   );
 }
 
-function handleParsedResult(parsed, error, fetch, env, parent) {
+function handleParsedResult(parsed, error, fetch, dom, parent) {
   if (!isValidParsedRequest(parsed)) {return false;}
-  handleRequestResponse(parsed.request.url, error, fetch, env, parent);
+  handleRequestResponse(parsed.request.url, error, fetch, dom, parent);
   return true;
 }
 
-function handleParsedResult_new(parsed, error, fetch, env, parent) {
-  return handleParsedResult(parsed, error, fetch, env, parent);
+function handleParsedResult_new(parsed, error, fetch, dom, parent) {
+  return handleParsedResult(parsed, error, fetch, dom, parent);
 }
 
 /**
