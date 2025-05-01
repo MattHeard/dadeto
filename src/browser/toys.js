@@ -258,7 +258,7 @@ function createHandleInputError_new(env, parent) {
   const dom = env.dom;
   const addWarning = dom.addWarning;
   const setText = (content) => setTextContent(content, dom, parent);
-  return function(e) {
+  return (e) => {
     logError('Error processing input:', e);
     setText('Error: ' + e.message);
     addWarning(parent);
