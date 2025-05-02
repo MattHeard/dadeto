@@ -1,7 +1,7 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
 [0m  [2m374:8[22m  [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3      [2mmax-params[22m[0m
-[0m  [2m404:8[22m  [33mwarning[39m  Function 'initializeVisibleComponents_new' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m405:8[22m  [33mwarning[39m  Function 'initializeVisibleComponents_new' has too many parameters (6). Maximum allowed is 3  [2mmax-params[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m26:1[22m  [33mwarning[39m  Function 'findJsFiles' has a complexity of 6. Maximum allowed is 2  [2mcomplexity[22m[0m

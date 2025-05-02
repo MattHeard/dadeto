@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746212181917" clover="3.2.0">
-  <project timestamp="1746212181917" name="All files">
-    <metrics statements="940" coveredstatements="938" conditionals="336" coveredconditionals="333" methods="347" coveredmethods="346" elements="1623" coveredelements="1617" complexity="0" loc="940" ncloc="940" packages="13" files="25" classes="25"/>
+<coverage generated="1746212283347" clover="3.2.0">
+  <project timestamp="1746212283347" name="All files">
+    <metrics statements="941" coveredstatements="939" conditionals="336" coveredconditionals="333" methods="347" coveredmethods="346" elements="1624" coveredelements="1618" complexity="0" loc="941" ncloc="941" packages="13" files="25" classes="25"/>
     <package name="browser">
-      <metrics statements="279" coveredstatements="278" conditionals="52" coveredconditionals="51" methods="99" coveredmethods="98"/>
+      <metrics statements="280" coveredstatements="279" conditionals="52" coveredconditionals="51" methods="99" coveredmethods="98"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -174,7 +174,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="119" coveredstatements="118" conditionals="22" coveredconditionals="21" methods="50" coveredmethods="49"/>
+        <metrics statements="120" coveredstatements="119" conditionals="22" coveredconditionals="21" methods="50" coveredmethods="49"/>
         <line num="18" count="14" type="stmt"/>
         <line num="19" count="14" type="stmt"/>
         <line num="20" count="14" type="stmt"/>
@@ -290,10 +290,11 @@
         <line num="385" count="1" type="stmt"/>
         <line num="387" count="5" type="stmt"/>
         <line num="388" count="5" type="stmt"/>
-        <line num="397" count="4" type="cond" truecount="2" falsecount="0"/>
-        <line num="401" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="405" count="0" type="stmt"/>
-        <line num="411" count="1" type="stmt"/>
+        <line num="390" count="3" type="stmt"/>
+        <line num="398" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="402" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="406" count="0" type="stmt"/>
+        <line num="412" count="1" type="stmt"/>
       </file>
     </package>
     <package name="generator">
