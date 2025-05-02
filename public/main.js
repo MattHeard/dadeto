@@ -129,9 +129,8 @@ const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 
 // Interactive components functionality
-initializeVisibleComponents(
+initializeVisibleComponents_new(
   window,
-  document,
   log,
   warn,
   getElementById,
