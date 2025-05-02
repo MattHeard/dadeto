@@ -222,7 +222,7 @@ function handleParsedResult(parsed, logError, fetch, dom, parent) {
 }
 
 function handleParsedResult_new(parsed, parent, env) {
-  const { error: logError, fetchFn, dom } = env;
+  const { errorFn: logError, fetchFn, dom } = env;
   const fetch = fetchFn;
   return handleParsedResult(parsed, logError, fetch, dom, parent);
 }
@@ -277,7 +277,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
-  if (!handleParsedResult(parsed, errorFn, fetchFn, dom, parent)) {
+  if (!handleParsedResult_new(parsed, parent, env)) {
     setTextContent(result, dom, parent);
   }
 }

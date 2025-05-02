@@ -3,7 +3,8 @@
 [0m  [2m185:1[22m   [33mwarning[39m  Function 'handleRequestResponse' has too many parameters (5). Maximum allowed is 3        [2mmax-params[22m[0m
 [0m  [2m210:1[22m   [33mwarning[39m  Function 'isValidParsedRequest' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
 [0m  [2m218:1[22m   [33mwarning[39m  Function 'handleParsedResult' has too many parameters (5). Maximum allowed is 3           [2mmax-params[22m[0m
-[0m  [2m224:10[22m  [33mwarning[39m  'handleParsedResult_new' is defined but never used                                        [2mno-unused-vars[22m[0m
+[0m  [2m275:35[22m  [33mwarning[39m  'errorFn' is assigned a value but never used                                              [2mno-unused-vars[22m[0m
+[0m  [2m275:44[22m  [33mwarning[39m  'fetchFn' is assigned a value but never used                                              [2mno-unused-vars[22m[0m
 [0m  [2m286:32[22m  [33mwarning[39m  'inputElement' is assigned a value but never used                                         [2mno-unused-vars[22m[0m
 [0m  [2m286:46[22m  [33mwarning[39m  'outputElement' is assigned a value but never used                                        [2mno-unused-vars[22m[0m
 [0m  [2m287:9[22m   [33mwarning[39m  'logError' is assigned a value but never used                                             [2mno-unused-vars[22m[0m
@@ -161,6 +162,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 128 problems (0 errors, 128 warnings)[22m[39m[0m
+[0m[33m[1m✖ 129 problems (0 errors, 129 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
