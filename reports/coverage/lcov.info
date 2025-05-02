@@ -417,7 +417,7 @@ FNDA:4,hasNoInteractiveComponents
 FNDA:3,getInteractiveComponentCount
 FNDA:3,getComponentInitializer
 FNDA:6,(anonymous_48)
-FNDA:1,initializeVisibleComponents_new
+FNDA:2,initializeVisibleComponents_new
 FNDA:1,(anonymous_50)
 DA:18,14
 DA:19,14
@@ -538,7 +538,7 @@ DA:401,1
 DA:402,1
 DA:404,5
 DA:405,5
-DA:410,1
+DA:410,2
 DA:416,1
 LF:121
 LH:121
