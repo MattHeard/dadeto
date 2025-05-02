@@ -221,8 +221,6 @@ function isValidParsedRequest(parsed) {
 }
 
 function handleParsedResult(parsed, parent, env) {
-  const { errorFn: logError, fetchFn, dom } = env;
-  const fetch = fetchFn;
   if (!isValidParsedRequest(parsed)) {return false;}
   handleRequestResponse_new(parsed.request.url, parent, env);
   return true;
