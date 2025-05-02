@@ -5,6 +5,7 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js[24m[0m
 [0m  [2m374:8[22m  [33mwarning[39m  Function 'initializeVisibleComponents' has too many parameters (6). Maximum allowed is 3      [2mmax-params[22m[0m
 [0m  [2m409:8[22m  [33mwarning[39m  Function 'initializeVisibleComponents_new' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m409:8[22m  [33mwarning[39m  Function 'initializeVisibleComponents_new' has a complexity of 4. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
 [0m  [2m26:1[22m  [33mwarning[39m  Function 'findJsFiles' has a complexity of 6. Maximum allowed is 2  [2mcomplexity[22m[0m
@@ -152,6 +153,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 117 problems (0 errors, 117 warnings)[22m[39m[0m
+[0m[33m[1m✖ 118 problems (0 errors, 118 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
