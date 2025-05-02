@@ -361,8 +361,9 @@ FN:355,createHandleKeyPress
 FN:356,(anonymous_43)
 FN:374,initializeVisibleComponents
 FN:380,(anonymous_45)
-FN:394,(anonymous_46)
-FNF:47
+FN:395,initializeVisibleComponents_new
+FN:403,(anonymous_47)
+FNF:48
 FNH:47
 FNDA:14,setTextContent
 FNDA:5,handleModuleError
@@ -410,7 +411,8 @@ FNDA:3,createHandleKeyPress
 FNDA:2,(anonymous_43)
 FNDA:4,initializeVisibleComponents
 FNDA:6,(anonymous_45)
-FNDA:1,(anonymous_46)
+FNDA:0,initializeVisibleComponents_new
+FNDA:1,(anonymous_47)
 DA:18,14
 DA:19,14
 DA:20,14
@@ -525,8 +527,10 @@ DA:383,1
 DA:384,1
 DA:386,5
 DA:387,5
-DA:394,1
-LF:115
+DA:396,0
+DA:397,0
+DA:403,1
+LF:117
 LH:115
 BRDA:103,0,0,4
 BRDA:103,0,1,2
