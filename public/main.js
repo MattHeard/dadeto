@@ -129,6 +129,8 @@ const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 
 // Interactive components functionality
+import { initializeVisibleComponents_new } from './toys.js';
+
 initializeVisibleComponents_new(
   window,
   log,
