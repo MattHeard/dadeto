@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746208365228" clover="3.2.0">
-  <project timestamp="1746208365228" name="All files">
-    <metrics statements="940" coveredstatements="937" conditionals="337" coveredconditionals="335" methods="343" coveredmethods="342" elements="1620" coveredelements="1614" complexity="0" loc="940" ncloc="940" packages="13" files="25" classes="25"/>
+<coverage generated="1746208445450" clover="3.2.0">
+  <project timestamp="1746208445450" name="All files">
+    <metrics statements="940" coveredstatements="939" conditionals="337" coveredconditionals="335" methods="343" coveredmethods="343" elements="1620" coveredelements="1617" complexity="0" loc="940" ncloc="940" packages="13" files="25" classes="25"/>
     <package name="browser">
-      <metrics statements="279" coveredstatements="277" conditionals="53" coveredconditionals="53" methods="95" coveredmethods="94"/>
+      <metrics statements="279" coveredstatements="279" conditionals="53" coveredconditionals="53" methods="95" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -174,7 +174,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="119" coveredstatements="117" conditionals="23" coveredconditionals="23" methods="46" coveredmethods="45"/>
+        <metrics statements="119" coveredstatements="119" conditionals="23" coveredconditionals="23" methods="46" coveredmethods="46"/>
         <line num="18" count="14" type="stmt"/>
         <line num="19" count="14" type="stmt"/>
         <line num="20" count="14" type="stmt"/>
@@ -218,8 +218,8 @@
         <line num="176" count="1" type="stmt"/>
         <line num="180" count="2" type="stmt"/>
         <line num="181" count="1" type="stmt"/>
-        <line num="186" count="0" type="stmt"/>
-        <line num="187" count="0" type="stmt"/>
+        <line num="186" count="2" type="stmt"/>
+        <line num="187" count="2" type="stmt"/>
         <line num="191" count="2" type="stmt"/>
         <line num="192" count="2" type="stmt"/>
         <line num="193" count="1" type="stmt"/>

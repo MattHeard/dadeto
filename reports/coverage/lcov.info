@@ -362,7 +362,7 @@ FN:381,initializeVisibleComponents
 FN:387,(anonymous_44)
 FN:401,(anonymous_45)
 FNF:46
-FNH:45
+FNH:46
 FNDA:14,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_2)
@@ -387,7 +387,7 @@ FNDA:6,enableInteractiveControls
 FNDA:1,getText
 FNDA:2,makeDisplayBody
 FNDA:1,(anonymous_23)
-FNDA:0,handleRequestResponse_new
+FNDA:2,handleRequestResponse_new
 FNDA:2,handleRequestResponse
 FNDA:1,(anonymous_26)
 FNDA:4,isObject
@@ -452,8 +452,8 @@ DA:172,6
 DA:176,1
 DA:180,2
 DA:181,1
-DA:186,0
-DA:187,0
+DA:186,2
+DA:187,2
 DA:191,2
 DA:192,2
 DA:193,1
@@ -529,7 +529,7 @@ DA:393,5
 DA:394,5
 DA:401,1
 LF:119
-LH:117
+LH:119
 BRDA:103,0,0,4
 BRDA:103,0,1,2
 BRDA:204,1,0,4
