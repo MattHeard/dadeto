@@ -413,15 +413,7 @@ export function initializeVisibleComponents_new(win, logInfo, logWarning, getEle
   }
   const interactiveComponentCount = getInteractiveComponentCount(win);
   logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
-  const init = (component) => {
-    const article = getElement(component.id);
-    if (!article) {
-      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
-      return;
-    }
-    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
-    observer.observe(article);
-  };
+  const init = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
   win.interactiveComponents.forEach(init);
 }
 
