@@ -378,15 +378,7 @@ export function initializeVisibleComponents(win, doc, logInfo, logWarning, getEl
   }
   const interactiveComponentCount = getInteractiveComponentCount(win);
   logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
-  const initializeComponent = component => {
-    const article = getElement(component.id);
-    if (!article) {
-      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
-      return;
-    }
-    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
-    observer.observe(article);
-  };
+  const initializeComponent = makeInitializeComponent(getElement, logWarning, createIntersectionObserver);
   win.interactiveComponents.forEach(initializeComponent);
 }
 
@@ -400,6 +392,18 @@ function hasNoInteractiveComponents(win) {
 
 function getInteractiveComponentCount(win) {
   return win.interactiveComponents ? win.interactiveComponents.length : 0;
+}
+
+function makeInitializeComponent(getElement, logWarning, createIntersectionObserver) {
+  return component => {
+    const article = getElement(component.id);
+    if (!article) {
+      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
+      return;
+    }
+    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
+    observer.observe(article);
+  };
 }
 
 export function initializeVisibleComponents_new(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn) {
