@@ -182,7 +182,7 @@ function makeDisplayBody(dom, parent) {
   };
 }
 
-function handleRequestResponse_new(url, parent, env) {
+function handleRequestResponse(url, parent, env) {
   const { errorFn, fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent);
   const handleFetchError = error => {
@@ -218,7 +218,7 @@ function isValidParsedRequest(parsed) {
 
 function handleParsedResult(parsed, parent, env) {
   if (!isValidParsedRequest(parsed)) {return false;}
-  handleRequestResponse_new(parsed.request.url, parent, env);
+  handleRequestResponse(parsed.request.url, parent, env);
   return true;
 }
 
