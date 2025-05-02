@@ -281,7 +281,6 @@ function processInputAndSetOutput(elements, processingFunction, env) {
 
 function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement } = elements;
-  const { createEnv, dom } = env;
   const handleInputError = createHandleInputError(env, outputParentElement);
   try {
     processInputAndSetOutput(elements, processingFunction, env);
