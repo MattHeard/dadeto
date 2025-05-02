@@ -368,7 +368,7 @@ FN:409,initializeVisibleComponents_new
 FN:416,(anonymous_50)
 FN:431,(anonymous_51)
 FNF:52
-FNH:49
+FNH:50
 FNDA:14,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_2)
@@ -415,7 +415,7 @@ FNDA:3,createHandleKeyPress
 FNDA:2,(anonymous_43)
 FNDA:1,initializeVisibleComponents
 FNDA:4,hasNoInteractiveComponents
-FNDA:0,getInteractiveComponentCount
+FNDA:3,getInteractiveComponentCount
 FNDA:0,getComponentInitializer
 FNDA:0,(anonymous_48)
 FNDA:3,initializeVisibleComponents_new
@@ -532,7 +532,7 @@ DA:380,0
 DA:381,0
 DA:382,0
 DA:390,4
-DA:394,0
+DA:394,3
 DA:398,0
 DA:399,0
 DA:400,0
@@ -555,7 +555,7 @@ DA:423,5
 DA:425,3
 DA:431,1
 LF:133
-LH:119
+LH:120
 BRDA:103,0,0,4
 BRDA:103,0,1,2
 BRDA:204,1,0,4
@@ -574,7 +574,7 @@ BRDA:375,7,0,1
 BRDA:375,7,1,0
 BRDA:390,8,0,4
 BRDA:390,8,1,4
-BRDA:394,9,0,0
+BRDA:394,9,0,3
 BRDA:394,9,1,0
 BRDA:400,10,0,0
 BRDA:400,10,1,0
@@ -583,7 +583,7 @@ BRDA:410,11,1,3
 BRDA:418,12,0,1
 BRDA:418,12,1,5
 BRF:26
-BRH:20
+BRH:21
 end_of_record
 TN:
 SF:src/generator/full-width.js

@@ -411,7 +411,7 @@ export function initializeVisibleComponents_new(win, logInfo, logWarning, getEle
     logWarning('No interactive components found to initialize');
     return;
   }
-  const interactiveComponentCount = win.interactiveComponents.length;
+  const interactiveComponentCount = getInteractiveComponentCount(win);
   logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
   const init = (component) => {
     const article = getElement(component.id);
