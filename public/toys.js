@@ -182,14 +182,18 @@ function makeDisplayBody(dom, parent) {
   };
 }
 
-function handleRequestResponse(url, parent, env) {
-  const { errorFn, fetchFn, dom } = env;
-  const displayBody = makeDisplayBody(dom, parent);
-  const handleFetchError = error => {
+function getFetchErrorHandler(dom, parent, errorFn) {
+  return error => {
     errorFn('Error fetching request URL:', error);
     setTextContent('Error fetching URL: ' + error.message, dom, parent);
     dom.addWarning(parent);
-  }
+  };
+}
+
+function handleRequestResponse(url, parent, env) {
+  const { errorFn, fetchFn, dom } = env;
+  const displayBody = makeDisplayBody(dom, parent);
+  const handleFetchError = getFetchErrorHandler(dom, parent, errorFn);
   fetchFn(url)
     .then(getText)
     .then(displayBody)
