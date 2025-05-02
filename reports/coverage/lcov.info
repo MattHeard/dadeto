@@ -362,7 +362,7 @@ FN:356,(anonymous_43)
 FN:374,initializeVisibleComponents
 FN:389,hasNoInteractiveComponents
 FN:393,getInteractiveComponentCount
-FN:397,makeInitializeComponent
+FN:397,makeInit
 FN:398,(anonymous_48)
 FN:409,initializeVisibleComponents_new
 FN:416,(anonymous_50)
@@ -415,7 +415,7 @@ FNDA:2,(anonymous_43)
 FNDA:4,initializeVisibleComponents
 FNDA:4,hasNoInteractiveComponents
 FNDA:3,getInteractiveComponentCount
-FNDA:3,makeInitializeComponent
+FNDA:3,makeInit
 FNDA:6,(anonymous_48)
 FNDA:0,initializeVisibleComponents_new
 FNDA:1,(anonymous_50)
