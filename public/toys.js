@@ -182,6 +182,11 @@ function makeDisplayBody(dom, parent) {
   };
 }
 
+function handleRequestResponse_new(url, parent, env) {
+  const { errorFn, fetchFn, dom } = env;
+  handleRequestResponse(url, errorFn, fetchFn, dom, parent);
+}
+
 function handleRequestResponse(url, error, fetch, env, parent) {
   const displayBody = makeDisplayBody(env, parent);
   const handleFetchError = fetchError => {
@@ -215,7 +220,7 @@ function isValidParsedRequest(parsed) {
   );
 }
 
-function handleParsedResult_new(parsed, parent, env) {
+function handleParsedResult(parsed, parent, env) {
   const { errorFn: logError, fetchFn, dom } = env;
   const fetch = fetchFn;
   if (!isValidParsedRequest(parsed)) {return false;}
@@ -273,7 +278,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
-  if (!handleParsedResult_new(parsed, parent, env)) {
+  if (!handleParsedResult(parsed, parent, env)) {
     setTextContent(result, dom, parent);
   }
 }
