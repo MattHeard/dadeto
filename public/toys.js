@@ -270,14 +270,14 @@ function createHandleInputError(env, parent) {
 }
 
 function processInputAndSetOutput(elements, processingFunction, env) {
-  const { inputElement, outputParentElement } = elements;
+  const { inputElement, outputParentElement: parent } = elements;
   const { globalState, createEnv, errorFn, fetchFn, dom } = env;
   const toyEnv = createEnv(globalState);
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
-  if (!handleParsedResult(parsed, errorFn, fetchFn, dom, outputParentElement)) {
-    setTextContent(result, dom, outputParentElement);
+  if (!handleParsedResult(parsed, errorFn, fetchFn, dom, parent)) {
+    setTextContent(result, dom, parent);
   }
 }
 
