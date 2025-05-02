@@ -269,8 +269,8 @@ function createHandleInputError(env, parent) {
 
 function processInputAndSetOutput(elements, processingFunction, env) {
   const { inputElement, outputParentElement: parent } = elements;
-  const { globalState, createEnv, dom } = env;
-  const toyEnv = createEnv(globalState);
+  const { createEnv, dom } = env;
+  const toyEnv = createEnv();
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
@@ -280,9 +280,8 @@ function processInputAndSetOutput(elements, processingFunction, env) {
 }
 
 function handleInputProcessing(elements, processingFunction, env) {
-  const { outputParentElement, inputElement, outputElement } = elements;
-  const logError = env.errorFn;
-  const { globalState, createEnv, fetchFn, dom } = env;
+  const { outputParentElement } = elements;
+  const { createEnv, dom } = env;
   const handleInputError = createHandleInputError(env, outputParentElement);
   try {
     processInputAndSetOutput(elements, processingFunction, env);
