@@ -269,7 +269,7 @@ function createHandleInputError(env, parent) {
   };
 }
 
-function processInputAndSetOutput_new(elements, processingFunction, env) {
+function processInputAndSetOutput(elements, processingFunction, env) {
   const { inputElement, outputParentElement } = elements;
   const { globalState, createEnv, errorFn, fetchFn, dom } = env;
   const toyEnv = createEnv(globalState);
@@ -287,7 +287,7 @@ function handleInputProcessing(elements, processingFunction, env) {
   const { globalState, createEnv, fetchFn, dom } = env;
   const handleInputError = createHandleInputError(env, outputParentElement);
   try {
-    processInputAndSetOutput_new(elements, processingFunction, env);
+    processInputAndSetOutput(elements, processingFunction, env);
   } catch (e) {
     handleInputError(e);
   }
