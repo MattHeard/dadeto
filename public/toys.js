@@ -372,7 +372,8 @@ function createHandleKeyPress(handleSubmit) {
  * @param {Function} createIntersectionObserverFn - Function that creates an IntersectionObserver for a given article, module path, and function name.
  */
 export function initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn) {
-  if (!win.interactiveComponents || win.interactiveComponents.length === 0) {
+  const hasNoInteractiveComponents = !win.interactiveComponents || win.interactiveComponents.length === 0;
+  if (hasNoInteractiveComponents) {
     warnFn('No interactive components found to initialize');
     return;
   }
