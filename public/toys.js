@@ -222,9 +222,9 @@ function handleParsedResult(parsed, logError, fetch, dom, parent) {
 }
 
 function handleParsedResult_new(parsed, parent, env) {
-  const { error: logError, fetch, dom } = env;
-  const fetchFn = fetch;
-  return handleParsedResult(parsed, logError, fetchFn, dom, parent);
+  const { error: logError, fetchFn, dom } = env;
+  const fetch = fetchFn;
+  return handleParsedResult(parsed, logError, fetch, dom, parent);
 }
 
 /**
