@@ -185,11 +185,11 @@ function makeDisplayBody(dom, parent) {
 function handleRequestResponse_new(url, parent, env) {
   const { errorFn, fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent);
-  const handleFetchError = fetchError => {
-    errorFn('Error fetching request URL:', fetchError);
-    setTextContent('Error fetching URL: ' + fetchError.message, dom, parent);
+  const handleFetchError = error => {
+    errorFn('Error fetching request URL:', error);
+    setTextContent('Error fetching URL: ' + error.message, dom, parent);
     dom.addWarning(parent);
-  };
+  }
   fetchFn(url)
     .then(getText)
     .then(displayBody)
