@@ -371,16 +371,16 @@ function createHandleKeyPress(handleSubmit) {
  * @param {Function} getElementByIdFn - Function to get element by ID.
  * @param {Function} createIntersectionObserverFn - Function that creates an IntersectionObserver for a given article, module path, and function name.
  */
-export function initializeVisibleComponents(win, doc, logInfo, warn, getElementByIdFn, createIntersectionObserverFn) {
+export function initializeVisibleComponents(win, doc, logInfo, logWarning, getElementByIdFn, createIntersectionObserverFn) {
   if (hasNoInteractiveComponents(win)) {
-    warn('No interactive components found to initialize');
+    logWarning('No interactive components found to initialize');
     return;
   }
   logInfo('Initializing', win.interactiveComponents.length, 'interactive components via IntersectionObserver');
   win.interactiveComponents.forEach(component => {
     const article = getElementByIdFn(component.id);
     if (!article) {
-      warn(`Could not find article element with ID: ${component.id} for component initialization.`);
+      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
       return;
     }
     const observer = createIntersectionObserverFn(article, component.modulePath, component.functionName);
