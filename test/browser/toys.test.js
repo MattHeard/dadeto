@@ -616,7 +616,7 @@ describe('initializeVisibleComponents', () => {
     const getElementByIdFn = jest.fn();
     const createIntersectionObserverFn = jest.fn();
 
-    initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
+    initializeVisibleComponents_new(win, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
     // Expectations at end
     expect(warnFn).toHaveBeenCalledWith('No interactive components found to initialize');
   });
