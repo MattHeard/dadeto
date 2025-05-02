@@ -411,10 +411,11 @@ export function initializeVisibleComponents_new(win, logInfo, logWarning, getEle
     logWarning('No interactive components found to initialize');
     return;
   }
+  const interactiveComponents = win.interactiveComponents;
   const interactiveComponentCount = getInteractiveComponentCount(win);
   logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
   const init = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
-  win.interactiveComponents.forEach(init);
+  interactiveComponents.forEach(init);
 }
 
 /**

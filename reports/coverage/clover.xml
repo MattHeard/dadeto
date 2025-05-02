@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746213788042" clover="3.2.0">
-  <project timestamp="1746213788042" name="All files">
-    <metrics statements="948" coveredstatements="941" conditionals="338" coveredconditionals="333" methods="348" coveredmethods="348" elements="1634" coveredelements="1622" complexity="0" loc="948" ncloc="948" packages="13" files="25" classes="25"/>
+<coverage generated="1746213881442" clover="3.2.0">
+  <project timestamp="1746213881442" name="All files">
+    <metrics statements="949" coveredstatements="942" conditionals="338" coveredconditionals="333" methods="348" coveredmethods="348" elements="1635" coveredelements="1623" complexity="0" loc="949" ncloc="949" packages="13" files="25" classes="25"/>
     <package name="browser">
-      <metrics statements="287" coveredstatements="281" conditionals="54" coveredconditionals="51" methods="100" coveredmethods="100"/>
+      <metrics statements="288" coveredstatements="282" conditionals="54" coveredconditionals="51" methods="100" coveredmethods="100"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -174,7 +174,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="127" coveredstatements="121" conditionals="24" coveredconditionals="21" methods="51" coveredmethods="51"/>
+        <metrics statements="128" coveredstatements="122" conditionals="24" coveredconditionals="21" methods="51" coveredmethods="51"/>
         <line num="18" count="14" type="stmt"/>
         <line num="19" count="14" type="stmt"/>
         <line num="20" count="14" type="stmt"/>
@@ -301,7 +301,8 @@
         <line num="415" count="3" type="stmt"/>
         <line num="416" count="3" type="stmt"/>
         <line num="417" count="3" type="stmt"/>
-        <line num="423" count="1" type="stmt"/>
+        <line num="418" count="3" type="stmt"/>
+        <line num="424" count="1" type="stmt"/>
       </file>
     </package>
     <package name="generator">

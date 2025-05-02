@@ -365,7 +365,7 @@ FN:393,getInteractiveComponentCount
 FN:397,getComponentInitializer
 FN:398,(anonymous_48)
 FN:409,initializeVisibleComponents_new
-FN:423,(anonymous_50)
+FN:424,(anonymous_50)
 FNF:51
 FNH:51
 FNDA:14,setTextContent
@@ -545,9 +545,10 @@ DA:414,3
 DA:415,3
 DA:416,3
 DA:417,3
-DA:423,1
-LF:127
-LH:121
+DA:418,3
+DA:424,1
+LF:128
+LH:122
 BRDA:103,0,0,4
 BRDA:103,0,1,2
 BRDA:204,1,0,4
