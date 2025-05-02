@@ -378,7 +378,7 @@ export function initializeVisibleComponents(win, doc, logInfo, logWarning, getEl
   }
   const interactiveComponentCount = getInteractiveComponentCount(win);
   logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
-  const init = makeInit(getElement, logWarning, createIntersectionObserver);
+  const init = getComponentInitialiser(getElement, logWarning, createIntersectionObserver);
   win.interactiveComponents.forEach(init);
 }
 
@@ -394,7 +394,7 @@ function getInteractiveComponentCount(win) {
   return win.interactiveComponents ? win.interactiveComponents.length : 0;
 }
 
-function makeInit(getElement, logWarning, createIntersectionObserver) {
+function getComponentInitialiser(getElement, logWarning, createIntersectionObserver) {
   return component => {
     const article = getElement(component.id);
     if (!article) {
