@@ -406,7 +406,7 @@ function getComponentInitializer(getElement, logWarning, createIntersectionObser
   };
 }
 
-export function initializeVisibleComponents_new({ win, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn }) {
+export function initializeVisibleComponents_new(win, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn) {
   return initializeVisibleComponents(win, undefined, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
 }
 
