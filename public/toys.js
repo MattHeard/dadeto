@@ -407,7 +407,7 @@ function getComponentInitializer(getElement, logWarning, createIntersectionObser
 }
 
 export function initializeVisibleComponents_new(win, logInfo, logWarning, getElement, createIntersectionObserver) {
-  if (!win || !win.interactiveComponents || win.interactiveComponents.length === 0) {
+  if (hasNoInteractiveComponents(win)) {
     logWarning('No interactive components found to initialize');
     return;
   }
