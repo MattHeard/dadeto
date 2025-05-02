@@ -212,12 +212,10 @@ function hasStringUrl(val) {
   return val.request && typeof val.request.url === 'string';
 }
 
+const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
+
 function isValidParsedRequest(parsed) {
-  return (
-    isObject(parsed) &&
-    hasRequestField(parsed) &&
-    hasStringUrl(parsed)
-  );
+  return parsedRequestPredicates.every(fn => fn(parsed));
 }
 
 function handleParsedResult(parsed, parent, env) {
