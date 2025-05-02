@@ -362,7 +362,7 @@ FN:356,(anonymous_43)
 FN:374,initializeVisibleComponents
 FN:380,(anonymous_45)
 FN:395,initializeVisibleComponents_new
-FN:403,(anonymous_47)
+FN:402,(anonymous_47)
 FNF:48
 FNH:47
 FNDA:14,setTextContent
@@ -528,9 +528,8 @@ DA:384,1
 DA:386,5
 DA:387,5
 DA:396,0
-DA:397,0
-DA:403,1
-LF:117
+DA:402,1
+LF:116
 LH:115
 BRDA:103,0,0,4
 BRDA:103,0,1,2

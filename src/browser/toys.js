@@ -392,8 +392,7 @@ export function initializeVisibleComponents(win, doc, logFn, warnFn, getElementB
  * New version: accepts a config object and delegates to the original.
  * @param {object} config - An object containing win, doc, logFn, warnFn, getElementByIdFn, and createIntersectionObserverFn.
  */
-export function initializeVisibleComponents_new(config) {
-  const { win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn } = config;
+export function initializeVisibleComponents_new(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn) {
   return initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
 }
 
