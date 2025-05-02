@@ -376,7 +376,8 @@ export function initializeVisibleComponents(win, doc, logInfo, logWarning, getEl
     logWarning('No interactive components found to initialize');
     return;
   }
-  logInfo('Initializing', win.interactiveComponents.length, 'interactive components via IntersectionObserver');
+  const interactiveComponentCount = win.interactiveComponents.length;
+  logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
   win.interactiveComponents.forEach(component => {
     const article = getElement(component.id);
     if (!article) {
