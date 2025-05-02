@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, getModuleInitializer, initializeVisibleComponents_new } from '../../src/browser/toys.js';
+import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, getModuleInitializer, initializeVisibleComponents_new, getDeepStateCopy, createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
   let importModule, disconnectObserver, f, modulePath, entry, observer;
@@ -300,7 +300,6 @@ describe('initialiseModule', () => {
   });
 });
 
-import { getDeepStateCopy } from '../../src/browser/toys.js';
 
 describe('getDeepStateCopy', () => {
   it('returns a deep copy of the global state object', () => {
@@ -326,7 +325,6 @@ describe('getDeepStateCopy', () => {
   });
 });
 
-import { createHandleSubmit, initializeInteractiveComponent, initializeVisibleComponents, handleModuleError } from '../../src/browser/toys.js';
 
 describe('createHandleSubmit', () => {
   let fetchFn;
