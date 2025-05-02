@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746213266994" clover="3.2.0">
-  <project timestamp="1746213266995" name="All files">
-    <metrics statements="942" coveredstatements="940" conditionals="336" coveredconditionals="333" methods="348" coveredmethods="347" elements="1626" coveredelements="1620" complexity="0" loc="942" ncloc="942" packages="13" files="25" classes="25"/>
+<coverage generated="1746213356419" clover="3.2.0">
+  <project timestamp="1746213356419" name="All files">
+    <metrics statements="942" coveredstatements="941" conditionals="336" coveredconditionals="333" methods="348" coveredmethods="348" elements="1626" coveredelements="1622" complexity="0" loc="942" ncloc="942" packages="13" files="25" classes="25"/>
     <package name="browser">
-      <metrics statements="281" coveredstatements="280" conditionals="52" coveredconditionals="51" methods="100" coveredmethods="99"/>
+      <metrics statements="281" coveredstatements="281" conditionals="52" coveredconditionals="51" methods="100" coveredmethods="100"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -174,7 +174,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="121" coveredstatements="120" conditionals="22" coveredconditionals="21" methods="51" coveredmethods="50"/>
+        <metrics statements="121" coveredstatements="121" conditionals="22" coveredconditionals="21" methods="51" coveredmethods="51"/>
         <line num="18" count="14" type="stmt"/>
         <line num="19" count="14" type="stmt"/>
         <line num="20" count="14" type="stmt"/>
@@ -294,7 +294,7 @@
         <line num="402" count="1" type="stmt"/>
         <line num="404" count="5" type="stmt"/>
         <line num="405" count="5" type="stmt"/>
-        <line num="410" count="0" type="stmt"/>
+        <line num="410" count="1" type="stmt"/>
         <line num="416" count="1" type="stmt"/>
       </file>
     </package>

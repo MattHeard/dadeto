@@ -367,7 +367,7 @@ FN:398,(anonymous_48)
 FN:409,initializeVisibleComponents_new
 FN:416,(anonymous_50)
 FNF:51
-FNH:50
+FNH:51
 FNDA:14,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_2)
@@ -417,7 +417,7 @@ FNDA:4,hasNoInteractiveComponents
 FNDA:3,getInteractiveComponentCount
 FNDA:3,getComponentInitializer
 FNDA:6,(anonymous_48)
-FNDA:0,initializeVisibleComponents_new
+FNDA:1,initializeVisibleComponents_new
 FNDA:1,(anonymous_50)
 DA:18,14
 DA:19,14
@@ -538,10 +538,10 @@ DA:401,1
 DA:402,1
 DA:404,5
 DA:405,5
-DA:410,0
+DA:410,1
 DA:416,1
 LF:121
-LH:120
+LH:121
 BRDA:103,0,0,4
 BRDA:103,0,1,2
 BRDA:204,1,0,4

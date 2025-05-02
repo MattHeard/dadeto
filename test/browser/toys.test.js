@@ -630,13 +630,12 @@ describe('initializeVisibleComponents', () => {
         { id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' }
       ]
     };
-    const doc = {};
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn(() => mockArticle);
     const createIntersectionObserverFn = jest.fn(() => mockObserver);
 
-    initializeVisibleComponents(win, doc, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
+    initializeVisibleComponents_new(win, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
     // Expectations at end
     expect(logFn).toHaveBeenCalledWith(
       'Initializing',
