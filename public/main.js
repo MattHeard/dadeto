@@ -119,6 +119,7 @@ const dom = {
   removeAllChildren
 };
 const env = { globalState, createEnv, error, fetch, loggers };
+import { initializeVisibleComponents, hasNoInteractiveComponents, getInteractiveComponents, getInteractiveComponentCount } from './toys.js';
 // Only keep one import from './toys.js' and combine symbols if needed
 const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
@@ -137,7 +138,8 @@ initializeVisibleComponents(
     logWarning: warn,
     getElement: getElementById,
     hasNoInteractiveComponents,
-    getInteractiveComponents
+    getInteractiveComponents,
+    getInteractiveComponentCount
   },
   createIntersectionObserver
 );
