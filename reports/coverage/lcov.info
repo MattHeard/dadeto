@@ -693,7 +693,7 @@ FN:919,createBlogContentArray
 FN:931,getBlogHtmlContent
 FN:941,getArticles
 FN:952,assembleBlogHTML
-FN:957,generateBlogNew
+FN:957,generateBlog
 FN:963,(anonymous_111)
 FN:973,getBlogGenerationArgs
 FN:979,(anonymous_113)
@@ -809,7 +809,7 @@ FNDA:10,createBlogContentArray
 FNDA:10,getBlogHtmlContent
 FNDA:10,getArticles
 FNDA:10,assembleBlogHTML
-FNDA:10,generateBlogNew
+FNDA:10,generateBlog
 FNDA:2,(anonymous_111)
 FNDA:2,getBlogGenerationArgs
 FNDA:1,(anonymous_113)

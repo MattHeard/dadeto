@@ -1,4 +1,4 @@
-import { generateBlogNew, getBlogGenerationArgs } from '../../src/generator/generator.js';
+import { generateBlog, getBlogGenerationArgs } from '../../src/generator/generator.js';
 
 const header = '<body>';
 const footer = '</body>';
@@ -96,7 +96,7 @@ describe('Blog Generator', () => {
     // The expected HTML is now a single line without indentation or newlines
     const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">First Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">4 May 2022</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2022-05-04.png" alt="a messy desk, digital art, black and white"/></div><div class="key media">audio</div><audio class="value" controls><source src="2022-05-04.mp3"></audio><div class="key">text</div><p class="value">First post content</p><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="https://en.wikipedia.org/wiki/Blog" target="_blank" rel="noopener">"Blog"</a> by Wikipedia, Wikipedia (EN)</li><li><a href="https://twitter.com/example/status/123456789" target="_blank" rel="noopener">"Thoughts on blogging"</a> by @exampleuser</li><li><a href="https://example.com/books/blogging-101" target="_blank" rel="noopener"><em>_Blogging 101_</em></a> by Jane Doe, Example Publishing ("Blogging is an essential skill for the digital age")</li></ul></div></article><article class="entry" id="SECO2"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">SECO2</div><div class="value"><h2><a href="#SECO2">Second Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">5 May 2022</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="foo.png" alt="a tangle of yellow and black woollen yarn"/></div><div class="key media">audio</div><audio class="value" controls><source src="2022-05-05.m4a"></audio><div class="key media">video</div><p class="value"><iframe height="300px" width="100%" src="https://www.youtube.com/embed/EdlrqPPI_YQ?start=420" title="Lonely &amp; Horny Episode 2 - Orion" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe></p><div class="key">text</div><p class="value">Second post content</p><div class="key"></div><p class="value">Another paragraph</p><div class="key">in</div><div class="value"><form><input type="text" disabled></form></div><div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div><div class="key">out</div><div class="value"><select disabled><option value="text">text</option></select><div class="output warning"><p>This toy requires Javascript to run.</p></div></div><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="https://example.com/video-tutorial" target="_blank" rel="noopener">Video Tutorial</a> by John Smith, Example Videos</li><li><a href="https://example.org/report-2022" target="_blank" rel="noopener">"Annual Report 2022"</a> by Research Team, Example Organization ("Significant progress was made in all key areas")</li><li><a href="https://example.net" target="_blank" rel="noopener">Example Website</a>, Example Net</li></ul></div><script type="module">window.addComponent('SECO2', '/toys/2025-03-19/identity.js', 'identity');</script></article></body></html>`;
 
-    const html = generateBlogNew({ blog, header, footer }, wrapHtml);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toBe(expectedHtml);
   });
 
@@ -121,7 +121,7 @@ describe('Blog Generator', () => {
       ],
     };
 
-    const html = generateBlogNew({ blog, header, footer }, wrapHtml);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">First</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key">text</div><p class="value">This is the content of the first post.</p></article><article class="entry" id="SECO1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">SECO1</div><div class="value"><h2><a href="#SECO1">Second</a></h2></div><div class="key">pubAt</div><p class="value metadata">31 Dec 2023</p><div class="key">text</div><p class="value">This post has two paragraphs.</p><div class="key"></div><p class="value">Here is the second one.</p></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
@@ -151,7 +151,7 @@ describe('Blog Generator', () => {
       ],
     };
 
-    const html = generateBlogNew({ blog, header, footer }, wrapHtml);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">Single Post</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2024-01-01.png" alt="An illustration"/></div></article><article class="entry" id="SECO1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">SECO1</div><div class="value"><h2><a href="#SECO1">Second</a></h2></div><div class="key">pubAt</div><p class="value metadata">31 Dec 2023</p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2023-12-31-0.svg" alt="A diagram"/></div></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
@@ -178,7 +178,7 @@ describe('Blog Generator', () => {
       ],
     };
 
-    const html = generateBlogNew({ blog, header, footer }, wrapHtml);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">First</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key media">audio</div><audio class="value" controls><source src="2024-01-01.mp3"></audio></article><article class="entry" id="SECO1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">SECO1</div><div class="value"><h2><a href="#SECO1">Second</a></h2></div><div class="key">pubAt</div><p class="value metadata">31 Dec 2023</p><div class="key media">audio</div><audio class="value" controls><source src="2023-12-31.wav"></audio></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
@@ -216,7 +216,7 @@ describe('Blog Generator', () => {
       ],
     };
 
-    const html = generateBlogNew({ blog, header, footer }, wrapHtml);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="LINK1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">LINK1</div><div class="value"><h2><a href="#LINK1">Post with Links</a></h2></div><div class="key">pubAt</div><p class="value metadata">15 Jan 2024</p><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="https://example.com/article" target="_blank" rel="noopener">"Example Article"</a> by John Doe, Example Blog ("This is an important quote")</li><li><a href="https://example.org/book" target="_blank" rel="noopener"><em>_Example Book_</em></a> by Jane Smith, Example Publishing</li><li><a href="https://example.net" target="_blank" rel="noopener">Example Website</a>, Example Net</li></ul></div></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
@@ -237,7 +237,7 @@ describe('Blog Generator', () => {
       ],
     };
 
-    const html = generateBlogNew({ blog, header, footer }, wrapHtml);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="VIDE1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">VIDE1</div><div class="value"><h2><a href="#VIDE1">Post with Video</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Feb 2024</p><div class="key media">video</div><p class="value"><iframe height="300px" width="100%" src="https://www.youtube.com/embed/dQw4w9WgXcQ?start=0" title="Never Gonna Give You Up" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe></p></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
@@ -282,7 +282,7 @@ describe('Blog Generator', () => {
       ],
     };
 
-    const html = generateBlogNew({ blog, header, footer }, wrapHtml);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="TOY01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TOY01</div><div class="value"><h2><a href="#TOY01">Post with Toy</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Mar 2024</p><div class="key">in</div><div class="value"><form><input type="text" disabled></form></div><div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div><div class="key">out</div><div class="value"><select disabled><option value="text">text</option></select><div class="output warning"><p>This toy requires Javascript to run.</p></div></div><script type="module">window.addComponent('TOY01', './toys/2024-03-01/calculator.js', 'calculator');</script></article><article class="entry" id="LINK1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">LINK1</div><div class="value"><h2><a href="#LINK1">Post with Related Links</a></h2></div><div class="key">pubAt</div><p class="value metadata">2 Mar 2024</p><div class="key">in</div><div class="value"><form><input type="text" disabled></form></div><div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div><div class="key">out</div><div class="value"><select disabled><option value="text">text</option></select><div class="output warning"><p>This toy requires Javascript to run.</p></div></div><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="https://example.com/article" target="_blank" rel="noopener">"Example Article"</a> by John Doe, Example Blog</li><li><a href="https://example.org/book" target="_blank" rel="noopener"><em>_Programming Guide_</em></a> by Jane Smith, Tech Publishing</li></ul></div><script type="module">window.addComponent('LINK1', './toys/2024-03-02/counter.js', 'counter');</script></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
@@ -307,7 +307,7 @@ describe('Blog Generator', () => {
       ],
     };
 
-    const html = generateBlogNew({ blog, header, footer }, wrapHtml);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry tag-tutorial" id="TAG01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TAG01</div><div class="value"><h2><a href="#TAG01">Post with Single Tag</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Apr 2024</p><div class="key">tags</div><p class="value metadata"><a class="tag-tutorial">tutorial</a></p><div class="key">text</div><p class="value">This is a post with a single tag.</p></article><article class="entry tag-javascript tag-programming tag-web-development" id="TAG02"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TAG02</div><div class="value"><h2><a href="#TAG02">Post with Multiple Tags</a></h2></div><div class="key">pubAt</div><p class="value metadata">2 Apr 2024</p><div class="key">tags</div><p class="value metadata"><a class="tag-javascript">javascript</a>, <a class="tag-programming">programming</a>, <a class="tag-web-development">web-development</a></p><div class="key">text</div><p class="value">This is a post with multiple tags.</p></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
@@ -333,7 +333,7 @@ describe('Blog Generator', () => {
       ],
     };
 
-    const html = generateBlogNew({ blog, header, footer }, wrapHtml);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">First</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key">text</div><blockquote class="value"><div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div><p>This is the content of the first post.</p></blockquote><div class="key"></div><blockquote class="value"><div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div><p>This is a quote with multiple lines.</p><p>Here is the second one.</p></blockquote></article></body></html>`;
     expect(html).toBe(expectedHtml);
   });
