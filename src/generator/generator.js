@@ -954,7 +954,7 @@ function assembleBlogHTML(header, blog, footer) {
   return getBlogHtmlContent(header, articles, footer);
 }
 
-export function generateBlog(blog, header, footer, wrapHtml) {
+const generateBlog = (blog, header, footer, wrapHtml) => {
   const htmlContents = assembleBlogHTML(header, blog, footer);
   return wrapHtml(htmlContents);
 }

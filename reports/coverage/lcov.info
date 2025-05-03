@@ -693,7 +693,7 @@ FN:919,createBlogContentArray
 FN:931,getBlogHtmlContent
 FN:941,getArticles
 FN:952,assembleBlogHTML
-FN:957,generateBlog
+FN:957,(anonymous_110)
 FN:962,generateBlogNew
 FN:967,(anonymous_112)
 FN:977,getBlogGenerationArgs
@@ -810,7 +810,7 @@ FNDA:10,createBlogContentArray
 FNDA:10,getBlogHtmlContent
 FNDA:10,getArticles
 FNDA:10,assembleBlogHTML
-FNDA:10,generateBlog
+FNDA:10,(anonymous_110)
 FNDA:10,generateBlogNew
 FNDA:2,(anonymous_112)
 FNDA:2,getBlogGenerationArgs
@@ -1037,6 +1037,7 @@ DA:933,10
 DA:942,10
 DA:953,10
 DA:954,10
+DA:957,2
 DA:958,10
 DA:959,10
 DA:963,10
@@ -1048,8 +1049,8 @@ DA:980,2
 DA:983,2
 DA:984,1
 DA:985,1
-LF:233
-LH:233
+LF:234
+LH:234
 BRDA:7,0,0,1
 BRDA:7,0,1,1
 BRDA:92,1,0,11
