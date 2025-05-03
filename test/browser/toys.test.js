@@ -691,7 +691,7 @@ describe('initializeVisibleComponents', () => {
   it('warns when article element is missing for a component', () => {
     interactiveComponents = [component];
     win = { interactiveComponents };
-    getElement.mockImplementation(() => null);    
+    getElement = jest.fn(() => null);
     const env = {
       win,
       logInfo,
