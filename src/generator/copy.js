@@ -43,7 +43,7 @@ function findJsFiles(dir) {
     if (entry.isDirectory()) {
       return jsFiles.concat(findJsFiles(fullPath));
     } else if (isJsFile(entry)) {
-      jsFiles.push(fullPath);
+      return jsFiles.concat(fullPath);
     }
     return jsFiles;
   }, []);
