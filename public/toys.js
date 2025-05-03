@@ -388,7 +388,7 @@ export function hasNoInteractiveComponents(win) {
   return !win.interactiveComponents || win.interactiveComponents.length === 0;
 }
 
-function getInteractiveComponentCount(win) {
+export function getInteractiveComponentCount(win) {
   return win.interactiveComponents ? win.interactiveComponents.length : 0;
 }
 
