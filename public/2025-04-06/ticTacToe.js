@@ -141,7 +141,7 @@ function setBoardCell(board, r, c, value) {
 }
 
 function scoreMove(board, player, moves, setCell) {
-  setCell(player);
+  const playerSetResult = setCell(player);
   const score = minimax(board, 0, false, player, moves);
   setCell(null);
   return score;
