@@ -1,5 +1,11 @@
 import { setupAudio } from './audio-controls.js';
-import { initializeVisibleComponents, makeCreateIntersectionObserver, hasNoInteractiveComponents, getInteractiveComponents, getInteractiveComponentCount } from './toys.js';
+import {
+  initializeVisibleComponents,
+  makeCreateIntersectionObserver,
+  hasNoInteractiveComponents,
+  getInteractiveComponents,
+  getInteractiveComponentCount
+} from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
@@ -37,6 +43,7 @@ import {
   disconnectObserver,
   getClasses
 } from './document.js';
+import { handleTagLinks } from './tags.js';
 
 const globalState = {
   blog: null, // Holds the fetched blog data
@@ -119,7 +126,6 @@ const dom = {
   removeAllChildren
 };
 const env = { globalState, createEnv, error, fetch, loggers };
-import { initializeVisibleComponents, makeCreateIntersectionObserver, hasNoInteractiveComponents, getInteractiveComponents, getInteractiveComponentCount } from './toys.js';
 const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 
@@ -145,8 +151,7 @@ initializeVisibleComponents(
 
 // Tag filtering functionality
 
-// Only keep one import from './tags.js' and combine symbols if needed
-import { handleTagLinks } from './tags.js';
+
 
 
 handleTagLinks(dom);
