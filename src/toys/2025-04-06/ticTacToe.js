@@ -157,6 +157,9 @@ function findBestMove(board, nextPlayer, moves) {
   let best = -Infinity;
   let bestMove = null;
 
+  // Store scored moves
+  const scoredMoves = [];
+
   // Evaluate moves for all empty cells
   const evaluateMove = ({ r, c }) => {
     const setCell = setter(board, r, c);
