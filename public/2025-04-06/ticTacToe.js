@@ -153,10 +153,11 @@ function scoreMove(player, moves, setCell) {
 }
 
 function findBestMove(board, nextPlayer, moves) {
-  const emptyCells = [];
   const setter = (board, r, c) => value => setBoardCell(board, { r, c }, value);
   let best = -Infinity;
   let bestMove = null;
+
+  const emptyCells = [];
 
   // First pass: collect empty cells
   for (let r = 0; r < 3; r++) {
