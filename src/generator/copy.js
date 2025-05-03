@@ -42,9 +42,9 @@ function findJsFiles(dir) {
     const fullPath = path.join(dir, entry.name);
     let newFiles = [];
     if (entry.isDirectory()) {
-      return jsFiles.concat(findJsFiles(fullPath));
+      newFiles = newFiles.concat(findJsFiles(fullPath));
     } else if (isJsFile(entry)) {
-      return jsFiles.concat(fullPath);
+      newFiles = newFiles.concat(fullPath);
     }
     return jsFiles.concat(newFiles);
   }, []);
