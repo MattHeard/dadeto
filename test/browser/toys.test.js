@@ -615,6 +615,13 @@ describe('initializeVisibleComponents', () => {
   let hasNoInteractiveComponents;
   let getInteractiveComponents;
 
+  let article;
+  let observer;
+  let id;
+  let modulePath;
+  let functionName;
+  let component;
+
   let env;
   beforeEach(() => {
     interactiveComponents = [];
@@ -625,6 +632,12 @@ describe('initializeVisibleComponents', () => {
     createIntersectionObserverFn = jest.fn();
     hasNoInteractiveComponents = () => false;
     getInteractiveComponents = () => win.interactiveComponents;
+    article = {};
+    observer = { observe: jest.fn() };
+    id = 'test-id';
+    modulePath = 'path/to/module';
+    functionName = 'initFunction';
+    component = { id, modulePath, functionName };
     env = {
       win,
       logInfo,
@@ -645,25 +658,9 @@ describe('initializeVisibleComponents', () => {
   });
 
   it('initializes and observes a valid interactive component', () => {
-    const article = {};
-    const observer = { observe: jest.fn() };
-
-    const id = 'test-id';
-    const modulePath = 'path/to/module';
-    const functionName = 'initFunction';
-    const component = { id, modulePath, functionName };
-
     interactiveComponents.push(component);
     getElement.mockImplementation(() => article);
     createIntersectionObserverFn.mockImplementation(() => observer);
-    const env = {
-      win,
-      logInfo,
-      logWarning,
-      getElement,
-      hasNoInteractiveComponents,
-      getInteractiveComponents
-    };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
     expect(logInfo).toHaveBeenCalledWith(
