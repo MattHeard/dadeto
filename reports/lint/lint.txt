@@ -136,9 +136,9 @@
 [0m  [2m590:11[22m   [33mwarning[39m  'listeners' is assigned a value but never used                      [2mno-unused-vars[22m[0m
 [0m  [2m591:11[22m   [33mwarning[39m  'createElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
 [0m  [2m625:1[22m    [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m644:68[22m   [33mwarning[39m  Multiple spaces found before 'createIntersectionObserverFn'         [2mno-multi-spaces[22m[0m
-[0m  [2m667:61[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
-[0m  [2m692:61[22m   [33mwarning[39m  Multiple spaces found before 'createIntersectionObserverFn'         [2mno-multi-spaces[22m[0m
+[0m  [2m644:62[22m   [33mwarning[39m  Multiple spaces found before 'createIntersectionObserverFn'         [2mno-multi-spaces[22m[0m
+[0m  [2m667:55[22m   [33mwarning[39m  Trailing spaces not allowed                                         [2mno-trailing-spaces[22m[0m
+[0m  [2m692:55[22m   [33mwarning[39m  Multiple spaces found before 'createIntersectionObserverFn'         [2mno-multi-spaces[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m

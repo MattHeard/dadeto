@@ -610,7 +610,7 @@ describe('initializeVisibleComponents', () => {
   let win;
   let logInfo;
   let logWarning;
-  let getElementByIdFn;
+  let getElement;
   let createIntersectionObserverFn;
 
   beforeEach(() => {
@@ -618,7 +618,7 @@ describe('initializeVisibleComponents', () => {
     win = { interactiveComponents };
     logInfo = jest.fn();
     logWarning = jest.fn();
-    getElementByIdFn = jest.fn();
+    getElement = jest.fn();
     createIntersectionObserverFn = jest.fn();
   });
   it('warns if there are no interactive components', () => {
@@ -627,7 +627,7 @@ describe('initializeVisibleComponents', () => {
       win,
       logInfo,
       logWarning,
-      getElement: getElementByIdFn,
+      getElement,
       hasNoInteractiveComponents: () => true,
       getInteractiveComponents: () => [],
     };
@@ -641,12 +641,12 @@ describe('initializeVisibleComponents', () => {
     const mockObserver = { observe: jest.fn() };
 
     interactiveComponents.push({ id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' });
-            getElementByIdFn.mockImplementation(() => mockArticle);    createIntersectionObserverFn.mockImplementation(() => mockObserver);
+            getElement.mockImplementation(() => mockArticle);    createIntersectionObserverFn.mockImplementation(() => mockObserver);
     const env = {
       win,
       logInfo,
       logWarning,
-      getElement: getElementByIdFn,
+      getElement,
       hasNoInteractiveComponents: () => false,
       getInteractiveComponents: () => win.interactiveComponents
     };
@@ -657,25 +657,25 @@ describe('initializeVisibleComponents', () => {
       1,
       'interactive components via IntersectionObserver'
     );
-    expect(getElementByIdFn).toHaveBeenCalledWith('test-id');
+    expect(getElement).toHaveBeenCalledWith('test-id');
     expect(createIntersectionObserverFn).toHaveBeenCalledWith(mockArticle, 'path/to/module', 'initFunction');
     expect(mockObserver.observe).toHaveBeenCalledWith(mockArticle);
   });
 
   it('warns when article element is missing for a component', () => {
     interactiveComponents.push({ id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' });
-            getElementByIdFn.mockImplementation(() => null);    
+            getElement.mockImplementation(() => null);    
     const env = {
       win,
       logInfo,
       logWarning,
-      getElement: getElementByIdFn,
+      getElement,
       hasNoInteractiveComponents: () => false,
       getInteractiveComponents: () => win.interactiveComponents
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
-    expect(getElementByIdFn).toHaveBeenCalledWith('missing-id');
+    expect(getElement).toHaveBeenCalledWith('missing-id');
     expect(createIntersectionObserverFn).not.toHaveBeenCalled();
     expect(logWarning).toHaveBeenCalledWith(
       'Could not find article element with ID: missing-id for component initialization.'
@@ -689,12 +689,12 @@ describe('initializeVisibleComponents', () => {
   { id: 'c', modulePath: null, functionName: 'fn' },
   { id: 'd', modulePath: 'valid', functionName: 'fn' }
 );
-            getElementByIdFn.mockImplementation(() => ({}));    createIntersectionObserverFn.mockImplementation(() => ({ observe: jest.fn() }));
+            getElement.mockImplementation(() => ({}));    createIntersectionObserverFn.mockImplementation(() => ({ observe: jest.fn() }));
     const env = {
       win,
       logInfo,
       logWarning,
-      getElement: getElementByIdFn,
+      getElement,
       hasNoInteractiveComponents: () => false,
       getInteractiveComponents: () => win.interactiveComponents
     };
