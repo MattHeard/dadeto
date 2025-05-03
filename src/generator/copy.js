@@ -40,6 +40,7 @@ function findJsFiles(dir) {
   const entries = getDirEntries(dir);
   return entries.reduce((jsFiles, entry) => {
     const fullPath = path.join(dir, entry.name);
+    let newFiles = [];
     if (entry.isDirectory()) {
       return jsFiles.concat(findJsFiles(fullPath));
     } else if (isJsFile(entry)) {
