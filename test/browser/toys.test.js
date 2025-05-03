@@ -716,7 +716,7 @@ describe('initializeVisibleComponents', () => {
       { id: 'd', modulePath: 'valid', functionName: 'fn' }
     );
     getElement.mockImplementation(() => ({}));
-    createIntersectionObserver = jest.fn(() => ({ observe: jest.fn() }));
+    createIntersectionObserver = jest.fn(() => observer);
     const env = {
       win,
       logInfo,
