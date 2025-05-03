@@ -36,17 +36,17 @@ function getDirEntries(dir) {
   return fs.readdirSync(dir, { withFileTypes: true });
 }
 
+function getNewFiles(entry, fullPath) {
+  if (entry.isDirectory()) {
+    return findJsFiles(fullPath);
+  } else if (isJsFile(entry)) {
+    return [fullPath];
+  }
+  return [];
+}
+
 function findJsFiles(dir) {
   const entries = getDirEntries(dir);
-  function getNewFiles(entry, fullPath) {
-    if (entry.isDirectory()) {
-      return findJsFiles(fullPath);
-    } else if (isJsFile(entry)) {
-      return [fullPath];
-    }
-    return [];
-  }
-
   return entries.reduce((jsFiles, entry) => {
     const fullPath = path.join(dir, entry.name);
     let newFiles = getNewFiles(entry, fullPath);
