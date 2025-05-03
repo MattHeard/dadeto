@@ -102,8 +102,10 @@ function isInvalidMoves(moves) {
 }
 
 function processMove(move, index, moves, board, seen) {
-  if (!isValidMove(move, index, moves)) {return false;}
-  if (!applyMoveToBoard(board, move, seen)) {return false;}
+  const isMoveValid = isValidMove(move, index, moves);
+  if (!isMoveValid) { return false; }
+  const appliedMove = applyMoveToBoard(board, move, seen);
+  if (!appliedMove) { return false; }
   return true;
 }
 
