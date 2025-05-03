@@ -608,7 +608,7 @@ describe('initializeInteractiveComponent', () => {
 describe('initializeVisibleComponents', () => {
   let interactiveComponents;
   let win;
-  let logFn;
+  let logInfo;
   let warnFn;
   let getElementByIdFn;
   let createIntersectionObserverFn;
@@ -616,7 +616,7 @@ describe('initializeVisibleComponents', () => {
   beforeEach(() => {
     interactiveComponents = [];
     win = { interactiveComponents };
-    logFn = jest.fn();
+    logInfo = jest.fn();
     warnFn = jest.fn();
     getElementByIdFn = jest.fn();
     createIntersectionObserverFn = jest.fn();
@@ -625,7 +625,7 @@ describe('initializeVisibleComponents', () => {
                     
     const env = {
       win,
-      logInfo: logFn,
+      logInfo: logInfo,
       logWarning: warnFn,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => true,
@@ -644,7 +644,7 @@ describe('initializeVisibleComponents', () => {
             getElementByIdFn.mockImplementation(() => mockArticle);    createIntersectionObserverFn.mockImplementation(() => mockObserver);
     const env = {
       win,
-      logInfo: logFn,
+      logInfo: logInfo,
       logWarning: warnFn,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => false,
@@ -652,7 +652,7 @@ describe('initializeVisibleComponents', () => {
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
-    expect(logFn).toHaveBeenCalledWith(
+    expect(logInfo).toHaveBeenCalledWith(
       'Initializing',
       1,
       'interactive components via IntersectionObserver'
@@ -667,7 +667,7 @@ describe('initializeVisibleComponents', () => {
             getElementByIdFn.mockImplementation(() => null);    
     const env = {
       win,
-      logInfo: logFn,
+      logInfo: logInfo,
       logWarning: warnFn,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => false,
@@ -692,7 +692,7 @@ describe('initializeVisibleComponents', () => {
             getElementByIdFn.mockImplementation(() => ({}));    createIntersectionObserverFn.mockImplementation(() => ({ observe: jest.fn() }));
     const env = {
       win,
-      logInfo: logFn,
+      logInfo: logInfo,
       logWarning: warnFn,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => false,
