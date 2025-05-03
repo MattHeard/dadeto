@@ -14,16 +14,19 @@ function respectsTurnOrder(index, player, moves) {
   return index === 0 || player !== moves[index - 1].player;
 }
 
-function validateParsedMoves(parsed) {
-  const isObject = typeof parsed === "object";
-  const hasMovesArray = parsed && Array.isArray(parsed.moves);
-  const isValid = parsed && isObject && hasMovesArray;
-  return isValid ? parsed.moves : null;
+function isObject(val) {
+  return typeof val === "object" && val !== null;
+}
+
+function isValidParsedMoves(parsed) {
+  const isObj = isObject(parsed);
+  const hasMovesArray = isObj && Array.isArray(parsed.moves);
+  return isObj && hasMovesArray ? parsed.moves : null;
 }
 
 function parseInputSafely(input) {
   const parsed = tryParseJSON(input);
-  return validateParsedMoves(parsed);
+  return isValidParsedMoves(parsed);
 }
 
 function shouldSkipMove(earlyWin, moves) {
