@@ -37,17 +37,16 @@ function getDirEntries(dir) {
 }
 
 function findJsFiles(dir) {
-  let jsFiles = [];
   const entries = getDirEntries(dir);
-  for (const entry of entries) {
+  return entries.reduce((jsFiles, entry) => {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      jsFiles = jsFiles.concat(findJsFiles(fullPath));
+      return jsFiles.concat(findJsFiles(fullPath));
     } else if (isJsFile(entry)) {
       jsFiles.push(fullPath);
     }
-  }
-  return jsFiles;
+    return jsFiles;
+  }, []);
 }
 
 // Find all JS files in src/toys
