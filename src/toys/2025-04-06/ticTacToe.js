@@ -60,7 +60,7 @@ function initializeBoardAndSeen() {
 }
 
 function isInvalidMoves(moves) {
-  return !Array.isArray(moves) || moves.length > 9;
+  return !moves || !Array.isArray(moves) || moves.length > 9;
 }
 
 function processMove(move, index, moves, board, seen) {
