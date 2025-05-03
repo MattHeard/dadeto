@@ -136,8 +136,10 @@ function applyMovesSequentially(moves, board, seen) {
 
 
 function setBoardCell(board, r, c, value) {
-  board[r][c] = value;
-  return board;
+  // Deep copy the 3x3 board
+  const boardCopy = board.map(row => row.slice());
+  boardCopy[r][c] = value;
+  return boardCopy;
 }
 
 function scoreMove(player, moves, setCell) {
