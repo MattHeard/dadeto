@@ -108,6 +108,10 @@ function isMoveApplicationValid(i, moves, apply) {
   return valid;
 }
 
+function shouldStop(valid, earlyWin) {
+  return !valid || earlyWin;
+}
+
 function applyMoveReducer(moves, board, seen) {
   return function(acc, _, i) {
     if (acc.stop) {
@@ -117,7 +121,7 @@ function applyMoveReducer(moves, board, seen) {
     const apply = move => applyMoveToBoard(board, move, seen);
     const valid = isMoveApplicationValid(i, moves, apply);
     const earlyWin = checkEarlyWin(board);
-    const stop = !valid || earlyWin;
+    const stop = shouldStop(valid, earlyWin);
 
     return { valid, earlyWin, stop };
   };
