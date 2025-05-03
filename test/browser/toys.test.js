@@ -614,8 +614,7 @@ describe('initializeVisibleComponents', () => {
     win = { interactiveComponents };
   });
   it('warns if there are no interactive components', () => {
-    interactiveComponents.length = 0;
-    const logFn = jest.fn();
+        const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn();
     const createIntersectionObserverFn = jest.fn();
@@ -637,8 +636,7 @@ describe('initializeVisibleComponents', () => {
     const mockArticle = {};
     const mockObserver = { observe: jest.fn() };
 
-    interactiveComponents.length = 0;
-interactiveComponents.push({ id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' });
+    interactiveComponents.push({ id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' });
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn(() => mockArticle);
@@ -665,8 +663,7 @@ interactiveComponents.push({ id: 'test-id', modulePath: 'path/to/module', functi
   });
 
   it('warns when article element is missing for a component', () => {
-    interactiveComponents.length = 0;
-interactiveComponents.push({ id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' });
+    interactiveComponents.push({ id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' });
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn(() => null);
@@ -690,8 +687,7 @@ interactiveComponents.push({ id: 'missing-id', modulePath: 'path/to/module', fun
   });
 
   it('attempts to initialize all interactive components, regardless of missing fields', () => {
-    interactiveComponents.length = 0;
-interactiveComponents.push(
+    interactiveComponents.push(
   { id: 'a', modulePath: 'valid/path', functionName: '' },
   { id: 'b', modulePath: '', functionName: 'fn' },
   { id: 'c', modulePath: null, functionName: 'fn' },
