@@ -111,10 +111,10 @@ function applyMovesSequentially(moves, board, seen) {
   let earlyWin;
   for (let i = 0; i < moves.length; i++) {
     valid = isMoveApplicationValid(i, moves, board, seen);
+    earlyWin = checkEarlyWin(board);
     if (!valid) {
       return { valid };
     }
-    earlyWin = checkEarlyWin(board);
     if (earlyWin) {
       return { valid, earlyWin };
     }
