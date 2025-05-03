@@ -646,12 +646,12 @@ describe('initializeVisibleComponents', () => {
 
   it('initializes and observes a valid interactive component', () => {
     const article = {};
-    const mockObserver = { observe: jest.fn() };
+    const observer = { observe: jest.fn() };
 
     const component = { id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' };
     interactiveComponents.push(component);
     getElement.mockImplementation(() => article);
-    createIntersectionObserverFn.mockImplementation(() => mockObserver);
+    createIntersectionObserverFn.mockImplementation(() => observer);
     const env = {
       win,
       logInfo,
@@ -669,7 +669,7 @@ describe('initializeVisibleComponents', () => {
     );
     expect(getElement).toHaveBeenCalledWith(component.id);
     expect(createIntersectionObserverFn).toHaveBeenCalledWith(article, 'path/to/module', 'initFunction');
-    expect(mockObserver.observe).toHaveBeenCalledWith(article);
+    expect(observer.observe).toHaveBeenCalledWith(article);
   });
 
   it('warns when article element is missing for a component', () => {
