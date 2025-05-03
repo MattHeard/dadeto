@@ -135,10 +135,14 @@ function applyMovesSequentially(moves, board, seen) {
 }
 
 
+function setBoardCell(board, r, c, value) {
+  board[r][c] = value;
+}
+
 function scoreMove(board, r, c, player, moves) {
-  board[r][c] = player;
+  setBoardCell(board, r, c, player);
   const score = minimax(board, 0, false, player, moves);
-  board[r][c] = null;
+  setBoardCell(board, r, c, null);
   return score;
 }
 
