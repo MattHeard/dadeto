@@ -19,10 +19,14 @@ function isObject(val) {
 }
 
 function getValidParsedMoves(parsed) {
+  const isValid = isValidParsedMoves(parsed);
+  return isValid ? parsed.moves : null;
+}
+
+function isValidParsedMoves(parsed) {
   const isObj = isObject(parsed);
   const hasMoves = hasMovesArray(parsed);
-  const isValid = isObj && hasMoves;
-  return isValid ? parsed.moves : null;
+  return isObj && hasMoves;
 }
 
 function hasMovesArray(val) {
