@@ -38,14 +38,18 @@ function getDirEntries(dir) {
 
 function findJsFiles(dir) {
   const entries = getDirEntries(dir);
+  function getNewFiles(entry, dir, fullPath) {
+    if (entry.isDirectory()) {
+      return findJsFiles(fullPath);
+    } else if (isJsFile(entry)) {
+      return [fullPath];
+    }
+    return [];
+  }
+
   return entries.reduce((jsFiles, entry) => {
     const fullPath = path.join(dir, entry.name);
-    let newFiles = [];
-    if (entry.isDirectory()) {
-      newFiles = newFiles.concat(findJsFiles(fullPath));
-    } else if (isJsFile(entry)) {
-      newFiles = newFiles.concat(fullPath);
-    }
+    let newFiles = getNewFiles(entry, dir, fullPath);
     return jsFiles.concat(newFiles);
   }, []);
 }
