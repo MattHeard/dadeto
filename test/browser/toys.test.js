@@ -713,12 +713,13 @@ describe('initializeVisibleComponents', () => {
     const componentB = { id: 'b', modulePath: '', functionName: 'fn' };
     const componentC = { id: 'c', modulePath: null, functionName: 'fn' };
     const componentD = { id: 'd', modulePath: 'valid', functionName: 'fn' };
-    interactiveComponents.push(
+    interactiveComponents = [
       componentA,
       componentB,
       componentC,
       componentD
-    );
+    ];
+    win = { interactiveComponents };
     getElement = jest.fn(() => ({}));
     createIntersectionObserver = jest.fn(() => observer);
     const env = {
