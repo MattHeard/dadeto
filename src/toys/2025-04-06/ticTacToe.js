@@ -85,7 +85,10 @@ function initializeBoardAndSeen() {
 }
 
 function isInvalidMoves(moves) {
-  return !moves || !Array.isArray(moves) || moves.length > 9;
+  const isFalsy = !moves;
+  const isNotArray = !Array.isArray(moves);
+  const isTooLong = moves && moves.length > 9;
+  return isFalsy || isNotArray || isTooLong;
 }
 
 function processMove(move, index, moves, board, seen) {
