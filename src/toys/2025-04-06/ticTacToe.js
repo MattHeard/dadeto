@@ -46,10 +46,10 @@ function handleValidMoves(moves) {
   const { board, seen } = initializeBoardAndSeen();
   const result = applyMovesSequentially(moves, board, seen);
   if (!result.valid) {return returnInitialOptimalMove();}
-  return handleValidAppliedMoves(moves, board, seen, result);
+  return handleValidAppliedMoves(moves, board, result);
 }
 
-function handleValidAppliedMoves(moves, board, seen, result) {
+function handleValidAppliedMoves(moves, board, result) {
   const earlyWin = result.earlyWin;
 
   if (shouldSkipMove(earlyWin, moves)) {return buildMoveResponse(moves);}
