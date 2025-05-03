@@ -137,6 +137,7 @@ function applyMovesSequentially(moves, board, seen) {
 
 function setBoardCell(board, r, c, value) {
   board[r][c] = value;
+  return board;
 }
 
 function scoreMove(board, player, moves, setCell) {
