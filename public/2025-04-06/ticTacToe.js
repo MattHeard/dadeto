@@ -182,7 +182,7 @@ function findBestMove(board, nextPlayer, moves) {
     }
   }
 
-  return bestMove;
+  return bestScoredMove.move;
 }
 
 function getEmptyCells(board) {
