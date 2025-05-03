@@ -726,5 +726,9 @@ describe('initializeVisibleComponents', () => {
     initializeVisibleComponents(env, createIntersectionObserver);
     // Expectations at end
     expect(initializeComponent).toHaveBeenCalledTimes(4);
+    expect(initializeComponent.mock.calls[0][0]).toEqual(componentA);
+    expect(initializeComponent.mock.calls[1][0]).toEqual(componentB);
+    expect(initializeComponent.mock.calls[2][0]).toEqual(componentC);
+    expect(initializeComponent.mock.calls[3][0]).toEqual(componentD);
   });
 });
