@@ -648,6 +648,8 @@ describe('initializeVisibleComponents', () => {
     };
   });
   it('warns if there are no interactive components', () => {
+    interactiveComponents = [];
+    win = { interactiveComponents };
     hasNoInteractiveComponents = () => true;
     getInteractiveComponents = () => [];
     env = {
@@ -687,8 +689,8 @@ describe('initializeVisibleComponents', () => {
   });
 
   it('warns when article element is missing for a component', () => {
-    const component = { id, modulePath, functionName };
-    interactiveComponents.push(component);
+    interactiveComponents = [component];
+    win = { interactiveComponents };
     getElement.mockImplementation(() => null);    
     const env = {
       win,
