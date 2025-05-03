@@ -15,9 +15,10 @@ function respectsTurnOrder(index, player, moves) {
 }
 
 function validateParsedMoves(parsed) {
-  return parsed && typeof parsed === "object" && Array.isArray(parsed.moves)
-    ? parsed.moves
-    : null;
+  const isObject = typeof parsed === "object";
+  const hasMovesArray = parsed && Array.isArray(parsed.moves);
+  const isValid = parsed && isObject && hasMovesArray;
+  return isValid ? parsed.moves : null;
 }
 
 function parseInputSafely(input) {
