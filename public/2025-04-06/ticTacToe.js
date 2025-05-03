@@ -107,19 +107,19 @@ function isMoveApplicationValid(i, moves, board, seen) {
 }
 
 function applyMovesSequentially(moves, board, seen) {
-  let valid;
-  let earlyWin;
-  let result = { valid: undefined, earlyWin: undefined };
-  for (let i = 0; i < moves.length; i++) {
-    valid = isMoveApplicationValid(i, moves, board, seen);
-    earlyWin = checkEarlyWin(board);
-    result = { valid, earlyWin };
-    const shouldBreak = !valid || earlyWin;
-    if (shouldBreak) {
-      break;
-    }
-  }
-  return result;
+  const initial = { valid: true, earlyWin: false, stop: false };
+
+  const result = moves.reduce((acc, _, i) => {
+    if (acc.stop) return acc;
+
+    const valid = isMoveApplicationValid(i, moves, board, seen);
+    const earlyWin = checkEarlyWin(board);
+    const stop = !valid || earlyWin;
+
+    return { valid, earlyWin, stop };
+  }, initial);
+
+  return { valid: result.valid, earlyWin: result.earlyWin };
 }
 
 
