@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, getModuleInitializer, initializeVisibleComponents, getDeepStateCopy, createHandleSubmit, initializeInteractiveComponent, handleModuleError } from '../../src/browser/toys.js';
+import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, getModuleInitializer, initializeVisibleComponents, getDeepStateCopy, createHandleSubmit, initializeInteractiveComponent, handleModuleError, hasNoInteractiveComponents } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
   let importModule, disconnectObserver, f, modulePath, entry, observer;
@@ -617,7 +617,8 @@ describe('initializeVisibleComponents', () => {
       win,
       logInfo: logFn,
       logWarning: warnFn,
-      getElement: getElementByIdFn
+      getElement: getElementByIdFn,
+      hasNoInteractiveComponents: () => true
     };
 
     initializeVisibleComponents(env, createIntersectionObserverFn);
@@ -642,7 +643,8 @@ describe('initializeVisibleComponents', () => {
       win,
       logInfo: logFn,
       logWarning: warnFn,
-      getElement: getElementByIdFn
+      getElement: getElementByIdFn,
+      hasNoInteractiveComponents: () => false
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
@@ -671,7 +673,8 @@ describe('initializeVisibleComponents', () => {
       win,
       logInfo: logFn,
       logWarning: warnFn,
-      getElement: getElementByIdFn
+      getElement: getElementByIdFn,
+      hasNoInteractiveComponents
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
@@ -700,7 +703,8 @@ describe('initializeVisibleComponents', () => {
       win,
       logInfo: logFn,
       logWarning: warnFn,
-      getElement: getElementByIdFn
+      getElement: getElementByIdFn,
+      hasNoInteractiveComponents
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end

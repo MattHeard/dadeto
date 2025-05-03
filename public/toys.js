@@ -369,7 +369,7 @@ function createHandleKeyPress(handleSubmit) {
  */
 export function initializeVisibleComponents(env, createIntersectionObserver) {
   const { win, logInfo, logWarning, getElement } = env;
-  if (hasNoInteractiveComponents(win)) {
+  if (env.hasNoInteractiveComponents(win)) {
     logWarning('No interactive components found to initialize');
     return;
   }

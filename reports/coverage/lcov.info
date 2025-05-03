@@ -413,7 +413,7 @@ FNDA:3,initializeInteractiveComponent
 FNDA:3,createHandleKeyPress
 FNDA:2,(anonymous_43)
 FNDA:4,initializeVisibleComponents
-FNDA:4,hasNoInteractiveComponents
+FNDA:2,hasNoInteractiveComponents
 FNDA:3,getInteractiveComponentCount
 FNDA:3,getInteractiveComponents
 FNDA:3,getComponentInitializer
@@ -531,7 +531,7 @@ DA:377,3
 DA:378,3
 DA:379,3
 DA:380,3
-DA:388,4
+DA:388,2
 DA:392,3
 DA:396,3
 DA:400,3
@@ -560,8 +560,8 @@ BRDA:357,6,0,1
 BRDA:357,6,1,1
 BRDA:372,7,0,1
 BRDA:372,7,1,3
-BRDA:388,8,0,4
-BRDA:388,8,1,4
+BRDA:388,8,0,2
+BRDA:388,8,1,2
 BRDA:392,9,0,3
 BRDA:392,9,1,0
 BRDA:396,10,0,3
