@@ -4,7 +4,8 @@ import {
   makeCreateIntersectionObserver,
   hasNoInteractiveComponents,
   getInteractiveComponents,
-  getInteractiveComponentCount
+  getInteractiveComponentCount,
+  getComponentInitializer
 } from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
@@ -136,7 +137,6 @@ const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 // Interactive components functionality
 
-import { getComponentInitializer } from './toys.js';
 
 initializeVisibleComponents(
   {
