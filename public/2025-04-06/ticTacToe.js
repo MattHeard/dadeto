@@ -116,7 +116,7 @@ function applyMovesSequentially(moves, board, seen) {
       return { valid, earlyWin };
     }
   }
-  return { valid, earlyWin: false };
+  return { valid, earlyWin };
 }
 
 
