@@ -166,7 +166,7 @@ function findBestMove(board, nextPlayer, moves) {
     const scoredMove = { moveScore, move };
     acc.push(scoredMove);
     return acc;
-  }, scoredMoves);
+  }, []);
 
   // Find the scoredMove with the highest moveScore
   let bestScoredMove = { moveScore: -Infinity };
