@@ -954,14 +954,10 @@ function assembleBlogHTML(header, blog, footer) {
   return getBlogHtmlContent(header, articles, footer);
 }
 
-const generateBlog = (blog, header, footer, wrapHtml) => {
-  const htmlContents = assembleBlogHTML(header, blog, footer);
-  return wrapHtml(htmlContents);
-}
-
 export function generateBlogNew(parts, wrapHtml) {
   const { blog, header, footer } = parts;
-  return generateBlog(blog, header, footer, wrapHtml);
+  const htmlContents = assembleBlogHTML(header, blog, footer);
+  return wrapHtml(htmlContents);
 }
 
 const createBlogComponents = () => ({
