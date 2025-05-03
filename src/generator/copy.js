@@ -46,7 +46,7 @@ function findJsFiles(dir) {
     } else if (isJsFile(entry)) {
       return jsFiles.concat(fullPath);
     }
-    return jsFiles;
+    return jsFiles.concat(newFiles);
   }, []);
 }
 
