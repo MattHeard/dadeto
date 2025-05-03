@@ -631,7 +631,7 @@ describe('initializeVisibleComponents', () => {
     getElement = jest.fn();
     createIntersectionObserver = jest.fn();
     hasNoInteractiveComponents = () => false;
-    getInteractiveComponents = () => win.interactiveComponents;
+    getInteractiveComponents = () => interactiveComponents;
     article = {};
     observer = { observe: jest.fn() };
     id = 'test-id';
