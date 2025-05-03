@@ -33,7 +33,6 @@
 [0m  [2m93:8[22m  [33mwarning[39m  Function 'cyberpunkAdventure' has a complexity of 17. Maximum allowed is 2   [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js[24m[0m
-[0m   [2m88:10[22m  [33mwarning[39m  Unexpected implicit coercion encountered. Use `Boolean(moves)` instead               [2mno-implicit-coercion[22m[0m
 [0m  [2m104:1[22m   [33mwarning[39m  Function 'isMoveApplicationValid' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
 [0m  [2m110:10[22m  [33mwarning[39m  Function has a complexity of 3. Maximum allowed is 2                                 [2mcomplexity[22m[0m
 [0m  [2m111:19[22m  [33mwarning[39m  Expected { after 'if' condition                                                      [2mcurly[22m[0m
@@ -141,6 +140,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 110 problems (0 errors, 110 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 53 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m✖ 109 problems (0 errors, 109 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 52 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

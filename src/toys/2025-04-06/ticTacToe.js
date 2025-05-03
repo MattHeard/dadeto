@@ -85,7 +85,7 @@ function initializeBoardAndSeen() {
 }
 
 function isTruthyMoves(moves) {
-  return !!moves;
+  return Boolean(moves);
 }
 
 function isArrayMoves(moves) {
