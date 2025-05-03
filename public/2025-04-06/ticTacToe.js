@@ -120,9 +120,8 @@ function applyMoveReducer(moves, board, seen) {
 
 function applyMovesSequentially(moves, board, seen) {
   const initial = { valid: true, earlyWin: false, stop: false };
-
-  const result = moves.reduce(applyMoveReducer(moves, board, seen), initial);
-
+  const reducer = applyMoveReducer(moves, board, seen);
+  const result = moves.reduce(reducer, initial);
   return { valid: result.valid, earlyWin: result.earlyWin };
 }
 
