@@ -112,7 +112,7 @@ function applyMovesSequentially(moves, board, seen) {
     }
     const earlyWin = checkEarlyWin(board);
     if (earlyWin) {
-      return { valid, earlyWin: true };
+      return { valid, earlyWin };
     }
   }
   return { valid, earlyWin: false };
