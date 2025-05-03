@@ -130,12 +130,14 @@ const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 // Interactive components functionality
 
-initializeVisibleComponents_new(
-  window,
-  log,
-  warn,
-  getElementById,
-  createIntersectionObserver // Pass the function defined in main.js
+initializeVisibleComponents(
+  {
+    win: window,
+    logInfo: log,
+    logWarning: warn,
+    getElement: getElementById
+  },
+  createIntersectionObserver
 );
 
 // Tag filtering functionality

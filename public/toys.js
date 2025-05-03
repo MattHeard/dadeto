@@ -364,13 +364,11 @@ function createHandleKeyPress(handleSubmit) {
  * Finds all interactive components registered on the window and sets up
  * IntersectionObservers (via the provided creator function) to lazy-load
  * and initialize them when they enter the viewport.
- * @param {Window} win - The window object.
- * @param {Function} logInfo - Logging function.
- * @param {Function} logWarning - Warning function.
- * @param {Function} getElement - Function to get element by ID.
+ * @param {object} env - An object containing win, logInfo, logWarning, and getElement.
  * @param {Function} createIntersectionObserver - Function that creates an IntersectionObserver for a given article, module path, and function name.
  */
-export function initializeVisibleComponents(win, logInfo, logWarning, getElement, createIntersectionObserver) {
+export function initializeVisibleComponents(env, createIntersectionObserver) {
+  const { win, logInfo, logWarning, getElement } = env;
   return initializeVisibleComponents_new(win, logInfo, logWarning, getElement, createIntersectionObserver);
 }
 
