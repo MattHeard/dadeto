@@ -174,16 +174,13 @@ function findBestMove(board, nextPlayer, moves) {
   };
   getEmptyCells(board).forEach(evaluateMove);
 
-  // Find the index of the scoredMove with the highest moveScore
-  let bestScoredMoveIndex = -1;
-  let maxScore = -Infinity;
-  scoredMoves.forEach((scoredMove, idx) => {
-    if (scoredMove.moveScore > maxScore) {
-      maxScore = scoredMove.moveScore;
-      bestScoredMoveIndex = idx;
+  // Find the scoredMove with the highest moveScore
+  let bestScoredMove = null;
+  for (const scoredMove of scoredMoves) {
+    if (!bestScoredMove || scoredMove.moveScore > bestScoredMove.moveScore) {
+      bestScoredMove = scoredMove;
     }
-  });
-  const bestScoredMove = bestScoredMoveIndex !== -1 ? scoredMoves[bestScoredMoveIndex] : null;
+  }
 
   return bestMove;
 }
