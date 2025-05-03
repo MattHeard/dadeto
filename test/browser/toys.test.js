@@ -608,14 +608,19 @@ describe('initializeInteractiveComponent', () => {
 describe('initializeVisibleComponents', () => {
   it('warns if there are no interactive components', () => {
     const win = { interactiveComponents: [] };
-    const doc = {};
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn();
     const createIntersectionObserverFn = jest.fn();
 
-    initializeVisibleComponents_new(win, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
-    // Expectations at end
+    const env = {
+      win,
+      logInfo: logFn,
+      logWarning: warnFn,
+      getElement: getElementByIdFn
+    };
+
+    initializeVisibleComponents(env, createIntersectionObserverFn);
     expect(warnFn).toHaveBeenCalledWith('No interactive components found to initialize');
   });
 

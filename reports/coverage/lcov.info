@@ -368,7 +368,7 @@ FN:392,(anonymous_49)
 FN:403,initializeVisibleComponents_new
 FN:418,(anonymous_51)
 FNF:52
-FNH:51
+FNH:52
 FNDA:14,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_2)
@@ -413,7 +413,7 @@ FNDA:3,disableInputAndButton
 FNDA:3,initializeInteractiveComponent
 FNDA:3,createHandleKeyPress
 FNDA:2,(anonymous_43)
-FNDA:0,initializeVisibleComponents
+FNDA:1,initializeVisibleComponents
 FNDA:4,hasNoInteractiveComponents
 FNDA:3,getInteractiveComponentCount
 FNDA:3,getInteractiveComponents
@@ -524,8 +524,8 @@ DA:347,3
 DA:356,3
 DA:357,2
 DA:358,1
-DA:371,0
-DA:372,0
+DA:371,1
+DA:372,1
 DA:380,4
 DA:384,3
 DA:388,3
@@ -546,7 +546,7 @@ DA:411,3
 DA:412,3
 DA:418,1
 LF:124
-LH:122
+LH:124
 BRDA:103,0,0,4
 BRDA:103,0,1,2
 BRDA:204,1,0,4
