@@ -38,7 +38,7 @@ function getDirEntries(dir) {
 
 function findJsFiles(dir) {
   const entries = getDirEntries(dir);
-  function getNewFiles(entry, dir, fullPath) {
+  function getNewFiles(entry, fullPath) {
     if (entry.isDirectory()) {
       return findJsFiles(fullPath);
     } else if (isJsFile(entry)) {
@@ -49,7 +49,7 @@ function findJsFiles(dir) {
 
   return entries.reduce((jsFiles, entry) => {
     const fullPath = path.join(dir, entry.name);
-    let newFiles = getNewFiles(entry, dir, fullPath);
+    let newFiles = getNewFiles(entry, fullPath);
     return jsFiles.concat(newFiles);
   }, []);
 }
