@@ -36,7 +36,6 @@ function buildMoveResponse(moves, newMove = null) {
 
 export function ticTacToeMove(input) {
   const moves = parseInputSafely(input);
-  if (!moves) {return returnInitialOptimalMove();}
 
   // Inline validateAndApplyMoves
   if (isInvalidMoves(moves)) {return returnInitialOptimalMove();}
