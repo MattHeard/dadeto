@@ -645,11 +645,11 @@ describe('initializeVisibleComponents', () => {
   });
 
   it('initializes and observes a valid interactive component', () => {
-    const mockArticle = {};
+    const article = {};
     const mockObserver = { observe: jest.fn() };
 
     interactiveComponents.push({ id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' });
-    getElement.mockImplementation(() => mockArticle);
+    getElement.mockImplementation(() => article);
     createIntersectionObserverFn.mockImplementation(() => mockObserver);
     const env = {
       win,
@@ -667,8 +667,8 @@ describe('initializeVisibleComponents', () => {
       'interactive components via IntersectionObserver'
     );
     expect(getElement).toHaveBeenCalledWith('test-id');
-    expect(createIntersectionObserverFn).toHaveBeenCalledWith(mockArticle, 'path/to/module', 'initFunction');
-    expect(mockObserver.observe).toHaveBeenCalledWith(mockArticle);
+    expect(createIntersectionObserverFn).toHaveBeenCalledWith(article, 'path/to/module', 'initFunction');
+    expect(mockObserver.observe).toHaveBeenCalledWith(article);
   });
 
   it('warns when article element is missing for a component', () => {
