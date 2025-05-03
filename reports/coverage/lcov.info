@@ -413,7 +413,7 @@ FNDA:3,disableInputAndButton
 FNDA:3,initializeInteractiveComponent
 FNDA:3,createHandleKeyPress
 FNDA:2,(anonymous_43)
-FNDA:2,initializeVisibleComponents
+FNDA:3,initializeVisibleComponents
 FNDA:4,hasNoInteractiveComponents
 FNDA:3,getInteractiveComponentCount
 FNDA:3,getInteractiveComponents
@@ -524,8 +524,8 @@ DA:347,3
 DA:356,3
 DA:357,2
 DA:358,1
-DA:371,2
-DA:372,2
+DA:371,3
+DA:372,3
 DA:380,4
 DA:384,3
 DA:388,3
