@@ -674,7 +674,7 @@ describe('initializeVisibleComponents', () => {
       logInfo: logFn,
       logWarning: warnFn,
       getElement: getElementByIdFn,
-      hasNoInteractiveComponents
+      hasNoInteractiveComponents: () => false
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
@@ -704,7 +704,7 @@ describe('initializeVisibleComponents', () => {
       logInfo: logFn,
       logWarning: warnFn,
       getElement: getElementByIdFn,
-      hasNoInteractiveComponents
+      hasNoInteractiveComponents: () => false
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
