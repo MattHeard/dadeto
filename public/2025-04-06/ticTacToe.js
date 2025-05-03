@@ -178,10 +178,7 @@ function setter(board, r, c) {
 }
 
 function findBestMove(board, nextPlayer, moves) {
-  // Get all scored moves
   const scoredMoves = getScoredMoves(board, nextPlayer, moves, setter);
-
-  // Find the scoredMove with the highest moveScore
   const bestScoredMove = getBestScoredMove(scoredMoves);
   return bestScoredMove.move;
 }
