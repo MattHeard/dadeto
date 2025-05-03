@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746290570444" clover="3.2.0">
-  <project timestamp="1746290570444" name="All files">
-    <metrics statements="962" coveredstatements="951" conditionals="330" coveredconditionals="320" methods="362" coveredmethods="356" elements="1654" coveredelements="1627" complexity="0" loc="962" ncloc="962" packages="13" files="25" classes="25"/>
+<coverage generated="1746290615201" clover="3.2.0">
+  <project timestamp="1746290615201" name="All files">
+    <metrics statements="962" coveredstatements="951" conditionals="330" coveredconditionals="320" methods="362" coveredmethods="357" elements="1654" coveredelements="1628" complexity="0" loc="962" ncloc="962" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -939,9 +939,9 @@
       </file>
     </package>
     <package name="toys.2025-04-06">
-      <metrics statements="121" coveredstatements="121" conditionals="83" coveredconditionals="83" methods="44" coveredmethods="43"/>
+      <metrics statements="121" coveredstatements="121" conditionals="83" coveredconditionals="83" methods="44" coveredmethods="44"/>
       <file name="ticTacToe.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js">
-        <metrics statements="121" coveredstatements="121" conditionals="83" coveredconditionals="83" methods="44" coveredmethods="43"/>
+        <metrics statements="121" coveredstatements="121" conditionals="83" coveredconditionals="83" methods="44" coveredmethods="44"/>
         <line num="2" count="1880701" type="cond" truecount="2" falsecount="0"/>
         <line num="6" count="25" type="stmt"/>
         <line num="7" count="25" type="stmt"/>
@@ -984,9 +984,9 @@
         <line num="101" count="71" type="stmt"/>
         <line num="105" count="86" type="stmt"/>
         <line num="106" count="86" type="stmt"/>
-        <line num="107" count="86" type="cond" truecount="2" falsecount="0"/>
-        <line num="108" count="86" type="stmt"/>
-        <line num="112" count="22" type="stmt"/>
+        <line num="107" count="86" type="stmt"/>
+        <line num="108" count="86" type="cond" truecount="2" falsecount="0"/>
+        <line num="109" count="86" type="stmt"/>
         <line num="113" count="22" type="stmt"/>
         <line num="114" count="90" type="cond" truecount="2" falsecount="0"/>
         <line num="116" count="86" type="stmt"/>

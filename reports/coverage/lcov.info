@@ -1939,8 +1939,8 @@ FN:95,isShortEnoughMoves
 FN:99,isInvalidMoves
 FN:101,(anonymous_21)
 FN:104,isMoveApplicationValid
-FN:111,applyMoveReducer
-FN:112,(anonymous_24)
+FN:107,(anonymous_23)
+FN:112,applyMoveReducer
 FN:113,(anonymous_25)
 FN:124,applyMovesSequentially
 FN:132,scoreMove
@@ -1961,7 +1961,7 @@ FN:251,canMoveBeApplied
 FN:263,isWin
 FN:267,returnInitialOptimalMove
 FNF:44
-FNH:43
+FNH:44
 FNDA:1880701,getOpponent
 FNDA:25,tryParseJSON
 FNDA:82,respectsTurnOrder
@@ -1985,8 +1985,8 @@ FNDA:23,isShortEnoughMoves
 FNDA:25,isInvalidMoves
 FNDA:71,(anonymous_21)
 FNDA:86,isMoveApplicationValid
+FNDA:81,(anonymous_23)
 FNDA:22,applyMoveReducer
-FNDA:0,(anonymous_24)
 FNDA:90,(anonymous_25)
 FNDA:22,applyMovesSequentially
 FNDA:41,scoreMove
@@ -2050,7 +2050,7 @@ DA:105,86
 DA:106,86
 DA:107,86
 DA:108,86
-DA:112,22
+DA:109,86
 DA:113,22
 DA:114,90
 DA:116,86
@@ -2149,8 +2149,8 @@ BRDA:73,8,0,5
 BRDA:73,8,1,9
 BRDA:96,9,0,23
 BRDA:96,9,1,23
-BRDA:107,10,0,86
-BRDA:107,10,1,81
+BRDA:108,10,0,86
+BRDA:108,10,1,81
 BRDA:114,11,0,4
 BRDA:114,11,1,86
 BRDA:118,12,0,86

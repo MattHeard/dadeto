@@ -104,12 +104,12 @@ function isInvalidMoves(moves) {
 function isMoveApplicationValid(i, moves, board, seen) {
   const move = moves[i];
   const canBeApplied = canMoveBeApplied(move, i, moves);
-  const valid = canBeApplied && applyMoveToBoard(board, move, seen);
+  const apply = move => applyMoveToBoard(board, move, seen);
+  const valid = canBeApplied && apply(move);
   return valid;
 }
 
 function applyMoveReducer(moves, board, seen) {
-  const apply = move => applyMoveToBoard(board, move, seen);
   return function(acc, _, i) {
     if (acc.stop) return acc;
 
