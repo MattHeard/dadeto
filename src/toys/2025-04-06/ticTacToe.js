@@ -98,7 +98,7 @@ function isTooLongMoves(moves) {
 
 function isInvalidMoves(moves) {
   const validators = [isFalsyMoves, isNotArrayMoves, isTooLongMoves];
-  return validators.some(fn => fn(moves));
+  return !validators.every(fn => !fn(moves));
 }
 
 function processMove(move, index, moves, board, seen) {
