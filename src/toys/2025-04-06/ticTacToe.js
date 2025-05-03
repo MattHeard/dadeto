@@ -101,15 +101,15 @@ function isInvalidMoves(moves) {
   return !validators.every(fn => fn(moves));
 }
 
-function processMove(move, index, moves, board, seen) {
-  return isValidMove(move, index, moves) && applyMoveToBoard(board, move, seen);
-}
-
 function applyMovesSequentially(moves, board, seen) {
   for (let i = 0; i < moves.length; i++) {
     const move = moves[i];
-    if (!processMove(move, i, moves, board, seen)) {return { valid: false };}
-    if (checkEarlyWin(board)) {return { valid: true, earlyWin: true };}
+    if (!(isValidMove(move, i, moves) && applyMoveToBoard(board, move, seen))) {
+      return { valid: false };
+    }
+    if (checkEarlyWin(board)) {
+      return { valid: true, earlyWin: true };
+    }
   }
   return { valid: true, earlyWin: false };
 }
