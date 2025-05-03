@@ -119,8 +119,7 @@ const dom = {
   removeAllChildren
 };
 const env = { globalState, createEnv, error, fetch, loggers };
-import { initializeVisibleComponents, hasNoInteractiveComponents, getInteractiveComponents, getInteractiveComponentCount } from './toys.js';
-// Only keep one import from './toys.js' and combine symbols if needed
+import { initializeVisibleComponents, makeCreateIntersectionObserver, hasNoInteractiveComponents, getInteractiveComponents, getInteractiveComponentCount } from './toys.js';
 const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 
