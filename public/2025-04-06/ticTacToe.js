@@ -158,14 +158,15 @@ function findBestMove(board, nextPlayer, moves) {
   let bestMove = null;
 
   // Evaluate moves for all empty cells
-  getEmptyCells(board).forEach(({ r, c }) => {
+  const evaluateMove = ({ r, c }) => {
     const setCell = setter(board, r, c);
     const moveScore = scoreMove(nextPlayer, moves, setCell);
     if (moveScore > best) {
       best = moveScore;
       bestMove = { row: r, column: c };
     }
-  });
+  };
+  getEmptyCells(board).forEach(evaluateMove);
 
   return bestMove;
 }
