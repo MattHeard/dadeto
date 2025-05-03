@@ -56,7 +56,7 @@ function getPossibleNewFiles(entry, fullPath) {
 
 function accumulateJsFiles(jsFiles, entry, dir) {
   const fullPath = path.join(dir, entry.name);
-  let newFiles = getPossibleNewFiles(entry, fullPath);
+  const newFiles = getPossibleNewFiles(entry, fullPath);
   return jsFiles.concat(newFiles);
 }
 
