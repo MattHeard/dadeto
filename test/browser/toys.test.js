@@ -650,7 +650,8 @@ describe('initializeVisibleComponents', () => {
       getElement,
       hasNoInteractiveComponents,
       getInteractiveComponents,
-      getInteractiveComponentCount
+      getInteractiveComponentCount,
+      getComponentInitializer
     };
   });
   it('warns if there are no interactive components', () => {
@@ -664,7 +665,8 @@ describe('initializeVisibleComponents', () => {
       getElement,
       hasNoInteractiveComponents,
       getInteractiveComponents,
-      getInteractiveComponentCount
+      getInteractiveComponentCount,
+      getComponentInitializer
     };
     initializeVisibleComponents(env, createIntersectionObserver);
     expect(logWarning).toHaveBeenCalledWith('No interactive components found to initialize');
@@ -681,7 +683,8 @@ describe('initializeVisibleComponents', () => {
       getElement,
       hasNoInteractiveComponents,
       getInteractiveComponents,
-      getInteractiveComponentCount
+      getInteractiveComponentCount,
+      getComponentInitializer
     };
     createIntersectionObserver = jest.fn(() => observer);
     initializeVisibleComponents(env, createIntersectionObserver);
@@ -706,7 +709,8 @@ describe('initializeVisibleComponents', () => {
       getElement,
       hasNoInteractiveComponents,
       getInteractiveComponents,
-      getInteractiveComponentCount
+      getInteractiveComponentCount,
+      getComponentInitializer
     };
     initializeVisibleComponents(env, createIntersectionObserver);
     // Expectations at end
@@ -737,7 +741,8 @@ describe('initializeVisibleComponents', () => {
       getElement,
       hasNoInteractiveComponents,
       getInteractiveComponents,
-      getInteractiveComponentCount
+      getInteractiveComponentCount,
+      getComponentInitializer
     };
     initializeVisibleComponents(env, createIntersectionObserver);
     // Expectations at end
