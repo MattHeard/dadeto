@@ -84,11 +84,21 @@ function initializeBoardAndSeen() {
   return { board, seen };
 }
 
+function isFalsyMoves(moves) {
+  return !moves;
+}
+
+function isNotArrayMoves(moves) {
+  return !Array.isArray(moves);
+}
+
+function isTooLongMoves(moves) {
+  return moves && moves.length > 9;
+}
+
 function isInvalidMoves(moves) {
-  const isFalsy = !moves;
-  const isNotArray = !Array.isArray(moves);
-  const isTooLong = moves && moves.length > 9;
-  return isFalsy || isNotArray || isTooLong;
+  const validators = [isFalsyMoves, isNotArrayMoves, isTooLongMoves];
+  return validators.some(fn => fn(moves));
 }
 
 function processMove(move, index, moves, board, seen) {
