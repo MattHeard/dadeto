@@ -43,8 +43,12 @@ function getActualNewFiles(entry, fullPath) {
   return [fullPath];
 }
 
+function shouldCheckEntry(entry) {
+  return entry.isDirectory() || isJsFile(entry);
+}
+
 function getPossibleNewFiles(entry, fullPath) {
-  if (entry.isDirectory() || isJsFile(entry)) {
+  if (shouldCheckEntry(entry)) {
     return getActualNewFiles(entry, fullPath);
   }
   return [];
