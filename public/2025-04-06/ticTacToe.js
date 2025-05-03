@@ -109,14 +109,16 @@ function isMoveApplicationValid(i, moves, board, seen) {
 function applyMovesSequentially(moves, board, seen) {
   let valid;
   let earlyWin;
+  let result = { valid: undefined, earlyWin: undefined };
   for (let i = 0; i < moves.length; i++) {
     valid = isMoveApplicationValid(i, moves, board, seen);
     earlyWin = checkEarlyWin(board);
+    result = { valid, earlyWin };
     if (!valid || earlyWin) {
       break;
     }
   }
-  return { valid, earlyWin };
+  return result;
 }
 
 
