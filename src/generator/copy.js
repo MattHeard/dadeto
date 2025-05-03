@@ -45,13 +45,15 @@ function getNewFiles(entry, fullPath) {
   return [];
 }
 
+function accumulateJsFiles(jsFiles, entry, dir) {
+  const fullPath = path.join(dir, entry.name);
+  let newFiles = getNewFiles(entry, fullPath);
+  return jsFiles.concat(newFiles);
+}
+
 function findJsFiles(dir) {
   const entries = getDirEntries(dir);
-  return entries.reduce((jsFiles, entry) => {
-    const fullPath = path.join(dir, entry.name);
-    let newFiles = getNewFiles(entry, fullPath);
-    return jsFiles.concat(newFiles);
-  }, []);
+  return entries.reduce((jsFiles, entry) => accumulateJsFiles(jsFiles, entry, dir), []);
 }
 
 // Find all JS files in src/toys
