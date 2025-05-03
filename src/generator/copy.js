@@ -42,7 +42,7 @@ function getActualNewFiles(entry, fullPath) {
   } else if (isJsFile(entry)) {
     return [fullPath];
   }
-  return [];
+  return [fullPath];
 }
 
 function getPossibleNewFiles(entry, fullPath) {
