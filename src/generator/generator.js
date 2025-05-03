@@ -727,7 +727,7 @@ function formatQuote(quote) {
   return quote ? ` ("${quote}")` : '';
 }
 
-function createLinkParts(baseLink, author, source, quote) {
+function createLinkParts(baseLink, { author, source, quote }) {
   return [
     baseLink,
     formatAuthor(author),
@@ -736,15 +736,15 @@ function createLinkParts(baseLink, author, source, quote) {
   ];
 }
 
-function composeLinkParts(baseLink, author, source, quote) {
-  const parts = createLinkParts(baseLink, author, source, quote);
+function composeLinkParts(baseLink, meta) {
+  const parts = createLinkParts(baseLink, meta);
   return `<li>${joinLinkParts(parts)}</li>`;
 }
 
 function formatRelatedLink(link) {
   const { url, title, author, source, quote, type } = escapeRelatedLinkFields(link);
   const baseLink = formatBaseLink(type, url, title);
-  return composeLinkParts(baseLink, author, source, quote);
+  return composeLinkParts(baseLink, { author, source, quote });
 }
 
 /**
