@@ -105,8 +105,8 @@ function applyMovesSequentially(moves, board, seen) {
   let valid;
   for (let i = 0; i < moves.length; i++) {
     const move = moves[i];
-    const isMoveValid = canMoveBeApplied(move, i, moves);
-    valid = isMoveValid && applyMoveToBoard(board, move, seen);
+    const canBeApplied = canMoveBeApplied(move, i, moves);
+    valid = canBeApplied && applyMoveToBoard(board, move, seen);
     if (!valid) {
       return { valid };
     }
