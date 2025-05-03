@@ -139,7 +139,8 @@ function copyBoard(board) {
   return board.map(row => row.slice());
 }
 
-function setBoardCell(board, r, c, value) {
+function setBoardCell(board, coordinates, value) {
+  const { r, c } = coordinates;
   const boardCopy = copyBoard(board);
   boardCopy[r][c] = value;
   return boardCopy;
@@ -152,7 +153,7 @@ function scoreMove(player, moves, setCell) {
 }
 
 function findBestMove(board, nextPlayer, moves) {
-  const setter = (board, r, c) => value => setBoardCell(board, r, c, value);
+  const setter = (board, r, c) => value => setBoardCell(board, { r, c }, value);
   let best = -Infinity;
   let bestMove = null;
 
