@@ -21,7 +21,8 @@ function isObject(val) {
 function getValidParsedMoves(parsed) {
   const isObj = isObject(parsed);
   const hasMoves = hasMovesArray(parsed);
-  return isObj && hasMoves ? parsed.moves : null;
+  const isValid = isObj && hasMoves;
+  return isValid ? parsed.moves : null;
 }
 
 function hasMovesArray(val) {
