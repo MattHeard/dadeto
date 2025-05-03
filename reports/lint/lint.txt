@@ -1,6 +1,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js[24m[0m
-[0m  [2m39:1[22m  [33mwarning[39m  Function 'getFilesForEntry' has a complexity of 3. Maximum allowed is 2     [2mcomplexity[22m[0m
+[0m  [2m39:1[22m  [33mwarning[39m  Function 'getActualNewFiles' has a complexity of 3. Maximum allowed is 2    [2mcomplexity[22m[0m
 [0m  [2m48:1[22m  [33mwarning[39m  Function 'getPossibleNewFiles' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m  [2m57:7[22m  [33mwarning[39m  'newFiles' is never reassigned. Use 'const' instead                         [2mprefer-const[22m[0m
 [0m[0m

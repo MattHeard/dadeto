@@ -36,7 +36,7 @@ function getDirEntries(dir) {
   return fs.readdirSync(dir, { withFileTypes: true });
 }
 
-function getFilesForEntry(entry, fullPath) {
+function getActualNewFiles(entry, fullPath) {
   if (entry.isDirectory()) {
     return findJsFiles(fullPath);
   } else if (isJsFile(entry)) {
@@ -47,7 +47,7 @@ function getFilesForEntry(entry, fullPath) {
 
 function getPossibleNewFiles(entry, fullPath) {
   if (entry.isDirectory() || isJsFile(entry)) {
-    return getFilesForEntry(entry, fullPath);
+    return getActualNewFiles(entry, fullPath);
   }
   return [];
 }
