@@ -139,8 +139,7 @@ function setBoardCell(board, r, c, value) {
   board[r][c] = value;
 }
 
-function scoreMove(board, r, c, player, moves) {
-  const setter = (board, r, c) => value => setBoardCell(board, r, c, value);
+function scoreMove(board, r, c, player, moves, setter) {
   const setCell = setter(board, r, c);
   setCell(player);
   const score = minimax(board, 0, false, player, moves);
@@ -149,13 +148,14 @@ function scoreMove(board, r, c, player, moves) {
 }
 
 function findBestMove(board, nextPlayer, moves) {
+  const setter = (board, r, c) => value => setBoardCell(board, r, c, value);
   let best = -Infinity;
   let bestMove = null;
 
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 3; c++) {
       if (!board[r][c]) {
-        const score = scoreMove(board, r, c, nextPlayer, moves);
+        const score = scoreMove(board, r, c, nextPlayer, moves, setter);
         if (score > best) {
           best = score;
           bestMove = { row: r, column: c };
