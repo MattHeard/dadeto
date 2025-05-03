@@ -166,6 +166,7 @@ function findBestMove(board, nextPlayer, moves) {
     const move = { row: r, column: c };
     const moveScore = scoreMove(nextPlayer, moves, setCell);
     const scoredMove = { moveScore, move };
+    scoredMoves.push(scoredMove);
     if (moveScore > best) {
       best = moveScore;
       bestMove = move;
