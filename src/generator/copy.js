@@ -39,8 +39,6 @@ function getDirEntries(dir) {
 function getActualNewFiles(entry, fullPath) {
   if (entry.isDirectory()) {
     return findJsFiles(fullPath);
-  } else if (isJsFile(entry)) {
-    return [fullPath];
   }
   return [fullPath];
 }
