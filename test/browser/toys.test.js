@@ -609,7 +609,7 @@ describe('initializeVisibleComponents', () => {
   let interactiveComponents;
   let win;
   let logInfo;
-  let warnFn;
+  let logWarning;
   let getElementByIdFn;
   let createIntersectionObserverFn;
 
@@ -617,7 +617,7 @@ describe('initializeVisibleComponents', () => {
     interactiveComponents = [];
     win = { interactiveComponents };
     logInfo = jest.fn();
-    warnFn = jest.fn();
+    logWarning = jest.fn();
     getElementByIdFn = jest.fn();
     createIntersectionObserverFn = jest.fn();
   });
@@ -626,14 +626,14 @@ describe('initializeVisibleComponents', () => {
     const env = {
       win,
       logInfo,
-      logWarning: warnFn,
+      logWarning,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => true,
       getInteractiveComponents: () => [],
     };
 
     initializeVisibleComponents(env, createIntersectionObserverFn);
-    expect(warnFn).toHaveBeenCalledWith('No interactive components found to initialize');
+    expect(logWarning).toHaveBeenCalledWith('No interactive components found to initialize');
   });
 
   it('initializes and observes a valid interactive component', () => {
@@ -645,7 +645,7 @@ describe('initializeVisibleComponents', () => {
     const env = {
       win,
       logInfo,
-      logWarning: warnFn,
+      logWarning,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => false,
       getInteractiveComponents: () => win.interactiveComponents
@@ -668,7 +668,7 @@ describe('initializeVisibleComponents', () => {
     const env = {
       win,
       logInfo,
-      logWarning: warnFn,
+      logWarning,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => false,
       getInteractiveComponents: () => win.interactiveComponents
@@ -677,7 +677,7 @@ describe('initializeVisibleComponents', () => {
     // Expectations at end
     expect(getElementByIdFn).toHaveBeenCalledWith('missing-id');
     expect(createIntersectionObserverFn).not.toHaveBeenCalled();
-    expect(warnFn).toHaveBeenCalledWith(
+    expect(logWarning).toHaveBeenCalledWith(
       'Could not find article element with ID: missing-id for component initialization.'
     );
   });
@@ -693,7 +693,7 @@ describe('initializeVisibleComponents', () => {
     const env = {
       win,
       logInfo,
-      logWarning: warnFn,
+      logWarning,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => false,
       getInteractiveComponents: () => win.interactiveComponents
