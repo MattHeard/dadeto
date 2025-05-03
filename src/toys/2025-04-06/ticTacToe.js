@@ -109,6 +109,7 @@ function isMoveApplicationValid(i, moves, board, seen) {
 }
 
 function applyMoveReducer(moves, board, seen) {
+  const apply = move => applyMoveToBoard(board, move, seen);
   return function(acc, _, i) {
     if (acc.stop) return acc;
 
