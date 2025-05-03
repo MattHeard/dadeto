@@ -174,6 +174,14 @@ function findBestMove(board, nextPlayer, moves) {
   };
   getEmptyCells(board).forEach(evaluateMove);
 
+  // Find the scoredMove with the highest moveScore
+  let bestScoredMove = null;
+  for (const scoredMove of scoredMoves) {
+    if (!bestScoredMove || scoredMove.moveScore > bestScoredMove.moveScore) {
+      bestScoredMove = scoredMove;
+    }
+  }
+
   return bestMove;
 }
 
