@@ -614,7 +614,7 @@ describe('initializeVisibleComponents', () => {
     win = { interactiveComponents };
   });
   it('warns if there are no interactive components', () => {
-    const win = { interactiveComponents: [] };
+    interactiveComponents.length = 0;
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn();
