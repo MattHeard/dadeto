@@ -687,7 +687,8 @@ describe('initializeVisibleComponents', () => {
   });
 
   it('warns when article element is missing for a component', () => {
-    interactiveComponents.push({ id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' });
+    const component = { id, modulePath, functionName };
+    interactiveComponents.push(component);
     getElement.mockImplementation(() => null);    
     const env = {
       win,
@@ -701,7 +702,7 @@ describe('initializeVisibleComponents', () => {
     // Expectations at end
     expect(createIntersectionObserver).not.toHaveBeenCalled();
     expect(logWarning).toHaveBeenCalledWith(
-      'Could not find article element with ID: missing-id for component initialization.'
+      `Could not find article element with ID: ${id} for component initialization.`
     );
   });
 
