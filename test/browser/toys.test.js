@@ -640,6 +640,8 @@ describe('initializeVisibleComponents', () => {
     functionName = 'initFunction';
     component = { id, modulePath, functionName };
     getInteractiveComponentCount = () => interactiveComponents.length;
+    // Define a noop getComponentInitializer for possible future use
+    const getComponentInitializer = () => {};
     env = {
       win,
       logInfo,
