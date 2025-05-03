@@ -103,7 +103,8 @@ function isInvalidMoves(moves) {
 
 function isMoveApplicationValid(i, moves, board, seen) {
   const move = moves[i];
-  const valid = canMoveBeApplied(move, i, moves) && applyMoveToBoard(board, move, seen);
+  const canBeApplied = canMoveBeApplied(move, i, moves);
+  const valid = canBeApplied && applyMoveToBoard(board, move, seen);
   return valid;
 }
 
