@@ -674,7 +674,7 @@ describe('initializeVisibleComponents', () => {
       hasNoInteractiveComponents,
       getInteractiveComponents,
     };
-    createIntersectionObserver.mockImplementation(() => observer);
+    createIntersectionObserver = jest.fn(() => observer);
     initializeVisibleComponents(env, createIntersectionObserver);
     // Expectations at end
     expect(logInfo).toHaveBeenCalledWith(
@@ -682,6 +682,7 @@ describe('initializeVisibleComponents', () => {
       1,
       'interactive components via IntersectionObserver'
     );
+    expect(createIntersectionObserver).toHaveBeenCalledWith(article, modulePath, functionName);
     expect(observer.observe).toHaveBeenCalledWith(article);
   });
 
