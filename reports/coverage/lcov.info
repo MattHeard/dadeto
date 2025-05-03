@@ -1953,7 +1953,7 @@ FN:211,simulateMoves
 FN:222,minimax
 FN:231,hasValidPlayer
 FN:235,hasValidPosition
-FN:241,isValidMove
+FN:241,canMoveBeApplied
 FN:253,isWin
 FN:257,returnInitialOptimalMove
 FNF:40
@@ -1995,7 +1995,7 @@ FNDA:38041,simulateMoves
 FNDA:61049,minimax
 FNDA:85,hasValidPlayer
 FNDA:84,hasValidPosition
-FNDA:86,isValidMove
+FNDA:86,canMoveBeApplied
 FNDA:114163,isWin
 FNDA:13,returnInitialOptimalMove
 DA:2,99097

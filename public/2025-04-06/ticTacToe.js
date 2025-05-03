@@ -105,7 +105,7 @@ function applyMovesSequentially(moves, board, seen) {
   let valid;
   for (let i = 0; i < moves.length; i++) {
     const move = moves[i];
-    const isMoveValid = isValidMove(move, i, moves);
+    const isMoveValid = canMoveBeApplied(move, i, moves);
     valid = isMoveValid && applyMoveToBoard(board, move, seen);
     if (!valid) {
       return { valid };
@@ -238,7 +238,7 @@ function hasValidPosition(position) {
   return [0, 1, 2].includes(row) && [0, 1, 2].includes(column);
 }
 
-function isValidMove(move, index, moves) {
+function canMoveBeApplied(move, index, moves) {
   if (!move || typeof move !== "object") {return false;}
 
   const { player, position } = move;
