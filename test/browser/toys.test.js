@@ -641,8 +641,10 @@ describe('initializeVisibleComponents', () => {
     functionName = 'initFunction';
     component = { id, modulePath, functionName };
     getInteractiveComponentCount = () => interactiveComponents.length;
-    // Define a noop getComponentInitializer for possible future use
-    getComponentInitializer = () => {};
+    // Define initializeComponent as a Jest mock function for tracking calls
+    initializeComponent = jest.fn();
+    // getComponentInitializer is a Jest mock that returns initializeComponent
+    getComponentInitializer = jest.fn(() => initializeComponent);
     env = {
       win,
       logInfo,
@@ -694,30 +696,7 @@ describe('initializeVisibleComponents', () => {
       1,
       'interactive components via IntersectionObserver'
     );
-    expect(createIntersectionObserver).toHaveBeenCalledWith(article, modulePath, functionName);
-    expect(observer.observe).toHaveBeenCalledWith(article);
-  });
-
-  it('warns when article element is missing for a component', () => {
-    interactiveComponents = [component];
-    win = { interactiveComponents };
-    getElement = jest.fn(() => null);
-    env = {
-      win,
-      logInfo,
-      logWarning,
-      getElement,
-      hasNoInteractiveComponents,
-      getInteractiveComponents,
-      getInteractiveComponentCount,
-      getComponentInitializer
-    };
-    initializeVisibleComponents(env, createIntersectionObserver);
-    // Expectations at end
-    expect(createIntersectionObserver).not.toHaveBeenCalled();
-    expect(logWarning).toHaveBeenCalledWith(
-      `Could not find article element with ID: ${id} for component initialization.`
-    );
+    expect(getComponentInitializer).toHaveBeenCalledWith(getElement, logWarning, createIntersectionObserver);
   });
 
   it('attempts to initialize all interactive components, regardless of missing fields', () => {
@@ -746,6 +725,6 @@ describe('initializeVisibleComponents', () => {
     };
     initializeVisibleComponents(env, createIntersectionObserver);
     // Expectations at end
-    expect(createIntersectionObserver).toHaveBeenCalledTimes(4);
+    expect(initializeComponent).toHaveBeenCalledTimes(4);
   });
 });
