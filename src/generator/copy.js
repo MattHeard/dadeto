@@ -32,9 +32,13 @@ function isJsFile(entry) {
 }
 
 // Function to recursively find JS files in a directory (excluding .test.js)
+function getDirEntries(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true });
+}
+
 function findJsFiles(dir) {
   let jsFiles = [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const entries = getDirEntries(dir);
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
