@@ -103,6 +103,7 @@ function isInvalidMoves(moves) {
 
 function applyMovesSequentially(moves, board, seen) {
   let valid;
+  let earlyWin;
   for (let i = 0; i < moves.length; i++) {
     const move = moves[i];
     const canBeApplied = canMoveBeApplied(move, i, moves);
@@ -110,7 +111,7 @@ function applyMovesSequentially(moves, board, seen) {
     if (!valid) {
       return { valid };
     }
-    const earlyWin = checkEarlyWin(board);
+    earlyWin = checkEarlyWin(board);
     if (earlyWin) {
       return { valid, earlyWin };
     }
