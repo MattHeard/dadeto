@@ -650,9 +650,14 @@ describe('initializeVisibleComponents', () => {
   it('warns if there are no interactive components', () => {
     hasNoInteractiveComponents = () => true;
     getInteractiveComponents = () => [];
-    env.hasNoInteractiveComponents = hasNoInteractiveComponents;
-    env.getInteractiveComponents = getInteractiveComponents;
-
+    env = {
+      win,
+      logInfo,
+      logWarning,
+      getElement,
+      hasNoInteractiveComponents,
+      getInteractiveComponents,
+    };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     expect(logWarning).toHaveBeenCalledWith('No interactive components found to initialize');
   });
