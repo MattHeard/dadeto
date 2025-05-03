@@ -811,7 +811,7 @@ FNDA:10,getBlogHtmlContent
 FNDA:10,getArticles
 FNDA:10,assembleBlogHTML
 FNDA:10,generateBlog
-FNDA:1,generateBlogNew
+FNDA:10,generateBlogNew
 FNDA:2,(anonymous_112)
 FNDA:2,getBlogGenerationArgs
 FNDA:1,(anonymous_114)
@@ -1039,8 +1039,8 @@ DA:953,10
 DA:954,10
 DA:958,10
 DA:959,10
-DA:963,1
-DA:964,1
+DA:963,10
+DA:964,10
 DA:967,2
 DA:978,2
 DA:979,2
