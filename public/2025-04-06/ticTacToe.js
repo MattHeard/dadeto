@@ -159,7 +159,18 @@ function findBestMove(board, nextPlayer, moves) {
 
   const emptyCells = getEmptyCells(board);
 
-// ...
+  // Second pass: evaluate moves for empty cells
+  emptyCells.forEach(({ r, c }) => {
+    const setCell = setter(board, r, c);
+    const moveScore = scoreMove(nextPlayer, moves, setCell);
+    if (moveScore > best) {
+      best = moveScore;
+      bestMove = { row: r, column: c };
+    }
+  });
+
+  return bestMove;
+}
 
 function getEmptyCells(board) {
   const emptyCells = [];
@@ -173,18 +184,6 @@ function getEmptyCells(board) {
   return emptyCells;
 }
 
-  // Second pass: evaluate moves for empty cells
-  emptyCells.forEach(({ r, c }) => {
-    const setCell = setter(board, r, c);
-    const moveScore = scoreMove(nextPlayer, moves, setCell);
-    if (moveScore > best) {
-      best = moveScore;
-      bestMove = { row: r, column: c };
-    }
-  });
-
-  return bestMove;
-}
 
 function determineNextPlayer(moves) {
   if (moves.length === 0) {return "X";}
