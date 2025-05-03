@@ -1920,7 +1920,7 @@ FN:1,getOpponent
 FN:5,tryParseJSON
 FN:13,respectsTurnOrder
 FN:17,isObject
-FN:21,isValidParsedMoves
+FN:21,getValidParsedMoves
 FN:27,parseInputSafely
 FN:32,shouldSkipMove
 FN:36,buildMoveResponse
@@ -1955,7 +1955,7 @@ FNDA:1880701,getOpponent
 FNDA:25,tryParseJSON
 FNDA:82,respectsTurnOrder
 FNDA:25,isObject
-FNDA:25,isValidParsedMoves
+FNDA:25,getValidParsedMoves
 FNDA:25,parseInputSafely
 FNDA:14,shouldSkipMove
 FNDA:14,buildMoveResponse

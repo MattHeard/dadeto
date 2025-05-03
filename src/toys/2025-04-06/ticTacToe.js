@@ -18,7 +18,7 @@ function isObject(val) {
   return typeof val === "object" && val !== null;
 }
 
-function isValidParsedMoves(parsed) {
+function getValidParsedMoves(parsed) {
   const isObj = isObject(parsed);
   const hasMovesArray = isObj && Array.isArray(parsed.moves);
   return isObj && hasMovesArray ? parsed.moves : null;
@@ -26,7 +26,7 @@ function isValidParsedMoves(parsed) {
 
 function parseInputSafely(input) {
   const parsed = tryParseJSON(input);
-  return isValidParsedMoves(parsed);
+  return getValidParsedMoves(parsed);
 }
 
 function shouldSkipMove(earlyWin, moves) {

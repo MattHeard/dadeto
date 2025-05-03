@@ -33,7 +33,7 @@
 [0m  [2m93:8[22m  [33mwarning[39m  Function 'cyberpunkAdventure' has a complexity of 17. Maximum allowed is 2   [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js[24m[0m
-[0m   [2m21:1[22m   [33mwarning[39m  Function 'isValidParsedMoves' has a complexity of 4. Maximum allowed is 2           [2mcomplexity[22m[0m
+[0m   [2m21:1[22m   [33mwarning[39m  Function 'getValidParsedMoves' has a complexity of 4. Maximum allowed is 2          [2mcomplexity[22m[0m
 [0m   [2m36:1[22m   [33mwarning[39m  Function 'buildMoveResponse' has a complexity of 3. Maximum allowed is 2            [2mcomplexity[22m[0m
 [0m   [2m73:1[22m   [33mwarning[39m  Function 'isInvalidMoves' has a complexity of 3. Maximum allowed is 2               [2mcomplexity[22m[0m
 [0m   [2m77:1[22m   [33mwarning[39m  Function 'processMove' has too many parameters (5). Maximum allowed is 3            [2mmax-params[22m[0m
