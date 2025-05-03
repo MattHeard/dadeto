@@ -104,10 +104,12 @@ function isInvalidMoves(moves) {
 function applyMovesSequentially(moves, board, seen) {
   for (let i = 0; i < moves.length; i++) {
     const move = moves[i];
-    if (!(isValidMove(move, i, moves) && applyMoveToBoard(board, move, seen))) {
+    const isMoveValidAndApplied = isValidMove(move, i, moves) && applyMoveToBoard(board, move, seen);
+    const isEarlyWin = checkEarlyWin(board);
+    if (!isMoveValidAndApplied) {
       return { valid: false };
     }
-    if (checkEarlyWin(board)) {
+    if (isEarlyWin) {
       return { valid: true, earlyWin: true };
     }
   }

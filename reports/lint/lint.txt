@@ -35,22 +35,22 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js[24m[0m
 [0m   [2m88:10[22m  [33mwarning[39m  Unexpected implicit coercion encountered. Use `Boolean(moves)` instead              [2mno-implicit-coercion[22m[0m
 [0m  [2m104:1[22m   [33mwarning[39m  Function 'applyMovesSequentially' has a complexity of 5. Maximum allowed is 2       [2mcomplexity[22m[0m
-[0m  [2m118:1[22m   [33mwarning[39m  Function 'scoreMove' has too many parameters (5). Maximum allowed is 3              [2mmax-params[22m[0m
-[0m  [2m125:1[22m   [33mwarning[39m  Function 'findBestMove' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
-[0m  [2m149:1[22m   [33mwarning[39m  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                    [2mcomplexity[22m[0m
-[0m  [2m158:1[22m   [33mwarning[39m  Function 'checkColumns' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
-[0m  [2m167:1[22m   [33mwarning[39m  Function 'checkDiagonals' has a complexity of 6. Maximum allowed is 2               [2mcomplexity[22m[0m
-[0m  [2m190:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m190:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
-[0m  [2m190:64[22m  [33mwarning[39m  'moves' is defined but never used                                                   [2mno-unused-vars[22m[0m
-[0m  [2m197:1[22m   [33mwarning[39m  Function 'getAvailableMoves' has a complexity of 4. Maximum allowed is 2            [2mcomplexity[22m[0m
-[0m  [2m207:1[22m   [33mwarning[39m  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3          [2mmax-params[22m[0m
-[0m  [2m207:1[22m   [33mwarning[39m  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2                [2mcomplexity[22m[0m
-[0m  [2m218:1[22m   [33mwarning[39m  Function 'minimax' has too many parameters (5). Maximum allowed is 3                [2mmax-params[22m[0m
-[0m  [2m218:1[22m   [33mwarning[39m  Function 'minimax' has a complexity of 3. Maximum allowed is 2                      [2mcomplexity[22m[0m
-[0m  [2m231:1[22m   [33mwarning[39m  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
-[0m  [2m237:1[22m   [33mwarning[39m  Function 'isValidMove' has a complexity of 6. Maximum allowed is 2                  [2mcomplexity[22m[0m
-[0m  [2m249:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
+[0m  [2m120:1[22m   [33mwarning[39m  Function 'scoreMove' has too many parameters (5). Maximum allowed is 3              [2mmax-params[22m[0m
+[0m  [2m127:1[22m   [33mwarning[39m  Function 'findBestMove' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
+[0m  [2m151:1[22m   [33mwarning[39m  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                    [2mcomplexity[22m[0m
+[0m  [2m160:1[22m   [33mwarning[39m  Function 'checkColumns' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
+[0m  [2m169:1[22m   [33mwarning[39m  Function 'checkDiagonals' has a complexity of 6. Maximum allowed is 2               [2mcomplexity[22m[0m
+[0m  [2m192:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m192:1[22m   [33mwarning[39m  Function 'evaluateTerminalState' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m  [2m192:64[22m  [33mwarning[39m  'moves' is defined but never used                                                   [2mno-unused-vars[22m[0m
+[0m  [2m199:1[22m   [33mwarning[39m  Function 'getAvailableMoves' has a complexity of 4. Maximum allowed is 2            [2mcomplexity[22m[0m
+[0m  [2m209:1[22m   [33mwarning[39m  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3          [2mmax-params[22m[0m
+[0m  [2m209:1[22m   [33mwarning[39m  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2                [2mcomplexity[22m[0m
+[0m  [2m220:1[22m   [33mwarning[39m  Function 'minimax' has too many parameters (5). Maximum allowed is 3                [2mmax-params[22m[0m
+[0m  [2m220:1[22m   [33mwarning[39m  Function 'minimax' has a complexity of 3. Maximum allowed is 2                      [2mcomplexity[22m[0m
+[0m  [2m233:1[22m   [33mwarning[39m  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
+[0m  [2m239:1[22m   [33mwarning[39m  Function 'isValidMove' has a complexity of 6. Maximum allowed is 2                  [2mcomplexity[22m[0m
+[0m  [2m251:1[22m   [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
 [0m  [2m163:47[22m  [33mwarning[39m  'createTextNode' is assigned a value but never used  [2mno-unused-vars[22m[0m
