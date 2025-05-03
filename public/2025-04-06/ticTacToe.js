@@ -163,10 +163,10 @@ function findBestMove(board, nextPlayer, moves) {
   // Evaluate moves for all empty cells
   const evaluateMove = ({ r, c }) => {
     const setCell = setter(board, r, c);
+    const move = { row: r, column: c };
     const moveScore = scoreMove(nextPlayer, moves, setCell);
     if (moveScore > best) {
       best = moveScore;
-      const move = { row: r, column: c };
       bestMove = move;
     }
   };
