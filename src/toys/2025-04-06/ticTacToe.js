@@ -25,9 +25,8 @@ function getValidParsedMoves(parsed) {
 
 function isValidParsedMoves(parsed) {
   const validators = [isObject, hasMovesArray];
-  const isObj = isObject(parsed);
-  const hasMoves = hasMovesArray(parsed);
-  return isObj && hasMoves;
+  const isValid = validators.every(fn => fn(parsed));
+  return isValid;
 }
 
 function hasMovesArray(val) {
