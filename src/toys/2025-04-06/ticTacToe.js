@@ -39,6 +39,10 @@ export function ticTacToeMove(input) {
 
   // Inline validateAndApplyMoves
   if (isInvalidMoves(moves)) {return returnInitialOptimalMove();}
+  return handleValidMoves(moves);
+}
+
+function handleValidMoves(moves) {
   const { board, seen } = initializeBoardAndSeen();
   const result = applyMovesSequentially(moves, board, seen);
   if (!result.valid) {return returnInitialOptimalMove();}
