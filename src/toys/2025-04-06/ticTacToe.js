@@ -42,7 +42,12 @@ function shouldSkipMove(earlyWin, moves) {
 }
 
 function buildMoveResponse(moves, newMove = null) {
-  const updatedMoves = newMove ? [...moves, newMove] : moves;
+  let updatedMoves;
+  if (newMove) {
+    updatedMoves = [...moves, newMove];
+  } else {
+    updatedMoves = moves;
+  }
   const response = { moves: updatedMoves };
   return JSON.stringify(response);
 }
