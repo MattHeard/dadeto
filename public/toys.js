@@ -369,7 +369,15 @@ function createHandleKeyPress(handleSubmit) {
  */
 export function initializeVisibleComponents(env, createIntersectionObserver) {
   const { win, logInfo, logWarning, getElement } = env;
-  return initializeVisibleComponents_new(win, logInfo, logWarning, getElement, createIntersectionObserver);
+  if (hasNoInteractiveComponents(win)) {
+    logWarning('No interactive components found to initialize');
+    return;
+  }
+  const interactiveComponents = getInteractiveComponents(win);
+  const interactiveComponentCount = getInteractiveComponentCount(win);
+  logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
+  const init = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
+  interactiveComponents.forEach(init);
 }
 
 /**
@@ -400,17 +408,7 @@ function getComponentInitializer(getElement, logWarning, createIntersectionObser
   };
 }
 
-export function initializeVisibleComponents_new(win, logInfo, logWarning, getElement, createIntersectionObserver) {
-  if (hasNoInteractiveComponents(win)) {
-    logWarning('No interactive components found to initialize');
-    return;
-  }
-  const interactiveComponents = getInteractiveComponents(win);
-  const interactiveComponentCount = getInteractiveComponentCount(win);
-  logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
-  const init = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
-  interactiveComponents.forEach(init);
-}
+
 
 /**
  * Helper function needed by getData
