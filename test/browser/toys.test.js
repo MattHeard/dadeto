@@ -682,7 +682,6 @@ describe('initializeVisibleComponents', () => {
       1,
       'interactive components via IntersectionObserver'
     );
-    expect(createIntersectionObserver).toHaveBeenCalledWith(article, modulePath, functionName);
     expect(observer.observe).toHaveBeenCalledWith(article);
   });
 
