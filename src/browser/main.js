@@ -136,6 +136,8 @@ const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 // Interactive components functionality
 
+import { getComponentInitializer } from './toys.js';
+
 initializeVisibleComponents(
   {
     win: window,
@@ -144,7 +146,8 @@ initializeVisibleComponents(
     getElement: getElementById,
     hasNoInteractiveComponents,
     getInteractiveComponents,
-    getInteractiveComponentCount
+    getInteractiveComponentCount,
+    getComponentInitializer
   },
   createIntersectionObserver
 );
