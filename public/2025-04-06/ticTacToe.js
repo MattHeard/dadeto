@@ -43,7 +43,8 @@ function shouldSkipMove(earlyWin, moves) {
 
 function buildMoveResponse(moves, newMove = null) {
   const updatedMoves = newMove ? [...moves, newMove] : moves;
-  return JSON.stringify({ moves: updatedMoves });
+  const responseObj = { moves: updatedMoves };
+  return JSON.stringify(responseObj);
 }
 
 export function ticTacToeMove(input) {
