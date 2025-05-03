@@ -135,9 +135,12 @@ function applyMovesSequentially(moves, board, seen) {
 }
 
 
+function copyBoard(board) {
+  return board.map(row => row.slice());
+}
+
 function setBoardCell(board, r, c, value) {
-  // Deep copy the 3x3 board
-  const boardCopy = board.map(row => row.slice());
+  const boardCopy = copyBoard(board);
   boardCopy[r][c] = value;
   return boardCopy;
 }
