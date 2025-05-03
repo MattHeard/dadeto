@@ -618,7 +618,8 @@ describe('initializeVisibleComponents', () => {
       logInfo: logFn,
       logWarning: warnFn,
       getElement: getElementByIdFn,
-      hasNoInteractiveComponents: () => true
+      hasNoInteractiveComponents: () => true,
+      getInteractiveComponents: () => [],
     };
 
     initializeVisibleComponents(env, createIntersectionObserverFn);
@@ -644,7 +645,8 @@ describe('initializeVisibleComponents', () => {
       logInfo: logFn,
       logWarning: warnFn,
       getElement: getElementByIdFn,
-      hasNoInteractiveComponents: () => false
+      hasNoInteractiveComponents: () => false,
+      getInteractiveComponents: () => win.interactiveComponents
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
@@ -674,7 +676,8 @@ describe('initializeVisibleComponents', () => {
       logInfo: logFn,
       logWarning: warnFn,
       getElement: getElementByIdFn,
-      hasNoInteractiveComponents: () => false
+      hasNoInteractiveComponents: () => false,
+      getInteractiveComponents: () => win.interactiveComponents
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
@@ -704,7 +707,8 @@ describe('initializeVisibleComponents', () => {
       logInfo: logFn,
       logWarning: warnFn,
       getElement: getElementByIdFn,
-      hasNoInteractiveComponents: () => false
+      hasNoInteractiveComponents: () => false,
+      getInteractiveComponents: () => win.interactiveComponents
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end

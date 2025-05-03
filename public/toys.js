@@ -373,7 +373,7 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
     logWarning('No interactive components found to initialize');
     return;
   }
-  const interactiveComponents = getInteractiveComponents(win);
+  const interactiveComponents = env.getInteractiveComponents(win);
   const interactiveComponentCount = getInteractiveComponentCount(win);
   logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
   const init = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
