@@ -39,8 +39,7 @@ export function ticTacToeMove(input) {
   if (!moves) {return returnInitialOptimalMove();}
 
   // Inline validateAndApplyMoves
-  const invalidMoves = !Array.isArray(moves) || moves.length > 9;
-  if (invalidMoves) {return returnInitialOptimalMove();}
+  if (isInvalidMoves(moves)) {return returnInitialOptimalMove();}
   const { board, seen } = initializeBoardAndSeen();
   const result = applyMovesSequentially(moves, board, seen);
   if (!result.valid) {return returnInitialOptimalMove();}
@@ -58,6 +57,10 @@ function initializeBoardAndSeen() {
   const board = Array.from({ length: 3 }, () => Array(3).fill(null));
   const seen = new Set();
   return { board, seen };
+}
+
+function isInvalidMoves(moves) {
+  return !Array.isArray(moves) || moves.length > 9;
 }
 
 function processMove(move, index, moves, board, seen) {
