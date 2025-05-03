@@ -101,7 +101,7 @@ function isInvalidMoves(moves) {
   return !validators.every(fn => fn(moves));
 }
 
-function isMoveApplicationValid(i, moves, board, seen, apply) {
+function isMoveApplicationValid(i, moves, apply) {
   const move = moves[i];
   const canBeApplied = canMoveBeApplied(move, i, moves);
   const valid = canBeApplied && apply(move);
@@ -113,7 +113,7 @@ function applyMoveReducer(moves, board, seen) {
     if (acc.stop) return acc;
 
     const apply = move => applyMoveToBoard(board, move, seen);
-    const valid = isMoveApplicationValid(i, moves, board, seen, apply);
+    const valid = isMoveApplicationValid(i, moves, apply);
     const earlyWin = checkEarlyWin(board);
     const stop = !valid || earlyWin;
 
