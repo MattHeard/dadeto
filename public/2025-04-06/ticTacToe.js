@@ -161,6 +161,7 @@ function findBestMove(board, nextPlayer, moves) {
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 3; c++) {
       if (!board[r][c]) {
+        emptyCells.push({ r, c });
         const setCell = setter(board, r, c);
         const moveScore = scoreMove(nextPlayer, moves, setCell);
         if (moveScore > best) {
