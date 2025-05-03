@@ -45,7 +45,7 @@ function getFilesForEntry(entry, fullPath) {
   return [];
 }
 
-function getNewFiles(entry, fullPath) {
+function getPossibleNewFiles(entry, fullPath) {
   if (entry.isDirectory() || isJsFile(entry)) {
     return getFilesForEntry(entry, fullPath);
   }
@@ -54,7 +54,7 @@ function getNewFiles(entry, fullPath) {
 
 function accumulateJsFiles(jsFiles, entry, dir) {
   const fullPath = path.join(dir, entry.name);
-  let newFiles = getNewFiles(entry, fullPath);
+  let newFiles = getPossibleNewFiles(entry, fullPath);
   return jsFiles.concat(newFiles);
 }
 
