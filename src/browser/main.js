@@ -1,5 +1,5 @@
 import { setupAudio } from './audio-controls.js';
-import { initializeVisibleComponents, makeCreateIntersectionObserver, hasNoInteractiveComponents } from './toys.js';
+import { initializeVisibleComponents, makeCreateIntersectionObserver, hasNoInteractiveComponents, getInteractiveComponents } from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
@@ -136,7 +136,8 @@ initializeVisibleComponents(
     logInfo: log,
     logWarning: warn,
     getElement: getElementById,
-    hasNoInteractiveComponents
+    hasNoInteractiveComponents,
+    getInteractiveComponents
   },
   createIntersectionObserver
 );
