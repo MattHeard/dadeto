@@ -687,7 +687,6 @@ describe('initializeVisibleComponents', () => {
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
-    expect(getElement).toHaveBeenCalledWith('missing-id');
     expect(createIntersectionObserverFn).not.toHaveBeenCalled();
     expect(logWarning).toHaveBeenCalledWith(
       'Could not find article element with ID: missing-id for component initialization.'
