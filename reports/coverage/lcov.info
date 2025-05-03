@@ -1933,9 +1933,9 @@ FN:63,handleValidMoves
 FN:70,handleValidAppliedMoves
 FN:81,initializeBoardAndSeen
 FN:82,(anonymous_16)
-FN:87,isFalsyMoves
-FN:91,isNotArrayMoves
-FN:95,isTooLongMoves
+FN:87,isTruthyMoves
+FN:91,isArrayMoves
+FN:95,isShortEnoughMoves
 FN:99,isInvalidMoves
 FN:101,(anonymous_21)
 FN:104,processMove
@@ -1976,9 +1976,9 @@ FNDA:22,handleValidMoves
 FNDA:14,handleValidAppliedMoves
 FNDA:22,initializeBoardAndSeen
 FNDA:66,(anonymous_16)
-FNDA:25,isFalsyMoves
-FNDA:23,isNotArrayMoves
-FNDA:23,isTooLongMoves
+FNDA:25,isTruthyMoves
+FNDA:23,isArrayMoves
+FNDA:23,isShortEnoughMoves
 FNDA:25,isInvalidMoves
 FNDA:71,(anonymous_21)
 FNDA:86,processMove
