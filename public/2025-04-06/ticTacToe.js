@@ -38,9 +38,13 @@ export function ticTacToeMove(input) {
   const moves = parseInputSafely(input);
   if (!moves) {return returnInitialOptimalMove();}
 
-  const result = validateAndApplyMoves(moves);
-  if (!result) {return returnInitialOptimalMove();}
-  const { board, earlyWin } = result;
+  // Inline validateAndApplyMoves
+  if (!Array.isArray(moves) || moves.length > 9) {return returnInitialOptimalMove();}
+  const { board, seen } = initializeBoardAndSeen();
+  const result = applyMovesSequentially(moves, board, seen);
+  if (!result.valid) {return returnInitialOptimalMove();}
+  const earlyWin = result.earlyWin;
+
   if (shouldSkipMove(earlyWin, moves)) {return buildMoveResponse(moves);}
 
   const nextPlayer = determineNextPlayer(moves);
@@ -70,15 +74,6 @@ function applyMovesSequentially(moves, board, seen) {
   return { valid: true, earlyWin: false };
 }
 
-function validateAndApplyMoves(moves) {
-  if (!Array.isArray(moves) || moves.length > 9) {return null;}
-
-  const { board, seen } = initializeBoardAndSeen();
-  const result = applyMovesSequentially(moves, board, seen);
-  if (!result.valid) {return null;}
-
-  return { board, earlyWin: result.earlyWin };
-}
 
 function scoreMove(board, r, c, player, moves) {
   board[r][c] = player;
