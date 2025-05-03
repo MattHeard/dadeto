@@ -163,6 +163,16 @@ function getScoredMoves(board, nextPlayer, moves, setter) {
   }, []);
 }
 
+function getBestScoredMove(scoredMoves) {
+  let bestScoredMove = { moveScore: -Infinity };
+  for (const scoredMove of scoredMoves) {
+    if (scoredMove.moveScore > bestScoredMove.moveScore) {
+      bestScoredMove = scoredMove;
+    }
+  }
+  return bestScoredMove;
+}
+
 function findBestMove(board, nextPlayer, moves) {
   const setter = (board, r, c) => value => setBoardCell(board, { r, c }, value);
 
@@ -170,13 +180,7 @@ function findBestMove(board, nextPlayer, moves) {
   const scoredMoves = getScoredMoves(board, nextPlayer, moves, setter);
 
   // Find the scoredMove with the highest moveScore
-  let bestScoredMove = { moveScore: -Infinity };
-  for (const scoredMove of scoredMoves) {
-    if (scoredMove.moveScore > bestScoredMove.moveScore) {
-      bestScoredMove = scoredMove;
-    }
-  }
-
+  const bestScoredMove = getBestScoredMove(scoredMoves);
   return bestScoredMove.move;
 }
 
