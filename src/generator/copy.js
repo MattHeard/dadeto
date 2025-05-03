@@ -37,10 +37,12 @@ function getDirEntries(dir) {
 }
 
 function getNewFiles(entry, fullPath) {
-  if (entry.isDirectory()) {
-    return findJsFiles(fullPath);
-  } else if (isJsFile(entry)) {
-    return [fullPath];
+  if (entry.isDirectory() || isJsFile(entry)) {
+    if (entry.isDirectory()) {
+      return findJsFiles(fullPath);
+    } else if (isJsFile(entry)) {
+      return [fullPath];
+    }
   }
   return [];
 }
