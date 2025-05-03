@@ -101,13 +101,16 @@ function isInvalidMoves(moves) {
   return !validators.every(fn => fn(moves));
 }
 
+function isMoveApplicationValid(move, i, moves, board, seen) {
+  return canMoveBeApplied(move, i, moves) && applyMoveToBoard(board, move, seen);
+}
+
 function applyMovesSequentially(moves, board, seen) {
   let valid;
   let earlyWin;
   for (let i = 0; i < moves.length; i++) {
     const move = moves[i];
-    const canBeApplied = canMoveBeApplied(move, i, moves);
-    valid = canBeApplied && applyMoveToBoard(board, move, seen);
+    valid = isMoveApplicationValid(move, i, moves, board, seen);
     if (!valid) {
       return { valid };
     }
