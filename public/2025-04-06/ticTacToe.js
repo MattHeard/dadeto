@@ -102,9 +102,7 @@ function isInvalidMoves(moves) {
 }
 
 function processMove(move, index, moves, board, seen) {
-  const isMoveValid = isValidMove(move, index, moves);
-  const appliedMove = isMoveValid && applyMoveToBoard(board, move, seen);
-  return isMoveValid && appliedMove;
+  return isValidMove(move, index, moves) && applyMoveToBoard(board, move, seen);
 }
 
 function applyMovesSequentially(moves, board, seen) {
