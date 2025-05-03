@@ -606,6 +606,7 @@ describe('initializeInteractiveComponent', () => {
 });
 
 describe('initializeVisibleComponents', () => {
+  let getInteractiveComponentCount;
   let interactiveComponents;
   let win;
   let logInfo;
@@ -638,6 +639,7 @@ describe('initializeVisibleComponents', () => {
     modulePath = 'path/to/module';
     functionName = 'initFunction';
     component = { id, modulePath, functionName };
+    getInteractiveComponentCount = () => interactiveComponents.length;
     env = {
       win,
       logInfo,
@@ -645,13 +647,13 @@ describe('initializeVisibleComponents', () => {
       getElement,
       hasNoInteractiveComponents,
       getInteractiveComponents,
+      getInteractiveComponentCount
     };
   });
   it('warns if there are no interactive components', () => {
     interactiveComponents = [];
     win = { interactiveComponents };
     hasNoInteractiveComponents = () => true;
-    getInteractiveComponents = () => [];
     env = {
       win,
       logInfo,
@@ -659,6 +661,7 @@ describe('initializeVisibleComponents', () => {
       getElement,
       hasNoInteractiveComponents,
       getInteractiveComponents,
+      getInteractiveComponentCount
     };
     initializeVisibleComponents(env, createIntersectionObserver);
     expect(logWarning).toHaveBeenCalledWith('No interactive components found to initialize');
@@ -675,6 +678,7 @@ describe('initializeVisibleComponents', () => {
       getElement,
       hasNoInteractiveComponents,
       getInteractiveComponents,
+      getInteractiveComponentCount
     };
     createIntersectionObserver = jest.fn(() => observer);
     initializeVisibleComponents(env, createIntersectionObserver);
@@ -692,13 +696,14 @@ describe('initializeVisibleComponents', () => {
     interactiveComponents = [component];
     win = { interactiveComponents };
     getElement = jest.fn(() => null);
-    const env = {
+    env = {
       win,
       logInfo,
       logWarning,
       getElement,
       hasNoInteractiveComponents,
-      getInteractiveComponents
+      getInteractiveComponents,
+      getInteractiveComponentCount
     };
     initializeVisibleComponents(env, createIntersectionObserver);
     // Expectations at end
@@ -722,13 +727,14 @@ describe('initializeVisibleComponents', () => {
     win = { interactiveComponents };
     getElement = jest.fn(() => ({}));
     createIntersectionObserver = jest.fn(() => observer);
-    const env = {
+    env = {
       win,
       logInfo,
       logWarning,
       getElement,
       hasNoInteractiveComponents,
-      getInteractiveComponents
+      getInteractiveComponents,
+      getInteractiveComponentCount
     };
     initializeVisibleComponents(env, createIntersectionObserver);
     // Expectations at end
