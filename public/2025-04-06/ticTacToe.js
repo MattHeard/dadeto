@@ -159,14 +159,13 @@ function findBestMove(board, nextPlayer, moves) {
   const scoredMoves = [];
 
   // Evaluate moves for all empty cells
-  const evaluateMove = ({ r, c }) => {
+  getEmptyCells(board).forEach(({ r, c }) => {
     const setCell = setter(board, r, c);
     const move = { row: r, column: c };
     const moveScore = scoreMove(nextPlayer, moves, setCell);
     const scoredMove = { moveScore, move };
     scoredMoves.push(scoredMove);
-  };
-  getEmptyCells(board).forEach(evaluateMove);
+  });
 
   // Find the scoredMove with the highest moveScore
   let bestScoredMove = { moveScore: -Infinity };
