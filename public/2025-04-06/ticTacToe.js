@@ -114,7 +114,8 @@ function applyMovesSequentially(moves, board, seen) {
     valid = isMoveApplicationValid(i, moves, board, seen);
     earlyWin = checkEarlyWin(board);
     result = { valid, earlyWin };
-    if (!valid || earlyWin) {
+    const shouldBreak = !valid || earlyWin;
+    if (shouldBreak) {
       break;
     }
   }
