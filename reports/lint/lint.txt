@@ -35,7 +35,7 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js[24m[0m
 [0m  [2m138:1[22m   [33mwarning[39m  Function 'setBoardCell' has too many parameters (4). Maximum allowed is 3           [2mmax-params[22m[0m
 [0m  [2m142:1[22m   [33mwarning[39m  Function 'scoreMove' has too many parameters (6). Maximum allowed is 3              [2mmax-params[22m[0m
-[0m  [2m150:1[22m   [33mwarning[39m  Function 'findBestMove' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
+[0m  [2m149:1[22m   [33mwarning[39m  Function 'findBestMove' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
 [0m  [2m175:1[22m   [33mwarning[39m  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                    [2mcomplexity[22m[0m
 [0m  [2m184:1[22m   [33mwarning[39m  Function 'checkColumns' has a complexity of 5. Maximum allowed is 2                 [2mcomplexity[22m[0m
 [0m  [2m193:1[22m   [33mwarning[39m  Function 'checkDiagonals' has a complexity of 6. Maximum allowed is 2               [2mcomplexity[22m[0m
