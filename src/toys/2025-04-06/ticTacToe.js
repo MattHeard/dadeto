@@ -173,9 +173,11 @@ function getBestScoredMove(scoredMoves) {
   return bestScoredMove;
 }
 
-function findBestMove(board, nextPlayer, moves) {
-  const setter = (board, r, c) => value => setBoardCell(board, { r, c }, value);
+function setter(board, r, c) {
+  return value => setBoardCell(board, { r, c }, value);
+}
 
+function findBestMove(board, nextPlayer, moves) {
   // Get all scored moves
   const scoredMoves = getScoredMoves(board, nextPlayer, moves, setter);
 
