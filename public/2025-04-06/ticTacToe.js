@@ -20,8 +20,12 @@ function isObject(val) {
 
 function getValidParsedMoves(parsed) {
   const isObj = isObject(parsed);
-  const hasMovesArray = isObj && Array.isArray(parsed.moves);
-  return isObj && hasMovesArray ? parsed.moves : null;
+  const hasMoves = hasMovesArray(parsed);
+  return isObj && hasMoves ? parsed.moves : null;
+}
+
+function hasMovesArray(val) {
+  return isObject(val) && Array.isArray(val.moves);
 }
 
 function parseInputSafely(input) {
