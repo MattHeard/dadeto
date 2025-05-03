@@ -744,7 +744,8 @@ function composeLinkParts(baseLink, meta) {
 function formatRelatedLink(link) {
   const { url, title, author, source, quote, type } = escapeRelatedLinkFields(link);
   const baseLink = formatBaseLink(type, url, title);
-  return composeLinkParts(baseLink, { author, source, quote });
+  const linkProperties = { author, source, quote };
+  return composeLinkParts(baseLink, linkProperties);
 }
 
 /**

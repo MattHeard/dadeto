@@ -1,6 +1,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js[24m[0m
-[0m  [2m956:8[22m  [33mwarning[39m  Function 'generateBlog' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m957:8[22m  [33mwarning[39m  Function 'generateBlog' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/interactive.js[24m[0m
 [0m  [2m30:8[22m  [33mwarning[39m  Function 'generateCompleteInteractiveComponent' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
