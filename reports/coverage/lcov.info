@@ -1951,6 +1951,7 @@ FN:149,scoreMove
 FN:155,findBestMove
 FN:157,(anonymous_33)
 FN:157,(anonymous_34)
+FN:171,(anonymous_35)
 FN:183,determineNextPlayer
 FN:188,checkRows
 FN:197,checkColumns
@@ -1966,8 +1967,8 @@ FN:270,hasValidPosition
 FN:276,canMoveBeApplied
 FN:288,isWin
 FN:292,returnInitialOptimalMove
-FNF:50
-FNH:50
+FNF:51
+FNH:51
 FNDA:1880701,getOpponent
 FNDA:25,tryParseJSON
 FNDA:82,respectsTurnOrder
@@ -2003,6 +2004,7 @@ FNDA:41,scoreMove
 FNDA:9,findBestMove
 FNDA:41,(anonymous_33)
 FNDA:41,(anonymous_34)
+FNDA:41,(anonymous_35)
 FNDA:9,determineNextPlayer
 FNDA:2051591,checkRows
 FNDA:1898180,checkColumns
