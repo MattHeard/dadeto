@@ -22,6 +22,11 @@ if (!fs.existsSync(publicDir)) {
 
 // --- Copy Toy Files ---
 
+// Predicate to check if an entry is a JS file (excluding .test.js)
+function isJsFile(entry) {
+  return entry.isFile() && entry.name.endsWith('.js') && !entry.name.endsWith('.test.js');
+}
+
 // Function to recursively find JS files in a directory (excluding .test.js)
 function findJsFiles(dir) {
   let jsFiles = [];
@@ -30,7 +35,7 @@ function findJsFiles(dir) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       jsFiles = jsFiles.concat(findJsFiles(fullPath));
-    } else if (entry.isFile() && entry.name.endsWith('.js') && !entry.name.endsWith('.test.js')) {
+    } else if (isJsFile(entry)) {
       jsFiles.push(fullPath);
     }
   }
