@@ -665,9 +665,15 @@ describe('initializeVisibleComponents', () => {
   it('initializes and observes a valid interactive component', () => {
     interactiveComponents = [component];
     win = { interactiveComponents };
-    env.win = win;
     getElement = () => article;
-    env.getElement = getElement;
+    env = {
+      win,
+      logInfo,
+      logWarning,
+      getElement,
+      hasNoInteractiveComponents,
+      getInteractiveComponents,
+    };
     createIntersectionObserverFn.mockImplementation(() => observer);
     initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
