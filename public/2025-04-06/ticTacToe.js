@@ -56,6 +56,10 @@ function buildMoveResponseWithNewMove(moves, newMove) {
   return buildMoveResponse(moves, newMove);
 }
 
+function buildMoveResponseWithoutNewMove(moves) {
+  return buildMoveResponse(moves, null);
+}
+
 export function ticTacToeMove(input) {
   const moves = parseInputSafely(input);
 
