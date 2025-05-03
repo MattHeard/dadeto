@@ -630,11 +630,10 @@ describe('initializeVisibleComponents', () => {
     const mockArticle = {};
     const mockObserver = { observe: jest.fn() };
 
-    const win = {
-      interactiveComponents: [
-        { id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' }
-      ]
-    };
+    const interactiveComponents = [
+  { id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' }
+];
+const win = { interactiveComponents };
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn(() => mockArticle);
@@ -661,11 +660,10 @@ describe('initializeVisibleComponents', () => {
   });
 
   it('warns when article element is missing for a component', () => {
-    const win = {
-      interactiveComponents: [
-        { id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' }
-      ]
-    };
+    const interactiveComponents = [
+  { id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' }
+];
+const win = { interactiveComponents };
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn(() => null);
@@ -689,14 +687,13 @@ describe('initializeVisibleComponents', () => {
   });
 
   it('attempts to initialize all interactive components, regardless of missing fields', () => {
-    const win = {
-      interactiveComponents: [
-        { id: 'a', modulePath: 'valid/path', functionName: '' },
-        { id: 'b', modulePath: '', functionName: 'fn' },
-        { id: 'c', modulePath: null, functionName: 'fn' },
-        { id: 'd', modulePath: 'valid', functionName: 'fn' }
-      ]
-    };
+    const interactiveComponents = [
+  { id: 'a', modulePath: 'valid/path', functionName: '' },
+  { id: 'b', modulePath: '', functionName: 'fn' },
+  { id: 'c', modulePath: null, functionName: 'fn' },
+  { id: 'd', modulePath: 'valid', functionName: 'fn' }
+];
+const win = { interactiveComponents };
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn(() => ({}));
