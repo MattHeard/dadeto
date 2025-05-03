@@ -106,10 +106,8 @@ function isMoveApplicationValid(i, moves, board, seen) {
   return canMoveBeApplied(move, i, moves) && applyMoveToBoard(board, move, seen);
 }
 
-function applyMovesSequentially(moves, board, seen) {
-  const initial = { valid: true, earlyWin: false, stop: false };
-
-  const result = moves.reduce((acc, _, i) => {
+function applyMoveReducer(moves, board, seen) {
+  return function(acc, _, i) {
     if (acc.stop) return acc;
 
     const valid = isMoveApplicationValid(i, moves, board, seen);
@@ -117,7 +115,13 @@ function applyMovesSequentially(moves, board, seen) {
     const stop = !valid || earlyWin;
 
     return { valid, earlyWin, stop };
-  }, initial);
+  };
+}
+
+function applyMovesSequentially(moves, board, seen) {
+  const initial = { valid: true, earlyWin: false, stop: false };
+
+  const result = moves.reduce(applyMoveReducer(moves, board, seen), initial);
 
   return { valid: result.valid, earlyWin: result.earlyWin };
 }
