@@ -625,7 +625,7 @@ describe('initializeVisibleComponents', () => {
                     
     const env = {
       win,
-      logInfo: logInfo,
+      logInfo,
       logWarning: warnFn,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => true,
@@ -644,7 +644,7 @@ describe('initializeVisibleComponents', () => {
             getElementByIdFn.mockImplementation(() => mockArticle);    createIntersectionObserverFn.mockImplementation(() => mockObserver);
     const env = {
       win,
-      logInfo: logInfo,
+      logInfo,
       logWarning: warnFn,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => false,
@@ -667,7 +667,7 @@ describe('initializeVisibleComponents', () => {
             getElementByIdFn.mockImplementation(() => null);    
     const env = {
       win,
-      logInfo: logInfo,
+      logInfo,
       logWarning: warnFn,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => false,
@@ -692,7 +692,7 @@ describe('initializeVisibleComponents', () => {
             getElementByIdFn.mockImplementation(() => ({}));    createIntersectionObserverFn.mockImplementation(() => ({ observe: jest.fn() }));
     const env = {
       win,
-      logInfo: logInfo,
+      logInfo,
       logWarning: warnFn,
       getElement: getElementByIdFn,
       hasNoInteractiveComponents: () => false,
