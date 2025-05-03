@@ -101,7 +101,8 @@ function isInvalidMoves(moves) {
   return !validators.every(fn => fn(moves));
 }
 
-function isMoveApplicationValid(move, i, moves, board, seen) {
+function isMoveApplicationValid(i, moves, board, seen) {
+  const move = moves[i];
   return canMoveBeApplied(move, i, moves) && applyMoveToBoard(board, move, seen);
 }
 
@@ -109,8 +110,7 @@ function applyMovesSequentially(moves, board, seen) {
   let valid;
   let earlyWin;
   for (let i = 0; i < moves.length; i++) {
-    const move = moves[i];
-    valid = isMoveApplicationValid(move, i, moves, board, seen);
+    valid = isMoveApplicationValid(i, moves, board, seen);
     if (!valid) {
       return { valid };
     }

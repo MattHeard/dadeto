@@ -34,8 +34,8 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js[24m[0m
 [0m   [2m88:10[22m  [33mwarning[39m  Unexpected implicit coercion encountered. Use `Boolean(moves)` instead               [2mno-implicit-coercion[22m[0m
-[0m  [2m104:1[22m   [33mwarning[39m  Function 'isMoveApplicationValid' has too many parameters (5). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m  [2m108:1[22m   [33mwarning[39m  Function 'applyMovesSequentially' has a complexity of 4. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m  [2m104:1[22m   [33mwarning[39m  Function 'isMoveApplicationValid' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
+[0m  [2m109:1[22m   [33mwarning[39m  Function 'applyMovesSequentially' has a complexity of 4. Maximum allowed is 2        [2mcomplexity[22m[0m
 [0m  [2m126:1[22m   [33mwarning[39m  Function 'scoreMove' has too many parameters (5). Maximum allowed is 3               [2mmax-params[22m[0m
 [0m  [2m133:1[22m   [33mwarning[39m  Function 'findBestMove' has a complexity of 5. Maximum allowed is 2                  [2mcomplexity[22m[0m
 [0m  [2m157:1[22m   [33mwarning[39m  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                     [2mcomplexity[22m[0m
