@@ -154,8 +154,6 @@ function scoreMove(player, moves, setCell) {
 
 function findBestMove(board, nextPlayer, moves) {
   const setter = (board, r, c) => value => setBoardCell(board, { r, c }, value);
-  let best = -Infinity;
-  let bestMove = null;
 
   // Store scored moves
   const scoredMoves = [];
@@ -167,10 +165,6 @@ function findBestMove(board, nextPlayer, moves) {
     const moveScore = scoreMove(nextPlayer, moves, setCell);
     const scoredMove = { moveScore, move };
     scoredMoves.push(scoredMove);
-    if (moveScore > best) {
-      best = moveScore;
-      bestMove = move;
-    }
   };
   getEmptyCells(board).forEach(evaluateMove);
 
