@@ -36,13 +36,18 @@ function getDirEntries(dir) {
   return fs.readdirSync(dir, { withFileTypes: true });
 }
 
+function getFilesForEntry(entry, fullPath) {
+  if (entry.isDirectory()) {
+    return findJsFiles(fullPath);
+  } else if (isJsFile(entry)) {
+    return [fullPath];
+  }
+  return [];
+}
+
 function getNewFiles(entry, fullPath) {
   if (entry.isDirectory() || isJsFile(entry)) {
-    if (entry.isDirectory()) {
-      return findJsFiles(fullPath);
-    } else if (isJsFile(entry)) {
-      return [fullPath];
-    }
+    return getFilesForEntry(entry, fullPath);
   }
   return [];
 }
