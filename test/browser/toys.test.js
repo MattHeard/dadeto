@@ -696,7 +696,13 @@ describe('initializeVisibleComponents', () => {
     const getElementByIdFn = jest.fn(() => ({}));
     const createIntersectionObserverFn = jest.fn(() => ({ observe: jest.fn() }));
 
-    initializeVisibleComponents_new(win, logFn, warnFn, getElementByIdFn, createIntersectionObserverFn);
+    const env = {
+      win,
+      logInfo: logFn,
+      logWarning: warnFn,
+      getElement: getElementByIdFn
+    };
+    initializeVisibleComponents(env, createIntersectionObserverFn);
     // Expectations at end
     expect(createIntersectionObserverFn).toHaveBeenCalledTimes(4);
   });
