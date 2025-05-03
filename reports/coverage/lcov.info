@@ -1955,7 +1955,7 @@ FN:234,isValidMove
 FN:246,isWin
 FN:250,returnInitialOptimalMove
 FNF:38
-FNH:36
+FNH:38
 FNDA:1880701,getOpponent
 FNDA:25,tryParseJSON
 FNDA:82,respectsTurnOrder
@@ -1967,8 +1967,8 @@ FNDA:24,hasMovesArray
 FNDA:25,parseInputSafely
 FNDA:14,shouldSkipMove
 FNDA:14,buildMoveResponse
-FNDA:0,buildMoveResponseWithNewMove
-FNDA:0,buildMoveResponseWithoutNewMove
+FNDA:9,buildMoveResponseWithNewMove
+FNDA:5,buildMoveResponseWithoutNewMove
 FNDA:25,ticTacToeMove
 FNDA:22,handleValidMoves
 FNDA:14,handleValidAppliedMoves
@@ -2013,8 +2013,8 @@ DA:47,9
 DA:49,5
 DA:51,14
 DA:52,14
-DA:56,0
-DA:60,0
+DA:56,9
+DA:60,5
 DA:64,25
 DA:67,25
 DA:68,22
@@ -2107,7 +2107,7 @@ DA:247,2051575
 DA:252,11
 DA:253,11
 LF:112
-LH:110
+LH:112
 BRDA:2,0,0,1781884
 BRDA:2,0,1,98817
 BRDA:14,1,0,82
@@ -2120,7 +2120,7 @@ BRDA:32,4,0,24
 BRDA:32,4,1,24
 BRDA:41,5,0,14
 BRDA:41,5,1,10
-BRDA:44,6,0,5
+BRDA:44,6,0,0
 BRDA:46,7,0,9
 BRDA:46,7,1,5
 BRDA:67,8,0,3
@@ -2198,7 +2198,7 @@ BRDA:247,40,0,2051575
 BRDA:247,40,1,1898164
 BRDA:247,40,2,1755733
 BRF:89
-BRH:89
+BRH:88
 end_of_record
 TN:
 SF:src/toys/2025-04-16/colorPalette.js

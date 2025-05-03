@@ -78,12 +78,12 @@ function handleValidMoves(moves) {
 function handleValidAppliedMoves(moves, board, result) {
   const earlyWin = result.earlyWin;
 
-  if (shouldSkipMove(earlyWin, moves)) {return buildMoveResponse(moves);}
+  if (shouldSkipMove(earlyWin, moves)) {return buildMoveResponseWithoutNewMove(moves);}
 
   const nextPlayer = determineNextPlayer(moves);
   const bestMove = findBestMove(board, nextPlayer, moves);
   const newMove = { player: nextPlayer, position: bestMove };
-  return buildMoveResponse(moves, newMove);
+  return buildMoveResponseWithNewMove(moves, newMove);
 }
 
 function initializeBoardAndSeen() {
