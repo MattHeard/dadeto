@@ -648,8 +648,9 @@ describe('initializeVisibleComponents', () => {
     const article = {};
     const observer = { observe: jest.fn() };
 
-    const component = { id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' };
-    const { id } = component;
+    const id = 'test-id';
+    const component = { id, modulePath: 'path/to/module', functionName: 'initFunction' };
+
     interactiveComponents.push(component);
     getElement.mockImplementation(() => article);
     createIntersectionObserverFn.mockImplementation(() => observer);
