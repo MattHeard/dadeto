@@ -108,9 +108,8 @@ function applyMovesSequentially(moves, board, seen) {
     const isMoveValid = isValidMove(move, i, moves);
     const isMoveValidAndApplied = isMoveValid && applyMoveToBoard(board, move, seen);
     const isEarlyWin = checkEarlyWin(board);
-    valid = true;
+    valid = isMoveValidAndApplied;
     if (!isMoveValidAndApplied) {
-      valid = false;
       return { valid };
     }
     if (isEarlyWin) {
