@@ -1,4 +1,4 @@
-import { generateBlog, getBlogGenerationArgs } from '../../src/generator/generator.js';
+import { generateBlog, generateBlogNew } from '../../src/generator/generator.js';
 
 const header = '<body>';
 const footer = '</body>';
