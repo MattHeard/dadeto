@@ -396,7 +396,7 @@ export function getInteractiveComponents(win) {
   return win.interactiveComponents || [];
 }
 
-function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
+export function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
   return component => {
     const article = getElement(component.id);
     if (!article) {
