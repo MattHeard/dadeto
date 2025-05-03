@@ -392,7 +392,7 @@ function getInteractiveComponentCount(win) {
   return win.interactiveComponents ? win.interactiveComponents.length : 0;
 }
 
-function getInteractiveComponents(win) {
+export function getInteractiveComponents(win) {
   return win.interactiveComponents || [];
 }
 
