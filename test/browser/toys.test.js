@@ -649,6 +649,7 @@ describe('initializeVisibleComponents', () => {
     const observer = { observe: jest.fn() };
 
     const component = { id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' };
+    const { id } = component;
     interactiveComponents.push(component);
     getElement.mockImplementation(() => article);
     createIntersectionObserverFn.mockImplementation(() => observer);
@@ -667,7 +668,7 @@ describe('initializeVisibleComponents', () => {
       1,
       'interactive components via IntersectionObserver'
     );
-    expect(getElement).toHaveBeenCalledWith(component.id);
+    expect(getElement).toHaveBeenCalledWith(id);
     expect(createIntersectionObserverFn).toHaveBeenCalledWith(article, 'path/to/module', 'initFunction');
     expect(observer.observe).toHaveBeenCalledWith(article);
   });
