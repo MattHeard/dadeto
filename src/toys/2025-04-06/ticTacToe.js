@@ -41,23 +41,15 @@ function shouldSkipMove(earlyWin, moves) {
   return earlyWin || moves.length >= 9;
 }
 
-function buildMoveResponse(moves, newMove = null) {
-  let updatedMoves;
-  if (newMove) {
-    updatedMoves = [...moves, newMove];
-  } else {
-    updatedMoves = moves;
-  }
+function buildMoveResponseWithNewMove(moves, newMove) {
+  const updatedMoves = [...moves, newMove];
   const response = { moves: updatedMoves };
   return JSON.stringify(response);
 }
 
-function buildMoveResponseWithNewMove(moves, newMove) {
-  return buildMoveResponse(moves, newMove);
-}
-
 function buildMoveResponseWithoutNewMove(moves) {
-  return buildMoveResponse(moves, null);
+  const response = { moves };
+  return JSON.stringify(response);
 }
 
 export function ticTacToeMove(input) {
