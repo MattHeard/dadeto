@@ -959,6 +959,11 @@ export function generateBlog(blog, header, footer, wrapHtml) {
   return wrapHtml(htmlContents);
 }
 
+export function generateBlogNew(parts, wrapHtml) {
+  const { blog, header, footer } = parts;
+  return generateBlog(blog, header, footer, wrapHtml);
+}
+
 const createBlogComponents = () => ({
   header: createPageHeader(),
   footer: createPageFooter(),
@@ -977,5 +982,5 @@ export function getBlogGenerationArgs() {
 
 export const generateBlogOuter = (blog) => {
   const { header, footer, wrapFunc } = getBlogGenerationArgs();
-  return generateBlog(blog, header, footer, wrapFunc);
+  return generateBlogNew({ blog, header, footer }, wrapFunc);
 };
