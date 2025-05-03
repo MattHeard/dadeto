@@ -166,11 +166,8 @@ function getScoredMoves(board, nextPlayer, moves, setter) {
 function findBestMove(board, nextPlayer, moves) {
   const setter = (board, r, c) => value => setBoardCell(board, { r, c }, value);
 
-  // Store scored moves
-  let scoredMoves = [];
-
   // Get all scored moves
-  scoredMoves = getScoredMoves(board, nextPlayer, moves, setter);
+  const scoredMoves = getScoredMoves(board, nextPlayer, moves, setter);
 
   // Find the scoredMove with the highest moveScore
   let bestScoredMove = { moveScore: -Infinity };
