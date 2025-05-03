@@ -709,11 +709,15 @@ describe('initializeVisibleComponents', () => {
   });
 
   it('attempts to initialize all interactive components, regardless of missing fields', () => {
+    const componentA = { id: 'a', modulePath: 'valid/path', functionName: '' };
+    const componentB = { id: 'b', modulePath: '', functionName: 'fn' };
+    const componentC = { id: 'c', modulePath: null, functionName: 'fn' };
+    const componentD = { id: 'd', modulePath: 'valid', functionName: 'fn' };
     interactiveComponents.push(
-      { id: 'a', modulePath: 'valid/path', functionName: '' },
-      { id: 'b', modulePath: '', functionName: 'fn' },
-      { id: 'c', modulePath: null, functionName: 'fn' },
-      { id: 'd', modulePath: 'valid', functionName: 'fn' }
+      componentA,
+      componentB,
+      componentC,
+      componentD
     );
     getElement = jest.fn(() => ({}));
     createIntersectionObserver = jest.fn(() => observer);
