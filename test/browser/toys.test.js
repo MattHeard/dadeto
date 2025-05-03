@@ -612,6 +612,7 @@ describe('initializeVisibleComponents', () => {
   let logWarning;
   let getElement;
   let createIntersectionObserverFn;
+  let hasNoInteractiveComponents;
 
   beforeEach(() => {
     interactiveComponents = [];
@@ -620,15 +621,17 @@ describe('initializeVisibleComponents', () => {
     logWarning = jest.fn();
     getElement = jest.fn();
     createIntersectionObserverFn = jest.fn();
+    hasNoInteractiveComponents = () => false;
   });
   it('warns if there are no interactive components', () => {
                     
+    hasNoInteractiveComponents = () => true;
     const env = {
       win,
       logInfo,
       logWarning,
       getElement,
-      hasNoInteractiveComponents: () => true,
+      hasNoInteractiveComponents,
       getInteractiveComponents: () => [],
     };
 
@@ -647,7 +650,7 @@ describe('initializeVisibleComponents', () => {
       logInfo,
       logWarning,
       getElement,
-      hasNoInteractiveComponents: () => false,
+      hasNoInteractiveComponents,
       getInteractiveComponents: () => win.interactiveComponents
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
@@ -670,7 +673,7 @@ describe('initializeVisibleComponents', () => {
       logInfo,
       logWarning,
       getElement,
-      hasNoInteractiveComponents: () => false,
+      hasNoInteractiveComponents,
       getInteractiveComponents: () => win.interactiveComponents
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
@@ -695,7 +698,7 @@ describe('initializeVisibleComponents', () => {
       logInfo,
       logWarning,
       getElement,
-      hasNoInteractiveComponents: () => false,
+      hasNoInteractiveComponents,
       getInteractiveComponents: () => win.interactiveComponents
     };
     initializeVisibleComponents(env, createIntersectionObserverFn);
