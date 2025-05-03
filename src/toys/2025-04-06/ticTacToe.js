@@ -156,9 +156,9 @@ function findBestMove(board, nextPlayer, moves) {
     for (let c = 0; c < 3; c++) {
       if (!board[r][c]) {
         const setCell = setter(board, r, c);
-        const score = scoreMove(board, nextPlayer, moves, setCell);
-        if (score > best) {
-          best = score;
+        const moveScore = scoreMove(board, nextPlayer, moves, setCell);
+        if (moveScore > best) {
+          best = moveScore;
           bestMove = { row: r, column: c };
         }
       }
