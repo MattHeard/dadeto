@@ -157,9 +157,12 @@ function findBestMove(board, nextPlayer, moves) {
   let best = -Infinity;
   let bestMove = null;
 
-  const emptyCells = [];
+  const emptyCells = getEmptyCells(board);
 
-  // First pass: collect empty cells
+// ...
+
+function getEmptyCells(board) {
+  const emptyCells = [];
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 3; c++) {
       if (!board[r][c]) {
@@ -167,6 +170,8 @@ function findBestMove(board, nextPlayer, moves) {
       }
     }
   }
+  return emptyCells;
+}
 
   // Second pass: evaluate moves for empty cells
   emptyCells.forEach(({ r, c }) => {
