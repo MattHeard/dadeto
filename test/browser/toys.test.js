@@ -609,15 +609,16 @@ describe('initializeVisibleComponents', () => {
   let interactiveComponents;
   let win;
   let logFn;
+  let warnFn;
 
   beforeEach(() => {
     interactiveComponents = [];
     win = { interactiveComponents };
     logFn = jest.fn();
+    warnFn = jest.fn();
   });
   it('warns if there are no interactive components', () => {
-            const warnFn = jest.fn();
-    const getElementByIdFn = jest.fn();
+                const getElementByIdFn = jest.fn();
     const createIntersectionObserverFn = jest.fn();
 
     const env = {
@@ -638,8 +639,7 @@ describe('initializeVisibleComponents', () => {
     const mockObserver = { observe: jest.fn() };
 
     interactiveComponents.push({ id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' });
-        const warnFn = jest.fn();
-    const getElementByIdFn = jest.fn(() => mockArticle);
+            const getElementByIdFn = jest.fn(() => mockArticle);
     const createIntersectionObserverFn = jest.fn(() => mockObserver);
 
     const env = {
@@ -664,8 +664,7 @@ describe('initializeVisibleComponents', () => {
 
   it('warns when article element is missing for a component', () => {
     interactiveComponents.push({ id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' });
-        const warnFn = jest.fn();
-    const getElementByIdFn = jest.fn(() => null);
+            const getElementByIdFn = jest.fn(() => null);
     const createIntersectionObserverFn = jest.fn();
 
     const env = {
@@ -692,8 +691,7 @@ describe('initializeVisibleComponents', () => {
   { id: 'c', modulePath: null, functionName: 'fn' },
   { id: 'd', modulePath: 'valid', functionName: 'fn' }
 );
-        const warnFn = jest.fn();
-    const getElementByIdFn = jest.fn(() => ({}));
+            const getElementByIdFn = jest.fn(() => ({}));
     const createIntersectionObserverFn = jest.fn(() => ({ observe: jest.fn() }));
 
     const env = {
