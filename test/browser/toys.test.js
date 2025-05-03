@@ -624,6 +624,7 @@ describe('initializeVisibleComponents', () => {
   let component;
 
   let env;
+  let getComponentInitializer;
   beforeEach(() => {
     interactiveComponents = [];
     win = { interactiveComponents };
@@ -641,7 +642,7 @@ describe('initializeVisibleComponents', () => {
     component = { id, modulePath, functionName };
     getInteractiveComponentCount = () => interactiveComponents.length;
     // Define a noop getComponentInitializer for possible future use
-    let getComponentInitializer = () => {};
+    getComponentInitializer = () => {};
     env = {
       win,
       logInfo,
