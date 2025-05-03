@@ -384,7 +384,7 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
  * New version: accepts a config object and delegates to the original.
  * @param {object} config - An object containing win, doc, logFn, warnFn, getElementByIdFn, and createIntersectionObserverFn.
  */
-function hasNoInteractiveComponents(win) {
+export function hasNoInteractiveComponents(win) {
   return !win.interactiveComponents || win.interactiveComponents.length === 0;
 }
 
