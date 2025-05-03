@@ -606,6 +606,13 @@ describe('initializeInteractiveComponent', () => {
 });
 
 describe('initializeVisibleComponents', () => {
+  let interactiveComponents;
+  let win;
+
+  beforeEach(() => {
+    interactiveComponents = [];
+    win = { interactiveComponents };
+  });
   it('warns if there are no interactive components', () => {
     const win = { interactiveComponents: [] };
     const logFn = jest.fn();
@@ -630,10 +637,8 @@ describe('initializeVisibleComponents', () => {
     const mockArticle = {};
     const mockObserver = { observe: jest.fn() };
 
-    const interactiveComponents = [
-  { id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' }
-];
-const win = { interactiveComponents };
+    interactiveComponents.length = 0;
+interactiveComponents.push({ id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' });
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn(() => mockArticle);
@@ -660,10 +665,8 @@ const win = { interactiveComponents };
   });
 
   it('warns when article element is missing for a component', () => {
-    const interactiveComponents = [
-  { id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' }
-];
-const win = { interactiveComponents };
+    interactiveComponents.length = 0;
+interactiveComponents.push({ id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' });
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn(() => null);
@@ -687,13 +690,13 @@ const win = { interactiveComponents };
   });
 
   it('attempts to initialize all interactive components, regardless of missing fields', () => {
-    const interactiveComponents = [
+    interactiveComponents.length = 0;
+interactiveComponents.push(
   { id: 'a', modulePath: 'valid/path', functionName: '' },
   { id: 'b', modulePath: '', functionName: 'fn' },
   { id: 'c', modulePath: null, functionName: 'fn' },
   { id: 'd', modulePath: 'valid', functionName: 'fn' }
-];
-const win = { interactiveComponents };
+);
     const logFn = jest.fn();
     const warnFn = jest.fn();
     const getElementByIdFn = jest.fn(() => ({}));
