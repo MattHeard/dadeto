@@ -635,7 +635,6 @@ describe('initializeVisibleComponents', () => {
     };
   });
   it('warns if there are no interactive components', () => {
-                    
     hasNoInteractiveComponents = () => true;
     getInteractiveComponents = () => [];
     env.hasNoInteractiveComponents = hasNoInteractiveComponents;
@@ -650,7 +649,8 @@ describe('initializeVisibleComponents', () => {
     const mockObserver = { observe: jest.fn() };
 
     interactiveComponents.push({ id: 'test-id', modulePath: 'path/to/module', functionName: 'initFunction' });
-            getElement.mockImplementation(() => mockArticle);    createIntersectionObserverFn.mockImplementation(() => mockObserver);
+    getElement.mockImplementation(() => mockArticle);
+    createIntersectionObserverFn.mockImplementation(() => mockObserver);
     const env = {
       win,
       logInfo,
@@ -673,7 +673,7 @@ describe('initializeVisibleComponents', () => {
 
   it('warns when article element is missing for a component', () => {
     interactiveComponents.push({ id: 'missing-id', modulePath: 'path/to/module', functionName: 'initFunction' });
-            getElement.mockImplementation(() => null);    
+    getElement.mockImplementation(() => null);    
     const env = {
       win,
       logInfo,
@@ -693,12 +693,13 @@ describe('initializeVisibleComponents', () => {
 
   it('attempts to initialize all interactive components, regardless of missing fields', () => {
     interactiveComponents.push(
-  { id: 'a', modulePath: 'valid/path', functionName: '' },
-  { id: 'b', modulePath: '', functionName: 'fn' },
-  { id: 'c', modulePath: null, functionName: 'fn' },
-  { id: 'd', modulePath: 'valid', functionName: 'fn' }
-);
-            getElement.mockImplementation(() => ({}));    createIntersectionObserverFn.mockImplementation(() => ({ observe: jest.fn() }));
+      { id: 'a', modulePath: 'valid/path', functionName: '' },
+      { id: 'b', modulePath: '', functionName: 'fn' },
+      { id: 'c', modulePath: null, functionName: 'fn' },
+      { id: 'd', modulePath: 'valid', functionName: 'fn' }
+    );
+    getElement.mockImplementation(() => ({}));
+    createIntersectionObserverFn.mockImplementation(() => ({ observe: jest.fn() }));
     const env = {
       win,
       logInfo,
