@@ -21,16 +21,20 @@ function getUnrecognizedBait() {
   return { modifier: 0, description: "an unconventional bait" };
 }
 
-function getBaitData(input, baitOptions, moodDescription) {
-  const baitKey = input.trim().toLowerCase();
-  if (isRecognizedBait(baitKey, baitOptions)) {
-    return getRecognizedBait(baitKey, baitOptions);
-  }
+function getEmptyOrUnrecognizedBaitResponse(baitKey, moodDescription) {
   if (isEmptyBait(baitKey)) {
     return getDefaultBaitResponse(moodDescription);
   } else {
     return getUnrecognizedBait();
   }
+}
+
+function getBaitData(input, baitOptions, moodDescription) {
+  const baitKey = input.trim().toLowerCase();
+  if (isRecognizedBait(baitKey, baitOptions)) {
+    return getRecognizedBait(baitKey, baitOptions);
+  }
+  return getEmptyOrUnrecognizedBaitResponse(baitKey, moodDescription);
 }
 
 function getTimeOfDay(hour) {

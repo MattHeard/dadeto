@@ -2,9 +2,6 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-26/prettyFloat.js[24m[0m
 [0m  [2m41:1[22m  [33mwarning[39m  Function 'handleSimpleCases' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/fishingGame.js[24m[0m
-[0m  [2m24:1[22m  [33mwarning[39m  Function 'getBaitData' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js[24m[0m
 [0m  [2m7:8[22m  [33mwarning[39m  Function 'get' has a complexity of 15. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
@@ -112,6 +109,6 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 93 problems (0 errors, 93 warnings)[22m[39m[0m
+[0m[33m[1m✖ 92 problems (0 errors, 92 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
