@@ -25,7 +25,7 @@ function deepMerge(target, source) {
   const mergeKey = key => {
     const targetValue = target[key];
     const sourceValue = source[key];
-    if (isObject(targetValue) && isObject(sourceValue)) {
+    if (shouldDeepMerge(targetValue, sourceValue)) {
       // If both target and source values are objects, recursively merge
       output[key] = deepMerge(targetValue, sourceValue);
     } else {
@@ -37,6 +37,10 @@ function deepMerge(target, source) {
   };
   Object.keys(source).forEach(mergeKey);
   return output;
+}
+
+function shouldDeepMerge(targetValue, sourceValue) {
+  return isObject(targetValue) && isObject(sourceValue);
 }
 
 
