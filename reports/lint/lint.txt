@@ -1,6 +1,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
-[0m  [2m64:1[22m  [33mwarning[39m  Function 'processSetTemporary' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m60:1[22m  [33mwarning[39m  Function 'processSetTemporary' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js[24m[0m
 [0m   [2m19:1[22m  [33mwarning[39m  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m

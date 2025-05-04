@@ -21,17 +21,13 @@ function isNonArrayObject(item) {
  * @returns {object} A new object representing the merged result.
  */
 function deepMerge(target, source) {
-  const output = { ...target }; // Start with a shallow copy of the target
+  const output = { ...target };
   const mergeKey = key => {
     const targetValue = target[key];
     const sourceValue = source[key];
     if (shouldDeepMerge(targetValue, sourceValue)) {
-      // If both target and source values are objects, recursively merge
       output[key] = deepMerge(targetValue, sourceValue);
     } else {
-      // Otherwise, overwrite with the source value
-      // (If sourceValue is an object, this assignment handles the case
-      // where target[key] wasn't an object or didn't exist)
       output[key] = sourceValue;
     }
   };

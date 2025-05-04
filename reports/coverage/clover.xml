@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746387953496" clover="3.2.0">
-  <project timestamp="1746387953496" name="All files">
+<coverage generated="1746388009243" clover="3.2.0">
+  <project timestamp="1746388009243" name="All files">
     <metrics statements="1011" coveredstatements="998" conditionals="325" coveredconditionals="313" methods="401" coveredmethods="396" elements="1737" coveredelements="1707" complexity="0" loc="1011" ncloc="1011" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
@@ -866,29 +866,29 @@
         <line num="26" count="18" type="stmt"/>
         <line num="27" count="18" type="stmt"/>
         <line num="28" count="18" type="cond" truecount="2" falsecount="0"/>
-        <line num="30" count="2" type="stmt"/>
-        <line num="35" count="16" type="stmt"/>
-        <line num="38" count="13" type="stmt"/>
-        <line num="39" count="13" type="stmt"/>
-        <line num="43" count="18" type="cond" truecount="2" falsecount="0"/>
-        <line num="56" count="15" type="stmt"/>
-        <line num="57" count="15" type="stmt"/>
-        <line num="59" count="1" type="stmt"/>
-        <line num="61" count="14" type="stmt"/>
-        <line num="65" count="14" type="cond" truecount="2" falsecount="0"/>
-        <line num="66" count="2" type="stmt"/>
-        <line num="68" count="12" type="stmt"/>
-        <line num="69" count="12" type="stmt"/>
-        <line num="70" count="12" type="stmt"/>
-        <line num="71" count="12" type="stmt"/>
-        <line num="73" count="2" type="stmt"/>
-        <line num="78" count="12" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="31" count="16" type="stmt"/>
+        <line num="34" count="13" type="stmt"/>
+        <line num="35" count="13" type="stmt"/>
+        <line num="39" count="18" type="cond" truecount="2" falsecount="0"/>
+        <line num="52" count="15" type="stmt"/>
+        <line num="53" count="15" type="stmt"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="57" count="14" type="stmt"/>
+        <line num="61" count="14" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="2" type="stmt"/>
+        <line num="64" count="12" type="stmt"/>
+        <line num="65" count="12" type="stmt"/>
+        <line num="66" count="12" type="stmt"/>
+        <line num="67" count="12" type="stmt"/>
+        <line num="69" count="2" type="stmt"/>
+        <line num="74" count="12" type="stmt"/>
+        <line num="75" count="11" type="stmt"/>
+        <line num="76" count="11" type="cond" truecount="2" falsecount="0"/>
+        <line num="77" count="7" type="stmt"/>
         <line num="79" count="11" type="stmt"/>
-        <line num="80" count="11" type="cond" truecount="2" falsecount="0"/>
-        <line num="81" count="7" type="stmt"/>
-        <line num="83" count="11" type="stmt"/>
-        <line num="84" count="11" type="stmt"/>
-        <line num="85" count="10" type="stmt"/>
+        <line num="80" count="11" type="stmt"/>
+        <line num="81" count="10" type="stmt"/>
       </file>
     </package>
     <package name="toys.2025-03-30">
