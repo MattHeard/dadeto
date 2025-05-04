@@ -112,10 +112,14 @@ function safeStringifyValueAtPath(value, input) {
 }
 
 function checkDataValidityInGet(data) {
-  if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
+  if (isInvalidGetDataResult(data)) {
     return "Error: 'getData' did not return a valid object or array.";
   }
   return null;
+}
+
+function isInvalidGetDataResult(data) {
+  return data === null || (typeof data !== 'object' && !Array.isArray(data));
 }
 
 function getFinalResultInGet(data, input) {

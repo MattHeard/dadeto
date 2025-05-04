@@ -1,11 +1,11 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js[24m[0m
-[0m  [2m114:1[22m   [33mwarning[39m  Function 'checkDataValidityInGet' has a complexity of 4. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m148:8[22m   [33mwarning[39m  Function 'get' has a complexity of 5. Maximum allowed is 2                     [2mcomplexity[22m[0m
-[0m  [2m151:26[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
-[0m  [2m156:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
-[0m  [2m159:28[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
-[0m  [2m162:20[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
+[0m  [2m121:1[22m   [33mwarning[39m  Function 'isInvalidGetDataResult' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m152:8[22m   [33mwarning[39m  Function 'get' has a complexity of 5. Maximum allowed is 2                     [2mcomplexity[22m[0m
+[0m  [2m155:26[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
+[0m  [2m160:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
+[0m  [2m163:28[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
+[0m  [2m166:20[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
 [0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
