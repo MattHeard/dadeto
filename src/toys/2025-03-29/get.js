@@ -27,7 +27,7 @@ function traversePathSegments(data, pathSegments) {
 
 function handlePathSegmentIteration(currentValue, segment, currentPath) {
   const result = traverseSegment(currentValue, segment, currentPath);
-  if (typeof result === 'string' && result.startsWith('Error:')) {
+  if (isErrorString(result)) {
     return { error: result };
   }
   return { value: result.value, path: result.path, error: null };
