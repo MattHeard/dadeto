@@ -34,8 +34,12 @@ function resolveZeroVariant(num) {
   return zeroResult ? zeroResult : null;
 }
 
+function isNotFinite(num) {
+  return !Number.isFinite(num);
+}
+
 function handleSimpleCases(num) {
-  if (!Number.isFinite(num)) {return "";}
+  if (isNotFinite(num)) {return "";}
   const zeroVariant = resolveZeroVariant(num);
   if (zeroVariant) {return zeroVariant;}
   return null;

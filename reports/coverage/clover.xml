@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746343044629" clover="3.2.0">
-  <project timestamp="1746343044630" name="All files">
-    <metrics statements="966" coveredstatements="956" conditionals="319" coveredconditionals="311" methods="371" coveredmethods="366" elements="1656" coveredelements="1633" complexity="0" loc="966" ncloc="966" packages="13" files="24" classes="24"/>
+<coverage generated="1746343555816" clover="3.2.0">
+  <project timestamp="1746343555816" name="All files">
+    <metrics statements="967" coveredstatements="957" conditionals="319" coveredconditionals="311" methods="372" coveredmethods="367" elements="1658" coveredelements="1635" complexity="0" loc="967" ncloc="967" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -673,9 +673,9 @@
       </file>
     </package>
     <package name="toys.2025-03-26">
-      <metrics statements="45" coveredstatements="45" conditionals="20" coveredconditionals="20" methods="18" coveredmethods="18"/>
+      <metrics statements="46" coveredstatements="46" conditionals="20" coveredconditionals="20" methods="19" coveredmethods="19"/>
       <file name="prettyFloat.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-26/prettyFloat.js">
-        <metrics statements="45" coveredstatements="45" conditionals="20" coveredconditionals="20" methods="18" coveredmethods="18"/>
+        <metrics statements="46" coveredstatements="46" conditionals="20" coveredconditionals="20" methods="19" coveredmethods="19"/>
         <line num="2" count="7" type="stmt"/>
         <line num="3" count="7" type="stmt"/>
         <line num="4" count="7" type="stmt"/>
@@ -691,36 +691,37 @@
         <line num="29" count="9" type="stmt"/>
         <line num="33" count="9" type="stmt"/>
         <line num="34" count="9" type="cond" truecount="2" falsecount="0"/>
-        <line num="38" count="12" type="cond" truecount="2" falsecount="0"/>
-        <line num="39" count="9" type="stmt"/>
-        <line num="40" count="9" type="cond" truecount="2" falsecount="0"/>
-        <line num="41" count="7" type="stmt"/>
-        <line num="45" count="9" type="stmt"/>
-        <line num="49" count="8" type="stmt"/>
-        <line num="53" count="9" type="cond" truecount="2" falsecount="0"/>
-        <line num="57" count="8" type="cond" truecount="2" falsecount="0"/>
-        <line num="61" count="9" type="cond" truecount="2" falsecount="0"/>
-        <line num="65" count="8" type="stmt"/>
-        <line num="66" count="8" type="cond" truecount="2" falsecount="0"/>
-        <line num="73" count="7" type="cond" truecount="2" falsecount="0"/>
-        <line num="74" count="7" type="stmt"/>
-        <line num="75" count="7" type="stmt"/>
-        <line num="76" count="7" type="stmt"/>
-        <line num="77" count="7" type="stmt"/>
+        <line num="38" count="12" type="stmt"/>
+        <line num="42" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="43" count="9" type="stmt"/>
+        <line num="44" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="45" count="7" type="stmt"/>
+        <line num="49" count="9" type="stmt"/>
+        <line num="53" count="8" type="stmt"/>
+        <line num="57" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="61" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="65" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="69" count="8" type="stmt"/>
+        <line num="70" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="77" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="78" count="7" type="stmt"/>
+        <line num="79" count="7" type="stmt"/>
+        <line num="80" count="7" type="stmt"/>
         <line num="81" count="7" type="stmt"/>
-        <line num="82" count="7" type="stmt"/>
+        <line num="85" count="7" type="stmt"/>
         <line num="86" count="7" type="stmt"/>
-        <line num="87" count="7" type="stmt"/>
-        <line num="88" count="7" type="stmt"/>
         <line num="90" count="7" type="stmt"/>
+        <line num="91" count="7" type="stmt"/>
         <line num="92" count="7" type="stmt"/>
-        <line num="93" count="7" type="stmt"/>
-        <line num="94" count="56" type="stmt"/>
+        <line num="94" count="7" type="stmt"/>
+        <line num="96" count="7" type="stmt"/>
         <line num="97" count="7" type="stmt"/>
+        <line num="98" count="56" type="stmt"/>
         <line num="101" count="7" type="stmt"/>
-        <line num="102" count="7" type="stmt"/>
-        <line num="103" count="7" type="stmt"/>
+        <line num="105" count="7" type="stmt"/>
+        <line num="106" count="7" type="stmt"/>
         <line num="107" count="7" type="stmt"/>
+        <line num="111" count="7" type="stmt"/>
       </file>
     </package>
     <package name="toys.2025-03-28">

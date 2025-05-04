@@ -1,6 +1,6 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-26/prettyFloat.js[24m[0m
-[0m  [2m37:1[22m  [33mwarning[39m  Function 'handleSimpleCases' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m41:1[22m  [33mwarning[39m  Function 'handleSimpleCases' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/fishingGame.js[24m[0m
 [0m  [2m24:1[22m  [33mwarning[39m  Function 'getBaitData' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
