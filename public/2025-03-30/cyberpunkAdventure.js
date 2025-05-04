@@ -1,11 +1,11 @@
-function handleHackerDoor(lowerInput, nextInventory, nextVisited) {
-  if (lowerInput.includes("zero")) {
+function handleHackerDoor(context) {
+  if (context.lowerInput.includes("zero")) {
     const output = `> Password accepted. Inside, a rogue AI offers you a cracked implant.`;
-    nextInventory.push("cracked implant");
-    nextVisited.add("hacker");
-    return { output, nextState: "hub", nextInventory, nextVisited };
+    context.nextInventory.push("cracked implant");
+    context.nextVisited.add("hacker");
+    return { output, nextState: "hub", nextInventory: context.nextInventory, nextVisited: context.nextVisited };
   } else {
-    return { output: `> Hint: the password is a number and a name...`, nextState: "hacker:door", nextInventory, nextVisited };
+    return { output: `> Hint: the password is a number and a name...`, nextState: "hacker:door", nextInventory: context.nextInventory, nextVisited: context.nextVisited };
   }
 }
 
@@ -101,7 +101,7 @@ function getAdventureResult(context) {
     case "hub":
       return handleHub(context);
     case "hacker:door":
-      return handleHackerDoor(context.lowerInput, context.nextInventory, context.nextVisited);
+      return handleHackerDoor(context);
     case "transport:platform":
       return handleTransportPlatform(context);
     case "transport:trade":
