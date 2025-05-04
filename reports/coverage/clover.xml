@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746348432956" clover="3.2.0">
-  <project timestamp="1746348432956" name="All files">
-    <metrics statements="976" coveredstatements="966" conditionals="323" coveredconditionals="315" methods="375" coveredmethods="370" elements="1674" coveredelements="1651" complexity="0" loc="976" ncloc="976" packages="13" files="24" classes="24"/>
+<coverage generated="1746348528548" clover="3.2.0">
+  <project timestamp="1746348528548" name="All files">
+    <metrics statements="981" coveredstatements="971" conditionals="327" coveredconditionals="319" methods="376" coveredmethods="371" elements="1684" coveredelements="1661" complexity="0" loc="981" ncloc="981" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -734,7 +734,7 @@
       </file>
     </package>
     <package name="toys.2025-03-29">
-      <metrics statements="111" coveredstatements="111" conditionals="54" coveredconditionals="54" methods="31" coveredmethods="31"/>
+      <metrics statements="116" coveredstatements="116" conditionals="58" coveredconditionals="58" methods="32" coveredmethods="32"/>
       <file name="fishingGame.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/fishingGame.js">
         <metrics statements="49" coveredstatements="49" conditionals="8" coveredconditionals="8" methods="25" coveredmethods="25"/>
         <line num="2" count="7" type="stmt"/>
@@ -788,7 +788,7 @@
         <line num="159" count="6" type="stmt"/>
       </file>
       <file name="get.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js">
-        <metrics statements="29" coveredstatements="29" conditionals="25" coveredconditionals="25" methods="2" coveredmethods="2"/>
+        <metrics statements="34" coveredstatements="34" conditionals="29" coveredconditionals="29" methods="3" coveredmethods="3"/>
         <line num="9" count="15" type="stmt"/>
         <line num="10" count="15" type="stmt"/>
         <line num="11" count="15" type="stmt"/>
@@ -805,19 +805,24 @@
         <line num="31" count="20" type="stmt"/>
         <line num="32" count="20" type="cond" truecount="2" falsecount="0"/>
         <line num="33" count="1" type="stmt"/>
-        <line num="36" count="19" type="stmt"/>
-        <line num="37" count="19" type="stmt"/>
-        <line num="38" count="18" type="cond" truecount="2" falsecount="0"/>
-        <line num="39" count="1" type="stmt"/>
-        <line num="42" count="17" type="cond" truecount="5" falsecount="0"/>
-        <line num="43" count="2" type="stmt"/>
-        <line num="46" count="15" type="stmt"/>
-        <line num="47" count="15" type="cond" truecount="4" falsecount="0"/>
-        <line num="48" count="4" type="stmt"/>
-        <line num="50" count="11" type="stmt"/>
-        <line num="51" count="11" type="stmt"/>
-        <line num="53" count="1" type="stmt"/>
-        <line num="57" count="1" type="stmt"/>
+        <line num="35" count="19" type="stmt"/>
+        <line num="39" count="22" type="stmt"/>
+        <line num="40" count="22" type="cond" truecount="4" falsecount="0"/>
+        <line num="41" count="3" type="stmt"/>
+        <line num="43" count="19" type="stmt"/>
+        <line num="45" count="19" type="stmt"/>
+        <line num="46" count="19" type="stmt"/>
+        <line num="47" count="18" type="cond" truecount="2" falsecount="0"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="51" count="17" type="cond" truecount="5" falsecount="0"/>
+        <line num="52" count="2" type="stmt"/>
+        <line num="55" count="15" type="stmt"/>
+        <line num="56" count="15" type="cond" truecount="4" falsecount="0"/>
+        <line num="57" count="4" type="stmt"/>
+        <line num="59" count="11" type="stmt"/>
+        <line num="60" count="11" type="stmt"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="66" count="1" type="stmt"/>
       </file>
       <file name="setTemporary.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js">
         <metrics statements="33" coveredstatements="33" conditionals="21" coveredconditionals="21" methods="4" coveredmethods="4"/>

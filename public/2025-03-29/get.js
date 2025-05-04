@@ -24,7 +24,7 @@ function getValueAtPath(data, input) {
   return currentValue;
 }
 
-export function get(input, env) {
+function validateAndGetData(env) {
   if (!env || typeof env.get !== 'function') {
     return "Error: 'env' Map with 'get' method is required.";
   }
@@ -32,6 +32,15 @@ export function get(input, env) {
   if (typeof getData !== 'function') {
     return "Error: 'getData' function not found in env.";
   }
+  return getData;
+}
+
+export function get(input, env) {
+  const getDataOrError = validateAndGetData(env);
+  if (typeof getDataOrError === 'string' && getDataOrError.startsWith('Error:')) {
+    return getDataOrError;
+  }
+  const getData = getDataOrError;
 
   try {
     const data = getData();
