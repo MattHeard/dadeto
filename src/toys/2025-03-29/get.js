@@ -129,12 +129,7 @@ function getFinalResultInGet(data, input) {
   return handleValueOrErrorResult(value, input);
 }
 
-function handleEnvErrorInGet(getDataOrError) {
-  if (isErrorString(getDataOrError)) {
-    return getDataOrError;
-  }
-  return null;
-}
+
 
 function handleDataRetrievalErrorInGet(error) {
   if (error) {
