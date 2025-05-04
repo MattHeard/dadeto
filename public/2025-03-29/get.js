@@ -100,8 +100,12 @@ function handleValueOrErrorResult(valueOrError, input) {
   if (isErrorString(valueOrError)) {
     return valueOrError;
   }
+  return safeStringifyValueAtPath(valueOrError, input);
+}
+
+function safeStringifyValueAtPath(value, input) {
   try {
-    return JSON.stringify(valueOrError);
+    return JSON.stringify(value);
   } catch (stringifyError) {
     return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
   }
