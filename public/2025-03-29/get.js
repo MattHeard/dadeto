@@ -49,9 +49,17 @@ function getSegmentValueOrError(currentValue, segment, nextPath) {
 
 function getNonObjectSegmentError(currentValue, segment, currentPath) {
   if (currentValue === null || typeof currentValue !== 'object') {
-    return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
+    return (
+      "Error: Cannot access property '" +
+      segment +
+      "' on non-object value at path '" +
+      currentPath.substring(0, currentPath.lastIndexOf('.')) +
+      "'. Value is: " +
+      JSON.stringify(currentValue)
+    );
+  } else {
+    return null;
   }
-  return null;
 }
 
 function hasOwnSegment(currentValue, segment) {
