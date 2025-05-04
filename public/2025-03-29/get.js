@@ -153,8 +153,10 @@ export function get(input, env) {
   const getDataOrError = validateAndGetData(env);
   const envError = handleEnvErrorInGet(getDataOrError);
   if (envError !== null) return envError;
+  return getFromValidEnv(input, getDataOrError);
+}
 
-  const getData = getDataOrError;
+function getFromValidEnv(input, getData) {
   const { data, error } = getDataWithCatch(getData, input);
   const retrievalError = handleDataRetrievalErrorInGet(error);
   if (retrievalError !== null) return retrievalError;
