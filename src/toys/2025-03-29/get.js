@@ -79,6 +79,11 @@ function checkDataValidityInGet(data) {
   return null;
 }
 
+function getFinalResultInGet(data, input) {
+  const value = getValueAtPath(data, input);
+  return handleValueOrErrorResult(value, input);
+}
+
 function checkDataValidity(data) {
   if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
     return "Error: 'getData' did not return a valid object or array.";
@@ -111,6 +116,5 @@ export function get(input, env) {
   const invalidData = checkDataValidityInGet(data);
   if (invalidData) return invalidData;
 
-  const value = getValueAtPath(data, input);
-  return handleValueOrErrorResult(value, input);
+  return getFinalResultInGet(data, input);
 }
