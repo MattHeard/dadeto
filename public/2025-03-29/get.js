@@ -58,7 +58,7 @@ function getSegmentValueOrError(currentValue, segment, nextPath) {
 }
 
 function getNonObjectSegmentError(currentValue, segment, currentPath) {
-  if (currentValue === null || typeof currentValue !== 'object') {
+  if (isNonObjectValue(currentValue)) {
     return (
       "Error: Cannot access property '" +
       segment +
@@ -70,6 +70,10 @@ function getNonObjectSegmentError(currentValue, segment, currentPath) {
   } else {
     return null;
   }
+}
+
+function isNonObjectValue(value) {
+  return value === null || typeof value !== 'object';
 }
 
 function hasOwnSegment(currentValue, segment) {
