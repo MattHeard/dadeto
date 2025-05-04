@@ -1,11 +1,11 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js[24m[0m
 [0m  [2m119:1[22m   [33mwarning[39m  Function 'isInvalidGetDataResult' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m153:26[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
-[0m  [2m157:1[22m   [33mwarning[39m  Function 'getFromValidEnv' has a complexity of 4. Maximum allowed is 2         [2mcomplexity[22m[0m
-[0m  [2m160:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
-[0m  [2m163:28[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
-[0m  [2m166:20[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
+[0m  [2m128:10[22m  [33mwarning[39m  'handleEnvErrorInGet' is defined but never used                                [2mno-unused-vars[22m[0m
+[0m  [2m155:1[22m   [33mwarning[39m  Function 'getFromValidEnv' has a complexity of 4. Maximum allowed is 2         [2mcomplexity[22m[0m
+[0m  [2m158:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
+[0m  [2m161:28[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
+[0m  [2m164:20[22m  [33mwarning[39m  Expected { after 'if' condition                                                [2mcurly[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
 [0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
@@ -112,5 +112,5 @@
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
 [0m[33m[1m✖ 96 problems (0 errors, 96 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 55 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 54 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
