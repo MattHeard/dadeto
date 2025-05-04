@@ -35,6 +35,20 @@ function validateAndGetData(env) {
   return getData;
 }
 
+function handleEmptyInput(input, data) {
+  if (input.trim() === '') {
+    return JSON.stringify(data);
+  }
+  return null;
+}
+
+function checkDataValidity(data) {
+  if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
+    return "Error: 'getData' did not return a valid object or array.";
+  }
+  return null;
+}
+
 function getDataWithCatch(getData, input) {
   try {
     return { data: getData() };
@@ -54,12 +68,13 @@ export function get(input, env) {
   if (error) {
     return error;
   }
-  if (input.trim() === '') {
-    return JSON.stringify(data);
+  const emptyInputResult = handleEmptyInput(input, data);
+  if (emptyInputResult !== null) {
+    return emptyInputResult;
   }
-  // Basic check if initial data is an object or array
-  if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
-      return "Error: 'getData' did not return a valid object or array.";
+  const dataValidityError = checkDataValidity(data);
+  if (dataValidityError) {
+    return dataValidityError;
   }
 
   const valueOrError = getValueAtPath(data, input);
