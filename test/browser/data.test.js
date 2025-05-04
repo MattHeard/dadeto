@@ -176,11 +176,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
   });
 
   it('setData logs specific error message when blog is missing', () => {
-    try {
-      setData({ desired: {}, current: state }, { logInfo: logFn, logError: errorFn });
-    } catch (e) {
-      // expected to throw
-    }
+    expect(() => setData({ desired: {}, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       {}

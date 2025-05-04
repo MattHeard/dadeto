@@ -100,9 +100,6 @@
 [0m  [2m304:17[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m  [2m305:18[22m  [33mwarning[39m  Trailing spaces not allowed                       [2mno-trailing-spaces[22m[0m
 [0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js[24m[0m
-[0m  [2m181:14[22m  [33mwarning[39m  'e' is defined but never used  [2mno-unused-vars[22m[0m
-[0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js[24m[0m
 [0m  [2m2:104[22m  [33mwarning[39m  'handleTagLinks' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
@@ -126,6 +123,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 101 problems (0 errors, 101 warnings)[22m[39m[0m
+[0m[33m[1m✖ 100 problems (0 errors, 100 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
