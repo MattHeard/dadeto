@@ -42,6 +42,17 @@ function handleEmptyInput(input, data) {
   return null;
 }
 
+function handleValueOrErrorResult(valueOrError, input) {
+  if (typeof valueOrError === 'string' && valueOrError.startsWith('Error:')) {
+    return valueOrError;
+  }
+  try {
+    return JSON.stringify(valueOrError);
+  } catch (stringifyError) {
+    return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
+  }
+}
+
 function checkDataValidity(data) {
   if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
     return "Error: 'getData' did not return a valid object or array.";
@@ -78,12 +89,5 @@ export function get(input, env) {
   }
 
   const valueOrError = getValueAtPath(data, input);
-  if (typeof valueOrError === 'string' && valueOrError.startsWith('Error:')) {
-    return valueOrError;
-  }
-  try {
-    return JSON.stringify(valueOrError);
-  } catch (stringifyError) {
-    return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
-  }
+  return handleValueOrErrorResult(valueOrError, input);
 }
