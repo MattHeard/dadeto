@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746350569890" clover="3.2.0">
-  <project timestamp="1746350569890" name="All files">
-    <metrics statements="1013" coveredstatements="993" conditionals="344" coveredconditionals="327" methods="387" coveredmethods="379" elements="1744" coveredelements="1699" complexity="0" loc="1013" ncloc="1013" packages="13" files="24" classes="24"/>
+<coverage generated="1746350698480" clover="3.2.0">
+  <project timestamp="1746350698480" name="All files">
+    <metrics statements="1009" coveredstatements="989" conditionals="344" coveredconditionals="327" methods="387" coveredmethods="379" elements="1740" coveredelements="1695" complexity="0" loc="1009" ncloc="1009" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -734,7 +734,7 @@
       </file>
     </package>
     <package name="toys.2025-03-29">
-      <metrics statements="148" coveredstatements="138" conditionals="75" coveredconditionals="66" methods="43" coveredmethods="40"/>
+      <metrics statements="144" coveredstatements="134" conditionals="75" coveredconditionals="66" methods="43" coveredmethods="40"/>
       <file name="fishingGame.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/fishingGame.js">
         <metrics statements="49" coveredstatements="49" conditionals="8" coveredconditionals="8" methods="25" coveredmethods="25"/>
         <line num="2" count="7" type="stmt"/>
@@ -788,7 +788,7 @@
         <line num="159" count="6" type="stmt"/>
       </file>
       <file name="get.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js">
-        <metrics statements="66" coveredstatements="56" conditionals="46" coveredconditionals="37" methods="14" coveredmethods="11"/>
+        <metrics statements="62" coveredstatements="52" conditionals="46" coveredconditionals="37" methods="14" coveredmethods="11"/>
         <line num="9" count="15" type="stmt"/>
         <line num="10" count="15" type="stmt"/>
         <line num="11" count="15" type="stmt"/>
@@ -842,19 +842,15 @@
         <line num="117" count="22" type="stmt"/>
         <line num="118" count="22" type="stmt"/>
         <line num="119" count="22" type="cond" truecount="2" falsecount="0"/>
-        <line num="120" count="3" type="stmt"/>
+        <line num="121" count="19" type="stmt"/>
         <line num="122" count="19" type="stmt"/>
         <line num="123" count="19" type="stmt"/>
-        <line num="124" count="19" type="stmt"/>
-        <line num="125" count="19" type="cond" truecount="2" falsecount="0"/>
-        <line num="126" count="1" type="stmt"/>
-        <line num="128" count="18" type="stmt"/>
-        <line num="129" count="18" type="cond" truecount="2" falsecount="0"/>
-        <line num="130" count="1" type="stmt"/>
-        <line num="132" count="17" type="stmt"/>
-        <line num="133" count="17" type="cond" truecount="2" falsecount="0"/>
-        <line num="134" count="2" type="stmt"/>
-        <line num="136" count="15" type="stmt"/>
+        <line num="124" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="126" count="18" type="stmt"/>
+        <line num="127" count="18" type="cond" truecount="2" falsecount="0"/>
+        <line num="129" count="17" type="stmt"/>
+        <line num="130" count="17" type="cond" truecount="2" falsecount="0"/>
+        <line num="132" count="15" type="stmt"/>
       </file>
       <file name="setTemporary.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js">
         <metrics statements="33" coveredstatements="33" conditionals="21" coveredconditionals="21" methods="4" coveredmethods="4"/>
