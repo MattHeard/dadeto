@@ -35,6 +35,14 @@ function validateAndGetData(env) {
   return getData;
 }
 
+function getDataWithCatch(getData, input) {
+  try {
+    return { data: getData() };
+  } catch (error) {
+    return { error: `Error during data retrieval or path traversal for "${input}": ${error.message}` };
+  }
+}
+
 export function get(input, env) {
   const getDataOrError = validateAndGetData(env);
   if (typeof getDataOrError === 'string' && getDataOrError.startsWith('Error:')) {
@@ -42,27 +50,25 @@ export function get(input, env) {
   }
   const getData = getDataOrError;
 
-  try {
-    const data = getData();
-    if (input.trim() === '') {
-      return JSON.stringify(data);
-    }
-    // Basic check if initial data is an object or array
-    if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
-        return "Error: 'getData' did not return a valid object or array.";
-    }
+  const { data, error } = getDataWithCatch(getData, input);
+  if (error) {
+    return error;
+  }
+  if (input.trim() === '') {
+    return JSON.stringify(data);
+  }
+  // Basic check if initial data is an object or array
+  if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
+      return "Error: 'getData' did not return a valid object or array.";
+  }
 
-    const valueOrError = getValueAtPath(data, input);
-    if (typeof valueOrError === 'string' && valueOrError.startsWith('Error:')) {
-      return valueOrError;
-    }
-    try {
-      return JSON.stringify(valueOrError);
-    } catch (stringifyError) {
-      return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
-    }
-  } catch (error) {
-      // Catch errors from getData() execution or other unexpected issues
-      return `Error during data retrieval or path traversal for "${input}": ${error.message}`;
+  const valueOrError = getValueAtPath(data, input);
+  if (typeof valueOrError === 'string' && valueOrError.startsWith('Error:')) {
+    return valueOrError;
+  }
+  try {
+    return JSON.stringify(valueOrError);
+  } catch (stringifyError) {
+    return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
   }
 }

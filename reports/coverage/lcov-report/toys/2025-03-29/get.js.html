@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>34/34</span>
+                <span class='fraction'>37/37</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>29/29</span>
+                <span class='fraction'>31/31</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>34/34</span>
+                <span class='fraction'>37/37</span>
             </div>
         
             
@@ -131,7 +131,13 @@
 <a name='L66'></a><a href='#L66'>66</a>
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
-<a name='L69'></a><a href='#L69'>69</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -169,6 +175,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">22x</span>
 <span class="cline-any cline-yes">22x</span>
 <span class="cline-any cline-yes">3x</span>
@@ -177,6 +191,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -191,10 +207,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -236,6 +248,14 @@ function validateAndGetData(env) {
   return getData;
 }
 &nbsp;
+function getDataWithCatch(getData, input) {
+  try {
+    return { data: getData() };
+  } catch (error) {
+    return { error: `Error during data retrieval or path traversal for "${input}": ${error.message}` };
+  }
+}
+&nbsp;
 export function get(input, env) {
   const getDataOrError = validateAndGetData(env);
   if (typeof getDataOrError === 'string' &amp;&amp; getDataOrError.startsWith('Error:')) {
@@ -243,28 +263,26 @@ export function get(input, env) {
   }
   const getData = getDataOrError;
 &nbsp;
-  try {
-    const data = getData();
-    if (input.trim() === '') {
-      return JSON.stringify(data);
-    }
-    // Basic check if initial data is an object or array
-    if (data === null || (typeof data !== 'object' &amp;&amp; !Array.isArray(data))) {
-        return "Error: 'getData' did not return a valid object or array.";
-    }
+  const { data, error } = getDataWithCatch(getData, input);
+  if (error) {
+    return error;
+  }
+  if (input.trim() === '') {
+    return JSON.stringify(data);
+  }
+  // Basic check if initial data is an object or array
+  if (data === null || (typeof data !== 'object' &amp;&amp; !Array.isArray(data))) {
+      return "Error: 'getData' did not return a valid object or array.";
+  }
 &nbsp;
-    const valueOrError = getValueAtPath(data, input);
-    if (typeof valueOrError === 'string' &amp;&amp; valueOrError.startsWith('Error:')) {
-      return valueOrError;
-    }
-    try {
-      return JSON.stringify(valueOrError);
-    } catch (stringifyError) {
-      return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
-    }
-  } catch (error) {
-      // Catch errors from getData() execution or other unexpected issues
-      return `Error during data retrieval or path traversal for "${input}": ${error.message}`;
+  const valueOrError = getValueAtPath(data, input);
+  if (typeof valueOrError === 'string' &amp;&amp; valueOrError.startsWith('Error:')) {
+    return valueOrError;
+  }
+  try {
+    return JSON.stringify(valueOrError);
+  } catch (stringifyError) {
+    return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
   }
 }
 &nbsp;</pre></td></tr></table></pre>
@@ -274,7 +292,7 @@ export function get(input, env) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-04T08:48:48.523Z
+                at 2025-05-04T09:09:05.630Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
