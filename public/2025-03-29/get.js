@@ -4,6 +4,26 @@
  * @param {Map<string, Function>} env - Environment map containing dependencies. Expected: 'getData'.
  * @returns {string} The JSON stringified value found at the path, or an error message.
  */
+function getValueAtPath(data, input) {
+  // Split the input path by dots
+  const pathSegments = input.split('.');
+  let currentValue = data;
+  let currentPath = '';
+
+  for (const segment of pathSegments) {
+    currentPath = currentPath ? `${currentPath}.${segment}` : segment;
+    if (currentValue === null || typeof currentValue !== 'object') {
+      return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
+    }
+    if (Object.prototype.hasOwnProperty.call(currentValue, segment)) {
+      currentValue = currentValue[segment];
+    } else {
+      return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
+    }
+  }
+  return currentValue;
+}
+
 export function get(input, env) {
   if (!env || typeof env.get !== 'function') {
     return "Error: 'env' Map with 'get' method is required.";
@@ -23,30 +43,14 @@ export function get(input, env) {
         return "Error: 'getData' did not return a valid object or array.";
     }
 
-    // Split the input path by dots
-    const pathSegments = input.split('.');
-    let currentValue = data;
-    let currentPath = '';
-
-    // Traverse the path
-    for (const segment of pathSegments) {
-      currentPath = currentPath ? `${currentPath}.${segment}` : segment;
-      if (currentValue === null || typeof currentValue !== 'object') {
-        return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
-      }
-
-      if (Object.prototype.hasOwnProperty.call(currentValue, segment)) {
-        currentValue = currentValue[segment];
-      } else {
-        return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
-      }
+    const valueOrError = getValueAtPath(data, input);
+    if (typeof valueOrError === 'string' && valueOrError.startsWith('Error:')) {
+      return valueOrError;
     }
-
-    // Return a string representation of the final value
     try {
-      return JSON.stringify(currentValue);
+      return JSON.stringify(valueOrError);
     } catch (stringifyError) {
-        return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
+      return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
     }
   } catch (error) {
       // Catch errors from getData() execution or other unexpected issues

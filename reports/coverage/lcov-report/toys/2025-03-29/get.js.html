@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>25/25</span>
+                <span class='fraction'>29/29</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>21/21</span>
+                <span class='fraction'>25/25</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>25/25</span>
+                <span class='fraction'>29/29</span>
             </div>
         
             
@@ -118,10 +118,34 @@
 <a name='L53'></a><a href='#L53'>53</a>
 <a name='L54'></a><a href='#L54'>54</a>
 <a name='L55'></a><a href='#L55'>55</a>
-<a name='L56'></a><a href='#L56'>56</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">38x</span>
+<span class="cline-any cline-yes">38x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">36x</span>
+<span class="cline-any cline-yes">34x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -143,25 +167,9 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">38x</span>
-<span class="cline-any cline-yes">38x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">36x</span>
-<span class="cline-any cline-yes">34x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-yes">11x</span>
@@ -179,6 +187,26 @@
  * @param {Map&lt;string, Function&gt;} env - Environment map containing dependencies. Expected: 'getData'.
  * @returns {string} The JSON stringified value found at the path, or an error message.
  */
+function getValueAtPath(data, input) {
+  // Split the input path by dots
+  const pathSegments = input.split('.');
+  let currentValue = data;
+  let currentPath = '';
+&nbsp;
+  for (const segment of pathSegments) {
+    currentPath = currentPath ? `${currentPath}.${segment}` : segment;
+    if (currentValue === null || typeof currentValue !== 'object') {
+      return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
+    }
+    if (Object.prototype.hasOwnProperty.call(currentValue, segment)) {
+      currentValue = currentValue[segment];
+    } else {
+      return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
+    }
+  }
+  return currentValue;
+}
+&nbsp;
 export function get(input, env) {
   if (!env || typeof env.get !== 'function') {
     return "Error: 'env' Map with 'get' method is required.";
@@ -198,30 +226,14 @@ export function get(input, env) {
         return "Error: 'getData' did not return a valid object or array.";
     }
 &nbsp;
-    // Split the input path by dots
-    const pathSegments = input.split('.');
-    let currentValue = data;
-    let currentPath = '';
-&nbsp;
-    // Traverse the path
-    for (const segment of pathSegments) {
-      currentPath = currentPath ? `${currentPath}.${segment}` : segment;
-      if (currentValue === null || typeof currentValue !== 'object') {
-        return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
-      }
-&nbsp;
-      if (Object.prototype.hasOwnProperty.call(currentValue, segment)) {
-        currentValue = currentValue[segment];
-      } else {
-        return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
-      }
+    const valueOrError = getValueAtPath(data, input);
+    if (typeof valueOrError === 'string' &amp;&amp; valueOrError.startsWith('Error:')) {
+      return valueOrError;
     }
-&nbsp;
-    // Return a string representation of the final value
     try {
-      return JSON.stringify(currentValue);
+      return JSON.stringify(valueOrError);
     } catch (stringifyError) {
-        return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
+      return `Error stringifying final value at path "${input}": ${stringifyError.message}`;
     }
   } catch (error) {
       // Catch errors from getData() execution or other unexpected issues
@@ -235,7 +247,7 @@ export function get(input, env) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-04T08:46:24.701Z
+                at 2025-05-04T08:47:12.929Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
