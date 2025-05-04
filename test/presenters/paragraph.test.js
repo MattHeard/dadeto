@@ -1,12 +1,12 @@
 // paragraph.test.js
-import { describe, it, jest, expect } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
 import { createParagraphElement } from '../../src/presenters/paragraph';
 
 describe('createParagraphElement', () => {
   it('creates a <p> element with the correct text content', () => {
     const mockElement = { textContent: '' };
     const dom = {
-      createElement: (tag) => mockElement,
+      createElement: () => mockElement,
       setTextContent: (el, text) => { el.textContent = text; }
     };
 
@@ -19,7 +19,7 @@ describe('createParagraphElement', () => {
   it('works with different input strings', () => {
     const mockElement = { textContent: '' };
     const dom = {
-      createElement: (tag) => mockElement,
+      createElement: () => mockElement,
       setTextContent: (el, text) => { el.textContent = text; }
     };
 
