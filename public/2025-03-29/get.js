@@ -84,9 +84,7 @@ function getSegmentNotFoundError(currentValue, segment, currentPath) {
   return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
 }
 
-function validateAndGetData(env) {
-  return env.get('getData');
-}
+
 
 function handleEmptyInputInGet(input, data) {
   if (input.trim() === '') {
@@ -150,7 +148,7 @@ function getDataWithCatch(getData, input) {
 }
 
 export function get(input, env) {
-  const getDataOrError = validateAndGetData(env);
+  const getDataOrError = env.get('getData');
   const envError = handleEnvErrorInGet(getDataOrError);
   if (envError !== null) return envError;
   return getFromValidEnv(input, getDataOrError);
