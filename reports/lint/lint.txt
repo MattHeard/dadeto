@@ -1,20 +1,21 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js[24m[0m
-[0m   [2m12:1[22m   [33mwarning[39m  Function 'traversePathSegments' has a complexity of 5. Maximum allowed is 2      [2mcomplexity[22m[0m
-[0m   [2m18:34[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
-[0m   [2m28:1[22m   [33mwarning[39m  Function 'getNonObjectSegmentError' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m   [2m43:1[22m   [33mwarning[39m  Function 'validateAndGetData' has a complexity of 4. Maximum allowed is 2        [2mcomplexity[22m[0m
-[0m   [2m61:10[22m  [33mwarning[39m  'handleEmptyInput' is defined but never used                                     [2mno-unused-vars[22m[0m
-[0m   [2m68:10[22m  [33mwarning[39m  'getResultOrError' is defined but never used                                     [2mno-unused-vars[22m[0m
-[0m   [2m80:1[22m   [33mwarning[39m  Function 'handleValueOrErrorResult' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m   [2m91:1[22m   [33mwarning[39m  Function 'checkDataValidityInGet' has a complexity of 4. Maximum allowed is 2    [2mcomplexity[22m[0m
-[0m  [2m117:1[22m   [33mwarning[39m  Function 'checkDataValidity' has a complexity of 4. Maximum allowed is 2         [2mcomplexity[22m[0m
-[0m  [2m117:10[22m  [33mwarning[39m  'checkDataValidity' is defined but never used                                    [2mno-unused-vars[22m[0m
-[0m  [2m132:8[22m   [33mwarning[39m  Function 'get' has a complexity of 5. Maximum allowed is 2                       [2mcomplexity[22m[0m
-[0m  [2m135:26[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
-[0m  [2m140:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
-[0m  [2m143:28[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
-[0m  [2m146:20[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
+[0m   [2m12:1[22m   [33mwarning[39m  Function 'traversePathSegments' has a complexity of 4. Maximum allowed is 2      [2mcomplexity[22m[0m
+[0m   [2m26:1[22m   [33mwarning[39m  Function 'traverseSegment' has a complexity of 4. Maximum allowed is 2           [2mcomplexity[22m[0m
+[0m   [2m29:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
+[0m   [2m37:1[22m   [33mwarning[39m  Function 'getNonObjectSegmentError' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m   [2m52:1[22m   [33mwarning[39m  Function 'validateAndGetData' has a complexity of 4. Maximum allowed is 2        [2mcomplexity[22m[0m
+[0m   [2m70:10[22m  [33mwarning[39m  'handleEmptyInput' is defined but never used                                     [2mno-unused-vars[22m[0m
+[0m   [2m77:10[22m  [33mwarning[39m  'getResultOrError' is defined but never used                                     [2mno-unused-vars[22m[0m
+[0m   [2m89:1[22m   [33mwarning[39m  Function 'handleValueOrErrorResult' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m100:1[22m   [33mwarning[39m  Function 'checkDataValidityInGet' has a complexity of 4. Maximum allowed is 2    [2mcomplexity[22m[0m
+[0m  [2m126:1[22m   [33mwarning[39m  Function 'checkDataValidity' has a complexity of 4. Maximum allowed is 2         [2mcomplexity[22m[0m
+[0m  [2m126:10[22m  [33mwarning[39m  'checkDataValidity' is defined but never used                                    [2mno-unused-vars[22m[0m
+[0m  [2m141:8[22m   [33mwarning[39m  Function 'get' has a complexity of 5. Maximum allowed is 2                       [2mcomplexity[22m[0m
+[0m  [2m144:26[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
+[0m  [2m149:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
+[0m  [2m152:28[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
+[0m  [2m155:20[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
 [0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
@@ -120,6 +121,6 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 105 problems (0 errors, 105 warnings)[22m[39m[0m
+[0m[33m[1m✖ 106 problems (0 errors, 106 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 56 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

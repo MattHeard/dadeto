@@ -13,16 +13,25 @@ function traversePathSegments(data, pathSegments) {
   let currentValue = data;
   let currentPath = '';
   for (const segment of pathSegments) {
-    currentPath = currentPath ? `${currentPath}.${segment}` : segment;
-    const nonObjectError = getNonObjectSegmentError(currentValue, segment, currentPath);
-    if (nonObjectError !== null) return nonObjectError;
-    if (hasOwnSegment(currentValue, segment)) {
-      currentValue = currentValue[segment];
-    } else {
-      return getSegmentNotFoundError(currentValue, segment, currentPath);
+    const result = traverseSegment(currentValue, segment, currentPath);
+    if (typeof result === 'string' && result.startsWith('Error:')) {
+      return result;
     }
+    currentValue = result.value;
+    currentPath = result.path;
   }
   return currentValue;
+}
+
+function traverseSegment(currentValue, segment, currentPath) {
+  const nextPath = currentPath ? `${currentPath}.${segment}` : segment;
+  const nonObjectError = getNonObjectSegmentError(currentValue, segment, nextPath);
+  if (nonObjectError !== null) return nonObjectError;
+  if (hasOwnSegment(currentValue, segment)) {
+    return { value: currentValue[segment], path: nextPath };
+  } else {
+    return getSegmentNotFoundError(currentValue, segment, nextPath);
+  }
 }
 
 function getNonObjectSegmentError(currentValue, segment, currentPath) {
