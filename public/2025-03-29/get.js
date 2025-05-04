@@ -133,13 +133,6 @@ function handleDataRetrievalErrorInGet(error) {
   return null;
 }
 
-function checkDataValidity(data) {
-  if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
-    return "Error: 'getData' did not return a valid object or array.";
-  }
-  return null;
-}
-
 function getDataWithCatch(getData, input) {
   try {
     return { data: getData() };
