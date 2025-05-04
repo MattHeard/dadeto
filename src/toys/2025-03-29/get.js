@@ -6,9 +6,12 @@
  */
 function getValueAtPath(data, input) {
   const pathSegments = input.split('.');
+  return traversePathSegments(data, pathSegments);
+}
+
+function traversePathSegments(data, pathSegments) {
   let currentValue = data;
   let currentPath = '';
-
   for (const segment of pathSegments) {
     currentPath = currentPath ? `${currentPath}.${segment}` : segment;
     const nonObjectError = getNonObjectSegmentError(currentValue, segment, currentPath);
