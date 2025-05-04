@@ -38,11 +38,15 @@ function isNotFinite(num) {
   return !Number.isFinite(num);
 }
 
-function handleSimpleCases(num) {
-  if (isNotFinite(num)) {return "";}
+function handleZeroVariantsOrNull(num) {
   const zeroVariant = resolveZeroVariant(num);
   if (zeroVariant) {return zeroVariant;}
   return null;
+}
+
+function handleSimpleCases(num) {
+  if (isNotFinite(num)) {return "";}
+  return handleZeroVariantsOrNull(num);
 }
 
 function isPositiveZero(n) {
