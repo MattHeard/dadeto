@@ -23,10 +23,14 @@ function getUnrecognizedBait() {
 
 function getBaitData(input, baitOptions, moodDescription) {
   const baitKey = input.trim().toLowerCase();
-  if (isRecognizedBait(baitKey, baitOptions)) {return getRecognizedBait(baitKey, baitOptions);}
-  return isEmptyBait(baitKey)
-    ? getDefaultBaitResponse(moodDescription)
-    : getUnrecognizedBait();
+  if (isRecognizedBait(baitKey, baitOptions)) {
+    return getRecognizedBait(baitKey, baitOptions);
+  }
+  if (isEmptyBait(baitKey)) {
+    return getDefaultBaitResponse(moodDescription);
+  } else {
+    return getUnrecognizedBait();
+  }
 }
 
 function getTimeOfDay(hour) {
