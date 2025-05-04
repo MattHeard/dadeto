@@ -61,6 +61,10 @@ function processSetTemporary(inputJson, env) {
   if (!isObject(inputJson)) {
     return "Error: Input JSON must be a plain object.";
   }
+  return handleValidTemporaryInput(inputJson, env);
+}
+
+function handleValidTemporaryInput(inputJson, env) {
   const getData = env.get('getData');
   const setData = env.get('setData');
   try {
