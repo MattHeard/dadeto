@@ -36,7 +36,9 @@ function handlePathSegmentIteration(currentValue, segment, currentPath) {
 function traverseSegment(currentValue, segment, currentPath) {
   const nextPath = getNextPath(currentPath, segment);
   const nonObjectError = getNonObjectSegmentError(currentValue, segment, nextPath);
-  if (nonObjectError !== null) return nonObjectError;
+  if (nonObjectError !== null) {
+    return nonObjectError;
+  }
   return getSegmentValueOrError(currentValue, segment, nextPath);
 }
 
