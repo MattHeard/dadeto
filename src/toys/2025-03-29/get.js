@@ -85,7 +85,7 @@ function getSegmentNotFoundError(currentValue, segment, currentPath) {
 }
 
 function validateAndGetData(env) {
-  if (!env || typeof env.get !== 'function') {
+  if (isInvalidEnvForGet(env)) {
     return "Error: 'env' Map with 'get' method is required.";
   }
   const getData = env.get('getData');
@@ -93,6 +93,10 @@ function validateAndGetData(env) {
     return "Error: 'getData' function not found in env.";
   }
   return getData;
+}
+
+function isInvalidEnvForGet(env) {
+  return !env || typeof env.get !== 'function';
 }
 
 function handleEmptyInputInGet(input, data) {
