@@ -22,15 +22,6 @@
 [0m  [2m292:1[22m  [33mwarning[39m  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2             [2mcomplexity[22m[0m
 [0m  [2m304:1[22m  [33mwarning[39m  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        [2mcomplexity[22m[0m
 [0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/audio-controls.test.js[24m[0m
-[0m  [2m163:83[22m  [33mwarning[39m  'appendChild' is assigned a value but never used  [2mno-unused-vars[22m[0m
-[0m  [2m168:22[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
-[0m  [2m195:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
-[0m  [2m220:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
-[0m  [2m246:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
-[0m  [2m272:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
-[0m  [2m298:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
-[0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js[24m[0m
 [0m  [2m2:104[22m  [33mwarning[39m  'handleTagLinks' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
@@ -47,5 +38,5 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 36 problems (0 errors, 36 warnings)[22m[39m[0m
+[0m[33m[1m✖ 29 problems (0 errors, 29 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

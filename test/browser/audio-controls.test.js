@@ -160,12 +160,12 @@ describe('createUpdateTimeDisplay', () => {
 
 describe('setupAudio', () => {
   let createdElements;
-  let removeControlsAttribute, createElement, stopDefault, playAudio, pauseAudio, appendChild;
+  let removeControlsAttribute, createElement, stopDefault, playAudio, pauseAudio;
   let audioElement, audioElements, dom;
   beforeEach(() => {
     createdElements = [];
     removeControlsAttribute = () => {};
-    createElement = (tag) => {
+    createElement = () => {
       const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() };
       createdElements.push(el);
       return el;
@@ -192,7 +192,7 @@ describe('setupAudio', () => {
     const dom = {
       getAudioElements,
       removeControlsAttribute,
-      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
+      createElement: () => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
       insertBefore: jest.fn(),
       appendChild: jest.fn(),
@@ -217,7 +217,7 @@ describe('setupAudio', () => {
     const dom = {
       getAudioElements,
       removeControlsAttribute,
-      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
+      createElement: () => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
       insertBefore: jest.fn(),
       appendChild: jest.fn(),
@@ -243,7 +243,7 @@ describe('setupAudio', () => {
     const dom = {
       getAudioElements,
       removeControlsAttribute,
-      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
+      createElement: () => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
       insertBefore: jest.fn(),
       appendChild: jest.fn(),
@@ -269,7 +269,7 @@ describe('setupAudio', () => {
     const dom = {
       getAudioElements,
       removeControlsAttribute,
-      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
+      createElement: () => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
       insertBefore: jest.fn(),
       appendChild: jest.fn(),
@@ -295,7 +295,7 @@ describe('setupAudio', () => {
     const dom = {
       getAudioElements,
       removeControlsAttribute,
-      createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
+      createElement: () => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
       insertBefore: jest.fn(),
       appendChild: jest.fn(),
