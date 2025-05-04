@@ -84,6 +84,13 @@ function getFinalResultInGet(data, input) {
   return handleValueOrErrorResult(value, input);
 }
 
+function handleEnvErrorInGet(getDataOrError) {
+  if (isErrorString(getDataOrError)) {
+    return getDataOrError;
+  }
+  return null;
+}
+
 function checkDataValidity(data) {
   if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
     return "Error: 'getData' did not return a valid object or array.";
@@ -101,9 +108,8 @@ function getDataWithCatch(getData, input) {
 
 export function get(input, env) {
   const getDataOrError = validateAndGetData(env);
-  if (isErrorString(getDataOrError)) {
-    return getDataOrError;
-  }
+  const envError = handleEnvErrorInGet(getDataOrError);
+  if (envError !== null) return envError;
   const getData = getDataOrError;
 
   const { data, error } = getDataWithCatch(getData, input);
