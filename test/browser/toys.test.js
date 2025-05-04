@@ -174,7 +174,6 @@ describe('handleModuleError', () => {
 describe('enableInteractiveControls', () => {
   let inputElement;
   let submitButton;
-  let outputElement;
   let outputParentElement;
 
   let enable;
@@ -195,11 +194,7 @@ describe('enableInteractiveControls', () => {
       appendChild: jest.fn() // Not needed, but completes the mock
     };
 
-    // Mock output element and link its parent
-    outputElement = {
-      textContent: '',
-      outputParentElement: outputParentElement
-    };
+
 
     // Reset enable and setTextContent mocks for each test
     enable = jest.fn();
