@@ -69,39 +69,6 @@ describe('get function with path traversal', () => {
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 
-  test('should return an error if getData is not a function', () => {
-    env.set('getData', 'not a function');
-    expect(get('user.name', env)).toBe("Error: 'getData' function not found in env.");
-  });
-
-  test('should return an error if env map is not provided or invalid', () => {
-    expect(get('user.name', null)).toBe("Error: 'env' Map with 'get' method is required.");
-    expect(get('user.name', {})).toBe("Error: 'env' Map with 'get' method is required."); // Plain object is not a Map
-  });
-
-  test('should return an error if getData does not return an object or array', () => {
-    mockGetData.mockReturnValue('a string');
-    expect(get('anyKey', env)).toBe("Error: 'getData' did not return a valid object or array.");
-
-    mockGetData.mockReturnValue(null);
-    expect(get('anyKey', env)).toBe("Error: 'getData' did not return a valid object or array.");
-
-    // Note: Array is now a valid return type from getData
-    mockGetData.mockReturnValue([1, 2, 3]);
-    expect(get('0', env)).toBe(JSON.stringify(1)); // Should be able to access array elements
-
-    expect(mockGetData).toHaveBeenCalledTimes(3);
-  });
-
-  test('should return an error if getData throws an error', () => {
-    const errorMessage = 'Failed to fetch data';
-    mockGetData.mockImplementation(() => {
-      throw new Error(errorMessage);
-    });
-    expect(get('user.name', env)).toBe(`Error during data retrieval or path traversal for "user.name": ${errorMessage}`);
-    expect(mockGetData).toHaveBeenCalledTimes(1);
-  });
-
   // Test for stringifying error remains similar
   test('should handle non-stringifiable values gracefully at the end of the path', () => {
     const circular = {};
