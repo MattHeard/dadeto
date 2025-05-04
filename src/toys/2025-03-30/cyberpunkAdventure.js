@@ -95,22 +95,16 @@ function getDefaultAdventureResult() {
 }
 
 function getAdventureResult(context) {
-  switch (context.state) {
-    case "intro":
-      return handleIntro(context);
-    case "hub":
-      return handleHub(context);
-    case "hacker:door":
-      return handleHackerDoor(context);
-    case "transport:platform":
-      return handleTransportPlatform(context);
-    case "transport:trade":
-      return handleTransportTrade(context);
-    case "alley:stealth":
-      return handleAlleyStealth(context);
-    default:
-      return getDefaultAdventureResult();
-  }
+  const stateHandlers = {
+    "intro": handleIntro,
+    "hub": handleHub,
+    "hacker:door": handleHackerDoor,
+    "transport:platform": handleTransportPlatform,
+    "transport:trade": handleTransportTrade,
+    "alley:stealth": handleAlleyStealth
+  };
+  const handler = stateHandlers[context.state];
+  return handler ? handler(context) : getDefaultAdventureResult();
 }
 
 export function cyberpunkAdventure(input, env) {

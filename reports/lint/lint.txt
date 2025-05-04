@@ -19,8 +19,7 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js[24m[0m
 [0m   [2m19:1[22m  [33mwarning[39m  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
 [0m   [2m50:1[22m  [33mwarning[39m  Function 'handleTransportTrade' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m   [2m97:1[22m  [33mwarning[39m  Function 'getAdventureResult' has a complexity of 7. Maximum allowed is 2    [2mcomplexity[22m[0m
-[0m  [2m116:8[22m  [33mwarning[39m  Function 'cyberpunkAdventure' has a complexity of 11. Maximum allowed is 2   [2mcomplexity[22m[0m
+[0m  [2m110:8[22m  [33mwarning[39m  Function 'cyberpunkAdventure' has a complexity of 11. Maximum allowed is 2   [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js[24m[0m
 [0m  [2m155:1[22m  [33mwarning[39m  Function 'getScoredMoves' has too many parameters (4). Maximum allowed is 3         [2mmax-params[22m[0m
@@ -116,6 +115,6 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 95 problems (0 errors, 95 warnings)[22m[39m[0m
+[0m[33m[1m✖ 94 problems (0 errors, 94 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
