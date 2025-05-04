@@ -170,7 +170,7 @@ describe('setupAudio', () => {
       createdElements.push(el);
       return el;
     };
-    createTextNode = () => '';
+
     stopDefault = () => {};
     playAudio = () => {};
     pauseAudio = () => {};
