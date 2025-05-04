@@ -1651,8 +1651,9 @@ FN:134,handleDataRetrievalErrorInGet
 FN:141,getDataWithCatch
 FN:149,get
 FN:160,getFinalResultAfterRetrieval
-FNF:23
-FNH:23
+FN:169,getValidDataResultAfterEmptyCheck
+FNF:24
+FNH:24
 FNDA:51,isErrorString
 FNDA:14,getValueAtPath
 FNDA:14,traversePathSegments
@@ -1676,6 +1677,7 @@ FNDA:16,handleDataRetrievalErrorInGet
 FNDA:16,getDataWithCatch
 FNDA:16,get
 FNDA:15,getFinalResultAfterRetrieval
+FNDA:14,getValidDataResultAfterEmptyCheck
 DA:8,51
 DA:12,14
 DA:13,14
@@ -1739,11 +1741,12 @@ DA:161,15
 DA:162,15
 DA:163,1
 DA:166,14
-DA:167,14
-DA:168,0
+DA:170,14
 DA:171,14
-LF:66
-LH:63
+DA:172,0
+DA:175,14
+LF:67
+LH:64
 BRDA:8,0,0,51
 BRDA:8,0,1,13
 BRDA:19,1,0,0
@@ -1778,8 +1781,8 @@ BRDA:153,15,0,1
 BRDA:153,15,1,15
 BRDA:162,16,0,1
 BRDA:162,16,1,14
-BRDA:167,17,0,0
-BRDA:167,17,1,14
+BRDA:171,17,0,0
+BRDA:171,17,1,14
 BRF:36
 BRH:32
 end_of_record

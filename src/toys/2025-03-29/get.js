@@ -163,6 +163,10 @@ function getFinalResultAfterRetrieval(input, data) {
     return emptyInput;
   }
 
+  return getValidDataResultAfterEmptyCheck(data, input);
+}
+
+function getValidDataResultAfterEmptyCheck(data, input) {
   const invalidData = checkDataValidityInGet(data);
   if (invalidData) {
     return invalidData;
