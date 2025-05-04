@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">92.15% </span>
+                <span class="strong">87.03% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>47/51</span>
+                <span class='fraction'>47/54</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">94.28% </span>
+                <span class="strong">89.18% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>33/35</span>
+                <span class='fraction'>33/37</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">88.88% </span>
+                <span class="strong">80% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>8/9</span>
+                <span class='fraction'>8/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">92.15% </span>
+                <span class="strong">86.53% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>47/51</span>
+                <span class='fraction'>45/52</span>
             </div>
         
             
@@ -168,7 +168,11 @@
 <a name='L103'></a><a href='#L103'>103</a>
 <a name='L104'></a><a href='#L104'>104</a>
 <a name='L105'></a><a href='#L105'>105</a>
-<a name='L106'></a><a href='#L106'>106</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -210,6 +214,13 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -263,12 +274,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-yes">18x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">17x</span>
 <span class="cline-any cline-yes">17x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
@@ -310,11 +318,18 @@ function validateAndGetData(env) {
   return getData;
 }
 &nbsp;
-function handleEmptyInput(input, data) {
+function handleEmptyInputInGet(input, data) {
   if (input.trim() === '') {
     return JSON.stringify(data);
   }
   return null;
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >handleEmptyInput(</span>input, data) {
+<span class="cstat-no" title="statement not covered" >  if (input.trim() === '') {</span>
+<span class="cstat-no" title="statement not covered" >    return JSON.stringify(data);</span>
+  }
+<span class="cstat-no" title="statement not covered" >  return null;</span>
 }
 &nbsp;
 function <span class="fstat-no" title="function not covered" >getResultOrError(</span>getData, input) {
@@ -366,17 +381,14 @@ export function get(input, env) {
   if (error) {
     return error;
   }
-  const emptyInputResult = handleEmptyInput(input, data);
-  if (emptyInputResult !== null) {
-    return emptyInputResult;
-  }
-  const dataValidityError = checkDataValidity(data);
-  if (dataValidityError) {
-    return dataValidityError;
-  }
+  const emptyInput = handleEmptyInputInGet(input, data);
+  if (emptyInput !== null) return emptyInput;
 &nbsp;
-  const valueOrError = getValueAtPath(data, input);
-  return handleValueOrErrorResult(valueOrError, input);
+  const invalidData = checkDataValidity(data);
+  if (invalidData) return invalidData;
+&nbsp;
+  const value = getValueAtPath(data, input);
+  return handleValueOrErrorResult(value, input);
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -385,7 +397,7 @@ export function get(input, env) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-04T09:17:00.836Z
+                at 2025-05-04T09:20:12.863Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -35,6 +35,13 @@ function validateAndGetData(env) {
   return getData;
 }
 
+function handleEmptyInputInGet(input, data) {
+  if (input.trim() === '') {
+    return JSON.stringify(data);
+  }
+  return null;
+}
+
 function handleEmptyInput(input, data) {
   if (input.trim() === '') {
     return JSON.stringify(data);
@@ -91,15 +98,12 @@ export function get(input, env) {
   if (error) {
     return error;
   }
-  const emptyInputResult = handleEmptyInput(input, data);
-  if (emptyInputResult !== null) {
-    return emptyInputResult;
-  }
-  const dataValidityError = checkDataValidity(data);
-  if (dataValidityError) {
-    return dataValidityError;
-  }
+  const emptyInput = handleEmptyInputInGet(input, data);
+  if (emptyInput !== null) return emptyInput;
 
-  const valueOrError = getValueAtPath(data, input);
-  return handleValueOrErrorResult(valueOrError, input);
+  const invalidData = checkDataValidity(data);
+  if (invalidData) return invalidData;
+
+  const value = getValueAtPath(data, input);
+  return handleValueOrErrorResult(value, input);
 }
