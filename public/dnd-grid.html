@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>D&D Grid</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 210mm;
+      height: 297mm;
+    }
+
+    body {
+      background: white;
+      position: relative;
+    }
+
+    .grid-container {
+      position: absolute;
+      top: 25.4mm;    /* 1 inch top margin */
+      left: 25.4mm;   /* 1 inch left margin */
+      width: calc(210mm - 25.4mm); /* no right margin */
+      height: calc(297mm - 25.4mm); /* no bottom margin */
+      box-sizing: border-box;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 25.4mm);
+      grid-auto-rows: 25.4mm;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cell {
+      border: 1px solid #999;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-container">
+    <div class="grid">
+      <!-- The number of cells is determined by available space, auto-filled -->
+      <!-- Fills with empty divs -->
+      <script>
+        const grid = document.querySelector('.grid');
+        const cols = Math.floor((210 - 25.4) / 25.4);
+        const rows = Math.floor((297 - 25.4) / 25.4);
+        for (let i = 0; i < cols * rows; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          grid.appendChild(cell);
+        }
+      </script>
+    </div>
+  </div>
+</body>
+</html>
