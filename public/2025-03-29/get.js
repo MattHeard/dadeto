@@ -11,10 +11,11 @@ function getValueAtPath(data, input) {
 
 function traversePathSegments(data, pathSegments) {
   const initialState = { value: data, path: '', error: null };
-  const finalState = pathSegments.reduce((acc, segment) => {
+  const reducer = (acc, segment) => {
     if (acc.error) return acc;
     return handlePathSegmentIteration(acc.value, segment, acc.path);
-  }, initialState);
+  };
+  const finalState = pathSegments.reduce(reducer, initialState);
   return finalState.error ? finalState.error : finalState.value;
 }
 
