@@ -73,9 +73,6 @@ function processSetTemporary(inputJson, env) {
 
 function mergeTemporaryData(getData, setData, inputJson) {
   const currentData = getData();
-  if (!isObject(currentData)) {
-    return "Error: 'getData' did not return a valid object.";
-  }
   // Deep clone currentData to create newData - JSON method is simple but has limitations (e.g., with Dates, Functions)
   // For this use case, it should be acceptable.
   const newData = JSON.parse(JSON.stringify(currentData));

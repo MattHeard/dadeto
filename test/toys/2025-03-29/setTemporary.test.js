@@ -119,11 +119,6 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
 
 
 
-  test('should return error if getData does not return an object and not call setData', () => {
-    mockGetData.mockReturnValue('not an object');
-    expect(setTemporary('{}', env)).toBe("Error: 'getData' did not return a valid object.");
-    expect(mockSetData).not.toHaveBeenCalled();
-  });
 
   test('should return error if getData throws an error and not call setData', () => {
     const errorMessage = 'Failed to retrieve data';
