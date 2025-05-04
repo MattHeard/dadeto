@@ -72,6 +72,13 @@ function handleValueOrErrorResult(valueOrError, input) {
   }
 }
 
+function checkDataValidityInGet(data) {
+  if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
+    return "Error: 'getData' did not return a valid object or array.";
+  }
+  return null;
+}
+
 function checkDataValidity(data) {
   if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
     return "Error: 'getData' did not return a valid object or array.";
@@ -101,7 +108,7 @@ export function get(input, env) {
   const emptyInput = handleEmptyInputInGet(input, data);
   if (emptyInput !== null) return emptyInput;
 
-  const invalidData = checkDataValidity(data);
+  const invalidData = checkDataValidityInGet(data);
   if (invalidData) return invalidData;
 
   const value = getValueAtPath(data, input);
