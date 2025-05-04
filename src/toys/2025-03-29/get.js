@@ -37,11 +37,14 @@ function traverseSegment(currentValue, segment, currentPath) {
   const nextPath = currentPath ? `${currentPath}.${segment}` : segment;
   const nonObjectError = getNonObjectSegmentError(currentValue, segment, nextPath);
   if (nonObjectError !== null) return nonObjectError;
+  return getSegmentValueOrError(currentValue, segment, nextPath);
+}
+
+function getSegmentValueOrError(currentValue, segment, nextPath) {
   if (hasOwnSegment(currentValue, segment)) {
     return { value: currentValue[segment], path: nextPath };
-  } else {
-    return getSegmentNotFoundError(currentValue, segment, nextPath);
   }
+  return getSegmentNotFoundError(currentValue, segment, nextPath);
 }
 
 function getNonObjectSegmentError(currentValue, segment, currentPath) {
