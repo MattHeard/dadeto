@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { hideArticlesByClass, toggleHideLink, makeHandleClassName, makeHandleLink, makeHandleHideSpan } from '../../src/browser/tags.js';
+import { hideArticlesByClass, toggleHideLink, makeHandleClassName, makeHandleLink, makeHandleHideSpan, handleTagLinks } from '../../src/browser/tags.js';
 
 
 describe('hideArticlesByClass', () => {
