@@ -1,7 +1,4 @@
 [0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/generator/interactive.js[24m[0m
-[0m  [2m30:8[22m  [33mwarning[39m  Function 'generateCompleteInteractiveComponent' has too many parameters (4). Maximum allowed is 3  [2mmax-params[22m[0m
-[0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js[24m[0m
 [0m  [2m1:8[22m  [33mwarning[39m  Function 'createParagraphElement' has a complexity of 4. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
@@ -130,6 +127,6 @@
 [0m   [2m9:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m  [2m22:23[22m  [33mwarning[39m  'tag' is defined but never used   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 103 problems (0 errors, 103 warnings)[22m[39m[0m
+[0m[33m[1m✖ 102 problems (0 errors, 102 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
