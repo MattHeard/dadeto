@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746342148676" clover="3.2.0">
-  <project timestamp="1746342148676" name="All files">
-    <metrics statements="972" coveredstatements="961" conditionals="330" coveredconditionals="320" methods="370" coveredmethods="365" elements="1672" coveredelements="1646" complexity="0" loc="972" ncloc="972" packages="13" files="24" classes="24"/>
+<coverage generated="1746342265061" clover="3.2.0">
+  <project timestamp="1746342265061" name="All files">
+    <metrics statements="973" coveredstatements="962" conditionals="330" coveredconditionals="320" methods="370" coveredmethods="365" elements="1673" coveredelements="1647" complexity="0" loc="973" ncloc="973" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -850,9 +850,9 @@
       </file>
     </package>
     <package name="toys.2025-03-30">
-      <metrics statements="64" coveredstatements="64" conditionals="38" coveredconditionals="38" methods="9" coveredmethods="9"/>
+      <metrics statements="65" coveredstatements="65" conditionals="38" coveredconditionals="38" methods="9" coveredmethods="9"/>
       <file name="cyberpunkAdventure.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js">
-        <metrics statements="64" coveredstatements="64" conditionals="38" coveredconditionals="38" methods="9" coveredmethods="9"/>
+        <metrics statements="65" coveredstatements="65" conditionals="38" coveredconditionals="38" methods="9" coveredmethods="9"/>
         <line num="2" count="2" type="cond" truecount="2" falsecount="0"/>
         <line num="3" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
@@ -910,13 +910,14 @@
         <line num="135" count="5" type="stmt"/>
         <line num="136" count="5" type="stmt"/>
         <line num="139" count="15" type="stmt"/>
-        <line num="149" count="15" type="stmt"/>
+        <line num="148" count="15" type="stmt"/>
         <line num="150" count="15" type="stmt"/>
-        <line num="151" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="151" count="15" type="stmt"/>
         <line num="152" count="15" type="cond" truecount="2" falsecount="0"/>
-        <line num="154" count="15" type="stmt"/>
-        <line num="165" count="15" type="stmt"/>
-        <line num="167" count="1" type="stmt"/>
+        <line num="153" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="155" count="15" type="stmt"/>
+        <line num="166" count="15" type="stmt"/>
+        <line num="168" count="1" type="stmt"/>
       </file>
     </package>
     <package name="toys.2025-04-05">

@@ -90,20 +90,20 @@ function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
   }
 }
 
-function getAdventureResult({ state, name, time, lowerInput, nextInventory, nextVisited, getRandomNumber }) {
-  switch (state) {
+function getAdventureResult(context) {
+  switch (context.state) {
     case "intro":
-      return handleIntro({ name, time });
+      return handleIntro({ name: context.name, time: context.time });
     case "hub":
-      return handleHub({ lowerInput });
+      return handleHub({ lowerInput: context.lowerInput });
     case "hacker:door":
-      return handleHackerDoor(lowerInput, nextInventory, nextVisited);
+      return handleHackerDoor(context.lowerInput, context.nextInventory, context.nextVisited);
     case "transport:platform":
       return handleTransportPlatform();
     case "transport:trade":
-      return handleTransportTrade({ nextInventory, nextVisited, lowerInput });
+      return handleTransportTrade({ nextInventory: context.nextInventory, nextVisited: context.nextVisited, lowerInput: context.lowerInput });
     case "alley:stealth":
-      return handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited });
+      return handleAlleyStealth({ getRandomNumber: context.getRandomNumber, nextInventory: context.nextInventory, nextVisited: context.nextVisited });
     default:
       return { output: `> Glitch in the grid. Resetting...`, nextState: "intro" };
   }
@@ -136,7 +136,7 @@ export function cyberpunkAdventure(input, env) {
       return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
     }
 
-    const result = getAdventureResult({
+    const context = {
       state,
       name,
       time,
@@ -144,7 +144,8 @@ export function cyberpunkAdventure(input, env) {
       nextInventory,
       nextVisited,
       getRandomNumber
-    });
+    };
+    const result = getAdventureResult(context);
 
     output = result.output;
     nextState = result.nextState;
