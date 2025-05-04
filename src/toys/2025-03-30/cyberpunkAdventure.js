@@ -95,7 +95,7 @@ function getAdventureResult(context) {
     case "intro":
       return handleIntro(context);
     case "hub":
-      return handleHub({ lowerInput: context.lowerInput });
+      return handleHub(context);
     case "hacker:door":
       return handleHackerDoor(context.lowerInput, context.nextInventory, context.nextVisited);
     case "transport:platform":
