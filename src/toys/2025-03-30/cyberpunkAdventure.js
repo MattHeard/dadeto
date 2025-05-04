@@ -90,6 +90,25 @@ function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
   }
 }
 
+function getAdventureResult({ state, name, time, lowerInput, nextInventory, nextVisited, getRandomNumber }) {
+  switch (state) {
+    case "intro":
+      return handleIntro({ name, time });
+    case "hub":
+      return handleHub({ lowerInput });
+    case "hacker:door":
+      return handleHackerDoor(lowerInput, nextInventory, nextVisited);
+    case "transport:platform":
+      return handleTransportPlatform();
+    case "transport:trade":
+      return handleTransportTrade({ nextInventory, nextVisited, lowerInput });
+    case "alley:stealth":
+      return handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited });
+    default:
+      return { output: `> Glitch in the grid. Resetting...`, nextState: "intro" };
+  }
+}
+
 export function cyberpunkAdventure(input, env) {
   try {
     const getRandomNumber = env.get("getRandomNumber");
@@ -117,29 +136,15 @@ export function cyberpunkAdventure(input, env) {
       return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
     }
 
-    let result;
-    switch (state) {
-      case "intro":
-        result = handleIntro({ name, time });
-        break;
-      case "hub":
-        result = handleHub({ lowerInput });
-        break;
-      case "hacker:door":
-        result = handleHackerDoor(lowerInput, nextInventory, nextVisited);
-        break;
-      case "transport:platform":
-        result = handleTransportPlatform();
-        break;
-      case "transport:trade":
-        result = handleTransportTrade({ nextInventory, nextVisited, lowerInput });
-        break;
-      case "alley:stealth":
-        result = handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited });
-        break;
-      default:
-        result = { output: `> Glitch in the grid. Resetting...`, nextState: "intro" };
-    }
+    const result = getAdventureResult({
+      state,
+      name,
+      time,
+      lowerInput,
+      nextInventory,
+      nextVisited,
+      getRandomNumber
+    });
 
     output = result.output;
     nextState = result.nextState;
