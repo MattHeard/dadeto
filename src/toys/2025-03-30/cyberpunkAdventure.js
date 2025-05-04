@@ -90,6 +90,10 @@ function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
   }
 }
 
+function getDefaultAdventureResult() {
+  return { output: `> Glitch in the grid. Resetting...`, nextState: "intro" };
+}
+
 function getAdventureResult(context) {
   switch (context.state) {
     case "intro":
@@ -105,7 +109,7 @@ function getAdventureResult(context) {
     case "alley:stealth":
       return handleAlleyStealth(context);
     default:
-      return { output: `> Glitch in the grid. Resetting...`, nextState: "intro" };
+      return getDefaultAdventureResult();
   }
 }
 
