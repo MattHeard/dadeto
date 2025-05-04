@@ -117,12 +117,6 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(mockSetData).not.toHaveBeenCalled();
   });
 
-  test('should return error if env is provided but does not have a get method', () => {
-    const env = {}; // No get method
-    const input = JSON.stringify({ foo: 'bar' });
-    const result = setTemporary(input, env);
-    expect(result).toBe("Error: 'env' Map with 'get' method is required.");
-  });
 
   test('should return error if getData or setData function is missing in env', () => {
     env.delete('getData');

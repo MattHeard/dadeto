@@ -62,9 +62,6 @@ function processSetTemporary(inputJson, env) {
   if (!isObject(inputJson)) {
     return "Error: Input JSON must be a plain object.";
   }
-  if (!env || typeof env.get !== 'function') {
-    return "Error: 'env' Map with 'get' method is required.";
-  }
   const getData = env.get('getData');
   const setData = env.get('setData');
   if (typeof getData !== 'function') {
