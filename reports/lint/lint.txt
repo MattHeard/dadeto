@@ -9,10 +9,6 @@
 [0m  [2m101:1[22m   [33mwarning[39m  Function 'checkDataValidity' has a complexity of 4. Maximum allowed is 2         [2mcomplexity[22m[0m
 [0m  [2m101:10[22m  [33mwarning[39m  'checkDataValidity' is defined but never used                                    [2mno-unused-vars[22m[0m
 [0m  [2m116:8[22m   [33mwarning[39m  Function 'get' has a complexity of 5. Maximum allowed is 2                       [2mcomplexity[22m[0m
-[0m  [2m119:26[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
-[0m  [2m124:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
-[0m  [2m126:28[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
-[0m  [2m129:20[22m  [33mwarning[39m  Expected { after 'if' condition                                                  [2mcurly[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
 [0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
@@ -118,6 +114,6 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 103 problems (0 errors, 103 warnings)[22m[39m[0m
-[0m[33m[1m[22m[39m[33m[1m  0 errors and 55 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[33m[1m✖ 99 problems (0 errors, 99 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

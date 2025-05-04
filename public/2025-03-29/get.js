@@ -116,17 +116,26 @@ function getDataWithCatch(getData, input) {
 export function get(input, env) {
   const getDataOrError = validateAndGetData(env);
   const envError = handleEnvErrorInGet(getDataOrError);
-  if (envError !== null) return envError;
-  const getData = getDataOrError;
-
-  const { data, error } = getDataWithCatch(getData, input);
-  const retrievalError = handleDataRetrievalErrorInGet(error);
-  if (retrievalError !== null) return retrievalError;
-  const emptyInput = handleEmptyInputInGet(input, data);
-  if (emptyInput !== null) return emptyInput;
-
-  const invalidData = checkDataValidityInGet(data);
-  if (invalidData) return invalidData;
-
-  return getFinalResultInGet(data, input);
+  if (envError !== null) {
+    return envError;
+  } else {
+    const getData = getDataOrError;
+    const { data, error } = getDataWithCatch(getData, input);
+    const retrievalError = handleDataRetrievalErrorInGet(error);
+    if (retrievalError !== null) {
+      return retrievalError;
+    } else {
+      const emptyInput = handleEmptyInputInGet(input, data);
+      if (emptyInput !== null) {
+        return emptyInput;
+      } else {
+        const invalidData = checkDataValidityInGet(data);
+        if (invalidData) {
+          return invalidData;
+        } else {
+          return getFinalResultInGet(data, input);
+        }
+      }
+    }
+  }
 }
