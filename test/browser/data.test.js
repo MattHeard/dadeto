@@ -170,16 +170,6 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(state.blog).toEqual({ title: 'preserved' }); // blog should be preserved
   });
 
-  it('setData throws and logs error if blog missing', () => {
-    expect(() =>
-      setData(
-        { desired: {}, current: state },
-        { logInfo: logFn, logError: errorFn }
-      )
-    ).toThrow();
-    expect(errorFn).toHaveBeenCalled();
-  });
-
   it('setData logs specific error message when blog is missing', () => {
     expect(() =>
       setData(
