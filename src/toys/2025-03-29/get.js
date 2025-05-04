@@ -34,7 +34,12 @@ function handlePathSegmentIteration(currentValue, segment, currentPath) {
 }
 
 function traverseSegment(currentValue, segment, currentPath) {
-  const nextPath = currentPath ? `${currentPath}.${segment}` : segment;
+  let nextPath;
+  if (currentPath) {
+    nextPath = `${currentPath}.${segment}`;
+  } else {
+    nextPath = segment;
+  }
   const nonObjectError = getNonObjectSegmentError(currentValue, segment, nextPath);
   if (nonObjectError !== null) return nonObjectError;
   return getSegmentValueOrError(currentValue, segment, nextPath);
