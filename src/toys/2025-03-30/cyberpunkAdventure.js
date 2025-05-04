@@ -93,7 +93,7 @@ function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
 function getAdventureResult(context) {
   switch (context.state) {
     case "intro":
-      return handleIntro({ name: context.name, time: context.time });
+      return handleIntro(context);
     case "hub":
       return handleHub({ lowerInput: context.lowerInput });
     case "hacker:door":
