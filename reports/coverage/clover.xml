@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746385932873" clover="3.2.0">
-  <project timestamp="1746385932873" name="All files">
-    <metrics statements="1023" coveredstatements="998" conditionals="346" coveredconditionals="321" methods="397" coveredmethods="389" elements="1766" coveredelements="1708" complexity="0" loc="1023" ncloc="1023" packages="13" files="24" classes="24"/>
+<coverage generated="1746386025954" clover="3.2.0">
+  <project timestamp="1746386025954" name="All files">
+    <metrics statements="1023" coveredstatements="1000" conditionals="346" coveredconditionals="323" methods="397" coveredmethods="389" elements="1766" coveredelements="1712" complexity="0" loc="1023" ncloc="1023" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -734,7 +734,7 @@
       </file>
     </package>
     <package name="toys.2025-03-29">
-      <metrics statements="158" coveredstatements="143" conditionals="77" coveredconditionals="60" methods="53" coveredmethods="50"/>
+      <metrics statements="158" coveredstatements="145" conditionals="77" coveredconditionals="62" methods="53" coveredmethods="50"/>
       <file name="fishingGame.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/fishingGame.js">
         <metrics statements="49" coveredstatements="49" conditionals="8" coveredconditionals="8" methods="25" coveredmethods="25"/>
         <line num="2" count="7" type="stmt"/>
@@ -788,8 +788,8 @@
         <line num="159" count="6" type="stmt"/>
       </file>
       <file name="get.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js">
-        <metrics statements="76" coveredstatements="61" conditionals="48" coveredconditionals="31" methods="24" coveredmethods="21"/>
-        <line num="8" count="66" type="cond" truecount="2" falsecount="0"/>
+        <metrics statements="76" coveredstatements="63" conditionals="48" coveredconditionals="33" methods="24" coveredmethods="21"/>
+        <line num="8" count="67" type="cond" truecount="2" falsecount="0"/>
         <line num="12" count="14" type="stmt"/>
         <line num="13" count="14" type="stmt"/>
         <line num="17" count="14" type="stmt"/>
@@ -820,7 +820,7 @@
         <line num="76" count="37" type="cond" truecount="2" falsecount="0"/>
         <line num="80" count="35" type="stmt"/>
         <line num="84" count="2" type="stmt"/>
-        <line num="88" count="15" type="stmt"/>
+        <line num="88" count="16" type="stmt"/>
         <line num="92" count="15" type="cond" truecount="2" falsecount="0"/>
         <line num="93" count="1" type="stmt"/>
         <line num="95" count="14" type="stmt"/>
@@ -841,25 +841,25 @@
         <line num="129" count="14" type="stmt"/>
         <line num="133" count="14" type="stmt"/>
         <line num="134" count="14" type="stmt"/>
-        <line num="138" count="15" type="cond" truecount="1" falsecount="1"/>
+        <line num="138" count="16" type="cond" truecount="1" falsecount="1"/>
         <line num="139" count="0" type="stmt"/>
-        <line num="141" count="15" type="stmt"/>
-        <line num="145" count="15" type="cond" truecount="1" falsecount="1"/>
-        <line num="146" count="0" type="stmt"/>
+        <line num="141" count="16" type="stmt"/>
+        <line num="145" count="16" type="cond" truecount="2" falsecount="0"/>
+        <line num="146" count="1" type="stmt"/>
         <line num="148" count="15" type="stmt"/>
         <line num="152" count="0" type="cond" truecount="0" falsecount="5"/>
         <line num="153" count="0" type="stmt"/>
         <line num="155" count="0" type="stmt"/>
-        <line num="159" count="15" type="stmt"/>
-        <line num="160" count="15" type="stmt"/>
-        <line num="162" count="0" type="stmt"/>
-        <line num="167" count="15" type="stmt"/>
-        <line num="168" count="15" type="stmt"/>
-        <line num="169" count="15" type="cond" truecount="1" falsecount="1"/>
-        <line num="171" count="15" type="stmt"/>
-        <line num="172" count="15" type="stmt"/>
-        <line num="173" count="15" type="stmt"/>
-        <line num="174" count="15" type="cond" truecount="1" falsecount="1"/>
+        <line num="159" count="16" type="stmt"/>
+        <line num="160" count="16" type="stmt"/>
+        <line num="162" count="1" type="stmt"/>
+        <line num="167" count="16" type="stmt"/>
+        <line num="168" count="16" type="stmt"/>
+        <line num="169" count="16" type="cond" truecount="1" falsecount="1"/>
+        <line num="171" count="16" type="stmt"/>
+        <line num="172" count="16" type="stmt"/>
+        <line num="173" count="16" type="stmt"/>
+        <line num="174" count="16" type="cond" truecount="2" falsecount="0"/>
         <line num="176" count="15" type="stmt"/>
         <line num="177" count="15" type="cond" truecount="2" falsecount="0"/>
         <line num="179" count="14" type="stmt"/>

@@ -105,6 +105,15 @@ describe('get function with path traversal', () => {
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 
+  test('should return an error if getData throws an error', () => {
+    const errorMessage = 'Failed to fetch data';
+    mockGetData.mockImplementation(() => {
+      throw new Error(errorMessage);
+    });
+    expect(get('user.name', env)).toBe(`Error during data retrieval or path traversal for "user.name": ${errorMessage}`);
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
+
   test('should return error when accessing deep property on null', () => {
     const nestedNull = { user: { profile: null } };
     mockGetData.mockReturnValue(nestedNull);
