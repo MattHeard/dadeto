@@ -1,8 +1,7 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
-[0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
-[0m  [2m21:31[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2            [2mcomplexity[22m[0m
-[0m  [2m47:8[22m   [33mwarning[39m  Function 'setTemporary' has a complexity of 10. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m25:31[22m  [33mwarning[39m  Arrow function has a complexity of 3. Maximum allowed is 2            [2mcomplexity[22m[0m
+[0m  [2m51:8[22m   [33mwarning[39m  Function 'setTemporary' has a complexity of 10. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js[24m[0m
 [0m   [2m19:1[22m  [33mwarning[39m  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             [2mcomplexity[22m[0m
@@ -103,6 +102,6 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 90 problems (0 errors, 90 warnings)[22m[39m[0m
+[0m[33m[1m✖ 89 problems (0 errors, 89 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 51 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m

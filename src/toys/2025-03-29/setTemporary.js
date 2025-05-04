@@ -4,7 +4,11 @@
  * @returns {boolean}
  */
 function isObject(item) {
-  return (item && typeof item === 'object' && !Array.isArray(item));
+  return item && isNonArrayObject(item);
+}
+
+function isNonArrayObject(item) {
+  return typeof item === 'object' && !Array.isArray(item);
 }
 
 /**
