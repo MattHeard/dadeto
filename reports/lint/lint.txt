@@ -31,9 +31,6 @@
 [0m  [2m276:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
 [0m  [2m303:23[22m  [33mwarning[39m  'tag' is defined but never used                   [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js[24m[0m
-[0m  [2m2:104[22m  [33mwarning[39m  'handleTagLinks' is defined but never used  [2mno-unused-vars[22m[0m
-[0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js[24m[0m
 [0m  [2m259:22[22m  [33mwarning[39m  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  [2mcomplexity[22m[0m
 [0m  [2m481:35[22m  [33mwarning[39m  Arrow function has a complexity of 5. Maximum allowed is 2          [2mcomplexity[22m[0m
@@ -44,8 +41,5 @@
 [0m  [2m585:11[22m  [33mwarning[39m  'listeners' is assigned a value but never used                      [2mno-unused-vars[22m[0m
 [0m  [2m586:11[22m  [33mwarning[39m  'createElement' is assigned a value but never used                  [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
-[0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
-[0m[0m
-[0m[33m[1m✖ 36 problems (0 errors, 36 warnings)[22m[39m[0m
+[0m[33m[1m✖ 34 problems (0 errors, 34 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
