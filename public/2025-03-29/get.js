@@ -150,17 +150,23 @@ export function get(input, env) {
   const getData = env.get('getData');
   const { data, error } = getDataWithCatch(getData, input);
   const retrievalError = handleDataRetrievalErrorInGet(error);
-  if (retrievalError !== null) return retrievalError;
+  if (retrievalError !== null) {
+    return retrievalError;
+  }
 
   return getFinalResultAfterRetrieval(input, data);
 }
 
 function getFinalResultAfterRetrieval(input, data) {
   const emptyInput = handleEmptyInputInGet(input, data);
-  if (emptyInput !== null) return emptyInput;
+  if (emptyInput !== null) {
+    return emptyInput;
+  }
 
   const invalidData = checkDataValidityInGet(data);
-  if (invalidData) return invalidData;
+  if (invalidData) {
+    return invalidData;
+  }
 
   return getFinalResultInGet(data, input);
 }
