@@ -12,7 +12,9 @@ function getValueAtPath(data, input) {
 function traversePathSegments(data, pathSegments) {
   const initialState = { value: data, path: '', error: null };
   const reducer = (acc, segment) => {
-    if (acc.error) return acc;
+    if (acc.error) {
+      return acc;
+    }
     return handlePathSegmentIteration(acc.value, segment, acc.path);
   };
   const finalState = pathSegments.reduce(reducer, initialState);
