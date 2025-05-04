@@ -34,15 +34,18 @@ function handlePathSegmentIteration(currentValue, segment, currentPath) {
 }
 
 function traverseSegment(currentValue, segment, currentPath) {
-  let nextPath;
-  if (currentPath) {
-    nextPath = `${currentPath}.${segment}`;
-  } else {
-    nextPath = segment;
-  }
+  const nextPath = getNextPath(currentPath, segment);
   const nonObjectError = getNonObjectSegmentError(currentValue, segment, nextPath);
   if (nonObjectError !== null) return nonObjectError;
   return getSegmentValueOrError(currentValue, segment, nextPath);
+}
+
+function getNextPath(currentPath, segment) {
+  if (currentPath) {
+    return `${currentPath}.${segment}`;
+  } else {
+    return segment;
+  }
 }
 
 function getSegmentValueOrError(currentValue, segment, nextPath) {
