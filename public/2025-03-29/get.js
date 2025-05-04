@@ -149,10 +149,6 @@ function getDataWithCatch(getData, input) {
 
 export function get(input, env) {
   const getData = env.get('getData');
-  return getFromValidEnv(input, getData);
-}
-
-function getFromValidEnv(input, getData) {
   const { data, error } = getDataWithCatch(getData, input);
   const retrievalError = handleDataRetrievalErrorInGet(error);
   if (retrievalError !== null) return retrievalError;
