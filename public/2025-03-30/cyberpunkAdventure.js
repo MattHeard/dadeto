@@ -101,9 +101,9 @@ function getAdventureResult(context) {
     case "transport:platform":
       return handleTransportPlatform(context);
     case "transport:trade":
-      return handleTransportTrade({ nextInventory: context.nextInventory, nextVisited: context.nextVisited, lowerInput: context.lowerInput });
+      return handleTransportTrade(context);
     case "alley:stealth":
-      return handleAlleyStealth({ getRandomNumber: context.getRandomNumber, nextInventory: context.nextInventory, nextVisited: context.nextVisited });
+      return handleAlleyStealth(context);
     default:
       return { output: `> Glitch in the grid. Resetting...`, nextState: "intro" };
   }
