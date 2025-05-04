@@ -10,10 +10,6 @@ function getValueAtPath(data, input) {
 }
 
 function traversePathSegments(data, pathSegments) {
-  return iteratePathSegments(data, pathSegments);
-}
-
-function iteratePathSegments(data, pathSegments) {
   let currentValue = data;
   let currentPath = '';
   for (const segment of pathSegments) {
