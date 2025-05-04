@@ -4,6 +4,10 @@
  * @param {Map<string, Function>} env - Environment map containing dependencies. Expected: 'getData'.
  * @returns {string} The JSON stringified value found at the path, or an error message.
  */
+function isErrorString(value) {
+  return typeof value === 'string' && value.startsWith('Error:');
+}
+
 function getValueAtPath(data, input) {
   const pathSegments = input.split('.');
   return traversePathSegments(data, pathSegments);
@@ -88,9 +92,6 @@ function getResultOrError(getData, input) {
   return data;
 }
 
-function isErrorString(value) {
-  return typeof value === 'string' && value.startsWith('Error:');
-}
 
 function handleValueOrErrorResult(valueOrError, input) {
   if (isErrorString(valueOrError)) {
