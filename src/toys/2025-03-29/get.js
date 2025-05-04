@@ -5,23 +5,36 @@
  * @returns {string} The JSON stringified value found at the path, or an error message.
  */
 function getValueAtPath(data, input) {
-  // Split the input path by dots
   const pathSegments = input.split('.');
   let currentValue = data;
   let currentPath = '';
 
   for (const segment of pathSegments) {
     currentPath = currentPath ? `${currentPath}.${segment}` : segment;
-    if (currentValue === null || typeof currentValue !== 'object') {
-      return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
-    }
-    if (Object.prototype.hasOwnProperty.call(currentValue, segment)) {
+    const nonObjectError = getNonObjectSegmentError(currentValue, segment, currentPath);
+    if (nonObjectError !== null) return nonObjectError;
+    if (hasOwnSegment(currentValue, segment)) {
       currentValue = currentValue[segment];
     } else {
-      return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
+      return getSegmentNotFoundError(currentValue, segment, currentPath);
     }
   }
   return currentValue;
+}
+
+function getNonObjectSegmentError(currentValue, segment, currentPath) {
+  if (currentValue === null || typeof currentValue !== 'object') {
+    return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
+  }
+  return null;
+}
+
+function hasOwnSegment(currentValue, segment) {
+  return Object.prototype.hasOwnProperty.call(currentValue, segment);
+}
+
+function getSegmentNotFoundError(currentValue, segment, currentPath) {
+  return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
 }
 
 function validateAndGetData(env) {

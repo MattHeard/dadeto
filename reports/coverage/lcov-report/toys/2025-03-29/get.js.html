@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">84.84% </span>
+                <span class="strong">86.11% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>56/66</span>
+                <span class='fraction'>62/72</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80.43% </span>
+                <span class="strong">81.25% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>37/46</span>
+                <span class='fraction'>39/48</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.57% </span>
+                <span class="strong">82.35% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>11/14</span>
+                <span class='fraction'>14/17</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">83.87% </span>
+                <span class="strong">85.07% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>52/62</span>
+                <span class='fraction'>57/67</span>
             </div>
         
             
@@ -196,8 +196,20 @@
 <a name='L131'></a><a href='#L131'>131</a>
 <a name='L132'></a><a href='#L132'>132</a>
 <a name='L133'></a><a href='#L133'>133</a>
-<a name='L134'></a><a href='#L134'>134</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -211,8 +223,7 @@
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">38x</span>
 <span class="cline-any cline-yes">38x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">38x</span>
 <span class="cline-any cline-yes">36x</span>
 <span class="cline-any cline-yes">34x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -220,6 +231,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">38x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">36x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">36x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -336,23 +362,36 @@
  * @returns {string} The JSON stringified value found at the path, or an error message.
  */
 function getValueAtPath(data, input) {
-  // Split the input path by dots
   const pathSegments = input.split('.');
   let currentValue = data;
   let currentPath = '';
 &nbsp;
   for (const segment of pathSegments) {
     currentPath = currentPath ? `${currentPath}.${segment}` : segment;
-    if (currentValue === null || typeof currentValue !== 'object') {
-      return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
-    }
-    if (Object.prototype.hasOwnProperty.call(currentValue, segment)) {
+    const nonObjectError = getNonObjectSegmentError(currentValue, segment, currentPath);
+    if (nonObjectError !== null) return nonObjectError;
+    if (hasOwnSegment(currentValue, segment)) {
       currentValue = currentValue[segment];
     } else {
-      return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
+      return getSegmentNotFoundError(currentValue, segment, currentPath);
     }
   }
   return currentValue;
+}
+&nbsp;
+function getNonObjectSegmentError(currentValue, segment, currentPath) {
+  if (currentValue === null || typeof currentValue !== 'object') {
+    return `Error: Cannot access property '${segment}' on non-object value at path '${currentPath.substring(0, currentPath.lastIndexOf('.'))}'. Value is: ${JSON.stringify(currentValue)}`;
+  }
+  return null;
+}
+&nbsp;
+function hasOwnSegment(currentValue, segment) {
+  return Object.prototype.hasOwnProperty.call(currentValue, segment);
+}
+&nbsp;
+function getSegmentNotFoundError(currentValue, segment, currentPath) {
+  return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
 }
 &nbsp;
 function validateAndGetData(env) {
@@ -469,7 +508,7 @@ export function get(input, env) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-04T09:26:16.793Z
+                at 2025-05-04T09:27:39.915Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
