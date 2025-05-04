@@ -64,12 +64,6 @@ function processSetTemporary(inputJson, env) {
   }
   const getData = env.get('getData');
   const setData = env.get('setData');
-  if (typeof getData !== 'function') {
-    return "Error: 'getData' function not found in env.";
-  }
-  if (typeof setData !== 'function') {
-    return "Error: 'setData' function not found in env.";
-  }
   try {
     const currentData = getData();
     if (!isObject(currentData)) {

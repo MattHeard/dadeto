@@ -118,12 +118,6 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
   });
 
 
-  test('should return error if getData or setData function is missing in env', () => {
-    env.delete('getData');
-    expect(setTemporary('{}', env)).toBe("Error: 'getData' function not found in env.");
-    env.set('getData', mockGetData).delete('setData'); // Restore getData, remove setData
-    expect(setTemporary('{}', env)).toBe("Error: 'setData' function not found in env.");
-  });
 
   test('should return error if getData does not return an object and not call setData', () => {
     mockGetData.mockReturnValue('not an object');
