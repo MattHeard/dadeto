@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746342904064" clover="3.2.0">
-  <project timestamp="1746342904064" name="All files">
-    <metrics statements="970" coveredstatements="959" conditionals="325" coveredconditionals="315" methods="372" coveredmethods="367" elements="1667" coveredelements="1641" complexity="0" loc="970" ncloc="970" packages="13" files="24" classes="24"/>
+<coverage generated="1746342954122" clover="3.2.0">
+  <project timestamp="1746342954122" name="All files">
+    <metrics statements="969" coveredstatements="958" conditionals="323" coveredconditionals="314" methods="372" coveredmethods="367" elements="1664" coveredelements="1639" complexity="0" loc="969" ncloc="969" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -591,16 +591,15 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="7" coveredstatements="6" conditionals="6" coveredconditionals="4" methods="2" coveredmethods="2"/>
+      <metrics statements="6" coveredstatements="5" conditionals="4" coveredconditionals="3" methods="2" coveredmethods="2"/>
       <file name="paragraph.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js">
-        <metrics statements="7" coveredstatements="6" conditionals="6" coveredconditionals="4" methods="2" coveredmethods="2"/>
+        <metrics statements="6" coveredstatements="5" conditionals="4" coveredconditionals="3" methods="2" coveredmethods="2"/>
         <line num="2" count="16" type="cond" truecount="3" falsecount="1"/>
         <line num="3" count="16" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
         <line num="10" count="16" type="stmt"/>
-        <line num="11" count="16" type="cond" truecount="1" falsecount="1"/>
+        <line num="11" count="16" type="stmt"/>
         <line num="12" count="16" type="stmt"/>
-        <line num="14" count="16" type="stmt"/>
       </file>
     </package>
     <package name="toys.2024-10-02">

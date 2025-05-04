@@ -8,8 +8,6 @@ function setParagraphText(paragraph, inputString, dom) {
 
 export function createParagraphElement(inputString, dom) {
   const paragraph = dom.createElement('p');
-  if (paragraph) {
-    setParagraphText(paragraph, inputString, dom);
-  }
+  setParagraphText(paragraph, inputString, dom);
   return paragraph;
 }
