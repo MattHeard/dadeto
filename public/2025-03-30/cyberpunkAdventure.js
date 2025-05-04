@@ -99,7 +99,7 @@ function getAdventureResult(context) {
     case "hacker:door":
       return handleHackerDoor(context.lowerInput, context.nextInventory, context.nextVisited);
     case "transport:platform":
-      return handleTransportPlatform();
+      return handleTransportPlatform(context);
     case "transport:trade":
       return handleTransportTrade({ nextInventory: context.nextInventory, nextVisited: context.nextVisited, lowerInput: context.lowerInput });
     case "alley:stealth":
