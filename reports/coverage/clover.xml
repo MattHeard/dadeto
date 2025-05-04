@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746387853517" clover="3.2.0">
-  <project timestamp="1746387853518" name="All files">
+<coverage generated="1746387881562" clover="3.2.0">
+  <project timestamp="1746387881562" name="All files">
     <metrics statements="1010" coveredstatements="997" conditionals="325" coveredconditionals="313" methods="400" coveredmethods="395" elements="1735" coveredelements="1705" complexity="0" loc="1010" ncloc="1010" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
@@ -885,9 +885,9 @@
         <line num="75" count="11" type="stmt"/>
         <line num="76" count="11" type="cond" truecount="2" falsecount="0"/>
         <line num="77" count="7" type="stmt"/>
+        <line num="79" count="11" type="stmt"/>
         <line num="80" count="11" type="stmt"/>
-        <line num="81" count="11" type="stmt"/>
-        <line num="82" count="10" type="stmt"/>
+        <line num="81" count="10" type="stmt"/>
       </file>
     </package>
     <package name="toys.2025-03-30">

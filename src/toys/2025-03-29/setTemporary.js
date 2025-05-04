@@ -76,7 +76,6 @@ function mergeTemporaryData(getData, setData, inputJson) {
   if (!isObject(newData.temporary)) {
     newData.temporary = {};
   }
-  // Perform the deep merge
   newData.temporary = deepMerge(newData.temporary, inputJson);
   setData(newData);
   return `Success: Temporary data deep merged.`;

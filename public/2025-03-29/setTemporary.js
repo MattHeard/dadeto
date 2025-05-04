@@ -72,14 +72,10 @@ function processSetTemporary(inputJson, env) {
 
 function mergeTemporaryData(getData, setData, inputJson) {
   const currentData = getData();
-  // Deep clone currentData to create newData - JSON method is simple but has limitations (e.g., with Dates, Functions)
-  // For this use case, it should be acceptable.
   const newData = JSON.parse(JSON.stringify(currentData));
-  // Ensure the 'temporary' key exists and is an object in the new copy
   if (!isObject(newData.temporary)) {
     newData.temporary = {};
   }
-  // Perform the deep merge
   newData.temporary = deepMerge(newData.temporary, inputJson);
   setData(newData);
   return `Success: Temporary data deep merged.`;
