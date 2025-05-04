@@ -42,6 +42,14 @@ function handleEmptyInput(input, data) {
   return null;
 }
 
+function getResultOrError(getData, input) {
+  const { error, data } = getDataWithCatch(getData, input);
+  if (error) {
+    return error;
+  }
+  return data;
+}
+
 function isErrorString(value) {
   return typeof value === 'string' && value.startsWith('Error:');
 }
