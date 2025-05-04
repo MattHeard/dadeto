@@ -95,21 +95,6 @@ function handleEmptyInputInGet(input, data) {
   return null;
 }
 
-function handleEmptyInput(input, data) {
-  if (input.trim() === '') {
-    return JSON.stringify(data);
-  }
-  return null;
-}
-
-function getResultOrError(getData, input) {
-  const { error, data } = getDataWithCatch(getData, input);
-  if (error) {
-    return error;
-  }
-  return data;
-}
-
 
 function handleValueOrErrorResult(valueOrError, input) {
   if (isErrorString(valueOrError)) {
