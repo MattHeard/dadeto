@@ -13,8 +13,8 @@ function traversePathSegments(data, pathSegments) {
   let state = { value: data, path: '', error: null };
   for (const segment of pathSegments) {
     const result = handlePathSegmentIteration(state.value, segment, state.path);
+    state.error = result.error;
     if (result.error) {
-      state.error = result.error;
       break;
     }
     state.value = result.value;
