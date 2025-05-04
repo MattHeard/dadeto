@@ -117,7 +117,11 @@ function checkDataValidityInGet(data) {
 }
 
 function isInvalidGetDataResult(data) {
-  return data === null || (typeof data !== 'object' && !Array.isArray(data));
+  return data === null || isNotObjectOrArray(data);
+}
+
+function isNotObjectOrArray(data) {
+  return typeof data !== 'object' && !Array.isArray(data);
 }
 
 function getFinalResultInGet(data, input) {

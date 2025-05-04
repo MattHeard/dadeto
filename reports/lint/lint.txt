@@ -1,11 +1,10 @@
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js[24m[0m
-[0m  [2m119:1[22m   [33mwarning[39m  Function 'isInvalidGetDataResult' has a complexity of 3. Maximum allowed is 2        [2mcomplexity[22m[0m
-[0m  [2m128:10[22m  [33mwarning[39m  'handleEnvErrorInGet' is defined but never used                                      [2mno-unused-vars[22m[0m
-[0m  [2m154:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                      [2mcurly[22m[0m
-[0m  [2m159:1[22m   [33mwarning[39m  Function 'getFinalResultAfterRetrieval' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m161:28[22m  [33mwarning[39m  Expected { after 'if' condition                                                      [2mcurly[22m[0m
-[0m  [2m164:20[22m  [33mwarning[39m  Expected { after 'if' condition                                                      [2mcurly[22m[0m
+[0m  [2m132:10[22m  [33mwarning[39m  'handleEnvErrorInGet' is defined but never used                                      [2mno-unused-vars[22m[0m
+[0m  [2m158:32[22m  [33mwarning[39m  Expected { after 'if' condition                                                      [2mcurly[22m[0m
+[0m  [2m163:1[22m   [33mwarning[39m  Function 'getFinalResultAfterRetrieval' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m165:28[22m  [33mwarning[39m  Expected { after 'if' condition                                                      [2mcurly[22m[0m
+[0m  [2m168:20[22m  [33mwarning[39m  Expected { after 'if' condition                                                      [2mcurly[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
 [0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m
@@ -111,6 +110,6 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js[24m[0m
 [0m  [2m1:24[22m  [33mwarning[39m  'getBlogGenerationArgs' is defined but never used  [2mno-unused-vars[22m[0m
 [0m[0m
-[0m[33m[1m✖ 96 problems (0 errors, 96 warnings)[22m[39m[0m
+[0m[33m[1m✖ 95 problems (0 errors, 95 warnings)[22m[39m[0m
 [0m[33m[1m[22m[39m[33m[1m  0 errors and 54 warnings potentially fixable with the `--fix` option.[22m[39m[0m
 [0m[33m[1m[22m[39m[0m
