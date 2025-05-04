@@ -55,11 +55,13 @@ export function setTemporary(input, env) {
   } catch (parseError) {
     return `Error: Invalid JSON input. ${parseError.message}`;
   }
+  return processSetTemporary(inputJson, env);
+}
 
-  if (!isObject(inputJson)) { // Use the helper
-      return "Error: Input JSON must be a plain object.";
+function processSetTemporary(inputJson, env) {
+  if (!isObject(inputJson)) {
+    return "Error: Input JSON must be a plain object.";
   }
-
   if (!env || typeof env.get !== 'function') {
     return "Error: 'env' Map with 'get' method is required.";
   }
@@ -69,32 +71,24 @@ export function setTemporary(input, env) {
     return "Error: 'getData' function not found in env.";
   }
   if (typeof setData !== 'function') {
-      return "Error: 'setData' function not found in env.";
+    return "Error: 'setData' function not found in env.";
   }
-
   try {
     const currentData = getData();
-
-    if (!isObject(currentData)) { // Use the helper
-        return "Error: 'getData' did not return a valid object.";
+    if (!isObject(currentData)) {
+      return "Error: 'getData' did not return a valid object.";
     }
-
     // Deep clone currentData to create newData - JSON method is simple but has limitations (e.g., with Dates, Functions)
     // For this use case, it should be acceptable.
     const newData = JSON.parse(JSON.stringify(currentData));
-
     // Ensure the 'temporary' key exists and is an object in the new copy
     if (!isObject(newData.temporary)) {
-        newData.temporary = {};
+      newData.temporary = {};
     }
-
     // Perform the deep merge
     newData.temporary = deepMerge(newData.temporary, inputJson);
-
     setData(newData);
-
     return `Success: Temporary data deep merged.`;
-
   } catch (error) {
     return `Error updating temporary data: ${error.message}`;
   }

@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>34/34</span>
+                <span class='fraction'>35/35</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>34/34</span>
+                <span class='fraction'>35/35</span>
             </div>
         
             
@@ -158,13 +158,7 @@
 <a name='L93'></a><a href='#L93'>93</a>
 <a name='L94'></a><a href='#L94'>94</a>
 <a name='L95'></a><a href='#L95'>95</a>
-<a name='L96'></a><a href='#L96'>96</a>
-<a name='L97'></a><a href='#L97'>97</a>
-<a name='L98'></a><a href='#L98'>98</a>
-<a name='L99'></a><a href='#L99'>99</a>
-<a name='L100'></a><a href='#L100'>100</a>
-<a name='L101'></a><a href='#L101'>101</a>
-<a name='L102'></a><a href='#L102'>102</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L96'></a><a href='#L96'>96</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -221,10 +215,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -237,30 +233,22 @@
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">13x</span>
 <span class="cline-any cline-yes">13x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -322,11 +310,13 @@ export function setTemporary(input, env) {
   } catch (parseError) {
     return `Error: Invalid JSON input. ${parseError.message}`;
   }
+  return processSetTemporary(inputJson, env);
+}
 &nbsp;
-  if (!isObject(inputJson)) { // Use the helper
-      return "Error: Input JSON must be a plain object.";
+function processSetTemporary(inputJson, env) {
+  if (!isObject(inputJson)) {
+    return "Error: Input JSON must be a plain object.";
   }
-&nbsp;
   if (!env || typeof env.get !== 'function') {
     return "Error: 'env' Map with 'get' method is required.";
   }
@@ -336,32 +326,24 @@ export function setTemporary(input, env) {
     return "Error: 'getData' function not found in env.";
   }
   if (typeof setData !== 'function') {
-      return "Error: 'setData' function not found in env.";
+    return "Error: 'setData' function not found in env.";
   }
-&nbsp;
   try {
     const currentData = getData();
-&nbsp;
-    if (!isObject(currentData)) { // Use the helper
-        return "Error: 'getData' did not return a valid object.";
+    if (!isObject(currentData)) {
+      return "Error: 'getData' did not return a valid object.";
     }
-&nbsp;
     // Deep clone currentData to create newData - JSON method is simple but has limitations (e.g., with Dates, Functions)
     // For this use case, it should be acceptable.
     const newData = JSON.parse(JSON.stringify(currentData));
-&nbsp;
     // Ensure the 'temporary' key exists and is an object in the new copy
     if (!isObject(newData.temporary)) {
-        newData.temporary = {};
+      newData.temporary = {};
     }
-&nbsp;
     // Perform the deep merge
     newData.temporary = deepMerge(newData.temporary, inputJson);
-&nbsp;
     setData(newData);
-&nbsp;
     return `Success: Temporary data deep merged.`;
-&nbsp;
   } catch (error) {
     return `Error updating temporary data: ${error.message}`;
   }
@@ -373,7 +355,7 @@ export function setTemporary(input, env) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-04T19:35:48.787Z
+                at 2025-05-04T19:36:57.188Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
