@@ -2,9 +2,9 @@
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js[24m[0m
 [0m   [2m7:1[22m  [33mwarning[39m  Function 'getValueAtPath' has a complexity of 6. Maximum allowed is 2            [2mcomplexity[22m[0m
 [0m  [2m27:1[22m  [33mwarning[39m  Function 'validateAndGetData' has a complexity of 4. Maximum allowed is 2        [2mcomplexity[22m[0m
-[0m  [2m45:1[22m  [33mwarning[39m  Function 'handleValueOrErrorResult' has a complexity of 4. Maximum allowed is 2  [2mcomplexity[22m[0m
-[0m  [2m56:1[22m  [33mwarning[39m  Function 'checkDataValidity' has a complexity of 4. Maximum allowed is 2         [2mcomplexity[22m[0m
-[0m  [2m71:8[22m  [33mwarning[39m  Function 'get' has a complexity of 6. Maximum allowed is 2                       [2mcomplexity[22m[0m
+[0m  [2m49:1[22m  [33mwarning[39m  Function 'handleValueOrErrorResult' has a complexity of 3. Maximum allowed is 2  [2mcomplexity[22m[0m
+[0m  [2m60:1[22m  [33mwarning[39m  Function 'checkDataValidity' has a complexity of 4. Maximum allowed is 2         [2mcomplexity[22m[0m
+[0m  [2m75:8[22m  [33mwarning[39m  Function 'get' has a complexity of 5. Maximum allowed is 2                       [2mcomplexity[22m[0m
 [0m[0m
 [0m[4m/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/setTemporary.js[24m[0m
 [0m   [2m6:1[22m   [33mwarning[39m  Function 'isObject' has a complexity of 3. Maximum allowed is 2       [2mcomplexity[22m[0m

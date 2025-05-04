@@ -42,8 +42,12 @@ function handleEmptyInput(input, data) {
   return null;
 }
 
+function isErrorString(value) {
+  return typeof value === 'string' && value.startsWith('Error:');
+}
+
 function handleValueOrErrorResult(valueOrError, input) {
-  if (typeof valueOrError === 'string' && valueOrError.startsWith('Error:')) {
+  if (isErrorString(valueOrError)) {
     return valueOrError;
   }
   try {
@@ -70,7 +74,7 @@ function getDataWithCatch(getData, input) {
 
 export function get(input, env) {
   const getDataOrError = validateAndGetData(env);
-  if (typeof getDataOrError === 'string' && getDataOrError.startsWith('Error:')) {
+  if (isErrorString(getDataOrError)) {
     return getDataOrError;
   }
   const getData = getDataOrError;
