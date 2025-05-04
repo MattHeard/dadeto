@@ -13,14 +13,20 @@ function traversePathSegments(data, pathSegments) {
   let currentValue = data;
   let currentPath = '';
   for (const segment of pathSegments) {
-    const result = traverseSegment(currentValue, segment, currentPath);
-    if (typeof result === 'string' && result.startsWith('Error:')) {
-      return result;
-    }
-    currentValue = result.value;
-    currentPath = result.path;
+    const { value, path, error } = handlePathSegmentIteration(currentValue, segment, currentPath);
+    if (error) return error;
+    currentValue = value;
+    currentPath = path;
   }
   return currentValue;
+}
+
+function handlePathSegmentIteration(currentValue, segment, currentPath) {
+  const result = traverseSegment(currentValue, segment, currentPath);
+  if (typeof result === 'string' && result.startsWith('Error:')) {
+    return { error: result };
+  }
+  return { value: result.value, path: result.path, error: null };
 }
 
 function traverseSegment(currentValue, segment, currentPath) {
