@@ -91,6 +91,13 @@ function handleEnvErrorInGet(getDataOrError) {
   return null;
 }
 
+function handleDataRetrievalErrorInGet(error) {
+  if (error) {
+    return error;
+  }
+  return null;
+}
+
 function checkDataValidity(data) {
   if (data === null || (typeof data !== 'object' && !Array.isArray(data))) {
     return "Error: 'getData' did not return a valid object or array.";
@@ -113,9 +120,8 @@ export function get(input, env) {
   const getData = getDataOrError;
 
   const { data, error } = getDataWithCatch(getData, input);
-  if (error) {
-    return error;
-  }
+  const retrievalError = handleDataRetrievalErrorInGet(error);
+  if (retrievalError !== null) return retrievalError;
   const emptyInput = handleEmptyInputInGet(input, data);
   if (emptyInput !== null) return emptyInput;
 
