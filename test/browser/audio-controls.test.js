@@ -191,6 +191,7 @@ describe('setupAudio', () => {
     const getAudioElements = () => audioElements;
     const dom = {
       getAudioElements,
+      appendChild: jest.fn(),
       removeControlsAttribute,
       createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
@@ -216,6 +217,7 @@ describe('setupAudio', () => {
     const getAudioElements = () => audioElements;
     const dom = {
       getAudioElements,
+      appendChild: jest.fn(),
       removeControlsAttribute,
       createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
@@ -242,6 +244,7 @@ describe('setupAudio', () => {
     const getAudioElements = () => audioElements;
     const dom = {
       getAudioElements,
+      appendChild: jest.fn(),
       removeControlsAttribute,
       createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
@@ -268,6 +271,7 @@ describe('setupAudio', () => {
     const getAudioElements = () => audioElements;
     const dom = {
       getAudioElements,
+      appendChild: jest.fn(),
       removeControlsAttribute,
       createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
@@ -294,6 +298,7 @@ describe('setupAudio', () => {
     const getAudioElements = () => audioElements;
     const dom = {
       getAudioElements,
+      appendChild: jest.fn(),
       removeControlsAttribute,
       createElement: (tag) => { const el = { className: '', id: '', textContent: '', href: '', addEventListener: jest.fn(), appendChild: jest.fn() }; createdElements.push(el); return el; },
       createTextNode: jest.fn((text) => ({ nodeType: 3, textContent: text })),
