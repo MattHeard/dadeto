@@ -153,6 +153,10 @@ export function get(input, env) {
   const retrievalError = handleDataRetrievalErrorInGet(error);
   if (retrievalError !== null) return retrievalError;
 
+  return getFinalResultAfterRetrieval(input, data);
+}
+
+function getFinalResultAfterRetrieval(input, data) {
   const emptyInput = handleEmptyInputInGet(input, data);
   if (emptyInput !== null) return emptyInput;
 
