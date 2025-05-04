@@ -10,15 +10,17 @@ function getValueAtPath(data, input) {
 }
 
 function traversePathSegments(data, pathSegments) {
-  let currentValue = data;
-  let currentPath = '';
+  let state = { value: data, path: '', error: null };
   for (const segment of pathSegments) {
-    const { value, path, error } = handlePathSegmentIteration(currentValue, segment, currentPath);
-    if (error) return error;
-    currentValue = value;
-    currentPath = path;
+    const result = handlePathSegmentIteration(state.value, segment, state.path);
+    if (result.error) {
+      state.error = result.error;
+      break;
+    }
+    state.value = result.value;
+    state.path = result.path;
   }
-  return currentValue;
+  return state.error ? state.error : state.value;
 }
 
 function handlePathSegmentIteration(currentValue, segment, currentPath) {
