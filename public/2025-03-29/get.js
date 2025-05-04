@@ -14,11 +14,7 @@ function traversePathSegments(data, pathSegments) {
   const finalState = pathSegments.reduce((acc, segment) => {
     if (acc.error) return acc;
     const result = handlePathSegmentIteration(acc.value, segment, acc.path);
-    if (result.error) {
-      return { ...acc, error: result.error };
-    } else {
-      return { value: result.value, path: result.path, error: null };
-    }
+    return result;
   }, initialState);
   return finalState.error ? finalState.error : finalState.value;
 }
