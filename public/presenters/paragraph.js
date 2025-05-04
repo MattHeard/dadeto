@@ -1,9 +1,5 @@
 function setParagraphText(paragraph, inputString, dom) {
-  if (dom && typeof dom.setTextContent === 'function') {
-    dom.setTextContent(paragraph, inputString);
-  } else {
-    paragraph.textContent = inputString;
-  }
+  dom.setTextContent(paragraph, inputString);
 }
 
 export function createParagraphElement(inputString, dom) {
