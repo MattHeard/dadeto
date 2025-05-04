@@ -22,7 +22,7 @@ function isNonArrayObject(item) {
  */
 function deepMerge(target, source) {
   const output = { ...target }; // Start with a shallow copy of the target
-  Object.keys(source).forEach(key => {
+  const mergeKey = key => {
     const targetValue = target[key];
     const sourceValue = source[key];
     if (isObject(targetValue) && isObject(sourceValue)) {
@@ -34,9 +34,8 @@ function deepMerge(target, source) {
       // where target[key] wasn't an object or didn't exist)
       output[key] = sourceValue;
     }
-  });
-  // If source is not an object, the initial shallow copy of target is returned
-  // or target itself if it wasn't an object either (though initial checks prevent this)
+  };
+  Object.keys(source).forEach(mergeKey);
   return output;
 }
 
