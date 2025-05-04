@@ -65,22 +65,27 @@ function processSetTemporary(inputJson, env) {
   const getData = env.get('getData');
   const setData = env.get('setData');
   try {
-    const currentData = getData();
-    if (!isObject(currentData)) {
-      return "Error: 'getData' did not return a valid object.";
-    }
-    // Deep clone currentData to create newData - JSON method is simple but has limitations (e.g., with Dates, Functions)
-    // For this use case, it should be acceptable.
-    const newData = JSON.parse(JSON.stringify(currentData));
-    // Ensure the 'temporary' key exists and is an object in the new copy
-    if (!isObject(newData.temporary)) {
-      newData.temporary = {};
-    }
-    // Perform the deep merge
-    newData.temporary = deepMerge(newData.temporary, inputJson);
-    setData(newData);
-    return `Success: Temporary data deep merged.`;
+    return mergeTemporaryData(getData, setData, inputJson);
   } catch (error) {
     return `Error updating temporary data: ${error.message}`;
   }
+}
+
+function mergeTemporaryData(getData, setData, inputJson) {
+  const currentData = getData();
+  if (!isObject(currentData)) {
+    return "Error: 'getData' did not return a valid object.";
+  }
+  // Deep clone currentData to create newData - JSON method is simple but has limitations (e.g., with Dates, Functions)
+  // For this use case, it should be acceptable.
+  const newData = JSON.parse(JSON.stringify(currentData));
+  // Ensure the 'temporary' key exists and is an object in the new copy
+  if (!isObject(newData.temporary)) {
+    newData.temporary = {};
+  }
+  // Perform the deep merge
+  newData.temporary = deepMerge(newData.temporary, inputJson);
+  setData(newData);
+  return `Success: Temporary data deep merged.`;
+
 }
