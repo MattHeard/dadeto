@@ -278,9 +278,10 @@ function simulateMoves(board, depth, isMax, player, moves) {
   const scores = [];
   const opponent = getOpponent(player);
   for (const [r, c] of getAvailableMoves(board)) {
-    board[r][c] = isMax ? player : opponent;
-    scores.push(minimax(board, depth + 1, !isMax, player, moves));
-    board[r][c] = null;
+    // Deep copy the board
+    const newBoard = board.map(row => row.slice());
+    newBoard[r][c] = isMax ? player : opponent;
+    scores.push(minimax(newBoard, depth + 1, !isMax, player, moves));
   }
   return scores;
 }
