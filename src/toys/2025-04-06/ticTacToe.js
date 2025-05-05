@@ -275,8 +275,6 @@ function getAvailableMoves(board) {
 }
 
 function simulateMoves(board, depth, isMax, player, moves) {
-  const opponent = getOpponent(player);
-  const value = isMax ? player : opponent;
   const makeAccumulateScores = (board, depth, isMax, player, moves) => {
     const value = isMax ? player : getOpponent(player);
     return (scores, [r, c]) => {
