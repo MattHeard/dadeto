@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746465306698" clover="3.2.0">
-  <project timestamp="1746465306698" name="All files">
+<coverage generated="1746465410260" clover="3.2.0">
+  <project timestamp="1746465410260" name="All files">
     <metrics statements="1019" coveredstatements="1006" conditionals="308" coveredconditionals="296" methods="429" coveredmethods="424" elements="1756" coveredelements="1726" complexity="0" loc="1019" ncloc="1019" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
@@ -1080,25 +1080,25 @@
         <line num="239" count="78" type="stmt"/>
         <line num="241" count="78" type="stmt"/>
         <line num="242" count="78" type="stmt"/>
-        <line num="246" count="1160939" type="stmt"/>
-        <line num="247" count="1160939" type="stmt"/>
-        <line num="248" count="1160939" type="cond" truecount="2" falsecount="0"/>
-        <line num="249" count="270456" type="stmt"/>
-        <line num="251" count="890483" type="cond" truecount="2" falsecount="0"/>
-        <line num="252" count="170728" type="stmt"/>
-        <line num="254" count="719755" type="stmt"/>
-        <line num="258" count="719755" type="stmt"/>
-        <line num="259" count="719755" type="stmt"/>
-        <line num="260" count="2159265" type="stmt"/>
-        <line num="261" count="6477795" type="cond" truecount="2" falsecount="0"/>
-        <line num="264" count="719755" type="stmt"/>
+        <line num="246" count="1160939" type="cond" truecount="2" falsecount="0"/>
+        <line num="247" count="270456" type="stmt"/>
+        <line num="249" count="890483" type="cond" truecount="2" falsecount="0"/>
+        <line num="250" count="170728" type="stmt"/>
+        <line num="252" count="719755" type="stmt"/>
+        <line num="256" count="719755" type="stmt"/>
+        <line num="257" count="719755" type="stmt"/>
+        <line num="258" count="2159265" type="stmt"/>
+        <line num="259" count="6477795" type="cond" truecount="2" falsecount="0"/>
+        <line num="262" count="719755" type="stmt"/>
+        <line num="266" count="719755" type="stmt"/>
+        <line num="267" count="719755" type="stmt"/>
         <line num="268" count="719755" type="stmt"/>
-        <line num="269" count="719755" type="stmt"/>
-        <line num="270" count="719755" type="stmt"/>
-        <line num="271" count="1160898" type="cond" truecount="2" falsecount="0"/>
-        <line num="272" count="1160898" type="stmt"/>
-        <line num="273" count="1160898" type="stmt"/>
-        <line num="275" count="719755" type="stmt"/>
+        <line num="269" count="1160898" type="cond" truecount="2" falsecount="0"/>
+        <line num="270" count="1160898" type="stmt"/>
+        <line num="271" count="1160898" type="stmt"/>
+        <line num="273" count="719755" type="stmt"/>
+        <line num="277" count="1160939" type="stmt"/>
+        <line num="278" count="1160939" type="stmt"/>
         <line num="279" count="1160939" type="stmt"/>
         <line num="280" count="1160939" type="stmt"/>
         <line num="281" count="1160939" type="cond" truecount="2" falsecount="0"/>

@@ -242,9 +242,7 @@ function applyMoveToBoard(board, move, seen) {
   return true;
 }
 
-function evaluateTerminalState(board, player, opponent, depth) {
-  const isWinPlayer = () => isWin(board, player);
-  const isWinOpponent = () => isWin(board, opponent);
+function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
   if (isWinPlayer()) {
     return 10 - depth;
   }
@@ -277,7 +275,9 @@ function simulateMoves(board, depth, isMax, player, moves) {
 
 function minimax(board, depth, isMax, player, moves) {
   const opponent = getOpponent(player);
-  const terminalScore = evaluateTerminalState(board, player, opponent, depth);
+  const isWinPlayer = () => isWin(board, player);
+  const isWinOpponent = () => isWin(board, opponent);
+  const terminalScore = evaluateTerminalState(isWinPlayer, isWinOpponent, depth);
   if (terminalScore !== null) {return terminalScore;}
 
   const scores = simulateMoves(board, depth, isMax, player, moves);
