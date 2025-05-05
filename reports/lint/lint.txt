@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
-  284:1  warning  Function 'minimax' has too many parameters (5). Maximum allowed is 3     max-params
+  284:1  warning  Function 'minimax' has too many parameters (4). Maximum allowed is 3     max-params
   284:1  warning  Function 'minimax' has a complexity of 3. Maximum allowed is 2           complexity
   313:1  warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2  complexity
   319:1  warning  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2  complexity

@@ -149,7 +149,7 @@ function setBoardCell(board, coordinates, value) {
 function scoreMove(player, moves, setCell) {
   const board = setCell(player);
   const params = { board, player, moves };
-  const score = minimax(board, 0, false, player, params);
+  const score = minimax(board, 0, false, params);
   return score;
 }
 
@@ -281,9 +281,9 @@ function simulateMoves(board, accumulateScores) {
 
 
 
-function minimax(board, depth, isMax, player, params) {
-  const opponent = getOpponent(player);
-  const isWinPlayer = () => isWin(board, player);
+function minimax(board, depth, isMax, params) {
+  const opponent = getOpponent(params.player);
+  const isWinPlayer = () => isWin(board, params.player);
   const isWinOpponent = () => isWin(board, opponent);
   const terminalScore = evaluateTerminalState(isWinPlayer, isWinOpponent, depth);
   if (terminalScore !== null) {
@@ -296,7 +296,7 @@ function minimax(board, depth, isMax, player, params) {
       const newBoard = params.board.map(row => row.slice());
       newBoard[r][c] = value;
       const newParams = { board: newBoard, player: params.player, moves: params.moves };
-      const score = minimax(newBoard, depth + 1, !isMax, params.player, newParams);
+      const score = minimax(newBoard, depth + 1, !isMax, newParams);
       scores.push(score);
       return scores;
     };
