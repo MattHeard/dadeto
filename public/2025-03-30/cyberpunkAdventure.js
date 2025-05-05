@@ -120,8 +120,12 @@ function getScopedState(data) {
   return data.temporary.CYBE1 || {};
 }
 
+function getNameOrInput(scoped, input) {
+  return scoped.name || input.trim();
+}
+
 function getPlayerName(scoped, input) {
-  return scoped.name || input.trim() || "Stray";
+  return getNameOrInput(scoped, input) || "Stray";
 }
 
 function getPlayerState(scoped) {
