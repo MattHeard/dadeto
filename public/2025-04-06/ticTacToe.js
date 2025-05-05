@@ -336,10 +336,8 @@ function canMoveBeApplied(move, index, moves) {
 }
 
 function isMoveDetailsValid(params) {
-  if (!hasValidPlayer(params)) { return false; }
-  if (!hasValidPosition(params)) { return false; }
-  if (!respectsTurnOrder(params)) { return false; }
-  return true;
+  const validators = [hasValidPlayer, hasValidPosition, respectsTurnOrder];
+  return validators.every(fn => fn(params));
 }
 
 function isWin(board, player) {
