@@ -254,13 +254,17 @@ describe('initialiseModule', () => {
     const paragraph = {};
     const outputParentElement = {};
     const outputElement = { textContent: '', outputParentElement };
-    // Extract querySelector into a local variable for clarity
-    const querySelector = (el, selector) => {
-      if (selector === 'input' || selector === 'button') {return {};}
-      if (selector === 'div.output > p') {return outputElement;}
-      if (selector === 'div.output') {return outputElement.outputParentElement;}
-      return {};
+    // Refactored querySelector to use a map for selector-object pairs
+    const selectorMap = {
+      'input': {},
+      'button': {},
+      'div.output > p': outputElement,
+      'div.output': outputElement.outputParentElement
     };
+    const querySelector = (el, selector) => {
+      return selectorMap.hasOwnProperty(selector) ? selectorMap[selector] : {};
+    };
+
     const dom = {
       removeAllChildren: jest.fn(),
       querySelector,
