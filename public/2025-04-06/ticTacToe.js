@@ -169,13 +169,11 @@ function getScoredMoves(board, nextPlayer, moves) {
 }
 
 function getBestScoredMove(scoredMoves) {
-  let bestScoredMove = { moveScore: -Infinity };
-  for (const scoredMove of scoredMoves) {
-    if (scoredMove.moveScore > bestScoredMove.moveScore) {
-      bestScoredMove = scoredMove;
-    }
-  }
-  return bestScoredMove;
+  return scoredMoves.reduce(
+    (best, current) =>
+      current.moveScore > best.moveScore ? current : best,
+    { moveScore: -Infinity }
+  );
 }
 
 function setter(board, r, c) {
