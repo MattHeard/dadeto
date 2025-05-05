@@ -1,7 +1,4 @@
 
-/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js
-  143:1  warning  Function 'processAdventureStep' has a complexity of 3. Maximum allowed is 2  complexity
-
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
   155:1  warning  Function 'getScoredMoves' has too many parameters (4). Maximum allowed is 3         max-params
   166:1  warning  Function 'getBestScoredMove' has a complexity of 3. Maximum allowed is 2            complexity
@@ -36,4 +33,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js
   1:24  warning  'getBlogGenerationArgs' is defined but never used  no-unused-vars
 
-✖ 27 problems (0 errors, 27 warnings)
+✖ 26 problems (0 errors, 26 warnings)

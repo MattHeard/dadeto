@@ -154,8 +154,8 @@ function processAdventureStep({ state, name, time, lowerInput, nextInventory, ne
 
   const output = result.output;
   const nextState = result.nextState;
-  const updatedInventory = result.nextInventory || nextInventory;
-  const updatedVisited = result.nextVisited || nextVisited;
+  const updatedInventory = getUpdatedInventory(result, nextInventory);
+  const updatedVisited = getUpdatedVisited(result, nextVisited);
 
   setTemporaryData({
     temporary: {
@@ -169,6 +169,15 @@ function processAdventureStep({ state, name, time, lowerInput, nextInventory, ne
   });
 
   return output;
+}
+
+function getUpdatedInventory(result, nextInventory) {
+  return result.nextInventory || nextInventory;
+}
+
+function getUpdatedVisited(result, nextVisited) {
+  return result.nextVisited || nextVisited;
+
 }
 
 function runAdventure(input, env) {
