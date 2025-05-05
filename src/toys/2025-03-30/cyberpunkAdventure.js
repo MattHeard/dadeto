@@ -17,27 +17,29 @@ function handleIntro({ name, time }) {
 }
 
 function handleHub({ lowerInput }) {
-  if (lowerInput.includes("hacker")) {
-    return {
+  const keywordMap = {
+    hacker: {
       output: `> You approach the Hacker Den. The door requires a password.`,
       nextState: "hacker:door"
-    };
-  } else if (lowerInput.includes("transport")) {
-    return {
+    },
+    transport: {
       output: `> You head to the Transport Hub. Trains screech overhead.`,
       nextState: "transport:platform"
-    };
-  } else if (lowerInput.includes("alley")) {
-    return {
+    },
+    alley: {
       output: `> You slip into the Back Alley. The shadows move with you.`,
       nextState: "alley:stealth"
-    };
-  } else {
-    return {
-      output: `> Unclear direction. Options: hacker / transport / alley`,
-      nextState: "hub"
-    };
+    }
+  };
+  for (const keyword of Object.keys(keywordMap)) {
+    if (lowerInput.includes(keyword)) {
+      return keywordMap[keyword];
+    }
   }
+  return {
+    output: `> Unclear direction. Options: hacker / transport / alley`,
+    nextState: "hub"
+  };
 }
 
 function handleTransportPlatform() {

@@ -1,8 +1,8 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js
-   19:1  warning  Function 'handleHub' has a complexity of 4. Maximum allowed is 2             complexity
-   50:1  warning  Function 'handleTransportTrade' has a complexity of 3. Maximum allowed is 2  complexity
-  110:8  warning  Function 'cyberpunkAdventure' has a complexity of 11. Maximum allowed is 2   complexity
+   19:1  warning  Function 'handleHub' has a complexity of 3. Maximum allowed is 2             complexity
+   52:1  warning  Function 'handleTransportTrade' has a complexity of 3. Maximum allowed is 2  complexity
+  112:8  warning  Function 'cyberpunkAdventure' has a complexity of 11. Maximum allowed is 2   complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
   155:1  warning  Function 'getScoredMoves' has too many parameters (4). Maximum allowed is 3         max-params
