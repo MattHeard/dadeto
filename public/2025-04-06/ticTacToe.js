@@ -243,11 +243,12 @@ function applyMoveToBoard(board, move, seen) {
 }
 
 function evaluateTerminalState(board, player, opponent, depth) {
-  const isWinFor = p => isWin(board, p);
-  if (isWinFor(player)) {
+  const isWinPlayer = () => isWin(board, player);
+  const isWinOpponent = () => isWin(board, opponent);
+  if (isWinPlayer()) {
     return 10 - depth;
   }
-  if (isWinFor(opponent)) {
+  if (isWinOpponent()) {
     return depth - 10;
   }
   return null;
