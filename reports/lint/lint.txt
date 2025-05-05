@@ -1,9 +1,8 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
-  284:1  warning  Function 'minimax' has a complexity of 3. Maximum allowed is 2           complexity
-  314:1  warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2  complexity
-  320:1  warning  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2  complexity
-  332:1  warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2             complexity
+  318:1  warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2  complexity
+  324:1  warning  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2  complexity
+  336:1  warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2             complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js
   2:104  warning  'handleTagLinks' is defined but never used  no-unused-vars
@@ -21,4 +20,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js
   1:24  warning  'getBlogGenerationArgs' is defined but never used  no-unused-vars
 
-✖ 14 problems (0 errors, 14 warnings)
+✖ 13 problems (0 errors, 13 warnings)

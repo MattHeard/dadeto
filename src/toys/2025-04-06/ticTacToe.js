@@ -291,6 +291,10 @@ function minimax(depth, isMax, params) {
   }
   const accumulateScores = makeAccumulateScores(params, depth, isMax);
   const scores = simulateMoves(params.board, accumulateScores);
+  return selectScore(scores, isMax);
+}
+
+function selectScore(scores, isMax) {
   return isMax ? Math.max(...scores) : Math.min(...scores);
 }
 
