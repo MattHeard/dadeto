@@ -244,19 +244,16 @@ function applyMoveToBoard(board, move, seen) {
   return true;
 }
 
-function getTerminalScore(isWinPlayer, isWinOpponent, depth) {
+function getTerminalScore(isWinPlayer, depth) {
   if (isWinPlayer()) {
     return 10 - depth;
   }
-  if (isWinOpponent()) {
-    return depth - 10;
-  }
+  return depth - 10;
 }
 
 function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
-  const score = getTerminalScore(isWinPlayer, isWinOpponent, depth);
-  if (score !== undefined) {
-    return score;
+  if (isWinPlayer() || isWinOpponent()) {
+    return getTerminalScore(isWinPlayer, depth);
   }
   return null;
 }
