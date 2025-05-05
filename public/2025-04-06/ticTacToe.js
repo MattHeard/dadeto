@@ -277,14 +277,18 @@ function getAvailableMoves(board) {
 function simulateMoves(board, depth, isMax, player, moves) {
   const opponent = getOpponent(player);
   const value = isMax ? player : opponent;
-  const accumulateScores = (scores, [r, c]) => {
-    // Deep copy the board
-    const newBoard = board.map(row => row.slice());
-    newBoard[r][c] = value;
-    const score = minimax(newBoard, depth + 1, !isMax, player, moves);
-    scores.push(score);
-    return scores;
+  const makeAccumulateScores = (board, depth, isMax, player, moves) => {
+    const value = isMax ? player : getOpponent(player);
+    return (scores, [r, c]) => {
+      // Deep copy the board
+      const newBoard = board.map(row => row.slice());
+      newBoard[r][c] = value;
+      const score = minimax(newBoard, depth + 1, !isMax, player, moves);
+      scores.push(score);
+      return scores;
+    };
   };
+  const accumulateScores = makeAccumulateScores(board, depth, isMax, player, moves);
   return getAvailableMoves(board).reduce(accumulateScores, []);
 }
 
