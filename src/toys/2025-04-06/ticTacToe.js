@@ -221,10 +221,9 @@ function checkColumns(board, player) {
 }
 
 function checkDiagonals(board, player) {
-  return (
-    (board[0][0] === player && board[1][1] === player && board[2][2] === player) ||
-    (board[0][2] === player && board[1][1] === player && board[2][0] === player)
-  );
+  const leftToRight = [0, 1, 2].every(i => board[i][i] === player);
+  const rightToLeft = [0, 1, 2].every(i => board[i][2 - i] === player);
+  return leftToRight || rightToLeft;
 }
 
 function checkEarlyWin(board) {
