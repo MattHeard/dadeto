@@ -213,7 +213,7 @@ function checkRows(board, player) {
 }
 
 function isColumnWin(board, col, player) {
-  return board[0][col] === player && board[1][col] === player && board[2][col] === player;
+  return board.every(row => row[col] === player);
 }
 
 function checkColumns(board, player) {
