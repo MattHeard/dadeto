@@ -1,11 +1,11 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
   277:1  warning  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3  max-params
-  291:1  warning  Function 'minimax' has too many parameters (5). Maximum allowed is 3        max-params
-  291:1  warning  Function 'minimax' has a complexity of 3. Maximum allowed is 2              complexity
-  308:1  warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2     complexity
-  314:1  warning  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2     complexity
-  326:1  warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2                complexity
+  292:1  warning  Function 'minimax' has too many parameters (5). Maximum allowed is 3        max-params
+  292:1  warning  Function 'minimax' has a complexity of 3. Maximum allowed is 2              complexity
+  309:1  warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2     complexity
+  315:1  warning  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2     complexity
+  327:1  warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2                complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js
   2:104  warning  'handleTagLinks' is defined but never used  no-unused-vars
