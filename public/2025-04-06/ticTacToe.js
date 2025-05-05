@@ -331,10 +331,10 @@ function isValidRowAndColumn(row, column) {
 
 function canMoveBeApplied(move, index, moves) {
   if (!isObject(move)) { return false; }
-  return isMoveDetailsValid(move, index, moves);
+  return isMoveDetailsValid({ move, index, moves });
 }
 
-function isMoveDetailsValid(move, index, moves) {
+function isMoveDetailsValid({ move, index, moves }) {
   const { player, position } = move;
   if (!hasValidPlayer(player)) { return false; }
   if (!hasValidPosition(position)) { return false; }
