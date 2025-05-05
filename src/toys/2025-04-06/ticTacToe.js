@@ -198,7 +198,9 @@ function getEmptyCells(board) {
 
 
 function determineNextPlayer(moves) {
-  if (moves.length === 0) {return "X";}
+  if (moves.length === 0) {
+    return "X";
+  }
   return getOpponent(moves[moves.length - 1].player);
 }
 
