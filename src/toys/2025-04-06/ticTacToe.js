@@ -277,11 +277,13 @@ function getAvailableMoves(board) {
 function simulateMoves(board, depth, isMax, player, moves) {
   const scores = [];
   const opponent = getOpponent(player);
+  const value = isMax ? player : opponent;
   for (const [r, c] of getAvailableMoves(board)) {
     // Deep copy the board
     const newBoard = board.map(row => row.slice());
-    newBoard[r][c] = isMax ? player : opponent;
-    scores.push(minimax(newBoard, depth + 1, !isMax, player, moves));
+    newBoard[r][c] = value;
+    const score = minimax(newBoard, depth + 1, !isMax, player, moves);
+    scores.push(score);
   }
   return scores;
 }
@@ -291,7 +293,9 @@ function minimax(board, depth, isMax, player, moves) {
   const isWinPlayer = () => isWin(board, player);
   const isWinOpponent = () => isWin(board, opponent);
   const terminalScore = evaluateTerminalState(isWinPlayer, isWinOpponent, depth);
-  if (terminalScore !== null) {return terminalScore;}
+  if (terminalScore !== null) {
+    return terminalScore;
+  }
 
   const scores = simulateMoves(board, depth, isMax, player, moves);
   return isMax ? Math.max(...scores) : Math.min(...scores);
