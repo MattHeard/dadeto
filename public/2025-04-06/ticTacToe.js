@@ -322,6 +322,10 @@ function hasValidPlayer(player) {
 function hasValidPosition(position) {
   if (!isObject(position)) { return false; }
   const { row, column } = position;
+  return isValidRowAndColumn(row, column);
+}
+
+function isValidRowAndColumn(row, column) {
   return [0, 1, 2].includes(row) && [0, 1, 2].includes(column);
 }
 
