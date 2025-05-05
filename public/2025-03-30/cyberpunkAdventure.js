@@ -117,7 +117,7 @@ function getAdventureResult(context) {
 }
 
 function getScopedState(data) {
-  return (data.temporary && data.temporary.CYBE1) || {};
+  return data.temporary.CYBE1 || {};
 }
 
 function getPlayerName(scoped, input) {
