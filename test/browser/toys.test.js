@@ -511,13 +511,15 @@ describe('initializeInteractiveComponent', () => {
     const addWarning = jest.fn();
     const listeners = {};
 
+    const isInputKeypress = (element, event) => element === inputElement && event === 'keypress';
+    const isSubmitClick = (element, event) => element === submitButton && event === 'click';
     const handleInputKeypress = (element, event, handler) => {
-      if (element === inputElement && event === 'keypress') {
+      if (isInputKeypress(element, event)) {
         listeners.keypress = handler;
       }
     };
     const handleSubmitClick = (element, event, handler) => {
-      if (element === submitButton && event === 'click') {
+      if (isSubmitClick(element, event)) {
         listeners.click = handler;
       }
     };
