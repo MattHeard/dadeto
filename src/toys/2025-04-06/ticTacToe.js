@@ -152,8 +152,8 @@ function scoreMove(player, moves, setCell) {
   return score;
 }
 
-function getScoredMoves(board, nextPlayer, moves, setter) {
-  const scoreReducer = (acc, { r, c }) => {
+function makeScoreReducer(board, nextPlayer, moves, setter) {
+  return (acc, { r, c }) => {
     const setCell = setter(board, r, c);
     const move = { row: r, column: c };
     const moveScore = scoreMove(nextPlayer, moves, setCell);
@@ -161,6 +161,10 @@ function getScoredMoves(board, nextPlayer, moves, setter) {
     acc.push(scoredMove);
     return acc;
   };
+}
+
+function getScoredMoves(board, nextPlayer, moves, setter) {
+  const scoreReducer = makeScoreReducer(board, nextPlayer, moves, setter);
   return getEmptyCells(board).reduce(scoreReducer, []);
 }
 

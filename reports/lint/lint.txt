@@ -1,21 +1,22 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
-  155:1  warning  Function 'getScoredMoves' has too many parameters (4). Maximum allowed is 3         max-params
-  167:1  warning  Function 'getBestScoredMove' has a complexity of 3. Maximum allowed is 2            complexity
-  187:1  warning  Function 'getEmptyCells' has a complexity of 4. Maximum allowed is 2                complexity
-  205:1  warning  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                    complexity
-  214:1  warning  Function 'checkColumns' has a complexity of 5. Maximum allowed is 2                 complexity
-  223:1  warning  Function 'checkDiagonals' has a complexity of 6. Maximum allowed is 2               complexity
-  246:1  warning  Function 'evaluateTerminalState' has too many parameters (4). Maximum allowed is 3  max-params
-  246:1  warning  Function 'evaluateTerminalState' has a complexity of 3. Maximum allowed is 2        complexity
-  253:1  warning  Function 'getAvailableMoves' has a complexity of 4. Maximum allowed is 2            complexity
-  263:1  warning  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3          max-params
-  263:1  warning  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2                complexity
-  274:1  warning  Function 'minimax' has too many parameters (5). Maximum allowed is 3                max-params
-  274:1  warning  Function 'minimax' has a complexity of 3. Maximum allowed is 2                      complexity
-  287:1  warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2             complexity
-  293:1  warning  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2             complexity
-  305:1  warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        complexity
+  155:1  warning  Function 'makeScoreReducer' has too many parameters (4). Maximum allowed is 3       max-params
+  166:1  warning  Function 'getScoredMoves' has too many parameters (4). Maximum allowed is 3         max-params
+  171:1  warning  Function 'getBestScoredMove' has a complexity of 3. Maximum allowed is 2            complexity
+  191:1  warning  Function 'getEmptyCells' has a complexity of 4. Maximum allowed is 2                complexity
+  209:1  warning  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                    complexity
+  218:1  warning  Function 'checkColumns' has a complexity of 5. Maximum allowed is 2                 complexity
+  227:1  warning  Function 'checkDiagonals' has a complexity of 6. Maximum allowed is 2               complexity
+  250:1  warning  Function 'evaluateTerminalState' has too many parameters (4). Maximum allowed is 3  max-params
+  250:1  warning  Function 'evaluateTerminalState' has a complexity of 3. Maximum allowed is 2        complexity
+  257:1  warning  Function 'getAvailableMoves' has a complexity of 4. Maximum allowed is 2            complexity
+  267:1  warning  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3          max-params
+  267:1  warning  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2                complexity
+  278:1  warning  Function 'minimax' has too many parameters (5). Maximum allowed is 3                max-params
+  278:1  warning  Function 'minimax' has a complexity of 3. Maximum allowed is 2                      complexity
+  291:1  warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2             complexity
+  297:1  warning  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2             complexity
+  309:1  warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2                        complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js
   2:104  warning  'handleTagLinks' is defined but never used  no-unused-vars
@@ -33,4 +34,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js
   1:24  warning  'getBlogGenerationArgs' is defined but never used  no-unused-vars
 
-✖ 26 problems (0 errors, 26 warnings)
+✖ 27 problems (0 errors, 27 warnings)
