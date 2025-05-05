@@ -479,14 +479,15 @@ describe('initializeInteractiveComponent', () => {
   let querySelector;
   let selectorMap;
 
+  let inputElement;
   beforeEach(() => {
     selectorMap = new Map();
+    inputElement = { value: 'test', disabled: false };
     querySelector = jest.fn((el, selector) => selectorMap.get(selector) || {});
   });
 
   it('attaches click and keypress listeners with expected arguments', () => {
     const article = {};
-    const inputElement = { value: 'test', disabled: false };
     const submitButton = { disabled: false };
     const outputElement = {
       textContent: '',
