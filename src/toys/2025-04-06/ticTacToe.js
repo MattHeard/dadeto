@@ -207,12 +207,7 @@ function isRowWin(row, player) {
 }
 
 function checkRows(board, player) {
-  for (let i = 0; i < 3; i++) {
-    if (isRowWin(board[i], player)) {
-      return true;
-    }
-  }
-  return false;
+  return board.some(row => isRowWin(row, player));
 }
 
 function checkColumns(board, player) {
