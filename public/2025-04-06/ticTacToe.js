@@ -187,15 +187,13 @@ function findBestMove(board, nextPlayer, moves) {
 }
 
 function getEmptyCells(board) {
-  const emptyCells = [];
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 3; c++) {
-      if (!board[r][c]) {
-        emptyCells.push({ r, c });
-      }
-    }
-  }
-  return emptyCells;
+  return board.reduce((cells, row, r) =>
+    row.reduce((acc, cell, c) => {
+      if (!cell) acc.push({ r, c });
+      return acc;
+    }, cells),
+    []
+  );
 }
 
 
