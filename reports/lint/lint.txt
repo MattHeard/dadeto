@@ -6,7 +6,4 @@
   549:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
   558:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
 
-/Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js
-  1:24  warning  'getBlogGenerationArgs' is defined but never used  no-unused-vars
-
-✖ 6 problems (0 errors, 6 warnings)
+✖ 5 problems (0 errors, 5 warnings)
