@@ -341,7 +341,8 @@ function isMoveDetailsValid(params) {
 }
 
 function isWin(board, player) {
-  return checkRows(board, player) || checkColumns(board, player) || checkDiagonals(board, player);
+  const checks = [checkRows, checkColumns, checkDiagonals];
+  return checks.some(fn => fn(board, player));
 }
 
 function returnInitialOptimalMove() {

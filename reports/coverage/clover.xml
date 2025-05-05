@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746475825251" clover="3.2.0">
-  <project timestamp="1746475825251" name="All files">
-    <metrics statements="1030" coveredstatements="1017" conditionals="300" coveredconditionals="288" methods="440" coveredmethods="435" elements="1770" coveredelements="1740" complexity="0" loc="1030" ncloc="1030" packages="13" files="24" classes="24"/>
+<coverage generated="1746475916913" clover="3.2.0">
+  <project timestamp="1746475916913" name="All files">
+    <metrics statements="1031" coveredstatements="1018" conditionals="297" coveredconditionals="285" methods="441" coveredmethods="436" elements="1769" coveredelements="1739" complexity="0" loc="1031" ncloc="1031" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -975,9 +975,9 @@
       </file>
     </package>
     <package name="toys.2025-04-06">
-      <metrics statements="150" coveredstatements="150" conditionals="61" coveredconditionals="61" methods="79" coveredmethods="79"/>
+      <metrics statements="151" coveredstatements="151" conditionals="58" coveredconditionals="58" methods="80" coveredmethods="80"/>
       <file name="ticTacToe.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js">
-        <metrics statements="150" coveredstatements="150" conditionals="61" coveredconditionals="61" methods="79" coveredmethods="79"/>
+        <metrics statements="151" coveredstatements="151" conditionals="58" coveredconditionals="58" methods="80" coveredmethods="80"/>
         <line num="2" count="1502147" type="cond" truecount="2" falsecount="0"/>
         <line num="6" count="25" type="stmt"/>
         <line num="7" count="25" type="stmt"/>
@@ -1125,9 +1125,10 @@
         <line num="335" count="85" type="stmt"/>
         <line num="339" count="85" type="stmt"/>
         <line num="340" count="251" type="stmt"/>
-        <line num="344" count="2492775" type="cond" truecount="3" falsecount="0"/>
-        <line num="349" count="11" type="stmt"/>
+        <line num="344" count="2492775" type="stmt"/>
+        <line num="345" count="6746255" type="stmt"/>
         <line num="350" count="11" type="stmt"/>
+        <line num="351" count="11" type="stmt"/>
       </file>
     </package>
     <package name="toys.2025-04-16">
