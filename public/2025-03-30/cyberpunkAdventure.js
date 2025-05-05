@@ -17,12 +17,7 @@ function handleIntro({ name, time }) {
 }
 
 function findMatchingKeyword(lowerInput, keywordMap) {
-  for (const keyword of Object.keys(keywordMap)) {
-    if (lowerInput.includes(keyword)) {
-      return keyword;
-    }
-  }
-  return null;
+  return Object.keys(keywordMap).find(keyword => lowerInput.includes(keyword));
 }
 
 function handleHub({ lowerInput }) {
