@@ -203,7 +203,7 @@ function determineNextPlayer(moves) {
 }
 
 function isRowWin(row, player) {
-  return row[0] === player && row[1] === player && row[2] === player;
+  return row.every(cell => cell === player);
 }
 
 function checkRows(board, player) {

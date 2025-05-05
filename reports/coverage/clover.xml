@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746464591535" clover="3.2.0">
-  <project timestamp="1746464591535" name="All files">
-    <metrics statements="1014" coveredstatements="1001" conditionals="320" coveredconditionals="308" methods="421" coveredmethods="416" elements="1755" coveredelements="1725" complexity="0" loc="1014" ncloc="1014" packages="13" files="24" classes="24"/>
+<coverage generated="1746464665825" clover="3.2.0">
+  <project timestamp="1746464665825" name="All files">
+    <metrics statements="1014" coveredstatements="1001" conditionals="317" coveredconditionals="305" methods="422" coveredmethods="417" elements="1753" coveredelements="1723" complexity="0" loc="1014" ncloc="1014" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -975,9 +975,9 @@
       </file>
     </package>
     <package name="toys.2025-04-06">
-      <metrics statements="134" coveredstatements="134" conditionals="81" coveredconditionals="81" methods="60" coveredmethods="60"/>
+      <metrics statements="134" coveredstatements="134" conditionals="78" coveredconditionals="78" methods="61" coveredmethods="61"/>
       <file name="ticTacToe.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js">
-        <metrics statements="134" coveredstatements="134" conditionals="81" coveredconditionals="81" methods="60" coveredmethods="60"/>
+        <metrics statements="134" coveredstatements="134" conditionals="78" coveredconditionals="78" methods="61" coveredmethods="61"/>
         <line num="2" count="1880701" type="cond" truecount="2" falsecount="0"/>
         <line num="6" count="25" type="stmt"/>
         <line num="7" count="25" type="stmt"/>
@@ -1064,7 +1064,7 @@
         <line num="193" count="81" type="stmt"/>
         <line num="201" count="9" type="cond" truecount="2" falsecount="0"/>
         <line num="202" count="7" type="stmt"/>
-        <line num="206" count="6000820" type="cond" truecount="3" falsecount="0"/>
+        <line num="206" count="9485450" type="stmt"/>
         <line num="210" count="6000820" type="stmt"/>
         <line num="214" count="1898180" type="stmt"/>
         <line num="215" count="5551700" type="cond" truecount="5" falsecount="0"/>
