@@ -485,11 +485,15 @@ describe('initializeInteractiveComponent', () => {
       outputParentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
     };
 
+    // Use a Map for selector-object pairs
+    const selectorMap = new Map([
+      ['input', inputElement],
+      ['button', submitButton],
+      ['div.output > p', outputElement],
+      ['div.output', outputElement.outputParentElement]
+    ]);
     const querySelector = jest.fn((el, selector) => {
-      if (selector === 'input') {return inputElement;}
-      if (selector === 'button') {return submitButton;}
-      if (selector === 'div.output > p') {return outputElement;}
-      if (selector === 'div.output') {return outputElement.outputParentElement;} // Return the parent element when asked for output container
+      return selectorMap.get(selector) || {};
     });
 
     const globalState = {};
@@ -553,11 +557,15 @@ describe('initializeInteractiveComponent', () => {
       outputParentElement: { classList: { remove: jest.fn() } }
     };
 
+    // Use a Map for selector-object pairs
+    const selectorMap = new Map([
+      ['input', inputElement],
+      ['button', submitButton],
+      ['div.output > p', outputElement],
+      ['div.output', outputElement.outputParentElement]
+    ]);
     const querySelector = jest.fn((el, selector) => {
-      if (selector === 'input') {return inputElement;}
-      if (selector === 'button') {return submitButton;}
-      if (selector === 'div.output > p') {return outputElement;}
-      if (selector === 'div.output') {return outputElement.outputParentElement;} // Return the parent element when asked for output container
+      return selectorMap.get(selector) || {};
     });
 
     const globalState = {};
