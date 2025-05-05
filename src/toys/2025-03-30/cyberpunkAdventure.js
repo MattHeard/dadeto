@@ -116,13 +116,16 @@ function getAdventureResult(context) {
   return handler ? handler(context) : getDefaultAdventureResult();
 }
 
+function getScopedState(data) {
+  return (data.temporary && data.temporary.CYBE1) || {};
+}
+
 function runAdventure(input, env) {
   const getRandomNumber = env.get("getRandomNumber");
   const getCurrentTime = env.get("getCurrentTime");
   const getData = env.get("getData");
   const setTemporaryData = env.get("setData");
-  const { temporary } = getData();
-  const scoped = temporary.CYBE1 || {};
+  const scoped = getScopedState(getData());
 
   const name = scoped.name || input.trim() || "Stray";
   const state = scoped.state || "intro";
