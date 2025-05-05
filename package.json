@@ -8,7 +8,7 @@
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
     "tcr": "./tcr.sh",
     "stryker": "node --experimental-vm-modules ./node_modules/.bin/stryker run > reports/mutation/text/mutation.txt",
-    "lint": "npx eslint . --format=stylish -o reports/lint/lint.txt || cat reports/lint/lint.txt",
+    "lint": "npx eslint . --no-color --format=stylish -o reports/lint/lint.txt || cat reports/lint/lint.txt",
     "copy": "node src/generator/copy.js",
     "build": "npm run copy && npm run generate",
     "start": "npx serve public"
