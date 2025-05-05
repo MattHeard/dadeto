@@ -579,13 +579,21 @@ describe('initializeInteractiveComponent', () => {
 
     const globalState = {};
     const listeners2 = {};
-    const addEventListener = jest.fn((element, event, handler) => {
-      if (element === inputElement && event === 'keypress') {
+    const isInputKeypress = (element, event) => element === inputElement && event === 'keypress';
+    const isSubmitClick = (element, event) => element === submitButton && event === 'click';
+    const handleInputKeypress = (element, event, handler) => {
+      if (isInputKeypress(element, event)) {
         listeners2.keypress = handler;
       }
-      if (element === submitButton && event === 'click') {
+    };
+    const handleSubmitClick = (element, event, handler) => {
+      if (isSubmitClick(element, event)) {
         listeners2.click = handler;
       }
+    };
+    const addEventListener = jest.fn((element, event, handler) => {
+      handleInputKeypress(element, event, handler);
+      handleSubmitClick(element, event, handler);
     });
     const dom = {
       removeAllChildren: jest.fn(),
