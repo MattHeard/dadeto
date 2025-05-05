@@ -513,12 +513,14 @@ describe('initializeInteractiveComponent', () => {
 
     const isInputKeypress = (element, event) => element === inputElement && event === 'keypress';
     const isSubmitClick = (element, event) => element === submitButton && event === 'click';
+    const handleInputKeypress = handler => { listeners.keypress = handler; };
+    const handleSubmitClick = handler => { listeners.click = handler; };
     const addEventListener = jest.fn((element, event, handler) => {
       if (isInputKeypress(element, event)) {
-        listeners.keypress = handler;
+        handleInputKeypress(handler);
       }
       if (isSubmitClick(element, event)) {
-        listeners.click = handler;
+        handleSubmitClick(handler);
       }
     });
     const dom = {
