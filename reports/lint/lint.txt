@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
-  512:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  572:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  514:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  574:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
 ✖ 2 problems (0 errors, 2 warnings)
