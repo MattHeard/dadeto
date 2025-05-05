@@ -153,14 +153,15 @@ function scoreMove(player, moves, setCell) {
 }
 
 function getScoredMoves(board, nextPlayer, moves, setter) {
-  return getEmptyCells(board).reduce((acc, { r, c }) => {
+  const scoreReducer = (acc, { r, c }) => {
     const setCell = setter(board, r, c);
     const move = { row: r, column: c };
     const moveScore = scoreMove(nextPlayer, moves, setCell);
     const scoredMove = { moveScore, move };
     acc.push(scoredMove);
     return acc;
-  }, []);
+  };
+  return getEmptyCells(board).reduce(scoreReducer, []);
 }
 
 function getBestScoredMove(scoredMoves) {
