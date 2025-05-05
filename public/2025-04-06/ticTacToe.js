@@ -281,6 +281,7 @@ function simulateMoves(board, accumulateScores) {
 
 
 function minimax(board, depth, isMax, player, moves) {
+  const params = { board, player, moves };
   const opponent = getOpponent(player);
   const isWinPlayer = () => isWin(board, player);
   const isWinOpponent = () => isWin(board, opponent);
