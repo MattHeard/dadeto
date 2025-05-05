@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js
-  119:8  warning  Function 'cyberpunkAdventure' has a complexity of 11. Maximum allowed is 2  complexity
+  119:1  warning  Function 'runAdventure' has a complexity of 10. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
   155:1  warning  Function 'getScoredMoves' has too many parameters (4). Maximum allowed is 3         max-params

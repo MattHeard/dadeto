@@ -116,61 +116,65 @@ function getAdventureResult(context) {
   return handler ? handler(context) : getDefaultAdventureResult();
 }
 
+function runAdventure(input, env) {
+  const getRandomNumber = env.get("getRandomNumber");
+  const getCurrentTime = env.get("getCurrentTime");
+  const getData = env.get("getData");
+  const setTemporaryData = env.get("setData");
+  const { temporary } = getData();
+  const scoped = temporary.CYBE1 || {};
+
+  const name = scoped.name || input.trim() || "Stray";
+  const state = scoped.state || "intro";
+  const inventory = scoped.inventory || [];
+  const visited = new Set(scoped.visited || []);
+
+  const lowerInput = input.trim().toLowerCase();
+  const time = getCurrentTime();
+
+  let output = "";
+  let nextState = state;
+  let nextInventory = [...inventory];
+  let nextVisited = new Set(visited);
+
+  if (!scoped.name) {
+    setTemporaryData({ temporary: { CYBE1: { name } } });
+    return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
+  }
+
+  const context = {
+    state,
+    name,
+    time,
+    lowerInput,
+    nextInventory,
+    nextVisited,
+    getRandomNumber
+  };
+  const result = getAdventureResult(context);
+
+  output = result.output;
+  nextState = result.nextState;
+  nextInventory = result.nextInventory || nextInventory;
+  nextVisited = result.nextVisited || nextVisited;
+
+  setTemporaryData({
+    temporary: {
+      CYBE1: {
+        name,
+        state: nextState,
+        inventory: nextInventory,
+        visited: [...nextVisited]
+      }
+    }
+  });
+
+  return output;
+}
+
 export function cyberpunkAdventure(input, env) {
   try {
-    const getRandomNumber = env.get("getRandomNumber");
-    const getCurrentTime = env.get("getCurrentTime");
-    const getData = env.get("getData");
-    const setTemporaryData = env.get("setData");
-    const { temporary } = getData();
-    const scoped = temporary.CYBE1 || {};
-
-    const name = scoped.name || input.trim() || "Stray";
-    const state = scoped.state || "intro";
-    const inventory = scoped.inventory || [];
-    const visited = new Set(scoped.visited || []);
-
-    const lowerInput = input.trim().toLowerCase();
-    const time = getCurrentTime();
-
-    let output = "";
-    let nextState = state;
-    let nextInventory = [...inventory];
-    let nextVisited = new Set(visited);
-
-    if (!scoped.name) {
-      setTemporaryData({ temporary: { CYBE1: { name } } });
-      return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
-    }
-
-    const context = {
-      state,
-      name,
-      time,
-      lowerInput,
-      nextInventory,
-      nextVisited,
-      getRandomNumber
-    };
-    const result = getAdventureResult(context);
-
-    output = result.output;
-    nextState = result.nextState;
-    nextInventory = result.nextInventory || nextInventory;
-    nextVisited = result.nextVisited || nextVisited;
-
-    setTemporaryData({
-      temporary: {
-        CYBE1: {
-          name,
-          state: nextState,
-          inventory: nextInventory,
-          visited: [...nextVisited]
-        }
-      }
-    });
-
-    return output;
+    return runAdventure(input, env);
   } catch {
     return `> SYSTEM ERROR: neural link failure`;
   }
