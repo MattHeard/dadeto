@@ -274,20 +274,23 @@ function getAvailableMoves(board) {
   );
 }
 
-function simulateMoves(board, depth, isMax, player, moves) {
-  const opponent = getOpponent(player);
-  const value = isMax ? player : opponent;
-  const accumulateScores = (scores, [r, c]) => {
-    // Deep copy the board
-    const newBoard = board.map(row => row.slice());
-    newBoard[r][c] = value;
-    const score = minimax(newBoard, depth + 1, !isMax, player, moves);
-    scores.push(score);
-    return scores;
-  };
-  return getAvailableMoves(board).reduce(accumulateScores, []);
-
+function accumulateScores(scores, [r, c], board, depth, isMax, player, moves) {
+  // Deep copy the board
+  const newBoard = board.map(row => row.slice());
+  const value = isMax ? player : getOpponent(player);
+  newBoard[r][c] = value;
+  const score = minimax(newBoard, depth + 1, !isMax, player, moves);
+  scores.push(score);
+  return scores;
 }
+
+function simulateMoves(board, depth, isMax, player, moves) {
+  return getAvailableMoves(board).reduce(
+    (scores, pos) => accumulateScores(scores, pos, board, depth, isMax, player, moves),
+    []
+  );
+}
+
 
 function minimax(board, depth, isMax, player, moves) {
   const opponent = getOpponent(player);
