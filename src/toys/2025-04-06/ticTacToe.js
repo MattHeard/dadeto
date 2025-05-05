@@ -212,13 +212,12 @@ function checkRows(board, player) {
   return board.some(row => isRowWin(row, player));
 }
 
+function isColumnWin(board, col, player) {
+  return board[0][col] === player && board[1][col] === player && board[2][col] === player;
+}
+
 function checkColumns(board, player) {
-  for (let i = 0; i < 3; i++) {
-    if (board[0][i] === player && board[1][i] === player && board[2][i] === player) {
-      return true;
-    }
-  }
-  return false;
+  return [0, 1, 2].some(col => isColumnWin(board, col, player));
 }
 
 function checkDiagonals(board, player) {
