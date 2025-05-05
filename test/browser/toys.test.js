@@ -491,16 +491,15 @@ describe('initializeInteractiveComponent', () => {
       outputParentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
     };
     querySelector = jest.fn((el, selector) => selectorMap.get(selector) || {});
+    selectorMap.set('input', inputElement);
+    selectorMap.set('button', submitButton);
+    selectorMap.set('div.output > p', outputElement);
+    selectorMap.set('div.output', outputElement.outputParentElement);
   });
 
   it('attaches click and keypress listeners with expected arguments', () => {
     const article = {};
 
-    // Populate selectorMap for this test
-    selectorMap.set('input', inputElement);
-    selectorMap.set('button', submitButton);
-    selectorMap.set('div.output > p', outputElement);
-    selectorMap.set('div.output', outputElement.outputParentElement);
 
     const globalState = {};
     const createEnvFn = () => ({});
