@@ -289,21 +289,22 @@ function minimax(depth, isMax, params) {
   if (terminalScore !== null) {
     return terminalScore;
   }
-  const makeAccumulateScores = (params, depth, isMax) => {
-    const value = isMax ? params.player : getOpponent(params.player);
-    return (scores, [r, c]) => {
-      // Deep copy the board
-      const newBoard = params.board.map(row => row.slice());
-      newBoard[r][c] = value;
-      const newParams = { board: newBoard, player: params.player, moves: params.moves };
-      const score = minimax(depth + 1, !isMax, newParams);
-      scores.push(score);
-      return scores;
-    };
-  };
   const accumulateScores = makeAccumulateScores(params, depth, isMax);
   const scores = simulateMoves(params.board, accumulateScores);
   return isMax ? Math.max(...scores) : Math.min(...scores);
+}
+
+function makeAccumulateScores(params, depth, isMax) {
+  const value = isMax ? params.player : getOpponent(params.player);
+  return (scores, [r, c]) => {
+    // Deep copy the board
+    const newBoard = params.board.map(row => row.slice());
+    newBoard[r][c] = value;
+    const newParams = { board: newBoard, player: params.player, moves: params.moves };
+    const score = minimax(depth + 1, !isMax, newParams);
+    scores.push(score);
+    return scores;
+  };
 }
 
 function hasValidPlayer(player) {
