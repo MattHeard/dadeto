@@ -320,23 +320,19 @@ function hasValidPlayer(player) {
 }
 
 function hasValidPosition(position) {
-  if (!isObjectPosition(position)) { return false; }
+  if (!isObject(position)) { return false; }
   const { row, column } = position;
   return [0, 1, 2].includes(row) && [0, 1, 2].includes(column);
 }
 
-function isObjectPosition(position) {
-  return position && typeof position === "object";
-}
-
 function canMoveBeApplied(move, index, moves) {
-  if (!move || typeof move !== "object") {return false;}
+  if (!isObject(move)) { return false; }
 
   const { player, position } = move;
-  if (!hasValidPlayer(player)) {return false;}
-  if (!hasValidPosition(position)) {return false;}
+  if (!hasValidPlayer(player)) { return false; }
+  if (!hasValidPosition(position)) { return false; }
 
-  if (!respectsTurnOrder(index, player, moves)) {return false;}
+  if (!respectsTurnOrder(index, player, moves)) { return false; }
 
   return true;
 }
