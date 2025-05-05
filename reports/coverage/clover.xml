@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746473304065" clover="3.2.0">
-  <project timestamp="1746473304065" name="All files">
-    <metrics statements="1025" coveredstatements="1012" conditionals="310" coveredconditionals="298" methods="434" coveredmethods="429" elements="1769" coveredelements="1739" complexity="0" loc="1025" ncloc="1025" packages="13" files="24" classes="24"/>
+<coverage generated="1746473344400" clover="3.2.0">
+  <project timestamp="1746473344400" name="All files">
+    <metrics statements="1024" coveredstatements="1011" conditionals="310" coveredconditionals="298" methods="435" coveredmethods="430" elements="1769" coveredelements="1739" complexity="0" loc="1024" ncloc="1024" packages="13" files="24" classes="24"/>
     <package name="browser">
       <metrics statements="283" coveredstatements="273" conditionals="54" coveredconditionals="46" methods="100" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -975,9 +975,9 @@
       </file>
     </package>
     <package name="toys.2025-04-06">
-      <metrics statements="145" coveredstatements="145" conditionals="71" coveredconditionals="71" methods="73" coveredmethods="73"/>
+      <metrics statements="144" coveredstatements="144" conditionals="71" coveredconditionals="71" methods="74" coveredmethods="74"/>
       <file name="ticTacToe.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js">
-        <metrics statements="145" coveredstatements="145" conditionals="71" coveredconditionals="71" methods="73" coveredmethods="73"/>
+        <metrics statements="144" coveredstatements="144" conditionals="71" coveredconditionals="71" methods="74" coveredmethods="74"/>
         <line num="2" count="1880701" type="cond" truecount="2" falsecount="0"/>
         <line num="6" count="25" type="stmt"/>
         <line num="7" count="25" type="stmt"/>
@@ -1094,14 +1094,13 @@
         <line num="269" count="1160898" type="stmt"/>
         <line num="271" count="6477795" type="stmt"/>
         <line num="278" count="719755" type="stmt"/>
-        <line num="279" count="719755" type="stmt"/>
-        <line num="280" count="719755" type="cond" truecount="2" falsecount="0"/>
-        <line num="281" count="719755" type="stmt"/>
-        <line num="283" count="3482694" type="stmt"/>
+        <line num="279" count="719755" type="cond" truecount="2" falsecount="0"/>
+        <line num="280" count="719755" type="stmt"/>
+        <line num="282" count="3482694" type="stmt"/>
+        <line num="283" count="1160898" type="stmt"/>
         <line num="284" count="1160898" type="stmt"/>
         <line num="285" count="1160898" type="stmt"/>
         <line num="286" count="1160898" type="stmt"/>
-        <line num="288" count="719755" type="stmt"/>
         <line num="292" count="1160939" type="stmt"/>
         <line num="293" count="1602123" type="stmt"/>
         <line num="294" count="1160939" type="stmt"/>
