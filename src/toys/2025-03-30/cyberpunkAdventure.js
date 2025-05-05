@@ -128,6 +128,14 @@ function getPlayerState(scoped) {
   return scoped.state || "intro";
 }
 
+function getPlayerInventory(scoped) {
+  return scoped.inventory || [];
+}
+
+function getPlayerVisited(scoped) {
+  return new Set(scoped.visited || []);
+}
+
 function runAdventure(input, env) {
   const getRandomNumber = env.get("getRandomNumber");
   const getCurrentTime = env.get("getCurrentTime");
@@ -137,8 +145,8 @@ function runAdventure(input, env) {
 
   const name = getPlayerName(scoped, input);
   const state = getPlayerState(scoped);
-  const inventory = scoped.inventory || [];
-  const visited = new Set(scoped.visited || []);
+  const inventory = getPlayerInventory(scoped);
+  const visited = getPlayerVisited(scoped);
 
   const lowerInput = input.trim().toLowerCase();
   const time = getCurrentTime();
