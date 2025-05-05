@@ -295,7 +295,11 @@ function minimax(depth, isMax, params) {
 }
 
 function selectScore(scores, isMax) {
-  return isMax ? Math.max(...scores) : Math.min(...scores);
+  if (isMax) {
+    return Math.max(...scores);
+  } else {
+    return Math.min(...scores);
+  }
 }
 
 function makeAccumulateScores(params, depth, isMax) {
