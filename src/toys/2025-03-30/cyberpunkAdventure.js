@@ -120,6 +120,10 @@ function getScopedState(data) {
   return (data.temporary && data.temporary.CYBE1) || {};
 }
 
+function getPlayerName(scoped, input) {
+  return scoped.name || input.trim() || "Stray";
+}
+
 function runAdventure(input, env) {
   const getRandomNumber = env.get("getRandomNumber");
   const getCurrentTime = env.get("getCurrentTime");
@@ -127,7 +131,7 @@ function runAdventure(input, env) {
   const setTemporaryData = env.get("setData");
   const scoped = getScopedState(getData());
 
-  const name = scoped.name || input.trim() || "Stray";
+  const name = getPlayerName(scoped, input);
   const state = scoped.state || "intro";
   const inventory = scoped.inventory || [];
   const visited = new Set(scoped.visited || []);
