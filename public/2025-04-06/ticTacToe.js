@@ -251,8 +251,12 @@ function getTerminalScore(isWinPlayer, depth) {
   return depth - 10;
 }
 
+function shouldEvaluateTerminal(isWinPlayer, isWinOpponent) {
+  return isWinPlayer() || isWinOpponent();
+}
+
 function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
-  if (isWinPlayer() || isWinOpponent()) {
+  if (shouldEvaluateTerminal(isWinPlayer, isWinOpponent)) {
     return getTerminalScore(isWinPlayer, depth);
   }
   return null;

@@ -1,14 +1,13 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
-  254:1   warning  Function 'evaluateTerminalState' has a complexity of 3. Maximum allowed is 2  complexity
-  264:18  warning  Expected { after 'if' condition                                               curly
-  271:1   warning  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3    max-params
-  271:1   warning  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2          complexity
-  282:1   warning  Function 'minimax' has too many parameters (5). Maximum allowed is 3          max-params
-  282:1   warning  Function 'minimax' has a complexity of 3. Maximum allowed is 2                complexity
-  297:1   warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2       complexity
-  303:1   warning  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2       complexity
-  315:1   warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2                  complexity
+  268:18  warning  Expected { after 'if' condition                                             curly
+  275:1   warning  Function 'simulateMoves' has too many parameters (5). Maximum allowed is 3  max-params
+  275:1   warning  Function 'simulateMoves' has a complexity of 3. Maximum allowed is 2        complexity
+  286:1   warning  Function 'minimax' has too many parameters (5). Maximum allowed is 3        max-params
+  286:1   warning  Function 'minimax' has a complexity of 3. Maximum allowed is 2              complexity
+  301:1   warning  Function 'hasValidPosition' has a complexity of 4. Maximum allowed is 2     complexity
+  307:1   warning  Function 'canMoveBeApplied' has a complexity of 6. Maximum allowed is 2     complexity
+  319:1   warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2                complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js
   2:104  warning  'handleTagLinks' is defined but never used  no-unused-vars
@@ -26,5 +25,5 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js
   1:24  warning  'getBlogGenerationArgs' is defined but never used  no-unused-vars
 
-✖ 19 problems (0 errors, 19 warnings)
+✖ 18 problems (0 errors, 18 warnings)
   0 errors and 1 warning potentially fixable with the `--fix` option.
