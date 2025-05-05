@@ -124,6 +124,10 @@ function getPlayerName(scoped, input) {
   return scoped.name || input.trim() || "Stray";
 }
 
+function getPlayerState(scoped) {
+  return scoped.state || "intro";
+}
+
 function runAdventure(input, env) {
   const getRandomNumber = env.get("getRandomNumber");
   const getCurrentTime = env.get("getCurrentTime");
@@ -132,7 +136,7 @@ function runAdventure(input, env) {
   const scoped = getScopedState(getData());
 
   const name = getPlayerName(scoped, input);
-  const state = scoped.state || "intro";
+  const state = getPlayerState(scoped);
   const inventory = scoped.inventory || [];
   const visited = new Set(scoped.visited || []);
 
