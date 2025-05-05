@@ -182,10 +182,8 @@ function runAdventure(input, env) {
   const lowerInput = input.trim().toLowerCase();
   const time = getCurrentTime();
 
-  let output = "";
-  let nextState = state;
-  let nextInventory = [...inventory];
-  let nextVisited = new Set(visited);
+  const nextInventory = [...inventory];
+  const nextVisited = new Set(visited);
 
   if (!scoped.name) {
     setTemporaryData({ temporary: { CYBE1: { name } } });
