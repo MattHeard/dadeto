@@ -16,6 +16,15 @@ function handleIntro({ name, time }) {
   };
 }
 
+function findMatchingKeyword(lowerInput, keywordMap) {
+  for (const keyword of Object.keys(keywordMap)) {
+    if (lowerInput.includes(keyword)) {
+      return keyword;
+    }
+  }
+  return null;
+}
+
 function handleHub({ lowerInput }) {
   const keywordMap = {
     hacker: {
@@ -31,10 +40,9 @@ function handleHub({ lowerInput }) {
       nextState: "alley:stealth"
     }
   };
-  for (const keyword of Object.keys(keywordMap)) {
-    if (lowerInput.includes(keyword)) {
-      return keywordMap[keyword];
-    }
+  const match = findMatchingKeyword(lowerInput, keywordMap);
+  if (match) {
+    return keywordMap[match];
   }
   return {
     output: `> Unclear direction. Options: hacker / transport / alley`,
