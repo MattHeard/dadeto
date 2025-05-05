@@ -483,18 +483,19 @@ describe('initializeInteractiveComponent', () => {
   let submitButton;
   let outputElement;
   beforeEach(() => {
-    selectorMap = new Map();
     inputElement = { value: 'test', disabled: false };
     submitButton = { disabled: false };
     outputElement = {
       textContent: '',
       outputParentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
     };
+    selectorMap = new Map([
+      ['input', inputElement],
+      ['button', submitButton],
+      ['div.output > p', outputElement],
+      ['div.output', outputElement.outputParentElement]
+    ]);
     querySelector = jest.fn((el, selector) => selectorMap.get(selector) || {});
-    selectorMap.set('input', inputElement);
-    selectorMap.set('button', submitButton);
-    selectorMap.set('div.output > p', outputElement);
-    selectorMap.set('div.output', outputElement.outputParentElement);
   });
 
   it('attaches click and keypress listeners with expected arguments', () => {
