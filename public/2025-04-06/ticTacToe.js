@@ -253,13 +253,13 @@ function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
 }
 
 function getAvailableMoves(board) {
-  const moves = [];
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 3; c++) {
-      if (!board[r][c]) {moves.push([r, c]);}
-    }
-  }
-  return moves;
+  return board.reduce((moves, row, r) =>
+    row.reduce((acc, cell, c) => {
+      if (!cell) acc.push([r, c]);
+      return acc;
+    }, moves),
+    []
+  );
 }
 
 function simulateMoves(board, depth, isMax, player, moves) {
