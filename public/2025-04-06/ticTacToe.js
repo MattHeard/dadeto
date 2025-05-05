@@ -320,9 +320,13 @@ function hasValidPlayer(player) {
 }
 
 function hasValidPosition(position) {
-  if (!position || typeof position !== "object") {return false;}
+  if (!isObjectPosition(position)) { return false; }
   const { row, column } = position;
   return [0, 1, 2].includes(row) && [0, 1, 2].includes(column);
+}
+
+function isObjectPosition(position) {
+  return position && typeof position === "object";
 }
 
 function canMoveBeApplied(move, index, moves) {
