@@ -202,9 +202,13 @@ function determineNextPlayer(moves) {
   return getOpponent(moves[moves.length - 1].player);
 }
 
+function isRowWin(row, player) {
+  return row[0] === player && row[1] === player && row[2] === player;
+}
+
 function checkRows(board, player) {
   for (let i = 0; i < 3; i++) {
-    if (board[i][0] === player && board[i][1] === player && board[i][2] === player) {
+    if (isRowWin(board[i], player)) {
       return true;
     }
   }
