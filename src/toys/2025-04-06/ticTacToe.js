@@ -148,7 +148,8 @@ function setBoardCell(board, coordinates, value) {
 
 function scoreMove(player, moves, setCell) {
   const board = setCell(player);
-  const score = minimax(board, 0, false, player, moves);
+  const params = { board, player, moves };
+  const score = minimax(board, 0, false, player, moves, params);
   return score;
 }
 
