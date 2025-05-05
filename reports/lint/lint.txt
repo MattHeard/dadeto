@@ -1,7 +1,5 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
-  155:1  warning  Function 'makeScoreReducer' has too many parameters (4). Maximum allowed is 3       max-params
-  166:1  warning  Function 'getScoredMoves' has too many parameters (4). Maximum allowed is 3         max-params
   171:1  warning  Function 'getBestScoredMove' has a complexity of 3. Maximum allowed is 2            complexity
   191:1  warning  Function 'getEmptyCells' has a complexity of 4. Maximum allowed is 2                complexity
   209:1  warning  Function 'checkRows' has a complexity of 5. Maximum allowed is 2                    complexity
@@ -34,4 +32,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js
   1:24  warning  'getBlogGenerationArgs' is defined but never used  no-unused-vars
 
-✖ 27 problems (0 errors, 27 warnings)
+✖ 25 problems (0 errors, 25 warnings)
