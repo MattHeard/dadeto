@@ -554,7 +554,6 @@ describe('initializeInteractiveComponent', () => {
     });
 
     const globalState = {};
-    const stopDefaultFn = jest.fn();
     const listeners2 = {};
     const addEventListener = jest.fn((element, event, handler) => {
       if (element === inputElement && event === 'keypress') {
@@ -582,10 +581,6 @@ describe('initializeInteractiveComponent', () => {
     const errorFn = jest.fn();
     const fetchFn = jest.fn();
     const processingFunction = jest.fn(() => 'processed result');
-    const listeners = {};
-    const createElement = jest.fn().mockImplementation(() => ({ textContent: '' }));
-
-
 
     const config = { globalState, createEnvFn, errorFn, fetchFn, dom };
     initializeInteractiveComponent(
