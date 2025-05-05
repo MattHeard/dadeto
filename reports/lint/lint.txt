@@ -1,7 +1,4 @@
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js
-  2:104  warning  'handleTagLinks' is defined but never used  no-unused-vars
-
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
   259:22  warning  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  complexity
   481:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
@@ -15,4 +12,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js
   1:24  warning  'getBlogGenerationArgs' is defined but never used  no-unused-vars
 
-✖ 10 problems (0 errors, 10 warnings)
+✖ 9 problems (0 errors, 9 warnings)
