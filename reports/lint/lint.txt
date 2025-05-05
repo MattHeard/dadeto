@@ -1,8 +1,14 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js
-  119:1  warning  Function 'getScopedState' has a complexity of 3. Maximum allowed is 2  complexity
-  123:1  warning  Function 'getPlayerName' has a complexity of 3. Maximum allowed is 2   complexity
-  139:1  warning  Function 'runAdventure' has a complexity of 4. Maximum allowed is 2    complexity
+  119:1  warning  Function 'getScopedState' has a complexity of 3. Maximum allowed is 2        complexity
+  123:1  warning  Function 'getPlayerName' has a complexity of 3. Maximum allowed is 2         complexity
+  139:1  warning  Function 'processAdventureStep' has a complexity of 3. Maximum allowed is 2  complexity
+  185:7  warning  'output' is assigned a value but never used                                  no-unused-vars
+  185:7  warning  'output' is never reassigned. Use 'const' instead                            prefer-const
+  186:7  warning  'nextState' is assigned a value but never used                               no-unused-vars
+  186:7  warning  'nextState' is never reassigned. Use 'const' instead                         prefer-const
+  187:7  warning  'nextInventory' is never reassigned. Use 'const' instead                     prefer-const
+  188:7  warning  'nextVisited' is never reassigned. Use 'const' instead                       prefer-const
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
   155:1  warning  Function 'getScoredMoves' has too many parameters (4). Maximum allowed is 3         max-params
@@ -38,4 +44,5 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/generator/generator.test.js
   1:24  warning  'getBlogGenerationArgs' is defined but never used  no-unused-vars
 
-✖ 29 problems (0 errors, 29 warnings)
+✖ 35 problems (0 errors, 35 warnings)
+  0 errors and 4 warnings potentially fixable with the `--fix` option.

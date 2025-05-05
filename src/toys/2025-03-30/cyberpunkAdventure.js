@@ -136,6 +136,37 @@ function getPlayerVisited(scoped) {
   return new Set(scoped.visited || []);
 }
 
+function processAdventureStep({ state, name, time, lowerInput, nextInventory, nextVisited, getRandomNumber, setTemporaryData }) {
+  const context = {
+    state,
+    name,
+    time,
+    lowerInput,
+    nextInventory,
+    nextVisited,
+    getRandomNumber
+  };
+  const result = getAdventureResult(context);
+
+  const output = result.output;
+  const nextState = result.nextState;
+  const updatedInventory = result.nextInventory || nextInventory;
+  const updatedVisited = result.nextVisited || nextVisited;
+
+  setTemporaryData({
+    temporary: {
+      CYBE1: {
+        name,
+        state: nextState,
+        inventory: updatedInventory,
+        visited: [...updatedVisited]
+      }
+    }
+  });
+
+  return output;
+}
+
 function runAdventure(input, env) {
   const getRandomNumber = env.get("getRandomNumber");
   const getCurrentTime = env.get("getCurrentTime");
@@ -161,34 +192,16 @@ function runAdventure(input, env) {
     return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
   }
 
-  const context = {
+  return processAdventureStep({
     state,
     name,
     time,
     lowerInput,
     nextInventory,
     nextVisited,
-    getRandomNumber
-  };
-  const result = getAdventureResult(context);
-
-  output = result.output;
-  nextState = result.nextState;
-  nextInventory = result.nextInventory || nextInventory;
-  nextVisited = result.nextVisited || nextVisited;
-
-  setTemporaryData({
-    temporary: {
-      CYBE1: {
-        name,
-        state: nextState,
-        inventory: nextInventory,
-        visited: [...nextVisited]
-      }
-    }
+    getRandomNumber,
+    setTemporaryData
   });
-
-  return output;
 }
 
 export function cyberpunkAdventure(input, env) {
