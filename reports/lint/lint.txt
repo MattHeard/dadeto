@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
-  337:1  warning  Function 'isMoveDetailsValid' has a complexity of 4. Maximum allowed is 2  complexity
+  338:1  warning  Function 'isMoveDetailsValid' has a complexity of 4. Maximum allowed is 2  complexity
   345:1  warning  Function 'isWin' has a complexity of 3. Maximum allowed is 2               complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js

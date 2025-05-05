@@ -10,8 +10,8 @@ function tryParseJSON(input) {
   }
 }
 
-function respectsTurnOrder(index, player, moves) {
-  return index === 0 || player !== moves[index - 1].player;
+function respectsTurnOrder({ move, index, moves }) {
+  return index === 0 || move.player !== moves[index - 1].player;
 }
 
 function isObject(val) {
@@ -315,11 +315,12 @@ function makeAccumulateScores(params, depth, isMax) {
   };
 }
 
-function hasValidPlayer(player) {
-  return ["X", "O"].includes(player);
+function hasValidPlayer({ move }) {
+  return ["X", "O"].includes(move.player);
 }
 
-function hasValidPosition(position) {
+function hasValidPosition({ move }) {
+  const position = move.position;
   if (!isObject(position)) { return false; }
   const { row, column } = position;
   return isValidRowAndColumn(row, column);
@@ -334,11 +335,10 @@ function canMoveBeApplied(move, index, moves) {
   return isMoveDetailsValid({ move, index, moves });
 }
 
-function isMoveDetailsValid({ move, index, moves }) {
-  const { player, position } = move;
-  if (!hasValidPlayer(player)) { return false; }
-  if (!hasValidPosition(position)) { return false; }
-  if (!respectsTurnOrder(index, player, moves)) { return false; }
+function isMoveDetailsValid(params) {
+  if (!hasValidPlayer(params)) { return false; }
+  if (!hasValidPosition(params)) { return false; }
+  if (!respectsTurnOrder(params)) { return false; }
   return true;
 }
 
