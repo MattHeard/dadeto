@@ -1,9 +1,9 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
-  259:22  warning  Method 'querySelector' has a complexity of 5. Maximum allowed is 2  complexity
-  481:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
-  497:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
-  549:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
-  558:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2          complexity
+  258:27  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  483:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  499:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  551:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  560:38  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
 ✖ 5 problems (0 errors, 5 warnings)

@@ -254,14 +254,16 @@ describe('initialiseModule', () => {
     const paragraph = {};
     const outputParentElement = {};
     const outputElement = { textContent: '', outputParentElement };
+    // Extract querySelector into a local variable for clarity
+    const querySelector = (el, selector) => {
+      if (selector === 'input' || selector === 'button') {return {};}
+      if (selector === 'div.output > p') {return outputElement;}
+      if (selector === 'div.output') {return outputElement.outputParentElement;}
+      return {};
+    };
     const dom = {
       removeAllChildren: jest.fn(),
-      querySelector: (el, selector) => {
-        if (selector === 'input' || selector === 'button') {return {};}
-        if (selector === 'div.output > p') {return outputElement;}
-        if (selector === 'div.output') {return outputElement.outputParentElement;}
-        return {};
-      },
+      querySelector,
       addEventListener: jest.fn(),
       setTextContent: jest.fn(),
       removeAllChildren: jest.fn(),
