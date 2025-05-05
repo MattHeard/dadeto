@@ -476,6 +476,14 @@ describe('createHandleSubmit', () => {
 });
 
 describe('initializeInteractiveComponent', () => {
+  let querySelector;
+  let selectorMap;
+
+  beforeEach(() => {
+    selectorMap = new Map();
+    querySelector = jest.fn((el, selector) => selectorMap.get(selector) || {});
+  });
+
   it('attaches click and keypress listeners with expected arguments', () => {
     const article = {};
     const inputElement = { value: 'test', disabled: false };
@@ -485,16 +493,11 @@ describe('initializeInteractiveComponent', () => {
       outputParentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
     };
 
-    // Use a Map for selector-object pairs
-    const selectorMap = new Map([
-      ['input', inputElement],
-      ['button', submitButton],
-      ['div.output > p', outputElement],
-      ['div.output', outputElement.outputParentElement]
-    ]);
-    const querySelector = jest.fn((el, selector) => {
-      return selectorMap.get(selector) || {};
-    });
+    // Populate selectorMap for this test
+    selectorMap.set('input', inputElement);
+    selectorMap.set('button', submitButton);
+    selectorMap.set('div.output > p', outputElement);
+    selectorMap.set('div.output', outputElement.outputParentElement);
 
     const globalState = {};
     const createEnvFn = () => ({});
@@ -557,16 +560,11 @@ describe('initializeInteractiveComponent', () => {
       outputParentElement: { classList: { remove: jest.fn() } }
     };
 
-    // Use a Map for selector-object pairs
-    const selectorMap = new Map([
-      ['input', inputElement],
-      ['button', submitButton],
-      ['div.output > p', outputElement],
-      ['div.output', outputElement.outputParentElement]
-    ]);
-    const querySelector = jest.fn((el, selector) => {
-      return selectorMap.get(selector) || {};
-    });
+    // Populate selectorMap for this test
+    selectorMap.set('input', inputElement);
+    selectorMap.set('button', submitButton);
+    selectorMap.set('div.output > p', outputElement);
+    selectorMap.set('div.output', outputElement.outputParentElement);
 
     const globalState = {};
     const listeners2 = {};
