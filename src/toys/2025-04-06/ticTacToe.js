@@ -280,8 +280,8 @@ function simulateMoves(board, accumulateScores) {
 
 
 
-function minimax(board, depth, isMax, player, moves) {
-  const params = { board, player, moves };
+function minimax(board, depth, isMax, player, moves, params) {
+  if (!params) params = { board, player, moves };
   const opponent = getOpponent(player);
   const isWinPlayer = () => isWin(board, player);
   const isWinOpponent = () => isWin(board, opponent);
@@ -295,7 +295,8 @@ function minimax(board, depth, isMax, player, moves) {
       // Deep copy the board
       const newBoard = params.board.map(row => row.slice());
       newBoard[r][c] = value;
-      const score = minimax(newBoard, depth + 1, !isMax, params.player, params.moves);
+      const newParams = { board: newBoard, player: params.player, moves: params.moves };
+      const score = minimax(newBoard, depth + 1, !isMax, params.player, params.moves, newParams);
       scores.push(score);
       return scores;
     };
