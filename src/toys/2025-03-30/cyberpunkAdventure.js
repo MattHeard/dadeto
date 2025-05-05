@@ -52,8 +52,12 @@ function handleTransportPlatform() {
   };
 }
 
+function shouldTradeDatapad(nextInventory, lowerInput) {
+  return nextInventory.includes("datapad") && lowerInput.includes("trade");
+}
+
 function handleTransportTrade({ nextInventory, nextVisited, lowerInput }) {
-  if (nextInventory.includes("datapad") && lowerInput.includes("trade")) {
+  if (shouldTradeDatapad(nextInventory, lowerInput)) {
     const newInventory = nextInventory.filter(item => item !== "datapad");
     newInventory.push("neural ticket");
     nextVisited.add("transport");
