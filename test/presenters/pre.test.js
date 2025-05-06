@@ -27,6 +27,36 @@ describe('createPreElement', () => {
     expect(dom.createdElements).toContain(pre);
   });
 
+  test('renders comma-separated list inside brackets on separate lines', () => {
+    const dom = createMockDom();
+    const input = '[a, b, c]';
+    const pre = createPreElement(input, dom);
+    expect(pre.tagName).toBe('pre');
+    expect(pre.textContent).toBe('a\nb\nc');
+  });
+
+  test('renders empty string for empty brackets', () => {
+    const dom = createMockDom();
+    const input = '[]';
+    const pre = createPreElement(input, dom);
+    expect(pre.tagName).toBe('pre');
+    expect(pre.textContent).toBe('');
+  });
+
+  test('trims whitespace for each element', () => {
+    const dom = createMockDom();
+    const input = '[  x,   y  ,z ]';
+    const pre = createPreElement(input, dom);
+    expect(pre.textContent).toBe('x\ny\nz');
+  });
+
+  test('does not split if only one element in brackets', () => {
+    const dom = createMockDom();
+    const input = '[single]';
+    const pre = createPreElement(input, dom);
+    expect(pre.textContent).toBe('single');
+  });
+
   test('handles empty string', () => {
     const dom = createMockDom();
     const pre = createPreElement('', dom);
