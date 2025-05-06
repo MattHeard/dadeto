@@ -168,13 +168,14 @@ setupAudio(dom);
 window.addEventListener('DOMContentLoaded', () => {
   // Select all <select> elements that are direct children of a .value div following a .key with 'out' text, within an .entry article
   const dropdowns = Array.from(document.querySelectorAll('article.entry .value > select'));
+  function handleDropdownChange(event) {
+    const dropdown = event.currentTarget;
+    let article = dropdown.closest('article.entry');
+    let postId = article ? article.id : undefined;
+    let selectedValue = dropdown.value;
+    log('Dropdown changed:', { postId, selectedValue });
+  }
   dropdowns.forEach(dropdown => {
-    dropdown.addEventListener('change', event => {
-      // Find the nearest ancestor article with an id
-      let article = dropdown.closest('article.entry');
-      let postId = article ? article.id : undefined;
-      let selectedValue = dropdown.value;
-      log('Dropdown changed:', { postId, selectedValue });
-    });
+    dropdown.addEventListener('change', handleDropdownChange);
   });
 });
