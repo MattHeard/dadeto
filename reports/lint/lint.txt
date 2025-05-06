@@ -1,0 +1,9 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
+  172:41  warning  'event' is defined but never used                         no-unused-vars
+  174:11  warning  'article' is never reassigned. Use 'const' instead        prefer-const
+  175:11  warning  'postId' is never reassigned. Use 'const' instead         prefer-const
+  176:11  warning  'selectedValue' is never reassigned. Use 'const' instead  prefer-const
+
+✖ 4 problems (0 errors, 4 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.

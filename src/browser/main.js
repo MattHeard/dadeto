@@ -163,3 +163,18 @@ handleTagLinks(dom);
 fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: error });
 
 setupAudio(dom);
+
+// Add event listeners to toy output dropdowns
+window.addEventListener('DOMContentLoaded', () => {
+  // Select all <select> elements that are direct children of a .value div following a .key with 'out' text, within an .entry article
+  const dropdowns = Array.from(document.querySelectorAll('article.entry .value > select'));
+  dropdowns.forEach(dropdown => {
+    dropdown.addEventListener('change', event => {
+      // Find the nearest ancestor article with an id
+      let article = dropdown.closest('article.entry');
+      let postId = article ? article.id : undefined;
+      let selectedValue = dropdown.value;
+      log('Dropdown changed:', { postId, selectedValue });
+    });
+  });
+});
