@@ -9,6 +9,20 @@
  */
 export function createPreElement(inputString, dom) {
   const pre = dom.createElement('pre');
-  dom.setTextContent(pre, inputString);
+  let content = inputString;
+  if (
+    typeof inputString === 'string' &&
+    inputString.startsWith('[') &&
+    inputString.endsWith(']')
+  ) {
+    // Remove brackets and split by comma
+    const inner = inputString.slice(1, -1).trim();
+    if (inner.length > 0) {
+      content = inner.split(',').map(s => s.trim()).join('\n');
+    } else {
+      content = '';
+    }
+  }
+  dom.setTextContent(pre, content);
   return pre;
 }
