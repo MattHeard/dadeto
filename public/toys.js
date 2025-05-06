@@ -7,6 +7,11 @@
  * @param {HTMLElement} parent - The parent element to append to.
  */
 import { createParagraphElement } from '../presenters/paragraph.js';
+
+// Map of text keys to presenter functions
+const presentersMap = {
+  text: createParagraphElement,
+};
 /**
  * Sets text content in a parent element using the new signature (no element argument).
  * @param {string} content - The text content to set.
@@ -16,7 +21,7 @@ import { createParagraphElement } from '../presenters/paragraph.js';
  */
 function setTextContent(content, dom, parent) {
   dom.removeAllChildren(parent);
-  const presenter = createParagraphElement;
+  const presenter = presentersMap.text;
   const child = presenter(content, dom);
   dom.appendChild(parent, child);
   return child;
