@@ -239,7 +239,7 @@ function isValidParsedRequest(parsed) {
 
 function handleParsedResult(parsed, parent, env) {
   if (!isValidParsedRequest(parsed)) {return false;}
-  handleRequestResponse(parsed.request.url, parent, env);
+  handleRequestResponse(parsed.request.url, parent, env, 'text');
   return true;
 }
 
