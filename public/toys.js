@@ -9,16 +9,11 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 
 // Map of text keys to presenter functions
-// Presenter for <pre> formatted output
-function preFormattedPresenter(content, dom) {
-  const pre = dom.createElement('pre');
-  dom.setTextContent(pre, content);
-  return pre;
-}
+import { createPreElement } from '../presenters/pre.js';
 
 const presentersMap = {
   text: createParagraphElement,
-  pre: preFormattedPresenter,
+  pre: createPreElement,
 };
 /**
  * Sets text content in a parent element using the new signature (no element argument).
