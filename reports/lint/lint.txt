@@ -9,7 +9,6 @@
   204:1  warning  Function 'getFetchErrorHandler' has too many parameters (4). Maximum allowed is 3   max-params
   212:1  warning  Function 'handleRequestResponse' has too many parameters (4). Maximum allowed is 3  max-params
   240:1  warning  Function 'handleParsedResult' has too many parameters (4). Maximum allowed is 3     max-params
-  240:1  warning  Function 'handleParsedResult' has a complexity of 3. Maximum allowed is 2           complexity
 
-✖ 8 problems (0 errors, 8 warnings)
+✖ 7 problems (0 errors, 7 warnings)
   0 errors and 3 warnings potentially fixable with the `--fix` option.
