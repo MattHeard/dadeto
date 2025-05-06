@@ -5,7 +5,7 @@
   172:7  warning  'selectedValue' is never reassigned. Use 'const' instead  prefer-const
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-  35:1  warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3  max-params
+  33:1  warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3  max-params
 
 ✖ 4 problems (0 errors, 4 warnings)
   0 errors and 3 warnings potentially fixable with the `--fix` option.
