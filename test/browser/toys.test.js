@@ -360,7 +360,7 @@ describe('createHandleSubmit', () => {
 
     processingFunction = jest.fn(async () => 'transformed');
 
-    elements = { inputElement, outputElement, outputParentElement };
+    elements = { inputElement, outputElement, outputParentElement, outputSelect: { value: 'text' } };
   });
 
   it('fetches from URL if processingFunction returns a request object', async () => {
@@ -446,6 +446,7 @@ describe('createHandleSubmit', () => {
     const paragraph = {};
     const outputParentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
     const output = { textContent: '', outputParentElement };
+    const outputSelect = { value: 'text' };
     const dom = {
       createElement: jest.fn(() => paragraph),
       stopDefault: jest.fn(),
@@ -459,7 +460,7 @@ describe('createHandleSubmit', () => {
 
     const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
     const handleSubmitNoEvent = createHandleSubmit(
-      { inputElement: input, outputElement: output, outputParentElement },
+      { inputElement: input, outputElement: output, outputParentElement, outputSelect },
       processingFunction,
       env
     );
