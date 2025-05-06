@@ -184,10 +184,10 @@ export function makeCreateIntersectionObserver(dom, env) {
 export function enableInteractiveControls(elements, dom) {
   const { inputElement, submitButton, parent } = elements;
   const readyMessage = 'Ready for input';
-  const textPresenterKey = 'text';
+  const presenterKey = 'text';
   dom.enable(inputElement);
   dom.enable(submitButton);
-  setTextContent(readyMessage, dom, parent, textPresenterKey);
+  setTextContent(readyMessage, dom, parent, presenterKey);
   dom.removeWarning(parent);
 }
 
