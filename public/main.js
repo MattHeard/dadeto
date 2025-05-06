@@ -165,16 +165,17 @@ fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: error });
 setupAudio(dom);
 
 // Add event listeners to toy output dropdowns
+function handleDropdownChange(event) {
+  const dropdown = event.currentTarget;
+  let article = dropdown.closest('article.entry');
+  let postId = article ? article.id : undefined;
+  let selectedValue = dropdown.value;
+  log('Dropdown changed:', { postId, selectedValue });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   // Select all <select> elements that are direct children of a .value div following a .key with 'out' text, within an .entry article
   const dropdowns = Array.from(document.querySelectorAll('article.entry .value > select'));
-  function handleDropdownChange(event) {
-    const dropdown = event.currentTarget;
-    let article = dropdown.closest('article.entry');
-    let postId = article ? article.id : undefined;
-    let selectedValue = dropdown.value;
-    log('Dropdown changed:', { postId, selectedValue });
-  }
   dropdowns.forEach(dropdown => {
     dropdown.addEventListener('change', handleDropdownChange);
   });

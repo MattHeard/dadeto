@@ -1,8 +1,8 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  173:9  warning  'article' is never reassigned. Use 'const' instead        prefer-const
-  174:9  warning  'postId' is never reassigned. Use 'const' instead         prefer-const
-  175:9  warning  'selectedValue' is never reassigned. Use 'const' instead  prefer-const
+  170:7  warning  'article' is never reassigned. Use 'const' instead        prefer-const
+  171:7  warning  'postId' is never reassigned. Use 'const' instead         prefer-const
+  172:7  warning  'selectedValue' is never reassigned. Use 'const' instead  prefer-const
 
 ✖ 3 problems (0 errors, 3 warnings)
   0 errors and 3 warnings potentially fixable with the `--fix` option.
