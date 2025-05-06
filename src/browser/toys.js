@@ -298,10 +298,9 @@ function processInputAndSetOutput(elements, processingFunction, env, presenterKe
   }
 }
 
-function handleInputProcessing(elements, processingFunction, env) {
+function handleInputProcessing(elements, processingFunction, env, presenterKey) {
   const { outputParentElement } = elements;
   const handleInputError = createHandleInputError(env, outputParentElement);
-  const presenterKey = 'text';
   try {
     processInputAndSetOutput(elements, processingFunction, env, presenterKey);
   } catch (e) {
@@ -311,10 +310,11 @@ function handleInputProcessing(elements, processingFunction, env) {
 
 export const createHandleSubmit = (elements, processingFunction, env) => (event) => {
   const { dom } = env;
+  const presenterKey = 'text';
   if (event) {
     dom.stopDefault(event);
   }
-  handleInputProcessing(elements, processingFunction, env);
+  handleInputProcessing(elements, processingFunction, env, presenterKey);
 };
 
 /**

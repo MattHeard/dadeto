@@ -353,8 +353,8 @@ FN:278,createHandleInputError
 FN:282,(anonymous_35)
 FN:289,processInputAndSetOutput
 FN:301,handleInputProcessing
-FN:312,(anonymous_38)
-FN:312,(anonymous_39)
+FN:311,(anonymous_38)
+FN:311,(anonymous_39)
 FN:331,disableInputAndButton
 FN:343,initializeInteractiveComponent
 FN:376,createHandleKeyPress
@@ -503,9 +503,9 @@ DA:302,5
 DA:303,5
 DA:304,5
 DA:305,5
-DA:306,5
-DA:308,1
-DA:312,7
+DA:307,1
+DA:311,7
+DA:312,5
 DA:313,5
 DA:314,5
 DA:315,4
