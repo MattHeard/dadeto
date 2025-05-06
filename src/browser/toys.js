@@ -16,7 +16,8 @@ import { createParagraphElement } from '../presenters/paragraph.js';
  */
 function setTextContent(content, dom, parent) {
   dom.removeAllChildren(parent);
-  const child = createParagraphElement(content, dom);
+  const presenter = createParagraphElement;
+  const child = presenter(content, dom);
   dom.appendChild(parent, child);
   return child;
 }
