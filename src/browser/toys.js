@@ -201,19 +201,18 @@ function makeDisplayBody(dom, parent, presenterKey) {
   };
 }
 
-function getFetchErrorHandler(dom, parent, errorFn) {
+function getFetchErrorHandler(dom, parent, errorFn, presenterKey) {
   return error => {
     errorFn('Error fetching request URL:', error);
-    setTextContent('Error fetching URL: ' + error.message, dom, parent, 'text');
+    setTextContent('Error fetching URL: ' + error.message, dom, parent, presenterKey);
     dom.addWarning(parent);
   };
 }
 
-function handleRequestResponse(url, parent, env) {
+function handleRequestResponse(url, parent, env, presenterKey = 'text') {
   const { errorFn, fetchFn, dom } = env;
-  const presenterKey = 'text';
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
-  const handleFetchError = getFetchErrorHandler(dom, parent, errorFn);
+  const handleFetchError = getFetchErrorHandler(dom, parent, errorFn, presenterKey);
   fetchFn(url)
     .then(getText)
     .then(displayBody)
