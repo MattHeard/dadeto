@@ -11,8 +11,10 @@ import { createParagraphElement } from '../presenters/paragraph.js';
 // Map of text keys to presenter functions
 import { createPreElement } from '../presenters/pre.js';
 
+const TEXT_PRESENTER_KEY = 'text';
+
 const presentersMap = {
-  text: createParagraphElement,
+  [TEXT_PRESENTER_KEY]: createParagraphElement,
   pre: createPreElement,
 };
 /**
@@ -185,7 +187,7 @@ export function enableInteractiveControls(elements, dom) {
   const { inputElement, submitButton, parent } = elements;
   dom.enable(inputElement);
   dom.enable(submitButton);
-  setTextContent('Ready for input', dom, parent, 'text');
+  setTextContent('Ready for input', dom, parent, TEXT_PRESENTER_KEY);
   dom.removeWarning(parent);
 }
 
@@ -195,14 +197,14 @@ function getText(response) {
 
 function makeDisplayBody(dom, parent) {
   return body => {
-    setTextContent(body, dom, parent, 'text');
+    setTextContent(body, dom, parent, TEXT_PRESENTER_KEY);
   };
 }
 
 function getFetchErrorHandler(dom, parent, errorFn) {
   return error => {
     errorFn('Error fetching request URL:', error);
-    setTextContent('Error fetching URL: ' + error.message, dom, parent, 'text');
+    setTextContent('Error fetching URL: ' + error.message, dom, parent, TEXT_PRESENTER_KEY);
     dom.addWarning(parent);
   };
 }
