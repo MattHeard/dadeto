@@ -836,7 +836,10 @@ function generateToyButtonSection() {
  * @returns {string} - HTML for the output section
  */
 function getToyOutputValueContent() {
-  return '<select disabled><option value="text">text</option></select><div class="output warning"><p>This toy requires Javascript to run.</p></div>';
+  const selectDropdown = '<select disabled><option value="text">text</option></select>';
+  const warningParagraph = '<p>This toy requires Javascript to run.</p>';
+  const outputDiv = `<div class="output warning">${warningParagraph}</div>`;
+  return selectDropdown + outputDiv;
 }
 
 function generateToyOutputSection() {
