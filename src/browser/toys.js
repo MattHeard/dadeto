@@ -27,12 +27,12 @@ const presentersMap = {
  * @param {string} content - The text content to set.
  * @param {object} dom - DOM helper functions.
  * @param {HTMLElement} parent - The parent element to append to.
- * @param {string} [presenterKey='text'] - The presenter key to use (e.g., 'text', 'pre').
+ * @param {string} presenterKey - The presenter key to use (e.g., 'text', 'pre').
  * @returns {HTMLElement} The created child element.
  */
-function setTextContent(content, dom, parent, presenterKey = 'text') {
+function setTextContent(content, dom, parent, presenterKey) {
   dom.removeAllChildren(parent);
-  const presenter = presentersMap[presenterKey] || presentersMap['text'];
+  const presenter = presentersMap[presenterKey ?? 'text'] || presentersMap['text'];
   const child = presenter(content, dom);
   dom.appendChild(parent, child);
   return child;
