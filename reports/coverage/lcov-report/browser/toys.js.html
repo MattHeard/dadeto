@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">92.53% </span>
+                <span class="strong">92.59% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>124/134</span>
+                <span class='fraction'>125/135</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68% </span>
+                <span class="strong">65.51% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>17/25</span>
+                <span class='fraction'>19/29</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">92.18% </span>
+                <span class="strong">92.24% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>118/128</span>
+                <span class='fraction'>119/129</span>
             </div>
         
             
@@ -500,7 +500,8 @@
 <a name='L435'></a><a href='#L435'>435</a>
 <a name='L436'></a><a href='#L436'>436</a>
 <a name='L437'></a><a href='#L437'>437</a>
-<a name='L438'></a><a href='#L438'>438</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L438'></a><a href='#L438'>438</a>
+<a name='L439'></a><a href='#L439'>439</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -533,11 +534,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -782,9 +783,9 @@
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -796,6 +797,7 @@
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -806,7 +808,7 @@
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1148,7 +1150,7 @@ function getFetchErrorHandler(dom, parent, errorFn, presenterKey) {
   };
 }
 &nbsp;
-function handleRequestResponse(url, parent, env, presenterKey = 'text') {
+function handleRequestResponse(url, parent, env, presenterKey = <span class="branch-0 cbranch-no" title="branch not covered" >'text')</span> {
   const { errorFn, fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
   const handleFetchError = getFetchErrorHandler(dom, parent, errorFn, presenterKey);
@@ -1225,34 +1227,35 @@ function createHandleInputError(env, parent) {
   };
 }
 &nbsp;
-function processInputAndSetOutput(elements, processingFunction, env, presenterKey) {
-  const { inputElement, outputParentElement: parent } = elements;
+function processInputAndSetOutput(elements, processingFunction, env) {
+  const { inputElement, outputParentElement: parent, outputSelect } = elements;
   const { createEnv, dom } = env;
   const toyEnv = createEnv();
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
+  const presenterKey = outputSelect &amp;&amp; outputSelect.value ? <span class="branch-0 cbranch-no" title="branch not covered" >outputSelect.value </span>: 'text';
   if (!handleParsedResult(parsed, parent, env, presenterKey)) {
     setTextContent(result, dom, parent, presenterKey);
   }
 }
 &nbsp;
-function handleInputProcessing(elements, processingFunction, env, presenterKey) {
+function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement } = elements;
   const handleInputError = createHandleInputError(env, outputParentElement);
   try {
-    processInputAndSetOutput(elements, processingFunction, env, presenterKey);
+    processInputAndSetOutput(elements, processingFunction, env);
   } catch (e) {
     handleInputError(e);
   }
 }
 &nbsp;
-export const createHandleSubmit = (elements, processingFunction, env, presenterKey) =&gt; (event) =&gt; {
+export const createHandleSubmit = (elements, processingFunction, env) =&gt; (event) =&gt; {
   const { dom } = env;
   if (event) {
     dom.stopDefault(event);
   }
-  handleInputProcessing(elements, processingFunction, env, presenterKey);
+  handleInputProcessing(elements, processingFunction, env);
 };
 &nbsp;
 /**
@@ -1295,7 +1298,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
 &nbsp;
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
-  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect }, processingFunction, env, presenterKey);
+  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect }, processingFunction, env);
 &nbsp;
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);
@@ -1381,7 +1384,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-06T20:30:43.635Z
+                at 2025-05-06T20:33:52.177Z
             </div>
         <script src="../prettify.js"></script>
         <script>

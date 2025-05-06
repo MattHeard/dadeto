@@ -286,34 +286,35 @@ function createHandleInputError(env, parent) {
   };
 }
 
-function processInputAndSetOutput(elements, processingFunction, env, presenterKey) {
-  const { inputElement, outputParentElement: parent } = elements;
+function processInputAndSetOutput(elements, processingFunction, env) {
+  const { inputElement, outputParentElement: parent, outputSelect } = elements;
   const { createEnv, dom } = env;
   const toyEnv = createEnv();
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
+  const presenterKey = outputSelect && outputSelect.value ? outputSelect.value : 'text';
   if (!handleParsedResult(parsed, parent, env, presenterKey)) {
     setTextContent(result, dom, parent, presenterKey);
   }
 }
 
-function handleInputProcessing(elements, processingFunction, env, presenterKey) {
+function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement } = elements;
   const handleInputError = createHandleInputError(env, outputParentElement);
   try {
-    processInputAndSetOutput(elements, processingFunction, env, presenterKey);
+    processInputAndSetOutput(elements, processingFunction, env);
   } catch (e) {
     handleInputError(e);
   }
 }
 
-export const createHandleSubmit = (elements, processingFunction, env, presenterKey) => (event) => {
+export const createHandleSubmit = (elements, processingFunction, env) => (event) => {
   const { dom } = env;
   if (event) {
     dom.stopDefault(event);
   }
-  handleInputProcessing(elements, processingFunction, env, presenterKey);
+  handleInputProcessing(elements, processingFunction, env);
 };
 
 /**
@@ -356,7 +357,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
-  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect }, processingFunction, env, presenterKey);
+  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect }, processingFunction, env);
 
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);
