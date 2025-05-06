@@ -12,6 +12,7 @@
   289:1   warning  Function 'processInputAndSetOutput' has too many parameters (4). Maximum allowed is 3  max-params
   301:1   warning  Function 'handleInputProcessing' has too many parameters (4). Maximum allowed is 3     max-params
   311:85  warning  Arrow function has too many parameters (4). Maximum allowed is 3                       max-params
+  348:9   warning  'outputSelect' is assigned a value but never used                                      no-unused-vars
 
-✖ 10 problems (0 errors, 10 warnings)
+✖ 11 problems (0 errors, 11 warnings)
   0 errors and 3 warnings potentially fixable with the `--fix` option.
