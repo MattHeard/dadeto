@@ -239,7 +239,8 @@ function isValidParsedRequest(parsed) {
 
 function handleParsedResult(parsed, parent, env) {
   if (!isValidParsedRequest(parsed)) {return false;}
-  handleRequestResponse(parsed.request.url, parent, env, 'text');
+  const presenterKey = 'text';
+  handleRequestResponse(parsed.request.url, parent, env, presenterKey);
   return true;
 }
 
