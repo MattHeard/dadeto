@@ -4,5 +4,10 @@
   171:7  warning  'postId' is never reassigned. Use 'const' instead         prefer-const
   172:7  warning  'selectedValue' is never reassigned. Use 'const' instead  prefer-const
 
-✖ 3 problems (0 errors, 3 warnings)
-  0 errors and 3 warnings potentially fixable with the `--fix` option.
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
+  33:1   warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3  max-params
+  33:1   warning  Function 'setTextContent' has a complexity of 3. Maximum allowed is 2        complexity
+  35:66  warning  ["text"] is better written in dot notation                                   dot-notation
+
+✖ 6 problems (0 errors, 6 warnings)
+  0 errors and 4 warnings potentially fixable with the `--fix` option.

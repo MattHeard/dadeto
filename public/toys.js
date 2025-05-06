@@ -22,10 +22,17 @@ const presentersMap = {
  * @param {HTMLElement} parent - The parent element to append to.
  * @returns {HTMLElement} The created paragraph element.
  */
-function setTextContent(content, dom, parent) {
+/**
+ * Sets text content in a parent element using the specified presenter key.
+ * @param {string} content - The text content to set.
+ * @param {object} dom - DOM helper functions.
+ * @param {HTMLElement} parent - The parent element to append to.
+ * @param {string} [presenterKey='text'] - The presenter key to use (e.g., 'text', 'pre').
+ * @returns {HTMLElement} The created child element.
+ */
+function setTextContent(content, dom, parent, presenterKey = 'text') {
   dom.removeAllChildren(parent);
-  const presenterKey = 'text';
-  const presenter = presentersMap[presenterKey];
+  const presenter = presentersMap[presenterKey] || presentersMap['text'];
   const child = presenter(content, dom);
   dom.appendChild(parent, child);
   return child;
@@ -178,7 +185,7 @@ export function enableInteractiveControls(elements, dom) {
   const { inputElement, submitButton, parent } = elements;
   dom.enable(inputElement);
   dom.enable(submitButton);
-  setTextContent('Ready for input', dom, parent);
+  setTextContent('Ready for input', dom, parent, 'text');
   dom.removeWarning(parent);
 }
 
@@ -188,14 +195,14 @@ function getText(response) {
 
 function makeDisplayBody(dom, parent) {
   return body => {
-    setTextContent(body, dom, parent);
+    setTextContent(body, dom, parent, 'text');
   };
 }
 
 function getFetchErrorHandler(dom, parent, errorFn) {
   return error => {
     errorFn('Error fetching request URL:', error);
-    setTextContent('Error fetching URL: ' + error.message, dom, parent);
+    setTextContent('Error fetching URL: ' + error.message, dom, parent, 'text');
     dom.addWarning(parent);
   };
 }
@@ -272,7 +279,7 @@ function createHandleInputError(env, parent) {
   const addWarning = dom.addWarning;
   return (e) => {
     logError('Error processing input:', e);
-    setTextContent('Error: ' + e.message, dom, parent);
+    setTextContent('Error: ' + e.message, dom, parent, 'text');
     addWarning(parent);
   };
 }
@@ -285,7 +292,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
   if (!handleParsedResult(parsed, parent, env)) {
-    setTextContent(result, dom, parent);
+    setTextContent(result, dom, parent, 'text');
   }
 }
 
@@ -341,7 +348,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   disableInputAndButton(inputElement, submitButton);
 
   // Update message to show JS is running, replacing <p.output> with paragraph
-  const initialisingWarning = setTextContent('Initialising...', dom, outputParent);
+  const initialisingWarning = setTextContent('Initialising...', dom, outputParent, 'text');
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
