@@ -293,8 +293,9 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
-  if (!handleParsedResult(parsed, parent, env, 'text')) {
-    setTextContent(result, dom, parent, 'text');
+  const presenterKey = 'text';
+  if (!handleParsedResult(parsed, parent, env, presenterKey)) {
+    setTextContent(result, dom, parent, presenterKey);
   }
 }
 
