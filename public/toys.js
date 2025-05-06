@@ -349,8 +349,9 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   // Disable input and submit during initialization
   disableInputAndButton(inputElement, submitButton);
 
+  const presenterKey = 'text';
   // Update message to show JS is running, replacing <p.output> with paragraph
-  const initialisingWarning = setTextContent('Initialising...', dom, outputParent, 'text');
+  const initialisingWarning = setTextContent('Initialising...', dom, outputParent, presenterKey);
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
@@ -363,7 +364,6 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   dom.addEventListener(inputElement, 'keypress', createHandleKeyPress(handleSubmit));
 
   // Enable controls when initialization is complete using the function from this module
-  const presenterKey = 'text';
   enableInteractiveControls({ inputElement, submitButton, parent: outputParent }, dom, presenterKey);
 }
 
