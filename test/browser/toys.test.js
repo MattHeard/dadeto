@@ -208,7 +208,7 @@ describe('enableInteractiveControls', () => {
 
   it('enables input and submit button', () => {
     // --- WHEN ---
-    enableInteractiveControls({ inputElement, submitButton, parent: outputParentElement }, dom);
+    enableInteractiveControls({ inputElement, submitButton, parent: outputParentElement }, dom, 'text');
 
     // --- THEN ---
     expect(enable).toHaveBeenCalledWith(inputElement);
@@ -228,7 +228,7 @@ describe('enableInteractiveControls', () => {
     const paragraph = {};
     dom.createElement = jest.fn(() => paragraph);
     // --- WHEN ---
-    enableInteractiveControls({ inputElement, submitButton, parent }, dom);
+    enableInteractiveControls({ inputElement, submitButton, parent }, dom, 'text');
     // --- THEN ---
     expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
     expect(appendChild).toHaveBeenCalledWith(parent, paragraph);
@@ -237,7 +237,7 @@ describe('enableInteractiveControls', () => {
 
   it('removes "warning" class from parent element', () => {
     // --- WHEN ---
-    enableInteractiveControls({ inputElement, submitButton, parent: outputParentElement }, dom);
+    enableInteractiveControls({ inputElement, submitButton, parent: outputParentElement }, dom, 'text');
     // --- THEN ---
     expect(removeWarning).toHaveBeenCalledWith(outputParentElement);
   });
