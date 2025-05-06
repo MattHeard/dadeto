@@ -838,7 +838,7 @@ function generateToyButtonSection() {
 function getToyOutputSelectDropdown() {
   const optionText = '<option value="text">text</option>';
   const optionPre = '<option value="pre">pre</option>';
-  return `<select>${optionText}${optionPre}</select>`;
+  return `<select class="output">${optionText}${optionPre}</select>`;
 }
 
 function getToyOutputValueContent() {
