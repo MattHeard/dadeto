@@ -32,7 +32,7 @@ const presentersMap = {
  */
 function setTextContent(content, dom, parent, presenterKey) {
   dom.removeAllChildren(parent);
-  const presenter = presentersMap[presenterKey ?? 'text'] || presentersMap['text'];
+  const presenter = presentersMap[presenterKey];
   const child = presenter(content, dom);
   dom.appendChild(parent, child);
   return child;
