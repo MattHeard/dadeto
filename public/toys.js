@@ -356,7 +356,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
-  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent }, processingFunction, env, presenterKey);
+  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect }, processingFunction, env, presenterKey);
 
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);
