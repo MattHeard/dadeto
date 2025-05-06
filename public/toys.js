@@ -237,9 +237,8 @@ function isValidParsedRequest(parsed) {
   return parsedRequestPredicates.every(fn => fn(parsed));
 }
 
-function handleParsedResult(parsed, parent, env) {
+function handleParsedResult(parsed, parent, env, presenterKey = 'text') {
   if (!isValidParsedRequest(parsed)) {return false;}
-  const presenterKey = 'text';
   handleRequestResponse(parsed.request.url, parent, env, presenterKey);
   return true;
 }
