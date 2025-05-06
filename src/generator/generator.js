@@ -836,7 +836,8 @@ function generateToyButtonSection() {
  * @returns {string} - HTML for the output section
  */
 function getToyOutputSelectDropdown() {
-  return '<select disabled><option value="text">text</option></select>';
+  const optionTag = '<option value="text">text</option>';
+  return `<select disabled>${optionTag}</select>`;
 }
 
 function getToyOutputValueContent() {
