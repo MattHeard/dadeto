@@ -335,7 +335,7 @@ FN:147,makeObserverCallback
 FN:150,(anonymous_17)
 FN:163,makeCreateIntersectionObserver
 FN:164,createIntersectionObserver
-FN:184,enableInteractiveControls
+FN:185,enableInteractiveControls
 FN:194,getText
 FN:198,makeDisplayBody
 FN:199,(anonymous_23)
@@ -456,7 +456,6 @@ DA:164,8
 DA:165,6
 DA:166,6
 DA:167,6
-DA:185,6
 DA:186,6
 DA:187,6
 DA:188,6
@@ -546,8 +545,8 @@ DA:423,0
 DA:425,0
 DA:426,0
 DA:435,1
-LF:127
-LH:117
+LF:126
+LH:116
 BRDA:120,0,0,4
 BRDA:120,0,1,2
 BRDA:223,1,0,4

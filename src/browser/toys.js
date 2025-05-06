@@ -180,11 +180,11 @@ export function makeCreateIntersectionObserver(dom, env) {
  * @param {HTMLButtonElement} submitButton
  * @param {object} dom - DOM helper object
  * @param {HTMLElement} parent
+ * @param {string} presenterKey - The presenter key to use (e.g., 'text', 'pre').
  */
-export function enableInteractiveControls(elements, dom) {
+export function enableInteractiveControls(elements, dom, presenterKey) {
   const { inputElement, submitButton, parent } = elements;
   const readyMessage = 'Ready for input';
-  const presenterKey = 'text';
   dom.enable(inputElement);
   dom.enable(submitButton);
   setTextContent(readyMessage, dom, parent, presenterKey);
@@ -363,7 +363,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   dom.addEventListener(inputElement, 'keypress', createHandleKeyPress(handleSubmit));
 
   // Enable controls when initialization is complete using the function from this module
-  enableInteractiveControls({ inputElement, submitButton, parent: outputParent }, dom);
+  enableInteractiveControls({ inputElement, submitButton, parent: outputParent }, dom, 'text');
 }
 
 /**
