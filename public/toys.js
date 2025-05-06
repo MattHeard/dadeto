@@ -195,9 +195,9 @@ function getText(response) {
   return response.text();
 }
 
-function makeDisplayBody(dom, parent) {
+function makeDisplayBody(dom, parent, presenterKey) {
   return body => {
-    setTextContent(body, dom, parent, 'text');
+    setTextContent(body, dom, parent, presenterKey);
   };
 }
 
@@ -211,7 +211,8 @@ function getFetchErrorHandler(dom, parent, errorFn) {
 
 function handleRequestResponse(url, parent, env) {
   const { errorFn, fetchFn, dom } = env;
-  const displayBody = makeDisplayBody(dom, parent);
+  const presenterKey = 'text';
+  const displayBody = makeDisplayBody(dom, parent, presenterKey);
   const handleFetchError = getFetchErrorHandler(dom, parent, errorFn);
   fetchFn(url)
     .then(getText)
