@@ -308,9 +308,8 @@ function handleInputProcessing(elements, processingFunction, env, presenterKey) 
   }
 }
 
-export const createHandleSubmit = (elements, processingFunction, env) => (event) => {
+export const createHandleSubmit = (elements, processingFunction, env, presenterKey) => (event) => {
   const { dom } = env;
-  const presenterKey = 'text';
   if (event) {
     dom.stopDefault(event);
   }
