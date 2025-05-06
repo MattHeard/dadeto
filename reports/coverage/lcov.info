@@ -368,7 +368,7 @@ FN:420,(anonymous_49)
 FN:436,(anonymous_50)
 FNF:51
 FNH:46
-FNDA:16,setTextContent
+FNDA:15,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_2)
 FNDA:5,getModuleInitializer
@@ -403,7 +403,7 @@ FNDA:8,(anonymous_31)
 FNDA:4,handleParsedResult
 FNDA:4,parseJSONResult
 FNDA:5,createHandleInputError
-FNDA:3,(anonymous_35)
+FNDA:2,(anonymous_35)
 FNDA:5,processInputAndSetOutput
 FNDA:5,handleInputProcessing
 FNDA:7,(anonymous_38)
@@ -420,9 +420,9 @@ FNDA:0,getComponentInitializer
 FNDA:0,(anonymous_49)
 FNDA:1,(anonymous_50)
 DA:14,1
-DA:34,16
-DA:35,16
-DA:36,16
+DA:34,15
+DA:35,15
+DA:36,15
 DA:37,14
 DA:38,14
 DA:50,5
@@ -488,9 +488,9 @@ DA:279,5
 DA:280,5
 DA:281,5
 DA:282,5
-DA:283,3
-DA:284,3
-DA:285,3
+DA:283,2
+DA:284,2
+DA:285,2
 DA:290,5
 DA:291,5
 DA:292,5
@@ -503,7 +503,7 @@ DA:302,5
 DA:303,5
 DA:304,5
 DA:305,5
-DA:307,3
+DA:307,2
 DA:311,7
 DA:312,5
 DA:313,5

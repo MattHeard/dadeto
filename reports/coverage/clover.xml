@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746562578707" clover="3.2.0">
-  <project timestamp="1746562578707" name="All files">
+<coverage generated="1746562641510" clover="3.2.0">
+  <project timestamp="1746562641511" name="All files">
     <metrics statements="1045" coveredstatements="1032" conditionals="298" coveredconditionals="286" methods="444" coveredmethods="439" elements="1787" coveredelements="1757" complexity="0" loc="1045" ncloc="1045" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="287" coveredstatements="277" conditionals="55" coveredconditionals="47" methods="100" coveredmethods="95"/>
@@ -176,9 +176,9 @@
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
         <metrics statements="127" coveredstatements="117" conditionals="25" coveredconditionals="17" methods="51" coveredmethods="46"/>
         <line num="14" count="1" type="stmt"/>
-        <line num="34" count="16" type="stmt"/>
-        <line num="35" count="16" type="stmt"/>
-        <line num="36" count="16" type="stmt"/>
+        <line num="34" count="15" type="stmt"/>
+        <line num="35" count="15" type="stmt"/>
+        <line num="36" count="15" type="stmt"/>
         <line num="37" count="14" type="stmt"/>
         <line num="38" count="14" type="stmt"/>
         <line num="50" count="5" type="stmt"/>
@@ -244,9 +244,9 @@
         <line num="280" count="5" type="stmt"/>
         <line num="281" count="5" type="stmt"/>
         <line num="282" count="5" type="stmt"/>
-        <line num="283" count="3" type="stmt"/>
-        <line num="284" count="3" type="stmt"/>
-        <line num="285" count="3" type="stmt"/>
+        <line num="283" count="2" type="stmt"/>
+        <line num="284" count="2" type="stmt"/>
+        <line num="285" count="2" type="stmt"/>
         <line num="290" count="5" type="stmt"/>
         <line num="291" count="5" type="stmt"/>
         <line num="292" count="5" type="stmt"/>
@@ -259,7 +259,7 @@
         <line num="303" count="5" type="stmt"/>
         <line num="304" count="5" type="stmt"/>
         <line num="305" count="5" type="stmt"/>
-        <line num="307" count="3" type="stmt"/>
+        <line num="307" count="2" type="stmt"/>
         <line num="311" count="7" type="stmt"/>
         <line num="312" count="5" type="stmt"/>
         <line num="313" count="5" type="cond" truecount="2" falsecount="0"/>
