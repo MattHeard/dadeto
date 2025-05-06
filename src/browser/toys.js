@@ -286,14 +286,13 @@ function createHandleInputError(env, parent) {
   };
 }
 
-function processInputAndSetOutput(elements, processingFunction, env) {
+function processInputAndSetOutput(elements, processingFunction, env, presenterKey) {
   const { inputElement, outputParentElement: parent } = elements;
   const { createEnv, dom } = env;
   const toyEnv = createEnv();
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
-  const presenterKey = 'text';
   if (!handleParsedResult(parsed, parent, env, presenterKey)) {
     setTextContent(result, dom, parent, presenterKey);
   }
@@ -302,8 +301,9 @@ function processInputAndSetOutput(elements, processingFunction, env) {
 function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement } = elements;
   const handleInputError = createHandleInputError(env, outputParentElement);
+  const presenterKey = 'text';
   try {
-    processInputAndSetOutput(elements, processingFunction, env);
+    processInputAndSetOutput(elements, processingFunction, env, presenterKey);
   } catch (e) {
     handleInputError(e);
   }

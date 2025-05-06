@@ -5,10 +5,11 @@
   172:7  warning  'selectedValue' is never reassigned. Use 'const' instead  prefer-const
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-   33:1  warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3         max-params
-  204:1  warning  Function 'getFetchErrorHandler' has too many parameters (4). Maximum allowed is 3   max-params
-  212:1  warning  Function 'handleRequestResponse' has too many parameters (4). Maximum allowed is 3  max-params
-  240:1  warning  Function 'handleParsedResult' has too many parameters (4). Maximum allowed is 3     max-params
+   33:1  warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3            max-params
+  204:1  warning  Function 'getFetchErrorHandler' has too many parameters (4). Maximum allowed is 3      max-params
+  212:1  warning  Function 'handleRequestResponse' has too many parameters (4). Maximum allowed is 3     max-params
+  240:1  warning  Function 'handleParsedResult' has too many parameters (4). Maximum allowed is 3        max-params
+  289:1  warning  Function 'processInputAndSetOutput' has too many parameters (4). Maximum allowed is 3  max-params
 
-✖ 7 problems (0 errors, 7 warnings)
+✖ 8 problems (0 errors, 8 warnings)
   0 errors and 3 warnings potentially fixable with the `--fix` option.
