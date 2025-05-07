@@ -182,10 +182,9 @@ describe('toys', () => {
     it('calls errorMock with the correct message', () => {
       // --- GIVEN ---
       const logError = jest.fn();
-      const modulePath = 'toyModule';
       const handler = handleModuleError(modulePath, logError);
       const error = new Error('fail');
-      const expectedMessage = 'Error loading module ' + modulePath + ':';
+      const expectedMessage = 'Error loading module mod:';
       // --- WHEN ---
       handler(error);
       // --- THEN ---
