@@ -21,12 +21,13 @@ import {
 describe('toys', () => {
   let entry;
   let observer;
-  let modulePath; // Moved up for use in nested describes
+  let modulePath;
+  let observerCallback; // Moved up for use in nested describes
 
   describe('makeObserverCallback', () => {
     let importModule;
     let disconnectObserver;
-    let observerCallback;
+
 
 
 
@@ -86,7 +87,7 @@ describe('toys', () => {
 
     let expectedResult;
     let dom;
-    let observerCallback;
+
     let env;
     let article;
 
