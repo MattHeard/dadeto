@@ -15,14 +15,18 @@ function isBracketedListString(str) {
   return typeof str === 'string' && isSurroundedByBrackets(str);
 }
 
+function formatBracketedListString(inputString) {
+  const inner = inputString.slice(1, -1).trim();
+  if (inner.length > 0) {
+    return inner.split(',').map(s => s.trim()).join('\n');
+  } else {
+    return '';
+  }
+}
+
 function getPreContent(inputString) {
   if (isBracketedListString(inputString)) {
-    const inner = inputString.slice(1, -1).trim();
-    if (inner.length > 0) {
-      return inner.split(',').map(s => s.trim()).join('\n');
-    } else {
-      return '';
-    }
+    return formatBracketedListString(inputString);
   }
   return inputString;
 }
