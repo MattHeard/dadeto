@@ -229,8 +229,10 @@ describe('toys', () => {
     });
 
     it('enables input and submit button', () => {
+      // --- GIVEN ---
+      const elements = { inputElement, submitButton, parent: outputParentElement };
       // --- WHEN ---
-      enableInteractiveControls({ inputElement, submitButton, parent: outputParentElement }, dom, 'text');
+      enableInteractiveControls(elements, dom, 'text');
       // --- THEN ---
       expect(enable).toHaveBeenCalledWith(inputElement);
       expect(enable).toHaveBeenCalledWith(submitButton);
