@@ -80,7 +80,7 @@ describe('toys', () => {
   });
 
   describe('makeCreateIntersectionObserver', () => {
-    let entry;
+
     let observer;
     let expectedResult;
     let dom;
