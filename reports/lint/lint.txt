@@ -1,9 +1,10 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-   33:1  warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3         max-params
-  205:1  warning  Function 'getFetchErrorHandler' has too many parameters (4). Maximum allowed is 3   max-params
-  213:1  warning  Function 'handleRequestResponse' has too many parameters (4). Maximum allowed is 3  max-params
-  241:1  warning  Function 'handleParsedResult' has too many parameters (4). Maximum allowed is 3     max-params
+   33:1   warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3         max-params
+   59:10  warning  'setTextContent_new' is defined but never used                                      no-unused-vars
+  228:1   warning  Function 'getFetchErrorHandler' has too many parameters (4). Maximum allowed is 3   max-params
+  236:1   warning  Function 'handleRequestResponse' has too many parameters (4). Maximum allowed is 3  max-params
+  264:1   warning  Function 'handleParsedResult' has too many parameters (4). Maximum allowed is 3     max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/pre.js
   10:8  warning  Function 'createPreElement' has a complexity of 5. Maximum allowed is 2  complexity
@@ -11,4 +12,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
   191:67  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
 
-✖ 6 problems (0 errors, 6 warnings)
+✖ 7 problems (0 errors, 7 warnings)
