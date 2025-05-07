@@ -19,7 +19,12 @@ import {
 } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
-  let importModule, disconnectObserver, f, modulePath, entry, observer;
+  let importModule;
+  let disconnectObserver;
+  let f;
+  let modulePath;
+  let entry;
+  let observer;
 
   beforeEach(() => {
     importModule = jest.fn();
