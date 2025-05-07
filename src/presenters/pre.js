@@ -15,21 +15,21 @@ function isBracketedListString(str) {
   return typeof str === 'string' && isSurroundedByBrackets(str);
 }
 
-export function createPreElement(inputString, dom) {
-  const pre = dom.createElement('pre');
-  let content = inputString;
+function getPreContent(inputString) {
   if (isBracketedListString(inputString)) {
-
-    // Remove brackets and split by comma
     const inner = inputString.slice(1, -1).trim();
     if (inner.length > 0) {
-
-      content = inner.split(',').map(s => s.trim()).join('\n');
+      return inner.split(',').map(s => s.trim()).join('\n');
     } else {
-
-      content = '';
+      return '';
     }
   }
+  return inputString;
+}
+
+export function createPreElement(inputString, dom) {
+  const pre = dom.createElement('pre');
+  const content = getPreContent(inputString);
   dom.setTextContent(pre, content);
   return pre;
 }
