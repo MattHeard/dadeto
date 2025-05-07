@@ -210,7 +210,7 @@ function getFetchErrorHandler(dom, parent, errorFn, presenterKey) {
   };
 }
 
-function handleRequestResponse(url, parent, env, presenterKey = 'text') {
+function handleRequestResponse(url, parent, env, presenterKey) {
   const { errorFn, fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
   const handleFetchError = getFetchErrorHandler(dom, parent, errorFn, presenterKey);
