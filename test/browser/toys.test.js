@@ -20,13 +20,14 @@ import {
 
 describe('toys', () => {
   let entry;
-  let observer; // Moved up for use in nested describes
+  let observer;
+  let modulePath; // Moved up for use in nested describes
 
   describe('makeObserverCallback', () => {
     let importModule;
     let disconnectObserver;
     let f;
-    let modulePath;
+
 
 
     beforeEach(() => {
@@ -88,7 +89,7 @@ describe('toys', () => {
     let f;
     let env;
     let article;
-    let modulePath;
+
     let functionName;
     let g;
     let isIntersecting;
@@ -678,7 +679,7 @@ describe('toys', () => {
     let article;
 
     let id;
-    let modulePath;
+
     let functionName;
     let component;
 
