@@ -1,11 +1,13 @@
-import {
+import
+{
   describe,
   it,
   expect,
   beforeEach,
   jest
 } from '@jest/globals';
-import {
+import
+{
   makeObserverCallback,
   makeCreateIntersectionObserver,
   enableInteractiveControls,
@@ -16,32 +18,37 @@ import {
   initializeInteractiveComponent,
   handleModuleError
 } from '../../src/browser/toys.js';
-describe('toys', () => {
+describe('toys', () =>
+{
   let entry;
   let observer;
   let modulePath;
-  beforeEach(() => {
+  beforeEach(() =>
+  {
     modulePath = 'mod';
   });
-  describe('makeObserverCallback', () => {
+  describe('makeObserverCallback', () =>
+  {
     let observerCallback;
     let importModule;
     let disconnectObserver;
-    beforeEach(() => {
+    beforeEach(() =>
+    {
       importModule = jest.fn();
       disconnectObserver = jest.fn();
       const isIntersecting = jest.fn(() => true);
       const error = jest.fn();
       const removeAllChildren = jest.fn();
       const contains = () => true;
-      const dom = {
-        removeAllChildren,
-        importModule,
-        disconnectObserver,
-        isIntersecting,
-        error,
-        contains
-      };
+      const dom =
+{
+  removeAllChildren,
+  importModule,
+  disconnectObserver,
+  isIntersecting,
+  error,
+  contains
+};
       const logError = jest.fn();
       const loggers = { logError };
       const env = { loggers };
@@ -52,7 +59,8 @@ describe('toys', () => {
       observerCallback = makeObserverCallback(moduleInfo, env, dom);
       observer = {};
     });
-    it('calls importModule when entry is intersecting', () => {
+    it('calls importModule when entry is intersecting', () =>
+    {
     // --- WHEN ---
       observerCallback([entry], observer);
       // --- THEN ---
@@ -62,14 +70,16 @@ describe('toys', () => {
         expect.any(Function)
       );
     });
-    it('calls disconnectObserver when entry is intersecting', () => {
+    it('calls disconnectObserver when entry is intersecting', () =>
+    {
     // --- WHEN ---
       observerCallback([entry], observer);
       // --- THEN ---
       expect(disconnectObserver).toHaveBeenCalledWith(observer);
     });
   });
-  describe('makeCreateIntersectionObserver', () => {
+  describe('makeCreateIntersectionObserver', () =>
+  {
     let createObserver;
     let expectedResult;
     let dom;
@@ -78,21 +88,24 @@ describe('toys', () => {
     let functionName;
     let intersectionCallback;
     let isIntersecting;
-    beforeEach(() => {
+    beforeEach(() =>
+    {
       expectedResult = {};
-      const makeIntersectionObserver = jest.fn((fn) => {
+      const makeIntersectionObserver = jest.fn((fn) =>
+      {
         intersectionCallback = fn;
         return expectedResult;
       });
       isIntersecting = () => true;
-      dom = {
-        makeIntersectionObserver,
-        importModule: jest.fn(),
-        disconnectObserver: jest.fn(),
-        error: jest.fn(),
-        isIntersecting,
-        contains: () => true
-      };
+      dom =
+{
+  makeIntersectionObserver,
+  importModule: jest.fn(),
+  disconnectObserver: jest.fn(),
+  error: jest.fn(),
+  isIntersecting,
+  contains: () => true
+};
       // Always provide loggers for moduleConfig compatibility
       env = { loggers: { logError: jest.fn() } };
       createObserver = makeCreateIntersectionObserver(dom, env);
@@ -101,19 +114,22 @@ describe('toys', () => {
       entry = {};
       observer = {};
     });
-    it('returns the result of makeIntersectionObserver', () => {
+    it('returns the result of makeIntersectionObserver', () =>
+    {
     // --- WHEN ---
       const result = createObserver(article, modulePath, functionName);
       // --- THEN ---
       expect(result).toBe(expectedResult);
     });
-    it('calls makeIntersectionObserver with a callback', () => {
+    it('calls makeIntersectionObserver with a callback', () =>
+    {
     // --- WHEN ---
       createObserver(article, modulePath, functionName);
       // --- THEN ---
       expect(dom.makeIntersectionObserver).toHaveBeenCalledWith(expect.any(Function));
     });
-    it('calls importModule when entry is intersecting', () => {
+    it('calls importModule when entry is intersecting', () =>
+    {
     // --- GIVEN ---
       createObserver(article, modulePath, functionName);
       // --- WHEN ---
@@ -121,7 +137,8 @@ describe('toys', () => {
       // --- THEN ---
       expect(dom.importModule).toHaveBeenCalled();
     });
-    it('calls disconnectObserver when entry is intersecting', () => {
+    it('calls disconnectObserver when entry is intersecting', () =>
+    {
     // --- GIVEN ---
       createObserver(article, modulePath, functionName);
       // --- WHEN ---
@@ -129,7 +146,8 @@ describe('toys', () => {
       // --- THEN ---
       expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
     });
-    it('does not call importModule when not intersecting', () => {
+    it('does not call importModule when not intersecting', () =>
+    {
     // --- GIVEN ---
       isIntersecting = () => false;
       dom.isIntersecting = isIntersecting;
@@ -140,7 +158,8 @@ describe('toys', () => {
       // --- THEN ---
       expect(dom.importModule).not.toHaveBeenCalled();
     });
-    it('does not call disconnectObserver when not intersecting', () => {
+    it('does not call disconnectObserver when not intersecting', () =>
+    {
     // --- GIVEN ---
       isIntersecting = () => false;
       dom.isIntersecting = isIntersecting;
@@ -152,8 +171,10 @@ describe('toys', () => {
       expect(dom.disconnectObserver).not.toHaveBeenCalled();
     });
   });
-  describe('handleModuleError', () => {
-    it('calls errorMock with the correct message', () => {
+  describe('handleModuleError', () =>
+  {
+    it('calls errorMock with the correct message', () =>
+    {
     // --- GIVEN ---
       const errorMock = jest.fn();
       const modulePath = 'toyModule';
@@ -169,7 +190,8 @@ describe('toys', () => {
       );
     });
   });
-  describe('enableInteractiveControls', () => {
+  describe('enableInteractiveControls', () =>
+  {
     let inputElement;
     let submitButton;
     let outputParentElement;
@@ -177,16 +199,18 @@ describe('toys', () => {
     let setTextContent;
     let removeWarning;
     let dom;
-    beforeEach(() => {
+    beforeEach(() =>
+    {
     // Mock input element
       inputElement = {};
       // Mock submit button
       submitButton = {};
       // Mock parent element with simple classList mock
-      outputParentElement = {
-        classList: {},
-        appendChild: jest.fn() // Not needed, but completes the mock
-      };
+      outputParentElement =
+{
+  classList: {},
+  appendChild: jest.fn() // Not needed, but completes the mock
+};
       // Reset enable and setTextContent mocks for each test
       enable = jest.fn();
       setTextContent = jest.fn();
@@ -196,14 +220,16 @@ describe('toys', () => {
       dom.createElement = jest.fn(() => ({}));
       dom.appendChild = jest.fn();
     });
-    it('enables input and submit button', () => {
+    it('enables input and submit button', () =>
+    {
     // --- WHEN ---
       enableInteractiveControls({ inputElement, submitButton, parent: outputParentElement }, dom, 'text');
       // --- THEN ---
       expect(enable).toHaveBeenCalledWith(inputElement);
       expect(enable).toHaveBeenCalledWith(submitButton);
     });
-    it('sets output textContent to "Ready for input" using parent branch', () => {
+    it('sets output textContent to "Ready for input" using parent branch', () =>
+    {
     // --- GIVEN ---
       const expectedText = 'Ready for input';
       const parent = {};
@@ -222,15 +248,18 @@ describe('toys', () => {
       expect(appendChild).toHaveBeenCalledWith(parent, paragraph);
       expect(setTextContent).toHaveBeenCalledWith(paragraph, expectedText);
     });
-    it('removes "warning" class from parent element', () => {
+    it('removes "warning" class from parent element', () =>
+    {
     // --- WHEN ---
       enableInteractiveControls({ inputElement, submitButton, parent: outputParentElement }, dom, 'text');
       // --- THEN ---
       expect(removeWarning).toHaveBeenCalledWith(outputParentElement);
     });
   });
-  describe('initialiseModule', () => {
-    it('can be invoked with minimal arguments', () => {
+  describe('initialiseModule', () =>
+  {
+    it('can be invoked with minimal arguments', () =>
+    {
       const article = {};
       const functionName = 'process';
       const globalState = {};
@@ -247,32 +276,35 @@ describe('toys', () => {
         ['div.output > p', outputElement],
         ['div.output', outputElement.outputParentElement]
       ]);
-      const querySelector = (el, selector) => {
+      const querySelector = (el, selector) =>
+      {
         return selectorMap.get(selector) || {};
       };
-      const dom = {
-        removeAllChildren: jest.fn(),
-        querySelector,
-        addEventListener: jest.fn(),
-        setTextContent: jest.fn(),
-        removeAllChildren: jest.fn(),
-        removeWarning: jest.fn(),
-        enable: jest.fn(),
-        removeChild: jest.fn(),
-        appendChild: jest.fn(),
-        createElement: jest.fn(() => paragraph),
-        contains: () => true,
-        removeAllChildren: jest.fn()
-      };
+      const dom =
+{
+  removeAllChildren: jest.fn(),
+  querySelector,
+  addEventListener: jest.fn(),
+  setTextContent: jest.fn(),
+  removeAllChildren: jest.fn(),
+  removeWarning: jest.fn(),
+  enable: jest.fn(),
+  removeChild: jest.fn(),
+  appendChild: jest.fn(),
+  createElement: jest.fn(() => paragraph),
+  contains: () => true,
+  removeAllChildren: jest.fn()
+};
       // Pass globalState, createEnv, error, and fetch directly
       // Create config object as passed to initializeAndRenderComponent
-      const config = {
-        globalState,
-        createEnvFn: createEnv,
-        errorFn: error,
-        fetchFn: fetch,
-        dom
-      };
+      const config =
+{
+  globalState,
+  createEnvFn: createEnv,
+  errorFn: error,
+  fetchFn: fetch,
+  dom
+};
       // Use getModuleInitializer to create an initializer and invoke with a module
       const result = getModuleInitializer(article, functionName, config);
       const module = { [functionName]: jest.fn() };
@@ -284,15 +316,20 @@ describe('toys', () => {
       expect(dom.appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
     });
   });
-  describe('getDeepStateCopy', () => {
-    it('returns a deep copy of the global state object', () => {
-      const globalState = {
-        level1: {
-          level2: {
-            value: 'original'
-          }
-        }
-      };
+  describe('getDeepStateCopy', () =>
+  {
+    it('returns a deep copy of the global state object', () =>
+    {
+      const globalState =
+{
+  level1:
+{
+  level2:
+{
+  value: 'original'
+}
+}
+};
       const copy = getDeepStateCopy(globalState);
       // Expectations at end
       expect(copy).toEqual(globalState);
@@ -304,7 +341,8 @@ describe('toys', () => {
       expect(globalState.level1.level2.value).toBe('original');
     });
   });
-  describe('createHandleSubmit', () => {
+  describe('createHandleSubmit', () =>
+  {
     let fetchFn;
     let inputElement;
     let outputElement;
@@ -313,27 +351,30 @@ describe('toys', () => {
     let elements;
     let dom;
     let newParagraph;
-    beforeEach(() => {
+    beforeEach(() =>
+    {
       inputElement = {};
       outputElement = {};
       outputParentElement = {};
       newParagraph = {};
-      dom = {
-        createElement: jest.fn().mockImplementation(() => newParagraph),
-        stopDefault: jest.fn(),
-        addWarning: jest.fn(),
-        setTextContent: jest.fn(),
-        removeAllChildren: jest.fn(),
-        removeChild: jest.fn(),
-        appendChild: jest.fn(),
-        contains: () => true,
-        removeAllChildren: jest.fn()
-      };
+      dom =
+{
+  createElement: jest.fn().mockImplementation(() => newParagraph),
+  stopDefault: jest.fn(),
+  addWarning: jest.fn(),
+  setTextContent: jest.fn(),
+  removeAllChildren: jest.fn(),
+  removeChild: jest.fn(),
+  appendChild: jest.fn(),
+  contains: () => true,
+  removeAllChildren: jest.fn()
+};
       fetchFn = jest.fn();
       processingFunction = jest.fn(async () => 'transformed');
       elements = { inputElement, outputElement, outputParentElement, outputSelect: { value: 'text' } };
     });
-    it('fetches from URL if processingFunction returns a request object', async () => {
+    it('fetches from URL if processingFunction returns a request object', async () =>
+    {
       const fetchedContent = 'fetched content';
       fetchFn = jest.fn(() =>
         Promise.resolve({ text: () => Promise.resolve(fetchedContent) })
@@ -352,7 +393,8 @@ describe('toys', () => {
       // Expectations at end
       expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, fetchedContent);
     });
-    it('handles fetch failure if request URL is unreachable', async () => {
+    it('handles fetch failure if request URL is unreachable', async () =>
+    {
       fetchFn = jest.fn(() =>
         Promise.reject(new Error('Network failure'))
       );
@@ -370,17 +412,20 @@ describe('toys', () => {
       expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
       expect(dom.addWarning).toHaveBeenCalledWith(outputParentElement);
     });
-    it('handles error thrown by processingFunction', async () => {
-      processingFunction = jest.fn(() => {
+    it('handles error thrown by processingFunction', async () =>
+    {
+      processingFunction = jest.fn(() =>
+      {
         throw new Error('processing error');
       });
-      const env = {
-        globalState: {},
-        createEnv: () => ({}),
-        errorFn: jest.fn(),
-        fetchFn: fetchFn,
-        dom
-      };
+      const env =
+{
+  globalState: {},
+  createEnv: () => ({}),
+  errorFn: jest.fn(),
+  fetchFn: fetchFn,
+  dom
+};
       const handleSubmitThrowing = createHandleSubmit(
         elements,
         processingFunction,
@@ -392,7 +437,8 @@ describe('toys', () => {
       expect(dom.setTextContent).toHaveBeenCalledWith(newParagraph, expect.stringMatching(/Error: processing error/));
       expect(dom.addWarning).toHaveBeenCalledWith(outputParentElement);
     });
-    it('handles being called without an event', async () => {
+    it('handles being called without an event', async () =>
+    {
       const stopDefault = jest.fn();
       const createEnv = () => ({});
       const errorFn = jest.fn();
@@ -402,16 +448,17 @@ describe('toys', () => {
       const outputParentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
       const output = { textContent: '', outputParentElement };
       const outputSelect = { value: 'text' };
-      const dom = {
-        createElement: jest.fn(() => paragraph),
-        stopDefault: jest.fn(),
-        addWarning: jest.fn(),
-        removeChild: jest.fn(),
-        appendChild: jest.fn(),
-        setTextContent: jest.fn(),
-        contains: () => true,
-        removeAllChildren: jest.fn()
-      };
+      const dom =
+{
+  createElement: jest.fn(() => paragraph),
+  stopDefault: jest.fn(),
+  addWarning: jest.fn(),
+  removeChild: jest.fn(),
+  appendChild: jest.fn(),
+  setTextContent: jest.fn(),
+  contains: () => true,
+  removeAllChildren: jest.fn()
+};
       const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
       const handleSubmitNoEvent = createHandleSubmit(
         { inputElement: input, outputElement: output, outputParentElement, outputSelect },
@@ -428,19 +475,22 @@ describe('toys', () => {
       expect(dom.appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
     });
   });
-  describe('initializeInteractiveComponent', () => {
+  describe('initializeInteractiveComponent', () =>
+  {
     let querySelector;
     let selectorMap;
     let inputElement;
     let submitButton;
     let outputElement;
-    beforeEach(() => {
+    beforeEach(() =>
+    {
       inputElement = { value: 'test', disabled: false };
       submitButton = { disabled: false };
-      outputElement = {
-        textContent: '',
-        outputParentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
-      };
+      outputElement =
+{
+  textContent: '',
+  outputParentElement: { classList: { remove: jest.fn() }, removeChild: jest.fn(), appendChild: jest.fn() }
+};
       selectorMap = new Map([
         ['input', inputElement],
         ['button', submitButton],
@@ -449,7 +499,8 @@ describe('toys', () => {
       ]);
       querySelector = jest.fn((el, selector) => selectorMap.get(selector) || {});
     });
-    it('attaches click and keypress listeners with expected arguments', () => {
+    it('attaches click and keypress listeners with expected arguments', () =>
+    {
       const article = {};
       const globalState = {};
       const createEnvFn = () => ({});
@@ -461,37 +512,43 @@ describe('toys', () => {
       const listeners = {};
       const isInputKeypress = (element, event) => element === inputElement && event === 'keypress';
       const isSubmitClick = (element, event) => element === submitButton && event === 'click';
-      const handleInputKeypress = (element, event, handler) => {
-        if (isInputKeypress(element, event)) {
+      const handleInputKeypress = (element, event, handler) =>
+      {
+        if (isInputKeypress(element, event))
+        {
           listeners.keypress = handler;
         }
       };
-      const handleSubmitClick = (element, event, handler) => {
-        if (isSubmitClick(element, event)) {
+      const handleSubmitClick = (element, event, handler) =>
+      {
+        if (isSubmitClick(element, event))
+        {
           listeners.click = handler;
         }
       };
-      const addEventListener = jest.fn((element, event, handler) => {
+      const addEventListener = jest.fn((element, event, handler) =>
+      {
         handleInputKeypress(element, event, handler);
         handleSubmitClick(element, event, handler);
       });
-      const dom = {
-        removeAllChildren: jest.fn(),
-        createElement,
-        stopDefault,
-        addWarning,
-        addWarningFn: addWarning,
-        addEventListener,
-        removeChild: jest.fn(),
-        appendChild: jest.fn(),
-        querySelector,
-        setTextContent: jest.fn((el, text) => { el.textContent = text; }),
-        removeAllChildren: jest.fn(),
-        removeWarning: jest.fn(),
-        enable: jest.fn(),
-        contains: () => true,
-        removeAllChildren: jest.fn()
-      };
+      const dom =
+{
+  removeAllChildren: jest.fn(),
+  createElement,
+  stopDefault,
+  addWarning,
+  addWarningFn: addWarning,
+  addEventListener,
+  removeChild: jest.fn(),
+  appendChild: jest.fn(),
+  querySelector,
+  setTextContent: jest.fn((el, text) => { el.textContent = text; }),
+  removeAllChildren: jest.fn(),
+  removeWarning: jest.fn(),
+  enable: jest.fn(),
+  contains: () => true,
+  removeAllChildren: jest.fn()
+};
       const processingFunction = jest.fn(() => 'processed result');
       const config = { globalState, createEnvFn, errorFn, fetchFn, dom };
       initializeInteractiveComponent(
@@ -506,14 +563,16 @@ describe('toys', () => {
       expect(addEventListener).toHaveBeenCalledWith(inputElement, 'keypress', expect.any(Function));
       expect(processingFunction).toHaveBeenCalledWith('test', expect.any(Object));
     });
-    it('does not call handleSubmit when a non-Enter key is pressed', () => {
+    it('does not call handleSubmit when a non-Enter key is pressed', () =>
+    {
       const article = {};
       const inputElement = { value: 'test', disabled: false };
       const submitButton = { disabled: false };
-      const outputElement = {
-        textContent: '',
-        outputParentElement: { classList: { remove: jest.fn() } }
-      };
+      const outputElement =
+{
+  textContent: '',
+  outputParentElement: { classList: { remove: jest.fn() } }
+};
       // Populate selectorMap for this test
       selectorMap.set('input', inputElement);
       selectorMap.set('button', submitButton);
@@ -523,34 +582,40 @@ describe('toys', () => {
       const listeners2 = {};
       const isInputKeypress = (element, event) => element === inputElement && event === 'keypress';
       const isSubmitClick = (element, event) => element === submitButton && event === 'click';
-      const handleInputKeypress = (element, event, handler) => {
-        if (isInputKeypress(element, event)) {
+      const handleInputKeypress = (element, event, handler) =>
+      {
+        if (isInputKeypress(element, event))
+        {
           listeners2.keypress = handler;
         }
       };
-      const handleSubmitClick = (element, event, handler) => {
-        if (isSubmitClick(element, event)) {
+      const handleSubmitClick = (element, event, handler) =>
+      {
+        if (isSubmitClick(element, event))
+        {
           listeners2.click = handler;
         }
       };
-      const addEventListener = jest.fn((element, event, handler) => {
+      const addEventListener = jest.fn((element, event, handler) =>
+      {
         handleInputKeypress(element, event, handler);
         handleSubmitClick(element, event, handler);
       });
-      const dom = {
-        removeAllChildren: jest.fn(),
-        querySelector,
-        addEventListener,
-        setTextContent: jest.fn(),
-        removeAllChildren: jest.fn(),
-        removeWarning: jest.fn(),
-        enable: jest.fn(),
-        removeChild: jest.fn(),
-        appendChild: jest.fn(),
-        createElement: jest.fn(() => ({})),
-        contains: () => true,
-        removeAllChildren: jest.fn()
-      };
+      const dom =
+{
+  removeAllChildren: jest.fn(),
+  querySelector,
+  addEventListener,
+  setTextContent: jest.fn(),
+  removeAllChildren: jest.fn(),
+  removeWarning: jest.fn(),
+  enable: jest.fn(),
+  removeChild: jest.fn(),
+  appendChild: jest.fn(),
+  createElement: jest.fn(() => ({})),
+  contains: () => true,
+  removeAllChildren: jest.fn()
+};
       const createEnvFn = () => ({});
       const errorFn = jest.fn();
       const fetchFn = jest.fn();
@@ -566,7 +631,8 @@ describe('toys', () => {
       expect(processingFunction).not.toHaveBeenCalled();
     });
   });
-  describe('initializeVisibleComponents', () => {
+  describe('initializeVisibleComponents', () =>
+  {
     let getInteractiveComponentCount;
     let interactiveComponents;
     let win;
@@ -582,7 +648,8 @@ describe('toys', () => {
     let component;
     let env;
     let getComponentInitializer;
-    beforeEach(() => {
+    beforeEach(() =>
+    {
       interactiveComponents = [];
       win = { interactiveComponents };
       logInfo = jest.fn();
@@ -602,48 +669,53 @@ describe('toys', () => {
       initializeComponent = jest.fn();
       // getComponentInitializer is a Jest mock that returns initializeComponent
       getComponentInitializer = jest.fn(() => initializeComponent);
-      env = {
-        win,
-        logInfo,
-        logWarning,
-        getElement,
-        hasNoInteractiveComponents,
-        getInteractiveComponents,
-        getInteractiveComponentCount,
-        getComponentInitializer
-      };
+      env =
+{
+  win,
+  logInfo,
+  logWarning,
+  getElement,
+  hasNoInteractiveComponents,
+  getInteractiveComponents,
+  getInteractiveComponentCount,
+  getComponentInitializer
+};
     });
-    it('warns if there are no interactive components', () => {
+    it('warns if there are no interactive components', () =>
+    {
       interactiveComponents = [];
       win = { interactiveComponents };
       hasNoInteractiveComponents = () => true;
-      env = {
-        win,
-        logInfo,
-        logWarning,
-        getElement,
-        hasNoInteractiveComponents,
-        getInteractiveComponents,
-        getInteractiveComponentCount,
-        getComponentInitializer
-      };
+      env =
+{
+  win,
+  logInfo,
+  logWarning,
+  getElement,
+  hasNoInteractiveComponents,
+  getInteractiveComponents,
+  getInteractiveComponentCount,
+  getComponentInitializer
+};
       initializeVisibleComponents(env, createIntersectionObserver);
       expect(logWarning).toHaveBeenCalledWith('No interactive components found to initialize');
     });
-    it('initializes and observes a valid interactive component', () => {
+    it('initializes and observes a valid interactive component', () =>
+    {
       interactiveComponents = [component];
       win = { interactiveComponents };
       getElement = () => article;
-      env = {
-        win,
-        logInfo,
-        logWarning,
-        getElement,
-        hasNoInteractiveComponents,
-        getInteractiveComponents,
-        getInteractiveComponentCount,
-        getComponentInitializer
-      };
+      env =
+{
+  win,
+  logInfo,
+  logWarning,
+  getElement,
+  hasNoInteractiveComponents,
+  getInteractiveComponents,
+  getInteractiveComponentCount,
+  getComponentInitializer
+};
       createIntersectionObserver = jest.fn(() => observer);
       initializeVisibleComponents(env, createIntersectionObserver);
       // Expectations at end
@@ -654,7 +726,8 @@ describe('toys', () => {
       );
       expect(getComponentInitializer).toHaveBeenCalledWith(getElement, logWarning, createIntersectionObserver);
     });
-    it('attempts to initialize all interactive components, regardless of missing fields', () => {
+    it('attempts to initialize all interactive components, regardless of missing fields', () =>
+    {
       const componentA = { id: 'a', modulePath: 'valid/path', functionName: '' };
       const componentB = { id: 'b', modulePath: '', functionName: 'fn' };
       const componentC = { id: 'c', modulePath: null, functionName: 'fn' };
@@ -668,16 +741,17 @@ describe('toys', () => {
       win = { interactiveComponents };
       getElement = jest.fn(() => ({}));
       createIntersectionObserver = jest.fn(() => observer);
-      env = {
-        win,
-        logInfo,
-        logWarning,
-        getElement,
-        hasNoInteractiveComponents,
-        getInteractiveComponents,
-        getInteractiveComponentCount,
-        getComponentInitializer
-      };
+      env =
+{
+  win,
+  logInfo,
+  logWarning,
+  getElement,
+  hasNoInteractiveComponents,
+  getInteractiveComponents,
+  getInteractiveComponentCount,
+  getComponentInitializer
+};
       initializeVisibleComponents(env, createIntersectionObserver);
       // Expectations at end
       expect(initializeComponent).toHaveBeenCalledTimes(4);
