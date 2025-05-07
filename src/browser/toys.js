@@ -220,7 +220,7 @@ function getFetchErrorHandler(env, parent, presenterKey) {
   };
 }
 
-function handleRequestResponse_new(url, env, { parent, presenterKey }) {
+function handleRequestResponse(url, env, { parent, presenterKey }) {
   const { fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
   const handleFetchError = getFetchErrorHandler(env, parent, presenterKey);
@@ -252,7 +252,7 @@ function isValidParsedRequest(parsed) {
 
 function handleParsedResult(parsed, parent, env, presenterKey) {
   if (!isValidParsedRequest(parsed)) {return false;}
-  handleRequestResponse_new(parsed.request.url, env, { parent, presenterKey });
+  handleRequestResponse(parsed.request.url, env, { parent, presenterKey });
   return true;
 }
 
