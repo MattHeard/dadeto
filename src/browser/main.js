@@ -11,10 +11,22 @@ function getInteractiveComponents(win) {
   return win.interactiveComponents || [];
 }
 
+function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
+  return component => {
+    const article = getElement(component.id);
+    if (!article) {
+      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
+      return;
+    }
+    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
+    observer.observe(article);
+  };
+}
+
+
 import {
   initializeVisibleComponents,
-  makeCreateIntersectionObserver,
-  getComponentInitializer
+  makeCreateIntersectionObserver
 } from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {

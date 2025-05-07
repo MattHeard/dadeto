@@ -413,17 +413,7 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
 
 
 
-export function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
-  return component => {
-    const article = getElement(component.id);
-    if (!article) {
-      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
-      return;
-    }
-    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
-    observer.observe(article);
-  };
-}
+
 
 
 
