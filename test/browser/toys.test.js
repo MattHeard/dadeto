@@ -61,7 +61,7 @@ describe('toys', () => {
 
     it('calls importModule when entry is intersecting', () => {
     // --- WHEN ---
-      const result = observerCallback([entry], observer);
+      observerCallback([entry], observer);
 
       // --- THEN ---
       expect(importModule).toHaveBeenCalledWith(
@@ -73,7 +73,7 @@ describe('toys', () => {
 
     it('calls disconnectObserver when entry is intersecting', () => {
     // --- WHEN ---
-      const result = observerCallback([entry], observer);
+      observerCallback([entry], observer);
 
       // --- THEN ---
       expect(disconnectObserver).toHaveBeenCalledWith(observer);
