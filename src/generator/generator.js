@@ -4,12 +4,9 @@
  * @returns {string} - HTML string composed of paragraph elements.
  */
 function createParagraphs(content) {
-  if (Array.isArray(content))
-{
+  if (Array.isArray(content)) {
     return content.map(para => `<p>${para}</p>`).join('');
-}
-else
-{
+  } else {
     return `<p>${content}</p>`;
 }
 }
@@ -669,6 +666,7 @@ function createYouTubeContent(post) {
 
   return `<p class="${CLASS.VALUE}">${iframe}</p>`;
 }
+
 
 /**
  * Mapping for media sections.
