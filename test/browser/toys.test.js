@@ -22,8 +22,6 @@ describe('toys', () => {
   let entry;
   let observer;
   let modulePath;
-
-
   beforeEach(() => {
     modulePath = 'mod';
   });
@@ -32,8 +30,6 @@ describe('toys', () => {
     let observerCallback;
     let importModule;
     let disconnectObserver;
-
-
 
 
     beforeEach(() => {
@@ -89,8 +85,6 @@ describe('toys', () => {
 
   describe('makeCreateIntersectionObserver', () => {
     let createObserver;
-
-
     let expectedResult;
     let dom;
 
@@ -117,8 +111,6 @@ describe('toys', () => {
         contains: () => true
       };
       // Always provide loggers for moduleConfig compatibility
-
-
       env = { loggers: { logError: jest.fn() } };
       createObserver = makeCreateIntersectionObserver(dom, env);
       article = {};
@@ -167,8 +159,6 @@ describe('toys', () => {
       isIntersecting = () => false;
       dom.isIntersecting = isIntersecting;
 
-
-
       const createObserver = makeCreateIntersectionObserver(dom, env);
       createObserver(article, modulePath, functionName);
       // --- WHEN ---
@@ -181,8 +171,6 @@ describe('toys', () => {
     // --- GIVEN ---
       isIntersecting = () => false;
       dom.isIntersecting = isIntersecting;
-
-
 
       const createObserver = makeCreateIntersectionObserver(dom, env);
       createObserver(article, modulePath, functionName);
@@ -213,8 +201,6 @@ describe('toys', () => {
     });
   });
 
-
-
   describe('enableInteractiveControls', () => {
     let inputElement;
     let submitButton;
@@ -237,8 +223,6 @@ describe('toys', () => {
         classList: {},
         appendChild: jest.fn() // Not needed, but completes the mock
       };
-
-
 
       // Reset enable and setTextContent mocks for each test
       enable = jest.fn();
@@ -308,8 +292,6 @@ describe('toys', () => {
       const querySelector = (el, selector) => {
         return selectorMap.get(selector) || {};
       };
-
-
       const dom = {
         removeAllChildren: jest.fn(),
         querySelector,
@@ -345,8 +327,6 @@ describe('toys', () => {
       expect(dom.appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
     });
   });
-
-
   describe('getDeepStateCopy', () => {
     it('returns a deep copy of the global state object', () => {
       const globalState = {
@@ -370,8 +350,6 @@ describe('toys', () => {
       expect(globalState.level1.level2.value).toBe('original');
     });
   });
-
-
   describe('createHandleSubmit', () => {
     let fetchFn;
     let inputElement;
@@ -458,8 +436,6 @@ describe('toys', () => {
       processingFunction = jest.fn(() => {
         throw new Error('processing error');
       });
-
-
       const env = {
         globalState: {},
         createEnv: () => ({}),
@@ -545,8 +521,6 @@ describe('toys', () => {
 
     it('attaches click and keypress listeners with expected arguments', () => {
       const article = {};
-
-
       const globalState = {};
       const createEnvFn = () => ({});
       const errorFn = jest.fn();
