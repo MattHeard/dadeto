@@ -7,14 +7,18 @@
  * @param {object} dom - An object with createElement and setTextContent methods.
  * @returns {HTMLElement} The <pre> element with the provided text content.
  */
+function isBracketedListString(str) {
+  return (
+    typeof str === 'string' &&
+    str.startsWith('[') &&
+    str.endsWith(']')
+  );
+}
+
 export function createPreElement(inputString, dom) {
   const pre = dom.createElement('pre');
   let content = inputString;
-  if (
-    typeof inputString === 'string' &&
-    inputString.startsWith('[') &&
-    inputString.endsWith(']')
-  ) {
+  if (isBracketedListString(inputString)) {
 
     // Remove brackets and split by comma
     const inner = inputString.slice(1, -1).trim();
