@@ -377,7 +377,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
 
   const presenterKey = 'text';
   // Update message to show JS is running, replacing <p.output> with paragraph
-  const initialisingWarning = setTextContent('Initialising...', dom, outputParent, presenterKey);
+  const initialisingWarning = setTextContent_new({ content: 'Initialising...', presenterKey }, dom, outputParent);
 
   // Create the submit handler using the function from this module
   const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
