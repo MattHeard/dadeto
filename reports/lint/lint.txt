@@ -1,9 +1,9 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
    33:1  warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3         max-params
-  204:1  warning  Function 'getFetchErrorHandler' has too many parameters (4). Maximum allowed is 3   max-params
-  212:1  warning  Function 'handleRequestResponse' has too many parameters (4). Maximum allowed is 3  max-params
-  240:1  warning  Function 'handleParsedResult' has too many parameters (4). Maximum allowed is 3     max-params
+  205:1  warning  Function 'getFetchErrorHandler' has too many parameters (4). Maximum allowed is 3   max-params
+  213:1  warning  Function 'handleRequestResponse' has too many parameters (4). Maximum allowed is 3  max-params
+  241:1  warning  Function 'handleParsedResult' has too many parameters (4). Maximum allowed is 3     max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/pre.js
   10:8  warning  Function 'createPreElement' has a complexity of 5. Maximum allowed is 2  complexity

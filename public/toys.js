@@ -161,11 +161,12 @@ export function makeObserverCallback(moduleInfo, env, dom) {
  * @returns {Function} Function to create an IntersectionObserver
  */
 export function makeCreateIntersectionObserver(dom, env) {
-  return function createIntersectionObserver(article, modulePath, functionName) {
+  return (article, modulePath, functionName) => {
     const moduleInfo = { article, modulePath, functionName };
     const observerCallback = makeObserverCallback(moduleInfo, env, dom);
     return dom.makeIntersectionObserver(observerCallback);
   };
+
 }
 
 /**
