@@ -7,12 +7,12 @@
  * @param {object} dom - An object with createElement and setTextContent methods.
  * @returns {HTMLElement} The <pre> element with the provided text content.
  */
+function isSurroundedByBrackets(str) {
+  return str.startsWith('[') && str.endsWith(']');
+}
+
 function isBracketedListString(str) {
-  return (
-    typeof str === 'string' &&
-    str.startsWith('[') &&
-    str.endsWith(']')
-  );
+  return typeof str === 'string' && isSurroundedByBrackets(str);
 }
 
 export function createPreElement(inputString, dom) {
