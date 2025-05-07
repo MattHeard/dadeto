@@ -8,4 +8,7 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/pre.js
   10:8  warning  Function 'createPreElement' has a complexity of 5. Maximum allowed is 2  complexity
 
-✖ 5 problems (0 errors, 5 warnings)
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
+  191:67  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
+
+✖ 6 problems (0 errors, 6 warnings)

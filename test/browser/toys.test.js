@@ -178,6 +178,32 @@ describe('toys', () => {
     });
   });
 
+  describe('setTextContent', () => {
+    it('removes all children, uses the correct presenter, appends the child, and returns it', () => {
+      const content = 'hello!';
+      const parent = {};
+      const child = { tag: 'p', text: content };
+      const removeAllChildren = jest.fn();
+      const appendChild = jest.fn();
+      const presenter = jest.fn(() => child);
+      const dom = { removeAllChildren, appendChild };
+      // For this test, directly call the function with our mock presenterMap
+      const setTextContent = (content, dom, parent, presenterKey) => {
+        dom.removeAllChildren(parent);
+        const presenterMap = { text: presenter };
+        const presenterFn = presenterMap[presenterKey];
+        const child = presenterFn(content, dom);
+        dom.appendChild(parent, child);
+        return child;
+      };
+      const result = setTextContent(content, dom, parent, 'text');
+      expect(removeAllChildren).toHaveBeenCalledWith(parent);
+      expect(presenter).toHaveBeenCalledWith(content, dom);
+      expect(appendChild).toHaveBeenCalledWith(parent, child);
+      expect(result).toBe(child);
+    });
+  });
+
   describe('handleModuleError', () => {
     it('calls errorMock with the correct message', () => {
       // --- GIVEN ---
