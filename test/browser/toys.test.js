@@ -222,13 +222,12 @@ describe('toys', () => {
         setTextContent,
         removeWarning,
         enable,
-        contains
+        contains,
+        removeAllChildren: jest.fn(),
+        createElement: jest.fn(() => ({})),
+        appendChild: jest.fn(),
+        removeChild: jest.fn()
       };
-      dom.removeAllChildren = jest.fn();
-      dom.createElement = jest.fn(() => ({}));
-      dom.appendChild = jest.fn();
-      removeChild = jest.fn();
-      dom.removeChild = removeChild;
       elements = { inputElement, submitButton, parent: outputParentElement };
     });
 
