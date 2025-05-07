@@ -26,7 +26,7 @@ describe('toys', () => {
   describe('makeObserverCallback', () => {
     let importModule;
     let disconnectObserver;
-    let f;
+    let observerCallback;
 
 
 
@@ -86,7 +86,7 @@ describe('toys', () => {
 
     let expectedResult;
     let dom;
-    let f;
+    let observerCallback;
     let env;
     let article;
 
@@ -113,7 +113,7 @@ describe('toys', () => {
 
 
       env = { loggers: { logError: jest.fn() } };
-      f = makeCreateIntersectionObserver(dom, env);
+      observerCallback = makeCreateIntersectionObserver(dom, env);
       article = {};
       modulePath = 'mod';
       functionName = 'fn';
@@ -123,7 +123,7 @@ describe('toys', () => {
 
     it('returns the result of makeIntersectionObserver', () => {
     // --- WHEN ---
-      const result = f(article, modulePath, functionName);
+      const result = observerCallback(article, modulePath, functionName);
 
       // --- THEN ---
       expect(result).toBe(expectedResult);
@@ -131,7 +131,7 @@ describe('toys', () => {
 
     it('calls makeIntersectionObserver with a callback', () => {
     // --- WHEN ---
-      f(article, modulePath, functionName);
+      observerCallback(article, modulePath, functionName);
 
       // --- THEN ---
       expect(dom.makeIntersectionObserver).toHaveBeenCalledWith(expect.any(Function));
@@ -139,7 +139,7 @@ describe('toys', () => {
 
     it('calls importModule when entry is intersecting', () => {
     // --- GIVEN ---
-      f(article, modulePath, functionName);
+      observerCallback(article, modulePath, functionName);
       // --- WHEN ---
       g([entry], observer);
       // --- THEN ---
@@ -148,7 +148,7 @@ describe('toys', () => {
 
     it('calls disconnectObserver when entry is intersecting', () => {
     // --- GIVEN ---
-      f(article, modulePath, functionName);
+      observerCallback(article, modulePath, functionName);
       // --- WHEN ---
       g([entry], observer);
       // --- THEN ---
@@ -162,8 +162,8 @@ describe('toys', () => {
 
 
 
-      const f = makeCreateIntersectionObserver(dom, env);
-      f(article, modulePath, functionName);
+      const observerCallback = makeCreateIntersectionObserver(dom, env);
+      observerCallback(article, modulePath, functionName);
       // --- WHEN ---
       g([entry], observer);
       // --- THEN ---
@@ -177,8 +177,8 @@ describe('toys', () => {
 
 
 
-      const f = makeCreateIntersectionObserver(dom, env);
-      f(article, modulePath, functionName);
+      const observerCallback = makeCreateIntersectionObserver(dom, env);
+      observerCallback(article, modulePath, functionName);
       // --- WHEN ---
       g([entry], observer);
       // --- THEN ---
