@@ -8,7 +8,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/pre.js
   10:8  warning  Function 'createPreElement' has a complexity of 5. Maximum allowed is 2  complexity
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
-  24:7  warning  'article' is defined but never used  no-unused-vars
-
-✖ 6 problems (0 errors, 6 warnings)
+✖ 5 problems (0 errors, 5 warnings)

@@ -25,6 +25,7 @@ describe('toys', () => {
 
   beforeEach(() => {
     modulePath = 'mod';
+    article = {};
   });
 
   describe('makeObserverCallback', () => {
@@ -82,7 +83,6 @@ describe('toys', () => {
     let expectedResult;
     let dom;
     let env;
-    let article;
     let functionName;
     let intersectionCallback;
     let isIntersecting;
