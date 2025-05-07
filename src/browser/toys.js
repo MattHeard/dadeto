@@ -211,7 +211,8 @@ function makeDisplayBody(dom, parent, presenterKey) {
   };
 }
 
-function getFetchErrorHandler(dom, parent, errorFn, presenterKey) {
+function getFetchErrorHandler(env, parent, presenterKey) {
+  const { dom, errorFn } = env;
   return error => {
     errorFn('Error fetching request URL:', error);
     setTextContent({ content: 'Error fetching URL: ' + error.message, presenterKey }, dom, parent);
@@ -222,7 +223,7 @@ function getFetchErrorHandler(dom, parent, errorFn, presenterKey) {
 function handleRequestResponse(url, parent, env, presenterKey) {
   const { errorFn, fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
-  const handleFetchError = getFetchErrorHandler(dom, parent, errorFn, presenterKey);
+  const handleFetchError = getFetchErrorHandler(env, parent, presenterKey);
   fetchFn(url)
     .then(getText)
     .then(displayBody)
