@@ -42,7 +42,8 @@ describe('makeObserverCallback', () => {
       contains
     };
 
-    const loggers = { logError: jest.fn() };
+    const logError = jest.fn();
+    const loggers = { logError };
     const env = { loggers };
     modulePath = 'mod';
     const article = 'art';
