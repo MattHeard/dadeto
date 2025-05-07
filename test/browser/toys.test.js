@@ -152,12 +152,13 @@ describe('toys', () => {
         intersectionCallback = fn;
         return expectedResult;
       });
+      const isIntersecting = () => false;
       const dom = {
         makeIntersectionObserver,
         importModule: jest.fn(),
         disconnectObserver: jest.fn(),
         error: jest.fn(),
-        isIntersecting: () => false,
+        isIntersecting,
         contains: () => true
       };
       const createObserver = makeCreateIntersectionObserver(dom, env);
