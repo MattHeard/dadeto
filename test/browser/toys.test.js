@@ -147,12 +147,13 @@ describe('toys', () => {
 
     it('does not call importModule when not intersecting', () => {
       // --- GIVEN ---
-      const makeIntersectionObserver = jest.fn((fn) => {
-        intersectionCallback = fn;
-        return expectedResult;
-      });
+      // Use the existing makeIntersectionObserver from beforeEach, but redefine dom with isIntersecting returning false
+      let localIntersectionCallback;
       const domWithFalseIntersect = {
-        makeIntersectionObserver,
+        makeIntersectionObserver: jest.fn((fn) => {
+          localIntersectionCallback = fn;
+          return expectedResult;
+        }),
         importModule: jest.fn(),
         disconnectObserver: jest.fn(),
         error: jest.fn(),
@@ -162,7 +163,7 @@ describe('toys', () => {
       const createObserver = makeCreateIntersectionObserver(domWithFalseIntersect, env);
       createObserver(article, modulePath, functionName);
       // --- WHEN ---
-      intersectionCallback([entry], observer);
+      localIntersectionCallback([entry], observer);
       // --- THEN ---
       expect(domWithFalseIntersect.importModule).not.toHaveBeenCalled();
     });
