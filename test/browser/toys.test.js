@@ -216,11 +216,12 @@ describe('toys', () => {
       enable = jest.fn();
       setTextContent = jest.fn();
       removeWarning = jest.fn();
+      const contains = () => true;
       dom = {
         setTextContent,
         removeWarning,
         enable,
-        contains: () => true
+        contains
       };
       dom.removeAllChildren = jest.fn();
       dom.createElement = jest.fn(() => ({}));
