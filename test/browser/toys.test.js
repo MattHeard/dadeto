@@ -32,7 +32,14 @@ describe('makeObserverCallback', () => {
     const isIntersecting = jest.fn(() => true);
     const error = jest.fn();
     const dom = {
-      removeAllChildren: jest.fn(), importModule, disconnectObserver, isIntersecting, error, contains: () => true };
+      removeAllChildren: jest.fn(),
+      importModule,
+      disconnectObserver,
+      isIntersecting,
+      error,
+      contains: () => true
+    };
+
     const env = { loggers: { logError: jest.fn() } };
     modulePath = 'mod';
     const article = 'art';
