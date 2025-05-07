@@ -250,7 +250,7 @@ function isValidParsedRequest(parsed) {
   return parsedRequestPredicates.every(fn => fn(parsed));
 }
 
-function handleParsedResult(parsed, parent, env, presenterKey) {
+function handleParsedResult(parsed, env, { parent, presenterKey }) {
   if (!isValidParsedRequest(parsed)) {return false;}
   handleRequestResponse(parsed.request.url, env, { parent, presenterKey });
   return true;
@@ -307,7 +307,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const result = processingFunction(inputValue, toyEnv);
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
-  if (!handleParsedResult(parsed, parent, env, presenterKey)) {
+  if (!handleParsedResult(parsed, env, { parent, presenterKey })) {
     setTextContent({ content: result, presenterKey }, dom, parent);
   }
 }
