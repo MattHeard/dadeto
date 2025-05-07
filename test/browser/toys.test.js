@@ -240,8 +240,10 @@ describe('toys', () => {
     });
 
     it('enables input and submit button', () => {
+      // --- GIVEN ---
+      const presenterKey = 'text';
       // --- WHEN ---
-      enableInteractiveControls(elements, dom, 'text');
+      enableInteractiveControls(elements, dom, presenterKey);
       // --- THEN ---
       expect(enable).toHaveBeenCalledWith(inputElement);
       expect(enable).toHaveBeenCalledWith(submitButton);
