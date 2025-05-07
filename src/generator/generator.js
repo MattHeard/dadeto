@@ -4,11 +4,14 @@
  * @returns {string} - HTML string composed of paragraph elements.
  */
 function createParagraphs(content) {
-  if (Array.isArray(content)) {
+  if (Array.isArray(content))
+{
     return content.map(para => `<p>${para}</p>`).join('');
-  } else {
+}
+else
+{
     return `<p>${content}</p>`;
-  }
+}
 }
 
 /**
@@ -393,7 +396,11 @@ function isTextContent(content) {
  * @returns {Object} - Normalized content object.
  */
 function normalizeContentItem(content) {
-  return isTextContent(content) ? { type: 'text', content } : content;
+  if (isTextContent(content)) {
+    return { type: 'text', content };
+  } else {
+    return content;
+  }
 }
 
 /**
@@ -433,7 +440,10 @@ function renderAsParagraph(content) {
  */
 function createContentSectionItem(content, isFirst) {
   const normalizedContent = normalizeContentItem(content);
-  const key = isFirst ? 'text' : '';
+  let key = '';
+  if (isFirst) {
+    key = 'text';
+  }
   const keyDiv = createDiv(CLASS.KEY, key);
   const valueDiv = renderValueDiv(normalizedContent);
 
@@ -659,7 +669,6 @@ function createYouTubeContent(post) {
 
   return `<p class="${CLASS.VALUE}">${iframe}</p>`;
 }
-
 
 /**
  * Mapping for media sections.
