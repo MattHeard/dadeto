@@ -19,14 +19,15 @@ import {
 } from '../../src/browser/toys.js';
 
 describe('toys', () => {
-  let entry; // Moved up for use in nested describes
+  let entry;
+  let observer; // Moved up for use in nested describes
 
   describe('makeObserverCallback', () => {
     let importModule;
     let disconnectObserver;
     let f;
     let modulePath;
-    let observer;
+
 
     beforeEach(() => {
       importModule = jest.fn();
@@ -81,7 +82,7 @@ describe('toys', () => {
 
   describe('makeCreateIntersectionObserver', () => {
 
-    let observer;
+
     let expectedResult;
     let dom;
     let f;
@@ -675,7 +676,7 @@ describe('toys', () => {
     let getInteractiveComponents;
 
     let article;
-    let observer;
+
     let id;
     let modulePath;
     let functionName;
