@@ -105,7 +105,6 @@ describe('toys', () => {
       // Always provide loggers for moduleConfig compatibility
       env = { loggers: { logError: jest.fn() } };
       createObserver = makeCreateIntersectionObserver(dom, env);
-      article = {};
       functionName = 'fn';
       entry = {};
       observer = {};
