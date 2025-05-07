@@ -22,13 +22,14 @@ describe('toys', () => {
   let entry;
   let observer;
   let modulePath;
-  let observerCallback; // Moved up for use in nested describes
+
 
   beforeEach(() => {
     modulePath = 'mod';
   });
 
   describe('makeObserverCallback', () => {
+    let observerCallback;
     let importModule;
     let disconnectObserver;
 
@@ -87,6 +88,7 @@ describe('toys', () => {
   });
 
   describe('makeCreateIntersectionObserver', () => {
+    let createObserver;
 
 
     let expectedResult;
@@ -118,7 +120,7 @@ describe('toys', () => {
 
 
       env = { loggers: { logError: jest.fn() } };
-      observerCallback = makeCreateIntersectionObserver(dom, env);
+      createObserver = makeCreateIntersectionObserver(dom, env);
       article = {};
 
       functionName = 'fn';
@@ -128,7 +130,7 @@ describe('toys', () => {
 
     it('returns the result of makeIntersectionObserver', () => {
     // --- WHEN ---
-      const result = observerCallback(article, modulePath, functionName);
+      const result = createObserver(article, modulePath, functionName);
 
       // --- THEN ---
       expect(result).toBe(expectedResult);
@@ -136,7 +138,7 @@ describe('toys', () => {
 
     it('calls makeIntersectionObserver with a callback', () => {
     // --- WHEN ---
-      observerCallback(article, modulePath, functionName);
+      createObserver(article, modulePath, functionName);
 
       // --- THEN ---
       expect(dom.makeIntersectionObserver).toHaveBeenCalledWith(expect.any(Function));
@@ -144,7 +146,7 @@ describe('toys', () => {
 
     it('calls importModule when entry is intersecting', () => {
     // --- GIVEN ---
-      observerCallback(article, modulePath, functionName);
+      createObserver(article, modulePath, functionName);
       // --- WHEN ---
       intersectionCallback([entry], observer);
       // --- THEN ---
@@ -153,7 +155,7 @@ describe('toys', () => {
 
     it('calls disconnectObserver when entry is intersecting', () => {
     // --- GIVEN ---
-      observerCallback(article, modulePath, functionName);
+      createObserver(article, modulePath, functionName);
       // --- WHEN ---
       intersectionCallback([entry], observer);
       // --- THEN ---
