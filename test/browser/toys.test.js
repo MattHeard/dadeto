@@ -508,7 +508,6 @@ describe('toys', () => {
     });
 
     it('attaches click and keypress listeners with expected arguments', () => {
-      const article = {};
       const globalState = {};
       const createEnvFn = () => ({});
       const errorFn = jest.fn();
@@ -566,7 +565,6 @@ describe('toys', () => {
     });
 
     it('does not call handleSubmit when a non-Enter key is pressed', () => {
-      const article = {};
       const inputElement = { value: 'test', disabled: false };
       const submitButton = { disabled: false };
       const outputElement = {
@@ -637,7 +635,6 @@ describe('toys', () => {
     let createIntersectionObserver;
     let hasNoInteractiveComponents;
     let getInteractiveComponents;
-    let article;
     let id;
     let functionName;
     let component;
@@ -653,7 +650,6 @@ describe('toys', () => {
       createIntersectionObserver = jest.fn();
       hasNoInteractiveComponents = () => false;
       getInteractiveComponents = () => interactiveComponents;
-      article = {};
       observer = { observe: jest.fn() };
       id = 'test-id';
       modulePath = 'path/to/module';
