@@ -24,6 +24,10 @@ describe('toys', () => {
   let modulePath;
   let observerCallback; // Moved up for use in nested describes
 
+  beforeEach(() => {
+    modulePath = 'mod';
+  });
+
   describe('makeObserverCallback', () => {
     let importModule;
     let disconnectObserver;
@@ -50,7 +54,7 @@ describe('toys', () => {
       const logError = jest.fn();
       const loggers = { logError };
       const env = { loggers };
-      modulePath = 'mod';
+
       const article = 'art';
       const functionName = 'fn';
       const moduleInfo = { modulePath, article, functionName };
@@ -116,7 +120,7 @@ describe('toys', () => {
       env = { loggers: { logError: jest.fn() } };
       observerCallback = makeCreateIntersectionObserver(dom, env);
       article = {};
-      modulePath = 'mod';
+
       functionName = 'fn';
       entry = {};
       observer = {};
