@@ -31,8 +31,9 @@ describe('makeObserverCallback', () => {
     disconnectObserver = jest.fn();
     const isIntersecting = jest.fn(() => true);
     const error = jest.fn();
+    const removeAllChildren = jest.fn();
     const dom = {
-      removeAllChildren: jest.fn(),
+      removeAllChildren,
       importModule,
       disconnectObserver,
       isIntersecting,
