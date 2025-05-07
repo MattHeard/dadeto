@@ -185,7 +185,7 @@ describe('toys', () => {
       const modulePath = 'toyModule';
       const handler = handleModuleError(modulePath, errorMock);
       const error = new Error('fail');
-      const expectedMessage = 'Error loading module ' + modulePath + ':';
+      const expectedMessage = 'Error loading module toyModule:';
       // --- WHEN ---
       handler(error);
       // --- THEN ---
