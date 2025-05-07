@@ -221,7 +221,7 @@ function getFetchErrorHandler(env, parent, presenterKey) {
 }
 
 function handleRequestResponse_new(url, env, { parent, presenterKey }) {
-  const { errorFn, fetchFn, dom } = env;
+  const { fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
   const handleFetchError = getFetchErrorHandler(env, parent, presenterKey);
   fetchFn(url)
