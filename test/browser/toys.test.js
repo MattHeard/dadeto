@@ -253,7 +253,8 @@ describe('toys', () => {
       // --- GIVEN ---
       const expectedText = 'Ready for input';
       const paragraph = {};
-      createElement.mockReturnValueOnce(paragraph);
+      const createElement = jest.fn(() => paragraph);
+      dom.createElement = createElement;
       // --- WHEN ---
       enableInteractiveControls(elements, dom, 'text');
       // --- THEN ---
