@@ -246,9 +246,9 @@ describe('toys', () => {
       const expectedText = 'Ready for input';
       const appendChild = jest.fn();
       dom.appendChild = appendChild;
-      dom.createElement = jest.fn(() => ({}));
       const paragraph = {};
-      dom.createElement = jest.fn(() => paragraph);
+      const createElement = jest.fn(() => paragraph);
+      dom.createElement = createElement;
       // --- WHEN ---
       enableInteractiveControls(elements, dom, 'text');
       // --- THEN ---
