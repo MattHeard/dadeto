@@ -1,6 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { get } from '../../../src/toys/2025-03-29/get.js';
-import { traversePathSegments } from '../../../src/toys/2025-03-29/get.js';
 
 describe('get function with path traversal', () => {
   let mockGetData;
