@@ -32,13 +32,14 @@ describe('makeObserverCallback', () => {
     const isIntersecting = jest.fn(() => true);
     const error = jest.fn();
     const removeAllChildren = jest.fn();
+    const contains = () => true;
     const dom = {
       removeAllChildren,
       importModule,
       disconnectObserver,
       isIntersecting,
       error,
-      contains: () => true
+      contains
     };
 
     const env = { loggers: { logError: jest.fn() } };
