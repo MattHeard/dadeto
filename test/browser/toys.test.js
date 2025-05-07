@@ -149,11 +149,12 @@ describe('toys', () => {
       // --- GIVEN ---
       // Use the existing makeIntersectionObserver from beforeEach, but redefine dom with isIntersecting returning false
       let localIntersectionCallback;
+      const makeIntersectionObserver = jest.fn((fn) => {
+        localIntersectionCallback = fn;
+        return expectedResult;
+      });
       const domWithFalseIntersect = {
-        makeIntersectionObserver: jest.fn((fn) => {
-          localIntersectionCallback = fn;
-          return expectedResult;
-        }),
+        makeIntersectionObserver,
         importModule: jest.fn(),
         disconnectObserver: jest.fn(),
         error: jest.fn(),
