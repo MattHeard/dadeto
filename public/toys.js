@@ -219,7 +219,7 @@ function getText(response) {
 
 function makeDisplayBody(dom, parent, presenterKey) {
   return body => {
-    setTextContent_new({ content: body, presenterKey }, dom, parent);
+    setTextContent({ content: body, presenterKey }, dom, parent);
   };
 }
 
