@@ -209,7 +209,7 @@ export function enableInteractiveControls(elements, dom, presenterKey) {
   const readyMessage = 'Ready for input';
   dom.enable(inputElement);
   dom.enable(submitButton);
-  setTextContent_new({ content: readyMessage, presenterKey }, dom, parent);
+  setTextContent({ content: readyMessage, presenterKey }, dom, parent);
   dom.removeWarning(parent);
 }
 
@@ -226,7 +226,7 @@ function makeDisplayBody(dom, parent, presenterKey) {
 function getFetchErrorHandler(dom, parent, errorFn, presenterKey) {
   return error => {
     errorFn('Error fetching request URL:', error);
-    setTextContent_new({ content: 'Error fetching URL: ' + error.message, presenterKey }, dom, parent);
+    setTextContent({ content: 'Error fetching URL: ' + error.message, presenterKey }, dom, parent);
     dom.addWarning(parent);
   };
 }
@@ -317,7 +317,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
   if (!handleParsedResult(parsed, parent, env, presenterKey)) {
-    setTextContent_new({ content: result, presenterKey }, dom, parent);
+    setTextContent({ content: result, presenterKey }, dom, parent);
   }
 }
 

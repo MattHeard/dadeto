@@ -363,8 +363,8 @@ FN:400,(anonymous_44)
 FN:414,initializeVisibleComponents
 FN:444,(anonymous_46)
 FNF:47
-FNH:46
-FNDA:0,setTextContent
+FNH:47
+FNDA:9,setTextContent
 FNDA:15,setTextContent_new
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_3)
@@ -412,7 +412,7 @@ FNDA:2,(anonymous_44)
 FNDA:3,initializeVisibleComponents
 FNDA:1,(anonymous_46)
 DA:14,1
-DA:43,0
+DA:43,9
 DA:56,15
 DA:57,15
 DA:58,15
@@ -532,7 +532,7 @@ DA:423,2
 DA:424,2
 DA:444,1
 LF:120
-LH:119
+LH:120
 BRDA:141,0,0,4
 BRDA:141,0,1,2
 BRDA:245,1,0,4
