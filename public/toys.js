@@ -30,10 +30,6 @@ const presentersMap = {
  * @param {string} presenterKey - The presenter key to use (e.g., 'text', 'pre').
  * @returns {HTMLElement} The created child element.
  */
-function setTextContent(content, dom, parent, presenterKey) {
-  return setTextContent_new({ content, presenterKey }, dom, parent);
-}
-
 /**
  * Sets text content in a parent element using an output object and separate dom and parent arguments.
  * @param {Object} output - Output object containing content and presenterKey.
