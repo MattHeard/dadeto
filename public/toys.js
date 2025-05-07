@@ -409,9 +409,7 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
  */
 
 
-export function getInteractiveComponentCount(win) {
-  return win.interactiveComponents ? win.interactiveComponents.length : 0;
-}
+
 
 export function getInteractiveComponents(win) {
   return win.interactiveComponents || [];

@@ -3,11 +3,14 @@ function hasNoInteractiveComponents(win) {
   return !win.interactiveComponents || win.interactiveComponents.length === 0;
 }
 
+function getInteractiveComponentCount(win) {
+  return win.interactiveComponents ? win.interactiveComponents.length : 0;
+}
+
 import {
   initializeVisibleComponents,
   makeCreateIntersectionObserver,
   getInteractiveComponents,
-  getInteractiveComponentCount,
   getComponentInitializer
 } from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';
