@@ -211,7 +211,7 @@ export function enableInteractiveControls(elements, dom, presenterKey) {
   const readyMessage = 'Ready for input';
   dom.enable(inputElement);
   dom.enable(submitButton);
-  setTextContent(readyMessage, dom, parent, presenterKey);
+  setTextContent_new({ content: readyMessage, presenterKey }, dom, parent);
   dom.removeWarning(parent);
 }
 
@@ -221,14 +221,14 @@ function getText(response) {
 
 function makeDisplayBody(dom, parent, presenterKey) {
   return body => {
-    setTextContent(body, dom, parent, presenterKey);
+    setTextContent_new({ content: body, presenterKey }, dom, parent);
   };
 }
 
 function getFetchErrorHandler(dom, parent, errorFn, presenterKey) {
   return error => {
     errorFn('Error fetching request URL:', error);
-    setTextContent('Error fetching URL: ' + error.message, dom, parent, presenterKey);
+    setTextContent_new({ content: 'Error fetching URL: ' + error.message, presenterKey }, dom, parent);
     dom.addWarning(parent);
   };
 }
