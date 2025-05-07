@@ -241,7 +241,6 @@ describe('toys', () => {
     it('sets output textContent to "Ready for input" using parent branch', () => {
       // --- GIVEN ---
       const expectedText = 'Ready for input';
-      const parent = {};
       const removeChild = jest.fn();
       const appendChild = jest.fn();
       dom.removeChild = removeChild;
@@ -251,16 +250,16 @@ describe('toys', () => {
       const paragraph = {};
       dom.createElement = jest.fn(() => paragraph);
       // --- WHEN ---
-      enableInteractiveControls({ inputElement, submitButton, parent }, dom, 'text');
+      enableInteractiveControls(elements, dom, 'text');
       // --- THEN ---
-      expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
-      expect(appendChild).toHaveBeenCalledWith(parent, paragraph);
+      expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
+      expect(appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
       expect(setTextContent).toHaveBeenCalledWith(paragraph, expectedText);
     });
 
     it('removes "warning" class from parent element', () => {
       // --- WHEN ---
-      enableInteractiveControls({ inputElement, submitButton, parent: outputParentElement }, dom, 'text');
+      enableInteractiveControls(elements, dom, 'text');
       // --- THEN ---
       expect(removeWarning).toHaveBeenCalledWith(outputParentElement);
     });
