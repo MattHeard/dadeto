@@ -181,15 +181,15 @@ describe('toys', () => {
   describe('handleModuleError', () => {
     it('calls errorMock with the correct message', () => {
       // --- GIVEN ---
-      const errorMock = jest.fn();
+      const logError = jest.fn();
       const modulePath = 'toyModule';
-      const handler = handleModuleError(modulePath, errorMock);
+      const handler = handleModuleError(modulePath, logError);
       const error = new Error('fail');
       const expectedMessage = 'Error loading module toyModule:';
       // --- WHEN ---
       handler(error);
       // --- THEN ---
-      expect(errorMock).toHaveBeenCalledWith(
+      expect(logError).toHaveBeenCalledWith(
         expectedMessage,
         error
       );
