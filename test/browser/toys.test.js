@@ -18,6 +18,8 @@ import {
   handleModuleError
 } from '../../src/browser/toys.js';
 
+describe('toys', () => {
+
 describe('makeObserverCallback', () => {
   let importModule;
   let disconnectObserver;
@@ -787,4 +789,6 @@ describe('initializeVisibleComponents', () => {
     expect(initializeComponent.mock.calls[2][0]).toEqual(componentC);
     expect(initializeComponent.mock.calls[3][0]).toEqual(componentD);
   });
+
+});
 });
