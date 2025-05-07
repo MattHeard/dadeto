@@ -180,7 +180,7 @@ test('detects tie game with no remaining moves', () => {
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
-    expect(output.moves).toEqual(input.moves); // board is full, no move added
+  expect(output.moves).toEqual(input.moves); // board is full, no move added
 });
 
 test('selects optimal move in mid-game scenario', () => {

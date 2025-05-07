@@ -1,9 +1,4 @@
 
-/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  170:7  warning  'article' is never reassigned. Use 'const' instead        prefer-const
-  171:7  warning  'postId' is never reassigned. Use 'const' instead         prefer-const
-  172:7  warning  'selectedValue' is never reassigned. Use 'const' instead  prefer-const
-
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
    33:1  warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3         max-params
   204:1  warning  Function 'getFetchErrorHandler' has too many parameters (4). Maximum allowed is 3   max-params
@@ -13,5 +8,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/pre.js
   10:8  warning  Function 'createPreElement' has a complexity of 5. Maximum allowed is 2  complexity
 
-✖ 8 problems (0 errors, 8 warnings)
-  0 errors and 3 warnings potentially fixable with the `--fix` option.
+✖ 5 problems (0 errors, 5 warnings)

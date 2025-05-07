@@ -29,6 +29,7 @@ export default [
       "dot-notation": "warn",
       "max-depth": ["warn", 4],
       "max-params": ["warn", 3],
+      "indent": ["warn", 2],
       // Add other project-specific rules here if needed
     }
   },

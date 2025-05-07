@@ -24,8 +24,8 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
   test('should call setData with merged JSON when temporary exists', () => {
     // Modify initialData for this test case before freezing (or create a new one)
     initialData = Object.freeze({
-        existing: 'value',
-        temporary: { initial: 'data' }
+      existing: 'value',
+      temporary: { initial: 'data' }
     });
     mockGetData.mockReturnValue(initialData);
 
@@ -46,7 +46,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(mockSetData.mock.calls[0][0]).not.toBe(initialData);
     // Ensure the temporary object within is also a new reference
     if(initialData.temporary) {
-        expect(mockSetData.mock.calls[0][0].temporary).not.toBe(initialData.temporary);
+      expect(mockSetData.mock.calls[0][0].temporary).not.toBe(initialData.temporary);
     }
   });
 
@@ -54,8 +54,8 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     // initialData already lacks temporary from beforeEach
     const inputJson = JSON.stringify({ firstKey: 123 });
     const expectedFinalData = {
-        existing: 'value',
-        temporary: { firstKey: 123 }
+      existing: 'value',
+      temporary: { firstKey: 123 }
     };
 
     const result = setTemporary(inputJson, env);
@@ -128,12 +128,12 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
   });
 
   test('should return error if setData throws an error', () => {
-      const errorMessage = 'Failed to save data';
-      mockSetData.mockImplementation(() => { throw new Error(errorMessage); });
-      const inputJson = JSON.stringify({ key: 'value' });
-      expect(setTemporary(inputJson, env)).toBe(`Error updating temporary data: ${errorMessage}`);
-      expect(mockGetData).toHaveBeenCalledTimes(1); // getData was called
-      expect(mockSetData).toHaveBeenCalledTimes(1); // setData was called (and threw)
+    const errorMessage = 'Failed to save data';
+    mockSetData.mockImplementation(() => { throw new Error(errorMessage); });
+    const inputJson = JSON.stringify({ key: 'value' });
+    expect(setTemporary(inputJson, env)).toBe(`Error updating temporary data: ${errorMessage}`);
+    expect(mockGetData).toHaveBeenCalledTimes(1); // getData was called
+    expect(mockSetData).toHaveBeenCalledTimes(1); // setData was called (and threw)
   });
 
   test('should deep merge nested objects within temporary', () => {
@@ -208,23 +208,23 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
   });
 
   test('should handle merging onto an empty initial temporary object', () => {
-      initialData = Object.freeze({ existing: 'value', temporary: {} });
-      mockGetData.mockReturnValue(initialData);
-      const inputJson = JSON.stringify({ level1: { a: 1 } });
-      const expectedTemporary = { level1: { a: 1 } };
+    initialData = Object.freeze({ existing: 'value', temporary: {} });
+    mockGetData.mockReturnValue(initialData);
+    const inputJson = JSON.stringify({ level1: { a: 1 } });
+    const expectedTemporary = { level1: { a: 1 } };
 
-      setTemporary(inputJson, env);
-      expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining({ temporary: expectedTemporary }));
+    setTemporary(inputJson, env);
+    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining({ temporary: expectedTemporary }));
   });
 
   test('should handle merging onto a non-existent initial temporary object', () => {
-      initialData = Object.freeze({ existing: 'value' }); // No temporary key
-      mockGetData.mockReturnValue(initialData);
-      const inputJson = JSON.stringify({ level1: { a: 1 } });
-      const expectedTemporary = { level1: { a: 1 } };
+    initialData = Object.freeze({ existing: 'value' }); // No temporary key
+    mockGetData.mockReturnValue(initialData);
+    const inputJson = JSON.stringify({ level1: { a: 1 } });
+    const expectedTemporary = { level1: { a: 1 } };
 
-      setTemporary(inputJson, env);
-      expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining({ temporary: expectedTemporary }));
+    setTemporary(inputJson, env);
+    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining({ temporary: expectedTemporary }));
   });
 
   test('should preserve existing temporary data if source is not object', () => {

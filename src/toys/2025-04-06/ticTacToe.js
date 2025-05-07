@@ -195,7 +195,7 @@ function getEmptyCells(board) {
       }
       return acc;
     }, cells),
-    []
+  []
   );
 }
 
@@ -271,7 +271,7 @@ function getAvailableMoves(board) {
       }
       return acc;
     }, moves),
-    []
+  []
   );
 }
 

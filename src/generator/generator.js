@@ -8,7 +8,7 @@ function createParagraphs(content) {
     return content.map(para => `<p>${para}</p>`).join('');
   } else {
     return `<p>${content}</p>`;
-}
+  }
 }
 
 /**
@@ -307,8 +307,8 @@ function formatArticleHTML(articleHTML) {
  */
 function processPostsToHTML(posts) {
   return posts.map(convertPostToArticleHTML)
-              .map(formatArticleHTML)
-              .join('');
+    .map(formatArticleHTML)
+    .join('');
 }
 
 /**
