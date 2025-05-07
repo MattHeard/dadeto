@@ -252,7 +252,8 @@ function isValidParsedRequest(parsed) {
 }
 
 function handleParsedResult(parsed, env, options) {
-  if (!isValidParsedRequest(parsed)) {
+  const isValid = isValidParsedRequest(parsed);
+  if (!isValid) {
     return false;
   } else {
     handleRequestResponse(parsed.request.url, env, options);
