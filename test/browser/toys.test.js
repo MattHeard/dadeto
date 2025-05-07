@@ -255,8 +255,10 @@ describe('toys', () => {
       const paragraph = {};
       const createElement = jest.fn(() => paragraph);
       dom.createElement = createElement;
+      // --- GIVEN ---
+      const presenterKey = 'text';
       // --- WHEN ---
-      enableInteractiveControls(elements, dom, 'text');
+      enableInteractiveControls(elements, dom, presenterKey);
       // --- THEN ---
       expect(removeAllChildren).toHaveBeenCalledWith(outputParentElement);
       expect(appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
