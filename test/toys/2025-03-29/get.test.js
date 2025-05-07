@@ -80,6 +80,16 @@ describe('get function with path traversal', () => {
   });
 
 
+  test("should return error if getData returns null", () => {
+    mockGetData.mockReturnValue(null);
+    expect(get("any.path", env)).toBe("Error: 'getData' did not return a valid object or array.");
+  });
+
+  test("should return error if getData returns a primitive", () => {
+    mockGetData.mockReturnValue(42);
+    expect(get("any.path", env)).toBe("Error: 'getData' did not return a valid object or array.");
+  });
+
   test('should short-circuit reducer when acc.error is set (indirect via get)', () => {
     mockGetData.mockReturnValue({ a: { b: 1 } });
     // 'a' exists, 'x' does not, 'y' should not be processed
