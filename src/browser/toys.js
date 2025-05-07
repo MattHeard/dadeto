@@ -31,11 +31,7 @@ const presentersMap = {
  * @returns {HTMLElement} The created child element.
  */
 function setTextContent(content, dom, parent, presenterKey) {
-  dom.removeAllChildren(parent);
-  const presenter = presentersMap[presenterKey];
-  const child = presenter(content, dom);
-  dom.appendChild(parent, child);
-  return child;
+  return setTextContent_new({ content, presenterKey }, dom, parent);
 }
 
 /**
