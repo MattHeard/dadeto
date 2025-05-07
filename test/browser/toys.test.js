@@ -205,6 +205,7 @@ describe('toys', () => {
     let removeWarning;
     let dom;
     let elements;
+    let removeAllChildren;
 
     beforeEach(() => {
       // Mock input element
@@ -218,12 +219,13 @@ describe('toys', () => {
       setTextContent = jest.fn();
       removeWarning = jest.fn();
       const contains = () => true;
+      removeAllChildren = jest.fn();
       dom = {
         setTextContent,
         removeWarning,
         enable,
         contains,
-        removeAllChildren: jest.fn(),
+        removeAllChildren,
         createElement: jest.fn(() => ({})),
         appendChild: jest.fn(),
         removeChild: jest.fn()
@@ -244,14 +246,13 @@ describe('toys', () => {
       const expectedText = 'Ready for input';
       const appendChild = jest.fn();
       dom.appendChild = appendChild;
-      dom.removeAllChildren = jest.fn();
       dom.createElement = jest.fn(() => ({}));
       const paragraph = {};
       dom.createElement = jest.fn(() => paragraph);
       // --- WHEN ---
       enableInteractiveControls(elements, dom, 'text');
       // --- THEN ---
-      expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
+      expect(removeAllChildren).toHaveBeenCalledWith(outputParentElement);
       expect(appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
       expect(setTextContent).toHaveBeenCalledWith(paragraph, expectedText);
     });
