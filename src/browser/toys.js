@@ -230,6 +230,12 @@ function handleRequestResponse(url, parent, env, presenterKey) {
     .catch(handleFetchError);
 }
 
+// New wrapper for future migration
+function handleRequestResponse_new(url, env, { parent, presenterKey }) {
+  return handleRequestResponse(url, parent, env, presenterKey);
+}
+
+
 function isObject(val) {
   return typeof val === 'object' && val !== null;
 }
@@ -250,7 +256,7 @@ function isValidParsedRequest(parsed) {
 
 function handleParsedResult(parsed, parent, env, presenterKey) {
   if (!isValidParsedRequest(parsed)) {return false;}
-  handleRequestResponse(parsed.request.url, parent, env, presenterKey);
+  handleRequestResponse_new(parsed.request.url, env, { parent, presenterKey });
   return true;
 }
 
