@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { get } from '../../../src/toys/2025-03-29/get.js';
+import { traversePathSegments } from '../../../src/toys/2025-03-29/get.js';
 
 describe('get function with path traversal', () => {
   let mockGetData;
@@ -77,6 +78,24 @@ describe('get function with path traversal', () => {
     mockGetData.mockReturnValue(circularData);
     expect(get('top.nested', env)).toMatch(/^Error stringifying final value at path "top.nested":/);
     expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
+
+  test('should short-circuit reducer when acc.error is set (coverage for acc.error branch)', () => {
+    // Custom data and path to trigger acc.error
+    const data = { a: { b: 123 } };
+
+    // Path: first segment 'a' is valid, second 'missing' triggers error
+    // Third segment should NOT be processed due to acc.error
+    const pathSegments = ['a', 'missing', 'shouldNotBeProcessed'];
+    const result = traversePathSegments(data, pathSegments);
+    // Should match the error string for missing property
+    expect(result).toMatch(/Error: Path segment 'missing' not found/);
+  });
+
+  test('should short-circuit reducer when acc.error is set (indirect via get)', () => {
+    mockGetData.mockReturnValue({ a: { b: 1 } });
+    // 'a' exists, 'x' does not, 'y' should not be processed
+    expect(get('a.x.y', env)).toMatch(/Error: Path segment 'x' not found/);
   });
 
   test('should return undefined for valid path to undefined value', () => {

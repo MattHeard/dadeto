@@ -124,6 +124,9 @@ function isNotObjectOrArray(data) {
   return typeof data !== 'object' && !Array.isArray(data);
 }
 
+export { traversePathSegments };
+
+
 function getFinalResultInGet(data, input) {
   const value = getValueAtPath(data, input);
   return handleValueOrErrorResult(value, input);
