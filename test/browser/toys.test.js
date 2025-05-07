@@ -274,7 +274,6 @@ describe('toys', () => {
   describe('initialiseModule', () => {
 
     it('can be invoked with minimal arguments', () => {
-      const article = {};
       const functionName = 'process';
       const globalState = {};
       const createEnv = () => ({});
