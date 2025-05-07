@@ -1,5 +1,22 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { makeObserverCallback, makeCreateIntersectionObserver, enableInteractiveControls, getModuleInitializer, initializeVisibleComponents, getDeepStateCopy, createHandleSubmit, initializeInteractiveComponent, handleModuleError } from '../../src/browser/toys.js';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  jest
+} from '@jest/globals';
+
+import {
+  makeObserverCallback,
+  makeCreateIntersectionObserver,
+  enableInteractiveControls,
+  getModuleInitializer,
+  initializeVisibleComponents,
+  getDeepStateCopy,
+  createHandleSubmit,
+  initializeInteractiveComponent,
+  handleModuleError
+} from '../../src/browser/toys.js';
 
 describe('makeObserverCallback', () => {
   let importModule, disconnectObserver, f, modulePath, entry, observer;
