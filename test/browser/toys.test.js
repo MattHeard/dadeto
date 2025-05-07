@@ -206,6 +206,9 @@ describe('toys', () => {
     let dom;
     let elements;
     let removeAllChildren;
+    let appendChild;
+    let removeChild;
+    let createElement;
 
     beforeEach(() => {
       // Mock input element
@@ -220,15 +223,18 @@ describe('toys', () => {
       removeWarning = jest.fn();
       const contains = () => true;
       removeAllChildren = jest.fn();
+      appendChild = jest.fn();
+      removeChild = jest.fn();
+      createElement = jest.fn(() => ({}));
       dom = {
         setTextContent,
         removeWarning,
         enable,
         contains,
         removeAllChildren,
-        createElement: jest.fn(() => ({})),
-        appendChild: jest.fn(),
-        removeChild: jest.fn()
+        createElement,
+        appendChild,
+        removeChild
       };
       elements = { inputElement, submitButton, parent: outputParentElement };
     });
@@ -244,11 +250,8 @@ describe('toys', () => {
     it('sets output textContent to "Ready for input" using parent branch', () => {
       // --- GIVEN ---
       const expectedText = 'Ready for input';
-      const appendChild = jest.fn();
-      dom.appendChild = appendChild;
       const paragraph = {};
-      const createElement = jest.fn(() => paragraph);
-      dom.createElement = createElement;
+      createElement.mockReturnValueOnce(paragraph);
       // --- WHEN ---
       enableInteractiveControls(elements, dom, 'text');
       // --- THEN ---
