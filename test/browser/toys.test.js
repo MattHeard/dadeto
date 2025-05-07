@@ -227,6 +227,8 @@ describe('toys', () => {
       dom.removeAllChildren = jest.fn();
       dom.createElement = jest.fn(() => ({}));
       dom.appendChild = jest.fn();
+      removeChild = jest.fn();
+      dom.removeChild = removeChild;
       elements = { inputElement, submitButton, parent: outputParentElement };
     });
 
@@ -241,9 +243,7 @@ describe('toys', () => {
     it('sets output textContent to "Ready for input" using parent branch', () => {
       // --- GIVEN ---
       const expectedText = 'Ready for input';
-      const removeChild = jest.fn();
       const appendChild = jest.fn();
-      dom.removeChild = removeChild;
       dom.appendChild = appendChild;
       dom.removeAllChildren = jest.fn();
       dom.createElement = jest.fn(() => ({}));
