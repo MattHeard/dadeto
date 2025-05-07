@@ -152,7 +152,7 @@ describe('toys', () => {
         intersectionCallback = fn;
         return expectedResult;
       });
-      const domWithFalseIntersect = {
+      const dom = {
         makeIntersectionObserver,
         importModule: jest.fn(),
         disconnectObserver: jest.fn(),
@@ -160,12 +160,12 @@ describe('toys', () => {
         isIntersecting: () => false,
         contains: () => true
       };
-      const createObserver = makeCreateIntersectionObserver(domWithFalseIntersect, env);
+      const createObserver = makeCreateIntersectionObserver(dom, env);
       createObserver(article, modulePath, functionName);
       // --- WHEN ---
       intersectionCallback([entry], observer);
       // --- THEN ---
-      expect(domWithFalseIntersect.importModule).not.toHaveBeenCalled();
+      expect(dom.importModule).not.toHaveBeenCalled();
     });
 
     it('does not call disconnectObserver when not intersecting', () => {
