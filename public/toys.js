@@ -220,7 +220,8 @@ function getFetchErrorHandler(env, parent, presenterKey) {
   };
 }
 
-function handleRequestResponse(url, env, { parent, presenterKey }) {
+function handleRequestResponse(url, env, options) {
+  const { parent, presenterKey } = options;
   const { fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
   const handleFetchError = getFetchErrorHandler(env, parent, presenterKey);
@@ -250,7 +251,8 @@ function isValidParsedRequest(parsed) {
   return parsedRequestPredicates.every(fn => fn(parsed));
 }
 
-function handleParsedResult(parsed, env, { parent, presenterKey }) {
+function handleParsedResult(parsed, env, options) {
+  const { parent, presenterKey } = options;
   if (!isValidParsedRequest(parsed)) {return false;}
   handleRequestResponse(parsed.request.url, env, { parent, presenterKey });
   return true;
