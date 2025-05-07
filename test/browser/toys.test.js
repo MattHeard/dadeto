@@ -55,13 +55,13 @@ describe('toys', () => {
       const moduleInfo = { modulePath, article, functionName };
       // Add loggers for moduleConfig compatibility
 
-      f = makeObserverCallback(moduleInfo, env, dom);
+      observerCallback = makeObserverCallback(moduleInfo, env, dom);
       observer = {};
     });
 
     it('calls importModule when entry is intersecting', () => {
     // --- WHEN ---
-      f([entry], observer);
+      const result = observerCallback([entry], observer);
 
       // --- THEN ---
       expect(importModule).toHaveBeenCalledWith(
@@ -73,7 +73,7 @@ describe('toys', () => {
 
     it('calls disconnectObserver when entry is intersecting', () => {
     // --- WHEN ---
-      f([entry], observer);
+      const result = observerCallback([entry], observer);
 
       // --- THEN ---
       expect(disconnectObserver).toHaveBeenCalledWith(observer);
