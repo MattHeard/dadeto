@@ -210,11 +210,8 @@ describe('toys', () => {
       inputElement = {};
       // Mock submit button
       submitButton = {};
-      // Mock parent element with simple classList mock
-      outputParentElement = {
-        classList: {},
-        appendChild: jest.fn() // Not needed, but completes the mock
-      };
+      // Mock parent element
+      outputParentElement = {};
       // Reset enable and setTextContent mocks for each test
       enable = jest.fn();
       setTextContent = jest.fn();
