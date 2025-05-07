@@ -6,7 +6,6 @@ function hasNoInteractiveComponents(win) {
 import {
   initializeVisibleComponents,
   makeCreateIntersectionObserver,
-  hasNoInteractiveComponents,
   getInteractiveComponents,
   getInteractiveComponentCount,
   getComponentInitializer
