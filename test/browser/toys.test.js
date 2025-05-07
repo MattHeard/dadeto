@@ -152,7 +152,7 @@ describe('toys', () => {
         return expectedResult;
       });
       isIntersecting = () => false;
-      const dom = {
+      dom = {
         makeIntersectionObserver,
         importModule: jest.fn(),
         disconnectObserver: jest.fn(),
