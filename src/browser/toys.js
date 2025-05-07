@@ -319,7 +319,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
   if (!handleParsedResult(parsed, parent, env, presenterKey)) {
-    setTextContent(result, dom, parent, presenterKey);
+    setTextContent_new({ content: result, presenterKey }, dom, parent);
   }
 }
 
