@@ -92,13 +92,13 @@ describe('toys', () => {
     let article;
 
     let functionName;
-    let g;
+    let intersectionCallback;
     let isIntersecting;
 
     beforeEach(() => {
       expectedResult = {};
       const makeIntersectionObserver = jest.fn((fn) => {
-        g = fn;
+        intersectionCallback = fn;
         return expectedResult;
       });
       isIntersecting = () => true;
@@ -142,7 +142,7 @@ describe('toys', () => {
     // --- GIVEN ---
       observerCallback(article, modulePath, functionName);
       // --- WHEN ---
-      g([entry], observer);
+      intersectionCallback([entry], observer);
       // --- THEN ---
       expect(dom.importModule).toHaveBeenCalled();
     });
@@ -151,7 +151,7 @@ describe('toys', () => {
     // --- GIVEN ---
       observerCallback(article, modulePath, functionName);
       // --- WHEN ---
-      g([entry], observer);
+      intersectionCallback([entry], observer);
       // --- THEN ---
       expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
     });
@@ -166,7 +166,7 @@ describe('toys', () => {
       const observerCallback = makeCreateIntersectionObserver(dom, env);
       observerCallback(article, modulePath, functionName);
       // --- WHEN ---
-      g([entry], observer);
+      intersectionCallback([entry], observer);
       // --- THEN ---
       expect(dom.importModule).not.toHaveBeenCalled();
     });
@@ -181,7 +181,7 @@ describe('toys', () => {
       const observerCallback = makeCreateIntersectionObserver(dom, env);
       observerCallback(article, modulePath, functionName);
       // --- WHEN ---
-      g([entry], observer);
+      intersectionCallback([entry], observer);
       // --- THEN ---
       expect(dom.disconnectObserver).not.toHaveBeenCalled();
     });
