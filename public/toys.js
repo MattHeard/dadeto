@@ -253,12 +253,10 @@ function isValidParsedRequest(parsed) {
 
 function handleParsedResult(parsed, env, options) {
   const isValid = isValidParsedRequest(parsed);
-  if (!isValid) {
-    return false;
-  } else {
+  if (isValid) {
     handleRequestResponse(parsed.request.url, env, options);
-    return true;
   }
+  return isValid;
 }
 
 /**
