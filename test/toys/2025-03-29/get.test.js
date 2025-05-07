@@ -80,17 +80,6 @@ describe('get function with path traversal', () => {
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 
-  test('should short-circuit reducer when acc.error is set (coverage for acc.error branch)', () => {
-    // Custom data and path to trigger acc.error
-    const data = { a: { b: 123 } };
-
-    // Path: first segment 'a' is valid, second 'missing' triggers error
-    // Third segment should NOT be processed due to acc.error
-    const pathSegments = ['a', 'missing', 'shouldNotBeProcessed'];
-    const result = traversePathSegments(data, pathSegments);
-    // Should match the error string for missing property
-    expect(result).toMatch(/Error: Path segment 'missing' not found/);
-  });
 
   test('should short-circuit reducer when acc.error is set (indirect via get)', () => {
     mockGetData.mockReturnValue({ a: { b: 1 } });
