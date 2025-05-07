@@ -19,13 +19,13 @@ import {
 } from '../../src/browser/toys.js';
 
 describe('toys', () => {
+  let entry; // Moved up for use in nested describes
 
   describe('makeObserverCallback', () => {
     let importModule;
     let disconnectObserver;
     let f;
     let modulePath;
-    let entry;
     let observer;
 
     beforeEach(() => {
@@ -54,7 +54,6 @@ describe('toys', () => {
       // Add loggers for moduleConfig compatibility
 
       f = makeObserverCallback(moduleInfo, env, dom);
-      entry = {};
       observer = {};
     });
 
@@ -81,7 +80,8 @@ describe('toys', () => {
   });
 
   describe('makeCreateIntersectionObserver', () => {
-    let entry, observer;
+    let entry;
+    let observer;
     let expectedResult;
     let dom;
     let f;

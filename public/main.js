@@ -167,9 +167,9 @@ setupAudio(dom);
 // Add event listeners to toy output dropdowns
 function handleDropdownChange(event) {
   const dropdown = event.currentTarget;
-  let article = dropdown.closest('article.entry');
-  let postId = article ? article.id : undefined;
-  let selectedValue = dropdown.value;
+  const article = dropdown.closest('article.entry');
+  const postId = article ? article.id : undefined;
+  const selectedValue = dropdown.value;
   log('Dropdown changed:', { postId, selectedValue });
 }
 
