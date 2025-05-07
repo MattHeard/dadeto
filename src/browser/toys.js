@@ -31,6 +31,19 @@ const presentersMap = {
  * @returns {HTMLElement} The created child element.
  */
 /**
+ * Wrapper for setTextContent_new. Calls setTextContent_new with the same arguments.
+ * @param {Object} output - Output object containing content and presenterKey.
+ * @param {string} output.content - The text content to set.
+ * @param {string} output.presenterKey - The presenter key to use (e.g., 'text', 'pre').
+ * @param {object} dom - DOM helper functions.
+ * @param {HTMLElement} parent - The parent element to append to.
+ * @returns {HTMLElement} The created child element.
+ */
+function setTextContent(output, dom, parent) {
+  return setTextContent_new(output, dom, parent);
+}
+
+/**
  * Sets text content in a parent element using an output object and separate dom and parent arguments.
  * @param {Object} output - Output object containing content and presenterKey.
  * @param {string} output.content - The text content to set.
