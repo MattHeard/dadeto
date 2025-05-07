@@ -147,12 +147,11 @@ describe('toys', () => {
 
     it('does not call importModule when not intersecting', () => {
       // --- GIVEN ---
-      // Use the existing makeIntersectionObserver from beforeEach, but redefine dom with isIntersecting returning false
       const makeIntersectionObserver = jest.fn((fn) => {
         intersectionCallback = fn;
         return expectedResult;
       });
-      const isIntersecting = () => false;
+      isIntersecting = () => false;
       const dom = {
         makeIntersectionObserver,
         importModule: jest.fn(),
