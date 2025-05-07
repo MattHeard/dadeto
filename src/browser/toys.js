@@ -220,7 +220,7 @@ function getFetchErrorHandler(env, parent, presenterKey) {
   };
 }
 
-function handleRequestResponse(url, parent, env, presenterKey) {
+function handleRequestResponse_new(url, env, { parent, presenterKey }) {
   const { errorFn, fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
   const handleFetchError = getFetchErrorHandler(env, parent, presenterKey);
@@ -230,10 +230,6 @@ function handleRequestResponse(url, parent, env, presenterKey) {
     .catch(handleFetchError);
 }
 
-// New wrapper for future migration
-function handleRequestResponse_new(url, env, { parent, presenterKey }) {
-  return handleRequestResponse(url, parent, env, presenterKey);
-}
 
 
 function isObject(val) {
