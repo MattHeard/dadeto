@@ -21,6 +21,7 @@ describe('toys', () => {
   let entry;
   let observer;
   let modulePath;
+  let article;
 
   beforeEach(() => {
     modulePath = 'mod';
@@ -265,7 +266,7 @@ describe('toys', () => {
 
     it('removes "warning" class from parent element', () => {
       // --- WHEN ---
-      enableInteractiveControls(elements, dom, 'text');
+      enableInteractiveControls(elements, dom, presenterKey);
       // --- THEN ---
       expect(removeWarning).toHaveBeenCalledWith(outputParentElement);
     });
