@@ -39,15 +39,6 @@ function setTextContent(content, dom, parent, presenterKey) {
 }
 
 /**
- * Sets text content in a parent element using an options object.
- * @param {Object} options - Options for setting text content.
- * @param {string} options.content - The text content to set.
- * @param {object} options.dom - DOM helper functions.
- * @param {HTMLElement} options.parent - The parent element to append to.
- * @param {string} options.presenterKey - The presenter key to use (e.g., 'text', 'pre').
- * @returns {HTMLElement} The created child element.
- */
-/**
  * Sets text content in a parent element using an output object and separate dom and parent arguments.
  * @param {Object} output - Output object containing content and presenterKey.
  * @param {string} output.content - The text content to set.
@@ -57,12 +48,14 @@ function setTextContent(content, dom, parent, presenterKey) {
  * @returns {HTMLElement} The created child element.
  */
 function setTextContent_new(output, dom, parent) {
-  return setTextContent(output.content, dom, parent, output.presenterKey);
+  dom.removeAllChildren(parent);
+  const presenter = presentersMap[output.presenterKey];
+  const child = presenter(output.content, dom);
+  dom.appendChild(parent, child);
+  return child;
 }
 
-
 /**
-
  * @query
  * Creates an error handler for module loading errors
  * @param {string} modulePath - Path to the module that failed to load
