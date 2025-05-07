@@ -169,8 +169,8 @@ describe('toys', () => {
 
 
 
-      const observerCallback = makeCreateIntersectionObserver(dom, env);
-      observerCallback(article, modulePath, functionName);
+      const createObserver = makeCreateIntersectionObserver(dom, env);
+      createObserver(article, modulePath, functionName);
       // --- WHEN ---
       intersectionCallback([entry], observer);
       // --- THEN ---
@@ -184,8 +184,8 @@ describe('toys', () => {
 
 
 
-      const observerCallback = makeCreateIntersectionObserver(dom, env);
-      observerCallback(article, modulePath, functionName);
+      const createObserver = makeCreateIntersectionObserver(dom, env);
+      createObserver(article, modulePath, functionName);
       // --- WHEN ---
       intersectionCallback([entry], observer);
       // --- THEN ---
