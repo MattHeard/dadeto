@@ -1,4 +1,7 @@
 
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
+  9:3  error  Parsing error: Identifier 'hasNoInteractiveComponents' has already been declared
+
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
    33:1  warning  Function 'setTextContent' has too many parameters (4). Maximum allowed is 3         max-params
   205:1  warning  Function 'getFetchErrorHandler' has too many parameters (4). Maximum allowed is 3   max-params
@@ -11,4 +14,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
   191:67  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
 
-✖ 6 problems (0 errors, 6 warnings)
+✖ 7 problems (1 error, 6 warnings)

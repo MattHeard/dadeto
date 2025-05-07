@@ -1,4 +1,8 @@
 import { setupAudio } from './audio-controls.js';
+function hasNoInteractiveComponents(win) {
+  return !win.interactiveComponents || win.interactiveComponents.length === 0;
+}
+
 import {
   initializeVisibleComponents,
   makeCreateIntersectionObserver,
