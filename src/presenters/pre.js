@@ -14,12 +14,19 @@ export function createPreElement(inputString, dom) {
     typeof inputString === 'string' &&
     inputString.startsWith('[') &&
     inputString.endsWith(']')
-  ) {
+  )
+{
+
     // Remove brackets and split by comma
     const inner = inputString.slice(1, -1).trim();
-    if (inner.length > 0) {
+    if (inner.length > 0)
+    {
+
       content = inner.split(',').map(s => s.trim()).join('\n');
-    } else {
+    }
+    else
+    {
+
       content = '';
     }
   }

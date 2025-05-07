@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746563949366" clover="3.2.0">
-  <project timestamp="1746563949366" name="All files">
+<coverage generated="1746605336231" clover="3.2.0">
+  <project timestamp="1746605336232" name="All files">
     <metrics statements="1053" coveredstatements="1040" conditionals="305" coveredconditionals="292" methods="445" coveredmethods="440" elements="1803" coveredelements="1772" complexity="0" loc="1053" ncloc="1053" packages="13" files="25" classes="25"/>
     <package name="browser">
       <metrics statements="289" coveredstatements="279" conditionals="55" coveredconditionals="46" methods="100" coveredmethods="95"/>
@@ -616,12 +616,12 @@
         <line num="11" count="6" type="stmt"/>
         <line num="12" count="6" type="stmt"/>
         <line num="13" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="19" count="4" type="stmt"/>
-        <line num="20" count="4" type="cond" truecount="2" falsecount="0"/>
-        <line num="21" count="7" type="stmt"/>
-        <line num="23" count="1" type="stmt"/>
-        <line num="26" count="6" type="stmt"/>
-        <line num="27" count="6" type="stmt"/>
+        <line num="21" count="4" type="stmt"/>
+        <line num="22" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="25" count="7" type="stmt"/>
+        <line num="30" count="1" type="stmt"/>
+        <line num="33" count="6" type="stmt"/>
+        <line num="34" count="6" type="stmt"/>
       </file>
     </package>
     <package name="toys.2024-10-02">
