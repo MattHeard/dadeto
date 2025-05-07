@@ -7,10 +7,13 @@ function getInteractiveComponentCount(win) {
   return win.interactiveComponents ? win.interactiveComponents.length : 0;
 }
 
+function getInteractiveComponents(win) {
+  return win.interactiveComponents || [];
+}
+
 import {
   initializeVisibleComponents,
   makeCreateIntersectionObserver,
-  getInteractiveComponents,
   getComponentInitializer
 } from './toys.js';
 import { fetchAndCacheBlogData, getData, setData } from './data.js';

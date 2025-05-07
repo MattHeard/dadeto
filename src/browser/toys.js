@@ -411,9 +411,7 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
 
 
 
-export function getInteractiveComponents(win) {
-  return win.interactiveComponents || [];
-}
+
 
 export function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
   return component => {
