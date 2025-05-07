@@ -187,11 +187,10 @@ describe('toys', () => {
       const appendChild = jest.fn();
       const presenter = jest.fn(() => child);
       const dom = { removeAllChildren, appendChild };
-      // For this test, directly call the function with our mock presenterMap
-      const setTextContent = (content, dom, parent, presenterKey) => {
+      const setTextContent = (content, dom, parent) => {
         dom.removeAllChildren(parent);
         const presenterMap = { text: presenter };
-        const presenterFn = presenterMap[presenterKey];
+        const presenterFn = presenterMap.text;
         const child = presenterFn(content, dom);
         dom.appendChild(parent, child);
         return child;
