@@ -148,9 +148,8 @@ describe('toys', () => {
     it('does not call importModule when not intersecting', () => {
       // --- GIVEN ---
       // Use the existing makeIntersectionObserver from beforeEach, but redefine dom with isIntersecting returning false
-      let localIntersectionCallback;
       const makeIntersectionObserver = jest.fn((fn) => {
-        localIntersectionCallback = fn;
+        intersectionCallback = fn;
         return expectedResult;
       });
       const domWithFalseIntersect = {
@@ -164,7 +163,7 @@ describe('toys', () => {
       const createObserver = makeCreateIntersectionObserver(domWithFalseIntersect, env);
       createObserver(article, modulePath, functionName);
       // --- WHEN ---
-      localIntersectionCallback([entry], observer);
+      intersectionCallback([entry], observer);
       // --- THEN ---
       expect(domWithFalseIntersect.importModule).not.toHaveBeenCalled();
     });
