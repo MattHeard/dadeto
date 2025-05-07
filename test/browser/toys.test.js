@@ -18,7 +18,6 @@ import {
 } from '../../src/browser/toys.js';
 
 describe('toys', () => {
-
   let entry;
   let observer;
   let modulePath;
@@ -28,7 +27,6 @@ describe('toys', () => {
   });
 
   describe('makeObserverCallback', () => {
-
     let observerCallback;
     let importModule;
     let disconnectObserver;
@@ -79,7 +77,6 @@ describe('toys', () => {
   });
 
   describe('makeCreateIntersectionObserver', () => {
-
     let createObserver;
     let expectedResult;
     let dom;
@@ -182,26 +179,24 @@ describe('toys', () => {
   });
 
   describe('handleModuleError', () => {
-
     it('calls errorMock with the correct message', () => {
       // --- GIVEN ---
       const errorMock = jest.fn();
       const modulePath = 'toyModule';
       const handler = handleModuleError(modulePath, errorMock);
-      const fakeError = new Error('fail');
+      const error = new Error('fail');
       const expectedMessage = 'Error loading module ' + modulePath + ':';
       // --- WHEN ---
-      handler(fakeError);
+      handler(error);
       // --- THEN ---
       expect(errorMock).toHaveBeenCalledWith(
         expectedMessage,
-        fakeError
+        error
       );
     });
   });
 
   describe('enableInteractiveControls', () => {
-
     let inputElement;
     let submitButton;
     let outputParentElement;
