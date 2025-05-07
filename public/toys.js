@@ -303,7 +303,7 @@ function createHandleInputError(env, parent) {
   const addWarning = dom.addWarning;
   return (e) => {
     logError('Error processing input:', e);
-    setTextContent_new({ content: 'Error: ' + e.message, presenterKey: 'text' }, dom, parent);
+    setTextContent({ content: 'Error: ' + e.message, presenterKey: 'text' }, dom, parent);
     addWarning(parent);
   };
 }
