@@ -204,6 +204,7 @@ describe('toys', () => {
     let setTextContent;
     let removeWarning;
     let dom;
+    let elements;
 
     beforeEach(() => {
       // Mock input element
@@ -226,11 +227,10 @@ describe('toys', () => {
       dom.removeAllChildren = jest.fn();
       dom.createElement = jest.fn(() => ({}));
       dom.appendChild = jest.fn();
+      elements = { inputElement, submitButton, parent: outputParentElement };
     });
 
     it('enables input and submit button', () => {
-      // --- GIVEN ---
-      const elements = { inputElement, submitButton, parent: outputParentElement };
       // --- WHEN ---
       enableInteractiveControls(elements, dom, 'text');
       // --- THEN ---
