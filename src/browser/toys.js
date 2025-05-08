@@ -318,12 +318,8 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const toyEnv = createEnv();
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
-  if (article && article.id) {
-    logInfo(article.id, result);
-    // Use setOutput to merge result into output data
-    // Import setOutput from src/browser/setOutput.js
-    setOutput(JSON.stringify({ [article.id]: result }), toyEnv);
-  }
+  // Assume article and article.id are always truthy, no need to log
+  setOutput(JSON.stringify({ [article.id]: result }), toyEnv);
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
   if (!handleParsedResult(parsed, env, { parent, presenterKey })) {

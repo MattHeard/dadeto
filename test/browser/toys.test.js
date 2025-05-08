@@ -318,7 +318,7 @@ describe('toys', () => {
     it('can be invoked with minimal arguments', () => {
       const functionName = 'process';
       const globalState = {};
-      const createEnv = () => ({});
+      const createEnv = () => ({ get: () => {} });
       const error = () => {};
       const fetch = () => {};
       const paragraph = {};
@@ -421,7 +421,7 @@ describe('toys', () => {
       };
       fetchFn = jest.fn();
       processingFunction = jest.fn(async () => 'transformed');
-      elements = { inputElement, outputElement, outputParentElement, outputSelect: { value: 'text' } };
+      elements = { inputElement, outputElement, outputParentElement, outputSelect: { value: 'text' }, article: { id: 'test-article' } };
     });
 
     it('fetches from URL if processingFunction returns a request object', async () => {
@@ -433,7 +433,7 @@ describe('toys', () => {
       const request = { request: { url } };
       processingFunction = jest.fn(() => JSON.stringify(request));
       const globalState = {};
-      const createEnv = () => ({});
+      const createEnv = () => ({ get: () => {} });
       const errorFn = jest.fn();
       // fetchFn and dom are already defined above
       const env = { globalState, createEnv, errorFn, fetchFn, dom };
@@ -452,7 +452,7 @@ describe('toys', () => {
       const request = { request: { url } };
       processingFunction = jest.fn(() => JSON.stringify(request));
       const globalState = {};
-      const createEnv = () => ({});
+      const createEnv = () => ({ get: () => {} });
       const errorFn = jest.fn();
       const env = { globalState, createEnv, errorFn, fetchFn, dom };
       const handleSubmitWithFailingFetch = createHandleSubmit(elements, processingFunction, env);
@@ -488,7 +488,7 @@ describe('toys', () => {
 
     it('handles being called without an event', async () => {
       const stopDefault = jest.fn();
-      const createEnv = () => ({});
+      const createEnv = () => ({ get: () => {} });
       const errorFn = jest.fn();
       const processingFunction = jest.fn(() => 'result from no-event');
       const input = { value: 'input without event' };
@@ -511,7 +511,7 @@ describe('toys', () => {
       };
       const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
       const handleSubmitNoEvent = createHandleSubmit(
-        { inputElement: input, outputElement: output, outputParentElement, outputSelect },
+        { inputElement: input, outputElement: output, outputParentElement, outputSelect, article: { id: 'test-article' } },
         processingFunction,
         env
       );
