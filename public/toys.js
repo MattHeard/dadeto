@@ -8,9 +8,13 @@ import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
  * @param {Event} event - The change event from the dropdown.
  * @param {Function} logInfo - Logging function to use for output. Must be provided.
  */
+function getDropdownArticle(dropdown) {
+  return dropdown.closest('article.entry');
+}
+
 export function handleDropdownChange(event, logInfo) {
   const dropdown = event.currentTarget;
-  const article = dropdown.closest('article.entry');
+  const article = getDropdownArticle(dropdown);
   const postId = article.id;
   const selectedValue = dropdown.value;
   logInfo('Dropdown changed:', { postId, selectedValue });
