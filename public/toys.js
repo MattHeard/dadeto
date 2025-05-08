@@ -355,11 +355,7 @@ function disableInputAndButton(inputElement, submitButton) {
  * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, and dom.
  */
 export function initializeInteractiveComponent(article, processingFunction, config) {
-  // Prefer config.logInfo, otherwise fallback to config.loggers?.logInfo
-  const logInfo = config.logInfo || (config.loggers && config.loggers.logInfo);
-  if (typeof logInfo !== 'function') {
-    throw new Error('logInfo must be provided as a function in config or config.loggers');
-  }
+  const logInfo = config.loggers.logInfo;
   const { globalState, createEnvFn, errorFn, fetchFn, dom } = config;
   logInfo('Initializing interactive component for article', article.id);
   // Get the elements within the article
