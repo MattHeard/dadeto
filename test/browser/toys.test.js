@@ -27,9 +27,16 @@ describe('toys', () => {
         value: 'text',
         closest: jest.fn(() => mockArticle)
       };
-      const logInfo = jest.fn();
-      handleDropdownChange(mockDropdown, logInfo);
-      expect(logInfo).toHaveBeenCalledWith('Dropdown changed:', { postId: 'post-123', selectedValue: 'text' });
+      const mockLogInfo = jest.fn();
+      const mockGetData = jest.fn(() => ({ output: { 'post-123': 'mockOutput' } }));
+
+      handleDropdownChange(mockDropdown, mockLogInfo, mockGetData);
+
+      expect(mockLogInfo).toHaveBeenCalledWith('Dropdown output:', {
+        postId: 'post-123',
+        selectedValue: 'text',
+        output: 'mockOutput'
+      });
     });
 
 

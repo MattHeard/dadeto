@@ -20,13 +20,9 @@ function getDropdownPostId(dropdown) {
 export function handleDropdownChange(dropdown, logInfo, getData) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
-  if (typeof getData === 'function') {
-    const data = getData();
-    const output = data && data.output && data.output[postId];
-    logInfo('Dropdown output:', { postId, selectedValue, output });
-  } else {
-    logInfo('Dropdown changed:', { postId, selectedValue });
-  }
+  const data = getData();
+  const output = data && data.output && data.output[postId];
+  logInfo('Dropdown output:', { postId, selectedValue, output });
 }
 
 // Map of presenter keys to presenter functions
