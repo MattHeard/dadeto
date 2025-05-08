@@ -7,13 +7,13 @@
  * @param {HTMLElement} parent - The parent element to append to.
  */
 import { createParagraphElement } from '../presenters/paragraph.js';
-
-// Map of text keys to presenter functions
 import { createPreElement } from '../presenters/pre.js';
+import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 
 const presentersMap = {
   text: createParagraphElement,
   pre: createPreElement,
+  'tic-tac-toe': createTicTacToeBoardElement,
 };
 /**
  * Sets text content in a parent element using the new signature (no element argument).

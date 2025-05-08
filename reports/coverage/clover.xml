@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746682322319" clover="3.2.0">
-  <project timestamp="1746682322320" name="All files">
+<coverage generated="1746682638360" clover="3.2.0">
+  <project timestamp="1746682638360" name="All files">
     <metrics statements="1070" coveredstatements="1070" conditionals="309" coveredconditionals="305" methods="448" coveredmethods="448" elements="1827" coveredelements="1823" complexity="0" loc="1070" ncloc="1070" packages="13" files="26" classes="26"/>
     <package name="browser">
       <metrics statements="282" coveredstatements="282" conditionals="46" coveredconditionals="46" methods="95" coveredmethods="95"/>
@@ -175,7 +175,7 @@
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
         <metrics statements="122" coveredstatements="122" conditionals="16" coveredconditionals="16" methods="46" coveredmethods="46"/>
-        <line num="14" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
         <line num="43" count="15" type="stmt"/>
         <line num="44" count="15" type="stmt"/>
         <line num="45" count="15" type="stmt"/>
