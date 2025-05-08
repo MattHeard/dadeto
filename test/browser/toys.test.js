@@ -40,6 +40,7 @@ describe('toys', () => {
       const mockGetData = jest.fn(() => ({ output: { 'post-123': 'mockOutput' } }));
 
       const dom = {
+        querySelector: (el, selector) => el.querySelector(selector),
         removeAllChildren: (node) => { while (node.firstChild) {node.removeChild(node.firstChild);} },
         appendChild: (parent, child) => parent.appendChild(child),
         createElement: () => ({}),
