@@ -9,8 +9,8 @@
   1:1  warning  Function 'isObject' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-  20:8  warning  Function 'handleDropdownChange' has too many parameters (4). Maximum allowed is 3  max-params
-  20:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2        complexity
+  21:8  warning  Function 'handleDropdownChange' has too many parameters (4). Maximum allowed is 3  max-params
+  21:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2        complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js
   20:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 21. Maximum allowed is 2  complexity

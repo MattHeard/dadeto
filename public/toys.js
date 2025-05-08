@@ -1,6 +1,7 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
+import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolitaireFleet.js';
 
 /**
  * Handles dropdown changes for toy output selection.
@@ -34,6 +35,7 @@ const presentersMap = {
   text: createParagraphElement,
   pre: createPreElement,
   'tic-tac-toe': createTicTacToeBoardElement,
+  'battleship-solitaire-fleet': createBattleshipFleetBoardElement,
 };
 
 function setTextContent(output, dom, parent) {
