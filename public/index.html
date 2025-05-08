@@ -322,6 +322,66 @@
           Software developer and philosopher in Berlin
         </div>
       </div>
+      <article
+        class="entry tag-toy tag-battleship tag-puzzle tag-generator"
+        id="BATT2"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">BATT2</div>
+        <div class="value">
+          <h2><a href="#BATT2">Battleship Solitaire Fleet</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">8 May 2025</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-battleship">battleship</a>,
+          <a class="tag-puzzle">puzzle</a>,
+          <a class="tag-generator">generator</a>
+        </p>
+        <div class="key media">illus</div>
+        <div class="value">
+          <img
+            loading="lazy"
+            src="2025-05-08.png"
+            alt="A digital illustration of a battleship puzzle grid with stylized ships placed on a blue ocean background, some ships touching, others separated, and a pencil marking possible placements."
+          />
+        </div>
+        <div class="key">text</div>
+        <p class="value">
+          Generates a random valid fleet for Battleship Solitaire puzzles,
+          respecting board size, fleet composition, and optional no-touching
+          constraints. Returns the fleet layout as JSON, or an error if not
+          possible.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <form><input type="text" disabled /></form>
+        </div>
+        <div class="key"></div>
+        <div class="value"><button type="submit" disabled>Submit</button></div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'BATT2',
+            '/2025-05-08/battleshipSolitaireFleet.js',
+            'generateFleet'
+          );
+        </script>
+      </article>
       <article class="entry tag-toy tag-color tag-palette" id="COLO1">
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
         <div class="value full-width">
@@ -5278,66 +5338,6 @@
           Afterwards, I had bruises all the way down the side of my ribcage. But
           I shrugged them off. "For the sake of the movie", right?
         </p>
-      </article>
-      <article
-        class="entry tag-toy tag-battleship tag-puzzle tag-generator"
-        id="BATT2"
-      >
-        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
-        <div class="value full-width">
-          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-        </div>
-        <div class="key article-title">BATT2</div>
-        <div class="value">
-          <h2><a href="#BATT2">Battleship Solitaire Fleet</a></h2>
-        </div>
-        <div class="key">pubAt</div>
-        <p class="value metadata">8 May 2025</p>
-        <div class="key">tags</div>
-        <p class="value metadata">
-          <a class="tag-toy">toy</a>, <a class="tag-battleship">battleship</a>,
-          <a class="tag-puzzle">puzzle</a>,
-          <a class="tag-generator">generator</a>
-        </p>
-        <div class="key media">illus</div>
-        <div class="value">
-          <img
-            loading="lazy"
-            src="2025-05-08.png"
-            alt="A digital illustration of a battleship puzzle grid with stylized ships placed on a blue ocean background, some ships touching, others separated, and a pencil marking possible placements."
-          />
-        </div>
-        <div class="key">text</div>
-        <p class="value">
-          Generates a random valid fleet for Battleship Solitaire puzzles,
-          respecting board size, fleet composition, and optional no-touching
-          constraints. Returns the fleet layout as JSON, or an error if not
-          possible.
-        </p>
-        <div class="key">in</div>
-        <div class="value">
-          <form><input type="text" disabled /></form>
-        </div>
-        <div class="key"></div>
-        <div class="value"><button type="submit" disabled>Submit</button></div>
-        <div class="key">out</div>
-        <div class="value">
-          <select class="output">
-            <option value="text">text</option>
-            <option value="pre">pre</option>
-            <option value="tic-tac-toe">tic-tac-toe</option>
-          </select>
-          <div class="output warning">
-            <p>This toy requires Javascript to run.</p>
-          </div>
-        </div>
-        <script type="module">
-          window.addComponent(
-            'BATT2',
-            '/2025-05-08/battleshipSolitaireFleet.js',
-            'generateFleet'
-          );
-        </script>
       </article>
       <div class="entry">
         <div class="key"></div>

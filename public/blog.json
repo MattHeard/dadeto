@@ -1,6 +1,28 @@
 {
   "posts": [
     {
+      "key": "BATT2",
+      "title": "Battleship Solitaire Fleet",
+      "publicationDate": "2025-05-08",
+      "content": [
+        "Generates a random valid fleet for Battleship Solitaire puzzles, respecting board size, fleet composition, and optional no-touching constraints. Returns the fleet layout as JSON, or an error if not possible."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "A digital illustration of a battleship puzzle grid with stylized ships placed on a blue ocean background, some ships touching, others separated, and a pencil marking possible placements."
+      },
+      "toy": {
+        "modulePath": "/2025-05-08/battleshipSolitaireFleet.js",
+        "functionName": "generateFleet"
+      },
+      "tags": [
+        "toy",
+        "battleship",
+        "puzzle",
+        "generator"
+      ]
+    },
+    {
       "key": "COLO1",
       "title": "Colour Palette",
       "publicationDate": "2025-04-16",
@@ -2168,28 +2190,6 @@
         "*Editor's 2024 note: There was originally an image inserted here but that was hosted on a now-defunct website called Hiveports. It was likly a still from the mentioned short film.*",
         "When Dan, my fellow beater of an actor, would bludgeon me with the hockey stick, the blanket would be pushed aside, and he would start beating me full contact. Out of self-preservation, like any sane person, I instinctively pulled my hands in front to protect me. Subconsciously, I was pulling my hands forwards, and consciously, I was pulling them back, not wanting to get them hit. It was funny wiggly dance, like the mix between a chicken with convulsions, and a boy with his foot jammed in an escalator.",
         "Afterwards, I had bruises all the way down the side of my ribcage. But I shrugged them off. \"For the sake of the movie\", right?"
-      ]
-    },
-    {
-      "key": "BATT2",
-      "title": "Battleship Solitaire Fleet",
-      "publicationDate": "2025-05-08",
-      "content": [
-        "Generates a random valid fleet for Battleship Solitaire puzzles, respecting board size, fleet composition, and optional no-touching constraints. Returns the fleet layout as JSON, or an error if not possible."
-      ],
-      "illustration": {
-        "fileType": "png",
-        "altText": "A digital illustration of a battleship puzzle grid with stylized ships placed on a blue ocean background, some ships touching, others separated, and a pencil marking possible placements."
-      },
-      "toy": {
-        "modulePath": "/2025-05-08/battleshipSolitaireFleet.js",
-        "functionName": "generateFleet"
-      },
-      "tags": [
-        "toy",
-        "battleship",
-        "puzzle",
-        "generator"
       ]
     }
   ]
