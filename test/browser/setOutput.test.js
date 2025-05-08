@@ -13,10 +13,12 @@ describe('setOutput', () => {
   });
 
   it('returns an error if merging throws', () => {
-    // env.getData throws
+    // env.get('getData') throws
     const env = {
-      getData: () => { throw new Error('fail'); },
-      setData: jest.fn()
+      get: (key) => {
+        if (key === 'getData') {return () => { throw new Error('fail'); };}
+        if (key === 'setData') {return jest.fn();}
+      }
     };
     const result = setOutput('{"foo": "bar"}', env);
     expect(result).toMatch(/Error updating output data/);
@@ -24,16 +26,19 @@ describe('setOutput', () => {
 
   it('merges output data and calls setData', () => {
     const initial = { output: { a: 1 } };
+    const setData = jest.fn();
     const env = {
-      getData: () => initial,
-      setData: jest.fn()
+      get: (key) => {
+        if (key === 'getData') {return () => initial;}
+        if (key === 'setData') {return setData;}
+      }
     };
     const input = '{"b":2}';
     const result = setOutput(input, env);
     expect(result).toMatch(/Success: Output data deep merged/);
-    expect(env.setData).toHaveBeenCalled();
+    expect(setData).toHaveBeenCalled();
     // Ensure output merged
-    const callArg = env.setData.mock.calls[0][0];
+    const callArg = setData.mock.calls[0][0];
     expect(callArg.output).toMatchObject({ a: 1, b: 2 });
   });
 });
