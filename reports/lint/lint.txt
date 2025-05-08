@@ -2,9 +2,12 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
   189:1  warning  './toys.js' import is duplicated  no-duplicate-imports
 
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
+  300:1  warning  Function 'processInputAndSetOutput' has a complexity of 5. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
   14:12  warning  '_' is defined but never used                                                       no-unused-vars
   24:30  warning  Arrow function has a complexity of 8. Maximum allowed is 2                          complexity
 
-✖ 4 problems (0 errors, 4 warnings)
+✖ 5 problems (0 errors, 5 warnings)

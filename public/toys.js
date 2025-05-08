@@ -298,11 +298,14 @@ function createHandleInputError(env, parent) {
 }
 
 function processInputAndSetOutput(elements, processingFunction, env) {
-  const { inputElement, outputParentElement: parent, outputSelect } = elements;
-  const { createEnv, dom } = env;
+  const { inputElement, outputParentElement: parent, outputSelect, article } = elements;
+  const { createEnv, dom, logInfo } = env;
   const toyEnv = createEnv();
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
+  if (typeof logInfo === 'function' && article && article.id) {
+    logInfo(article.id);
+  }
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
   if (!handleParsedResult(parsed, env, { parent, presenterKey })) {
