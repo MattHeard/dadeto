@@ -27,7 +27,7 @@ export function handleDropdownChange(dropdown, logInfo, getData) {
   const parent = dropdown.parentNode;
   if (parent) {
     const dom = {
-      removeAllChildren: (node) => { while (node.firstChild) node.removeChild(node.firstChild); },
+      removeAllChildren: (node) => { while (node.firstChild) {node.removeChild(node.firstChild);} },
       appendChild: (parent, child) => parent.appendChild(child),
       createElement: typeof document !== 'undefined' ? document.createElement.bind(document) : () => ({}),
       setTextContent: (el, txt) => { el.textContent = txt; }
