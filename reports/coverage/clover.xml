@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746639178011" clover="3.2.0">
-  <project timestamp="1746639178011" name="All files">
-    <metrics statements="1054" coveredstatements="1054" conditionals="297" coveredconditionals="297" methods="444" coveredmethods="444" elements="1795" coveredelements="1795" complexity="0" loc="1054" ncloc="1054" packages="13" files="25" classes="25"/>
+<coverage generated="1746681101078" clover="3.2.0">
+  <project timestamp="1746681101078" name="All files">
+    <metrics statements="1069" coveredstatements="1069" conditionals="309" coveredconditionals="305" methods="448" coveredmethods="448" elements="1826" coveredelements="1822" complexity="0" loc="1069" ncloc="1069" packages="13" files="26" classes="26"/>
     <package name="browser">
       <metrics statements="282" coveredstatements="282" conditionals="46" coveredconditionals="46" methods="95" coveredmethods="95"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -601,7 +601,7 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="16" coveredstatements="16" conditionals="8" coveredconditionals="8" methods="7" coveredmethods="7"/>
+      <metrics statements="31" coveredstatements="31" conditionals="20" coveredconditionals="16" methods="11" coveredmethods="11"/>
       <file name="paragraph.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="2" count="16" type="stmt"/>
@@ -623,6 +623,24 @@
         <line num="36" count="6" type="stmt"/>
         <line num="37" count="6" type="stmt"/>
         <line num="38" count="6" type="stmt"/>
+      </file>
+      <file name="ticTacToeBoard.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js">
+        <metrics statements="15" coveredstatements="15" conditionals="12" coveredconditionals="8" methods="4" coveredmethods="4"/>
+        <line num="12" count="3" type="stmt"/>
+        <line num="13" count="3" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="21" count="6" type="stmt"/>
+        <line num="24" count="2" type="cond" truecount="1" falsecount="2"/>
+        <line num="25" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="26" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="32" count="3" type="stmt"/>
+        <line num="37" count="6" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="41" count="2" type="stmt"/>
+        <line num="42" count="2" type="stmt"/>
+        <line num="43" count="2" type="stmt"/>
       </file>
     </package>
     <package name="toys.2024-10-02">
