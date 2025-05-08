@@ -334,7 +334,8 @@ describe('toys', () => {
         createEnvFn: createEnv,
         errorFn: error,
         fetchFn: fetch,
-        dom
+        dom,
+        logInfo: jest.fn()
       };
       // Use getModuleInitializer to create an initializer and invoke with a module
       const result = getModuleInitializer(article, functionName, config);
@@ -571,7 +572,7 @@ describe('toys', () => {
         removeAllChildren: jest.fn()
       };
       const processingFunction = jest.fn(() => 'processed result');
-      const config = { globalState, createEnvFn, errorFn, fetchFn, dom };
+      const config = { globalState, createEnvFn, errorFn, fetchFn, dom, logInfo: jest.fn() };
       initializeInteractiveComponent(
         article,
         processingFunction,
@@ -633,7 +634,7 @@ describe('toys', () => {
       const errorFn = jest.fn();
       const fetchFn = jest.fn();
       const processingFunction = jest.fn(() => 'processed result');
-      const config = { globalState, createEnvFn, errorFn, fetchFn, dom };
+      const config = { globalState, createEnvFn, errorFn, fetchFn, dom, logInfo: jest.fn() };
       initializeInteractiveComponent(
         article,
         processingFunction,

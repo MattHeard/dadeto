@@ -356,6 +356,7 @@ function disableInputAndButton(inputElement, submitButton) {
  */
 export function initializeInteractiveComponent(article, processingFunction, config) {
   const { globalState, createEnvFn, errorFn, fetchFn, dom, logInfo } = config;
+  logInfo('Initializing interactive component for article', article.id);
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
   const submitButton = dom.querySelector(article, 'button');
