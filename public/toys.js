@@ -11,7 +11,7 @@ import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 export function handleDropdownChange(event, logInfo) {
   const dropdown = event.currentTarget;
   const article = dropdown.closest('article.entry');
-  const postId = article ? article.id : undefined;
+  const postId = article.id;
   const selectedValue = dropdown.value;
   logInfo('Dropdown changed:', { postId, selectedValue });
 }

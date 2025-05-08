@@ -35,15 +35,7 @@ describe('toys', () => {
     });
 
 
-    it('logs with undefined postId if no article is found', () => {
-      const logInfo = jest.fn();
-      const mockDropdown = { value: 'tic-tac-toe', currentTarget: null, closest: null };
-      mockDropdown.currentTarget = mockDropdown;
-      mockDropdown.closest = jest.fn(() => undefined);
-      const event = { currentTarget: mockDropdown };
-      handleDropdownChange(event, logInfo);
-      expect(logInfo).toHaveBeenCalledWith('Dropdown changed:', { postId: undefined, selectedValue: 'tic-tac-toe' });
-    });
+
   });
 
   let entry;
