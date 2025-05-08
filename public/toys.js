@@ -312,17 +312,9 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const result = processingFunction(inputValue, toyEnv);
   if (article && article.id) {
     logInfo(article.id, result);
-    // Update the desired output for this article
-    // Always use setData from createEnv().get('setData')
-    const setData = createEnv().get('setData');
-    const { globalState, desired } = env;
-    const loggers = env.loggers || { logInfo, logError: env.errorFn };
-    console.log('processInputAndSetOutput debug:', { desired, globalState, env });
-    if (desired && globalState) {
-      desired.output = desired.output || {};
-      desired.output[article.id] = result;
-      setData({ desired, current: globalState }, loggers);
-    }
+    // Use setOutput to merge result into output data
+    // Import setOutput from src/browser/setOutput.js
+    setOutput(JSON.stringify({ [article.id]: result }), env);
   }
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
