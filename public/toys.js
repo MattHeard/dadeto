@@ -12,10 +12,14 @@ function getDropdownArticle(dropdown) {
   return dropdown.closest('article.entry');
 }
 
+function getDropdownPostId(dropdown) {
+  const article = getDropdownArticle(dropdown);
+  return article.id;
+}
+
 export function handleDropdownChange(event, logInfo) {
   const dropdown = event.currentTarget;
-  const article = getDropdownArticle(dropdown);
-  const postId = article.id;
+  const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
   logInfo('Dropdown changed:', { postId, selectedValue });
 }
