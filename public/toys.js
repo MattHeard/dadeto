@@ -314,7 +314,7 @@ function createHandleInputError(env, parent) {
 
 function processInputAndSetOutput(elements, processingFunction, env) {
   const { inputElement, outputParentElement: parent, outputSelect, article } = elements;
-  const { createEnv, dom, logInfo } = env;
+  const { createEnv, dom } = env;
   const toyEnv = createEnv();
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
