@@ -23,8 +23,17 @@ describe('toys', () => {
     it('logs the correct postId and selectedValue when dropdown changes', () => {
       // Mock dropdown and article
       const mockArticle = { id: 'post-123' };
+      // Mock parent node with DOM methods
+      const mockParent = {
+        appendChild: jest.fn(),
+        removeChild: jest.fn(),
+        firstChild: null,
+      };
       const mockDropdown = {
         value: 'text',
+        parentNode: {
+          querySelector: () => mockParent,
+        },
         closest: jest.fn(() => mockArticle)
       };
       const mockLogInfo = jest.fn();
