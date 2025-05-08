@@ -15,8 +15,9 @@
 
 /** Fisher‑Yates shuffle (in‑place) using env RNG */
 function shuffle(arr, env) {
+  const getRandomNumber = env.get('getRandomNumber');
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(env.getRandomNumber() * (i + 1));
+    const j = Math.floor(getRandomNumber() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
 }
@@ -91,7 +92,8 @@ function attemptPlacement(cfg, env) {
     }
 
     if (candidates.length === 0) {return null;} // dead end
-    const chosen = candidates[Math.floor(env.getRandomNumber() * candidates.length)];
+    const getRandomNumber = env.get('getRandomNumber');
+    const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
     ships.push(chosen);
 
     // Mark occupied squares
