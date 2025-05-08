@@ -355,7 +355,7 @@ function disableInputAndButton(inputElement, submitButton) {
  * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, and dom.
  */
 export function initializeInteractiveComponent(article, processingFunction, config) {
-  const { globalState, createEnvFn, errorFn, fetchFn, dom } = config;
+  const { globalState, createEnvFn, errorFn, fetchFn, dom, logInfo, logError, logWarning, loggers } = config;
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
   const submitButton = dom.querySelector(article, 'button');
@@ -369,9 +369,19 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   // Update message to show JS is running, replacing <p.output> with paragraph
   const initialisingWarning = setTextContent({ content: 'Initialising...', presenterKey }, dom, outputParent);
 
-  // Create the submit handler using the function from this module
-  const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
-  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect }, processingFunction, env);
+  // Prefer loggers object if present, otherwise use individual log* props
+  const loggerObj = loggers || {};
+  const env = {
+    globalState,
+    createEnv: createEnvFn,
+    errorFn,
+    fetchFn,
+    dom,
+    logInfo: loggerObj.logInfo || logInfo,
+    logError: loggerObj.logError || logError,
+    logWarning: loggerObj.logWarning || logWarning
+  };
+  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect, article }, processingFunction, env);
 
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);

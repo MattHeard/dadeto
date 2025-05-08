@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">99.25% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>133/134</span>
+                <span class='fraction'>134/135</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">85.71% </span>
+                <span class="strong">89.65% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>18/21</span>
+                <span class='fraction'>26/29</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.22% </span>
+                <span class="strong">99.23% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>128/129</span>
+                <span class='fraction'>129/130</span>
             </div>
         
             
@@ -499,7 +499,17 @@
 <a name='L434'></a><a href='#L434'>434</a>
 <a name='L435'></a><a href='#L435'>435</a>
 <a name='L436'></a><a href='#L436'>436</a>
-<a name='L437'></a><a href='#L437'>437</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L437'></a><a href='#L437'>437</a>
+<a name='L438'></a><a href='#L438'>438</a>
+<a name='L439'></a><a href='#L439'>439</a>
+<a name='L440'></a><a href='#L440'>440</a>
+<a name='L441'></a><a href='#L441'>441</a>
+<a name='L442'></a><a href='#L442'>442</a>
+<a name='L443'></a><a href='#L443'>443</a>
+<a name='L444'></a><a href='#L444'>444</a>
+<a name='L445'></a><a href='#L445'>445</a>
+<a name='L446'></a><a href='#L446'>446</a>
+<a name='L447'></a><a href='#L447'>447</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -872,6 +882,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1292,7 +1312,7 @@ function disableInputAndButton(inputElement, submitButton) {
  * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, and dom.
  */
 export function initializeInteractiveComponent(article, processingFunction, config) {
-  const { globalState, createEnvFn, errorFn, fetchFn, dom } = config;
+  const { globalState, createEnvFn, errorFn, fetchFn, dom, logInfo, logError, logWarning, loggers } = config;
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
   const submitButton = dom.querySelector(article, 'button');
@@ -1306,9 +1326,19 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   // Update message to show JS is running, replacing &lt;p.output&gt; with paragraph
   const initialisingWarning = setTextContent({ content: 'Initialising...', presenterKey }, dom, outputParent);
 &nbsp;
-  // Create the submit handler using the function from this module
-  const env = { globalState, createEnv: createEnvFn, errorFn, fetchFn, dom };
-  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect }, processingFunction, env);
+  // Prefer loggers object if present, otherwise use individual log* props
+  const loggerObj = loggers || {};
+  const env = {
+    globalState,
+    createEnv: createEnvFn,
+    errorFn,
+    fetchFn,
+    dom,
+    logInfo: loggerObj.logInfo || logInfo,
+    logError: loggerObj.logError || logError,
+    logWarning: loggerObj.logWarning || logWarning
+  };
+  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect, article }, processingFunction, env);
 &nbsp;
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);
@@ -1378,7 +1408,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-08T07:54:36.098Z
+                at 2025-05-08T08:08:19.350Z
             </div>
         <script src="../prettify.js"></script>
         <script>
