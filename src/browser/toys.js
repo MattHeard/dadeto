@@ -317,6 +317,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
     const setData = createEnv().get('setData');
     const { globalState, desired } = env;
     const loggers = env.loggers || { logInfo, logError: env.errorFn };
+    console.log('processInputAndSetOutput debug:', { desired, globalState, env });
     if (desired && globalState) {
       desired.output = desired.output || {};
       desired.output[article.id] = result;
