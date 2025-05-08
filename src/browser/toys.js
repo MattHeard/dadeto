@@ -311,7 +311,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
   if (article && article.id) {
-    logInfo(article.id);
+    logInfo(article.id, result);
     // Update the desired output for this article
     // Always use setData from createEnv().get('setData')
     const setData = createEnv().get('setData');
