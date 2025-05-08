@@ -80,6 +80,42 @@ export function fetchAndCacheBlogData(state, fetch, loggers) {
 // Helper function needed by getData
 export const getDeepStateCopy = (globalState) => JSON.parse(JSON.stringify(globalState));
 
+/**
+ * Deeply merges two objects. Creates a new object with merged properties.
+ * Properties in source will overwrite properties in target, unless both
+ * properties are plain objects, in which case they are recursively merged.
+ * Arrays and other types are overwritten, not merged.
+ * @param {object} target - The target object.
+ * @param {object} source - The source object.
+ * @returns {object} A new object representing the merged result.
+ */
+function shouldDeepMerge(targetValue, sourceValue) {
+  return (
+    typeof targetValue === 'object' &&
+    targetValue !== null &&
+    typeof sourceValue === 'object' &&
+    sourceValue !== null &&
+    !Array.isArray(targetValue) &&
+    !Array.isArray(sourceValue)
+  );
+}
+
+export function deepMerge(target, source) {
+  const output = { ...target };
+  const mergeKey = key => {
+    const targetValue = target[key];
+    const sourceValue = source[key];
+    if (shouldDeepMerge(targetValue, sourceValue)) {
+      output[key] = deepMerge(targetValue, sourceValue);
+    } else {
+      output[key] = sourceValue;
+    }
+  };
+  Object.keys(source).forEach(mergeKey);
+  return output;
+}
+
+
 function stripInternalFields(stateCopy) {
   for (const key of INTERNAL_STATE_KEYS) {
     delete stateCopy[key];

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746699071878" clover="3.2.0">
-  <project timestamp="1746699071878" name="All files">
-    <metrics statements="1102" coveredstatements="1081" conditionals="317" coveredconditionals="308" methods="455" coveredmethods="451" elements="1874" coveredelements="1840" complexity="0" loc="1102" ncloc="1102" packages="13" files="27" classes="27"/>
+<coverage generated="1746699421172" clover="3.2.0">
+  <project timestamp="1746699421172" name="All files">
+    <metrics statements="1112" coveredstatements="1081" conditionals="325" coveredconditionals="308" methods="458" coveredmethods="451" elements="1895" coveredelements="1840" complexity="0" loc="1112" ncloc="1112" packages="13" files="27" classes="27"/>
     <package name="browser">
-      <metrics statements="314" coveredstatements="293" conditionals="54" coveredconditionals="49" methods="102" coveredmethods="98"/>
+      <metrics statements="324" coveredstatements="293" conditionals="62" coveredconditionals="49" methods="105" coveredmethods="98"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -62,7 +62,7 @@
         <line num="82" count="6" type="stmt"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
-        <metrics statements="69" coveredstatements="69" conditionals="22" coveredconditionals="22" methods="24" coveredmethods="24"/>
+        <metrics statements="79" coveredstatements="69" conditionals="30" coveredconditionals="22" methods="27" coveredmethods="24"/>
         <line num="1" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
         <line num="11" count="26" type="stmt"/>
@@ -92,46 +92,56 @@
         <line num="74" count="6" type="stmt"/>
         <line num="77" count="6" type="stmt"/>
         <line num="81" count="3" type="stmt"/>
-        <line num="84" count="5" type="stmt"/>
-        <line num="85" count="15" type="stmt"/>
-        <line num="90" count="1" type="stmt"/>
-        <line num="91" count="1" type="stmt"/>
-        <line num="92" count="1" type="stmt"/>
-        <line num="93" count="1" type="stmt"/>
-        <line num="97" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="101" count="4" type="stmt"/>
-        <line num="105" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="109" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="113" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="114" count="5" type="stmt"/>
-        <line num="115" count="5" type="stmt"/>
+        <line num="93" count="0" type="stmt"/>
+        <line num="104" count="0" type="stmt"/>
+        <line num="105" count="0" type="stmt"/>
+        <line num="106" count="0" type="stmt"/>
+        <line num="107" count="0" type="stmt"/>
+        <line num="108" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="109" count="0" type="stmt"/>
+        <line num="111" count="0" type="stmt"/>
+        <line num="114" count="0" type="stmt"/>
+        <line num="115" count="0" type="stmt"/>
         <line num="120" count="5" type="stmt"/>
-        <line num="124" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="125" count="1" type="stmt"/>
-        <line num="130" count="5" type="stmt"/>
-        <line num="131" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="132" count="1" type="stmt"/>
-        <line num="137" count="5" type="stmt"/>
-        <line num="138" count="5" type="stmt"/>
-        <line num="139" count="5" type="stmt"/>
-        <line num="140" count="5" type="stmt"/>
-        <line num="162" count="1" type="stmt"/>
-        <line num="163" count="5" type="stmt"/>
-        <line num="164" count="5" type="stmt"/>
-        <line num="165" count="5" type="stmt"/>
+        <line num="121" count="15" type="stmt"/>
+        <line num="126" count="1" type="stmt"/>
+        <line num="127" count="1" type="stmt"/>
+        <line num="128" count="1" type="stmt"/>
+        <line num="129" count="1" type="stmt"/>
+        <line num="133" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="137" count="4" type="stmt"/>
+        <line num="141" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="145" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="149" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="150" count="5" type="stmt"/>
+        <line num="151" count="5" type="stmt"/>
+        <line num="156" count="5" type="stmt"/>
+        <line num="160" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="161" count="1" type="stmt"/>
         <line num="166" count="5" type="stmt"/>
-        <line num="179" count="5" type="stmt"/>
-        <line num="180" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="209" count="1" type="stmt"/>
-        <line num="210" count="6" type="stmt"/>
-        <line num="211" count="6" type="stmt"/>
-        <line num="213" count="6" type="stmt"/>
-        <line num="214" count="6" type="stmt"/>
-        <line num="216" count="6" type="stmt"/>
-        <line num="217" count="1" type="stmt"/>
-        <line num="218" count="1" type="stmt"/>
-        <line num="219" count="1" type="stmt"/>
-        <line num="220" count="1" type="stmt"/>
+        <line num="167" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="168" count="1" type="stmt"/>
+        <line num="173" count="5" type="stmt"/>
+        <line num="174" count="5" type="stmt"/>
+        <line num="175" count="5" type="stmt"/>
+        <line num="176" count="5" type="stmt"/>
+        <line num="198" count="1" type="stmt"/>
+        <line num="199" count="5" type="stmt"/>
+        <line num="200" count="5" type="stmt"/>
+        <line num="201" count="5" type="stmt"/>
+        <line num="202" count="5" type="stmt"/>
+        <line num="215" count="5" type="stmt"/>
+        <line num="216" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="245" count="1" type="stmt"/>
+        <line num="246" count="6" type="stmt"/>
+        <line num="247" count="6" type="stmt"/>
+        <line num="249" count="6" type="stmt"/>
+        <line num="250" count="6" type="stmt"/>
+        <line num="252" count="6" type="stmt"/>
+        <line num="253" count="1" type="stmt"/>
+        <line num="254" count="1" type="stmt"/>
+        <line num="255" count="1" type="stmt"/>
+        <line num="256" count="1" type="stmt"/>
       </file>
       <file name="setOutput.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/setOutput.js">
         <metrics statements="19" coveredstatements="0" conditionals="4" coveredconditionals="0" methods="4" coveredmethods="0"/>
