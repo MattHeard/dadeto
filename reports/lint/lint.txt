@@ -3,7 +3,7 @@
   189:1  warning  './toys.js' import is duplicated  no-duplicate-imports
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-  307:1  warning  Function 'processInputAndSetOutput' has a complexity of 5. Maximum allowed is 2  complexity
+  307:1  warning  Function 'processInputAndSetOutput' has a complexity of 4. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity

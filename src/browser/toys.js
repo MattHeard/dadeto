@@ -310,7 +310,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const toyEnv = createEnv();
   const inputValue = inputElement.value;
   const result = processingFunction(inputValue, toyEnv);
-  if (typeof logInfo === 'function' && article && article.id) {
+  if (article && article.id) {
     logInfo(article.id);
   }
   const parsed = parseJSONResult(result);
