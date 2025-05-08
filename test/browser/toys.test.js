@@ -20,14 +20,6 @@ import {
 
 describe('toys', () => {
   describe('handleDropdownChange', () => {
-    let originalLog;
-    beforeEach(() => {
-      originalLog = global.log;
-    });
-    afterEach(() => {
-      global.log = originalLog;
-    });
-
     it('logs the correct postId and selectedValue when dropdown changes', () => {
       // Mock dropdown and article
       const mockArticle = { id: 'post-123', closest: jest.fn(() => ({ id: 'post-123' })) };
@@ -36,16 +28,13 @@ describe('toys', () => {
       mockDropdown.closest = jest.fn(() => mockArticle);
       // Mock log
       const logMock = jest.fn();
-      global.log = logMock;
       // Mock event
       const event = { currentTarget: mockDropdown };
-      handleDropdownChange(event);
+      handleDropdownChange(event, logMock);
       expect(logMock).toHaveBeenCalledWith('Dropdown changed:', { postId: 'post-123', selectedValue: 'text' });
     });
 
-    it('falls back to console.log if log is undefined', () => {
-      // Remove global.log
-      global.log = undefined;
+    it('falls back to console.log if logFn is not provided', () => {
       const mockArticle = { id: 'post-456', closest: jest.fn(() => ({ id: 'post-456' })) };
       const mockDropdown = { value: 'pre', currentTarget: null, closest: null };
       mockDropdown.currentTarget = mockDropdown;
@@ -59,13 +48,13 @@ describe('toys', () => {
     });
 
     it('logs with undefined postId if no article is found', () => {
-      global.log = jest.fn();
+      const logMock = jest.fn();
       const mockDropdown = { value: 'tic-tac-toe', currentTarget: null, closest: null };
       mockDropdown.currentTarget = mockDropdown;
       mockDropdown.closest = jest.fn(() => undefined);
       const event = { currentTarget: mockDropdown };
-      handleDropdownChange(event);
-      expect(global.log).toHaveBeenCalledWith('Dropdown changed:', { postId: undefined, selectedValue: 'tic-tac-toe' });
+      handleDropdownChange(event, logMock);
+      expect(logMock).toHaveBeenCalledWith('Dropdown changed:', { postId: undefined, selectedValue: 'tic-tac-toe' });
     });
   });
 
