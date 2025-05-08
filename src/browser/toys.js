@@ -17,12 +17,7 @@ function getDropdownPostId(dropdown) {
   return article.id;
 }
 
-function getCurrentTarget(event) {
-  return event.currentTarget;
-}
-
-export function handleDropdownChange(event, logInfo) {
-  const dropdown = getCurrentTarget(event);
+export function handleDropdownChange(dropdown, logInfo) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
   logInfo('Dropdown changed:', { postId, selectedValue });

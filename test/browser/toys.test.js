@@ -22,15 +22,13 @@ describe('toys', () => {
   describe('handleDropdownChange', () => {
     it('logs the correct postId and selectedValue when dropdown changes', () => {
       // Mock dropdown and article
-      const mockArticle = { id: 'post-123', closest: jest.fn(() => ({ id: 'post-123' })) };
-      const mockDropdown = { value: 'text', currentTarget: null, closest: null };
-      mockDropdown.currentTarget = mockDropdown;
-      mockDropdown.closest = jest.fn(() => mockArticle);
-      // Mock log
+      const mockArticle = { id: 'post-123' };
+      const mockDropdown = {
+        value: 'text',
+        closest: jest.fn(() => mockArticle)
+      };
       const logInfo = jest.fn();
-      // Mock event
-      const event = { currentTarget: mockDropdown };
-      handleDropdownChange(event, logInfo);
+      handleDropdownChange(mockDropdown, logInfo);
       expect(logInfo).toHaveBeenCalledWith('Dropdown changed:', { postId: 'post-123', selectedValue: 'text' });
     });
 

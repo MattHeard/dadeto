@@ -192,6 +192,6 @@ window.addEventListener('DOMContentLoaded', () => {
   // Select all <select> elements that are direct children of a .value div following a .key with 'out' text, within an .entry article
   const dropdowns = Array.from(document.querySelectorAll('article.entry .value > select'));
   dropdowns.forEach(dropdown => {
-    dropdown.addEventListener('change', event => handleDropdownChange(event, loggers.logInfo));
+    dropdown.addEventListener('change', event => handleDropdownChange(getCurrentTarget(event), loggers.logInfo));
   });
 });
