@@ -2,7 +2,11 @@ import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 
-// Handles dropdown changes for toy output selection
+/**
+ * Handles dropdown changes for toy output selection.
+ * Logs the selected value and article ID.
+ * @param {Event} event - The change event from the dropdown.
+ */
 export function handleDropdownChange(event) {
   const dropdown = event.currentTarget;
   const article = dropdown.closest('article.entry');
@@ -34,6 +38,12 @@ function setTextContent(output, dom, parent) {
  * @param {Function} errorFn - Error logging function
  * @returns {Function} Error handler function
  */
+/**
+ * Creates an error handler for module loading errors.
+ * @param {string} modulePath - Path to the module that failed to load.
+ * @param {Function} logError - Error logging function.
+ * @returns {Function} Error handler function.
+ */
 export function handleModuleError(modulePath, logError) {
   return (e) => {
     logError('Error loading module ' + modulePath + ':', e);
@@ -48,6 +58,13 @@ export function handleModuleError(modulePath, logError) {
  * @param {object} env - Environment object containing globalState, createEnv, error, and fetch.
  * @param {object} dom - Object containing DOM helper functions.
  * @returns {Function} A function that takes a module and initializes the interactive component.
+ */
+/**
+ * Creates a module initializer function to be called when a dynamic import completes.
+ * @param {HTMLElement} article - The article element containing the toy.
+ * @param {string} functionName - The name of the exported function to use from the module.
+ * @param {object} config - Environment and DOM helpers for initialization.
+ * @returns {Function} Function that takes a module and initializes the interactive component.
  */
 export function getModuleInitializer(article, functionName, config) {
   const getProcessing = makeProcessingFunction(functionName);
