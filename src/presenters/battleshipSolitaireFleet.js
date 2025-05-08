@@ -30,12 +30,17 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
   }
 
   const { width, height, ships } = fleet ?? {};
-  if (
-    typeof width !== 'number' || typeof height !== 'number' ||
-      !Array.isArray(ships)
-  ) {
+  let errorMsg = '';
+  if (typeof width !== 'number') {
+    errorMsg = 'Missing or invalid property: width';
+  } else if (typeof height !== 'number') {
+    errorMsg = 'Missing or invalid property: height';
+  } else if (!Array.isArray(ships)) {
+    errorMsg = 'Missing or invalid property: ships';
+  }
+  if (errorMsg) {
     const err = dom.createElement('p');
-    dom.setTextContent(err, 'Invalid fleet structure');
+    dom.setTextContent(err, errorMsg);
     return err;
   }
 
