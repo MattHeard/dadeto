@@ -27,22 +27,22 @@ describe('toys', () => {
       mockDropdown.currentTarget = mockDropdown;
       mockDropdown.closest = jest.fn(() => mockArticle);
       // Mock log
-      const logMock = jest.fn();
+      const logInfo = jest.fn();
       // Mock event
       const event = { currentTarget: mockDropdown };
-      handleDropdownChange(event, logMock);
-      expect(logMock).toHaveBeenCalledWith('Dropdown changed:', { postId: 'post-123', selectedValue: 'text' });
+      handleDropdownChange(event, logInfo);
+      expect(logInfo).toHaveBeenCalledWith('Dropdown changed:', { postId: 'post-123', selectedValue: 'text' });
     });
 
 
     it('logs with undefined postId if no article is found', () => {
-      const logMock = jest.fn();
+      const logInfo = jest.fn();
       const mockDropdown = { value: 'tic-tac-toe', currentTarget: null, closest: null };
       mockDropdown.currentTarget = mockDropdown;
       mockDropdown.closest = jest.fn(() => undefined);
       const event = { currentTarget: mockDropdown };
-      handleDropdownChange(event, logMock);
-      expect(logMock).toHaveBeenCalledWith('Dropdown changed:', { postId: undefined, selectedValue: 'tic-tac-toe' });
+      handleDropdownChange(event, logInfo);
+      expect(logInfo).toHaveBeenCalledWith('Dropdown changed:', { postId: undefined, selectedValue: 'tic-tac-toe' });
     });
   });
 

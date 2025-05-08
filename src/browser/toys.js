@@ -6,14 +6,14 @@ import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
  * Handles dropdown changes for toy output selection.
  * Logs the selected value and article ID.
  * @param {Event} event - The change event from the dropdown.
- * @param {Function} logFn - Logging function to use for output. Must be provided.
+ * @param {Function} logInfo - Logging function to use for output. Must be provided.
  */
-export function handleDropdownChange(event, logFn) {
+export function handleDropdownChange(event, logInfo) {
   const dropdown = event.currentTarget;
   const article = dropdown.closest('article.entry');
   const postId = article ? article.id : undefined;
   const selectedValue = dropdown.value;
-  logFn('Dropdown changed:', { postId, selectedValue });
+  logInfo('Dropdown changed:', { postId, selectedValue });
 }
 
 // Map of presenter keys to presenter functions
