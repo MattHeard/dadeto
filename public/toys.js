@@ -316,7 +316,7 @@ function processInputAndSetOutput(elements, processingFunction, env) {
     logInfo(article.id, result);
     // Use setOutput to merge result into output data
     // Import setOutput from src/browser/setOutput.js
-    setOutput(JSON.stringify({ [article.id]: result }), env);
+    setOutput(JSON.stringify({ [article.id]: result }), toyEnv);
   }
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
