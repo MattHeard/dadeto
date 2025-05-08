@@ -10,6 +10,14 @@ import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 
+export function handleDropdownChange(event) {
+  const dropdown = event.currentTarget;
+  const article = dropdown.closest('article.entry');
+  const postId = article ? article.id : undefined;
+  const selectedValue = dropdown.value;
+  (typeof log !== 'undefined' ? log : console.log)('Dropdown changed:', { postId, selectedValue });
+}
+
 const presentersMap = {
   text: createParagraphElement,
   pre: createPreElement,

@@ -186,13 +186,7 @@ fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: error });
 setupAudio(dom);
 
 // Add event listeners to toy output dropdowns
-function handleDropdownChange(event) {
-  const dropdown = event.currentTarget;
-  const article = dropdown.closest('article.entry');
-  const postId = article ? article.id : undefined;
-  const selectedValue = dropdown.value;
-  log('Dropdown changed:', { postId, selectedValue });
-}
+import { handleDropdownChange } from './toys.js';
 
 window.addEventListener('DOMContentLoaded', () => {
   // Select all <select> elements that are direct children of a .value div following a .key with 'out' text, within an .entry article
