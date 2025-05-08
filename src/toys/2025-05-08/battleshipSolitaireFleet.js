@@ -116,6 +116,9 @@ function generateFleet(input, env) {
   } catch (_) {
     return JSON.stringify({ error: 'Invalid JSON' });
   }
+  if (!Array.isArray(cfg.ships)) {
+    cfg.ships = [];
+  }
 
   if (cfg.diagonalAllowed) {
     return JSON.stringify({ error: 'Diagonal placement not supported' });
