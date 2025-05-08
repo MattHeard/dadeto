@@ -1,15 +1,8 @@
-/**
- * @command
- * Sets text content in a parent element by creating a paragraph element.
- * @param {HTMLElement} element - The target element. (DEPRECATED, will be removed)
- * @param {string} content - The text content to set.
- * @param {object} dom - DOM helper functions.
- * @param {HTMLElement} parent - The parent element to append to.
- */
 import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 
+// Handles dropdown changes for toy output selection
 export function handleDropdownChange(event) {
   const dropdown = event.currentTarget;
   const article = dropdown.closest('article.entry');
@@ -18,35 +11,13 @@ export function handleDropdownChange(event) {
   (typeof log !== 'undefined' ? log : console.log)('Dropdown changed:', { postId, selectedValue });
 }
 
+// Map of presenter keys to presenter functions
 const presentersMap = {
   text: createParagraphElement,
   pre: createPreElement,
   'tic-tac-toe': createTicTacToeBoardElement,
 };
-/**
- * Sets text content in a parent element using the new signature (no element argument).
- * @param {string} content - The text content to set.
- * @param {object} dom - DOM helper functions.
- * @param {HTMLElement} parent - The parent element to append to.
- * @returns {HTMLElement} The created paragraph element.
- */
-/**
- * Sets text content in a parent element using the specified presenter key.
- * @param {string} content - The text content to set.
- * @param {object} dom - DOM helper functions.
- * @param {HTMLElement} parent - The parent element to append to.
- * @param {string} presenterKey - The presenter key to use (e.g., 'text', 'pre').
- * @returns {HTMLElement} The created child element.
- */
-/**
- * Wrapper for setTextContent_new. Calls setTextContent_new with the same arguments.
- * @param {Object} output - Output object containing content and presenterKey.
- * @param {string} output.content - The text content to set.
- * @param {string} output.presenterKey - The presenter key to use (e.g., 'text', 'pre').
- * @param {object} dom - DOM helper functions.
- * @param {HTMLElement} parent - The parent element to append to.
- * @returns {HTMLElement} The created child element.
- */
+
 function setTextContent(output, dom, parent) {
   dom.removeAllChildren(parent);
   const presenter = presentersMap[output.presenterKey];
