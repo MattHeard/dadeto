@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746733388429" clover="3.2.0">
-  <project timestamp="1746733388429" name="All files">
-    <metrics statements="1180" coveredstatements="1114" conditionals="375" coveredconditionals="317" methods="466" coveredmethods="459" elements="2021" coveredelements="1890" complexity="0" loc="1180" ncloc="1180" packages="14" files="28" classes="28"/>
+<coverage generated="1746733500088" clover="3.2.0">
+  <project timestamp="1746733500088" name="All files">
+    <metrics statements="1178" coveredstatements="1114" conditionals="373" coveredconditionals="317" methods="466" coveredmethods="459" elements="2017" coveredelements="1890" complexity="0" loc="1178" ncloc="1178" packages="14" files="28" classes="28"/>
     <package name="browser">
       <metrics statements="327" coveredstatements="326" conditionals="64" coveredconditionals="58" methods="106" coveredmethods="106"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1238,9 +1238,9 @@
       </file>
     </package>
     <package name="toys.2025-05-08">
-      <metrics statements="65" coveredstatements="0" conditionals="48" coveredconditionals="0" methods="7" coveredmethods="0"/>
+      <metrics statements="63" coveredstatements="0" conditionals="46" coveredconditionals="0" methods="7" coveredmethods="0"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js">
-        <metrics statements="65" coveredstatements="0" conditionals="48" coveredconditionals="0" methods="7" coveredmethods="0"/>
+        <metrics statements="63" coveredstatements="0" conditionals="46" coveredconditionals="0" methods="7" coveredmethods="0"/>
         <line num="18" count="0" type="stmt"/>
         <line num="19" count="0" type="stmt"/>
         <line num="20" count="0" type="stmt"/>
@@ -1304,8 +1304,6 @@
         <line num="129" count="0" type="stmt"/>
         <line num="130" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="133" count="0" type="stmt"/>
-        <line num="137" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="138" count="0" type="stmt"/>
       </file>
     </package>
   </project>

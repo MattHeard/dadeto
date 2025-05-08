@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/82</span>
+                <span class='fraction'>0/80</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/48</span>
+                <span class='fraction'>0/46</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/65</span>
+                <span class='fraction'>0/63</span>
             </div>
         
             
@@ -199,10 +199,7 @@
 <a name='L134'></a><a href='#L134'>134</a>
 <a name='L135'></a><a href='#L135'>135</a>
 <a name='L136'></a><a href='#L136'>136</a>
-<a name='L137'></a><a href='#L137'>137</a>
-<a name='L138'></a><a href='#L138'>138</a>
-<a name='L139'></a><a href='#L139'>139</a>
-<a name='L140'></a><a href='#L140'>140</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L137'></a><a href='#L137'>137</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -337,9 +334,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/*
  * Battleship Solitaire – Fleet Generator (JavaScript version)
@@ -358,136 +352,133 @@
 &nbsp;
 /** Fisher‑Yates shuffle (in‑place) using env RNG */
 function <span class="fstat-no" title="function not covered" >shuffle(</span>arr, env) {
-<span class="cstat-no" title="statement not covered" >    for (let i = <span class="cstat-no" title="statement not covered" >arr.length - 1;</span> i &gt; 0; i--) {</span>
-      const j = <span class="cstat-no" title="statement not covered" >Math.floor(env.getRandomNumber() * (i + 1));</span>
-<span class="cstat-no" title="statement not covered" >      [arr[i], arr[j]] = [arr[j], arr[i]];</span>
+<span class="cstat-no" title="statement not covered" >  for (let i = <span class="cstat-no" title="statement not covered" >arr.length - 1;</span> i &gt; 0; i--) {</span>
+    const j = <span class="cstat-no" title="statement not covered" >Math.floor(env.getRandomNumber() * (i + 1));</span>
+<span class="cstat-no" title="statement not covered" >    [arr[i], arr[j]] = [arr[j], arr[i]];</span>
+  }
+}
+&nbsp;
+const key = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(x</span>, y) =&gt; <span class="cstat-no" title="statement not covered" >`${x},${y}`;</span></span>
+&nbsp;
+function <span class="fstat-no" title="function not covered" >inBounds(</span>x, y, w, h) {
+<span class="cstat-no" title="statement not covered" >  return x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x &lt; w &amp;&amp; y &lt; h;</span>
+}
+&nbsp;
+/** 8‑neighbour coordinates */
+function <span class="fstat-no" title="function not covered" >neighbours(</span>x, y) {
+  const out = <span class="cstat-no" title="statement not covered" >[];</span>
+<span class="cstat-no" title="statement not covered" >  for (let dy = <span class="cstat-no" title="statement not covered" >-1;</span> dy &lt;= 1; dy++) {</span>
+<span class="cstat-no" title="statement not covered" >    for (let dx = <span class="cstat-no" title="statement not covered" >-1;</span> dx &lt;= 1; dx++) {</span>
+<span class="cstat-no" title="statement not covered" >      if (dx === 0 &amp;&amp; dy === 0) {<span class="cstat-no" title="statement not covered" >continue;}</span></span>
+<span class="cstat-no" title="statement not covered" >      out.push({ x: x + dx, y: y + dy });</span>
     }
   }
-  
-  const key = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(x</span>, y) =&gt; <span class="cstat-no" title="statement not covered" >`${x},${y}`;</span></span>
-  
-  function <span class="fstat-no" title="function not covered" >inBounds(</span>x, y, w, h) {
-<span class="cstat-no" title="statement not covered" >    return x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x &lt; w &amp;&amp; y &lt; h;</span>
-  }
-  
-  /** 8‑neighbour coordinates */
-  function <span class="fstat-no" title="function not covered" >neighbours(</span>x, y) {
-    const out = <span class="cstat-no" title="statement not covered" >[];</span>
-<span class="cstat-no" title="statement not covered" >    for (let dy = <span class="cstat-no" title="statement not covered" >-1;</span> dy &lt;= 1; dy++) {</span>
-<span class="cstat-no" title="statement not covered" >      for (let dx = <span class="cstat-no" title="statement not covered" >-1;</span> dx &lt;= 1; dx++) {</span>
-<span class="cstat-no" title="statement not covered" >        if (dx === 0 &amp;&amp; dy === 0) <span class="cstat-no" title="statement not covered" >continue;</span></span>
-<span class="cstat-no" title="statement not covered" >        out.push({ x: x + dx, y: y + dy });</span>
-      }
-    }
-<span class="cstat-no" title="statement not covered" >    return out;</span>
-  }
-  
-  // ─────────────────── Placement attempt (single pass) ─────────────────── //
-  
-  function <span class="fstat-no" title="function not covered" >attemptPlacement(</span>cfg, env) {
-    const occupied = <span class="cstat-no" title="statement not covered" >new Set();</span>
-    const touchForbidden = <span class="cstat-no" title="statement not covered" >cfg.noTouching === true;</span>
-    const ships = <span class="cstat-no" title="statement not covered" >[];</span>
-  
-    // Work on a shuffled copy to reduce bias
-    const lengths = <span class="cstat-no" title="statement not covered" >cfg.ships.slice();</span>
-<span class="cstat-no" title="statement not covered" >    shuffle(lengths, env);</span>
-  
-<span class="cstat-no" title="statement not covered" >    for (const len of lengths) {</span>
-      const candidates = <span class="cstat-no" title="statement not covered" >[];</span>
-  
-<span class="cstat-no" title="statement not covered" >      for (let y = <span class="cstat-no" title="statement not covered" >0;</span> y &lt; cfg.height; y++) {</span>
-<span class="cstat-no" title="statement not covered" >        for (let x = <span class="cstat-no" title="statement not covered" >0;</span> x &lt; cfg.width; x++) {</span>
-<span class="cstat-no" title="statement not covered" >          for (const dir of ['H', 'V']) {</span>
-            const endX = <span class="cstat-no" title="statement not covered" >dir === 'H' ? x + len - 1 : x;</span>
-            const endY = <span class="cstat-no" title="statement not covered" >dir === 'V' ? y + len - 1 : y;</span>
-<span class="cstat-no" title="statement not covered" >            if (!inBounds(endX, endY, cfg.width, cfg.height)) <span class="cstat-no" title="statement not covered" >continue;</span></span>
-  
-            let valid = <span class="cstat-no" title="statement not covered" >true;</span>
-            const segs = <span class="cstat-no" title="statement not covered" >[];</span>
-<span class="cstat-no" title="statement not covered" >            for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; len &amp;&amp; valid; i++) {</span>
-              const sx = <span class="cstat-no" title="statement not covered" >dir === 'H' ? x + i : x;</span>
-              const sy = <span class="cstat-no" title="statement not covered" >dir === 'V' ? y + i : y;</span>
-              const k = <span class="cstat-no" title="statement not covered" >key(sx, sy);</span>
-<span class="cstat-no" title="statement not covered" >              if (occupied.has(k)) <span class="cstat-no" title="statement not covered" >valid = false;</span></span>
-<span class="cstat-no" title="statement not covered" >              segs.push({ x: sx, y: sy });</span>
-            }
-<span class="cstat-no" title="statement not covered" >            if (!valid) <span class="cstat-no" title="statement not covered" >continue;</span></span>
-  
-<span class="cstat-no" title="statement not covered" >            if (touchForbidden) {</span>
-<span class="cstat-no" title="statement not covered" >              for (const { x: sx, y: sy } of segs) {</span>
-<span class="cstat-no" title="statement not covered" >                for (const n of neighbours(sx, sy)) {</span>
-<span class="cstat-no" title="statement not covered" >                  if (inBounds(n.x, n.y, cfg.width, cfg.height) &amp;&amp; occupied.has(key(n.x, n.y))) {</span>
-<span class="cstat-no" title="statement not covered" >                    valid = false;</span>
-<span class="cstat-no" title="statement not covered" >                    break;</span>
-                  }
+<span class="cstat-no" title="statement not covered" >  return out;</span>
+}
+&nbsp;
+// ─────────────────── Placement attempt (single pass) ─────────────────── //
+&nbsp;
+function <span class="fstat-no" title="function not covered" >attemptPlacement(</span>cfg, env) {
+  const occupied = <span class="cstat-no" title="statement not covered" >new Set();</span>
+  const touchForbidden = <span class="cstat-no" title="statement not covered" >cfg.noTouching === true;</span>
+  const ships = <span class="cstat-no" title="statement not covered" >[];</span>
+&nbsp;
+  // Work on a shuffled copy to reduce bias
+  const lengths = <span class="cstat-no" title="statement not covered" >cfg.ships.slice();</span>
+<span class="cstat-no" title="statement not covered" >  shuffle(lengths, env);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  for (const len of lengths) {</span>
+    const candidates = <span class="cstat-no" title="statement not covered" >[];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    for (let y = <span class="cstat-no" title="statement not covered" >0;</span> y &lt; cfg.height; y++) {</span>
+<span class="cstat-no" title="statement not covered" >      for (let x = <span class="cstat-no" title="statement not covered" >0;</span> x &lt; cfg.width; x++) {</span>
+<span class="cstat-no" title="statement not covered" >        for (const dir of ['H', 'V']) {</span>
+          const endX = <span class="cstat-no" title="statement not covered" >dir === 'H' ? x + len - 1 : x;</span>
+          const endY = <span class="cstat-no" title="statement not covered" >dir === 'V' ? y + len - 1 : y;</span>
+<span class="cstat-no" title="statement not covered" >          if (!inBounds(endX, endY, cfg.width, cfg.height)) {<span class="cstat-no" title="statement not covered" >continue;}</span></span>
+&nbsp;
+          let valid = <span class="cstat-no" title="statement not covered" >true;</span>
+          const segs = <span class="cstat-no" title="statement not covered" >[];</span>
+<span class="cstat-no" title="statement not covered" >          for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; len &amp;&amp; valid; i++) {</span>
+            const sx = <span class="cstat-no" title="statement not covered" >dir === 'H' ? x + i : x;</span>
+            const sy = <span class="cstat-no" title="statement not covered" >dir === 'V' ? y + i : y;</span>
+            const k = <span class="cstat-no" title="statement not covered" >key(sx, sy);</span>
+<span class="cstat-no" title="statement not covered" >            if (occupied.has(k)) {<span class="cstat-no" title="statement not covered" >valid = false;}</span></span>
+<span class="cstat-no" title="statement not covered" >            segs.push({ x: sx, y: sy });</span>
+          }
+<span class="cstat-no" title="statement not covered" >          if (!valid) {<span class="cstat-no" title="statement not covered" >continue;}</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if (touchForbidden) {</span>
+<span class="cstat-no" title="statement not covered" >            for (const { x: sx, y: sy } of segs) {</span>
+<span class="cstat-no" title="statement not covered" >              for (const n of neighbours(sx, sy)) {</span>
+<span class="cstat-no" title="statement not covered" >                if (inBounds(n.x, n.y, cfg.width, cfg.height) &amp;&amp; occupied.has(key(n.x, n.y))) {</span>
+<span class="cstat-no" title="statement not covered" >                  valid = false;</span>
+<span class="cstat-no" title="statement not covered" >                  break;</span>
                 }
-<span class="cstat-no" title="statement not covered" >                if (!valid) <span class="cstat-no" title="statement not covered" >break;</span></span>
               }
+<span class="cstat-no" title="statement not covered" >              if (!valid) {<span class="cstat-no" title="statement not covered" >break;}</span></span>
             }
-  
-<span class="cstat-no" title="statement not covered" >            if (valid) {</span>
-<span class="cstat-no" title="statement not covered" >              candidates.push({ start: { x, y }, length: len, direction: dir });</span>
-            }
+          }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if (valid) {</span>
+<span class="cstat-no" title="statement not covered" >            candidates.push({ start: { x, y }, length: len, direction: dir });</span>
           }
         }
       }
-  
-<span class="cstat-no" title="statement not covered" >      if (candidates.length === 0) <span class="cstat-no" title="statement not covered" >return null; </span></span>// dead end
-      const chosen = <span class="cstat-no" title="statement not covered" >candidates[Math.floor(env.getRandomNumber() * candidates.length)];</span>
-<span class="cstat-no" title="statement not covered" >      ships.push(chosen);</span>
-  
-      // Mark occupied squares
-<span class="cstat-no" title="statement not covered" >      for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; len; i++) {</span>
-        const sx = <span class="cstat-no" title="statement not covered" >chosen.direction === 'H' ? chosen.start.x + i : chosen.start.x;</span>
-        const sy = <span class="cstat-no" title="statement not covered" >chosen.direction === 'V' ? chosen.start.y + i : chosen.start.y;</span>
-<span class="cstat-no" title="statement not covered" >        occupied.add(key(sx, sy));</span>
-      }
     }
-  
-<span class="cstat-no" title="statement not covered" >    return { width: cfg.width, height: cfg.height, ships };</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (candidates.length === 0) {<span class="cstat-no" title="statement not covered" >return null;}</span> </span>// dead end
+    const chosen = <span class="cstat-no" title="statement not covered" >candidates[Math.floor(env.getRandomNumber() * candidates.length)];</span>
+<span class="cstat-no" title="statement not covered" >    ships.push(chosen);</span>
+&nbsp;
+    // Mark occupied squares
+<span class="cstat-no" title="statement not covered" >    for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; len; i++) {</span>
+      const sx = <span class="cstat-no" title="statement not covered" >chosen.direction === 'H' ? chosen.start.x + i : chosen.start.x;</span>
+      const sy = <span class="cstat-no" title="statement not covered" >chosen.direction === 'V' ? chosen.start.y + i : chosen.start.y;</span>
+<span class="cstat-no" title="statement not covered" >      occupied.add(key(sx, sy));</span>
+    }
   }
-  
-  // ─────────────────────────── Public toy ─────────────────────────── //
-  
-  function <span class="fstat-no" title="function not covered" >generateFleet(</span>input, env) {
-    let cfg;
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      cfg = JSON.parse(input);</span>
-    } catch (_) {
-<span class="cstat-no" title="statement not covered" >      return JSON.stringify({ error: 'Invalid JSON' });</span>
-    }
-  
-<span class="cstat-no" title="statement not covered" >    if (cfg.diagonalAllowed) {</span>
-<span class="cstat-no" title="statement not covered" >      return JSON.stringify({ error: 'Diagonal placement not supported' });</span>
-    }
-  
-    const totalSegments = <span class="cstat-no" title="statement not covered" >cfg.ships.reduce(<span class="fstat-no" title="function not covered" >(s</span>, l) =&gt; <span class="cstat-no" title="statement not covered" >s + l,</span> 0);</span>
-<span class="cstat-no" title="statement not covered" >    if (totalSegments &gt; cfg.width * cfg.height) {</span>
-<span class="cstat-no" title="statement not covered" >      return JSON.stringify({ error: 'Ship segments exceed board area' });</span>
-    }
-  
-    const MAX_TRIES = <span class="cstat-no" title="statement not covered" >100;</span>
-<span class="cstat-no" title="statement not covered" >    for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; MAX_TRIES; i++) {</span>
-      const fleet = <span class="cstat-no" title="statement not covered" >attemptPlacement(cfg, env);</span>
-<span class="cstat-no" title="statement not covered" >      if (fleet) <span class="cstat-no" title="statement not covered" >return JSON.stringify(fleet);</span></span>
-    }
-  
-<span class="cstat-no" title="statement not covered" >    return JSON.stringify({ error: 'Failed to generate fleet after max retries' });</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return { width: cfg.width, height: cfg.height, ships };</span>
+}
+&nbsp;
+// ─────────────────────────── Public toy ─────────────────────────── //
+&nbsp;
+function <span class="fstat-no" title="function not covered" >generateFleet(</span>input, env) {
+  let cfg;
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    cfg = JSON.parse(input);</span>
+  } catch (_) {
+<span class="cstat-no" title="statement not covered" >    return JSON.stringify({ error: 'Invalid JSON' });</span>
   }
-  
-  // Provide CommonJS export when possible
-<span class="cstat-no" title="statement not covered" >  if (typeof module !== 'undefined') {</span>
-<span class="cstat-no" title="statement not covered" >    module.exports = generateFleet;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (cfg.diagonalAllowed) {</span>
+<span class="cstat-no" title="statement not covered" >    return JSON.stringify({ error: 'Diagonal placement not supported' });</span>
   }
-  </pre></td></tr></table></pre>
+&nbsp;
+  const totalSegments = <span class="cstat-no" title="statement not covered" >cfg.ships.reduce(<span class="fstat-no" title="function not covered" >(s</span>, l) =&gt; <span class="cstat-no" title="statement not covered" >s + l,</span> 0);</span>
+<span class="cstat-no" title="statement not covered" >  if (totalSegments &gt; cfg.width * cfg.height) {</span>
+<span class="cstat-no" title="statement not covered" >    return JSON.stringify({ error: 'Ship segments exceed board area' });</span>
+  }
+&nbsp;
+  const MAX_TRIES = <span class="cstat-no" title="statement not covered" >100;</span>
+<span class="cstat-no" title="statement not covered" >  for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; MAX_TRIES; i++) {</span>
+    const fleet = <span class="cstat-no" title="statement not covered" >attemptPlacement(cfg, env);</span>
+<span class="cstat-no" title="statement not covered" >    if (fleet) {<span class="cstat-no" title="statement not covered" >return JSON.stringify(fleet);}</span></span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return JSON.stringify({ error: 'Failed to generate fleet after max retries' });</span>
+}
+&nbsp;
+export { generateFleet };
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-08T19:43:08.396Z
+                at 2025-05-08T19:45:00.051Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

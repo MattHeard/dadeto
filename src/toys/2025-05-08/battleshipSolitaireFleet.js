@@ -133,7 +133,4 @@ function generateFleet(input, env) {
   return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
 }
 
-// Provide CommonJS export when possible
-if (typeof module !== 'undefined') {
-  module.exports = generateFleet;
-}
+export { generateFleet };

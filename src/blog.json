@@ -2170,5 +2170,49 @@
         "Afterwards, I had bruises all the way down the side of my ribcage. But I shrugged them off. \"For the sake of the movie\", right?"
       ]
     }
+    {
+      "key": "BATS1",
+      "title": "Battleship Solitaire Fleet",
+      "publicationDate": "2025-05-08",
+      "content": [
+        "Generates a random valid fleet for Battleship Solitaire puzzles, respecting board size, fleet composition, and optional no-touching constraints. Returns the fleet layout as JSON, or an error if not possible."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "A digital illustration of a battleship puzzle grid with stylized ships placed on a blue ocean background, some ships touching, others separated, and a pencil marking possible placements."
+      },
+      "toy": {
+        "modulePath": "/2025-05-08/battleshipSolitaireFleet.js",
+        "functionName": "generateFleet"
+      },
+      "tags": [
+        "toy",
+        "battleship",
+        "puzzle",
+        "generator"
+      ]
+    },
+    {
+      "key": "BATS1",
+      "title": "Battleship Solitaire Fleet",
+      "publicationDate": "2025-05-08",
+      "content": [
+        "Generates a random valid fleet for Battleship Solitaire puzzles, respecting board size, fleet composition, and optional no-touching constraints. Returns the fleet layout as JSON, or an error if not possible."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "A digital illustration of a battleship puzzle grid with stylized ships placed on a blue ocean background, some ships touching, others separated, and a pencil marking possible placements."
+      },
+      "toy": {
+        "modulePath": "/2025-05-08/battleshipSolitaireFleet.js",
+        "functionName": "generateFleet"
+      },
+      "tags": [
+        "toy",
+        "battleship",
+        "puzzle",
+        "generator"
+      ]
+    }
   ]
 }
