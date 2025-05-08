@@ -1,3 +1,8 @@
+function isObject(obj) {
+  return obj && typeof obj === 'object' && !Array.isArray(obj);
+}
+import { deepMerge } from './data.js';
+
 export function setOutput(input, env) {
   let inputJson;
   try {
