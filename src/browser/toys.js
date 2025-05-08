@@ -312,6 +312,25 @@ function processInputAndSetOutput(elements, processingFunction, env) {
   const result = processingFunction(inputValue, toyEnv);
   if (article && article.id) {
     logInfo(article.id);
+    // Update the desired output for this article
+    if (env.setData) {
+      // Use setData from env if provided
+      const { globalState, desired } = env;
+      const loggers = env.loggers || { logInfo, logError: env.errorFn };
+      if (desired && globalState) {
+        desired.output = desired.output || {};
+        desired.output[article.id] = result;
+        env.setData({ desired, current: globalState }, loggers);
+      }
+    } else {
+      // Fallback: import setData directly
+      // (Assumes setData is imported at the top of the file)
+      if (env.globalState && env.desired) {
+        env.desired.output = env.desired.output || {};
+        env.desired.output[article.id] = result;
+        setData({ desired: env.desired, current: env.globalState }, env.loggers || { logInfo, logError: env.errorFn });
+      }
+    }
   }
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
