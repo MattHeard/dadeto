@@ -355,7 +355,7 @@ function disableInputAndButton(inputElement, submitButton) {
  * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, and dom.
  */
 export function initializeInteractiveComponent(article, processingFunction, config) {
-  const { globalState, createEnvFn, errorFn, fetchFn, dom, loggers } = config;
+  const { globalState, createEnvFn, errorFn, fetchFn, dom, logInfo } = config;
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
   const submitButton = dom.querySelector(article, 'button');
@@ -369,16 +369,14 @@ export function initializeInteractiveComponent(article, processingFunction, conf
   // Update message to show JS is running, replacing <p.output> with paragraph
   const initialisingWarning = setTextContent({ content: 'Initialising...', presenterKey }, dom, outputParent);
 
-  // Use loggers directly
+  // Use logInfo directly from config
   const env = {
     globalState,
     createEnv: createEnvFn,
     errorFn,
     fetchFn,
     dom,
-    logInfo: loggers && loggers.logInfo,
-    logError: loggers && loggers.logError,
-    logWarning: loggers && loggers.logWarning
+    logInfo
   };
   const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect, article }, processingFunction, env);
 
