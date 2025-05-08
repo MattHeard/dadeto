@@ -34,18 +34,6 @@ describe('toys', () => {
       expect(logMock).toHaveBeenCalledWith('Dropdown changed:', { postId: 'post-123', selectedValue: 'text' });
     });
 
-    it('falls back to console.log if logFn is not provided', () => {
-      const mockArticle = { id: 'post-456', closest: jest.fn(() => ({ id: 'post-456' })) };
-      const mockDropdown = { value: 'pre', currentTarget: null, closest: null };
-      mockDropdown.currentTarget = mockDropdown;
-      mockDropdown.closest = jest.fn(() => mockArticle);
-      // Mock console.log
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-      const event = { currentTarget: mockDropdown };
-      handleDropdownChange(event);
-      expect(consoleLogSpy).toHaveBeenCalledWith('Dropdown changed:', { postId: 'post-456', selectedValue: 'pre' });
-      consoleLogSpy.mockRestore();
-    });
 
     it('logs with undefined postId if no article is found', () => {
       const logMock = jest.fn();
