@@ -9,8 +9,9 @@
   1:1  warning  Function 'isObject' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-   22:8  warning  Function 'handleDropdownChange' has a complexity of 4. Maximum allowed is 2      complexity
-  323:1  warning  Function 'processInputAndSetOutput' has a complexity of 4. Maximum allowed is 2  complexity
+   22:8  warning  Function 'handleDropdownChange' has too many parameters (4). Maximum allowed is 3  max-params
+   22:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2        complexity
+  317:1  warning  Function 'processInputAndSetOutput' has a complexity of 4. Maximum allowed is 2    complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
@@ -22,4 +23,4 @@
   31:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
   48:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 11 problems (0 errors, 11 warnings)
+✖ 12 problems (0 errors, 12 warnings)

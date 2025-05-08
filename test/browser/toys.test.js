@@ -39,7 +39,13 @@ describe('toys', () => {
       const mockLogInfo = jest.fn();
       const mockGetData = jest.fn(() => ({ output: { 'post-123': 'mockOutput' } }));
 
-      handleDropdownChange(mockDropdown, mockLogInfo, mockGetData);
+      const dom = {
+        removeAllChildren: (node) => { while (node.firstChild) {node.removeChild(node.firstChild);} },
+        appendChild: (parent, child) => parent.appendChild(child),
+        createElement: () => ({}),
+        setTextContent: (el, txt) => { el.textContent = txt; }
+      };
+      handleDropdownChange(mockDropdown, mockLogInfo, mockGetData, dom);
 
       expect(mockLogInfo).toHaveBeenCalledWith('Dropdown output:', {
         postId: 'post-123',

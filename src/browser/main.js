@@ -195,7 +195,8 @@ window.addEventListener('DOMContentLoaded', () => {
     dropdown.addEventListener('change', event => handleDropdownChange(
       event.currentTarget,
       loggers.logInfo,
-      () => getData(globalState, fetch, loggers)
+      () => getData(globalState, fetch, loggers),
+      dom
     ));
   });
 });

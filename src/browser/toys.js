@@ -19,7 +19,7 @@ function getDropdownPostId(dropdown) {
 
 import { querySelector } from './document.js';
 
-export function handleDropdownChange(dropdown, logInfo, getData) {
+export function handleDropdownChange(dropdown, logInfo, getData, dom) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
   const data = getData();
@@ -27,12 +27,6 @@ export function handleDropdownChange(dropdown, logInfo, getData) {
   logInfo('Dropdown output:', { postId, selectedValue, output });
 
   const parent = querySelector(dropdown.parentNode, 'div.output');
-  const dom = {
-    removeAllChildren: (node) => { while (node.firstChild) {node.removeChild(node.firstChild);} },
-    appendChild: (parent, child) => parent.appendChild(child),
-    createElement: typeof document !== 'undefined' ? document.createElement.bind(document) : () => ({}),
-    setTextContent: (el, txt) => { el.textContent = txt; }
-  };
   setTextContent({ presenterKey: selectedValue, content: output }, dom, parent);
 
 }
