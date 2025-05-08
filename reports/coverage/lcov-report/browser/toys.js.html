@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.57% </span>
+                <span class="strong">93.95% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>138/140</span>
+                <span class='fraction'>140/149</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">95.65% </span>
+                <span class="strong">85.18% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>22/23</span>
+                <span class='fraction'>23/27</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">92.45% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>49/49</span>
+                <span class='fraction'>49/53</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.51% </span>
+                <span class="strong">94.4% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>133/135</span>
+                <span class='fraction'>135/143</span>
             </div>
         
             
@@ -522,7 +522,18 @@
 <a name='L457'></a><a href='#L457'>457</a>
 <a name='L458'></a><a href='#L458'>458</a>
 <a name='L459'></a><a href='#L459'>459</a>
-<a name='L460'></a><a href='#L460'>460</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L460'></a><a href='#L460'>460</a>
+<a name='L461'></a><a href='#L461'>461</a>
+<a name='L462'></a><a href='#L462'>462</a>
+<a name='L463'></a><a href='#L463'>463</a>
+<a name='L464'></a><a href='#L464'>464</a>
+<a name='L465'></a><a href='#L465'>465</a>
+<a name='L466'></a><a href='#L466'>466</a>
+<a name='L467'></a><a href='#L467'>467</a>
+<a name='L468'></a><a href='#L468'>468</a>
+<a name='L469'></a><a href='#L469'>469</a>
+<a name='L470'></a><a href='#L470'>470</a>
+<a name='L471'></a><a href='#L471'>471</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -547,6 +558,17 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1006,6 +1028,17 @@ export function handleDropdownChange(dropdown, logInfo, getData) {
   const data = getData();
   const output = data &amp;&amp; data.output &amp;&amp; data.output[postId];
   logInfo('Dropdown output:', { postId, selectedValue, output });
+&nbsp;
+  const parent = dropdown.parentNode;
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (parent) {
+    const dom = <span class="cstat-no" title="statement not covered" >{</span>
+      removeAllChildren: <span class="fstat-no" title="function not covered" >(n</span>ode) =&gt; { <span class="cstat-no" title="statement not covered" >while (node.firstChild) <span class="cstat-no" title="statement not covered" >node.removeChild(node.firstChild); </span></span>},
+      appendChild: <span class="fstat-no" title="function not covered" >(p</span>arent, child) =&gt; <span class="cstat-no" title="statement not covered" >parent.appendChild(child),</span>
+      createElement: typeof document !== 'undefined' ? document.createElement.bind(document) : <span class="fstat-no" title="function not covered" >()</span> =&gt; (<span class="cstat-no" title="statement not covered" >{})</span>,
+      setTextContent: <span class="fstat-no" title="function not covered" >(e</span>l, txt) =&gt; { <span class="cstat-no" title="statement not covered" >el.textContent = txt; </span>}
+    };
+<span class="cstat-no" title="statement not covered" >    setTextContent({ presenterKey: selectedValue, content: output }, dom, parent);</span>
+  }
 }
 &nbsp;
 // Map of presenter keys to presenter functions
@@ -1447,7 +1480,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-08T11:29:12.038Z
+                at 2025-05-08T12:24:46.782Z
             </div>
         <script src="../prettify.js"></script>
         <script>

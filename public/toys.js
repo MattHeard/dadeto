@@ -23,6 +23,17 @@ export function handleDropdownChange(dropdown, logInfo, getData) {
   const data = getData();
   const output = data && data.output && data.output[postId];
   logInfo('Dropdown output:', { postId, selectedValue, output });
+
+  const parent = dropdown.parentNode;
+  if (parent) {
+    const dom = {
+      removeAllChildren: (node) => { while (node.firstChild) node.removeChild(node.firstChild); },
+      appendChild: (parent, child) => parent.appendChild(child),
+      createElement: typeof document !== 'undefined' ? document.createElement.bind(document) : () => ({}),
+      setTextContent: (el, txt) => { el.textContent = txt; }
+    };
+    setTextContent({ presenterKey: selectedValue, content: output }, dom, parent);
+  }
 }
 
 // Map of presenter keys to presenter functions

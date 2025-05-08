@@ -10,8 +10,8 @@
   23:1  warning  Function 'handleValidOutputInput' has a complexity of 4. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-   20:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2      complexity
-  311:1  warning  Function 'processInputAndSetOutput' has a complexity of 4. Maximum allowed is 2  complexity
+   20:8  warning  Function 'handleDropdownChange' has a complexity of 5. Maximum allowed is 2      complexity
+  322:1  warning  Function 'processInputAndSetOutput' has a complexity of 4. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
