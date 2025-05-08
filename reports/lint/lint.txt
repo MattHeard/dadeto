@@ -20,5 +20,6 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setOutput.test.js
   18:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
   31:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
+  48:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 10 problems (0 errors, 10 warnings)
+✖ 11 problems (0 errors, 11 warnings)
