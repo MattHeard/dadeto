@@ -21,9 +21,9 @@ function processSetOutput(inputJson, env) {
 }
 
 function handleValidOutputInput(inputJson, env) {
-  // Support both env.get (function/Map) and plain object
-  const getData = typeof env.get === 'function' ? env.get('getData') : env.getData;
-  const setData = typeof env.get === 'function' ? env.get('setData') : env.setData;
+  // Assume env.get is always a function
+  const getData = env.get('getData');
+  const setData = env.get('setData');
   try {
     return mergeOutputData(getData, setData, inputJson);
   } catch (error) {
