@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746695710338" clover="3.2.0">
-  <project timestamp="1746695710338" name="All files">
-    <metrics statements="1087" coveredstatements="1079" conditionals="321" coveredconditionals="308" methods="451" coveredmethods="451" elements="1859" coveredelements="1838" complexity="0" loc="1087" ncloc="1087" packages="13" files="26" classes="26"/>
+<coverage generated="1746696172922" clover="3.2.0">
+  <project timestamp="1746696172922" name="All files">
+    <metrics statements="1089" coveredstatements="1081" conditionals="321" coveredconditionals="308" methods="451" coveredmethods="451" elements="1861" coveredelements="1840" complexity="0" loc="1089" ncloc="1089" packages="13" files="26" classes="26"/>
     <package name="browser">
-      <metrics statements="299" coveredstatements="291" conditionals="58" coveredconditionals="49" methods="98" coveredmethods="98"/>
+      <metrics statements="301" coveredstatements="293" conditionals="58" coveredconditionals="49" methods="98" coveredmethods="98"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -62,7 +62,7 @@
         <line num="82" count="6" type="stmt"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
-        <metrics statements="67" coveredstatements="67" conditionals="22" coveredconditionals="22" methods="24" coveredmethods="24"/>
+        <metrics statements="69" coveredstatements="69" conditionals="22" coveredconditionals="22" methods="24" coveredmethods="24"/>
         <line num="1" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
         <line num="11" count="26" type="stmt"/>
@@ -126,10 +126,12 @@
         <line num="210" count="6" type="stmt"/>
         <line num="211" count="6" type="stmt"/>
         <line num="213" count="6" type="stmt"/>
-        <line num="214" count="1" type="stmt"/>
-        <line num="215" count="1" type="stmt"/>
-        <line num="216" count="1" type="stmt"/>
+        <line num="214" count="6" type="stmt"/>
+        <line num="216" count="6" type="stmt"/>
         <line num="217" count="1" type="stmt"/>
+        <line num="218" count="1" type="stmt"/>
+        <line num="219" count="1" type="stmt"/>
+        <line num="220" count="1" type="stmt"/>
       </file>
       <file name="tags.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js">
         <metrics statements="39" coveredstatements="39" conditionals="6" coveredconditionals="6" methods="15" coveredmethods="15"/>

@@ -207,6 +207,9 @@ function getRelevantStateCopy(state) {
  * @param {function} loggers.logError - The error logging function.
  */
 export const setData = (state, loggers) => {
+  console.log('setData called', state, loggers);
+  console.log('logInfo in setData:', loggers.logInfo);
+
   const { desired, current } = state;
   const { logInfo, logError } = loggers;
   // Validate incoming state
