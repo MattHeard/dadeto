@@ -229,67 +229,67 @@
  * }
  */
 export function <span class="fstat-no" title="function not covered" >createBattleshipFleetBoardElement(</span>inputString, dom) {
-    let fleet;
-  
-    // 1. Parse input safely
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      fleet = JSON.parse(inputString);</span>
-    } catch {
-      const err = <span class="cstat-no" title="statement not covered" >dom.createElement('p');</span>
-<span class="cstat-no" title="statement not covered" >      dom.setTextContent(err, 'Invalid JSON');</span>
-<span class="cstat-no" title="statement not covered" >      return err;</span>
-    }
-  
-    const { width, height, ships } = <span class="cstat-no" title="statement not covered" >fleet ?? {};</span>
-<span class="cstat-no" title="statement not covered" >    if (</span>
-      typeof width !== 'number' || typeof height !== 'number' ||
-      !Array.isArray(ships)
-    ) {
-      const err = <span class="cstat-no" title="statement not covered" >dom.createElement('p');</span>
-<span class="cstat-no" title="statement not covered" >      dom.setTextContent(err, 'Invalid fleet structure');</span>
-<span class="cstat-no" title="statement not covered" >      return err;</span>
-    }
-  
-    // 2. Initialise empty grid with water symbols
-    const board = <span class="cstat-no" title="statement not covered" >Array.from({ length: height }, <span class="fstat-no" title="function not covered" >()</span> =&gt;</span>
-<span class="cstat-no" title="statement not covered" >      Array(width).fill('\u00b7') </span>// middle-dot
-    );
-  
-    // 3. Place ships – mark with '#'
-<span class="cstat-no" title="statement not covered" >    for (const ship of ships) {</span>
-      const { start, length, direction } = <span class="cstat-no" title="statement not covered" >ship ?? {};</span>
-<span class="cstat-no" title="statement not covered" >      if (</span>
-        !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
-        typeof length !== 'number' || (direction !== 'H' &amp;&amp; direction !== 'V')
-      ) {
-<span class="cstat-no" title="statement not covered" >        continue; </span>// skip malformed
-      }
-  
-<span class="cstat-no" title="statement not covered" >      for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; length; i++) {</span>
-        const x = <span class="cstat-no" title="statement not covered" >direction === 'H' ? start.x + i : start.x;</span>
-        const y = <span class="cstat-no" title="statement not covered" >direction === 'V' ? start.y + i : start.y;</span>
-<span class="cstat-no" title="statement not covered" >        if (x &lt; 0 || y &lt; 0 || x &gt;= width || y &gt;= height) <span class="cstat-no" title="statement not covered" >continue;</span></span>
-<span class="cstat-no" title="statement not covered" >        board[y][x] = '#';</span>
-      }
-    }
-  
-    // 4. Convert to string
-    const rowStrings = <span class="cstat-no" title="statement not covered" >board.map(<span class="fstat-no" title="function not covered" >ro</span>w =&gt; <span class="cstat-no" title="statement not covered" >row.join(' '))</span>;</span>
-    const content = <span class="cstat-no" title="statement not covered" >rowStrings.join('\n');</span>
-  
-    // 5. Wrap in &lt;pre&gt;
-    const pre = <span class="cstat-no" title="statement not covered" >dom.createElement('pre');</span>
-<span class="cstat-no" title="statement not covered" >    dom.setTextContent(pre, content);</span>
-<span class="cstat-no" title="statement not covered" >    return pre;</span>
+  let fleet;
+&nbsp;
+  // 1. Parse input safely
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    fleet = JSON.parse(inputString);</span>
+  } catch {
+    const err = <span class="cstat-no" title="statement not covered" >dom.createElement('p');</span>
+<span class="cstat-no" title="statement not covered" >    dom.setTextContent(err, 'Invalid JSON');</span>
+<span class="cstat-no" title="statement not covered" >    return err;</span>
   }
-  </pre></td></tr></table></pre>
+&nbsp;
+  const { width, height, ships } = <span class="cstat-no" title="statement not covered" >fleet ?? {};</span>
+<span class="cstat-no" title="statement not covered" >  if (</span>
+    typeof width !== 'number' || typeof height !== 'number' ||
+      !Array.isArray(ships)
+  ) {
+    const err = <span class="cstat-no" title="statement not covered" >dom.createElement('p');</span>
+<span class="cstat-no" title="statement not covered" >    dom.setTextContent(err, 'Invalid fleet structure');</span>
+<span class="cstat-no" title="statement not covered" >    return err;</span>
+  }
+&nbsp;
+  // 2. Initialise empty grid with water symbols
+  const board = <span class="cstat-no" title="statement not covered" >Array.from({ length: height }, <span class="fstat-no" title="function not covered" >()</span> =&gt;</span>
+<span class="cstat-no" title="statement not covered" >    Array(width).fill('\u00b7') </span>// middle-dot
+  );
+&nbsp;
+  // 3. Place ships – mark with '#'
+<span class="cstat-no" title="statement not covered" >  for (const ship of ships) {</span>
+    const { start, length, direction } = <span class="cstat-no" title="statement not covered" >ship ?? {};</span>
+<span class="cstat-no" title="statement not covered" >    if (</span>
+      !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
+        typeof length !== 'number' || (direction !== 'H' &amp;&amp; direction !== 'V')
+    ) {
+<span class="cstat-no" title="statement not covered" >      continue; </span>// skip malformed
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; length; i++) {</span>
+      const x = <span class="cstat-no" title="statement not covered" >direction === 'H' ? start.x + i : start.x;</span>
+      const y = <span class="cstat-no" title="statement not covered" >direction === 'V' ? start.y + i : start.y;</span>
+<span class="cstat-no" title="statement not covered" >      if (x &lt; 0 || y &lt; 0 || x &gt;= width || y &gt;= height) {<span class="cstat-no" title="statement not covered" >continue;}</span></span>
+<span class="cstat-no" title="statement not covered" >      board[y][x] = '#';</span>
+    }
+  }
+&nbsp;
+  // 4. Convert to string
+  const rowStrings = <span class="cstat-no" title="statement not covered" >board.map(<span class="fstat-no" title="function not covered" >ro</span>w =&gt; <span class="cstat-no" title="statement not covered" >row.join(' '))</span>;</span>
+  const content = <span class="cstat-no" title="statement not covered" >rowStrings.join('\n');</span>
+&nbsp;
+  // 5. Wrap in &lt;pre&gt;
+  const pre = <span class="cstat-no" title="statement not covered" >dom.createElement('pre');</span>
+<span class="cstat-no" title="statement not covered" >  dom.setTextContent(pre, content);</span>
+<span class="cstat-no" title="statement not covered" >  return pre;</span>
+}
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-08T20:12:25.943Z
+                at 2025-05-08T20:15:35.477Z
             </div>
         <script src="../prettify.js"></script>
         <script>

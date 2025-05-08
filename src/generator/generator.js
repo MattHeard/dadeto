@@ -846,7 +846,8 @@ function getToyOutputSelectDropdown() {
   const optionText = '<option value="text">text</option>';
   const optionPre = '<option value="pre">pre</option>';
   const optionTicTacToe = '<option value="tic-tac-toe">tic-tac-toe</option>';
-  return `<select class="output">${optionText}${optionPre}${optionTicTacToe}</select>`;
+  const optionBattleship = '<option value="battleship-solitaire-fleet">battleship-solitaire-fleet</option>';
+  return `<select class="output">${optionText}${optionPre}${optionTicTacToe}${optionBattleship}</select>`;
 }
 
 function getToyOutputValueContent() {
