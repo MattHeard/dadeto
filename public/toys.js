@@ -17,6 +17,8 @@ function getDropdownPostId(dropdown) {
   return article.id;
 }
 
+import { querySelector } from './document.js';
+
 export function handleDropdownChange(dropdown, logInfo, getData) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
@@ -24,7 +26,7 @@ export function handleDropdownChange(dropdown, logInfo, getData) {
   const output = data && data.output && data.output[postId];
   logInfo('Dropdown output:', { postId, selectedValue, output });
 
-  const parent = dropdown.parentNode;
+  const parent = dropdown.parentNode && querySelector(dropdown.parentNode, 'div.output');
   if (parent) {
     const dom = {
       removeAllChildren: (node) => { while (node.firstChild) {node.removeChild(node.firstChild);} },
