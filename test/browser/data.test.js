@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch } from '../../src/browser/data.js';
+import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch, deepMerge } from '../../src/browser/data.js';
 
 describe('fetchAndCacheBlogData', () => {
   let state;
