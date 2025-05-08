@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746698689876" clover="3.2.0">
-  <project timestamp="1746698689876" name="All files">
+<coverage generated="1746698926151" clover="3.2.0">
+  <project timestamp="1746698926151" name="All files">
     <metrics statements="1102" coveredstatements="1081" conditionals="317" coveredconditionals="308" methods="455" coveredmethods="451" elements="1874" coveredelements="1840" complexity="0" loc="1102" ncloc="1102" packages="13" files="27" classes="27"/>
     <package name="browser">
       <metrics statements="314" coveredstatements="293" conditionals="54" coveredconditionals="49" methods="102" coveredmethods="98"/>
@@ -273,65 +273,65 @@
         <line num="270" count="4" type="stmt"/>
         <line num="271" count="4" type="stmt"/>
         <line num="273" count="2" type="stmt"/>
-        <line num="297" count="5" type="stmt"/>
-        <line num="298" count="5" type="stmt"/>
         <line num="299" count="5" type="stmt"/>
         <line num="300" count="5" type="stmt"/>
-        <line num="301" count="2" type="stmt"/>
-        <line num="302" count="2" type="stmt"/>
+        <line num="301" count="5" type="stmt"/>
+        <line num="302" count="5" type="stmt"/>
         <line num="303" count="2" type="stmt"/>
-        <line num="308" count="5" type="stmt"/>
-        <line num="309" count="5" type="stmt"/>
+        <line num="304" count="2" type="stmt"/>
+        <line num="305" count="2" type="stmt"/>
         <line num="310" count="5" type="stmt"/>
         <line num="311" count="5" type="stmt"/>
         <line num="312" count="5" type="stmt"/>
-        <line num="313" count="4" type="cond" truecount="3" falsecount="1"/>
-        <line num="314" count="0" type="stmt"/>
-        <line num="317" count="0" type="stmt"/>
-        <line num="319" count="4" type="stmt"/>
-        <line num="320" count="4" type="stmt"/>
-        <line num="321" count="4" type="cond" truecount="2" falsecount="0"/>
-        <line num="322" count="2" type="stmt"/>
-        <line num="327" count="5" type="stmt"/>
-        <line num="328" count="5" type="stmt"/>
+        <line num="313" count="5" type="stmt"/>
+        <line num="314" count="5" type="stmt"/>
+        <line num="315" count="4" type="cond" truecount="3" falsecount="1"/>
+        <line num="316" count="0" type="stmt"/>
+        <line num="319" count="0" type="stmt"/>
+        <line num="321" count="4" type="stmt"/>
+        <line num="322" count="4" type="stmt"/>
+        <line num="323" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="324" count="2" type="stmt"/>
         <line num="329" count="5" type="stmt"/>
         <line num="330" count="5" type="stmt"/>
-        <line num="332" count="2" type="stmt"/>
-        <line num="336" count="7" type="stmt"/>
-        <line num="337" count="5" type="stmt"/>
-        <line num="338" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="339" count="4" type="stmt"/>
-        <line num="341" count="5" type="stmt"/>
-        <line num="356" count="3" type="stmt"/>
-        <line num="357" count="3" type="stmt"/>
-        <line num="368" count="3" type="stmt"/>
-        <line num="369" count="3" type="stmt"/>
+        <line num="331" count="5" type="stmt"/>
+        <line num="332" count="5" type="stmt"/>
+        <line num="334" count="2" type="stmt"/>
+        <line num="338" count="7" type="stmt"/>
+        <line num="339" count="5" type="stmt"/>
+        <line num="340" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="341" count="4" type="stmt"/>
+        <line num="343" count="5" type="stmt"/>
+        <line num="358" count="3" type="stmt"/>
+        <line num="359" count="3" type="stmt"/>
         <line num="370" count="3" type="stmt"/>
+        <line num="371" count="3" type="stmt"/>
         <line num="372" count="3" type="stmt"/>
-        <line num="373" count="3" type="stmt"/>
         <line num="374" count="3" type="stmt"/>
         <line num="375" count="3" type="stmt"/>
-        <line num="378" count="3" type="stmt"/>
+        <line num="376" count="3" type="stmt"/>
+        <line num="377" count="3" type="stmt"/>
         <line num="380" count="3" type="stmt"/>
         <line num="382" count="3" type="stmt"/>
-        <line num="385" count="3" type="stmt"/>
-        <line num="393" count="3" type="stmt"/>
-        <line num="396" count="3" type="stmt"/>
-        <line num="399" count="3" type="stmt"/>
-        <line num="402" count="3" type="stmt"/>
-        <line num="411" count="3" type="stmt"/>
-        <line num="412" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="413" count="1" type="stmt"/>
-        <line num="426" count="3" type="stmt"/>
-        <line num="427" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="428" count="1" type="stmt"/>
-        <line num="429" count="1" type="stmt"/>
-        <line num="431" count="2" type="stmt"/>
-        <line num="432" count="2" type="stmt"/>
+        <line num="384" count="3" type="stmt"/>
+        <line num="387" count="3" type="stmt"/>
+        <line num="395" count="3" type="stmt"/>
+        <line num="398" count="3" type="stmt"/>
+        <line num="401" count="3" type="stmt"/>
+        <line num="404" count="3" type="stmt"/>
+        <line num="413" count="3" type="stmt"/>
+        <line num="414" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="415" count="1" type="stmt"/>
+        <line num="428" count="3" type="stmt"/>
+        <line num="429" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="430" count="1" type="stmt"/>
+        <line num="431" count="1" type="stmt"/>
         <line num="433" count="2" type="stmt"/>
         <line num="434" count="2" type="stmt"/>
         <line num="435" count="2" type="stmt"/>
-        <line num="455" count="1" type="stmt"/>
+        <line num="436" count="2" type="stmt"/>
+        <line num="437" count="2" type="stmt"/>
+        <line num="457" count="1" type="stmt"/>
       </file>
     </package>
     <package name="generator">

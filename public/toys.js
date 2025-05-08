@@ -292,6 +292,8 @@ function parseJSONResult(result) {
  */
 
 
+import { setOutput } from './setOutput.js';
+
 // New wrapper function
 function createHandleInputError(env, parent) {
   const logError = env.errorFn;
