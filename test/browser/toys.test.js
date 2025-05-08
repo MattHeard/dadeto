@@ -14,10 +14,61 @@ import {
   getDeepStateCopy,
   createHandleSubmit,
   initializeInteractiveComponent,
-  handleModuleError
+  handleModuleError,
+  handleDropdownChange
 } from '../../src/browser/toys.js';
 
 describe('toys', () => {
+  describe('handleDropdownChange', () => {
+    let originalLog;
+    beforeEach(() => {
+      originalLog = global.log;
+    });
+    afterEach(() => {
+      global.log = originalLog;
+    });
+
+    it('logs the correct postId and selectedValue when dropdown changes', () => {
+      // Mock dropdown and article
+      const mockArticle = { id: 'post-123', closest: jest.fn(() => ({ id: 'post-123' })) };
+      const mockDropdown = { value: 'text', currentTarget: null, closest: null };
+      mockDropdown.currentTarget = mockDropdown;
+      mockDropdown.closest = jest.fn(() => mockArticle);
+      // Mock log
+      const logMock = jest.fn();
+      global.log = logMock;
+      // Mock event
+      const event = { currentTarget: mockDropdown };
+      handleDropdownChange(event);
+      expect(logMock).toHaveBeenCalledWith('Dropdown changed:', { postId: 'post-123', selectedValue: 'text' });
+    });
+
+    it('falls back to console.log if log is undefined', () => {
+      // Remove global.log
+      global.log = undefined;
+      const mockArticle = { id: 'post-456', closest: jest.fn(() => ({ id: 'post-456' })) };
+      const mockDropdown = { value: 'pre', currentTarget: null, closest: null };
+      mockDropdown.currentTarget = mockDropdown;
+      mockDropdown.closest = jest.fn(() => mockArticle);
+      // Mock console.log
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const event = { currentTarget: mockDropdown };
+      handleDropdownChange(event);
+      expect(consoleLogSpy).toHaveBeenCalledWith('Dropdown changed:', { postId: 'post-456', selectedValue: 'pre' });
+      consoleLogSpy.mockRestore();
+    });
+
+    it('logs with undefined postId if no article is found', () => {
+      global.log = jest.fn();
+      const mockDropdown = { value: 'tic-tac-toe', currentTarget: null, closest: null };
+      mockDropdown.currentTarget = mockDropdown;
+      mockDropdown.closest = jest.fn(() => undefined);
+      const event = { currentTarget: mockDropdown };
+      handleDropdownChange(event);
+      expect(global.log).toHaveBeenCalledWith('Dropdown changed:', { postId: undefined, selectedValue: 'tic-tac-toe' });
+    });
+  });
+
   let entry;
   let observer;
   let modulePath;
@@ -28,6 +79,7 @@ describe('toys', () => {
     article = {};
   });
 
+  // --- Existing tests below ---
   describe('makeObserverCallback', () => {
     let observerCallback;
     let importModule;

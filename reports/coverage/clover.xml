@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746690054536" clover="3.2.0">
-  <project timestamp="1746690054536" name="All files">
-    <metrics statements="1075" coveredstatements="1070" conditionals="313" coveredconditionals="305" methods="449" coveredmethods="448" elements="1837" coveredelements="1823" complexity="0" loc="1075" ncloc="1075" packages="13" files="26" classes="26"/>
+<coverage generated="1746690201893" clover="3.2.0">
+  <project timestamp="1746690201893" name="All files">
+    <metrics statements="1075" coveredstatements="1075" conditionals="313" coveredconditionals="309" methods="449" coveredmethods="449" elements="1837" coveredelements="1833" complexity="0" loc="1075" ncloc="1075" packages="13" files="26" classes="26"/>
     <package name="browser">
-      <metrics statements="287" coveredstatements="282" conditionals="50" coveredconditionals="46" methods="96" coveredmethods="95"/>
+      <metrics statements="287" coveredstatements="287" conditionals="50" coveredconditionals="50" methods="96" coveredmethods="96"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -174,12 +174,12 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="127" coveredstatements="122" conditionals="20" coveredconditionals="16" methods="47" coveredmethods="46"/>
-        <line num="11" count="0" type="stmt"/>
-        <line num="12" count="0" type="stmt"/>
-        <line num="13" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="14" count="0" type="stmt"/>
-        <line num="15" count="0" type="cond" truecount="0" falsecount="2"/>
+        <metrics statements="127" coveredstatements="127" conditionals="20" coveredconditionals="20" methods="47" coveredmethods="47"/>
+        <line num="11" count="3" type="stmt"/>
+        <line num="12" count="3" type="stmt"/>
+        <line num="13" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="14" count="3" type="stmt"/>
+        <line num="15" count="3" type="cond" truecount="2" falsecount="0"/>
         <line num="19" count="1" type="stmt"/>
         <line num="26" count="15" type="stmt"/>
         <line num="27" count="15" type="stmt"/>
