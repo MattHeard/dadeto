@@ -30,7 +30,6 @@ function setTextContent(output, dom, parent) {
   return child;
 }
 
-
 /**
  * @query
  * Creates an error handler for module loading errors
@@ -88,7 +87,6 @@ function runModuleInitializer(module, getProcessing, initialize) {
   const processingFunction = getProcessing(module);
   initialize(processingFunction);
 }
-
 
 function importModuleForIntersection(moduleInfo, moduleConfig) {
   const { dom, loggers } = moduleConfig;
