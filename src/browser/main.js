@@ -1,4 +1,48 @@
 import { setupAudio } from './audio-controls.js';
+import {
+  initializeVisibleComponents,
+  makeCreateIntersectionObserver
+} from './toys.js';
+import {
+  fetchAndCacheBlogData, getData, setData
+} from './data.js';
+import {
+  getElementById,
+  getAudioElements,
+  getElementsByTagName,
+  hasClass,
+  querySelector,
+  removeControlsAttribute,
+  createElement,
+  createTextNode,
+  stopDefault,
+  playAudio,
+  addEventListener,
+  appendChild,
+  insertBefore,
+  log,
+  warn,
+  error,
+  addWarning,
+  getRandomNumber,
+  getCurrentTime,
+  hasNextSiblingClass,
+  removeNextSibling,
+  setTextContent,
+  addClass,
+  hide,
+  makeIntersectionObserver,
+  enable,
+  removeChild,
+  removeWarning,
+  contains,
+  removeAllChildren,
+  isIntersecting,
+  disconnectObserver,
+  getClasses
+} from './document.js';
+import { handleTagLinks } from './tags.js';
+
 function hasNoInteractiveComponents(win) {
   return !win.interactiveComponents || win.interactiveComponents.length === 0;
 }

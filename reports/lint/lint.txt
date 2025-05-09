@@ -4,7 +4,7 @@
   187:1  warning  Function 'getRelevantStateCopy' has a complexity of 3. Maximum allowed is 2   complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  189:1  warning  './toys.js' import is duplicated  no-duplicate-imports
+  72:3  error  Parsing error: Identifier 'initializeVisibleComponents' has already been declared
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/setOutput.js
   1:1  warning  Function 'isObject' has a complexity of 3. Maximum allowed is 2  complexity
@@ -53,4 +53,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 36 problems (0 errors, 36 warnings)
+✖ 36 problems (1 error, 35 warnings)
