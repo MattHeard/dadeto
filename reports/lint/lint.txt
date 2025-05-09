@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  72:3  error  Parsing error: Identifier 'initializeVisibleComponents' has already been declared
+  67:10  error  Parsing error: Identifier 'fetchAndCacheBlogData' has already been declared
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/setOutput.js
   1:1  warning  Function 'isObject' has a complexity of 3. Maximum allowed is 2  complexity
