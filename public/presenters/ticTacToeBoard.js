@@ -8,7 +8,11 @@ import { isObject } from '../browser/common.js';
  * @returns {HTMLElement}      – <pre> (board) or <p> (error)
  */
 function getPlayer(move) {
-  return (move && typeof move === 'object') ? move.player : undefined;
+  if (move && typeof move === 'object') {
+    return move.player;
+  } else {
+    return undefined;
+  }
 }
 
 function getPosition(move) {

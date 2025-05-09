@@ -1,10 +1,10 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
   10:1   warning  Function 'getPlayer' has a complexity of 3. Maximum allowed is 2                    complexity
-  14:1   warning  Function 'getPosition' has a complexity of 4. Maximum allowed is 2                  complexity
-  21:1   warning  Function 'isLegalMove' has a complexity of 6. Maximum allowed is 2                  complexity
-  47:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
-  53:12  warning  '_' is defined but never used                                                       no-unused-vars
+  18:1   warning  Function 'getPosition' has a complexity of 4. Maximum allowed is 2                  complexity
+  25:1   warning  Function 'isLegalMove' has a complexity of 6. Maximum allowed is 2                  complexity
+  51:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
+  57:12  warning  '_' is defined but never used                                                       no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
    27:1   warning  Function 'inBounds' has too many parameters (4). Maximum allowed is 3     max-params
