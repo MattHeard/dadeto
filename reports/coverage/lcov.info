@@ -2825,7 +2825,7 @@ FN:27,inBounds
 FN:32,neighbours
 FN:43,isNeighbourOccupied
 FN:49,attemptPlacement
-FN:105,(anonymous_6)
+FN:104,(anonymous_6)
 FN:150,generateFleet
 FN:162,(anonymous_8)
 FNF:9
@@ -2886,8 +2886,8 @@ DA:97,1758
 DA:99,1678
 DA:100,204
 DA:103,1474
-DA:104,1400
-DA:105,7800
+DA:104,7800
+DA:105,1400
 DA:106,1400
 DA:107,1400
 DA:108,600
