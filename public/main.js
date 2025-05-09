@@ -36,6 +36,7 @@ import {
   removeAllChildren,
   removeWarning,
   contains,
+  enable,
 } from './document.js';
 
 function hasNoInteractiveComponents(win) {
