@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746807360017" clover="3.2.0">
-  <project timestamp="1746807360017" name="All files">
-    <metrics statements="1283" coveredstatements="1283" conditionals="391" coveredconditionals="391" methods="512" coveredmethods="512" elements="2186" coveredelements="2186" complexity="0" loc="1283" ncloc="1283" packages="14" files="30" classes="30"/>
+<coverage generated="1746807728951" clover="3.2.0">
+  <project timestamp="1746807728951" name="All files">
+    <metrics statements="1283" coveredstatements="1281" conditionals="398" coveredconditionals="394" methods="512" coveredmethods="510" elements="2193" coveredelements="2185" complexity="0" loc="1283" ncloc="1283" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1334,16 +1334,16 @@
       </file>
     </package>
     <package name="toys.2025-05-08">
-      <metrics statements="78" coveredstatements="78" conditionals="46" coveredconditionals="46" methods="8" coveredmethods="8"/>
+      <metrics statements="78" coveredstatements="76" conditionals="53" coveredconditionals="49" methods="8" coveredmethods="6"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js">
-        <metrics statements="78" coveredstatements="78" conditionals="46" coveredconditionals="46" methods="8" coveredmethods="8"/>
+        <metrics statements="78" coveredstatements="76" conditionals="53" coveredconditionals="49" methods="8" coveredmethods="6"/>
         <line num="18" count="105" type="stmt"/>
         <line num="19" count="105" type="stmt"/>
         <line num="20" count="301" type="stmt"/>
         <line num="21" count="301" type="stmt"/>
         <line num="25" count="4867" type="stmt"/>
-        <line num="28" count="9514" type="cond" truecount="4" falsecount="0"/>
-        <line num="32" count="9514" type="stmt"/>
+        <line num="28" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="32" count="0" type="stmt"/>
         <line num="37" count="1400" type="stmt"/>
         <line num="38" count="1400" type="stmt"/>
         <line num="39" count="4200" type="stmt"/>
@@ -1366,7 +1366,7 @@
         <line num="70" count="1714" type="cond" truecount="2" falsecount="0"/>
         <line num="71" count="857" type="stmt"/>
         <line num="73" count="857" type="stmt"/>
-        <line num="75" count="1714" type="cond" truecount="2" falsecount="0"/>
+        <line num="75" count="1714" type="cond" truecount="6" falsecount="0"/>
         <line num="77" count="1678" type="stmt"/>
         <line num="78" count="1678" type="stmt"/>
         <line num="79" count="1678" type="cond" truecount="2" falsecount="0"/>
@@ -1383,7 +1383,7 @@
         <line num="97" count="1474" type="cond" truecount="2" falsecount="0"/>
         <line num="98" count="1400" type="stmt"/>
         <line num="99" count="1400" type="stmt"/>
-        <line num="100" count="7800" type="cond" truecount="4" falsecount="0"/>
+        <line num="100" count="7800" type="cond" truecount="7" falsecount="0"/>
         <line num="101" count="600" type="stmt"/>
         <line num="102" count="600" type="stmt"/>
         <line num="105" count="1400" type="cond" truecount="2" falsecount="0"/>

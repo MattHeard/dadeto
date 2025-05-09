@@ -72,7 +72,7 @@ function attemptPlacement(cfg, env) {
           } else {
             endY = y;
           }
-          if (!inBounds_new(endX, endY, cfg)) {continue;}
+          if (!(endX >= 0 && endY >= 0 && endX < cfg.width && endY < cfg.height)) {continue;}
 
           let valid = true;
           const segs = [];
@@ -97,7 +97,7 @@ function attemptPlacement(cfg, env) {
           if (touchForbidden) {
             for (const { x: sx, y: sy } of segs) {
               for (const n of neighbours(sx, sy)) {
-                if (inBounds_new(n.x, n.y, cfg) && occupied.has(key(n.x, n.y))) {
+                if ((n.x >= 0 && n.y >= 0 && n.x < cfg.width && n.y < cfg.height) && occupied.has(key(n.x, n.y))) {
                   valid = false;
                   break;
                 }
