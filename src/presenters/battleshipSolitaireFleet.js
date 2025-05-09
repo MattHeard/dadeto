@@ -67,29 +67,29 @@ function markShipCellOnBoard(board, x, y, width, height) {
 }
 
 function isMalformedShip(ship) {
-  const { start, length, direction } = ship;
-  return (
-    isMissingStart(start) ||
-    isInvalidStartCoordinates(start) ||
-    isInvalidLength(length) ||
-    isInvalidDirection(direction)
-  );
+  const validators = [
+    isMissingStart,
+    isInvalidStartCoordinates,
+    isInvalidLength,
+    isInvalidDirection,
+  ];
+  return validators.some(validator => validator(ship));
 }
 
-function isMissingStart(start) {
-  return !start;
+function isMissingStart(ship) {
+  return !ship.start;
 }
 
-function isInvalidStartCoordinates(start) {
-  return typeof start?.x !== 'number' || typeof start?.y !== 'number';
+function isInvalidStartCoordinates(ship) {
+  return typeof ship.start?.x !== 'number' || typeof ship.start?.y !== 'number';
 }
 
-function isInvalidLength(length) {
-  return typeof length !== 'number';
+function isInvalidLength(ship) {
+  return typeof ship.length !== 'number';
 }
 
-function isInvalidDirection(direction) {
-  return direction !== 'H' && direction !== 'V';
+function isInvalidDirection(ship) {
+  return ship.direction !== 'H' && ship.direction !== 'V';
 }
 
 function isOutOfBounds(x, y, width, height) {

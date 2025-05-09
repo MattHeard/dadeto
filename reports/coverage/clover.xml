@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746798059892" clover="3.2.0">
-  <project timestamp="1746798059892" name="All files">
-    <metrics statements="1263" coveredstatements="1263" conditionals="404" coveredconditionals="404" methods="491" coveredmethods="491" elements="2158" coveredelements="2158" complexity="0" loc="1263" ncloc="1263" packages="14" files="30" classes="30"/>
+<coverage generated="1746798135849" clover="3.2.0">
+  <project timestamp="1746798135849" name="All files">
+    <metrics statements="1263" coveredstatements="1263" conditionals="400" coveredconditionals="400" methods="492" coveredmethods="492" elements="2155" coveredelements="2155" complexity="0" loc="1263" ncloc="1263" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="65" coveredconditionals="65" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -658,9 +658,9 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="97" coveredstatements="97" conditionals="50" coveredconditionals="50" methods="33" coveredmethods="33"/>
+      <metrics statements="97" coveredstatements="97" conditionals="46" coveredconditionals="46" methods="34" coveredmethods="34"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js">
-        <metrics statements="54" coveredstatements="54" conditionals="22" coveredconditionals="22" methods="22" coveredmethods="22"/>
+        <metrics statements="54" coveredstatements="54" conditionals="18" coveredconditionals="18" methods="23" coveredmethods="23"/>
         <line num="21" count="5" type="stmt"/>
         <line num="22" count="5" type="stmt"/>
         <line num="23" count="4" type="stmt"/>
@@ -686,7 +686,7 @@
         <line num="64" count="1" type="stmt"/>
         <line num="66" count="5" type="stmt"/>
         <line num="70" count="4" type="stmt"/>
-        <line num="71" count="4" type="stmt"/>
+        <line num="76" count="14" type="stmt"/>
         <line num="80" count="4" type="stmt"/>
         <line num="84" count="4" type="cond" truecount="2" falsecount="0"/>
         <line num="88" count="3" type="stmt"/>
