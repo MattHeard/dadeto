@@ -34,7 +34,6 @@ function placeShipsOnBoard(boardInfo, ships) {
 }
 
 function placeSingleShipOnBoard(boardInfo, ship) {
-  const { board, width, height } = boardInfo;
   if (isMalformedShip(ship)) {
     return; // skip malformed
   }
