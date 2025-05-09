@@ -33,9 +33,8 @@ function applyMove(move, board) {
   const player = getPlayer(move);
   const position = getPosition(move);
   if (isObject(position)) {
-    const validPosition = { row: position.row, column: position.column };
-    if (isLegalMove(player, validPosition, board)) {
-      const { row, column } = validPosition;
+    if (isLegalMove(player, position, board)) {
+      const { row, column } = position;
       board[row][column] = player;
     }
   }
