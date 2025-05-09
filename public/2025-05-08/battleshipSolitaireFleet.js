@@ -114,7 +114,7 @@ function generateFleet(input, env) {
   try {
     cfg = JSON.parse(input);
   } catch (_) {
-    return JSON.stringify({ error: 'Invalid JSON' });
+    cfg = {};
   }
   if (!Array.isArray(cfg.ships)) {
     cfg.ships = [];
