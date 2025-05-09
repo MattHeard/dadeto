@@ -113,7 +113,7 @@ FN:184,getRelevantStateCopy
 FN:210,(anonymous_25)
 FN:247,(anonymous_26)
 FNF:27
-FNH:26
+FNH:27
 FNDA:21,getBlogState
 FNDA:10,isFetchInProgress
 FNDA:3,shouldUseExistingFetch
@@ -128,7 +128,7 @@ FNDA:4,deepMerge
 FNDA:5,(anonymous_11)
 FNDA:5,stripInternalFields
 FNDA:1,restoreBlogState
-FNDA:0,shouldCopyStateForFetch
+FNDA:4,shouldCopyStateForFetch
 FNDA:4,hasTemporaryProperty
 FNDA:6,isNonNullObject
 FNDA:6,isInvalidState
@@ -186,7 +186,7 @@ DA:126,1
 DA:127,1
 DA:128,1
 DA:129,1
-DA:133,0
+DA:133,4
 DA:137,4
 DA:141,6
 DA:145,6
@@ -223,7 +223,7 @@ DA:256,1
 DA:257,1
 DA:258,1
 LF:81
-LH:80
+LH:81
 BRDA:21,0,0,10
 BRDA:21,0,1,3
 BRDA:25,1,0,1
@@ -240,8 +240,8 @@ BRDA:94,4,4,1
 BRDA:94,4,5,1
 BRDA:108,5,0,1
 BRDA:108,5,1,4
-BRDA:133,6,0,0
-BRDA:133,6,1,0
+BRDA:133,6,0,4
+BRDA:133,6,1,3
 BRDA:141,7,0,6
 BRDA:141,7,1,4
 BRDA:145,8,0,6
@@ -257,7 +257,7 @@ BRDA:186,12,1,3
 BRDA:186,13,0,5
 BRDA:186,13,1,4
 BRF:32
-BRH:30
+BRH:32
 end_of_record
 TN:
 SF:src/browser/setOutput.js

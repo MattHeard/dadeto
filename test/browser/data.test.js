@@ -1,5 +1,20 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch, deepMerge } from '../../src/browser/data.js';
+import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch, deepMerge, shouldCopyStateForFetch } from '../../src/browser/data.js';
+
+describe('shouldCopyStateForFetch', () => {
+  it('returns true for idle', () => {
+    expect(shouldCopyStateForFetch('idle')).toBe(true);
+  });
+  it('returns true for error', () => {
+    expect(shouldCopyStateForFetch('error')).toBe(true);
+  });
+  it('returns false for loaded', () => {
+    expect(shouldCopyStateForFetch('loaded')).toBe(false);
+  });
+  it('returns false for loading', () => {
+    expect(shouldCopyStateForFetch('loading')).toBe(false);
+  });
+});
 
 describe('deepMerge', () => {
   it('should use the if branch when shouldDeepMerge is true (deep merge plain objects)', () => {
