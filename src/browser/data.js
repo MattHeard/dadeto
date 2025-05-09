@@ -89,14 +89,17 @@ export const getDeepStateCopy = (globalState) => JSON.parse(JSON.stringify(globa
  * @param {object} source - The source object.
  * @returns {object} A new object representing the merged result.
  */
+function bothAreNotArrays(a, b) {
+  return !Array.isArray(a) && !Array.isArray(b);
+}
+
 function shouldDeepMerge(targetValue, sourceValue) {
   return (
     typeof targetValue === 'object' &&
     targetValue !== null &&
     typeof sourceValue === 'object' &&
     sourceValue !== null &&
-    !Array.isArray(targetValue) &&
-    !Array.isArray(sourceValue)
+    bothAreNotArrays(targetValue, sourceValue)
   );
 }
 
