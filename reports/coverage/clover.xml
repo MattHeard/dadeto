@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746801061293" clover="3.2.0">
-  <project timestamp="1746801061293" name="All files">
-    <metrics statements="1274" coveredstatements="1274" conditionals="401" coveredconditionals="401" methods="502" coveredmethods="502" elements="2177" coveredelements="2177" complexity="0" loc="1274" ncloc="1274" packages="14" files="30" classes="30"/>
+<coverage generated="1746801124040" clover="3.2.0">
+  <project timestamp="1746801124040" name="All files">
+    <metrics statements="1274" coveredstatements="1274" conditionals="399" coveredconditionals="399" methods="502" coveredmethods="502" elements="2175" coveredelements="2175" complexity="0" loc="1274" ncloc="1274" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -658,7 +658,7 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="108" coveredstatements="108" conditionals="50" coveredconditionals="50" methods="44" coveredmethods="44"/>
+      <metrics statements="108" coveredstatements="108" conditionals="48" coveredconditionals="48" methods="44" coveredmethods="44"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js">
         <metrics statements="66" coveredstatements="66" conditionals="20" coveredconditionals="20" methods="30" coveredmethods="30"/>
         <line num="21" count="5" type="stmt"/>
@@ -751,14 +751,14 @@
         <line num="38" count="6" type="stmt"/>
       </file>
       <file name="ticTacToeBoard.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js">
-        <metrics statements="26" coveredstatements="26" conditionals="22" coveredconditionals="22" methods="7" coveredmethods="7"/>
+        <metrics statements="26" coveredstatements="26" conditionals="20" coveredconditionals="20" methods="7" coveredmethods="7"/>
         <line num="11" count="24" type="cond" truecount="4" falsecount="0"/>
         <line num="15" count="24" type="cond" truecount="5" falsecount="0"/>
         <line num="16" count="19" type="stmt"/>
         <line num="18" count="5" type="stmt"/>
         <line num="22" count="24" type="stmt"/>
         <line num="23" count="24" type="stmt"/>
-        <line num="25" count="24" type="cond" truecount="4" falsecount="0"/>
+        <line num="25" count="24" type="cond" truecount="2" falsecount="0"/>
         <line num="26" count="20" type="stmt"/>
         <line num="27" count="20" type="stmt"/>
         <line num="29" count="24" type="cond" truecount="2" falsecount="0"/>

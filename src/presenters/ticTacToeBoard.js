@@ -22,7 +22,7 @@ function applyMove(move, board) {
   const player = getPlayer(move);
   const position = getPosition(move);
   let row, column;
-  if (isObject(position) && !Array.isArray(position)) {
+  if (isObject(position)) {
     row = position.row;
     column = position.column;
   }
