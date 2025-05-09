@@ -27,34 +27,34 @@ export function createTicTacToeBoardElement(inputString, dom) {
   } else {
     moves = [];
   }
-  const applyMove = move => {
-    let player, position;
-    if (move && typeof move === 'object') {
-      player = move.player;
-      if (move.position !== undefined) {
-        position = move.position;
-      } else {
-        position = {};
-      }
+  function applyMove(move, board) {
+  let player, position;
+  if (move && typeof move === 'object') {
+    player = move.player;
+    if (move.position !== undefined) {
+      position = move.position;
     } else {
-      player = undefined;
       position = {};
     }
-    let row, column;
-    if (position && typeof position === 'object' && !Array.isArray(position)) {
-      row = position.row;
-      column = position.column;
-    }
-    if (
-      (player === 'X' || player === 'O') &&
-      [0, 1, 2].includes(row) &&
-      [0, 1, 2].includes(column) &&
-      board[row][column] === ' '
-    ) {
-      board[row][column] = player;
-    }
-  };
-  moves.forEach(applyMove);
+  } else {
+    player = undefined;
+    position = {};
+  }
+  let row, column;
+  if (position && typeof position === 'object' && !Array.isArray(position)) {
+    row = position.row;
+    column = position.column;
+  }
+  if (
+    (player === 'X' || player === 'O') &&
+    [0, 1, 2].includes(row) &&
+    [0, 1, 2].includes(column) &&
+    board[row][column] === ' '
+  ) {
+    board[row][column] = player;
+  }
+}
+moves.forEach(move => applyMove(move, board));
 
   // 4. Render board into a monospace grid
   const rowStrings = board.map(r => ` ${r[0]} | ${r[1]} | ${r[2]} `);
