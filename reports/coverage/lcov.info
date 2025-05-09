@@ -2832,7 +2832,7 @@ FNH:8
 FNDA:105,shuffle
 FNDA:4867,(anonymous_1)
 FNDA:9514,inBounds
-FNDA:1714,inBounds_new
+FNDA:9514,inBounds_new
 FNDA:1400,neighbours
 FNDA:105,attemptPlacement
 FNDA:7,generateFleet
@@ -2843,7 +2843,7 @@ DA:20,301
 DA:21,301
 DA:25,4867
 DA:28,9514
-DA:32,1714
+DA:32,9514
 DA:37,1400
 DA:38,1400
 DA:39,4200

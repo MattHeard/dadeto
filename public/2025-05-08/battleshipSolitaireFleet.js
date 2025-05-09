@@ -97,7 +97,7 @@ function attemptPlacement(cfg, env) {
           if (touchForbidden) {
             for (const { x: sx, y: sy } of segs) {
               for (const n of neighbours(sx, sy)) {
-                if (inBounds(n.x, n.y, cfg.width, cfg.height) && occupied.has(key(n.x, n.y))) {
+                if (inBounds_new(n.x, n.y, cfg) && occupied.has(key(n.x, n.y))) {
                   valid = false;
                   break;
                 }
