@@ -14,6 +14,7 @@ const srcDir = path.resolve(projectRoot, 'src');
 const publicDir = path.resolve(projectRoot, 'public');
 const srcToysDir = path.resolve(srcDir, 'toys');
 const srcBrowserDir = path.resolve(srcDir, 'browser');
+const publicBrowserDir = path.join(publicDir, 'browser');
 
 // Ensure public directory exists
 if (!fs.existsSync(publicDir)) {
@@ -108,27 +109,28 @@ if (fs.existsSync(srcPresentersDir)) {
   console.warn(`Warning: presenters directory not found at ${srcPresentersDir}`);
 }
 
-// --- Copy Specific Assets ---
+// --- Copy src/browser to public/browser ---
 
-const assetsToCopy = [
-  { src: path.join(srcDir, 'blog.json'), dest: path.join(publicDir, 'blog.json') },
-  { src: path.join(srcBrowserDir, 'data.js'), dest: path.join(publicDir, 'data.js') },
-  { src: path.join(srcBrowserDir, 'main.js'), dest: path.join(publicDir, 'main.js') },
-  { src: path.join(srcBrowserDir, 'toys.js'), dest: path.join(publicDir, 'toys.js') },
-  { src: path.join(srcBrowserDir, 'audio-controls.js'), dest: path.join(publicDir, 'audio-controls.js') },
-  { src: path.join(srcBrowserDir, 'document.js'), dest: path.join(publicDir, 'document.js') },
-  { src: path.join(srcBrowserDir, 'tags.js'), dest: path.join(publicDir, 'tags.js') },
-  { src: path.join(srcBrowserDir, 'setOutput.js'), dest: path.join(publicDir, 'setOutput.js') },
-  { src: path.join(srcBrowserDir, 'common.js'), dest: path.join(publicDir, 'common.js') }
-];
-
-assetsToCopy.forEach(asset => {
-  if (fs.existsSync(asset.src)) {
-    fs.copyFileSync(asset.src, asset.dest);
-    console.log(`Copied: ${asset.src} -> ${asset.dest}`);
-  } else {
-    console.warn(`Warning: Asset not found, skipping copy: ${asset.src}`);
+function copyDirRecursive(src, dest) {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
   }
-});
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirRecursive(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+      console.log(`Copied: ${srcPath} -> ${destPath}`);
+    }
+  }
+}
 
-console.log('Specific assets copied successfully!');
+if (fs.existsSync(srcBrowserDir)) {
+  copyDirRecursive(srcBrowserDir, publicBrowserDir);
+  console.log('Browser files copied successfully!');
+} else {
+  console.warn(`Warning: browser directory not found at ${srcBrowserDir}`);
+}
