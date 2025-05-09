@@ -19,7 +19,7 @@ function getPosition(move) {
 }
 
 function isLegalMove(player, position, board) {
-  if (!position) return false;
+  if (!position) {return false;}
   const { row, column } = position;
   return (
     (player === 'X' || player === 'O') &&
@@ -32,13 +32,12 @@ function isLegalMove(player, position, board) {
 function applyMove(move, board) {
   const player = getPlayer(move);
   const position = getPosition(move);
-  let validPosition = null;
   if (isObject(position)) {
-    validPosition = { row: position.row, column: position.column };
-  }
-  if (isLegalMove(player, validPosition, board)) {
-    const { row, column } = validPosition;
-    board[row][column] = player;
+    const validPosition = { row: position.row, column: position.column };
+    if (isLegalMove(player, validPosition, board)) {
+      const { row, column } = validPosition;
+      board[row][column] = player;
+    }
   }
 }
 

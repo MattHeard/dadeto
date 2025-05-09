@@ -4,8 +4,8 @@
   14:1   warning  Function 'getPosition' has a complexity of 4. Maximum allowed is 2                  complexity
   21:1   warning  Function 'isLegalMove' has a complexity of 6. Maximum allowed is 2                  complexity
   32:1   warning  Function 'applyMove' has a complexity of 3. Maximum allowed is 2                    complexity
-  45:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
-  51:12  warning  '_' is defined but never used                                                       no-unused-vars
+  44:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
+  50:12  warning  '_' is defined but never used                                                       no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
    27:1   warning  Function 'inBounds' has too many parameters (4). Maximum allowed is 3     max-params
