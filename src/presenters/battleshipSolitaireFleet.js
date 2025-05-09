@@ -50,11 +50,10 @@ function fillShipOnBoard(boardInfo, ship) {
 
 
 function fillShipCell(boardInfo, ship, i) {
-  const { board, dimensions } = boardInfo;
   const x = getShipCellX(ship, i);
   const y = getShipCellY(ship, i);
   const coord = { x, y };
-  markShipCellOnBoard(board, coord, dimensions);
+  markShipCellOnBoard(boardInfo, coord);
 }
 
 function getShipCellY(ship, i) {
@@ -71,7 +70,8 @@ function getShipCellX(ship, i) {
   return ship.start.x;
 }
 
-function markShipCellOnBoard(board, coord, dimensions) {
+function markShipCellOnBoard(boardInfo, coord) {
+  const { board, dimensions } = boardInfo;
   const { x, y } = coord;
   const { width, height } = dimensions;
   if (isOutOfBounds(x, y, width, height)) {
