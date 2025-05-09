@@ -3,7 +3,7 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData
 } from './data.js';
-import { makeCreateIntersectionObserver, initializeVisibleComponents } from './toys.js';
+import { makeCreateIntersectionObserver, initializeVisibleComponents, handleDropdownChange } from './toys.js';
 import {
   getElementById,
   getAudioElements,
@@ -175,7 +175,6 @@ fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: error });
 setupAudio(dom);
 
 // Add event listeners to toy output dropdowns
-import { handleDropdownChange } from './toys.js';
 
 window.addEventListener('DOMContentLoaded', () => {
   // Select all <select> elements that are direct children of a .value div following a .key with 'out' text, within an .entry article
