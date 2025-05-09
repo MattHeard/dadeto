@@ -106,9 +106,18 @@ function isInvalidDirection(ship) {
 }
 
 function isOutOfBounds(coord, dimensions) {
+  return isNegativeCoordinate(coord) || isCoordinateExceedsDimensions(coord, dimensions);
+}
+
+function isNegativeCoordinate(coord) {
+  const { x, y } = coord;
+  return x < 0 || y < 0;
+}
+
+function isCoordinateExceedsDimensions(coord, dimensions) {
   const { x, y } = coord;
   const { width, height } = dimensions;
-  return x < 0 || y < 0 || x >= width || y >= height;
+  return x >= width || y >= height;
 }
 
 export function createBattleshipFleetBoardElement(inputString, dom) {
