@@ -93,12 +93,13 @@ function bothAreNotArrays(a, b) {
   return !Array.isArray(a) && !Array.isArray(b);
 }
 
+function bothAreNonNullObjects(a, b) {
+  return typeof a === 'object' && a !== null && typeof b === 'object' && b !== null;
+}
+
 function shouldDeepMerge(targetValue, sourceValue) {
   return (
-    typeof targetValue === 'object' &&
-    targetValue !== null &&
-    typeof sourceValue === 'object' &&
-    sourceValue !== null &&
+    bothAreNonNullObjects(targetValue, sourceValue) &&
     bothAreNotArrays(targetValue, sourceValue)
   );
 }

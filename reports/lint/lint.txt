@@ -1,7 +1,7 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js
-   96:1  warning  Function 'shouldDeepMerge' has a complexity of 5. Maximum allowed is 2       complexity
-  186:1  warning  Function 'getRelevantStateCopy' has a complexity of 3. Maximum allowed is 2  complexity
+   96:1  warning  Function 'bothAreNonNullObjects' has a complexity of 4. Maximum allowed is 2  complexity
+  187:1  warning  Function 'getRelevantStateCopy' has a complexity of 3. Maximum allowed is 2   complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
   189:1  warning  './toys.js' import is duplicated  no-duplicate-imports
