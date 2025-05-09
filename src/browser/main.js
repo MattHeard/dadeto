@@ -2,7 +2,7 @@ import { setupAudio } from './audio-controls.js';
 import {
   fetchAndCacheBlogData, getData, setData
 } from './data.js';
-import { makeCreateIntersectionObserver } from './toys.js';
+import { makeCreateIntersectionObserver, initializeVisibleComponents } from './toys.js';
 import {
   getElementById,
   getAudioElements,
@@ -106,7 +106,6 @@ function createEnv() {
 
 
 const dom = {
-  createElement,
   createElement,
   removeControlsAttribute,
   getAudioElements,
