@@ -66,6 +66,10 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
     return err;
   }
 
+  return renderFleetBoard(width, height, ships, dom);
+}
+
+function renderFleetBoard(width, height, ships, dom) {
   // 2. Initialise empty grid with water symbols
   const createWaterRow = () => Array(width).fill('\u00b7');
   const board = Array.from({ length: height }, createWaterRow);
@@ -84,3 +88,4 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
   dom.setTextContent(pre, content);
   return pre;
 }
+
