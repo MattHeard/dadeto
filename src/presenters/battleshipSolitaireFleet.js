@@ -55,9 +55,15 @@ function fillShipOnBoard(boardInfo, ship) {
     } else {
       y = ship.start.y;
     }
-    if (isOutOfBounds(x, y, width, height)) { continue; }
-    board[y][x] = '#';
+    markShipCellOnBoard(board, x, y, width, height);
   }
+}
+
+function markShipCellOnBoard(board, x, y, width, height) {
+  if (isOutOfBounds(x, y, width, height)) {
+    return;
+  }
+  board[y][x] = '#';
 }
 
 function isMalformedShip(ship) {
