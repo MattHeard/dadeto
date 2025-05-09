@@ -22,7 +22,8 @@ import {
   addWarning,
   getRandomNumber,
   getCurrentTime,
-  setTextContent
+  setTextContent,
+  disconnectObserver
 } from './document.js';
 
 function hasNoInteractiveComponents(win) {
