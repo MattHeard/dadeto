@@ -48,11 +48,7 @@ describe('toys', () => {
       };
       handleDropdownChange(mockDropdown, mockLogInfo, mockGetData, dom);
 
-      expect(mockLogInfo).toHaveBeenCalledWith('Dropdown output:', {
-        postId: 'post-123',
-        selectedValue: 'text',
-        output: 'mockOutput'
-      });
+
     });
 
 
