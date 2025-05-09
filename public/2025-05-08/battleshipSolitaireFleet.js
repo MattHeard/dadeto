@@ -69,44 +69,45 @@ function attemptPlacement(cfg, env) {
             endY = y;
           }
           if (!inBounds({x: endX, y: endY}, cfg)) {
-  continue;
-}
+            continue;
+          }
 
           let valid = true;
           const segs = [];
           for (let i = 0; i < len && valid; i++) {
             let sx, sy;
             if (dir === 'H') {
-  sx = x + i;
-} else {
-  sx = x;
-}
+              sx = x + i;
+            } else {
+              sx = x;
+            }
             if (dir === 'V') {
-  sy = y + i;
-} else {
-  sy = y;
-}
+              sy = y + i;
+            } else {
+              sy = y;
+            }
             const k = key(sx, sy);
             if (occupied.has(k)) {
-  valid = false;
-}
+              valid = false;
+            }
             segs.push({ x: sx, y: sy });
           }
           if (!valid) {
-  continue;
-}
+            continue;
+          }
 
           if (touchForbidden) {
             for (const { x: sx, y: sy } of segs) {
               for (const n of neighbours(sx, sy)) {
-                if (inBounds({x: n.x, y: n.y}, cfg) && occupied.has(key(n.x, n.y))) {
+                const isNeighbourOccupied = inBounds({x: n.x, y: n.y}, cfg) && occupied.has(key(n.x, n.y));
+                if (isNeighbourOccupied) {
                   valid = false;
                   break;
                 }
               }
               if (!valid) {
-  break;
-}
+                break;
+              }
             }
           }
 
