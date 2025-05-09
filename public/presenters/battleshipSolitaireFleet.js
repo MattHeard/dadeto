@@ -28,6 +28,24 @@ function validateFleetObject(width, height, ships) {
   return '';
 }
 
+function placeShipsOnBoard(board, ships, width, height) {
+  for (const ship of ships) {
+    const { start, length, direction } = ship;
+    if (
+      !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
+      typeof length !== 'number' || (direction !== 'H' && direction !== 'V')
+    ) {
+      continue; // skip malformed
+    }
+    for (let i = 0; i < length; i++) {
+      const x = direction === 'H' ? start.x + i : start.x;
+      const y = direction === 'V' ? start.y + i : start.y;
+      if (x < 0 || y < 0 || x >= width || y >= height) { continue; }
+      board[y][x] = '#';
+    }
+  }
+}
+
 export function createBattleshipFleetBoardElement(inputString, dom) {
   let fleet;
 
@@ -54,22 +72,7 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
   );
 
   // 3. Place ships – mark with '#'
-  for (const ship of ships) {
-    const { start, length, direction } = ship; // ship is assumed to be a valid object at this point
-    if (
-      !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
-        typeof length !== 'number' || (direction !== 'H' && direction !== 'V')
-    ) {
-      continue; // skip malformed
-    }
-
-    for (let i = 0; i < length; i++) {
-      const x = direction === 'H' ? start.x + i : start.x;
-      const y = direction === 'V' ? start.y + i : start.y;
-      if (x < 0 || y < 0 || x >= width || y >= height) {continue;}
-      board[y][x] = '#';
-    }
-  }
+  placeShipsOnBoard(board, ships, width, height);
 
   // 4. Convert to string
   const rowStrings = board.map(row => row.join(' '));

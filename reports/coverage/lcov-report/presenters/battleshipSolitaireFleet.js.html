@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>37/37</span>
+                <span class='fraction'>38/38</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>34/34</span>
+                <span class='fraction'>35/35</span>
             </div>
         
             
@@ -145,7 +145,10 @@
 <a name='L80'></a><a href='#L80'>80</a>
 <a name='L81'></a><a href='#L81'>81</a>
 <a name='L82'></a><a href='#L82'>82</a>
-<a name='L83'></a><a href='#L83'>83</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -176,6 +179,24 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -202,21 +223,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
@@ -257,6 +263,24 @@ function validateFleetObject(width, height, ships) {
   return '';
 }
 &nbsp;
+function placeShipsOnBoard(board, ships, width, height) {
+  for (const ship of ships) {
+    const { start, length, direction } = ship;
+    if (
+      !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
+      typeof length !== 'number' || (direction !== 'H' &amp;&amp; direction !== 'V')
+    ) {
+      continue; // skip malformed
+    }
+    for (let i = 0; i &lt; length; i++) {
+      const x = direction === 'H' ? start.x + i : start.x;
+      const y = direction === 'V' ? start.y + i : start.y;
+      if (x &lt; 0 || y &lt; 0 || x &gt;= width || y &gt;= height) { continue; }
+      board[y][x] = '#';
+    }
+  }
+}
+&nbsp;
 export function createBattleshipFleetBoardElement(inputString, dom) {
   let fleet;
 &nbsp;
@@ -283,22 +307,7 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
   );
 &nbsp;
   // 3. Place ships – mark with '#'
-  for (const ship of ships) {
-    const { start, length, direction } = ship; // ship is assumed to be a valid object at this point
-    if (
-      !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
-        typeof length !== 'number' || (direction !== 'H' &amp;&amp; direction !== 'V')
-    ) {
-      continue; // skip malformed
-    }
-&nbsp;
-    for (let i = 0; i &lt; length; i++) {
-      const x = direction === 'H' ? start.x + i : start.x;
-      const y = direction === 'V' ? start.y + i : start.y;
-      if (x &lt; 0 || y &lt; 0 || x &gt;= width || y &gt;= height) {continue;}
-      board[y][x] = '#';
-    }
-  }
+  placeShipsOnBoard(board, ships, width, height);
 &nbsp;
   // 4. Convert to string
   const rowStrings = board.map(row =&gt; row.join(' '));
@@ -316,7 +325,7 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-09T12:35:04.823Z
+                at 2025-05-09T12:37:02.667Z
             </div>
         <script src="../prettify.js"></script>
         <script>
