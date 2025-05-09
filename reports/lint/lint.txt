@@ -4,10 +4,10 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js
    53:1  warning  Function 'fillShipCell' has too many parameters (4). Maximum allowed is 3                 max-params
-   95:1  warning  Function 'isInvalidStartCoordinates' has a complexity of 4. Maximum allowed is 2          complexity
-  107:1  warning  Function 'isOutOfBounds' has too many parameters (4). Maximum allowed is 3                max-params
-  107:1  warning  Function 'isOutOfBounds' has a complexity of 4. Maximum allowed is 2                      complexity
-  111:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
+   97:1  warning  Function 'isInvalidStartCoordinates' has a complexity of 4. Maximum allowed is 2          complexity
+  109:1  warning  Function 'isOutOfBounds' has too many parameters (4). Maximum allowed is 3                max-params
+  109:1  warning  Function 'isOutOfBounds' has a complexity of 4. Maximum allowed is 2                      complexity
+  113:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity

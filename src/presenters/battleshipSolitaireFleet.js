@@ -52,14 +52,16 @@ function fillShipOnBoard(boardInfo, ship) {
 
 function fillShipCell(board, ship, i, dimensions) {
   const x = getShipCellX(ship, i);
-  let y;
-  if (ship.direction === 'V') {
-    y = ship.start.y + i;
-  } else {
-    y = ship.start.y;
-  }
+  const y = getShipCellY(ship, i);
   const coord = { x, y };
   markShipCellOnBoard(board, coord, dimensions);
+}
+
+function getShipCellY(ship, i) {
+  if (ship.direction === 'V') {
+    return ship.start.y + i;
+  }
+  return ship.start.y;
 }
 
 function getShipCellX(ship, i) {
