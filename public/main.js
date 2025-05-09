@@ -21,7 +21,8 @@ import {
   error,
   addWarning,
   getRandomNumber,
-  getCurrentTime
+  getCurrentTime,
+  setTextContent
 } from './document.js';
 
 function hasNoInteractiveComponents(win) {
@@ -47,7 +48,7 @@ function getComponentInitializer(getElement, logWarning, createIntersectionObser
     observer.observe(article);
   };
 }
-  
+
 
 const globalState = {
   blog: null, // Holds the fetched blog data
