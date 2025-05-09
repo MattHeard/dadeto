@@ -27,7 +27,8 @@ import {
   isIntersecting,
   makeIntersectionObserver,
   addClass,
-  getClasses
+  getClasses,
+  hasNextSiblingClass
 } from './document.js';
 
 function hasNoInteractiveComponents(win) {
