@@ -122,7 +122,6 @@ function isCoordinateExceedsDimensions(coord, dimensions) {
 
 export function createBattleshipFleetBoardElement(inputString, dom) {
   let fleet;
-
   // 1. Parse input safely
   try {
     fleet = JSON.parse(inputString);
@@ -131,7 +130,10 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
     dom.setTextContent(err, 'Invalid JSON');
     return err;
   }
+  return handleParsedFleet(fleet, dom);
+}
 
+function handleParsedFleet(fleet, dom) {
   const errorMsg = validateFleetObject(fleet);
   if (errorMsg) {
     const err = dom.createElement('p');
