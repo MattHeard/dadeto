@@ -69,9 +69,27 @@ function markShipCellOnBoard(board, x, y, width, height) {
 function isMalformedShip(ship) {
   const { start, length, direction } = ship;
   return (
-    !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
-    typeof length !== 'number' || (direction !== 'H' && direction !== 'V')
+    isMissingStart(start) ||
+    isInvalidStartCoordinates(start) ||
+    isInvalidLength(length) ||
+    isInvalidDirection(direction)
   );
+}
+
+function isMissingStart(start) {
+  return !start;
+}
+
+function isInvalidStartCoordinates(start) {
+  return typeof start?.x !== 'number' || typeof start?.y !== 'number';
+}
+
+function isInvalidLength(length) {
+  return typeof length !== 'number';
+}
+
+function isInvalidDirection(direction) {
+  return direction !== 'H' && direction !== 'V';
 }
 
 function isOutOfBounds(x, y, width, height) {

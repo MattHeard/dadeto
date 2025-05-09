@@ -5,10 +5,11 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js
   44:1  warning  Function 'fillShipOnBoard' has a complexity of 4. Maximum allowed is 2                    complexity
   62:1  warning  Function 'markShipCellOnBoard' has too many parameters (5). Maximum allowed is 3          max-params
-  69:1  warning  Function 'isMalformedShip' has a complexity of 6. Maximum allowed is 2                    complexity
-  77:1  warning  Function 'isOutOfBounds' has too many parameters (4). Maximum allowed is 3                max-params
-  77:1  warning  Function 'isOutOfBounds' has a complexity of 4. Maximum allowed is 2                      complexity
-  81:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
+  69:1  warning  Function 'isMalformedShip' has a complexity of 4. Maximum allowed is 2                    complexity
+  83:1  warning  Function 'isInvalidStartCoordinates' has a complexity of 4. Maximum allowed is 2          complexity
+  95:1  warning  Function 'isOutOfBounds' has too many parameters (4). Maximum allowed is 3                max-params
+  95:1  warning  Function 'isOutOfBounds' has a complexity of 4. Maximum allowed is 2                      complexity
+  99:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
@@ -50,4 +51,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 37 problems (0 errors, 37 warnings)
+✖ 38 problems (0 errors, 38 warnings)
