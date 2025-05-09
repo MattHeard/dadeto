@@ -120,9 +120,6 @@ function generateFleet(input, env) {
     cfg.ships = [];
   }
 
-  if (cfg.diagonalAllowed) {
-    return JSON.stringify({ error: 'Diagonal placement not supported' });
-  }
 
   const totalSegments = cfg.ships.reduce((s, l) => s + l, 0);
   if (totalSegments > cfg.width * cfg.height) {

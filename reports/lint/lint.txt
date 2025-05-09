@@ -35,7 +35,7 @@
    78:17  warning  Blocks are nested too deeply (8). Maximum allowed is 4                    max-depth
    83:15  warning  Blocks are nested too deeply (7). Maximum allowed is 4                    max-depth
    87:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
-  112:1   warning  Function 'generateFleet' has a complexity of 7. Maximum allowed is 2      complexity
+  112:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2      complexity
   116:12  warning  '_' is defined but never used                                             no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
