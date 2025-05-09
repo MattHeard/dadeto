@@ -242,7 +242,6 @@ function handleRequestResponse(url, env, options) {
 }
 
 
-
 import { isObject } from './common.js';
 
 function hasRequestField(val) {
