@@ -18,7 +18,7 @@ function getDropdownPostId(dropdown) {
   return article.id;
 }
 
-export function handleDropdownChange(dropdown, logInfo, getData, dom) {
+export function handleDropdownChange_new(dropdown, getData, dom) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
   const data = getData();
@@ -28,9 +28,6 @@ export function handleDropdownChange(dropdown, logInfo, getData, dom) {
   setTextContent({ presenterKey: selectedValue, content: output }, dom, parent);
 }
 
-export function handleDropdownChange_new(dropdown, getData, dom) {
-  return handleDropdownChange(dropdown, null, getData, dom);
-}
 
 
 // Map of presenter keys to presenter functions
