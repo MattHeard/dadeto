@@ -23,7 +23,7 @@ export function handleDropdownChange(dropdown, logInfo, getData, dom) {
   const selectedValue = dropdown.value;
   const data = getData();
   const output = data && data.output && data.output[postId];
-  logInfo('Dropdown output:', { postId, selectedValue, output });
+
 
   const parent = dom.querySelector(dropdown.parentNode, 'div.output');
   setTextContent({ presenterKey: selectedValue, content: output }, dom, parent);
