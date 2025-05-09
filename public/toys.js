@@ -18,7 +18,7 @@ function getDropdownPostId(dropdown) {
   return article.id;
 }
 
-export function handleDropdownChange_new(dropdown, getData, dom) {
+export function handleDropdownChange(dropdown, getData, dom) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
   const data = getData();

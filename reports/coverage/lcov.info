@@ -415,7 +415,7 @@ TN:
 SF:src/browser/toys.js
 FN:12,getDropdownArticle
 FN:16,getDropdownPostId
-FN:21,handleDropdownChange_new
+FN:21,handleDropdownChange
 FN:41,setTextContent
 FN:62,handleModuleError
 FN:63,(anonymous_5)
@@ -465,7 +465,7 @@ FNF:48
 FNH:48
 FNDA:1,getDropdownArticle
 FNDA:1,getDropdownPostId
-FNDA:1,handleDropdownChange_new
+FNDA:1,handleDropdownChange
 FNDA:15,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_5)

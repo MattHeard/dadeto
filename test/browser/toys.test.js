@@ -15,7 +15,7 @@ import {
   createHandleSubmit,
   initializeInteractiveComponent,
   handleModuleError,
-  handleDropdownChange_new
+  handleDropdownChange
 } from '../../src/browser/toys.js';
 
 describe('toys', () => {
@@ -46,7 +46,7 @@ describe('toys', () => {
         createElement: () => ({}),
         setTextContent: (el, txt) => { el.textContent = txt; }
       };
-      handleDropdownChange_new(mockDropdown, mockGetData, dom);
+      handleDropdownChange(mockDropdown, mockGetData, dom);
 
 
     });
