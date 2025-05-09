@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746798453384" clover="3.2.0">
-  <project timestamp="1746798453384" name="All files">
-    <metrics statements="1268" coveredstatements="1268" conditionals="400" coveredconditionals="400" methods="493" coveredmethods="493" elements="2161" coveredelements="2161" complexity="0" loc="1268" ncloc="1268" packages="14" files="30" classes="30"/>
+<coverage generated="1746798519500" clover="3.2.0">
+  <project timestamp="1746798519500" name="All files">
+    <metrics statements="1269" coveredstatements="1269" conditionals="400" coveredconditionals="400" methods="493" coveredmethods="493" elements="2162" coveredelements="2162" complexity="0" loc="1269" ncloc="1269" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="65" coveredconditionals="65" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -658,9 +658,9 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="102" coveredstatements="102" conditionals="46" coveredconditionals="46" methods="35" coveredmethods="35"/>
+      <metrics statements="103" coveredstatements="103" conditionals="46" coveredconditionals="46" methods="35" coveredmethods="35"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js">
-        <metrics statements="59" coveredstatements="59" conditionals="18" coveredconditionals="18" methods="24" coveredmethods="24"/>
+        <metrics statements="60" coveredstatements="60" conditionals="18" coveredconditionals="18" methods="24" coveredmethods="24"/>
         <line num="21" count="5" type="stmt"/>
         <line num="22" count="5" type="stmt"/>
         <line num="23" count="4" type="stmt"/>
@@ -712,14 +712,15 @@
         <line num="133" count="6" type="stmt"/>
         <line num="134" count="2" type="stmt"/>
         <line num="135" count="2" type="stmt"/>
-        <line num="138" count="2" type="stmt"/>
-        <line num="141" count="6" type="stmt"/>
-        <line num="142" count="2" type="stmt"/>
+        <line num="136" count="2" type="stmt"/>
+        <line num="139" count="2" type="stmt"/>
+        <line num="142" count="6" type="stmt"/>
         <line num="143" count="2" type="stmt"/>
         <line num="144" count="2" type="stmt"/>
-        <line num="147" count="2" type="stmt"/>
+        <line num="145" count="2" type="stmt"/>
         <line num="148" count="2" type="stmt"/>
         <line num="149" count="2" type="stmt"/>
+        <line num="150" count="2" type="stmt"/>
       </file>
       <file name="paragraph.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
