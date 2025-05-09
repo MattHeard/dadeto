@@ -41,6 +41,14 @@ describe('generateFleet', () => {
     }
   });
 
+  test('noTouching true blocks all adjacent placements (full adjacency block)', () => {
+    // 2x2 board, try to place four 1-length ships with noTouching true
+    // All placements are blocked by adjacency, so fleet generation fails
+    const cfg = { width: 2, height: 2, ships: [1, 1, 1, 1], noTouching: true };
+    const result = generateFleet(JSON.stringify(cfg), env);
+    expect(JSON.parse(result)).toEqual({ error: 'Failed to generate fleet after max retries' });
+  });
+
   test('ignores diagonalAllowed property', () => {
     const cfg = { width: 4, height: 4, ships: [2], diagonalAllowed: true };
     const result = generateFleet(JSON.stringify(cfg), env);
