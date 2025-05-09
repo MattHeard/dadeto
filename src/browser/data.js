@@ -129,7 +129,7 @@ function restoreBlogState(globalState, blogState) {
   globalState.blog = blogState.data;
 }
 
-function shouldCopyStateForFetch(status) {
+export function shouldCopyStateForFetch(status) {
   return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
 }
 
