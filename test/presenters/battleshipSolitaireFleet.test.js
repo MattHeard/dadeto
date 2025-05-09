@@ -1,0 +1,82 @@
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
+import { createBattleshipFleetBoardElement } from '../../src/presenters/battleshipSolitaireFleet.js';
+
+describe('createBattleshipFleetBoardElement', () => {
+  // Mock dom abstraction
+  let dom;
+  beforeEach(() => {
+    dom = {
+      createElement: jest.fn(tag => ({ tag, text: '', children: [], setText: function (t) { this.text = t; } })),
+      setTextContent: jest.fn((el, text) => { el.text = text; }),
+    };
+  });
+
+  test('renders a valid fleet as a <pre> element', () => {
+    const fleet = {
+      width: 4,
+      height: 3,
+      ships: [
+        { start: { x: 0, y: 0 }, length: 2, direction: 'H' },
+        { start: { x: 2, y: 2 }, length: 2, direction: 'V' },
+      ],
+    };
+    const input = JSON.stringify(fleet);
+    // Patch dom.createElement to recognize 'pre'
+    dom.createElement = jest.fn(tag => ({ tag, text: '', children: [], setText: function (t) { this.text = t; } }));
+    const el = createBattleshipFleetBoardElement(input, dom);
+    expect(el.tag).toBe('pre');
+    // Should render a grid with '#' for ships and '·' for water
+    // Horizontal ship at (0,0)-(1,0), vertical at (2,2)-(2,3) (but height is 3, so only (2,2))
+    // The grid:
+    // ##··
+    // ····
+    // ··#·
+    expect(dom.setTextContent).toHaveBeenCalled();
+    const gridString = dom.setTextContent.mock.calls[0][1];
+    expect(gridString).toContain('# # · ·');
+    expect(gridString).toContain('· · # ·');
+  });
+
+  test('returns <p> with error for invalid JSON', () => {
+    const el = createBattleshipFleetBoardElement('not json', dom);
+    expect(el.tag).toBe('p');
+    expect(el.text).toMatch(/invalid json/i);
+  });
+
+  test('returns <p> with error for missing width', () => {
+    const fleet = { height: 3, ships: [] };
+    const el = createBattleshipFleetBoardElement(JSON.stringify(fleet), dom);
+    expect(el.tag).toBe('p');
+    expect(el.text).toMatch(/width/i);
+  });
+
+  test('returns <p> with error for missing height', () => {
+    const fleet = { width: 3, ships: [] };
+    const el = createBattleshipFleetBoardElement(JSON.stringify(fleet), dom);
+    expect(el.tag).toBe('p');
+    expect(el.text).toMatch(/height/i);
+  });
+
+  test('returns <p> with error for missing ships', () => {
+    const fleet = { width: 3, height: 3 };
+    const el = createBattleshipFleetBoardElement(JSON.stringify(fleet), dom);
+    expect(el.tag).toBe('p');
+    expect(el.text).toMatch(/ships/i);
+  });
+
+  test('skips malformed ships and still renders valid ones', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [
+        { start: { x: 0, y: 0 }, length: 2, direction: 'H' },
+        { start: { x: 1 }, length: 2, direction: 'V' }, // malformed
+      ],
+    };
+    const input = JSON.stringify(fleet);
+    const el = createBattleshipFleetBoardElement(input, dom);
+    expect(el.tag).toBe('pre');
+    const gridString = dom.setTextContent.mock.calls[0][1];
+    expect(gridString).toContain('# # ·');
+  });
+});
