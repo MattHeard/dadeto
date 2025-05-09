@@ -184,9 +184,13 @@ function handleBlogFetchState(state, fetch, loggers) {
  * @param {object} state
  * @returns {object}
  */
+function shouldDeepCopyForFetch(status) {
+  return status === 'idle' || status === 'error';
+}
+
 function getRelevantStateCopy(state) {
   const status = state.blogStatus;
-  if (status === 'idle' || status === 'error') {
+  if (shouldDeepCopyForFetch(status)) {
     return JSON.parse(JSON.stringify(state));
   }
   return state;

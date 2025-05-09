@@ -1,7 +1,4 @@
 
-/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js
-  187:1  warning  Function 'getRelevantStateCopy' has a complexity of 3. Maximum allowed is 2  complexity
-
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
   72:3  error  Parsing error: Identifier 'initializeVisibleComponents' has already been declared
 
@@ -52,4 +49,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 35 problems (1 error, 34 warnings)
+✖ 34 problems (1 error, 33 warnings)

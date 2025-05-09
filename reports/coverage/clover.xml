@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746786520442" clover="3.2.0">
-  <project timestamp="1746786520442" name="All files">
-    <metrics statements="1242" coveredstatements="1242" conditionals="409" coveredconditionals="409" methods="471" coveredmethods="471" elements="2122" coveredelements="2122" complexity="0" loc="1242" ncloc="1242" packages="14" files="29" classes="29"/>
+<coverage generated="1746786575488" clover="3.2.0">
+  <project timestamp="1746786575488" name="All files">
+    <metrics statements="1243" coveredstatements="1243" conditionals="409" coveredconditionals="409" methods="472" coveredmethods="472" elements="2124" coveredelements="2124" complexity="0" loc="1243" ncloc="1243" packages="14" files="29" classes="29"/>
     <package name="browser">
-      <metrics statements="331" coveredstatements="331" conditionals="66" coveredconditionals="66" methods="108" coveredmethods="108"/>
+      <metrics statements="332" coveredstatements="332" conditionals="66" coveredconditionals="66" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -62,7 +62,7 @@
         <line num="82" count="6" type="stmt"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
-        <metrics statements="83" coveredstatements="83" conditionals="32" coveredconditionals="32" methods="29" coveredmethods="29"/>
+        <metrics statements="84" coveredstatements="84" conditionals="32" coveredconditionals="32" methods="30" coveredmethods="30"/>
         <line num="1" count="3" type="stmt"/>
         <line num="3" count="3" type="stmt"/>
         <line num="11" count="21" type="stmt"/>
@@ -127,25 +127,26 @@
         <line num="177" count="5" type="stmt"/>
         <line num="178" count="5" type="stmt"/>
         <line num="179" count="5" type="stmt"/>
-        <line num="188" count="5" type="stmt"/>
-        <line num="189" count="5" type="cond" truecount="4" falsecount="0"/>
-        <line num="190" count="2" type="stmt"/>
-        <line num="192" count="3" type="stmt"/>
-        <line num="213" count="3" type="stmt"/>
-        <line num="214" count="5" type="stmt"/>
-        <line num="215" count="5" type="stmt"/>
-        <line num="216" count="5" type="stmt"/>
-        <line num="217" count="5" type="stmt"/>
-        <line num="250" count="3" type="stmt"/>
-        <line num="251" count="6" type="stmt"/>
-        <line num="252" count="6" type="stmt"/>
-        <line num="254" count="6" type="stmt"/>
+        <line num="188" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="192" count="5" type="stmt"/>
+        <line num="193" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="194" count="2" type="stmt"/>
+        <line num="196" count="3" type="stmt"/>
+        <line num="217" count="3" type="stmt"/>
+        <line num="218" count="5" type="stmt"/>
+        <line num="219" count="5" type="stmt"/>
+        <line num="220" count="5" type="stmt"/>
+        <line num="221" count="5" type="stmt"/>
+        <line num="254" count="3" type="stmt"/>
         <line num="255" count="6" type="stmt"/>
-        <line num="257" count="6" type="stmt"/>
-        <line num="258" count="1" type="stmt"/>
-        <line num="259" count="1" type="stmt"/>
-        <line num="260" count="1" type="stmt"/>
-        <line num="261" count="1" type="stmt"/>
+        <line num="256" count="6" type="stmt"/>
+        <line num="258" count="6" type="stmt"/>
+        <line num="259" count="6" type="stmt"/>
+        <line num="261" count="6" type="stmt"/>
+        <line num="262" count="1" type="stmt"/>
+        <line num="263" count="1" type="stmt"/>
+        <line num="264" count="1" type="stmt"/>
+        <line num="265" count="1" type="stmt"/>
       </file>
       <file name="setOutput.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/setOutput.js">
         <metrics statements="20" coveredstatements="20" conditionals="7" coveredconditionals="7" methods="5" coveredmethods="5"/>
