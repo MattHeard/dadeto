@@ -29,14 +29,18 @@ function isLegalMove(player, position, board) {
   );
 }
 
+function updateBoardIfLegal(player, position, board) {
+  if (isLegalMove(player, position, board)) {
+    const { row, column } = position;
+    board[row][column] = player;
+  }
+}
+
 function applyMove(move, board) {
   const player = getPlayer(move);
   const position = getPosition(move);
   if (isObject(position)) {
-    if (isLegalMove(player, position, board)) {
-      const { row, column } = position;
-      board[row][column] = player;
-    }
+    updateBoardIfLegal(player, position, board);
   }
 }
 
