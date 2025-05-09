@@ -24,6 +24,44 @@ describe('generateFleet', () => {
     expect(JSON.parse(result)).toEqual({ error: 'Ship segments exceed board area' });
   });
 
+  test('places a vertical ship of length 3 somewhere', () => {
+    // 3x3 board, place a vertical ship of length 3 somewhere
+    const cfg = { width: 3, height: 3, ships: [3] };
+    // getRandomNumber: () => 0.5 will select a vertical candidate in the shuffled list
+    const env = new Map([
+      ['getRandomNumber', () => 0.5],
+    ]);
+    const result = generateFleet(JSON.stringify(cfg), env);
+    const fleet = JSON.parse(result);
+    expect(fleet.width).toBe(3);
+    expect(fleet.height).toBe(3);
+    expect(Array.isArray(fleet.ships)).toBe(true);
+    expect(fleet.ships.length).toBe(1);
+    const ship = fleet.ships[0];
+    expect(ship.length).toBe(3);
+    expect(ship.direction).toBe('V');
+    // All occupied squares must be in the same column and consecutive rows
+    const occupied = [];
+    for (let i = 0; i < ship.length; i++) {
+      const sx = ship.start.x;
+      const sy = ship.start.y + i;
+      occupied.push([sx, sy]);
+    }
+    // Check that all x are the same and y are consecutive
+    const xs = occupied.map(([x, _]) => x);
+    const ys = occupied.map(([_, y]) => y);
+    expect(new Set(xs).size).toBe(1);
+    ys.sort((a, b) => a - b);
+    expect(ys).toEqual([ys[0], ys[0] + 1, ys[0] + 2]);
+    // All cells are within bounds
+    for (const [x, y] of occupied) {
+      expect(x).toBeGreaterThanOrEqual(0);
+      expect(x).toBeLessThan(3);
+      expect(y).toBeGreaterThanOrEqual(0);
+      expect(y).toBeLessThan(3);
+    }
+  });
+
   test('generates a valid fleet for simple input', () => {
     const cfg = { width: 4, height: 4, ships: [2,2] };
     const result = generateFleet(JSON.stringify(cfg), env);
