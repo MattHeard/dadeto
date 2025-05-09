@@ -117,6 +117,58 @@ describe('createTicTacToeBoardElement', () => {
     );
   });
 
+  it('ignores moves where the move is not an object (null, number, string, array)', () => {
+    const input = JSON.stringify({
+      moves: [null, 42, "foo", [1,2,3], { player: 'X', position: { row: 0, column: 0 } }]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      ' X |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
+  it('ignores moves where position is null, number, string, or array', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X', position: null },
+        { player: 'O', position: 123 },
+        { player: 'X', position: "abc" },
+        { player: 'O', position: [1,2] },
+        { player: 'X', position: { row: 2, column: 2 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   | X '
+    );
+  });
+
+  it('renders an error for empty string input', () => {
+    const el = createTicTacToeBoardElement('', mockDom());
+    expect(el.tagName).toBe('p');
+    expect(el.textContent).toBe('Invalid JSON');
+  });
+
+  it('renders an empty board for valid JSON but not an object', () => {
+    const el = createTicTacToeBoardElement('42', mockDom());
+    expect(el.tagName).toBe('pre');
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
   it('renders a board with three moves', () => {
     const input = JSON.stringify({
       moves: [

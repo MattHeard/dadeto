@@ -40,7 +40,11 @@ export function createTicTacToeBoardElement(inputString, dom) {
       player = undefined;
       position = {};
     }
-    const { row, column } = position;
+    let row, column;
+    if (position && typeof position === 'object' && !Array.isArray(position)) {
+      row = position.row;
+      column = position.column;
+    }
     if (
       (player === 'X' || player === 'O') &&
       [0, 1, 2].includes(row) &&
