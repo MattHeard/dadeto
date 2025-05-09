@@ -24,7 +24,8 @@ import {
   getCurrentTime,
   setTextContent,
   disconnectObserver,
-  isIntersecting
+  isIntersecting,
+  makeIntersectionObserver
 } from './document.js';
 
 function hasNoInteractiveComponents(win) {
