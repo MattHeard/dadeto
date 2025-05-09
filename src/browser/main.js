@@ -23,7 +23,6 @@ import {
   getRandomNumber,
   getCurrentTime
 } from './document.js';
-import { handleTagLinks } from './tags.js';
 
 function hasNoInteractiveComponents(win) {
   return !win.interactiveComponents || win.interactiveComponents.length === 0;
@@ -48,8 +47,7 @@ function getComponentInitializer(getElement, logWarning, createIntersectionObser
     observer.observe(article);
   };
 }
-  
-import { handleTagLinks } from './tags.js';
+
 
 const globalState = {
   blog: null, // Holds the fetched blog data
