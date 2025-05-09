@@ -51,12 +51,8 @@ function fillShipOnBoard(boardInfo, ship) {
 
 
 function fillShipCell(board, ship, i, dimensions) {
-  let x, y;
-  if (ship.direction === 'H') {
-    x = ship.start.x + i;
-  } else {
-    x = ship.start.x;
-  }
+  const x = getShipCellX(ship, i);
+  let y;
   if (ship.direction === 'V') {
     y = ship.start.y + i;
   } else {
@@ -64,6 +60,13 @@ function fillShipCell(board, ship, i, dimensions) {
   }
   const coord = { x, y };
   markShipCellOnBoard(board, coord, dimensions);
+}
+
+function getShipCellX(ship, i) {
+  if (ship.direction === 'H') {
+    return ship.start.x + i;
+  }
+  return ship.start.x;
 }
 
 function markShipCellOnBoard(board, coord, dimensions) {
