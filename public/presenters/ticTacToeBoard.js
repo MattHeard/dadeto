@@ -9,18 +9,16 @@ function getPlayer(move) {
   return (move && typeof move === 'object') ? move.player : undefined;
 }
 
+function getPosition(move) {
+  if (move && typeof move === 'object' && move.position !== undefined) {
+    return move.position;
+  }
+  return {};
+}
+
 function applyMove(move, board) {
   const player = getPlayer(move);
-  let position;
-  if (move && typeof move === 'object') {
-    if (move.position !== undefined) {
-      position = move.position;
-    } else {
-      position = {};
-    }
-  } else {
-    position = {};
-  }
+  const position = getPosition(move);
   let row, column;
   if (position && typeof position === 'object' && !Array.isArray(position)) {
     row = position.row;
