@@ -102,9 +102,7 @@ function attemptPlacement(cfg, env) {
 
           if (touchForbidden) {
             for (const { x: sx, y: sy } of segs) {
-              function isNeighbourOfSegOccupied(n) {
-                return isNeighbourOccupied(n, cfg, occupied);
-              }
+              const isNeighbourOfSegOccupied = n => isNeighbourOccupied(n, cfg, occupied);
               const foundOccupied = neighbours(sx, sy).find(isNeighbourOfSegOccupied);
               if (foundOccupied) {
                 valid = false;
