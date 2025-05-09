@@ -8,18 +8,11 @@ import { isObject } from '../browser/common.js';
  * @returns {HTMLElement}      – <pre> (board) or <p> (error)
  */
 function getPlayer(move) {
-  if (move && typeof move === 'object') {
-    return move.player;
-  } else {
-    return undefined;
-  }
+  return move?.player;
 }
 
 function getPosition(move) {
-  if (move && typeof move === 'object' && move.position !== undefined) {
-    return move.position;
-  }
-  return {};
+  return move?.position;
 }
 
 function isLegalMove(player, position, board) {
