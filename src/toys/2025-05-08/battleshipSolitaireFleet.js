@@ -28,6 +28,10 @@ function inBounds(x, y, w, h) {
   return x >= 0 && y >= 0 && x < w && y < h;
 }
 
+function inBounds_new(x, y, cfg) {
+  return inBounds(x, y, cfg.width, cfg.height);
+}
+
 /** 8‑neighbour coordinates */
 function neighbours(x, y) {
   const out = [];
@@ -68,7 +72,7 @@ function attemptPlacement(cfg, env) {
           } else {
             endY = y;
           }
-          if (!inBounds(endX, endY, cfg.width, cfg.height)) {continue;}
+          if (!inBounds_new(endX, endY, cfg)) {continue;}
 
           let valid = true;
           const segs = [];
