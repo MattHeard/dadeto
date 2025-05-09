@@ -1,3 +1,5 @@
+import { isObject } from '../browser/common.js';
+
 /**
  * createTicTacToeBoardElement
  * ---------------------------
@@ -20,7 +22,7 @@ function applyMove(move, board) {
   const player = getPlayer(move);
   const position = getPosition(move);
   let row, column;
-  if (position && typeof position === 'object' && !Array.isArray(position)) {
+  if (isObject(position) && !Array.isArray(position)) {
     row = position.row;
     column = position.column;
   }
