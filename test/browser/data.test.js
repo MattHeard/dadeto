@@ -1,6 +1,17 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch, deepMerge } from '../../src/browser/data.js';
 
+describe('deepMerge', () => {
+  it('should use the if branch when shouldDeepMerge is true (deep merge plain objects)', () => {
+    const target = { a: { x: 1 }, b: 2 };
+    const source = { a: { y: 3 }, c: 4 };
+    const merged = deepMerge(target, source);
+    // a should be deeply merged, b and c should be present
+    expect(merged).toEqual({ a: { x: 1, y: 3 }, b: 2, c: 4 });
+  });
+});
+
+
 describe('fetchAndCacheBlogData', () => {
   let state;
   let mockFetch;

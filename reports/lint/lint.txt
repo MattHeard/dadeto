@@ -43,9 +43,6 @@
   139:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2      complexity
   143:12  warning  '_' is defined but never used                                             no-unused-vars
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
-  2:93  warning  'deepMerge' is defined but never used  no-unused-vars
-
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setOutput.test.js
   18:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
   31:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
@@ -56,4 +53,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 37 problems (0 errors, 37 warnings)
+✖ 36 problems (0 errors, 36 warnings)
