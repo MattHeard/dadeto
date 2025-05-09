@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746798705533" clover="3.2.0">
-  <project timestamp="1746798705533" name="All files">
-    <metrics statements="1268" coveredstatements="1268" conditionals="400" coveredconditionals="400" methods="493" coveredmethods="493" elements="2161" coveredelements="2161" complexity="0" loc="1268" ncloc="1268" packages="14" files="30" classes="30"/>
+<coverage generated="1746798762556" clover="3.2.0">
+  <project timestamp="1746798762557" name="All files">
+    <metrics statements="1268" coveredstatements="1268" conditionals="400" coveredconditionals="400" methods="494" coveredmethods="494" elements="2162" coveredelements="2162" complexity="0" loc="1268" ncloc="1268" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="65" coveredconditionals="65" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -658,9 +658,9 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="102" coveredstatements="102" conditionals="46" coveredconditionals="46" methods="35" coveredmethods="35"/>
+      <metrics statements="102" coveredstatements="102" conditionals="46" coveredconditionals="46" methods="36" coveredmethods="36"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js">
-        <metrics statements="59" coveredstatements="59" conditionals="18" coveredconditionals="18" methods="24" coveredmethods="24"/>
+        <metrics statements="59" coveredstatements="59" conditionals="18" coveredconditionals="18" methods="25" coveredmethods="25"/>
         <line num="21" count="5" type="stmt"/>
         <line num="22" count="5" type="stmt"/>
         <line num="23" count="4" type="stmt"/>

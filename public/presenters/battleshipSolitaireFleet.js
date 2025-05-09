@@ -43,9 +43,9 @@ function placeSingleShipOnBoard(boardInfo, ship) {
 
 function fillShipOnBoard(boardInfo, ship) {
   const { board, dimensions } = boardInfo;
-  for (let i = 0; i < ship.length; i++) {
+  Array.from({ length: ship.length }).forEach((_, i) => {
     fillShipCell(board, ship, i, dimensions);
-  }
+  });
 
 }
 
