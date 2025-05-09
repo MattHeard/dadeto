@@ -26,6 +26,7 @@ import {
   disconnectObserver,
   isIntersecting,
   hide,
+  pauseAudio,
   makeIntersectionObserver,
   addClass,
   getClasses,
