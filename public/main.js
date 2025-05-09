@@ -22,20 +22,7 @@ import {
   addWarning,
   getRandomNumber,
   getCurrentTime,
-  hasNextSiblingClass,
-  removeNextSibling,
-  setTextContent,
-  addClass,
-  hide,
-  makeIntersectionObserver,
-  enable,
-  removeChild,
-  removeWarning,
-  contains,
-  removeAllChildren,
-  isIntersecting,
-  disconnectObserver,
-  getClasses
+  
 } from './document.js';
 import { handleTagLinks } from './tags.js';
 
@@ -62,43 +49,7 @@ function getComponentInitializer(getElement, logWarning, createIntersectionObser
     observer.observe(article);
   };
 }
-
-
-import {
-  getElementById,
-  getAudioElements,
-  getElementsByTagName,
-  hasClass,
-  querySelector,
-  removeControlsAttribute,
-  createElement,
-  createTextNode,
-  stopDefault,
-  playAudio,
-  pauseAudio,
-  addEventListener,
-  appendChild,
-  insertBefore,
-  log,
-  warn,
-  error,
-  addWarning,
-  getRandomNumber,
-  getCurrentTime,
-  hasNextSiblingClass,
-  removeNextSibling,
-  setTextContent,
-  addClass,
-  hide,
-  makeIntersectionObserver,
-  enable,
-  removeChild,
-  removeWarning,
-  contains,
-  removeAllChildren,
-  isIntersecting,
-  disconnectObserver,
-  getClasses
+  
 } from './document.js';
 import { handleTagLinks } from './tags.js';
 
@@ -122,9 +73,6 @@ function importModule(modulePath, onSuccess, onError) {
 }
 
 // createHandleClick has been moved to tags.js
-
-
-
 
 
 
@@ -188,9 +136,6 @@ const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 // isIntersecting and disconnectObserver moved to document.js
 
-
-
-
 // Interactive components functionality
 
 
@@ -209,9 +154,6 @@ initializeVisibleComponents(
 );
 
 // Tag filtering functionality
-
-
-
 
 handleTagLinks(dom);
 
