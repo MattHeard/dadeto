@@ -9,6 +9,114 @@ function mockDom() {
 }
 
 describe('createTicTacToeBoardElement', () => {
+  it('renders an empty board if moves property is missing', () => {
+    const el = createTicTacToeBoardElement(JSON.stringify({}), mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
+  it('renders an empty board if moves is not an array', () => {
+    const el = createTicTacToeBoardElement(JSON.stringify({ moves: 5 }), mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
+  it('ignores moves with invalid player', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'Q', position: { row: 0, column: 0 } },
+        { player: 'X', position: { row: 1, column: 1 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   | X |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
+  it('ignores moves with missing position', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X' },
+        { player: 'O', position: { row: 1, column: 1 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   | O |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
+  it('ignores moves with out-of-bounds position', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X', position: { row: 3, column: 0 } },
+        { player: 'O', position: { row: 1, column: 1 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   | O |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
+  it('only applies the first move to a cell (overlapping moves)', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X', position: { row: 0, column: 0 } },
+        { player: 'O', position: { row: 0, column: 0 } },
+        { player: 'X', position: { row: 0, column: 0 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      ' X |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
+  it('ignores moves with missing row/column', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X', position: { row: 0 } },
+        { player: 'O', position: { column: 1 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
   it('renders a board with three moves', () => {
     const input = JSON.stringify({
       moves: [
