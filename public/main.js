@@ -25,7 +25,8 @@ import {
   setTextContent,
   disconnectObserver,
   isIntersecting,
-  makeIntersectionObserver
+  makeIntersectionObserver,
+  addClass
 } from './document.js';
 
 function hasNoInteractiveComponents(win) {
