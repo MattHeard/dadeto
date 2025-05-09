@@ -2828,11 +2828,11 @@ FN:49,attemptPlacement
 FN:143,generateFleet
 FN:155,(anonymous_7)
 FNF:8
-FNH:7
+FNH:8
 FNDA:105,shuffle
 FNDA:4867,(anonymous_1)
 FNDA:7800,inBounds
-FNDA:0,inBounds_new
+FNDA:7800,inBounds_new
 FNDA:1400,neighbours
 FNDA:105,attemptPlacement
 FNDA:7,generateFleet
@@ -2843,7 +2843,7 @@ DA:20,301
 DA:21,301
 DA:25,4867
 DA:28,7800
-DA:32,0
+DA:32,7800
 DA:37,1400
 DA:38,1400
 DA:39,4200
@@ -2916,7 +2916,7 @@ DA:162,105
 DA:163,105
 DA:166,1
 LF:78
-LH:77
+LH:78
 BRDA:28,0,0,7800
 BRDA:28,0,1,6400
 BRDA:28,0,2,4800
