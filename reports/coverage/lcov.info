@@ -1325,8 +1325,8 @@ FN:31,placeShipsOnBoard
 FN:32,(anonymous_7)
 FN:36,placeSingleShipOnBoard
 FN:44,fillShipOnBoard
-FN:46,(anonymous_10)
-FN:53,fillShipCell
+FN:45,(anonymous_10)
+FN:52,fillShipCell
 FN:60,getShipCellY
 FN:67,getShipCellX
 FN:74,markShipCellOnBoard
@@ -1384,8 +1384,8 @@ DA:37,4
 DA:38,1
 DA:40,3
 DA:45,3
-DA:46,3
-DA:47,6
+DA:46,6
+DA:53,6
 DA:54,6
 DA:55,6
 DA:56,6

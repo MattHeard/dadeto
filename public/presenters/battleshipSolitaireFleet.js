@@ -42,15 +42,15 @@ function placeSingleShipOnBoard(boardInfo, ship) {
 }
 
 function fillShipOnBoard(boardInfo, ship) {
-  const { board, dimensions } = boardInfo;
   Array.from({ length: ship.length }).forEach((_, i) => {
-    fillShipCell(board, ship, i, dimensions);
+    fillShipCell(boardInfo, ship, i);
   });
 
 }
 
 
-function fillShipCell(board, ship, i, dimensions) {
+function fillShipCell(boardInfo, ship, i) {
+  const { board, dimensions } = boardInfo;
   const x = getShipCellX(ship, i);
   const y = getShipCellY(ship, i);
   const coord = { x, y };
