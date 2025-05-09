@@ -41,8 +41,17 @@ function placeSingleShipOnBoard({ board, width, height }, ship) {
     return; // skip malformed
   }
   for (let i = 0; i < ship.length; i++) {
-    const x = ship.direction === 'H' ? ship.start.x + i : ship.start.x;
-    const y = ship.direction === 'V' ? ship.start.y + i : ship.start.y;
+    let x, y;
+    if (ship.direction === 'H') {
+      x = ship.start.x + i;
+    } else {
+      x = ship.start.x;
+    }
+    if (ship.direction === 'V') {
+      y = ship.start.y + i;
+    } else {
+      y = ship.start.y;
+    }
     if (isOutOfBounds(x, y, width, height)) { continue; }
     board[y][x] = '#';
   }
