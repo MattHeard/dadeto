@@ -24,7 +24,7 @@ function shuffle(arr, env) {
 
 const key = (x, y) => `${x},${y}`;
 
-function inBounds_new(coord, cfg) {
+function inBounds(coord, cfg) {
   return coord.x >= 0 && coord.y >= 0 && coord.x < cfg.width && coord.y < cfg.height;
 }
 
@@ -68,7 +68,7 @@ function attemptPlacement(cfg, env) {
           } else {
             endY = y;
           }
-          if (!inBounds_new({x: endX, y: endY}, cfg)) {continue;}
+          if (!inBounds({x: endX, y: endY}, cfg)) {continue;}
 
           let valid = true;
           const segs = [];
@@ -93,7 +93,7 @@ function attemptPlacement(cfg, env) {
           if (touchForbidden) {
             for (const { x: sx, y: sy } of segs) {
               for (const n of neighbours(sx, sy)) {
-                if (inBounds_new({x: n.x, y: n.y}, cfg) && occupied.has(key(n.x, n.y))) {
+                if (inBounds({x: n.x, y: n.y}, cfg) && occupied.has(key(n.x, n.y))) {
                   valid = false;
                   break;
                 }

@@ -2821,7 +2821,7 @@ TN:
 SF:src/toys/2025-05-08/battleshipSolitaireFleet.js
 FN:17,shuffle
 FN:25,(anonymous_1)
-FN:27,inBounds_new
+FN:27,inBounds
 FN:32,neighbours
 FN:45,attemptPlacement
 FN:139,generateFleet
@@ -2830,7 +2830,7 @@ FNF:7
 FNH:7
 FNDA:105,shuffle
 FNDA:4867,(anonymous_1)
-FNDA:9514,inBounds_new
+FNDA:9514,inBounds
 FNDA:1400,neighbours
 FNDA:105,attemptPlacement
 FNDA:7,generateFleet
