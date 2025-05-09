@@ -62,10 +62,12 @@ function fillShipCell(board, ship, i, width, height) {
   } else {
     y = ship.start.y;
   }
-  markShipCellOnBoard(board, x, y, width, height);
+  const coord = { x, y };
+  markShipCellOnBoard(board, coord, width, height);
 }
 
-function markShipCellOnBoard(board, x, y, width, height) {
+function markShipCellOnBoard(board, coord, width, height) {
+  const { x, y } = coord;
   if (isOutOfBounds(x, y, width, height)) {
     return;
   }
