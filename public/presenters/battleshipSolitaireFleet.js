@@ -17,6 +17,17 @@
  *   ]
  * }
  */
+function validateFleetObject(width, height, ships) {
+  if (typeof width !== 'number') {
+    return 'Missing or invalid property: width';
+  } else if (typeof height !== 'number') {
+    return 'Missing or invalid property: height';
+  } else if (!Array.isArray(ships)) {
+    return 'Missing or invalid property: ships';
+  }
+  return '';
+}
+
 export function createBattleshipFleetBoardElement(inputString, dom) {
   let fleet;
 
@@ -29,15 +40,8 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
     return err;
   }
 
-  const { width, height, ships } = fleet; // fleet is assumed to be a valid object at this point
-  let errorMsg = '';
-  if (typeof width !== 'number') {
-    errorMsg = 'Missing or invalid property: width';
-  } else if (typeof height !== 'number') {
-    errorMsg = 'Missing or invalid property: height';
-  } else if (!Array.isArray(ships)) {
-    errorMsg = 'Missing or invalid property: ships';
-  }
+  const { width, height, ships } = fleet;
+  const errorMsg = validateFleetObject(width, height, ships);
   if (errorMsg) {
     const err = dom.createElement('p');
     dom.setTextContent(err, errorMsg);
