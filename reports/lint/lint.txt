@@ -5,23 +5,23 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
    27:1   warning  Function 'inBounds' has a complexity of 4. Maximum allowed is 2           complexity
    32:1   warning  Function 'neighbours' has a complexity of 5. Maximum allowed is 2         complexity
-   45:1   warning  Function 'attemptPlacement' has a complexity of 25. Maximum allowed is 2  complexity
-   61:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
-   66:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
-   71:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
-   77:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
-   79:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                    max-depth
-   84:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                    max-depth
-   90:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                    max-depth
-   95:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
+   49:1   warning  Function 'attemptPlacement' has a complexity of 24. Maximum allowed is 2  complexity
+   65:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
+   70:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
+   75:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
+   81:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
+   83:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                    max-depth
+   88:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                    max-depth
+   94:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                    max-depth
    99:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
-  100:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                    max-depth
-  101:15  warning  Blocks are nested too deeply (7). Maximum allowed is 4                    max-depth
-  103:17  warning  Blocks are nested too deeply (8). Maximum allowed is 4                    max-depth
-  108:15  warning  Blocks are nested too deeply (7). Maximum allowed is 4                    max-depth
-  114:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
-  148:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2      complexity
-  152:12  warning  '_' is defined but never used                                             no-unused-vars
+  103:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
+  104:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                    max-depth
+  105:15  warning  Blocks are nested too deeply (7). Maximum allowed is 4                    max-depth
+  106:17  warning  Blocks are nested too deeply (8). Maximum allowed is 4                    max-depth
+  111:15  warning  Blocks are nested too deeply (7). Maximum allowed is 4                    max-depth
+  117:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
+  151:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2      complexity
+  155:12  warning  '_' is defined but never used                                             no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setOutput.test.js
   18:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity

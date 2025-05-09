@@ -40,6 +40,10 @@ function neighbours(x, y) {
   return out;
 }
 
+function isNeighbourOccupied(n, cfg, occupied) {
+  return inBounds(n, cfg) && occupied.has(key(n.x, n.y));
+}
+
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
 function attemptPlacement(cfg, env) {
@@ -99,8 +103,7 @@ function attemptPlacement(cfg, env) {
           if (touchForbidden) {
             for (const { x: sx, y: sy } of segs) {
               for (const n of neighbours(sx, sy)) {
-                const isNeighbourOccupied = inBounds(n, cfg) && occupied.has(key(n.x, n.y));
-                if (isNeighbourOccupied) {
+                if (isNeighbourOccupied(n, cfg, occupied)) {
                   valid = false;
                   break;
                 }
