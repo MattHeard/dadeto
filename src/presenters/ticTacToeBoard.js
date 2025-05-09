@@ -21,12 +21,21 @@ export function createTicTacToeBoardElement(inputString, dom) {
   const board = Array.from({ length: 3 }, () => Array(3).fill(' '));
 
   // 3. Apply each legal move (first–come, first-served)
-  const moves = Array.isArray(data.moves) ? data.moves : [];
+  let moves;
+  if (Array.isArray(data.moves)) {
+    moves = data.moves;
+  } else {
+    moves = [];
+  }
   moves.forEach(move => {
     let player, position;
     if (move && typeof move === 'object') {
       player = move.player;
-      position = move.position !== undefined ? move.position : {};
+      if (move.position !== undefined) {
+        position = move.position;
+      } else {
+        position = {};
+      }
     } else {
       player = undefined;
       position = {};

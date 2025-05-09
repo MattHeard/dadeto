@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.3% </span>
+                <span class="strong">85.18% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>21/23</span>
+                <span class='fraction'>23/27</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.47% </span>
+                <span class="strong">84% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>19/21</span>
+                <span class='fraction'>21/25</span>
             </div>
         
             
@@ -115,7 +115,16 @@
 <a name='L50'></a><a href='#L50'>50</a>
 <a name='L51'></a><a href='#L51'>51</a>
 <a name='L52'></a><a href='#L52'>52</a>
-<a name='L53'></a><a href='#L53'>53</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -138,12 +147,21 @@
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -190,26 +208,35 @@ export function createTicTacToeBoardElement(inputString, dom) {
   const board = Array.from({ length: 3 }, () =&gt; Array(3).fill(' '));
 &nbsp;
   // 3. Apply each legal move (first–come, first-served)
-  const moves = Array.isArray(data.moves) ? data.moves : <span class="branch-1 cbranch-no" title="branch not covered" >[];</span>
-moves.forEach(move =&gt; {
-  let player, position;
-  if (move &amp;&amp; typeof move === 'object') {
-    player = move.player;
-    position = move.position !== undefined ? move.position : <span class="branch-1 cbranch-no" title="branch not covered" >{};</span>
+  let moves;
+  if (Array.isArray(data.moves)) {
+    moves = data.moves;
   } else <span class="missing-if-branch" title="else path not taken" >E</span>{
-<span class="cstat-no" title="statement not covered" >    player = undefined;</span>
-<span class="cstat-no" title="statement not covered" >    position = {};</span>
+<span class="cstat-no" title="statement not covered" >    moves = [];</span>
   }
-  const { row, column } = position;
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (
-    (player === 'X' || player === 'O') &amp;&amp;
+  moves.forEach(move =&gt; {
+    let player, position;
+    if (move &amp;&amp; typeof move === 'object') {
+      player = move.player;
+      if (move.position !== undefined) {
+        position = move.position;
+      } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >        position = {};</span>
+      }
+    } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >      player = undefined;</span>
+<span class="cstat-no" title="statement not covered" >      position = {};</span>
+    }
+    const { row, column } = position;
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (
+      (player === 'X' || player === 'O') &amp;&amp;
       [0, 1, 2].includes(row) &amp;&amp;
       [0, 1, 2].includes(column) &amp;&amp;
       board[row][column] === ' '
-  ) {
-    board[row][column] = player;
-  }
-});
+    ) {
+      board[row][column] = player;
+    }
+  });
 &nbsp;
   // 4. Render board into a monospace grid
   const rowStrings = board.map(r =&gt; ` ${r[0]} | ${r[1]} | ${r[2]} `);
@@ -226,7 +253,7 @@ moves.forEach(move =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-09T09:58:57.318Z
+                at 2025-05-09T10:00:43.218Z
             </div>
         <script src="../prettify.js"></script>
         <script>
