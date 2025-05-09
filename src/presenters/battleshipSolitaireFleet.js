@@ -72,11 +72,10 @@ function getShipCellX(ship, i) {
 
 function markShipCellOnBoard(boardInfo, coord) {
   const { board, dimensions } = boardInfo;
-  const { x, y } = coord;
-  const { width, height } = dimensions;
-  if (isOutOfBounds(x, y, width, height)) {
+  if (isOutOfBounds(coord, dimensions)) {
     return;
   }
+  const { x, y } = coord;
   board[y][x] = '#';
 }
 
@@ -106,7 +105,9 @@ function isInvalidDirection(ship) {
   return ship.direction !== 'H' && ship.direction !== 'V';
 }
 
-function isOutOfBounds(x, y, width, height) {
+function isOutOfBounds(coord, dimensions) {
+  const { x, y } = coord;
+  const { width, height } = dimensions;
   return x < 0 || y < 0 || x >= width || y >= height;
 }
 
