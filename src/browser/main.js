@@ -3,7 +3,7 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData
 } from './data.js';
-import { makeCreateIntersectionObserver, initializeVisibleComponents, handleDropdownChange } from './toys.js';
+import { makeCreateIntersectionObserver, initializeVisibleComponents, handleDropdownChange_new } from './toys.js';
 import {
   getElementById,
   getAudioElements,

@@ -10,7 +10,7 @@ import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolit
  * @param {Function} logInfo - Logging function to use for output. Must be provided.
  */
 function getDropdownArticle(dropdown) {
-  return dropdown.closest('article.entry');
+  return dropdown.closest('article.entry')
 }
 
 function getDropdownPostId(dropdown) {
