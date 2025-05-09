@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  67:10  error  Parsing error: Identifier 'fetchAndCacheBlogData' has already been declared
+  68:3  error  Parsing error: Identifier 'getElementById' has already been declared
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/setOutput.js
   1:1  warning  Function 'isObject' has a complexity of 3. Maximum allowed is 2  complexity

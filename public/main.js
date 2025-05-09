@@ -64,7 +64,6 @@ function getComponentInitializer(getElement, logWarning, createIntersectionObser
 }
 
 
-import { fetchAndCacheBlogData, getData, setData } from './data.js';
 import {
   getElementById,
   getAudioElements,
