@@ -5,17 +5,20 @@
  * @param {object} dom         – abstraction with createElement / setTextContent
  * @returns {HTMLElement}      – <pre> (board) or <p> (error)
  */
+function getPlayer(move) {
+  return (move && typeof move === 'object') ? move.player : undefined;
+}
+
 function applyMove(move, board) {
-  let player, position;
+  const player = getPlayer(move);
+  let position;
   if (move && typeof move === 'object') {
-    player = move.player;
     if (move.position !== undefined) {
       position = move.position;
     } else {
       position = {};
     }
   } else {
-    player = undefined;
     position = {};
   }
   let row, column;
