@@ -68,7 +68,9 @@ function attemptPlacement(cfg, env) {
           } else {
             endY = y;
           }
-          if (!inBounds({x: endX, y: endY}, cfg)) {continue;}
+          if (!inBounds({x: endX, y: endY}, cfg)) {
+            continue;
+          }
 
           let valid = true;
           const segs = [];
@@ -85,10 +87,14 @@ function attemptPlacement(cfg, env) {
               sy = y;
             }
             const k = key(sx, sy);
-            if (occupied.has(k)) {valid = false;}
+            if (occupied.has(k)) {
+              valid = false;
+            }
             segs.push({ x: sx, y: sy });
           }
-          if (!valid) {continue;}
+          if (!valid) {
+            continue;
+          }
 
           if (touchForbidden) {
             for (const { x: sx, y: sy } of segs) {
@@ -98,7 +104,9 @@ function attemptPlacement(cfg, env) {
                   break;
                 }
               }
-              if (!valid) {break;}
+              if (!valid) {
+                break;
+              }
             }
           }
 

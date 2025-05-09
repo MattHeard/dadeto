@@ -68,27 +68,33 @@ function attemptPlacement(cfg, env) {
           } else {
             endY = y;
           }
-          if (!inBounds({x: endX, y: endY}, cfg)) {continue;}
+          if (!inBounds({x: endX, y: endY}, cfg)) {
+  continue;
+}
 
           let valid = true;
           const segs = [];
           for (let i = 0; i < len && valid; i++) {
             let sx, sy;
             if (dir === 'H') {
-              sx = x + i;
-            } else {
-              sx = x;
-            }
+  sx = x + i;
+} else {
+  sx = x;
+}
             if (dir === 'V') {
-              sy = y + i;
-            } else {
-              sy = y;
-            }
+  sy = y + i;
+} else {
+  sy = y;
+}
             const k = key(sx, sy);
-            if (occupied.has(k)) {valid = false;}
+            if (occupied.has(k)) {
+  valid = false;
+}
             segs.push({ x: sx, y: sy });
           }
-          if (!valid) {continue;}
+          if (!valid) {
+  continue;
+}
 
           if (touchForbidden) {
             for (const { x: sx, y: sy } of segs) {
@@ -98,7 +104,9 @@ function attemptPlacement(cfg, env) {
                   break;
                 }
               }
-              if (!valid) {break;}
+              if (!valid) {
+  break;
+}
             }
           }
 
