@@ -29,12 +29,12 @@ function inBounds(coord, cfg) {
 }
 
 /** 8‑neighbour coordinates */
-function neighbours(x, y) {
+function neighbours(coord) {
   const out = [];
   for (let dy = -1; dy <= 1; dy++) {
     for (let dx = -1; dx <= 1; dx++) {
       if (dx === 0 && dy === 0) {continue;}
-      out.push({ x: x + dx, y: y + dy });
+      out.push({ x: coord.x + dx, y: coord.y + dy });
     }
   }
   return out;
@@ -103,7 +103,7 @@ function attemptPlacement(cfg, env) {
           if (touchForbidden) {
             for (const seg of segs) {
               const isNeighbourOfSegOccupied = n => isNeighbourOccupied(n, cfg, occupied);
-              const foundOccupied = neighbours(...Object.values(seg)).find(isNeighbourOfSegOccupied);
+              const foundOccupied = neighbours(seg).find(isNeighbourOfSegOccupied);
               if (foundOccupied) {
                 valid = false;
               }
