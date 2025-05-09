@@ -463,11 +463,11 @@ FN:417,(anonymous_46)
 FN:431,initializeVisibleComponents
 FN:461,(anonymous_48)
 FNF:49
-FNH:48
+FNH:49
 FNDA:1,getDropdownArticle
 FNDA:1,getDropdownPostId
 FNDA:1,handleDropdownChange
-FNDA:0,handleDropdownChange_new
+FNDA:1,handleDropdownChange_new
 FNDA:15,setTextContent
 FNDA:5,handleModuleError
 FNDA:1,(anonymous_6)
@@ -522,7 +522,7 @@ DA:24,1
 DA:25,1
 DA:27,1
 DA:28,1
-DA:32,0
+DA:32,1
 DA:37,1
 DA:45,15
 DA:46,15
@@ -648,7 +648,7 @@ DA:440,2
 DA:441,2
 DA:461,1
 LF:134
-LH:133
+LH:134
 BRDA:25,0,0,1
 BRDA:25,0,1,1
 BRDA:25,0,2,1
