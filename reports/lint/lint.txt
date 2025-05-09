@@ -3,12 +3,15 @@
   21:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js
-  44:1  warning  Function 'fillShipOnBoard' has a complexity of 4. Maximum allowed is 2                    complexity
-  62:1  warning  Function 'markShipCellOnBoard' has too many parameters (5). Maximum allowed is 3          max-params
-  83:1  warning  Function 'isInvalidStartCoordinates' has a complexity of 4. Maximum allowed is 2          complexity
-  95:1  warning  Function 'isOutOfBounds' has too many parameters (4). Maximum allowed is 3                max-params
-  95:1  warning  Function 'isOutOfBounds' has a complexity of 4. Maximum allowed is 2                      complexity
-  99:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
+   45:11  warning  'board' is assigned a value but never used                                                no-unused-vars
+   45:18  warning  'width' is assigned a value but never used                                                no-unused-vars
+   45:25  warning  'height' is assigned a value but never used                                               no-unused-vars
+   50:1   warning  Function 'iterateShipCells' has a complexity of 4. Maximum allowed is 2                   complexity
+   68:1   warning  Function 'markShipCellOnBoard' has too many parameters (5). Maximum allowed is 3          max-params
+   89:1   warning  Function 'isInvalidStartCoordinates' has a complexity of 4. Maximum allowed is 2          complexity
+  101:1   warning  Function 'isOutOfBounds' has too many parameters (4). Maximum allowed is 3                max-params
+  101:1   warning  Function 'isOutOfBounds' has a complexity of 4. Maximum allowed is 2                      complexity
+  105:8   warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
@@ -50,4 +53,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 37 problems (0 errors, 37 warnings)
+✖ 40 problems (0 errors, 40 warnings)

@@ -43,6 +43,12 @@ function placeSingleShipOnBoard(boardInfo, ship) {
 
 function fillShipOnBoard(boardInfo, ship) {
   const { board, width, height } = boardInfo;
+  iterateShipCells(boardInfo, ship);
+
+}
+
+function iterateShipCells(boardInfo, ship) {
+  const { board, width, height } = boardInfo;
   for (let i = 0; i < ship.length; i++) {
     let x, y;
     if (ship.direction === 'H') {
