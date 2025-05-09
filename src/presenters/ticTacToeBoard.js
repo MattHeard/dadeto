@@ -60,7 +60,7 @@ export function createTicTacToeBoardElement(inputString, dom) {
   // 1. Parse input safely
   try {
     data = JSON.parse(inputString);
-  } catch (_) {
+  } catch {
     const errEl = dom.createElement('p');
     dom.setTextContent(errEl, 'Invalid JSON'); // 🛑
     return errEl;

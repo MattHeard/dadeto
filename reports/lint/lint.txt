@@ -1,7 +1,4 @@
 
-/Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
-  63:12  warning  '_' is defined but never used  no-unused-vars
-
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
    27:1   warning  Function 'inBounds' has too many parameters (4). Maximum allowed is 3     max-params
    27:1   warning  Function 'inBounds' has a complexity of 4. Maximum allowed is 2           complexity
@@ -37,4 +34,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 28 problems (0 errors, 28 warnings)
+✖ 27 problems (0 errors, 27 warnings)
