@@ -21,8 +21,7 @@ import {
   error,
   addWarning,
   getRandomNumber,
-  getCurrentTime,
-  
+  getCurrentTime
 } from './document.js';
 import { handleTagLinks } from './tags.js';
 
@@ -50,7 +49,6 @@ function getComponentInitializer(getElement, logWarning, createIntersectionObser
   };
 }
   
-} from './document.js';
 import { handleTagLinks } from './tags.js';
 
 const globalState = {

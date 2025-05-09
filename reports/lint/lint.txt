@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  53:1  error  Parsing error: Unexpected token }
+  52:10  error  Parsing error: Identifier 'handleTagLinks' has already been declared
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/setOutput.js
   1:1  warning  Function 'isObject' has a complexity of 3. Maximum allowed is 2  complexity
