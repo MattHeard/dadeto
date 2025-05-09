@@ -25,10 +25,16 @@ import {
   setTextContent,
   disconnectObserver,
   isIntersecting,
+  hide,
   makeIntersectionObserver,
   addClass,
   getClasses,
-  hasNextSiblingClass
+  hasNextSiblingClass,
+  removeNextSibling,
+  removeChild,
+  removeAllChildren,
+  removeWarning,
+  contains,
 } from './document.js';
 
 function hasNoInteractiveComponents(win) {
