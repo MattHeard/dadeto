@@ -3,10 +3,10 @@
   21:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js
-  20:1  warning  Function 'validateFleetObject' has a complexity of 4. Maximum allowed is 2                complexity
-  31:1  warning  Function 'placeShipsOnBoard' has too many parameters (4). Maximum allowed is 3            max-params
-  31:1  warning  Function 'placeShipsOnBoard' has a complexity of 15. Maximum allowed is 2                 complexity
-  49:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
+  20:1  warning  Function 'validateFleetObject' has a complexity of 3. Maximum allowed is 2                complexity
+  32:1  warning  Function 'placeShipsOnBoard' has too many parameters (4). Maximum allowed is 3            max-params
+  32:1  warning  Function 'placeShipsOnBoard' has a complexity of 15. Maximum allowed is 2                 complexity
+  50:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity

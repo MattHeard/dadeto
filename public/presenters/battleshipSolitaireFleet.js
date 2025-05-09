@@ -18,12 +18,13 @@
  * }
  */
 function validateFleetObject(fleet) {
-  if (typeof fleet.width !== 'number') {
-    return 'Missing or invalid property: width';
-  } else if (typeof fleet.height !== 'number') {
-    return 'Missing or invalid property: height';
-  } else if (!Array.isArray(fleet.ships)) {
-    return 'Missing or invalid property: ships';
+  const validators = [
+    [f => typeof f.width !== 'number', 'Missing or invalid property: width'],
+    [f => typeof f.height !== 'number', 'Missing or invalid property: height'],
+    [f => !Array.isArray(f.ships), 'Missing or invalid property: ships'],
+  ];
+  for (const [validator, errorMsg] of validators) {
+    if (validator(fleet)) return errorMsg;
   }
   return '';
 }
