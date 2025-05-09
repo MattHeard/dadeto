@@ -27,7 +27,7 @@ export function createTicTacToeBoardElement(inputString, dom) {
   } else {
     moves = [];
   }
-  moves.forEach(move => {
+  const applyMove = move => {
     let player, position;
     if (move && typeof move === 'object') {
       player = move.player;
@@ -53,7 +53,8 @@ export function createTicTacToeBoardElement(inputString, dom) {
     ) {
       board[row][column] = player;
     }
-  });
+  };
+  moves.forEach(applyMove);
 
   // 4. Render board into a monospace grid
   const rowStrings = board.map(r => ` ${r[0]} | ${r[1]} | ${r[2]} `);
