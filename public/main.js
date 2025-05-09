@@ -2,6 +2,7 @@ import { setupAudio } from './audio-controls.js';
 import {
   fetchAndCacheBlogData, getData, setData
 } from './data.js';
+import { makeCreateIntersectionObserver } from './toys.js';
 import {
   getElementById,
   getAudioElements,
