@@ -18,7 +18,9 @@ function getPosition(move) {
   return {};
 }
 
-function isLegalMove(player, row, column, board) {
+function isLegalMove(player, position, board) {
+  if (!position) {return false;}
+  const { row, column } = position;
   return (
     (player === 'X' || player === 'O') &&
     [0, 1, 2].includes(row) &&
@@ -30,15 +32,14 @@ function isLegalMove(player, row, column, board) {
 function applyMove(move, board) {
   const player = getPlayer(move);
   const position = getPosition(move);
-  let row, column;
+  let validPosition = null;
   if (isObject(position)) {
-    row = position.row;
-    column = position.column;
+    validPosition = { row: position.row, column: position.column };
   }
-  if (isLegalMove(player, row, column, board)) {
+  if (isLegalMove(player, validPosition, board)) {
+    const { row, column } = validPosition;
     board[row][column] = player;
   }
-
 }
 
 export function createTicTacToeBoardElement(inputString, dom) {
