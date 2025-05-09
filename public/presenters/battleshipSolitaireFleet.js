@@ -38,6 +38,12 @@ function placeSingleShipOnBoard(boardInfo, ship) {
   if (isMalformedShip(ship)) {
     return; // skip malformed
   }
+  fillShipOnBoard(boardInfo, ship);
+
+}
+
+function fillShipOnBoard(boardInfo, ship) {
+  const { board, width, height } = boardInfo;
   for (let i = 0; i < ship.length; i++) {
     let x, y;
     if (ship.direction === 'H') {
