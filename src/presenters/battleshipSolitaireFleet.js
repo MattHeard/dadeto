@@ -28,8 +28,7 @@ function validateFleetObject(fleet) {
   return found[1];
 }
 
-function placeShipsOnBoard(boardInfo, fleet) {
-  const { ships } = fleet;
+function placeShipsOnBoard(boardInfo, ships) {
   const placeShip = ship => placeSingleShipOnBoard(boardInfo, ship);
   ships.forEach(placeShip);
 }
@@ -97,7 +96,7 @@ function renderFleetBoard(fleet, dom) {
   const boardInfo = { board, width, height };
 
   // 3. Place ships – mark with '#'
-  placeShipsOnBoard(boardInfo, fleet);
+  placeShipsOnBoard(boardInfo, fleet.ships);
 
   // 4. Convert to string
   const formatRow = row => row.join(' ');
