@@ -16,25 +16,26 @@ function getPosition(move) {
 }
 
 const moveValidators = [
-  function positionIsObject(_, position) {
+  function positionIsObject({ position }) {
     return isObject(position);
   },
-  function validPlayer(player) {
+  function validPlayer({ player }) {
     return player === 'X' || player === 'O';
   },
-  function validRow(_, position) {
+  function validRow({ position }) {
     return typeof position.row === 'number' && [0, 1, 2].includes(position.row);
   },
-  function validColumn(_, position) {
+  function validColumn({ position }) {
     return typeof position.column === 'number' && [0, 1, 2].includes(position.column);
   },
-  function cellIsEmpty(_, position, board) {
+  function cellIsEmpty({ position, board }) {
     return board[position.row][position.column] === ' ';
   }
 ];
 
 function isLegalMove(player, position, board) {
-  return moveValidators.every(fn => fn(player, position, board));
+  const args = { player, position, board };
+  return moveValidators.every(fn => fn(args));
 }
 
 function updateBoardIfLegal(player, position, board) {
