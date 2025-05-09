@@ -243,9 +243,7 @@ function handleRequestResponse(url, env, options) {
 
 
 
-function isObject(val) {
-  return typeof val === 'object' && val !== null;
-}
+import { isObject } from './common.js';
 
 function hasRequestField(val) {
   return Object.prototype.hasOwnProperty.call(val, 'request');

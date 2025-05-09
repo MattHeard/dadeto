@@ -1,9 +1,9 @@
 
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/common.js
+  8:8  warning  Function 'isObject' has a complexity of 3. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
   178:1  warning  './toys.js' import is duplicated  no-duplicate-imports
-
-/Users/matthew.heard/Code/Matt/dadeto/src/browser/setOutput.js
-  1:1  warning  Function 'isObject' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
   21:8  warning  Function 'handleDropdownChange' has too many parameters (4). Maximum allowed is 3  max-params

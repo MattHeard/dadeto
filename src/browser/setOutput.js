@@ -1,6 +1,4 @@
-function isObject(obj) {
-  return obj && typeof obj === 'object' && !Array.isArray(obj);
-}
+import { isObject } from './common.js';
 import { deepMerge } from './data.js';
 
 export function setOutput(input, env) {
