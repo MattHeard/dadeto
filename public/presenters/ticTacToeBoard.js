@@ -66,7 +66,7 @@ export function createTicTacToeBoardElement(inputString, dom) {
   // 3. Apply each legal move (first–come, first-served)
   let moves;
   if (Array.isArray(data.moves)) {
-    moves = data.moves;
+    moves = data.moves.filter(Boolean);
   } else {
     moves = [];
   }
