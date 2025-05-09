@@ -42,8 +42,8 @@ function placeSingleShipOnBoard(boardInfo, ship) {
 }
 
 function fillShipOnBoard(boardInfo, ship) {
-  const { board, width, height } = boardInfo;
-  const dimensions = { width, height };
+  const { board, dimensions } = boardInfo;
+  const { width, height } = dimensions;
   for (let i = 0; i < ship.length; i++) {
     fillShipCell(board, ship, i, dimensions);
   }
@@ -133,7 +133,7 @@ function renderFleetBoard(fleet, dom) {
   const createWaterRow = () => Array(width).fill('\u00b7');
   const board = Array.from({ length: height }, createWaterRow);
   const dimensions = { width, height };
-  const boardInfo = { board, width, height, dimensions };
+  const boardInfo = { board, dimensions };
 
   // 3. Place ships – mark with '#'
   placeShipsOnBoard(boardInfo, fleet.ships);
