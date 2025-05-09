@@ -23,7 +23,8 @@ import {
   getRandomNumber,
   getCurrentTime,
   setTextContent,
-  disconnectObserver
+  disconnectObserver,
+  isIntersecting
 } from './document.js';
 
 function hasNoInteractiveComponents(win) {
