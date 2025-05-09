@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746791750625" clover="3.2.0">
-  <project timestamp="1746791750625" name="All files">
-    <metrics statements="1244" coveredstatements="1244" conditionals="408" coveredconditionals="407" methods="471" coveredmethods="471" elements="2123" coveredelements="2122" complexity="0" loc="1244" ncloc="1244" packages="14" files="30" classes="30"/>
+<coverage generated="1746791813825" clover="3.2.0">
+  <project timestamp="1746791813826" name="All files">
+    <metrics statements="1243" coveredstatements="1243" conditionals="408" coveredconditionals="408" methods="472" coveredmethods="472" elements="2123" coveredelements="2123" complexity="0" loc="1243" ncloc="1243" packages="14" files="30" classes="30"/>
     <package name="browser">
-      <metrics statements="333" coveredstatements="333" conditionals="65" coveredconditionals="64" methods="108" coveredmethods="108"/>
+      <metrics statements="332" coveredstatements="332" conditionals="65" coveredconditionals="65" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -62,10 +62,9 @@
         <line num="82" count="6" type="stmt"/>
       </file>
       <file name="common.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/common.js">
-        <metrics statements="3" coveredstatements="3" conditionals="4" coveredconditionals="3" methods="1" coveredmethods="1"/>
+        <metrics statements="2" coveredstatements="2" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
         <line num="9" count="13" type="cond" truecount="2" falsecount="0"/>
-        <line num="10" count="12" type="cond" truecount="1" falsecount="1"/>
-        <line num="11" count="12" type="stmt"/>
+        <line num="13" count="13" type="cond" truecount="2" falsecount="0"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
         <metrics statements="84" coveredstatements="84" conditionals="32" coveredconditionals="32" methods="30" coveredmethods="30"/>

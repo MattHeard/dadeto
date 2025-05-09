@@ -5,9 +5,10 @@
  * @param {*} val
  * @returns {boolean}
  */
-export function isObject(val) {
-  if (val === null) {return false;}
-  if (Array.isArray(val)) {return false;}
-  return typeof val === 'object';
+function isNonNullNonArray(val) {
+  return val !== null && !Array.isArray(val);
 }
 
+export function isObject(val) {
+  return isNonNullNonArray(val) && typeof val === 'object';
+}
