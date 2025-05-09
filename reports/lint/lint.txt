@@ -1,8 +1,7 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
-  18:1   warning  Function 'isLegalMove' has a complexity of 6. Maximum allowed is 2                  complexity
-  44:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
-  50:12  warning  '_' is defined but never used                                                       no-unused-vars
+  55:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
+  61:12  warning  '_' is defined but never used                                                       no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
    27:1   warning  Function 'inBounds' has too many parameters (4). Maximum allowed is 3     max-params
@@ -39,4 +38,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 30 problems (0 errors, 30 warnings)
+✖ 29 problems (0 errors, 29 warnings)
