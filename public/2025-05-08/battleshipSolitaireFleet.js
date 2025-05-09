@@ -72,7 +72,7 @@ function attemptPlacement(cfg, env) {
           } else {
             endY = y;
           }
-          if (!(endX >= 0 && endY >= 0 && endX < cfg.width && endY < cfg.height)) {continue;}
+          if (!inBounds_new({x: endX, y: endY}, cfg)) {continue;}
 
           let valid = true;
           const segs = [];
