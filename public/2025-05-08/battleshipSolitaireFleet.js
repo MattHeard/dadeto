@@ -28,6 +28,10 @@ function inBounds(x, y, cfg) {
   return x >= 0 && y >= 0 && x < cfg.width && y < cfg.height;
 }
 
+function inBounds_new(x, y, cfg) {
+  return inBounds(x, y, cfg);
+}
+
 /** 8‑neighbour coordinates */
 function neighbours(x, y) {
   const out = [];
