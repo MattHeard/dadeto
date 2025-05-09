@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746802533687" clover="3.2.0">
-  <project timestamp="1746802533687" name="All files">
-    <metrics statements="1281" coveredstatements="1281" conditionals="391" coveredconditionals="391" methods="510" coveredmethods="510" elements="2182" coveredelements="2182" complexity="0" loc="1281" ncloc="1281" packages="14" files="30" classes="30"/>
+<coverage generated="1746803260293" clover="3.2.0">
+  <project timestamp="1746803260293" name="All files">
+    <metrics statements="1282" coveredstatements="1282" conditionals="391" coveredconditionals="391" methods="511" coveredmethods="511" elements="2184" coveredelements="2184" complexity="0" loc="1282" ncloc="1282" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -658,7 +658,7 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="115" coveredstatements="115" conditionals="40" coveredconditionals="40" methods="52" coveredmethods="52"/>
+      <metrics statements="116" coveredstatements="116" conditionals="40" coveredconditionals="40" methods="53" coveredmethods="53"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js">
         <metrics statements="66" coveredstatements="66" conditionals="20" coveredconditionals="20" methods="30" coveredmethods="30"/>
         <line num="21" count="5" type="stmt"/>
@@ -751,7 +751,7 @@
         <line num="38" count="6" type="stmt"/>
       </file>
       <file name="ticTacToeBoard.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js">
-        <metrics statements="33" coveredstatements="33" conditionals="12" coveredconditionals="12" methods="15" coveredmethods="15"/>
+        <metrics statements="34" coveredstatements="34" conditionals="12" coveredconditionals="12" methods="16" coveredmethods="16"/>
         <line num="11" count="24" type="stmt"/>
         <line num="15" count="47" type="stmt"/>
         <line num="18" count="2" type="stmt"/>
@@ -775,16 +775,17 @@
         <line num="64" count="2" type="stmt"/>
         <line num="65" count="2" type="stmt"/>
         <line num="66" count="2" type="stmt"/>
-        <line num="70" count="36" type="stmt"/>
-        <line num="74" count="12" type="cond" truecount="2" falsecount="0"/>
-        <line num="75" count="9" type="stmt"/>
-        <line num="77" count="3" type="stmt"/>
-        <line num="79" count="23" type="stmt"/>
-        <line num="82" count="36" type="stmt"/>
-        <line num="83" count="12" type="stmt"/>
-        <line num="86" count="12" type="stmt"/>
+        <line num="69" count="12" type="stmt"/>
+        <line num="74" count="36" type="stmt"/>
+        <line num="78" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="79" count="9" type="stmt"/>
+        <line num="81" count="3" type="stmt"/>
+        <line num="83" count="23" type="stmt"/>
+        <line num="86" count="36" type="stmt"/>
         <line num="87" count="12" type="stmt"/>
-        <line num="88" count="12" type="stmt"/>
+        <line num="90" count="12" type="stmt"/>
+        <line num="91" count="12" type="stmt"/>
+        <line num="92" count="12" type="stmt"/>
       </file>
     </package>
     <package name="toys.2024-10-02">

@@ -66,6 +66,10 @@ export function createTicTacToeBoardElement(inputString, dom) {
     return errEl;
   }
 
+  return renderTicTacToeBoardFromData(data, dom);
+}
+
+function renderTicTacToeBoardFromData(data, dom) {
   // 2. Initialise empty 3 × 3 grid
   const board = Array.from({ length: 3 }, () => Array(3).fill(' '));
 
