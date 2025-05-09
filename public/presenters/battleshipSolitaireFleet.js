@@ -31,11 +31,11 @@ function validateFleetObject(fleet) {
 function placeShipsOnBoard(board, fleet) {
   const { ships, width, height } = fleet;
   for (const ship of ships) {
-    placeSingleShipOnBoard(board, ship, width, height);
+    placeSingleShipOnBoard({ board, width, height }, ship);
   }
 }
 
-function placeSingleShipOnBoard(board, ship, width, height) {
+function placeSingleShipOnBoard({ board, width, height }, ship) {
   const { start, length, direction } = ship;
   if (
     !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
