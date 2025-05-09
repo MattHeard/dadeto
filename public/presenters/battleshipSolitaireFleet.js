@@ -17,12 +17,12 @@
  *   ]
  * }
  */
-function validateFleetObject(width, height, ships) {
-  if (typeof width !== 'number') {
+function validateFleetObject(fleet) {
+  if (typeof fleet.width !== 'number') {
     return 'Missing or invalid property: width';
-  } else if (typeof height !== 'number') {
+  } else if (typeof fleet.height !== 'number') {
     return 'Missing or invalid property: height';
-  } else if (!Array.isArray(ships)) {
+  } else if (!Array.isArray(fleet.ships)) {
     return 'Missing or invalid property: ships';
   }
   return '';
@@ -58,14 +58,13 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
     return err;
   }
 
-  const { width, height, ships } = fleet;
-  const errorMsg = validateFleetObject(width, height, ships);
+  const errorMsg = validateFleetObject(fleet);
   if (errorMsg) {
     const err = dom.createElement('p');
     dom.setTextContent(err, errorMsg);
     return err;
   }
-
+  const { width, height, ships } = fleet;
   return renderFleetBoard(width, height, ships, dom);
 }
 

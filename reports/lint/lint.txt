@@ -7,7 +7,7 @@
   31:1  warning  Function 'placeShipsOnBoard' has too many parameters (4). Maximum allowed is 3            max-params
   31:1  warning  Function 'placeShipsOnBoard' has a complexity of 15. Maximum allowed is 2                 complexity
   49:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
-  72:1  warning  Function 'renderFleetBoard' has too many parameters (4). Maximum allowed is 3             max-params
+  71:1  warning  Function 'renderFleetBoard' has too many parameters (4). Maximum allowed is 3             max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity

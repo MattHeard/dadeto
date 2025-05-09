@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746795158043" clover="3.2.0">
-  <project timestamp="1746795158043" name="All files">
+<coverage generated="1746795269606" clover="3.2.0">
+  <project timestamp="1746795269606" name="All files">
     <metrics statements="1247" coveredstatements="1247" conditionals="408" coveredconditionals="408" methods="476" coveredmethods="476" elements="2131" coveredelements="2131" complexity="0" loc="1247" ncloc="1247" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="65" coveredconditionals="65" methods="109" coveredmethods="109"/>
@@ -683,22 +683,22 @@
         <line num="57" count="1" type="stmt"/>
         <line num="58" count="1" type="stmt"/>
         <line num="61" count="5" type="stmt"/>
-        <line num="62" count="5" type="stmt"/>
-        <line num="63" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="63" count="3" type="stmt"/>
         <line num="64" count="3" type="stmt"/>
         <line num="65" count="3" type="stmt"/>
-        <line num="66" count="3" type="stmt"/>
-        <line num="69" count="2" type="stmt"/>
-        <line num="74" count="6" type="stmt"/>
-        <line num="75" count="2" type="stmt"/>
-        <line num="78" count="2" type="stmt"/>
-        <line num="81" count="6" type="stmt"/>
+        <line num="67" count="2" type="stmt"/>
+        <line num="68" count="2" type="stmt"/>
+        <line num="73" count="6" type="stmt"/>
+        <line num="74" count="2" type="stmt"/>
+        <line num="77" count="2" type="stmt"/>
+        <line num="80" count="6" type="stmt"/>
+        <line num="81" count="2" type="stmt"/>
         <line num="82" count="2" type="stmt"/>
         <line num="83" count="2" type="stmt"/>
-        <line num="84" count="2" type="stmt"/>
+        <line num="86" count="2" type="stmt"/>
         <line num="87" count="2" type="stmt"/>
         <line num="88" count="2" type="stmt"/>
-        <line num="89" count="2" type="stmt"/>
       </file>
       <file name="paragraph.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
