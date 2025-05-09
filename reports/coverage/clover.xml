@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746786442998" clover="3.2.0">
-  <project timestamp="1746786442998" name="All files">
-    <metrics statements="1242" coveredstatements="1242" conditionals="411" coveredconditionals="411" methods="471" coveredmethods="471" elements="2124" coveredelements="2124" complexity="0" loc="1242" ncloc="1242" packages="14" files="29" classes="29"/>
+<coverage generated="1746786520442" clover="3.2.0">
+  <project timestamp="1746786520442" name="All files">
+    <metrics statements="1242" coveredstatements="1242" conditionals="409" coveredconditionals="409" methods="471" coveredmethods="471" elements="2122" coveredelements="2122" complexity="0" loc="1242" ncloc="1242" packages="14" files="29" classes="29"/>
     <package name="browser">
-      <metrics statements="331" coveredstatements="331" conditionals="68" coveredconditionals="68" methods="108" coveredmethods="108"/>
+      <metrics statements="331" coveredstatements="331" conditionals="66" coveredconditionals="66" methods="108" coveredmethods="108"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -62,7 +62,7 @@
         <line num="82" count="6" type="stmt"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
-        <metrics statements="83" coveredstatements="83" conditionals="34" coveredconditionals="34" methods="29" coveredmethods="29"/>
+        <metrics statements="83" coveredstatements="83" conditionals="32" coveredconditionals="32" methods="29" coveredmethods="29"/>
         <line num="1" count="3" type="stmt"/>
         <line num="3" count="3" type="stmt"/>
         <line num="11" count="21" type="stmt"/>
@@ -93,7 +93,7 @@
         <line num="77" count="6" type="stmt"/>
         <line num="81" count="3" type="stmt"/>
         <line num="93" count="1" type="cond" truecount="2" falsecount="0"/>
-        <line num="97" count="5" type="cond" truecount="4" falsecount="0"/>
+        <line num="97" count="5" type="cond" truecount="2" falsecount="0"/>
         <line num="101" count="5" type="stmt"/>
         <line num="108" count="4" type="stmt"/>
         <line num="109" count="4" type="stmt"/>
@@ -112,7 +112,7 @@
         <line num="132" count="1" type="stmt"/>
         <line num="136" count="4" type="cond" truecount="2" falsecount="0"/>
         <line num="140" count="4" type="stmt"/>
-        <line num="144" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="144" count="12" type="cond" truecount="2" falsecount="0"/>
         <line num="148" count="6" type="cond" truecount="2" falsecount="0"/>
         <line num="152" count="6" type="cond" truecount="2" falsecount="0"/>
         <line num="153" count="5" type="stmt"/>
