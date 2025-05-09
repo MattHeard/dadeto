@@ -1,7 +1,8 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-  21:8  warning  Function 'handleDropdownChange' has too many parameters (4). Maximum allowed is 3  max-params
-  21:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2        complexity
+  21:8  warning  Function 'handleDropdownChange' has too many parameters (4). Maximum allowed is 3      max-params
+  21:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2            complexity
+  31:8  warning  Function 'handleDropdownChange_new' has too many parameters (4). Maximum allowed is 3  max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js
   20:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 20. Maximum allowed is 2  complexity
@@ -43,4 +44,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 32 problems (0 errors, 32 warnings)
+✖ 33 problems (0 errors, 33 warnings)

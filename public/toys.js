@@ -24,11 +24,14 @@ export function handleDropdownChange(dropdown, logInfo, getData, dom) {
   const data = getData();
   const output = data && data.output && data.output[postId];
 
-
   const parent = dom.querySelector(dropdown.parentNode, 'div.output');
   setTextContent({ presenterKey: selectedValue, content: output }, dom, parent);
-
 }
+
+export function handleDropdownChange_new(dropdown, logInfo, getData, dom) {
+  return handleDropdownChange(dropdown, logInfo, getData, dom);
+}
+
 
 // Map of presenter keys to presenter functions
 const presentersMap = {
