@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746798221919" clover="3.2.0">
-  <project timestamp="1746798221919" name="All files">
-    <metrics statements="1265" coveredstatements="1265" conditionals="400" coveredconditionals="400" methods="493" coveredmethods="493" elements="2158" coveredelements="2158" complexity="0" loc="1265" ncloc="1265" packages="14" files="30" classes="30"/>
+<coverage generated="1746798288567" clover="3.2.0">
+  <project timestamp="1746798288567" name="All files">
+    <metrics statements="1264" coveredstatements="1264" conditionals="400" coveredconditionals="400" methods="493" coveredmethods="493" elements="2157" coveredelements="2157" complexity="0" loc="1264" ncloc="1264" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="65" coveredconditionals="65" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -658,9 +658,9 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="99" coveredstatements="99" conditionals="46" coveredconditionals="46" methods="35" coveredmethods="35"/>
+      <metrics statements="98" coveredstatements="98" conditionals="46" coveredconditionals="46" methods="35" coveredmethods="35"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js">
-        <metrics statements="56" coveredstatements="56" conditionals="18" coveredconditionals="18" methods="24" coveredmethods="24"/>
+        <metrics statements="55" coveredstatements="55" conditionals="18" coveredconditionals="18" methods="24" coveredmethods="24"/>
         <line num="21" count="5" type="stmt"/>
         <line num="22" count="5" type="stmt"/>
         <line num="23" count="4" type="stmt"/>
@@ -675,15 +675,14 @@
         <line num="40" count="3" type="stmt"/>
         <line num="45" count="3" type="stmt"/>
         <line num="46" count="3" type="stmt"/>
-        <line num="51" count="3" type="stmt"/>
-        <line num="52" count="3" type="stmt"/>
-        <line num="54" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="55" count="4" type="stmt"/>
-        <line num="57" count="2" type="stmt"/>
-        <line num="59" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="60" count="2" type="stmt"/>
-        <line num="62" count="4" type="stmt"/>
-        <line num="64" count="6" type="stmt"/>
+        <line num="47" count="6" type="stmt"/>
+        <line num="55" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="56" count="4" type="stmt"/>
+        <line num="58" count="2" type="stmt"/>
+        <line num="60" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="61" count="2" type="stmt"/>
+        <line num="63" count="4" type="stmt"/>
+        <line num="65" count="6" type="stmt"/>
         <line num="69" count="6" type="cond" truecount="2" falsecount="0"/>
         <line num="70" count="1" type="stmt"/>
         <line num="72" count="5" type="stmt"/>

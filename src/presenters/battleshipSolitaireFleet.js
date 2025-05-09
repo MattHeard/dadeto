@@ -43,26 +43,26 @@ function placeSingleShipOnBoard(boardInfo, ship) {
 
 function fillShipOnBoard(boardInfo, ship) {
   const { board, width, height } = boardInfo;
-  iterateShipCells(boardInfo, ship);
+  for (let i = 0; i < ship.length; i++) {
+    fillShipCell(board, ship, i, width, height);
+  }
 
 }
 
-function iterateShipCells(boardInfo, ship) {
-  const { board, width, height } = boardInfo;
-  for (let i = 0; i < ship.length; i++) {
-    let x, y;
-    if (ship.direction === 'H') {
-      x = ship.start.x + i;
-    } else {
-      x = ship.start.x;
-    }
-    if (ship.direction === 'V') {
-      y = ship.start.y + i;
-    } else {
-      y = ship.start.y;
-    }
-    markShipCellOnBoard(board, x, y, width, height);
+
+function fillShipCell(board, ship, i, width, height) {
+  let x, y;
+  if (ship.direction === 'H') {
+    x = ship.start.x + i;
+  } else {
+    x = ship.start.x;
   }
+  if (ship.direction === 'V') {
+    y = ship.start.y + i;
+  } else {
+    y = ship.start.y;
+  }
+  markShipCellOnBoard(board, x, y, width, height);
 }
 
 function markShipCellOnBoard(board, x, y, width, height) {
