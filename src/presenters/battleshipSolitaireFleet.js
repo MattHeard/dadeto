@@ -37,18 +37,27 @@ function placeShipsOnBoard(board, fleet) {
 
 function placeSingleShipOnBoard({ board, width, height }, ship) {
   const { start, length, direction } = ship;
-  if (
-    !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
-    typeof length !== 'number' || (direction !== 'H' && direction !== 'V')
-  ) {
+  if (isMalformedShip(ship)) {
     return; // skip malformed
   }
-  for (let i = 0; i < length; i++) {
-    const x = direction === 'H' ? start.x + i : start.x;
-    const y = direction === 'V' ? start.y + i : start.y;
-    if (x < 0 || y < 0 || x >= width || y >= height) { continue; }
+  for (let i = 0; i < ship.length; i++) {
+    const x = ship.direction === 'H' ? ship.start.x + i : ship.start.x;
+    const y = ship.direction === 'V' ? ship.start.y + i : ship.start.y;
+    if (isOutOfBounds(x, y, width, height)) { continue; }
     board[y][x] = '#';
   }
+}
+
+function isMalformedShip(ship) {
+  const { start, length, direction } = ship;
+  return (
+    !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
+    typeof length !== 'number' || (direction !== 'H' && direction !== 'V')
+  );
+}
+
+function isOutOfBounds(x, y, width, height) {
+  return x < 0 || y < 0 || x >= width || y >= height;
 }
 
 export function createBattleshipFleetBoardElement(inputString, dom) {

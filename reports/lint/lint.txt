@@ -3,8 +3,14 @@
   21:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js
-  38:1  warning  Function 'placeSingleShipOnBoard' has a complexity of 14. Maximum allowed is 2            complexity
-  54:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
+  38:1   warning  Function 'placeSingleShipOnBoard' has a complexity of 6. Maximum allowed is 2             complexity
+  39:11  warning  'start' is assigned a value but never used                                                no-unused-vars
+  39:18  warning  'length' is assigned a value but never used                                               no-unused-vars
+  39:26  warning  'direction' is assigned a value but never used                                            no-unused-vars
+  51:1   warning  Function 'isMalformedShip' has a complexity of 6. Maximum allowed is 2                    complexity
+  59:1   warning  Function 'isOutOfBounds' has too many parameters (4). Maximum allowed is 3                max-params
+  59:1   warning  Function 'isOutOfBounds' has a complexity of 4. Maximum allowed is 2                      complexity
+  63:8   warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js
    8:8   warning  Function 'createTicTacToeBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
@@ -46,4 +52,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 33 problems (0 errors, 33 warnings)
+✖ 39 problems (0 errors, 39 warnings)
