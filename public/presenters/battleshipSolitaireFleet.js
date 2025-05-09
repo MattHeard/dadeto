@@ -22,9 +22,10 @@ function validateFleetObject(fleet) {
     [f => typeof f.width !== 'number', 'Missing or invalid property: width'],
     [f => typeof f.height !== 'number', 'Missing or invalid property: height'],
     [f => !Array.isArray(f.ships), 'Missing or invalid property: ships'],
+    [() => true, ''],
   ];
   const found = validators.find(([validator]) => validator(fleet));
-  return found ? found[1] : '';
+  return found[1];
 }
 
 function placeShipsOnBoard(board, ships, width, height) {
