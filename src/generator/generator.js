@@ -273,7 +273,7 @@ function createFooterContentArray(footerElement) {
     '',
     footerElement,
     createContainerDivClose(),
-    '<script type="module" src="main.js" defer></script>',
+    '<script type="module" src="browser/main.js" defer></script>',
     createBodyClose(),
   ];
 }
