@@ -28,8 +28,8 @@ export function handleDropdownChange(dropdown, logInfo, getData, dom) {
   setTextContent({ presenterKey: selectedValue, content: output }, dom, parent);
 }
 
-export function handleDropdownChange_new(dropdown, logInfo, getData, dom) {
-  return handleDropdownChange(dropdown, logInfo, getData, dom);
+export function handleDropdownChange_new(dropdown, getData, dom) {
+  return handleDropdownChange(dropdown, null, getData, dom);
 }
 
 
