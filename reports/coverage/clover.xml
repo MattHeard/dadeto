@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746802297700" clover="3.2.0">
-  <project timestamp="1746802297700" name="All files">
+<coverage generated="1746802371227" clover="3.2.0">
+  <project timestamp="1746802371227" name="All files">
     <metrics statements="1280" coveredstatements="1280" conditionals="391" coveredconditionals="391" methods="510" coveredmethods="510" elements="2181" coveredelements="2181" complexity="0" loc="1280" ncloc="1280" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
@@ -752,7 +752,7 @@
       </file>
       <file name="ticTacToeBoard.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/ticTacToeBoard.js">
         <metrics statements="32" coveredstatements="32" conditionals="12" coveredconditionals="12" methods="15" coveredmethods="15"/>
-        <line num="11" count="23" type="stmt"/>
+        <line num="11" count="15" type="stmt"/>
         <line num="15" count="23" type="stmt"/>
         <line num="18" count="2" type="stmt"/>
         <line num="20" count="15" type="stmt"/>
@@ -762,10 +762,10 @@
         <line num="32" count="11" type="stmt"/>
         <line num="37" count="15" type="stmt"/>
         <line num="38" count="67" type="stmt"/>
-        <line num="42" count="15" type="cond" truecount="2" falsecount="0"/>
-        <line num="43" count="9" type="stmt"/>
+        <line num="42" count="15" type="stmt"/>
+        <line num="43" count="15" type="cond" truecount="2" falsecount="0"/>
         <line num="44" count="9" type="stmt"/>
-        <line num="49" count="23" type="stmt"/>
+        <line num="45" count="9" type="stmt"/>
         <line num="50" count="23" type="stmt"/>
         <line num="51" count="23" type="cond" truecount="2" falsecount="0"/>
         <line num="52" count="15" type="stmt"/>

@@ -38,7 +38,8 @@ function isLegalMove(player, position, board) {
   return moveValidators.every(fn => fn(args));
 }
 
-function updateBoardIfLegal(player, position, board) {
+function updateBoardIfLegal(move, position, board) {
+  const player = getPlayer(move);
   if (isLegalMove(player, position, board)) {
     const { row, column } = position;
     board[row][column] = player;
@@ -46,10 +47,9 @@ function updateBoardIfLegal(player, position, board) {
 }
 
 function applyMove(move, board) {
-  const player = getPlayer(move);
   const position = getPosition(move);
   if (isObject(position)) {
-    updateBoardIfLegal(player, position, board);
+    updateBoardIfLegal(move, position, board);
   }
 }
 
