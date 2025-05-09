@@ -41,11 +41,9 @@ function isLegalMove(move, board) {
 }
 
 function updateBoardIfLegal(move, board) {
-  const player = getPlayer(move);
-  const position = getPosition(move);
   if (isLegalMove(move, board)) {
-    const { row, column } = position;
-    board[row][column] = player;
+    const { row, column } = getPosition(move);
+    board[row][column] = getPlayer(move);
   }
 }
 
