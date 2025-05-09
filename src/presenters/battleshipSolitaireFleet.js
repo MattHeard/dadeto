@@ -75,8 +75,10 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
   placeShipsOnBoard(board, ships, width, height);
 
   // 4. Convert to string
-  const rowStrings = board.map(row => row.join(' '));
-  const content = rowStrings.join('\n');
+  const formatRow = row => row.join(' ');
+  const joinRows = rows => rows.join('\n');
+  const rowStrings = board.map(formatRow);
+  const content = joinRows(rowStrings);
 
   // 5. Wrap in <pre>
   const pre = dom.createElement('pre');
