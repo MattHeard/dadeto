@@ -115,7 +115,6 @@ export function deepMerge(target, source) {
   return output;
 }
 
-
 function stripInternalFields(stateCopy) {
   for (const key of INTERNAL_STATE_KEYS) {
     delete stateCopy[key];
