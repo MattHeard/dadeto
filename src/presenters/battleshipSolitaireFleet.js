@@ -30,9 +30,9 @@ function validateFleetObject(fleet) {
 
 function placeShipsOnBoard(boardInfo, fleet) {
   const { ships } = fleet;
-  for (const ship of ships) {
+  ships.forEach(ship => {
     placeSingleShipOnBoard(boardInfo, ship);
-  }
+  });
 }
 
 function placeSingleShipOnBoard(boardInfo, ship) {
