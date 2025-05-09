@@ -57,15 +57,33 @@ function attemptPlacement(cfg, env) {
     for (let y = 0; y < cfg.height; y++) {
       for (let x = 0; x < cfg.width; x++) {
         for (const dir of ['H', 'V']) {
-          const endX = dir === 'H' ? x + len - 1 : x;
-          const endY = dir === 'V' ? y + len - 1 : y;
+          let endX, endY;
+          if (dir === 'H') {
+            endX = x + len - 1;
+          } else {
+            endX = x;
+          }
+          if (dir === 'V') {
+            endY = y + len - 1;
+          } else {
+            endY = y;
+          }
           if (!inBounds(endX, endY, cfg.width, cfg.height)) {continue;}
 
           let valid = true;
           const segs = [];
           for (let i = 0; i < len && valid; i++) {
-            const sx = dir === 'H' ? x + i : x;
-            const sy = dir === 'V' ? y + i : y;
+            let sx, sy;
+            if (dir === 'H') {
+              sx = x + i;
+            } else {
+              sx = x;
+            }
+            if (dir === 'V') {
+              sy = y + i;
+            } else {
+              sy = y;
+            }
             const k = key(sx, sy);
             if (occupied.has(k)) {valid = false;}
             segs.push({ x: sx, y: sy });
@@ -98,8 +116,17 @@ function attemptPlacement(cfg, env) {
 
     // Mark occupied squares
     for (let i = 0; i < len; i++) {
-      const sx = chosen.direction === 'H' ? chosen.start.x + i : chosen.start.x;
-      const sy = chosen.direction === 'V' ? chosen.start.y + i : chosen.start.y;
+      let sx, sy;
+      if (chosen.direction === 'H') {
+        sx = chosen.start.x + i;
+      } else {
+        sx = chosen.start.x;
+      }
+      if (chosen.direction === 'V') {
+        sy = chosen.start.y + i;
+      } else {
+        sy = chosen.start.y;
+      }
       occupied.add(key(sx, sy));
     }
   }
