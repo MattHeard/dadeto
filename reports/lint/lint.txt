@@ -4,7 +4,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js
    53:1  warning  Function 'fillShipCell' has too many parameters (4). Maximum allowed is 3                 max-params
-   97:1  warning  Function 'isInvalidStartCoordinates' has a complexity of 4. Maximum allowed is 2          complexity
   109:1  warning  Function 'isOutOfBounds' has too many parameters (4). Maximum allowed is 3                max-params
   109:1  warning  Function 'isOutOfBounds' has a complexity of 4. Maximum allowed is 2                      complexity
   113:8  warning  Function 'createBattleshipFleetBoardElement' has a complexity of 3. Maximum allowed is 2  complexity
@@ -49,4 +48,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 36 problems (0 errors, 36 warnings)
+✖ 35 problems (0 errors, 35 warnings)

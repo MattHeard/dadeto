@@ -95,7 +95,7 @@ function isMissingStart(ship) {
 }
 
 function isInvalidStartCoordinates(ship) {
-  return typeof ship.start?.x !== 'number' || typeof ship.start?.y !== 'number';
+  return typeof ship.start.x !== 'number' || typeof ship.start.y !== 'number';
 }
 
 function isInvalidLength(ship) {
