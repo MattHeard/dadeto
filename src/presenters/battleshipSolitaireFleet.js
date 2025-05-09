@@ -28,7 +28,8 @@ function validateFleetObject(fleet) {
   return found[1];
 }
 
-function placeShipsOnBoard(board, ships, width, height) {
+function placeShipsOnBoard(board, fleet) {
+  const { ships, width, height } = fleet;
   for (const ship of ships) {
     const { start, length, direction } = ship;
     if (
@@ -74,7 +75,7 @@ function renderFleetBoard(fleet, dom) {
   const board = Array.from({ length: height }, createWaterRow);
 
   // 3. Place ships – mark with '#'
-  placeShipsOnBoard(board, ships, width, height);
+  placeShipsOnBoard(board, fleet);
 
   // 4. Convert to string
   const formatRow = row => row.join(' ');
