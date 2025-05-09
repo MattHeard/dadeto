@@ -29,16 +29,7 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
     return err;
   }
 
-  let width, height, ships;
-  if (fleet !== undefined && fleet !== null) {
-    width = fleet.width;
-    height = fleet.height;
-    ships = fleet.ships;
-  } else {
-    width = undefined;
-    height = undefined;
-    ships = undefined;
-  }
+  const { width, height, ships } = fleet; // fleet is assumed to be a valid object at this point
   let errorMsg = '';
   if (typeof width !== 'number') {
     errorMsg = 'Missing or invalid property: width';
@@ -60,16 +51,7 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
 
   // 3. Place ships – mark with '#'
   for (const ship of ships) {
-    let start, length, direction;
-    if (ship !== undefined && ship !== null) {
-      start = ship.start;
-      length = ship.length;
-      direction = ship.direction;
-    } else {
-      start = undefined;
-      length = undefined;
-      direction = undefined;
-    }
+    const { start, length, direction } = ship; // ship is assumed to be a valid object at this point
     if (
       !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
         typeof length !== 'number' || (direction !== 'H' && direction !== 'V')
