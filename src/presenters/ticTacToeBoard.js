@@ -5,6 +5,34 @@
  * @param {object} dom         – abstraction with createElement / setTextContent
  * @returns {HTMLElement}      – <pre> (board) or <p> (error)
  */
+function applyMove(move, board) {
+  let player, position;
+  if (move && typeof move === 'object') {
+    player = move.player;
+    if (move.position !== undefined) {
+      position = move.position;
+    } else {
+      position = {};
+    }
+  } else {
+    player = undefined;
+    position = {};
+  }
+  let row, column;
+  if (position && typeof position === 'object' && !Array.isArray(position)) {
+    row = position.row;
+    column = position.column;
+  }
+  if (
+    (player === 'X' || player === 'O') &&
+    [0, 1, 2].includes(row) &&
+    [0, 1, 2].includes(column) &&
+    board[row][column] === ' '
+  ) {
+    board[row][column] = player;
+  }
+}
+
 export function createTicTacToeBoardElement(inputString, dom) {
   let data;
 
@@ -26,33 +54,6 @@ export function createTicTacToeBoardElement(inputString, dom) {
     moves = data.moves;
   } else {
     moves = [];
-  }
-  function applyMove(move, board) {
-    let player, position;
-    if (move && typeof move === 'object') {
-      player = move.player;
-      if (move.position !== undefined) {
-        position = move.position;
-      } else {
-        position = {};
-      }
-    } else {
-      player = undefined;
-      position = {};
-    }
-    let row, column;
-    if (position && typeof position === 'object' && !Array.isArray(position)) {
-      row = position.row;
-      column = position.column;
-    }
-    if (
-      (player === 'X' || player === 'O') &&
-    [0, 1, 2].includes(row) &&
-    [0, 1, 2].includes(column) &&
-    board[row][column] === ' '
-    ) {
-      board[row][column] = player;
-    }
   }
   moves.forEach(move => applyMove(move, board));
 
