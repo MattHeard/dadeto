@@ -6,5 +6,8 @@
  * @returns {boolean}
  */
 export function isObject(val) {
-  return typeof val === 'object' && val !== null && !Array.isArray(val);
+  if (val === null) return false;
+  if (Array.isArray(val)) return false;
+  return typeof val === 'object';
 }
+
