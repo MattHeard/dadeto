@@ -1,4 +1,5 @@
 import { setupAudio } from './audio-controls.js';
+import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData
 } from './data.js';
