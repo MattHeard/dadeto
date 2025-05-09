@@ -31,19 +31,23 @@ function validateFleetObject(fleet) {
 function placeShipsOnBoard(board, fleet) {
   const { ships, width, height } = fleet;
   for (const ship of ships) {
-    const { start, length, direction } = ship;
-    if (
-      !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
-      typeof length !== 'number' || (direction !== 'H' && direction !== 'V')
-    ) {
-      continue; // skip malformed
-    }
-    for (let i = 0; i < length; i++) {
-      const x = direction === 'H' ? start.x + i : start.x;
-      const y = direction === 'V' ? start.y + i : start.y;
-      if (x < 0 || y < 0 || x >= width || y >= height) { continue; }
-      board[y][x] = '#';
-    }
+    placeSingleShipOnBoard(board, ship, width, height);
+  }
+}
+
+function placeSingleShipOnBoard(board, ship, width, height) {
+  const { start, length, direction } = ship;
+  if (
+    !start || typeof start.x !== 'number' || typeof start.y !== 'number' ||
+    typeof length !== 'number' || (direction !== 'H' && direction !== 'V')
+  ) {
+    return; // skip malformed
+  }
+  for (let i = 0; i < length; i++) {
+    const x = direction === 'H' ? start.x + i : start.x;
+    const y = direction === 'V' ? start.y + i : start.y;
+    if (x < 0 || y < 0 || x >= width || y >= height) { continue; }
+    board[y][x] = '#';
   }
 }
 
