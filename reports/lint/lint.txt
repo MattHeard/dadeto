@@ -3,7 +3,7 @@
   114:1  warning  Function 'copyDirRecursive' has a complexity of 4. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
-   27:1   warning  Function 'inBounds_new' has a complexity of 4. Maximum allowed is 2       complexity
+   27:1   warning  Function 'inBounds' has a complexity of 4. Maximum allowed is 2           complexity
    32:1   warning  Function 'neighbours' has a complexity of 5. Maximum allowed is 2         complexity
    45:1   warning  Function 'attemptPlacement' has a complexity of 28. Maximum allowed is 2  complexity
    61:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                    max-depth
