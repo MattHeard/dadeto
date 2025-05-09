@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.76% </span>
+                <span class="strong">97.59% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>80/81</span>
+                <span class='fraction'>81/83</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>24/30</span>
+                <span class='fraction'>24/32</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">96.29% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>27/27</span>
+                <span class='fraction'>26/27</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.73% </span>
+                <span class="strong">97.53% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>78/79</span>
+                <span class='fraction'>79/81</span>
             </div>
         
             
@@ -320,7 +320,9 @@
 <a name='L255'></a><a href='#L255'>255</a>
 <a name='L256'></a><a href='#L256'>256</a>
 <a name='L257'></a><a href='#L257'>257</a>
-<a name='L258'></a><a href='#L258'>258</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -330,7 +332,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">21x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -452,7 +454,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -504,6 +506,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -526,16 +540,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -708,8 +712,8 @@ function restoreBlogState(globalState, blogState) {
   globalState.blog = blogState.data;
 }
 &nbsp;
-function shouldCopyStateForFetch(status) {
-  return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
+function <span class="fstat-no" title="function not covered" >shouldCopyStateForFetch(</span>status) {
+<span class="cstat-no" title="statement not covered" >  return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;</span>
 }
 &nbsp;
 function hasTemporaryProperty(obj) {
@@ -755,6 +759,18 @@ function handleBlogFetchState(state, fetch, loggers) {
   maybeLogFetchError(state, logWarning);
 }
 &nbsp;
+/**
+ * Returns a deep copy of state if needed for fetch, otherwise returns state itself.
+ * @param {object} state
+ * @returns {object}
+ */
+function getRelevantStateCopy(state) {
+  const status = state.blogStatus;
+  if (status === 'idle' || status === 'error') {
+    return JSON.parse(JSON.stringify(state));
+  }
+  return state;
+}
 &nbsp;
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
@@ -784,16 +800,6 @@ export const getData = (state, fetch, loggers) =&gt; {
 // Alias for test compatibility
 &nbsp;
 &nbsp;
-&nbsp;
-/**
- * Returns a deep copy of state if needed for fetch, otherwise returns state itself.
- * @param {object} state
- * @returns {object}
- */
-function getRelevantStateCopy(state) {
-  const { status } = getBlogState(state);
-  return shouldCopyStateForFetch(status) ? getDeepStateCopy(state) : state;
-};
 &nbsp;
 /**
  * Updates the global state, preserving internal fetch/blog properties.
@@ -841,7 +847,7 @@ export const setData = (state, loggers) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-09T09:37:02.638Z
+                at 2025-05-09T09:42:24.021Z
             </div>
         <script src="../prettify.js"></script>
         <script>

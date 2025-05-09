@@ -176,6 +176,18 @@ function handleBlogFetchState(state, fetch, loggers) {
   maybeLogFetchError(state, logWarning);
 }
 
+/**
+ * Returns a deep copy of state if needed for fetch, otherwise returns state itself.
+ * @param {object} state
+ * @returns {object}
+ */
+function getRelevantStateCopy(state) {
+  const status = state.blogStatus;
+  if (status === 'idle' || status === 'error') {
+    return JSON.parse(JSON.stringify(state));
+  }
+  return state;
+}
 
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
@@ -205,16 +217,6 @@ export const getData = (state, fetch, loggers) => {
 // Alias for test compatibility
 
 
-
-/**
- * Returns a deep copy of state if needed for fetch, otherwise returns state itself.
- * @param {object} state
- * @returns {object}
- */
-function getRelevantStateCopy(state) {
-  const { status } = getBlogState(state);
-  return shouldCopyStateForFetch(status) ? getDeepStateCopy(state) : state;
-};
 
 /**
  * Updates the global state, preserving internal fetch/blog properties.
