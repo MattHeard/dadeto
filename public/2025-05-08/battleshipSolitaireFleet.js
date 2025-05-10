@@ -291,14 +291,17 @@ function shouldReturnFleet(fleet) {
 }
 
 function maybeReturnFleet(fleet) {
-  if (shouldReturnFleet(fleet)) return fleet;
+  if (shouldReturnFleet(fleet)) {
+    return fleet;
+  }
+  return null;
 }
 
 function findFleetLoop(cfg, env, maxTries) {
   for (let i = 0; i < maxTries; i++) {
     const fleet = fleetLoopBody(i, cfg, env);
     const result = maybeReturnFleet(fleet);
-    if (result) return result;
+    if (result) {return result;}
   }
   return null;
 }

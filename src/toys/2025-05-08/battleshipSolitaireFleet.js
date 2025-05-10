@@ -291,7 +291,10 @@ function shouldReturnFleet(fleet) {
 }
 
 function maybeReturnFleet(fleet) {
-  if (shouldReturnFleet(fleet)) {return fleet;}
+  if (shouldReturnFleet(fleet)) {
+    return fleet;
+  }
+  return null;
 }
 
 function findFleetLoop(cfg, env, maxTries) {
