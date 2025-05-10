@@ -1,17 +1,19 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
    41:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
-   64:1   warning  Function 'placeShip' has too many parameters (5). Maximum allowed is 3      max-params
-   64:1   warning  Function 'placeShip' has a complexity of 21. Maximum allowed is 2           complexity
-   87:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-   92:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-   98:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-  108:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-  142:1   warning  Function 'makePlaceShip' has too many parameters (4). Maximum allowed is 3  max-params
-  151:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
-  160:1   warning  Function 'placeAllShips' has too many parameters (4). Maximum allowed is 3  max-params
-  183:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2        complexity
-  187:12  warning  '_' is defined but never used                                               no-unused-vars
+   62:30  warning  Ternary operator used                                                       no-ternary
+   66:1   warning  Function 'placeShip' has too many parameters (5). Maximum allowed is 3      max-params
+   66:1   warning  Function 'placeShip' has a complexity of 19. Maximum allowed is 2           complexity
+   88:15  warning  'sx' is never reassigned. Use 'const' instead                               prefer-const
+   89:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
+   95:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
+  105:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
+  123:9   warning  'sx' is never reassigned. Use 'const' instead                               prefer-const
+  134:1   warning  Function 'makePlaceShip' has too many parameters (4). Maximum allowed is 3  max-params
+  143:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
+  152:1   warning  Function 'placeAllShips' has too many parameters (4). Maximum allowed is 3  max-params
+  175:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2        complexity
+  179:12  warning  '_' is defined but never used                                               no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setOutput.test.js
   18:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
@@ -29,4 +31,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 20 problems (0 errors, 20 warnings)
+✖ 22 problems (0 errors, 22 warnings)

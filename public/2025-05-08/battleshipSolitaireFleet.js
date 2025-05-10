@@ -59,6 +59,8 @@ function isNeighbourOccupied(n, cfg, occupied) {
 
 const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg => !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
 
+const getSx = (dir, x, i) => dir === 'H' ? x + i : x;
+
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
 function placeShip(len, cfg, env, occupied, touchForbidden) {
@@ -83,12 +85,7 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         let valid = true;
         const segs = [];
         for (let i = 0; i < len && valid; i++) {
-          let sx, sy;
-          if (dir === 'H') {
-            sx = x + i;
-          } else {
-            sx = x;
-          }
+          let sx = getSx(dir, x, i), sy;
           if (dir === 'V') {
             sy = y + i;
           } else {
@@ -123,12 +120,7 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
   const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
   // Mark occupied squares
   for (let i = 0; i < len; i++) {
-    let sx, sy;
-    if (chosen.direction === 'H') {
-      sx = chosen.start.x + i;
-    } else {
-      sx = chosen.start.x;
-    }
+    let sx = getSx(chosen.direction, chosen.start.x, i), sy;
     if (chosen.direction === 'V') {
       sy = chosen.start.y + i;
     } else {

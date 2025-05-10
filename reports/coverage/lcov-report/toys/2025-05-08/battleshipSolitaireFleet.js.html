@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>115/115</span>
+                <span class='fraction'>113/113</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.27% </span>
+                <span class="strong">98.21% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>57/58</span>
+                <span class='fraction'>55/56</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>23/23</span>
+                <span class='fraction'>24/24</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>97/97</span>
+                <span class='fraction'>94/94</span>
             </div>
         
             
@@ -264,15 +264,7 @@
 <a name='L199'></a><a href='#L199'>199</a>
 <a name='L200'></a><a href='#L200'>200</a>
 <a name='L201'></a><a href='#L201'>201</a>
-<a name='L202'></a><a href='#L202'>202</a>
-<a name='L203'></a><a href='#L203'>203</a>
-<a name='L204'></a><a href='#L204'>204</a>
-<a name='L205'></a><a href='#L205'>205</a>
-<a name='L206'></a><a href='#L206'>206</a>
-<a name='L207'></a><a href='#L207'>207</a>
-<a name='L208'></a><a href='#L208'>208</a>
-<a name='L209'></a><a href='#L209'>209</a>
-<a name='L210'></a><a href='#L210'>210</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L202'></a><a href='#L202'>202</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -333,6 +325,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">7800x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1867x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -357,12 +351,7 @@
 <span class="cline-any cline-yes">1678x</span>
 <span class="cline-any cline-yes">1678x</span>
 <span class="cline-any cline-yes">1678x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1758x</span>
-<span class="cline-any cline-yes">879x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">879x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1758x</span>
 <span class="cline-any cline-yes">879x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -397,12 +386,7 @@
 <span class="cline-any cline-yes">104x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">104x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">109x</span>
-<span class="cline-any cline-yes">106x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">109x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -542,6 +526,8 @@ function isNeighbourOccupied(n, cfg, occupied) {
 &nbsp;
 const makeSegHasNoOccupiedNeighbour = (cfg, occupied) =&gt; seg =&gt; !neighbours(seg).some(n =&gt; isNeighbourOccupied(n, cfg, occupied));
 &nbsp;
+const getSx = (dir, x, i) =&gt; dir === 'H' ? x + i : x;
+&nbsp;
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 &nbsp;
 function placeShip(len, cfg, env, occupied, touchForbidden) {
@@ -566,12 +552,7 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         let valid = true;
         const segs = [];
         for (let i = 0; i &lt; len &amp;&amp; valid; i++) {
-          let sx, sy;
-          if (dir === 'H') {
-            sx = x + i;
-          } else {
-            sx = x;
-          }
+          let sx = getSx(dir, x, i), sy;
           if (dir === 'V') {
             sy = y + i;
           } else {
@@ -606,12 +587,7 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
   const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
   // Mark occupied squares
   for (let i = 0; i &lt; len; i++) {
-    let sx, sy;
-    if (chosen.direction === 'H') {
-      sx = chosen.start.x + i;
-    } else {
-      sx = chosen.start.x;
-    }
+    let sx = getSx(chosen.direction, chosen.start.x, i), sy;
     if (chosen.direction === 'V') {
       sy = chosen.start.y + i;
     } else {
@@ -697,7 +673,7 @@ export { generateFleet };
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-10T09:34:22.284Z
+                at 2025-05-10T09:36:07.245Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
