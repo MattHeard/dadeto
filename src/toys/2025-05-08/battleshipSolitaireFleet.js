@@ -104,11 +104,11 @@ function getEndCoord(dir, start, len) {
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
-function makeSegReducer(dir, x, y, occupied) {
+function makeSegReducer(dir, start, occupied) {
   return (acc, _, i) => {
     if (!acc.valid) {return acc;}
-    const sx = getSx(dir, x, i);
-    const sy = getSy(dir, y, i);
+    const sx = getSx(dir, start.x, i);
+    const sy = getSy(dir, start.y, i);
     const k = key(sx, sy);
     if (occupied.has(k)) {
       return { ...acc, valid: false };
@@ -139,7 +139,7 @@ function placeShip(len, cfg, env, occupied) {
         if (!inBounds(endCoord, cfg)) {
           continue;
         }
-        const segReducer = makeSegReducer(dir, x, y, occupied);
+        const segReducer = makeSegReducer(dir, start, occupied);
         const { segs, valid } = Array.from({ length: len }).reduce(
           segReducer,
           { segs: [], valid: true }
@@ -149,7 +149,7 @@ function placeShip(len, cfg, env, occupied) {
         if (valid) {
           const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
           if (!forbiddenTouch) {
-            candidates.push({ start: { x, y }, length: len, direction: dir });
+            candidates.push({ start, length: len, direction: dir });
           }
         }
       }
