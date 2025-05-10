@@ -342,10 +342,18 @@ test('returns fallback when minimax fails to assign bestMove', () => {
   const env = new Map();
   // All cells are filled with null to simulate a fully corrupted board
   const input = {
-    moves: Array.from({ length: 9 }, (_, i) => ({
-      player: i % 2 === 0 ? 'X' : 'O',
-      position: { row: Math.floor(i / 3), column: i % 3 }
-    }))
+    moves: Array.from({ length: 9 }, function(_, i) {
+      let player;
+      if (i % 2 === 0) {
+        player = 'X';
+      } else {
+        player = 'O';
+      }
+      return {
+        player: player,
+        position: { row: Math.floor(i / 3), column: i % 3 }
+      };
+    })
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
