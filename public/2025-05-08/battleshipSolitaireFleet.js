@@ -174,7 +174,7 @@ function markOccupiedSquares(chosen, occupied, length) {
   }
 }
 
-function chooseAndMarkCandidate(candidates, env, occupied, length) {
+function chooseAndMarkCandidate({ candidates, length }, env, occupied) {
   if (candidates.length === 0) {return null;} // dead end
   const getRandomNumber = env.get('getRandomNumber');
   const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
@@ -186,7 +186,7 @@ function chooseAndMarkCandidate(candidates, env, occupied, length) {
 function placeShip(length, boardState, env) {
   const { cfg, occupied } = boardState;
   const candidates = collectAllCandidates(length, cfg, occupied);
-  return chooseAndMarkCandidate(candidates, env, occupied, length);
+  return chooseAndMarkCandidate({ candidates, length }, env, occupied);
 }
 
 function makePlaceShip(cfg, env) {

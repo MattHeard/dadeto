@@ -4,6 +4,7 @@ description: Step-by-step process to fix all lint warnings in the codebase
 
 1. Run the TCR (Test && Commit || Revert) process to ensure the codebase is currently passing all tests and is in a clean state.
    - Command: `npm run tcr`
+   - Wait up to 60 seconds for the TCR process to finish before checking the result, to ensure all tests and commits are completed.
 
 2. Run the linter to generate the latest lint report.
    - Command: `npm run lint`
