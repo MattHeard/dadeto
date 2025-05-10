@@ -45,7 +45,7 @@
   306:17  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
-   27:1   warning  Function 'isCoordInBounds' has a complexity of 4. Maximum allowed is 2      complexity
+   31:1   warning  Function 'inBounds' has a complexity of 3. Maximum allowed is 2             complexity
    36:1   warning  Function 'neighbours' has a complexity of 5. Maximum allowed is 2           complexity
    54:1   warning  Function 'placeShip' has too many parameters (5). Maximum allowed is 3      max-params
    54:1   warning  Function 'placeShip' has a complexity of 22. Maximum allowed is 2           complexity

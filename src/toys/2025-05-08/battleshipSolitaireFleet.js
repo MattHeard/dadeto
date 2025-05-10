@@ -24,12 +24,12 @@ function shuffle(arr, env) {
 
 const key = (x, y) => `${x},${y}`;
 
-function isCoordInBounds(coord, cfg) {
-  return coord.x >= 0 && coord.y >= 0 && coord.x < cfg.width && coord.y < cfg.height;
+function isCoordNonNegative(coord) {
+  return coord.x >= 0 && coord.y >= 0;
 }
 
 function inBounds(coord, cfg) {
-  return isCoordInBounds(coord, cfg);
+  return isCoordNonNegative(coord) && coord.x < cfg.width && coord.y < cfg.height;
 }
 
 /** 8‑neighbour coordinates */

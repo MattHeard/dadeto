@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746855335337" clover="3.2.0">
-  <project timestamp="1746855335337" name="All files">
-    <metrics statements="1302" coveredstatements="1302" conditionals="401" coveredconditionals="401" methods="521" coveredmethods="521" elements="2224" coveredelements="2224" complexity="0" loc="1302" ncloc="1302" packages="14" files="30" classes="30"/>
+<coverage generated="1746855390932" clover="3.2.0">
+  <project timestamp="1746855390932" name="All files">
+    <metrics statements="1302" coveredstatements="1302" conditionals="402" coveredconditionals="402" methods="521" coveredmethods="521" elements="2225" coveredelements="2225" complexity="0" loc="1302" ncloc="1302" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1334,16 +1334,16 @@
       </file>
     </package>
     <package name="toys.2025-05-08">
-      <metrics statements="97" coveredstatements="97" conditionals="56" coveredconditionals="56" methods="17" coveredmethods="17"/>
+      <metrics statements="97" coveredstatements="97" conditionals="57" coveredconditionals="57" methods="17" coveredmethods="17"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js">
-        <metrics statements="97" coveredstatements="97" conditionals="56" coveredconditionals="56" methods="17" coveredmethods="17"/>
+        <metrics statements="97" coveredstatements="97" conditionals="57" coveredconditionals="57" methods="17" coveredmethods="17"/>
         <line num="18" count="105" type="stmt"/>
         <line num="19" count="105" type="stmt"/>
         <line num="20" count="301" type="stmt"/>
         <line num="21" count="301" type="stmt"/>
         <line num="25" count="4867" type="stmt"/>
-        <line num="28" count="9514" type="cond" truecount="4" falsecount="0"/>
-        <line num="32" count="9514" type="stmt"/>
+        <line num="28" count="9514" type="cond" truecount="2" falsecount="0"/>
+        <line num="32" count="9514" type="cond" truecount="3" falsecount="0"/>
         <line num="37" count="1400" type="stmt"/>
         <line num="38" count="1400" type="stmt"/>
         <line num="39" count="4200" type="stmt"/>
