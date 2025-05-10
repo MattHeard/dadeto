@@ -128,19 +128,19 @@ function isForbiddenTouch(cfg, occupied, segs) {
 }
 
 
-function placeShip(len, cfg, env, occupied) {
+function placeShip(length, cfg, env, occupied) {
   const candidates = [];
   const directions = ['H', 'V'];
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
       for (const dir of directions) {
         const start = { x, y };
-        const endCoord = getEndCoord(dir, start, len);
+        const endCoord = getEndCoord(dir, start, length);
         if (!inBounds(endCoord, cfg)) {
           continue;
         }
         const segReducer = makeSegReducer(dir, start, occupied);
-        const { segs, valid } = Array.from({ length: len }).reduce(
+        const { segs, valid } = Array.from({ length }).reduce(
           segReducer,
           { segs: [], valid: true }
         );
@@ -149,7 +149,7 @@ function placeShip(len, cfg, env, occupied) {
         if (valid) {
           const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
           if (!forbiddenTouch) {
-            candidates.push({ start, length: len, direction: dir });
+            candidates.push({ start, length, direction: dir });
           }
         }
       }
@@ -159,7 +159,7 @@ function placeShip(len, cfg, env, occupied) {
   const getRandomNumber = env.get('getRandomNumber');
   const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
   // Mark occupied squares
-  for (let i = 0; i < len; i++) {
+  for (let i = 0; i < length; i++) {
     const sx = getSx(chosen.direction, chosen.start.x, i);
     const sy = getSy(chosen.direction, chosen.start.y, i);
     occupied.add(key(sx, sy));
