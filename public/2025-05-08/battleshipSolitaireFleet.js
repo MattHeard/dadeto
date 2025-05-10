@@ -95,7 +95,8 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         };
 
         if (valid) {
-          if (touchForbidden && !allSegsHaveNoOccupiedNeighbour(cfg, occupied, segs)) {
+          const forbiddenTouch = touchForbidden && !allSegsHaveNoOccupiedNeighbour(cfg, occupied, segs);
+          if (forbiddenTouch) {
             continue;
           }
           candidates.push({ start: { x, y }, length: len, direction: dir });
