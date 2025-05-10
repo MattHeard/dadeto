@@ -148,7 +148,11 @@ function placeAllShips(cfg, env, occupied, touchForbidden) {
   const placeShipWithArgs = makePlaceShip(cfg, env, occupied, touchForbidden);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
-  return result && result.length === lengths.length ? result : null;
+  if (result && result.length === lengths.length) {
+    return result;
+  } else {
+    return null;
+  }
 }
 
 function attemptPlacement(cfg, env) {

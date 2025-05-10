@@ -134,9 +134,9 @@ function makePlaceShip(cfg, env, occupied, touchForbidden) {
 
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (!acc) return null;
+    if (!acc) {return null;}
     const placed = placeShipWithArgs(len);
-    if (!placed) return null;
+    if (!placed) {return null;}
     acc.push(placed);
     return acc;
   };
@@ -148,7 +148,11 @@ function placeAllShips(cfg, env, occupied, touchForbidden) {
   const placeShipWithArgs = makePlaceShip(cfg, env, occupied, touchForbidden);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
-  return result && result.length === lengths.length ? result : null;
+  if (result && result.length === lengths.length) {
+    return result;
+  } else {
+    return null;
+  }
 }
 
 function attemptPlacement(cfg, env) {
