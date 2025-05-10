@@ -61,6 +61,8 @@ const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg => !neighbours(seg)
 
 const getSx = (dir, x, i) => dir === 'H' ? x + i : x;
 const getSy = (dir, y, i) => dir === 'V' ? y + i : y;
+const getEndX = (dir, x, len) => dir === 'H' ? x + len - 1 : x;
+const getEndY = (dir, y, len) => dir === 'V' ? y + len - 1 : y;
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
@@ -69,17 +71,8 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
       for (const dir of ['H', 'V']) {
-        let endX, endY;
-        if (dir === 'H') {
-          endX = x + len - 1;
-        } else {
-          endX = x;
-        }
-        if (dir === 'V') {
-          endY = y + len - 1;
-        } else {
-          endY = y;
-        }
+        const endX = getEndX(dir, x, len);
+        const endY = getEndY(dir, y, len);
         if (!inBounds({x: endX, y: endY}, cfg)) {
           continue;
         }
