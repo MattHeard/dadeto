@@ -117,7 +117,7 @@ function placeShip(len, cfg, env, occupied) {
         if (!inBounds({x: endX, y: endY}, cfg)) {
           continue;
         }
-        const makeSegReducer = (dir, x, y, len, occupied) => (acc, _, i) => {
+        const makeSegReducer = (dir, x, y, occupied) => (acc, _, i) => {
           if (!acc.valid) {return acc;}
           const sx = getSx(dir, x, i);
           const sy = getSy(dir, y, i);
@@ -127,7 +127,7 @@ function placeShip(len, cfg, env, occupied) {
           }
           return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
         };
-        const segReducer = makeSegReducer(dir, x, y, len, occupied);
+        const segReducer = makeSegReducer(dir, x, y, occupied);
         const { segs, valid } = Array.from({ length: len }).reduce(
           segReducer,
           { segs: [], valid: true }

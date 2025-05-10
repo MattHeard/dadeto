@@ -2,8 +2,8 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
   109:1   warning  Function 'placeShip' has too many parameters (4). Maximum allowed is 3  max-params
   109:1   warning  Function 'placeShip' has a complexity of 10. Maximum allowed is 2       complexity
-  120:59  warning  Arrow function has too many parameters (5). Maximum allowed is 3        max-params
-  120:62  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
+  120:54  warning  Arrow function has too many parameters (4). Maximum allowed is 3        max-params
+  120:57  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
   139:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                  max-depth
   168:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
   198:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2    complexity
