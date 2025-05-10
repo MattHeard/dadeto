@@ -153,7 +153,6 @@ function collectCandidatesForStart(start, length, cfg, occupied) {
 
 function placeShip(length, cfg, env, occupied) {
   const candidates = [];
-  const directions = ['H', 'V'];
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
       const start = { x, y };
