@@ -34,14 +34,15 @@ function inBounds(coord, cfg) {
 
 /** 8‑neighbour coordinates */
 function neighbours(coord) {
-  const out = [];
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      if (dx === 0 && dy === 0) {continue;}
-      out.push({ x: coord.x + dx, y: coord.y + dy });
-    }
-  }
-  return out;
+  return [-1, 0, 1].reduce((acc, dy) => {
+    return acc.concat(
+      [-1, 0, 1].reduce((row, dx) => {
+        if (dx === 0 && dy === 0) {return row;}
+        row.push({ x: coord.x + dx, y: coord.y + dy });
+        return row;
+      }, [])
+    );
+  }, []);
 }
 
 function isNeighbourOccupied(n, cfg, occupied) {
