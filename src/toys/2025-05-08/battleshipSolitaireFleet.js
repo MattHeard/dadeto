@@ -119,8 +119,8 @@ const allSegsHaveNoOccupiedNeighbour = (cfg, occupied, segs) => {
   return segs.every(segHasNoOccupiedNeighbour);
 };
 
-function isForbiddenTouch(cfg, occupied, segs, touchForbidden) {
-  return touchForbidden && !allSegsHaveNoOccupiedNeighbour(cfg, occupied, segs);
+function isForbiddenTouch(cfg, occupied, segs) {
+  return cfg.noTouching === true && !allSegsHaveNoOccupiedNeighbour(cfg, occupied, segs);
 }
 
 
@@ -143,7 +143,7 @@ function placeShip(len, cfg, env, occupied) {
 
 
         if (valid) {
-          const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs, touchForbidden);
+          const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
           if (!forbiddenTouch) {
             candidates.push({ start: { x, y }, length: len, direction: dir });
           }
