@@ -57,13 +57,6 @@ function isNeighbourOccupied(n, cfg, occupied) {
   return inBounds(n, cfg) && occupied.has(key(n.x, n.y));
 }
 
-function makeCheckSegForNeighbourOccupied(isNeighbourOfSegOccupied) {
-  return seg => {
-    const foundOccupied = neighbours(seg).find(isNeighbourOfSegOccupied);
-    return Boolean(foundOccupied);
-  };
-}
-
 const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg => !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
