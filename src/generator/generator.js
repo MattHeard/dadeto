@@ -733,12 +733,12 @@ function formatBaseLink(type, url, title) {
 }
 
 function joinLinkParts(parts) {
-  const filtered = [];
-  for (let i = 0; i < parts.length; i++) {
-    if (parts[i]) {
-      filtered.push(parts[i]);
+  const filtered = parts.reduce((acc, part) => {
+    if (part) {
+      acc.push(part);
     }
-  }
+    return acc;
+  }, []);
   return filtered.join('');
 }
 
