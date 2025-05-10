@@ -2,11 +2,12 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
   109:1   warning  Function 'placeShip' has too many parameters (4). Maximum allowed is 3  max-params
   109:1   warning  Function 'placeShip' has a complexity of 10. Maximum allowed is 2       complexity
-  120:28  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
-  138:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                  max-depth
-  167:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
-  197:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2    complexity
-  201:12  warning  '_' is defined but never used                                           no-unused-vars
+  120:59  warning  Arrow function has too many parameters (5). Maximum allowed is 3        max-params
+  120:62  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
+  139:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                  max-depth
+  168:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
+  198:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2    complexity
+  202:12  warning  '_' is defined but never used                                           no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.handleTagLinks.test.js
   12:33  warning  Ternary operator used  no-ternary
@@ -19,4 +20,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 12 problems (0 errors, 12 warnings)
+✖ 13 problems (0 errors, 13 warnings)
