@@ -46,7 +46,11 @@ function hasNoInteractiveComponents(win) {
 }
 
 function getInteractiveComponentCount(win) {
-  return win.interactiveComponents ? win.interactiveComponents.length : 0;
+  if (win.interactiveComponents) {
+    return win.interactiveComponents.length;
+  } else {
+    return 0;
+  }
 }
 
 function getInteractiveComponents(win) {
