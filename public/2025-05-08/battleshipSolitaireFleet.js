@@ -98,6 +98,10 @@ function getEndY(dir, y, len) {
   }
 }
 
+function getEndCoord(dir, x, y, len) {
+  return { x: getEndX(dir, x, len), y: getEndY(dir, y, len) };
+}
+
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
 function makeSegReducer(dir, x, y, occupied) {
@@ -130,9 +134,7 @@ function placeShip(len, cfg, env, occupied) {
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
       for (const dir of directions) {
-        const endX = getEndX(dir, x, len);
-        const endY = getEndY(dir, y, len);
-        const endCoord = { x: endX, y: endY };
+        const endCoord = getEndCoord(dir, x, y, len);
         if (!inBounds(endCoord, cfg)) {
           continue;
         }
