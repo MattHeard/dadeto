@@ -64,8 +64,9 @@ function makeCheckSegForNeighbourOccupied(isNeighbourOfSegOccupied) {
   };
 }
 
-// ─────────────────── Placement attempt (single pass) ─────────────────── //
+const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg => !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
 
+// ─────────────────── Placement attempt (single pass) ─────────────────── //
 
 function placeShip(len, cfg, env, occupied, touchForbidden) {
   const candidates = [];
@@ -110,7 +111,6 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
           continue;
         }
         if (touchForbidden) {
-          const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg => !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
           const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
           if (!segs.every(segHasNoOccupiedNeighbour)) {
             valid = false;
