@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746875939439" clover="3.2.0">
-  <project timestamp="1746875939439" name="All files">
+<coverage generated="1746876122800" clover="3.2.0">
+  <project timestamp="1746876122800" name="All files">
     <metrics statements="1358" coveredstatements="1358" conditionals="399" coveredconditionals="399" methods="537" coveredmethods="537" elements="2294" coveredelements="2294" complexity="0" loc="1358" ncloc="1358" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
@@ -1456,15 +1456,15 @@
         <line num="146" count="109" type="stmt"/>
         <line num="147" count="109" type="stmt"/>
         <line num="149" count="104" type="stmt"/>
-        <line num="153" count="204" type="stmt"/>
-        <line num="157" count="105" type="cond" truecount="2" falsecount="0"/>
-        <line num="161" count="105" type="stmt"/>
-        <line num="162" count="404" type="cond" truecount="2" falsecount="0"/>
-        <line num="163" count="204" type="stmt"/>
-        <line num="164" count="204" type="cond" truecount="2" falsecount="0"/>
-        <line num="165" count="104" type="stmt"/>
+        <line num="153" count="105" type="stmt"/>
+        <line num="154" count="204" type="stmt"/>
+        <line num="158" count="105" type="cond" truecount="2" falsecount="0"/>
+        <line num="162" count="105" type="stmt"/>
+        <line num="163" count="404" type="cond" truecount="2" falsecount="0"/>
+        <line num="164" count="204" type="stmt"/>
+        <line num="165" count="204" type="cond" truecount="2" falsecount="0"/>
         <line num="166" count="104" type="stmt"/>
-        <line num="171" count="105" type="stmt"/>
+        <line num="167" count="104" type="stmt"/>
         <line num="172" count="105" type="stmt"/>
         <line num="173" count="105" type="stmt"/>
         <line num="174" count="105" type="stmt"/>

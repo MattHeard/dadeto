@@ -149,7 +149,8 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
   return chosen;
 }
 
-function makePlaceShip(cfg, env, occupied, touchForbidden) {
+function makePlaceShip(cfg, env, occupied) {
+  const touchForbidden = cfg.noTouching === true;
   return len => placeShip(len, cfg, env, occupied, touchForbidden);
 }
 
@@ -168,10 +169,9 @@ function makePlaceShipReducer(placeShipWithArgs) {
 }
 
 function placeAllShips(cfg, env, occupied) {
-  const touchForbidden = cfg.noTouching === true;
   const lengths = cfg.ships.slice();
   shuffle(lengths, env);
-  const placeShipWithArgs = makePlaceShip(cfg, env, occupied, touchForbidden);
+  const placeShipWithArgs = makePlaceShip(cfg, env, occupied);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
   if (isValidFleetResult(result, lengths)) {

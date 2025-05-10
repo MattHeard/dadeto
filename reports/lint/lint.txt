@@ -1,13 +1,12 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
-  103:1   warning  Function 'placeShip' has too many parameters (5). Maximum allowed is 3      max-params
-  103:1   warning  Function 'placeShip' has a complexity of 10. Maximum allowed is 2           complexity
-  114:11  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
-  133:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-  152:1   warning  Function 'makePlaceShip' has too many parameters (4). Maximum allowed is 3  max-params
-  161:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
-  193:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2        complexity
-  197:12  warning  '_' is defined but never used                                               no-unused-vars
+  103:1   warning  Function 'placeShip' has too many parameters (5). Maximum allowed is 3  max-params
+  103:1   warning  Function 'placeShip' has a complexity of 10. Maximum allowed is 2       complexity
+  114:11  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
+  133:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                  max-depth
+  162:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
+  193:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2    complexity
+  197:12  warning  '_' is defined but never used                                           no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setOutput.test.js
   18:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
@@ -25,4 +24,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 16 problems (0 errors, 16 warnings)
+✖ 15 problems (0 errors, 15 warnings)
