@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746901756575" clover="3.2.0">
-  <project timestamp="1746901756575" name="All files">
-    <metrics statements="1383" coveredstatements="1383" conditionals="401" coveredconditionals="401" methods="553" coveredmethods="553" elements="2337" coveredelements="2337" complexity="0" loc="1383" ncloc="1383" packages="14" files="30" classes="30"/>
+<coverage generated="1746901831422" clover="3.2.0">
+  <project timestamp="1746901831422" name="All files">
+    <metrics statements="1386" coveredstatements="1386" conditionals="403" coveredconditionals="403" methods="554" coveredmethods="554" elements="2343" coveredelements="2343" complexity="0" loc="1386" ncloc="1386" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1392,9 +1392,9 @@
       </file>
     </package>
     <package name="toys.2025-05-08">
-      <metrics statements="120" coveredstatements="120" conditionals="52" coveredconditionals="52" methods="46" coveredmethods="46"/>
+      <metrics statements="123" coveredstatements="123" conditionals="54" coveredconditionals="54" methods="47" coveredmethods="47"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js">
-        <metrics statements="120" coveredstatements="120" conditionals="52" coveredconditionals="52" methods="46" coveredmethods="46"/>
+        <metrics statements="123" coveredstatements="123" conditionals="54" coveredconditionals="54" methods="47" coveredmethods="47"/>
         <line num="18" count="105" type="stmt"/>
         <line num="19" count="105" type="stmt"/>
         <line num="20" count="301" type="stmt"/>
@@ -1508,13 +1508,16 @@
         <line num="274" count="105" type="stmt"/>
         <line num="275" count="105" type="cond" truecount="2" falsecount="0"/>
         <line num="277" count="1" type="stmt"/>
-        <line num="281" count="7" type="stmt"/>
-        <line num="282" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="281" count="6" type="stmt"/>
+        <line num="282" count="6" type="cond" truecount="2" falsecount="0"/>
         <line num="283" count="1" type="stmt"/>
-        <line num="285" count="6" type="stmt"/>
-        <line num="286" count="6" type="stmt"/>
-        <line num="287" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="288" count="1" type="stmt"/>
+        <line num="287" count="7" type="stmt"/>
+        <line num="288" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="289" count="1" type="stmt"/>
+        <line num="291" count="6" type="stmt"/>
+        <line num="292" count="6" type="stmt"/>
+        <line num="293" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="294" count="1" type="stmt"/>
       </file>
     </package>
   </project>
