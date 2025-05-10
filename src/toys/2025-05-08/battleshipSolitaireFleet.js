@@ -132,6 +132,10 @@ function makePlaceShip(cfg, env, occupied, touchForbidden) {
   return len => placeShip(len, cfg, env, occupied, touchForbidden);
 }
 
+function isValidFleetResult(result, lengths) {
+  return result && result.length === lengths.length;
+}
+
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
     if (!acc) {return null;}
@@ -148,7 +152,7 @@ function placeAllShips(cfg, env, occupied, touchForbidden) {
   const placeShipWithArgs = makePlaceShip(cfg, env, occupied, touchForbidden);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
-  if (result && result.length === lengths.length) {
+  if (isValidFleetResult(result, lengths)) {
     return result;
   } else {
     return null;
