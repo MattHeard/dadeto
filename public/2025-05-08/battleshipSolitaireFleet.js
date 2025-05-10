@@ -290,10 +290,15 @@ function shouldReturnFleet(fleet) {
   return isEarlyFleetSuccess(fleet);
 }
 
+function maybeReturnFleet(fleet) {
+  if (shouldReturnFleet(fleet)) return fleet;
+}
+
 function findFleetLoop(cfg, env, maxTries) {
   for (let i = 0; i < maxTries; i++) {
     const fleet = fleetLoopBody(i, cfg, env);
-    if (shouldReturnFleet(fleet)) return fleet;
+    const result = maybeReturnFleet(fleet);
+    if (result) return result;
   }
   return null;
 }
