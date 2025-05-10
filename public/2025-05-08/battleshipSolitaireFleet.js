@@ -132,19 +132,20 @@ function makePlaceShip(cfg, env, occupied, touchForbidden) {
   return len => placeShip(len, cfg, env, occupied, touchForbidden);
 }
 
+function makePlaceShipReducer(placeShipWithArgs) {
+  return (acc, len) => {
+    if (!acc) return null;
+    const placed = placeShipWithArgs(len);
+    if (!placed) return null;
+    acc.push(placed);
+    return acc;
+  };
+}
+
 function placeAllShips(cfg, env, occupied, touchForbidden) {
   const lengths = cfg.ships.slice();
   shuffle(lengths, env);
   const placeShipWithArgs = makePlaceShip(cfg, env, occupied, touchForbidden);
-  function makePlaceShipReducer(placeShipWithArgs) {
-    return (acc, len) => {
-      if (!acc) return null;
-      const placed = placeShipWithArgs(len);
-      if (!placed) return null;
-      acc.push(placed);
-      return acc;
-    };
-  }
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
   return result && result.length === lengths.length ? result : null;
