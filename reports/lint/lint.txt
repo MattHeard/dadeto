@@ -1,8 +1,8 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  734:10  warning  Ternary operator used  no-ternary
-  738:10  warning  Ternary operator used  no-ternary
-  742:10  warning  Ternary operator used  no-ternary
+  740:10  warning  Ternary operator used  no-ternary
+  744:10  warning  Ternary operator used  no-ternary
+  748:10  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/src/test/toys/2025-04-06/ticTacToe.test.js
   346:15  warning  Ternary operator used  no-ternary

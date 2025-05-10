@@ -718,7 +718,13 @@ function formatTitleByType(type, title) {
     report: t => `"${t}"`
   };
 
-  return (formatters[type] || (t => t))(title);
+  let formatter;
+  if (formatters[type]) {
+    formatter = formatters[type];
+  } else {
+    formatter = t => t;
+  }
+  return formatter(title);
 }
 
 function formatBaseLink(type, url, title) {
