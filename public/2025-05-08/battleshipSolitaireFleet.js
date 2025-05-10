@@ -210,6 +210,11 @@ function attemptPlacement(cfg, env) {
   return { width: cfg.width, height: cfg.height, ships };
 }
 
+function exceedsBoardArea(cfg) {
+  const totalSegments = cfg.ships.reduce((s, l) => s + l, 0);
+  return totalSegments > cfg.width * cfg.height;
+}
+
 // ─────────────────────────── Public toy ─────────────────────────── //
 
 function parseConfig(input) {
@@ -228,8 +233,7 @@ function parseConfig(input) {
 function generateFleet(input, env) {
   const cfg = parseConfig(input);
 
-  const totalSegments = cfg.ships.reduce((s, l) => s + l, 0);
-  if (totalSegments > cfg.width * cfg.height) {
+  if (exceedsBoardArea(cfg)) {
     return JSON.stringify({ error: 'Ship segments exceed board area' });
   }
 
