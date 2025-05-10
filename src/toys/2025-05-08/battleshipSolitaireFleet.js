@@ -126,9 +126,10 @@ function isForbiddenTouch(cfg, occupied, segs) {
 
 function placeShip(len, cfg, env, occupied) {
   const candidates = [];
+  const directions = ['H', 'V'];
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
-      for (const dir of ['H', 'V']) {
+      for (const dir of directions) {
         const endX = getEndX(dir, x, len);
         const endY = getEndY(dir, y, len);
         if (!inBounds({x: endX, y: endY}, cfg)) {
