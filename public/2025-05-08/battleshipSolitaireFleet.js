@@ -78,7 +78,7 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         }
         const { segs, valid } = Array.from({ length: len }).reduce(
           (acc, _, i) => {
-            if (!acc.valid) return acc;
+            if (!acc.valid) {return acc;}
             const sx = getSx(dir, x, i);
             const sy = getSy(dir, y, i);
             const k = key(sx, sy);
@@ -96,7 +96,6 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
           const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
           if (!segs.every(segHasNoOccupiedNeighbour)) {
             continue;
-            valid = false;
           }
         }
         if (!valid) {

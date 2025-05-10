@@ -96,7 +96,6 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
           const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
           if (!segs.every(segHasNoOccupiedNeighbour)) {
             continue;
-            valid = false;
           }
         }
         if (!valid) {
