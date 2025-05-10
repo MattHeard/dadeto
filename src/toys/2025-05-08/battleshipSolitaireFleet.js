@@ -117,17 +117,18 @@ function placeShip(len, cfg, env, occupied) {
         if (!inBounds({x: endX, y: endY}, cfg)) {
           continue;
         }
+        const segReducer = (acc, _, i) => {
+          if (!acc.valid) {return acc;}
+          const sx = getSx(dir, x, i);
+          const sy = getSy(dir, y, i);
+          const k = key(sx, sy);
+          if (occupied.has(k)) {
+            return { ...acc, valid: false };
+          }
+          return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
+        };
         const { segs, valid } = Array.from({ length: len }).reduce(
-          (acc, _, i) => {
-            if (!acc.valid) {return acc;}
-            const sx = getSx(dir, x, i);
-            const sy = getSy(dir, y, i);
-            const k = key(sx, sy);
-            if (occupied.has(k)) {
-              return { ...acc, valid: false };
-            }
-            return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
-          },
+          segReducer,
           { segs: [], valid: true }
         );
 
