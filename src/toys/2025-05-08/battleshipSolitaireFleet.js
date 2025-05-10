@@ -297,10 +297,15 @@ function maybeReturnFleet(fleet) {
   return null;
 }
 
+function processFleetLoopIteration(i, cfg, env) {
+  const fleet = fleetLoopIteration(cfg, env);
+  const result = maybeReturnFleet(fleet);
+  return result;
+}
+
 function findFleetLoop(cfg, env, maxTries) {
   for (let i = 0; i < maxTries; i++) {
-    const fleet = fleetLoopBody(i, cfg, env);
-    const result = maybeReturnFleet(fleet);
+    const result = processFleetLoopIteration(i, cfg, env);
     if (result) {return result;}
   }
   return null;
