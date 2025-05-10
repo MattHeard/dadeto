@@ -261,20 +261,31 @@ function parseConfig(input) {
   return cfg;
 }
 
-function generateFleet(input, env) {
-  const cfg = parseConfig(input);
+function fleetAreaError() {
+  return JSON.stringify({ error: 'Ship segments exceed board area' });
+}
 
-  if (exceedsBoardArea(cfg)) {
-    return JSON.stringify({ error: 'Ship segments exceed board area' });
-  }
+function fleetRetryError() {
+  return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
+}
 
-  const MAX_TRIES = 100;
-  for (let i = 0; i < MAX_TRIES; i++) {
+function tryGenerateFleet(cfg, env, maxTries) {
+  for (let i = 0; i < maxTries; i++) {
     const fleet = attemptPlacement(cfg, env);
     if (fleet) {return JSON.stringify(fleet);}
   }
+  return null;
+}
 
-  return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
+function generateFleet(input, env) {
+  const cfg = parseConfig(input);
+  if (exceedsBoardArea(cfg)) {
+    return fleetAreaError();
+  }
+  const MAX_TRIES = 100;
+  const fleetResult = tryGenerateFleet(cfg, env, MAX_TRIES);
+  if (fleetResult) {return fleetResult;}
+  return fleetRetryError();
 }
 
 export { generateFleet };

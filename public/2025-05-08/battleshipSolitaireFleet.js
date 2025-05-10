@@ -209,9 +209,9 @@ function shouldAbortPlacement(placed) {
 
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (shouldAbortAccumulator(acc)) return null;
+    if (shouldAbortAccumulator(acc)) {return null;}
     const placed = placeShipWithArgs(len);
-    if (shouldAbortPlacement(placed)) return null;
+    if (shouldAbortPlacement(placed)) {return null;}
     acc.push(placed);
     return acc;
   };
@@ -261,20 +261,31 @@ function parseConfig(input) {
   return cfg;
 }
 
+function fleetAreaError() {
+  return JSON.stringify({ error: 'Ship segments exceed board area' });
+}
+
+function fleetRetryError() {
+  return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
+}
+
+function tryGenerateFleet(cfg, env, maxTries) {
+  for (let i = 0; i < maxTries; i++) {
+    const fleet = attemptPlacement(cfg, env);
+    if (fleet) return JSON.stringify(fleet);
+  }
+  return null;
+}
+
 function generateFleet(input, env) {
   const cfg = parseConfig(input);
-
   if (exceedsBoardArea(cfg)) {
-    return JSON.stringify({ error: 'Ship segments exceed board area' });
+    return fleetAreaError();
   }
-
   const MAX_TRIES = 100;
-  for (let i = 0; i < MAX_TRIES; i++) {
-    const fleet = attemptPlacement(cfg, env);
-    if (fleet) {return JSON.stringify(fleet);}
-  }
-
-  return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
+  const fleetResult = tryGenerateFleet(cfg, env, MAX_TRIES);
+  if (fleetResult) return fleetResult;
+  return fleetRetryError();
 }
 
 export { generateFleet };
