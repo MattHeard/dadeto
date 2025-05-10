@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746872032994" clover="3.2.0">
-  <project timestamp="1746872032994" name="All files">
+<coverage generated="1746872061005" clover="3.2.0">
+  <project timestamp="1746872061005" name="All files">
     <metrics statements="1349" coveredstatements="1349" conditionals="399" coveredconditionals="399" methods="536" coveredmethods="536" elements="2284" coveredelements="2284" complexity="0" loc="1349" ncloc="1349" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
@@ -1437,8 +1437,8 @@
         <line num="97" count="1678" type="cond" truecount="2" falsecount="0"/>
         <line num="98" count="1474" type="cond" truecount="2" falsecount="0"/>
         <line num="99" count="1474" type="cond" truecount="2" falsecount="0"/>
-        <line num="100" count="600" type="stmt"/>
-        <line num="102" count="874" type="stmt"/>
+        <line num="100" count="874" type="stmt"/>
+        <line num="102" count="600" type="stmt"/>
         <line num="108" count="204" type="cond" truecount="2" falsecount="0"/>
         <line num="109" count="104" type="stmt"/>
         <line num="110" count="104" type="stmt"/>
