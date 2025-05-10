@@ -33,10 +33,13 @@ function getValidParsedMoves(parsed) {
 
 function isValidParsedMoves(parsed) {
   const validators = [isObject, hasMovesArray];
-  return validators.reduce((acc, fn) => {
-    if (!acc) {return false;}
+  const validatorReducer = (acc, fn) => {
+    if (!acc) {
+      return false;
+    }
     return fn(parsed);
-  }, true);
+  };
+  return validators.reduce(validatorReducer, true);
 
 }
 
