@@ -98,12 +98,7 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
             continue;
           }
         }
-        if (!valid) {
-          continue;
-        }
-        if (valid) {
-          candidates.push({ start: { x, y }, length: len, direction: dir });
-        }
+        candidates.push({ start: { x, y }, length: len, direction: dir });
       }
     }
   }
