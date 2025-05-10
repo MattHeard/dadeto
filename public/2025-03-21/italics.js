@@ -41,7 +41,12 @@ function getDoubledMarker(marker) {
  */
 function createBoldPatternPart(marker) {
   // Escape marker if it's a special regex character
-  const escapedMarker = REGEX_SPECIAL_CHARS.test(marker) ? `\\${marker}` : marker;
+  let escapedMarker;
+  if (REGEX_SPECIAL_CHARS.test(marker)) {
+    escapedMarker = `\\${marker}`;
+  } else {
+    escapedMarker = marker;
+  }
   const doubledMarker = getDoubledMarker(escapedMarker);
 
   // Break the pattern into its constituent parts
