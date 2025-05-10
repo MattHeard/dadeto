@@ -232,6 +232,12 @@ function exceedsBoardArea(cfg) {
   return totalSegments > cfg.width * cfg.height;
 }
 
+function ensureShipsArray(cfg) {
+  if (!Array.isArray(cfg.ships)) {
+    cfg.ships = [];
+  }
+}
+
 // ─────────────────────────── Public toy ─────────────────────────── //
 
 function parseConfig(input) {
@@ -241,9 +247,7 @@ function parseConfig(input) {
   } catch {
     cfg = {};
   }
-  if (!Array.isArray(cfg.ships)) {
-    cfg.ships = [];
-  }
+  ensureShipsArray(cfg);
   return cfg;
 }
 
