@@ -1,8 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  740:10  warning  Ternary operator used  no-ternary
-  744:10  warning  Ternary operator used  no-ternary
-  748:10  warning  Ternary operator used  no-ternary
+  735:1  warning  Function 'joinLinkParts' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/test/toys/2025-04-06/ticTacToe.test.js
   346:15  warning  Ternary operator used  no-ternary
@@ -69,4 +67,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 44 problems (0 errors, 44 warnings)
+✖ 42 problems (0 errors, 42 warnings)

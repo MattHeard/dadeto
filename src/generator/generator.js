@@ -733,19 +733,37 @@ function formatBaseLink(type, url, title) {
 }
 
 function joinLinkParts(parts) {
-  return parts.filter(Boolean).join('');
+  const filtered = [];
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i]) {
+      filtered.push(parts[i]);
+    }
+  }
+  return filtered.join('');
 }
 
 function formatAuthor(author) {
-  return author ? ` by ${author}` : '';
+  if (author) {
+    return ` by ${author}`;
+  } else {
+    return '';
+  }
 }
 
 function formatSource(source) {
-  return source ? `, ${source}` : '';
+  if (source) {
+    return `, ${source}`;
+  } else {
+    return '';
+  }
 }
 
 function formatQuote(quote) {
-  return quote ? ` ("${quote}")` : '';
+  if (quote) {
+    return ` ("${quote}")`;
+  } else {
+    return '';
+  }
 }
 
 function createLinkParts(baseLink, { author, source, quote }) {
