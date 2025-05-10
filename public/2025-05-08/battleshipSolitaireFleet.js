@@ -98,8 +98,8 @@ function getEndY(dir, y, len) {
   }
 }
 
-function getEndCoord(dir, x, y, len) {
-  return { x: getEndX(dir, x, len), y: getEndY(dir, y, len) };
+function getEndCoord(dir, start, len) {
+  return { x: getEndX(dir, start.x, len), y: getEndY(dir, start.y, len) };
 }
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
@@ -134,7 +134,8 @@ function placeShip(len, cfg, env, occupied) {
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
       for (const dir of directions) {
-        const endCoord = getEndCoord(dir, x, y, len);
+        const start = { x, y };
+        const endCoord = getEndCoord(dir, start, len);
         if (!inBounds(endCoord, cfg)) {
           continue;
         }
