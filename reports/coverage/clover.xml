@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746865959561" clover="3.2.0">
-  <project timestamp="1746865959561" name="All files">
-    <metrics statements="1330" coveredstatements="1330" conditionals="406" coveredconditionals="406" methods="524" coveredmethods="524" elements="2260" coveredelements="2260" complexity="0" loc="1330" ncloc="1330" packages="14" files="30" classes="30"/>
+<coverage generated="1746866066533" clover="3.2.0">
+  <project timestamp="1746866066533" name="All files">
+    <metrics statements="1330" coveredstatements="1330" conditionals="406" coveredconditionals="406" methods="525" coveredmethods="525" elements="2261" coveredelements="2261" complexity="0" loc="1330" ncloc="1330" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1181,9 +1181,9 @@
       </file>
     </package>
     <package name="toys.2025-04-06">
-      <metrics statements="163" coveredstatements="163" conditionals="60" coveredconditionals="60" methods="80" coveredmethods="80"/>
+      <metrics statements="163" coveredstatements="163" conditionals="60" coveredconditionals="60" methods="81" coveredmethods="81"/>
       <file name="ticTacToe.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js">
-        <metrics statements="163" coveredstatements="163" conditionals="60" coveredconditionals="60" methods="80" coveredmethods="80"/>
+        <metrics statements="163" coveredstatements="163" conditionals="60" coveredconditionals="60" methods="81" coveredmethods="81"/>
         <line num="2" count="1502147" type="cond" truecount="2" falsecount="0"/>
         <line num="3" count="1421108" type="stmt"/>
         <line num="5" count="81039" type="stmt"/>
