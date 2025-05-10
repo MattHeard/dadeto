@@ -154,7 +154,7 @@ function collectCandidatesForStart(start, length, cfg, occupied) {
   return candidates;
 }
 
-function placeShip(length, cfg, env, occupied) {
+function collectAllCandidates(length, cfg, occupied) {
   const candidates = [];
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
@@ -163,6 +163,11 @@ function placeShip(length, cfg, env, occupied) {
       candidates.push(...localCandidates);
     }
   }
+  return candidates;
+}
+
+function placeShip(length, cfg, env, occupied) {
+  const candidates = collectAllCandidates(length, cfg, occupied);
   if (candidates.length === 0) {return null;} // dead end
   const getRandomNumber = env.get('getRandomNumber');
   const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
