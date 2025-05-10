@@ -21,4 +21,6 @@ description: Step-by-step process to fix all lint warnings in the codebase
 
 6. If at any point a test fails or the TCR process does not pass, revert or fix the code before proceeding to the next lint warning.
 
+- This workflow should be run iteratively and automatically: after each fix, immediately proceed to the next lint warning and repeat the process, without waiting for user confirmation between steps.
+
 // turbo-all
