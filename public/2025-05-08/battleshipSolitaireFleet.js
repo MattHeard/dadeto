@@ -100,6 +100,12 @@ function getEndY(dir, y, len) {
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
+const allSegsHaveNoOccupiedNeighbour = (cfg, occupied, segs) => {
+  const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
+  return segs.every(segHasNoOccupiedNeighbour);
+};
+
+
 function placeShip(len, cfg, env, occupied) {
   const touchForbidden = cfg.noTouching === true;
   const candidates = [];
@@ -124,10 +130,7 @@ function placeShip(len, cfg, env, occupied) {
           },
           { segs: [], valid: true }
         );
-        const allSegsHaveNoOccupiedNeighbour = (cfg, occupied, segs) => {
-          const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
-          return segs.every(segHasNoOccupiedNeighbour);
-        };
+
 
         if (valid) {
           const forbiddenTouch = touchForbidden && !allSegsHaveNoOccupiedNeighbour(cfg, occupied, segs);
