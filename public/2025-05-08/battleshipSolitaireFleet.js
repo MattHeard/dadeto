@@ -133,13 +133,13 @@ function placeShip(length, cfg, env, occupied) {
   const directions = ['H', 'V'];
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
-      for (const dir of directions) {
+      for (const direction of directions) {
         const start = { x, y };
-        const endCoord = getEndCoord(dir, start, length);
+        const endCoord = getEndCoord(direction, start, length);
         if (!inBounds(endCoord, cfg)) {
           continue;
         }
-        const segReducer = makeSegReducer(dir, start, occupied);
+        const segReducer = makeSegReducer(direction, start, occupied);
         const { segs, valid } = Array.from({ length }).reduce(
           segReducer,
           { segs: [], valid: true }
@@ -149,7 +149,7 @@ function placeShip(length, cfg, env, occupied) {
         if (valid) {
           const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
           if (!forbiddenTouch) {
-            candidates.push({ start, length, direction: dir });
+            candidates.push({ start, length, direction });
           }
         }
       }
