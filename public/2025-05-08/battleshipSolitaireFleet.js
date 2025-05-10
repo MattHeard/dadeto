@@ -39,9 +39,12 @@ function inBounds(coord, cfg) {
 /** 8‑neighbour coordinates */
 function dxReducerForNeighbour(coord, dy) {
   return (row, dx) => {
-    if (dx === 0 && dy === 0) { return row; }
-    const neighbour = { x: coord.x + dx, y: coord.y + dy };
-    return row.concat(neighbour);
+    if (dx === 0 && dy === 0) {
+      return row;
+    } else {
+      const neighbour = { x: coord.x + dx, y: coord.y + dy };
+      return row.concat(neighbour);
+    }
   };
 }
 
@@ -98,8 +101,6 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
           const forbiddenTouch = touchForbidden && !allSegsHaveNoOccupiedNeighbour(cfg, occupied, segs);
           if (!forbiddenTouch) {
             candidates.push({ start: { x, y }, length: len, direction: dir });
-          } else {
-            continue;
           }
         }
       }
