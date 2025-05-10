@@ -150,7 +150,8 @@ function placeShip(len, cfg, env, occupied) {
   return chosen;
 }
 
-function makePlaceShip(cfg, env, occupied) {
+function makePlaceShip(cfg, env) {
+  const occupied = new Set();
   return len => placeShip(len, cfg, env, occupied);
 }
 
@@ -169,10 +170,9 @@ function makePlaceShipReducer(placeShipWithArgs) {
 }
 
 function placeAllShips(cfg, env) {
-  const occupied = new Set();
   const lengths = cfg.ships.slice();
   shuffle(lengths, env);
-  const placeShipWithArgs = makePlaceShip(cfg, env, occupied);
+  const placeShipWithArgs = makePlaceShip(cfg, env);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
   if (isValidFleetResult(result, lengths)) {
