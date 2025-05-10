@@ -9,11 +9,11 @@
    69:1   warning  Function 'placeShip' has a complexity of 10. Maximum allowed is 2           complexity
    80:11  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
    99:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-  119:1   warning  Function 'makePlaceShip' has too many parameters (4). Maximum allowed is 3  max-params
-  128:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
-  137:1   warning  Function 'placeAllShips' has too many parameters (4). Maximum allowed is 3  max-params
-  160:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2        complexity
-  164:12  warning  '_' is defined but never used                                               no-unused-vars
+  120:1   warning  Function 'makePlaceShip' has too many parameters (4). Maximum allowed is 3  max-params
+  129:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
+  138:1   warning  Function 'placeAllShips' has too many parameters (4). Maximum allowed is 3  max-params
+  161:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2        complexity
+  165:12  warning  '_' is defined but never used                                               no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setOutput.test.js
   18:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity
