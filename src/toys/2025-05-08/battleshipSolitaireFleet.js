@@ -281,10 +281,14 @@ function fleetLoopIteration(cfg, env) {
   return attemptPlacement(cfg, env);
 }
 
+function shouldReturnFleet(fleet) {
+  return isEarlyFleetSuccess(fleet);
+}
+
 function findFleetLoop(cfg, env, maxTries) {
   for (let i = 0; i < maxTries; i++) {
     const fleet = fleetLoopIteration(cfg, env);
-    if (isEarlyFleetSuccess(fleet)) {return fleet;}
+    if (shouldReturnFleet(fleet)) {return fleet;}
   }
   return null;
 }
