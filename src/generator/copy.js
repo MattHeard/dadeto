@@ -111,11 +111,7 @@ if (fs.existsSync(srcPresentersDir)) {
 
 // --- Copy src/browser to public/browser ---
 
-function copyDirRecursive(src, dest) {
-  if (!fs.existsSync(dest)) {
-    fs.mkdirSync(dest, { recursive: true });
-  }
-  const entries = fs.readdirSync(src, { withFileTypes: true });
+function processDirectoryEntries(entries, src, dest) {
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
@@ -126,6 +122,14 @@ function copyDirRecursive(src, dest) {
       console.log(`Copied: ${srcPath} -> ${destPath}`);
     }
   }
+}
+
+function copyDirRecursive(src, dest) {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  processDirectoryEntries(entries, src, dest);
 }
 
 if (fs.existsSync(srcBrowserDir)) {

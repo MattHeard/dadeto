@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js
-  114:1  warning  Function 'copyDirRecursive' has a complexity of 4. Maximum allowed is 2  complexity
+  114:1  warning  Function 'processDirectoryEntries' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
   329:10  warning  Ternary operator used  no-ternary
