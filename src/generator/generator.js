@@ -701,7 +701,11 @@ function escapeRelatedLinkFields(link) {
   const fields = ['url', 'title', 'author', 'source', 'quote'];
 
   return fields.reduce((acc, field) => {
-    acc[field] = link[field] ? escapeHtml(link[field]) : '';
+    if (link[field]) {
+      acc[field] = escapeHtml(link[field]);
+    } else {
+      acc[field] = '';
+    }
     return acc;
   }, { type: link.type });
 }
