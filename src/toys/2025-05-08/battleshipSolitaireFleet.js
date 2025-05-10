@@ -92,7 +92,8 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         if (valid) {
           if (touchForbidden) {
             const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
-            if (!segs.every(segHasNoOccupiedNeighbour)) {
+            const allSegsHaveNoOccupiedNeighbour = segs.every(segHasNoOccupiedNeighbour);
+            if (!allSegsHaveNoOccupiedNeighbour) {
               continue;
             }
           }
