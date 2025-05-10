@@ -7,7 +7,6 @@
   157:1   warning  Function 'collectAllCandidates' has a complexity of 3. Maximum allowed is 2             complexity
   169:1   warning  Function 'chooseAndMarkCandidate' has too many parameters (4). Maximum allowed is 3     max-params
   169:1   warning  Function 'chooseAndMarkCandidate' has a complexity of 3. Maximum allowed is 2           complexity
-  182:1   warning  Function 'placeShip' has too many parameters (4). Maximum allowed is 3                  max-params
   197:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                              complexity
   232:1   warning  Function 'parseConfig' has a complexity of 3. Maximum allowed is 2                      complexity
   245:1   warning  Function 'generateFleet' has a complexity of 4. Maximum allowed is 2                    complexity
@@ -23,4 +22,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 16 problems (0 errors, 16 warnings)
+✖ 15 problems (0 errors, 15 warnings)

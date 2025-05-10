@@ -167,7 +167,7 @@ function collectAllCandidates(length, cfg, occupied) {
 }
 
 function chooseAndMarkCandidate(candidates, env, occupied, length) {
-  if (candidates.length === 0) return null; // dead end
+  if (candidates.length === 0) {return null;} // dead end
   const getRandomNumber = env.get('getRandomNumber');
   const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
   // Mark occupied squares
@@ -179,14 +179,14 @@ function chooseAndMarkCandidate(candidates, env, occupied, length) {
   return chosen;
 }
 
-function placeShip(length, cfg, env, occupied) {
+function placeShip({ length, cfg, env, occupied }) {
   const candidates = collectAllCandidates(length, cfg, occupied);
   return chooseAndMarkCandidate(candidates, env, occupied, length);
 }
 
 function makePlaceShip(cfg, env) {
   const occupied = new Set();
-  return len => placeShip(len, cfg, env, occupied);
+  return len => placeShip({ length: len, cfg, env, occupied });
 }
 
 function isValidFleetResult(result, lengths) {
