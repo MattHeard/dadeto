@@ -13,7 +13,11 @@ export function decomposeFloat(input) {
 
 function getZeroVariantResult(num) {
   const result = isZeroVariant(num);
-  return result !== null ? result : null;
+  if (result !== null) {
+    return result;
+  } else {
+    return null;
+  }
 }
 
 function getIEEEDecomposition(num) {
@@ -31,7 +35,11 @@ function getZeroVariantString(num) {
 
 function resolveZeroVariant(num) {
   const zeroResult = getZeroVariantString(num);
-  return zeroResult ? zeroResult : null;
+  if (zeroResult) {
+    return zeroResult;
+  } else {
+    return null;
+  }
 }
 
 function isNotFinite(num) {
@@ -58,27 +66,48 @@ function isNegativeZero(n) {
 }
 
 function isPositiveZeroResult(num) {
-  return isPositiveZero(num) ? "0 (0 × 2^0)" : null;
+  if (isPositiveZero(num)) {
+    return "0 (0 × 2^0)";
+  } else {
+    return null;
+  }
 }
 
 function isNegativeZeroResult(num) {
-  return isNegativeZero(num) ? "0 (-0 × 2^0)" : null;
+  if (isNegativeZero(num)) {
+    return "0 (-0 × 2^0)";
+  } else {
+    return null;
+  }
 }
 
 function isZeroVariant(num) {
-  return isPositiveZeroResult(num) || isNegativeZeroResult(num);
+  if (isPositiveZeroResult(num)) {
+    return isPositiveZeroResult(num);
+  } else {
+    return isNegativeZeroResult(num);
+  }
 }
 
 export function formatDecimal(num) {
   const A = num.toPrecision(17);
-  return A.includes('.') ? A.replace(/\.?0+$/, '') : A;
+  if (A.includes('.')) {
+    return A.replace(/\.?0+$/, '');
+  } else {
+    return A;
+  }
 }
 
 
 
 function getSignificandAndExponent({ sign, mantissa, exponent }) {
 
-  const signValue = sign === 0 ? 1n : -1n;
+  let signValue;
+  if (sign === 0) {
+    signValue = 1n;
+  } else {
+    signValue = -1n;
+  }
   const fullSignificand = (1n << 52n) | BigInt(mantissa);
   const B = signValue * fullSignificand;
   const C = BigInt(exponent - 1023) - 52n;

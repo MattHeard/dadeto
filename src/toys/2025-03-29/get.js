@@ -22,7 +22,11 @@ function traversePathSegments(data, pathSegments) {
     return handlePathSegmentIteration(acc.value, segment, acc.path);
   };
   const finalState = pathSegments.reduce(reducer, initialState);
-  return finalState.error ? finalState.error : finalState.value;
+  if (finalState.error) {
+    return finalState.error;
+  } else {
+    return finalState.value;
+  }
 }
 
 function handlePathSegmentIteration(currentValue, segment, currentPath) {

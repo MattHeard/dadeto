@@ -33,11 +33,11 @@ function createBoldPatternPart(marker) {
   // Escape marker if it's a special regex character
   const escapedMarker = REGEX_SPECIAL_CHARS.test(marker) ? `\\${marker}` : marker;
   let doubledMarker;
-if (escapedMarker) {
-  doubledMarker = createDoubledMarker(escapedMarker);
-} else {
-  doubledMarker = createDoubledMarker(escapedMarker);
-}
+  if (escapedMarker) {
+    doubledMarker = createDoubledMarker(escapedMarker);
+  } else {
+    doubledMarker = createDoubledMarker(escapedMarker);
+  }
 
   // Break the pattern into its constituent parts
   const patternParts = [
@@ -75,12 +75,12 @@ function createBoldPattern() {
 function createItalicsPattern(marker) {
   // Escape marker if it's a special regex character
   let escapedMarker;
-if (REGEX_SPECIAL_CHARS.test(marker)) {
-  escapedMarker = `\\${marker}`;
-} else {
-  escapedMarker = marker;
-}
-return new RegExp(`${escapedMarker}(.*?)${escapedMarker}`, 'g');
+  if (REGEX_SPECIAL_CHARS.test(marker)) {
+    escapedMarker = `\\${marker}`;
+  } else {
+    escapedMarker = marker;
+  }
+  return new RegExp(`${escapedMarker}(.*?)${escapedMarker}`, 'g');
 }
 
 /**
@@ -137,18 +137,18 @@ function processTextPreservingBold(text) {
 
 function processItalicBefore(beforeText) {
   if (beforeText) {
-  return processAllItalicStyles(beforeText);
-} else {
-  return '';
-}
+    return processAllItalicStyles(beforeText);
+  } else {
+    return '';
+  }
 }
 
 function processBoldAfter(afterText) {
   if (afterText) {
-  return processTextPreservingBold(afterText);
-} else {
-  return '';
-}
+    return processTextPreservingBold(afterText);
+  } else {
+    return '';
+  }
 }
 
 // Helper function to check if text is invalid

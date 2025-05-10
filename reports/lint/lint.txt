@@ -3,17 +3,6 @@
   32:1   warning  Function 'createBoldPatternPart' has a complexity of 3. Maximum allowed is 2  complexity
   34:25  warning  Ternary operator used                                                         no-ternary
 
-/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-26/prettyFloat.js
-  16:10  warning  Ternary operator used  no-ternary
-  34:10  warning  Ternary operator used  no-ternary
-  61:10  warning  Ternary operator used  no-ternary
-  65:10  warning  Ternary operator used  no-ternary
-  74:10  warning  Ternary operator used  no-ternary
-  81:21  warning  Ternary operator used  no-ternary
-
-/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-29/get.js
-  25:10  warning  Ternary operator used  no-ternary
-
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js
   116:10  warning  Ternary operator used  no-ternary
 
@@ -50,4 +39,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 33 problems (0 errors, 33 warnings)
+✖ 26 problems (0 errors, 26 warnings)
