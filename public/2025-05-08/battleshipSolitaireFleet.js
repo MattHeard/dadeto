@@ -128,13 +128,13 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
   return chosen;
 }
 
-function placeAllShips(cfg, env, occupied, touchForbidden) {
-  const lengths = cfg.ships.slice();
-  shuffle(lengths, env);
-
 function makePlaceShip(cfg, env, occupied, touchForbidden) {
   return len => placeShip(len, cfg, env, occupied, touchForbidden);
 }
+
+function placeAllShips(cfg, env, occupied, touchForbidden) {
+  const lengths = cfg.ships.slice();
+  shuffle(lengths, env);
   const placeShipWithArgs = makePlaceShip(cfg, env, occupied, touchForbidden);
   const placeShipReducer = (acc, len) => {
     if (!acc) {return null;}

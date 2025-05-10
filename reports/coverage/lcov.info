@@ -2826,9 +2826,9 @@ FN:32,neighbours
 FN:43,isNeighbourOccupied
 FN:50,placeShip
 FN:93,(anonymous_6)
-FN:131,placeAllShips
-FN:135,makePlaceShip
-FN:136,(anonymous_9)
+FN:131,makePlaceShip
+FN:132,(anonymous_8)
+FN:135,placeAllShips
 FN:139,(anonymous_10)
 FN:151,attemptPlacement
 FN:161,generateFleet
@@ -2842,9 +2842,9 @@ FNDA:1400,neighbours
 FNDA:7800,isNeighbourOccupied
 FNDA:204,placeShip
 FNDA:7800,(anonymous_6)
-FNDA:105,placeAllShips
 FNDA:105,makePlaceShip
-FNDA:204,(anonymous_9)
+FNDA:204,(anonymous_8)
+FNDA:105,placeAllShips
 FNDA:404,(anonymous_10)
 FNDA:105,attemptPlacement
 FNDA:7,generateFleet
@@ -2911,9 +2911,9 @@ DA:122,3
 DA:124,106
 DA:126,109
 DA:128,104
-DA:132,105
-DA:133,105
-DA:136,204
+DA:132,204
+DA:136,105
+DA:137,105
 DA:138,105
 DA:139,105
 DA:140,404
