@@ -212,7 +212,7 @@ function attemptPlacement(cfg, env) {
 
 // ─────────────────────────── Public toy ─────────────────────────── //
 
-function generateFleet(input, env) {
+function parseConfig(input) {
   let cfg;
   try {
     cfg = JSON.parse(input);
@@ -222,7 +222,11 @@ function generateFleet(input, env) {
   if (!Array.isArray(cfg.ships)) {
     cfg.ships = [];
   }
+  return cfg;
+}
 
+function generateFleet(input, env) {
+  const cfg = parseConfig(input);
 
   const totalSegments = cfg.ships.reduce((s, l) => s + l, 0);
   if (totalSegments > cfg.width * cfg.height) {
