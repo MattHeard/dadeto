@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746868136606" clover="3.2.0">
-  <project timestamp="1746868136606" name="All files">
-    <metrics statements="1363" coveredstatements="1363" conditionals="405" coveredconditionals="405" methods="530" coveredmethods="530" elements="2298" coveredelements="2298" complexity="0" loc="1363" ncloc="1363" packages="14" files="30" classes="30"/>
+<coverage generated="1746868649284" clover="3.2.0">
+  <project timestamp="1746868649284" name="All files">
+    <metrics statements="1363" coveredstatements="1360" conditionals="405" coveredconditionals="405" methods="531" coveredmethods="529" elements="2299" coveredelements="2294" complexity="0" loc="1363" ncloc="1363" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1392,9 +1392,9 @@
       </file>
     </package>
     <package name="toys.2025-05-08">
-      <metrics statements="100" coveredstatements="100" conditionals="56" coveredconditionals="56" methods="23" coveredmethods="23"/>
+      <metrics statements="100" coveredstatements="97" conditionals="56" coveredconditionals="56" methods="24" coveredmethods="22"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js">
-        <metrics statements="100" coveredstatements="100" conditionals="56" coveredconditionals="56" methods="23" coveredmethods="23"/>
+        <metrics statements="100" coveredstatements="97" conditionals="56" coveredconditionals="56" methods="24" coveredmethods="22"/>
         <line num="18" count="105" type="stmt"/>
         <line num="19" count="105" type="stmt"/>
         <line num="20" count="301" type="stmt"/>
@@ -1410,9 +1410,9 @@
         <line num="49" count="1400" type="stmt"/>
         <line num="50" count="4200" type="stmt"/>
         <line num="57" count="7800" type="cond" truecount="2" falsecount="0"/>
-        <line num="61" count="1400" type="stmt"/>
-        <line num="62" count="1400" type="stmt"/>
-        <line num="63" count="1400" type="stmt"/>
+        <line num="61" count="0" type="stmt"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="63" count="0" type="stmt"/>
         <line num="71" count="204" type="stmt"/>
         <line num="72" count="204" type="stmt"/>
         <line num="73" count="415" type="stmt"/>

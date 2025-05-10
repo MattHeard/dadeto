@@ -1,6 +1,7 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
    41:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
+   60:10  warning  'makeCheckSegForNeighbourOccupied' is defined but never used                no-unused-vars
    70:1   warning  Function 'placeShip' has too many parameters (5). Maximum allowed is 3      max-params
    70:1   warning  Function 'placeShip' has a complexity of 21. Maximum allowed is 2           complexity
    93:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
@@ -30,4 +31,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 21 problems (0 errors, 21 warnings)
+✖ 22 problems (0 errors, 22 warnings)
