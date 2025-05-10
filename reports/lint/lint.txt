@@ -1,7 +1,4 @@
 
-/Users/matthew.heard/Code/Matt/dadeto/src/generator/copy.js
-  114:1  warning  Function 'processDirectoryEntries' has a complexity of 3. Maximum allowed is 2  complexity
-
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
   329:10  warning  Ternary operator used  no-ternary
   700:18  warning  Ternary operator used  no-ternary
@@ -74,4 +71,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 47 problems (0 errors, 47 warnings)
+✖ 46 problems (0 errors, 46 warnings)
