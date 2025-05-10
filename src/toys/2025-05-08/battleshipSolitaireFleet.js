@@ -277,9 +277,13 @@ function isEarlyFleetSuccess(fleet) {
   return isValidFleetResultOrNull(fleet);
 }
 
+function fleetLoopIteration(cfg, env) {
+  return attemptPlacement(cfg, env);
+}
+
 function findFleetLoop(cfg, env, maxTries) {
   for (let i = 0; i < maxTries; i++) {
-    const fleet = attemptPlacement(cfg, env);
+    const fleet = fleetLoopIteration(cfg, env);
     if (isEarlyFleetSuccess(fleet)) {return fleet;}
   }
   return null;
