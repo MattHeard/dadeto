@@ -5,8 +5,8 @@
   137:1   warning  Function 'collectCandidatesForStart' has too many parameters (4). Maximum allowed is 3  max-params
   137:1   warning  Function 'collectCandidatesForStart' has a complexity of 4. Maximum allowed is 2        complexity
   157:1   warning  Function 'collectAllCandidates' has a complexity of 3. Maximum allowed is 2             complexity
-  202:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                              complexity
-  254:1   warning  Function 'generateFleet' has a complexity of 4. Maximum allowed is 2                    complexity
+  211:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                              complexity
+  264:1   warning  Function 'generateFleet' has a complexity of 4. Maximum allowed is 2                    complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.handleTagLinks.test.js
   12:33  warning  Ternary operator used  no-ternary

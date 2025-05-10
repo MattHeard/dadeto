@@ -198,14 +198,24 @@ function isValidFleetResult(result, lengths) {
   return result && result.length === lengths.length;
 }
 
+function shouldAbortAccumulator(acc) {
+  return !acc;
+}
+
+function shouldAbortPlacement(placed) {
+  return !placed;
+}
+
+
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (!acc) {return null;}
+    if (shouldAbortAccumulator(acc)) return null;
     const placed = placeShipWithArgs(len);
-    if (!placed) {return null;}
+    if (shouldAbortPlacement(placed)) return null;
     acc.push(placed);
     return acc;
   };
+
 }
 
 function placeAllShips(cfg, env) {
