@@ -110,11 +110,14 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
           continue;
         }
         if (touchForbidden) {
-          const isNeighbourOfSegOccupied = n => isNeighbourOccupied(n, cfg, occupied);
-          const segHasNoOccupiedNeighbour = seg => !neighbours(seg).some(isNeighbourOfSegOccupied);
+          const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg => !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
+          const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
           if (!segs.every(segHasNoOccupiedNeighbour)) {
             valid = false;
           }
+        }
+        if (!valid) {
+          continue;
         }
         if (valid) {
           candidates.push({ start: { x, y }, length: len, direction: dir });
