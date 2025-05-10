@@ -187,8 +187,13 @@ function getScoredMoves(board, nextPlayer, moves) {
 
 function getBestScoredMove(scoredMoves) {
   return scoredMoves.reduce(
-    (best, current) =>
-      current.moveScore > best.moveScore ? current : best,
+    (best, current) => {
+      if (current.moveScore > best.moveScore) {
+        return current;
+      } else {
+        return best;
+      }
+    },
     { moveScore: -Infinity }
   );
 }
