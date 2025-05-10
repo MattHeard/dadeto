@@ -28,8 +28,12 @@ function isCoordNonNegative(coord) {
   return coord.x >= 0 && coord.y >= 0;
 }
 
+function isCoordWithinBoard(coord, cfg) {
+  return coord.x < cfg.width && coord.y < cfg.height;
+}
+
 function inBounds(coord, cfg) {
-  return isCoordNonNegative(coord) && coord.x < cfg.width && coord.y < cfg.height;
+  return isCoordNonNegative(coord) && isCoordWithinBoard(coord, cfg);
 }
 
 /** 8‑neighbour coordinates */
