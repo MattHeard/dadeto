@@ -46,7 +46,8 @@ function isNeighbourOccupied(n, cfg, occupied) {
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
-function placeShipForLength(len, cfg, env, occupied, touchForbidden) {
+
+function placeShip(len, cfg, env, occupied, touchForbidden) {
   const candidates = [];
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
@@ -125,10 +126,6 @@ function placeShipForLength(len, cfg, env, occupied, touchForbidden) {
     occupied.add(key(sx, sy));
   }
   return chosen;
-}
-
-function placeShip(len, cfg, env, occupied, touchForbidden) {
-  return placeShipForLength(len, cfg, env, occupied, touchForbidden);
 }
 
 function placeAllShips(cfg, env, occupied, touchForbidden) {
