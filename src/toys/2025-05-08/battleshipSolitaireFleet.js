@@ -100,6 +100,20 @@ function getEndY(dir, y, len) {
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
+function makeSegReducer(dir, x, y, occupied) {
+  return (acc, _, i) => {
+    if (!acc.valid) {return acc;}
+    const sx = getSx(dir, x, i);
+    const sy = getSy(dir, y, i);
+    const k = key(sx, sy);
+    if (occupied.has(k)) {
+      return { ...acc, valid: false };
+    }
+    return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
+  };
+}
+
+
 const allSegsHaveNoOccupiedNeighbour = (cfg, occupied, segs) => {
   const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
   return segs.every(segHasNoOccupiedNeighbour);
@@ -117,16 +131,6 @@ function placeShip(len, cfg, env, occupied) {
         if (!inBounds({x: endX, y: endY}, cfg)) {
           continue;
         }
-        const makeSegReducer = (dir, x, y, occupied) => (acc, _, i) => {
-          if (!acc.valid) {return acc;}
-          const sx = getSx(dir, x, i);
-          const sy = getSy(dir, y, i);
-          const k = key(sx, sy);
-          if (occupied.has(k)) {
-            return { ...acc, valid: false };
-          }
-          return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
-        };
         const segReducer = makeSegReducer(dir, x, y, occupied);
         const { segs, valid } = Array.from({ length: len }).reduce(
           segReducer,
