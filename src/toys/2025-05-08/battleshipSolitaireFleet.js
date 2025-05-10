@@ -132,7 +132,8 @@ function placeShip(len, cfg, env, occupied) {
       for (const dir of directions) {
         const endX = getEndX(dir, x, len);
         const endY = getEndY(dir, y, len);
-        if (!inBounds({x: endX, y: endY}, cfg)) {
+        const endCoord = { x: endX, y: endY };
+        if (!inBounds(endCoord, cfg)) {
           continue;
         }
         const segReducer = makeSegReducer(dir, x, y, occupied);
