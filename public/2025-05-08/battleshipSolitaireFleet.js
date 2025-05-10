@@ -303,12 +303,12 @@ function processFleetLoopIteration(i, cfg, env) {
   return result;
 }
 
+function maybeReturnFleetLoopResult(result) {
+  return result !== null;
+}
+
 function fleetLoopFor(maxTries, cb) {
-  for (let i = 0; i < maxTries; i++) {
-    const result = cb(i);
-    if (result) return result;
-  }
-  return null;
+  return Array.from({ length: maxTries }, (_, i) => cb(i)).find(maybeReturnFleetLoopResult) || null;
 }
 
 function runFleetLoop(cfg, env, maxTries) {
