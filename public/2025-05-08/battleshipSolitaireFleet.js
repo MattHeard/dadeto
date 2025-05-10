@@ -269,17 +269,21 @@ function fleetRetryError() {
   return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
 }
 
+function isValidFleetResultOrNull(fleet) {
+  return fleet !== null;
+}
+
 function findValidFleet(cfg, env, maxTries) {
   for (let i = 0; i < maxTries; i++) {
     const fleet = attemptPlacement(cfg, env);
-    if (fleet) return fleet;
+    if (isValidFleetResultOrNull(fleet)) return fleet;
   }
   return null;
 }
 
 function tryGenerateFleet(cfg, env, maxTries) {
   const fleet = findValidFleet(cfg, env, maxTries);
-  if (fleet) return JSON.stringify(fleet);
+  if (fleet) {return JSON.stringify(fleet);}
   return null;
 }
 
