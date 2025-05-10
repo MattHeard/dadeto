@@ -66,10 +66,37 @@ function isNeighbourOccupied(n, cfg, occupied) {
 
 const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg => !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
 
-const getSx = (dir, x, i) => dir === 'H' ? x + i : x;
-const getSy = (dir, y, i) => dir === 'V' ? y + i : y;
-const getEndX = (dir, x, len) => dir === 'H' ? x + len - 1 : x;
-const getEndY = (dir, y, len) => dir === 'V' ? y + len - 1 : y;
+function getSx(dir, x, i) {
+  if (dir === 'H') {
+    return x + i;
+  } else {
+    return x;
+  }
+}
+
+function getSy(dir, y, i) {
+  if (dir === 'V') {
+    return y + i;
+  } else {
+    return y;
+  }
+}
+
+function getEndX(dir, x, len) {
+  if (dir === 'H') {
+    return x + len - 1;
+  } else {
+    return x;
+  }
+}
+
+function getEndY(dir, y, len) {
+  if (dir === 'V') {
+    return y + len - 1;
+  } else {
+    return y;
+  }
+}
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
