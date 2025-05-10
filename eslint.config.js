@@ -16,6 +16,7 @@ export default [
     },
     rules: {
       complexity: ["warn", { max: 2 }], // Keep existing complexity rule
+      "no-ternary": "warn",
       "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
       "no-console": "off",
       "eqeqeq": ["warn", "always"],
