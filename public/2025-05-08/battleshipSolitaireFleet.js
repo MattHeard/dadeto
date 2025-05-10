@@ -128,31 +128,37 @@ function isForbiddenTouch(cfg, occupied, segs) {
 }
 
 
+function collectCandidatesForStart(start, length, cfg, occupied) {
+  const directions = ['H', 'V'];
+  const candidates = [];
+  for (const direction of directions) {
+    const endCoord = getEndCoord(direction, start, length);
+    if (!inBounds(endCoord, cfg)) {
+      continue;
+    }
+    const segReducer = makeSegReducer(direction, start, occupied);
+    const { segs, valid } = Array.from({ length }).reduce(
+      segReducer,
+      { segs: [], valid: true }
+    );
+    if (valid) {
+      const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
+      if (!forbiddenTouch) {
+        candidates.push({ start, length, direction });
+      }
+    }
+  }
+  return candidates;
+}
+
 function placeShip(length, cfg, env, occupied) {
   const candidates = [];
   const directions = ['H', 'V'];
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
-      for (const direction of directions) {
-        const start = { x, y };
-        const endCoord = getEndCoord(direction, start, length);
-        if (!inBounds(endCoord, cfg)) {
-          continue;
-        }
-        const segReducer = makeSegReducer(direction, start, occupied);
-        const { segs, valid } = Array.from({ length }).reduce(
-          segReducer,
-          { segs: [], valid: true }
-        );
-
-
-        if (valid) {
-          const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
-          if (!forbiddenTouch) {
-            candidates.push({ start, length, direction });
-          }
-        }
-      }
+      const start = { x, y };
+      const localCandidates = collectCandidatesForStart(start, length, cfg, occupied);
+      candidates.push(...localCandidates);
     }
   }
   if (candidates.length === 0) {return null;} // dead end

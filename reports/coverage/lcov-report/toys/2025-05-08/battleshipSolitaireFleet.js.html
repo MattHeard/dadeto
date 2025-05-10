@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>116/116</span>
+                <span class='fraction'>121/121</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>33/33</span>
+                <span class='fraction'>34/34</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>99/99</span>
+                <span class='fraction'>104/104</span>
             </div>
         
             
@@ -299,7 +299,13 @@
 <a name='L234'></a><a href='#L234'>234</a>
 <a name='L235'></a><a href='#L235'>235</a>
 <a name='L236'></a><a href='#L236'>236</a>
-<a name='L237'></a><a href='#L237'>237</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -430,20 +436,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">204x</span>
-<span class="cline-any cline-yes">204x</span>
-<span class="cline-any cline-yes">204x</span>
-<span class="cline-any cline-yes">415x</span>
 <span class="cline-any cline-yes">857x</span>
-<span class="cline-any cline-yes">1714x</span>
+<span class="cline-any cline-yes">857x</span>
+<span class="cline-any cline-yes">857x</span>
 <span class="cline-any cline-yes">1714x</span>
 <span class="cline-any cline-yes">1714x</span>
 <span class="cline-any cline-yes">36x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1678x</span>
 <span class="cline-any cline-yes">1678x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -454,6 +455,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">857x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">204x</span>
+<span class="cline-any cline-yes">204x</span>
+<span class="cline-any cline-yes">204x</span>
+<span class="cline-any cline-yes">415x</span>
+<span class="cline-any cline-yes">857x</span>
+<span class="cline-any cline-yes">857x</span>
+<span class="cline-any cline-yes">857x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">204x</span>
@@ -665,31 +677,37 @@ function isForbiddenTouch(cfg, occupied, segs) {
 }
 &nbsp;
 &nbsp;
+function collectCandidatesForStart(start, length, cfg, occupied) {
+  const directions = ['H', 'V'];
+  const candidates = [];
+  for (const direction of directions) {
+    const endCoord = getEndCoord(direction, start, length);
+    if (!inBounds(endCoord, cfg)) {
+      continue;
+    }
+    const segReducer = makeSegReducer(direction, start, occupied);
+    const { segs, valid } = Array.from({ length }).reduce(
+      segReducer,
+      { segs: [], valid: true }
+    );
+    if (valid) {
+      const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
+      if (!forbiddenTouch) {
+        candidates.push({ start, length, direction });
+      }
+    }
+  }
+  return candidates;
+}
+&nbsp;
 function placeShip(length, cfg, env, occupied) {
   const candidates = [];
   const directions = ['H', 'V'];
   for (let y = 0; y &lt; cfg.height; y++) {
     for (let x = 0; x &lt; cfg.width; x++) {
-      for (const direction of directions) {
-        const start = { x, y };
-        const endCoord = getEndCoord(direction, start, length);
-        if (!inBounds(endCoord, cfg)) {
-          continue;
-        }
-        const segReducer = makeSegReducer(direction, start, occupied);
-        const { segs, valid } = Array.from({ length }).reduce(
-          segReducer,
-          { segs: [], valid: true }
-        );
-&nbsp;
-&nbsp;
-        if (valid) {
-          const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
-          if (!forbiddenTouch) {
-            candidates.push({ start, length, direction });
-          }
-        }
-      }
+      const start = { x, y };
+      const localCandidates = collectCandidatesForStart(start, length, cfg, occupied);
+      candidates.push(...localCandidates);
     }
   }
   if (candidates.length === 0) {return null;} // dead end
@@ -778,7 +796,7 @@ export { generateFleet };
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-10T18:03:33.162Z
+                at 2025-05-10T18:04:34.378Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
