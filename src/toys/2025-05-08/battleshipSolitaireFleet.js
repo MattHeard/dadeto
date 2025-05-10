@@ -46,12 +46,8 @@ function isNeighbourOccupied(n, cfg, occupied) {
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
-function attemptPlacement(cfg, env) {
-  const occupied = new Set();
-  const touchForbidden = cfg.noTouching === true;
+function placeAllShips(cfg, env, occupied, touchForbidden) {
   const ships = [];
-
-  // Work on a shuffled copy to reduce bias
   const lengths = cfg.ships.slice();
   shuffle(lengths, env);
 
@@ -141,7 +137,14 @@ function attemptPlacement(cfg, env) {
       occupied.add(key(sx, sy));
     }
   }
+  return ships;
+}
 
+function attemptPlacement(cfg, env) {
+  const occupied = new Set();
+  const touchForbidden = cfg.noTouching === true;
+  const ships = placeAllShips(cfg, env, occupied, touchForbidden);
+  if (!ships) {return null;}
   return { width: cfg.width, height: cfg.height, ships };
 }
 
