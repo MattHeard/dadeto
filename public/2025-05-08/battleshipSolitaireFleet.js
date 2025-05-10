@@ -57,6 +57,13 @@ function isNeighbourOccupied(n, cfg, occupied) {
   return inBounds(n, cfg) && occupied.has(key(n.x, n.y));
 }
 
+function makeCheckSegForNeighbourOccupied(isNeighbourOfSegOccupied) {
+  return seg => {
+    const foundOccupied = neighbours(seg).find(isNeighbourOfSegOccupied);
+    return Boolean(foundOccupied);
+  };
+}
+
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
 
@@ -104,19 +111,10 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         }
         if (touchForbidden) {
           const isNeighbourOfSegOccupied = n => isNeighbourOccupied(n, cfg, occupied);
-          const makeCheckSegForNeighbourOccupied = isNeighbourOfSegOccupied => seg => {
-            const foundOccupied = neighbours(seg).find(isNeighbourOfSegOccupied);
-            if (foundOccupied) {
-              valid = false;
-            }
-            if (!valid) {
-              return true; // break signal
-            }
-            return false;
-          };
           const checkSegForNeighbourOccupied = makeCheckSegForNeighbourOccupied(isNeighbourOfSegOccupied);
           for (const seg of segs) {
             if (checkSegForNeighbourOccupied(seg)) {
+              valid = false;
               break;
             }
           }
