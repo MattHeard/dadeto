@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746868787975" clover="3.2.0">
-  <project timestamp="1746868787975" name="All files">
-    <metrics statements="1361" coveredstatements="1358" conditionals="405" coveredconditionals="405" methods="532" coveredmethods="530" elements="2298" coveredelements="2293" complexity="0" loc="1361" ncloc="1361" packages="14" files="30" classes="30"/>
+<coverage generated="1746868878339" clover="3.2.0">
+  <project timestamp="1746868878339" name="All files">
+    <metrics statements="1361" coveredstatements="1358" conditionals="405" coveredconditionals="405" methods="531" coveredmethods="529" elements="2297" coveredelements="2292" complexity="0" loc="1361" ncloc="1361" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1392,9 +1392,9 @@
       </file>
     </package>
     <package name="toys.2025-05-08">
-      <metrics statements="98" coveredstatements="95" conditionals="56" coveredconditionals="56" methods="25" coveredmethods="23"/>
+      <metrics statements="98" coveredstatements="95" conditionals="56" coveredconditionals="56" methods="24" coveredmethods="22"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js">
-        <metrics statements="98" coveredstatements="95" conditionals="56" coveredconditionals="56" methods="25" coveredmethods="23"/>
+        <metrics statements="98" coveredstatements="95" conditionals="56" coveredconditionals="56" methods="24" coveredmethods="22"/>
         <line num="18" count="105" type="stmt"/>
         <line num="19" count="105" type="stmt"/>
         <line num="20" count="301" type="stmt"/>
