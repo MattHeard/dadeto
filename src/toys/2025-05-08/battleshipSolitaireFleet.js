@@ -39,7 +39,8 @@ function inBounds(coord, cfg) {
 /** 8‑neighbour coordinates */
 function dxReducerForNeighbour(coord, dy) {
   return (row, dx) => {
-    if (dx === 0 && dy === 0) {
+    const isOrigin = dx === 0 && dy === 0;
+    if (isOrigin) {
       return row;
     } else {
       const neighbour = { x: coord.x + dx, y: coord.y + dy };
