@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746876122800" clover="3.2.0">
-  <project timestamp="1746876122800" name="All files">
+<coverage generated="1746876179939" clover="3.2.0">
+  <project timestamp="1746876179939" name="All files">
     <metrics statements="1358" coveredstatements="1358" conditionals="399" coveredconditionals="399" methods="537" coveredmethods="537" elements="2294" coveredelements="2294" complexity="0" loc="1358" ncloc="1358" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
@@ -1427,36 +1427,36 @@
         <line num="97" count="857" type="stmt"/>
         <line num="104" count="204" type="stmt"/>
         <line num="105" count="204" type="stmt"/>
-        <line num="106" count="415" type="stmt"/>
-        <line num="107" count="857" type="stmt"/>
-        <line num="108" count="1714" type="stmt"/>
+        <line num="106" count="204" type="stmt"/>
+        <line num="107" count="415" type="stmt"/>
+        <line num="108" count="857" type="stmt"/>
         <line num="109" count="1714" type="stmt"/>
-        <line num="110" count="1714" type="cond" truecount="2" falsecount="0"/>
-        <line num="111" count="36" type="stmt"/>
-        <line num="113" count="1678" type="stmt"/>
-        <line num="115" count="1762" type="cond" truecount="2" falsecount="0"/>
-        <line num="116" count="1758" type="stmt"/>
+        <line num="110" count="1714" type="stmt"/>
+        <line num="111" count="1714" type="cond" truecount="2" falsecount="0"/>
+        <line num="112" count="36" type="stmt"/>
+        <line num="114" count="1678" type="stmt"/>
+        <line num="116" count="1762" type="cond" truecount="2" falsecount="0"/>
         <line num="117" count="1758" type="stmt"/>
         <line num="118" count="1758" type="stmt"/>
-        <line num="119" count="1758" type="cond" truecount="2" falsecount="0"/>
-        <line num="120" count="204" type="stmt"/>
-        <line num="122" count="1554" type="stmt"/>
-        <line num="126" count="1678" type="stmt"/>
-        <line num="127" count="1400" type="stmt"/>
+        <line num="119" count="1758" type="stmt"/>
+        <line num="120" count="1758" type="cond" truecount="2" falsecount="0"/>
+        <line num="121" count="204" type="stmt"/>
+        <line num="123" count="1554" type="stmt"/>
+        <line num="127" count="1678" type="stmt"/>
         <line num="128" count="1400" type="stmt"/>
-        <line num="131" count="1678" type="cond" truecount="2" falsecount="0"/>
-        <line num="132" count="1474" type="cond" truecount="2" falsecount="0"/>
+        <line num="129" count="1400" type="stmt"/>
+        <line num="132" count="1678" type="cond" truecount="2" falsecount="0"/>
         <line num="133" count="1474" type="cond" truecount="2" falsecount="0"/>
-        <line num="134" count="874" type="stmt"/>
-        <line num="140" count="204" type="cond" truecount="2" falsecount="0"/>
-        <line num="141" count="104" type="stmt"/>
+        <line num="134" count="1474" type="cond" truecount="2" falsecount="0"/>
+        <line num="135" count="874" type="stmt"/>
+        <line num="141" count="204" type="cond" truecount="2" falsecount="0"/>
         <line num="142" count="104" type="stmt"/>
-        <line num="144" count="104" type="stmt"/>
-        <line num="145" count="109" type="stmt"/>
+        <line num="143" count="104" type="stmt"/>
+        <line num="145" count="104" type="stmt"/>
         <line num="146" count="109" type="stmt"/>
         <line num="147" count="109" type="stmt"/>
-        <line num="149" count="104" type="stmt"/>
-        <line num="153" count="105" type="stmt"/>
+        <line num="148" count="109" type="stmt"/>
+        <line num="150" count="104" type="stmt"/>
         <line num="154" count="204" type="stmt"/>
         <line num="158" count="105" type="cond" truecount="2" falsecount="0"/>
         <line num="162" count="105" type="stmt"/>

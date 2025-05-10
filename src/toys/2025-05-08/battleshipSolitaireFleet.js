@@ -100,7 +100,8 @@ function getEndY(dir, y, len) {
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
-function placeShip(len, cfg, env, occupied, touchForbidden) {
+function placeShip(len, cfg, env, occupied) {
+  const touchForbidden = cfg.noTouching === true;
   const candidates = [];
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {
@@ -150,8 +151,7 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
 }
 
 function makePlaceShip(cfg, env, occupied) {
-  const touchForbidden = cfg.noTouching === true;
-  return len => placeShip(len, cfg, env, occupied, touchForbidden);
+  return len => placeShip(len, cfg, env, occupied);
 }
 
 function isValidFleetResult(result, lengths) {
