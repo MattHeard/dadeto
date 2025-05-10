@@ -273,11 +273,17 @@ function isValidFleetResultOrNull(fleet) {
   return fleet !== null;
 }
 
-function findValidFleet(cfg, env, maxTries) {
+function findFleetLoop(cfg, env, maxTries) {
   for (let i = 0; i < maxTries; i++) {
     const fleet = attemptPlacement(cfg, env);
     if (isValidFleetResultOrNull(fleet)) {return fleet;}
   }
+  return null;
+}
+
+function findValidFleet(cfg, env, maxTries) {
+  const fleet = findFleetLoop(cfg, env, maxTries);
+  if (isValidFleetResultOrNull(fleet)) {return fleet;}
   return null;
 }
 
