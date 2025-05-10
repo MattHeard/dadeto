@@ -166,16 +166,20 @@ function collectAllCandidates(length, cfg, occupied) {
   return candidates;
 }
 
-function chooseAndMarkCandidate(candidates, env, occupied, length) {
-  if (candidates.length === 0) {return null;} // dead end
-  const getRandomNumber = env.get('getRandomNumber');
-  const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
-  // Mark occupied squares
+function markOccupiedSquares(chosen, occupied, length) {
   for (let i = 0; i < length; i++) {
     const sx = getSx(chosen.direction, chosen.start.x, i);
     const sy = getSy(chosen.direction, chosen.start.y, i);
     occupied.add(key(sx, sy));
   }
+}
+
+function chooseAndMarkCandidate(candidates, env, occupied, length) {
+  if (candidates.length === 0) {return null;} // dead end
+  const getRandomNumber = env.get('getRandomNumber');
+  const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
+  // Mark occupied squares
+  markOccupiedSquares(chosen, occupied, length);
   return chosen;
 }
 
