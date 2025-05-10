@@ -7,9 +7,9 @@
   157:1   warning  Function 'collectAllCandidates' has a complexity of 3. Maximum allowed is 2             complexity
   169:1   warning  Function 'chooseAndMarkCandidate' has too many parameters (4). Maximum allowed is 3     max-params
   169:1   warning  Function 'chooseAndMarkCandidate' has a complexity of 3. Maximum allowed is 2           complexity
-  197:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                              complexity
-  232:1   warning  Function 'parseConfig' has a complexity of 3. Maximum allowed is 2                      complexity
-  245:1   warning  Function 'generateFleet' has a complexity of 4. Maximum allowed is 2                    complexity
+  198:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                              complexity
+  233:1   warning  Function 'parseConfig' has a complexity of 3. Maximum allowed is 2                      complexity
+  246:1   warning  Function 'generateFleet' has a complexity of 4. Maximum allowed is 2                    complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.handleTagLinks.test.js
   12:33  warning  Ternary operator used  no-ternary

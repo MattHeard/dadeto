@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746901163930" clover="3.2.0">
-  <project timestamp="1746901163930" name="All files">
-    <metrics statements="1373" coveredstatements="1373" conditionals="399" coveredconditionals="399" methods="546" coveredmethods="546" elements="2318" coveredelements="2318" complexity="0" loc="1373" ncloc="1373" packages="14" files="30" classes="30"/>
+<coverage generated="1746901226705" clover="3.2.0">
+  <project timestamp="1746901226705" name="All files">
+    <metrics statements="1374" coveredstatements="1374" conditionals="399" coveredconditionals="399" methods="546" coveredmethods="546" elements="2319" coveredelements="2319" complexity="0" loc="1374" ncloc="1374" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1392,9 +1392,9 @@
       </file>
     </package>
     <package name="toys.2025-05-08">
-      <metrics statements="110" coveredstatements="110" conditionals="50" coveredconditionals="50" methods="39" coveredmethods="39"/>
+      <metrics statements="111" coveredstatements="111" conditionals="50" coveredconditionals="50" methods="39" coveredmethods="39"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js">
-        <metrics statements="110" coveredstatements="110" conditionals="50" coveredconditionals="50" methods="39" coveredmethods="39"/>
+        <metrics statements="111" coveredstatements="111" conditionals="50" coveredconditionals="50" methods="39" coveredmethods="39"/>
         <line num="18" count="105" type="stmt"/>
         <line num="19" count="105" type="stmt"/>
         <line num="20" count="301" type="stmt"/>
@@ -1469,42 +1469,43 @@
         <line num="179" count="104" type="stmt"/>
         <line num="183" count="204" type="stmt"/>
         <line num="184" count="204" type="stmt"/>
-        <line num="188" count="105" type="stmt"/>
-        <line num="189" count="204" type="stmt"/>
-        <line num="193" count="105" type="cond" truecount="2" falsecount="0"/>
-        <line num="197" count="105" type="stmt"/>
-        <line num="198" count="404" type="cond" truecount="2" falsecount="0"/>
-        <line num="199" count="204" type="stmt"/>
-        <line num="200" count="204" type="cond" truecount="2" falsecount="0"/>
-        <line num="201" count="104" type="stmt"/>
+        <line num="185" count="204" type="stmt"/>
+        <line num="189" count="105" type="stmt"/>
+        <line num="190" count="204" type="stmt"/>
+        <line num="194" count="105" type="cond" truecount="2" falsecount="0"/>
+        <line num="198" count="105" type="stmt"/>
+        <line num="199" count="404" type="cond" truecount="2" falsecount="0"/>
+        <line num="200" count="204" type="stmt"/>
+        <line num="201" count="204" type="cond" truecount="2" falsecount="0"/>
         <line num="202" count="104" type="stmt"/>
-        <line num="207" count="105" type="stmt"/>
+        <line num="203" count="104" type="stmt"/>
         <line num="208" count="105" type="stmt"/>
         <line num="209" count="105" type="stmt"/>
         <line num="210" count="105" type="stmt"/>
         <line num="211" count="105" type="stmt"/>
-        <line num="212" count="105" type="cond" truecount="2" falsecount="0"/>
-        <line num="213" count="5" type="stmt"/>
-        <line num="215" count="100" type="stmt"/>
-        <line num="220" count="105" type="stmt"/>
-        <line num="221" count="105" type="cond" truecount="2" falsecount="0"/>
-        <line num="222" count="5" type="stmt"/>
-        <line num="226" count="10" type="stmt"/>
-        <line num="227" count="7" type="stmt"/>
-        <line num="234" count="7" type="stmt"/>
+        <line num="212" count="105" type="stmt"/>
+        <line num="213" count="105" type="cond" truecount="2" falsecount="0"/>
+        <line num="214" count="5" type="stmt"/>
+        <line num="216" count="100" type="stmt"/>
+        <line num="221" count="105" type="stmt"/>
+        <line num="222" count="105" type="cond" truecount="2" falsecount="0"/>
+        <line num="223" count="5" type="stmt"/>
+        <line num="227" count="10" type="stmt"/>
+        <line num="228" count="7" type="stmt"/>
         <line num="235" count="7" type="stmt"/>
-        <line num="237" count="1" type="stmt"/>
-        <line num="239" count="7" type="cond" truecount="2" falsecount="0"/>
-        <line num="240" count="2" type="stmt"/>
-        <line num="242" count="7" type="stmt"/>
-        <line num="246" count="7" type="stmt"/>
-        <line num="248" count="7" type="cond" truecount="2" falsecount="0"/>
-        <line num="249" count="1" type="stmt"/>
-        <line num="252" count="6" type="stmt"/>
+        <line num="236" count="7" type="stmt"/>
+        <line num="238" count="1" type="stmt"/>
+        <line num="240" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="241" count="2" type="stmt"/>
+        <line num="243" count="7" type="stmt"/>
+        <line num="247" count="7" type="stmt"/>
+        <line num="249" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="250" count="1" type="stmt"/>
         <line num="253" count="6" type="stmt"/>
-        <line num="254" count="105" type="stmt"/>
-        <line num="255" count="105" type="cond" truecount="2" falsecount="0"/>
-        <line num="258" count="1" type="stmt"/>
+        <line num="254" count="6" type="stmt"/>
+        <line num="255" count="105" type="stmt"/>
+        <line num="256" count="105" type="cond" truecount="2" falsecount="0"/>
+        <line num="259" count="1" type="stmt"/>
       </file>
     </package>
   </project>

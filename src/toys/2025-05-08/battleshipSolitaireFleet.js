@@ -179,14 +179,15 @@ function chooseAndMarkCandidate(candidates, env, occupied, length) {
   return chosen;
 }
 
-function placeShip({ length, cfg, env, occupied }) {
+function placeShip(length, boardState, env) {
+  const { cfg, occupied } = boardState;
   const candidates = collectAllCandidates(length, cfg, occupied);
   return chooseAndMarkCandidate(candidates, env, occupied, length);
 }
 
 function makePlaceShip(cfg, env) {
   const occupied = new Set();
-  return len => placeShip({ length: len, cfg, env, occupied });
+  return len => placeShip(len, { cfg, occupied }, env);
 }
 
 function isValidFleetResult(result, lengths) {
