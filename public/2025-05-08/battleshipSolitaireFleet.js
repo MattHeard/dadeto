@@ -46,96 +46,95 @@ function isNeighbourOccupied(n, cfg, occupied) {
 
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
+function placeShipForLength(len, cfg, env, occupied, touchForbidden) {
+  const candidates = [];
+  for (let y = 0; y < cfg.height; y++) {
+    for (let x = 0; x < cfg.width; x++) {
+      for (const dir of ['H', 'V']) {
+        let endX, endY;
+        if (dir === 'H') {
+          endX = x + len - 1;
+        } else {
+          endX = x;
+        }
+        if (dir === 'V') {
+          endY = y + len - 1;
+        } else {
+          endY = y;
+        }
+        if (!inBounds({x: endX, y: endY}, cfg)) {
+          continue;
+        }
+        let valid = true;
+        const segs = [];
+        for (let i = 0; i < len && valid; i++) {
+          let sx, sy;
+          if (dir === 'H') {
+            sx = x + i;
+          } else {
+            sx = x;
+          }
+          if (dir === 'V') {
+            sy = y + i;
+          } else {
+            sy = y;
+          }
+          const k = key(sx, sy);
+          if (occupied.has(k)) {
+            valid = false;
+          }
+          segs.push({ x: sx, y: sy });
+        }
+        if (!valid) {
+          continue;
+        }
+        if (touchForbidden) {
+          const isNeighbourOfSegOccupied = n => isNeighbourOccupied(n, cfg, occupied);
+          for (const seg of segs) {
+            const foundOccupied = neighbours(seg).find(isNeighbourOfSegOccupied);
+            if (foundOccupied) {
+              valid = false;
+            }
+            if (!valid) {
+              break;
+            }
+          }
+        }
+        if (valid) {
+          candidates.push({ start: { x, y }, length: len, direction: dir });
+        }
+      }
+    }
+  }
+  if (candidates.length === 0) {return null;} // dead end
+  const getRandomNumber = env.get('getRandomNumber');
+  const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
+  // Mark occupied squares
+  for (let i = 0; i < len; i++) {
+    let sx, sy;
+    if (chosen.direction === 'H') {
+      sx = chosen.start.x + i;
+    } else {
+      sx = chosen.start.x;
+    }
+    if (chosen.direction === 'V') {
+      sy = chosen.start.y + i;
+    } else {
+      sy = chosen.start.y;
+    }
+    occupied.add(key(sx, sy));
+  }
+  return chosen;
+}
+
 function placeAllShips(cfg, env, occupied, touchForbidden) {
   const ships = [];
   const lengths = cfg.ships.slice();
   shuffle(lengths, env);
-
   for (const len of lengths) {
-    const candidates = [];
-
-    for (let y = 0; y < cfg.height; y++) {
-      for (let x = 0; x < cfg.width; x++) {
-        for (const dir of ['H', 'V']) {
-          let endX, endY;
-          if (dir === 'H') {
-            endX = x + len - 1;
-          } else {
-            endX = x;
-          }
-          if (dir === 'V') {
-            endY = y + len - 1;
-          } else {
-            endY = y;
-          }
-          if (!inBounds({x: endX, y: endY}, cfg)) {
-            continue;
-          }
-
-          let valid = true;
-          const segs = [];
-          for (let i = 0; i < len && valid; i++) {
-            let sx, sy;
-            if (dir === 'H') {
-              sx = x + i;
-            } else {
-              sx = x;
-            }
-            if (dir === 'V') {
-              sy = y + i;
-            } else {
-              sy = y;
-            }
-            const k = key(sx, sy);
-            if (occupied.has(k)) {
-              valid = false;
-            }
-            segs.push({ x: sx, y: sy });
-          }
-          if (!valid) {
-            continue;
-          }
-
-          if (touchForbidden) {
-            const isNeighbourOfSegOccupied = n => isNeighbourOccupied(n, cfg, occupied);
-            for (const seg of segs) {
-              const foundOccupied = neighbours(seg).find(isNeighbourOfSegOccupied);
-              if (foundOccupied) {
-                valid = false;
-              }
-              if (!valid) {
-                break;
-              }
-            }
-          }
-
-          if (valid) {
-            candidates.push({ start: { x, y }, length: len, direction: dir });
-          }
-        }
-      }
-    }
-
-    if (candidates.length === 0) {return null;} // dead end
-    const getRandomNumber = env.get('getRandomNumber');
-    const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
-    ships.push(chosen);
-
-    // Mark occupied squares
-    for (let i = 0; i < len; i++) {
-      let sx, sy;
-      if (chosen.direction === 'H') {
-        sx = chosen.start.x + i;
-      } else {
-        sx = chosen.start.x;
-      }
-      if (chosen.direction === 'V') {
-        sy = chosen.start.y + i;
-      } else {
-        sy = chosen.start.y;
-      }
-      occupied.add(key(sx, sy));
-    }
+    const placed = placeShipForLength(len, cfg, env, occupied, touchForbidden);
+    if (!placed) return null;
+    ships.push(placed);
   }
   return ships;
 }
@@ -144,7 +143,7 @@ function attemptPlacement(cfg, env) {
   const occupied = new Set();
   const touchForbidden = cfg.noTouching === true;
   const ships = placeAllShips(cfg, env, occupied, touchForbidden);
-  if (!ships) return null;
+  if (!ships) {return null;}
   return { width: cfg.width, height: cfg.height, ships };
 }
 
