@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746866231481" clover="3.2.0">
-  <project timestamp="1746866231481" name="All files">
-    <metrics statements="1330" coveredstatements="1330" conditionals="406" coveredconditionals="406" methods="525" coveredmethods="525" elements="2261" coveredelements="2261" complexity="0" loc="1330" ncloc="1330" packages="14" files="30" classes="30"/>
+<coverage generated="1746866293235" clover="3.2.0">
+  <project timestamp="1746866293235" name="All files">
+    <metrics statements="1332" coveredstatements="1332" conditionals="406" coveredconditionals="406" methods="525" coveredmethods="525" elements="2263" coveredelements="2263" complexity="0" loc="1332" ncloc="1332" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -820,16 +820,18 @@
       </file>
     </package>
     <package name="toys.2025-03-21">
-      <metrics statements="50" coveredstatements="50" conditionals="24" coveredconditionals="24" methods="25" coveredmethods="25"/>
+      <metrics statements="52" coveredstatements="52" conditionals="24" coveredconditionals="24" methods="25" coveredmethods="25"/>
       <file name="booleanCoercer.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/booleanCoercer.js">
-        <metrics statements="7" coveredstatements="7" conditionals="6" coveredconditionals="6" methods="4" coveredmethods="4"/>
+        <metrics statements="9" coveredstatements="9" conditionals="6" coveredconditionals="6" methods="4" coveredmethods="4"/>
         <line num="2" count="10" type="cond" truecount="2" falsecount="0"/>
         <line num="3" count="8" type="stmt"/>
         <line num="15" count="10" type="stmt"/>
         <line num="16" count="10" type="cond" truecount="2" falsecount="0"/>
-        <line num="20" count="8" type="cond" truecount="2" falsecount="0"/>
-        <line num="22" count="4" type="stmt"/>
+        <line num="17" count="6" type="stmt"/>
+        <line num="19" count="4" type="stmt"/>
+        <line num="24" count="8" type="cond" truecount="2" falsecount="0"/>
         <line num="26" count="4" type="stmt"/>
+        <line num="30" count="4" type="stmt"/>
       </file>
       <file name="italics.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/italics.js">
         <metrics statements="43" coveredstatements="43" conditionals="18" coveredconditionals="18" methods="21" coveredmethods="21"/>

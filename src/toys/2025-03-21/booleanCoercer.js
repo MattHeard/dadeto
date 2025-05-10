@@ -13,7 +13,11 @@ function tryBooleanCoercion(input) {
  */
 export function coerceToBoolean(input) {
   const value = tryBooleanCoercion(input);
-  return value !== undefined ? `{ value: ${value} }` : '{}';
+  if (value !== undefined) {
+    return `{ value: ${value} }`;
+  } else {
+    return '{}';
+  }
 }
 
 function normalizeBooleanString(input) {

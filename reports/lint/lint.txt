@@ -1,7 +1,4 @@
 
-/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/booleanCoercer.js
-  16:10  warning  Ternary operator used  no-ternary
-
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/italics.js
    34:25  warning  Ternary operator used  no-ternary
    72:25  warning  Ternary operator used  no-ternary
@@ -55,4 +52,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 36 problems (0 errors, 36 warnings)
+✖ 35 problems (0 errors, 35 warnings)
