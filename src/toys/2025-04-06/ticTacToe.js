@@ -324,7 +324,12 @@ function selectScore(scores, isMax) {
 }
 
 function makeAccumulateScores(params, depth, isMax) {
-  const value = isMax ? params.player : getOpponent(params.player);
+  let value;
+  if (isMax) {
+    value = params.player;
+  } else {
+    value = getOpponent(params.player);
+  }
   return (scores, [r, c]) => {
     // Deep copy the board
     const newBoard = params.board.map(row => row.slice());
