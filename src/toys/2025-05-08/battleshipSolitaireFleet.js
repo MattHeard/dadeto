@@ -125,7 +125,6 @@ function isForbiddenTouch(cfg, occupied, segs) {
 
 
 function placeShip(len, cfg, env, occupied) {
-  const touchForbidden = cfg.noTouching === true;
   const candidates = [];
   for (let y = 0; y < cfg.height; y++) {
     for (let x = 0; x < cfg.width; x++) {

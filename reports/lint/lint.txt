@@ -4,11 +4,10 @@
   104:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
   127:1   warning  Function 'placeShip' has too many parameters (4). Maximum allowed is 3       max-params
   127:1   warning  Function 'placeShip' has a complexity of 9. Maximum allowed is 2             complexity
-  128:9   warning  'touchForbidden' is assigned a value but never used                          no-unused-vars
-  147:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                       max-depth
-  176:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
-  206:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2         complexity
-  210:12  warning  '_' is defined but never used                                                no-unused-vars
+  146:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                       max-depth
+  175:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
+  205:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2         complexity
+  209:12  warning  '_' is defined but never used                                                no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.handleTagLinks.test.js
   12:33  warning  Ternary operator used  no-ternary
@@ -21,4 +20,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 14 problems (0 errors, 14 warnings)
+✖ 13 problems (0 errors, 13 warnings)
