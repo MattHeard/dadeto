@@ -168,7 +168,8 @@ function makePlaceShipReducer(placeShipWithArgs) {
   };
 }
 
-function placeAllShips(cfg, env, occupied) {
+function placeAllShips(cfg, env) {
+  const occupied = new Set();
   const lengths = cfg.ships.slice();
   shuffle(lengths, env);
   const placeShipWithArgs = makePlaceShip(cfg, env, occupied);
@@ -182,8 +183,7 @@ function placeAllShips(cfg, env, occupied) {
 }
 
 function attemptPlacement(cfg, env) {
-  const occupied = new Set();
-  const ships = placeAllShips(cfg, env, occupied);
+  const ships = placeAllShips(cfg, env);
   if (!ships) {return null;}
   return { width: cfg.width, height: cfg.height, ships };
 }
