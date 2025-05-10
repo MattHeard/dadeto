@@ -37,9 +37,8 @@ function neighbours(coord) {
   return [-1, 0, 1].reduce((acc, dy) => {
     return acc.concat(
       [-1, 0, 1].reduce((row, dx) => {
-        if (dx === 0 && dy === 0) return row;
-        row.push({ x: coord.x + dx, y: coord.y + dy });
-        return row;
+        if (dx === 0 && dy === 0) {return row;}
+        return row.concat({ x: coord.x + dx, y: coord.y + dy });
       }, [])
     );
   }, []);
