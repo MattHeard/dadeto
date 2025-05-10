@@ -38,13 +38,14 @@ function inBounds(coord, cfg) {
 
 /** 8‑neighbour coordinates */
 function neighbours(coord) {
+  const dxReducer = dy => (row, dx) => {
+    if (dx === 0 && dy === 0) { return row; }
+    const neighbour = { x: coord.x + dx, y: coord.y + dy };
+    return row.concat(neighbour);
+  };
   return [-1, 0, 1].reduce((acc, dy) => {
     return acc.concat(
-      [-1, 0, 1].reduce((row, dx) => {
-        if (dx === 0 && dy === 0) {return row;}
-        const neighbour = { x: coord.x + dx, y: coord.y + dy };
-        return row.concat(neighbour);
-      }, [])
+      [-1, 0, 1].reduce(dxReducer(dy), [])
     );
   }, []);
 }
