@@ -216,7 +216,7 @@ function generateFleet(input, env) {
   let cfg;
   try {
     cfg = JSON.parse(input);
-  } catch (_) {
+  } catch {
     cfg = {};
   }
   if (!Array.isArray(cfg.ships)) {
