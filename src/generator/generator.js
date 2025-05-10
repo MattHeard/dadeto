@@ -326,7 +326,11 @@ export function createIdAttributeIfNeeded(post) {
 }
 
 function getTagClassList(post) {
-  return hasTags(post) ? post.tags.map(tag => `tag-${tag}`) : [];
+  if (hasTags(post)) {
+    return post.tags.map(tag => `tag-${tag}`);
+  } else {
+    return [];
+  }
 }
 
 function createArticleClassAttr(post) {
