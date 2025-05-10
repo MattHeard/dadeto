@@ -91,14 +91,15 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         );
         if (!valid) {
           continue;
-        }
-        if (touchForbidden) {
-          const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
-          if (!segs.every(segHasNoOccupiedNeighbour)) {
-            continue;
+        } else {
+          if (touchForbidden) {
+            const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
+            if (!segs.every(segHasNoOccupiedNeighbour)) {
+              continue;
+            }
           }
+          candidates.push({ start: { x, y }, length: len, direction: dir });
         }
-        candidates.push({ start: { x, y }, length: len, direction: dir });
       }
     }
   }
