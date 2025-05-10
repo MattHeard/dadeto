@@ -1,7 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/italics.js
-  32:1   warning  Function 'createBoldPatternPart' has a complexity of 3. Maximum allowed is 2  complexity
-  34:25  warning  Ternary operator used                                                         no-ternary
+  44:25  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
    31:1   warning  Function 'inBounds' has a complexity of 3. Maximum allowed is 2             complexity
@@ -36,4 +35,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 25 problems (0 errors, 25 warnings)
+✖ 24 problems (0 errors, 24 warnings)

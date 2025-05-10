@@ -24,6 +24,16 @@ function createDoubledMarker(marker) {
 }
 
 /**
+ * Returns the doubled marker for use in bold pattern parts.
+ * @param {string} marker - The (possibly escaped) marker character
+ * @returns {string} - The doubled marker string
+ * @private
+ */
+function getDoubledMarker(marker) {
+  return createDoubledMarker(marker);
+}
+
+/**
  * Creates a regex pattern part for bold text with a specific marker
  * @param {string} marker - The marker character (* or _)
  * @returns {string} - Regex pattern string for bold with the specified marker
@@ -32,12 +42,7 @@ function createDoubledMarker(marker) {
 function createBoldPatternPart(marker) {
   // Escape marker if it's a special regex character
   const escapedMarker = REGEX_SPECIAL_CHARS.test(marker) ? `\\${marker}` : marker;
-  let doubledMarker;
-  if (escapedMarker) {
-    doubledMarker = createDoubledMarker(escapedMarker);
-  } else {
-    doubledMarker = createDoubledMarker(escapedMarker);
-  }
+  const doubledMarker = getDoubledMarker(escapedMarker);
 
   // Break the pattern into its constituent parts
   const patternParts = [
