@@ -113,7 +113,11 @@ function getAdventureResult(context) {
     "alley:stealth": handleAlleyStealth
   };
   const handler = stateHandlers[context.state];
-  return handler ? handler(context) : getDefaultAdventureResult();
+  if (handler) {
+    return handler(context);
+  } else {
+    return getDefaultAdventureResult();
+  }
 }
 
 function getScopedState(data) {

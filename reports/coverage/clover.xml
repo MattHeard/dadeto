@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746866713381" clover="3.2.0">
-  <project timestamp="1746866713381" name="All files">
-    <metrics statements="1356" coveredstatements="1355" conditionals="408" coveredconditionals="407" methods="525" coveredmethods="525" elements="2289" coveredelements="2287" complexity="0" loc="1356" ncloc="1356" packages="14" files="30" classes="30"/>
+<coverage generated="1746866814785" clover="3.2.0">
+  <project timestamp="1746866814785" name="All files">
+    <metrics statements="1358" coveredstatements="1357" conditionals="408" coveredconditionals="407" methods="525" coveredmethods="525" elements="2291" coveredelements="2289" complexity="0" loc="1358" ncloc="1358" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1125,9 +1125,9 @@
       </file>
     </package>
     <package name="toys.2025-03-30">
-      <metrics statements="68" coveredstatements="68" conditionals="30" coveredconditionals="30" methods="23" coveredmethods="23"/>
+      <metrics statements="70" coveredstatements="70" conditionals="30" coveredconditionals="30" methods="23" coveredmethods="23"/>
       <file name="cyberpunkAdventure.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-30/cyberpunkAdventure.js">
-        <metrics statements="68" coveredstatements="68" conditionals="30" coveredconditionals="30" methods="23" coveredmethods="23"/>
+        <metrics statements="70" coveredstatements="70" conditionals="30" coveredconditionals="30" methods="23" coveredmethods="23"/>
         <line num="2" count="2" type="cond" truecount="2" falsecount="0"/>
         <line num="3" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
@@ -1160,42 +1160,44 @@
         <line num="107" count="15" type="stmt"/>
         <line num="115" count="15" type="stmt"/>
         <line num="116" count="15" type="cond" truecount="2" falsecount="0"/>
-        <line num="120" count="20" type="cond" truecount="2" falsecount="0"/>
+        <line num="117" count="14" type="stmt"/>
+        <line num="119" count="1" type="stmt"/>
         <line num="124" count="20" type="cond" truecount="2" falsecount="0"/>
         <line num="128" count="20" type="cond" truecount="2" falsecount="0"/>
         <line num="132" count="20" type="cond" truecount="2" falsecount="0"/>
         <line num="136" count="20" type="cond" truecount="2" falsecount="0"/>
         <line num="140" count="20" type="cond" truecount="2" falsecount="0"/>
-        <line num="144" count="15" type="stmt"/>
-        <line num="153" count="15" type="stmt"/>
-        <line num="155" count="15" type="stmt"/>
-        <line num="156" count="15" type="stmt"/>
+        <line num="144" count="20" type="cond" truecount="2" falsecount="0"/>
+        <line num="148" count="15" type="stmt"/>
         <line num="157" count="15" type="stmt"/>
-        <line num="158" count="15" type="stmt"/>
+        <line num="159" count="15" type="stmt"/>
         <line num="160" count="15" type="stmt"/>
-        <line num="171" count="15" type="stmt"/>
-        <line num="175" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="161" count="15" type="stmt"/>
+        <line num="162" count="15" type="stmt"/>
+        <line num="164" count="15" type="stmt"/>
+        <line num="175" count="15" type="stmt"/>
         <line num="179" count="15" type="cond" truecount="2" falsecount="0"/>
-        <line num="184" count="21" type="stmt"/>
-        <line num="185" count="21" type="stmt"/>
-        <line num="186" count="21" type="stmt"/>
-        <line num="187" count="21" type="stmt"/>
+        <line num="183" count="15" type="cond" truecount="2" falsecount="0"/>
         <line num="188" count="21" type="stmt"/>
-        <line num="190" count="20" type="stmt"/>
-        <line num="191" count="20" type="stmt"/>
-        <line num="192" count="20" type="stmt"/>
-        <line num="193" count="20" type="stmt"/>
+        <line num="189" count="21" type="stmt"/>
+        <line num="190" count="21" type="stmt"/>
+        <line num="191" count="21" type="stmt"/>
+        <line num="192" count="21" type="stmt"/>
+        <line num="194" count="20" type="stmt"/>
         <line num="195" count="20" type="stmt"/>
         <line num="196" count="20" type="stmt"/>
-        <line num="198" count="20" type="stmt"/>
+        <line num="197" count="20" type="stmt"/>
         <line num="199" count="20" type="stmt"/>
-        <line num="201" count="20" type="cond" truecount="2" falsecount="0"/>
-        <line num="202" count="5" type="stmt"/>
-        <line num="203" count="5" type="stmt"/>
-        <line num="206" count="15" type="stmt"/>
-        <line num="219" count="21" type="stmt"/>
-        <line num="220" count="21" type="stmt"/>
-        <line num="222" count="1" type="stmt"/>
+        <line num="200" count="20" type="stmt"/>
+        <line num="202" count="20" type="stmt"/>
+        <line num="203" count="20" type="stmt"/>
+        <line num="205" count="20" type="cond" truecount="2" falsecount="0"/>
+        <line num="206" count="5" type="stmt"/>
+        <line num="207" count="5" type="stmt"/>
+        <line num="210" count="15" type="stmt"/>
+        <line num="223" count="21" type="stmt"/>
+        <line num="224" count="21" type="stmt"/>
+        <line num="226" count="1" type="stmt"/>
       </file>
     </package>
     <package name="toys.2025-04-05">
