@@ -6,14 +6,14 @@
    86:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
    91:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
    97:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-  107:48  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
-  117:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-  118:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                      max-depth
-  150:1   warning  Function 'makePlaceShip' has too many parameters (4). Maximum allowed is 3  max-params
-  159:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
-  168:1   warning  Function 'placeAllShips' has too many parameters (4). Maximum allowed is 3  max-params
-  191:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2        complexity
-  195:12  warning  '_' is defined but never used                                               no-unused-vars
+  107:80  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
+  118:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
+  119:13  warning  Blocks are nested too deeply (6). Maximum allowed is 4                      max-depth
+  151:1   warning  Function 'makePlaceShip' has too many parameters (4). Maximum allowed is 3  max-params
+  160:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
+  169:1   warning  Function 'placeAllShips' has too many parameters (4). Maximum allowed is 3  max-params
+  192:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2        complexity
+  196:12  warning  '_' is defined but never used                                               no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setOutput.test.js
   18:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity

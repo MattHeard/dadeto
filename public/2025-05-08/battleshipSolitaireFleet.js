@@ -104,7 +104,7 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         }
         if (touchForbidden) {
           const isNeighbourOfSegOccupied = n => isNeighbourOccupied(n, cfg, occupied);
-          const checkSegForNeighbourOccupied = seg => {
+          const makeCheckSegForNeighbourOccupied = isNeighbourOfSegOccupied => seg => {
             const foundOccupied = neighbours(seg).find(isNeighbourOfSegOccupied);
             if (foundOccupied) {
               valid = false;
@@ -114,6 +114,7 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
             }
             return false;
           };
+          const checkSegForNeighbourOccupied = makeCheckSegForNeighbourOccupied(isNeighbourOfSegOccupied);
           for (const seg of segs) {
             if (checkSegForNeighbourOccupied(seg)) {
               break;
