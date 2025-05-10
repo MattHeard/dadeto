@@ -167,7 +167,8 @@ function makePlaceShipReducer(placeShipWithArgs) {
   };
 }
 
-function placeAllShips(cfg, env, occupied, touchForbidden) {
+function placeAllShips(cfg, env, occupied) {
+  const touchForbidden = cfg.noTouching === true;
   const lengths = cfg.ships.slice();
   shuffle(lengths, env);
   const placeShipWithArgs = makePlaceShip(cfg, env, occupied, touchForbidden);
@@ -182,8 +183,7 @@ function placeAllShips(cfg, env, occupied, touchForbidden) {
 
 function attemptPlacement(cfg, env) {
   const occupied = new Set();
-  const touchForbidden = cfg.noTouching === true;
-  const ships = placeAllShips(cfg, env, occupied, touchForbidden);
+  const ships = placeAllShips(cfg, env, occupied);
   if (!ships) {return null;}
   return { width: cfg.width, height: cfg.height, ships };
 }
