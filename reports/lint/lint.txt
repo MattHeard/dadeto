@@ -6,14 +6,14 @@
    64:34  warning  Ternary operator used                                                       no-ternary
    65:34  warning  Ternary operator used                                                       no-ternary
    69:1   warning  Function 'placeShip' has too many parameters (5). Maximum allowed is 3      max-params
-   69:1   warning  Function 'placeShip' has a complexity of 15. Maximum allowed is 2           complexity
-   85:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-   95:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
-  120:1   warning  Function 'makePlaceShip' has too many parameters (4). Maximum allowed is 3  max-params
-  129:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
-  138:1   warning  Function 'placeAllShips' has too many parameters (4). Maximum allowed is 3  max-params
-  161:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2        complexity
-  165:12  warning  '_' is defined but never used                                               no-unused-vars
+   69:1   warning  Function 'placeShip' has a complexity of 12. Maximum allowed is 2           complexity
+   80:11  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
+   97:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                      max-depth
+  123:1   warning  Function 'makePlaceShip' has too many parameters (4). Maximum allowed is 3  max-params
+  132:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                  complexity
+  141:1   warning  Function 'placeAllShips' has too many parameters (4). Maximum allowed is 3  max-params
+  164:1   warning  Function 'generateFleet' has a complexity of 6. Maximum allowed is 2        complexity
+  168:12  warning  '_' is defined but never used                                               no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setOutput.test.js
   18:12  warning  Method 'get' has a complexity of 3. Maximum allowed is 2  complexity

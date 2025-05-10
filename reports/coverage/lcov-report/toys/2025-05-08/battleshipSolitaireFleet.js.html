@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">98.19% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>111/111</span>
+                <span class='fraction'>109/111</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.14% </span>
+                <span class="strong">96.29% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>53/54</span>
+                <span class='fraction'>52/54</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>27/27</span>
+                <span class='fraction'>28/28</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">97.75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>89/89</span>
+                <span class='fraction'>87/89</span>
             </div>
         
             
@@ -250,7 +250,10 @@
 <a name='L185'></a><a href='#L185'>185</a>
 <a name='L186'></a><a href='#L186'>186</a>
 <a name='L187'></a><a href='#L187'>187</a>
-<a name='L188'></a><a href='#L188'>188</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -329,15 +332,17 @@
 <span class="cline-any cline-yes">36x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1678x</span>
-<span class="cline-any cline-yes">1678x</span>
-<span class="cline-any cline-yes">1678x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1762x</span>
 <span class="cline-any cline-yes">1758x</span>
 <span class="cline-any cline-yes">1758x</span>
 <span class="cline-any cline-yes">1758x</span>
 <span class="cline-any cline-yes">1758x</span>
 <span class="cline-any cline-yes">204x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1758x</span>
+<span class="cline-any cline-yes">1554x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1678x</span>
 <span class="cline-any cline-yes">204x</span>
@@ -346,10 +351,11 @@
 <span class="cline-any cline-yes">1400x</span>
 <span class="cline-any cline-yes">1400x</span>
 <span class="cline-any cline-yes">600x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1474x</span>
-<span class="cline-any cline-yes">600x</span>
+<span class="cline-any cline-yes">874x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">874x</span>
 <span class="cline-any cline-yes">874x</span>
@@ -515,28 +521,31 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         if (!inBounds({x: endX, y: endY}, cfg)) {
           continue;
         }
-        let valid = true;
-        const segs = [];
-        for (let i = 0; i &lt; len &amp;&amp; valid; i++) {
-          const sx = getSx(dir, x, i);
-          const sy = getSy(dir, y, i);
-          const k = key(sx, sy);
-          if (occupied.has(k)) {
-            valid = false;
-          }
-          segs.push({ x: sx, y: sy });
-        }
+        const { segs, valid } = Array.from({ length: len }).reduce(
+          (acc, _, i) =&gt; {
+            if (!acc.valid) return acc;
+            const sx = getSx(dir, x, i);
+            const sy = getSy(dir, y, i);
+            const k = key(sx, sy);
+            if (occupied.has(k)) {
+              return { ...acc, valid: false };
+            }
+            return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
+          },
+          { segs: [], valid: true }
+        );
         if (!valid) {
           continue;
         }
         if (touchForbidden) {
           const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
           if (!segs.every(segHasNoOccupiedNeighbour)) {
-            valid = false;
+            continue;
+<span class="cstat-no" title="statement not covered" >            valid = false;</span>
           }
         }
-        if (!valid) {
-          continue;
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (!valid) {
+<span class="cstat-no" title="statement not covered" >          continue;</span>
         }
         <span class="missing-if-branch" title="else path not taken" >E</span>if (valid) {
           candidates.push({ start: { x, y }, length: len, direction: dir });
@@ -631,7 +640,7 @@ export { generateFleet };
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-10T10:00:10.143Z
+                at 2025-05-10T10:01:18.953Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

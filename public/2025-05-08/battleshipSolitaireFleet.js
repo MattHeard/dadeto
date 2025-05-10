@@ -76,23 +76,26 @@ function placeShip(len, cfg, env, occupied, touchForbidden) {
         if (!inBounds({x: endX, y: endY}, cfg)) {
           continue;
         }
-        let valid = true;
-        const segs = [];
-        for (let i = 0; i < len && valid; i++) {
-          const sx = getSx(dir, x, i);
-          const sy = getSy(dir, y, i);
-          const k = key(sx, sy);
-          if (occupied.has(k)) {
-            valid = false;
-          }
-          segs.push({ x: sx, y: sy });
-        }
+        const { segs, valid } = Array.from({ length: len }).reduce(
+          (acc, _, i) => {
+            if (!acc.valid) return acc;
+            const sx = getSx(dir, x, i);
+            const sy = getSy(dir, y, i);
+            const k = key(sx, sy);
+            if (occupied.has(k)) {
+              return { ...acc, valid: false };
+            }
+            return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
+          },
+          { segs: [], valid: true }
+        );
         if (!valid) {
           continue;
         }
         if (touchForbidden) {
           const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
           if (!segs.every(segHasNoOccupiedNeighbour)) {
+            continue;
             valid = false;
           }
         }
