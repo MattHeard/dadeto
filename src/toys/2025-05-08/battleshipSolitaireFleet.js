@@ -128,7 +128,6 @@ function placeShipForLength(len, cfg, env, occupied, touchForbidden) {
 }
 
 function placeAllShips(cfg, env, occupied, touchForbidden) {
-  const ships = [];
   const lengths = cfg.ships.slice();
   shuffle(lengths, env);
   // Closure: captures cfg, env, occupied, touchForbidden
