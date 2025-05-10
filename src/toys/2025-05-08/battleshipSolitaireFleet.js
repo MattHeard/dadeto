@@ -133,12 +133,14 @@ function placeAllShips(cfg, env, occupied, touchForbidden) {
   shuffle(lengths, env);
   // Closure: captures cfg, env, occupied, touchForbidden
   const placeShip = len => placeShipForLength(len, cfg, env, occupied, touchForbidden);
-  for (const len of lengths) {
+  const result = lengths.reduce((acc, len) => {
+    if (!acc) {return null;}
     const placed = placeShip(len);
     if (!placed) {return null;}
-    ships.push(placed);
-  }
-  return ships;
+    acc.push(placed);
+    return acc;
+  }, []);
+  return result && result.length === lengths.length ? result : null;
 }
 
 function attemptPlacement(cfg, env) {
