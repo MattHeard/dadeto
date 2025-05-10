@@ -26,10 +26,9 @@
   116:10  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-04-06/ticTacToe.js
-    2:10  warning  Ternary operator used  no-ternary
-   23:10  warning  Ternary operator used  no-ternary
-  175:7   warning  Ternary operator used  no-ternary
-  306:17  warning  Ternary operator used  no-ternary
+   34:1   warning  Function 'isValidParsedMoves' has a complexity of 3. Maximum allowed is 2  complexity
+  191:7   warning  Ternary operator used                                                      no-ternary
+  322:17  warning  Ternary operator used                                                      no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
    31:1   warning  Function 'inBounds' has a complexity of 3. Maximum allowed is 2             complexity
@@ -64,4 +63,4 @@
   51:34  warning  '_' is defined but never used                               no-unused-vars
   52:31  warning  '_' is defined but never used                               no-unused-vars
 
-✖ 41 problems (0 errors, 41 warnings)
+✖ 40 problems (0 errors, 40 warnings)

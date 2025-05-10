@@ -1,5 +1,9 @@
 function getOpponent(player) {
-  return player === "X" ? "O" : "X";
+  if (player === "X") {
+    return "O";
+  } else {
+    return "X";
+  }
 }
 
 function tryParseJSON(input) {
@@ -20,12 +24,24 @@ function isObject(val) {
 
 function getValidParsedMoves(parsed) {
   const isValid = isValidParsedMoves(parsed);
-  return isValid ? parsed.moves : null;
+  if (isValid) {
+    return parsed.moves;
+  } else {
+    return null;
+  }
 }
 
 function isValidParsedMoves(parsed) {
   const validators = [isObject, hasMovesArray];
-  return validators.every(fn => fn(parsed));
+  let allValid = true;
+  for (let i = 0; i < validators.length; i++) {
+    if (!validators[i](parsed)) {
+      allValid = false;
+      break;
+    }
+  }
+  return allValid;
+
 }
 
 function hasMovesArray(val) {
