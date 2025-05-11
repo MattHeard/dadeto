@@ -409,9 +409,6 @@ function createContentItemWithIndex(text, index) {
   return createContentSectionItem(text, isFirst);
 }
 
-function isTextContent(content) {
-  return typeof content !== 'object' || content === null;
-}
 
 /**
  * Normalize a content item.
@@ -426,7 +423,11 @@ function normalizeContentItem(content) {
     [c => typeof c !== 'object' || c === null, { type: 'text', content }],
   ];
   const found = tests.find(([predicate]) => predicate(content));
-  return found ? found[1] : content;
+  if (found) {
+    return found[1];
+  } else {
+    return content;
+  }
 }
 
 /**

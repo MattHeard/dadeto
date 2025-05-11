@@ -1,6 +1,0 @@
-
-/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  412:10  warning  'isTextContent' is defined but never used  no-unused-vars
-  429:10  warning  Ternary operator used                      no-ternary
-
-✖ 2 problems (0 errors, 2 warnings)
