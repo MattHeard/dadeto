@@ -632,6 +632,13 @@ function createYouTubeContent(post) {
  * Mapping for media sections.
  * Each key maps to a function that generates the corresponding media section.
  */
+// Media config: [type, label]
+const MEDIA_CONFIG = [
+  ['illustration', 'illus'],
+  ['audio', 'audio'],
+  ['youtube', 'video'],
+];
+
 const MEDIA_SECTIONS = {
   illustration: function(post) {
     if (!shouldDisplayMedia(post, 'illustration')) {

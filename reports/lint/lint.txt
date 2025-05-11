@@ -1,0 +1,5 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
+  636:7  warning  'MEDIA_CONFIG' is assigned a value but never used  no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
