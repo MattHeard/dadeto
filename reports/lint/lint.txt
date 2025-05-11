@@ -1,0 +1,6 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
+  684:10  warning  'prefixIfPresent' is defined but never used  no-unused-vars
+  685:10  warning  Ternary operator used                        no-ternary
+
+✖ 2 problems (0 errors, 2 warnings)

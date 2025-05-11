@@ -681,6 +681,10 @@ function escapeRelatedLinkFields(link) {
   }, { type: link.type });
 }
 
+function prefixIfPresent(prefix, value) {
+  return value ? `${prefix}${value}` : '';
+}
+
 function formatTitleByType(type, title) {
   const formatters = {
     book: t => `<em>_${t}_</em>`,
@@ -770,10 +774,6 @@ function generateRelatedLinksSection(post) {
   const valueContent = `<ul class="related-links">${linksList}</ul>`;
   return createLabeledSection({ label: 'links', valueHTML: valueContent });
 }
-
-/**
- * Combine multiple HTML sections into a single string
- */
 
 function extractModulePath(toy) {
   return toy?.modulePath;
