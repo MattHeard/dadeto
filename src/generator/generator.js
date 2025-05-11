@@ -445,12 +445,7 @@ registerContentType({
  */
 function getContentNormalizer(content) {
   const found = normalizationRules.find(([predicate]) => predicate(content));
-  // Always fallback to text normalizer if not found
-  if (found) {
-    return found[1];
-  } else {
-    return c => ({ type: 'text', content: c });
-  }
+  return found[1];
 }
 
 /**
