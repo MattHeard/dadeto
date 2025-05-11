@@ -1,0 +1,7 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-11/battleshipSolitaireClues.js
+  10:1   warning  Function 'generateClues' has a complexity of 13. Maximum allowed is 2  complexity
+  33:17  warning  Ternary operator used                                                  no-ternary
+  34:17  warning  Ternary operator used                                                  no-ternary
+
+✖ 3 problems (0 errors, 3 warnings)
