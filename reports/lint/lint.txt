@@ -1,7 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-   84:1   warning  Function 'createLabeledSection' has a complexity of 3. Maximum allowed is 2  complexity
-   86:21  warning  Ternary operator used                                                        no-ternary
-  623:10  warning  'mediaSectionBuilder' is defined but never used                              no-unused-vars
+  84:1   warning  Function 'createLabeledSection' has a complexity of 3. Maximum allowed is 2  complexity
+  86:21  warning  Ternary operator used                                                        no-ternary
 
-✖ 3 problems (0 errors, 3 warnings)
+✖ 2 problems (0 errors, 2 warnings)

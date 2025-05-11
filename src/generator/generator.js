@@ -705,7 +705,13 @@ function createYouTubeContent(post) {
  * Each key maps to a function that generates the corresponding media section.
  */
 const MEDIA_SECTIONS = {
-  illustration: createMediaSectionGenerator('illustration', 'illus'),
+  illustration: function(post) {
+    if (!shouldDisplayMedia(post, 'illustration')) {
+      return '';
+    }
+    const valueDiv = generateMediaContent(post, 'illustration');
+    return mediaSectionBuilder('illus', valueDiv);
+  },
   audio: createMediaSectionGenerator('audio', 'audio'),
   youtube: createMediaSectionGenerator('youtube', 'video'),
 };
