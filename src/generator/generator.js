@@ -868,6 +868,7 @@ const TOY_OUTPUT_TYPES = [
   ['pre', 'pre'],
   ['tic-tac-toe', 'tic-tac-toe'],
   ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
+  ['battleship-solitaire-clues-presenter', 'battleship-solitaire-clues-presenter'],
 ];
 
 // Generic select builder for dropdowns
