@@ -779,7 +779,7 @@ function hasFunctionName(post) {
  * @returns {boolean} - True if post has a toy component
  */
 function hasToy(post) {
-  return hasModulePath(post) && hasFunctionName(post);
+  return post?.toy?.modulePath && post?.toy?.functionName;
 }
 
 /**

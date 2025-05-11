@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">97.7% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>261/261</span>
+                <span class='fraction'>255/261</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">94.95% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>119/119</span>
+                <span class='fraction'>113/119</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">97.58% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>248/248</span>
+                <span class='fraction'>242/248</span>
             </div>
         
             
@@ -1770,27 +1770,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2724,28 +2724,28 @@ function generateRelatedLinksSection(post) {
   return createLabeledSection({ label: 'links', valueHTML: valueContent });
 }
 &nbsp;
-function extractModulePath(toy) {
-  return toy?.modulePath;
+function <span class="fstat-no" title="function not covered" >extractModulePath(</span>toy) {
+<span class="cstat-no" title="statement not covered" >  return toy?.modulePath;</span>
 }
 &nbsp;
-function getModulePath(post) {
-  return extractModulePath(post?.toy);
+function <span class="fstat-no" title="function not covered" >getModulePath(</span>post) {
+<span class="cstat-no" title="statement not covered" >  return extractModulePath(post?.toy);</span>
 }
 &nbsp;
-function extractFunctionName(toy) {
-  return toy?.functionName;
+function <span class="fstat-no" title="function not covered" >extractFunctionName(</span>toy) {
+<span class="cstat-no" title="statement not covered" >  return toy?.functionName;</span>
 }
 &nbsp;
-function getFunctionName(post) {
-  return extractFunctionName(post?.toy);
+function <span class="fstat-no" title="function not covered" >getFunctionName(</span>post) {
+<span class="cstat-no" title="statement not covered" >  return extractFunctionName(post?.toy);</span>
 }
 &nbsp;
-function hasModulePath(post) {
-  return Boolean(getModulePath(post));
+function <span class="fstat-no" title="function not covered" >hasModulePath(</span>post) {
+<span class="cstat-no" title="statement not covered" >  return Boolean(getModulePath(post));</span>
 }
 &nbsp;
-function hasFunctionName(post) {
-  return Boolean(getFunctionName(post));
+function <span class="fstat-no" title="function not covered" >hasFunctionName(</span>post) {
+<span class="cstat-no" title="statement not covered" >  return Boolean(getFunctionName(post));</span>
 }
 &nbsp;
 /**
@@ -2754,7 +2754,7 @@ function hasFunctionName(post) {
  * @returns {boolean} - True if post has a toy component
  */
 function hasToy(post) {
-  return hasModulePath(post) &amp;&amp; hasFunctionName(post);
+  return post?.toy?.modulePath &amp;&amp; post?.toy?.functionName;
 }
 &nbsp;
 /**
@@ -2935,7 +2935,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T14:57:38.981Z
+                at 2025-05-11T15:01:56.484Z
             </div>
         <script src="../prettify.js"></script>
         <script>
