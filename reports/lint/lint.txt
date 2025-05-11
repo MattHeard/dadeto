@@ -1,0 +1,6 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
+  412:10  warning  'isTextContent' is defined but never used                                    no-unused-vars
+  423:1   warning  Function 'normalizeContentItem' has a complexity of 4. Maximum allowed is 2  complexity
+
+✖ 2 problems (0 errors, 2 warnings)

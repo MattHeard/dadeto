@@ -421,11 +421,13 @@ function isTextContent(content) {
  * @returns {Object} - Normalized content object.
  */
 function normalizeContentItem(content) {
-  if (isTextContent(content)) {
-    return { type: 'text', content };
-  } else {
-    return content;
+  if (Array.isArray(content)) {
+    return { type: 'quote', content };
   }
+  if (typeof content !== 'object' || content === null) {
+    return { type: 'text', content };
+  }
+  return content;
 }
 
 /**
@@ -437,20 +439,12 @@ const CONTENT_RENDERERS = {
   __default__: renderAsParagraph,
 };
 
-function isBlockquoteContent(type, content) {
-  return type === 'text' && Array.isArray(content);
-}
 
-function getRenderer(type) {
-  return CONTENT_RENDERERS[type] || CONTENT_RENDERERS.__default__;
-}
 
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
-  if (isBlockquoteContent(type, content)) {
-    return CONTENT_RENDERERS.quote(content);
-  }
-  return getRenderer(type)(content);
+  const renderer = CONTENT_RENDERERS[type] || CONTENT_RENDERERS.__default__;
+  return renderer(content);
 }
 
 
