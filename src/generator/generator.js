@@ -536,15 +536,12 @@ function generateTagsSection(post) {
   if (!hasTags(post)) {
     return '';
   }
-
-  const tagsKey = createDiv(CLASS.KEY, 'tags');
   const tagsContent = post.tags.map(tag => {
     const escapedTag = escapeHtml(tag);
     return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
   }).join(', ');
   const tagsValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagsContent}</p>`;
-
-  return createPair(tagsKey, tagsValue);
+  return createLabeledSection('tags', tagsValue, false);
 }
 
 /**
