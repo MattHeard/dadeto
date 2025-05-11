@@ -82,7 +82,7 @@ function createDiv(classes, content) {
  * @param {boolean} [wrapValueDiv=true] – whether to wrap valueHTML in a value div
  * @returns {string} formatted section HTML
  */
-function createLabeledSection(label, valueHTML, wrapValueDiv = true, keyExtraClasses = '') {
+function createLabeledSection({ label, valueHTML, wrapValueDiv = true, keyExtraClasses = '' }) {
   // Build the key div with CLASS.KEY plus any extra classes
   const keyClass = keyExtraClasses ? `${CLASS.KEY} ${keyExtraClasses}` : CLASS.KEY;
   const keyDiv = createDiv(keyClass, label);
@@ -521,7 +521,7 @@ function generateTitleSection(post) {
  */
 function generateDateSection(post) {
   const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
-  return createLabeledSection('pubAt', valueHTML, false);
+  return createLabeledSection({ label: 'pubAt', valueHTML, wrapValueDiv: false });
 }
 
 /**
@@ -547,7 +547,7 @@ function generateTagsSection(post) {
     return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
   }).join(', ');
   const tagsValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagsContent}</p>`;
-  return createLabeledSection('tags', tagsValue, false);
+  return createLabeledSection({ label: 'tags', valueHTML: tagsValue, wrapValueDiv: false });
 }
 
 /**
@@ -684,21 +684,21 @@ const MEDIA_SECTIONS = {
       return '';
     }
     const valueDiv = generateMediaContent(post, 'illustration');
-    return createLabeledSection('illus', valueDiv, false, CLASS.MEDIA);
+    return createLabeledSection({ label: 'illus', valueHTML: valueDiv, wrapValueDiv: false, keyExtraClasses: CLASS.MEDIA });
   },
   audio: function(post) {
     if (!shouldDisplayMedia(post, 'audio')) {
       return '';
     }
     const valueDiv = generateMediaContent(post, 'audio');
-    return createLabeledSection('audio', valueDiv, false, CLASS.MEDIA);
+    return createLabeledSection({ label: 'audio', valueHTML: valueDiv, wrapValueDiv: false, keyExtraClasses: CLASS.MEDIA });
   },
   youtube: function(post) {
     if (!shouldDisplayMedia(post, 'youtube')) {
       return '';
     }
     const valueDiv = generateMediaContent(post, 'youtube');
-    return createLabeledSection('video', valueDiv, false, CLASS.MEDIA);
+    return createLabeledSection({ label: 'video', valueHTML: valueDiv, wrapValueDiv: false, keyExtraClasses: CLASS.MEDIA });
   },
 };
 
@@ -818,7 +818,7 @@ function generateRelatedLinksSection(post) {
   }
   const linksList = post.relatedLinks.map(link => formatRelatedLink(link)).join('');
   const valueContent = `<ul class="related-links">${linksList}</ul>`;
-  return createLabeledSection('links', valueContent);
+  return createLabeledSection({ label: 'links', valueHTML: valueContent });
 }
 
 /**
@@ -867,7 +867,7 @@ function hasToy(post) {
  */
 function generateToyInputSection() {
   const valueHTML = '<form><input type="text" disabled></form>';
-  return createLabeledSection('in', valueHTML);
+  return createLabeledSection({ label: 'in', valueHTML });
 }
 
 /**
@@ -915,7 +915,7 @@ function getToyOutputValueContent() {
 
 function generateToyOutputSection() {
   const valueHTML = getToyOutputValueContent();
-  return createLabeledSection('out', valueHTML);
+  return createLabeledSection({ label: 'out', valueHTML });
 }
 
 /**
