@@ -417,16 +417,16 @@ function isBlockquoteContent(type, content) {
   return type === 'text' && Array.isArray(content);
 }
 
+function getRenderer(type) {
+  return CONTENT_RENDERERS[type] || CONTENT_RENDERERS.__default__;
+}
+
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
   if (isBlockquoteContent(type, content)) {
     return CONTENT_RENDERERS.quote(content);
   }
-  if (CONTENT_RENDERERS[type]) {
-    return CONTENT_RENDERERS[type](content);
-  } else {
-    return CONTENT_RENDERERS.__default__(content);
-  }
+  return getRenderer(type)(content);
 }
 
 
