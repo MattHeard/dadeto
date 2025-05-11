@@ -33,7 +33,7 @@ export default function BattleshipSolitaireCluesPresenter() {
  */
 
 function validateCluesObject(obj) {
-  if (!obj || typeof obj !== 'object') return 'Invalid JSON object';
+  if (!obj || typeof obj !== 'object') {return 'Invalid JSON object';}
   if (!Array.isArray(obj.rowClues) || !Array.isArray(obj.colClues)) {
     return 'Missing rowClues or colClues array';
   }
@@ -83,12 +83,12 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
 
   const { rowClues, colClues } = clues;
   const height = rowClues.length;
-  const width  = colClues.length;
+  const width = colClues.length;
 
   const rowPad = Math.max(...rowClues).toString().length;
 
   /* ---------- TOP COLUMN CLUES ---------- */
-  const colLines = buildColumnDigitMatrix(colClues);            // [maxDigits][width]
+  const colLines = buildColumnDigitMatrix(colClues); // [maxDigits][width]
   const topClueLines = colLines.map(lineArr =>
     padLeft('', rowPad) + ' ' + lineArr.join(' ') + ' ' + padLeft('', rowPad)
   );
@@ -105,7 +105,7 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
 
   /* ---------- ASSEMBLE CONTENT ---------- */
   const allLines = [...topClueLines, ...gridLines, ...bottomClueLines];
-  const content  = allLines.join('\n');
+  const content = allLines.join('\n');
 
   const pre = dom.createElement('pre');
   dom.setTextContent(pre, content);
