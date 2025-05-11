@@ -89,10 +89,7 @@ function createLabeledSection(label, valueHTML, wrapValueDiv = true) {
   return createPair(keyDiv, valueHTML);
 }
 
-function createLabeledSectionNoWrap(label, valueHTML) {
-  const keyDiv = createDiv(CLASS.KEY, label);
-  return createPair(keyDiv, valueHTML);
-}
+
 
 
 /**
@@ -548,7 +545,7 @@ function generateTagsSection(post) {
     return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
   }).join(', ');
   const tagsValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagsContent}</p>`;
-  return createLabeledSectionNoWrap('tags', tagsValue);
+  return createLabeledSection('tags', tagsValue, false);
 }
 
 /**
