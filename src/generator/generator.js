@@ -836,13 +836,7 @@ const TOY_UI_SECTIONS = [
 ];
 
 function buildToySection(label, buildHTML) {
-  let valueHTML;
-  if (typeof buildHTML === 'function') {
-    valueHTML = buildHTML();
-  } else {
-    valueHTML = buildHTML;
-  }
-  return createLabeledSection({ label, valueHTML });
+  return createLabeledSection({ label, valueHTML: buildHTML() });
 }
 
 /**
