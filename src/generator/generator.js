@@ -421,15 +421,12 @@ function isTextContent(content) {
  * @returns {Object} - Normalized content object.
  */
 function normalizeContentItem(content) {
-  const isArrayContent = c => Array.isArray(c);
-  const isPrimitiveContent = c => typeof c !== 'object' || c === null;
-  const quoteValue = { type: 'quote', content };
-  const textValue = { type: 'text', content };
-  if (isArrayContent(content)) {
-    return quoteValue;
-  }
-  if (isPrimitiveContent(content)) {
-    return textValue;
+  const tests = [
+    [c => Array.isArray(c), { type: 'quote', content }],
+    [c => typeof c !== 'object' || c === null, { type: 'text', content }],
+  ];
+  for (const [predicate, value] of tests) {
+    if (predicate(content)) {return value;}
   }
   return content;
 }
