@@ -559,12 +559,7 @@ function hasRelatedLinks(post) {
  * Generate media content based on media type
  */
 function generateMediaContent(post, mediaType) {
-  const generators = {
-    illustration: createIllustrationContent,
-    audio: createAudioContent,
-    youtube: createYouTubeContent
-  };
-  return generators[mediaType](post);
+  return buildMediaContent(post, mediaType);
 }
 
 /**
@@ -580,27 +575,11 @@ function createIllustrationImage(post) {
 }
 
 /**
- * Create illustration content
- */
-function createIllustrationContent(post) {
-  const image = createIllustrationImage(post);
-  return `<div class="${CLASS.VALUE}">${image}</div>`;
-}
-
-/**
  * Create audio source element
  */
 function createAudioSource(post) {
   const audioSrc = `${post.publicationDate}.${post.audio.fileType}`;
   return `<source src="${audioSrc}">`;
-}
-
-/**
- * Create audio content
- */
-function createAudioContent(post) {
-  const source = createAudioSource(post);
-  return `<audio class="${CLASS.VALUE}" controls>${source}</audio>`;
 }
 
 /**
@@ -635,15 +614,16 @@ const MEDIA_CONFIG = [
 // Declarative mapping for media content rendering
 const MEDIA_CONTENT_CONFIG = {
   illustration: { wrapperTag: 'div', fragment: createIllustrationImage },
-  audio:        { wrapperTag: 'audio', fragment: createAudioSource },
+  audio:        { wrapperTag: 'audio', fragment: createAudioSource, controls: true },
   youtube:      { wrapperTag: 'p', fragment: createYouTubeIframe },
 };
 
 // Generic builder for media content
 function buildMediaContent(post, type) {
-  const { wrapperTag, fragment } = MEDIA_CONTENT_CONFIG[type];
+  const { wrapperTag, fragment, controls } = MEDIA_CONTENT_CONFIG[type];
   const innerHTML = fragment(post);
-  return `<${wrapperTag} class="${CLASS.VALUE}">${innerHTML}</${wrapperTag}>`;
+  const controlsAttr = controls ? ' controls' : '';
+  return `<${wrapperTag} class="${CLASS.VALUE}"${controlsAttr}>${innerHTML}</${wrapperTag}>`;
 }
 
 // Generic media section builder
