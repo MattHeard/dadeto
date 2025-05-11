@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746988854527" clover="3.2.0">
-  <project timestamp="1746988854527" name="All files">
-    <metrics statements="1449" coveredstatements="1445" conditionals="422" coveredconditionals="418" methods="598" coveredmethods="596" elements="2469" coveredelements="2459" complexity="0" loc="1449" ncloc="1449" packages="15" files="32" classes="32"/>
+<coverage generated="1746989398238" clover="3.2.0">
+  <project timestamp="1746989398238" name="All files">
+    <metrics statements="1448" coveredstatements="1445" conditionals="422" coveredconditionals="418" methods="597" coveredmethods="596" elements="2467" coveredelements="2459" complexity="0" loc="1448" ncloc="1448" packages="15" files="31" classes="31"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -692,11 +692,7 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="117" coveredstatements="116" conditionals="40" coveredconditionals="40" methods="54" coveredmethods="53"/>
-      <file name="battleshipSolitaireClues.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js">
-        <metrics statements="1" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
-        <line num="7" count="0" type="stmt"/>
-      </file>
+      <metrics statements="116" coveredstatements="116" conditionals="40" coveredconditionals="40" methods="53" coveredmethods="53"/>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js">
         <metrics statements="66" coveredstatements="66" conditionals="20" coveredconditionals="20" methods="30" coveredmethods="30"/>
         <line num="21" count="5" type="stmt"/>

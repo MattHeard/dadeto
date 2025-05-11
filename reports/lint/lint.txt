@@ -1,8 +1,11 @@
 
+/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
+  115:10  error  Parsing error: Duplicate export 'createBattleshipCluesBoardElement'
+
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-11/battleshipSolitaireClues.js
   45:1  warning  Function 'incrementClues' has too many parameters (4). Maximum allowed is 3  max-params
   45:1  warning  Function 'incrementClues' has a complexity of 3. Maximum allowed is 2        complexity
   60:1  warning  Function 'parseFleet' has a complexity of 3. Maximum allowed is 2            complexity
   73:1  warning  Function 'isValidFleet' has a complexity of 6. Maximum allowed is 2          complexity
 
-✖ 4 problems (0 errors, 4 warnings)
+✖ 5 problems (1 error, 4 warnings)
