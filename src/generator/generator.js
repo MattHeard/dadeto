@@ -94,11 +94,16 @@ function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
   return createPair(keyDiv, valuePart);
 }
 
-function createLabeledSection({ label, valueHTML, wrapValueDiv, keyExtraClasses }) {
+function prepareLabeledSectionArgs({ label, valueHTML, wrapValueDiv, keyExtraClasses }) {
   if (wrapValueDiv === undefined) {wrapValueDiv = true;}
   if (keyExtraClasses === undefined) {keyExtraClasses = '';}
   const keyClass = getKeyClass(keyExtraClasses);
   const keyDiv = createDiv(keyClass, label);
+  return { keyDiv, valueHTML, wrapValueDiv };
+}
+
+function createLabeledSection(args) {
+  const { keyDiv, valueHTML, wrapValueDiv } = prepareLabeledSectionArgs(args);
   return buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv);
 }
 
