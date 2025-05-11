@@ -210,14 +210,6 @@ const METADATA_TEXT = `Software developer and philosopher in Berlin`;
  * Create an empty div with the key class
  * @returns {string} - HTML div element with key class and no content
  */
-function createEmptyKeyDiv() {
-  return createDiv(CLASS.KEY, '');
-}
-
-function prefixWithEmptyKey(valueDiv) {
-  const emptyKeyDiv = createEmptyKeyDiv();
-  return createPair(emptyKeyDiv, valueDiv);
-}
 
 /**
  * Create the content for the header section
@@ -909,11 +901,6 @@ function generateToyInputSection() {
  * @param {string} valueHTML - The HTML for the value div
  * @returns {string} - Section HTML with empty key and value
  */
-function createValueOnlySection(valueHTML) {
-  const keyDiv = createEmptyKeyDiv();
-  const valueDiv = createValueDiv(valueHTML);
-  return formatSection(keyDiv, valueDiv);
-}
 
 /**
  * Generate the button section for a toy component

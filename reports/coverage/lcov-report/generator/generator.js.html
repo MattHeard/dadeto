@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.91% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>282/288</span>
+                <span class='fraction'>282/282</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.63% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>124/127</span>
+                <span class='fraction'>124/124</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.84% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>272/278</span>
+                <span class='fraction'>272/272</span>
             </div>
         
             
@@ -1137,20 +1137,7 @@
 <a name='L1072'></a><a href='#L1072'>1072</a>
 <a name='L1073'></a><a href='#L1073'>1073</a>
 <a name='L1074'></a><a href='#L1074'>1074</a>
-<a name='L1075'></a><a href='#L1075'>1075</a>
-<a name='L1076'></a><a href='#L1076'>1076</a>
-<a name='L1077'></a><a href='#L1077'>1077</a>
-<a name='L1078'></a><a href='#L1078'>1078</a>
-<a name='L1079'></a><a href='#L1079'>1079</a>
-<a name='L1080'></a><a href='#L1080'>1080</a>
-<a name='L1081'></a><a href='#L1081'>1081</a>
-<a name='L1082'></a><a href='#L1082'>1082</a>
-<a name='L1083'></a><a href='#L1083'>1083</a>
-<a name='L1084'></a><a href='#L1084'>1084</a>
-<a name='L1085'></a><a href='#L1085'>1085</a>
-<a name='L1086'></a><a href='#L1086'>1086</a>
-<a name='L1087'></a><a href='#L1087'>1087</a>
-<a name='L1088'></a><a href='#L1088'>1088</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1075'></a><a href='#L1075'>1075</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1361,14 +1348,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2062,11 +2041,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2449,14 +2423,6 @@ const METADATA_TEXT = `Software developer and philosopher in Berlin`;
  * Create an empty div with the key class
  * @returns {string} - HTML div element with key class and no content
  */
-function <span class="fstat-no" title="function not covered" >createEmptyKeyDiv(</span>) {
-<span class="cstat-no" title="statement not covered" >  return createDiv(CLASS.KEY, '');</span>
-}
-&nbsp;
-function <span class="fstat-no" title="function not covered" >prefixWithEmptyKey(</span>valueDiv) {
-  const emptyKeyDiv = <span class="cstat-no" title="statement not covered" >createEmptyKeyDiv();</span>
-<span class="cstat-no" title="statement not covered" >  return createPair(emptyKeyDiv, valueDiv);</span>
-}
 &nbsp;
 /**
  * Create the content for the header section
@@ -3148,11 +3114,6 @@ function generateToyInputSection() {
  * @param {string} valueHTML - The HTML for the value div
  * @returns {string} - Section HTML with empty key and value
  */
-function <span class="fstat-no" title="function not covered" >createValueOnlySection(</span>valueHTML) {
-  const keyDiv = <span class="cstat-no" title="statement not covered" >createEmptyKeyDiv();</span>
-  const valueDiv = <span class="cstat-no" title="statement not covered" >createValueDiv(valueHTML);</span>
-<span class="cstat-no" title="statement not covered" >  return formatSection(keyDiv, valueDiv);</span>
-}
 &nbsp;
 /**
  * Generate the button section for a toy component
@@ -3331,7 +3292,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T13:43:45.074Z
+                at 2025-05-11T13:44:13.642Z
             </div>
         <script src="../prettify.js"></script>
         <script>
