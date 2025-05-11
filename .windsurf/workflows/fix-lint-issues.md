@@ -16,6 +16,7 @@ description: Step-by-step process to fix all lint warnings in the codebase
    - If the warning is related to cyclomatic complexity or complex conditional logic, consider following the dedicated workflow: `extract-conditional-logic` (see `.windsurf/workflows/extract-conditional-logic.md`).
    - If the warning is related to too many parameters (`max-params`) or parameter grouping, consider following the dedicated workflow: `group-related-params` (see `.windsurf/workflows/group-related-params.md`).
    - If the warning suggests that a for loop could be replaced by an iterator method (such as `.map`, `.reduce`, `.find`, etc.), follow the workflow: `convert-for-to-iterator` (see `.windsurf/workflows/convert-for-to-iterator.md`).
+   - If the linter suggests replacing a complex conditional chain (if/else or switch) with a more declarative approach, see the dedicated workflow: `replace-conditional-with-predicate-list` (see `.windsurf/workflows/replace-conditional-with-predicate-list.md`). This is especially useful for normalization, dispatch, or any logic that can be made extensible and DRY by using a list of predicate/value pairs.
 
 4. Repeat steps 1–3:
    - After fixing each warning, run TCR again.
