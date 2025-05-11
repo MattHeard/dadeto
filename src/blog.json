@@ -1,6 +1,28 @@
 {
   "posts": [
     {
+      "key": "BATT3",
+      "title": "Battleship Solitaire Clues Presenter",
+      "publicationDate": "2025-05-11",
+      "content": [
+        "Renders Battleship Solitaire puzzle clues as a formatted grid, given row and column clues in JSON. Handles invalid input with clear error messages. Useful for puzzle creators and solvers to visualize clues before attempting or publishing a puzzle."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "A stylized Battleship Solitaire grid with row and column numbers, bold navy title text, and a clean puzzle layout."
+      },
+      "toy": {
+        "modulePath": "/2025-05-11/battleshipSolitaireClues.js",
+        "functionName": "createBattleshipCluesBoardElement"
+      },
+      "tags": [
+        "toy",
+        "battleship",
+        "puzzle",
+        "presenter"
+      ]
+    },
+    {
       "key": "BATT2",
       "title": "Battleship Solitaire Fleet",
       "publicationDate": "2025-05-08",
