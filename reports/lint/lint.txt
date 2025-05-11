@@ -1,5 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  757:1  warning  Function 'hasToy' has a complexity of 6. Maximum allowed is 2  complexity
+  758:3  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  759:3  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 1 problem (0 errors, 1 warning)
+✖ 2 problems (0 errors, 2 warnings)
