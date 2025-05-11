@@ -1,8 +1,3 @@
-/**
- * Create paragraphs HTML string.
- * @param {string|string[]} content - A string or an array of strings.
- * @returns {string} - HTML string composed of paragraph elements.
- */
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
 import { HEADER_BANNER } from './title.js';
@@ -23,16 +18,10 @@ function createParagraphs(content) {
   }
 }
 
-/**
- * Create a blockquote HTML string.
- * @param {string|string[]} content - A string or an array of strings.
- * @returns {string} - The blockquote HTML.
- */
 function createBlockquote(content) {
   return `<blockquote class="${CLASS.VALUE}">${BLOCKQUOTE_CORNERS}${createParagraphs(content)}</blockquote>`;
 }
 
-// CSS class names
 const CLASS = {
   KEY: 'key',
   VALUE: 'value',
