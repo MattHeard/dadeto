@@ -783,27 +783,11 @@ function hasToy(post) {
 }
 
 /**
- * Generate the input section for a toy component
- * @returns {string} - HTML for the input section
- */
-function generateToyInputSection() {
-  const valueHTML = '<form><input type="text" disabled></form>';
-  return createLabeledSection({ label: 'in', valueHTML });
-}
-
-/**
- * Generate the button section for a toy component
- * @returns {string} - HTML for the button section
- */
-/**
  * Helper to generate a section with an empty key and a value.
  * @param {string} valueHTML - The HTML for the value div
  * @returns {string} - Section HTML with empty key and value
  */
-/**
- * Generate the button section for a toy component
- * @returns {string} - HTML for the button section
- */
+
 // Output types for toy dropdown
 const TOY_OUTPUT_TYPES = [
   ['text', 'text'],
