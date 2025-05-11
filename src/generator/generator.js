@@ -84,7 +84,12 @@ function createDiv(classes, content) {
  */
 function createLabeledSection({ label, valueHTML, wrapValueDiv = true, keyExtraClasses = '' }) {
   // Build the key div with CLASS.KEY plus any extra classes
-  const keyClass = keyExtraClasses ? `${CLASS.KEY} ${keyExtraClasses}` : CLASS.KEY;
+  let keyClass;
+  if (keyExtraClasses) {
+    keyClass = `${CLASS.KEY} ${keyExtraClasses}`;
+  } else {
+    keyClass = CLASS.KEY;
+  }
   const keyDiv = createDiv(keyClass, label);
   const valuePart = labeledSectionValuePart(valueHTML, wrapValueDiv);
   return createPair(keyDiv, valuePart);

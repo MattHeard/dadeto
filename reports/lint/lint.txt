@@ -1,6 +1,5 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  85:1   warning  Function 'createLabeledSection' has a complexity of 4. Maximum allowed is 2  complexity
-  87:20  warning  Ternary operator used                                                        no-ternary
+  85:1  warning  Function 'createLabeledSection' has a complexity of 4. Maximum allowed is 2  complexity
 
-✖ 2 problems (0 errors, 2 warnings)
+✖ 1 problem (0 errors, 1 warning)
