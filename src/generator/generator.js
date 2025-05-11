@@ -871,11 +871,8 @@ function hasToy(post) {
  * @returns {string} - HTML for the input section
  */
 function generateToyInputSection() {
-  const keyDiv = createDiv(CLASS.KEY, 'in');
-  const valueContent = '<form><input type="text" disabled></form>';
-  const valueDiv = createValueDiv(valueContent);
-
-  return formatSection(keyDiv, valueDiv);
+  const valueHTML = '<form><input type="text" disabled></form>';
+  return createLabeledSection('in', valueHTML);
 }
 
 /**
