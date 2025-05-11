@@ -63,7 +63,7 @@ describe('createBattleshipCluesBoardElement – error handling', () => {
     const dom = makeDom();
     const bad = JSON.stringify({ rowClues: [], colClues: [1] });
     const el = createBattleshipCluesBoardElement(bad, dom);
-    expect(el.text).toMatch(/non‑empty/);
+    expect(el.text).toMatch(/non-empty/);
   });
 });
 

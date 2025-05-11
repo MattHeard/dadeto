@@ -42,7 +42,7 @@ function validateCluesObject(obj) {
     return 'Clue values must be numbers';
   }
   if (obj.rowClues.length === 0 || obj.colClues.length === 0) {
-    return 'rowClues and colClues must be non‑empty';
+    return 'rowClues and colClues must be non-empty';
   }
   return '';
 }
