@@ -625,21 +625,7 @@ function mediaSectionBuilder(label, valueHTML) {
   return keyDiv + valueHTML;
 }
 
-/**
- * Higher-order function for generating media sections
- */
-function createMediaSectionGenerator(mediaType, label) {
-  return function (post) {
-    if (!shouldDisplayMedia(post, mediaType)) {
-      return '';
-    }
 
-    const keyDiv = createMediaKeyDiv(label);
-    const valueDiv = generateMediaContent(post, mediaType);
-
-    return formatSection(keyDiv, valueDiv);
-  };
-}
 
 /**
  * Create illustration image element
