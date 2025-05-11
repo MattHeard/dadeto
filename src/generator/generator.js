@@ -554,9 +554,6 @@ function hasRelatedLinks(post) {
 /**
  * Check if media should be displayed
  */
-function shouldDisplayMedia(post, mediaType) {
-  return hasMediaType(post, mediaType) && true;
-}
 
 /**
  * Generate media content based on media type
@@ -637,7 +634,7 @@ const MEDIA_CONFIG = [
 
 // Generic media section builder
 function buildMediaSection(post, type, label) {
-  if (!shouldDisplayMedia(post, type)) {
+  if (!hasMediaType(post, type)) {
     return '';
   }
   return createLabeledSection({
