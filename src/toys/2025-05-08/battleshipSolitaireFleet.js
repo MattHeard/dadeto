@@ -210,9 +210,7 @@ function makePlaceShip(cfg, env) {
   return len => placeShip(len, { cfg, occupied }, env);
 }
 
-function isValidFleetResult(result, lengths) {
-  return result && result.length === lengths.length;
-}
+
 
 
 
