@@ -94,7 +94,9 @@ function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
   return createPair(keyDiv, valuePart);
 }
 
-function createLabeledSection({ label, valueHTML, wrapValueDiv = true, keyExtraClasses = '' }) {
+function createLabeledSection({ label, valueHTML, wrapValueDiv, keyExtraClasses }) {
+  if (wrapValueDiv === undefined) {wrapValueDiv = true;}
+  if (keyExtraClasses === undefined) {keyExtraClasses = '';}
   const keyClass = getKeyClass(keyExtraClasses);
   const keyDiv = createDiv(keyClass, label);
   return buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv);
