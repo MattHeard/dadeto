@@ -52,8 +52,8 @@ describe('generateFleet', () => {
     // All occupied squares must be in the same column and consecutive rows
     const occupied = getOccupiedCells(ship);
     // Check that all x are the same and y are consecutive
-    const xs = occupied.map(([x, _]) => x);
-    const ys = occupied.map(([_, y]) => y);
+    const xs = occupied.map(([x]) => x);
+    const ys = occupied.map(([, y]) => y);
     expect(new Set(xs).size).toBe(1);
     ys.sort((a, b) => a - b);
     expect(ys).toEqual([ys[0], ys[0] + 1, ys[0] + 2]);
