@@ -884,12 +884,24 @@ function generateToyInputSection() {
  * Generate the button section for a toy component
  * @returns {string} - HTML for the button section
  */
-function generateToyButtonSection() {
+/**
+ * Helper to generate a section with an empty key and a value.
+ * @param {string} valueHTML - The HTML for the value div
+ * @returns {string} - Section HTML with empty key and value
+ */
+function createValueOnlySection(valueHTML) {
   const keyDiv = createEmptyKeyDiv();
-  const valueContent = '<button type="submit" disabled>Submit</button>';
-  const valueDiv = createValueDiv(valueContent);
-
+  const valueDiv = createValueDiv(valueHTML);
   return formatSection(keyDiv, valueDiv);
+}
+
+/**
+ * Generate the button section for a toy component
+ * @returns {string} - HTML for the button section
+ */
+function generateToyButtonSection() {
+  const valueContent = '<button type="submit" disabled>Submit</button>';
+  return createValueOnlySection(valueContent);
 }
 
 /**
