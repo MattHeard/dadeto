@@ -455,7 +455,7 @@ function createContentSectionItem(content, isFirst) {
 function generateContentSections(post) {
   const contentArray = getContentArray(post);
   const contentItems = contentArray.map(createContentItemWithIndex);
-  return combineHTMLSections(...contentItems);
+  return join(contentItems);
 }
 
 /**
