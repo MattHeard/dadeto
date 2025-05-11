@@ -639,6 +639,19 @@ const MEDIA_CONFIG = [
   ['youtube', 'video'],
 ];
 
+// Generic media section builder
+function buildMediaSection(post, type, label) {
+  if (!shouldDisplayMedia(post, type)) {
+    return '';
+  }
+  return createLabeledSection({
+    label,
+    valueHTML: generateMediaContent(post, type),
+    wrapValueDiv: false,
+    keyExtraClasses: CLASS.MEDIA
+  });
+}
+
 const MEDIA_SECTIONS = {
   illustration: function(post) {
     if (!shouldDisplayMedia(post, 'illustration')) {
