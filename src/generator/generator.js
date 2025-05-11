@@ -425,10 +425,8 @@ function normalizeContentItem(content) {
     [c => Array.isArray(c), { type: 'quote', content }],
     [c => typeof c !== 'object' || c === null, { type: 'text', content }],
   ];
-  for (const [predicate, value] of tests) {
-    if (predicate(content)) {return value;}
-  }
-  return content;
+  const found = tests.find(([predicate]) => predicate(content));
+  return found ? found[1] : content;
 }
 
 /**
