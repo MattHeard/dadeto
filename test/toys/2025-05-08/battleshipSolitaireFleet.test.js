@@ -25,6 +25,15 @@ describe('generateFleet', () => {
   });
 
   test('places a vertical ship of length 3 somewhere', () => {
+    function getOccupiedCells(ship) {
+      const occupied = [];
+      for (let i = 0; i < ship.length; i++) {
+        const sx = ship.start.x;
+        const sy = ship.start.y + i;
+        occupied.push([sx, sy]);
+      }
+      return occupied;
+    }
     // 3x3 board, place a vertical ship of length 3 somewhere
     const cfg = { width: 3, height: 3, ships: [3] };
     // getRandomNumber: () => 0.5 will select a vertical candidate in the shuffled list
