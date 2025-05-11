@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.91% </span>
+                <span class="strong">97.6% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>282/288</span>
+                <span class='fraction'>285/292</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">89.83% </span>
+                <span class="strong">88.52% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>53/59</span>
+                <span class='fraction'>54/61</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.25% </span>
+                <span class="strong">99.26% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>267/269</span>
+                <span class='fraction'>270/272</span>
             </div>
         
             
@@ -1069,7 +1069,11 @@
 <a name='L1004'></a><a href='#L1004'>1004</a>
 <a name='L1005'></a><a href='#L1005'>1005</a>
 <a name='L1006'></a><a href='#L1006'>1006</a>
-<a name='L1007'></a><a href='#L1007'>1007</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1007'></a><a href='#L1007'>1007</a>
+<a name='L1008'></a><a href='#L1008'>1008</a>
+<a name='L1009'></a><a href='#L1009'>1009</a>
+<a name='L1010'></a><a href='#L1010'>1010</a>
+<a name='L1011'></a><a href='#L1011'>1011</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1489,6 +1493,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1496,14 +1501,17 @@
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2494,23 +2502,27 @@ function createContentItemWithIndex(text, index) {
 /**
  * Register a new content type with normalization and rendering logic.
  * @param {ContentTypeHandler} options
+ * @returns {boolean|string} True if registration succeeded, error message otherwise.
  */
 const CONTENT_TYPE_HANDLERS = [];
 &nbsp;
 function validateContentTypeHandler({ predicate, normalize, type, render }) {
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof predicate !== 'function') <span class="cstat-no" title="statement not covered" >throw new Error('registerContentType: predicate must be a function');</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof normalize !== 'function') <span class="cstat-no" title="statement not covered" >throw new Error('registerContentType: normalize must be a function');</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof type !== 'string') <span class="cstat-no" title="statement not covered" >throw new Error('registerContentType: type must be a string');</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof render !== 'function') <span class="cstat-no" title="statement not covered" >throw new Error('registerContentType: render must be a function');</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof predicate !== 'function') <span class="cstat-no" title="statement not covered" >return 'registerContentType: predicate must be a function';</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof normalize !== 'function') <span class="cstat-no" title="statement not covered" >return 'registerContentType: normalize must be a function';</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof type !== 'string') <span class="cstat-no" title="statement not covered" >return 'registerContentType: type must be a string';</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof render !== 'function') <span class="cstat-no" title="statement not covered" >return 'registerContentType: render must be a function';</span>
+  return null;
 }
 &nbsp;
 function registerContentType({ predicate, normalize, type, render }) {
-  validateContentTypeHandler({ predicate, normalize, type, render });
+  const validationError = validateContentTypeHandler({ predicate, normalize, type, render });
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (validationError) <span class="cstat-no" title="statement not covered" >return validationError;</span>
   CONTENT_TYPE_HANDLERS.push({ predicate, normalize, type, render });
   // Invalidate derived maps (for hot-reloading/extensions, if needed)
   normalizationRules.length = 0;
   CONTENT_TYPE_HANDLERS.forEach(h =&gt; normalizationRules.push([h.predicate, h.normalize]));
   Object.assign(CONTENT_RENDERERS, { [type]: render });
+  return true;
 }
 &nbsp;
 // Derived normalization rules and renderer map
@@ -3088,7 +3100,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T18:16:53.998Z
+                at 2025-05-11T18:18:27.076Z
             </div>
         <script src="../prettify.js"></script>
         <script>

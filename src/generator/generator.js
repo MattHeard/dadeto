@@ -417,23 +417,27 @@ function createContentItemWithIndex(text, index) {
 /**
  * Register a new content type with normalization and rendering logic.
  * @param {ContentTypeHandler} options
+ * @returns {boolean|string} True if registration succeeded, error message otherwise.
  */
 const CONTENT_TYPE_HANDLERS = [];
 
 function validateContentTypeHandler({ predicate, normalize, type, render }) {
-  if (typeof predicate !== 'function') {throw new Error('registerContentType: predicate must be a function');}
-  if (typeof normalize !== 'function') {throw new Error('registerContentType: normalize must be a function');}
-  if (typeof type !== 'string') {throw new Error('registerContentType: type must be a string');}
-  if (typeof render !== 'function') {throw new Error('registerContentType: render must be a function');}
+  if (typeof predicate !== 'function') {return 'registerContentType: predicate must be a function';}
+  if (typeof normalize !== 'function') {return 'registerContentType: normalize must be a function';}
+  if (typeof type !== 'string') {return 'registerContentType: type must be a string';}
+  if (typeof render !== 'function') {return 'registerContentType: render must be a function';}
+  return null;
 }
 
 function registerContentType({ predicate, normalize, type, render }) {
-  validateContentTypeHandler({ predicate, normalize, type, render });
+  const validationError = validateContentTypeHandler({ predicate, normalize, type, render });
+  if (validationError) {return validationError;}
   CONTENT_TYPE_HANDLERS.push({ predicate, normalize, type, render });
   // Invalidate derived maps (for hot-reloading/extensions, if needed)
   normalizationRules.length = 0;
   CONTENT_TYPE_HANDLERS.forEach(h => normalizationRules.push([h.predicate, h.normalize]));
   Object.assign(CONTENT_RENDERERS, { [type]: render });
+  return true;
 }
 
 // Derived normalization rules and renderer map
