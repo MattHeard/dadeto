@@ -1,5 +1,0 @@
-
-/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  408:6  warning  '_' is defined but never used  no-unused-vars
-
-✖ 1 problem (0 errors, 1 warning)

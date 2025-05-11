@@ -405,7 +405,7 @@ function normalizeContentItem(content) {
   const normalizationRules = [
     [c => Array.isArray(c), c => ({ type: 'quote', content: c })],
     [c => typeof c !== 'object' || c === null, c => ({ type: 'text', content: c })],
-    [_ => true, c => c], // catch-all
+    [() => true, c => c], // catch-all
   ];
   const found = normalizationRules.find(([predicate]) => predicate(content));
   return found[1](content);
