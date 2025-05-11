@@ -409,16 +409,18 @@ function normalizeContentItem(content) {
  */
 const CONTENT_RENDERERS = {
   quote: createBlockquote,
+  text: renderAsParagraph,
+  __default__: renderAsParagraph,
 };
 
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
 
-  if (shouldRenderAsBlockquote(type, content)) {
+  if (type === 'text' && Array.isArray(content)) {
     return CONTENT_RENDERERS.quote(content);
   }
 
-  return renderAsParagraph(content);
+  return CONTENT_RENDERERS[type] ? CONTENT_RENDERERS[type](content) : CONTENT_RENDERERS.__default__(content);
 }
 
 function isArrayTextQuote(type, content) {

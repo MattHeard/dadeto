@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">99.25% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>268/268</span>
+                <span class='fraction'>266/268</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">91.52% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>55/55</span>
+                <span class='fraction'>54/59</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">98.29% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>117/117</span>
+                <span class='fraction'>115/117</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">99.23% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>262/262</span>
+                <span class='fraction'>260/262</span>
             </div>
         
             
@@ -1101,7 +1101,9 @@
 <a name='L1036'></a><a href='#L1036'>1036</a>
 <a name='L1037'></a><a href='#L1037'>1037</a>
 <a name='L1038'></a><a href='#L1038'>1038</a>
-<a name='L1039'></a><a href='#L1039'>1039</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1039'></a><a href='#L1039'>1039</a>
+<a name='L1040'></a><a href='#L1040'>1040</a>
+<a name='L1041'></a><a href='#L1041'>1041</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1515,21 +1517,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2550,24 +2554,26 @@ function normalizeContentItem(content) {
  */
 const CONTENT_RENDERERS = {
   quote: createBlockquote,
+  text: renderAsParagraph,
+  __default__: renderAsParagraph,
 };
 &nbsp;
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
 &nbsp;
-  if (shouldRenderAsBlockquote(type, content)) {
+  if (type === 'text' &amp;&amp; Array.isArray(content)) {
     return CONTENT_RENDERERS.quote(content);
   }
 &nbsp;
-  return renderAsParagraph(content);
+  return CONTENT_RENDERERS[type] ? CONTENT_RENDERERS[type](content) : <span class="branch-1 cbranch-no" title="branch not covered" >CONTENT_RENDERERS.__default__(content);</span>
 }
 &nbsp;
-function isArrayTextQuote(type, content) {
-  return type === 'text' &amp;&amp; Array.isArray(content);
+function <span class="fstat-no" title="function not covered" >isArrayTextQuote(</span>type, content) {
+<span class="cstat-no" title="statement not covered" >  return type === 'text' &amp;&amp; Array.isArray(content);</span>
 }
 &nbsp;
-function shouldRenderAsBlockquote(type, content) {
-  return type === 'quote' || isArrayTextQuote(type, content);
+function <span class="fstat-no" title="function not covered" >shouldRenderAsBlockquote(</span>type, content) {
+<span class="cstat-no" title="statement not covered" >  return type === 'quote' || isArrayTextQuote(type, content);</span>
 }
 &nbsp;
 function renderAsParagraph(content) {
@@ -3184,7 +3190,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T09:22:53.421Z
+                at 2025-05-11T09:27:38.416Z
             </div>
         <script src="../prettify.js"></script>
         <script>
