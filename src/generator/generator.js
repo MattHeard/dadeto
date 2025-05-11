@@ -422,8 +422,9 @@ function isTextContent(content) {
  */
 function normalizeContentItem(content) {
   const isArrayContent = c => Array.isArray(c);
+  const quoteValue = { type: 'quote', content };
   if (isArrayContent(content)) {
-    return { type: 'quote', content };
+    return quoteValue;
   }
   if (typeof content !== 'object' || content === null) {
     return { type: 'text', content };
