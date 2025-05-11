@@ -507,6 +507,15 @@ function generateDateSection(post) {
 }
 
 /**
+ * Check if post has tags
+ * @param {Object} post - The blog post
+ * @returns {boolean} - True if post has tags
+ */
+function hasTags(post) {
+  return Array.isArray(post.tags) && post.tags.length > 0;
+}
+
+/**
  * Generate the tags section for a blog post
  * @param {Object} post - The blog post
  * @returns {string} - HTML for the tags section
@@ -551,10 +560,6 @@ function hasRelatedLinks(post) {
  * @param {Object} post - The blog post
  * @returns {boolean} - True if post has tags
  */
-function hasTags(post) {
-  return Array.isArray(post.tags) && post.tags.length > 0;
-}
-
 /**
  * Check if post either is YouTube content or has a publication date
  */
