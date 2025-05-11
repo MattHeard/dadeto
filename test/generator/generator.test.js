@@ -322,7 +322,7 @@ describe('Blog Generator', () => {
           content: [
             { type: 'quote', content: 'This is the content of the first post.' },
             {
-              type: 'text',
+              type: 'quote',
               content: [
                 'This is a quote with multiple lines.',
                 'Here is the second one.'
