@@ -881,11 +881,11 @@ function generateToyUISection(post) {
   if (!hasToy(post)) {
     return '';
   }
-  return combineHTMLSections(
+  return join([
     generateToyInputSection(),
     generateToyButtonSection(),
     generateToyOutputSection()
-  );
+  ]);
 }
 
 /**
