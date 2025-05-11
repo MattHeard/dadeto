@@ -82,14 +82,16 @@ function createDiv(classes, content) {
  * @param {boolean} [wrapValueDiv=true] – whether to wrap valueHTML in a value div
  * @returns {string} formatted section HTML
  */
+function getKeyClass(keyExtraClasses) {
+  if (keyExtraClasses) {
+    return `${CLASS.KEY} ${keyExtraClasses}`;
+  }
+  return CLASS.KEY;
+}
+
 function createLabeledSection({ label, valueHTML, wrapValueDiv = true, keyExtraClasses = '' }) {
   // Build the key div with CLASS.KEY plus any extra classes
-  let keyClass;
-  if (keyExtraClasses) {
-    keyClass = `${CLASS.KEY} ${keyExtraClasses}`;
-  } else {
-    keyClass = CLASS.KEY;
-  }
+  const keyClass = getKeyClass(keyExtraClasses);
   const keyDiv = createDiv(keyClass, label);
   const valuePart = labeledSectionValuePart(valueHTML, wrapValueDiv);
   return createPair(keyDiv, valuePart);
