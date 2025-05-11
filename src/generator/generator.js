@@ -706,16 +706,6 @@ function formatBaseLink(type, url, title) {
   return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>${formattedTitle}</a>`;
 }
 
-function joinLinkParts(parts) {
-  const filtered = parts.reduce((acc, part) => {
-    if (part) {
-      acc.push(part);
-    }
-    return acc;
-  }, []);
-  return filtered.join('');
-}
-
 function createLinkParts(baseLink, { author, source, quote }) {
   return [
     baseLink,
@@ -727,7 +717,7 @@ function createLinkParts(baseLink, { author, source, quote }) {
 
 function composeLinkParts(baseLink, meta) {
   const parts = createLinkParts(baseLink, meta);
-  return `<li>${joinLinkParts(parts)}</li>`;
+  return `<li>${join(parts.filter(Boolean))}</li>`;
 }
 
 function formatRelatedLink(link) {
