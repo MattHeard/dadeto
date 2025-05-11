@@ -749,30 +749,6 @@ function generateRelatedLinksSection(post) {
   return createLabeledSection({ label: 'links', valueHTML: valueContent });
 }
 
-function extractModulePath(toy) {
-  return toy?.modulePath;
-}
-
-function getModulePath(post) {
-  return extractModulePath(post?.toy);
-}
-
-function extractFunctionName(toy) {
-  return toy?.functionName;
-}
-
-function getFunctionName(post) {
-  return extractFunctionName(post?.toy);
-}
-
-function hasModulePath(post) {
-  return Boolean(getModulePath(post));
-}
-
-function hasFunctionName(post) {
-  return Boolean(getFunctionName(post));
-}
-
 /**
  * Check if post has a toy component
  * @param {Object} post - The blog post
