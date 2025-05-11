@@ -401,16 +401,31 @@ function createContentItemWithIndex(text, index) {
  * @returns {Object} - Normalized content object.
  */
 /**
+ * @typedef {Object} NormalizedContent
+ * @property {string} type - The normalized content type.
+ * @property {*} content - The normalized content data.
+ */
+
+/**
+ * @typedef {Object} ContentTypeHandler
+ * @property {function(*): boolean} predicate - Returns true if this handler matches the content.
+ * @property {function(*): NormalizedContent} normalize - Normalizes the content to a standard object.
+ * @property {string} type - The normalized content type name.
+ * @property {function(*): string} render - Renders the normalized content as HTML.
+ */
+
+/**
  * Register a new content type with normalization and rendering logic.
- * @param {Object} options
- * @param {function(*): boolean} options.predicate - Returns true if this handler matches the content.
- * @param {function(*): Object} options.normalize - Normalizes the content to a standard object.
- * @param {string} options.type - The normalized content type name.
- * @param {function(*): string} options.render - Renders the normalized content as HTML.
+ * @param {ContentTypeHandler} options
  */
 const CONTENT_TYPE_HANDLERS = [];
 
 function registerContentType({ predicate, normalize, type, render }) {
+  // Runtime validation for handler structure
+  if (typeof predicate !== 'function') {throw new Error('registerContentType: predicate must be a function');}
+  if (typeof normalize !== 'function') {throw new Error('registerContentType: normalize must be a function');}
+  if (typeof type !== 'string') {throw new Error('registerContentType: type must be a string');}
+  if (typeof render !== 'function') {throw new Error('registerContentType: render must be a function');}
   CONTENT_TYPE_HANDLERS.push({ predicate, normalize, type, render });
   // Invalidate derived maps (for hot-reloading/extensions, if needed)
   normalizationRules.length = 0;
@@ -445,7 +460,7 @@ registerContentType({
 /**
  * Returns the normalizer function for the given raw content.
  * @param {*} content - Raw content to normalize.
- * @returns {function(*): Object} - Normalizer function that returns a normalized content object.
+ * @returns {function(*): NormalizedContent} - Normalizer function that returns a normalized content object.
  */
 function getContentNormalizer(content) {
   const found = normalizationRules.find(([predicate]) => predicate(content));
@@ -455,7 +470,7 @@ function getContentNormalizer(content) {
 /**
  * Normalizes a content item using the registered normalizers.
  * @param {*} content - Raw content to normalize.
- * @returns {Object} Normalized content object with { type, content }.
+ * @returns {NormalizedContent} Normalized content object with { type, content }.
  */
 function normalizeContentItem(content) {
   return getContentNormalizer(content)(content);
@@ -472,7 +487,7 @@ function getContentRenderer(type) {
 
 /**
  * Renders normalized content by dispatching to the correct renderer by type.
- * @param {Object} normalizedContent - Normalized content object with { type, content }.
+ * @param {NormalizedContent} normalizedContent - Normalized content object with { type, content }.
  * @returns {string} Rendered HTML.
  */
 function renderValueDiv(normalizedContent) {

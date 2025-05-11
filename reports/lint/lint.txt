@@ -1,0 +1,5 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
+  423:1  warning  Function 'registerContentType' has a complexity of 5. Maximum allowed is 2  complexity
+
+✖ 1 problem (0 errors, 1 warning)

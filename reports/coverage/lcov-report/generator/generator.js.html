@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.28% </span>
+                <span class="strong">97.9% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>277/279</span>
+                <span class='fraction'>281/287</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">96.07% </span>
+                <span class="strong">89.83% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>49/51</span>
+                <span class='fraction'>53/59</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.24% </span>
+                <span class="strong">99.25% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>262/264</span>
+                <span class='fraction'>266/268</span>
             </div>
         
             
@@ -1051,7 +1051,22 @@
 <a name='L986'></a><a href='#L986'>986</a>
 <a name='L987'></a><a href='#L987'>987</a>
 <a name='L988'></a><a href='#L988'>988</a>
-<a name='L989'></a><a href='#L989'>989</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L989'></a><a href='#L989'>989</a>
+<a name='L990'></a><a href='#L990'>990</a>
+<a name='L991'></a><a href='#L991'>991</a>
+<a name='L992'></a><a href='#L992'>992</a>
+<a name='L993'></a><a href='#L993'>993</a>
+<a name='L994'></a><a href='#L994'>994</a>
+<a name='L995'></a><a href='#L995'>995</a>
+<a name='L996'></a><a href='#L996'>996</a>
+<a name='L997'></a><a href='#L997'>997</a>
+<a name='L998'></a><a href='#L998'>998</a>
+<a name='L999'></a><a href='#L999'>999</a>
+<a name='L1000'></a><a href='#L1000'>1000</a>
+<a name='L1001'></a><a href='#L1001'>1001</a>
+<a name='L1002'></a><a href='#L1002'>1002</a>
+<a name='L1003'></a><a href='#L1003'>1003</a>
+<a name='L1004'></a><a href='#L1004'>1004</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1461,9 +1476,24 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
@@ -2442,16 +2472,31 @@ function createContentItemWithIndex(text, index) {
  * @returns {Object} - Normalized content object.
  */
 /**
+ * @typedef {Object} NormalizedContent
+ * @property {string} type - The normalized content type.
+ * @property {*} content - The normalized content data.
+ */
+&nbsp;
+/**
+ * @typedef {Object} ContentTypeHandler
+ * @property {function(*): boolean} predicate - Returns true if this handler matches the content.
+ * @property {function(*): NormalizedContent} normalize - Normalizes the content to a standard object.
+ * @property {string} type - The normalized content type name.
+ * @property {function(*): string} render - Renders the normalized content as HTML.
+ */
+&nbsp;
+/**
  * Register a new content type with normalization and rendering logic.
- * @param {Object} options
- * @param {function(*): boolean} options.predicate - Returns true if this handler matches the content.
- * @param {function(*): Object} options.normalize - Normalizes the content to a standard object.
- * @param {string} options.type - The normalized content type name.
- * @param {function(*): string} options.render - Renders the normalized content as HTML.
+ * @param {ContentTypeHandler} options
  */
 const CONTENT_TYPE_HANDLERS = [];
 &nbsp;
 function registerContentType({ predicate, normalize, type, render }) {
+  // Runtime validation for handler structure
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof predicate !== 'function') <span class="cstat-no" title="statement not covered" >throw new Error('registerContentType: predicate must be a function');</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof normalize !== 'function') <span class="cstat-no" title="statement not covered" >throw new Error('registerContentType: normalize must be a function');</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof type !== 'string') <span class="cstat-no" title="statement not covered" >throw new Error('registerContentType: type must be a string');</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof render !== 'function') <span class="cstat-no" title="statement not covered" >throw new Error('registerContentType: render must be a function');</span>
   CONTENT_TYPE_HANDLERS.push({ predicate, normalize, type, render });
   // Invalidate derived maps (for hot-reloading/extensions, if needed)
   normalizationRules.length = 0;
@@ -2486,7 +2531,7 @@ registerContentType({
 /**
  * Returns the normalizer function for the given raw content.
  * @param {*} content - Raw content to normalize.
- * @returns {function(*): Object} - Normalizer function that returns a normalized content object.
+ * @returns {function(*): NormalizedContent} - Normalizer function that returns a normalized content object.
  */
 function getContentNormalizer(content) {
   const found = normalizationRules.find(([predicate]) =&gt; predicate(content));
@@ -2496,7 +2541,7 @@ function getContentNormalizer(content) {
 /**
  * Normalizes a content item using the registered normalizers.
  * @param {*} content - Raw content to normalize.
- * @returns {Object} Normalized content object with { type, content }.
+ * @returns {NormalizedContent} Normalized content object with { type, content }.
  */
 function normalizeContentItem(content) {
   return getContentNormalizer(content)(content);
@@ -2513,7 +2558,7 @@ function getContentRenderer(type) {
 &nbsp;
 /**
  * Renders normalized content by dispatching to the correct renderer by type.
- * @param {Object} normalizedContent - Normalized content object with { type, content }.
+ * @param {NormalizedContent} normalizedContent - Normalized content object with { type, content }.
  * @returns {string} Rendered HTML.
  */
 function renderValueDiv(normalizedContent) {
@@ -3034,7 +3079,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T18:14:32.972Z
+                at 2025-05-11T18:16:03.097Z
             </div>
         <script src="../prettify.js"></script>
         <script>
