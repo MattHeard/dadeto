@@ -632,6 +632,20 @@ const MEDIA_CONFIG = [
   ['youtube', 'video'],
 ];
 
+// Declarative mapping for media content rendering
+const MEDIA_CONTENT_CONFIG = {
+  illustration: { wrapperTag: 'div', fragment: createIllustrationImage },
+  audio:        { wrapperTag: 'audio', fragment: createAudioSource },
+  youtube:      { wrapperTag: 'p', fragment: createYouTubeIframe },
+};
+
+// Generic builder for media content
+function buildMediaContent(post, type) {
+  const { wrapperTag, fragment } = MEDIA_CONTENT_CONFIG[type];
+  const innerHTML = fragment(post);
+  return `<${wrapperTag} class="${CLASS.VALUE}">${innerHTML}</${wrapperTag}>`;
+}
+
 // Generic media section builder
 function buildMediaSection(post, type, label) {
   if (!hasMediaType(post, type)) {
