@@ -89,12 +89,15 @@ function getKeyClass(keyExtraClasses) {
   return CLASS.KEY;
 }
 
-function createLabeledSection({ label, valueHTML, wrapValueDiv = true, keyExtraClasses = '' }) {
-  // Build the key div with CLASS.KEY plus any extra classes
-  const keyClass = getKeyClass(keyExtraClasses);
-  const keyDiv = createDiv(keyClass, label);
+function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
   const valuePart = labeledSectionValuePart(valueHTML, wrapValueDiv);
   return createPair(keyDiv, valuePart);
+}
+
+function createLabeledSection({ label, valueHTML, wrapValueDiv = true, keyExtraClasses = '' }) {
+  const keyClass = getKeyClass(keyExtraClasses);
+  const keyDiv = createDiv(keyClass, label);
+  return buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv);
 }
 
 function labeledSectionValuePart(valueHTML, wrapValueDiv) {
