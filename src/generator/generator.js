@@ -716,36 +716,12 @@ function joinLinkParts(parts) {
   return filtered.join('');
 }
 
-function formatAuthor(author) {
-  if (author) {
-    return ` by ${author}`;
-  } else {
-    return '';
-  }
-}
-
-function formatSource(source) {
-  if (source) {
-    return `, ${source}`;
-  } else {
-    return '';
-  }
-}
-
-function formatQuote(quote) {
-  if (quote) {
-    return ` ("${quote}")`;
-  } else {
-    return '';
-  }
-}
-
 function createLinkParts(baseLink, { author, source, quote }) {
   return [
     baseLink,
-    formatAuthor(author),
-    formatSource(source),
-    formatQuote(quote)
+    prefixIfPresent(' by ', author),
+    prefixIfPresent(', ', source),
+    prefixIfPresent(' ("', quote) + (quote ? '")' : '')
   ];
 }
 
