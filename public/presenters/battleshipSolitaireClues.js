@@ -111,5 +111,3 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
   dom.setTextContent(pre, content);
   return pre;
 }
-
-export { createBattleshipCluesBoardElement };

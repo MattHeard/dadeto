@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746989398238" clover="3.2.0">
-  <project timestamp="1746989398238" name="All files">
-    <metrics statements="1448" coveredstatements="1445" conditionals="422" coveredconditionals="418" methods="597" coveredmethods="596" elements="2467" coveredelements="2459" complexity="0" loc="1448" ncloc="1448" packages="15" files="31" classes="31"/>
+<coverage generated="1746989433648" clover="3.2.0">
+  <project timestamp="1746989433648" name="All files">
+    <metrics statements="1493" coveredstatements="1445" conditionals="442" coveredconditionals="418" methods="610" coveredmethods="596" elements="2545" coveredelements="2459" complexity="0" loc="1493" ncloc="1493" packages="15" files="32" classes="32"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -692,7 +692,55 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="116" coveredstatements="116" conditionals="40" coveredconditionals="40" methods="53" coveredmethods="53"/>
+      <metrics statements="161" coveredstatements="116" conditionals="60" coveredconditionals="40" methods="66" coveredmethods="53"/>
+      <file name="battleshipSolitaireClues.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js">
+        <metrics statements="45" coveredstatements="0" conditionals="20" coveredconditionals="0" methods="13" coveredmethods="0"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="36" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="37" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="40" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="44" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="59" count="0" type="stmt"/>
+        <line num="60" count="0" type="stmt"/>
+        <line num="61" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="64" count="0" type="stmt"/>
+        <line num="69" count="0" type="stmt"/>
+        <line num="70" count="0" type="stmt"/>
+        <line num="72" count="0" type="stmt"/>
+        <line num="73" count="0" type="stmt"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="78" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="80" count="0" type="stmt"/>
+        <line num="81" count="0" type="stmt"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="85" count="0" type="stmt"/>
+        <line num="86" count="0" type="stmt"/>
+        <line num="88" count="0" type="stmt"/>
+        <line num="91" count="0" type="stmt"/>
+        <line num="92" count="0" type="stmt"/>
+        <line num="93" count="0" type="stmt"/>
+        <line num="97" count="0" type="stmt"/>
+        <line num="98" count="0" type="stmt"/>
+        <line num="99" count="0" type="stmt"/>
+        <line num="100" count="0" type="stmt"/>
+        <line num="104" count="0" type="stmt"/>
+        <line num="107" count="0" type="stmt"/>
+        <line num="108" count="0" type="stmt"/>
+        <line num="110" count="0" type="stmt"/>
+        <line num="111" count="0" type="stmt"/>
+        <line num="112" count="0" type="stmt"/>
+      </file>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js">
         <metrics statements="66" coveredstatements="66" conditionals="20" coveredconditionals="20" methods="30" coveredmethods="30"/>
         <line num="21" count="5" type="stmt"/>
