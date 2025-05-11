@@ -812,6 +812,12 @@ const TOY_OUTPUT_TYPES = [
   ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
 ];
 
+// Generic select builder for dropdowns
+function buildSelect(selectClass, entries) {
+  const options = entries.map(([value, label]) => `<option value="${value}">${label}</option>`).join('');
+  return `<select class="${selectClass}">${options}</select>`;
+}
+
 function generateToyButtonSection() {
   const valueContent = '<button type="submit" disabled>Submit</button>';
   return createLabeledSection({ label: '', valueHTML: valueContent });
