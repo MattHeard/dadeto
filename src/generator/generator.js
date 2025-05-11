@@ -774,9 +774,6 @@ function generateRelatedLinksSection(post) {
 /**
  * Combine multiple HTML sections into a single string
  */
-function combineHTMLSections(...sections) {
-  return sections.join('');
-}
 
 function extractModulePath(toy) {
   return toy?.modulePath;
