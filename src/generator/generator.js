@@ -420,6 +420,9 @@ const CONTENT_RENDERERS = {
   __default__: renderAsParagraph,
 };
 
+/**
+ * Rendering must dispatch by type, not by content shape, since normalized objects can no longer be detected by predicates.
+ */
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
   const renderer = CONTENT_RENDERERS[type] || CONTENT_RENDERERS.__default__;
