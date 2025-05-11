@@ -926,7 +926,7 @@ function getArticleSections(post) {
  * Generate the content of a blog post article
  */
 function generateArticleContent(post) {
-  return combineHTMLSections(...getArticleSections(post));
+  return join(getArticleSections(post));
 }
 
 /**

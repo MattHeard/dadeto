@@ -895,7 +895,7 @@ FNDA:11,composeLinkParts
 FNDA:11,formatRelatedLink
 FNDA:15,generateRelatedLinksSection
 FNDA:11,(anonymous_95)
-FNDA:33,combineHTMLSections
+FNDA:18,combineHTMLSections
 FNDA:30,extractModulePath
 FNDA:30,getModulePath
 FNDA:6,extractFunctionName
@@ -1135,7 +1135,7 @@ DA:767,11
 DA:769,11
 DA:770,4
 DA:771,4
-DA:778,33
+DA:778,18
 DA:782,30
 DA:786,30
 DA:790,6
@@ -1285,7 +1285,7 @@ FN:161,createHtmlTag
 FN:171,wrapHtml
 FNF:13
 FNH:13
-FNDA:573,join
+FNDA:588,join
 FNDA:113,getOpeningTagParts
 FNDA:113,createOpeningTag
 FNDA:113,getClosingTagParts
@@ -1303,7 +1303,7 @@ DA:7,2
 DA:12,2
 DA:15,2
 DA:22,2
-DA:38,573
+DA:38,588
 DA:42,2
 DA:43,2
 DA:44,2
