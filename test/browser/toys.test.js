@@ -36,7 +36,6 @@ describe('toys', () => {
         },
         closest: jest.fn(() => mockArticle)
       };
-      const mockLogInfo = jest.fn();
       const mockGetData = jest.fn(() => ({ output: { 'post-123': 'mockOutput' } }));
 
       const dom = {
