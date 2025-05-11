@@ -389,6 +389,72 @@
         </script>
       </article>
       <article
+        class="entry tag-toy tag-battleship tag-puzzle tag-clues"
+        id="BATT3"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">BATT3</div>
+        <div class="value">
+          <h2><a href="#BATT3">Battleship Solitaire Clues</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">11 May 2025</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-battleship">battleship</a>,
+          <a class="tag-puzzle">puzzle</a>, <a class="tag-clues">clues</a>
+        </p>
+        <div class="key media">illus</div>
+        <div class="value">
+          <img
+            loading="lazy"
+            src="2025-05-11.png"
+            alt="a sepia-toned steampunk puzzle schematic featuring a grid of dots with numerical clues along the top, bottom, left, and right, all framed by brass pipes and riveted metal borders"
+          />
+        </div>
+        <div class="key">text</div>
+        <p class="value">
+          Converts a Battleship Solitaire fleet layout into row and column
+          clues. Accepts a fleet as input (in JSON format) and outputs the
+          corresponding clues as arrays. Useful for puzzle creators to generate
+          clues from a solution grid, validate fleet layouts, or create custom
+          Battleship Solitaire challenges.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <form><input type="text" disabled /></form>
+        </div>
+        <div class="key"></div>
+        <div class="value"><button type="submit" disabled>Submit</button></div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'BATT3',
+            '/2025-05-11/battleshipSolitaireClues.js',
+            'generateClues'
+          );
+        </script>
+      </article>
+      <article
         class="entry tag-toy tag-battleship tag-puzzle tag-generator"
         id="BATT2"
       >

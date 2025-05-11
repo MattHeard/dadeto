@@ -22,6 +22,29 @@
         "clues"
       ]
     },
+
+    {
+      "key": "BATT3",
+      "title": "Battleship Solitaire Clues",
+      "publicationDate": "2025-05-11",
+      "content": [
+        "Converts a Battleship Solitaire fleet layout into row and column clues. Accepts a fleet as input (in JSON format) and outputs the corresponding clues as arrays. Useful for puzzle creators to generate clues from a solution grid, validate fleet layouts, or create custom Battleship Solitaire challenges."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a sepia-toned steampunk puzzle schematic featuring a grid of dots with numerical clues along the top, bottom, left, and right, all framed by brass pipes and riveted metal borders"
+      },
+      "toy": {
+        "modulePath": "/2025-05-11/battleshipSolitaireClues.js",
+        "functionName": "generateClues"
+      },
+      "tags": [
+        "toy",
+        "battleship",
+        "puzzle",
+        "clues"
+      ]
+    },
     {
       "key": "BATT2",
       "title": "Battleship Solitaire Fleet",
