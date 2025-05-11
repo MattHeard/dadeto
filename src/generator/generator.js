@@ -420,12 +420,15 @@ function createContentItemWithIndex(text, index) {
  */
 const CONTENT_TYPE_HANDLERS = [];
 
-function registerContentType({ predicate, normalize, type, render }) {
-  // Runtime validation for handler structure
+function validateContentTypeHandler({ predicate, normalize, type, render }) {
   if (typeof predicate !== 'function') {throw new Error('registerContentType: predicate must be a function');}
   if (typeof normalize !== 'function') {throw new Error('registerContentType: normalize must be a function');}
   if (typeof type !== 'string') {throw new Error('registerContentType: type must be a string');}
   if (typeof render !== 'function') {throw new Error('registerContentType: render must be a function');}
+}
+
+function registerContentType({ predicate, normalize, type, render }) {
+  validateContentTypeHandler({ predicate, normalize, type, render });
   CONTENT_TYPE_HANDLERS.push({ predicate, normalize, type, render });
   // Invalidate derived maps (for hot-reloading/extensions, if needed)
   normalizationRules.length = 0;
