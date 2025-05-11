@@ -1,7 +1,8 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-11/battleshipSolitaireClues.js
-  45:1  warning  Function 'incrementClues' has too many parameters (6). Maximum allowed is 3  max-params
-  45:1  warning  Function 'incrementClues' has a complexity of 5. Maximum allowed is 2        complexity
-  52:1  warning  Function 'parseFleet' has a complexity of 5. Maximum allowed is 2            complexity
+  45:1  warning  Function 'incrementClues' has too many parameters (4). Maximum allowed is 3  max-params
+  52:1  warning  Function 'isOnBoard' has a complexity of 4. Maximum allowed is 2             complexity
+  56:1  warning  Function 'parseFleet' has a complexity of 3. Maximum allowed is 2            complexity
+  69:1  warning  Function 'isValidFleet' has a complexity of 6. Maximum allowed is 2          complexity
 
-✖ 3 problems (0 errors, 3 warnings)
+✖ 4 problems (0 errors, 4 warnings)
