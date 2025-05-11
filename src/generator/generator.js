@@ -421,6 +421,10 @@ function createContentItemWithIndex(text, index) {
  */
 const CONTENT_TYPE_HANDLERS = [];
 
+function isHandlerKeyValid(key, handler, typeChecks) {
+  return typeChecks[key](handler[key]);
+}
+
 function validateContentTypeHandler(handler) {
   const typeChecks = {
     predicate: v => typeof v === 'function',
@@ -435,7 +439,7 @@ function validateContentTypeHandler(handler) {
     render: 'registerContentType: render must be a function',
   };
   for (const key in typeChecks) {
-    if (!typeChecks[key](handler[key])) {
+    if (!isHandlerKeyValid(key, handler, typeChecks)) {
       return errorMessages[key];
     }
   }
