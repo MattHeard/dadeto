@@ -81,11 +81,13 @@ function createDiv(classes, content) {
  * @param {boolean} [wrapValueDiv=true] – whether to wrap valueHTML in a value div
  * @returns {string} formatted section HTML
  */
-function createLabeledSection(label, valueHTML, wrapValueDiv = true) {
+function createLabeledSection(label, valueHTML) {
   const keyDiv = createDiv(CLASS.KEY, label);
-  if (wrapValueDiv) {
-    return createPair(keyDiv, createValueDiv(valueHTML));
-  }
+  return createPair(keyDiv, createValueDiv(valueHTML));
+}
+
+function createLabeledSectionNoWrap(label, valueHTML) {
+  const keyDiv = createDiv(CLASS.KEY, label);
   return createPair(keyDiv, valueHTML);
 }
 
@@ -517,7 +519,7 @@ function generateTitleSection(post) {
  */
 function generateDateSection(post) {
   const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
-  return createLabeledSection('pubAt', valueHTML, false);
+  return createLabeledSectionNoWrap('pubAt', valueHTML);
 }
 
 /**
@@ -543,7 +545,7 @@ function generateTagsSection(post) {
     return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
   }).join(', ');
   const tagsValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagsContent}</p>`;
-  return createLabeledSection('tags', tagsValue, false);
+  return createLabeledSectionNoWrap('tags', tagsValue);
 }
 
 /**
