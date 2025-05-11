@@ -921,7 +921,7 @@ function createValueOnlySection(valueHTML) {
  */
 function generateToyButtonSection() {
   const valueContent = '<button type="submit" disabled>Submit</button>';
-  return createValueOnlySection(valueContent);
+  return createLabeledSection({ label: '', valueHTML: valueContent });
 }
 
 /**
