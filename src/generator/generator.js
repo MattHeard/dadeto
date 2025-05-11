@@ -413,14 +413,20 @@ const CONTENT_RENDERERS = {
   __default__: renderAsParagraph,
 };
 
+function isBlockquoteContent(type, content) {
+  return type === 'text' && Array.isArray(content);
+}
+
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
-
-  if (type === 'text' && Array.isArray(content)) {
+  if (isBlockquoteContent(type, content)) {
     return CONTENT_RENDERERS.quote(content);
   }
-
-  return CONTENT_RENDERERS[type] ? CONTENT_RENDERERS[type](content) : CONTENT_RENDERERS.__default__(content);
+  if (CONTENT_RENDERERS[type]) {
+    return CONTENT_RENDERERS[type](content);
+  } else {
+    return CONTENT_RENDERERS.__default__(content);
+  }
 }
 
 function isArrayTextQuote(type, content) {

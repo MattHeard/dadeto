@@ -1,7 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  416:1   warning  Function 'renderValueDiv' has a complexity of 4. Maximum allowed is 2  complexity
-  423:10  warning  Ternary operator used                                                  no-ternary
-  430:10  warning  'shouldRenderAsBlockquote' is defined but never used                   no-unused-vars
+  420:1   warning  Function 'renderValueDiv' has a complexity of 3. Maximum allowed is 2  complexity
+  436:10  warning  'shouldRenderAsBlockquote' is defined but never used                   no-unused-vars
 
-✖ 3 problems (0 errors, 3 warnings)
+✖ 2 problems (0 errors, 2 warnings)
