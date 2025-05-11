@@ -583,13 +583,7 @@ function shouldDisplayMedia(post, mediaType) {
   return hasMediaType(post, mediaType) && isValidMediaType(post, mediaType);
 }
 
-/**
- * Create a key div for media sections
- */
-function createMediaKeyDiv(label) {
-  const classes = `${CLASS.KEY} ${CLASS.MEDIA}`;
-  return createDiv(classes, label);
-}
+
 
 /**
  * Format a section with key and value divs
