@@ -614,16 +614,6 @@ function shouldDisplayMedia(post, mediaType) {
 
 
 /**
- * Format a section with key and value divs
- * @param {string} keyDiv - The key div HTML
- * @param {string} valueDiv - The value div HTML
- * @returns {string} - Formatted section HTML
- */
-function formatSection(keyDiv, valueDiv) {
-  return `${keyDiv}${valueDiv}`;
-}
-
-/**
  * Generate media content based on media type
  */
 function generateMediaContent(post, mediaType) {
