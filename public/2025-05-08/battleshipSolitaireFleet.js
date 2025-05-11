@@ -157,13 +157,17 @@ function collectCandidatesForStart(start, length, cfg, occupied) {
 function collectAllCandidates(length, cfg, occupied) {
   const candidates = [];
   for (let y = 0; y < cfg.height; y++) {
-    for (let x = 0; x < cfg.width; x++) {
-      const start = { x, y };
-      const localCandidates = collectCandidatesForStart(start, length, cfg, occupied);
-      candidates.push(...localCandidates);
-    }
+    collectCandidatesForRow(y, length, cfg, occupied, candidates);
   }
   return candidates;
+}
+
+function collectCandidatesForRow(y, length, cfg, occupied, candidates) {
+  for (let x = 0; x < cfg.width; x++) {
+    const start = { x, y };
+    const localCandidates = collectCandidatesForStart(start, length, cfg, occupied);
+    candidates.push(...localCandidates);
+  }
 }
 
 function markOccupiedSquares(chosen, occupied, length) {
@@ -294,7 +298,7 @@ function tryGenerateFleet(cfg, env, maxTries) {
 
 function generateFleet(input, env) {
   const cfg = parseConfig(input);
-  if (shouldReturnAreaError(cfg)) return fleetAreaError();
+  if (shouldReturnAreaError(cfg)) {return fleetAreaError();}
   const MAX_TRIES = 100;
   const fleetResult = tryGenerateFleet(cfg, env, MAX_TRIES);
   return getFleetResultOrError(fleetResult);
@@ -305,7 +309,7 @@ function shouldReturnAreaError(cfg) {
 }
 
 function getFleetResultOrError(fleetResult) {
-  if (fleetResult !== null) return fleetResult;
+  if (fleetResult !== null) {return fleetResult;}
   return fleetRetryError();
 }
 
