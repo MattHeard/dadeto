@@ -138,20 +138,24 @@ function collectCandidatesForStart(start, length, cfg, occupied) {
   const directions = ['H', 'V'];
   const candidates = [];
   for (const direction of directions) {
-    const endCoord = getEndCoord(direction, start, length);
-    if (!inBounds(endCoord, cfg)) {
-      continue;
-    }
-    const segReducer = makeSegReducer(direction, start, occupied);
-    const { segs, valid } = Array.from({ length }).reduce(
-      segReducer,
-      { segs: [], valid: true }
-    );
-    if (isValidCandidate(cfg, occupied, segs, valid)) {
-      candidates.push({ start, length, direction });
-    }
+    collectCandidatesForDirection({ direction, start, length, cfg, occupied, candidates });
   }
   return candidates;
+}
+
+function collectCandidatesForDirection({ direction, start, length, cfg, occupied, candidates }) {
+  const endCoord = getEndCoord(direction, start, length);
+  if (!inBounds(endCoord, cfg)) {
+    return;
+  }
+  const segReducer = makeSegReducer(direction, start, occupied);
+  const { segs, valid } = Array.from({ length }).reduce(
+    segReducer,
+    { segs: [], valid: true }
+  );
+  if (isValidCandidate(cfg, occupied, segs, valid)) {
+    candidates.push({ start, length, direction });
+  }
 }
 
 function collectAllCandidates(length, cfg, occupied) {
