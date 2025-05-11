@@ -9,7 +9,13 @@ describe('handleTagLinks', () => {
     // Mock dom helpers
     const dom = {
       getElementsByTagName: jest.fn(() => [link1, link2]),
-      getClasses: jest.fn(el => el === link1 ? ['tag-foo'] : ['tag-bar']),
+      getClasses: jest.fn(el => {
+        if (el === link1) {
+          return ['tag-foo'];
+        } else {
+          return ['tag-bar'];
+        }
+      }),
       addEventListener: jest.fn()
     };
     // Run
