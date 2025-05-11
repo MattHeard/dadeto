@@ -1,7 +1,7 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-11/battleshipSolitaireClues.js
-  10:1   warning  Function 'generateClues' has a complexity of 11. Maximum allowed is 2  complexity
-  10:31  warning  'env' is defined but never used                                        no-unused-vars
-  43:1   warning  Function 'getShipCells' has a complexity of 3. Maximum allowed is 2    complexity
+  45:1  warning  Function 'incrementClues' has too many parameters (6). Maximum allowed is 3  max-params
+  45:1  warning  Function 'incrementClues' has a complexity of 5. Maximum allowed is 2        complexity
+  52:1  warning  Function 'parseFleet' has a complexity of 5. Maximum allowed is 2            complexity
 
 ✖ 3 problems (0 errors, 3 warnings)
