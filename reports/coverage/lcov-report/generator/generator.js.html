@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.6% </span>
+                <span class="strong">98.63% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>285/292</span>
+                <span class='fraction'>289/293</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">88.52% </span>
+                <span class="strong">92.72% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>54/61</span>
+                <span class='fraction'>51/55</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.21% </span>
+                <span class="strong">99.24% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>127/128</span>
+                <span class='fraction'>131/132</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.26% </span>
+                <span class="strong">98.91% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>270/272</span>
+                <span class='fraction'>274/277</span>
             </div>
         
             
@@ -1073,7 +1073,20 @@
 <a name='L1008'></a><a href='#L1008'>1008</a>
 <a name='L1009'></a><a href='#L1009'>1009</a>
 <a name='L1010'></a><a href='#L1010'>1010</a>
-<a name='L1011'></a><a href='#L1011'>1011</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1011'></a><a href='#L1011'>1011</a>
+<a name='L1012'></a><a href='#L1012'>1012</a>
+<a name='L1013'></a><a href='#L1013'>1013</a>
+<a name='L1014'></a><a href='#L1014'>1014</a>
+<a name='L1015'></a><a href='#L1015'>1015</a>
+<a name='L1016'></a><a href='#L1016'>1016</a>
+<a name='L1017'></a><a href='#L1017'>1017</a>
+<a name='L1018'></a><a href='#L1018'>1018</a>
+<a name='L1019'></a><a href='#L1019'>1019</a>
+<a name='L1020'></a><a href='#L1020'>1020</a>
+<a name='L1021'></a><a href='#L1021'>1021</a>
+<a name='L1022'></a><a href='#L1022'>1022</a>
+<a name='L1023'></a><a href='#L1023'>1023</a>
+<a name='L1024'></a><a href='#L1024'>1024</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1501,6 +1514,19 @@
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2506,17 +2532,30 @@ function createContentItemWithIndex(text, index) {
  */
 const CONTENT_TYPE_HANDLERS = [];
 &nbsp;
-function validateContentTypeHandler({ predicate, normalize, type, render }) {
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof predicate !== 'function') <span class="cstat-no" title="statement not covered" >return 'registerContentType: predicate must be a function';</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof normalize !== 'function') <span class="cstat-no" title="statement not covered" >return 'registerContentType: normalize must be a function';</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof type !== 'string') <span class="cstat-no" title="statement not covered" >return 'registerContentType: type must be a string';</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof render !== 'function') <span class="cstat-no" title="statement not covered" >return 'registerContentType: render must be a function';</span>
+function validateContentTypeHandler(handler) {
+  const typeChecks = {
+    predicate: v =&gt; typeof v === 'function',
+    normalize: v =&gt; typeof v === 'function',
+    type: v =&gt; typeof v === 'string',
+    render: v =&gt; typeof v === 'function',
+  };
+  const errorMessages = {
+    predicate: 'registerContentType: predicate must be a function',
+    normalize: 'registerContentType: normalize must be a function',
+    type: 'registerContentType: type must be a string',
+    render: 'registerContentType: render must be a function',
+  };
+  for (const key in typeChecks) {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!typeChecks[key](handler[key])) {
+<span class="cstat-no" title="statement not covered" >      return errorMessages[key];</span>
+    }
+  }
   return null;
 }
 &nbsp;
 function registerContentType({ predicate, normalize, type, render }) {
   const validationError = validateContentTypeHandler({ predicate, normalize, type, render });
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (validationError) <span class="cstat-no" title="statement not covered" >return validationError;</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (validationError) {<span class="cstat-no" title="statement not covered" >return validationError;}</span>
   CONTENT_TYPE_HANDLERS.push({ predicate, normalize, type, render });
   // Invalidate derived maps (for hot-reloading/extensions, if needed)
   normalizationRules.length = 0;
@@ -3100,7 +3139,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T18:18:27.076Z
+                at 2025-05-11T18:20:00.328Z
             </div>
         <script src="../prettify.js"></script>
         <script>

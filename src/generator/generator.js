@@ -421,11 +421,24 @@ function createContentItemWithIndex(text, index) {
  */
 const CONTENT_TYPE_HANDLERS = [];
 
-function validateContentTypeHandler({ predicate, normalize, type, render }) {
-  if (typeof predicate !== 'function') {return 'registerContentType: predicate must be a function';}
-  if (typeof normalize !== 'function') {return 'registerContentType: normalize must be a function';}
-  if (typeof type !== 'string') {return 'registerContentType: type must be a string';}
-  if (typeof render !== 'function') {return 'registerContentType: render must be a function';}
+function validateContentTypeHandler(handler) {
+  const typeChecks = {
+    predicate: v => typeof v === 'function',
+    normalize: v => typeof v === 'function',
+    type: v => typeof v === 'string',
+    render: v => typeof v === 'function',
+  };
+  const errorMessages = {
+    predicate: 'registerContentType: predicate must be a function',
+    normalize: 'registerContentType: normalize must be a function',
+    type: 'registerContentType: type must be a string',
+    render: 'registerContentType: render must be a function',
+  };
+  for (const key in typeChecks) {
+    if (!typeChecks[key](handler[key])) {
+      return errorMessages[key];
+    }
+  }
   return null;
 }
 
