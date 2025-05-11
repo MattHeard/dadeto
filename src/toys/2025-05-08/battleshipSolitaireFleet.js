@@ -105,7 +105,9 @@ function getEndCoord(dir, start, len) {
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
 function makeSegReducer(dir, start, occupied) {
-  return (acc, _, i) => {
+  return (acc, _, i) => handleSegment(acc, dir, start, occupied, i);
+
+  function handleSegment(acc, dir, start, occupied, i) {
     if (!acc.valid) {return acc;}
     const sx = getSx(dir, start.x, i);
     const sy = getSy(dir, start.y, i);
@@ -113,7 +115,7 @@ function makeSegReducer(dir, start, occupied) {
       return { ...acc, valid: false };
     }
     return addSegmentToAccumulator(acc, sx, sy);
-  };
+  }
 
   function isSegmentOccupied(occupied, sx, sy) {
     const k = key(sx, sy);
