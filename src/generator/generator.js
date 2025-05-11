@@ -873,11 +873,7 @@ function generateToyUISection(post) {
   if (!hasToy(post)) {
     return '';
   }
-  return join([
-    generateToyInputSection(),
-    generateToyButtonSection(),
-    generateToyOutputSection()
-  ]);
+  return join(TOY_UI_SECTIONS.map(([label, buildHTML]) => buildToySection(label, buildHTML)));
 }
 
 /**

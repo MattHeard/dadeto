@@ -1,7 +1,8 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  857:7   warning  'TOY_UI_SECTIONS' is assigned a value but never used  no-unused-vars
-  863:10  warning  'buildToySection' is defined but never used           no-unused-vars
+  789:10  warning  'generateToyInputSection' is defined but never used   no-unused-vars
+  821:10  warning  'generateToyButtonSection' is defined but never used  no-unused-vars
+  841:10  warning  'generateToyOutputSection' is defined but never used  no-unused-vars
   864:51  warning  Ternary operator used                                 no-ternary
 
-✖ 3 problems (0 errors, 3 warnings)
+✖ 4 problems (0 errors, 4 warnings)
