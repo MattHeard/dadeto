@@ -802,10 +802,6 @@ function buildSelect(selectClass, entries) {
   return `<select class="${selectClass}">${options}</select>`;
 }
 
-function generateToyButtonSection() {
-  const valueContent = '<button type="submit" disabled>Submit</button>';
-  return createLabeledSection({ label: '', valueHTML: valueContent });
-}
 
 /**
  * Generate the output section for a toy component
