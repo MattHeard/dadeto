@@ -1,6 +1,0 @@
-
-/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  636:7   warning  'MEDIA_CONFIG' is assigned a value but never used  no-unused-vars
-  643:10  warning  'buildMediaSection' is defined but never used      no-unused-vars
-
-✖ 2 problems (0 errors, 2 warnings)

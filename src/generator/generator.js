@@ -652,29 +652,9 @@ function buildMediaSection(post, type, label) {
   });
 }
 
-const MEDIA_SECTIONS = {
-  illustration: function(post) {
-    if (!shouldDisplayMedia(post, 'illustration')) {
-      return '';
-    }
-    const valueDiv = generateMediaContent(post, 'illustration');
-    return createLabeledSection({ label: 'illus', valueHTML: valueDiv, wrapValueDiv: false, keyExtraClasses: CLASS.MEDIA });
-  },
-  audio: function(post) {
-    if (!shouldDisplayMedia(post, 'audio')) {
-      return '';
-    }
-    const valueDiv = generateMediaContent(post, 'audio');
-    return createLabeledSection({ label: 'audio', valueHTML: valueDiv, wrapValueDiv: false, keyExtraClasses: CLASS.MEDIA });
-  },
-  youtube: function(post) {
-    if (!shouldDisplayMedia(post, 'youtube')) {
-      return '';
-    }
-    const valueDiv = generateMediaContent(post, 'youtube');
-    return createLabeledSection({ label: 'video', valueHTML: valueDiv, wrapValueDiv: false, keyExtraClasses: CLASS.MEDIA });
-  },
-};
+const MEDIA_SECTIONS = Object.fromEntries(
+  MEDIA_CONFIG.map(([type, label]) => [type, post => buildMediaSection(post, type, label)])
+);
 /**
  * Generate all media sections for a blog post by iterating over the MEDIA_SECTIONS mapping.
  */
