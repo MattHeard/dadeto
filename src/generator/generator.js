@@ -400,44 +400,49 @@ function createContentItemWithIndex(text, index) {
  * @param {Object|string} content - The content item to normalize.
  * @returns {Object} - Normalized content object.
  */
-// Unified content type handler config
-const CONTENT_TYPE_HANDLERS = [
-  {
-    predicate: c => Array.isArray(c),
-    normalize: c => ({ type: 'quote', content: c }),
-    type: 'quote',
-    render: createBlockquote,
-  },
-  {
-    predicate: c => typeof c !== 'object' || c === null,
-    normalize: c => ({ type: 'text', content: c }),
-    type: 'text',
-    render: renderAsParagraph,
-  },
-  {
-    predicate: () => true,
-    normalize: c => c,
-    type: '__default__',
-    render: renderAsParagraph,
-  },
-];
+/**
+ * Content type registration utility for extensible normalization and rendering.
+ * Usage: registerContentType({ predicate, normalize, type, render })
+ */
+const CONTENT_TYPE_HANDLERS = [];
 
-// Generate normalization rules
-const normalizationRules = CONTENT_TYPE_HANDLERS.map(h => [h.predicate, h.normalize]);
+function registerContentType({ predicate, normalize, type, render }) {
+  CONTENT_TYPE_HANDLERS.push({ predicate, normalize, type, render });
+  // Invalidate derived maps (for hot-reloading/extensions, if needed)
+  normalizationRules.length = 0;
+  CONTENT_TYPE_HANDLERS.forEach(h => normalizationRules.push([h.predicate, h.normalize]));
+  Object.assign(CONTENT_RENDERERS, { [type]: render });
+}
+
+// Derived normalization rules and renderer map
+const normalizationRules = [];
+const CONTENT_RENDERERS = {};
+
+// Register built-in content types
+registerContentType({
+  predicate: c => Array.isArray(c),
+  normalize: c => ({ type: 'quote', content: c }),
+  type: 'quote',
+  render: createBlockquote,
+});
+registerContentType({
+  predicate: c => typeof c !== 'object' || c === null,
+  normalize: c => ({ type: 'text', content: c }),
+  type: 'text',
+  render: renderAsParagraph,
+});
+registerContentType({
+  predicate: () => true,
+  normalize: c => c,
+  type: '__default__',
+  render: renderAsParagraph,
+});
 
 function normalizeContentItem(content) {
   const found = normalizationRules.find(([predicate]) => predicate(content));
   return found[1](content);
 }
 
-
-/**
- * Mapping of content types to their renderer functions.
- */
-// Generate content renderers mapping
-const CONTENT_RENDERERS = Object.fromEntries(
-  CONTENT_TYPE_HANDLERS.map(h => [h.type, h.render])
-);
 
 /**
  * Rendering must dispatch by type, not by content shape, since normalized objects can no longer be detected by predicates.

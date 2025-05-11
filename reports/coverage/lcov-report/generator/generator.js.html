@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.26% </span>
+                <span class="strong">99.27% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>269/271</span>
+                <span class='fraction'>275/277</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.21% </span>
+                <span class="strong">99.23% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>254/256</span>
+                <span class='fraction'>260/262</span>
             </div>
         
             
@@ -1017,7 +1017,12 @@
 <a name='L952'></a><a href='#L952'>952</a>
 <a name='L953'></a><a href='#L953'>953</a>
 <a name='L954'></a><a href='#L954'>954</a>
-<a name='L955'></a><a href='#L955'>955</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L955'></a><a href='#L955'>955</a>
+<a name='L956'></a><a href='#L956'>956</a>
+<a name='L957'></a><a href='#L957'>957</a>
+<a name='L958'></a><a href='#L958'>958</a>
+<a name='L959'></a><a href='#L959'>959</a>
+<a name='L960'></a><a href='#L960'>960</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1420,42 +1425,47 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">22x</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2373,44 +2383,49 @@ function createContentItemWithIndex(text, index) {
  * @param {Object|string} content - The content item to normalize.
  * @returns {Object} - Normalized content object.
  */
-// Unified content type handler config
-const CONTENT_TYPE_HANDLERS = [
-  {
-    predicate: c =&gt; Array.isArray(c),
-    normalize: <span class="fstat-no" title="function not covered" >c </span>=&gt; (<span class="cstat-no" title="statement not covered" >{ type: 'quote', content: c })</span>,
-    type: 'quote',
-    render: createBlockquote,
-  },
-  {
-    predicate: c =&gt; typeof c !== 'object' || c === null,
-    normalize: c =&gt; ({ type: 'text', content: c }),
-    type: 'text',
-    render: renderAsParagraph,
-  },
-  {
-    predicate: () =&gt; true,
-    normalize: c =&gt; c,
-    type: '__default__',
-    render: renderAsParagraph,
-  },
-];
+/**
+ * Content type registration utility for extensible normalization and rendering.
+ * Usage: registerContentType({ predicate, normalize, type, render })
+ */
+const CONTENT_TYPE_HANDLERS = [];
 &nbsp;
-// Generate normalization rules
-const normalizationRules = CONTENT_TYPE_HANDLERS.map(h =&gt; [h.predicate, h.normalize]);
+function registerContentType({ predicate, normalize, type, render }) {
+  CONTENT_TYPE_HANDLERS.push({ predicate, normalize, type, render });
+  // Invalidate derived maps (for hot-reloading/extensions, if needed)
+  normalizationRules.length = 0;
+  CONTENT_TYPE_HANDLERS.forEach(h =&gt; normalizationRules.push([h.predicate, h.normalize]));
+  Object.assign(CONTENT_RENDERERS, { [type]: render });
+}
+&nbsp;
+// Derived normalization rules and renderer map
+const normalizationRules = [];
+const CONTENT_RENDERERS = {};
+&nbsp;
+// Register built-in content types
+registerContentType({
+  predicate: c =&gt; Array.isArray(c),
+  normalize: <span class="fstat-no" title="function not covered" >c </span>=&gt; (<span class="cstat-no" title="statement not covered" >{ type: 'quote', content: c })</span>,
+  type: 'quote',
+  render: createBlockquote,
+});
+registerContentType({
+  predicate: c =&gt; typeof c !== 'object' || c === null,
+  normalize: c =&gt; ({ type: 'text', content: c }),
+  type: 'text',
+  render: renderAsParagraph,
+});
+registerContentType({
+  predicate: () =&gt; true,
+  normalize: c =&gt; c,
+  type: '__default__',
+  render: renderAsParagraph,
+});
 &nbsp;
 function normalizeContentItem(content) {
   const found = normalizationRules.find(([predicate]) =&gt; predicate(content));
   return found[1](content);
 }
 &nbsp;
-&nbsp;
-/**
- * Mapping of content types to their renderer functions.
- */
-// Generate content renderers mapping
-const CONTENT_RENDERERS = Object.fromEntries(
-  CONTENT_TYPE_HANDLERS.map(h =&gt; [h.type, h.render])
-);
 &nbsp;
 /**
  * Rendering must dispatch by type, not by content shape, since normalized objects can no longer be detected by predicates.
@@ -2932,7 +2947,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T18:07:43.470Z
+                at 2025-05-11T18:08:59.893Z
             </div>
         <script src="../prettify.js"></script>
         <script>
