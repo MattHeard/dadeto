@@ -157,12 +157,12 @@ function collectCandidatesForStart(start, length, cfg, occupied) {
 function collectAllCandidates(length, cfg, occupied) {
   const candidates = [];
   for (let y = 0; y < cfg.height; y++) {
-    collectCandidatesForRow(y, length, cfg, occupied, candidates);
+    collectCandidatesForRow({ y, length, cfg, occupied, candidates });
   }
   return candidates;
 }
 
-function collectCandidatesForRow(y, length, cfg, occupied, candidates) {
+function collectCandidatesForRow({ y, length, cfg, occupied, candidates }) {
   for (let x = 0; x < cfg.width; x++) {
     const start = { x, y };
     const localCandidates = collectCandidatesForStart(start, length, cfg, occupied);
