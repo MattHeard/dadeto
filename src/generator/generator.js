@@ -151,15 +151,6 @@ function createValueDiv(content, additionalClasses = []) {
   return createDiv(joinedClasses, content);
 }
 
-/**
- * Create an array with two parts for joining
- * @param {string} first - The first part
- * @param {string} second - The second part
- * @returns {Array<string>} - Array containing both parts
- */
-function createParts(first, second) {
-  return [first, second];
-}
 
 /**
  * Create a pair with two elements
@@ -168,8 +159,7 @@ function createParts(first, second) {
  * @returns {string} - Combined HTML without newlines
  */
 function createPair(first, second) {
-  const parts = createParts(first, second);
-  return join(parts);
+  return join([first, second]);
 }
 
 /**
