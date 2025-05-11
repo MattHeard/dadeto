@@ -1,5 +1,0 @@
-
-/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  85:1  warning  Function 'createLabeledSection' has a complexity of 3. Maximum allowed is 2  complexity
-
-✖ 1 problem (0 errors, 1 warning)
