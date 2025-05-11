@@ -1,6 +1,0 @@
-
-/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
-  110:3  warning  Function 'handleSegment' has too many parameters (4). Maximum allowed is 3       max-params
-  118:3  warning  Function 'getNextAccumulator' has too many parameters (4). Maximum allowed is 3  max-params
-
-✖ 2 problems (0 errors, 2 warnings)
