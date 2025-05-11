@@ -202,9 +202,9 @@ function isValidFleetResult(result, lengths) {
 
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (!acc) return null;
+    if (!acc) {return null;}
     const placed = placeShipWithArgs(len);
-    if (!placed) return null;
+    if (!placed) {return null;}
     acc.push(placed);
     return acc;
   };
@@ -216,7 +216,7 @@ function placeAllShips(cfg, env) {
   const placeShipWithArgs = makePlaceShip(cfg, env);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
-  if (result !== null) return result;
+  if (result !== null) {return result;}
   return null;
 }
 
@@ -258,10 +258,6 @@ function fleetRetryError() {
   return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
 }
 
-function fleetLoopBody(i, cfg, env) {
-  // i is currently unused, but included for future extensibility
-  return attemptPlacement(cfg, env);
-}
 
 function maybeReturnFleet(fleet) {
   if (fleet !== null) {return fleet;}

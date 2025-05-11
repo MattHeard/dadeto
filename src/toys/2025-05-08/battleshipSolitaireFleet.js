@@ -258,10 +258,6 @@ function fleetRetryError() {
   return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
 }
 
-function fleetLoopBody(i, cfg, env) {
-  // i is currently unused, but included for future extensibility
-  return attemptPlacement(cfg, env);
-}
 
 function maybeReturnFleet(fleet) {
   if (fleet !== null) {return fleet;}
