@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">99.27% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>275/275</span>
+                <span class='fraction'>273/275</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">99.17% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>121/121</span>
+                <span class='fraction'>120/121</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">99.25% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>268/268</span>
+                <span class='fraction'>266/268</span>
             </div>
         
             
@@ -1204,8 +1204,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">91x</span>
-<span class="cline-any cline-yes">91x</span>
+<span class="cline-any cline-yes">97x</span>
+<span class="cline-any cline-yes">97x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1218,17 +1218,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
+<span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-yes">37x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">31x</span>
+<span class="cline-any cline-yes">37x</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-yes">27x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1262,7 +1262,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1272,8 +1272,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">52x</span>
-<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">58x</span>
+<span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1755,8 +1755,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2823,9 +2823,9 @@ function generateMediaContent(post, mediaType) {
  * @param {string} valueHTML – pre-wrapped value HTML
  * @returns {string} formatted section HTML
  */
-function mediaSectionBuilder(label, valueHTML) {
-  const keyDiv = `&lt;div class="${CLASS.KEY} ${CLASS.MEDIA}"&gt;${label}&lt;/div&gt;`;
-  return keyDiv + valueHTML;
+function <span class="fstat-no" title="function not covered" >mediaSectionBuilder(</span>label, valueHTML) {
+  const keyDiv = <span class="cstat-no" title="statement not covered" >`&lt;div class="${CLASS.KEY} ${CLASS.MEDIA}"&gt;${label}&lt;/div&gt;`;</span>
+<span class="cstat-no" title="statement not covered" >  return keyDiv + valueHTML;</span>
 }
 &nbsp;
 &nbsp;
@@ -2906,14 +2906,14 @@ const MEDIA_SECTIONS = {
       return '';
     }
     const valueDiv = generateMediaContent(post, 'audio');
-    return mediaSectionBuilder('audio', valueDiv);
+    return createLabeledSection('audio', valueDiv, false, CLASS.MEDIA);
   },
   youtube: function(post) {
     if (!shouldDisplayMedia(post, 'youtube')) {
       return '';
     }
     const valueDiv = generateMediaContent(post, 'youtube');
-    return mediaSectionBuilder('video', valueDiv);
+    return createLabeledSection('video', valueDiv, false, CLASS.MEDIA);
   },
 };
 &nbsp;
@@ -3277,7 +3277,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T13:30:54.155Z
+                at 2025-05-11T13:31:19.297Z
             </div>
         <script src="../prettify.js"></script>
         <script>

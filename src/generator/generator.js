@@ -703,14 +703,14 @@ const MEDIA_SECTIONS = {
       return '';
     }
     const valueDiv = generateMediaContent(post, 'audio');
-    return mediaSectionBuilder('audio', valueDiv);
+    return createLabeledSection('audio', valueDiv, false, CLASS.MEDIA);
   },
   youtube: function(post) {
     if (!shouldDisplayMedia(post, 'youtube')) {
       return '';
     }
     const valueDiv = generateMediaContent(post, 'youtube');
-    return mediaSectionBuilder('video', valueDiv);
+    return createLabeledSection('video', valueDiv, false, CLASS.MEDIA);
   },
 };
 
