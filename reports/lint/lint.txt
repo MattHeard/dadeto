@@ -1,6 +1,5 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  420:1   warning  Function 'renderValueDiv' has a complexity of 3. Maximum allowed is 2  complexity
-  432:10  warning  'isArrayTextQuote' is defined but never used                           no-unused-vars
+  420:1  warning  Function 'renderValueDiv' has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 2 problems (0 errors, 2 warnings)
+✖ 1 problem (0 errors, 1 warning)

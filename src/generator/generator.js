@@ -429,9 +429,6 @@ function renderValueDiv(normalizedContent) {
   }
 }
 
-function isArrayTextQuote(type, content) {
-  return type === 'text' && Array.isArray(content);
-}
 
 function renderAsParagraph(content) {
   return `<p class="${CLASS.VALUE}">${content}</p>`;
