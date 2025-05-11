@@ -441,7 +441,11 @@ function validateContentTypeHandler(handler) {
   const failingKey = Object.keys(typeChecks).find(
     key => !isHandlerKeyValid(key, handler, typeChecks)
   );
-  return failingKey ? errorMessages[failingKey] : null;
+  if (failingKey) {
+    return errorMessages[failingKey];
+  } else {
+    return null;
+  }
 }
 
 function registerContentType({ predicate, normalize, type, render }) {
