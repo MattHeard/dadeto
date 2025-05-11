@@ -106,15 +106,23 @@ function getEndCoord(dir, start, len) {
 
 function makeSegReducer(dir, start, occupied) {
   return (acc, _, i) => {
-    if (!acc.valid) {return acc;}
+    if (!acc.valid) return acc;
     const sx = getSx(dir, start.x, i);
     const sy = getSy(dir, start.y, i);
-    const k = key(sx, sy);
-    if (occupied.has(k)) {
+    if (isSegmentOccupied(occupied, sx, sy)) {
       return { ...acc, valid: false };
     }
-    return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
+    return addSegmentToAccumulator(acc, sx, sy);
   };
+
+function isSegmentOccupied(occupied, sx, sy) {
+  const k = key(sx, sy);
+  return occupied.has(k);
+}
+
+function addSegmentToAccumulator(acc, sx, sy) {
+  return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
+}
 }
 
 
