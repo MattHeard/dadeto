@@ -551,15 +551,11 @@ function hasRelatedLinks(post) {
 /**
  * Check if post either is YouTube content or has a publication date
  */
-function isValidMediaType(post, mediaType) {
-  return true;
-}
-
 /**
  * Check if media should be displayed
  */
 function shouldDisplayMedia(post, mediaType) {
-  return hasMediaType(post, mediaType) && isValidMediaType(post, mediaType);
+  return hasMediaType(post, mediaType) && true;
 }
 
 /**

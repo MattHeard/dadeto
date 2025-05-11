@@ -1,6 +1,0 @@
-
-/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  554:27  warning  'post' is defined but never used       no-unused-vars
-  554:33  warning  'mediaType' is defined but never used  no-unused-vars
-
-✖ 2 problems (0 errors, 2 warnings)
