@@ -712,8 +712,20 @@ const MEDIA_SECTIONS = {
     const valueDiv = generateMediaContent(post, 'illustration');
     return mediaSectionBuilder('illus', valueDiv);
   },
-  audio: createMediaSectionGenerator('audio', 'audio'),
-  youtube: createMediaSectionGenerator('youtube', 'video'),
+  audio: function(post) {
+    if (!shouldDisplayMedia(post, 'audio')) {
+      return '';
+    }
+    const valueDiv = generateMediaContent(post, 'audio');
+    return mediaSectionBuilder('audio', valueDiv);
+  },
+  youtube: function(post) {
+    if (!shouldDisplayMedia(post, 'youtube')) {
+      return '';
+    }
+    const valueDiv = generateMediaContent(post, 'youtube');
+    return mediaSectionBuilder('video', valueDiv);
+  },
 };
 
 /**
