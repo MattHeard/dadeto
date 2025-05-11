@@ -21,6 +21,12 @@ if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
 }
 
+// Copy src/blog.json to public/blog.json
+const srcBlogJson = path.join(srcDir, 'blog.json');
+const publicBlogJson = path.join(publicDir, 'blog.json');
+fs.copyFileSync(srcBlogJson, publicBlogJson);
+console.log('Copied: src/blog.json -> public/blog.json');
+
 // --- Copy Toy Files ---
 
 // Predicate to check if an entry is a JS file (excluding .test.js)
