@@ -696,16 +696,16 @@ function formatBaseLink(type, url, title) {
   return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>${formattedTitle}</a>`;
 }
 
+function wrapIfPresent(prefix, value, suffix) {
+  return value ? prefix + value + suffix : '';
+}
+
 function createLinkParts(baseLink, { author, source, quote }) {
-  let quotePart = '';
-  if (quote) {
-    quotePart = prefixIfPresent(' ("', quote) + '")';
-  }
   return [
     baseLink,
     prefixIfPresent(' by ', author),
     prefixIfPresent(', ', source),
-    quotePart
+    wrapIfPresent(' ("', quote, '")')
   ];
 }
 
