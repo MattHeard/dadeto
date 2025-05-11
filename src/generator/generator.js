@@ -438,12 +438,10 @@ function validateContentTypeHandler(handler) {
     type: 'registerContentType: type must be a string',
     render: 'registerContentType: render must be a function',
   };
-  for (const key in typeChecks) {
-    if (!isHandlerKeyValid(key, handler, typeChecks)) {
-      return errorMessages[key];
-    }
-  }
-  return null;
+  const failingKey = Object.keys(typeChecks).find(
+    key => !isHandlerKeyValid(key, handler, typeChecks)
+  );
+  return failingKey ? errorMessages[failingKey] : null;
 }
 
 function registerContentType({ predicate, normalize, type, render }) {

@@ -1,5 +1,5 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  428:1  warning  Function 'validateContentTypeHandler' has a complexity of 3. Maximum allowed is 2  complexity
+  444:10  warning  Ternary operator used  no-ternary
 
 ✖ 1 problem (0 errors, 1 warning)
