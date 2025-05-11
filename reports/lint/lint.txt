@@ -10,9 +10,7 @@
   39:13  warning  'mockLogInfo' is assigned a value but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-05-08/battleshipSolitaireFleet.test.js
-  27:56  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  28:14  warning  'getOccupiedCells' is defined but never used                no-unused-vars
-  60:34  warning  '_' is defined but never used                               no-unused-vars
-  61:31  warning  '_' is defined but never used                               no-unused-vars
+  55:34  warning  '_' is defined but never used  no-unused-vars
+  56:31  warning  '_' is defined but never used  no-unused-vars
 
-✖ 8 problems (0 errors, 8 warnings)
+✖ 6 problems (0 errors, 6 warnings)
