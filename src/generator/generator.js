@@ -903,11 +903,6 @@ function generateArticleContent(post) {
 /**
  * Create blog HTML content array
  */
-function createBlogContentArray(header, articles, footer) {
-  // Remove the newline character between elements
-  return [header, articles, footer];
-}
-
 /**
  * Build the complete HTML content for the blog from header, articles, and footer.
  * @param {string} header - The header HTML.
@@ -916,8 +911,7 @@ function createBlogContentArray(header, articles, footer) {
  * @returns {string} - Combined HTML content.
  */
 function getBlogHtmlContent(header, articles, footer) {
-  const contentArray = createBlogContentArray(header, articles, footer);
-  return contentArray.join('');
+  return join([header, articles, footer]);
 }
 
 /**
