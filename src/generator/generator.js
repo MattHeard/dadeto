@@ -535,7 +535,11 @@ const MEDIA_DISPLAY_RULES = {
 
 function shouldDisplayMedia(post, type) {
   const rule = MEDIA_DISPLAY_RULES[type];
-  return rule ? rule(post) : false;
+  if (rule) {
+    return rule(post);
+  } else {
+    return false;
+  }
 }
 
 function isNonEmptyArray(value) {
@@ -697,7 +701,11 @@ function formatBaseLink(type, url, title) {
 }
 
 function wrapIfPresent(prefix, value, suffix) {
-  return value ? prefix + value + suffix : '';
+  if (value) {
+    return prefix + value + suffix;
+  } else {
+    return '';
+  }
 }
 
 function createLinkParts(baseLink, { author, source, quote }) {
