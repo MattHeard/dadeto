@@ -495,6 +495,8 @@ function generateTitleSection(post) {
 
 /**
  * Generate the date section for a blog post
+ * @param {Object} post - The blog post
+ * @returns {string} - HTML for the date section
  */
 function generateDateSection(post) {
   const dateKey = createDiv(CLASS.KEY, 'pubAt');
