@@ -294,11 +294,17 @@ function tryGenerateFleet(cfg, env, maxTries) {
 
 function generateFleet(input, env) {
   const cfg = parseConfig(input);
-  if (exceedsBoardArea(cfg)) {
-    return fleetAreaError();
-  }
+  if (shouldReturnAreaError(cfg)) {return fleetAreaError();}
   const MAX_TRIES = 100;
   const fleetResult = tryGenerateFleet(cfg, env, MAX_TRIES);
+  return getFleetResultOrError(fleetResult);
+}
+
+function shouldReturnAreaError(cfg) {
+  return exceedsBoardArea(cfg);
+}
+
+function getFleetResultOrError(fleetResult) {
   if (fleetResult !== null) {return fleetResult;}
   return fleetRetryError();
 }

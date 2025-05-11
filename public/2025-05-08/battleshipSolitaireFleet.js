@@ -206,7 +206,7 @@ function shouldAbortPlaceShip(acc, placeShipWithArgs, len) {
 
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (shouldAbortPlaceShip(acc, placeShipWithArgs, len)) return null;
+    if (shouldAbortPlaceShip(acc, placeShipWithArgs, len)) {return null;}
     const placed = placeShipWithArgs(len);
     acc.push(placed);
     return acc;
@@ -294,12 +294,18 @@ function tryGenerateFleet(cfg, env, maxTries) {
 
 function generateFleet(input, env) {
   const cfg = parseConfig(input);
-  if (exceedsBoardArea(cfg)) {
-    return fleetAreaError();
-  }
+  if (shouldReturnAreaError(cfg)) return fleetAreaError();
   const MAX_TRIES = 100;
   const fleetResult = tryGenerateFleet(cfg, env, MAX_TRIES);
-  if (fleetResult !== null) {return fleetResult;}
+  return getFleetResultOrError(fleetResult);
+}
+
+function shouldReturnAreaError(cfg) {
+  return exceedsBoardArea(cfg);
+}
+
+function getFleetResultOrError(fleetResult) {
+  if (fleetResult !== null) return fleetResult;
   return fleetRetryError();
 }
 
