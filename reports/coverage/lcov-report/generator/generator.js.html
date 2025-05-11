@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">98.89% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>268/268</span>
+                <span class='fraction'>268/271</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.18% </span>
+                <span class="strong">93.1% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>54/55</span>
+                <span class='fraction'>54/58</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">99.15% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>117/117</span>
+                <span class='fraction'>117/118</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">98.86% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>262/262</span>
+                <span class='fraction'>262/265</span>
             </div>
         
             
@@ -1107,7 +1107,21 @@
 <a name='L1042'></a><a href='#L1042'>1042</a>
 <a name='L1043'></a><a href='#L1043'>1043</a>
 <a name='L1044'></a><a href='#L1044'>1044</a>
-<a name='L1045'></a><a href='#L1045'>1045</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1045'></a><a href='#L1045'>1045</a>
+<a name='L1046'></a><a href='#L1046'>1046</a>
+<a name='L1047'></a><a href='#L1047'>1047</a>
+<a name='L1048'></a><a href='#L1048'>1048</a>
+<a name='L1049'></a><a href='#L1049'>1049</a>
+<a name='L1050'></a><a href='#L1050'>1050</a>
+<a name='L1051'></a><a href='#L1051'>1051</a>
+<a name='L1052'></a><a href='#L1052'>1052</a>
+<a name='L1053'></a><a href='#L1053'>1053</a>
+<a name='L1054'></a><a href='#L1054'>1054</a>
+<a name='L1055'></a><a href='#L1055'>1055</a>
+<a name='L1056'></a><a href='#L1056'>1056</a>
+<a name='L1057'></a><a href='#L1057'>1057</a>
+<a name='L1058'></a><a href='#L1058'>1058</a>
+<a name='L1059'></a><a href='#L1059'>1059</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1181,6 +1195,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">97x</span>
 <span class="cline-any cline-yes">97x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2228,6 +2256,20 @@ function createDiv(classes, content) {
 }
 &nbsp;
 /**
+ * Build a key-value section.
+ * @param {string} label – text for the key div
+ * @param {string} valueHTML – full HTML for the value element
+ * @param {boolean} [wrapValueDiv=true] – whether to wrap valueHTML in a value div
+ * @returns {string} formatted section HTML
+ */
+function <span class="fstat-no" title="function not covered" >createLabeledSection(</span>label, valueHTML, wrapValueDiv = <span class="branch-0 cbranch-no" title="branch not covered" >true)</span> {
+  const keyDiv = <span class="cstat-no" title="statement not covered" >createDiv(CLASS.KEY, label);</span>
+  const valuePart = <span class="cstat-no" title="statement not covered" >wrapValueDiv ? createValueDiv(valueHTML) : valueHTML;</span>
+<span class="cstat-no" title="statement not covered" >  return createPair(keyDiv, valuePart);</span>
+}
+&nbsp;
+&nbsp;
+/**
  * Join CSS classes into a space-separated string
  * @param {string[]} classes - Array of CSS class names
  * @returns {string} - Space-separated class string
@@ -3202,7 +3244,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T11:03:23.716Z
+                at 2025-05-11T11:08:13.301Z
             </div>
         <script src="../prettify.js"></script>
         <script>

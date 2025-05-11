@@ -75,6 +75,20 @@ function createDiv(classes, content) {
 }
 
 /**
+ * Build a key-value section.
+ * @param {string} label – text for the key div
+ * @param {string} valueHTML – full HTML for the value element
+ * @param {boolean} [wrapValueDiv=true] – whether to wrap valueHTML in a value div
+ * @returns {string} formatted section HTML
+ */
+function createLabeledSection(label, valueHTML, wrapValueDiv = true) {
+  const keyDiv = createDiv(CLASS.KEY, label);
+  const valuePart = wrapValueDiv ? createValueDiv(valueHTML) : valueHTML;
+  return createPair(keyDiv, valuePart);
+}
+
+
+/**
  * Join CSS classes into a space-separated string
  * @param {string[]} classes - Array of CSS class names
  * @returns {string} - Space-separated class string
