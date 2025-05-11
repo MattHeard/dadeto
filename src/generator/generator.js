@@ -94,9 +94,14 @@ function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
   return createPair(keyDiv, valuePart);
 }
 
-function prepareLabeledSectionArgs({ label, valueHTML, wrapValueDiv, keyExtraClasses }) {
-  if (wrapValueDiv === undefined) {wrapValueDiv = true;}
-  if (keyExtraClasses === undefined) {keyExtraClasses = '';}
+function applyLabeledSectionDefaults(args) {
+  if (args.wrapValueDiv === undefined) {args.wrapValueDiv = true;}
+  if (args.keyExtraClasses === undefined) {args.keyExtraClasses = '';}
+  return args;
+}
+
+function prepareLabeledSectionArgs(args) {
+  const { label, valueHTML, wrapValueDiv, keyExtraClasses } = applyLabeledSectionDefaults(args);
   const keyClass = getKeyClass(keyExtraClasses);
   const keyDiv = createDiv(keyClass, label);
   return { keyDiv, valueHTML, wrapValueDiv };
