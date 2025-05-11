@@ -7,7 +7,7 @@
  * Returns a JSON string of { rowClues: number[], colClues: number[] }  or { error }
  */
 
-function generateClues(input, env) { // eslint-disable-line no-unused-vars
+function generateClues(input, env) {
   let fleet;
   try {
     fleet = JSON.parse(input);
@@ -28,10 +28,8 @@ function generateClues(input, env) { // eslint-disable-line no-unused-vars
   const colClues = Array(width).fill(0);
 
   for (const ship of ships) {
-    const { start, length, direction } = ship;
-    for (let i = 0; i < length; i++) {
-      const x = direction === 'H' ? start.x + i : start.x;
-      const y = direction === 'V' ? start.y + i : start.y;
+    const cells = getShipCells(ship);
+    for (const [x, y] of cells) {
       if (x >= 0 && x < width && y >= 0 && y < height) {
         rowClues[y] += 1;
         colClues[x] += 1;
@@ -40,6 +38,24 @@ function generateClues(input, env) { // eslint-disable-line no-unused-vars
   }
 
   return JSON.stringify({ rowClues, colClues });
+}
+
+function getShipCells(ship) {
+  const cells = [];
+  const { start, length, direction } = ship;
+  for (let i = 0; i < length; i++) {
+    let x;
+    let y;
+    if (direction === 'H') {
+      x = start.x + i;
+      y = start.y;
+    } else {
+      x = start.x;
+      y = start.y + i;
+    }
+    cells.push([x, y]);
+  }
+  return cells;
 }
 
 export { generateClues };
