@@ -798,7 +798,7 @@ FN:979,(anonymous_119)
 FN:989,getBlogGenerationArgs
 FN:995,(anonymous_121)
 FNF:122
-FNH:122
+FNH:121
 FNDA:2,createParagraphs
 FNDA:2,(anonymous_1)
 FNDA:2,createBlockquote
@@ -895,7 +895,7 @@ FNDA:11,composeLinkParts
 FNDA:11,formatRelatedLink
 FNDA:15,generateRelatedLinksSection
 FNDA:11,(anonymous_95)
-FNDA:15,combineHTMLSections
+FNDA:0,combineHTMLSections
 FNDA:30,extractModulePath
 FNDA:30,getModulePath
 FNDA:6,extractFunctionName
@@ -1135,7 +1135,7 @@ DA:767,11
 DA:769,11
 DA:770,4
 DA:771,4
-DA:778,15
+DA:778,0
 DA:782,30
 DA:786,30
 DA:790,6
@@ -1191,7 +1191,7 @@ DA:995,2
 DA:996,1
 DA:997,1
 LF:269
-LH:269
+LH:268
 BRDA:14,0,0,1
 BRDA:14,0,1,1
 BRDA:67,1,0,10
@@ -1285,7 +1285,7 @@ FN:161,createHtmlTag
 FN:171,wrapHtml
 FNF:13
 FNH:13
-FNDA:591,join
+FNDA:606,join
 FNDA:113,getOpeningTagParts
 FNDA:113,createOpeningTag
 FNDA:113,getClosingTagParts
@@ -1303,7 +1303,7 @@ DA:7,2
 DA:12,2
 DA:15,2
 DA:22,2
-DA:38,591
+DA:38,606
 DA:42,2
 DA:43,2
 DA:44,2

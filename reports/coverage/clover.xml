@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1746972037298" clover="3.2.0">
-  <project timestamp="1746972037298" name="All files">
-    <metrics statements="1407" coveredstatements="1407" conditionals="413" coveredconditionals="412" methods="574" coveredmethods="574" elements="2394" coveredelements="2393" complexity="0" loc="1407" ncloc="1407" packages="14" files="30" classes="30"/>
+<coverage generated="1746972081927" clover="3.2.0">
+  <project timestamp="1746972081927" name="All files">
+    <metrics statements="1407" coveredstatements="1406" conditionals="413" coveredconditionals="412" methods="574" coveredmethods="573" elements="2394" coveredelements="2391" complexity="0" loc="1407" ncloc="1407" packages="14" files="30" classes="30"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -355,13 +355,13 @@
       </file>
     </package>
     <package name="generator">
-      <metrics statements="306" coveredstatements="306" conditionals="63" coveredconditionals="62" methods="135" coveredmethods="135"/>
+      <metrics statements="306" coveredstatements="305" conditionals="63" coveredconditionals="62" methods="135" coveredmethods="134"/>
       <file name="full-width.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/generator/full-width.js">
         <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="2" type="stmt"/>
       </file>
       <file name="generator.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js">
-        <metrics statements="269" coveredstatements="269" conditionals="63" coveredconditionals="62" methods="122" coveredmethods="122"/>
+        <metrics statements="269" coveredstatements="268" conditionals="63" coveredconditionals="62" methods="122" coveredmethods="121"/>
         <line num="14" count="2" type="cond" truecount="2" falsecount="0"/>
         <line num="15" count="2" type="stmt"/>
         <line num="17" count="1" type="stmt"/>
@@ -576,7 +576,7 @@
         <line num="769" count="11" type="stmt"/>
         <line num="770" count="4" type="stmt"/>
         <line num="771" count="4" type="stmt"/>
-        <line num="778" count="15" type="stmt"/>
+        <line num="778" count="0" type="stmt"/>
         <line num="782" count="30" type="stmt"/>
         <line num="786" count="30" type="stmt"/>
         <line num="790" count="6" type="stmt"/>
@@ -643,7 +643,7 @@
         <line num="12" count="2" type="stmt"/>
         <line num="15" count="2" type="stmt"/>
         <line num="22" count="2" type="stmt"/>
-        <line num="38" count="591" type="stmt"/>
+        <line num="38" count="606" type="stmt"/>
         <line num="42" count="2" type="stmt"/>
         <line num="43" count="2" type="stmt"/>
         <line num="44" count="2" type="stmt"/>

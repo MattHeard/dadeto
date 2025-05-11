@@ -465,7 +465,7 @@ function generateHeaderSection(post) {
   const titleSection = generateTitleSection(post);
   const dateSection = generateDateSection(post);
   const tagsSection = generateTagsSection(post);
-  return combineHTMLSections(titleSection, dateSection, tagsSection);
+  return join([titleSection, dateSection, tagsSection]);
 }
 
 /**
