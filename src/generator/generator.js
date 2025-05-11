@@ -401,8 +401,12 @@ function createContentItemWithIndex(text, index) {
  * @returns {Object} - Normalized content object.
  */
 /**
- * Content type registration utility for extensible normalization and rendering.
- * Usage: registerContentType({ predicate, normalize, type, render })
+ * Register a new content type with normalization and rendering logic.
+ * @param {Object} options
+ * @param {function(*): boolean} options.predicate - Returns true if this handler matches the content.
+ * @param {function(*): Object} options.normalize - Normalizes the content to a standard object.
+ * @param {string} options.type - The normalized content type name.
+ * @param {function(*): string} options.render - Renders the normalized content as HTML.
  */
 const CONTENT_TYPE_HANDLERS = [];
 
@@ -439,9 +443,9 @@ registerContentType({
 });
 
 /**
- * Get the normalizer for a given raw content.
- * @param {*} content
- * @returns {function} - Normalizer function
+ * Returns the normalizer function for the given raw content.
+ * @param {*} content - Raw content to normalize.
+ * @returns {function(*): Object} - Normalizer function that returns a normalized content object.
  */
 function getContentNormalizer(content) {
   const found = normalizationRules.find(([predicate]) => predicate(content));
@@ -449,27 +453,27 @@ function getContentNormalizer(content) {
 }
 
 /**
- * Normalize a content item using the registered normalizers.
- * @param {*} content
- * @returns {object} Normalized content object
+ * Normalizes a content item using the registered normalizers.
+ * @param {*} content - Raw content to normalize.
+ * @returns {Object} Normalized content object with { type, content }.
  */
 function normalizeContentItem(content) {
   return getContentNormalizer(content)(content);
 }
 
 /**
- * Get the renderer for a given content type.
- * @param {string} type
- * @returns {function} - Renderer function
+ * Returns the renderer function for a given normalized content type.
+ * @param {string} type - The normalized content type.
+ * @returns {function(*): string} - Renderer function that returns HTML.
  */
 function getContentRenderer(type) {
   return CONTENT_RENDERERS[type] || CONTENT_RENDERERS.__default__;
 }
 
 /**
- * Rendering must dispatch by type, not by content shape, since normalized objects can no longer be detected by predicates.
- * @param {object} normalizedContent
- * @returns {string} Rendered HTML
+ * Renders normalized content by dispatching to the correct renderer by type.
+ * @param {Object} normalizedContent - Normalized content object with { type, content }.
+ * @returns {string} Rendered HTML.
  */
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
