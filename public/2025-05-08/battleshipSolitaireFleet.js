@@ -128,7 +128,7 @@ function isForbiddenTouch(cfg, occupied, segs) {
 }
 
 
-function isValidCandidate({ start, length }, cfg, occupied, segs, valid) {
+function isValidCandidate(_, cfg, occupied, segs, valid) {
   if (!valid) {return false;}
   const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
   return !forbiddenTouch;
