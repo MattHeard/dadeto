@@ -424,11 +424,12 @@ function normalizeContentItem(content) {
   const isArrayContent = c => Array.isArray(c);
   const isPrimitiveContent = c => typeof c !== 'object' || c === null;
   const quoteValue = { type: 'quote', content };
+  const textValue = { type: 'text', content };
   if (isArrayContent(content)) {
     return quoteValue;
   }
   if (isPrimitiveContent(content)) {
-    return { type: 'text', content };
+    return textValue;
   }
   return content;
 }
