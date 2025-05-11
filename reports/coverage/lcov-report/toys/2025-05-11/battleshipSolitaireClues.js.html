@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/18</span>
+                <span class='fraction'>18/18</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/17</span>
+                <span class='fraction'>17/17</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -118,37 +118,37 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/*
@@ -160,39 +160,39 @@
  * Returns a JSON string of { rowClues: number[], colClues: number[] }  or { error }
  */
 &nbsp;
-function <span class="fstat-no" title="function not covered" >generateClues(</span>input, env) { // eslint-disable-line no-unused-vars
+function generateClues(input, env) { // eslint-disable-line no-unused-vars
   let fleet;
-<span class="cstat-no" title="statement not covered" >  try {</span>
-<span class="cstat-no" title="statement not covered" >    fleet = JSON.parse(input);</span>
+  try {
+    fleet = JSON.parse(input);
   } catch {
-<span class="cstat-no" title="statement not covered" >    return JSON.stringify({ error: 'Invalid input JSON' });</span>
+    return JSON.stringify({ error: 'Invalid input JSON' });
   }
 &nbsp;
-  const { width, height, ships } = <span class="cstat-no" title="statement not covered" >fleet;</span>
-<span class="cstat-no" title="statement not covered" >  if (</span>
+  const { width, height, ships } = fleet;
+  if (
     typeof width !== 'number' ||
       typeof height !== 'number' ||
       !Array.isArray(ships)
   ) {
-<span class="cstat-no" title="statement not covered" >    return JSON.stringify({ error: 'Invalid fleet structure' });</span>
+    return JSON.stringify({ error: 'Invalid fleet structure' });
   }
 &nbsp;
-  const rowClues = <span class="cstat-no" title="statement not covered" >Array(height).fill(0);</span>
-  const colClues = <span class="cstat-no" title="statement not covered" >Array(width).fill(0);</span>
+  const rowClues = Array(height).fill(0);
+  const colClues = Array(width).fill(0);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  for (const ship of ships) {</span>
-    const { start, length, direction } = <span class="cstat-no" title="statement not covered" >ship;</span>
-<span class="cstat-no" title="statement not covered" >    for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; length; i++) {</span>
-      const x = <span class="cstat-no" title="statement not covered" >direction === 'H' ? start.x + i : start.x;</span>
-      const y = <span class="cstat-no" title="statement not covered" >direction === 'V' ? start.y + i : start.y;</span>
-<span class="cstat-no" title="statement not covered" >      if (x &gt;= 0 &amp;&amp; x &lt; width &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; height) {</span>
-<span class="cstat-no" title="statement not covered" >        rowClues[y] += 1;</span>
-<span class="cstat-no" title="statement not covered" >        colClues[x] += 1;</span>
+  for (const ship of ships) {
+    const { start, length, direction } = ship;
+    for (let i = 0; i &lt; length; i++) {
+      const x = direction === 'H' ? start.x + i : start.x;
+      const y = direction === 'V' ? start.y + i : start.y;
+      if (x &gt;= 0 &amp;&amp; x &lt; width &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; height) {
+        rowClues[y] += 1;
+        colClues[x] += 1;
       }
     }
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return JSON.stringify({ rowClues, colClues });</span>
+  return JSON.stringify({ rowClues, colClues });
 }
 &nbsp;
 export { generateClues };</pre></td></tr></table></pre>
@@ -202,7 +202,7 @@ export { generateClues };</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T18:32:37.437Z
+                at 2025-05-11T18:36:18.768Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
