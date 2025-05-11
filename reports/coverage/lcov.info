@@ -800,7 +800,7 @@ FN:1055,(anonymous_121)
 FN:1065,getBlogGenerationArgs
 FN:1071,(anonymous_123)
 FNF:124
-FNH:124
+FNH:123
 FNDA:2,createParagraphs
 FNDA:2,(anonymous_1)
 FNDA:2,createBlockquote
@@ -815,8 +815,8 @@ FNDA:46,createLabeledSection
 FNDA:46,labeledSectionValuePart
 FNDA:49,joinClasses
 FNDA:17,createValueDiv
-FNDA:61,createParts
-FNDA:61,createPair
+FNDA:71,createParts
+FNDA:71,createPair
 FNDA:15,createDateFromString
 FNDA:15,formatDateWithOptions
 FNDA:15,formatDate
@@ -867,7 +867,7 @@ FNDA:4,isNonEmptyArray
 FNDA:15,hasRelatedLinks
 FNDA:10,isValidMediaType
 FNDA:45,shouldDisplayMedia
-FNDA:10,formatSection
+FNDA:0,formatSection
 FNDA:10,generateMediaContent
 FNDA:4,createIllustrationImage
 FNDA:4,createIllustrationContent
@@ -961,9 +961,9 @@ DA:139,49
 DA:149,17
 DA:150,17
 DA:151,17
-DA:161,61
-DA:171,61
-DA:172,61
+DA:161,71
+DA:171,71
+DA:172,71
 DA:181,15
 DA:190,15
 DA:199,15
@@ -1064,7 +1064,7 @@ DA:583,4
 DA:592,15
 DA:604,10
 DA:611,45
-DA:623,10
+DA:623,0
 DA:630,10
 DA:636,10
 DA:645,4
@@ -1198,7 +1198,7 @@ DA:1071,2
 DA:1072,1
 DA:1073,1
 LF:272
-LH:272
+LH:271
 BRDA:7,0,0,1
 BRDA:7,0,1,1
 BRDA:86,1,0,10
@@ -1292,7 +1292,7 @@ FN:161,createHtmlTag
 FN:171,wrapHtml
 FNF:13
 FNH:13
-FNDA:533,join
+FNDA:543,join
 FNDA:113,getOpeningTagParts
 FNDA:113,createOpeningTag
 FNDA:113,getClosingTagParts
@@ -1310,7 +1310,7 @@ DA:7,2
 DA:12,2
 DA:15,2
 DA:22,2
-DA:38,533
+DA:38,543
 DA:42,2
 DA:43,2
 DA:44,2

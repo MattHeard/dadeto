@@ -491,7 +491,7 @@ function createContentSectionItem(content, isFirst) {
   const keyDiv = createDiv(CLASS.KEY, key);
   const valueDiv = renderValueDiv(normalizedContent);
 
-  return formatSection(keyDiv, valueDiv);
+  return createPair(keyDiv, valueDiv);
 }
 
 /**
