@@ -1,0 +1,5 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
+  449:10  warning  Ternary operator used  no-ternary
+
+✖ 1 problem (0 errors, 1 warning)

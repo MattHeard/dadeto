@@ -438,20 +438,46 @@ registerContentType({
   render: renderAsParagraph,
 });
 
-function normalizeContentItem(content) {
+/**
+ * Get the normalizer for a given raw content.
+ * @param {*} content
+ * @returns {function} - Normalizer function
+ */
+function getContentNormalizer(content) {
   const found = normalizationRules.find(([predicate]) => predicate(content));
-  return found[1](content);
+  // Always fallback to text normalizer if not found
+  return found ? found[1] : c => ({ type: 'text', content: c });
 }
 
+/**
+ * Normalize a content item using the registered normalizers.
+ * @param {*} content
+ * @returns {object} Normalized content object
+ */
+function normalizeContentItem(content) {
+  return getContentNormalizer(content)(content);
+}
+
+/**
+ * Get the renderer for a given content type.
+ * @param {string} type
+ * @returns {function} - Renderer function
+ */
+function getContentRenderer(type) {
+  return CONTENT_RENDERERS[type] || CONTENT_RENDERERS.__default__;
+}
 
 /**
  * Rendering must dispatch by type, not by content shape, since normalized objects can no longer be detected by predicates.
+ * @param {object} normalizedContent
+ * @returns {string} Rendered HTML
  */
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
-  const renderer = CONTENT_RENDERERS[type] || CONTENT_RENDERERS.__default__;
+  const renderer = getContentRenderer(type);
   return renderer(content);
 }
+
 
 function renderAsParagraph(content) {
   return `<p class="${CLASS.VALUE}">${content}</p>`;
