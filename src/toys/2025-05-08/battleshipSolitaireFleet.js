@@ -144,14 +144,18 @@ function collectCandidatesForStart({ start, length, cfg, occupied }) {
 }
 
 function collectCandidatesForDirection({ direction, start, length, cfg, occupied, candidates }) {
-  const endCoord = getEndCoord(direction, start, length);
-  if (!inBounds(endCoord, cfg)) {
-    return;
-  }
-  const candidate = getValidCandidate({ direction, start, length, cfg, occupied });
+  const candidate = getCandidateIfInBounds({ direction, start, length, cfg, occupied });
   if (candidate) {
     candidates.push(candidate);
   }
+}
+
+function getCandidateIfInBounds({ direction, start, length, cfg, occupied }) {
+  const endCoord = getEndCoord(direction, start, length);
+  if (!inBounds(endCoord, cfg)) {
+    return null;
+  }
+  return getValidCandidate({ direction, start, length, cfg, occupied });
 }
 
 function getValidCandidate({ direction, start, length, cfg, occupied }) {
