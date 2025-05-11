@@ -400,25 +400,44 @@ function createContentItemWithIndex(text, index) {
  * @param {Object|string} content - The content item to normalize.
  * @returns {Object} - Normalized content object.
  */
+// Unified content type handler config
+const CONTENT_TYPE_HANDLERS = [
+  {
+    predicate: c => Array.isArray(c),
+    normalize: c => ({ type: 'quote', content: c }),
+    type: 'quote',
+    render: createBlockquote,
+  },
+  {
+    predicate: c => typeof c !== 'object' || c === null,
+    normalize: c => ({ type: 'text', content: c }),
+    type: 'text',
+    render: renderAsParagraph,
+  },
+  {
+    predicate: () => true,
+    normalize: c => c,
+    type: '__default__',
+    render: renderAsParagraph,
+  },
+];
+
+// Generate normalization rules
+const normalizationRules = CONTENT_TYPE_HANDLERS.map(h => [h.predicate, h.normalize]);
+
 function normalizeContentItem(content) {
-  // Each pair: [predicate, normalizerFn]
-  const normalizationRules = [
-    [c => Array.isArray(c), c => ({ type: 'quote', content: c })],
-    [c => typeof c !== 'object' || c === null, c => ({ type: 'text', content: c })],
-    [() => true, c => c], // catch-all
-  ];
   const found = normalizationRules.find(([predicate]) => predicate(content));
   return found[1](content);
 }
 
+
 /**
  * Mapping of content types to their renderer functions.
  */
-const CONTENT_RENDERERS = {
-  quote: createBlockquote,
-  text: renderAsParagraph,
-  __default__: renderAsParagraph,
-};
+// Generate content renderers mapping
+const CONTENT_RENDERERS = Object.fromEntries(
+  CONTENT_TYPE_HANDLERS.map(h => [h.type, h.render])
+);
 
 /**
  * Rendering must dispatch by type, not by content shape, since normalized objects can no longer be detected by predicates.
