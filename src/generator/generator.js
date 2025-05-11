@@ -755,14 +755,14 @@ function generateRelatedLinksSection(post) {
  * @returns {boolean} - True if post has a toy component
  */
 const toyPredicates = [
-  p => Boolean(p),
-  p => Boolean(p.toy),
-  p => Boolean(p.toy.modulePath),
-  p => Boolean(p.toy.functionName)
+  p => p,
+  p => p.toy,
+  p => p.toy.modulePath,
+  p => p.toy.functionName
 ];
 
 function hasToy(post) {
-  return toyPredicates.every(fn => fn(post));
+  return toyPredicates.every(fn => Boolean(fn(post)));
 }
 
 /**
