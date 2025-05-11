@@ -696,7 +696,7 @@ const MEDIA_SECTIONS = {
       return '';
     }
     const valueDiv = generateMediaContent(post, 'illustration');
-    return mediaSectionBuilder('illus', valueDiv);
+    return createLabeledSection('illus', valueDiv, false, CLASS.MEDIA);
   },
   audio: function(post) {
     if (!shouldDisplayMedia(post, 'audio')) {
