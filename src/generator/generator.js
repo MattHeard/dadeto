@@ -592,13 +592,6 @@ function createYouTubeIframe(post) {
   return `<iframe height="300px" width="100%" src="https://www.youtube.com/embed/${youtubeId}?start=${timestamp}" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>`;
 }
 
-/**
- * Create YouTube content
- */
-function createYouTubeContent(post) {
-  const iframe = createYouTubeIframe(post);
-  return `<p class="${CLASS.VALUE}">${iframe}</p>`;
-}
 
 /**
  * Mapping for media sections.
