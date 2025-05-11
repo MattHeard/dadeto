@@ -907,11 +907,8 @@ function getToyOutputValueContent() {
 }
 
 function generateToyOutputSection() {
-  const keyDiv = createDiv(CLASS.KEY, 'out');
-  const valueContent = getToyOutputValueContent();
-  const valueDiv = createValueDiv(valueContent);
-
-  return formatSection(keyDiv, valueDiv);
+  const valueHTML = getToyOutputValueContent();
+  return createLabeledSection('out', valueHTML);
 }
 
 /**
