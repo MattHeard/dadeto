@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.89% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>268/271</span>
+                <span class='fraction'>270/270</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">93.1% </span>
+                <span class="strong">94.82% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>54/58</span>
+                <span class='fraction'>55/58</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.15% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>117/118</span>
+                <span class='fraction'>118/118</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.86% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>262/265</span>
+                <span class='fraction'>264/264</span>
             </div>
         
             
@@ -1119,9 +1119,7 @@
 <a name='L1054'></a><a href='#L1054'>1054</a>
 <a name='L1055'></a><a href='#L1055'>1055</a>
 <a name='L1056'></a><a href='#L1056'>1056</a>
-<a name='L1057'></a><a href='#L1057'>1057</a>
-<a name='L1058'></a><a href='#L1058'>1058</a>
-<a name='L1059'></a><a href='#L1059'>1059</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1057'></a><a href='#L1057'>1057</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1205,9 +1203,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1638,8 +1636,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2262,10 +2258,10 @@ function createDiv(classes, content) {
  * @param {boolean} [wrapValueDiv=true] – whether to wrap valueHTML in a value div
  * @returns {string} formatted section HTML
  */
-function <span class="fstat-no" title="function not covered" >createLabeledSection(</span>label, valueHTML, wrapValueDiv = <span class="branch-0 cbranch-no" title="branch not covered" >true)</span> {
-  const keyDiv = <span class="cstat-no" title="statement not covered" >createDiv(CLASS.KEY, label);</span>
-  const valuePart = <span class="cstat-no" title="statement not covered" >wrapValueDiv ? createValueDiv(valueHTML) : valueHTML;</span>
-<span class="cstat-no" title="statement not covered" >  return createPair(keyDiv, valuePart);</span>
+function createLabeledSection(label, valueHTML, wrapValueDiv = <span class="branch-0 cbranch-no" title="branch not covered" >true)</span> {
+  const keyDiv = createDiv(CLASS.KEY, label);
+  const valuePart = wrapValueDiv ? <span class="branch-0 cbranch-no" title="branch not covered" >createValueDiv(valueHTML) </span>: valueHTML;
+  return createPair(keyDiv, valuePart);
 }
 &nbsp;
 &nbsp;
@@ -2695,10 +2691,8 @@ function generateTitleSection(post) {
  * @returns {string} - HTML for the date section
  */
 function generateDateSection(post) {
-  const dateKey = createDiv(CLASS.KEY, 'pubAt');
-  const dateValue = `&lt;p class="${CLASS.VALUE} ${CLASS.METADATA}"&gt;${formatDate(post.publicationDate)}&lt;/p&gt;`;
-&nbsp;
-  return createPair(dateKey, dateValue);
+  const valueHTML = `&lt;p class="${CLASS.VALUE} ${CLASS.METADATA}"&gt;${formatDate(post.publicationDate)}&lt;/p&gt;`;
+  return createLabeledSection('pubAt', valueHTML, false);
 }
 &nbsp;
 /**
@@ -3244,7 +3238,7 @@ export const generateBlogOuter = (blog) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-11T11:08:13.301Z
+                at 2025-05-11T11:09:02.402Z
             </div>
         <script src="../prettify.js"></script>
         <script>

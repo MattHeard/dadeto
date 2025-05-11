@@ -514,10 +514,8 @@ function generateTitleSection(post) {
  * @returns {string} - HTML for the date section
  */
 function generateDateSection(post) {
-  const dateKey = createDiv(CLASS.KEY, 'pubAt');
-  const dateValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
-
-  return createPair(dateKey, dateValue);
+  const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
+  return createLabeledSection('pubAt', valueHTML, false);
 }
 
 /**
