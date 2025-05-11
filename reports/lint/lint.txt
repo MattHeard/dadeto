@@ -1,8 +1,7 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-   85:1   warning  Function 'createLabeledSection' has too many parameters (4). Maximum allowed is 3  max-params
-   85:1   warning  Function 'createLabeledSection' has a complexity of 4. Maximum allowed is 2        complexity
-   87:20  warning  Ternary operator used                                                              no-ternary
-  623:10  warning  'mediaSectionBuilder' is defined but never used                                    no-unused-vars
+  85:1   warning  Function 'createLabeledSection' has too many parameters (4). Maximum allowed is 3  max-params
+  85:1   warning  Function 'createLabeledSection' has a complexity of 4. Maximum allowed is 2        complexity
+  87:20  warning  Ternary operator used                                                              no-ternary
 
-✖ 4 problems (0 errors, 4 warnings)
+✖ 3 problems (0 errors, 3 warnings)

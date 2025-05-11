@@ -615,18 +615,6 @@ function generateMediaContent(post, mediaType) {
 }
 
 /**
- * Helper to build a media section with consistent markup.
- * @param {string} label – text for the key div
- * @param {string} valueHTML – pre-wrapped value HTML
- * @returns {string} formatted section HTML
- */
-function mediaSectionBuilder(label, valueHTML) {
-  const keyDiv = `<div class="${CLASS.KEY} ${CLASS.MEDIA}">${label}</div>`;
-  return keyDiv + valueHTML;
-}
-
-
-
 /**
  * Create illustration image element
  */
