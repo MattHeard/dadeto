@@ -401,13 +401,14 @@ function createContentItemWithIndex(text, index) {
  * @returns {Object} - Normalized content object.
  */
 function normalizeContentItem(content) {
-  const tests = [
-    [c => Array.isArray(c), { type: 'quote', content }],
-    [c => typeof c !== 'object' || c === null, { type: 'text', content }],
+  // Each pair: [predicate, normalizerFn]
+  const normalizationRules = [
+    [c => Array.isArray(c), c => ({ type: 'quote', content: c })],
+    [c => typeof c !== 'object' || c === null, c => ({ type: 'text', content: c })],
   ];
-  const found = tests.find(([predicate]) => predicate(content));
+  const found = normalizationRules.find(([predicate]) => predicate(content));
   if (found) {
-    return found[1];
+    return found[1](content);
   } else {
     return content;
   }
