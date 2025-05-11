@@ -7,39 +7,39 @@
  * Returns a JSON string of { rowClues: number[], colClues: number[] }  or { error }
  */
 
-function generateClues(input, env) {            // eslint-disable-line no-unused-vars
-    let fleet;
-    try {
-      fleet = JSON.parse(input);
-    } catch {
-      return JSON.stringify({ error: 'Invalid input JSON' });
-    }
-  
-    const { width, height, ships } = fleet;
-    if (
-      typeof width !== 'number' ||
+function generateClues(input, env) { // eslint-disable-line no-unused-vars
+  let fleet;
+  try {
+    fleet = JSON.parse(input);
+  } catch {
+    return JSON.stringify({ error: 'Invalid input JSON' });
+  }
+
+  const { width, height, ships } = fleet;
+  if (
+    typeof width !== 'number' ||
       typeof height !== 'number' ||
       !Array.isArray(ships)
-    ) {
-      return JSON.stringify({ error: 'Invalid fleet structure' });
-    }
-  
-    const rowClues = Array(height).fill(0);
-    const colClues = Array(width).fill(0);
-  
-    for (const ship of ships) {
-      const { start, length, direction } = ship;
-      for (let i = 0; i < length; i++) {
-        const x = direction === 'H' ? start.x + i : start.x;
-        const y = direction === 'V' ? start.y + i : start.y;
-        if (x >= 0 && x < width && y >= 0 && y < height) {
-          rowClues[y] += 1;
-          colClues[x] += 1;
-        }
+  ) {
+    return JSON.stringify({ error: 'Invalid fleet structure' });
+  }
+
+  const rowClues = Array(height).fill(0);
+  const colClues = Array(width).fill(0);
+
+  for (const ship of ships) {
+    const { start, length, direction } = ship;
+    for (let i = 0; i < length; i++) {
+      const x = direction === 'H' ? start.x + i : start.x;
+      const y = direction === 'V' ? start.y + i : start.y;
+      if (x >= 0 && x < width && y >= 0 && y < height) {
+        rowClues[y] += 1;
+        colClues[x] += 1;
       }
     }
-  
-    return JSON.stringify({ rowClues, colClues });
   }
-  
-  export { generateClues };
+
+  return JSON.stringify({ rowClues, colClues });
+}
+
+export { generateClues };
