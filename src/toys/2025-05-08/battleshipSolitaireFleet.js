@@ -200,14 +200,18 @@ function isValidFleetResult(result, lengths) {
 
 
 
+function shouldAbortPlaceShip(acc, placeShipWithArgs, len) {
+  return !acc || !placeShipWithArgs(len);
+}
+
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (!acc) {return null;}
+    if (shouldAbortPlaceShip(acc, placeShipWithArgs, len)) {return null;}
     const placed = placeShipWithArgs(len);
-    if (!placed) {return null;}
     acc.push(placed);
     return acc;
   };
+
 }
 
 function placeAllShips(cfg, env) {
