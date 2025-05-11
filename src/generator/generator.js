@@ -3,6 +3,18 @@
  * @param {string|string[]} content - A string or an array of strings.
  * @returns {string} - HTML string composed of paragraph elements.
  */
+import { headElement } from './head.js';
+import { fullWidthElement } from './full-width.js';
+import { HEADER_BANNER } from './title.js';
+import {
+  createTag,
+  createAttrPair,
+  escapeHtml,
+  wrapHtml,
+  join,
+  ATTR_NAME,
+} from './html.js';
+
 function createParagraphs(content) {
   if (Array.isArray(content)) {
     return content.map(para => `<p>${para}</p>`).join('');
@@ -19,17 +31,6 @@ function createParagraphs(content) {
 function createBlockquote(content) {
   return `<blockquote class="${CLASS.VALUE}">${BLOCKQUOTE_CORNERS}${createParagraphs(content)}</blockquote>`;
 }
-import { headElement } from './head.js';
-import { fullWidthElement } from './full-width.js';
-import { HEADER_BANNER } from './title.js';
-import {
-  createTag,
-  createAttrPair,
-  escapeHtml,
-  wrapHtml,
-  join,
-  ATTR_NAME,
-} from './html.js';
 
 // CSS class names
 const CLASS = {
