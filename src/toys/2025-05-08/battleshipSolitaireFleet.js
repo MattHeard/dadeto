@@ -136,9 +136,9 @@ function isForbiddenTouch(cfg, occupied, segs) {
 }
 
 
-function isValidCandidate(_, cfg, occupied, segs, valid) {
+function isValidCandidate(boardState, segs, valid) {
   if (!valid) {return false;}
-  const forbiddenTouch = isForbiddenTouch(cfg, occupied, segs);
+  const forbiddenTouch = isForbiddenTouch(boardState.cfg, boardState.occupied, segs);
   return !forbiddenTouch;
 }
 
@@ -172,7 +172,7 @@ function getValidCandidate({ direction, start, length, cfg, occupied }) {
     segReducer,
     { segs: [], valid: true }
   );
-  if (isValidCandidate({ start, length }, cfg, occupied, segs, valid)) {
+  if (isValidCandidate({ cfg, occupied }, segs, valid)) {
     return { start, length, direction };
   }
   return null;

@@ -1,6 +1,5 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
-  108:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                     complexity
-  139:1   warning  Function 'isValidCandidate' has too many parameters (5). Maximum allowed is 3  max-params
+  108:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 2 problems (0 errors, 2 warnings)
+✖ 1 problem (0 errors, 1 warning)
