@@ -43,14 +43,18 @@ function getVerticalCells(ship) {
 
 
 function incrementClues(x, y, board, clues) {
-  if (isOnBoard(x, y, board)) {
+  if (isValidX(x, board) && isValidY(y, board)) {
     clues.row[y] += 1;
     clues.col[x] += 1;
   }
 }
 
-function isOnBoard(x, y, board) {
-  return x >= 0 && x < board.width && y >= 0 && y < board.height;
+function isValidX(x, board) {
+  return x >= 0 && x < board.width;
+}
+
+function isValidY(y, board) {
+  return y >= 0 && y < board.height;
 }
 
 function parseFleet(input) {
