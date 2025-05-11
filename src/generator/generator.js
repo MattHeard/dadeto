@@ -526,8 +526,16 @@ function generateTagsSection(post) {
 /**
  * Check if post has the specified media type
  */
-function hasMediaType(post, mediaType) {
-  return Boolean(post[mediaType]);
+// Declarative rules for whether media of a given type should display
+const MEDIA_DISPLAY_RULES = {
+  illustration: post => Boolean(post.illustration),
+  audio: post => Boolean(post.audio),
+  youtube: post => Boolean(post.youtube),
+};
+
+function shouldDisplayMedia(post, type) {
+  const rule = MEDIA_DISPLAY_RULES[type];
+  return rule ? rule(post) : false;
 }
 
 function isNonEmptyArray(value) {
@@ -548,12 +556,7 @@ function hasRelatedLinks(post) {
  * @param {Object} post - The blog post
  * @returns {boolean} - True if post has tags
  */
-/**
- * Check if post either is YouTube content or has a publication date
- */
-/**
- * Check if media should be displayed
- */
+
 
 /**
  * Generate media content based on media type
@@ -624,7 +627,7 @@ function buildMediaContent(post, type) {
 
 // Generic media section builder
 function buildMediaSection(post, type, label) {
-  if (!hasMediaType(post, type)) {
+  if (!shouldDisplayMedia(post, type)) {
     return '';
   }
   return createLabeledSection({
