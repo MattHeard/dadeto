@@ -228,7 +228,7 @@ function createHeaderContent() {
     createValueDiv(METADATA_TEXT, [CLASS.METADATA])
   ];
 
-  const parts = valueDivs.map(prefixWithEmptyKey);
+  const parts = valueDivs.map(valueDiv => createLabeledSection({ label: '', valueHTML: valueDiv, wrapValueDiv: false }));
 
   return join(parts);
 }
@@ -262,7 +262,7 @@ const WARNING_MESSAGE =
 function createFooterContent() {
   const classes = joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]);
   const footerDiv = createDiv(classes, WARNING_MESSAGE);
-  return prefixWithEmptyKey(footerDiv);
+  return createLabeledSection({ label: '', valueHTML: footerDiv, wrapValueDiv: false });
 }
 
 /**
