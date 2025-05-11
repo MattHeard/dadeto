@@ -323,7 +323,7 @@
         </div>
       </div>
       <article
-        class="entry tag-toy tag-battleship tag-puzzle tag-presenter"
+        class="entry tag-toy tag-battleship tag-puzzle tag-clues tag-generator"
         id="BATT3"
       >
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
@@ -332,30 +332,31 @@
         </div>
         <div class="key article-title">BATT3</div>
         <div class="value">
-          <h2><a href="#BATT3">Battleship Solitaire Clues Presenter</a></h2>
+          <h2><a href="#BATT3">Battleship Solitaire Clues Generator</a></h2>
         </div>
         <div class="key">pubAt</div>
         <p class="value metadata">11 May 2025</p>
         <div class="key">tags</div>
         <p class="value metadata">
           <a class="tag-toy">toy</a>, <a class="tag-battleship">battleship</a>,
-          <a class="tag-puzzle">puzzle</a>,
-          <a class="tag-presenter">presenter</a>
+          <a class="tag-puzzle">puzzle</a>, <a class="tag-clues">clues</a>,
+          <a class="tag-generator">generator</a>
         </p>
         <div class="key media">illus</div>
         <div class="value">
           <img
             loading="lazy"
             src="2025-05-11.png"
-            alt="A stylized Battleship Solitaire grid with row and column numbers, bold navy title text, and a clean puzzle layout."
+            alt="A Battleship Solitaire grid with ships placed and numeric row and column clues highlighted in bold."
           />
         </div>
         <div class="key">text</div>
         <p class="value">
-          Renders Battleship Solitaire puzzle clues as a formatted grid, given
-          row and column clues in JSON. Handles invalid input with clear error
-          messages. Useful for puzzle creators and solvers to visualize clues
-          before attempting or publishing a puzzle.
+          Converts a Battleship Solitaire fleet layout into row and column
+          clues. Accepts a fleet as input (in JSON format) and outputs the
+          corresponding clues as arrays. Useful for puzzle creators to generate
+          clues from a solution grid, validate fleet layouts, or create custom
+          Battleship Solitaire challenges.
         </p>
         <div class="key">in</div>
         <div class="value">
@@ -381,7 +382,7 @@
           window.addComponent(
             'BATT3',
             '/2025-05-11/battleshipSolitaireClues.js',
-            'createBattleshipCluesBoardElement'
+            'generateClues'
           );
         </script>
       </article>
