@@ -148,14 +148,22 @@ function collectCandidatesForDirection({ direction, start, length, cfg, occupied
   if (!inBounds(endCoord, cfg)) {
     return;
   }
+  const candidate = getValidCandidate({ direction, start, length, cfg, occupied });
+  if (candidate) {
+    candidates.push(candidate);
+  }
+}
+
+function getValidCandidate({ direction, start, length, cfg, occupied }) {
   const segReducer = makeSegReducer(direction, start, occupied);
   const { segs, valid } = Array.from({ length }).reduce(
     segReducer,
     { segs: [], valid: true }
   );
   if (isValidCandidate(cfg, occupied, segs, valid)) {
-    candidates.push({ start, length, direction });
+    return { start, length, direction };
   }
+  return null;
 }
 
 function collectAllCandidates(length, cfg, occupied) {
