@@ -198,24 +198,16 @@ function isValidFleetResult(result, lengths) {
   return result && result.length === lengths.length;
 }
 
-function shouldAbortAccumulator(acc) {
-  return !acc;
-}
-
-function shouldAbortPlacement(placed) {
-  return !placed;
-}
 
 
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (shouldAbortAccumulator(acc)) {return null;}
+    if (!acc) {return null;}
     const placed = placeShipWithArgs(len);
-    if (shouldAbortPlacement(placed)) {return null;}
+    if (!placed) {return null;}
     acc.push(placed);
     return acc;
   };
-
 }
 
 function placeAllShips(cfg, env) {
@@ -224,11 +216,8 @@ function placeAllShips(cfg, env) {
   const placeShipWithArgs = makePlaceShip(cfg, env);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
-  if (isValidFleetResult(result, lengths)) {
-    return result;
-  } else {
-    return null;
-  }
+  if (result !== null) {return result;}
+  return null;
 }
 
 function attemptPlacement(cfg, env) {
@@ -269,65 +258,37 @@ function fleetRetryError() {
   return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
 }
 
-function isValidFleetResultOrNull(fleet) {
-  return fleet !== null;
-}
-
-function isEarlyFleetSuccess(fleet) {
-  return isValidFleetResultOrNull(fleet);
-}
-
-function fleetLoopIteration(cfg, env) {
+function fleetLoopBody(i, cfg, env) {
+  // i is currently unused, but included for future extensibility
   return attemptPlacement(cfg, env);
 }
 
-function fleetLoopBody(i, cfg, env) {
-  // i is currently unused, but included for future extensibility
-  return fleetLoopIteration(cfg, env);
-}
-
-function shouldReturnFleet(fleet) {
-  return isEarlyFleetSuccess(fleet);
-}
-
 function maybeReturnFleet(fleet) {
-  if (shouldReturnFleet(fleet)) {
-    return fleet;
-  }
+  if (fleet !== null) {return fleet;}
   return null;
 }
 
 function processFleetLoopIteration(i, cfg, env) {
-  const fleet = fleetLoopIteration(cfg, env);
+  const fleet = attemptPlacement(cfg, env);
   const result = maybeReturnFleet(fleet);
   return result;
 }
 
-function maybeReturnFleetLoopResult(result) {
-  return result !== null;
-}
-
 function fleetLoopFor(maxTries, cb) {
-  return Array.from({ length: maxTries }, (_, i) => cb(i)).find(maybeReturnFleetLoopResult) || null;
+  return Array.from({ length: maxTries }, (_, i) => cb(i)).find(result => result !== null) || null;
 }
 
 function runFleetLoop(cfg, env, maxTries) {
   return fleetLoopFor(maxTries, i => processFleetLoopIteration(i, cfg, env));
 }
 
-function findFleetLoop(cfg, env, maxTries) {
-  return runFleetLoop(cfg, env, maxTries);
-}
-
 function findValidFleet(cfg, env, maxTries) {
-  const fleet = findFleetLoop(cfg, env, maxTries);
-  if (isValidFleetResultOrNull(fleet)) {return fleet;}
-  return null;
+  return runFleetLoop(cfg, env, maxTries);
 }
 
 function tryGenerateFleet(cfg, env, maxTries) {
   const fleet = findValidFleet(cfg, env, maxTries);
-  if (fleet) {return JSON.stringify(fleet);}
+  if (fleet !== null) {return JSON.stringify(fleet);}
   return null;
 }
 
@@ -338,7 +299,7 @@ function generateFleet(input, env) {
   }
   const MAX_TRIES = 100;
   const fleetResult = tryGenerateFleet(cfg, env, MAX_TRIES);
-  if (fleetResult) {return fleetResult;}
+  if (fleetResult !== null) {return fleetResult;}
   return fleetRetryError();
 }
 
