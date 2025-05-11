@@ -35,23 +35,15 @@ const CLASS = {
 };
 
 const BLOCKQUOTE_CORNERS = `<div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>`;
-
-// HTML tag names
 const DIV_TAG_NAME = 'div';
 const ARTICLE_TAG_NAME = 'article';
-
-// Date formatting constants
 const DATE_LOCALE = 'en-GB';
 const DATE_FORMAT_OPTIONS = {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 };
-
-// Container ID
 const CONTAINER_ID = 'container';
-
-// HTML generation helpers
 
 /**
  * Create a div element with specified classes and content
@@ -63,7 +55,6 @@ function createDiv(classes, content) {
   const classAttr = createAttrPair(ATTR_NAME.CLASS, classes);
   return createTag(DIV_TAG_NAME, classAttr, content);
 }
-
 
 /**
  * Build a key-value section.
@@ -118,8 +109,6 @@ function labeledSectionValuePart(valueHTML, wrapValueDiv) {
 }
 
 
-
-
 /**
  * Join CSS classes into a space-separated string
  * @param {string[]} classes - Array of CSS class names
@@ -140,7 +129,6 @@ function createValueDiv(content, additionalClasses = []) {
   const joinedClasses = joinClasses(classes);
   return createDiv(joinedClasses, content);
 }
-
 
 /**
  * Create a pair with two elements
@@ -181,16 +169,13 @@ function formatDate(dateString) {
 }
 
 // Header components
-
 // No longer using newlines and indentation
-
 const METADATA_TEXT = `Software developer and philosopher in Berlin`;
 
 /**
  * Create an empty div with the key class
  * @returns {string} - HTML div element with key class and no content
  */
-
 /**
  * Create the content for the header section
  */
@@ -199,9 +184,7 @@ function createHeaderContent() {
     createValueDiv(HEADER_BANNER),
     createValueDiv(METADATA_TEXT, [CLASS.METADATA])
   ];
-
   const parts = valueDivs.map(valueDiv => createLabeledSection({ label: '', valueHTML: valueDiv, wrapValueDiv: false }));
-
   return join(parts);
 }
 
@@ -275,7 +258,6 @@ function createHeaderContentArray(headerElement) {
 function createPageHeader() {
   const headerElement = createHeaderSection();
   const contentArray = createHeaderContentArray(headerElement);
-
   return contentArray.join('');
 }
 
@@ -312,7 +294,6 @@ function createFooterContentArray(footerElement) {
 function createPageFooter() {
   const footerElement = createFooterSection();
   const contentArray = createFooterContentArray(footerElement);
-
   return contentArray.join('');
 }
 
@@ -387,7 +368,6 @@ function generateArticle(post) {
   const content = generateArticleContent(post);
   const formattedContent = formatArticleContent(content);
   const attributes = createArticleAttributes(post);
-
   return createTag(ARTICLE_TAG_NAME, attributes, formattedContent);
 }
 
@@ -412,7 +392,6 @@ function createContentItemWithIndex(text, index) {
   const isFirst = isFirstContentItem(index);
   return createContentSectionItem(text, isFirst);
 }
-
 
 /**
  * Normalize a content item.
@@ -443,14 +422,11 @@ const CONTENT_RENDERERS = {
   __default__: renderAsParagraph,
 };
 
-
-
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
   const renderer = CONTENT_RENDERERS[type] || CONTENT_RENDERERS.__default__;
   return renderer(content);
 }
-
 
 function renderAsParagraph(content) {
   return `<p class="${CLASS.VALUE}">${content}</p>`;
@@ -470,7 +446,6 @@ function createContentSectionItem(content, isFirst) {
   }
   const keyDiv = createDiv(CLASS.KEY, key);
   const valueDiv = renderValueDiv(normalizedContent);
-
   return createPair(keyDiv, valueDiv);
 }
 
@@ -479,9 +454,7 @@ function createContentSectionItem(content, isFirst) {
  */
 function generateContentSections(post) {
   const contentArray = getContentArray(post);
-
   const contentItems = contentArray.map(createContentItemWithIndex);
-
   return combineHTMLSections(...contentItems);
 }
 
@@ -492,7 +465,6 @@ function generateHeaderSection(post) {
   const titleSection = generateTitleSection(post);
   const dateSection = generateDateSection(post);
   const tagsSection = generateTagsSection(post);
-
   return combineHTMLSections(titleSection, dateSection, tagsSection);
 }
 
@@ -512,7 +484,6 @@ function generateTitleSection(post) {
   const titleClasses = joinClasses([CLASS.KEY, CLASS.ARTICLE_TITLE]);
   const titleKey = createDiv(titleClasses, post.key);
   const titleValue = createTitleValue(post);
-
   return createPair(titleKey, titleValue);
 }
 
@@ -591,8 +562,6 @@ function shouldDisplayMedia(post, mediaType) {
   return hasMediaType(post, mediaType) && isValidMediaType(post, mediaType);
 }
 
-
-
 /**
  * Generate media content based on media type
  */
@@ -602,7 +571,6 @@ function generateMediaContent(post, mediaType) {
     audio: createAudioContent,
     youtube: createYouTubeContent
   };
-
   return generators[mediaType](post);
 }
 
@@ -615,7 +583,6 @@ function createIllustrationImage(post) {
   const fileName = post.illustration.fileName || post.publicationDate;
   const src = `${fileName}.${post.illustration.fileType}`;
   const altText = post.illustration.altText;
-
   return `<img loading="lazy" src="${src}" alt="${altText}"/>`;
 }
 
@@ -624,7 +591,6 @@ function createIllustrationImage(post) {
  */
 function createIllustrationContent(post) {
   const image = createIllustrationImage(post);
-
   return `<div class="${CLASS.VALUE}">${image}</div>`;
 }
 
@@ -641,7 +607,6 @@ function createAudioSource(post) {
  */
 function createAudioContent(post) {
   const source = createAudioSource(post);
-
   return `<audio class="${CLASS.VALUE}" controls>${source}</audio>`;
 }
 
@@ -652,7 +617,6 @@ function createYouTubeIframe(post) {
   const youtubeId = post.youtube.id;
   const timestamp = post.youtube.timestamp;
   const title = escapeHtml(post.youtube.title);
-
   return `<iframe height="300px" width="100%" src="https://www.youtube.com/embed/${youtubeId}?start=${timestamp}" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>`;
 }
 
@@ -661,10 +625,8 @@ function createYouTubeIframe(post) {
  */
 function createYouTubeContent(post) {
   const iframe = createYouTubeIframe(post);
-
   return `<p class="${CLASS.VALUE}">${iframe}</p>`;
 }
-
 
 /**
  * Mapping for media sections.
@@ -693,7 +655,6 @@ const MEDIA_SECTIONS = {
     return createLabeledSection({ label: 'video', valueHTML: valueDiv, wrapValueDiv: false, keyExtraClasses: CLASS.MEDIA });
   },
 };
-
 /**
  * Generate all media sections for a blog post by iterating over the MEDIA_SECTIONS mapping.
  */
@@ -708,10 +669,8 @@ function generateMediaSections(post) {
  * @returns {string} - Formatted HTML for a related link
  */
 const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
-
 function escapeRelatedLinkFields(link) {
   const fields = ['url', 'title', 'author', 'source', 'quote'];
-
   return fields.reduce((acc, field) => {
     if (link[field]) {
       acc[field] = escapeHtml(link[field]);
@@ -729,7 +688,6 @@ function formatTitleByType(type, title) {
     article: t => `"${t}"`,
     report: t => `"${t}"`
   };
-
   let formatter;
   if (formatters[type]) {
     formatter = formatters[type];
@@ -871,7 +829,6 @@ function generateToyInputSection() {
  * @param {string} valueHTML - The HTML for the value div
  * @returns {string} - Section HTML with empty key and value
  */
-
 /**
  * Generate the button section for a toy component
  * @returns {string} - HTML for the button section
@@ -924,7 +881,6 @@ function generateToyUISection(post) {
   if (!hasToy(post)) {
     return '';
   }
-
   return combineHTMLSections(
     generateToyInputSection(),
     generateToyButtonSection(),
@@ -941,7 +897,6 @@ function generateToyScriptSection(post) {
   if (!hasToy(post)) {
     return '';
   }
-
   return generateToyScript(post);
 }
 
@@ -957,7 +912,6 @@ function getArticleSections(post) {
   const toyUISection = generateToyUISection(post);
   const relatedLinksSection = generateRelatedLinksSection(post);
   const toyScriptSection = generateToyScriptSection(post);
-
   return [
     headerSection,
     mediaSection,
