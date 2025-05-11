@@ -853,6 +853,17 @@ function generateToyScript(post) {
   return `<script type="module">${scriptContent}</script>`;
 }
 
+// Unified toy UI section abstraction
+const TOY_UI_SECTIONS = [
+  ['in', () => '<form><input type="text" disabled></form>'],
+  ['', () => '<button type="submit" disabled>Submit</button>'],
+  ['out', getToyOutputValueContent],
+];
+
+function buildToySection(label, buildHTML) {
+  return createLabeledSection({ label, valueHTML: typeof buildHTML === 'function' ? buildHTML() : buildHTML });
+}
+
 /**
  * Generate the toy UI components for a blog post
  * @param {Object} post - The blog post
