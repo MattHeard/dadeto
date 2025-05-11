@@ -134,7 +134,7 @@ function isValidCandidate(cfg, occupied, segs, valid) {
   return !forbiddenTouch;
 }
 
-function collectCandidatesForStart(start, length, cfg, occupied) {
+function collectCandidatesForStart({ start, length, cfg, occupied }) {
   const directions = ['H', 'V'];
   const candidates = [];
   for (const direction of directions) {
@@ -177,7 +177,7 @@ function collectAllCandidates(length, cfg, occupied) {
 function collectCandidatesForRow({ y, length, cfg, occupied, candidates }) {
   for (let x = 0; x < cfg.width; x++) {
     const start = { x, y };
-    const localCandidates = collectCandidatesForStart(start, length, cfg, occupied);
+    const localCandidates = collectCandidatesForStart({ start, length, cfg, occupied });
     candidates.push(...localCandidates);
   }
 }
