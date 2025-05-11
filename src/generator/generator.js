@@ -682,7 +682,11 @@ function escapeRelatedLinkFields(link) {
 }
 
 function prefixIfPresent(prefix, value) {
-  return value ? `${prefix}${value}` : '';
+  if (value) {
+    return `${prefix}${value}`;
+  } else {
+    return '';
+  }
 }
 
 function formatTitleByType(type, title) {
@@ -707,11 +711,15 @@ function formatBaseLink(type, url, title) {
 }
 
 function createLinkParts(baseLink, { author, source, quote }) {
+  let quotePart = '';
+  if (quote) {
+    quotePart = prefixIfPresent(' ("', quote) + '")';
+  }
   return [
     baseLink,
     prefixIfPresent(' by ', author),
     prefixIfPresent(', ', source),
-    prefixIfPresent(' ("', quote) + (quote ? '")' : '')
+    quotePart
   ];
 }
 
