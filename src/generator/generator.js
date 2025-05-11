@@ -615,7 +615,10 @@ const MEDIA_CONTENT_CONFIG = {
 function buildMediaContent(post, type) {
   const { wrapperTag, fragment, controls } = MEDIA_CONTENT_CONFIG[type];
   const innerHTML = fragment(post);
-  const controlsAttr = controls ? ' controls' : '';
+  let controlsAttr = '';
+  if (controls) {
+    controlsAttr = ' controls';
+  }
   return `<${wrapperTag} class="${CLASS.VALUE}"${controlsAttr}>${innerHTML}</${wrapperTag}>`;
 }
 
