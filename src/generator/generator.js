@@ -838,11 +838,6 @@ function getToyOutputValueContent() {
   return selectDropdown + outputDiv;
 }
 
-function generateToyOutputSection() {
-  const valueHTML = getToyOutputValueContent();
-  return createLabeledSection({ label: 'out', valueHTML });
-}
-
 /**
  * Generate script tag to add the component
  * @param {Object} post - The blog post
