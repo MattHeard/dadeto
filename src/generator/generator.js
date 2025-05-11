@@ -804,6 +804,14 @@ function generateToyInputSection() {
  * Generate the button section for a toy component
  * @returns {string} - HTML for the button section
  */
+// Output types for toy dropdown
+const TOY_OUTPUT_TYPES = [
+  ['text', 'text'],
+  ['pre', 'pre'],
+  ['tic-tac-toe', 'tic-tac-toe'],
+  ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
+];
+
 function generateToyButtonSection() {
   const valueContent = '<button type="submit" disabled>Submit</button>';
   return createLabeledSection({ label: '', valueHTML: valueContent });
