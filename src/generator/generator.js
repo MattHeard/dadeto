@@ -83,8 +83,10 @@ function createDiv(classes, content) {
  */
 function createLabeledSection(label, valueHTML, wrapValueDiv = true) {
   const keyDiv = createDiv(CLASS.KEY, label);
-  const valuePart = wrapValueDiv ? createValueDiv(valueHTML) : valueHTML;
-  return createPair(keyDiv, valuePart);
+  if (wrapValueDiv) {
+    return createPair(keyDiv, createValueDiv(valueHTML));
+  }
+  return createPair(keyDiv, valueHTML);
 }
 
 
