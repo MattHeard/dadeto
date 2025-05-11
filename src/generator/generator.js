@@ -660,7 +660,7 @@ const MEDIA_SECTIONS = {
  */
 function generateMediaSections(post) {
   const sections = Object.values(MEDIA_SECTIONS).map(generator => generator(post));
-  return combineHTMLSections(...sections);
+  return join(sections);
 }
 
 /**
