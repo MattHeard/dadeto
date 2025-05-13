@@ -3445,11 +3445,11 @@ TN:
 SF:src/toys/2025-05-13/base64Encoder.js
 FN:5,encodeBase64
 FNF:1
-FNH:0
-FNDA:0,encodeBase64
-DA:7,0
+FNH:1
+FNDA:1,encodeBase64
+DA:7,1
 LF:1
-LH:0
+LH:1
 BRF:0
 BRH:0
 end_of_record

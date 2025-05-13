@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747133888052" clover="3.2.0">
-  <project timestamp="1747133888052" name="All files">
-    <metrics statements="1494" coveredstatements="1489" conditionals="442" coveredconditionals="438" methods="611" coveredmethods="608" elements="2547" coveredelements="2535" complexity="0" loc="1494" ncloc="1494" packages="16" files="33" classes="33"/>
+<coverage generated="1747134015503" clover="3.2.0">
+  <project timestamp="1747134015503" name="All files">
+    <metrics statements="1494" coveredstatements="1490" conditionals="442" coveredconditionals="438" methods="611" coveredmethods="609" elements="2547" coveredelements="2537" complexity="0" loc="1494" ncloc="1494" packages="16" files="33" classes="33"/>
     <package name="browser">
       <metrics statements="331" coveredstatements="331" conditionals="62" coveredconditionals="62" methods="109" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1637,10 +1637,10 @@
       </file>
     </package>
     <package name="toys.2025-05-13">
-      <metrics statements="1" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
       <file name="base64Encoder.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-13/base64Encoder.js">
-        <metrics statements="1" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
-        <line num="7" count="0" type="stmt"/>
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="7" count="1" type="stmt"/>
       </file>
     </package>
   </project>
