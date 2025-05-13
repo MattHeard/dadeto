@@ -264,3 +264,5 @@ export const setData = (state, loggers) => {
   restoreBlogState(current, oldBlogState);
   logInfo('Global state updated:', current);
 };
+
+export const encodeBase64 = (input) => btoa(unescape(encodeURIComponent(input)));

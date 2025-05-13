@@ -1,7 +1,7 @@
 import { setupAudio } from './audio-controls.js';
 import { handleTagLinks } from './tags.js';
 import {
-  fetchAndCacheBlogData, getData, setData
+  fetchAndCacheBlogData, getData, setData, encodeBase64
 } from './data.js';
 import { makeCreateIntersectionObserver, initializeVisibleComponents, handleDropdownChange } from './toys.js';
 import {
@@ -105,7 +105,8 @@ function createEnv() {
     ["getRandomNumber", getRandomNumber],
     ["getCurrentTime", getCurrentTime],
     ["getData", () => getData(globalState, fetch, loggers)],
-    ["setData", (newData) => setData({ desired: newData, current: globalState }, loggers)]
+    ["setData", (newData) => setData({ desired: newData, current: globalState }, loggers)],
+    ["encodeBase64", encodeBase64]
   ]);
 }
 

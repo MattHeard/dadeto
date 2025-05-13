@@ -1,10 +1,10 @@
-// Test suite for Base64 Encoder toy
 import { encodeBase64 } from '../../../src/toys/2025-05-13/base64Encoder.js';
+import { jest } from '@jest/globals';
 
 describe('encodeBase64', () => {
-  it('should be implemented', () => {
-    // Placeholder: replace with real tests once implemented
-    expect(typeof encodeBase64).toBe('function');
-    expect(encodeBase64('test')).toBe('dGVzdA==');
+  it('encodes a string to Base64 using the provided environment function', () => {
+    const encoder = jest.fn(() => 'dGVzdA==');
+    const env = { encodeBase64: encoder };
+    expect(encodeBase64('test', env)).toBe('dGVzdA==');
   });
 });
