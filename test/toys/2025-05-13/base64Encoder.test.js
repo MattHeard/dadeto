@@ -5,6 +5,6 @@ describe('encodeBase64', () => {
   it('should be implemented', () => {
     // Placeholder: replace with real tests once implemented
     expect(typeof encodeBase64).toBe('function');
-    expect(encodeBase64('test')).toBe('');
+    expect(encodeBase64('test')).toBe('dGVzdA==');
   });
 });

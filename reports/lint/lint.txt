@@ -12,6 +12,13 @@
   73:1  warning  Function 'isValidFleet' has a complexity of 6. Maximum allowed is 2          complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-13/base64Encoder.js
-  5:30  warning  'input' is defined but never used  no-unused-vars
+   4:8   warning  Function 'encodeBase64' has a complexity of 17. Maximum allowed is 2  complexity
+   5:16  warning  Ternary operator used                                                 no-ternary
+  12:7   warning  Ternary operator used                                                 no-ternary
+  15:7   warning  Ternary operator used                                                 no-ternary
+  45:16  warning  Ternary operator used                                                 no-ternary
+  46:16  warning  Ternary operator used                                                 no-ternary
+  50:18  warning  Ternary operator used                                                 no-ternary
+  51:18  warning  Ternary operator used                                                 no-ternary
 
-✖ 9 problems (0 errors, 9 warnings)
+✖ 16 problems (0 errors, 16 warnings)
