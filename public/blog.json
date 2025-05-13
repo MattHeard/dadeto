@@ -1,6 +1,29 @@
 {
   "posts": [
     {
+      "key": "BASE1",
+      "title": "Base64 Encoder",
+      "publicationDate": "2025-05-13",
+      "content": [
+        "Encodes a string into Base64. Enter any text and receive its Base64 representation. Useful for encoding data for web, APIs, or debugging."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a stylized terminal window with the phrase 'Base64 Encoder', a text input, and an output box, all in a minimal, modern design"
+      },
+      "toy": {
+        "modulePath": "/2025-05-13/base64Encoder.js",
+        "functionName": "encodeBase64"
+      },
+      "tags": [
+        "toy",
+        "base64",
+        "encoding",
+        "string"
+      ]
+    },
+
+    {
       "key": "BATT3",
       "title": "Battleship Solitaire Clues",
       "publicationDate": "2025-05-11",

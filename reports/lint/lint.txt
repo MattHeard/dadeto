@@ -11,4 +11,7 @@
   60:1  warning  Function 'parseFleet' has a complexity of 3. Maximum allowed is 2            complexity
   73:1  warning  Function 'isValidFleet' has a complexity of 6. Maximum allowed is 2          complexity
 
-✖ 8 problems (0 errors, 8 warnings)
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-13/base64Encoder.js
+  5:30  warning  'input' is defined but never used  no-unused-vars
+
+✖ 9 problems (0 errors, 9 warnings)
