@@ -10,7 +10,14 @@ describe('encodeBase64', () => {
         return 'unexpected input';
       }
     });
-    const env = { encodeBase64: encoder };
+    const get = jest.fn((key) => {
+      if (key === 'encodeBase64') {
+        return encoder;
+      } else {
+        return undefined;
+      }
+    });
+    const env = { get };
     expect(encodeBase64('test', env)).toBe('dGVzdA==');
   });
 });
