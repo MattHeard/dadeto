@@ -66,19 +66,18 @@ function buildColumnDigitMatrix(colClues) {
 
 export function createBattleshipCluesBoardElement(inputString, dom) {
   let clues;
+  let invalid = false;
   try {
     clues = JSON.parse(inputString);
   } catch {
-    const err = dom.createElement('p');
-    dom.setTextContent(err, 'Invalid JSON');
-    return err;
+    invalid = true;
   }
-
-  const error = validateCluesObject(clues);
-  if (error) {
-    const err = dom.createElement('p');
-    dom.setTextContent(err, error);
-    return err;
+  if (!invalid) {
+    const error = validateCluesObject(clues);
+    if (error) {invalid = true;}
+  }
+  if (invalid) {
+    clues = { rowClues: Array(10).fill(0), colClues: Array(10).fill(0) };
   }
 
   const { rowClues, colClues } = clues;

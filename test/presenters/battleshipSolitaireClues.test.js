@@ -32,38 +32,51 @@ function makeDom() {
 }
 
 describe('createBattleshipCluesBoardElement – error handling', () => {
-  test('returns <p> “Invalid JSON” on parse failure', () => {
+  function expectEmpty10x10Board(el) {
+    expect(el.tag).toBe('pre');
+    const lines = el.text.trim().split('\n');
+    // Find grid lines (should be 10 of them, each with 10 dots and 0 clue)
+    const gridLines = lines.filter(line =>
+      /^\s*0(\s+·){10}\s+0\s*$/.test(line)
+    );
+    expect(gridLines.length).toBe(10);
+    for (const line of gridLines) {
+      // Remove spaces, should be '0··········0'
+      expect(line.replace(/\s/g, '')).toBe('0··········0');
+    }
+  }
+
+  test('renders 10x10 empty board on parse failure', () => {
     const dom = makeDom();
     const el = createBattleshipCluesBoardElement('not json', dom);
-    expect(el.tag).toBe('p');
-    expect(el.text).toMatch(/Invalid JSON/);
+    expectEmpty10x10Board(el);
   });
 
-  test('returns <p> “Invalid JSON object” when JSON is not an object', () => {
+  test('renders 10x10 empty board when JSON is not an object', () => {
     const dom = makeDom();
     const el = createBattleshipCluesBoardElement('123', dom); // number, not object
-    expect(el.text).toMatch(/Invalid JSON object/);
+    expectEmpty10x10Board(el);
   });
 
-  test('returns <p> when rowClues / colClues arrays are missing', () => {
+  test('renders 10x10 empty board when rowClues / colClues arrays are missing', () => {
     const dom = makeDom();
     const bad = JSON.stringify({ rowClues: [1, 2, 3] });
     const el = createBattleshipCluesBoardElement(bad, dom);
-    expect(el.text).toMatch(/Missing rowClues or colClues/);
+    expectEmpty10x10Board(el);
   });
 
-  test('returns <p> when clue values are non‑numeric', () => {
+  test('renders 10x10 empty board when clue values are non‑numeric', () => {
     const dom = makeDom();
-    const bad = JSON.stringify({ rowClues: [1, 'x'], colClues: [2, 3] });
+    const bad = JSON.stringify({ rowClues: [1, "x"], colClues: [2, 3] });
     const el = createBattleshipCluesBoardElement(bad, dom);
-    expect(el.text).toMatch(/Clue values must be numbers/);
+    expectEmpty10x10Board(el);
   });
 
-  test('returns <p> when any array is empty', () => {
+  test('renders 10x10 empty board when any array is empty', () => {
     const dom = makeDom();
     const bad = JSON.stringify({ rowClues: [], colClues: [1] });
     const el = createBattleshipCluesBoardElement(bad, dom);
-    expect(el.text).toMatch(/non-empty/);
+    expectEmpty10x10Board(el);
   });
 });
 
