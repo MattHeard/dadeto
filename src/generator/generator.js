@@ -905,7 +905,7 @@ function generateToyScript(post) {
 
 // Unified toy UI section abstraction
 const TOY_UI_SECTIONS = [
-  ['in', () => '<form><input type="text" disabled></form>'],
+  ['in', () => '<select class="input" disabled><option value="text">text</option></select><form><input type="text" disabled></form>'],
   ['', () => '<button type="submit" disabled>Submit</button>'],
   ['out', getToyOutputValueContent],
 ];
