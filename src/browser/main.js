@@ -148,6 +148,24 @@ const dom = {
   removeAllChildren
 };
 const env = { globalState, createEnv, error, fetch, loggers };
+
+// Ensures a single <input type="number"> exists just after the text input
+const ensureNumberInput = (container, textInput) => {
+  let numberInput = container.querySelector('input[type="number"]');
+  if (!numberInput) {
+    numberInput = dom.createElement('input');
+    numberInput.type = 'number';
+
+    // keep DOM order stable: place right after the text input
+    if (textInput && textInput.nextSibling) {
+      container.insertBefore(numberInput, textInput.nextSibling);
+    } else {
+      container.appendChild(numberInput);
+    }
+  }
+  return numberInput;
+};
+
 const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 
@@ -198,25 +216,10 @@ const onInputDropdownChange = event => {
     textInput.disabled = !showText;
   }
 
-  // ── number‑input management ───────────────────────────────
-  const numberInputSelector = 'input[type="number"]';
-  let numberInput = container.querySelector(numberInputSelector);
-
   if (select.value === 'number') {
-    // create one if it doesn't already exist
-    if (!numberInput) {
-      numberInput = dom.createElement('input');
-      numberInput.type = 'number';
-
-      // insert right after the text input so DOM order is stable
-      if (textInput && textInput.nextSibling) {
-        container.insertBefore(numberInput, textInput.nextSibling);
-      } else {
-        container.appendChild(numberInput);
-      }
-    }
+    ensureNumberInput(container, textInput);
   } else {
-    // any non‑number selection removes the number input, if present
+    const numberInput = container.querySelector('input[type="number"]');
     if (numberInput) {container.removeChild(numberInput);}
   }
 
