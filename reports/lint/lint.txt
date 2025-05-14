@@ -1,4 +1,7 @@
 
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
+  190:31  warning  Arrow function has a complexity of 7. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   35:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
   61:22  warning  Ternary operator used                                                                     no-ternary
@@ -11,4 +14,4 @@
   60:1  warning  Function 'parseFleet' has a complexity of 3. Maximum allowed is 2            complexity
   73:1  warning  Function 'isValidFleet' has a complexity of 6. Maximum allowed is 2          complexity
 
-✖ 8 problems (0 errors, 8 warnings)
+✖ 9 problems (0 errors, 9 warnings)

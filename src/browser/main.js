@@ -191,14 +191,36 @@ const onInputDropdownChange = event => {
   const select = event.currentTarget;
   const container = select.parentElement; // <div class="value">
   const textInput = container.querySelector('input[type="text"]');
+
   if (textInput) {
     const showText = select.value === 'text';
     textInput.hidden = !showText;
-    // keep it out of tab‑order and form submission when hidden
     textInput.disabled = !showText;
   }
 
-  // Log after toggling so we can trace behaviour
+  // ── number‑input management ───────────────────────────────
+  const numberInputSelector = 'input[type="number"]';
+  let numberInput = container.querySelector(numberInputSelector);
+
+  if (select.value === 'number') {
+    // create one if it doesn't already exist
+    if (!numberInput) {
+      numberInput = dom.createElement('input');
+      numberInput.type = 'number';
+
+      // insert right after the text input so DOM order is stable
+      if (textInput && textInput.nextSibling) {
+        container.insertBefore(numberInput, textInput.nextSibling);
+      } else {
+        container.appendChild(numberInput);
+      }
+    }
+  } else {
+    // any non‑number selection removes the number input, if present
+    if (numberInput) {container.removeChild(numberInput);}
+  }
+
+  // Log change for debugging
   loggers.logInfo(`input dropdown changed: ${select.value}`);
 };
 
