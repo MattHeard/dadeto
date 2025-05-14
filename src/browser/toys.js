@@ -26,6 +26,11 @@ export function handleDropdownChange(dropdown, getData, dom) {
   const output = data.output[postId];
 
   const parent = dom.querySelector(dropdown.parentNode, 'div.output');
+  if (typeof output === 'undefined') {
+    dom.removeAllChildren(parent);
+    // Optionally, show a placeholder: dom.setTextContent(parent, 'No output available.');
+    return;
+  }
   setTextContent({ presenterKey: selectedValue, content: output }, dom, parent);
 }
 
