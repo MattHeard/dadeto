@@ -183,12 +183,13 @@ setupAudio(dom);
 
 window.addEventListener('DOMContentLoaded', () => {
   const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
+  const onOutputDropdownChange = event => handleDropdownChange(
+    event.currentTarget,
+    () => getData(globalState, fetch, loggers),
+    dom
+  );
   outputDropdowns.forEach(dropdown => {
-    dropdown.addEventListener('change', event => handleDropdownChange(
-      event.currentTarget,
-      () => getData(globalState, fetch, loggers),
-      dom
-    ));
+    dropdown.addEventListener('change', onOutputDropdownChange);
   });
 
   // Add event listeners to toy input dropdowns
