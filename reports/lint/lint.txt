@@ -3,6 +3,9 @@
   153:27  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
   221:31  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
+  22:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   35:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
   61:22  warning  Ternary operator used                                                                     no-ternary
@@ -15,4 +18,4 @@
   60:1  warning  Function 'parseFleet' has a complexity of 3. Maximum allowed is 2            complexity
   73:1  warning  Function 'isValidFleet' has a complexity of 6. Maximum allowed is 2          complexity
 
-✖ 10 problems (0 errors, 10 warnings)
+✖ 11 problems (0 errors, 11 warnings)
