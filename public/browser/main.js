@@ -182,9 +182,8 @@ setupAudio(dom);
 // Add event listeners to toy output dropdowns
 
 window.addEventListener('DOMContentLoaded', () => {
-  // Select all <select> elements that are direct children of a .value div following a .key with 'out' text, within an .entry article
-  const dropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
-  dropdowns.forEach(dropdown => {
+  const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
+  outputDropdowns.forEach(dropdown => {
     dropdown.addEventListener('change', event => handleDropdownChange(
       event.currentTarget,
       () => getData(globalState, fetch, loggers),
