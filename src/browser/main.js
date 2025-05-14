@@ -156,6 +156,15 @@ const ensureNumberInput = (container, textInput) => {
     numberInput = dom.createElement('input');
     numberInput.type = 'number';
 
+    // install value-change listener and stash a disposer
+    const onValueChange = e => {
+      loggers.logInfo(`number input value: ${e.target.value}`);
+    };
+    numberInput.addEventListener('input', onValueChange);
+    numberInput._dispose = () => {
+      numberInput.removeEventListener('input', onValueChange);
+    };
+
     // keep DOM order stable: place right after the text input
     if (textInput && textInput.nextSibling) {
       container.insertBefore(numberInput, textInput.nextSibling);
@@ -220,7 +229,10 @@ const onInputDropdownChange = event => {
     ensureNumberInput(container, textInput);
   } else {
     const numberInput = container.querySelector('input[type="number"]');
-    if (numberInput) {container.removeChild(numberInput);}
+    if (numberInput) {
+      numberInput._dispose?.(); // clean up listener
+      container.removeChild(numberInput);
+    }
   }
 
   // Log change for debugging
