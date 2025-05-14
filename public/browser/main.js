@@ -159,7 +159,7 @@ const ensureNumberInput = (container, textInput) => {
     // install value-change listener and stash a disposer
     const onValueChange = e => {
       const val = e.target.value;
-      if (textInput) textInput.value = val;
+      if (textInput) {textInput.value = val;}
     };
     numberInput.addEventListener('input', onValueChange);
     numberInput._dispose = () => {
@@ -167,7 +167,7 @@ const ensureNumberInput = (container, textInput) => {
     };
 
     // initialize number input from existing text value
-    if (textInput) numberInput.value = textInput.value;
+    if (textInput) {numberInput.value = textInput.value;}
 
     // keep DOM order stable: place right after the text input
     if (textInput && textInput.nextSibling) {

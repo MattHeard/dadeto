@@ -151,10 +151,16 @@ describe('createTicTacToeBoardElement', () => {
     );
   });
 
-  it('renders an error for empty string input', () => {
+  it('renders an empty board for empty string input', () => {
     const el = createTicTacToeBoardElement('', mockDom());
-    expect(el.tagName).toBe('p');
-    expect(el.textContent).toBe('Invalid JSON');
+    expect(el.tagName).toBe('pre');
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
   });
 
   it('renders an empty board for valid JSON but not an object', () => {
@@ -204,10 +210,15 @@ describe('createTicTacToeBoardElement', () => {
     );
   });
 
-  it('gracefully reports invalid JSON', () => {
+  it('renders an empty board for invalid JSON', () => {
     const el = createTicTacToeBoardElement('not-json', mockDom());
-
-    expect(el.tagName).toBe('p');
-    expect(el.textContent).toBe('Invalid JSON');
+    expect(el.tagName).toBe('pre');
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
   });
 });

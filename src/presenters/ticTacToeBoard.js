@@ -61,9 +61,8 @@ export function createTicTacToeBoardElement(inputString, dom) {
   try {
     data = JSON.parse(inputString);
   } catch {
-    const errEl = dom.createElement('p');
-    dom.setTextContent(errEl, 'Invalid JSON'); // 🛑
-    return errEl;
+    // On error, render an empty board (no moves)
+    return renderTicTacToeBoardFromData({ moves: [] }, dom);
   }
 
   return renderTicTacToeBoardFromData(data, dom);
