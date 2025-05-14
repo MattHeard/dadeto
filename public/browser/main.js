@@ -194,20 +194,21 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Add event listeners to toy input dropdowns
   const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
-  inputDropdowns.forEach(dropdown => {
-    dropdown.addEventListener('change', event => {
-      const select = event.currentTarget;
-      const container = select.parentElement; // <div class="value">
-      const textInput = container.querySelector('input[type="text"]');
-      if (textInput) {
-        const showText = select.value === 'text';
-        textInput.hidden = !showText;
-        // keep it out of tab‑order and form submission when hidden
-        textInput.disabled = !showText;
-      }
+  const onInputDropdownChange = event => {
+    const select = event.currentTarget;
+    const container = select.parentElement; // <div class="value">
+    const textInput = container.querySelector('input[type="text"]');
+    if (textInput) {
+      const showText = select.value === 'text';
+      textInput.hidden = !showText;
+      // keep it out of tab‑order and form submission when hidden
+      textInput.disabled = !showText;
+    }
 
-      // Log after toggling so we can trace behaviour
-      loggers.logInfo(`input dropdown changed: ${select.value}`);
-    });
+    // Log after toggling so we can trace behaviour
+    loggers.logInfo(`input dropdown changed: ${select.value}`);
+  };
+  inputDropdowns.forEach(dropdown => {
+    dropdown.addEventListener('change', onInputDropdownChange);
   });
 });
