@@ -181,33 +181,35 @@ setupAudio(dom);
 
 // Add event listeners to toy output dropdowns
 
+const onOutputDropdownChange = event => handleDropdownChange(
+  event.currentTarget,
+  () => getData(globalState, fetch, loggers),
+  dom
+);
+
+const onInputDropdownChange = event => {
+  const select = event.currentTarget;
+  const container = select.parentElement; // <div class="value">
+  const textInput = container.querySelector('input[type="text"]');
+  if (textInput) {
+    const showText = select.value === 'text';
+    textInput.hidden = !showText;
+    // keep it out of tab‑order and form submission when hidden
+    textInput.disabled = !showText;
+  }
+
+  // Log after toggling so we can trace behaviour
+  loggers.logInfo(`input dropdown changed: ${select.value}`);
+};
+
 window.addEventListener('DOMContentLoaded', () => {
   const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
-  const onOutputDropdownChange = event => handleDropdownChange(
-    event.currentTarget,
-    () => getData(globalState, fetch, loggers),
-    dom
-  );
   outputDropdowns.forEach(dropdown => {
     dropdown.addEventListener('change', onOutputDropdownChange);
   });
 
   // Add event listeners to toy input dropdowns
   const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
-  const onInputDropdownChange = event => {
-    const select = event.currentTarget;
-    const container = select.parentElement; // <div class="value">
-    const textInput = container.querySelector('input[type="text"]');
-    if (textInput) {
-      const showText = select.value === 'text';
-      textInput.hidden = !showText;
-      // keep it out of tab‑order and form submission when hidden
-      textInput.disabled = !showText;
-    }
-
-    // Log after toggling so we can trace behaviour
-    loggers.logInfo(`input dropdown changed: ${select.value}`);
-  };
   inputDropdowns.forEach(dropdown => {
     dropdown.addEventListener('change', onInputDropdownChange);
   });
