@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747252166306" clover="3.2.0">
-  <project timestamp="1747252166306" name="All files">
-    <metrics statements="1494" coveredstatements="1490" conditionals="444" coveredconditionals="439" methods="612" coveredmethods="609" elements="2550" coveredelements="2538" complexity="0" loc="1494" ncloc="1494" packages="16" files="33" classes="33"/>
+<coverage generated="1747252388075" clover="3.2.0">
+  <project timestamp="1747252388075" name="All files">
+    <metrics statements="1492" coveredstatements="1488" conditionals="444" coveredconditionals="439" methods="612" coveredmethods="609" elements="2548" coveredelements="2536" complexity="0" loc="1492" ncloc="1492" packages="16" files="33" classes="33"/>
     <package name="browser">
       <metrics statements="332" coveredstatements="332" conditionals="64" coveredconditionals="63" methods="110" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -693,7 +693,7 @@
       </file>
     </package>
     <package name="presenters">
-      <metrics statements="159" coveredstatements="158" conditionals="60" coveredconditionals="60" methods="66" coveredmethods="65"/>
+      <metrics statements="157" coveredstatements="156" conditionals="60" coveredconditionals="60" methods="66" coveredmethods="65"/>
       <file name="battleshipSolitaireClues.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js">
         <metrics statements="45" coveredstatements="44" conditionals="20" coveredconditionals="20" methods="13" coveredmethods="12"/>
         <line num="7" count="0" type="stmt"/>
@@ -743,16 +743,16 @@
         <line num="112" count="1" type="stmt"/>
       </file>
       <file name="battleshipSolitaireFleet.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireFleet.js">
-        <metrics statements="66" coveredstatements="66" conditionals="20" coveredconditionals="20" methods="30" coveredmethods="30"/>
-        <line num="21" count="5" type="stmt"/>
-        <line num="22" count="5" type="stmt"/>
-        <line num="23" count="4" type="stmt"/>
-        <line num="24" count="3" type="stmt"/>
-        <line num="25" count="2" type="stmt"/>
-        <line num="27" count="14" type="stmt"/>
-        <line num="28" count="5" type="stmt"/>
+        <metrics statements="64" coveredstatements="64" conditionals="20" coveredconditionals="20" methods="30" coveredmethods="30"/>
+        <line num="21" count="6" type="stmt"/>
+        <line num="22" count="6" type="stmt"/>
+        <line num="23" count="5" type="stmt"/>
+        <line num="24" count="4" type="stmt"/>
+        <line num="25" count="3" type="stmt"/>
+        <line num="27" count="18" type="stmt"/>
+        <line num="28" count="6" type="stmt"/>
         <line num="32" count="4" type="stmt"/>
-        <line num="33" count="2" type="stmt"/>
+        <line num="33" count="3" type="stmt"/>
         <line num="37" count="4" type="cond" truecount="2" falsecount="0"/>
         <line num="38" count="1" type="stmt"/>
         <line num="40" count="3" type="stmt"/>
@@ -787,29 +787,27 @@
         <line num="120" count="6" type="cond" truecount="2" falsecount="0"/>
         <line num="126" count="6" type="stmt"/>
         <line num="127" count="6" type="stmt"/>
-        <line num="129" count="1" type="stmt"/>
         <line num="130" count="1" type="stmt"/>
-        <line num="131" count="1" type="stmt"/>
-        <line num="133" count="5" type="stmt"/>
-        <line num="137" count="5" type="stmt"/>
-        <line num="138" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="132" count="5" type="stmt"/>
+        <line num="136" count="6" type="stmt"/>
+        <line num="137" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="138" count="3" type="stmt"/>
         <line num="139" count="3" type="stmt"/>
         <line num="140" count="3" type="stmt"/>
-        <line num="141" count="3" type="stmt"/>
-        <line num="143" count="2" type="stmt"/>
-        <line num="147" count="2" type="stmt"/>
-        <line num="149" count="6" type="stmt"/>
-        <line num="150" count="2" type="stmt"/>
-        <line num="151" count="2" type="stmt"/>
-        <line num="152" count="2" type="stmt"/>
-        <line num="155" count="2" type="stmt"/>
-        <line num="158" count="6" type="stmt"/>
-        <line num="159" count="2" type="stmt"/>
-        <line num="160" count="2" type="stmt"/>
-        <line num="161" count="2" type="stmt"/>
-        <line num="164" count="2" type="stmt"/>
-        <line num="165" count="2" type="stmt"/>
-        <line num="166" count="2" type="stmt"/>
+        <line num="142" count="3" type="stmt"/>
+        <line num="146" count="3" type="stmt"/>
+        <line num="148" count="16" type="stmt"/>
+        <line num="149" count="3" type="stmt"/>
+        <line num="150" count="3" type="stmt"/>
+        <line num="151" count="3" type="stmt"/>
+        <line num="154" count="3" type="stmt"/>
+        <line num="157" count="16" type="stmt"/>
+        <line num="158" count="3" type="stmt"/>
+        <line num="159" count="3" type="stmt"/>
+        <line num="160" count="3" type="stmt"/>
+        <line num="163" count="3" type="stmt"/>
+        <line num="164" count="3" type="stmt"/>
+        <line num="165" count="3" type="stmt"/>
       </file>
       <file name="paragraph.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>

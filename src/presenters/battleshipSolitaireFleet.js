@@ -126,9 +126,8 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
   try {
     fleet = JSON.parse(inputString);
   } catch {
-    const err = dom.createElement('p');
-    dom.setTextContent(err, 'Invalid JSON');
-    return err;
+    // On error, render a default empty fleet
+    return handleParsedFleet({ width: 10, height: 10, ships: [] }, dom);
   }
   return handleParsedFleet(fleet, dom);
 }

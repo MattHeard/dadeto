@@ -37,10 +37,15 @@ describe('createBattleshipFleetBoardElement', () => {
     expect(gridString).toContain('· · # ·');
   });
 
-  test('returns <p> with error for invalid JSON', () => {
+  test('renders a 10x10 empty fleet for invalid JSON', () => {
     const el = createBattleshipFleetBoardElement('not json', dom);
-    expect(el.tag).toBe('p');
-    expect(el.text).toMatch(/invalid json/i);
+    expect(el.tag).toBe('pre');
+    // Check for a 10x10 grid of water symbols
+    const lines = el.text.trim().split('\n');
+    expect(lines).toHaveLength(10);
+    for (const line of lines) {
+      expect(line.replace(/ /g, '')).toBe('··········');
+    }
   });
 
   test('returns <p> with error for missing width', () => {
