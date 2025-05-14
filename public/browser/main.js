@@ -190,4 +190,13 @@ window.addEventListener('DOMContentLoaded', () => {
       dom
     ));
   });
+
+  // Add event listeners to toy input dropdowns
+  const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
+  inputDropdowns.forEach(dropdown => {
+    dropdown.addEventListener('change', event => {
+      // Log the newly selected value for debugging
+      loggers.logInfo(`input dropdown changed: ${event.currentTarget.value}`);
+    });
+  });
 });
