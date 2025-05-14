@@ -195,8 +195,18 @@ window.addEventListener('DOMContentLoaded', () => {
   const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
   inputDropdowns.forEach(dropdown => {
     dropdown.addEventListener('change', event => {
-      // Log the newly selected value for debugging
-      loggers.logInfo(`input dropdown changed: ${event.currentTarget.value}`);
+      const select = event.currentTarget;
+      const container = select.parentElement; // <div class="value">
+      const textInput = container.querySelector('input[type="text"]');
+      if (textInput) {
+        const showText = select.value === 'text';
+        textInput.hidden = !showText;
+        // keep it out of tab‑order and form submission when hidden
+        textInput.disabled = !showText;
+      }
+
+      // Log after toggling so we can trace behaviour
+      loggers.logInfo(`input dropdown changed: ${select.value}`);
     });
   });
 });
