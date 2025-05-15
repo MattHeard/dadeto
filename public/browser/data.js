@@ -30,6 +30,23 @@ export function shouldUseExistingFetch(globalState, logFn) {
 }
 
 /**
+ * Returns a Base64 encoding function using the provided btoa, unescape, and encodeURIComponent.
+ * @param {function} btoa - The btoa function
+ * @param {function} unescape - The unescape function
+ * @param {function} encodeURIComponent - The encodeURIComponent function
+ * @returns {function} encodeBase64 - Function that encodes a string to Base64
+ */
+export function getEncodeBase64(btoa, unescape, encodeURIComponent) {
+  return function encodeBase64(str) {
+    try {
+      return btoa(unescape(encodeURIComponent(str)));
+    } catch (e) {
+      return '';
+    }
+  };
+}
+
+/**
  * Wrapper for fetchAndCacheBlogData (for migration/testing).
  */
 /**
