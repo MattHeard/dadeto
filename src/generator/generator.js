@@ -416,7 +416,6 @@ function createContentItemWithIndex(text, index) {
 
 // Hardcoded normalization rules and content renderers
 const normalizationRules = [
-  [c => Array.isArray(c), c => ({ type: 'quote', content: c })],
   [c => typeof c !== 'object' || c === null, c => ({ type: 'text', content: c })],
   [() => true, c => c]
 ];
