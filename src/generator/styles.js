@@ -9,14 +9,14 @@ export const styles = `
     padding: 0;
   }
   #container {
-    max-width: 85ch;
-    padding: 1lh;
+    max-width: 85rch;
+    padding: 1em 1rch;
   }
   .entry {
     display: grid;
     grid-template-columns: 5ch auto;
     padding-bottom: 1em;
-    gap: 0em 1em;
+    gap: 0em 1rch;
   }
   .key {
     font-weight: bold;

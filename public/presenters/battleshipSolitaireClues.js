@@ -74,7 +74,7 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
   }
   if (!invalid) {
     const error = validateCluesObject(clues);
-    if (error) invalid = true;
+    if (error) {invalid = true;}
   }
   if (invalid) {
     clues = { rowClues: Array(10).fill(0), colClues: Array(10).fill(0) };
