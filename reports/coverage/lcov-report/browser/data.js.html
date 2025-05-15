@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">94.56% </span>
+                <span class="strong">97.72% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>87/92</span>
+                <span class='fraction'>86/88</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.9% </span>
+                <span class="strong">93.75% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>30/33</span>
+                <span class='fraction'>30/32</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">95.5% </span>
+                <span class="strong">98.82% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>85/89</span>
+                <span class='fraction'>84/85</span>
             </div>
         
             
@@ -339,15 +339,7 @@
 <a name='L274'></a><a href='#L274'>274</a>
 <a name='L275'></a><a href='#L275'>275</a>
 <a name='L276'></a><a href='#L276'>276</a>
-<a name='L277'></a><a href='#L277'>277</a>
-<a name='L278'></a><a href='#L278'>278</a>
-<a name='L279'></a><a href='#L279'>279</a>
-<a name='L280'></a><a href='#L280'>280</a>
-<a name='L281'></a><a href='#L281'>281</a>
-<a name='L282'></a><a href='#L282'>282</a>
-<a name='L283'></a><a href='#L283'>283</a>
-<a name='L284'></a><a href='#L284'>284</a>
-<a name='L285'></a><a href='#L285'>285</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<a name='L277'></a><a href='#L277'>277</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -387,12 +379,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -629,9 +615,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span></td><td class="text"><pre class="prettyprint lang-js">const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
 &nbsp;
 const BLOG_STATUS = {
   IDLE: 'idle',
@@ -670,13 +654,7 @@ export function shouldUseExistingFetch(globalState, logFn) {
  * @returns {function} encodeBase64 - Function that encodes a string to Base64
  */
 export function <span class="fstat-no" title="function not covered" >getEncodeBase64(</span>btoa, unescape, encodeURIComponent) {
-<span class="cstat-no" title="statement not covered" >  return function <span class="fstat-no" title="function not covered" >encodeBase64(</span>str) {</span>
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      return btoa(unescape(encodeURIComponent(str)));</span>
-    } catch (e) {
-<span class="cstat-no" title="statement not covered" >      return '';</span>
-    }
-  };
+<span class="cstat-no" title="statement not covered" >  return <span class="fstat-no" title="function not covered" >(s</span>tr) =&gt; <span class="cstat-no" title="statement not covered" >btoa(unescape(encodeURIComponent(str)));</span></span>
 }
 &nbsp;
 /**
@@ -913,16 +891,14 @@ export const setData = (state, loggers) =&gt; {
   Object.assign(current, desired);
   restoreBlogState(current, oldBlogState);
   logInfo('Global state updated:', current);
-};
-&nbsp;
-export const encodeBase64 = <span class="fstat-no" title="function not covered" >(i</span>nput) =&gt; <span class="cstat-no" title="statement not covered" >btoa(unescape(encodeURIComponent(input)));</span></pre></td></tr></table></pre>
+};</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-15T15:16:26.603Z
+                at 2025-05-15T15:18:46.629Z
             </div>
         <script src="../prettify.js"></script>
         <script>

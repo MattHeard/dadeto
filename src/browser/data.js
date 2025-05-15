@@ -37,13 +37,7 @@ export function shouldUseExistingFetch(globalState, logFn) {
  * @returns {function} encodeBase64 - Function that encodes a string to Base64
  */
 export function getEncodeBase64(btoa, unescape, encodeURIComponent) {
-  return function encodeBase64(str) {
-    try {
-      return btoa(unescape(encodeURIComponent(str)));
-    } catch (e) {
-      return '';
-    }
-  };
+  return (str) => btoa(unescape(encodeURIComponent(str)));
 }
 
 /**
@@ -281,5 +275,3 @@ export const setData = (state, loggers) => {
   restoreBlogState(current, oldBlogState);
   logInfo('Global state updated:', current);
 };
-
-export const encodeBase64 = (input) => btoa(unescape(encodeURIComponent(input)));
