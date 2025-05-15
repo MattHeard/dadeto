@@ -207,17 +207,24 @@ const ensureKeyValueInput = (container, textInput) => {
   // ---------------------------------------------------------------------
   // State + bookkeeping
   // ---------------------------------------------------------------------
-  let rows = [];
+  let rows = {};
   let disposers = [];
   const clearDisposers = () => {
     disposers.forEach(fn => fn());
     disposers = [];
   };
 
-  const syncHiddenField = () => {
-    if (!textInput) return;
-    textInput.value = JSON.stringify(rows.filter(r => r.key || r.value));
+  const syncHiddenField = (textInput, rows) => {
+    if (!textInput) {return;}
+    // Only include keys with non-empty key or value
+    const filtered = {};
+    for (const [k, v] of Object.entries(rows)) {
+      if (k || v) filtered[k] = v;
+    }
+    textInput.value = JSON.stringify(filtered);
   };
+
+
 
   // ---------------------------------------------------------------------
   // Renderer
@@ -226,9 +233,13 @@ const ensureKeyValueInput = (container, textInput) => {
     clearDisposers();
     dom.removeAllChildren(kvContainer);
 
-    if (rows.length === 0) rows.push({ key: '', value: '' });
+    // If no keys, add a single empty row
+    if (Object.keys(rows).length === 0) {
+      rows[''] = '';
+    }
 
-    rows.forEach((pair, idx) => {
+    const entries = Object.entries(rows);
+    entries.forEach(([key, value], idx) => {
       const rowEl = dom.createElement('div');
       rowEl.className = 'kv-row';
 
@@ -236,8 +247,18 @@ const ensureKeyValueInput = (container, textInput) => {
       const keyEl = dom.createElement('input');
       keyEl.type = 'text';
       keyEl.placeholder = 'Key';
-      keyEl.value = pair.key;
-      const onKey = e => { rows[idx].key = e.target.value; syncHiddenField(); };
+      keyEl.value = key;
+      const onKey = e => {
+        const newKey = e.target.value;
+        // Only update if changed
+        if (newKey !== key) {
+          // Move value to new key, delete old key
+          rows[newKey] = rows[key];
+          delete rows[key];
+        }
+        syncHiddenField(textInput, rows);
+        render(); // re-render to update input field positions
+      };
       keyEl.addEventListener('input', onKey);
       disposers.push(() => keyEl.removeEventListener('input', onKey));
 
@@ -245,22 +266,36 @@ const ensureKeyValueInput = (container, textInput) => {
       const valueEl = dom.createElement('input');
       valueEl.type = 'text';
       valueEl.placeholder = 'Value';
-      valueEl.value = pair.value;
-      const onValue = e => { rows[idx].value = e.target.value; syncHiddenField(); };
+      valueEl.value = value;
+      const onValue = e => {
+        rows[key] = e.target.value;
+        syncHiddenField(textInput, rows);
+      };
       valueEl.addEventListener('input', onValue);
       disposers.push(() => valueEl.removeEventListener('input', onValue));
 
       // + / × button
       const btnEl = dom.createElement('button');
       btnEl.type = 'button';
-      if (idx === rows.length - 1) {
+      if (idx === entries.length - 1) {
         btnEl.textContent = '+';
-        const onAdd = e => { e.preventDefault(); rows.push({ key: '', value: '' }); render(); };
+        const onAdd = e => {
+          e.preventDefault();
+          // Add a new empty key only if there isn't already one
+          if (!Object.prototype.hasOwnProperty.call(rows, '')) {
+            rows[''] = '';
+            render();
+          }
+        };
         btnEl.addEventListener('click', onAdd);
         disposers.push(() => btnEl.removeEventListener('click', onAdd));
       } else {
         btnEl.textContent = '×';
-        const onRemove = e => { e.preventDefault(); rows.splice(idx, 1); render(); };
+        const onRemove = e => {
+          e.preventDefault();
+          delete rows[key];
+          render();
+        };
         btnEl.addEventListener('click', onRemove);
         disposers.push(() => btnEl.removeEventListener('click', onRemove));
       }
@@ -271,18 +306,22 @@ const ensureKeyValueInput = (container, textInput) => {
       kvContainer.appendChild(rowEl);
     });
 
-    syncHiddenField();
+    syncHiddenField(textInput, rows);
   };
 
   // ---------------------------------------------------------------------
   // Initialise from existing JSON in the hidden field, if present
   // ---------------------------------------------------------------------
   try {
-    const existing = JSON.parse(textInput?.value || '[]');
+    const existing = JSON.parse(textInput?.value || '{}');
     if (Array.isArray(existing)) {
-      rows = existing.map(o => ({ key: o.key ?? '', value: o.value ?? '' }));
+      // Convert legacy array format [{key, value}] to object
+      rows = {};
+      for (const pair of existing) {
+        if (pair.key !== undefined) rows[pair.key] = pair.value ?? '';
+      }
     } else if (existing && typeof existing === 'object') {
-      rows = Object.entries(existing).map(([k, v]) => ({ key: k, value: v }));
+      rows = { ...existing };
     }
   } catch { /* ignore parse errors */ }
 
