@@ -451,7 +451,7 @@ function normalizeContentItem(content) {
  * @returns {function(*): string} - Renderer function that returns HTML.
  */
 function getContentRenderer(type) {
-  return CONTENT_RENDERERS[type] || CONTENT_RENDERERS.__default__;
+  return CONTENT_RENDERERS[type];
 }
 
 /**
