@@ -250,15 +250,18 @@ const ensureKeyValueInput = (container, textInput) => {
       keyEl.value = key;
       const onKey = e => {
         const newKey = e.target.value;
-        // Only update if changed
-        if (newKey !== key) {
-          // Move value to new key, delete old key
+        // Only update if changed and newKey is not empty and not colliding
+        if (newKey !== key && newKey !== '' && !(newKey in rows)) {
           rows[newKey] = rows[key];
           delete rows[key];
+          syncHiddenField(textInput, rows);
+          render(); // Only re-render if key actually changed to a unique new key
+        } else {
+          // If editing in place or trying to set to empty/colliding key, just update the hidden field
+          syncHiddenField(textInput, rows);
         }
-        syncHiddenField(textInput, rows);
-        render(); // re-render to update input field positions
       };
+
       keyEl.addEventListener('input', onKey);
       disposers.push(() => keyEl.removeEventListener('input', onKey));
 

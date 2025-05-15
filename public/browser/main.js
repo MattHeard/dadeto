@@ -219,7 +219,7 @@ const ensureKeyValueInput = (container, textInput) => {
     // Only include keys with non-empty key or value
     const filtered = {};
     for (const [k, v] of Object.entries(rows)) {
-      if (k || v) filtered[k] = v;
+      if (k || v) {filtered[k] = v;}
     }
     textInput.value = JSON.stringify(filtered);
   };
@@ -250,15 +250,18 @@ const ensureKeyValueInput = (container, textInput) => {
       keyEl.value = key;
       const onKey = e => {
         const newKey = e.target.value;
-        // Only update if changed
-        if (newKey !== key) {
-          // Move value to new key, delete old key
+        // Only update if changed and newKey is not empty and not colliding
+        if (newKey !== key && newKey !== '' && !(newKey in rows)) {
           rows[newKey] = rows[key];
           delete rows[key];
+          syncHiddenField(textInput, rows);
+          render(); // Only re-render if key actually changed to a unique new key
+        } else {
+          // If editing in place or trying to set to empty/colliding key, just update the hidden field
+          syncHiddenField(textInput, rows);
         }
-        syncHiddenField(textInput, rows);
-        render(); // re-render to update input field positions
       };
+
       keyEl.addEventListener('input', onKey);
       disposers.push(() => keyEl.removeEventListener('input', onKey));
 
@@ -318,7 +321,7 @@ const ensureKeyValueInput = (container, textInput) => {
       // Convert legacy array format [{key, value}] to object
       rows = {};
       for (const pair of existing) {
-        if (pair.key !== undefined) rows[pair.key] = pair.value ?? '';
+        if (pair.key !== undefined) {rows[pair.key] = pair.value ?? '';}
       }
     } else if (existing && typeof existing === 'object') {
       rows = { ...existing };
