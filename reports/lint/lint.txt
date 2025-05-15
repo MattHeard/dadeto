@@ -30,6 +30,9 @@
   17:12  warning  'e' is defined but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
-  2:129  warning  'getEncodeBase64' is defined but never used  no-unused-vars
+  303:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+  304:20  warning  Ternary operator used                                       no-ternary
+  305:24  warning  Ternary operator used                                       no-ternary
+  306:34  warning  Ternary operator used                                       no-ternary
 
-✖ 19 problems (0 errors, 19 warnings)
+✖ 22 problems (0 errors, 22 warnings)

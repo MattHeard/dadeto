@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747322895747" clover="3.2.0">
-  <project timestamp="1747322895747" name="All files">
-    <metrics statements="1504" coveredstatements="1495" conditionals="454" coveredconditionals="446" methods="616" coveredmethods="611" elements="2574" coveredelements="2552" complexity="0" loc="1504" ncloc="1504" packages="17" files="34" classes="34"/>
+<coverage generated="1747323089349" clover="3.2.0">
+  <project timestamp="1747323089349" name="All files">
+    <metrics statements="1504" coveredstatements="1496" conditionals="454" coveredconditionals="446" methods="616" coveredmethods="613" elements="2574" coveredelements="2555" complexity="0" loc="1504" ncloc="1504" packages="17" files="34" classes="34"/>
     <package name="browser">
-      <metrics statements="332" coveredstatements="331" conditionals="64" coveredconditionals="63" methods="111" coveredmethods="109"/>
+      <metrics statements="332" coveredstatements="332" conditionals="64" coveredconditionals="63" methods="111" coveredmethods="111"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -67,7 +67,7 @@
         <line num="13" count="51" type="cond" truecount="2" falsecount="0"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
-        <metrics statements="85" coveredstatements="84" conditionals="32" coveredconditionals="32" methods="32" coveredmethods="30"/>
+        <metrics statements="85" coveredstatements="85" conditionals="32" coveredconditionals="32" methods="32" coveredmethods="32"/>
         <line num="1" count="3" type="stmt"/>
         <line num="3" count="3" type="stmt"/>
         <line num="11" count="21" type="stmt"/>
@@ -77,7 +77,7 @@
         <line num="26" count="1" type="stmt"/>
         <line num="27" count="1" type="stmt"/>
         <line num="29" count="2" type="stmt"/>
-        <line num="40" count="0" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
         <line num="55" count="7" type="stmt"/>
         <line num="58" count="7" type="cond" truecount="2" falsecount="0"/>
         <line num="59" count="1" type="stmt"/>

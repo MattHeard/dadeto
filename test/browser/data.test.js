@@ -299,4 +299,13 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(result.blog).toEqual(blog);
     expect(fetchFn).not.toHaveBeenCalled();
   });
+
+  it('getEncodeBase64 returns a function that encodes to base64 using provided helpers', () => {
+    const btoaFn = typeof btoa !== 'undefined' ? btoa : (str) => Buffer.from(str, 'binary').toString('base64');
+    const unescapeFn = typeof unescape !== 'undefined' ? unescape : (str) => str;
+    const encodeURIComponentFn = typeof encodeURIComponent !== 'undefined' ? encodeURIComponent : encodeURIComponent;
+    const encodeBase64 = getEncodeBase64(btoaFn, unescapeFn, encodeURIComponentFn);
+    const input = 'hello world!';
+    expect(encodeBase64(input)).toBe('aGVsbG8gd29ybGQh');
+  });
 });
