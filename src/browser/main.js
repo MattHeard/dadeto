@@ -248,18 +248,27 @@ const ensureKeyValueInput = (container, textInput) => {
       keyEl.type = 'text';
       keyEl.placeholder = 'Key';
       keyEl.value = key;
+      // store the current key so we can track renames without re‑rendering
+      keyEl.dataset.prevKey = key;
       const onKey = e => {
+        const prevKey = keyEl.dataset.prevKey;
         const newKey = e.target.value;
-        // Only update if changed and newKey is not empty and not colliding
-        if (newKey !== key && newKey !== '' && !(newKey in rows)) {
-          rows[newKey] = rows[key];
-          delete rows[key];
+
+        // If nothing changed, just keep the hidden JSON fresh.
+        if (newKey === prevKey) {
           syncHiddenField(textInput, rows);
-          render(); // Only re-render if key actually changed to a unique new key
-        } else {
-          // If editing in place or trying to set to empty/colliding key, just update the hidden field
-          syncHiddenField(textInput, rows);
+          return;
         }
+
+        // If the new key is non‑empty and unique, migrate the value.
+        if (newKey !== '' && !(newKey in rows)) {
+          rows[newKey] = rows[prevKey];
+          delete rows[prevKey];
+          keyEl.dataset.prevKey = newKey; // track latest key name
+        }
+        // Otherwise (empty or duplicate), leave the mapping under prevKey.
+
+        syncHiddenField(textInput, rows);
       };
 
       keyEl.addEventListener('input', onKey);
@@ -271,7 +280,8 @@ const ensureKeyValueInput = (container, textInput) => {
       valueEl.placeholder = 'Value';
       valueEl.value = value;
       const onValue = e => {
-        rows[key] = e.target.value;
+        const rowKey = keyEl.dataset.prevKey; // may have changed via onKey
+        rows[rowKey] = e.target.value;
         syncHiddenField(textInput, rows);
       };
       valueEl.addEventListener('input', onValue);
