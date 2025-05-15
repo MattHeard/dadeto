@@ -9,7 +9,7 @@
 
 function stringToJsonArrayToy(input, env = {}) {
   try {
-    const delimiter = typeof env.delimiter === 'string' ? env.delimiter : '\n';
+    const delimiter = typeof env.delimiter === 'string' ? env.delimiter : ',';
     const arr = input
       .split(delimiter)
       .map(s => s.trim())
