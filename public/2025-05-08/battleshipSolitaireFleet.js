@@ -285,6 +285,13 @@ function parseConfig(input) {
   } catch {
     cfg = {};
   }
+  // If ships is a string, interpret as comma-delimited and convert to array
+  if (typeof cfg.ships === 'string') {
+    cfg.ships = cfg.ships
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
   ensureShipsArray(cfg);
   return cfg;
 }
