@@ -179,6 +179,126 @@ const ensureNumberInput = (container, textInput) => {
   return numberInput;
 };
 
+// Ensures a dynamic key/value editor exists just after the given hidden text input.
+// - `container`  : <div class="value"> wrapper
+// - `textInput`  : hidden <input type="text"> that stores a JSON string
+//
+// Internal state: `rows` = [{key, value}]. The editor writes to the hidden field
+// on every change so that a normal form submission works out‑of‑the‑box.
+//
+// Memory‑safety: **every** DOM listener is registered explicitly, its disposer is
+// stored in `disposers`, and cleared on every re‑render or when `_dispose()`
+// runs, preventing leaks.
+const ensureKeyValueInput = (container, textInput) => {
+  // Re‑use an existing editor if one is already present
+  let kvContainer = container.querySelector('.kv-container');
+  if (!kvContainer) {
+    kvContainer = dom.createElement('div');
+    kvContainer.className = 'kv-container';
+
+    // Insert right after the reference text input for a predictable layout
+    if (textInput?.nextSibling) {
+      container.insertBefore(kvContainer, textInput.nextSibling);
+    } else {
+      container.appendChild(kvContainer);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // State + bookkeeping
+  // ---------------------------------------------------------------------
+  let rows = [];
+  let disposers = [];
+  const clearDisposers = () => {
+    disposers.forEach(fn => fn());
+    disposers = [];
+  };
+
+  const syncHiddenField = () => {
+    if (!textInput) return;
+    textInput.value = JSON.stringify(rows.filter(r => r.key || r.value));
+  };
+
+  // ---------------------------------------------------------------------
+  // Renderer
+  // ---------------------------------------------------------------------
+  const render = () => {
+    clearDisposers();
+    dom.removeAllChildren(kvContainer);
+
+    if (rows.length === 0) rows.push({ key: '', value: '' });
+
+    rows.forEach((pair, idx) => {
+      const rowEl = dom.createElement('div');
+      rowEl.className = 'kv-row';
+
+      // Key field
+      const keyEl = dom.createElement('input');
+      keyEl.type = 'text';
+      keyEl.placeholder = 'Key';
+      keyEl.value = pair.key;
+      const onKey = e => { rows[idx].key = e.target.value; syncHiddenField(); };
+      keyEl.addEventListener('input', onKey);
+      disposers.push(() => keyEl.removeEventListener('input', onKey));
+
+      // Value field
+      const valueEl = dom.createElement('input');
+      valueEl.type = 'text';
+      valueEl.placeholder = 'Value';
+      valueEl.value = pair.value;
+      const onValue = e => { rows[idx].value = e.target.value; syncHiddenField(); };
+      valueEl.addEventListener('input', onValue);
+      disposers.push(() => valueEl.removeEventListener('input', onValue));
+
+      // + / × button
+      const btnEl = dom.createElement('button');
+      btnEl.type = 'button';
+      if (idx === rows.length - 1) {
+        btnEl.textContent = '+';
+        const onAdd = e => { e.preventDefault(); rows.push({ key: '', value: '' }); render(); };
+        btnEl.addEventListener('click', onAdd);
+        disposers.push(() => btnEl.removeEventListener('click', onAdd));
+      } else {
+        btnEl.textContent = '×';
+        const onRemove = e => { e.preventDefault(); rows.splice(idx, 1); render(); };
+        btnEl.addEventListener('click', onRemove);
+        disposers.push(() => btnEl.removeEventListener('click', onRemove));
+      }
+
+      rowEl.appendChild(keyEl);
+      rowEl.appendChild(valueEl);
+      rowEl.appendChild(btnEl);
+      kvContainer.appendChild(rowEl);
+    });
+
+    syncHiddenField();
+  };
+
+  // ---------------------------------------------------------------------
+  // Initialise from existing JSON in the hidden field, if present
+  // ---------------------------------------------------------------------
+  try {
+    const existing = JSON.parse(textInput?.value || '[]');
+    if (Array.isArray(existing)) {
+      rows = existing.map(o => ({ key: o.key ?? '', value: o.value ?? '' }));
+    } else if (existing && typeof existing === 'object') {
+      rows = Object.entries(existing).map(([k, v]) => ({ key: k, value: v }));
+    }
+  } catch { /* ignore parse errors */ }
+
+  render();
+
+  // Public API for cleanup by parent code
+  kvContainer._dispose = () => {
+    clearDisposers();
+    dom.removeAllChildren(kvContainer);
+    rows = [];
+  };
+
+  return kvContainer;
+};
+
+
 const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
 
 
@@ -229,17 +349,33 @@ const onInputDropdownChange = event => {
     textInput.disabled = !showText;
   }
 
-  if (select.value === 'number') {
-    ensureNumberInput(container, textInput);
-  } else {
+  const maybeRemoveNumber = () => {
     const numberInput = container.querySelector('input[type="number"]');
     if (numberInput) {
-      numberInput._dispose?.(); // clean up listener
+      numberInput._dispose?.();
       container.removeChild(numberInput);
     }
-  }
+  };
 
-  // Log change for debugging
+  const maybeRemoveKV = () => {
+    const kvContainer = container.querySelector('.kv-container');
+    if (kvContainer) {
+      kvContainer._dispose?.();
+      container.removeChild(kvContainer);
+    }
+  };
+
+  if (select.value === 'number') {
+    maybeRemoveKV();
+    ensureNumberInput(container, textInput);
+  } else if (select.value === 'kv') {
+    maybeRemoveNumber();
+    ensureKeyValueInput(container, textInput);
+  } else {
+    // 'text' or any other type – clean up specialised inputs
+    maybeRemoveNumber();
+    maybeRemoveKV();
+  }
 };
 
 window.addEventListener('DOMContentLoaded', () => {
