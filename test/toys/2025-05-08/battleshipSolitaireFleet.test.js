@@ -9,7 +9,7 @@ describe('generateFleet', () => {
 
   test('returns empty fleet for invalid JSON', () => {
     const result = generateFleet('not a json', env);
-    expect(JSON.parse(result)).toEqual({ width: undefined, height: undefined, ships: [] });
+    expect(JSON.parse(result)).toEqual({ width: 10, height: 10, ships: [] });
   });
 
   test('returns empty fleet for missing ships', () => {
@@ -97,6 +97,29 @@ describe('generateFleet', () => {
     const fleet = JSON.parse(result);
     expect(fleet.width).toBe(4);
     expect(fleet.height).toBe(4);
+    expect(Array.isArray(fleet.ships)).toBe(true);
+  });
+
+  test('parses comma-separated string ships into array', () => {
+    const cfg = { width: 4, height: 4, ships: "2, 3, 1" };
+    const result = generateFleet(JSON.stringify(cfg), env);
+    const fleet = JSON.parse(result);
+    expect(Array.isArray(fleet.ships)).toBe(true);
+  });
+
+  test('parses string width and height into numbers', () => {
+    const cfg = { width: "5", height: "5", ships: [2] };
+    const result = generateFleet(JSON.stringify(cfg), env);
+    const fleet = JSON.parse(result);
+    expect(fleet.width).toBe(5);
+    expect(fleet.height).toBe(5);
+  });
+
+  test('uses empty config if JSON parse fails', () => {
+    const result = generateFleet("{bad json", env);
+    const fleet = JSON.parse(result);
+    expect(fleet).toHaveProperty('width', 10);
+    expect(fleet).toHaveProperty('height', 10);
     expect(Array.isArray(fleet.ships)).toBe(true);
   });
 });

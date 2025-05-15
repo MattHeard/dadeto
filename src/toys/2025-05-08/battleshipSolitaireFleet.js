@@ -283,13 +283,13 @@ function parseConfig(input) {
   try {
     cfg = JSON.parse(input);
   } catch {
-    cfg = {};
+    cfg = { width: 10, height: 10, ships: [] };
   }
   // If ships is a string, interpret as comma-delimited and convert to array
   if (typeof cfg.ships === 'string') {
     cfg.ships = cfg.ships
       .split(',')
-      .map(s => s.trim())
+      .map(s => parseInt(s.trim(), 10))
       .filter(Boolean);
   }
   // Parse width and height if they are strings
