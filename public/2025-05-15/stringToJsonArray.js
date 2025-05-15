@@ -2,7 +2,7 @@
  * String to JSON Array Toy
  * ----------------------------------------------------------
  * Toy signature:  stringToJsonArrayToy(input: string): string
- *   input : delimited string (default delimiter: \n)
+ *   input : delimited string (default delimiter: ,)
  * Returns a JSON string of an array, or []
  */
 

@@ -1,6 +1,28 @@
 {
   "posts": [
     {
+      "key": "STRI1",
+      "title": "String to Array",
+      "publicationDate": "2025-05-15",
+      "content": [
+        "Converts a delimited string into an array."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a watercolor painting with four soft-edged rectangles in yellow, red, green, and blue arranged in a row, framed by a wavy red-orange line above and a straight line below, all set against a textured background blending beige, peach, and light blue tones"
+      },
+      "toy": {
+        "modulePath": "/2025-05-15/stringToJsonArray.js",
+        "functionName": "stringToJsonArrayToy"
+      },
+      "tags": [
+        "toy",
+        "string",
+        "json",
+        "array"
+      ]
+    },
+    {
       "key": "BASE1",
       "title": "Base64 Encoder",
       "publicationDate": "2025-05-13",
