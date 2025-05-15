@@ -23,4 +23,9 @@
   60:1  warning  Function 'parseFleet' has a complexity of 3. Maximum allowed is 2            complexity
   73:1  warning  Function 'isValidFleet' has a complexity of 6. Maximum allowed is 2          complexity
 
-✖ 16 problems (0 errors, 16 warnings)
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-15/stringToJsonArray.js
+  10:1   warning  Function 'stringToJsonArrayToy' has a complexity of 6. Maximum allowed is 2  complexity
+  12:23  warning  Ternary operator used                                                        no-ternary
+  19:36  warning  Ternary operator used                                                        no-ternary
+
+✖ 19 problems (0 errors, 19 warnings)

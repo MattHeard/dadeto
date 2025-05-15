@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747306613045" clover="3.2.0">
-  <project timestamp="1747306613045" name="All files">
-    <metrics statements="1496" coveredstatements="1487" conditionals="451" coveredconditionals="443" methods="614" coveredmethods="609" elements="2561" coveredelements="2539" complexity="0" loc="1496" ncloc="1496" packages="17" files="34" classes="34"/>
+<coverage generated="1747306683878" clover="3.2.0">
+  <project timestamp="1747306683878" name="All files">
+    <metrics statements="1497" coveredstatements="1487" conditionals="455" coveredconditionals="443" methods="614" coveredmethods="609" elements="2566" coveredelements="2539" complexity="0" loc="1497" ncloc="1497" packages="17" files="34" classes="34"/>
     <package name="browser">
       <metrics statements="332" coveredstatements="332" conditionals="64" coveredconditionals="63" methods="110" coveredmethods="109"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -1641,14 +1641,15 @@
       </file>
     </package>
     <package name="toys.2025-05-15">
-      <metrics statements="5" coveredstatements="0" conditionals="3" coveredconditionals="0" methods="2" coveredmethods="0"/>
+      <metrics statements="6" coveredstatements="0" conditionals="7" coveredconditionals="0" methods="2" coveredmethods="0"/>
       <file name="stringToJsonArray.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-15/stringToJsonArray.js">
-        <metrics statements="5" coveredstatements="0" conditionals="3" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <metrics statements="6" coveredstatements="0" conditionals="7" coveredconditionals="0" methods="2" coveredmethods="0"/>
         <line num="11" count="0" type="stmt"/>
-        <line num="14" count="0" type="stmt"/>
-        <line num="23" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="24" count="0" type="stmt"/>
-        <line num="27" count="0" type="stmt"/>
+        <line num="12" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="13" count="0" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="19" count="0" type="cond" truecount="0" falsecount="4"/>
       </file>
     </package>
   </project>

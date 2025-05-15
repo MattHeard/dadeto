@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
@@ -86,11 +86,7 @@
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a>
-<a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a>
-<a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -101,49 +97,41 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// Toy: String to JSON Array
-// Usage: Paste a string, get a JSON array output
-&nbsp;
-/**
- * Converts a delimited string (e.g., comma or newline separated) to a JSON array.
- * @param {string} str - The input string.
- * @param {string} delimiter - The delimiter to split on (default: '\n').
- * @returns {string} JSON array string
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/*
+ * String to JSON Array Toy
+ * ----------------------------------------------------------
+ * Toy signature:  stringToJsonArrayToy(input: string, env: Env): string
+ *   input : delimited string (default delimiter: \n)
+ *   env   : { delimiter?: string }
+ * Returns a JSON string of an array, or { error }
  */
-function <span class="fstat-no" title="function not covered" >stringToJsonArray(</span>str, delimiter = <span class="branch-0 cbranch-no" title="branch not covered" >'\n')</span> {
-<span class="cstat-no" title="statement not covered" >  return JSON.stringify(</span>
-    str
+&nbsp;
+function <span class="fstat-no" title="function not covered" >stringToJsonArrayToy(</span>input, env = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
+<span class="cstat-no" title="statement not covered" >  try {</span>
+    const delimiter = <span class="cstat-no" title="statement not covered" >typeof env.delimiter === 'string' ? env.delimiter : '\n';</span>
+    const arr = <span class="cstat-no" title="statement not covered" >input</span>
       .split(delimiter)
       .map(<span class="fstat-no" title="function not covered" >s </span>=&gt; <span class="cstat-no" title="statement not covered" >s.trim())</span>
-      .filter(Boolean)
-  );
+      .filter(Boolean);
+<span class="cstat-no" title="statement not covered" >    return JSON.stringify(arr);</span>
+  } catch (e) {
+<span class="cstat-no" title="statement not covered" >    return JSON.stringify({ error: e &amp;&amp; e.message ? e.message : 'Unknown error' });</span>
+  }
 }
 &nbsp;
-// Example toy UI usage (Node or browser console):
-// const input = 'foo\nbar\nbaz';
-// console.log(stringToJsonArray(input)); // ["foo","bar","baz"]
-&nbsp;
-<span class="cstat-no" title="statement not covered" >if (typeof window !== 'undefined') {</span>
-<span class="cstat-no" title="statement not covered" >  window.stringToJsonArray = stringToJsonArray;</span>
-}
-&nbsp;
-<span class="cstat-no" title="statement not covered" >module.exports = { stringToJsonArray };</span>
+export { stringToJsonArrayToy };
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -151,7 +139,7 @@ function <span class="fstat-no" title="function not covered" >stringToJsonArray(
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-15T10:56:53.010Z
+                at 2025-05-15T10:58:03.845Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

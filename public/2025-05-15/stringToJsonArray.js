@@ -1,27 +1,23 @@
-// Toy: String to JSON Array
-// Usage: Paste a string, get a JSON array output
-
-/**
- * Converts a delimited string (e.g., comma or newline separated) to a JSON array.
- * @param {string} str - The input string.
- * @param {string} delimiter - The delimiter to split on (default: '\n').
- * @returns {string} JSON array string
+/*
+ * String to JSON Array Toy
+ * ----------------------------------------------------------
+ * Toy signature:  stringToJsonArrayToy(input: string, env: Env): string
+ *   input : delimited string (default delimiter: \n)
+ *   env   : { delimiter?: string }
+ * Returns a JSON string of an array, or { error }
  */
-function stringToJsonArray(str, delimiter = '\n') {
-  return JSON.stringify(
-    str
+
+function stringToJsonArrayToy(input, env = {}) {
+  try {
+    const delimiter = typeof env.delimiter === 'string' ? env.delimiter : '\n';
+    const arr = input
       .split(delimiter)
       .map(s => s.trim())
-      .filter(Boolean)
-  );
+      .filter(Boolean);
+    return JSON.stringify(arr);
+  } catch (e) {
+    return JSON.stringify({ error: e && e.message ? e.message : 'Unknown error' });
+  }
 }
 
-// Example toy UI usage (Node or browser console):
-// const input = 'foo\nbar\nbaz';
-// console.log(stringToJsonArray(input)); // ["foo","bar","baz"]
-
-if (typeof window !== 'undefined') {
-  window.stringToJsonArray = stringToJsonArray;
-}
-
-module.exports = { stringToJsonArray };
+export { stringToJsonArrayToy };
