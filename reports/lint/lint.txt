@@ -18,7 +18,7 @@
   84:9   warning  'height' is assigned a value but never used                                               no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
-  281:1  warning  Function 'parseConfig' has a complexity of 3. Maximum allowed is 2  complexity
+  281:1  warning  Function 'parseConfig' has a complexity of 5. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-11/battleshipSolitaireClues.js
   45:1  warning  Function 'incrementClues' has too many parameters (4). Maximum allowed is 3  max-params

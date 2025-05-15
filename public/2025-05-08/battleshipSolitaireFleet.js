@@ -292,6 +292,13 @@ function parseConfig(input) {
       .map(s => s.trim())
       .filter(Boolean);
   }
+  // Parse width and height if they are strings
+  if (typeof cfg.width === 'string') {
+    cfg.width = parseInt(cfg.width, 10);
+  }
+  if (typeof cfg.height === 'string') {
+    cfg.height = parseInt(cfg.height, 10);
+  }
   ensureShipsArray(cfg);
   return cfg;
 }
