@@ -573,11 +573,7 @@ const MEDIA_DISPLAY_RULES = {
 
 function shouldDisplayMedia(post, type) {
   const rule = MEDIA_DISPLAY_RULES[type];
-  if (rule) {
-    return rule(post);
-  } else {
-    return false;
-  }
+  return rule(post);
 }
 
 function isNonEmptyArray(value) {
