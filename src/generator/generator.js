@@ -414,74 +414,18 @@ function createContentItemWithIndex(text, index) {
  * @property {function(*): string} render - Renders the normalized content as HTML.
  */
 
-/**
- * Register a new content type with normalization and rendering logic.
- * @param {ContentTypeHandler} options
- * @returns {boolean|string} True if registration succeeded, error message otherwise.
- */
-const CONTENT_TYPE_HANDLERS = [];
+// Hardcoded normalization rules and content renderers
+const normalizationRules = [
+  [c => Array.isArray(c), c => ({ type: 'quote', content: c })],
+  [c => typeof c !== 'object' || c === null, c => ({ type: 'text', content: c })],
+  [() => true, c => c]
+];
 
-function isHandlerKeyValid(key, handler, typeChecks) {
-  return typeChecks[key](handler[key]);
-}
-
-function validateContentTypeHandler(handler) {
-  const typeChecks = {
-    predicate: v => typeof v === 'function',
-    normalize: v => typeof v === 'function',
-    type: v => typeof v === 'string',
-    render: v => typeof v === 'function',
-  };
-  const errorMessages = {
-    predicate: 'registerContentType: predicate must be a function',
-    normalize: 'registerContentType: normalize must be a function',
-    type: 'registerContentType: type must be a string',
-    render: 'registerContentType: render must be a function',
-  };
-  const failingKey = Object.keys(typeChecks).find(
-    key => !isHandlerKeyValid(key, handler, typeChecks)
-  );
-  if (failingKey) {
-    return errorMessages[failingKey];
-  } else {
-    return null;
-  }
-}
-
-function registerContentType({ predicate, normalize, type, render }) {
-  const validationError = validateContentTypeHandler({ predicate, normalize, type, render });
-  if (validationError) {return validationError;}
-  CONTENT_TYPE_HANDLERS.push({ predicate, normalize, type, render });
-  // Invalidate derived maps (for hot-reloading/extensions, if needed)
-  normalizationRules.length = 0;
-  CONTENT_TYPE_HANDLERS.forEach(h => normalizationRules.push([h.predicate, h.normalize]));
-  Object.assign(CONTENT_RENDERERS, { [type]: render });
-  return true;
-}
-
-// Derived normalization rules and renderer map
-const normalizationRules = [];
-const CONTENT_RENDERERS = {};
-
-// Register built-in content types
-registerContentType({
-  predicate: c => Array.isArray(c),
-  normalize: c => ({ type: 'quote', content: c }),
-  type: 'quote',
-  render: createBlockquote,
-});
-registerContentType({
-  predicate: c => typeof c !== 'object' || c === null,
-  normalize: c => ({ type: 'text', content: c }),
-  type: 'text',
-  render: renderAsParagraph,
-});
-registerContentType({
-  predicate: () => true,
-  normalize: c => c,
-  type: '__default__',
-  render: renderAsParagraph,
-});
+const CONTENT_RENDERERS = {
+  quote: createBlockquote,
+  text: renderAsParagraph,
+  __default__: renderAsParagraph
+};
 
 /**
  * Returns the normalizer function for the given raw content.
