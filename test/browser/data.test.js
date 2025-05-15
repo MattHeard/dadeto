@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch, deepMerge, shouldCopyStateForFetch } from '../../src/browser/data.js';
+import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch, deepMerge, shouldCopyStateForFetch, getEncodeBase64 } from '../../src/browser/data.js';
 
 describe('shouldCopyStateForFetch', () => {
   it('returns true for idle', () => {
