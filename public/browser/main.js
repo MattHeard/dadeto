@@ -252,7 +252,7 @@ const ensureKeyValueInput = (container, textInput) => {
       keyEl.dataset.prevKey = key;
       const onKey = e => {
         const prevKey = keyEl.dataset.prevKey;
-        const newKey  = e.target.value;
+        const newKey = e.target.value;
 
         // If nothing changed, just keep the hidden JSON fresh.
         if (newKey === prevKey) {

@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for toys/2025-03-21/booleanCoercer.js</title>
+    <title>Code coverage report for toys/2025-05-15/stringToJsonArray.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">toys/2025-03-21</a> booleanCoercer.js</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">toys/2025-05-15</a> stringToJsonArray.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/11</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -90,12 +90,7 @@
 <a name='L25'></a><a href='#L25'>25</a>
 <a name='L26'></a><a href='#L26'>26</a>
 <a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a>
-<a name='L29'></a><a href='#L29'>29</a>
-<a name='L30'></a><a href='#L30'>30</a>
-<a name='L31'></a><a href='#L31'>31</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">8x</span>
+<a name='L28'></a><a href='#L28'>28</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -105,55 +100,51 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">function tryBooleanCoercion(input) {
-  if (typeof input === 'boolean') {return input;}
-  return normalizeBooleanString(input);
-}
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// Toy: String to JSON Array
+// Usage: Paste a string, get a JSON array output
 &nbsp;
 /**
- * Coerces input to a boolean value if possible.
- * Returns a string representation of an object with a 'value' property if coercion is successful,
- * or a string representation of an empty object if coercion fails.
- *
- * @param {any} input - The value to coerce to boolean
- * @returns {string} - String representation of object with 'value' property if coercion successful, '{}' if not
+ * Converts a delimited string (e.g., comma or newline separated) to a JSON array.
+ * @param {string} str - The input string.
+ * @param {string} delimiter - The delimiter to split on (default: '\n').
+ * @returns {string} JSON array string
  */
-export function coerceToBoolean(input) {
-  const value = tryBooleanCoercion(input);
-  if (value !== undefined) {
-    return `{ value: ${value} }`;
-  } else {
-    return '{}';
-  }
+function <span class="fstat-no" title="function not covered" >stringToJsonArray(</span>str, delimiter = <span class="branch-0 cbranch-no" title="branch not covered" >'\n')</span> {
+<span class="cstat-no" title="statement not covered" >  return JSON.stringify(</span>
+    str
+      .split(delimiter)
+      .map(<span class="fstat-no" title="function not covered" >s </span>=&gt; <span class="cstat-no" title="statement not covered" >s.trim())</span>
+      .filter(Boolean)
+  );
 }
 &nbsp;
-function normalizeBooleanString(input) {
-  if (typeof input !== 'string') {return undefined;}
+// Example toy UI usage (Node or browser console):
+// const input = 'foo\nbar\nbaz';
+// console.log(stringToJsonArray(input)); // ["foo","bar","baz"]
 &nbsp;
-  return parseBooleanString(input.toLowerCase());
+<span class="cstat-no" title="statement not covered" >if (typeof window !== 'undefined') {</span>
+<span class="cstat-no" title="statement not covered" >  window.stringToJsonArray = stringToJsonArray;</span>
 }
 &nbsp;
-function parseBooleanString(str) {
-  return { true: true, false: false }[str];
-}</pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >module.exports = { stringToJsonArray };</span>
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
