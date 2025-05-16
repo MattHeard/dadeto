@@ -4,9 +4,8 @@ import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
 import {
-  maybeRemoveNumber,
-  maybeRemoveKV,
-  createOutputDropdownHandler
+  createOutputDropdownHandler,
+  createInputDropdownHandler
 } from './toys.js';
 import {
   ensureKeyValueInput,
@@ -172,39 +171,19 @@ const onOutputDropdownChange = createOutputDropdownHandler(
   dom
 );
 
-const onInputDropdownChange = event => {
-  const select = event.currentTarget;
-  const container = select.parentElement; // <div class="value">
-  const textInput = container.querySelector('input[type="text"]');
-
-  if (textInput) {
-    const showText = select.value === 'text';
-    textInput.hidden = !showText;
-    textInput.disabled = !showText;
-  }
-
-  if (select.value === 'number') {
-    maybeRemoveKV(container);
-    ensureNumberInput(container, textInput, dom);
-  } else if (select.value === 'kv') {
-    maybeRemoveNumber(container);
-    ensureKeyValueInput(container, textInput, dom);
-  } else {
-    // 'text' or any other type – clean up specialised inputs
-    maybeRemoveNumber(container);
-    maybeRemoveKV(container);
-  }
-};
+const onInputDropdownChange = createInputDropdownHandler(dom);
 
 window.addEventListener('DOMContentLoaded', () => {
   const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
-  outputDropdowns.forEach(dropdown => {
+  const addOutputDropdownListener = dropdown => {
     dropdown.addEventListener('change', onOutputDropdownChange);
-  });
+  };
+  outputDropdowns.forEach(addOutputDropdownListener);
 
   // Add event listeners to toy input dropdowns
   const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
-  inputDropdowns.forEach(dropdown => {
+  const addInputDropdownListener = dropdown => {
     dropdown.addEventListener('change', onInputDropdownChange);
-  });
+  };
+  inputDropdowns.forEach(addInputDropdownListener);
 });
