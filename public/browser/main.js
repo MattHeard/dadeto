@@ -172,11 +172,13 @@ const onOutputDropdownChange = createOutputDropdownHandler(
 
 const onInputDropdownChange = createInputDropdownHandler(dom);
 
-window.addEventListener('DOMContentLoaded', () => {
+const initializeDropdowns = () => {
   const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
   outputDropdowns.forEach(createAddDropdownListener(onOutputDropdownChange));
 
   // Add event listeners to toy input dropdowns
   const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
   inputDropdowns.forEach(createAddDropdownListener(onInputDropdownChange));
-});
+};
+
+window.addEventListener('DOMContentLoaded', initializeDropdowns);
