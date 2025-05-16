@@ -17,6 +17,7 @@ import {
   getElementsByTagName,
   pauseAudio,
   removeNextSibling,
+  removeWarning,
   hasClass,
   querySelector,
   removeControlsAttribute,
