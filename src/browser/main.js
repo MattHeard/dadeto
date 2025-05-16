@@ -121,9 +121,10 @@ const env = { globalState, createEnv, error, fetch, loggers };
 
 /**
  * Creates a basic number input element
+ * @param {Object} dom - The DOM utilities object
  * @returns {HTMLInputElement} The created input element
  */
-const createBaseNumberInput = () => {
+const createBaseNumberInput = (dom) => {
   const input = dom.createElement('input');
   input.type = 'number';
   return input;
@@ -144,10 +145,11 @@ const setupInputEvents = (input, onChange) => {
  * Creates a number input element with the specified value and change handler
  * @param {string} value - The initial value for the input
  * @param {Function} onChange - The callback to execute when the input value changes
+ * @param {Object} dom - The DOM utilities object
  * @returns {HTMLInputElement} The created number input element
  */
-const createNumberInput = (value, onChange) => {
-  const input = createBaseNumberInput();
+const createNumberInput = (value, onChange, dom) => {
+  const input = createBaseNumberInput(dom);
   if (value) {input.value = value;}
   setupInputEvents(input, onChange);
   return input;
@@ -184,7 +186,7 @@ const ensureNumberInput = (container, textInput) => {
       textInput.value = event.target.value;
     };
 
-    numberInput = createNumberInput(textInput?.value, updateTextInputValue);
+    numberInput = createNumberInput(textInput?.value, updateTextInputValue, dom);
     positionNumberInput(container, textInput, numberInput);
   }
 
