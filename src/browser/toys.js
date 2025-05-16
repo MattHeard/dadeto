@@ -46,6 +46,10 @@ export const maybeRemoveKV = (container) => {
  * @param {Object} dom - The DOM utilities object
  * @returns {Function} The event handler function for input dropdown changes
  */
+export const createAddDropdownListener = (onChange) => dropdown => {
+  dropdown.addEventListener('change', onChange);
+};
+
 export const createInputDropdownHandler = (dom) => {
   return (event) => {
     const select = event.currentTarget;
