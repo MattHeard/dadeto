@@ -1,8 +1,8 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
     7:1   warning  './toys.js' import is duplicated                            no-duplicate-imports
-  171:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
-  182:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  163:27  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  179:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
   190:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js

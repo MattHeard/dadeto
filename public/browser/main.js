@@ -160,6 +160,14 @@ setupAudio(dom);
 
 // Add event listeners to toy output dropdowns
 
+const maybeRemoveNumber = (containerElement) => {
+  const numberInput = containerElement.querySelector('input[type="number"]');
+  if (numberInput) {
+    numberInput._dispose?.();
+    containerElement.removeChild(numberInput);
+  }
+};
+
 const getDataCallback = () => getData(globalState, fetch, loggers);
 
 const onOutputDropdownChange = createOutputDropdownHandler(
@@ -178,14 +186,6 @@ const onInputDropdownChange = event => {
     textInput.hidden = !showText;
     textInput.disabled = !showText;
   }
-
-  const maybeRemoveNumber = (containerElement) => {
-    const numberInput = containerElement.querySelector('input[type="number"]');
-    if (numberInput) {
-      numberInput._dispose?.();
-      containerElement.removeChild(numberInput);
-    }
-  };
 
   const maybeRemoveKV = () => {
     const kvContainer = container.querySelector('.kv-container');
