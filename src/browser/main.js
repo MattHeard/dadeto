@@ -161,8 +161,11 @@ setupAudio(dom);
 
 const getDataCallback = () => getData(globalState, fetch, loggers);
 
-const onOutputDropdownChange = event => handleDropdownChange(
-  event.currentTarget,
+const createOutputDropdownHandler = (handleDropdownChange, getData, dom) =>
+  event => handleDropdownChange(event.currentTarget, getData, dom);
+
+const onOutputDropdownChange = createOutputDropdownHandler(
+  handleDropdownChange,
   getDataCallback,
   dom
 );
