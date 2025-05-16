@@ -3,19 +3,18 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
-import { pauseAudio, removeNextSibling, removeWarning, contains } from './document.js'; // Added imports for pauseAudio, removeNextSibling, removeWarning, and contains
 import {
-  createNumberInput,
-  positionNumberInput,
+  ensureKeyValueInput,
   ensureNumberInput,
-  syncHiddenField
-} from './toys.js'; // Import utility functions
-import {
   makeCreateIntersectionObserver,
   initializeVisibleComponents,
   handleDropdownChange,
   getComponentInitializer,
+  createNumberInput,
+  positionNumberInput,
+  syncHiddenField,
 } from './toys.js';
+
 import {
   getElementById,
   getAudioElements,
@@ -32,7 +31,7 @@ import {
   insertBefore,
   log,
   warn,
-  error,
+  error as logError,
   addWarning,
   disconnectObserver,
   isIntersecting,
@@ -130,41 +129,42 @@ const dom = {
   contains,
   removeAllChildren
 };
-const env = { globalState, createEnv, error, fetch, loggers };
+const env = { globalState, createEnv, error: logError, fetch, loggers };
 
 
 
 
 
-// Ensures a dynamic key/value editor exists just after the given hidden text input.
+// Ensures a dynamic number input exists just after the given hidden text input.
 // - `container`  : <div class="value"> wrapper
 // - `textInput`  : hidden <input type="text"> that stores a JSON string
 //
-// Internal state: `rows` = [{key, value}]. The editor writes to the hidden field
-// on every change so that a normal form submission works out‑of‑the‑box.
+// Internal state: `value` = current number value. The editor writes to the hidden
+// field on every change so that a normal form submission works out‑of‑the‑box.
 //
 // Memory‑safety: **every** DOM listener is registered explicitly, its disposer is
 // stored in `disposers`, and cleared on every re‑render or when `_dispose()`
 // runs, preventing leaks.
-const ensureKeyValueInput = (container, textInput) => {
+const ensureNumberInput = (container, textInput) => {
   // Re‑use an existing editor if one is already present
-  let kvContainer = container.querySelector('.kv-container');
-  if (!kvContainer) {
-    kvContainer = dom.createElement('div');
-    kvContainer.className = 'kv-container';
+  let numberInput = container.querySelector('input[type="number"]');
+  if (!numberInput) {
+    numberInput = dom.createElement('input');
+    numberInput.type = 'number';
+    numberInput.step = 'any';
 
     // Insert right after the reference text input for a predictable layout
     if (textInput?.nextSibling) {
-      container.insertBefore(kvContainer, textInput.nextSibling);
+      container.insertBefore(numberInput, textInput.nextSibling);
     } else {
-      container.appendChild(kvContainer);
+      container.appendChild(numberInput);
     }
   }
 
   // ---------------------------------------------------------------------
   // State + bookkeeping
   // ---------------------------------------------------------------------
-  let rows = {};
+  let value = '';
   let disposers = [];
   const clearDisposers = () => {
     disposers.forEach(fn => fn());
@@ -178,130 +178,36 @@ const ensureKeyValueInput = (container, textInput) => {
   // ---------------------------------------------------------------------
   const render = () => {
     clearDisposers();
-    dom.removeAllChildren(kvContainer);
+    numberInput.value = value;
 
-    // If no keys, add a single empty row
-    if (Object.keys(rows).length === 0) {
-      rows[''] = '';
-    }
-
-    const entries = Object.entries(rows);
-    entries.forEach(([key, value], idx) => {
-      const rowEl = dom.createElement('div');
-      rowEl.className = 'kv-row';
-
-      // Key field
-      const keyEl = dom.createElement('input');
-      keyEl.type = 'text';
-      keyEl.placeholder = 'Key';
-      keyEl.value = key;
-      // store the current key so we can track renames without re‑rendering
-      keyEl.dataset.prevKey = key;
-      const onKey = e => {
-        const prevKey = keyEl.dataset.prevKey;
-        const newKey = e.target.value;
-
-        // If nothing changed, just keep the hidden JSON fresh.
-        if (newKey === prevKey) {
-          syncHiddenField(textInput, rows);
-          return;
-        }
-
-        // If the new key is non‑empty and unique, migrate the value.
-        if (newKey !== '' && !(newKey in rows)) {
-          rows[newKey] = rows[prevKey];
-          delete rows[prevKey];
-          keyEl.dataset.prevKey = newKey; // track latest key name
-        }
-        // Otherwise (empty or duplicate), leave the mapping under prevKey.
-
-        syncHiddenField(textInput, rows);
-      };
-
-      keyEl.addEventListener('input', onKey);
-      disposers.push(() => keyEl.removeEventListener('input', onKey));
-
-      // Value field
-      const valueEl = dom.createElement('input');
-      valueEl.type = 'text';
-      valueEl.placeholder = 'Value';
-      valueEl.value = value;
-      const onValue = e => {
-        const rowKey = keyEl.dataset.prevKey; // may have changed via onKey
-        rows[rowKey] = e.target.value;
-        syncHiddenField(textInput, rows);
-      };
-      valueEl.addEventListener('input', onValue);
-      disposers.push(() => valueEl.removeEventListener('input', onValue));
-
-      // + / × button
-      const btnEl = dom.createElement('button');
-      btnEl.type = 'button';
-      if (idx === entries.length - 1) {
-        btnEl.textContent = '+';
-        const onAdd = e => {
-          e.preventDefault();
-          // Add a new empty key only if there isn't already one
-          if (!Object.prototype.hasOwnProperty.call(rows, '')) {
-            rows[''] = '';
-            render();
-          }
-        };
-        btnEl.addEventListener('click', onAdd);
-        disposers.push(() => btnEl.removeEventListener('click', onAdd));
-      } else {
-        btnEl.textContent = '×';
-        const onRemove = e => {
-          e.preventDefault();
-          delete rows[key];
-          render();
-        };
-        btnEl.addEventListener('click', onRemove);
-        disposers.push(() => btnEl.removeEventListener('click', onRemove));
-      }
-
-      rowEl.appendChild(keyEl);
-      rowEl.appendChild(valueEl);
-      rowEl.appendChild(btnEl);
-      kvContainer.appendChild(rowEl);
-    });
-
-    syncHiddenField(textInput, rows);
+    const onChange = e => {
+      value = e.target.value;
+      syncHiddenField(textInput, value);
+    };
+    numberInput.addEventListener('input', onChange);
+    disposers.push(() => numberInput.removeEventListener('input', onChange));
   };
 
   // ---------------------------------------------------------------------
   // Initialise from existing JSON in the hidden field, if present
   // ---------------------------------------------------------------------
   try {
-    const existing = JSON.parse(textInput?.value || '{}');
-    if (Array.isArray(existing)) {
-      // Convert legacy array format [{key, value}] to object
-      rows = {};
-      for (const pair of existing) {
-        if (pair.key !== undefined) {rows[pair.key] = pair.value ?? '';}
-      }
-    } else if (existing && typeof existing === 'object') {
-      rows = { ...existing };
+    const existing = JSON.parse(textInput?.value || '""');
+    if (typeof existing === 'number') {
+      value = existing;
     }
   } catch { /* ignore parse errors */ }
 
   render();
 
   // Public API for cleanup by parent code
-  kvContainer._dispose = () => {
+  numberInput._dispose = () => {
     clearDisposers();
-    dom.removeAllChildren(kvContainer);
-    rows = [];
+    container.removeChild(numberInput);
   };
 
-  return kvContainer;
+  return numberInput;
 };
-
-
-const createIntersectionObserver = makeCreateIntersectionObserver(dom, env);
-
-
-// isIntersecting and disconnectObserver moved to document.js
 
 // Interactive components functionality
 
@@ -325,7 +231,7 @@ initializeVisibleComponents(
 handleTagLinks(dom);
 
 // Initial fetch of blog data when the script loads
-fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: error });
+fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError });
 
 setupAudio(dom);
 

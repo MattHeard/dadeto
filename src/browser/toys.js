@@ -551,10 +551,165 @@ export const syncHiddenField = (textInput, rows) => {
 };
 
 /**
+ * Ensures a dynamic key/value editor exists just after the given hidden text input.
+ * @param {HTMLElement} container - The container element to render the editor into
+ * @param {HTMLInputElement} textInput - The hidden input element that stores the JSON string
+ * @param {Object} dom - The DOM utilities object
+ * @returns {HTMLElement} The container element for the key-value editor
+ */
+export const ensureKeyValueInput = (container, textInput, dom) => {
+  // Re‑use an existing editor if one is already present
+  let kvContainer = container.querySelector('.kv-container');
+  if (!kvContainer) {
+    kvContainer = dom.createElement('div');
+    kvContainer.className = 'kv-container';
+
+    // Insert right after the reference text input for a predictable layout
+    if (textInput?.nextSibling) {
+      container.insertBefore(kvContainer, textInput.nextSibling);
+    } else {
+      container.appendChild(kvContainer);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // State + bookkeeping
+  // ---------------------------------------------------------------------
+  let rows = {};
+  let disposers = [];
+  const clearDisposers = () => {
+    disposers.forEach(fn => fn());
+    disposers = [];
+  };
+
+  // ---------------------------------------------------------------------
+  // Renderer
+  // ---------------------------------------------------------------------
+  const render = () => {
+    clearDisposers();
+    dom.removeAllChildren(kvContainer);
+
+    // If no keys, add a single empty row
+    if (Object.keys(rows).length === 0) {
+      rows[''] = '';
+    }
+
+    const entries = Object.entries(rows);
+    entries.forEach(([key, value], idx) => {
+      const rowEl = dom.createElement('div');
+      rowEl.className = 'kv-row';
+
+      // Key field
+      const keyEl = dom.createElement('input');
+      keyEl.type = 'text';
+      keyEl.placeholder = 'Key';
+      keyEl.value = key;
+      // store the current key so we can track renames without re‑rendering
+      keyEl.dataset.prevKey = key;
+      const onKey = e => {
+        const prevKey = keyEl.dataset.prevKey;
+        const newKey = e.target.value;
+
+        // If nothing changed, just keep the hidden JSON fresh.
+        if (newKey === prevKey) {
+          syncHiddenField(textInput, rows);
+          return;
+        }
+
+        // If the new key is non‑empty and unique, migrate the value.
+        if (newKey !== '' && !(newKey in rows)) {
+          rows[newKey] = rows[prevKey];
+          delete rows[prevKey];
+          keyEl.dataset.prevKey = newKey; // track latest key name
+        }
+        // Otherwise (empty or duplicate), leave the mapping under prevKey.
+
+        syncHiddenField(textInput, rows);
+      };
+
+      keyEl.addEventListener('input', onKey);
+      disposers.push(() => keyEl.removeEventListener('input', onKey));
+
+      // Value field
+      const valueEl = dom.createElement('input');
+      valueEl.type = 'text';
+      valueEl.placeholder = 'Value';
+      valueEl.value = value;
+      const onValue = e => {
+        const rowKey = keyEl.dataset.prevKey; // may have changed via onKey
+        rows[rowKey] = e.target.value;
+        syncHiddenField(textInput, rows);
+      };
+      valueEl.addEventListener('input', onValue);
+      disposers.push(() => valueEl.removeEventListener('input', onValue));
+
+      // + / × button
+      const btnEl = dom.createElement('button');
+      btnEl.type = 'button';
+      if (idx === entries.length - 1) {
+        btnEl.textContent = '+';
+        const onAdd = e => {
+          e.preventDefault();
+          // Add a new empty key only if there isn't already one
+          if (!Object.prototype.hasOwnProperty.call(rows, '')) {
+            rows[''] = '';
+            render();
+          }
+        };
+        btnEl.addEventListener('click', onAdd);
+        disposers.push(() => btnEl.removeEventListener('click', onAdd));
+      } else {
+        btnEl.textContent = '×';
+        const onRemove = e => {
+          e.preventDefault();
+          delete rows[key];
+          render();
+        };
+        btnEl.addEventListener('click', onRemove);
+        disposers.push(() => btnEl.removeEventListener('click', onRemove));
+      }
+
+      rowEl.appendChild(keyEl);
+      rowEl.appendChild(valueEl);
+      rowEl.appendChild(btnEl);
+      kvContainer.appendChild(rowEl);
+    });
+
+    syncHiddenField(textInput, rows);
+  };
+
+  // ---------------------------------------------------------------------
+  // Initialise from existing JSON in the hidden field, if present
+  // ---------------------------------------------------------------------
+  try {
+    const existing = JSON.parse(textInput?.value || '{}');
+    if (Array.isArray(existing)) {
+      // Convert legacy array format [{key, value}] to object
+      rows = {};
+      for (const pair of existing) {
+        if (pair.key !== undefined) {rows[pair.key] = pair.value ?? '';}
+      }
+    } else if (existing && typeof existing === 'object') {
+      rows = { ...existing };
+    }
+  } catch { /* ignore parse errors */ }
+
+  render();
+
+  // Public API for cleanup by parent code
+  kvContainer._dispose = () => {
+    clearDisposers();
+    dom.removeAllChildren(kvContainer);
+    rows = [];
+  };
+
+  return kvContainer;
+};
+
+/**
  * New version: accepts a config object and delegates to the original.
  * @param {object} config - An object containing win, doc, logFn, warnFn, getElementByIdFn, and createIntersectionObserverFn.
  */
-
 
 
 
