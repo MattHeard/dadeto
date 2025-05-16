@@ -199,9 +199,11 @@ const getNextSibling = (element) => element?.nextSibling || null;
  */
 const positionNumberInput = (container, textInput, numberInput) => {
   const nextSibling = getNextSibling(textInput);
-  nextSibling
-    ? container.insertBefore(numberInput, nextSibling)
-    : container.appendChild(numberInput);
+  if (nextSibling) {
+    container.insertBefore(numberInput, nextSibling);
+  } else {
+    container.appendChild(numberInput);
+  }
 };
 
 /**
