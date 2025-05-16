@@ -3,10 +3,10 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
-import { 
+import {
   maybeRemoveNumber,
   maybeRemoveKV,
-  createOutputDropdownHandler 
+  createOutputDropdownHandler
 } from './toys.js';
 import {
   ensureKeyValueInput,
@@ -184,7 +184,7 @@ const onInputDropdownChange = event => {
   }
 
   if (select.value === 'number') {
-    maybeRemoveKV();
+    maybeRemoveKV(container);
     ensureNumberInput(container, textInput, dom);
   } else if (select.value === 'kv') {
     maybeRemoveNumber(container);
@@ -192,7 +192,7 @@ const onInputDropdownChange = event => {
   } else {
     // 'text' or any other type – clean up specialised inputs
     maybeRemoveNumber(container);
-    maybeRemoveKV();
+    maybeRemoveKV(container);
   }
 };
 

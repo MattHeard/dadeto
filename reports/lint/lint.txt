@@ -4,14 +4,14 @@
   175:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-   23:34  warning  Arrow function has a complexity of 6. Maximum allowed is 2                   complexity
-   46:30  warning  Arrow function has a complexity of 6. Maximum allowed is 2                   complexity
-  109:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
-  367:36  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  383:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
-  599:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
-  616:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
-  665:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+   23:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
+   36:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
+   89:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
+  347:36  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  363:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
+  579:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
+  596:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
+  645:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
