@@ -195,14 +195,13 @@ const getNextSibling = (element) => element?.nextSibling || null;
  * @param {HTMLElement} container - The container element
  * @param {HTMLInputElement} textInput - The text input element
  * @param {HTMLInputElement} numberInput - The number input element to position
+ * @returns {void}
  */
 const positionNumberInput = (container, textInput, numberInput) => {
   const nextSibling = getNextSibling(textInput);
-  if (nextSibling) {
-    container.insertBefore(numberInput, nextSibling);
-    return;
-  }
-  container.appendChild(numberInput);
+  nextSibling
+    ? container.insertBefore(numberInput, nextSibling)
+    : container.appendChild(numberInput);
 };
 
 /**
