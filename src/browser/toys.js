@@ -16,6 +16,17 @@ export const createBaseNumberInput = (dom) => {
 };
 
 /**
+ * Sets up the event listener and disposal for the input
+ * @param {HTMLInputElement} input - The input element
+ * @param {Function} onChange - The change handler
+ * @returns {void}
+ */
+export const setupInputEvents = (input, onChange) => {
+  input.addEventListener('input', onChange);
+  input._dispose = () => input.removeEventListener('input', onChange);
+};
+
+/**
  * Creates a component initializer function for setting up intersection observers.
  * @param {Function} getElement - Function to get an element by ID
  * @param {Function} logWarning - Function to log warnings

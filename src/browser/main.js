@@ -8,7 +8,8 @@ import {
   initializeVisibleComponents,
   handleDropdownChange,
   getComponentInitializer,
-  createBaseNumberInput
+  createBaseNumberInput,
+  setupInputEvents
 } from './toys.js';
 import {
   getElementById,
@@ -121,16 +122,6 @@ const dom = {
 const env = { globalState, createEnv, error, fetch, loggers };
 
 
-/**
- * Sets up the event listener and disposal for the input
- * @param {HTMLInputElement} input - The input element
- * @param {Function} onChange - The change handler
- * @returns {void}
- */
-const setupInputEvents = (input, onChange) => {
-  input.addEventListener('input', onChange);
-  input._dispose = () => input.removeEventListener('input', onChange);
-};
 
 /**
  * Creates a number input element with the specified value and change handler
