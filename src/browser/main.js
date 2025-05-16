@@ -184,13 +184,6 @@ const createNumberInput = (value, onChange) => {
 };
 
 /**
- * Gets the next sibling of an element if it exists
- * @param {HTMLElement} element - The element to get the next sibling from
- * @returns {Node|null} The next sibling or null if it doesn't exist
- */
-const getNextSibling = (element) => element?.nextSibling || null;
-
-/**
  * Positions the number input in the DOM relative to the text input
  * @param {HTMLElement} container - The container element
  * @param {HTMLInputElement} textInput - The text input element
@@ -198,7 +191,7 @@ const getNextSibling = (element) => element?.nextSibling || null;
  * @returns {void}
  */
 const positionNumberInput = (container, textInput, numberInput) => {
-  const nextSibling = getNextSibling(textInput);
+  const nextSibling = textInput?.nextSibling || null;
   if (nextSibling) {
     container.insertBefore(numberInput, nextSibling);
   } else {
