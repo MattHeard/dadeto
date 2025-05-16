@@ -85,3 +85,16 @@ export const hasNoInteractiveComponents = (win) => {
   return !win.interactiveComponents || win.interactiveComponents.length === 0;
 };
 
+/**
+ * Gets the count of interactive components in the window
+ * @param {Window} win - The window object to check
+ * @returns {number} The count of interactive components, or 0 if none exist
+ */
+export const getInteractiveComponentCount = (win) => {
+  if (win.interactiveComponents) {
+    return win.interactiveComponents.length;
+  } else {
+    return 0;
+  }
+};
+

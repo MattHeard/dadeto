@@ -30,16 +30,8 @@ import {
   hide,
   enable,
   hasNoInteractiveComponents,
+  getInteractiveComponentCount,
 } from './document.js';
-
-
-function getInteractiveComponentCount(win) {
-  if (win.interactiveComponents) {
-    return win.interactiveComponents.length;
-  } else {
-    return 0;
-  }
-}
 
 function getInteractiveComponents(win) {
   return win.interactiveComponents || [];
