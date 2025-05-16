@@ -184,7 +184,7 @@ const onInputDropdownChange = event => {
   }
 
   if (select.value === 'number') {
-    maybeRemoveKV();
+    maybeRemoveKV(container);
     ensureNumberInput(container, textInput, dom);
   } else if (select.value === 'kv') {
     maybeRemoveNumber(container);
@@ -192,7 +192,7 @@ const onInputDropdownChange = event => {
   } else {
     // 'text' or any other type – clean up specialised inputs
     maybeRemoveNumber(container);
-    maybeRemoveKV();
+    maybeRemoveKV(container);
   }
 };
 
