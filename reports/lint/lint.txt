@@ -1,16 +1,17 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  173:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
-  184:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  192:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+    7:1   warning  './toys.js' import is duplicated                            no-duplicate-imports
+  171:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+  182:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  190:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
    63:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
-  311:36  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  327:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
-  543:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
-  560:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
-  609:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  321:36  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  337:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
+  553:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
+  570:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
+  619:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
@@ -36,4 +37,4 @@
   305:24  warning  Ternary operator used                                       no-ternary
   306:34  warning  Ternary operator used                                       no-ternary
 
-✖ 23 problems (0 errors, 23 warnings)
+✖ 24 problems (0 errors, 24 warnings)

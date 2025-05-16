@@ -72,6 +72,16 @@ export function handleDropdownChange(dropdown, getData, dom) {
 
 
 
+/**
+ * Creates a handler function for output dropdown changes.
+ * @param {Function} handleDropdownChange - The function to handle dropdown changes
+ * @param {Function} getData - Function to retrieve data
+ * @param {Object} dom - The DOM utilities object
+ * @returns {Function} An event handler function for dropdown changes
+ */
+export const createOutputDropdownHandler = (handleDropdownChange, getData, dom) =>
+  event => handleDropdownChange(event.currentTarget, getData, dom);
+
 // Map of presenter keys to presenter functions
 const presentersMap = {
   text: createParagraphElement,

@@ -3,6 +3,7 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
+import { createOutputDropdownHandler } from './toys.js';
 import {
   ensureKeyValueInput,
   ensureNumberInput,
@@ -160,9 +161,6 @@ setupAudio(dom);
 // Add event listeners to toy output dropdowns
 
 const getDataCallback = () => getData(globalState, fetch, loggers);
-
-const createOutputDropdownHandler = (handleDropdownChange, getData, dom) => 
-  event => handleDropdownChange(event.currentTarget, getData, dom);
 
 const onOutputDropdownChange = createOutputDropdownHandler(
   handleDropdownChange,
