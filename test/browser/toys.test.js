@@ -51,7 +51,28 @@ describe('toys', () => {
     });
 
     it('handles dropdown change with empty output data', () => {
-      // Test case will be implemented here
+      // Mock dropdown with required methods
+      const dropdown = {
+        value: 'text', // 'text' is a valid key in presentersMap
+        closest: jest.fn(() => ({ id: 'test-article' })), // Mock closest to return an article
+        parentNode: {
+          querySelector: jest.fn(() => ({})) // Mock parentNode.querySelector
+        }
+      };
+
+      // Mock getData to return empty output
+      const getData = jest.fn(() => ({ output: {} }));
+
+      // Mock DOM utilities
+      const dom = {
+        querySelector: jest.fn(),
+        setTextContent: jest.fn(),
+        removeAllChildren: jest.fn(),
+        appendChild: jest.fn(),
+        createElement: jest.fn()
+      };
+
+      handleDropdownChange(dropdown, getData, dom);
     });
 
 

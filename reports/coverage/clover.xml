@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747372775380" clover="3.2.0">
-  <project timestamp="1747372775380" name="All files">
-    <metrics statements="1474" coveredstatements="1474" conditionals="446" coveredconditionals="445" methods="604" coveredmethods="604" elements="2524" coveredelements="2523" complexity="0" loc="1474" ncloc="1474" packages="17" files="34" classes="34"/>
+<coverage generated="1747373265747" clover="3.2.0">
+  <project timestamp="1747373265747" name="All files">
+    <metrics statements="1474" coveredstatements="1474" conditionals="446" coveredconditionals="446" methods="604" coveredmethods="604" elements="2524" coveredelements="2524" complexity="0" loc="1474" ncloc="1474" packages="17" files="34" classes="34"/>
     <package name="browser">
-      <metrics statements="332" coveredstatements="332" conditionals="64" coveredconditionals="63" methods="111" coveredmethods="111"/>
+      <metrics statements="332" coveredstatements="332" conditionals="64" coveredconditionals="64" methods="111" coveredmethods="111"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -219,22 +219,22 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="133" coveredstatements="133" conditionals="16" coveredconditionals="15" methods="48" coveredmethods="48"/>
-        <line num="14" count="1" type="stmt"/>
-        <line num="18" count="1" type="stmt"/>
-        <line num="19" count="1" type="stmt"/>
-        <line num="23" count="1" type="stmt"/>
-        <line num="24" count="1" type="stmt"/>
-        <line num="25" count="1" type="stmt"/>
-        <line num="26" count="1" type="stmt"/>
-        <line num="28" count="1" type="stmt"/>
-        <line num="29" count="1" type="cond" truecount="1" falsecount="1"/>
+        <metrics statements="133" coveredstatements="133" conditionals="16" coveredconditionals="16" methods="48" coveredmethods="48"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="18" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="23" count="2" type="stmt"/>
+        <line num="24" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="29" count="2" type="cond" truecount="2" falsecount="0"/>
         <line num="35" count="1" type="stmt"/>
-        <line num="44" count="15" type="stmt"/>
-        <line num="45" count="15" type="stmt"/>
-        <line num="46" count="15" type="stmt"/>
-        <line num="47" count="15" type="stmt"/>
-        <line num="48" count="15" type="stmt"/>
+        <line num="44" count="16" type="stmt"/>
+        <line num="45" count="16" type="stmt"/>
+        <line num="46" count="16" type="stmt"/>
+        <line num="47" count="16" type="stmt"/>
+        <line num="48" count="16" type="stmt"/>
         <line num="65" count="5" type="stmt"/>
         <line num="66" count="1" type="stmt"/>
         <line num="87" count="5" type="stmt"/>
@@ -780,9 +780,9 @@
       </file>
       <file name="paragraph.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
-        <line num="2" count="17" type="stmt"/>
-        <line num="3" count="17" type="stmt"/>
-        <line num="4" count="17" type="stmt"/>
+        <line num="2" count="18" type="stmt"/>
+        <line num="3" count="18" type="stmt"/>
+        <line num="4" count="18" type="stmt"/>
       </file>
       <file name="pre.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/pre.js">
         <metrics statements="13" coveredstatements="13" conditionals="8" coveredconditionals="8" methods="6" coveredmethods="6"/>
