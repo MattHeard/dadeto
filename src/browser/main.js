@@ -188,10 +188,7 @@ const createNumberInput = (value, onChange) => {
  * @param {HTMLElement} element - The element to get the next sibling from
  * @returns {Node|null} The next sibling or null if it doesn't exist
  */
-const getNextSibling = (element) => {
-  if (!element) {return null;}
-  return element.nextSibling || null;
-};
+const getNextSibling = (element) => element?.nextSibling || null;
 
 /**
  * Positions the number input in the DOM relative to the text input
