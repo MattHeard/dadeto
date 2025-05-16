@@ -33,6 +33,7 @@ import {
   isIntersecting,
   makeIntersectionObserver,
   getClasses,
+  getCurrentTime,
   getRandomNumber,
   addClass,
   removeAllChildren,
