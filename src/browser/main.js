@@ -3,7 +3,12 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
-import { makeCreateIntersectionObserver, initializeVisibleComponents, handleDropdownChange } from './toys.js';
+import {
+  makeCreateIntersectionObserver,
+  initializeVisibleComponents,
+  handleDropdownChange,
+  getComponentInitializer
+} from './toys.js';
 import {
   getElementById,
   getAudioElements,
@@ -33,18 +38,6 @@ import {
   getInteractiveComponentCount,
   getInteractiveComponents,
 } from './document.js';
-
-function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
-  return component => {
-    const article = getElement(component.id);
-    if (!article) {
-      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
-      return;
-    }
-    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
-    observer.observe(article);
-  };
-}
 
 
 const globalState = {

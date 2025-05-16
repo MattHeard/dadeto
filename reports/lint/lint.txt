@@ -1,16 +1,16 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  170:29  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
-  185:27  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
-  211:29  warning  Arrow function has a complexity of 13. Maximum allowed is 2  complexity
-  236:27  warning  Arrow function has a complexity of 5. Maximum allowed is 2   complexity
-  272:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
-  412:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
-  423:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
-  431:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
+  163:29  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
+  178:27  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
+  204:29  warning  Arrow function has a complexity of 13. Maximum allowed is 2  complexity
+  229:27  warning  Arrow function has a complexity of 5. Maximum allowed is 2   complexity
+  265:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
+  405:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
+  416:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
+  424:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-  22:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
+  41:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity

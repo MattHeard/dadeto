@@ -5,6 +5,25 @@ import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolit
 import { createBattleshipCluesBoardElement } from '../presenters/battleshipSolitaireClues.js';
 
 /**
+ * Creates a component initializer function for setting up intersection observers.
+ * @param {Function} getElement - Function to get an element by ID
+ * @param {Function} logWarning - Function to log warnings
+ * @param {Function} createIntersectionObserver - Function to create an intersection observer
+ * @returns {Function} A function that initializes a component with an intersection observer
+ */
+export function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
+  return component => {
+    const article = getElement(component.id);
+    if (!article) {
+      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
+      return;
+    }
+    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
+    observer.observe(article);
+  };
+}
+
+/**
  * Handles dropdown changes for toy output selection.
  * Logs the selected value and article ID.
  * @param {Event} event - The change event from the dropdown.
