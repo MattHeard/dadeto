@@ -29,6 +29,7 @@ import {
   warn,
   error,
   addWarning,
+  disconnectObserver,
   getRandomNumber,
   addClass,
   removeAllChildren,
