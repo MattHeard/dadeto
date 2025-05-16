@@ -21,10 +21,20 @@ export const createBaseNumberInput = (dom) => {
  * @returns {void}
  */
 export const maybeRemoveNumber = (containerElement) => {
+  if (!containerElement) {
+    console.warn('maybeRemoveNumber: containerElement is undefined or null');
+    return;
+  }
+  if (typeof containerElement.querySelector !== 'function') {
+    console.warn('maybeRemoveNumber: containerElement does not have querySelector method', containerElement);
+    return;
+  }
   const numberInput = containerElement.querySelector('input[type="number"]');
   if (numberInput) {
     numberInput._dispose?.();
-    containerElement.removeChild(numberInput);
+    if (numberInput.parentNode === containerElement) {
+      containerElement.removeChild(numberInput);
+    }
   }
 };
 
@@ -34,10 +44,20 @@ export const maybeRemoveNumber = (containerElement) => {
  * @returns {void}
  */
 export const maybeRemoveKV = (container) => {
+  if (!container) {
+    console.warn('maybeRemoveKV: container is undefined or null');
+    return;
+  }
+  if (typeof container.querySelector !== 'function') {
+    console.warn('maybeRemoveKV: container does not have querySelector method', container);
+    return;
+  }
   const kvContainer = container.querySelector('.kv-container');
   if (kvContainer) {
     kvContainer._dispose?.();
-    container.removeChild(kvContainer);
+    if (kvContainer.parentNode === container) {
+      container.removeChild(kvContainer);
+    }
   }
 };
 

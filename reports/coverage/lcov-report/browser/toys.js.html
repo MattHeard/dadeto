@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">51.38% </span>
+                <span class="strong">49% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>148/288</span>
+                <span class='fraction'>148/302</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">24.24% </span>
+                <span class="strong">20.51% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>16/66</span>
+                <span class='fraction'>16/78</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">52.76% </span>
+                <span class="strong">50.17% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>143/271</span>
+                <span class='fraction'>143/285</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -824,7 +824,27 @@
 <a name='L759'></a><a href='#L759'>759</a>
 <a name='L760'></a><a href='#L760'>760</a>
 <a name='L761'></a><a href='#L761'>761</a>
-<a name='L762'></a><a href='#L762'>762</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L762'></a><a href='#L762'>762</a>
+<a name='L763'></a><a href='#L763'>763</a>
+<a name='L764'></a><a href='#L764'>764</a>
+<a name='L765'></a><a href='#L765'>765</a>
+<a name='L766'></a><a href='#L766'>766</a>
+<a name='L767'></a><a href='#L767'>767</a>
+<a name='L768'></a><a href='#L768'>768</a>
+<a name='L769'></a><a href='#L769'>769</a>
+<a name='L770'></a><a href='#L770'>770</a>
+<a name='L771'></a><a href='#L771'>771</a>
+<a name='L772'></a><a href='#L772'>772</a>
+<a name='L773'></a><a href='#L773'>773</a>
+<a name='L774'></a><a href='#L774'>774</a>
+<a name='L775'></a><a href='#L775'>775</a>
+<a name='L776'></a><a href='#L776'>776</a>
+<a name='L777'></a><a href='#L777'>777</a>
+<a name='L778'></a><a href='#L778'>778</a>
+<a name='L779'></a><a href='#L779'>779</a>
+<a name='L780'></a><a href='#L780'>780</a>
+<a name='L781'></a><a href='#L781'>781</a>
+<a name='L782'></a><a href='#L782'>782</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -850,7 +870,17 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -863,7 +893,17 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1608,10 +1648,20 @@ export const createBaseNumberInput = <span class="fstat-no" title="function not 
  * @returns {void}
  */
 export const maybeRemoveNumber = <span class="fstat-no" title="function not covered" >(c</span>ontainerElement) =&gt; {
+<span class="cstat-no" title="statement not covered" >  if (!containerElement) {</span>
+<span class="cstat-no" title="statement not covered" >    console.warn('maybeRemoveNumber: containerElement is undefined or null');</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+<span class="cstat-no" title="statement not covered" >  if (typeof containerElement.querySelector !== 'function') {</span>
+<span class="cstat-no" title="statement not covered" >    console.warn('maybeRemoveNumber: containerElement does not have querySelector method', containerElement);</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
   const numberInput = <span class="cstat-no" title="statement not covered" >containerElement.querySelector('input[type="number"]');</span>
 <span class="cstat-no" title="statement not covered" >  if (numberInput) {</span>
 <span class="cstat-no" title="statement not covered" >    numberInput._dispose?.();</span>
-<span class="cstat-no" title="statement not covered" >    containerElement.removeChild(numberInput);</span>
+<span class="cstat-no" title="statement not covered" >    if (numberInput.parentNode === containerElement) {</span>
+<span class="cstat-no" title="statement not covered" >      containerElement.removeChild(numberInput);</span>
+    }
   }
 };
 &nbsp;
@@ -1621,10 +1671,20 @@ export const maybeRemoveNumber = <span class="fstat-no" title="function not cove
  * @returns {void}
  */
 export const maybeRemoveKV = <span class="fstat-no" title="function not covered" >(c</span>ontainer) =&gt; {
+<span class="cstat-no" title="statement not covered" >  if (!container) {</span>
+<span class="cstat-no" title="statement not covered" >    console.warn('maybeRemoveKV: container is undefined or null');</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+<span class="cstat-no" title="statement not covered" >  if (typeof container.querySelector !== 'function') {</span>
+<span class="cstat-no" title="statement not covered" >    console.warn('maybeRemoveKV: container does not have querySelector method', container);</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
   const kvContainer = <span class="cstat-no" title="statement not covered" >container.querySelector('.kv-container');</span>
 <span class="cstat-no" title="statement not covered" >  if (kvContainer) {</span>
 <span class="cstat-no" title="statement not covered" >    kvContainer._dispose?.();</span>
-<span class="cstat-no" title="statement not covered" >    container.removeChild(kvContainer);</span>
+<span class="cstat-no" title="statement not covered" >    if (kvContainer.parentNode === container) {</span>
+<span class="cstat-no" title="statement not covered" >      container.removeChild(kvContainer);</span>
+    }
   }
 };
 &nbsp;
@@ -2353,7 +2413,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-16T14:32:22.665Z
+                at 2025-05-16T14:34:30.146Z
             </div>
         <script src="../prettify.js"></script>
         <script>
