@@ -4,6 +4,7 @@ import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
 import { pauseAudio, removeNextSibling, removeWarning, contains } from './document.js'; // Added imports for pauseAudio, removeNextSibling, removeWarning, and contains
+import { syncHiddenField } from './keyValueUtils.js'; // Import syncHiddenField utility
 import {
   createNumberInput,
   positionNumberInput,
@@ -168,16 +169,6 @@ const ensureKeyValueInput = (container, textInput) => {
   const clearDisposers = () => {
     disposers.forEach(fn => fn());
     disposers = [];
-  };
-
-  const syncHiddenField = (textInput, rows) => {
-    if (!textInput) {return;}
-    // Only include keys with non-empty key or value
-    const filtered = {};
-    for (const [k, v] of Object.entries(rows)) {
-      if (k || v) {filtered[k] = v;}
-    }
-    textInput.value = JSON.stringify(filtered);
   };
 
 
