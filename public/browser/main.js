@@ -9,6 +9,7 @@ import {
   initializeVisibleComponents,
   handleDropdownChange,
   getComponentInitializer,
+  makeCreateIntersectionObserver
 } from './toys.js';
 
 import {
@@ -144,7 +145,7 @@ initializeVisibleComponents(
     getInteractiveComponentCount,
     getComponentInitializer
   },
-  createIntersectionObserver
+  makeCreateIntersectionObserver(dom, env)
 );
 
 // Tag filtering functionality
