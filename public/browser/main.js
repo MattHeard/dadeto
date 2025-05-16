@@ -3,6 +3,7 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
+import { maybeRemoveNumber } from './toys.js';
 import { createOutputDropdownHandler } from './toys.js';
 import {
   ensureKeyValueInput,
@@ -159,14 +160,6 @@ fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError });
 setupAudio(dom);
 
 // Add event listeners to toy output dropdowns
-
-const maybeRemoveNumber = (containerElement) => {
-  const numberInput = containerElement.querySelector('input[type="number"]');
-  if (numberInput) {
-    numberInput._dispose?.();
-    containerElement.removeChild(numberInput);
-  }
-};
 
 const getDataCallback = () => getData(globalState, fetch, loggers);
 

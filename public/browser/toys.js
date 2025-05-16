@@ -16,6 +16,19 @@ export const createBaseNumberInput = (dom) => {
 };
 
 /**
+ * Removes a number input element if it exists in the container
+ * @param {HTMLElement} containerElement - The container element to search in
+ * @returns {void}
+ */
+export const maybeRemoveNumber = (containerElement) => {
+  const numberInput = containerElement.querySelector('input[type="number"]');
+  if (numberInput) {
+    numberInput._dispose?.();
+    containerElement.removeChild(numberInput);
+  }
+};
+
+/**
  * Sets up the event listener and disposal for the input
  * @param {HTMLInputElement} input - The input element
  * @param {Function} onChange - The change handler
