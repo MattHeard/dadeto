@@ -4,13 +4,11 @@ import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
 import {
-  createOutputDropdownHandler,
-  createInputDropdownHandler
-} from './toys.js';
-import {
   ensureKeyValueInput,
   ensureNumberInput,
-  initializeVisibleComponents,
+  createOutputDropdownHandler,
+  createInputDropdownHandler,
+  createAddDropdownListener,
   handleDropdownChange,
   getComponentInitializer,
   makeCreateIntersectionObserver
@@ -170,10 +168,6 @@ const onOutputDropdownChange = createOutputDropdownHandler(
   getDataCallback,
   dom
 );
-
-const createAddDropdownListener = (onChange) => dropdown => {
-  dropdown.addEventListener('change', onChange);
-};
 
 const onInputDropdownChange = createInputDropdownHandler(dom);
 
