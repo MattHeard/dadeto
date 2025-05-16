@@ -105,7 +105,7 @@ const dom = {
   disconnectObserver,
   isIntersecting,
   importModule,
-  error,
+  error: logError,
   makeIntersectionObserver,
   addClass,
   appendChild,
