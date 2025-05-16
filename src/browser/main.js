@@ -171,7 +171,7 @@ const onOutputDropdownChange = createOutputDropdownHandler(
   dom
 );
 
-const createAddOutputDropdownListener = (onChange) => dropdown => {
+const createAddDropdownListener = (onChange) => dropdown => {
   dropdown.addEventListener('change', onChange);
 };
 
@@ -179,12 +179,9 @@ const onInputDropdownChange = createInputDropdownHandler(dom);
 
 window.addEventListener('DOMContentLoaded', () => {
   const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
-  outputDropdowns.forEach(createAddOutputDropdownListener(onOutputDropdownChange));
+  outputDropdowns.forEach(createAddDropdownListener(onOutputDropdownChange));
 
   // Add event listeners to toy input dropdowns
   const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
-  const addInputDropdownListener = dropdown => {
-    dropdown.addEventListener('change', onInputDropdownChange);
-  };
-  inputDropdowns.forEach(addInputDropdownListener);
+  inputDropdowns.forEach(createAddDropdownListener(onInputDropdownChange));
 });
