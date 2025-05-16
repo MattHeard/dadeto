@@ -3,8 +3,11 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
-import { maybeRemoveNumber } from './toys.js';
-import { createOutputDropdownHandler } from './toys.js';
+import { 
+  maybeRemoveNumber,
+  maybeRemoveKV,
+  createOutputDropdownHandler 
+} from './toys.js';
 import {
   ensureKeyValueInput,
   ensureNumberInput,
@@ -179,14 +182,6 @@ const onInputDropdownChange = event => {
     textInput.hidden = !showText;
     textInput.disabled = !showText;
   }
-
-  const maybeRemoveKV = () => {
-    const kvContainer = container.querySelector('.kv-container');
-    if (kvContainer) {
-      kvContainer._dispose?.();
-      container.removeChild(kvContainer);
-    }
-  };
 
   if (select.value === 'number') {
     maybeRemoveKV();

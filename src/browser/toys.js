@@ -29,6 +29,19 @@ export const maybeRemoveNumber = (containerElement) => {
 };
 
 /**
+ * Removes a key-value input container if it exists
+ * @param {HTMLElement} container - The container element to search in
+ * @returns {void}
+ */
+export const maybeRemoveKV = (container) => {
+  const kvContainer = container.querySelector('.kv-container');
+  if (kvContainer) {
+    kvContainer._dispose?.();
+    container.removeChild(kvContainer);
+  }
+};
+
+/**
  * Sets up the event listener and disposal for the input
  * @param {HTMLInputElement} input - The input element
  * @param {Function} onChange - The change handler
