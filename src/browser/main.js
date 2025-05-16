@@ -18,6 +18,7 @@ import {
   pauseAudio,
   removeNextSibling,
   removeWarning,
+  contains,
   hasClass,
   querySelector,
   removeControlsAttribute,
