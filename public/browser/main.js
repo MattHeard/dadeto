@@ -3,7 +3,7 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
-import { pauseAudio, removeNextSibling } from './document.js'; // Added imports for pauseAudio and removeNextSibling
+import { pauseAudio, removeNextSibling, removeWarning } from './document.js'; // Added imports for pauseAudio, removeNextSibling, and removeWarning
 import {
   makeCreateIntersectionObserver,
   initializeVisibleComponents,
