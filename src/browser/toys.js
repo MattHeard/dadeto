@@ -791,6 +791,24 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 
 
 /**
+ * Creates a function that initializes dropdown event listeners
+ * @param {Document} document - The document object
+ * @param {Function} onOutputChange - Handler for output dropdown changes
+ * @param {Function} onInputChange - Handler for input dropdown changes
+ * @returns {Function} A function that initializes dropdown event listeners
+ */
+export const createDropdownInitializer = (document, onOutputChange, onInputChange) => {
+  return () => {
+    const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
+    outputDropdowns.forEach(createAddDropdownListener(onOutputChange));
+
+    // Add event listeners to toy input dropdowns
+    const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
+    inputDropdowns.forEach(createAddDropdownListener(onInputChange));
+  };
+};
+
+/**
  * Helper function needed by getData
  */
 export const getDeepStateCopy = (globalState) => JSON.parse(JSON.stringify(globalState));

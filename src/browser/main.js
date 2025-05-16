@@ -12,7 +12,8 @@ import {
   handleDropdownChange,
   getComponentInitializer,
   makeCreateIntersectionObserver,
-  initializeVisibleComponents
+  initializeVisibleComponents,
+  createDropdownInitializer
 } from './toys.js';
 
 import {
@@ -171,17 +172,6 @@ const onOutputDropdownChange = createOutputDropdownHandler(
 );
 
 const onInputDropdownChange = createInputDropdownHandler(dom);
-
-const createDropdownInitializer = (document, onOutputChange, onInputChange) => {
-  return () => {
-    const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
-    outputDropdowns.forEach(createAddDropdownListener(onOutputChange));
-
-    // Add event listeners to toy input dropdowns
-    const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
-    inputDropdowns.forEach(createAddDropdownListener(onInputChange));
-  };
-};
 
 const initializeDropdowns = createDropdownInitializer(document, onOutputDropdownChange, onInputDropdownChange);
 window.addEventListener('DOMContentLoaded', initializeDropdowns);

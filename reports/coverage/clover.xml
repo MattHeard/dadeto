@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747407822739" clover="3.2.0">
-  <project timestamp="1747407822739" name="All files">
-    <metrics statements="1628" coveredstatements="1483" conditionals="502" coveredconditionals="446" methods="636" coveredmethods="604" elements="2766" coveredelements="2533" complexity="0" loc="1628" ncloc="1628" packages="17" files="34" classes="34"/>
+<coverage generated="1747407956786" clover="3.2.0">
+  <project timestamp="1747407956786" name="All files">
+    <metrics statements="1634" coveredstatements="1484" conditionals="502" coveredconditionals="446" methods="638" coveredmethods="604" elements="2774" coveredelements="2534" complexity="0" loc="1634" ncloc="1634" packages="17" files="34" classes="34"/>
     <package name="browser">
-      <metrics statements="486" coveredstatements="341" conditionals="120" coveredconditionals="64" methods="143" coveredmethods="111"/>
+      <metrics statements="492" coveredstatements="342" conditionals="120" coveredconditionals="64" methods="145" coveredmethods="111"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -216,7 +216,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="290" coveredstatements="145" conditionals="72" coveredconditionals="16" methods="80" coveredmethods="48"/>
+        <metrics statements="296" coveredstatements="146" conditionals="72" coveredconditionals="16" methods="82" coveredmethods="48"/>
         <line num="12" count="1" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
         <line num="14" count="0" type="stmt"/>
@@ -506,7 +506,13 @@
         <line num="773" count="0" type="stmt"/>
         <line num="774" count="0" type="stmt"/>
         <line num="777" count="0" type="stmt"/>
-        <line num="796" count="1" type="stmt"/>
+        <line num="800" count="1" type="stmt"/>
+        <line num="801" count="0" type="stmt"/>
+        <line num="802" count="0" type="stmt"/>
+        <line num="803" count="0" type="stmt"/>
+        <line num="806" count="0" type="stmt"/>
+        <line num="807" count="0" type="stmt"/>
+        <line num="814" count="1" type="stmt"/>
       </file>
     </package>
     <package name="generator">

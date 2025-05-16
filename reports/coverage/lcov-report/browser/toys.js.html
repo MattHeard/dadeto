@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">48.7% </span>
+                <span class="strong">48.08% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>150/308</span>
+                <span class='fraction'>151/314</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">58.53% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>48/80</span>
+                <span class='fraction'>48/82</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">49.32% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>145/290</span>
+                <span class='fraction'>146/296</span>
             </div>
         
             
@@ -859,7 +859,25 @@
 <a name='L794'></a><a href='#L794'>794</a>
 <a name='L795'></a><a href='#L795'>795</a>
 <a name='L796'></a><a href='#L796'>796</a>
-<a name='L797'></a><a href='#L797'>797</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L797'></a><a href='#L797'>797</a>
+<a name='L798'></a><a href='#L798'>798</a>
+<a name='L799'></a><a href='#L799'>799</a>
+<a name='L800'></a><a href='#L800'>800</a>
+<a name='L801'></a><a href='#L801'>801</a>
+<a name='L802'></a><a href='#L802'>802</a>
+<a name='L803'></a><a href='#L803'>803</a>
+<a name='L804'></a><a href='#L804'>804</a>
+<a name='L805'></a><a href='#L805'>805</a>
+<a name='L806'></a><a href='#L806'>806</a>
+<a name='L807'></a><a href='#L807'>807</a>
+<a name='L808'></a><a href='#L808'>808</a>
+<a name='L809'></a><a href='#L809'>809</a>
+<a name='L810'></a><a href='#L810'>810</a>
+<a name='L811'></a><a href='#L811'>811</a>
+<a name='L812'></a><a href='#L812'>812</a>
+<a name='L813'></a><a href='#L813'>813</a>
+<a name='L814'></a><a href='#L814'>814</a>
+<a name='L815'></a><a href='#L815'>815</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1648,6 +1666,24 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2448,6 +2484,24 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
 &nbsp;
 &nbsp;
 /**
+ * Creates a function that initializes dropdown event listeners
+ * @param {Document} document - The document object
+ * @param {Function} onOutputChange - Handler for output dropdown changes
+ * @param {Function} onInputChange - Handler for input dropdown changes
+ * @returns {Function} A function that initializes dropdown event listeners
+ */
+export const createDropdownInitializer = <span class="fstat-no" title="function not covered" >(d</span>ocument, onOutputChange, onInputChange) =&gt; {
+<span class="cstat-no" title="statement not covered" >  return <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+    const outputDropdowns = <span class="cstat-no" title="statement not covered" >Array.from(document.querySelectorAll('article.entry .value &gt; select.output'));</span>
+<span class="cstat-no" title="statement not covered" >    outputDropdowns.forEach(createAddDropdownListener(onOutputChange));</span>
+&nbsp;
+    // Add event listeners to toy input dropdowns
+    const inputDropdowns = <span class="cstat-no" title="statement not covered" >Array.from(document.querySelectorAll('article.entry .value &gt; select.input'));</span>
+<span class="cstat-no" title="statement not covered" >    inputDropdowns.forEach(createAddDropdownListener(onInputChange));</span>
+  };
+};
+&nbsp;
+/**
  * Helper function needed by getData
  */
 export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(globalState));
@@ -2458,7 +2512,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-16T15:03:42.616Z
+                at 2025-05-16T15:05:56.746Z
             </div>
         <script src="../prettify.js"></script>
         <script>
