@@ -1,13 +1,13 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  192:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
-  206:27  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
-  231:29  warning  Arrow function has a complexity of 13. Maximum allowed is 2  complexity
-  256:27  warning  Arrow function has a complexity of 5. Maximum allowed is 2   complexity
-  292:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
-  432:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
-  443:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
-  451:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
+  191:24  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
+  214:27  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
+  239:29  warning  Arrow function has a complexity of 13. Maximum allowed is 2  complexity
+  264:27  warning  Arrow function has a complexity of 5. Maximum allowed is 2   complexity
+  300:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
+  440:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
+  451:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
+  459:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
   22:8  warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
