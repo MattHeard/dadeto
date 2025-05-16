@@ -149,33 +149,53 @@ const dom = {
 };
 const env = { globalState, createEnv, error, fetch, loggers };
 
-// Ensures a single <input type="number"> exists just after the text input
+/**
+ * Creates a number input element with the specified value and change handler
+ * @param {string} value - The initial value for the input
+ * @param {Function} onChange - The callback to execute when the input value changes
+ * @returns {HTMLInputElement} The created number input element
+ */
+const createNumberInput = (value, onChange) => {
+  const input = dom.createElement('input');
+  input.type = 'number';
+  if (value) {input.value = value;}
+  input.addEventListener('input', onChange);
+  input._dispose = () => input.removeEventListener('input', onChange);
+  return input;
+};
+
+/**
+ * Positions the number input in the DOM relative to the text input
+ * @param {HTMLElement} container - The container element
+ * @param {HTMLInputElement} textInput - The text input element
+ * @param {HTMLInputElement} numberInput - The number input element to position
+ */
+const positionNumberInput = (container, textInput, numberInput) => {
+  if (textInput?.nextSibling) {
+    container.insertBefore(numberInput, textInput.nextSibling);
+  } else {
+    container.appendChild(numberInput);
+  }
+};
+
+/**
+ * Ensures a single <input type="number"> exists just after the text input
+ * @param {HTMLElement} container - The container element
+ * @param {HTMLInputElement} textInput - The text input element
+ * @returns {HTMLInputElement} The number input element
+ */
 const ensureNumberInput = (container, textInput) => {
   let numberInput = container.querySelector('input[type="number"]');
+
   if (!numberInput) {
-    numberInput = dom.createElement('input');
-    numberInput.type = 'number';
-
-    // install value-change listener and stash a disposer
     const onValueChange = e => {
-      const val = e.target.value;
-      if (textInput) {textInput.value = val;}
-    };
-    numberInput.addEventListener('input', onValueChange);
-    numberInput._dispose = () => {
-      numberInput.removeEventListener('input', onValueChange);
+      if (textInput) {textInput.value = e.target.value;}
     };
 
-    // initialize number input from existing text value
-    if (textInput) {numberInput.value = textInput.value;}
-
-    // keep DOM order stable: place right after the text input
-    if (textInput && textInput.nextSibling) {
-      container.insertBefore(numberInput, textInput.nextSibling);
-    } else {
-      container.appendChild(numberInput);
-    }
+    numberInput = createNumberInput(textInput?.value, onValueChange);
+    positionNumberInput(container, textInput, numberInput);
   }
+
   return numberInput;
 };
 
