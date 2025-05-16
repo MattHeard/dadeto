@@ -4,12 +4,12 @@ import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
 import { pauseAudio, removeNextSibling, removeWarning, contains } from './document.js'; // Added imports for pauseAudio, removeNextSibling, removeWarning, and contains
-import { syncHiddenField } from './keyValueUtils.js'; // Import syncHiddenField utility
 import {
   createNumberInput,
   positionNumberInput,
-  ensureNumberInput
-} from './toys.js'; // Import number input related functions
+  ensureNumberInput,
+  syncHiddenField
+} from './toys.js'; // Import utility functions
 import {
   makeCreateIntersectionObserver,
   initializeVisibleComponents,

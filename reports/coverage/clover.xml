@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747400668980" clover="3.2.0">
-  <project timestamp="1747400668981" name="All files">
-    <metrics statements="1510" coveredstatements="1476" conditionals="464" coveredconditionals="446" methods="614" coveredmethods="604" elements="2588" coveredelements="2526" complexity="0" loc="1510" ncloc="1510" packages="17" files="35" classes="35"/>
+<coverage generated="1747401021354" clover="3.2.0">
+  <project timestamp="1747401021354" name="All files">
+    <metrics statements="1510" coveredstatements="1477" conditionals="464" coveredconditionals="446" methods="614" coveredmethods="604" elements="2588" coveredelements="2527" complexity="0" loc="1510" ncloc="1510" packages="17" files="34" classes="34"/>
     <package name="browser">
-      <metrics statements="368" coveredstatements="334" conditionals="82" coveredconditionals="64" methods="121" coveredmethods="111"/>
+      <metrics statements="368" coveredstatements="335" conditionals="82" coveredconditionals="64" methods="121" coveredmethods="111"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -151,15 +151,6 @@
         <line num="271" count="1" type="stmt"/>
         <line num="272" count="1" type="stmt"/>
       </file>
-      <file name="keyValueUtils.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/keyValueUtils.js">
-        <metrics statements="6" coveredstatements="0" conditionals="6" coveredconditionals="0" methods="1" coveredmethods="0"/>
-        <line num="7" count="0" type="stmt"/>
-        <line num="8" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="10" count="0" type="stmt"/>
-        <line num="11" count="0" type="stmt"/>
-        <line num="12" count="0" type="cond" truecount="0" falsecount="4"/>
-        <line num="14" count="0" type="stmt"/>
-      </file>
       <file name="setOutput.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/setOutput.js">
         <metrics statements="19" coveredstatements="19" conditionals="4" coveredconditionals="4" methods="4" coveredmethods="4"/>
         <line num="6" count="9" type="stmt"/>
@@ -225,7 +216,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="166" coveredstatements="138" conditionals="28" coveredconditionals="16" methods="57" coveredmethods="48"/>
+        <metrics statements="172" coveredstatements="139" conditionals="34" coveredconditionals="16" methods="58" coveredmethods="48"/>
         <line num="12" count="1" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
         <line num="14" count="0" type="stmt"/>
@@ -391,7 +382,13 @@
         <line num="532" count="2" type="stmt"/>
         <line num="533" count="2" type="stmt"/>
         <line num="534" count="2" type="stmt"/>
-        <line num="554" count="1" type="stmt"/>
+        <line num="543" count="1" type="stmt"/>
+        <line num="544" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="546" count="0" type="stmt"/>
+        <line num="547" count="0" type="stmt"/>
+        <line num="548" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="550" count="0" type="stmt"/>
+        <line num="570" count="1" type="stmt"/>
       </file>
     </package>
     <package name="generator">
