@@ -5,10 +5,10 @@
    13:1   warning  './toys.js' import is duplicated                             no-duplicate-imports
    19:1   warning  './document.js' import is duplicated                         no-duplicate-imports
   149:29  warning  Arrow function has a complexity of 13. Maximum allowed is 2  complexity
-  200:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
-  340:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
-  351:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
-  359:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
+  206:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
+  349:31  warning  Arrow function has a complexity of 4. Maximum allowed is 2   complexity
+  360:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
+  368:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2   complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
    63:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
