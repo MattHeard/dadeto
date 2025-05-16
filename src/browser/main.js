@@ -4,6 +4,7 @@ import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
 import { pauseAudio, removeNextSibling, removeWarning, contains } from './document.js'; // Added imports for pauseAudio, removeNextSibling, removeWarning, and contains
+import { createNumberInput, positionNumberInput, ensureNumberInput } from './toys.js'; // Import number input related functions
 import {
   makeCreateIntersectionObserver,
   initializeVisibleComponents,
@@ -130,57 +131,7 @@ const env = { globalState, createEnv, error, fetch, loggers };
 
 
 
-/**
- * Creates a number input element with the specified value and change handler
- * @param {string} value - The initial value for the input
- * @param {Function} onChange - The callback to execute when the input value changes
- * @param {Object} dom - The DOM utilities object
- * @returns {HTMLInputElement} The created number input element
- */
-const createNumberInput = (value, onChange, dom) => {
-  const input = createBaseNumberInput(dom);
-  if (value) {input.value = value;}
-  setupInputEvents(input, onChange);
-  return input;
-};
 
-/**
- * Positions the number input in the DOM relative to the text input
- * @param {HTMLElement} container - The container element
- * @param {HTMLInputElement} textInput - The text input element
- * @param {HTMLInputElement} numberInput - The number input element to position
- * @returns {void}
- */
-const positionNumberInput = (container, textInput, numberInput) => {
-  const nextSibling = textInput?.nextSibling || null;
-  if (nextSibling) {
-    container.insertBefore(numberInput, nextSibling);
-  } else {
-    container.appendChild(numberInput);
-  }
-};
-
-/**
- * Ensures a single <input type="number"> exists just after the text input
- * @param {HTMLElement} container - The container element
- * @param {HTMLInputElement} textInput - The text input element
- * @returns {HTMLInputElement} The number input element
- */
-const ensureNumberInput = (container, textInput) => {
-  let numberInput = container.querySelector('input[type="number"]');
-
-  if (!numberInput) {
-    const updateTextInputValue = (event) => {
-      if (!textInput) {return;}
-      textInput.value = event.target.value;
-    };
-
-    numberInput = createNumberInput(textInput?.value, updateTextInputValue, dom);
-    positionNumberInput(container, textInput, numberInput);
-  }
-
-  return numberInput;
-};
 
 // Ensures a dynamic key/value editor exists just after the given hidden text input.
 // - `container`  : <div class="value"> wrapper

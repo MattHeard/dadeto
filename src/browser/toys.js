@@ -287,6 +287,59 @@ function handleRequestResponse(url, env, options) {
 
 import { isObject } from './common.js';
 
+/**
+ * Creates a number input element with the specified value and change handler
+ * @param {string} value - The initial value for the input
+ * @param {Function} onChange - The callback to execute when the input value changes
+ * @param {Object} dom - The DOM utilities object
+ * @returns {HTMLInputElement} The created number input element
+ */
+export const createNumberInput = (value, onChange, dom) => {
+  const input = createBaseNumberInput(dom);
+  if (value) {input.value = value;}
+  setupInputEvents(input, onChange);
+  return input;
+};
+
+/**
+ * Positions the number input in the DOM relative to the text input
+ * @param {HTMLElement} container - The container element
+ * @param {HTMLInputElement} textInput - The text input element
+ * @param {HTMLInputElement} numberInput - The number input element to position
+ * @returns {void}
+ */
+export const positionNumberInput = (container, textInput, numberInput) => {
+  const nextSibling = textInput?.nextSibling || null;
+  if (nextSibling) {
+    container.insertBefore(numberInput, nextSibling);
+  } else {
+    container.appendChild(numberInput);
+  }
+};
+
+/**
+ * Ensures a single <input type="number"> exists just after the text input
+ * @param {HTMLElement} container - The container element
+ * @param {HTMLInputElement} textInput - The text input element
+ * @param {Object} dom - The DOM utilities object
+ * @returns {HTMLInputElement} The number input element
+ */
+export const ensureNumberInput = (container, textInput, dom) => {
+  let numberInput = container.querySelector('input[type="number"]');
+
+  if (!numberInput) {
+    const updateTextInputValue = (event) => {
+      if (!textInput) {return;}
+      textInput.value = event.target.value;
+    };
+
+    numberInput = createNumberInput(textInput?.value, updateTextInputValue, dom);
+    positionNumberInput(container, textInput, numberInput);
+  }
+
+  return numberInput;
+};
+
 function hasRequestField(val) {
   return Object.prototype.hasOwnProperty.call(val, 'request');
 }
