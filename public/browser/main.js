@@ -34,6 +34,7 @@ import {
   makeIntersectionObserver,
   getClasses,
   getCurrentTime,
+  hasNextSiblingClass,
   getRandomNumber,
   addClass,
   removeAllChildren,
