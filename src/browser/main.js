@@ -31,11 +31,8 @@ import {
   enable,
   hasNoInteractiveComponents,
   getInteractiveComponentCount,
+  getInteractiveComponents,
 } from './document.js';
-
-function getInteractiveComponents(win) {
-  return win.interactiveComponents || [];
-}
 
 function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
   return component => {

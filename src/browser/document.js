@@ -98,3 +98,12 @@ export const getInteractiveComponentCount = (win) => {
   }
 };
 
+/**
+ * Gets the interactive components from the window
+ * @param {Window} win - The window object to get components from
+ * @returns {Array} An array of interactive components, or an empty array if none exist
+ */
+export const getInteractiveComponents = (win) => {
+  return win.interactiveComponents || [];
+};
+
