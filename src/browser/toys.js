@@ -42,6 +42,37 @@ export const maybeRemoveKV = (container) => {
 };
 
 /**
+ * Creates a handler for input dropdown changes
+ * @param {Object} dom - The DOM utilities object
+ * @returns {Function} The event handler function for input dropdown changes
+ */
+export const createInputDropdownHandler = (dom) => {
+  return (event) => {
+    const select = event.currentTarget;
+    const container = select.parentElement; // <div class="value">
+    const textInput = container.querySelector('input[type="text"]');
+
+    if (textInput) {
+      const showText = select.value === 'text';
+      textInput.hidden = !showText;
+      textInput.disabled = !showText;
+    }
+
+    if (select.value === 'number') {
+      maybeRemoveKV(container);
+      ensureNumberInput(container, textInput, dom);
+    } else if (select.value === 'kv') {
+      maybeRemoveNumber(container);
+      ensureKeyValueInput(container, textInput, dom);
+    } else {
+      // 'text' or any other type – clean up specialised inputs
+      maybeRemoveNumber(container);
+      maybeRemoveKV(container);
+    }
+  };
+};
+
+/**
  * Sets up the event listener and disposal for the input
  * @param {HTMLInputElement} input - The input element
  * @param {Function} onChange - The change handler
