@@ -50,6 +50,10 @@ describe('toys', () => {
 
     });
 
+    it('handles dropdown change with empty output data', () => {
+      // Test case will be implemented here
+    });
+
 
 
   });
