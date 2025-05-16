@@ -32,6 +32,7 @@ import {
   disconnectObserver,
   isIntersecting,
   makeIntersectionObserver,
+  getClasses,
   getRandomNumber,
   addClass,
   removeAllChildren,
