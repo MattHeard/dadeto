@@ -179,11 +179,11 @@ const onInputDropdownChange = event => {
     textInput.disabled = !showText;
   }
 
-  const maybeRemoveNumber = () => {
-    const numberInput = container.querySelector('input[type="number"]');
+  const maybeRemoveNumber = (containerElement) => {
+    const numberInput = containerElement.querySelector('input[type="number"]');
     if (numberInput) {
       numberInput._dispose?.();
-      container.removeChild(numberInput);
+      containerElement.removeChild(numberInput);
     }
   };
 
@@ -199,7 +199,7 @@ const onInputDropdownChange = event => {
     maybeRemoveKV();
     ensureNumberInput(container, textInput);
   } else if (select.value === 'kv') {
-    maybeRemoveNumber();
+    maybeRemoveNumber(container);
     ensureKeyValueInput(container, textInput, dom);
   } else {
     // 'text' or any other type – clean up specialised inputs
