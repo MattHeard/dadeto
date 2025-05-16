@@ -63,16 +63,30 @@ describe('toys', () => {
       // Mock getData to return empty output
       const getData = jest.fn(() => ({ output: {} }));
 
+      // Create a mock parent element and mock element to be appended
+      const mockParent = {};
+      const mockElement = {};
+
       // Mock DOM utilities
       const dom = {
-        querySelector: jest.fn(),
+        querySelector: jest.fn(() => mockParent),
         setTextContent: jest.fn(),
         removeAllChildren: jest.fn(),
         appendChild: jest.fn(),
-        createElement: jest.fn()
+        createElement: jest.fn(() => mockElement)
       };
 
       handleDropdownChange(dropdown, getData, dom);
+
+      // Verify the output container was found
+      expect(dom.querySelector).toHaveBeenCalledWith(dropdown.parentNode, 'div.output');
+
+      // Verify the parent was cleared
+      expect(dom.removeAllChildren).toHaveBeenCalledWith(mockParent);
+
+      // Verify a new element was created and appended
+      expect(dom.createElement).toHaveBeenCalled();
+      expect(dom.appendChild).toHaveBeenCalledWith(mockParent, mockElement);
     });
 
 
