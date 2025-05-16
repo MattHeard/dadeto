@@ -76,3 +76,12 @@ export const disconnectObserver = (observer) => {
   observer.disconnect();
 };
 
+/**
+ * Checks if a window has no interactive components
+ * @param {Window} win - The window object to check
+ * @returns {boolean} True if there are no interactive components, false otherwise
+ */
+export const hasNoInteractiveComponents = (win) => {
+  return !win.interactiveComponents || win.interactiveComponents.length === 0;
+};
+

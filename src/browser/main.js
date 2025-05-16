@@ -23,27 +23,15 @@ import {
   error,
   addWarning,
   getRandomNumber,
-  getCurrentTime,
-  setTextContent,
-  disconnectObserver,
-  isIntersecting,
-  hide,
-  pauseAudio,
-  makeIntersectionObserver,
   addClass,
-  getClasses,
-  hasNextSiblingClass,
-  removeNextSibling,
-  removeChild,
   removeAllChildren,
-  removeWarning,
-  contains,
+  setTextContent,
+  removeChild,
+  hide,
   enable,
+  hasNoInteractiveComponents,
 } from './document.js';
 
-function hasNoInteractiveComponents(win) {
-  return !win.interactiveComponents || win.interactiveComponents.length === 0;
-}
 
 function getInteractiveComponentCount(win) {
   if (win.interactiveComponents) {
@@ -209,11 +197,12 @@ const ensureNumberInput = (container, textInput) => {
   let numberInput = container.querySelector('input[type="number"]');
 
   if (!numberInput) {
-    const onValueChange = e => {
-      if (textInput) {textInput.value = e.target.value;}
+    const updateTextInputValue = (event) => {
+      if (!textInput) {return;}
+      textInput.value = event.target.value;
     };
 
-    numberInput = createNumberInput(textInput?.value, onValueChange);
+    numberInput = createNumberInput(textInput?.value, updateTextInputValue);
     positionNumberInput(container, textInput, numberInput);
   }
 
