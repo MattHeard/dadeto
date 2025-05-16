@@ -16,6 +16,7 @@ import {
   getAudioElements,
   getElementsByTagName,
   pauseAudio,
+  removeNextSibling,
   hasClass,
   querySelector,
   removeControlsAttribute,
