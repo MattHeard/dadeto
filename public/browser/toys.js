@@ -5,6 +5,47 @@ import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolit
 import { createBattleshipCluesBoardElement } from '../presenters/battleshipSolitaireClues.js';
 
 /**
+ * Creates a basic number input element
+ * @param {Object} dom - The DOM utilities object
+ * @returns {HTMLInputElement} The created input element
+ */
+export const createBaseNumberInput = (dom) => {
+  const input = dom.createElement('input');
+  input.type = 'number';
+  return input;
+};
+
+/**
+ * Sets up the event listener and disposal for the input
+ * @param {HTMLInputElement} input - The input element
+ * @param {Function} onChange - The change handler
+ * @returns {void}
+ */
+export const setupInputEvents = (input, onChange) => {
+  input.addEventListener('input', onChange);
+  input._dispose = () => input.removeEventListener('input', onChange);
+};
+
+/**
+ * Creates a component initializer function for setting up intersection observers.
+ * @param {Function} getElement - Function to get an element by ID
+ * @param {Function} logWarning - Function to log warnings
+ * @param {Function} createIntersectionObserver - Function to create an intersection observer
+ * @returns {Function} A function that initializes a component with an intersection observer
+ */
+export function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
+  return component => {
+    const article = getElement(component.id);
+    if (!article) {
+      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
+      return;
+    }
+    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
+    observer.observe(article);
+  };
+}
+
+/**
  * Handles dropdown changes for toy output selection.
  * Logs the selected value and article ID.
  * @param {Event} event - The change event from the dropdown.

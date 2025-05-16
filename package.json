@@ -7,6 +7,7 @@
     "generate": "node generate.js",
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
     "tcr": "./tcr.sh",
+    "build-and-tcr": "npm run build && npm run tcr",
     "stryker": "node --experimental-vm-modules ./node_modules/.bin/stryker run > reports/mutation/text/mutation.txt",
     "lint": "npx eslint . --fix --no-color --format=stylish -o reports/lint/lint.txt; cat reports/lint/lint.txt",
     "copy": "node src/generator/copy.js",

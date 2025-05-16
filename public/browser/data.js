@@ -264,11 +264,10 @@ export const getData = (state, fetch, loggers) => {
  */
 export const setData = (state, loggers) => {
   const { desired, current } = state;
-  const { logInfo, logError } = loggers;
+  const { logError } = loggers;
   // Validate incoming state
   validateIncomingState(desired, logError);
   const oldBlogState = getBlogState(current);
   Object.assign(current, desired);
   restoreBlogState(current, oldBlogState);
-  logInfo('Global state updated:', current);
 };

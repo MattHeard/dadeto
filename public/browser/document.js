@@ -76,3 +76,34 @@ export const disconnectObserver = (observer) => {
   observer.disconnect();
 };
 
+/**
+ * Checks if a window has no interactive components
+ * @param {Window} win - The window object to check
+ * @returns {boolean} True if there are no interactive components, false otherwise
+ */
+export const hasNoInteractiveComponents = (win) => {
+  return !win.interactiveComponents || win.interactiveComponents.length === 0;
+};
+
+/**
+ * Gets the count of interactive components in the window
+ * @param {Window} win - The window object to check
+ * @returns {number} The count of interactive components, or 0 if none exist
+ */
+export const getInteractiveComponentCount = (win) => {
+  if (win.interactiveComponents) {
+    return win.interactiveComponents.length;
+  } else {
+    return 0;
+  }
+};
+
+/**
+ * Gets the interactive components from the window
+ * @param {Window} win - The window object to get components from
+ * @returns {Array} An array of interactive components, or an empty array if none exist
+ */
+export const getInteractiveComponents = (win) => {
+  return win.interactiveComponents || [];
+};
+

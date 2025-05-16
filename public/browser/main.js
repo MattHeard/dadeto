@@ -3,7 +3,14 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
-import { makeCreateIntersectionObserver, initializeVisibleComponents, handleDropdownChange } from './toys.js';
+import {
+  makeCreateIntersectionObserver,
+  initializeVisibleComponents,
+  handleDropdownChange,
+  getComponentInitializer,
+  createBaseNumberInput,
+  setupInputEvents
+} from './toys.js';
 import {
   getElementById,
   getAudioElements,
@@ -23,51 +30,16 @@ import {
   error,
   addWarning,
   getRandomNumber,
-  getCurrentTime,
-  setTextContent,
-  disconnectObserver,
-  isIntersecting,
-  hide,
-  pauseAudio,
-  makeIntersectionObserver,
   addClass,
-  getClasses,
-  hasNextSiblingClass,
-  removeNextSibling,
-  removeChild,
   removeAllChildren,
-  removeWarning,
-  contains,
+  setTextContent,
+  removeChild,
+  hide,
   enable,
+  hasNoInteractiveComponents,
+  getInteractiveComponentCount,
+  getInteractiveComponents,
 } from './document.js';
-
-function hasNoInteractiveComponents(win) {
-  return !win.interactiveComponents || win.interactiveComponents.length === 0;
-}
-
-function getInteractiveComponentCount(win) {
-  if (win.interactiveComponents) {
-    return win.interactiveComponents.length;
-  } else {
-    return 0;
-  }
-}
-
-function getInteractiveComponents(win) {
-  return win.interactiveComponents || [];
-}
-
-function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
-  return component => {
-    const article = getElement(component.id);
-    if (!article) {
-      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
-      return;
-    }
-    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
-    observer.observe(article);
-  };
-}
 
 
 const globalState = {
@@ -149,33 +121,57 @@ const dom = {
 };
 const env = { globalState, createEnv, error, fetch, loggers };
 
-// Ensures a single <input type="number"> exists just after the text input
+
+
+/**
+ * Creates a number input element with the specified value and change handler
+ * @param {string} value - The initial value for the input
+ * @param {Function} onChange - The callback to execute when the input value changes
+ * @param {Object} dom - The DOM utilities object
+ * @returns {HTMLInputElement} The created number input element
+ */
+const createNumberInput = (value, onChange, dom) => {
+  const input = createBaseNumberInput(dom);
+  if (value) {input.value = value;}
+  setupInputEvents(input, onChange);
+  return input;
+};
+
+/**
+ * Positions the number input in the DOM relative to the text input
+ * @param {HTMLElement} container - The container element
+ * @param {HTMLInputElement} textInput - The text input element
+ * @param {HTMLInputElement} numberInput - The number input element to position
+ * @returns {void}
+ */
+const positionNumberInput = (container, textInput, numberInput) => {
+  const nextSibling = textInput?.nextSibling || null;
+  if (nextSibling) {
+    container.insertBefore(numberInput, nextSibling);
+  } else {
+    container.appendChild(numberInput);
+  }
+};
+
+/**
+ * Ensures a single <input type="number"> exists just after the text input
+ * @param {HTMLElement} container - The container element
+ * @param {HTMLInputElement} textInput - The text input element
+ * @returns {HTMLInputElement} The number input element
+ */
 const ensureNumberInput = (container, textInput) => {
   let numberInput = container.querySelector('input[type="number"]');
+
   if (!numberInput) {
-    numberInput = dom.createElement('input');
-    numberInput.type = 'number';
-
-    // install value-change listener and stash a disposer
-    const onValueChange = e => {
-      const val = e.target.value;
-      if (textInput) {textInput.value = val;}
-    };
-    numberInput.addEventListener('input', onValueChange);
-    numberInput._dispose = () => {
-      numberInput.removeEventListener('input', onValueChange);
+    const updateTextInputValue = (event) => {
+      if (!textInput) {return;}
+      textInput.value = event.target.value;
     };
 
-    // initialize number input from existing text value
-    if (textInput) {numberInput.value = textInput.value;}
-
-    // keep DOM order stable: place right after the text input
-    if (textInput && textInput.nextSibling) {
-      container.insertBefore(numberInput, textInput.nextSibling);
-    } else {
-      container.appendChild(numberInput);
-    }
+    numberInput = createNumberInput(textInput?.value, updateTextInputValue, dom);
+    positionNumberInput(container, textInput, numberInput);
   }
+
   return numberInput;
 };
 
