@@ -4,8 +4,6 @@ import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
 import {
-  maybeRemoveNumber,
-  maybeRemoveKV,
   createOutputDropdownHandler,
   createInputDropdownHandler
 } from './toys.js';
@@ -177,13 +175,15 @@ const onInputDropdownChange = createInputDropdownHandler(dom);
 
 window.addEventListener('DOMContentLoaded', () => {
   const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
-  outputDropdowns.forEach(dropdown => {
+  const addOutputDropdownListener = dropdown => {
     dropdown.addEventListener('change', onOutputDropdownChange);
-  });
+  };
+  outputDropdowns.forEach(addOutputDropdownListener);
 
   // Add event listeners to toy input dropdowns
   const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
-  inputDropdowns.forEach(dropdown => {
+  const addInputDropdownListener = dropdown => {
     dropdown.addEventListener('change', onInputDropdownChange);
-  });
+  };
+  inputDropdowns.forEach(addInputDropdownListener);
 });
