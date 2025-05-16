@@ -176,15 +176,9 @@ const ensureKeyValueInput = (container, textInput) => {
   // ---------------------------------------------------------------------
   // Renderer
   // ---------------------------------------------------------------------
-  /**
-   * Renders the key-value editor UI
-   * @param {Object} dom - The DOM utilities object
-   * @param {HTMLElement} container - The container element to render into
-   * @returns {void}
-   */
-  const render = (dom, container) => {
+  const render = () => {
     clearDisposers();
-    dom.removeAllChildren(container);
+    dom.removeAllChildren(kvContainer);
 
     // If no keys, add a single empty row
     if (Object.keys(rows).length === 0) {
@@ -212,9 +206,6 @@ const ensureKeyValueInput = (container, textInput) => {
           syncHiddenField(textInput, rows);
           return;
         }
-
-        // Rerender to reflect changes
-        render(dom, kvContainer);
 
         // If the new key is non‑empty and unique, migrate the value.
         if (newKey !== '' && !(newKey in rows)) {
@@ -253,7 +244,7 @@ const ensureKeyValueInput = (container, textInput) => {
           // Add a new empty key only if there isn't already one
           if (!Object.prototype.hasOwnProperty.call(rows, '')) {
             rows[''] = '';
-            render(dom, kvContainer);
+            render();
           }
         };
         btnEl.addEventListener('click', onAdd);
@@ -263,7 +254,7 @@ const ensureKeyValueInput = (container, textInput) => {
         const onRemove = e => {
           e.preventDefault();
           delete rows[key];
-          render(dom, kvContainer);
+          render();
         };
         btnEl.addEventListener('click', onRemove);
         disposers.push(() => btnEl.removeEventListener('click', onRemove));
@@ -294,7 +285,7 @@ const ensureKeyValueInput = (container, textInput) => {
     }
   } catch { /* ignore parse errors */ }
 
-  render(dom, kvContainer);
+  render();
 
   // Public API for cleanup by parent code
   kvContainer._dispose = () => {
