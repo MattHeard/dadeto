@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747385015802" clover="3.2.0">
-  <project timestamp="1747385015802" name="All files">
-    <metrics statements="1486" coveredstatements="1474" conditionals="448" coveredconditionals="446" methods="609" coveredmethods="604" elements="2543" coveredelements="2524" complexity="0" loc="1486" ncloc="1486" packages="17" files="34" classes="34"/>
+<coverage generated="1747385182015" clover="3.2.0">
+  <project timestamp="1747385182015" name="All files">
+    <metrics statements="1485" coveredstatements="1473" conditionals="448" coveredconditionals="446" methods="609" coveredmethods="604" elements="2542" coveredelements="2523" complexity="0" loc="1485" ncloc="1485" packages="17" files="34" classes="34"/>
     <package name="browser">
-      <metrics statements="344" coveredstatements="332" conditionals="66" coveredconditionals="64" methods="116" coveredmethods="111"/>
+      <metrics statements="343" coveredstatements="331" conditionals="66" coveredconditionals="64" methods="116" coveredmethods="111"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -67,7 +67,7 @@
         <line num="13" count="51" type="cond" truecount="2" falsecount="0"/>
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
-        <metrics statements="83" coveredstatements="83" conditionals="32" coveredconditionals="32" methods="32" coveredmethods="32"/>
+        <metrics statements="82" coveredstatements="82" conditionals="32" coveredconditionals="32" methods="32" coveredmethods="32"/>
         <line num="1" count="3" type="stmt"/>
         <line num="3" count="3" type="stmt"/>
         <line num="11" count="21" type="stmt"/>
@@ -150,7 +150,6 @@
         <line num="270" count="1" type="stmt"/>
         <line num="271" count="1" type="stmt"/>
         <line num="272" count="1" type="stmt"/>
-        <line num="273" count="1" type="stmt"/>
       </file>
       <file name="setOutput.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/setOutput.js">
         <metrics statements="19" coveredstatements="19" conditionals="4" coveredconditionals="4" methods="4" coveredmethods="4"/>
