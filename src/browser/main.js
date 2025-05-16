@@ -11,7 +11,8 @@ import {
   createAddDropdownListener,
   handleDropdownChange,
   getComponentInitializer,
-  makeCreateIntersectionObserver
+  makeCreateIntersectionObserver,
+  initializeVisibleComponents
 } from './toys.js';
 
 import {
