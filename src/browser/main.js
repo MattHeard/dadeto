@@ -159,9 +159,11 @@ setupAudio(dom);
 
 // Add event listeners to toy output dropdowns
 
+const getDataCallback = () => getData(globalState, fetch, loggers);
+
 const onOutputDropdownChange = event => handleDropdownChange(
   event.currentTarget,
-  () => getData(globalState, fetch, loggers),
+  getDataCallback,
   dom
 );
 
