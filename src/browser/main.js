@@ -4,14 +4,16 @@ import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
 import { pauseAudio, removeNextSibling, removeWarning, contains } from './document.js'; // Added imports for pauseAudio, removeNextSibling, removeWarning, and contains
-import { createNumberInput, positionNumberInput, ensureNumberInput } from './toys.js'; // Import number input related functions
+import {
+  createNumberInput,
+  positionNumberInput,
+  ensureNumberInput
+} from './toys.js'; // Import number input related functions
 import {
   makeCreateIntersectionObserver,
   initializeVisibleComponents,
   handleDropdownChange,
   getComponentInitializer,
-  createBaseNumberInput,
-  setupInputEvents
 } from './toys.js';
 import {
   getElementById,
