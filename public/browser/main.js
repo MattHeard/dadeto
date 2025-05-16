@@ -203,7 +203,7 @@ const onInputDropdownChange = event => {
     ensureKeyValueInput(container, textInput, dom);
   } else {
     // 'text' or any other type – clean up specialised inputs
-    maybeRemoveNumber();
+    maybeRemoveNumber(container);
     maybeRemoveKV();
   }
 };
