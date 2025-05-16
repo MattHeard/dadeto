@@ -150,17 +150,36 @@ const dom = {
 const env = { globalState, createEnv, error, fetch, loggers };
 
 /**
+ * Creates a basic number input element
+ * @returns {HTMLInputElement} The created input element
+ */
+const createBaseNumberInput = () => {
+  const input = dom.createElement('input');
+  input.type = 'number';
+  return input;
+};
+
+/**
+ * Sets up the event listener and disposal for the input
+ * @param {HTMLInputElement} input - The input element
+ * @param {Function} onChange - The change handler
+ * @returns {void}
+ */
+const setupInputEvents = (input, onChange) => {
+  input.addEventListener('input', onChange);
+  input._dispose = () => input.removeEventListener('input', onChange);
+};
+
+/**
  * Creates a number input element with the specified value and change handler
  * @param {string} value - The initial value for the input
  * @param {Function} onChange - The callback to execute when the input value changes
  * @returns {HTMLInputElement} The created number input element
  */
 const createNumberInput = (value, onChange) => {
-  const input = dom.createElement('input');
-  input.type = 'number';
+  const input = createBaseNumberInput();
   if (value) {input.value = value;}
-  input.addEventListener('input', onChange);
-  input._dispose = () => input.removeEventListener('input', onChange);
+  setupInputEvents(input, onChange);
   return input;
 };
 
