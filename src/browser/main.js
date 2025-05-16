@@ -7,7 +7,8 @@ import {
   makeCreateIntersectionObserver,
   initializeVisibleComponents,
   handleDropdownChange,
-  getComponentInitializer
+  getComponentInitializer,
+  createBaseNumberInput
 } from './toys.js';
 import {
   getElementById,
@@ -119,16 +120,6 @@ const dom = {
 };
 const env = { globalState, createEnv, error, fetch, loggers };
 
-/**
- * Creates a basic number input element
- * @param {Object} dom - The DOM utilities object
- * @returns {HTMLInputElement} The created input element
- */
-const createBaseNumberInput = (dom) => {
-  const input = dom.createElement('input');
-  input.type = 'number';
-  return input;
-};
 
 /**
  * Sets up the event listener and disposal for the input

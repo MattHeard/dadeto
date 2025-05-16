@@ -5,6 +5,17 @@ import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolit
 import { createBattleshipCluesBoardElement } from '../presenters/battleshipSolitaireClues.js';
 
 /**
+ * Creates a basic number input element
+ * @param {Object} dom - The DOM utilities object
+ * @returns {HTMLInputElement} The created input element
+ */
+export const createBaseNumberInput = (dom) => {
+  const input = dom.createElement('input');
+  input.type = 'number';
+  return input;
+};
+
+/**
  * Creates a component initializer function for setting up intersection observers.
  * @param {Function} getElement - Function to get an element by ID
  * @param {Function} logWarning - Function to log warnings
