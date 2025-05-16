@@ -19,6 +19,7 @@ import {
   getElementById,
   getAudioElements,
   getElementsByTagName,
+  pauseAudio,
   hasClass,
   querySelector,
   removeControlsAttribute,

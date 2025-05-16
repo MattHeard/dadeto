@@ -6,19 +6,16 @@ import {
 import {
   ensureKeyValueInput,
   ensureNumberInput,
-  makeCreateIntersectionObserver,
   initializeVisibleComponents,
   handleDropdownChange,
   getComponentInitializer,
-  createNumberInput,
-  positionNumberInput,
-  syncHiddenField,
 } from './toys.js';
 
 import {
   getElementById,
   getAudioElements,
   getElementsByTagName,
+  pauseAudio,
   hasClass,
   querySelector,
   removeControlsAttribute,
