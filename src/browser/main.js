@@ -30,6 +30,7 @@ import {
   error,
   addWarning,
   disconnectObserver,
+  isIntersecting,
   getRandomNumber,
   addClass,
   removeAllChildren,
