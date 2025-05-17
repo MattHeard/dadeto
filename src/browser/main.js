@@ -173,7 +173,7 @@ const onOutputDropdownChange = createOutputDropdownHandler(
 
 const onInputDropdownChange = createInputDropdownHandler(dom);
 
-const initializeDropdowns = createDropdownInitializer(document, onOutputDropdownChange, onInputDropdownChange);
+const initializeDropdowns = createDropdownInitializer(document, onOutputDropdownChange, onInputDropdownChange, dom);
 
 // Initialize dropdowns after DOM is loaded
 window.addEventListener('DOMContentLoaded', () => {
