@@ -46,10 +46,10 @@
    887:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
    888:7   warning  Ternary operator used                                       no-ternary
    892:7   warning  Ternary operator used                                       no-ternary
-   990:41  warning  Ternary operator used                                       no-ternary
    991:41  warning  Ternary operator used                                       no-ternary
-   999:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  1000:7   warning  Ternary operator used                                       no-ternary
-  1004:7   warning  Ternary operator used                                       no-ternary
+   992:41  warning  Ternary operator used                                       no-ternary
+  1000:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  1001:7   warning  Ternary operator used                                       no-ternary
+  1005:7   warning  Ternary operator used                                       no-ternary
 
 ✖ 35 problems (0 errors, 35 warnings)

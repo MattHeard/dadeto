@@ -901,6 +901,7 @@ describe('createInputDropdownHandler when select value is text', () => {
 
     // Create DOM mock object
     dom = {
+      createElement: jest.fn(() => ({ type: "number", _dispose: jest.fn() })),
       getCurrentTarget,
       getParentElement,
       querySelector,
@@ -1013,6 +1014,7 @@ describe('createInputDropdownHandler when select value is number', () => {
 
     // Create DOM mock object
     dom = {
+      createElement: jest.fn(() => ({ type: "number", _dispose: jest.fn() })),
       getCurrentTarget,
       getParentElement,
       querySelector,
