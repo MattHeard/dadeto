@@ -855,7 +855,7 @@ describe('toys', () => {
 
 describe('createInputDropdownHandler', () => {
   // Shared test data and setup
-  let event, select, container, textInput, numberInput, kvContainer;
+  let event, select, container, textInput, numberInput, kvContainer, baseDom;
   let getCurrentTarget, getParentElement, querySelector;
   let reveal, enable, hide, disable, removeChild;
 
@@ -893,6 +893,19 @@ describe('createInputDropdownHandler', () => {
     hide = jest.fn();
     disable = jest.fn();
     removeChild = jest.fn();
+
+    // Create base DOM object with common functions
+    baseDom = {
+      getCurrentTarget,
+      getParentElement,
+      querySelector,
+      reveal,
+      enable,
+      hide,
+      disable,
+      removeChild,
+      createElement: jest.fn()
+    };
   });
 
   describe('when select value is text', () => {
@@ -905,17 +918,10 @@ describe('createInputDropdownHandler', () => {
         element === select ? selectValue : null
       );
 
-      // Create DOM mock object
+      // Create DOM mock object by extending baseDom
       dom = {
-        getCurrentTarget,
-        getParentElement,
-        querySelector,
-        getValue,
-        reveal,
-        enable,
-        hide,
-        disable,
-        removeChild
+        ...baseDom,
+        getValue
       };
 
       // Create the handler with the mocked DOM
@@ -981,17 +987,10 @@ describe('createInputDropdownHandler', () => {
         element === select ? selectValue : null
       );
 
-      // Create DOM mock object
+      // Create DOM mock object by extending baseDom
       dom = {
-        getCurrentTarget,
-        getParentElement,
-        querySelector,
-        getValue,
-        reveal,
-        enable,
-        hide,
-        disable,
-        removeChild
+        ...baseDom,
+        getValue
       };
 
       // Create the handler with the mocked DOM
