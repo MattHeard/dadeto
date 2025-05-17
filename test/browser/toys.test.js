@@ -901,7 +901,6 @@ describe('createInputDropdownHandler', () => {
 
     // Create DOM mock object
     dom = {
-      createElement: jest.fn(() => ({ type: "number", _dispose: jest.fn() })),
       getCurrentTarget,
       getParentElement,
       querySelector,
