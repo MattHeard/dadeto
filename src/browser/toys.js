@@ -44,10 +44,11 @@ const maybeRemoveKV = (container) => {
 
 /**
  * Creates a handler for input dropdown changes
+ * @param {Function} onChange - The change handler function
  * @param {Object} dom - The DOM utilities object
  * @returns {Function} The event handler function for input dropdown changes
  */
-export const createAddDropdownListener = (onChange) => dropdown => {
+export const createAddDropdownListener = (onChange, dom) => dropdown => {
   dropdown.addEventListener('change', onChange);
 };
 
@@ -801,11 +802,11 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 export const createDropdownInitializer = (document, onOutputChange, onInputChange) => {
   return () => {
     const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
-    outputDropdowns.forEach(createAddDropdownListener(onOutputChange));
+    outputDropdowns.forEach(createAddDropdownListener(onOutputChange, dom));
 
     // Add event listeners to toy input dropdowns
     const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
-    inputDropdowns.forEach(createAddDropdownListener(onInputChange));
+    inputDropdowns.forEach(createAddDropdownListener(onInputChange, dom));
   };
 };
 
