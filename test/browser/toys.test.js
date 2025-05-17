@@ -999,16 +999,19 @@ describe('createInputDropdownHandler', () => {
         element === select ? selectValue : null
       );
 
+      // Create createElement mock
+      const createElement = jest.fn((tagName) => {
+        if (tagName === "input") {
+          return numberInput;
+        }
+        return null;
+      });
+
       // Create DOM mock object by extending baseDom
       dom = {
         ...baseDom,
         getValue,
-        createElement: jest.fn((tagName) => {
-          if (tagName === "input") {
-            return numberInput;
-          }
-          return null;
-        })
+        createElement
       };
       // Create the handler with the mocked DOM
       handler = createInputDropdownHandler(dom);
