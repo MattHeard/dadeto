@@ -888,10 +888,6 @@ describe('createInputDropdownHandler', () => {
       parent === container ? selectorMap.get(selector) || null : null
     );
 
-    getValue = jest.fn((element) =>
-      element === select ? selectValue : null
-    );
-
     // Mock DOM manipulation functions
     reveal = jest.fn();
     enable = jest.fn();
@@ -904,6 +900,11 @@ describe('createInputDropdownHandler', () => {
     let handler, dom;
 
     beforeEach(() => {
+      // Create mocks
+      const getValue = jest.fn((element) =>
+        element === select ? selectValue : null
+      );
+
       // Create DOM mock object
       dom = {
         getCurrentTarget,
