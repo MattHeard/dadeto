@@ -892,6 +892,7 @@ describe('createInputDropdownHandler', () => {
     const handler = createInputDropdownHandler(dom);
     handler(event);
 
-    // Assertions will be added here
+    // Assert
+    expect(reveal).toHaveBeenCalledWith(textInput);
   });
 });
