@@ -40,6 +40,7 @@ import {
   addWarning,
   disconnectObserver,
   isIntersecting,
+  getCurrentTarget,
   makeIntersectionObserver,
   getClasses,
   getCurrentTime,
@@ -132,7 +133,8 @@ const dom = {
   removeChild,
   removeWarning,
   contains,
-  removeAllChildren
+  removeAllChildren,
+  getCurrentTarget
 };
 const env = { globalState, createEnv, error: logError, fetch, loggers };
 
