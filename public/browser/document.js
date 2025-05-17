@@ -98,9 +98,7 @@ export const removeNextSibling = link => link.nextElementSibling && link.nextEle
  * @param {string} type - The type to set (e.g., 'text', 'number', 'email')
  */
 export const setType = (element, type) => {
-  if (element) {
-    element.type = type;
-  }
+  element.type = type;
 };
 
 export const setTextContent = (element, content) => {
