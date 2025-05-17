@@ -853,7 +853,7 @@ describe('toys', () => {
   });
 });
 
-describe('createInputDropdownHandler', () => {
+describe('createInputDropdownHandler when select value is text', () => {
   // Shared test data and setup
   let event, select, container, textInput, numberInput, kvContainer, selectValue;
   let getCurrentTarget, getParentElement, querySelector, getValue;
