@@ -20,7 +20,8 @@ import {
   initializeInteractiveComponent,
   handleModuleError,
   handleDropdownChange,
-  createAddDropdownListener
+  createAddDropdownListener,
+  createInputDropdownHandler
 } from '../../src/browser/toys.js';
 
 describe('createAddDropdownListener', () => {
