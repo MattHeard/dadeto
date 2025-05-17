@@ -855,7 +855,7 @@ describe('toys', () => {
 
 describe('createInputDropdownHandler', () => {
   // Shared test data and setup
-  let event, select, container, textInput, numberInput, kvContainer, selectValue;
+  let event, select, container, textInput, numberInput, kvContainer;
   let getCurrentTarget, getParentElement, querySelector, getValue;
   let reveal, enable, hide, disable, removeChild, dom, handler;
 
@@ -867,7 +867,6 @@ describe('createInputDropdownHandler', () => {
     textInput = {};
     numberInput = { _dispose: jest.fn() };
     kvContainer = { _dispose: jest.fn() };
-    selectValue = 'text';
 
     // Mock container with querySelector
     container = {
@@ -901,6 +900,7 @@ describe('createInputDropdownHandler', () => {
 
     beforeEach(() => {
       // Create mocks
+      const selectValue = 'text';
       const getValue = jest.fn((element) =>
         element === select ? selectValue : null
       );
