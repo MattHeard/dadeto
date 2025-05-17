@@ -877,6 +877,7 @@ describe('createInputDropdownHandler', () => {
     const hide = jest.fn();
     const disable = jest.fn();
 
+    const removeChild = jest.fn();
     const dom = {
       getCurrentTarget,
       getParentElement,
@@ -885,7 +886,8 @@ describe('createInputDropdownHandler', () => {
       reveal,
       enable,
       hide,
-      disable
+      disable,
+      removeChild
     };
 
     // Act
