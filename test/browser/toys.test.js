@@ -856,7 +856,8 @@ describe('toys', () => {
 describe('createInputDropdownHandler', () => {
   it('handles input dropdown changes', () => {
     // Arrange
-    const getCurrentTarget = jest.fn(() => null);
+    const select = {};
+    const getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
     const dom = {
       getCurrentTarget,
       getParentElement: jest.fn(),
