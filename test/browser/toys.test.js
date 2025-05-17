@@ -903,5 +903,6 @@ describe('createInputDropdownHandler', () => {
     expect(reveal).toHaveBeenCalledWith(textInput);
     expect(enable).toHaveBeenCalledWith(textInput);
     expect(numberInput._dispose).toHaveBeenCalled();
+    expect(removeChild).toHaveBeenCalledWith(container, numberInput);
   });
 });
