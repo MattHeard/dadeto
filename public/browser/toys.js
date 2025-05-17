@@ -411,7 +411,7 @@ const positionNumberInput = (container, textInput, numberInput) => {
  * @returns {HTMLInputElement} The number input element
  */
 export const ensureNumberInput = (container, textInput, dom) => {
-  let numberInput = container.querySelector('input[type="number"]');
+  let numberInput = dom.querySelector(container, 'input[type="number"]');
 
   if (!numberInput) {
     const updateTextInputValue = (event) => {
