@@ -856,8 +856,8 @@ describe('toys', () => {
 describe('createInputDropdownHandler', () => {
   // Shared test data and setup
   let event, select, container, textInput, numberInput, kvContainer;
-  let getCurrentTarget, getParentElement, querySelector, getValue;
-  let reveal, enable, hide, disable, removeChild, dom, handler;
+  let getCurrentTarget, getParentElement, querySelector;
+  let reveal, enable, hide, disable, removeChild;
 
   beforeEach(() => {
     // Given
