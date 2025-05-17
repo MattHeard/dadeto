@@ -10,13 +10,13 @@
    24:27  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
    37:23  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
    56:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  126:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
-  384:29  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  400:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
-  616:25  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
-  633:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
-  682:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  802:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
+  128:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
+  386:29  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  402:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
+  618:25  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
+  635:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
+  684:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  804:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity

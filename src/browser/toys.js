@@ -58,16 +58,18 @@ export const createInputDropdownHandler = (dom) => {
     const container = dom.getParentElement(select); // <div class="value">
     const textInput = dom.querySelector(container, 'input[type="text"]');
 
+    const selectValue = dom.getValue(select);
+
     if (textInput) {
-      const showText = select.value === 'text';
+      const showText = selectValue === 'text';
       textInput.hidden = !showText;
       textInput.disabled = !showText;
     }
 
-    if (select.value === 'number') {
+    if (selectValue === 'number') {
       maybeRemoveKV(container);
       ensureNumberInput(container, textInput, dom);
-    } else if (select.value === 'kv') {
+    } else if (selectValue === 'kv') {
       maybeRemoveNumber(container, dom);
       ensureKeyValueInput(container, textInput, dom);
     } else {
