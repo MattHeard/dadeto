@@ -32,13 +32,14 @@ const maybeRemoveNumber = (containerElement, dom) => {
 /**
  * Removes a key-value input container if it exists
  * @param {HTMLElement} container - The container element to search in
+ * @param {Object} dom - The DOM utilities object
  * @returns {void}
  */
-const maybeRemoveKV = (container) => {
-  const kvContainer = container.querySelector('.kv-container');
+const maybeRemoveKV = (container, dom) => {
+  const kvContainer = dom.querySelector(container, '.kv-container');
   if (kvContainer) {
     kvContainer._dispose?.();
-    container.removeChild(kvContainer);
+    dom.removeChild(container, kvContainer);
   }
 };
 
@@ -71,7 +72,7 @@ export const createInputDropdownHandler = (dom) => {
     }
 
     if (selectValue === 'number') {
-      maybeRemoveKV(container);
+      maybeRemoveKV(container, dom);
       ensureNumberInput(container, textInput, dom);
     } else if (selectValue === 'kv') {
       maybeRemoveNumber(container, dom);
@@ -79,7 +80,7 @@ export const createInputDropdownHandler = (dom) => {
     } else {
       // 'text' or any other type – clean up specialised inputs
       maybeRemoveNumber(container, dom);
-      maybeRemoveKV(container);
+      maybeRemoveKV(container, dom);
     }
   };
 };
