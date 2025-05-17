@@ -67,11 +67,11 @@ export const createInputDropdownHandler = (dom) => {
       maybeRemoveKV(container);
       ensureNumberInput(container, textInput, dom);
     } else if (select.value === 'kv') {
-      maybeRemoveNumber(container);
+      maybeRemoveNumber(container, dom);
       ensureKeyValueInput(container, textInput, dom);
     } else {
       // 'text' or any other type – clean up specialised inputs
-      maybeRemoveNumber(container);
+      maybeRemoveNumber(container, dom);
       maybeRemoveKV(container);
     }
   };
