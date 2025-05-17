@@ -6,6 +6,7 @@ import {
   jest
 } from '@jest/globals';
 import {
+  createBaseNumberInput,
   makeObserverCallback,
   makeCreateIntersectionObserver,
   enableInteractiveControls,
@@ -19,6 +20,23 @@ import {
 } from '../../src/browser/toys.js';
 
 describe('toys', () => {
+  describe('createBaseNumberInput', () => {
+    it('creates a number input element with the correct type', () => {
+      // Mock the DOM utilities
+      const mockCreateElement = jest.fn(() => ({}));
+      const dom = {
+        createElement: mockCreateElement
+      };
+
+      // Call the function
+      const result = createBaseNumberInput(dom);
+
+      // Assertions
+      expect(mockCreateElement).toHaveBeenCalledWith('input');
+      expect(result.type).toBe('number');
+    });
+  });
+
   describe('handleDropdownChange', () => {
     it('logs the correct postId and selectedValue when dropdown changes', () => {
       // Mock dropdown and article
