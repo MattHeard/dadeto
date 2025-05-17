@@ -414,16 +414,25 @@ export const ensureNumberInput = (container, textInput, dom) => {
   let numberInput = dom.querySelector(container, 'input[type="number"]');
 
   if (!numberInput) {
-    const updateTextInputValue = (event) => {
-      if (!textInput) {return;}
-      textInput.value = event.target.value;
-    };
-
-    numberInput = createNumberInput(textInput?.value, updateTextInputValue, dom);
+    numberInput = createNumberInput(
+      textInput?.value,
+      createUpdateTextInputValue(textInput),
+      dom
+    );
     positionNumberInput(container, textInput, numberInput);
   }
 
   return numberInput;
+};
+
+/**
+ * Creates an event handler that updates a text input's value from an event
+ * @param {HTMLInputElement|null} textInput - The text input element to update
+ * @returns {Function} An event handler function
+ */
+export const createUpdateTextInputValue = (textInput) => (event) => {
+  if (!textInput) { return; }
+  textInput.value = event.target.value;
 };
 
 function hasRequestField(val) {

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.23% </span>
+                <span class="strong">57.36% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>182/318</span>
+                <span class='fraction'>183/319</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">67.46% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>56/83</span>
+                <span class='fraction'>56/84</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">58.66% </span>
+                <span class="strong">59% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>176/300</span>
+                <span class='fraction'>177/300</span>
             </div>
         
             
@@ -892,7 +892,16 @@
 <a name='L827'></a><a href='#L827'>827</a>
 <a name='L828'></a><a href='#L828'>828</a>
 <a name='L829'></a><a href='#L829'>829</a>
-<a name='L830'></a><a href='#L830'>830</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L830'></a><a href='#L830'>830</a>
+<a name='L831'></a><a href='#L831'>831</a>
+<a name='L832'></a><a href='#L832'>832</a>
+<a name='L833'></a><a href='#L833'>833</a>
+<a name='L834'></a><a href='#L834'>834</a>
+<a name='L835'></a><a href='#L835'>835</a>
+<a name='L836'></a><a href='#L836'>836</a>
+<a name='L837'></a><a href='#L837'>837</a>
+<a name='L838'></a><a href='#L838'>838</a>
+<a name='L839'></a><a href='#L839'>839</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1309,15 +1318,24 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2137,16 +2155,25 @@ export const ensureNumberInput = (container, textInput, dom) =&gt; {
   let numberInput = dom.querySelector(container, 'input[type="number"]');
 &nbsp;
   <span class="missing-if-branch" title="if path not taken" >I</span>if (!numberInput) {
-    const updateTextInputValue = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>vent) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      if (!textInput) {<span class="cstat-no" title="statement not covered" >return;}</span></span>
-<span class="cstat-no" title="statement not covered" >      textInput.value = event.target.value;</span>
-    };
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    numberInput = createNumberInput(textInput?.value, updateTextInputValue, dom);</span>
+<span class="cstat-no" title="statement not covered" >    numberInput = createNumberInput(</span>
+      textInput?.value, 
+      createUpdateTextInputValue(textInput), 
+      dom
+    );
 <span class="cstat-no" title="statement not covered" >    positionNumberInput(container, textInput, numberInput);</span>
   }
 &nbsp;
   return numberInput;
+};
+&nbsp;
+/**
+ * Creates an event handler that updates a text input's value from an event
+ * @param {HTMLInputElement|null} textInput - The text input element to update
+ * @returns {Function} An event handler function
+ */
+export const createUpdateTextInputValue = <span class="fstat-no" title="function not covered" >(t</span>extInput) =&gt; <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>vent) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  if (!textInput) { <span class="cstat-no" title="statement not covered" >return; </span>}</span>
+<span class="cstat-no" title="statement not covered" >  textInput.value = event.target.value;</span>
 };
 &nbsp;
 function hasRequestField(val) {
@@ -2557,7 +2584,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-17T16:19:40.321Z
+                at 2025-05-17T16:21:46.486Z
             </div>
         <script src="../prettify.js"></script>
         <script>
