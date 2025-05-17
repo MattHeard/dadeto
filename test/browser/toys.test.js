@@ -857,25 +857,35 @@ describe('createInputDropdownHandler', () => {
   it('handles input dropdown changes', () => {
     // Test data
     const event = {};
-
-    // Arrange
     const select = {};
     const container = {};
     const textInput = {};
+    const selectValue = 'test-value';
+
+    // Arrange
     const getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
     const getParentElement = jest.fn((arg) => arg === select ? container : null);
     const querySelector = jest.fn((parent, selector) =>
       parent === container && selector === 'input[type="text"]' ? textInput : null
     );
+    const getValue = jest.fn((element) =>
+      element === select ? selectValue : null
+    );
+
+    const reveal = jest.fn();
+    const enable = jest.fn();
+    const hide = jest.fn();
+    const disable = jest.fn();
+
     const dom = {
       getCurrentTarget,
       getParentElement,
       querySelector,
-      getValue: jest.fn(),
-      reveal: jest.fn(),
-      enable: jest.fn(),
-      hide: jest.fn(),
-      disable: jest.fn()
+      getValue,
+      reveal,
+      enable,
+      hide,
+      disable
     };
 
     // Act
@@ -886,5 +896,14 @@ describe('createInputDropdownHandler', () => {
     expect(getCurrentTarget).toHaveBeenCalledWith(event);
     expect(getParentElement).toHaveBeenCalledWith(select);
     expect(querySelector).toHaveBeenCalledWith(container, 'input[type="text"]');
+    expect(getValue).toHaveBeenCalledWith(select);
+
+    // Verify the text input is shown and enabled when selectValue is 'text'
+    if (selectValue === 'text') {
+      expect(reveal).toHaveBeenCalledWith(textInput);
+      expect(enable).toHaveBeenCalledWith(textInput);
+      expect(hide).not.toHaveBeenCalled();
+      expect(disable).not.toHaveBeenCalled();
+    }
   });
 });
