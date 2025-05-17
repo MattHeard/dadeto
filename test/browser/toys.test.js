@@ -868,6 +868,6 @@ describe('createInputDropdownHandler', () => {
     };
 
     // Act
-    // Test logic will go here
+    const handler = createInputDropdownHandler(dom);
   });
 });

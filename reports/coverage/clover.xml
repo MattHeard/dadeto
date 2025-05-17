@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747473176799" clover="3.2.0">
-  <project timestamp="1747473176799" name="All files">
-    <metrics statements="1639" coveredstatements="1486" conditionals="504" coveredconditionals="446" methods="639" coveredmethods="606" elements="2782" coveredelements="2538" complexity="0" loc="1639" ncloc="1639" packages="17" files="34" classes="34"/>
+<coverage generated="1747473230914" clover="3.2.0">
+  <project timestamp="1747473230914" name="All files">
+    <metrics statements="1639" coveredstatements="1487" conditionals="504" coveredconditionals="446" methods="639" coveredmethods="607" elements="2782" coveredelements="2540" complexity="0" loc="1639" ncloc="1639" packages="17" files="34" classes="34"/>
     <package name="browser">
-      <metrics statements="497" coveredstatements="344" conditionals="122" coveredconditionals="64" methods="146" coveredmethods="113"/>
+      <metrics statements="497" coveredstatements="345" conditionals="122" coveredconditionals="64" methods="146" coveredmethods="114"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -216,7 +216,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="301" coveredstatements="148" conditionals="74" coveredconditionals="16" methods="83" coveredmethods="50"/>
+        <metrics statements="301" coveredstatements="149" conditionals="74" coveredconditionals="16" methods="83" coveredmethods="51"/>
         <line num="7" count="1" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
         <line num="21" count="1" type="stmt"/>
@@ -236,7 +236,7 @@
         <line num="61" count="1" type="stmt"/>
         <line num="62" count="1" type="stmt"/>
         <line num="65" count="1" type="stmt"/>
-        <line num="66" count="0" type="stmt"/>
+        <line num="66" count="1" type="stmt"/>
         <line num="67" count="0" type="stmt"/>
         <line num="68" count="0" type="stmt"/>
         <line num="69" count="0" type="stmt"/>
