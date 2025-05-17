@@ -63,10 +63,10 @@ export const createInputDropdownHandler = (dom) => {
     if (textInput) {
       if (selectValue === 'text') {
         dom.reveal(textInput);
-        textInput.disabled = false;
+        dom.enable(textInput);
       } else {
         dom.hide(textInput);
-        textInput.disabled = true;
+        dom.disable(textInput);
       }
     }
 

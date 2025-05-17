@@ -74,9 +74,20 @@ export const getParentElement = (element) => element.parentElement;
  */
 export const getValue = (element) => element?.value ?? null;
 
-// Enables the given input element by setting its disabled property to false
+/**
+ * Enables the given input element by setting its disabled property to false
+ * @param {HTMLElement} input - The input element to enable
+ */
 export const enable = (input) => {
   input.disabled = false;
+};
+
+/**
+ * Disables the given input element by setting its disabled property to true
+ * @param {HTMLElement} input - The input element to disable
+ */
+export const disable = (input) => {
+  input.disabled = true;
 };
 
 export const removeNextSibling = link => link.nextElementSibling && link.nextElementSibling.remove();
