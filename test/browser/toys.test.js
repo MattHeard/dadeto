@@ -869,5 +869,6 @@ describe('createInputDropdownHandler', () => {
 
     // Act
     const handler = createInputDropdownHandler(dom);
+    handler({});
   });
 });
