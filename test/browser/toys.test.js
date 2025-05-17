@@ -1024,5 +1024,13 @@ describe('createInputDropdownHandler', () => {
       // Then
       expect(kvContainer._dispose).toHaveBeenCalled();
     });
+
+    it('calls removeChild with container and KV container when dropdown value is number', () => {
+      // When
+      handler(event);
+
+      // Then
+      expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
+    });
   });
 });
