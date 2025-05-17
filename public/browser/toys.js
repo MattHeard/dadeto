@@ -59,7 +59,7 @@ export const createInputDropdownHandler = (dom) => {
     const textInput = dom.querySelector(container, 'input[type="text"]');
 
     const selectValue = dom.getValue(select);
-    
+
     if (textInput) {
       const showText = selectValue === 'text';
       textInput.hidden = !showText;

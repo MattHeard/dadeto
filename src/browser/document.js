@@ -50,6 +50,9 @@ export const hasNextSiblingClass = (link, cls) => link.nextElementSibling && lin
 export const addWarning = (parent) => parent.classList.add('warning');
 export const removeWarning = (outputElement) => outputElement.classList.remove('warning');
 
+// Reveals the given element by resetting its display style
+export const reveal = (element) => element.style.display = '';
+
 /**
  * Gets the current target of an event
  * @param {Event} event - The event object

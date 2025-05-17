@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/document.js
-  72:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  75:25  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
   7:3  warning  'ensureKeyValueInput' is defined but never used  no-unused-vars

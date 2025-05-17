@@ -43,6 +43,7 @@ import {
   getCurrentTarget,
   getParentElement,
   getValue,
+  reveal,
   makeIntersectionObserver,
   getClasses,
   getCurrentTime,
@@ -138,7 +139,8 @@ const dom = {
   removeAllChildren,
   getCurrentTarget,
   getParentElement,
-  getValue
+  getValue,
+  reveal
 };
 const env = { globalState, createEnv, error: logError, fetch, loggers };
 
