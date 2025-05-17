@@ -905,32 +905,55 @@ describe('createInputDropdownHandler', () => {
       removeChild
     };
 
-    // Create and call the handler once for all tests
+    // Create the handler
     handler = createInputDropdownHandler(dom);
-    handler(event);
   });
 
   it('calls reveal with text input when dropdown value is text', () => {
+    // Act
+    handler(event);
+
+    // Assert
     expect(reveal).toHaveBeenCalledWith(textInput);
   });
 
   it('calls enable with text input when dropdown value is text', () => {
+    // Act
+    handler(event);
+
+    // Assert
     expect(enable).toHaveBeenCalledWith(textInput);
   });
 
   it('calls _dispose on number input when dropdown value is text', () => {
+    // Act
+    handler(event);
+
+    // Assert
     expect(numberInput._dispose).toHaveBeenCalled();
   });
 
   it('calls removeChild with container and number input when dropdown value is text', () => {
+    // Act
+    handler(event);
+
+    // Assert
     expect(removeChild).toHaveBeenCalledWith(container, numberInput);
   });
 
   it('calls _dispose on KV container when dropdown value is text', () => {
+    // Act
+    handler(event);
+
+    // Assert
     expect(kvContainer._dispose).toHaveBeenCalled();
   });
 
   it('calls removeChild with container and KV container when dropdown value is text', () => {
+    // Act
+    handler(event);
+
+    // Assert
     expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
   });
 });
