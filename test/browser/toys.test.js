@@ -864,11 +864,15 @@ describe('createInputDropdownHandler when select value is text', () => {
     // Test data setup
     event = {};
     select = {};
-    container = {};
     textInput = {};
     numberInput = { _dispose: jest.fn() };
     kvContainer = { _dispose: jest.fn() };
     selectValue = 'text';
+
+    // Mock container with querySelector
+    container = {
+      querySelector: jest.fn()
+    };
 
     // Mock DOM functions
     getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
