@@ -911,8 +911,6 @@ describe('createInputDropdownHandler', () => {
       disable,
       removeChild
     };
-
-    // DOM setup complete
   });
 
   describe('when select value is text', () => {
