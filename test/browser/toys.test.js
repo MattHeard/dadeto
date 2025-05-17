@@ -964,3 +964,115 @@ describe('createInputDropdownHandler when select value is text', () => {
     expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
   });
 });
+
+describe('createInputDropdownHandler when select value is number', () => {
+  // Shared test data and setup
+  let event, select, container, textInput, numberInput, kvContainer, selectValue;
+  let getCurrentTarget, getParentElement, querySelector, getValue;
+  let reveal, enable, hide, disable, removeChild, dom, handler;
+
+  beforeEach(() => {
+    // Given
+    // Test data setup
+    event = {};
+    select = {};
+    textInput = {};
+    numberInput = { _dispose: jest.fn() };
+    kvContainer = { _dispose: jest.fn() };
+    selectValue = 'text';
+
+    // Mock container with querySelector
+    container = {
+      querySelector: jest.fn()
+    };
+
+    // Mock DOM functions
+    getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
+    getParentElement = jest.fn((arg) => arg === select ? container : null);
+
+    const selectorMap = new Map([
+      ['input[type="text"]', textInput],
+      ['input[type="number"]', numberInput],
+      ['.kv-container', kvContainer]
+    ]);
+
+    querySelector = jest.fn((parent, selector) =>
+      parent === container ? selectorMap.get(selector) || null : null
+    );
+
+    getValue = jest.fn((element) =>
+      element === select ? selectValue : null
+    );
+
+    // Mock DOM manipulation functions
+    reveal = jest.fn();
+    enable = jest.fn();
+    hide = jest.fn();
+    disable = jest.fn();
+    removeChild = jest.fn();
+
+    // Create DOM mock object
+    dom = {
+      getCurrentTarget,
+      getParentElement,
+      querySelector,
+      getValue,
+      reveal,
+      enable,
+      hide,
+      disable,
+      removeChild
+    };
+
+    // Create the handler with the mocked DOM
+    handler = createInputDropdownHandler(dom);
+  });
+
+  it('calls reveal with text input when dropdown value is text', () => {
+    // When
+    handler(event);
+
+    // Then
+    expect(reveal).toHaveBeenCalledWith(textInput);
+  });
+
+  it('calls enable with text input when dropdown value is text', () => {
+    // When
+    handler(event);
+
+    // Then
+    expect(enable).toHaveBeenCalledWith(textInput);
+  });
+
+  it('calls _dispose on number input when dropdown value is text', () => {
+    // When
+    handler(event);
+
+    // Then
+    expect(numberInput._dispose).toHaveBeenCalled();
+  });
+
+  it('calls removeChild with container and number input when dropdown value is text', () => {
+    // When
+    handler(event);
+
+    // Then
+    expect(removeChild).toHaveBeenCalledWith(container, numberInput);
+  });
+
+  it('calls _dispose on KV container when dropdown value is text', () => {
+    // When
+    handler(event);
+
+    // Then
+    expect(kvContainer._dispose).toHaveBeenCalled();
+  });
+
+  it('calls removeChild with container and KV container when dropdown value is text', () => {
+    // When
+    handler(event);
+
+    // Then
+    expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
+  });
+});
