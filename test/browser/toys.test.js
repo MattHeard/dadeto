@@ -909,18 +909,7 @@ describe('createInputDropdownHandler when select value is text', () => {
       enable,
       hide,
       disable,
-      removeChild,
-      createElement: jest.fn().mockImplementation((tagName) => ({
-        tagName: tagName.toUpperCase(),
-        type: '',
-        setAttribute: jest.fn(),
-        classList: {
-          add: jest.fn(),
-          remove: jest.fn()
-        },
-        appendChild: jest.fn(),
-        remove: jest.fn()
-      }))
+      removeChild
     };
 
     // Create the handler with the mocked DOM
