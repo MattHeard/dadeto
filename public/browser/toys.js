@@ -9,7 +9,7 @@ import { createBattleshipCluesBoardElement } from '../presenters/battleshipSolit
  * @param {Object} dom - The DOM utilities object
  * @returns {HTMLInputElement} The created input element
  */
-export const createBaseNumberInput = (dom) => {
+const createBaseNumberInput = (dom) => {
   const input = dom.createElement('input');
   input.type = 'number';
   return input;
