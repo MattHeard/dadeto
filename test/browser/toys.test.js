@@ -932,14 +932,7 @@ describe('createInputDropdownHandler', () => {
       // Create DOM mock object by extending baseDom
       dom = {
         ...baseDom,
-        getValue,
-        createElement: jest.fn((tagName) => {
-          const element = document.createElement(tagName);
-          if (tagName === "input") {
-            element.type = "number";
-          }
-          return element;
-        })
+        getValue
       };
 
       // Create the handler with the mocked DOM
@@ -1025,8 +1018,11 @@ describe('createInputDropdownHandler', () => {
     });
 
     it('should handle number input', () => {
-      // Act
+      // When
       handler(event);
+
+      // Then
+      expect(kvContainer._dispose).toHaveBeenCalled();
     });
   });
 });
