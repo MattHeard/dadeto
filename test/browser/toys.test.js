@@ -864,7 +864,9 @@ describe('createInputDropdownHandler', () => {
     // Test data setup
     event = {};
     select = {};
-    container = {};
+    container = {
+      querySelector: jest.fn()
+    };
     textInput = {};
     numberInput = { _dispose: jest.fn() };
     kvContainer = { _dispose: jest.fn() };
