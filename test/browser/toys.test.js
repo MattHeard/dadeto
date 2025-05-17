@@ -856,8 +856,9 @@ describe('toys', () => {
 describe('createInputDropdownHandler', () => {
   it('handles input dropdown changes', () => {
     // Arrange
+    const getCurrentTarget = jest.fn();
     const dom = {
-      getCurrentTarget: jest.fn(),
+      getCurrentTarget,
       getParentElement: jest.fn(),
       querySelector: jest.fn(),
       getValue: jest.fn(),
