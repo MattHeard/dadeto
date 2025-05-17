@@ -972,8 +972,30 @@ describe('createInputDropdownHandler', () => {
   });
 
   describe('when select value is number', () => {
+    let handler, dom;
+
     beforeEach(() => {
       // Setup code will go here
+      const selectValue = 'number';
+      const getValue = jest.fn((element) =>
+        element === select ? selectValue : null
+      );
+
+      // Create DOM mock object
+      dom = {
+        getCurrentTarget,
+        getParentElement,
+        querySelector,
+        getValue,
+        reveal,
+        enable,
+        hide,
+        disable,
+        removeChild
+      };
+
+      // Create the handler with the mocked DOM
+      handler = createInputDropdownHandler(dom);
     });
 
     it('should handle number input', () => {
