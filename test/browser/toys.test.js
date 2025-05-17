@@ -860,7 +860,7 @@ describe('createInputDropdownHandler', () => {
     const select = {};
     const container = {};
     const textInput = {};
-    const selectValue = 'test-value';
+    const selectValue = 'text';
 
     // Arrange
     const getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
