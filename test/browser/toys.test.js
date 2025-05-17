@@ -851,3 +851,19 @@ describe('toys', () => {
     });
   });
 });
+
+describe('createInputDropdownHandler', () => {
+  it('handles input dropdown changes', () => {
+    // Arrange
+    const mockDom = {
+      getCurrentTarget: jest.fn(),
+      getParentElement: jest.fn(),
+      querySelector: jest.fn(),
+      getValue: jest.fn(),
+      reveal: jest.fn(),
+      enable: jest.fn(),
+      hide: jest.fn(),
+      disable: jest.fn()
+    };
+  });
+});

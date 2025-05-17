@@ -41,4 +41,7 @@
   305:24  warning  Ternary operator used                                       no-ternary
   306:34  warning  Ternary operator used                                       no-ternary
 
-✖ 26 problems (0 errors, 26 warnings)
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
+  858:11  warning  'mockDom' is assigned a value but never used  no-unused-vars
+
+✖ 27 problems (0 errors, 27 warnings)
