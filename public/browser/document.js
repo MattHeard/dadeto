@@ -50,6 +50,13 @@ export const hasNextSiblingClass = (link, cls) => link.nextElementSibling && lin
 export const addWarning = (parent) => parent.classList.add('warning');
 export const removeWarning = (outputElement) => outputElement.classList.remove('warning');
 
+/**
+ * Gets the current target of an event
+ * @param {Event} event - The event object
+ * @returns {EventTarget} The current target of the event
+ */
+export const getCurrentTarget = (event) => event.currentTarget;
+
 // Enables the given input element by setting its disabled property to false
 export const enable = (input) => {
   input.disabled = false;
