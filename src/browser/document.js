@@ -57,6 +57,13 @@ export const removeWarning = (outputElement) => outputElement.classList.remove('
  */
 export const getCurrentTarget = (event) => event.currentTarget;
 
+/**
+ * Gets the parent element of the given element
+ * @param {Element} element - The element to get the parent of
+ * @returns {Element|null} The parent element, or null if the element has no parent
+ */
+export const getParentElement = (element) => element.parentElement;
+
 // Enables the given input element by setting its disabled property to false
 export const enable = (input) => {
   input.disabled = false;
