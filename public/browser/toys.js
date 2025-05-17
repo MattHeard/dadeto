@@ -20,7 +20,7 @@ import { createBattleshipCluesBoardElement } from '../presenters/battleshipSolit
  */
 const createBaseNumberInput = (dom) => {
   const input = dom.createElement('input');
-  input.type = 'number';
+  dom.setType(input, 'number');
   return input;
 };
 
