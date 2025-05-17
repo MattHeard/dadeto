@@ -860,10 +860,12 @@ describe('createInputDropdownHandler', () => {
 
     // Arrange
     const select = {};
+    const container = {};
     const getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
+    const getParentElement = jest.fn((arg) => arg === select ? container : null);
     const dom = {
       getCurrentTarget,
-      getParentElement: jest.fn(),
+      getParentElement,
       querySelector: jest.fn(),
       getValue: jest.fn(),
       reveal: jest.fn(),
@@ -875,5 +877,9 @@ describe('createInputDropdownHandler', () => {
     // Act
     const handler = createInputDropdownHandler(dom);
     handler(event);
+
+    // Assert
+    expect(getCurrentTarget).toHaveBeenCalledWith(event);
+    expect(getParentElement).toHaveBeenCalledWith(select);
   });
 });

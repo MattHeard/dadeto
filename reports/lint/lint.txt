@@ -42,6 +42,7 @@
   306:34  warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
-  863:47  warning  Ternary operator used  no-ternary
+  864:47  warning  Ternary operator used  no-ternary
+  865:47  warning  Ternary operator used  no-ternary
 
-✖ 27 problems (0 errors, 27 warnings)
+✖ 28 problems (0 errors, 28 warnings)
