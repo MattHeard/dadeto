@@ -5,15 +5,15 @@
   11:3  warning  'createAddDropdownListener' is defined but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-   23:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
-   36:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
-   54:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  124:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
-  382:36  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  398:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
-  614:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
-  631:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
-  680:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+   24:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
+   37:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
+   55:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  125:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
+  383:36  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  399:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
+  615:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
+  632:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
+  681:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
