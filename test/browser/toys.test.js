@@ -861,6 +861,7 @@ describe('createInputDropdownHandler', () => {
     const container = {};
     const textInput = {};
     const numberInput = { _dispose: jest.fn() };
+    const kvContainer = { _dispose: jest.fn() };
     const selectValue = 'text';
 
     // Arrange
@@ -868,7 +869,8 @@ describe('createInputDropdownHandler', () => {
     const getParentElement = jest.fn((arg) => arg === select ? container : null);
     const selectorMap = new Map([
       ['input[type="text"]', textInput],
-      ['input[type="number"]', numberInput]
+      ['input[type="number"]', numberInput],
+      ['.kv-container', kvContainer]
     ]);
     const querySelector = jest.fn((parent, selector) =>
       parent === container ? selectorMap.get(selector) || null : null
@@ -902,7 +904,13 @@ describe('createInputDropdownHandler', () => {
     // Assert
     expect(reveal).toHaveBeenCalledWith(textInput);
     expect(enable).toHaveBeenCalledWith(textInput);
+
+    // Verify number input cleanup
     expect(numberInput._dispose).toHaveBeenCalled();
     expect(removeChild).toHaveBeenCalledWith(container, numberInput);
+
+    // Verify KV container cleanup
+    expect(kvContainer._dispose).toHaveBeenCalled();
+    expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
   });
 });
