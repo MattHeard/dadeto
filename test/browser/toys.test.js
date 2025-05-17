@@ -861,12 +861,16 @@ describe('createInputDropdownHandler', () => {
     // Arrange
     const select = {};
     const container = {};
+    const textInput = {};
     const getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
     const getParentElement = jest.fn((arg) => arg === select ? container : null);
+    const querySelector = jest.fn((parent, selector) =>
+      parent === container && selector === 'input[type="text"]' ? textInput : null
+    );
     const dom = {
       getCurrentTarget,
       getParentElement,
-      querySelector: jest.fn(),
+      querySelector,
       getValue: jest.fn(),
       reveal: jest.fn(),
       enable: jest.fn(),
@@ -881,5 +885,6 @@ describe('createInputDropdownHandler', () => {
     // Assert
     expect(getCurrentTarget).toHaveBeenCalledWith(event);
     expect(getParentElement).toHaveBeenCalledWith(select);
+    expect(querySelector).toHaveBeenCalledWith(container, 'input[type="text"]');
   });
 });
