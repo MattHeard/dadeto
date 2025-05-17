@@ -41,12 +41,11 @@
   306:34  warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
-  883:41  warning  Ternary operator used                                       no-ternary
-  884:41  warning  Ternary operator used                                       no-ternary
-  892:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  893:7   warning  Ternary operator used                                       no-ternary
-  923:9   warning  Ternary operator used                                       no-ternary
-  993:9   warning  'handler' is assigned a value but never used                no-unused-vars
-  999:9   warning  Ternary operator used                                       no-ternary
+   889:41  warning  Ternary operator used                                       no-ternary
+   890:41  warning  Ternary operator used                                       no-ternary
+   898:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+   899:7   warning  Ternary operator used                                       no-ternary
+   929:9   warning  Ternary operator used                                       no-ternary
+  1005:9   warning  Ternary operator used                                       no-ternary
 
-✖ 32 problems (0 errors, 32 warnings)
+✖ 31 problems (0 errors, 31 warnings)

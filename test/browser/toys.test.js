@@ -871,12 +871,18 @@ describe('createInputDropdownHandler', () => {
     event = {};
     select = {};
     textInput = {};
-    numberInput = { _dispose: jest.fn() };
+    numberInput = {
+      _dispose: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn()
+    };
     kvContainer = { _dispose: jest.fn() };
 
-    // Mock container with querySelector
+    // Mock container with querySelector and appendChild
     container = {
-      querySelector: jest.fn()
+      querySelector: jest.fn(),
+      appendChild: jest.fn(),
+      insertBefore: jest.fn()
     };
 
     // Mock DOM functions
@@ -1011,14 +1017,16 @@ describe('createInputDropdownHandler', () => {
       dom = {
         ...baseDom,
         getValue,
-        createElement
+        createElement,
+        setType: jest.fn()
       };
       // Create the handler with the mocked DOM
       handler = createInputDropdownHandler(dom);
     });
 
     it('should handle number input', () => {
-      // Test will go here
+      // Act
+      handler(event);
     });
   });
 });
