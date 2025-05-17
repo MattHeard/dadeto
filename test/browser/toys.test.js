@@ -898,25 +898,25 @@ describe('createInputDropdownHandler', () => {
     hide = jest.fn();
     disable = jest.fn();
     removeChild = jest.fn();
-
-    // Create DOM mock object
-    dom = {
-      getCurrentTarget,
-      getParentElement,
-      querySelector,
-      getValue,
-      reveal,
-      enable,
-      hide,
-      disable,
-      removeChild
-    };
   });
 
   describe('when select value is text', () => {
-    let handler;
+    let handler, dom;
 
     beforeEach(() => {
+      // Create DOM mock object
+      dom = {
+        getCurrentTarget,
+        getParentElement,
+        querySelector,
+        getValue,
+        reveal,
+        enable,
+        hide,
+        disable,
+        removeChild
+      };
+
       // Create the handler with the mocked DOM
       handler = createInputDropdownHandler(dom);
     });

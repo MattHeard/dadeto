@@ -41,6 +41,7 @@
   306:34  warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
+  860:51  warning  'dom' is defined but never used                             no-unused-vars
   860:56  warning  'handler' is defined but never used                         no-unused-vars
   878:41  warning  Ternary operator used                                       no-ternary
   879:41  warning  Ternary operator used                                       no-ternary
@@ -48,4 +49,4 @@
   888:7   warning  Ternary operator used                                       no-ternary
   892:7   warning  Ternary operator used                                       no-ternary
 
-✖ 31 problems (0 errors, 31 warnings)
+✖ 32 problems (0 errors, 32 warnings)
