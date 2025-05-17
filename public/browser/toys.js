@@ -49,7 +49,7 @@ const maybeRemoveKV = (container) => {
  * @returns {Function} The event handler function for input dropdown changes
  */
 export const createAddDropdownListener = (onChange, dom) => dropdown => {
-  dropdown.addEventListener('change', onChange);
+  dom.addEventListener(dropdown, 'change', onChange);
 };
 
 export const createInputDropdownHandler = (dom) => {
