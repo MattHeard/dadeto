@@ -853,7 +853,7 @@ describe('toys', () => {
   });
 });
 
-describe('createInputDropdownHandler when select value is text', () => {
+describe('createInputDropdownHandler', () => {
   // Shared test data and setup
   let event, select, container, textInput, numberInput, kvContainer, selectValue;
   let getCurrentTarget, getParentElement, querySelector, getValue;
@@ -913,11 +913,17 @@ describe('createInputDropdownHandler when select value is text', () => {
       removeChild
     };
 
-    // Create the handler with the mocked DOM
-    handler = createInputDropdownHandler(dom);
+    // DOM setup complete
   });
 
   describe('when select value is text', () => {
+    let handler;
+
+    beforeEach(() => {
+      // Create the handler with the mocked DOM
+      handler = createInputDropdownHandler(dom);
+    });
+
     it('calls reveal with text input when dropdown value is text', () => {
       // When
       handler(event);

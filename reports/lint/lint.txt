@@ -41,10 +41,11 @@
   306:34  warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
+  860:56  warning  'handler' is defined but never used                         no-unused-vars
   878:41  warning  Ternary operator used                                       no-ternary
   879:41  warning  Ternary operator used                                       no-ternary
   887:29  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
   888:7   warning  Ternary operator used                                       no-ternary
   892:7   warning  Ternary operator used                                       no-ternary
 
-✖ 30 problems (0 errors, 30 warnings)
+✖ 31 problems (0 errors, 31 warnings)
