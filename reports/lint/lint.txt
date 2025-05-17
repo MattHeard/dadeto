@@ -10,7 +10,6 @@
    66:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
   139:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
   397:29  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  413:34  warning  Arrow function has a complexity of 3. Maximum allowed is 2                   complexity
   638:25  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
   655:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
   704:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
@@ -48,4 +47,4 @@
    929:9   warning  Ternary operator used                                       no-ternary
   1005:9   warning  Ternary operator used                                       no-ternary
 
-✖ 31 problems (0 errors, 31 warnings)
+✖ 30 problems (0 errors, 30 warnings)

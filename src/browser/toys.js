@@ -415,7 +415,7 @@ export const ensureNumberInput = (container, textInput, dom) => {
 
   if (!numberInput) {
     numberInput = createNumberInput(
-      textInput?.value,
+      textInput.value, // textInput is assumed to be truthy
       createUpdateTextInputValue(textInput),
       dom
     );
