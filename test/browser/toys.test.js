@@ -860,14 +860,23 @@ describe('createInputDropdownHandler', () => {
     const select = {};
     const container = {};
     const textInput = {};
+    const numberInput = {};
     const selectValue = 'text';
 
     // Arrange
     const getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
     const getParentElement = jest.fn((arg) => arg === select ? container : null);
-    const querySelector = jest.fn((parent, selector) =>
-      parent === container && selector === 'input[type="text"]' ? textInput : null
-    );
+    const querySelector = jest.fn((parent, selector) => {
+      if (parent === container) {
+        if (selector === 'input[type="text"]') {
+          return textInput;
+        }
+        if (selector === 'input[type="number"]') {
+          return numberInput;
+        }
+      }
+      return null;
+    });
     const getValue = jest.fn((element) =>
       element === select ? selectValue : null
     );
