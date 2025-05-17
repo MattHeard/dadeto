@@ -1007,7 +1007,7 @@ describe('createInputDropdownHandler', () => {
           if (tagName === "input") {
             return numberInput;
           }
-          return {};
+          return null;
         })
       };
       // Create the handler with the mocked DOM
