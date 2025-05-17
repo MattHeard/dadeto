@@ -855,7 +855,7 @@ describe('toys', () => {
 describe('createInputDropdownHandler', () => {
   it('handles input dropdown changes', () => {
     // Arrange
-    const mockDom = {
+    const dom = {
       getCurrentTarget: jest.fn(),
       getParentElement: jest.fn(),
       querySelector: jest.fn(),
@@ -865,5 +865,8 @@ describe('createInputDropdownHandler', () => {
       hide: jest.fn(),
       disable: jest.fn()
     };
+
+    // Act
+    // Test logic will go here
   });
 });
