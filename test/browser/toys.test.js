@@ -867,8 +867,11 @@ describe('createInputDropdownHandler', () => {
       disable: jest.fn()
     };
 
+    // Test data
+    const event = {};
+
     // Act
     const handler = createInputDropdownHandler(dom);
-    handler({});
+    handler(event);
   });
 });
