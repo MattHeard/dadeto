@@ -920,7 +920,8 @@ describe('createInputDropdownHandler', () => {
       // Create DOM mock object by extending baseDom
       dom = {
         ...baseDom,
-        getValue
+        getValue,
+        createElement: jest.fn()
       };
 
       // Create the handler with the mocked DOM
@@ -989,7 +990,8 @@ describe('createInputDropdownHandler', () => {
       // Create DOM mock object by extending baseDom
       dom = {
         ...baseDom,
-        getValue
+        getValue,
+        createElement: jest.fn()
       };
 
       // Create the handler with the mocked DOM
