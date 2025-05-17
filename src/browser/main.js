@@ -19,6 +19,7 @@ import {
 import {
   getElementById,
   getAudioElements,
+  setType,
   getElementsByTagName,
   pauseAudio,
   removeNextSibling,
@@ -117,6 +118,7 @@ const dom = {
   importModule,
   error: logError,
   makeIntersectionObserver,
+  setType,
   addClass,
   appendChild,
   createTextNode,
