@@ -469,7 +469,13 @@ describe('toys', () => {
       outputParentElement = {};
       newParagraph = {};
       dom = {
-        createElement: jest.fn().mockImplementation(() => newParagraph),
+        createElement: jest.fn((tagName) => {
+          const element = document.createElement(tagName);
+          if (tagName === "input") {
+            element.type = "number";
+          }
+          return element;
+        }).mockImplementation(() => newParagraph),
         stopDefault: jest.fn(),
         addWarning: jest.fn(),
         setTextContent: jest.fn(),
@@ -921,7 +927,13 @@ describe('createInputDropdownHandler', () => {
       dom = {
         ...baseDom,
         getValue,
-        createElement: jest.fn()
+        createElement: jest.fn((tagName) => {
+          const element = document.createElement(tagName);
+          if (tagName === "input") {
+            element.type = "number";
+          }
+          return element;
+        })
       };
 
       // Create the handler with the mocked DOM
@@ -991,7 +1003,13 @@ describe('createInputDropdownHandler', () => {
       dom = {
         ...baseDom,
         getValue,
-        createElement: jest.fn()
+        createElement: jest.fn((tagName) => {
+          const element = document.createElement(tagName);
+          if (tagName === "input") {
+            element.type = "number";
+          }
+          return element;
+        })
       };
 
       // Create the handler with the mocked DOM
