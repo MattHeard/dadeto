@@ -34,7 +34,7 @@ const maybeRemoveNumber = (containerElement, dom) => {
  * @param {HTMLElement} container - The container element to search in
  * @returns {void}
  */
-export const maybeRemoveKV = (container) => {
+const maybeRemoveKV = (container) => {
   const kvContainer = container.querySelector('.kv-container');
   if (kvContainer) {
     kvContainer._dispose?.();
@@ -83,7 +83,7 @@ export const createInputDropdownHandler = (dom) => {
  * @param {Function} onChange - The change handler
  * @returns {void}
  */
-export const setupInputEvents = (input, onChange) => {
+const setupInputEvents = (input, onChange) => {
   input.addEventListener('input', onChange);
   input._dispose = () => input.removeEventListener('input', onChange);
 };
@@ -366,7 +366,7 @@ import { isObject } from './common.js';
  * @param {Object} dom - The DOM utilities object
  * @returns {HTMLInputElement} The created number input element
  */
-export const createNumberInput = (value, onChange, dom) => {
+const createNumberInput = (value, onChange, dom) => {
   const input = createBaseNumberInput(dom);
   if (value) {input.value = value;}
   setupInputEvents(input, onChange);
@@ -380,7 +380,7 @@ export const createNumberInput = (value, onChange, dom) => {
  * @param {HTMLInputElement} numberInput - The number input element to position
  * @returns {void}
  */
-export const positionNumberInput = (container, textInput, numberInput) => {
+const positionNumberInput = (container, textInput, numberInput) => {
   const nextSibling = textInput?.nextSibling || null;
   if (nextSibling) {
     container.insertBefore(numberInput, nextSibling);
@@ -612,7 +612,7 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
  * @param {HTMLInputElement} textInput - The hidden input element to update
  * @param {Object} rows - The key-value pairs to sync
  */
-export const syncHiddenField = (textInput, rows) => {
+const syncHiddenField = (textInput, rows) => {
   if (!textInput) {return;}
   // Only include keys with non-empty key or value
   const filtered = {};
