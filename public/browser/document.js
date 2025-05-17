@@ -64,6 +64,13 @@ export const getCurrentTarget = (event) => event.currentTarget;
  */
 export const getParentElement = (element) => element.parentElement;
 
+/**
+ * Gets the value of a form element
+ * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element - The form element to get the value from
+ * @returns {string|number|boolean|Array<string>|FileList|null} The value of the element, or null if the element has no value
+ */
+export const getValue = (element) => element?.value ?? null;
+
 // Enables the given input element by setting its disabled property to false
 export const enable = (input) => {
   input.disabled = false;
