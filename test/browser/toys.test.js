@@ -854,38 +854,49 @@ describe('toys', () => {
 });
 
 describe('createInputDropdownHandler', () => {
-  it('handles input dropdown changes', () => {
+  // Shared test data and setup
+  let event, select, container, textInput, numberInput, kvContainer, selectValue;
+  let getCurrentTarget, getParentElement, querySelector, getValue;
+  let reveal, enable, hide, disable, removeChild, dom, handler;
+
+  beforeEach(() => {
+    // Reset all mocks and test data before each test
+    jest.clearAllMocks();
+
     // Test data
-    const event = {};
-    const select = {};
-    const container = {};
-    const textInput = {};
-    const numberInput = { _dispose: jest.fn() };
-    const kvContainer = { _dispose: jest.fn() };
-    const selectValue = 'text';
+    event = {};
+    select = {};
+    container = {};
+    textInput = {};
+    numberInput = { _dispose: jest.fn() };
+    kvContainer = { _dispose: jest.fn() };
+    selectValue = 'text';
 
     // Arrange
-    const getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
-    const getParentElement = jest.fn((arg) => arg === select ? container : null);
+    getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
+    getParentElement = jest.fn((arg) => arg === select ? container : null);
+
     const selectorMap = new Map([
       ['input[type="text"]', textInput],
       ['input[type="number"]', numberInput],
       ['.kv-container', kvContainer]
     ]);
-    const querySelector = jest.fn((parent, selector) =>
+
+    querySelector = jest.fn((parent, selector) =>
       parent === container ? selectorMap.get(selector) || null : null
     );
-    const getValue = jest.fn((element) =>
+
+    getValue = jest.fn((element) =>
       element === select ? selectValue : null
     );
 
-    const reveal = jest.fn();
-    const enable = jest.fn();
-    const hide = jest.fn();
-    const disable = jest.fn();
+    reveal = jest.fn();
+    enable = jest.fn();
+    hide = jest.fn();
+    disable = jest.fn();
+    removeChild = jest.fn();
 
-    const removeChild = jest.fn();
-    const dom = {
+    dom = {
       getCurrentTarget,
       getParentElement,
       querySelector,
@@ -897,20 +908,32 @@ describe('createInputDropdownHandler', () => {
       removeChild
     };
 
-    // Act
-    const handler = createInputDropdownHandler(dom);
+    // Create and call the handler once for all tests
+    handler = createInputDropdownHandler(dom);
     handler(event);
+  });
 
-    // Assert
+  it('calls reveal with text input when dropdown value is text', () => {
     expect(reveal).toHaveBeenCalledWith(textInput);
+  });
+
+  it('calls enable with text input when dropdown value is text', () => {
     expect(enable).toHaveBeenCalledWith(textInput);
+  });
 
-    // Verify number input cleanup
+  it('calls _dispose on number input when dropdown value is text', () => {
     expect(numberInput._dispose).toHaveBeenCalled();
-    expect(removeChild).toHaveBeenCalledWith(container, numberInput);
+  });
 
-    // Verify KV container cleanup
+  it('calls removeChild with container and number input when dropdown value is text', () => {
+    expect(removeChild).toHaveBeenCalledWith(container, numberInput);
+  });
+
+  it('calls _dispose on KV container when dropdown value is text', () => {
     expect(kvContainer._dispose).toHaveBeenCalled();
+  });
+
+  it('calls removeChild with container and KV container when dropdown value is text', () => {
     expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
   });
 });
