@@ -92,6 +92,17 @@ export const disable = (input) => {
 
 export const removeNextSibling = link => link.nextElementSibling && link.nextElementSibling.remove();
 
+/**
+ * Sets the type of an input element
+ * @param {HTMLInputElement} element - The input element to set the type for
+ * @param {string} type - The type to set (e.g., 'text', 'number', 'email')
+ */
+export const setType = (element, type) => {
+  if (element) {
+    element.type = type;
+  }
+};
+
 export const setTextContent = (element, content) => {
   element.textContent = content;
 };
