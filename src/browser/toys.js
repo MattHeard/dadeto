@@ -1,11 +1,11 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 /**
- * Safely calls the _dispose function on an element if it exists
- * @param {HTMLElement} element - The element that might have a _dispose function
+ * Calls the _dispose function on an element
+ * @param {HTMLElement} element - The element with a _dispose function
  * @returns {void}
  */
 const disposeListeners = (element) => {
-  element?._dispose?.();
+  element._dispose();
 };
 
 import { createPreElement } from '../presenters/pre.js';
