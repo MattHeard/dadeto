@@ -44,7 +44,8 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
   867:47  warning  Ternary operator used                                       no-ternary
   868:47  warning  Ternary operator used                                       no-ternary
-  869:35  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
-  881:7   warning  Ternary operator used                                       no-ternary
+  873:35  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  874:7   warning  Ternary operator used                                       no-ternary
+  877:7   warning  Ternary operator used                                       no-ternary
 
-✖ 30 problems (0 errors, 30 warnings)
+✖ 31 problems (0 errors, 31 warnings)
