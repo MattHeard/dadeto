@@ -61,9 +61,13 @@ export const createInputDropdownHandler = (dom) => {
     const selectValue = dom.getValue(select);
 
     if (textInput) {
-      const showText = selectValue === 'text';
-      textInput.hidden = !showText;
-      textInput.disabled = !showText;
+      if (selectValue === 'text') {
+        dom.reveal(textInput);
+        textInput.disabled = false;
+      } else {
+        dom.hide(textInput);
+        textInput.disabled = true;
+      }
     }
 
     if (selectValue === 'number') {
