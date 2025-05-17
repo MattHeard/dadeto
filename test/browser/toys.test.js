@@ -894,5 +894,6 @@ describe('createInputDropdownHandler', () => {
 
     // Assert
     expect(reveal).toHaveBeenCalledWith(textInput);
+    expect(enable).toHaveBeenCalledWith(textInput);
   });
 });
