@@ -860,9 +860,6 @@ describe('createInputDropdownHandler', () => {
   let reveal, enable, hide, disable, removeChild, dom, handler;
 
   beforeEach(() => {
-    // Reset all mocks and test data before each test
-    jest.clearAllMocks();
-
     // Test data
     event = {};
     select = {};
