@@ -860,7 +860,7 @@ describe('createInputDropdownHandler', () => {
     const select = {};
     const container = {};
     const textInput = {};
-    const numberInput = {};
+    const numberInput = { _dispose: jest.fn() };
     const selectValue = 'text';
 
     // Arrange
