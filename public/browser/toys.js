@@ -21,7 +21,7 @@ export const createBaseNumberInput = (dom) => {
  * @param {Object} dom - The DOM utilities object
  * @returns {void}
  */
-export const maybeRemoveNumber = (containerElement, dom) => {
+const maybeRemoveNumber = (containerElement, dom) => {
   const numberInput = dom.querySelector(containerElement, 'input[type="number"]');
   if (numberInput) {
     numberInput._dispose?.();
