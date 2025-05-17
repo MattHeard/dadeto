@@ -1,4 +1,13 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
+/**
+ * Safely calls the _dispose function on an element if it exists
+ * @param {HTMLElement} element - The element that might have a _dispose function
+ * @returns {void}
+ */
+const disposeListeners = (element) => {
+  element?._dispose?.();
+};
+
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolitaireFleet.js';
@@ -24,7 +33,7 @@ const createBaseNumberInput = (dom) => {
 const maybeRemoveNumber = (containerElement, dom) => {
   const numberInput = dom.querySelector(containerElement, 'input[type="number"]');
   if (numberInput) {
-    numberInput._dispose?.();
+    disposeListeners(numberInput);
     dom.removeChild(containerElement, numberInput);
   }
 };
@@ -38,7 +47,7 @@ const maybeRemoveNumber = (containerElement, dom) => {
 const maybeRemoveKV = (container, dom) => {
   const kvContainer = dom.querySelector(container, '.kv-container');
   if (kvContainer) {
-    kvContainer._dispose?.();
+    disposeListeners(kvContainer);
     dom.removeChild(container, kvContainer);
   }
 };
