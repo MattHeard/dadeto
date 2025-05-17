@@ -1017,7 +1017,7 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('should handle number input', () => {
+    it('calls _dispose on KV container when dropdown value is number', () => {
       // When
       handler(event);
 
