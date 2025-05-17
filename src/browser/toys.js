@@ -55,7 +55,7 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 export const createInputDropdownHandler = (dom) => {
   return (event) => {
     const select = dom.getCurrentTarget(event);
-    const container = select.parentElement; // <div class="value">
+    const container = dom.getParentElement(select); // <div class="value">
     const textInput = container.querySelector('input[type="text"]');
 
     if (textInput) {
