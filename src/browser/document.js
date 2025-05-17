@@ -69,10 +69,10 @@ export const getParentElement = (element) => element.parentElement;
 
 /**
  * Gets the value of a form element
- * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element - The form element to get the value from
+ * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element - The form element to get the value from (assumed to be truthy)
  * @returns {string|number|boolean|Array<string>|FileList|null} The value of the element, or null if the element has no value
  */
-export const getValue = (element) => element?.value ?? null;
+export const getValue = (element) => element.value ?? null;
 
 /**
  * Enables the given input element by setting its disabled property to false
