@@ -970,6 +970,14 @@ describe('createInputDropdownHandler', () => {
       expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
     });
   });
+
+  describe('when select value is number', () => {
+    beforeEach(() => {
+      // Setup code will go here
+    });
+
+    it('should handle number input', () => {
+      // Test will go here
+    });
+  });
 });
-
-
