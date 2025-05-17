@@ -41,6 +41,7 @@ import {
   disconnectObserver,
   isIntersecting,
   getCurrentTarget,
+  getParentElement,
   makeIntersectionObserver,
   getClasses,
   getCurrentTime,
@@ -134,7 +135,8 @@ const dom = {
   removeWarning,
   contains,
   removeAllChildren,
-  getCurrentTarget
+  getCurrentTarget,
+  getParentElement
 };
 const env = { globalState, createEnv, error: logError, fetch, loggers };
 
