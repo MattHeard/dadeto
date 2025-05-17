@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import {
   describe,
   it,
@@ -15,8 +19,29 @@ import {
   createHandleSubmit,
   initializeInteractiveComponent,
   handleModuleError,
-  handleDropdownChange
+  handleDropdownChange,
+  createAddDropdownListener
 } from '../../src/browser/toys.js';
+
+describe('createAddDropdownListener', () => {
+  it('adds a change event listener to the dropdown', () => {
+    // Arrange
+    const mockOnChange = jest.fn();
+    const mockAddEventListener = jest.fn();
+    const mockDom = {
+      addEventListener: mockAddEventListener
+    };
+    const mockDropdown = document.createElement('select');
+
+    // Act
+    const addListener = createAddDropdownListener(mockOnChange, mockDom);
+    addListener(mockDropdown);
+
+    // Assert
+    expect(mockAddEventListener).toHaveBeenCalledTimes(1);
+    expect(mockAddEventListener).toHaveBeenCalledWith(mockDropdown, 'change', mockOnChange);
+  });
+});
 
 describe('toys', () => {
   describe('handleDropdownChange', () => {
