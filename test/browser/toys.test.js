@@ -1026,6 +1026,7 @@ describe('createInputDropdownHandler', () => {
         createElement,
         getTargetValue: jest.fn((e) => e === event ? eventTargetValue : null),
         setType: jest.fn(),
+        setValue: jest.fn(),
         querySelector: createQuerySelector(numberSelectorMap)
       };
 
