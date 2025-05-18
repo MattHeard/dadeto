@@ -944,7 +944,7 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('calls reveal with text input when dropdown value is text', () => {
+    it('calls reveal with text input', () => {
       // When
       handler(event);
 
@@ -952,7 +952,7 @@ describe('createInputDropdownHandler', () => {
       expect(reveal).toHaveBeenCalledWith(textInput);
     });
 
-    it('calls enable with text input when dropdown value is text', () => {
+    it('calls enable with text input', () => {
       // When
       handler(event);
 
@@ -960,7 +960,7 @@ describe('createInputDropdownHandler', () => {
       expect(enable).toHaveBeenCalledWith(textInput);
     });
 
-    it('calls _dispose on number input when dropdown value is text', () => {
+    it('calls _dispose on number input', () => {
       // When
       handler(event);
 
@@ -968,7 +968,7 @@ describe('createInputDropdownHandler', () => {
       expect(numberInput._dispose).toHaveBeenCalled();
     });
 
-    it('calls removeChild with container and number input when dropdown value is text', () => {
+    it('calls removeChild with container and number input', () => {
       // When
       handler(event);
 
@@ -976,7 +976,7 @@ describe('createInputDropdownHandler', () => {
       expect(removeChild).toHaveBeenCalledWith(container, numberInput);
     });
 
-    it('calls _dispose on KV container when dropdown value is text', () => {
+    it('calls _dispose on KV container', () => {
       // When
       handler(event);
 
@@ -984,7 +984,7 @@ describe('createInputDropdownHandler', () => {
       expect(kvContainer._dispose).toHaveBeenCalled();
     });
 
-    it('calls removeChild with container and KV container when dropdown value is text', () => {
+    it('calls removeChild with container and KV container', () => {
       // When
       handler(event);
 
