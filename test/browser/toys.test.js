@@ -1025,6 +1025,15 @@ describe('createInputDropdownHandler', () => {
       expect(kvContainer._dispose).toHaveBeenCalled();
     });
 
+    it('hides and disables the text input when dropdown value is number', () => {
+      // When
+      handler(event);
+
+      // Then
+      expect(hide).toHaveBeenCalledWith(textInput);
+      expect(disable).toHaveBeenCalledWith(textInput);
+    });
+
     it('calls removeChild with container and KV container when dropdown value is number', () => {
       // When
       handler(event);
