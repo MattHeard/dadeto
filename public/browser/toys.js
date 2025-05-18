@@ -431,7 +431,7 @@ export const ensureNumberInput = (container, textInput, dom) => {
 export const createUpdateTextInputValue = (textInput, dom) => (event) => {
   const targetValue = dom.getTargetValue(event);
   console.log('createUpdateTextInputValue - targetValue:', targetValue);
-  textInput.value = targetValue;
+  dom.setValue(textInput, targetValue);
 };
 
 function hasRequestField(val) {
