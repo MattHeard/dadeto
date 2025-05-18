@@ -1022,7 +1022,7 @@ describe('createInputDropdownHandler', () => {
         ...baseDom,
         getValue,
         createElement,
-        getTargetValue: jest.fn((event) => event === 'event' ? eventTargetValue : null),
+        getTargetValue: jest.fn((e) => e === event ? eventTargetValue : null),
         setType: jest.fn(),
         querySelector: createQuerySelector(numberSelectorMap)
       };
