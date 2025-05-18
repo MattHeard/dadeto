@@ -1058,6 +1058,14 @@ describe('createInputDropdownHandler', () => {
       expect(disable).toHaveBeenCalledWith(textInput);
     });
 
+    it('calls setType with input and number when select value is number', () => {
+      // When
+      handler(event);
+
+      // Then
+      expect(dom.setType).toHaveBeenCalledWith(numberInput, 'number');
+    });
+
     it('calls removeChild with container and KV container when dropdown value is number', () => {
       // When
       handler(event);
