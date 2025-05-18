@@ -4,8 +4,6 @@ import {
   fetchAndCacheBlogData, getData, setData, getEncodeBase64
 } from './data.js';
 import {
-  ensureKeyValueInput,
-  ensureNumberInput,
   createOutputDropdownHandler,
   createInputDropdownHandler,
   createAddDropdownListener,
@@ -48,6 +46,7 @@ import {
   makeIntersectionObserver,
   getClasses,
   getCurrentTime,
+  getTargetValue,
   hasNextSiblingClass,
   getRandomNumber,
   addClass,
@@ -144,6 +143,7 @@ const dom = {
   getCurrentTarget,
   getParentElement,
   getValue,
+  getTargetValue,
   reveal
 };
 const env = { globalState, createEnv, error: logError, fetch, loggers };
