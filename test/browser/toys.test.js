@@ -865,6 +865,12 @@ describe('createInputDropdownHandler', () => {
   let getCurrentTarget, getParentElement, querySelector;
   let reveal, enable, hide, disable, removeChild;
 
+  // Helper function to create a querySelector mock
+  const createQuerySelector = (selectorMap) =>
+    jest.fn((parent, selector) =>
+      parent === container ? selectorMap.get(selector) || null : null
+    );
+
   beforeEach(() => {
     // Given
     // Test data setup
@@ -888,11 +894,6 @@ describe('createInputDropdownHandler', () => {
     // Mock DOM functions
     getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
     getParentElement = jest.fn((arg) => arg === select ? container : null);
-
-    const createQuerySelector = (selectorMap) =>
-      jest.fn((parent, selector) =>
-        parent === container ? selectorMap.get(selector) || null : null
-      );
 
     const selectorMap = new Map([
       ['input[type="text"]', textInput],
