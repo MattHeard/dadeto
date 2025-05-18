@@ -889,15 +889,18 @@ describe('createInputDropdownHandler', () => {
     getCurrentTarget = jest.fn((arg) => arg === event ? select : null);
     getParentElement = jest.fn((arg) => arg === select ? container : null);
 
+    const createQuerySelector = (selectorMap) =>
+      jest.fn((parent, selector) =>
+        parent === container ? selectorMap.get(selector) || null : null
+      );
+
     const selectorMap = new Map([
       ['input[type="text"]', textInput],
       ['input[type="number"]', numberInput],
       ['.kv-container', kvContainer]
     ]);
 
-    querySelector = jest.fn((parent, selector) =>
-      parent === container ? selectorMap.get(selector) || null : null
-    );
+    querySelector = createQuerySelector(selectorMap);
 
     // Mock DOM manipulation functions
     reveal = jest.fn();
