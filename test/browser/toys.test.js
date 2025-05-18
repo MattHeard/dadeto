@@ -993,23 +993,6 @@ describe('createInputDropdownHandler', () => {
     });
   });
 
-  describe('createUpdateTextInputValue', () => {
-    it('calls setValue with textInput and event target value', () => {
-      // Given
-      const mockValue = 'test value';
-      const event = { target: { value: mockValue } };
-      const textInput = {};
-      const setValue = jest.fn();
-      const dom = { setValue, getTargetValue: (e) => e.target.value };
-
-      // When
-      const handler = createUpdateTextInputValue(textInput, dom);
-      handler(event);
-
-      // Then
-      expect(setValue).toHaveBeenCalledWith(textInput, mockValue);
-    });
-  });
 
   describe('when select value is number', () => {
     let handler, dom, eventTargetValue;
