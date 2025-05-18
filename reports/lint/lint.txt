@@ -42,6 +42,6 @@
    895:41  warning  Ternary operator used                                       no-ternary
    896:41  warning  Ternary operator used                                       no-ternary
    933:9   warning  Ternary operator used                                       no-ternary
-  1002:9   warning  Ternary operator used                                       no-ternary
+  1001:9   warning  Ternary operator used                                       no-ternary
 
 ✖ 29 problems (0 errors, 29 warnings)

@@ -996,7 +996,6 @@ describe('createInputDropdownHandler', () => {
     let handler, dom;
 
     beforeEach(() => {
-      // Setup code will go here
       const selectValue = 'number';
       const getValue = jest.fn((element) =>
         element === select ? selectValue : null
@@ -1010,13 +1009,21 @@ describe('createInputDropdownHandler', () => {
         return null;
       });
 
-      // Create DOM mock object by extending baseDom
+      // Create a selector map that doesn't include number input
+      const numberSelectorMap = new Map([
+        ['input[type="text"]', textInput],
+        ['.kv-container', kvContainer]
+      ]);
+
+      // Create DOM mock object with the new querySelector
       dom = {
         ...baseDom,
         getValue,
         createElement,
-        setType: jest.fn()
+        setType: jest.fn(),
+        querySelector: createQuerySelector(numberSelectorMap)
       };
+
       // Create the handler with the mocked DOM
       handler = createInputDropdownHandler(dom);
     });

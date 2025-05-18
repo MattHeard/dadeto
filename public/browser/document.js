@@ -68,6 +68,13 @@ export const getCurrentTarget = (event) => event.currentTarget;
 export const getParentElement = (element) => element.parentElement;
 
 /**
+ * Gets the value from an event target
+ * @param {Event} event - The event object
+ * @returns {string|number|boolean|Array<string>|FileList|null} The value of the event target
+ */
+export const getTargetValue = (event) => event.target.value;
+
+/**
  * Gets the value of a form element
  * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element - The form element to get the value from (assumed to be truthy)
  * @returns {string|number|boolean|Array<string>|FileList|null} The value of the element, or null if the element has no value

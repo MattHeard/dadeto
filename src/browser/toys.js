@@ -416,7 +416,7 @@ export const ensureNumberInput = (container, textInput, dom) => {
   if (!numberInput) {
     numberInput = createNumberInput(
       textInput.value, // textInput is assumed to be truthy
-      createUpdateTextInputValue(textInput),
+      createUpdateTextInputValue(textInput, dom),
       dom
     );
     positionNumberInput(container, textInput, numberInput);
@@ -427,12 +427,12 @@ export const ensureNumberInput = (container, textInput, dom) => {
 
 /**
  * Creates an event handler that updates a text input's value from an event
- * @param {HTMLInputElement|null} textInput - The text input element to update
+ * @param {HTMLInputElement} textInput - The text input element to update
+ * @param {Object} dom - The DOM utilities object
  * @returns {Function} An event handler function
  */
-export const createUpdateTextInputValue = (textInput) => (event) => {
-  if (!textInput) { return; }
-  textInput.value = event.target.value;
+export const createUpdateTextInputValue = (textInput, dom) => (event) => {
+  dom.setValue(textInput, event.target.value);
 };
 
 function hasRequestField(val) {
