@@ -21,7 +21,8 @@ import {
   handleModuleError,
   handleDropdownChange,
   createAddDropdownListener,
-  createInputDropdownHandler
+  createInputDropdownHandler,
+  createUpdateTextInputValue
 } from '../../src/browser/toys.js';
 
 describe('createAddDropdownListener', () => {
@@ -989,6 +990,24 @@ describe('createInputDropdownHandler', () => {
 
       // Then
       expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
+    });
+  });
+
+  describe('createUpdateTextInputValue', () => {
+    it('calls setValue with textInput and event target value', () => {
+      // Given
+      const mockValue = 'test value';
+      const event = { target: { value: mockValue } };
+      const textInput = {};
+      const setValue = jest.fn();
+      const dom = { setValue, getTargetValue: (e) => e.target.value };
+
+      // When
+      const handler = createUpdateTextInputValue(textInput, dom);
+      handler(event);
+
+      // Then
+      expect(setValue).toHaveBeenCalledWith(textInput, mockValue);
     });
   });
 
