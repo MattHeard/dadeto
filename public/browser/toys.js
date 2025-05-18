@@ -397,9 +397,12 @@ const createNumberInput = (value, onChange, dom) => {
  */
 const positionNumberInput = (container, textInput, numberInput, dom) => {
   const nextSibling = textInput.nextSibling || null;
+  console.log('positionNumberInput - nextSibling:', nextSibling);
   if (nextSibling) {
+    console.log('Inserting number input before next sibling');
     dom.insertBefore(container, numberInput, nextSibling);
   } else {
+    console.log('No next sibling found, removing number input');
     dom.removeChild(container, numberInput);
   }
 };
