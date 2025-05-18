@@ -42,6 +42,7 @@ import {
   getCurrentTarget,
   getParentElement,
   getValue,
+  setValue,
   reveal,
   makeIntersectionObserver,
   getClasses,
@@ -142,6 +143,7 @@ const dom = {
   removeAllChildren,
   getCurrentTarget,
   getParentElement,
+  setValue,
   getValue,
   getTargetValue,
   reveal
