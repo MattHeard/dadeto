@@ -1025,12 +1025,19 @@ describe('createInputDropdownHandler', () => {
       expect(kvContainer._dispose).toHaveBeenCalled();
     });
 
-    it('hides and disables the text input when dropdown value is number', () => {
+    it('hides the text input when dropdown value is number', () => {
       // When
       handler(event);
 
       // Then
       expect(hide).toHaveBeenCalledWith(textInput);
+    });
+
+    it('disables the text input when dropdown value is number', () => {
+      // When
+      handler(event);
+
+      // Then
       expect(disable).toHaveBeenCalledWith(textInput);
     });
 
