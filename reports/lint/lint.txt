@@ -2,11 +2,12 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
    66:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
   139:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
-  397:29  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  638:25  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
-  655:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
-  704:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  824:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
+  398:29  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  398:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
+  639:25  warning  Arrow function has a complexity of 5. Maximum allowed is 2                   complexity
+  656:36  warning  Arrow function has a complexity of 13. Maximum allowed is 2                  complexity
+  705:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  825:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
@@ -42,4 +43,4 @@
   1005:9   warning  Ternary operator used                                       no-ternary
   1027:40  warning  Ternary operator used                                       no-ternary
 
-✖ 29 problems (0 errors, 29 warnings)
+✖ 30 problems (0 errors, 30 warnings)

@@ -392,14 +392,15 @@ const createNumberInput = (value, onChange, dom) => {
  * @param {HTMLElement} container - The container element
  * @param {HTMLInputElement} textInput - The text input element
  * @param {HTMLInputElement} numberInput - The number input element to position
+ * @param {Object} dom - The DOM utilities object
  * @returns {void}
  */
-const positionNumberInput = (container, textInput, numberInput) => {
+const positionNumberInput = (container, textInput, numberInput, dom) => {
   const nextSibling = textInput?.nextSibling || null;
   if (nextSibling) {
-    container.insertBefore(numberInput, nextSibling);
+    dom.insertBefore(container, numberInput, nextSibling);
   } else {
-    container.appendChild(numberInput);
+    dom.removeChild(container, numberInput);
   }
 };
 
@@ -419,7 +420,7 @@ export const ensureNumberInput = (container, textInput, dom) => {
       createUpdateTextInputValue(textInput, dom),
       dom
     );
-    positionNumberInput(container, textInput, numberInput);
+    positionNumberInput(container, textInput, numberInput, dom);
   }
 
   return numberInput;
