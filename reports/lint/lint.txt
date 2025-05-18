@@ -38,6 +38,7 @@
    895:41  warning  Ternary operator used                                       no-ternary
    896:41  warning  Ternary operator used                                       no-ternary
    933:9   warning  Ternary operator used                                       no-ternary
-  1001:9   warning  Ternary operator used                                       no-ternary
+  1003:9   warning  Ternary operator used                                       no-ternary
+  1025:44  warning  Ternary operator used                                       no-ternary
 
-✖ 27 problems (0 errors, 27 warnings)
+✖ 28 problems (0 errors, 28 warnings)

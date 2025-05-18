@@ -993,9 +993,11 @@ describe('createInputDropdownHandler', () => {
   });
 
   describe('when select value is number', () => {
-    let handler, dom;
+    let handler, dom, eventTargetValue;
 
     beforeEach(() => {
+      eventTargetValue = {};
+
       const selectValue = 'number';
       const getValue = jest.fn((element) =>
         element === select ? selectValue : null
@@ -1020,6 +1022,7 @@ describe('createInputDropdownHandler', () => {
         ...baseDom,
         getValue,
         createElement,
+        getTargetValue: jest.fn((event) => event === 'event' ? eventTargetValue : null),
         setType: jest.fn(),
         querySelector: createQuerySelector(numberSelectorMap)
       };
