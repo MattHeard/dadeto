@@ -988,20 +988,16 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('reveals and enables the text input', () => {
+    it('handles text input cleanup and setup', () => {
       // When
       handler(event);
 
       // Then
+      // Verify text input is revealed and enabled
       expect(reveal).toHaveBeenCalledWith(textInput);
       expect(enable).toHaveBeenCalledWith(textInput);
-    });
 
-    it('calls _dispose on number input', () => {
-      // When
-      handler(event);
-
-      // Then
+      // Verify number input is cleaned up
       expect(numberInput._dispose).toHaveBeenCalled();
     });
 
