@@ -954,13 +954,15 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('should call the handler with kv value', () => {
+    it('should call getCurrentTarget with the event', () => {
       // Arrange
-      console.log('Starting test');
       const mockEvent = { target: { value: 'kv' } };
 
       // Act - call the handler directly with our mock event
       handler(mockEvent);
+
+      // Assert - verify getCurrentTarget was called with the event
+      expect(dom.getCurrentTarget).toHaveBeenCalledWith(mockEvent);
     });
   });
 
