@@ -926,10 +926,8 @@ describe('createInputDropdownHandler', () => {
   });
 
   describe('when select value is kv', () => {
-    let handler, dom;
-
-    beforeEach(() => {
-      // Create mocks
+    it('should call getCurrentTarget with the event', () => {
+      // Given
       const selectValue = 'kv';
       const getValue = jest.fn((element) =>
         element === select ? selectValue : null
@@ -941,7 +939,7 @@ describe('createInputDropdownHandler', () => {
       const setClassName = jest.fn();
 
       // Create DOM mock object by extending baseDom
-      dom = {
+      const dom = {
         ...baseDom,
         getValue,
         createElement,
@@ -952,10 +950,8 @@ describe('createInputDropdownHandler', () => {
       };
 
       // Create the handler with the mocked DOM
-      handler = createInputDropdownHandler(dom);
-    });
+      const handler = createInputDropdownHandler(dom);
 
-    it('should call getCurrentTarget with the event', () => {
       // Arrange
       const mockSelect = { value: 'kv' };
       dom.getCurrentTarget.mockReturnValue(mockSelect);

@@ -38,9 +38,9 @@
    872:7   warning  Ternary operator used                                       no-ternary
    896:41  warning  Ternary operator used                                       no-ternary
    897:41  warning  Ternary operator used                                       no-ternary
-   935:9   warning  Ternary operator used                                       no-ternary
-   976:9   warning  Ternary operator used                                       no-ternary
-  1013:9   warning  Ternary operator used                                       no-ternary
-  1035:40  warning  Ternary operator used                                       no-ternary
+   933:9   warning  Ternary operator used                                       no-ternary
+   972:9   warning  Ternary operator used                                       no-ternary
+  1009:9   warning  Ternary operator used                                       no-ternary
+  1031:40  warning  Ternary operator used                                       no-ternary
 
 ✖ 30 problems (0 errors, 30 warnings)
