@@ -40,8 +40,8 @@
    896:41  warning  Ternary operator used                                       no-ternary
    897:41  warning  Ternary operator used                                       no-ternary
    934:9   warning  Ternary operator used                                       no-ternary
-   973:9   warning  Ternary operator used                                       no-ternary
-  1044:9   warning  Ternary operator used                                       no-ternary
-  1066:40  warning  Ternary operator used                                       no-ternary
+   974:9   warning  Ternary operator used                                       no-ternary
+  1045:9   warning  Ternary operator used                                       no-ternary
+  1067:40  warning  Ternary operator used                                       no-ternary
 
 ✖ 31 problems (0 errors, 31 warnings)

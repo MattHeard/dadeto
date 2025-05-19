@@ -956,6 +956,7 @@ describe('createInputDropdownHandler', () => {
 
     it('should call the handler with kv value', () => {
       // Arrange
+      console.log('Starting test');
       const mockEvent = { target: { value: 'kv' } };
 
       // Act - call the handler directly with our mock event
