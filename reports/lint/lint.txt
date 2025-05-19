@@ -41,8 +41,8 @@
    897:41  warning  Ternary operator used                                       no-ternary
    928:9   warning  'handler' is assigned a value but never used                no-unused-vars
    934:9   warning  Ternary operator used                                       no-ternary
-   968:9   warning  Ternary operator used                                       no-ternary
-  1039:9   warning  Ternary operator used                                       no-ternary
-  1061:40  warning  Ternary operator used                                       no-ternary
+   970:9   warning  Ternary operator used                                       no-ternary
+  1041:9   warning  Ternary operator used                                       no-ternary
+  1063:40  warning  Ternary operator used                                       no-ternary
 
 ✖ 32 problems (0 errors, 32 warnings)
