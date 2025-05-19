@@ -130,6 +130,15 @@ export const setType = (element, type) => {
   element.type = type;
 };
 
+/**
+ * Sets the placeholder text of an input element
+ * @param {HTMLInputElement|HTMLTextAreaElement} element - The input element to set the placeholder for
+ * @param {string} placeholder - The placeholder text to set
+ */
+export const setPlaceholder = (element, placeholder) => {
+  element.placeholder = placeholder;
+};
+
 export const setTextContent = (element, content) => {
   element.textContent = content;
 };

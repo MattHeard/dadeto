@@ -688,7 +688,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       // Key field
       const keyEl = dom.createElement('input');
       dom.setType(keyEl, 'text');
-      keyEl.placeholder = 'Key';
+      dom.setPlaceholder(keyEl, 'Key');
       keyEl.value = key;
       // store the current key so we can track renames without re‑rendering
       keyEl.dataset.prevKey = key;
