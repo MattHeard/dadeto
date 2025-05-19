@@ -64,30 +64,59 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 
 export const createInputDropdownHandler = (dom) => {
   return (event) => {
-    const select = dom.getCurrentTarget(event);
-    const container = dom.getParentElement(select); // <div class="value">
-    const textInput = dom.querySelector(container, 'input[type="text"]');
-    const selectValue = dom.getValue(select);
+    console.log('1. Starting createInputDropdownHandler');
 
+    console.log('2. Getting current target (select element)');
+    const select = dom.getCurrentTarget(event);
+    console.log('3. Got select:', { select, value: select?.value });
+
+    console.log('4. Getting parent element (container)');
+    const container = dom.getParentElement(select);
+    console.log('5. Got container:', { container });
+
+    console.log('6. Finding text input in container');
+    const textInput = dom.querySelector(container, 'input[type="text"]');
+    console.log('7. Found text input:', { textInput });
+
+    console.log('8. Getting select value');
+    const selectValue = dom.getValue(select);
+    console.log('9. Got select value:', selectValue);
+
+    console.log('10. Handling text input visibility/state');
     if (selectValue === 'text') {
+      console.log('10a. Select value is "text" - revealing and enabling text input');
       dom.reveal(textInput);
       dom.enable(textInput);
     } else {
+      console.log('10b. Select value is not "text" - hiding and disabling text input');
       dom.hide(textInput);
       dom.disable(textInput);
     }
 
+    console.log('11. Handling input type specific logic');
     if (selectValue === 'number') {
+      console.log('11a. Select value is "number" - handling number input');
       maybeRemoveKV(container, dom);
       ensureNumberInput(container, textInput, dom);
     } else if (selectValue === 'kv') {
+      console.log('11b. Select value is "kv" - handling key-value input');
+      console.log('11b1. Before calling maybeRemoveNumber');
       maybeRemoveNumber(container, dom);
+      console.log('11b2. After calling maybeRemoveNumber');
+      console.log('11b3. Before calling ensureKeyValueInput');
       ensureKeyValueInput(container, textInput, dom);
+      console.log('11b4. After calling ensureKeyValueInput');
     } else {
-      // 'text' or any other type – clean up specialised inputs
+      console.log('11c. Select value is neither "number" nor "kv" - cleaning up');
+      console.log('11c1. Before calling maybeRemoveNumber');
       maybeRemoveNumber(container, dom);
+      console.log('11c2. After calling maybeRemoveNumber');
+      console.log('11c3. Before calling maybeRemoveKV');
       maybeRemoveKV(container, dom);
+      console.log('11c4. After calling maybeRemoveKV');
     }
+
+    console.log('12. Finished createInputDropdownHandler');
   };
 };
 
