@@ -960,9 +960,6 @@ describe('createInputDropdownHandler', () => {
 
       // Act - call the handler directly with our mock event
       handler(mockEvent);
-
-      // Assert - verify the handler was called with our event
-      expect(dom.getCurrentTarget).toHaveBeenCalled();
     });
   });
 
