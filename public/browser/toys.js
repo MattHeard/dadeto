@@ -691,7 +691,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       dom.setPlaceholder(keyEl, 'Key');
       dom.setValue(keyEl, key);
       // store the current key so we can track renames without re‑rendering
-      keyEl.dataset.prevKey = key;
+      dom.setDataAttribute(keyEl, 'prevKey', key);
       const onKey = e => {
         const prevKey = keyEl.dataset.prevKey;
         const newKey = e.target.value;
@@ -706,7 +706,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         if (newKey !== '' && !(newKey in rows)) {
           rows[newKey] = rows[prevKey];
           delete rows[prevKey];
-          keyEl.dataset.prevKey = newKey; // track latest key name
+          dom.setDataAttribute(keyEl, 'prevKey', newKey); // track latest key name
         }
         // Otherwise (empty or duplicate), leave the mapping under prevKey.
 

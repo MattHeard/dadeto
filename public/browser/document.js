@@ -139,6 +139,16 @@ export const setPlaceholder = (element, placeholder) => {
   element.placeholder = placeholder;
 };
 
+/**
+ * Sets a data attribute on an element
+ * @param {HTMLElement} element - The element to set the data attribute on
+ * @param {string} name - The name of the data attribute (without the 'data-' prefix)
+ * @param {string} value - The value to set
+ */
+export const setDataAttribute = (element, name, value) => {
+  element.dataset[name] = value;
+};
+
 export const setTextContent = (element, content) => {
   element.textContent = content;
 };

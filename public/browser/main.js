@@ -124,6 +124,7 @@ const dom = {
   makeIntersectionObserver,
   setType,
   setPlaceholder,
+  setDataAttribute,
   addClass,
   appendChild,
   createTextNode,
