@@ -51,6 +51,7 @@ import {
   getTargetValue,
   hasNextSiblingClass,
   setClassName,
+  setDataAttribute,
   setPlaceholder,
   getRandomNumber,
   addClass,
