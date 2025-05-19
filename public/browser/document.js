@@ -162,10 +162,130 @@ export const setTextContent = (element, content) => {
 export const makeIntersectionObserver = (callback) =>
   new IntersectionObserver(callback, { root: null, threshold: 0.1 });
 
-export const isIntersecting = (entry) => entry.isIntersecting;
-
 export const disconnectObserver = (observer) => {
   observer.disconnect();
+};
+
+export const isIntersecting = (entry) => entry.isIntersecting;
+
+/**
+ * Centralized DOM manipulation utilities
+ */
+export const dom = {
+
+  /**
+   * Removes all children from the given DOM element.
+   * @param {HTMLElement} element - The parent element to clear.
+   */
+  removeAllChildren: (element) => {
+    while (element.firstChild) {
+      removeChildNode(element);
+    }
+  },
+
+  /**
+   * Gets the current target of an event
+   * @param {Event} event - The event object
+   * @returns {EventTarget} The current target of the event
+   */
+  getCurrentTarget: (event) => event.currentTarget,
+
+  /**
+   * Gets the parent element of the given element
+   * @param {Element} element - The element to get the parent of
+   * @returns {Element|null} The parent element, or null if the element has no parent
+   */
+  getParentElement: (element) => element.parentElement,
+
+  /**
+   * Gets the value from an event target
+   * @param {Event} event - The event object
+   * @returns {string|number|boolean|Array<string>|FileList|null} The value of the event target
+   */
+  getTargetValue: (event) => event.target.value,
+
+  /**
+   * Gets the value of a form element
+   * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element - The form element to get the value from (assumed to be truthy)
+   * @returns {string|number|boolean|Array<string>|FileList|null} The value of the element, or null if the element has no value
+   */
+  getValue: (element) => element.value ?? null,
+
+  /**
+   * Sets the value of a form element
+   * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element - The form element to set the value on (assumed to be truthy)
+   * @param {string|number|boolean|Array<string>|FileList} value - The value to set
+   * @returns {void}
+   */
+  setValue: (element, value) => {
+    element.value = value;
+  },
+
+  /**
+   * Enables the given input element by setting its disabled property to false
+   * @param {HTMLElement} input - The input element to enable
+   */
+  enable: (input) => {
+    input.disabled = false;
+  },
+
+  /**
+   * Disables the given input element by setting its disabled property to true
+   * @param {HTMLElement} input - The input element to disable
+   */
+  disable: (input) => {
+    input.disabled = true;
+  },
+
+  /**
+   * Gets the next sibling node of the given element
+   * @param {Node} element - The element to get the next sibling of
+   * @returns {Node|null} The next sibling node (which could be an element, text node, etc.), or null if there isn't one
+   */
+  getNextSibling: (element) => element.nextSibling,
+
+  /**
+   * Removes the next sibling node of the given element
+   * @param {Node} link - The element to remove the next sibling of
+   */
+  removeNextSibling: (link) => link.nextElementSibling && link.nextElementSibling.remove(),
+
+  /**
+   * Sets the type of an input element
+   * @param {HTMLInputElement} element - The input element to set the type for
+   * @param {string} type - The type to set (e.g., 'text', 'number', 'email')
+   */
+  setType: (element, type) => {
+    element.type = type;
+  },
+
+  /**
+   * Sets the placeholder text of an input element
+   * @param {HTMLInputElement|HTMLTextAreaElement} element - The input element to set the placeholder for
+   * @param {string} placeholder - The placeholder text to set
+   */
+  setPlaceholder: (element, placeholder) => {
+    element.placeholder = placeholder;
+  },
+
+  /**
+   * Sets a data attribute on an element
+   * @param {HTMLElement} element - The element to set the data attribute on
+   * @param {string} name - The name of the data attribute (without the 'data-' prefix)
+   * @param {string} value - The value to set
+   */
+  setDataAttribute: (element, name, value) => {
+    element.dataset[name] = value;
+  },
+
+  /**
+   * Sets the text content of an element
+   * @param {HTMLElement} element - The element to set the text content of
+   * @param {string} content - The text content to set
+   */
+  setTextContent: (element, content) => {
+    element.textContent = content;
+  },
 };
 
 /**
@@ -198,4 +318,3 @@ export const getInteractiveComponentCount = (win) => {
 export const getInteractiveComponents = (win) => {
   return win.interactiveComponents || [];
 };
-
