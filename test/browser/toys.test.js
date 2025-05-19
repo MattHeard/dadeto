@@ -915,6 +915,7 @@ describe('createInputDropdownHandler', () => {
     baseDom = {
       getCurrentTarget,
       getParentElement,
+      getNextSibling: (element) => element.nextSibling, // Add getNextSibling
       querySelector,
       reveal,
       enable,
