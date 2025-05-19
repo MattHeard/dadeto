@@ -655,7 +655,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   let kvContainer = dom.querySelector(container, '.kv-container');
   if (!kvContainer) {
     kvContainer = dom.createElement('div');
-    kvContainer.className = 'kv-container';
+    dom.setClassName(kvContainer, 'kv-container');
 
     // Insert right after the reference text input for a predictable layout
     if (textInput?.nextSibling) {
