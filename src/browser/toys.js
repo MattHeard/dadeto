@@ -658,7 +658,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
     dom.setClassName(kvContainer, 'kv-container');
 
     // Insert right after the reference text input for a predictable layout
-    if (textInput?.nextSibling) {
+    if (textInput.nextSibling) {
       container.insertBefore(kvContainer, textInput.nextSibling);
     } else {
       container.appendChild(kvContainer);
