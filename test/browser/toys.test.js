@@ -988,40 +988,20 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('handles text input cleanup and setup', () => {
+    it('handles text input setup and cleanup of other input types', () => {
       // When
       handler(event);
 
-      // Then
-      // Verify text input is revealed and enabled
+      // Then - Verify text input is properly set up
       expect(reveal).toHaveBeenCalledWith(textInput);
       expect(enable).toHaveBeenCalledWith(textInput);
 
       // Verify number input is cleaned up
       expect(numberInput._dispose).toHaveBeenCalled();
-    });
-
-    it('calls removeChild with container and number input', () => {
-      // When
-      handler(event);
-
-      // Then
       expect(removeChild).toHaveBeenCalledWith(container, numberInput);
-    });
 
-    it('calls _dispose on KV container', () => {
-      // When
-      handler(event);
-
-      // Then
+      // Verify KV container is cleaned up
       expect(kvContainer._dispose).toHaveBeenCalled();
-    });
-
-    it('calls removeChild with container and KV container', () => {
-      // When
-      handler(event);
-
-      // Then
       expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
     });
   });

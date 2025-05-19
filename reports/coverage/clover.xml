@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747683655274" clover="3.2.0">
-  <project timestamp="1747683655274" name="All files">
+<coverage generated="1747683751976" clover="3.2.0">
+  <project timestamp="1747683751976" name="All files">
     <metrics statements="1635" coveredstatements="1528" conditionals="494" coveredconditionals="457" methods="640" coveredmethods="617" elements="2769" coveredelements="2602" complexity="0" loc="1635" ncloc="1635" packages="17" files="34" classes="34"/>
     <package name="browser">
       <metrics statements="493" coveredstatements="386" conditionals="112" coveredconditionals="75" methods="147" coveredmethods="124"/>
@@ -218,42 +218,42 @@
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
         <metrics statements="297" coveredstatements="190" conditionals="64" coveredconditionals="27" methods="84" coveredmethods="61"/>
         <line num="7" count="1" type="stmt"/>
-        <line num="8" count="13" type="stmt"/>
+        <line num="8" count="7" type="stmt"/>
         <line num="21" count="1" type="stmt"/>
         <line num="22" count="5" type="stmt"/>
         <line num="23" count="5" type="stmt"/>
         <line num="24" count="5" type="stmt"/>
         <line num="33" count="1" type="stmt"/>
-        <line num="34" count="5" type="stmt"/>
-        <line num="35" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="36" count="4" type="stmt"/>
-        <line num="37" count="4" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="35" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
         <line num="47" count="1" type="stmt"/>
-        <line num="48" count="10" type="stmt"/>
-        <line num="49" count="10" type="cond" truecount="2" falsecount="0"/>
-        <line num="50" count="9" type="stmt"/>
-        <line num="51" count="9" type="stmt"/>
+        <line num="48" count="7" type="stmt"/>
+        <line num="49" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="50" count="6" type="stmt"/>
+        <line num="51" count="6" type="stmt"/>
         <line num="61" count="1" type="stmt"/>
         <line num="62" count="1" type="stmt"/>
         <line num="65" count="1" type="stmt"/>
-        <line num="66" count="10" type="stmt"/>
-        <line num="67" count="10" type="stmt"/>
-        <line num="68" count="10" type="stmt"/>
-        <line num="69" count="10" type="stmt"/>
-        <line num="70" count="10" type="stmt"/>
-        <line num="72" count="10" type="cond" truecount="2" falsecount="0"/>
-        <line num="73" count="4" type="stmt"/>
-        <line num="74" count="4" type="stmt"/>
+        <line num="66" count="7" type="stmt"/>
+        <line num="67" count="7" type="stmt"/>
+        <line num="68" count="7" type="stmt"/>
+        <line num="69" count="7" type="stmt"/>
+        <line num="70" count="7" type="stmt"/>
+        <line num="72" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="73" count="1" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
         <line num="76" count="6" type="stmt"/>
         <line num="77" count="6" type="stmt"/>
-        <line num="80" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="80" count="7" type="cond" truecount="2" falsecount="0"/>
         <line num="81" count="5" type="stmt"/>
         <line num="82" count="5" type="stmt"/>
-        <line num="83" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="83" count="2" type="cond" truecount="1" falsecount="1"/>
         <line num="84" count="0" type="stmt"/>
         <line num="85" count="0" type="stmt"/>
-        <line num="88" count="5" type="stmt"/>
-        <line num="89" count="5" type="stmt"/>
+        <line num="88" count="2" type="stmt"/>
+        <line num="89" count="2" type="stmt"/>
         <line num="100" count="1" type="stmt"/>
         <line num="101" count="5" type="stmt"/>
         <line num="102" count="5" type="stmt"/>
