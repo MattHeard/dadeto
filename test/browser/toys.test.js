@@ -1047,37 +1047,20 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('cleans up KV container and hides text input when dropdown value is number', () => {
+    it('handles number input setup and cleanup when dropdown value is number', () => {
       // When
       handler(event);
 
-      // Then
+      // Then - Verify KV container cleanup
       expect(kvContainer._dispose).toHaveBeenCalled();
-      expect(hide).toHaveBeenCalledWith(textInput);
-    });
-
-    it('disables the text input when dropdown value is number', () => {
-      // When
-      handler(event);
-
-      // Then
-      expect(disable).toHaveBeenCalledWith(textInput);
-    });
-
-    it('calls setType with input and number when select value is number', () => {
-      // When
-      handler(event);
-
-      // Then
-      expect(dom.setType).toHaveBeenCalledWith(numberInput, 'number');
-    });
-
-    it('calls removeChild with container and KV container when dropdown value is number', () => {
-      // When
-      handler(event);
-
-      // Then
       expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
+
+      // Verify text input state
+      expect(hide).toHaveBeenCalledWith(textInput);
+      expect(disable).toHaveBeenCalledWith(textInput);
+
+      // Verify number input setup
+      expect(dom.setType).toHaveBeenCalledWith(numberInput, 'number');
     });
   });
 });
