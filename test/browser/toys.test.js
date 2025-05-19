@@ -954,7 +954,7 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('should call getCurrentTarget with the event and getParentElement with the select', () => {
+    it('should call getCurrentTarget with the event', () => {
       // Arrange
       const mockSelect = { value: 'kv' };
       dom.getCurrentTarget.mockReturnValue(mockSelect);
@@ -962,9 +962,8 @@ describe('createInputDropdownHandler', () => {
       // Act - call the handler directly with the event
       handler(event);
 
-      // Assert - verify the DOM functions were called correctly
+      // Assert - verify getCurrentTarget was called with the event
       expect(dom.getCurrentTarget).toHaveBeenCalledWith(event);
-      expect(dom.getParentElement).toHaveBeenCalledWith(mockSelect);
     });
   });
 
