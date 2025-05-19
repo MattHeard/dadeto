@@ -938,7 +938,8 @@ describe('createInputDropdownHandler', () => {
       // Create DOM mock object by extending baseDom
       dom = {
         ...baseDom,
-        getValue
+        getValue,
+        createElement
       };
 
       // Create the handler with the mocked DOM
