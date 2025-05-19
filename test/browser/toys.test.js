@@ -1005,11 +1005,9 @@ describe('createInputDropdownHandler', () => {
 
 
   describe('when select value is number', () => {
-    let handler, dom, eventTargetValue;
-
-    beforeEach(() => {
-      eventTargetValue = {};
-
+    it('handles number input setup and cleanup when dropdown value is number', () => {
+      // Given
+      const eventTargetValue = {};
       const selectValue = 'number';
       const getValue = jest.fn((element) =>
         element === select ? selectValue : null
@@ -1030,7 +1028,7 @@ describe('createInputDropdownHandler', () => {
       ]);
 
       // Create DOM mock object with the new querySelector
-      dom = {
+      const dom = {
         ...baseDom,
         getValue,
         createElement,
@@ -1041,10 +1039,8 @@ describe('createInputDropdownHandler', () => {
       };
 
       // Create the handler with the mocked DOM
-      handler = createInputDropdownHandler(dom);
-    });
+      const handler = createInputDropdownHandler(dom);
 
-    it('handles number input setup and cleanup when dropdown value is number', () => {
       // When
       handler(event);
 
