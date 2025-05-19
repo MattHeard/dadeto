@@ -936,6 +936,7 @@ describe('createInputDropdownHandler', () => {
       const createElement = jest.fn();
       const querySelector = jest.fn(() => null);
       const removeAllChildren = jest.fn();
+      const insertBefore = jest.fn();
 
       // Create DOM mock object by extending baseDom
       dom = {
@@ -943,7 +944,8 @@ describe('createInputDropdownHandler', () => {
         getValue,
         createElement,
         querySelector,
-        removeAllChildren
+        removeAllChildren,
+        insertBefore
       };
 
       // Create the handler with the mocked DOM
