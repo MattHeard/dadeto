@@ -954,9 +954,15 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('should handle the kv case (placeholder)', () => {
-      // TODO: implement test
-      expect(true).toBe(true);
+    it('should call the handler with kv value', () => {
+      // Arrange
+      const mockEvent = { target: { value: 'kv' } };
+
+      // Act - call the handler directly with our mock event
+      handler(mockEvent);
+
+      // Assert - verify the handler was called with our event
+      expect(dom.getCurrentTarget).toHaveBeenCalled();
     });
   });
 
