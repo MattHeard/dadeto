@@ -683,7 +683,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
     const entries = Object.entries(rows);
     entries.forEach(([key, value], idx) => {
       const rowEl = dom.createElement('div');
-      rowEl.className = 'kv-row';
+      dom.setClassName(rowEl, 'kv-row');
 
       // Key field
       const keyEl = dom.createElement('input');
