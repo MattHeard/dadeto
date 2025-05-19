@@ -655,7 +655,8 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   if (!kvContainer) {
     kvContainer = dom.createElement('div');
     dom.setClassName(kvContainer, 'kv-container');
-    dom.insertBefore(container, kvContainer, textInput.nextSibling);
+    const nextSibling = dom.getNextSibling(textInput);
+    dom.insertBefore(container, kvContainer, nextSibling);
   }
 
   // ---------------------------------------------------------------------
