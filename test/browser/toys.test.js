@@ -925,6 +925,25 @@ describe('createInputDropdownHandler', () => {
   });
 
   describe('when select value is kv', () => {
+    let handler, dom;
+
+    beforeEach(() => {
+      // Create mocks
+      const selectValue = 'kv';
+      const getValue = jest.fn((element) =>
+        element === select ? selectValue : null
+      );
+
+      // Create DOM mock object by extending baseDom
+      dom = {
+        ...baseDom,
+        getValue
+      };
+
+      // Create the handler with the mocked DOM
+      handler = createInputDropdownHandler(dom);
+    });
+
     it('should handle the kv case (placeholder)', () => {
       // TODO: implement test
       expect(true).toBe(true);

@@ -39,8 +39,10 @@
    872:7   warning  Ternary operator used                                       no-ternary
    896:41  warning  Ternary operator used                                       no-ternary
    897:41  warning  Ternary operator used                                       no-ternary
-   941:9   warning  Ternary operator used                                       no-ternary
-  1012:9   warning  Ternary operator used                                       no-ternary
-  1034:40  warning  Ternary operator used                                       no-ternary
+   928:9   warning  'handler' is assigned a value but never used                no-unused-vars
+   934:9   warning  Ternary operator used                                       no-ternary
+   960:9   warning  Ternary operator used                                       no-ternary
+  1031:9   warning  Ternary operator used                                       no-ternary
+  1053:40  warning  Ternary operator used                                       no-ternary
 
-✖ 30 problems (0 errors, 30 warnings)
+✖ 32 problems (0 errors, 32 warnings)
