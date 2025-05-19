@@ -988,19 +988,12 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('calls reveal with text input', () => {
+    it('reveals and enables the text input', () => {
       // When
       handler(event);
 
       // Then
       expect(reveal).toHaveBeenCalledWith(textInput);
-    });
-
-    it('calls enable with text input', () => {
-      // When
-      handler(event);
-
-      // Then
       expect(enable).toHaveBeenCalledWith(textInput);
     });
 
