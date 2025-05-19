@@ -1047,19 +1047,12 @@ describe('createInputDropdownHandler', () => {
       handler = createInputDropdownHandler(dom);
     });
 
-    it('calls _dispose on KV container when dropdown value is number', () => {
+    it('cleans up KV container and hides text input when dropdown value is number', () => {
       // When
       handler(event);
 
       // Then
       expect(kvContainer._dispose).toHaveBeenCalled();
-    });
-
-    it('hides the text input when dropdown value is number', () => {
-      // When
-      handler(event);
-
-      // Then
       expect(hide).toHaveBeenCalledWith(textInput);
     });
 
