@@ -924,6 +924,10 @@ describe('createInputDropdownHandler', () => {
     };
   });
 
+  describe('when select value is kv', () => {
+    // Tests will go here
+  });
+
   describe('when select value is text', () => {
     let handler, dom;
 
