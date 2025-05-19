@@ -969,28 +969,25 @@ describe('createInputDropdownHandler', () => {
   });
 
   describe('when select value is text', () => {
-    let handler, dom;
-
-    beforeEach(() => {
-      // Create mocks
+    it('handles text input setup and cleanup of other input types', () => {
+      // Given
       const selectValue = 'text';
       const getValue = jest.fn((element) =>
         element === select ? selectValue : null
       );
 
       // Create DOM mock object by extending baseDom
-      dom = {
+      const dom = {
         ...baseDom,
         getValue
       };
 
       // Create the handler with the mocked DOM
-      handler = createInputDropdownHandler(dom);
-    });
+      const handler = createInputDropdownHandler(dom);
 
-    it('handles text input setup and cleanup of other input types', () => {
       // When
       handler(event);
+
 
       // Then - Verify text input is properly set up
       expect(reveal).toHaveBeenCalledWith(textInput);
