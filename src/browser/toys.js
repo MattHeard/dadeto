@@ -651,18 +651,11 @@ const syncHiddenField = (textInput, rows) => {
  * @returns {HTMLElement} The container element for the key-value editor
  */
 export const ensureKeyValueInput = (container, textInput, dom) => {
-  // Re‑use an existing editor if one is already present
   let kvContainer = dom.querySelector(container, '.kv-container');
   if (!kvContainer) {
     kvContainer = dom.createElement('div');
     dom.setClassName(kvContainer, 'kv-container');
-
-    // Insert right after the reference text input for a predictable layout
-    if (textInput.nextSibling) {
-      container.insertBefore(kvContainer, textInput.nextSibling);
-    } else {
-      container.appendChild(kvContainer);
-    }
+    container.insertBefore(kvContainer, textInput.nextSibling);
   }
 
   // ---------------------------------------------------------------------
