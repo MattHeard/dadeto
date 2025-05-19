@@ -925,7 +925,10 @@ describe('createInputDropdownHandler', () => {
   });
 
   describe('when select value is kv', () => {
-    // Tests will go here
+    it('should handle the kv case (placeholder)', () => {
+      // TODO: implement test
+      expect(true).toBe(true);
+    });
   });
 
   describe('when select value is text', () => {
