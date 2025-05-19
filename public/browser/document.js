@@ -3,6 +3,11 @@ export const getElementById = (id) => document.getElementById(id);
 export const querySelector = (el, selector) => el.querySelector(selector);
 export const querySelectorAll = (docOrEl, selector) => docOrEl.querySelectorAll(selector);
 export const addClass = (element, className) => element.classList.add(className);
+
+export const setClassName = (element, className) => {
+  element.className = className;
+};
+
 export const getAudioElements = () => querySelectorAll(document, "audio");
 export const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
 export const createElement = (tag) => document.createElement(tag);

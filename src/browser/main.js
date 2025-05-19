@@ -49,6 +49,7 @@ import {
   getCurrentTime,
   getTargetValue,
   hasNextSiblingClass,
+  setClassName,
   getRandomNumber,
   addClass,
   removeAllChildren,
@@ -107,6 +108,7 @@ function createEnv() {
 const dom = {
   createElement,
   removeControlsAttribute,
+  setClassName,
   getAudioElements,
   setTextContent,
   stopDefault,

@@ -652,7 +652,7 @@ const syncHiddenField = (textInput, rows) => {
  */
 export const ensureKeyValueInput = (container, textInput, dom) => {
   // Re‑use an existing editor if one is already present
-  let kvContainer = container.querySelector('.kv-container');
+  let kvContainer = dom.querySelector(container, '.kv-container');
   if (!kvContainer) {
     kvContainer = dom.createElement('div');
     kvContainer.className = 'kv-container';
