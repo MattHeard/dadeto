@@ -113,11 +113,11 @@ export const disable = (input) => {
 };
 
 /**
- * Gets the next sibling element of the given element
- * @param {Element} element - The element to get the next sibling of
- * @returns {Element|null} The next sibling element, or null if there isn't one
+ * Gets the next sibling node of the given element
+ * @param {Node} element - The element to get the next sibling of
+ * @returns {Node|null} The next sibling node (which could be an element, text node, etc.), or null if there isn't one
  */
-export const getNextSibling = (element) => element.nextElementSibling;
+export const getNextSibling = (element) => element.nextSibling;
 
 export const removeNextSibling = link => link.nextElementSibling && link.nextElementSibling.remove();
 
