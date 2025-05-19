@@ -396,7 +396,7 @@ const createNumberInput = (value, onChange, dom) => {
  * @returns {void}
  */
 const positionNumberInput = (container, textInput, numberInput, dom) => {
-  const nextSibling = textInput.nextSibling;
+  const nextSibling = dom.getNextSibling(textInput);
   container.insertBefore(numberInput, nextSibling);
 };
 
