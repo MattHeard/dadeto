@@ -794,7 +794,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
     }
 
     const entries = Object.entries(rows);
-    entries.forEach(([key, value], idx) => {
+    const createRow = ([key, value], idx) => {
       const rowEl = dom.createElement('div');
       dom.setClassName(rowEl, 'kv-row');
 
@@ -811,6 +811,11 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       disposers.push(() => dom.removeEventListener(keyEl, 'input', onKey));
 
       // Value field
+      return { rowEl, keyEl };
+    };
+
+    entries.forEach((entry, idx) => {
+      const { rowEl, keyEl } = createRow(entry, idx);
       const valueEl = dom.createElement('input');
       dom.setType(valueEl, 'text');
       dom.setPlaceholder(valueEl, 'Value');
