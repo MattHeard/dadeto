@@ -891,7 +891,8 @@
 <a name='L826'></a><a href='#L826'>826</a>
 <a name='L827'></a><a href='#L827'>827</a>
 <a name='L828'></a><a href='#L828'>828</a>
-<a name='L829'></a><a href='#L829'>829</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L829'></a><a href='#L829'>829</a>
+<a name='L830'></a><a href='#L830'>830</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1517,6 +1518,7 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2352,14 +2354,15 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
  * Only includes non-empty key-value pairs in the output.
  * @param {HTMLInputElement} textInput - The hidden input element to update (assumed to be truthy)
  * @param {Object} rows - The key-value pairs to sync
+ * @param {Object} dom - The DOM utilities object
  */
-const syncHiddenField = <span class="fstat-no" title="function not covered" >(t</span>extInput, rows) =&gt; {
+const syncHiddenField = <span class="fstat-no" title="function not covered" >(t</span>extInput, rows, dom) =&gt; {
   // Only include keys with non-empty key or value
   const filtered = <span class="cstat-no" title="statement not covered" >{};</span>
 <span class="cstat-no" title="statement not covered" >  for (const [k, v] of Object.entries(rows)) {</span>
 <span class="cstat-no" title="statement not covered" >    if (k || v) {<span class="cstat-no" title="statement not covered" >filtered[k] = v;}</span></span>
   }
-<span class="cstat-no" title="statement not covered" >  textInput.value = JSON.stringify(filtered);</span>
+<span class="cstat-no" title="statement not covered" >  dom.setValue(textInput, JSON.stringify(filtered));</span>
 };
 &nbsp;
 /**
@@ -2418,7 +2421,7 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
 &nbsp;
         // If nothing changed, just keep the hidden JSON fresh.
 <span class="cstat-no" title="statement not covered" >        if (newKey === prevKey) {</span>
-<span class="cstat-no" title="statement not covered" >          syncHiddenField(textInput, rows);</span>
+<span class="cstat-no" title="statement not covered" >          syncHiddenField(textInput, rows, dom);</span>
 <span class="cstat-no" title="statement not covered" >          return;</span>
         }
 &nbsp;
@@ -2430,7 +2433,7 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
         }
         // Otherwise (empty or duplicate), leave the mapping under prevKey.
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        syncHiddenField(textInput, rows);</span>
+<span class="cstat-no" title="statement not covered" >        syncHiddenField(textInput, rows, dom);</span>
       };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      keyEl.addEventListener('input', onKey);</span>
@@ -2444,7 +2447,7 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
       const onValue = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >e </span>=&gt; {</span>
         const rowKey = <span class="cstat-no" title="statement not covered" >dom.getDataAttribute(keyEl, 'prevKey');</span> // may have changed via onKey
 <span class="cstat-no" title="statement not covered" >        rows[rowKey] = e.target.value;</span>
-<span class="cstat-no" title="statement not covered" >        syncHiddenField(textInput, rows);</span>
+<span class="cstat-no" title="statement not covered" >        syncHiddenField(textInput, rows, dom);</span>
       };
 <span class="cstat-no" title="statement not covered" >      valueEl.addEventListener('input', onValue);</span>
 <span class="cstat-no" title="statement not covered" >      disposers.push(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >valueEl.removeEventListener('input', onValue))</span>;</span>
@@ -2481,7 +2484,7 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
 <span class="cstat-no" title="statement not covered" >      kvContainer.appendChild(rowEl);</span>
     });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    syncHiddenField(textInput, rows);</span>
+<span class="cstat-no" title="statement not covered" >    syncHiddenField(textInput, rows, dom);</span>
   };
 &nbsp;
   // ---------------------------------------------------------------------
@@ -2554,7 +2557,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-20T11:27:19.995Z
+                at 2025-05-20T11:34:15.772Z
             </div>
         <script src="../prettify.js"></script>
         <script>

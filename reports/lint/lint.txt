@@ -6,10 +6,10 @@
    66:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
   138:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2  complexity
   397:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
-  635:25  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  651:36  warning  Arrow function has a complexity of 11. Maximum allowed is 2                  complexity
-  694:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  814:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
+  636:25  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  652:36  warning  Arrow function has a complexity of 11. Maximum allowed is 2                  complexity
+  695:21  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  815:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
