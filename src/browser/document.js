@@ -177,7 +177,12 @@ export const dom = {
   setClassName,
   getAudioElements,
   setTextContent,
-  stopDefault
+  stopDefault,
+  addWarning,
+  addEventListener,
+  querySelector,
+  disconnectObserver,
+  isIntersecting
 };
 
 /**

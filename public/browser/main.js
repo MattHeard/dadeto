@@ -111,11 +111,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  addWarning,
-  addEventListener,
-  querySelector,
-  disconnectObserver,
-  isIntersecting,
   importModule,
   error: logError,
   makeIntersectionObserver,
