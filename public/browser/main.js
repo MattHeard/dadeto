@@ -15,6 +15,8 @@ import {
 } from './toys.js';
 
 import { dom as baseDom } from './document.js';
+const dom = baseDom;
+
 import {
   getElementById,
   getAudioElements,
@@ -101,9 +103,7 @@ function createEnv() {
   ]);
 }
 
-
-const dom = baseDom;
-const env = { globalState, createEnv, error: baseDom.logError, fetch, loggers };
+const env = { globalState, createEnv, error: dom.logError, fetch, loggers };
 
 // Interactive components functionality
 
