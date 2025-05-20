@@ -11,16 +11,19 @@
   32:3  warning  'stopDefault' is defined but never used               no-unused-vars
   34:3  warning  'addEventListener' is defined but never used          no-unused-vars
   35:3  warning  'appendChild' is defined but never used               no-unused-vars
+  36:3  warning  'insertBefore' is defined but never used              no-unused-vars
   39:3  warning  'addWarning' is defined but never used                no-unused-vars
   40:3  warning  'disconnectObserver' is defined but never used        no-unused-vars
   41:3  warning  'isIntersecting' is defined but never used            no-unused-vars
   48:3  warning  'makeIntersectionObserver' is defined but never used  no-unused-vars
   49:3  warning  'getClasses' is defined but never used                no-unused-vars
+  52:3  warning  'hasNextSiblingClass' is defined but never used       no-unused-vars
   53:3  warning  'setClassName' is defined but never used              no-unused-vars
   54:3  warning  'setDataAttribute' is defined but never used          no-unused-vars
   55:3  warning  'setPlaceholder' is defined but never used            no-unused-vars
   57:3  warning  'addClass' is defined but never used                  no-unused-vars
   59:3  warning  'setTextContent' is defined but never used            no-unused-vars
+  61:3  warning  'hide' is defined but never used                      no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
    66:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
@@ -66,4 +69,4 @@
   1009:9   warning  Ternary operator used                                       no-ternary
   1031:40  warning  Ternary operator used                                       no-ternary
 
-✖ 51 problems (0 errors, 51 warnings)
+✖ 54 problems (0 errors, 54 warnings)

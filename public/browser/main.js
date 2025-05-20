@@ -104,9 +104,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  hasNextSiblingClass,
-  hide,
-  insertBefore,
   log,
   pauseAudio,
   playAudio,
