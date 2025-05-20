@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.96% </span>
+                <span class="strong">61.21% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>202/326</span>
+                <span class='fraction'>202/330</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">67.03% </span>
+                <span class="strong">66.3% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>61/91</span>
+                <span class='fraction'>61/92</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">63.31% </span>
+                <span class="strong">62.5% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>195/308</span>
+                <span class='fraction'>195/312</span>
             </div>
         
             
@@ -975,7 +975,14 @@
 <a name='L910'></a><a href='#L910'>910</a>
 <a name='L911'></a><a href='#L911'>911</a>
 <a name='L912'></a><a href='#L912'>912</a>
-<a name='L913'></a><a href='#L913'>913</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L913'></a><a href='#L913'>913</a>
+<a name='L914'></a><a href='#L914'>914</a>
+<a name='L915'></a><a href='#L915'>915</a>
+<a name='L916'></a><a href='#L916'>916</a>
+<a name='L917'></a><a href='#L917'>917</a>
+<a name='L918'></a><a href='#L918'>918</a>
+<a name='L919'></a><a href='#L919'>919</a>
+<a name='L920'></a><a href='#L920'>920</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1774,6 +1781,15 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1781,9 +1797,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2682,12 +2696,7 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
 <span class="cstat-no" title="statement not covered" >      rows[''] = '';</span>
     }
 &nbsp;
-    const entries = <span class="cstat-no" title="statement not covered" >Object.entries(rows);</span>
-<span class="cstat-no" title="statement not covered" >    entries.forEach(<span class="fstat-no" title="function not covered" >([</span>key, value], idx) =&gt; {</span>
-      const rowEl = <span class="cstat-no" title="statement not covered" >dom.createElement('div');</span>
-<span class="cstat-no" title="statement not covered" >      dom.setClassName(rowEl, 'kv-row');</span>
-&nbsp;
-      // Key field
+    const createKeyElement = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(d</span>om, key, textInput, rows, syncHiddenField) =&gt; {</span>
       const keyEl = <span class="cstat-no" title="statement not covered" >dom.createElement('input');</span>
 <span class="cstat-no" title="statement not covered" >      dom.setType(keyEl, 'text');</span>
 <span class="cstat-no" title="statement not covered" >      dom.setPlaceholder(keyEl, 'Key');</span>
@@ -2697,7 +2706,19 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
 &nbsp;
       const onKey = <span class="cstat-no" title="statement not covered" >createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField);</span>
 <span class="cstat-no" title="statement not covered" >      dom.addEventListener(keyEl, 'input', onKey);</span>
-<span class="cstat-no" title="statement not covered" >      disposers.push(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >dom.removeEventListener(keyEl, 'input', onKey))</span>;</span>
+      const removeKeyListener = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >dom.removeEventListener(keyEl, 'input', onKey);</span></span>
+      
+<span class="cstat-no" title="statement not covered" >      return { keyEl, removeKeyListener };</span>
+    };
+&nbsp;
+    const entries = <span class="cstat-no" title="statement not covered" >Object.entries(rows);</span>
+<span class="cstat-no" title="statement not covered" >    entries.forEach(<span class="fstat-no" title="function not covered" >([</span>key, value], idx) =&gt; {</span>
+      const rowEl = <span class="cstat-no" title="statement not covered" >dom.createElement('div');</span>
+<span class="cstat-no" title="statement not covered" >      dom.setClassName(rowEl, 'kv-row');</span>
+&nbsp;
+      // Create key element
+      const { keyEl, removeKeyListener } = <span class="cstat-no" title="statement not covered" >createKeyElement(dom, key, textInput, rows, syncHiddenField);</span>
+<span class="cstat-no" title="statement not covered" >      disposers.push(removeKeyListener);</span>
 &nbsp;
       // Value field
       const valueEl = <span class="cstat-no" title="statement not covered" >dom.createElement('input');</span>
@@ -2806,7 +2827,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-20T14:03:31.935Z
+                at 2025-05-20T14:11:40.050Z
             </div>
         <script src="../prettify.js"></script>
         <script>
