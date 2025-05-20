@@ -692,27 +692,35 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       dom.setValue(keyEl, key);
       // store the current key so we can track renames without re‑rendering
       dom.setDataAttribute(keyEl, 'prevKey', key);
-      const onKey = e => {
-        const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
-        const newKey = dom.getTargetValue(e);
+      
+      /**
+       * Creates a key input event handler for a key-value row
+       * @returns {Function} The event handler function
+       */
+      const createKeyInputHandler = () => {
+        return e => {
+          const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
+          const newKey = dom.getTargetValue(e);
 
-        // If nothing changed, just keep the hidden JSON fresh.
-        if (newKey === prevKey) {
+          // If nothing changed, just keep the hidden JSON fresh.
+          if (newKey === prevKey) {
+            syncHiddenField(textInput, rows, dom);
+            return;
+          }
+
+          // If the new key is non‑empty and unique, migrate the value.
+          if (newKey !== '' && !(newKey in rows)) {
+            rows[newKey] = rows[prevKey];
+            delete rows[prevKey];
+            dom.setDataAttribute(keyEl, 'prevKey', newKey); // track latest key name
+          }
+          // Otherwise (empty or duplicate), leave the mapping under prevKey.
+
           syncHiddenField(textInput, rows, dom);
-          return;
-        }
-
-        // If the new key is non‑empty and unique, migrate the value.
-        if (newKey !== '' && !(newKey in rows)) {
-          rows[newKey] = rows[prevKey];
-          delete rows[prevKey];
-          dom.setDataAttribute(keyEl, 'prevKey', newKey); // track latest key name
-        }
-        // Otherwise (empty or duplicate), leave the mapping under prevKey.
-
-        syncHiddenField(textInput, rows, dom);
+        };
       };
 
+      const onKey = createKeyInputHandler();
       dom.addEventListener(keyEl, 'input', onKey);
       disposers.push(() => dom.removeEventListener(keyEl, 'input', onKey));
 

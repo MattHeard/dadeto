@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.93% </span>
+                <span class="strong">62.53% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>197/313</span>
+                <span class='fraction'>197/315</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">72.61% </span>
+                <span class="strong">71.76% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>61/84</span>
+                <span class='fraction'>61/85</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">64.18% </span>
+                <span class="strong">63.75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>190/296</span>
+                <span class='fraction'>190/298</span>
             </div>
         
             
@@ -892,7 +892,15 @@
 <a name='L827'></a><a href='#L827'>827</a>
 <a name='L828'></a><a href='#L828'>828</a>
 <a name='L829'></a><a href='#L829'>829</a>
-<a name='L830'></a><a href='#L830'>830</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L830'></a><a href='#L830'>830</a>
+<a name='L831'></a><a href='#L831'>831</a>
+<a name='L832'></a><a href='#L832'>832</a>
+<a name='L833'></a><a href='#L833'>833</a>
+<a name='L834'></a><a href='#L834'>834</a>
+<a name='L835'></a><a href='#L835'>835</a>
+<a name='L836'></a><a href='#L836'>836</a>
+<a name='L837'></a><a href='#L837'>837</a>
+<a name='L838'></a><a href='#L838'>838</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1586,14 +1594,8 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1603,10 +1605,24 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2415,27 +2431,35 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
 <span class="cstat-no" title="statement not covered" >      dom.setValue(keyEl, key);</span>
       // store the current key so we can track renames without re‑rendering
 <span class="cstat-no" title="statement not covered" >      dom.setDataAttribute(keyEl, 'prevKey', key);</span>
-      const onKey = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >e </span>=&gt; {</span>
-        const prevKey = <span class="cstat-no" title="statement not covered" >dom.getDataAttribute(keyEl, 'prevKey');</span>
-        const newKey = <span class="cstat-no" title="statement not covered" >dom.getTargetValue(e);</span>
+      
+      /**
+       * Creates a key input event handler for a key-value row
+       * @returns {Function} The event handler function
+       */
+      const createKeyInputHandler = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        return <span class="fstat-no" title="function not covered" >e </span>=&gt; {</span>
+          const prevKey = <span class="cstat-no" title="statement not covered" >dom.getDataAttribute(keyEl, 'prevKey');</span>
+          const newKey = <span class="cstat-no" title="statement not covered" >dom.getTargetValue(e);</span>
 &nbsp;
-        // If nothing changed, just keep the hidden JSON fresh.
-<span class="cstat-no" title="statement not covered" >        if (newKey === prevKey) {</span>
+          // If nothing changed, just keep the hidden JSON fresh.
+<span class="cstat-no" title="statement not covered" >          if (newKey === prevKey) {</span>
+<span class="cstat-no" title="statement not covered" >            syncHiddenField(textInput, rows, dom);</span>
+<span class="cstat-no" title="statement not covered" >            return;</span>
+          }
+&nbsp;
+          // If the new key is non‑empty and unique, migrate the value.
+<span class="cstat-no" title="statement not covered" >          if (newKey !== '' &amp;&amp; !(newKey in rows)) {</span>
+<span class="cstat-no" title="statement not covered" >            rows[newKey] = rows[prevKey];</span>
+<span class="cstat-no" title="statement not covered" >            delete rows[prevKey];</span>
+<span class="cstat-no" title="statement not covered" >            dom.setDataAttribute(keyEl, 'prevKey', newKey); </span>// track latest key name
+          }
+          // Otherwise (empty or duplicate), leave the mapping under prevKey.
+&nbsp;
 <span class="cstat-no" title="statement not covered" >          syncHiddenField(textInput, rows, dom);</span>
-<span class="cstat-no" title="statement not covered" >          return;</span>
-        }
-&nbsp;
-        // If the new key is non‑empty and unique, migrate the value.
-<span class="cstat-no" title="statement not covered" >        if (newKey !== '' &amp;&amp; !(newKey in rows)) {</span>
-<span class="cstat-no" title="statement not covered" >          rows[newKey] = rows[prevKey];</span>
-<span class="cstat-no" title="statement not covered" >          delete rows[prevKey];</span>
-<span class="cstat-no" title="statement not covered" >          dom.setDataAttribute(keyEl, 'prevKey', newKey); </span>// track latest key name
-        }
-        // Otherwise (empty or duplicate), leave the mapping under prevKey.
-&nbsp;
-<span class="cstat-no" title="statement not covered" >        syncHiddenField(textInput, rows, dom);</span>
+        };
       };
 &nbsp;
+      const onKey = <span class="cstat-no" title="statement not covered" >createKeyInputHandler();</span>
 <span class="cstat-no" title="statement not covered" >      dom.addEventListener(keyEl, 'input', onKey);</span>
 <span class="cstat-no" title="statement not covered" >      disposers.push(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >dom.removeEventListener(keyEl, 'input', onKey))</span>;</span>
 &nbsp;
@@ -2557,7 +2581,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-20T11:50:10.382Z
+                at 2025-05-20T12:36:39.616Z
             </div>
         <script src="../prettify.js"></script>
         <script>
