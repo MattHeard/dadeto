@@ -768,7 +768,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // Initialise from existing JSON in the hidden field, if present
   // ---------------------------------------------------------------------
   try {
-    const existing = JSON.parse(textInput?.value || '{}');
+    const existing = JSON.parse(dom.getValue(textInput) || '{}');
     if (Array.isArray(existing)) {
       // Convert legacy array format [{key, value}] to object
       rows = {};
