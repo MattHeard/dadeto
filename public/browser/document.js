@@ -173,20 +173,6 @@ export const isIntersecting = (entry) => entry.isIntersecting;
  */
 export const dom = {
   /**
-   * Gets the current target of an event
-   * @param {Event} event - The event object
-   * @returns {EventTarget} The current target of the event
-   */
-  getCurrentTarget: (event) => event.currentTarget,
-
-  /**
-   * Gets the parent element of the given element
-   * @param {Element} element - The element to get the parent of
-   * @returns {Element|null} The parent element, or null if the element has no parent
-   */
-  getParentElement: (element) => element.parentElement,
-
-  /**
    * Gets the value from an event target
    * @param {Event} event - The event object
    * @returns {string|number|boolean|Array<string>|FileList|null} The value of the event target
