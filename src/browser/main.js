@@ -102,9 +102,7 @@ function createEnv() {
 }
 
 
-const dom = {
-  ...baseDom
-};
+const dom = baseDom;
 const env = { globalState, createEnv, error: baseDom.logError, fetch, loggers };
 
 // Interactive components functionality
