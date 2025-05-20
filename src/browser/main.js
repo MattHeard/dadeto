@@ -14,8 +14,7 @@ import {
   createDropdownInitializer
 } from './toys.js';
 
-import { dom as baseDom } from './document.js';
-const dom = baseDom;
+import { dom } from './document.js';
 
 import {
   getElementById,
