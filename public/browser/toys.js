@@ -505,8 +505,7 @@ function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
  * @returns {Function} The click event handler function
  */
 function createOnAddHandler(rows, render) {
-  return e => {
-    e.preventDefault();
+  return () => {
     // Add a new empty key only if there isn't already one
     if (!Object.prototype.hasOwnProperty.call(rows, '')) {
       rows[''] = '';
