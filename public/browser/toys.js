@@ -499,6 +499,32 @@ function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
 }
 
 /**
+ * Creates a key input element with event listeners
+ * @param {Object} dom - The DOM utilities object
+ * @param {string} key - The initial key value
+ * @param {HTMLElement} textInput - The hidden text input element
+ * @param {Object} rows - The rows object containing key-value pairs
+ * @param {Function} syncHiddenField - Function to sync the hidden field with current state
+ * @param {Array<Function>} disposers - Array to store cleanup functions
+ * @returns {HTMLInputElement} The created key input element
+ */
+const createKeyElement = (dom, key, textInput, rows, syncHiddenField, disposers) => {
+  const keyEl = dom.createElement('input');
+  dom.setType(keyEl, 'text');
+  dom.setPlaceholder(keyEl, 'Key');
+  dom.setValue(keyEl, key);
+  // store the current key so we can track renames without re‑rendering
+  dom.setDataAttribute(keyEl, 'prevKey', key);
+
+  const onKey = createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
+  dom.addEventListener(keyEl, 'input', onKey);
+  const removeKeyListener = () => dom.removeEventListener(keyEl, 'input', onKey);
+  disposers.push(removeKeyListener);
+
+  return keyEl;
+};
+
+/**
  * Creates an add button click handler for key-value rows
  * @param {Object} rows - The rows object containing key-value pairs
  * @param {Function} render - Function to re-render the key-value editor
@@ -792,22 +818,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
     if (Object.keys(rows).length === 0) {
       rows[''] = '';
     }
-
-    const createKeyElement = (dom, key, textInput, rows, syncHiddenField, disposers) => {
-      const keyEl = dom.createElement('input');
-      dom.setType(keyEl, 'text');
-      dom.setPlaceholder(keyEl, 'Key');
-      dom.setValue(keyEl, key);
-      // store the current key so we can track renames without re‑rendering
-      dom.setDataAttribute(keyEl, 'prevKey', key);
-
-      const onKey = createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
-      dom.addEventListener(keyEl, 'input', onKey);
-      const removeKeyListener = () => dom.removeEventListener(keyEl, 'input', onKey);
-      disposers.push(removeKeyListener);
-
-      return keyEl;
-    };
 
     const entries = Object.entries(rows);
     entries.forEach(([key, value], idx) => {
