@@ -1,4 +1,8 @@
 
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/document.js
+  148:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  159:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
   19:1  warning  './document.js' import is duplicated  no-duplicate-imports
 
@@ -46,4 +50,4 @@
   1009:9   warning  Ternary operator used                                       no-ternary
   1031:40  warning  Ternary operator used                                       no-ternary
 
-✖ 31 problems (0 errors, 31 warnings)
+✖ 33 problems (0 errors, 33 warnings)

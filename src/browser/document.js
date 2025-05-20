@@ -146,7 +146,19 @@ export const setPlaceholder = (element, placeholder) => {
  * @param {string} value - The value to set
  */
 export const setDataAttribute = (element, name, value) => {
+  if (!element || !name) {return;}
   element.dataset[name] = value;
+};
+
+/**
+ * Gets the value of a data attribute from an element
+ * @param {HTMLElement} element - The element to get the data attribute from
+ * @param {string} name - The name of the data attribute (without the 'data-' prefix)
+ * @returns {string|undefined} The value of the data attribute, or undefined if not found
+ */
+export const getDataAttribute = (element, name) => {
+  if (!element || !name) {return undefined;}
+  return element.dataset[name];
 };
 
 export const setTextContent = (element, content) => {
@@ -187,6 +199,7 @@ export const dom = {
   setType,
   setPlaceholder,
   setDataAttribute,
+  getDataAttribute,
   addClass,
   appendChild,
   createTextNode,
