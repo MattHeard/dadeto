@@ -172,17 +172,6 @@ export const isIntersecting = (entry) => entry.isIntersecting;
  * Centralized DOM manipulation utilities
  */
 export const dom = {
-
-  /**
-   * Removes all children from the given DOM element.
-   * @param {HTMLElement} element - The parent element to clear.
-   */
-  removeAllChildren: (element) => {
-    while (element.firstChild) {
-      removeChildNode(element);
-    }
-  },
-
   /**
    * Gets the current target of an event
    * @param {Event} event - The event object
