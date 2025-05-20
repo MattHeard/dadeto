@@ -199,6 +199,8 @@ export const dom = {
   hide,
   insertBefore,
   log,
+  pauseAudio,
+  playAudio,
   createElement,
   removeControlsAttribute,
   setClassName,
