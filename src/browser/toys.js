@@ -596,6 +596,23 @@ const setupAddButton = (dom, button, rows, render, disposers) => {
 };
 
 /**
+ * Sets up a remove button with a click handler that removes the corresponding row
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} button - The button element to set up
+ * @param {Object} rows - The rows object containing the row to remove
+ * @param {Function} render - The render function to update the UI
+ * @param {string} key - The key of the row to remove
+ * @param {Array} disposers - Array to store cleanup functions
+ */
+const setupRemoveButton = (dom, button, rows, render, key, disposers) => {
+  dom.setTextContent(button, '×');
+  const onRemove = createOnRemove(rows, render, key);
+  dom.addEventListener(button, 'click', onRemove);
+  const removeRemoveListener = createRemoveRemoveListener(dom, button, onRemove);
+  disposers.push(removeRemoveListener);
+};
+
+/**
  * Creates a function that removes a click event listener from a button
  * @param {Object} dom - The DOM utilities object
  * @param {HTMLElement} btnEl - The button element to remove the listener from
@@ -876,11 +893,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       if (idx === entries.length - 1) {
         setupAddButton(dom, btnEl, rows, render, disposers);
       } else {
-        dom.setTextContent(btnEl, '×');
-        const onRemove = createOnRemove(rows, render, key);
-        dom.addEventListener(btnEl, 'click', onRemove);
-        const removeRemoveListener = createRemoveRemoveListener(dom, btnEl, onRemove);
-        disposers.push(removeRemoveListener);
+        setupRemoveButton(dom, btnEl, rows, render, key, disposers);
       }
 
       dom.appendChild(rowEl, keyEl);
