@@ -104,7 +104,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  log,
   pauseAudio,
   playAudio,
   removeControlsAttribute,

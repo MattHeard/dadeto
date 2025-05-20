@@ -198,6 +198,7 @@ export const dom = {
   hasNextSiblingClass,
   hide,
   insertBefore,
+  log,
   createElement,
   removeControlsAttribute,
   setClassName,
