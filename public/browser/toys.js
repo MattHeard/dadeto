@@ -498,6 +498,27 @@ function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
   };
 }
 
+/**
+ * Creates an add button click handler for key-value rows
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} btnEl - The button element to add the click handler to
+ * @param {Object} rows - The rows object containing key-value pairs
+ * @param {Function} render - Function to re-render the key-value editor
+ * @returns {Function} The click event handler function
+ */
+function createOnAddHandler(dom, btnEl, rows, render) {
+  const handler = e => {
+    e.preventDefault();
+    // Add a new empty key only if there isn't already one
+    if (!Object.prototype.hasOwnProperty.call(rows, '')) {
+      rows[''] = '';
+      render();
+    }
+  };
+  dom.addEventListener(btnEl, 'click', handler);
+  return handler;
+}
+
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
 function isValidParsedRequest(parsed) {
@@ -766,18 +787,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       dom.setType(btnEl, 'button');
       if (idx === entries.length - 1) {
         dom.setTextContent(btnEl, '+');
-        const createOnAddHandler = (rowsArray, renderFn) => {
-          return e => {
-            e.preventDefault();
-            // Add a new empty key only if there isn't already one
-            if (!Object.prototype.hasOwnProperty.call(rowsArray, '')) {
-              rowsArray[''] = '';
-              renderFn();
-            }
-          };
-        };
-        const onAdd = createOnAddHandler(rows, render);
-        dom.addEventListener(btnEl, 'click', onAdd);
+        const onAdd = createOnAddHandler(dom, btnEl, rows, render);
         disposers.push(() => dom.removeEventListener(btnEl, 'click', onAdd));
       } else {
         dom.setTextContent(btnEl, '×');

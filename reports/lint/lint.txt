@@ -12,9 +12,10 @@
   461:1   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
   462:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
   493:1   warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
-  694:25  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-  710:36  warning  Arrow function has a complexity of 10. Maximum allowed is 2                           complexity
-  850:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
+  509:1   warning  Function 'createOnAddHandler' has too many parameters (4). Maximum allowed is 3       max-params
+  715:25  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
+  731:36  warning  Arrow function has a complexity of 10. Maximum allowed is 2                           complexity
+  860:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
@@ -51,4 +52,4 @@
   1009:9   warning  Ternary operator used                                       no-ternary
   1031:40  warning  Ternary operator used                                       no-ternary
 
-✖ 34 problems (0 errors, 34 warnings)
+✖ 35 problems (0 errors, 35 warnings)
