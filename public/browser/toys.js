@@ -8,6 +8,15 @@ const disposeListeners = (element) => {
   element._dispose();
 };
 
+/**
+ * Clears all disposer functions and empties the array
+ * @param {Array<Function>} disposersArray - The array of disposer functions to clear
+ */
+const clearDisposers = (disposersArray) => {
+  disposersArray.forEach(fn => fn());
+  disposersArray.length = 0; // Clear array in place for better performance
+};
+
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolitaireFleet.js';
@@ -712,14 +721,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // ---------------------------------------------------------------------
   let rows = {};
   const disposers = [];
-  /**
-   * Clears all disposer functions and empties the array
-   * @param {Array<Function>} disposersArray - The array of disposer functions to clear
-   */
-  const clearDisposers = (disposersArray) => {
-    disposersArray.forEach(fn => fn());
-    disposersArray.length = 0; // Clear array in place for better performance
-  };
 
   // ---------------------------------------------------------------------
   // Renderer
