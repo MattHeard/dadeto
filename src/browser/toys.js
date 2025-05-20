@@ -809,11 +809,12 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         disposers.push(removeAddListener);
       } else {
         dom.setTextContent(btnEl, '×');
-        const onRemove = e => {
+        const createOnRemove = (rows, render) => e => {
           e.preventDefault();
           delete rows[key];
           render();
         };
+        const onRemove = createOnRemove(rows, render);
         dom.addEventListener(btnEl, 'click', onRemove);
         const removeRemoveListener = () => dom.removeEventListener(btnEl, 'click', onRemove);
         disposers.push(removeRemoveListener);
