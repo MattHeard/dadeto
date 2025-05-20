@@ -805,8 +805,8 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       dom.addEventListener(keyEl, 'input', onKey);
       const removeKeyListener = () => dom.removeEventListener(keyEl, 'input', onKey);
       disposers.push(removeKeyListener);
-      
-      return { keyEl };
+
+      return keyEl;
     };
 
     const entries = Object.entries(rows);
@@ -815,7 +815,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       dom.setClassName(rowEl, 'kv-row');
 
       // Create key element
-      const { keyEl } = createKeyElement(dom, key, textInput, rows, syncHiddenField, disposers);
+      const keyEl = createKeyElement(dom, key, textInput, rows, syncHiddenField, disposers);
 
       // Value field
       const valueEl = dom.createElement('input');
