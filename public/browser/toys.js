@@ -694,7 +694,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       dom.setDataAttribute(keyEl, 'prevKey', key);
       const onKey = e => {
         const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
-        const newKey = e.target.value;
+        const newKey = dom.getTargetValue(e);
 
         // If nothing changed, just keep the hidden JSON fresh.
         if (newKey === prevKey) {
