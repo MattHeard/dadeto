@@ -36,7 +36,6 @@ import {
   insertBefore,
   log,
   warn,
-  error as logError,
   addWarning,
   disconnectObserver,
   isIntersecting,
