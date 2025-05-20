@@ -713,17 +713,17 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         syncHiddenField(textInput, rows, dom);
       };
 
-      keyEl.addEventListener('input', onKey);
-      disposers.push(() => keyEl.removeEventListener('input', onKey));
+      dom.addEventListener(keyEl, 'input', onKey);
+      disposers.push(() => dom.removeEventListener(keyEl, 'input', onKey));
 
       // Value field
       const valueEl = dom.createElement('input');
-      valueEl.type = 'text';
-      valueEl.placeholder = 'Value';
-      valueEl.value = value;
+      dom.setType(valueEl, 'text');
+      dom.setPlaceholder(valueEl, 'Value');
+      dom.setValue(valueEl, value);
       const onValue = e => {
         const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
-        rows[rowKey] = e.target.value;
+        rows[rowKey] = dom.getTargetValue(e);
         syncHiddenField(textInput, rows, dom);
       };
       valueEl.addEventListener('input', onValue);
