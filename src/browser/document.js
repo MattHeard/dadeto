@@ -169,9 +169,20 @@ export const disconnectObserver = (observer) => {
 export const isIntersecting = (entry) => entry.isIntersecting;
 
 /**
+ * Dynamically imports a module
+ * @param {string} modulePath - Path to the module to import
+ * @param {Function} onSuccess - Function to call when import succeeds
+ * @param {Function} onError - Function to call when import fails
+ */
+const importModule = (modulePath, onSuccess, onError) => {
+  import(modulePath).then(onSuccess).catch(onError);
+};
+
+/**
  * Centralized DOM manipulation utilities
  */
 export const dom = {
+  importModule,
   createElement,
   removeControlsAttribute,
   setClassName,

@@ -76,15 +76,9 @@ const globalState = {
 };
 
 /**
- * @command
- * Imports a module dynamically with success and error handling
- * @param {string} modulePath - Path to the module to import
- * @param {Function} onSuccess - Function to call when import succeeds
- * @param {Function} onError - Function to call when import fails
+ * @module main
+ * @description Main entry point for the application
  */
-function importModule(modulePath, onSuccess, onError) {
-  import(modulePath).then(onSuccess).catch(onError);
-}
 
 // createHandleClick has been moved to tags.js
 
@@ -110,7 +104,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  importModule,
   makeIntersectionObserver,
   setType,
   setPlaceholder,
