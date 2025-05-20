@@ -524,6 +524,16 @@ function createOnAddHandler(rows, render) {
 const createRemoveValueListener = (dom, el, handler) => () =>
   dom.removeEventListener(el, 'input', handler);
 
+/**
+ * Creates a function that removes an event listener for add button clicks
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} btnEl - The button element to remove the listener from
+ * @param {Function} handler - The click event handler function to remove
+ * @returns {Function} A function that removes the click event listener
+ */
+const createRemoveAddListener = (dom, btnEl, handler) => () =>
+  dom.removeEventListener(btnEl, 'click', handler);
+
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
 function isValidParsedRequest(parsed) {
@@ -795,7 +805,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         dom.setTextContent(btnEl, '+');
         const onAdd = createOnAddHandler(rows, render);
         dom.addEventListener(btnEl, 'click', onAdd);
-        const removeAddListener = () => dom.removeEventListener(btnEl, 'click', onAdd);
+        const removeAddListener = createRemoveAddListener(dom, btnEl, onAdd);
         disposers.push(removeAddListener);
       } else {
         dom.setTextContent(btnEl, '×');

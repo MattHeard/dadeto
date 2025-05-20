@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.18% </span>
+                <span class="strong">62.11% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>199/320</span>
+                <span class='fraction'>200/322</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">69.31% </span>
+                <span class="strong">68.53% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>61/88</span>
+                <span class='fraction'>61/89</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">63.36% </span>
+                <span class="strong">63.27% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>192/303</span>
+                <span class='fraction'>193/305</span>
             </div>
         
             
@@ -946,7 +946,17 @@
 <a name='L881'></a><a href='#L881'>881</a>
 <a name='L882'></a><a href='#L882'>882</a>
 <a name='L883'></a><a href='#L883'>883</a>
-<a name='L884'></a><a href='#L884'>884</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L884'></a><a href='#L884'>884</a>
+<a name='L885'></a><a href='#L885'>885</a>
+<a name='L886'></a><a href='#L886'>886</a>
+<a name='L887'></a><a href='#L887'>887</a>
+<a name='L888'></a><a href='#L888'>888</a>
+<a name='L889'></a><a href='#L889'>889</a>
+<a name='L890'></a><a href='#L890'>890</a>
+<a name='L891'></a><a href='#L891'>891</a>
+<a name='L892'></a><a href='#L892'>892</a>
+<a name='L893'></a><a href='#L893'>893</a>
+<a name='L894'></a><a href='#L894'>894</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1461,6 +1471,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2355,6 +2375,16 @@ function <span class="fstat-no" title="function not covered" >createOnAddHandler
 const createRemoveValueListener = <span class="fstat-no" title="function not covered" >(d</span>om, el, handler) =&gt; <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt;</span>
 <span class="cstat-no" title="statement not covered" >  dom.removeEventListener(el, 'input', handler);</span>
 &nbsp;
+/**
+ * Creates a function that removes an event listener for add button clicks
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} btnEl - The button element to remove the listener from
+ * @param {Function} handler - The click event handler function to remove
+ * @returns {Function} A function that removes the click event listener
+ */
+const createRemoveAddListener = <span class="fstat-no" title="function not covered" >(d</span>om, btnEl, handler) =&gt; <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt;</span>
+<span class="cstat-no" title="statement not covered" >  dom.removeEventListener(btnEl, 'click', handler);</span>
+&nbsp;
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 &nbsp;
 function isValidParsedRequest(parsed) {
@@ -2626,7 +2656,7 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
 <span class="cstat-no" title="statement not covered" >        dom.setTextContent(btnEl, '+');</span>
         const onAdd = <span class="cstat-no" title="statement not covered" >createOnAddHandler(rows, render);</span>
 <span class="cstat-no" title="statement not covered" >        dom.addEventListener(btnEl, 'click', onAdd);</span>
-        const removeAddListener = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >dom.removeEventListener(btnEl, 'click', onAdd);</span></span>
+        const removeAddListener = <span class="cstat-no" title="statement not covered" >createRemoveAddListener(dom, btnEl, onAdd);</span>
 <span class="cstat-no" title="statement not covered" >        disposers.push(removeAddListener);</span>
       } else {
 <span class="cstat-no" title="statement not covered" >        dom.setTextContent(btnEl, '×');</span>
@@ -2719,7 +2749,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-20T13:29:48.510Z
+                at 2025-05-20T13:33:48.791Z
             </div>
         <script src="../prettify.js"></script>
         <script>
