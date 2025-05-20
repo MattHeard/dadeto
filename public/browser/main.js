@@ -145,7 +145,7 @@ const dom = {
   getTargetValue,
   reveal
 };
-const env = { globalState, createEnv, error: logError, fetch, loggers };
+const env = { globalState, createEnv, error: baseDom.logError, fetch, loggers };
 
 // Interactive components functionality
 
