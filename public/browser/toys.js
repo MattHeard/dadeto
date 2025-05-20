@@ -634,7 +634,7 @@ const setupRemoveButton = (dom, button, rows, render, key, disposers) => {
  * @param {HTMLElement} container - The container to append the row to
  * @returns {Function} A function that takes [key, value] and index and creates a row
  */
-const createKeyValueRow = (dom, entries, textInput, rows, syncHiddenField, disposers, render, container) => 
+const createKeyValueRow = (dom, entries, textInput, rows, syncHiddenField, disposers, render, container) =>
   ([key, value], idx) => {
     const rowEl = dom.createElement('div');
     dom.setClassName(rowEl, 'kv-row');
@@ -920,22 +920,37 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   const disposers = [];
 
   // ---------------------------------------------------------------------
-  // Renderer
+  // Renderer Factory
   // ---------------------------------------------------------------------
-  const render = () => {
-    clearDisposers(disposers);
-    dom.removeAllChildren(kvContainer);
+  /**
+   * Creates a render function with access to the given disposers array
+   * @param {Array} disposersArray - Array to store cleanup functions
+   * @returns {Function} The render function
+   */
+  const createRenderer = (disposersArray) => {
+    /**
+     * Renders the key-value input UI
+     */
+    const render = () => {
+      clearDisposers(disposersArray);
+      dom.removeAllChildren(kvContainer);
 
-    // If no keys, add a single empty row
-    if (Object.keys(rows).length === 0) {
-      rows[''] = '';
-    }
+      // If no keys, add a single empty row
+      if (Object.keys(rows).length === 0) {
+        rows[''] = '';
+      }
 
-    const entries = Object.entries(rows);
-    entries.forEach(createKeyValueRow(dom, entries, textInput, rows, syncHiddenField, disposers, render, kvContainer));
+      const entries = Object.entries(rows);
+      entries.forEach(createKeyValueRow(dom, entries, textInput, rows, syncHiddenField, disposersArray, render, kvContainer));
 
-    syncHiddenField(textInput, rows, dom);
+      syncHiddenField(textInput, rows, dom);
+    };
+
+    return render;
   };
+
+  // Create the render function with the disposers array
+  const render = createRenderer(disposers);
 
   // ---------------------------------------------------------------------
   // Initialise from existing JSON in the hidden field, if present
