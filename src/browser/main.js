@@ -110,6 +110,7 @@ function createEnv() {
 
 
 const dom = {
+  ...baseDom,
   createElement,
   removeControlsAttribute,
   setClassName,
