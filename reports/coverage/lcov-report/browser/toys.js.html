@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.65% </span>
+                <span class="strong">61.96% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>201/326</span>
+                <span class='fraction'>202/326</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.98% </span>
+                <span class="strong">63.31% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>194/308</span>
+                <span class='fraction'>195/308</span>
             </div>
         
             
@@ -967,7 +967,15 @@
 <a name='L902'></a><a href='#L902'>902</a>
 <a name='L903'></a><a href='#L903'>903</a>
 <a name='L904'></a><a href='#L904'>904</a>
-<a name='L905'></a><a href='#L905'>905</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L905'></a><a href='#L905'>905</a>
+<a name='L906'></a><a href='#L906'>906</a>
+<a name='L907'></a><a href='#L907'>907</a>
+<a name='L908'></a><a href='#L908'>908</a>
+<a name='L909'></a><a href='#L909'>909</a>
+<a name='L910'></a><a href='#L910'>910</a>
+<a name='L911'></a><a href='#L911'>911</a>
+<a name='L912'></a><a href='#L912'>912</a>
+<a name='L913'></a><a href='#L913'>913</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1495,6 +1503,16 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1790,8 +1808,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -2401,6 +2417,16 @@ const createOnRemove = <span class="fstat-no" title="function not covered" >(r</
 };
 &nbsp;
 /**
+ * Creates a function that removes a click event listener from a button
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} btnEl - The button element to remove the listener from
+ * @param {Function} onRemove - The click event handler to remove
+ * @returns {Function} A function that removes the click event listener
+ */
+const createRemoveRemoveListener = <span class="fstat-no" title="function not covered" >(d</span>om, btnEl, onRemove) =&gt; <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; </span>
+<span class="cstat-no" title="statement not covered" >  dom.removeEventListener(btnEl, 'click', onRemove);</span>
+&nbsp;
+/**
  * Creates a function that removes an event listener for value input
  * @param {Object} dom - The DOM utilities object
  * @param {HTMLElement} el - The element to remove the listener from
@@ -2697,8 +2723,6 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
 <span class="cstat-no" title="statement not covered" >        dom.setTextContent(btnEl, '×');</span>
         const onRemove = <span class="cstat-no" title="statement not covered" >createOnRemove(rows, render, key);</span>
 <span class="cstat-no" title="statement not covered" >        dom.addEventListener(btnEl, 'click', onRemove);</span>
-        const createRemoveRemoveListener = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(d</span>om, btnEl, onRemove) =&gt; <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; </span></span>
-<span class="cstat-no" title="statement not covered" >          dom.removeEventListener(btnEl, 'click', onRemove);</span>
         const removeRemoveListener = <span class="cstat-no" title="statement not covered" >createRemoveRemoveListener(dom, btnEl, onRemove);</span>
 <span class="cstat-no" title="statement not covered" >        disposers.push(removeRemoveListener);</span>
       }
@@ -2782,7 +2806,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-20T13:49:51.453Z
+                at 2025-05-20T13:53:55.908Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -528,6 +528,16 @@ const createOnRemove = (rows, render, key) => e => {
 };
 
 /**
+ * Creates a function that removes a click event listener from a button
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} btnEl - The button element to remove the listener from
+ * @param {Function} onRemove - The click event handler to remove
+ * @returns {Function} A function that removes the click event listener
+ */
+const createRemoveRemoveListener = (dom, btnEl, onRemove) => () =>
+  dom.removeEventListener(btnEl, 'click', onRemove);
+
+/**
  * Creates a function that removes an event listener for value input
  * @param {Object} dom - The DOM utilities object
  * @param {HTMLElement} el - The element to remove the listener from
@@ -824,8 +834,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         dom.setTextContent(btnEl, '×');
         const onRemove = createOnRemove(rows, render, key);
         dom.addEventListener(btnEl, 'click', onRemove);
-        const createRemoveRemoveListener = (dom, btnEl, onRemove) => () =>
-          dom.removeEventListener(btnEl, 'click', onRemove);
         const removeRemoveListener = createRemoveRemoveListener(dom, btnEl, onRemove);
         disposers.push(removeRemoveListener);
       }
