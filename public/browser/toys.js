@@ -515,6 +515,19 @@ function createOnAddHandler(rows, render) {
 }
 
 /**
+ * Creates an event handler for removing a key-value row
+ * @param {Object} rows - The rows object containing key-value pairs
+ * @param {Function} render - The render function to update the UI
+ * @param {string} key - The key to remove
+ * @returns {Function} The event handler function
+ */
+const createOnRemove = (rows, render, key) => e => {
+  e.preventDefault();
+  delete rows[key];
+  render();
+};
+
+/**
  * Creates a function that removes an event listener for value input
  * @param {Object} dom - The DOM utilities object
  * @param {HTMLElement} el - The element to remove the listener from
@@ -809,12 +822,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         disposers.push(removeAddListener);
       } else {
         dom.setTextContent(btnEl, '×');
-        const createOnRemove = (rows, render) => e => {
-          e.preventDefault();
-          delete rows[key];
-          render();
-        };
-        const onRemove = createOnRemove(rows, render);
+        const onRemove = createOnRemove(rows, render, key);
         dom.addEventListener(btnEl, 'click', onRemove);
         const removeRemoveListener = () => dom.removeEventListener(btnEl, 'click', onRemove);
         disposers.push(removeRemoveListener);
