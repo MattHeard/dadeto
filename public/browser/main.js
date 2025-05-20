@@ -168,7 +168,7 @@ initializeVisibleComponents(
 handleTagLinks(dom);
 
 // Initial fetch of blog data when the script loads
-fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError });
+fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: baseDom.logError });
 
 setupAudio(dom);
 
