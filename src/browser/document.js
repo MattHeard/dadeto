@@ -173,53 +173,6 @@ export const isIntersecting = (entry) => entry.isIntersecting;
  */
 export const dom = {
   /**
-   * Enables the given input element by setting its disabled property to false
-   * @param {HTMLElement} input - The input element to enable
-   */
-  enable: (input) => {
-    input.disabled = false;
-  },
-
-  /**
-   * Disables the given input element by setting its disabled property to true
-   * @param {HTMLElement} input - The input element to disable
-   */
-  disable: (input) => {
-    input.disabled = true;
-  },
-
-  /**
-   * Gets the next sibling node of the given element
-   * @param {Node} element - The element to get the next sibling of
-   * @returns {Node|null} The next sibling node (which could be an element, text node, etc.), or null if there isn't one
-   */
-  getNextSibling: (element) => element.nextSibling,
-
-  /**
-   * Removes the next sibling node of the given element
-   * @param {Node} link - The element to remove the next sibling of
-   */
-  removeNextSibling: (link) => link.nextElementSibling && link.nextElementSibling.remove(),
-
-  /**
-   * Sets the type of an input element
-   * @param {HTMLInputElement} element - The input element to set the type for
-   * @param {string} type - The type to set (e.g., 'text', 'number', 'email')
-   */
-  setType: (element, type) => {
-    element.type = type;
-  },
-
-  /**
-   * Sets the placeholder text of an input element
-   * @param {HTMLInputElement|HTMLTextAreaElement} element - The input element to set the placeholder for
-   * @param {string} placeholder - The placeholder text to set
-   */
-  setPlaceholder: (element, placeholder) => {
-    element.placeholder = placeholder;
-  },
-
-  /**
    * Sets a data attribute on an element
    * @param {HTMLElement} element - The element to set the data attribute on
    * @param {string} name - The name of the data attribute (without the 'data-' prefix)
