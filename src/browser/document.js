@@ -131,6 +131,18 @@ export const getNextSibling = (element) => element.nextSibling;
 export const removeNextSibling = link => link.nextElementSibling && link.nextElementSibling.remove();
 
 /**
+ * Removes an event listener from an element
+ * @param {EventTarget} target - The target element to remove the listener from
+ * @param {string} event - The event type to remove
+ * @param {Function} handler - The event handler function to remove
+ * @param {boolean|Object} [options] - Options that were used when adding the event listener
+ * @returns {void}
+ */
+export const removeEventListener = (target, event, handler, options) => {
+  target.removeEventListener(event, handler, options);
+};
+
+/**
  * Sets the type of an input element
  * @param {HTMLInputElement} element - The input element to set the type for
  * @param {string} type - The type to set (e.g., 'text', 'number', 'email')
@@ -206,6 +218,7 @@ export const dom = {
   setDataAttribute,
   getDataAttribute,
   addClass,
+  removeEventListener,
   appendChild,
   createTextNode,
   getElementsByTagName,
