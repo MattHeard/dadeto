@@ -440,6 +440,38 @@ function hasStringUrl(val) {
   return val.request && typeof val.request.url === 'string';
 }
 
+/**
+ * Creates a key input event handler for a key-value row
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} keyEl - The key input element
+ * @param {HTMLElement} textInput - The hidden text input element
+ * @param {Object} rows - The rows object containing key-value pairs
+ * @param {Function} syncHiddenField - Function to sync the hidden field with current state
+ * @returns {Function} The event handler function
+ */
+function createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
+  return e => {
+    const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
+    const newKey = dom.getTargetValue(e);
+
+    // If nothing changed, just keep the hidden JSON fresh.
+    if (newKey === prevKey) {
+      syncHiddenField(textInput, rows, dom);
+      return;
+    }
+
+    // If the new key is non‑empty and unique, migrate the value.
+    if (newKey !== '' && !(newKey in rows)) {
+      rows[newKey] = rows[prevKey];
+      delete rows[prevKey];
+      dom.setDataAttribute(keyEl, 'prevKey', newKey); // track latest key name
+    }
+    // Otherwise (empty or duplicate), leave the mapping under prevKey.
+
+    syncHiddenField(textInput, rows, dom);
+  };
+}
+
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
 function isValidParsedRequest(parsed) {
@@ -693,38 +725,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       // store the current key so we can track renames without re‑rendering
       dom.setDataAttribute(keyEl, 'prevKey', key);
 
-      /**
-       * Creates a key input event handler for a key-value row
-       * @param {Object} dom - The DOM utilities object
-       * @param {HTMLElement} keyEl - The key input element
-       * @param {HTMLElement} textInput - The hidden text input element
-       * @param {Object} rows - The rows object containing key-value pairs
-       * @returns {Function} The event handler function
-       */
-      const createKeyInputHandler = (dom, keyEl, textInput, rows) => {
-        return e => {
-          const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
-          const newKey = dom.getTargetValue(e);
-
-          // If nothing changed, just keep the hidden JSON fresh.
-          if (newKey === prevKey) {
-            syncHiddenField(textInput, rows, dom);
-            return;
-          }
-
-          // If the new key is non‑empty and unique, migrate the value.
-          if (newKey !== '' && !(newKey in rows)) {
-            rows[newKey] = rows[prevKey];
-            delete rows[prevKey];
-            dom.setDataAttribute(keyEl, 'prevKey', newKey); // track latest key name
-          }
-          // Otherwise (empty or duplicate), leave the mapping under prevKey.
-
-          syncHiddenField(textInput, rows, dom);
-        };
-      };
-
-      const onKey = createKeyInputHandler(dom, keyEl, textInput, rows);
+      const onKey = createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
       dom.addEventListener(keyEl, 'input', onKey);
       disposers.push(() => dom.removeEventListener(keyEl, 'input', onKey));
 
