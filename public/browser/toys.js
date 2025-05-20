@@ -525,6 +525,31 @@ const createKeyElement = (dom, key, textInput, rows, syncHiddenField, disposers)
 };
 
 /**
+ * Creates a value input element with event listeners
+ * @param {Object} dom - The DOM utilities object
+ * @param {string} value - The initial value
+ * @param {HTMLElement} keyEl - The corresponding key input element
+ * @param {HTMLElement} textInput - The hidden text input element
+ * @param {Object} rows - The rows object containing key-value pairs
+ * @param {Function} syncHiddenField - Function to sync the hidden field with current state
+ * @param {Array<Function>} disposers - Array to store cleanup functions
+ * @returns {HTMLInputElement} The created value input element
+ */
+const createValueElement = (dom, value, keyEl, textInput, rows, syncHiddenField, disposers) => {
+  const valueEl = dom.createElement('input');
+  dom.setType(valueEl, 'text');
+  dom.setPlaceholder(valueEl, 'Value');
+  dom.setValue(valueEl, value);
+
+  const onValue = createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
+  dom.addEventListener(valueEl, 'input', onValue);
+  const removeValueListener = () => dom.removeEventListener(valueEl, 'input', onValue);
+  disposers.push(removeValueListener);
+
+  return valueEl;
+};
+
+/**
  * Creates an add button click handler for key-value rows
  * @param {Object} rows - The rows object containing key-value pairs
  * @param {Function} render - Function to re-render the key-value editor
@@ -824,19 +849,9 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       const rowEl = dom.createElement('div');
       dom.setClassName(rowEl, 'kv-row');
 
-      // Create key element
+      // Create key and value elements
       const keyEl = createKeyElement(dom, key, textInput, rows, syncHiddenField, disposers);
-
-      // Value field
-      const valueEl = dom.createElement('input');
-      dom.setType(valueEl, 'text');
-      dom.setPlaceholder(valueEl, 'Value');
-      dom.setValue(valueEl, value);
-
-      const onValue = createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
-      dom.addEventListener(valueEl, 'input', onValue);
-      const removeValueListener = createRemoveValueListener(dom, valueEl, onValue);
-      disposers.push(removeValueListener);
+      const valueEl = createValueElement(dom, value, keyEl, textInput, rows, syncHiddenField, disposers);
 
       // + / × button
       const btnEl = dom.createElement('button');
