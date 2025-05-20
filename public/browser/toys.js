@@ -580,6 +580,22 @@ const createOnRemove = (rows, render, key) => e => {
 };
 
 /**
+ * Sets up an add button with a click handler that adds a new row
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} button - The button element to set up
+ * @param {Object} rows - The rows object to add a new row to
+ * @param {Function} render - The render function to update the UI
+ * @param {Array} disposers - Array to store cleanup functions
+ */
+const setupAddButton = (dom, button, rows, render, disposers) => {
+  dom.setTextContent(button, '+');
+  const onAdd = createOnAddHandler(rows, render);
+  dom.addEventListener(button, 'click', onAdd);
+  const removeAddListener = createRemoveAddListener(dom, button, onAdd);
+  disposers.push(removeAddListener);
+};
+
+/**
  * Creates a function that removes a click event listener from a button
  * @param {Object} dom - The DOM utilities object
  * @param {HTMLElement} btnEl - The button element to remove the listener from
@@ -858,11 +874,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       const btnEl = dom.createElement('button');
       dom.setType(btnEl, 'button');
       if (idx === entries.length - 1) {
-        dom.setTextContent(btnEl, '+');
-        const onAdd = createOnAddHandler(rows, render);
-        dom.addEventListener(btnEl, 'click', onAdd);
-        const removeAddListener = createRemoveAddListener(dom, btnEl, onAdd);
-        disposers.push(removeAddListener);
+        setupAddButton(dom, btnEl, rows, render, disposers);
       } else {
         dom.setTextContent(btnEl, '×');
         const onRemove = createOnRemove(rows, render, key);
