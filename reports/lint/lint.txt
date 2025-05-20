@@ -11,8 +11,8 @@
   397:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
   636:25  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
   652:36  warning  Arrow function has a complexity of 10. Maximum allowed is 2                  complexity
-  702:16  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
-  824:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
+  703:16  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+  825:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3             max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
