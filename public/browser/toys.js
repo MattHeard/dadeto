@@ -731,9 +731,9 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 
       // + / × button
       const btnEl = dom.createElement('button');
-      btnEl.type = 'button';
+      dom.setType(btnEl, 'button');
       if (idx === entries.length - 1) {
-        btnEl.textContent = '+';
+        dom.setTextContent(btnEl, '+');
         const onAdd = e => {
           e.preventDefault();
           // Add a new empty key only if there isn't already one
@@ -745,7 +745,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         dom.addEventListener(btnEl, 'click', onAdd);
         disposers.push(() => dom.removeEventListener(btnEl, 'click', onAdd));
       } else {
-        btnEl.textContent = '×';
+        dom.setTextContent(btnEl, '×');
         const onRemove = e => {
           e.preventDefault();
           delete rows[key];
@@ -755,10 +755,10 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         disposers.push(() => dom.removeEventListener(btnEl, 'click', onRemove));
       }
 
-      rowEl.appendChild(keyEl);
-      rowEl.appendChild(valueEl);
-      rowEl.appendChild(btnEl);
-      kvContainer.appendChild(rowEl);
+      dom.appendChild(rowEl, keyEl);
+      dom.appendChild(rowEl, valueEl);
+      dom.appendChild(rowEl, btnEl);
+      dom.appendChild(kvContainer, rowEl);
     });
 
     syncHiddenField(textInput, rows, dom);
