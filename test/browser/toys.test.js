@@ -921,7 +921,8 @@ describe('createInputDropdownHandler', () => {
       enable,
       hide,
       disable,
-      removeChild
+      removeChild,
+      addEventListener: jest.fn()
     };
   });
 

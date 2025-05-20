@@ -49,9 +49,9 @@
    872:7   warning  Ternary operator used                                       no-ternary
    896:41  warning  Ternary operator used                                       no-ternary
    897:41  warning  Ternary operator used                                       no-ternary
-   933:9   warning  Ternary operator used                                       no-ternary
-   972:9   warning  Ternary operator used                                       no-ternary
-  1009:9   warning  Ternary operator used                                       no-ternary
-  1031:40  warning  Ternary operator used                                       no-ternary
+   934:9   warning  Ternary operator used                                       no-ternary
+   973:9   warning  Ternary operator used                                       no-ternary
+  1010:9   warning  Ternary operator used                                       no-ternary
+  1032:40  warning  Ternary operator used                                       no-ternary
 
 ✖ 37 problems (0 errors, 37 warnings)
