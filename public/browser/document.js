@@ -183,7 +183,8 @@ export const dom = {
   querySelector,
   disconnectObserver,
   isIntersecting,
-  logError
+  logError,
+  error: logError
 };
 
 /**
