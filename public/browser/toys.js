@@ -766,14 +766,17 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       dom.setType(btnEl, 'button');
       if (idx === entries.length - 1) {
         dom.setTextContent(btnEl, '+');
-        const onAdd = e => {
-          e.preventDefault();
-          // Add a new empty key only if there isn't already one
-          if (!Object.prototype.hasOwnProperty.call(rows, '')) {
-            rows[''] = '';
-            render();
-          }
+        const createOnAddHandler = () => {
+          return e => {
+            e.preventDefault();
+            // Add a new empty key only if there isn't already one
+            if (!Object.prototype.hasOwnProperty.call(rows, '')) {
+              rows[''] = '';
+              render();
+            }
+          };
         };
+        const onAdd = createOnAddHandler();
         dom.addEventListener(btnEl, 'click', onAdd);
         disposers.push(() => dom.removeEventListener(btnEl, 'click', onAdd));
       } else {
