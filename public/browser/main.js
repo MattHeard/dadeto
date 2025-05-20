@@ -104,11 +104,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  removeNextSibling,
-  enable,
-  disable,
-  removeChild,
-  removeWarning,
   contains,
   removeAllChildren,
   getCurrentTarget,

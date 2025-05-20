@@ -5,6 +5,8 @@
   21:3  warning  'setType' is defined but never used                   no-unused-vars
   22:3  warning  'getElementsByTagName' is defined but never used      no-unused-vars
   23:3  warning  'pauseAudio' is defined but never used                no-unused-vars
+  24:3  warning  'removeNextSibling' is defined but never used         no-unused-vars
+  25:3  warning  'removeWarning' is defined but never used             no-unused-vars
   27:3  warning  'hasClass' is defined but never used                  no-unused-vars
   28:3  warning  'querySelector' is defined but never used             no-unused-vars
   29:3  warning  'removeControlsAttribute' is defined but never used   no-unused-vars
@@ -26,7 +28,10 @@
   55:3  warning  'setPlaceholder' is defined but never used            no-unused-vars
   57:3  warning  'addClass' is defined but never used                  no-unused-vars
   59:3  warning  'setTextContent' is defined but never used            no-unused-vars
+  60:3  warning  'removeChild' is defined but never used               no-unused-vars
   61:3  warning  'hide' is defined but never used                      no-unused-vars
+  62:3  warning  'enable' is defined but never used                    no-unused-vars
+  63:3  warning  'disable' is defined but never used                   no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
    66:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
@@ -72,4 +77,4 @@
   1009:9   warning  Ternary operator used                                       no-ternary
   1031:40  warning  Ternary operator used                                       no-ternary
 
-✖ 57 problems (0 errors, 57 warnings)
+✖ 62 problems (0 errors, 62 warnings)
