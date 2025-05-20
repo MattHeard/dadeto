@@ -397,7 +397,7 @@ import { isObject } from './common.js';
 const createNumberInput = (value, onChange, dom) => {
   const input = createBaseNumberInput(dom);
   if (value) { dom.setValue(input, value); }
-  setupInputEvents(input, onChange);
+  setupInputEvents(input, onChange, dom);
   return input;
 };
 
