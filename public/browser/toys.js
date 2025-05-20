@@ -926,15 +926,16 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
    * Creates a render function with access to the given disposers array
    * @param {Object} dom - The DOM utilities object
    * @param {Array} disposersArray - Array to store cleanup functions
+   * @param {HTMLElement} container - The container element for the key-value pairs
    * @returns {Function} The render function
    */
-  const createRenderer = (dom, disposersArray) => {
+  const createRenderer = (dom, disposersArray, container) => {
     /**
      * Renders the key-value input UI
      */
     const render = () => {
       clearDisposers(disposersArray);
-      dom.removeAllChildren(kvContainer);
+      dom.removeAllChildren(container);
 
       // If no keys, add a single empty row
       if (Object.keys(rows).length === 0) {
@@ -942,7 +943,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       }
 
       const entries = Object.entries(rows);
-      entries.forEach(createKeyValueRow(dom, entries, textInput, rows, syncHiddenField, disposersArray, render, kvContainer));
+      entries.forEach(createKeyValueRow(dom, entries, textInput, rows, syncHiddenField, disposersArray, render, container));
 
       syncHiddenField(textInput, rows, dom);
     };
@@ -951,7 +952,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   };
 
   // Create the render function with the required dependencies
-  const render = createRenderer(dom, disposers);
+  const render = createRenderer(dom, disposers, kvContainer);
 
   // ---------------------------------------------------------------------
   // Initialise from existing JSON in the hidden field, if present
