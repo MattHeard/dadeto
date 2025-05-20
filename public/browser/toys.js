@@ -631,14 +631,15 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
  * Only includes non-empty key-value pairs in the output.
  * @param {HTMLInputElement} textInput - The hidden input element to update (assumed to be truthy)
  * @param {Object} rows - The key-value pairs to sync
+ * @param {Object} dom - The DOM utilities object
  */
-const syncHiddenField = (textInput, rows) => {
+const syncHiddenField = (textInput, rows, dom) => {
   // Only include keys with non-empty key or value
   const filtered = {};
   for (const [k, v] of Object.entries(rows)) {
     if (k || v) {filtered[k] = v;}
   }
-  textInput.value = JSON.stringify(filtered);
+  dom.setValue(textInput, JSON.stringify(filtered));
 };
 
 /**
@@ -697,7 +698,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 
         // If nothing changed, just keep the hidden JSON fresh.
         if (newKey === prevKey) {
-          syncHiddenField(textInput, rows);
+          syncHiddenField(textInput, rows, dom);
           return;
         }
 
@@ -709,7 +710,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         }
         // Otherwise (empty or duplicate), leave the mapping under prevKey.
 
-        syncHiddenField(textInput, rows);
+        syncHiddenField(textInput, rows, dom);
       };
 
       keyEl.addEventListener('input', onKey);
@@ -723,7 +724,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       const onValue = e => {
         const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
         rows[rowKey] = e.target.value;
-        syncHiddenField(textInput, rows);
+        syncHiddenField(textInput, rows, dom);
       };
       valueEl.addEventListener('input', onValue);
       disposers.push(() => valueEl.removeEventListener('input', onValue));
@@ -760,7 +761,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       kvContainer.appendChild(rowEl);
     });
 
-    syncHiddenField(textInput, rows);
+    syncHiddenField(textInput, rows, dom);
   };
 
   // ---------------------------------------------------------------------
