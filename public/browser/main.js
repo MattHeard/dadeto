@@ -104,11 +104,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  getElementsByTagName,
-  getClasses,
-  getRandomNumber,
-  getCurrentTime,
-  hasClass,
   hasNextSiblingClass,
   hide,
   insertBefore,
