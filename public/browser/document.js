@@ -141,25 +141,21 @@ export const setPlaceholder = (element, placeholder) => {
 
 /**
  * Sets a data attribute on an element
- * @param {HTMLElement} element - The element to set the data attribute on
- * @param {string} name - The name of the data attribute (without the 'data-' prefix)
+ * @param {HTMLElement} element - The element to set the data attribute on (must be truthy)
+ * @param {string} name - The name of the data attribute (without the 'data-' prefix, must be truthy)
  * @param {string} value - The value to set
  */
 export const setDataAttribute = (element, name, value) => {
-  if (!element || !name) return;
   element.dataset[name] = value;
 };
 
 /**
  * Gets the value of a data attribute from an element
- * @param {HTMLElement} element - The element to get the data attribute from
- * @param {string} name - The name of the data attribute (without the 'data-' prefix)
+ * @param {HTMLElement} element - The element to get the data attribute from (must be truthy)
+ * @param {string} name - The name of the data attribute (without the 'data-' prefix, must be truthy)
  * @returns {string|undefined} The value of the data attribute, or undefined if not found
  */
-export const getDataAttribute = (element, name) => {
-  if (!element || !name) return undefined;
-  return element.dataset[name];
-};
+export const getDataAttribute = (element, name) => element.dataset[name];
 
 export const setTextContent = (element, content) => {
   element.textContent = content;
