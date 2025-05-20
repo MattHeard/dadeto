@@ -775,7 +775,8 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 
       const onValue = createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
       dom.addEventListener(valueEl, 'input', onValue);
-      const removeValueListener = () => dom.removeEventListener(valueEl, 'input', onValue);
+      const createRemoveValueListener = (el, handler) => () => dom.removeEventListener(el, 'input', handler);
+      const removeValueListener = createRemoveValueListener(valueEl, onValue);
       disposers.push(removeValueListener);
 
       // + / × button
