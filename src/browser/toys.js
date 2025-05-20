@@ -726,8 +726,8 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         rows[rowKey] = dom.getTargetValue(e);
         syncHiddenField(textInput, rows, dom);
       };
-      valueEl.addEventListener('input', onValue);
-      disposers.push(() => valueEl.removeEventListener('input', onValue));
+      dom.addEventListener(valueEl, 'input', onValue);
+      disposers.push(() => dom.removeEventListener(valueEl, 'input', onValue));
 
       // + / × button
       const btnEl = dom.createElement('button');
@@ -742,8 +742,8 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
             render();
           }
         };
-        btnEl.addEventListener('click', onAdd);
-        disposers.push(() => btnEl.removeEventListener('click', onAdd));
+        dom.addEventListener(btnEl, 'click', onAdd);
+        disposers.push(() => dom.removeEventListener(btnEl, 'click', onAdd));
       } else {
         btnEl.textContent = '×';
         const onRemove = e => {
@@ -751,8 +751,8 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
           delete rows[key];
           render();
         };
-        btnEl.addEventListener('click', onRemove);
-        disposers.push(() => btnEl.removeEventListener('click', onRemove));
+        dom.addEventListener(btnEl, 'click', onRemove);
+        disposers.push(() => dom.removeEventListener(btnEl, 'click', onRemove));
       }
 
       rowEl.appendChild(keyEl);
