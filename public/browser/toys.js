@@ -613,6 +613,29 @@ const setupRemoveButton = (dom, button, rows, render, key, disposers) => {
 };
 
 /**
+ * Creates and sets up a button element as either an add or remove button
+ * @param {Object} dom - The DOM utilities object
+ * @param {boolean} isAddButton - Whether to create an add button (true) or remove button (false)
+ * @param {Object} rows - The rows object for the key-value editor
+ * @param {Function} render - The render function to update the UI
+ * @param {string} key - The key of the row (for remove button)
+ * @param {Array} disposers - Array to store cleanup functions
+ * @returns {HTMLElement} The created and configured button element
+ */
+const createButton = (dom, isAddButton, rows, render, key, disposers) => {
+  const button = dom.createElement('button');
+  dom.setType(button, 'button');
+  
+  if (isAddButton) {
+    setupAddButton(dom, button, rows, render, disposers);
+  } else {
+    setupRemoveButton(dom, button, rows, render, key, disposers);
+  }
+  
+  return button;
+};
+
+/**
  * Creates a function that removes a click event listener from a button
  * @param {Object} dom - The DOM utilities object
  * @param {HTMLElement} btnEl - The button element to remove the listener from
@@ -887,14 +910,8 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       const keyEl = createKeyElement(dom, key, textInput, rows, syncHiddenField, disposers);
       const valueEl = createValueElement(dom, value, keyEl, textInput, rows, syncHiddenField, disposers);
 
-      // + / × button
-      const btnEl = dom.createElement('button');
-      dom.setType(btnEl, 'button');
-      if (idx === entries.length - 1) {
-        setupAddButton(dom, btnEl, rows, render, disposers);
-      } else {
-        setupRemoveButton(dom, btnEl, rows, render, key, disposers);
-      }
+      // Create and set up the appropriate button type
+      const btnEl = createButton(dom, idx === entries.length - 1, rows, render, key, disposers);
 
       dom.appendChild(rowEl, keyEl);
       dom.appendChild(rowEl, valueEl);
