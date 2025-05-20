@@ -543,7 +543,7 @@ const createValueElement = (dom, value, keyEl, textInput, rows, syncHiddenField,
 
   const onValue = createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
   dom.addEventListener(valueEl, 'input', onValue);
-  const removeValueListener = () => dom.removeEventListener(valueEl, 'input', onValue);
+  const removeValueListener = createRemoveValueListener(dom, valueEl, onValue);
   disposers.push(removeValueListener);
 
   return valueEl;
