@@ -185,6 +185,8 @@ export const dom = {
   importModule,
   makeIntersectionObserver,
   setType,
+  setPlaceholder,
+  setDataAttribute,
   createElement,
   removeControlsAttribute,
   setClassName,

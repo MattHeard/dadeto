@@ -104,8 +104,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  setPlaceholder,
-  setDataAttribute,
   addClass,
   appendChild,
   createTextNode,

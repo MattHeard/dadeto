@@ -12,6 +12,8 @@
   41:3  warning  'isIntersecting' is defined but never used            no-unused-vars
   48:3  warning  'makeIntersectionObserver' is defined but never used  no-unused-vars
   53:3  warning  'setClassName' is defined but never used              no-unused-vars
+  54:3  warning  'setDataAttribute' is defined but never used          no-unused-vars
+  55:3  warning  'setPlaceholder' is defined but never used            no-unused-vars
   59:3  warning  'setTextContent' is defined but never used            no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
@@ -58,4 +60,4 @@
   1009:9   warning  Ternary operator used                                       no-ternary
   1031:40  warning  Ternary operator used                                       no-ternary
 
-✖ 43 problems (0 errors, 43 warnings)
+✖ 45 problems (0 errors, 45 warnings)
