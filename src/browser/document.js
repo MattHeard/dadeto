@@ -171,26 +171,7 @@ export const isIntersecting = (entry) => entry.isIntersecting;
 /**
  * Centralized DOM manipulation utilities
  */
-export const dom = {
-  /**
-   * Sets a data attribute on an element
-   * @param {HTMLElement} element - The element to set the data attribute on
-   * @param {string} name - The name of the data attribute (without the 'data-' prefix)
-   * @param {string} value - The value to set
-   */
-  setDataAttribute: (element, name, value) => {
-    element.dataset[name] = value;
-  },
-
-  /**
-   * Sets the text content of an element
-   * @param {HTMLElement} element - The element to set the text content of
-   * @param {string} content - The text content to set
-   */
-  setTextContent: (element, content) => {
-    element.textContent = content;
-  },
-};
+export const dom = {};
 
 /**
  * Checks if a window has no interactive components
