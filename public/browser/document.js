@@ -171,7 +171,9 @@ export const isIntersecting = (entry) => entry.isIntersecting;
 /**
  * Centralized DOM manipulation utilities
  */
-export const dom = {};
+export const dom = {
+  createElement
+};
 
 /**
  * Checks if a window has no interactive components
