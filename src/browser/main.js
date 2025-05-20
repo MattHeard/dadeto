@@ -111,7 +111,6 @@ function createEnv() {
 const dom = {
   ...baseDom,
   importModule,
-  error: logError,
   makeIntersectionObserver,
   setType,
   setPlaceholder,
