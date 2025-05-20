@@ -516,11 +516,12 @@ function createOnAddHandler(rows, render) {
 
 /**
  * Creates a function that removes an event listener for value input
+ * @param {Object} dom - The DOM utilities object
  * @param {HTMLElement} el - The element to remove the listener from
  * @param {Function} handler - The event handler function to remove
  * @returns {Function} A function that removes the event listener
  */
-const createRemoveValueListener = (el, handler) => () =>
+const createRemoveValueListener = (dom, el, handler) => () =>
   dom.removeEventListener(el, 'input', handler);
 
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
@@ -784,7 +785,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 
       const onValue = createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
       dom.addEventListener(valueEl, 'input', onValue);
-      const removeValueListener = createRemoveValueListener(valueEl, onValue);
+      const removeValueListener = createRemoveValueListener(dom, valueEl, onValue);
       disposers.push(removeValueListener);
 
       // + / × button
