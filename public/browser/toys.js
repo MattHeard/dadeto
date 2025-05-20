@@ -714,7 +714,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   let disposers = [];
   const clearDisposers = () => {
     disposers.forEach(fn => fn());
-    disposers = [];
+    disposers.length = 0;  // Clear array in place for better performance
   };
 
   // ---------------------------------------------------------------------

@@ -711,10 +711,10 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // State + bookkeeping
   // ---------------------------------------------------------------------
   let rows = {};
-  let disposers = [];
+  const disposers = [];
   const clearDisposers = () => {
     disposers.forEach(fn => fn());
-    disposers = [];
+    disposers.length = 0; // Clear array in place for better performance
   };
 
   // ---------------------------------------------------------------------
