@@ -218,7 +218,16 @@ export const dom = {
   disconnectObserver,
   isIntersecting,
   logError,
-  error: logError
+  error: logError,
+  contains,
+  removeAllChildren,
+  getCurrentTarget,
+  getNextSibling,
+  getParentElement,
+  setValue,
+  getValue,
+  getTargetValue,
+  reveal
 };
 
 /**

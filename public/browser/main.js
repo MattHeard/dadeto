@@ -103,16 +103,7 @@ function createEnv() {
 
 
 const dom = {
-  ...baseDom,
-  contains,
-  removeAllChildren,
-  getCurrentTarget,
-  getNextSibling,
-  getParentElement,
-  setValue,
-  getValue,
-  getTargetValue,
-  reveal
+  ...baseDom
 };
 const env = { globalState, createEnv, error: baseDom.logError, fetch, loggers };
 
