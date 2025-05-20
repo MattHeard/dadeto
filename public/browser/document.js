@@ -91,9 +91,9 @@ export const setTargetValue = (event, value) => {
 /**
  * Gets the value of a form element
  * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element - The form element to get the value from (assumed to be truthy)
- * @returns {string|number|boolean|Array<string>|FileList|null} The value of the element, or null if the element has no value
+ * @returns {string|number|boolean|Array<string>|FileList} The value of the element (assumed to be truthy)
  */
-export const getValue = (element) => element.value ?? null;
+export const getValue = (element) => element.value;
 
 /**
  * Sets the value of a form element
