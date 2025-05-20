@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.34% </span>
+                <span class="strong">62.53% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>197/316</span>
+                <span class='fraction'>197/315</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">63.54% </span>
+                <span class="strong">63.75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>190/299</span>
+                <span class='fraction'>190/298</span>
             </div>
         
             
@@ -1393,6 +1393,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1655,23 +1672,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -2249,6 +2249,23 @@ function <span class="fstat-no" title="function not covered" >createKeyInputHand
   };
 }
 &nbsp;
+/**
+ * Creates a value input event handler for a key-value row
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} keyEl - The key input element
+ * @param {HTMLElement} textInput - The hidden text input element
+ * @param {Object} rows - The rows object containing key-value pairs
+ * @param {Function} syncHiddenField - Function to sync the hidden field with current state
+ * @returns {Function} The event handler function
+ */
+function <span class="fstat-no" title="function not covered" >createValueInputHandler(</span>dom, keyEl, textInput, rows, syncHiddenField) {
+<span class="cstat-no" title="statement not covered" >  return <span class="fstat-no" title="function not covered" >e </span>=&gt; {</span>
+    const rowKey = <span class="cstat-no" title="statement not covered" >dom.getDataAttribute(keyEl, 'prevKey');</span> // may have changed via onKey
+<span class="cstat-no" title="statement not covered" >    rows[rowKey] = dom.getTargetValue(e);</span>
+<span class="cstat-no" title="statement not covered" >    syncHiddenField(textInput, rows, dom);</span>
+  };
+}
+&nbsp;
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 &nbsp;
 function isValidParsedRequest(parsed) {
@@ -2511,24 +2528,7 @@ export const ensureKeyValueInput = <span class="fstat-no" title="function not co
 <span class="cstat-no" title="statement not covered" >      dom.setType(valueEl, 'text');</span>
 <span class="cstat-no" title="statement not covered" >      dom.setPlaceholder(valueEl, 'Value');</span>
 <span class="cstat-no" title="statement not covered" >      dom.setValue(valueEl, value);</span>
-      
-      /**
-       * Creates a value input event handler for a key-value row
-       * @param {Object} dom - The DOM utilities object
-       * @param {HTMLElement} keyEl - The key input element
-       * @param {HTMLElement} textInput - The hidden text input element
-       * @param {Object} rows - The rows object containing key-value pairs
-       * @param {Function} syncHiddenField - Function to sync the hidden field with current state
-       * @returns {Function} The event handler function
-       */
-      const createValueInputHandler = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(d</span>om, keyEl, textInput, rows, syncHiddenField) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >        return <span class="fstat-no" title="function not covered" >e </span>=&gt; {</span>
-          const rowKey = <span class="cstat-no" title="statement not covered" >dom.getDataAttribute(keyEl, 'prevKey');</span> // may have changed via onKey
-<span class="cstat-no" title="statement not covered" >          rows[rowKey] = dom.getTargetValue(e);</span>
-<span class="cstat-no" title="statement not covered" >          syncHiddenField(textInput, rows, dom);</span>
-        };
-      };
-      
+&nbsp;
       const onValue = <span class="cstat-no" title="statement not covered" >createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField);</span>
 <span class="cstat-no" title="statement not covered" >      dom.addEventListener(valueEl, 'input', onValue);</span>
 <span class="cstat-no" title="statement not covered" >      disposers.push(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >dom.removeEventListener(valueEl, 'input', onValue))</span>;</span>
@@ -2638,7 +2638,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-20T12:46:48.617Z
+                at 2025-05-20T12:48:32.196Z
             </div>
         <script src="../prettify.js"></script>
         <script>

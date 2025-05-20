@@ -472,6 +472,23 @@ function createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
   };
 }
 
+/**
+ * Creates a value input event handler for a key-value row
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} keyEl - The key input element
+ * @param {HTMLElement} textInput - The hidden text input element
+ * @param {Object} rows - The rows object containing key-value pairs
+ * @param {Function} syncHiddenField - Function to sync the hidden field with current state
+ * @returns {Function} The event handler function
+ */
+function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
+  return e => {
+    const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
+    rows[rowKey] = dom.getTargetValue(e);
+    syncHiddenField(textInput, rows, dom);
+  };
+}
+
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
 function isValidParsedRequest(parsed) {
@@ -734,23 +751,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       dom.setType(valueEl, 'text');
       dom.setPlaceholder(valueEl, 'Value');
       dom.setValue(valueEl, value);
-
-      /**
-       * Creates a value input event handler for a key-value row
-       * @param {Object} dom - The DOM utilities object
-       * @param {HTMLElement} keyEl - The key input element
-       * @param {HTMLElement} textInput - The hidden text input element
-       * @param {Object} rows - The rows object containing key-value pairs
-       * @param {Function} syncHiddenField - Function to sync the hidden field with current state
-       * @returns {Function} The event handler function
-       */
-      const createValueInputHandler = (dom, keyEl, textInput, rows, syncHiddenField) => {
-        return e => {
-          const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
-          rows[rowKey] = dom.getTargetValue(e);
-          syncHiddenField(textInput, rows, dom);
-        };
-      };
 
       const onValue = createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
       dom.addEventListener(valueEl, 'input', onValue);
