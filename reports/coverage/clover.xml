@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747756774958" clover="3.2.0">
-  <project timestamp="1747756774958" name="All files">
+<coverage generated="1747756826406" clover="3.2.0">
+  <project timestamp="1747756826407" name="All files">
     <metrics statements="1665" coveredstatements="1539" conditionals="492" coveredconditionals="457" methods="653" coveredmethods="618" elements="2810" coveredelements="2614" complexity="0" loc="1665" ncloc="1665" packages="17" files="34" classes="34"/>
     <package name="browser">
       <metrics statements="523" coveredstatements="397" conditionals="110" coveredconditionals="75" methods="160" coveredmethods="125"/>
@@ -512,38 +512,38 @@
         <line num="913" count="0" type="stmt"/>
         <line num="919" count="0" type="stmt"/>
         <line num="920" count="0" type="stmt"/>
-        <line num="930" count="0" type="stmt"/>
-        <line num="934" count="0" type="stmt"/>
+        <line num="931" count="0" type="stmt"/>
         <line num="935" count="0" type="stmt"/>
         <line num="936" count="0" type="stmt"/>
-        <line num="939" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="940" count="0" type="stmt"/>
-        <line num="943" count="0" type="stmt"/>
+        <line num="937" count="0" type="stmt"/>
+        <line num="940" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="941" count="0" type="stmt"/>
         <line num="944" count="0" type="stmt"/>
-        <line num="946" count="0" type="stmt"/>
-        <line num="949" count="0" type="stmt"/>
-        <line num="953" count="0" type="stmt"/>
-        <line num="958" count="0" type="stmt"/>
-        <line num="959" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="945" count="0" type="stmt"/>
+        <line num="947" count="0" type="stmt"/>
+        <line num="950" count="0" type="stmt"/>
+        <line num="954" count="0" type="stmt"/>
+        <line num="959" count="0" type="stmt"/>
         <line num="960" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="962" count="0" type="stmt"/>
+        <line num="961" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="963" count="0" type="stmt"/>
-        <line num="964" count="0" type="cond" truecount="0" falsecount="4"/>
-        <line num="966" count="0" type="cond" truecount="0" falsecount="4"/>
-        <line num="967" count="0" type="stmt"/>
-        <line num="971" count="0" type="stmt"/>
-        <line num="974" count="0" type="stmt"/>
+        <line num="964" count="0" type="stmt"/>
+        <line num="965" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="967" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="968" count="0" type="stmt"/>
+        <line num="972" count="0" type="stmt"/>
         <line num="975" count="0" type="stmt"/>
         <line num="976" count="0" type="stmt"/>
         <line num="977" count="0" type="stmt"/>
-        <line num="980" count="0" type="stmt"/>
-        <line num="1003" count="1" type="stmt"/>
-        <line num="1004" count="0" type="stmt"/>
+        <line num="978" count="0" type="stmt"/>
+        <line num="981" count="0" type="stmt"/>
+        <line num="1004" count="1" type="stmt"/>
         <line num="1005" count="0" type="stmt"/>
         <line num="1006" count="0" type="stmt"/>
-        <line num="1009" count="0" type="stmt"/>
+        <line num="1007" count="0" type="stmt"/>
         <line num="1010" count="0" type="stmt"/>
-        <line num="1017" count="1" type="stmt"/>
+        <line num="1011" count="0" type="stmt"/>
+        <line num="1018" count="1" type="stmt"/>
       </file>
     </package>
     <package name="generator">

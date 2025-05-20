@@ -924,10 +924,11 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // ---------------------------------------------------------------------
   /**
    * Creates a render function with access to the given disposers array
+   * @param {Object} dom - The DOM utilities object
    * @param {Array} disposersArray - Array to store cleanup functions
    * @returns {Function} The render function
    */
-  const createRenderer = (disposersArray) => {
+  const createRenderer = (dom, disposersArray) => {
     /**
      * Renders the key-value input UI
      */
@@ -949,8 +950,8 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
     return render;
   };
 
-  // Create the render function with the disposers array
-  const render = createRenderer(disposers);
+  // Create the render function with the required dependencies
+  const render = createRenderer(dom, disposers);
 
   // ---------------------------------------------------------------------
   // Initialise from existing JSON in the hidden field, if present
