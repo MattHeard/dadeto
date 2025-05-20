@@ -623,11 +623,8 @@ const setupRemoveButton = (dom, button, rows, render, key, disposers) => {
  * @returns {HTMLElement} The created and configured button element
  */
 /**
- * Creates and appends a key-value row to the container
+ * Creates a function that creates and appends a key-value row to the container
  * @param {Object} dom - The DOM utilities object
- * @param {string} key - The key for the row
- * @param {string} value - The value for the row
- * @param {number} idx - The index of the current row
  * @param {Array} entries - The array of all key-value entries
  * @param {HTMLInputElement} textInput - The hidden input element
  * @param {Object} rows - The rows object containing all key-value pairs
@@ -635,23 +632,25 @@ const setupRemoveButton = (dom, button, rows, render, key, disposers) => {
  * @param {Array} disposers - Array to store cleanup functions
  * @param {Function} render - The render function to update the UI
  * @param {HTMLElement} container - The container to append the row to
+ * @returns {Function} A function that takes [key, value] and index and creates a row
  */
-const createKeyValueRow = (dom, key, value, idx, entries, textInput, rows, syncHiddenField, disposers, render, container) => {
-  const rowEl = dom.createElement('div');
-  dom.setClassName(rowEl, 'kv-row');
+const createKeyValueRow = (dom, entries, textInput, rows, syncHiddenField, disposers, render, container) =>
+  ([key, value], idx) => {
+    const rowEl = dom.createElement('div');
+    dom.setClassName(rowEl, 'kv-row');
 
-  // Create key and value elements
-  const keyEl = createKeyElement(dom, key, textInput, rows, syncHiddenField, disposers);
-  const valueEl = createValueElement(dom, value, keyEl, textInput, rows, syncHiddenField, disposers);
+    // Create key and value elements
+    const keyEl = createKeyElement(dom, key, textInput, rows, syncHiddenField, disposers);
+    const valueEl = createValueElement(dom, value, keyEl, textInput, rows, syncHiddenField, disposers);
 
-  // Create and set up the appropriate button type
-  const btnEl = createButton(dom, idx === entries.length - 1, rows, render, key, disposers);
+    // Create and set up the appropriate button type
+    const btnEl = createButton(dom, idx === entries.length - 1, rows, render, key, disposers);
 
-  dom.appendChild(rowEl, keyEl);
-  dom.appendChild(rowEl, valueEl);
-  dom.appendChild(rowEl, btnEl);
-  dom.appendChild(container, rowEl);
-};
+    dom.appendChild(rowEl, keyEl);
+    dom.appendChild(rowEl, valueEl);
+    dom.appendChild(rowEl, btnEl);
+    dom.appendChild(container, rowEl);
+  };
 
 const createButton = (dom, isAddButton, rows, render, key, disposers) => {
   const button = dom.createElement('button');
@@ -933,9 +932,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
     }
 
     const entries = Object.entries(rows);
-    entries.forEach(([key, value], idx) => {
-      createKeyValueRow(dom, key, value, idx, entries, textInput, rows, syncHiddenField, disposers, render, kvContainer);
-    });
+    entries.forEach(createKeyValueRow(dom, entries, textInput, rows, syncHiddenField, disposers, render, kvContainer));
 
     syncHiddenField(textInput, rows, dom);
   };
