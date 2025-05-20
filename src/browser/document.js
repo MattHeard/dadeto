@@ -174,7 +174,10 @@ export const isIntersecting = (entry) => entry.isIntersecting;
 export const dom = {
   createElement,
   removeControlsAttribute,
-  setClassName
+  setClassName,
+  getAudioElements,
+  setTextContent,
+  stopDefault
 };
 
 /**

@@ -111,9 +111,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  getAudioElements,
-  setTextContent,
-  stopDefault,
   addWarning,
   addEventListener,
   querySelector,
