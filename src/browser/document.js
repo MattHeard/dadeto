@@ -43,7 +43,7 @@ export const pauseAudio = (audio) => audio.pause();
 // Console logging wrappers
 export const log = (...args) => console.log(...args);
 export const warn = (...args) => console.warn(...args);
-export const error = (...args) => console.error(...args);
+export const logError = (...args) => console.error(...args);
 
 // Utility functions
 export const getClasses = (el) => Array.from(el.classList);
@@ -183,7 +183,7 @@ export const dom = {
   querySelector,
   disconnectObserver,
   isIntersecting,
-  error
+  logError
 };
 
 /**
