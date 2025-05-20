@@ -74,18 +74,18 @@ export const getParentElement = (element) => element.parentElement;
 
 /**
  * Gets the value from an event target
- * @param {EventTarget} target - The event target to get the value from
+ * @param {Event|{target: EventTarget}} event - The event object with a target property
  * @returns {string} The value of the target
  */
-export const getTargetValue = target => target.value;
+export const getTargetValue = event => event.target.value;
 
 /**
  * Sets the value of an event target
- * @param {EventTarget} target - The event target to set the value on
+ * @param {Event|{target: EventTarget}} event - The event object with a target property
  * @param {string} value - The value to set
  */
-export const setTargetValue = (target, value) => {
-  target.value = value;
+export const setTargetValue = (event, value) => {
+  event.target.value = value;
 };
 
 /**
