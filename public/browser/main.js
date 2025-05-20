@@ -111,8 +111,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  removeControlsAttribute,
-  setClassName,
   getAudioElements,
   setTextContent,
   stopDefault,
