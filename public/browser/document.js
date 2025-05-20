@@ -172,7 +172,9 @@ export const isIntersecting = (entry) => entry.isIntersecting;
  * Centralized DOM manipulation utilities
  */
 export const dom = {
-  createElement
+  createElement,
+  removeControlsAttribute,
+  setClassName
 };
 
 /**
