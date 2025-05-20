@@ -693,7 +693,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       // store the current key so we can track renames without re‑rendering
       dom.setDataAttribute(keyEl, 'prevKey', key);
       const onKey = e => {
-        const prevKey = keyEl.dataset.prevKey;
+        const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
         const newKey = e.target.value;
 
         // If nothing changed, just keep the hidden JSON fresh.
@@ -722,7 +722,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
       valueEl.placeholder = 'Value';
       valueEl.value = value;
       const onValue = e => {
-        const rowKey = keyEl.dataset.prevKey; // may have changed via onKey
+        const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
         rows[rowKey] = e.target.value;
         syncHiddenField(textInput, rows);
       };
