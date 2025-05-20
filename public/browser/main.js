@@ -104,9 +104,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  addClass,
-  appendChild,
-  createTextNode,
   getElementsByTagName,
   getClasses,
   getRandomNumber,
