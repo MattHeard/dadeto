@@ -91,7 +91,7 @@ const globalState = {
  * Creates and returns a new environment map for dependency injection
  * @returns {Map<string, Function>} Map of environment functions
  */
-const loggers = { logInfo: log, logError: baseDom.logError, logWarning: warn };
+const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
 
 function createEnv() {
   return new Map([
@@ -126,7 +126,7 @@ initializeVisibleComponents(
 handleTagLinks(dom);
 
 // Initial fetch of blog data when the script loads
-fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: baseDom.logError });
+fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: dom.logError });
 
 setupAudio(dom);
 
