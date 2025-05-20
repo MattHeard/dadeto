@@ -698,9 +698,10 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
        * @param {Object} dom - The DOM utilities object
        * @param {HTMLElement} keyEl - The key input element
        * @param {HTMLElement} textInput - The hidden text input element
+       * @param {Object} rows - The rows object containing key-value pairs
        * @returns {Function} The event handler function
        */
-      const createKeyInputHandler = (dom, keyEl, textInput) => {
+      const createKeyInputHandler = (dom, keyEl, textInput, rows) => {
         return e => {
           const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
           const newKey = dom.getTargetValue(e);
@@ -723,7 +724,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         };
       };
 
-      const onKey = createKeyInputHandler(dom, keyEl, textInput);
+      const onKey = createKeyInputHandler(dom, keyEl, textInput, rows);
       dom.addEventListener(keyEl, 'input', onKey);
       disposers.push(() => dom.removeEventListener(keyEl, 'input', onKey));
 
