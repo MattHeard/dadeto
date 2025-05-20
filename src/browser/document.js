@@ -183,6 +183,7 @@ const importModule = (modulePath, onSuccess, onError) => {
  */
 export const dom = {
   importModule,
+  makeIntersectionObserver,
   createElement,
   removeControlsAttribute,
   setClassName,

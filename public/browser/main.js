@@ -104,7 +104,6 @@ function createEnv() {
 
 const dom = {
   ...baseDom,
-  makeIntersectionObserver,
   setType,
   setPlaceholder,
   setDataAttribute,
