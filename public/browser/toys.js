@@ -711,17 +711,21 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // State + bookkeeping
   // ---------------------------------------------------------------------
   let rows = {};
-  let disposers = [];
-  const clearDisposers = () => {
-    disposers.forEach(fn => fn());
-    disposers.length = 0;  // Clear array in place for better performance
+  const disposers = [];
+  /**
+   * Clears all disposer functions and empties the array
+   * @param {Array<Function>} disposersArray - The array of disposer functions to clear
+   */
+  const clearDisposers = (disposersArray) => {
+    disposersArray.forEach(fn => fn());
+    disposersArray.length = 0; // Clear array in place for better performance
   };
 
   // ---------------------------------------------------------------------
   // Renderer
   // ---------------------------------------------------------------------
   const render = () => {
-    clearDisposers();
+    clearDisposers(disposers);
     dom.removeAllChildren(kvContainer);
 
     // If no keys, add a single empty row
