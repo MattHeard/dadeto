@@ -534,7 +534,7 @@ const createOnRemove = (rows, render, key) => e => {
  * @param {Function} onRemove - The click event handler to remove
  * @returns {Function} A function that removes the click event listener
  */
-const createRemoveRemoveListener = (dom, btnEl, onRemove) => () => 
+const createRemoveRemoveListener = (dom, btnEl, onRemove) => () =>
   dom.removeEventListener(btnEl, 'click', onRemove);
 
 /**
