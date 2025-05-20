@@ -41,10 +41,6 @@ const globalState = {
  * @description Main entry point for the application
  */
 
-// createHandleClick has been moved to tags.js
-
-
-
 /**
  * @query
  * Creates and returns a new environment map for dependency injection
@@ -64,7 +60,7 @@ function createEnv() {
 
 const env = { globalState, createEnv, error: dom.logError, fetch, loggers };
 
-// Interactive components functionality
+// --- Interactive Components ---
 
 initializeVisibleComponents(
   {
@@ -80,16 +76,16 @@ initializeVisibleComponents(
   makeCreateIntersectionObserver(dom, env)
 );
 
-// Tag filtering functionality
+// --- Tag Filtering ---
 
 handleTagLinks(dom);
 
-// Initial fetch of blog data when the script loads
+// --- Initial Data Fetch ---
 fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: dom.logError });
 
 setupAudio(dom);
 
-// Add event listeners to toy output dropdowns
+// --- Dropdown Initialization ---
 
 const getDataCallback = () => getData(globalState, fetch, loggers);
 
@@ -103,7 +99,7 @@ const onInputDropdownChange = createInputDropdownHandler(dom);
 
 const initializeDropdowns = createDropdownInitializer(document, onOutputDropdownChange, onInputDropdownChange, dom);
 
-// Initialize dropdowns after DOM is loaded
+// Initialize dropdowns after DOM is fully loaded
 window.addEventListener('DOMContentLoaded', () => {
   initializeDropdowns();
 
