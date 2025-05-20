@@ -7,17 +7,16 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
    75:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-  109:26  warning  Arrow function has a complexity of 3. Maximum allowed is 2                            complexity
-  153:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2           complexity
-  412:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
-  467:1   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
-  468:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-  499:1   warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
-  517:82  warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-  544:93  warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
-  810:25  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-  826:36  warning  Arrow function has a complexity of 10. Maximum allowed is 2                           complexity
-  936:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
+  148:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2           complexity
+  407:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
+  462:1   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
+  463:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
+  494:1   warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
+  512:82  warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+  539:93  warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
+  805:25  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
+  821:36  warning  Arrow function has a complexity of 10. Maximum allowed is 2                           complexity
+  931:89  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
@@ -54,4 +53,4 @@
   1010:9   warning  Ternary operator used                                       no-ternary
   1032:40  warning  Ternary operator used                                       no-ternary
 
-✖ 37 problems (0 errors, 37 warnings)
+✖ 36 problems (0 errors, 36 warnings)

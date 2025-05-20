@@ -103,17 +103,12 @@ export const createInputDropdownHandler = (dom) => {
  * Sets up the event listener and disposal for the input
  * @param {HTMLInputElement} input - The input element
  * @param {Function} onChange - The change handler
- * @param {Object} [dom] - Optional DOM utilities object
+ * @param {Object} dom - The DOM utilities object
  * @returns {void}
  */
 const setupInputEvents = (input, onChange, dom) => {
-  if (dom && typeof dom.addEventListener === 'function') {
-    dom.addEventListener(input, 'input', onChange);
-    input._dispose = createRemoveValueListener(dom, input, onChange);
-  } else {
-    input.addEventListener('input', onChange);
-    input._dispose = () => input.removeEventListener('input', onChange);
-  }
+  dom.addEventListener(input, 'input', onChange);
+  input._dispose = createRemoveValueListener(dom, input, onChange);
 };
 
 /**
