@@ -182,7 +182,8 @@ export const dom = {
   addEventListener,
   querySelector,
   disconnectObserver,
-  isIntersecting
+  isIntersecting,
+  error
 };
 
 /**
