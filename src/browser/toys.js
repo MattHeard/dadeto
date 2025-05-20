@@ -824,7 +824,9 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
         dom.setTextContent(btnEl, '×');
         const onRemove = createOnRemove(rows, render, key);
         dom.addEventListener(btnEl, 'click', onRemove);
-        const removeRemoveListener = () => dom.removeEventListener(btnEl, 'click', onRemove);
+        const createRemoveRemoveListener = (dom, btnEl, onRemove) => () =>
+          dom.removeEventListener(btnEl, 'click', onRemove);
+        const removeRemoveListener = createRemoveRemoveListener(dom, btnEl, onRemove);
         disposers.push(removeRemoveListener);
       }
 
