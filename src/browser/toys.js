@@ -816,7 +816,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 
   // Public API for cleanup by parent code
   kvContainer._dispose = () => {
-    clearDisposers();
+    clearDisposers(disposers);
     dom.removeAllChildren(kvContainer);
     rows = [];
   };
