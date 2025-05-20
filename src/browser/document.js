@@ -74,10 +74,19 @@ export const getParentElement = (element) => element.parentElement;
 
 /**
  * Gets the value from an event target
- * @param {Event} event - The event object
- * @returns {string|number|boolean|Array<string>|FileList|null} The value of the event target
+ * @param {EventTarget} target - The event target to get the value from
+ * @returns {string} The value of the target
  */
-export const getTargetValue = (event) => event.target.value;
+export const getTargetValue = target => target.value;
+
+/**
+ * Sets the value of an event target
+ * @param {EventTarget} target - The event target to set the value on
+ * @param {string} value - The value to set
+ */
+export const setTargetValue = (target, value) => {
+  target.value = value;
+};
 
 /**
  * Gets the value of a form element
@@ -236,6 +245,7 @@ export const dom = {
   setValue,
   getValue,
   getTargetValue,
+  setTargetValue,
   reveal
 };
 
