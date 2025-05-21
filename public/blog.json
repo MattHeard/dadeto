@@ -1,6 +1,28 @@
 {
   "posts": [
     {
+      "key": "MAGR1",
+      "title": "Magritte's 'The Survivor'",
+      "publicationDate": "2025-05-21",
+      "content": [
+        "A rifle leans against the wall, coated with blood.",
+        "The scene is still, the rifle balanced, the blood settled. All is calm. Painting as a medium is necessarily static. But the image tells of action. Violence. The image is cold, but tells us about hot emotion.",
+        "The blood on the gun is strange. The barrel of the gun is oddly spotless. The stain starts from the middle and continues back. Only towards the shooter, instead of the victim. There are lines of blood down the stock, almost as if the rifle itself bled out after being placed against the wall."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a man in a dark suit stands facing an empty picture frame on a museum wall, with fluffy white clouds floating both inside and outside the frame against a soft blue and beige background in a surreal, flat design style"
+      },
+      "tags": [
+        "painting",
+        "magritte",
+        "art",
+        "surrealism",
+        "violence",
+        "emotion"
+      ]
+    },
+    {
       "key": "STRI1",
       "title": "String to Array",
       "publicationDate": "2025-05-15",
