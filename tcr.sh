@@ -15,8 +15,12 @@ echo "Running ESLint..."
 npm run lint
 LINT_EXIT_CODE=$?
 
+echo "Running Sonar..."
+npm run sonar
+SONAR_EXIT_CODE=$?
+
 # Check if both tests and lint passed
-if [ $TEST_EXIT_CODE -eq 0 ] && [ $LINT_EXIT_CODE -eq 0 ]; then
+if [ $TEST_EXIT_CODE -eq 0 ] && [ $LINT_EXIT_CODE -eq 0 ] && [ $SONAR_EXIT_CODE -eq 0 ]; then
   echo "Tests and linting passed! Committing changes..."
   git add .
   git commit -m "$COMMIT_MESSAGE"
