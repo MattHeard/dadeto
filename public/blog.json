@@ -1,6 +1,27 @@
 {
   "posts": [
     {
+      "key": "SELF1",
+      "title": "Self-Serving Misunderstanding",
+      "publicationDate": "2025-05-22",
+      "content": [
+        "Accurate communication is often difficult. A lot is usually lost in the translation from idea to utterance to percept to idea. From the set of possibly intended meanings for a perceived message, I sometimes don't select the most plausible. My conscious and unconscious desires bias me towards interpretations which suit me better, interpretations I wish had been meant.",
+        "When I seek clarity and confirmation, I can curtail this bias, narrowing the set. I make substantially implausible the meanings that I just want to hear. Reflection, in the moment and later, can also challenge me against succumbing to lazy, selfish interpretations."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "two stylized figures in a sci-fi setting, one in orange deep in thought and the other in blue gesturing toward them, with a starry sky and distant planet in the background, rendered in moebius-style ink and color without any speech or thought bubbles"
+      },
+      "tags": [
+        "self",
+        "misunderstanding",
+        "communication",
+        "language",
+        "mind",
+        "perception"
+      ]
+    },
+    {
       "key": "MAGR1",
       "title": "Magritte's 'The Survivor'",
       "publicationDate": "2025-05-21",
