@@ -34,6 +34,10 @@ else
     echo "Linting failed!"
   fi
 
+  if [ $SONAR_EXIT_CODE -ne 0 ]; then
+    echo "SonarQube analysis failed!"
+  fi
+
   echo "Reverting changes..."
   git reset --hard
   echo "Changes have been reverted."
