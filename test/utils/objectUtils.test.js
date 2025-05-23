@@ -38,6 +38,35 @@ describe('formatAsString', () => {
     expect(formatAsString('test')).toBe('test');
     expect(formatAsString(123)).toBe('123');
   });
+
+  test('handles complex types like functions and symbols', () => {
+    const obj = {
+      fn: function() {},
+      sym: Symbol('test'),
+      bool: false,
+      num: 0
+    };
+    const result = formatAsString(obj);
+    expect(result).toContain('fn: function () {}');
+    expect(result).toContain('sym: Symbol(test)');
+    expect(result).toContain('bool: false');
+    expect(result).toContain('num: 0');
+  });
+
+  test('handles objects with valueOf method', () => {
+    const customObj = {
+      valueOf() { return 42; },
+      toString() { return 'custom'; }
+    };
+    const obj = { value: customObj };
+    const result = formatAsString(obj);
+    // The function should use formatAsString recursively for objects
+    // Check that it contains the valueOf and toString functions
+    expect(result).toContain('valueOf:');
+    expect(result).toContain('toString:');
+    expect(result).toContain('return 42');
+    expect(result).toContain('return \'custom\'');
+  });
 });
 
 describe('pick', () => {

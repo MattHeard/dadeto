@@ -1,7 +1,7 @@
 import { isType } from '../../utils/validation.js';
 
 function tryBooleanCoercion(input) {
-  if (isType(input, 'boolean')) return input;
+  if (isType(input, 'boolean')) {return input;}
   return normalizeBooleanString(input);
 }
 
@@ -23,7 +23,7 @@ export function coerceToBoolean(input) {
 }
 
 function normalizeBooleanString(input) {
-  if (!isType(input, 'string')) return undefined;
+  if (!isType(input, 'string')) {return undefined;}
   return parseBooleanString(input.toLowerCase());
 }
 
