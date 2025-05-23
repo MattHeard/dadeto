@@ -941,6 +941,7 @@ describe('createInputDropdownHandler', () => {
 
       // Create DOM mock object by extending baseDom
       const mockSelect = { value: 'kv' };
+      const mockGetCurrentTarget = jest.fn().mockReturnValue(mockSelect);
       const dom = {
         ...baseDom,
         getValue,
@@ -949,7 +950,7 @@ describe('createInputDropdownHandler', () => {
         removeAllChildren,
         insertBefore,
         setClassName,
-        getCurrentTarget: jest.fn().mockReturnValue(mockSelect)
+        getCurrentTarget: mockGetCurrentTarget
       };
 
       // Create the handler with the mocked DOM
