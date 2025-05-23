@@ -15,6 +15,8 @@ const publicDir = path.resolve(projectRoot, 'public');
 const srcToysDir = path.resolve(srcDir, 'toys');
 const srcBrowserDir = path.resolve(srcDir, 'browser');
 const publicBrowserDir = path.join(publicDir, 'browser');
+const srcUtilsDir = path.resolve(srcDir, 'utils');
+const publicUtilsDir = path.join(publicDir, 'utils');
 
 // Ensure public directory exists
 if (!fs.existsSync(publicDir)) {
@@ -113,6 +115,14 @@ if (fs.existsSync(srcPresentersDir)) {
   console.log('Presenter files copied successfully!');
 } else {
   console.warn(`Warning: presenters directory not found at ${srcPresentersDir}`);
+}
+
+// --- Copy src/utils to public/utils ---
+if (fs.existsSync(srcUtilsDir)) {
+  copyDirRecursive(srcUtilsDir, publicUtilsDir);
+  console.log('Utils files copied successfully!');
+} else {
+  console.warn(`Warning: utils directory not found at ${srcUtilsDir}`);
 }
 
 // --- Copy src/browser to public/browser ---

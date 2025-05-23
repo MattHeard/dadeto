@@ -1,12 +1,13 @@
-import { escapeRegex, createPattern } from '../../src/utils/regexUtils.js';
-import { isEmpty as isEmptyText } from '../../src/utils/stringUtils.js';
-
 // Markdown marker characters
 const ASTERISK_MARKER = '*';
 const UNDERSCORE_MARKER = '_';
 
 // Pattern to match special regex characters that need escaping
 const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
+
+function isEmptyText(text) {
+  return !text?.trim();
+}
 
 function hasNoBoldSegments(text) {
   return !findBoldSegments(text);
@@ -266,10 +267,8 @@ function processAllItalicStyles(text) {
  * @private
  */
 function wrapWithMarker(content, marker) {
-  return wrapWith(content, marker);
+  return `${marker}${content}${marker}`;
 }
-
-import { wrapWithHtml } from '../../src/utils/wrappers.js';
 
 /**
  * Create an HTML tag wrapper for content
@@ -279,7 +278,7 @@ import { wrapWithHtml } from '../../src/utils/wrappers.js';
  * @private
  */
 function wrapWithHtmlTag(tagName, content) {
-  return wrapWithHtml(tagName, content);
+  return [`<${tagName}>`, content, `</${tagName}>`].join('');
 }
 
 /**
