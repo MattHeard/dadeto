@@ -93,9 +93,8 @@ REPORT_FILE="$REPORT_DIR/issues-$(date +%Y%m%d%H%M%S).json"
 mkdir -p "$REPORT_DIR"
 
 # Use the CI token as a Bearer header (cleaner than basic auth)
-curl -s \
-  -H "Authorization: Bearer $CI_TOKEN" \
-  "http://localhost:9000/api/issues/search?componentKeys=dadeto&resolved=false&ps=10000" \
+curl -s -u "$CI_TOKEN:" \
+  "http://localhost:9000/api/issues/search?componentKeys=dadeto&resolved=false&ps=10000&p=1" \
   -o "$REPORT_FILE"
 
 echo "📄 JSON issue report written to $REPORT_FILE"

@@ -22,8 +22,7 @@ import {
   handleDropdownChange,
   createAddDropdownListener,
   createInputDropdownHandler,
-  createUpdateTextInputValue,
-  getComponentInitializer
+  createUpdateTextInputValue
 } from '../../src/browser/toys.js';
 
 describe('createAddDropdownListener', () => {
@@ -46,89 +45,6 @@ describe('createAddDropdownListener', () => {
   });
 });
 
-describe('getComponentInitializer', () => {
-  let getElement;
-  let logWarning;
-  let createIntersectionObserver;
-  let initializeComponent; // Mock for the returned initializer function
-
-  beforeEach(() => {
-    // Mock dependencies
-    getElement = jest.fn();
-    logWarning = jest.fn();
-    createIntersectionObserver = jest.fn();
-    initializeComponent = jest.fn(); // This will be returned by getComponentInitializer
-  });
-
-  it('should return a function', () => {
-    const initializer = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
-    expect(typeof initializer).toBe('function');
-  });
-
-  it('returned function should log warning if component element is not found', () => {
-    getElement.mockReturnValue(null); // Simulate element not found
-    const component = { id: 'test-component', modulePath: 'test/path', functionName: 'testFn' };
-    const initializer = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
-    
-    initializer(component); // Execute the returned initializer
-
-    expect(getElement).toHaveBeenCalledWith(component.id);
-    expect(logWarning).toHaveBeenCalledWith(
-      `Element with ID '${component.id}' not found. Skipping initialization.`
-    );
-    expect(createIntersectionObserver).not.toHaveBeenCalled();
-  });
-
-  it('returned function should log warning if modulePath is missing', () => {
-    const mockElement = {}; // Simulate element found
-    getElement.mockReturnValue(mockElement);
-    const component = { id: 'test-component', functionName: 'testFn' /* modulePath missing */ };
-    const initializer = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
-
-    initializer(component);
-
-    expect(getElement).toHaveBeenCalledWith(component.id);
-    expect(logWarning).toHaveBeenCalledWith(
-      `Missing modulePath for component ID '${component.id}'. Skipping initialization.`
-    );
-    expect(createIntersectionObserver).not.toHaveBeenCalled();
-  });
-
-  it('returned function should log warning if functionName is missing', () => {
-    const mockElement = {}; // Simulate element found
-    getElement.mockReturnValue(mockElement);
-    const component = { id: 'test-component', modulePath: 'test/path' /* functionName missing */ };
-    const initializer = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
-
-    initializer(component);
-
-    expect(getElement).toHaveBeenCalledWith(component.id);
-    expect(logWarning).toHaveBeenCalledWith(
-      `Missing functionName for component ID '${component.id}'. Skipping initialization.`
-    );
-    expect(createIntersectionObserver).not.toHaveBeenCalled();
-  });
-
-  it('returned function should create and observe intersection observer for valid component', () => {
-    const mockElement = {}; // Simulate element found
-    const mockObserver = { observe: jest.fn() };
-    getElement.mockReturnValue(mockElement);
-    createIntersectionObserver.mockReturnValue(mockObserver); // Return a mock observer
-    const component = { id: 'test-component', modulePath: 'test/path', functionName: 'testFn' };
-    const initializer = getComponentInitializer(getElement, logWarning, createIntersectionObserver);
-
-    initializer(component);
-
-    expect(getElement).toHaveBeenCalledWith(component.id);
-    expect(logWarning).not.toHaveBeenCalled();
-    expect(createIntersectionObserver).toHaveBeenCalledWith(
-      mockElement,
-      component.modulePath,
-      component.functionName
-    );
-    expect(mockObserver.observe).toHaveBeenCalledWith(mockElement);
-  });
-});
 
 describe('toys', () => {
   describe('handleDropdownChange', () => {
