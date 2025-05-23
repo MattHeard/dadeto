@@ -1,5 +1,7 @@
+import { isType, isValidBoolean } from '../../src/utils/validation.js';
+
 function tryBooleanCoercion(input) {
-  if (typeof input === 'boolean') {return input;}
+  if (isType(input, 'boolean')) return input;
   return normalizeBooleanString(input);
 }
 
@@ -13,19 +15,10 @@ function tryBooleanCoercion(input) {
  */
 export function coerceToBoolean(input) {
   const value = tryBooleanCoercion(input);
-  if (value !== undefined) {
-    return `{ value: ${value} }`;
-  } else {
-    return '{}';
-  }
+  return value !== undefined ? `{ value: ${value} }` : '{}';
 }
 
 function normalizeBooleanString(input) {
-  if (typeof input !== 'string') {return undefined;}
-
-  return parseBooleanString(input.toLowerCase());
-}
-
-function parseBooleanString(str) {
-  return { true: true, false: false }[str];
+  if (!isType(input, 'string')) return undefined;
+  return { true: true, false: false }[input.toLowerCase()];
 }
