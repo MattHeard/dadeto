@@ -12,7 +12,12 @@ const disposeListeners = (element) => {
  * Clears all disposer functions and empties the array
  * @param {Array<Function>} disposersArray - The array of disposer functions to clear
  */
-const clearDisposers = (disposersArray) => {
+/**
+ * Clears all disposer functions and empties the array
+ * @param {Array<Function>} disposersArray - The array of disposer functions to clear
+ * @returns {void}
+ */
+export const clearDisposers = (disposersArray) => {
   disposersArray.forEach(fn => fn());
   disposersArray.length = 0; // Clear array in place for better performance
 };
