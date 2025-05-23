@@ -30,15 +30,18 @@ export function wrapWithHtml(tagName, content, attributes = {}) {
   if (!tagName) {return content || '';}
 
   const attrs = Object.entries(attributes)
+    .filter(([_, value]) => value !== false && value != null)
     .map(([key, value]) => {
-      if (value == null) {return '';}
-      return value === true ? key : `${key}="${String(value).replace(/"/g, '&quot;')}"`;
+      if (value === true) {return key;}
+      const escapedValue = String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;');
+      return `${key}="${escapedValue}"`;
     })
-    .filter(Boolean)
     .join(' ');
 
   const openTag = `<${tagName}${attrs ? ' ' + attrs : ''}>`;
-  const closeTag = `</${tagName}>`;
+  const closeTag = content === undefined ? '' : `</${tagName}>`;
 
   return wrapWith(content, { open: openTag, close: closeTag });
 }

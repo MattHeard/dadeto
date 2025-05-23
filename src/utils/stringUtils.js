@@ -4,7 +4,7 @@
  * @returns {boolean} True if the string is empty or contains only whitespace
  */
 export function isEmpty(text) {
-  return !text?.trim();
+  return typeof text !== 'string' || !text.trim();
 }
 
 /**
@@ -12,8 +12,8 @@ export function isEmpty(text) {
  * @param {*} value - The value to check
  * @returns {boolean} True if the value is a non-empty string
  */
-export function isValidText(text) {
-  return text && typeof text === 'string';
+export function isValidText(value) {
+  return Boolean(value && typeof value === 'string');
 }
 
 /**

@@ -1,4 +1,4 @@
-const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/g;
+const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\-]/g;
 
 /**
  * Escapes special regex characters in a string

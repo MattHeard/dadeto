@@ -1,33 +1,51 @@
 /**
  * Formats an object as a string representation
  * @param {Object} obj - The object to format
- * @param {Object} options - Formatting options
- * @param {boolean} [options.multiline=false] - Whether to use multiple lines
+ * @param {Object} [options] - Formatting options
+ * @param {boolean} [options.multiline=false] - Whether to use multiline formatting
  * @returns {string} The formatted string representation
  */
 export function formatAsString(obj, { multiline = false } = {}) {
   if (obj === null || obj === undefined) {return '{}';}
   if (typeof obj !== 'object') {return String(obj);}
 
-  const entries = Object.entries(obj);
-  if (entries.length === 0) {return '{}';}
+  const isArray = Array.isArray(obj);
+  const entries = isArray ? obj.map((v, i) => [i, v]) : Object.entries(obj);
 
-  const separator = multiline ? '\n  ' : ' ';
-  const entrySeparator = multiline ? ',\n  ' : ', ';
+  if (entries.length === 0) {return isArray ? '[]' : '{}';}
 
-  const formattedEntries = entries
-    .map(([key, value]) => {
-      let valueStr;
-      if (value === null) {valueStr = 'null';}
-      else if (value === undefined) {valueStr = 'undefined';}
-      else if (typeof value === 'object') {valueStr = formatAsString(value, { multiline });}
-      else {valueStr = JSON.stringify(value);}
+  const formatValue = (value, forceInline = false) => {
+    if (value === null) {return 'null';}
+    if (value === undefined) {return 'undefined';}
+    if (typeof value === 'string') {return `"${value}"`;}
+    if (Array.isArray(value)) {return `[${value.join(',')}]`;}
+    if (typeof value === 'object') {
+      if (forceInline) {
+        const inner = Object.entries(value)
+          .map(([k, v]) => `${k}: ${formatValue(v, true)}`)
+          .join(', ');
+        return `{ ${inner} }`;
+      }
+      return formatAsString(value, { multiline });
+    }
+    return String(value);
+  };
 
-      return `${key}: ${valueStr}`;
-    })
-    .join(entrySeparator);
+  if (multiline) {
+    const formatted = entries
+      .map(([key, value]) => {
+        const formattedKey = isArray ? '' : `${key}: `;
+        const formattedValue = formatValue(value, true);
+        return `  ${formattedKey}${formattedValue}`;
+      })
+      .join(',\n');
+    return `${isArray ? '[' : '{'}\n${formatted}\n${isArray ? ']' : '}'}`;
+  }
 
-  return `{${separator}${formattedEntries}${multiline ? '\n' : ' '}}`;
+  const formatted = entries
+    .map(([key, value]) => isArray ? formatValue(value) : `${key}: ${formatValue(value, true)}`)
+    .join(', ');
+  return isArray ? `[${formatted}]` : `{ ${formatted} }`;
 }
 
 /**

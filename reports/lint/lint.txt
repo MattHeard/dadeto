@@ -41,13 +41,17 @@
   17:12  warning  'e' is defined but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/src/utils/objectUtils.js
-   8:8   warning  Function 'formatAsString' has a complexity of 10. Maximum allowed is 2  complexity
-  15:21  warning  Ternary operator used                                                   no-ternary
-  16:26  warning  Ternary operator used                                                   no-ternary
-  19:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2              complexity
-  30:45  warning  Ternary operator used                                                   no-ternary
-  39:8   warning  Function 'pick' has a complexity of 3. Maximum allowed is 2             complexity
-  56:8   warning  Function 'mapValues' has a complexity of 3. Maximum allowed is 2        complexity
+   8:8   warning  Function 'formatAsString' has a complexity of 13. Maximum allowed is 2  complexity
+  13:19  warning  Ternary operator used                                                   no-ternary
+  15:37  warning  Ternary operator used                                                   no-ternary
+  17:23  warning  Arrow function has a complexity of 8. Maximum allowed is 2              complexity
+  37:30  warning  Ternary operator used                                                   no-ternary
+  42:15  warning  Ternary operator used                                                   no-ternary
+  42:53  warning  Ternary operator used                                                   no-ternary
+  46:28  warning  Ternary operator used                                                   no-ternary
+  48:10  warning  Ternary operator used                                                   no-ternary
+  57:8   warning  Function 'pick' has a complexity of 3. Maximum allowed is 2             complexity
+  74:8   warning  Function 'mapValues' has a complexity of 3. Maximum allowed is 2        complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/utils/regexUtils.js
   21:8   warning  Function 'createPattern' has a complexity of 5. Maximum allowed is 2  complexity
@@ -61,11 +65,11 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/utils/wrappers.js
    7:8   warning  Function 'wrapWith' has a complexity of 8. Maximum allowed is 2      complexity
-  29:8   warning  Function 'wrapWithHtml' has a complexity of 5. Maximum allowed is 2  complexity
-  33:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2           complexity
-  34:17  warning  Expected '===' and instead saw '=='                                  eqeqeq
-  35:14  warning  Ternary operator used                                                no-ternary
-  40:33  warning  Ternary operator used                                                no-ternary
+  29:8   warning  Function 'wrapWithHtml' has a complexity of 6. Maximum allowed is 2  complexity
+  33:15  warning  '_' is defined but never used                                        no-unused-vars
+  33:54  warning  Expected '!==' and instead saw '!='                                  eqeqeq
+  43:33  warning  Ternary operator used                                                no-ternary
+  44:20  warning  Ternary operator used                                                no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
   303:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
@@ -84,4 +88,4 @@
   1010:9   warning  Ternary operator used                                       no-ternary
   1032:40  warning  Ternary operator used                                       no-ternary
 
-✖ 57 problems (0 errors, 57 warnings)
+✖ 61 problems (0 errors, 61 warnings)

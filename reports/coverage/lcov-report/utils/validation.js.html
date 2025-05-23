@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/7</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -102,7 +102,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -111,7 +111,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -120,12 +120,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Validates if a value is of a specific type
@@ -133,17 +133,17 @@
  * @param {string} type - The expected type (e.g., 'string', 'boolean', 'number')
  * @returns {boolean} True if the value is of the specified type
  */
-export function <span class="fstat-no" title="function not covered" >isType(</span>value, type) {
-<span class="cstat-no" title="statement not covered" >  return typeof value === type;</span>
+export function isType(value, type) {
+  return typeof value === type;
 }
 &nbsp;
 /**
- * Checks if a value is a non-empty string
- * @param {*} value - The value to check
- * @returns {boolean} True if the value is a non-empty string
+ * Checks if a string is valid (non-empty)
+ * @param {string} str - The string to check
+ * @returns {boolean} True if the string is valid
  */
-export function <span class="fstat-no" title="function not covered" >isValidString(</span>value) {
-<span class="cstat-no" title="statement not covered" >  return value &amp;&amp; typeof value === 'string';</span>
+export function isValidString(str) {
+  return typeof str === 'string' &amp;&amp; str.length &gt; 0;
 }
 &nbsp;
 /**
@@ -151,13 +151,13 @@ export function <span class="fstat-no" title="function not covered" >isValidStri
  * @param {*} value - The value to check
  * @returns {boolean} True if the value is a valid boolean or boolean string
  */
-export function <span class="fstat-no" title="function not covered" >isValidBoolean(</span>value) {
-<span class="cstat-no" title="statement not covered" >  if (typeof value === 'boolean') <span class="cstat-no" title="statement not covered" >return true;</span></span>
-<span class="cstat-no" title="statement not covered" >  if (typeof value === 'string') {</span>
-    const lower = <span class="cstat-no" title="statement not covered" >value.toLowerCase();</span>
-<span class="cstat-no" title="statement not covered" >    return lower === 'true' || lower === 'false';</span>
+export function isValidBoolean(value) {
+  if (typeof value === 'boolean') {return true;}
+  if (typeof value === 'string') {
+    const lower = value.toLowerCase();
+    return lower === 'true' || lower === 'false';
   }
-<span class="cstat-no" title="statement not covered" >  return false;</span>
+  return false;
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -166,7 +166,7 @@ export function <span class="fstat-no" title="function not covered" >isValidBool
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-23T15:34:20.614Z
+                at 2025-05-23T15:45:29.685Z
             </div>
         <script src="../prettify.js"></script>
         <script>

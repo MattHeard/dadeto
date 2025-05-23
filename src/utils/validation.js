@@ -9,12 +9,12 @@ export function isType(value, type) {
 }
 
 /**
- * Checks if a value is a non-empty string
- * @param {*} value - The value to check
- * @returns {boolean} True if the value is a non-empty string
+ * Checks if a string is valid (non-empty)
+ * @param {string} str - The string to check
+ * @returns {boolean} True if the string is valid
  */
-export function isValidString(value) {
-  return value && typeof value === 'string';
+export function isValidString(str) {
+  return typeof str === 'string' && str.length > 0;
 }
 
 /**
