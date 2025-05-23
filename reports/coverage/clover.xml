@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1748015595752" clover="3.2.0">
-  <project timestamp="1748015595752" name="All files">
+<coverage generated="1748015735848" clover="3.2.0">
+  <project timestamp="1748015735849" name="All files">
     <metrics statements="1738" coveredstatements="1609" conditionals="587" coveredconditionals="540" methods="677" coveredmethods="640" elements="3002" coveredelements="2789" complexity="0" loc="1738" ncloc="1738" packages="19" files="41" classes="41"/>
     <package name="browser">
       <metrics statements="523" coveredstatements="397" conditionals="110" coveredconditionals="75" methods="160" coveredmethods="125"/>
@@ -1056,15 +1056,15 @@
       <metrics statements="61" coveredstatements="61" conditionals="24" coveredconditionals="24" methods="26" coveredmethods="26"/>
       <file name="booleanCoercer.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/booleanCoercer.js">
         <metrics statements="9" coveredstatements="9" conditionals="6" coveredconditionals="6" methods="4" coveredmethods="4"/>
-        <line num="2" count="10" type="cond" truecount="2" falsecount="0"/>
-        <line num="3" count="8" type="stmt"/>
-        <line num="15" count="10" type="stmt"/>
-        <line num="16" count="10" type="cond" truecount="2" falsecount="0"/>
-        <line num="17" count="6" type="stmt"/>
-        <line num="19" count="4" type="stmt"/>
-        <line num="24" count="8" type="cond" truecount="2" falsecount="0"/>
-        <line num="26" count="4" type="stmt"/>
-        <line num="30" count="4" type="stmt"/>
+        <line num="4" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="5" count="8" type="stmt"/>
+        <line num="17" count="10" type="stmt"/>
+        <line num="18" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="19" count="6" type="stmt"/>
+        <line num="21" count="4" type="stmt"/>
+        <line num="26" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="27" count="4" type="stmt"/>
+        <line num="31" count="4" type="stmt"/>
       </file>
       <file name="italics.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-03-21/italics.js">
         <metrics statements="52" coveredstatements="52" conditionals="18" coveredconditionals="18" methods="22" coveredmethods="22"/>
@@ -1892,7 +1892,7 @@
       </file>
       <file name="validation.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/utils/validation.js">
         <metrics statements="7" coveredstatements="7" conditionals="8" coveredconditionals="8" methods="3" coveredmethods="3"/>
-        <line num="8" count="15" type="stmt"/>
+        <line num="8" count="33" type="stmt"/>
         <line num="17" count="11" type="cond" truecount="2" falsecount="0"/>
         <line num="26" count="17" type="cond" truecount="2" falsecount="0"/>
         <line num="27" count="15" type="cond" truecount="2" falsecount="0"/>
