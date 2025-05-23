@@ -95,7 +95,7 @@ mkdir -p "$REPORT_DIR"
 # Use the CI token as a Bearer header (cleaner than basic auth)
 curl -s \
   -H "Authorization: Bearer $CI_TOKEN" \
-  "http://sonarqube-server:9000/api/issues/search?componentKeys=dadeto&resolved=false&ps=10000" \
+  "http://localhost:9000/api/issues/search?componentKeys=dadeto&resolved=false&ps=10000" \
   -o "$REPORT_FILE"
 
 echo "📄 JSON issue report written to $REPORT_FILE"
