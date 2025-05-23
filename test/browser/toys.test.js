@@ -950,9 +950,8 @@ describe('createInputDropdownHandler', () => {
         setClassName
       };
 
-      // Create the handler with the mocked DOM and inject mockMaybeRemoveNumber
-      const mockMaybeRemoveNumber = jest.fn();
-      const handler = createInputDropdownHandler(dom, mockMaybeRemoveNumber);
+      // Create the handler with the mocked DOM
+      const handler = createInputDropdownHandler(dom);
 
       // Arrange
       const mockSelect = { value: 'kv' };
