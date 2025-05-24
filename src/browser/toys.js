@@ -516,7 +516,7 @@ export function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenF
  * @param {Array<Function>} disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created key input element
  */
-const createKeyElement = (dom, key, textInput, rows, syncHiddenField, disposers) => {
+export const createKeyElement = (dom, key, textInput, rows, syncHiddenField, disposers) => {
   const keyEl = dom.createElement('input');
   dom.setType(keyEl, 'text');
   dom.setPlaceholder(keyEl, 'Key');
