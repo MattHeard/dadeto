@@ -73,7 +73,7 @@ export const clearDisposers = (disposersArray) => {
  * @param {Array} rows - The rows array to clear
  * @returns {Function} A function that cleans up resources
  */
-const createDispose = (disposers, dom, container, rows) => () => {
+export const createDispose = (disposers, dom, container, rows) => () => {
   clearDisposers(disposers);
   dom.removeAllChildren(container);
   rows.length = 0;

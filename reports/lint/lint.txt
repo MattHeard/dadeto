@@ -8,7 +8,7 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
     14:45   warning  Arrow function has a complexity of 7. Maximum allowed is 2                            complexity
     30:34   warning  Arrow function has a complexity of 6. Maximum allowed is 2                            complexity
-    76:57   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
+    76:64   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
    186:10   warning  Arrow function has a complexity of 3. Maximum allowed is 2                            complexity
    248:8    warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2           complexity
    509:70   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
