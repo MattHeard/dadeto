@@ -226,6 +226,7 @@ export const dom = {
   appendChild,
   createTextNode,
   getElementsByTagName,
+  querySelectorAll,
   getClasses,
   getRandomNumber,
   getCurrentTime,
