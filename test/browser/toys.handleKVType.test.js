@@ -5,9 +5,10 @@ describe('handleKVType', () => {
   test('can be invoked with an empty DOM object', () => {
     // Create mocks
     const dispose = jest.fn();
-    const querySelector = jest.fn(() => ({
+    const kvContainer = {
       _dispose: dispose
-    }));
+    };
+    const querySelector = jest.fn(() => kvContainer);
 
     // Create a DOM object with required methods
     const dom = {
