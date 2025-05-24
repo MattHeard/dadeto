@@ -66,9 +66,6 @@
   305:24  warning  Ternary operator used                                       no-ternary
   306:34  warning  Ternary operator used                                       no-ternary
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.createDispose.test.js
-  10:11  warning  'dispose' is assigned a value but never used  no-unused-vars
-
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.keyValueInput.test.js
   13:7  warning  'mockRender' is assigned a value but never used  no-unused-vars
   14:7  warning  'disposers' is assigned a value but never used   no-unused-vars
@@ -89,4 +86,4 @@
   1010:9   warning  Ternary operator used                                       no-ternary
   1032:40  warning  Ternary operator used                                       no-ternary
 
-✖ 56 problems (0 errors, 56 warnings)
+✖ 55 problems (0 errors, 55 warnings)
