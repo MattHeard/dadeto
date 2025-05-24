@@ -65,6 +65,20 @@ export const clearDisposers = (disposersArray) => {
   disposersArray.length = 0; // Clear array in place for better performance
 };
 
+/**
+ * Factory function for creating a dispose function
+ * @param {Array<Function>} disposers - Array of disposer functions to clear
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} container - The container element to clear
+ * @param {Array} rows - The rows array to clear
+ * @returns {Function} A function that cleans up resources
+ */
+const createDispose = (disposers, dom, container, rows) => () => {
+  clearDisposers(disposers);
+  dom.removeAllChildren(container);
+  rows.length = 0;
+};
+
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolitaireFleet.js';
@@ -1044,13 +1058,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 
   // Initial render
   render();
-
-  // Factory function for creating the dispose function
-  const createDispose = (disposers, dom, container, rows) => () => {
-    clearDisposers(disposers);
-    dom.removeAllChildren(container);
-    rows.length = 0;
-  };
 
   // Public API for cleanup by parent code
   const dispose = createDispose(disposers, dom, kvContainer, rows);
