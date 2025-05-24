@@ -1080,12 +1080,12 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 
 /**
  * Creates a function that initializes dropdown event listeners
- * @param {Document} document - The document object
  * @param {Function} onOutputChange - Handler for output dropdown changes
  * @param {Function} onInputChange - Handler for input dropdown changes
+ * @param {Object} dom - The DOM utilities object
  * @returns {Function} A function that initializes dropdown event listeners
  */
-export const createDropdownInitializer = (document, onOutputChange, onInputChange, dom) => {
+export const createDropdownInitializer = (onOutputChange, onInputChange, dom) => {
   return () => {
     const outputDropdowns = Array.from(dom.querySelectorAll('article.entry .value > select.output'));
     outputDropdowns.forEach(createAddDropdownListener(onOutputChange, dom));
