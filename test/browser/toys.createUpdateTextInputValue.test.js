@@ -1,0 +1,118 @@
+/**
+ * @jest-environment jsdom
+ */
+
+import { jest } from '@jest/globals';
+import { createUpdateTextInputValue } from '../../src/browser/toys.js';
+
+describe('createUpdateTextInputValue', () => {
+  let textInput;
+  let mockDom;
+  let mockEvent;
+
+  beforeEach(() => {
+    // Create a text input element
+    textInput = document.createElement('input');
+    textInput.type = 'text';
+
+    // Create a mock DOM utilities object
+    mockDom = {
+      getTargetValue: jest.fn(),
+      setValue: jest.fn()
+    };
+
+    // Create a mock event
+    mockEvent = {
+      target: document.createElement('input'),
+      preventDefault: jest.fn()
+    };
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('creates a function that updates the text input value from an event', () => {
+    // Arrange
+    const testValue = 'test value';
+    mockDom.getTargetValue.mockReturnValue(testValue);
+
+    // Act
+    const updateHandler = createUpdateTextInputValue(textInput, mockDom);
+    updateHandler(mockEvent);
+
+    // Assert
+    expect(mockDom.getTargetValue).toHaveBeenCalledWith(mockEvent);
+    expect(mockDom.setValue).toHaveBeenCalledWith(textInput, testValue);
+  });
+
+  it('handles empty string values correctly', () => {
+    // Arrange
+    const emptyValue = '';
+    mockDom.getTargetValue.mockReturnValue(emptyValue);
+
+    // Act
+    const updateHandler = createUpdateTextInputValue(textInput, mockDom);
+    updateHandler(mockEvent);
+
+    // Assert
+    expect(mockDom.getTargetValue).toHaveBeenCalledWith(mockEvent);
+    expect(mockDom.setValue).toHaveBeenCalledWith(textInput, emptyValue);
+  });
+
+  it('handles numeric values without converting them to strings', () => {
+    // Arrange
+    const numericValue = 42;
+    mockDom.getTargetValue.mockReturnValue(numericValue);
+
+    // Act
+    const updateHandler = createUpdateTextInputValue(textInput, mockDom);
+    updateHandler(mockEvent);
+
+    // Assert
+    expect(mockDom.getTargetValue).toHaveBeenCalledWith(mockEvent);
+    expect(mockDom.setValue).toHaveBeenCalledWith(textInput, numericValue);
+  });
+
+  it('handles null or undefined values by passing them through', () => {
+    // Test with null
+    mockDom.getTargetValue.mockReturnValue(null);
+    let updateHandler = createUpdateTextInputValue(textInput, mockDom);
+    updateHandler(mockEvent);
+    expect(mockDom.setValue).toHaveBeenCalledWith(textInput, null);
+
+    // Reset mocks
+    jest.clearAllMocks();
+
+    // Test with undefined
+    mockDom.getTargetValue.mockReturnValue(undefined);
+    updateHandler = createUpdateTextInputValue(textInput, mockDom);
+    updateHandler(mockEvent);
+    expect(mockDom.setValue).toHaveBeenCalledWith(textInput, undefined);
+  });
+
+  it('can be used as an event handler for input events', () => {
+    // Arrange
+    const testValue = 'test input';
+    const inputElement = document.createElement('input');
+    inputElement.type = 'text';
+    inputElement.value = testValue;
+
+    // Mock getTargetValue to return the input's value
+    mockDom.getTargetValue.mockImplementation((event) => event.target.value);
+
+    // Create a custom event with a target property
+    const inputEvent = {
+      target: inputElement,
+      preventDefault: jest.fn()
+    };
+
+    // Act
+    const updateHandler = createUpdateTextInputValue(textInput, mockDom);
+    updateHandler(inputEvent);
+
+    // Assert
+    expect(mockDom.getTargetValue).toHaveBeenCalledWith(inputEvent);
+    expect(mockDom.setValue).toHaveBeenCalledWith(textInput, testValue);
+  });
+});
