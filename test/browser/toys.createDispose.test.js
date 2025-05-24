@@ -1,8 +1,4 @@
-/**
- * @jest-environment jsdom
- */
-
-import { describe, it, jest, expect } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import { createDispose } from '../../src/browser/toys.js';
 
 describe('createDispose', () => {
@@ -12,7 +8,7 @@ describe('createDispose', () => {
     const dom = {
       removeAllChildren: jest.fn()
     };
-    const container = document.createElement('div');
+    const container = {};
     const rows = [];
 
     // Create and call dispose

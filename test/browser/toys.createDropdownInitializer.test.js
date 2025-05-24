@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import { describe, it, expect, jest } from '@jest/globals';
 import { createDropdownInitializer } from '../../src/browser/toys.js';
 

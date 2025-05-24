@@ -1,8 +1,4 @@
-/**
- * @jest-environment jsdom
- */
-
-import { jest } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import { clearDisposers } from '../../src/browser/toys.js';
 
 describe('clearDisposers', () => {

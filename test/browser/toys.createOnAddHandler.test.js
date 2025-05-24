@@ -1,8 +1,4 @@
-/**
- * @jest-environment jsdom
- */
-
-import { jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { createOnAddHandler } from '../../src/browser/toys.js';
 
 describe('createOnAddHandler', () => {
