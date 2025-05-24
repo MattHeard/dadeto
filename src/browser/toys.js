@@ -394,7 +394,7 @@ import { isObject } from './common.js';
  * @param {Object} dom - The DOM utilities object
  * @returns {HTMLInputElement} The created number input element
  */
-const createNumberInput = (value, onChange, dom) => {
+export const createNumberInput = (value, onChange, dom) => {
   const input = createBaseNumberInput(dom);
   if (value) {
     dom.setValue(input, value);
