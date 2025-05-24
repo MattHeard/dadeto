@@ -895,7 +895,7 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
  * @param {Object} rows - The key-value pairs to sync
  * @param {Object} dom - The DOM utilities object
  */
-const syncHiddenField = (textInput, rows, dom) => {
+export const syncHiddenField = (textInput, rows, dom) => {
   // Only include keys with non-empty key or value
   const filtered = {};
   for (const [k, v] of Object.entries(rows)) {
