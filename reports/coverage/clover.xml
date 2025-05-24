@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1748103339994" clover="3.2.0">
-  <project timestamp="1748103339994" name="All files">
-    <metrics statements="1715" coveredstatements="1714" conditionals="526" coveredconditionals="526" methods="675" coveredmethods="674" elements="2916" coveredelements="2914" complexity="0" loc="1715" ncloc="1715" packages="19" files="40" classes="40"/>
+<coverage generated="1748106407041" clover="3.2.0">
+  <project timestamp="1748106407041" name="All files">
+    <metrics statements="1714" coveredstatements="1714" conditionals="526" coveredconditionals="526" methods="674" coveredmethods="674" elements="2914" coveredelements="2914" complexity="0" loc="1714" ncloc="1714" packages="19" files="40" classes="40"/>
     <package name="browser">
       <metrics statements="542" coveredstatements="542" conditionals="113" coveredconditionals="113" methods="168" coveredmethods="168"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -566,14 +566,13 @@
       </file>
     </package>
     <package name="constants">
-      <metrics statements="5" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       <file name="markdown.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/constants/markdown.js">
-        <metrics statements="5" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="4" count="1" type="stmt"/>
         <line num="26" count="1" type="stmt"/>
-        <line num="31" count="0" type="stmt"/>
-        <line num="48" count="1" type="stmt"/>
-        <line num="65" count="1" type="stmt"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="64" count="1" type="stmt"/>
       </file>
     </package>
     <package name="generator">

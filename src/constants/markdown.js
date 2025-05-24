@@ -28,7 +28,6 @@ export const HTML_TAGS = Object.freeze({
   STRONG: 'strong',
   CODE: 'code',
   PARAGRAPH: 'p',
-  HEADING: (level) => `h${Math.min(6, Math.max(1, level))}`,
   BLOCKQUOTE: 'blockquote',
   LIST: 'ul',
   LIST_ITEM: 'li',
