@@ -1087,11 +1087,11 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
  */
 export const createDropdownInitializer = (document, onOutputChange, onInputChange, dom) => {
   return () => {
-    const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
+    const outputDropdowns = Array.from(dom.querySelectorAll('article.entry .value > select.output'));
     outputDropdowns.forEach(createAddDropdownListener(onOutputChange, dom));
 
     // Add event listeners to toy input dropdowns
-    const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
+    const inputDropdowns = Array.from(dom.querySelectorAll('article.entry .value > select.input'));
     inputDropdowns.forEach(createAddDropdownListener(onInputChange, dom));
   };
 };
