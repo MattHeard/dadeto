@@ -37,17 +37,8 @@
   73:1  warning  Function 'isValidFleet' has a complexity of 3. Maximum allowed is 2          complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/utils/objectUtils.js
-   8:8   warning  Function 'formatAsString' has a complexity of 11. Maximum allowed is 2  complexity
-  13:19  warning  Ternary operator used                                                   no-ternary
-  15:37  warning  Ternary operator used                                                   no-ternary
-  17:23  warning  Arrow function has a complexity of 7. Maximum allowed is 2              complexity
-  37:30  warning  Ternary operator used                                                   no-ternary
-  42:15  warning  Ternary operator used                                                   no-ternary
-  42:53  warning  Ternary operator used                                                   no-ternary
-  46:28  warning  Ternary operator used                                                   no-ternary
-  48:10  warning  Ternary operator used                                                   no-ternary
-  57:8   warning  Function 'pick' has a complexity of 3. Maximum allowed is 2             complexity
-  74:8   warning  Function 'mapValues' has a complexity of 3. Maximum allowed is 2        complexity
+   7:8  warning  Function 'pick' has a complexity of 3. Maximum allowed is 2       complexity
+  24:8  warning  Function 'mapValues' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/utils/regexUtils.js
   23:24  warning  Ternary operator used  no-ternary
@@ -83,4 +74,4 @@
   1010:9   warning  Ternary operator used                                       no-ternary
   1032:40  warning  Ternary operator used                                       no-ternary
 
-✖ 58 problems (0 errors, 58 warnings)
+✖ 49 problems (0 errors, 49 warnings)

@@ -14,7 +14,6 @@ describe('utils/index', () => {
     expect(typeof utils.matchesPattern).toBe('function');
     expect(typeof utils.wrapWith).toBe('function');
     expect(typeof utils.wrapWithHtml).toBe('function');
-    expect(typeof utils.formatAsString).toBe('function');
     expect(typeof utils.pick).toBe('function');
     expect(typeof utils.mapValues).toBe('function');
   });
