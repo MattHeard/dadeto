@@ -76,6 +76,32 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
   dom.addEventListener(dropdown, 'change', onChange);
 };
 
+const inputHandlers = {
+  text: (dom, container, textInput) => {
+    dom.reveal(textInput);
+    dom.enable(textInput);
+  },
+  default: (dom, _container, textInput) => {
+    dom.hide(textInput);
+    dom.disable(textInput);
+  }
+};
+
+const typeHandlers = {
+  number: (dom, container, textInput) => {
+    maybeRemoveKV(container, dom);
+    ensureNumberInput(container, textInput, dom);
+  },
+  kv: (dom, container, textInput) => {
+    maybeRemoveNumber(container, dom);
+    ensureKeyValueInput(container, textInput, dom);
+  },
+  default: (dom, container) => {
+    maybeRemoveNumber(container, dom);
+    maybeRemoveKV(container, dom);
+  }
+};
+
 export const createInputDropdownHandler = (dom) => {
   return (event) => {
     const select = dom.getCurrentTarget(event);
@@ -83,24 +109,13 @@ export const createInputDropdownHandler = (dom) => {
     const textInput = dom.querySelector(container, 'input[type="text"]');
     const selectValue = dom.getValue(select);
 
-    if (selectValue === 'text') {
-      dom.reveal(textInput);
-      dom.enable(textInput);
-    } else {
-      dom.hide(textInput);
-      dom.disable(textInput);
-    }
+    // Handle input visibility
+    const handleInput = inputHandlers[selectValue] || inputHandlers.default;
+    handleInput(dom, container, textInput);
 
-    if (selectValue === 'number') {
-      maybeRemoveKV(container, dom);
-      ensureNumberInput(container, textInput, dom);
-    } else if (selectValue === 'kv') {
-      maybeRemoveNumber(container, dom);
-      ensureKeyValueInput(container, textInput, dom);
-    } else {
-      maybeRemoveNumber(container, dom);
-      maybeRemoveKV(container, dom);
-    }
+    // Handle type-specific behavior
+    const handleType = typeHandlers[selectValue] || typeHandlers.default;
+    handleType(dom, container, textInput);
   };
 };
 
