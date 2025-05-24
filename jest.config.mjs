@@ -1,11 +1,16 @@
-export default {
+const config = {
   transform: {
     '^.+\\.js$': 'babel-jest'
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  // Use node environment by default, but allow override for browser testing
   testEnvironment: 'node',
+  // When running with Stryker, use the special Stryker environment
+  ...(process.env.STRYKER_TEST_ENV && {
+    testEnvironment: '@stryker-mutator/jest-runner/jest-env/node',
+  }),
   testPathIgnorePatterns: ['<rootDir>/.stryker-tmp/'],
   collectCoverageFrom: [
     "src/**/*.js",
@@ -16,4 +21,10 @@ export default {
     "!src/generator/copy.js"
   ],
   coverageDirectory: 'reports/coverage',
+  // Ensure coverage is collected for all files, including those not tested
+  collectCoverage: Boolean(process.env.STRYKER_TEST_ENV),
+  // Ensure all files are included in coverage, even if not required
+  forceCoverageMatch: process.env.STRYKER_TEST_ENV ? ['**/*.js'] : []
 };
+
+export default config;

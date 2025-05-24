@@ -4,8 +4,14 @@ export default {
   coverageAnalysis: "perTest",
   reporters: ["clear-text"],
   jest: {
-    configFile: "jest.config.mjs"
+    configFile: "jest.config.mjs",
+    enableFindRelatedTests: true,
+    projectType: "custom"
   },
   tempDirName: ".stryker-tmp",
-  disableTypeChecks: false
+  disableTypeChecks: false,
+  testRunnerNodeArgs: ["--experimental-vm-modules"],
+  commandRunner: {
+    command: "STRYKER_TEST_ENV=true node --experimental-vm-modules"
+  }
 };

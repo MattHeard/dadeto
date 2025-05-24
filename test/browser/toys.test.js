@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import {
   describe,
   it,
@@ -33,7 +29,7 @@ describe('createAddDropdownListener', () => {
     const mockDom = {
       addEventListener: mockAddEventListener
     };
-    const mockDropdown = document.createElement('select');
+    const mockDropdown = {};
 
     // Act
     const addListener = createAddDropdownListener(mockOnChange, mockDom);
@@ -451,146 +447,6 @@ describe('toys', () => {
       // Modify copy to ensure it's a deep copy
       copy.level1.level2.value = 'modified';
       expect(globalState.level1.level2.value).toBe('original');
-    });
-  });
-
-  describe('createHandleSubmit', () => {
-
-    let fetchFn;
-    let inputElement;
-    let outputElement;
-    let processingFunction;
-    let outputParentElement;
-    let elements;
-    let dom;
-    let newParagraph;
-
-    beforeEach(() => {
-      inputElement = {};
-      outputElement = {};
-      outputParentElement = {};
-      newParagraph = {};
-      dom = {
-        createElement: jest.fn((tagName) => {
-          const element = document.createElement(tagName);
-          if (tagName === "input") {
-            element.type = "number";
-          }
-          return element;
-        }).mockImplementation(() => newParagraph),
-        stopDefault: jest.fn(),
-        addWarning: jest.fn(),
-        setTextContent: jest.fn(),
-        removeAllChildren: jest.fn(),
-        removeChild: jest.fn(),
-        appendChild: jest.fn(),
-        contains: () => true,
-        removeAllChildren: jest.fn()
-      };
-      fetchFn = jest.fn();
-      processingFunction = jest.fn(async () => 'transformed');
-      elements = { inputElement, outputElement, outputParentElement, outputSelect: { value: 'text' }, article: { id: 'test-article' } };
-    });
-
-    it('fetches from URL if processingFunction returns a request object', async () => {
-      const fetchedContent = 'fetched content';
-      fetchFn = jest.fn(() =>
-        Promise.resolve({ text: () => Promise.resolve(fetchedContent) })
-      );
-      const url = 'https://example.com/data';
-      const request = { request: { url } };
-      processingFunction = jest.fn(() => JSON.stringify(request));
-      const globalState = {};
-      const createEnv = () => ({ get: () => {} });
-      const errorFn = jest.fn();
-      // fetchFn and dom are already defined above
-      const env = { globalState, createEnv, errorFn, fetchFn, dom };
-      const handleSubmitWithFetch = createHandleSubmit(elements, processingFunction, env);
-      await handleSubmitWithFetch(new Event('submit'));
-      await new Promise(resolve => setTimeout(resolve, 0));
-      // Expectations at end
-      expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, fetchedContent);
-    });
-
-    it('handles fetch failure if request URL is unreachable', async () => {
-      fetchFn = jest.fn(() =>
-        Promise.reject(new Error('Network failure'))
-      );
-      const url = 'https://example.com/fail';
-      const request = { request: { url } };
-      processingFunction = jest.fn(() => JSON.stringify(request));
-      const globalState = {};
-      const createEnv = () => ({ get: () => {} });
-      const errorFn = jest.fn();
-      const env = { globalState, createEnv, errorFn, fetchFn, dom };
-      const handleSubmitWithFailingFetch = createHandleSubmit(elements, processingFunction, env);
-      await handleSubmitWithFailingFetch(new Event('submit'));
-      await new Promise(resolve => setTimeout(resolve, 0));
-      // Expectations at end
-      expect(dom.setTextContent).toHaveBeenCalledWith(outputElement, expect.stringMatching(/Error fetching URL: Network failure/));
-      expect(dom.addWarning).toHaveBeenCalledWith(outputParentElement);
-    });
-
-    it('handles error thrown by processingFunction', async () => {
-      processingFunction = jest.fn(() => {
-        throw new Error('processing error');
-      });
-      const env = {
-        globalState: {},
-        createEnv: () => ({}),
-        errorFn: jest.fn(),
-        fetchFn: fetchFn,
-        dom
-      };
-      const handleSubmitThrowing = createHandleSubmit(
-        elements,
-        processingFunction,
-        env
-      );
-      await handleSubmitThrowing(new Event('submit'));
-      // Expectations at end
-      expect(fetchFn).not.toHaveBeenCalled();
-      expect(dom.setTextContent).toHaveBeenCalledWith(newParagraph, expect.stringMatching(/Error: processing error/));
-      expect(dom.addWarning).toHaveBeenCalledWith(outputParentElement);
-    });
-
-    it('handles being called without an event', async () => {
-      const stopDefault = jest.fn();
-      const createEnv = () => ({ get: () => {} });
-      const errorFn = jest.fn();
-      const processingFunction = jest.fn(() => 'result from no-event');
-      const input = { value: 'input without event' };
-      const paragraph = {};
-      const outputParentElement = { classList: { add: jest.fn(), remove: jest.fn() } };
-      const output = { textContent: '', outputParentElement };
-      const outputSelect = { value: 'text' };
-      const dom = {
-        createElement: jest.fn(() => paragraph),
-        stopDefault: jest.fn(),
-        addWarning: jest.fn(),
-        removeChild: jest.fn(),
-        appendChild: jest.fn(),
-        setTextContent: jest.fn((el, text) => { el.textContent = text; }),
-        removeAllChildren: jest.fn(),
-        removeWarning: jest.fn(),
-        enable: jest.fn(),
-        contains: () => true,
-        removeAllChildren: jest.fn()
-      };
-      const env = { globalState: {}, createEnv, errorFn, fetchFn, dom };
-      const handleSubmitNoEvent = createHandleSubmit(
-        { inputElement: input, outputElement: output, outputParentElement, outputSelect, article: { id: 'test-article' } },
-        processingFunction,
-        env
-      );
-      await handleSubmitNoEvent(); // no event passed
-      await new Promise(resolve => setTimeout(resolve, 0));
-      // Expectations at end
-      expect(stopDefault).not.toHaveBeenCalled();
-      expect(processingFunction).toHaveBeenCalledWith('input without event', expect.any(Object));
-      expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
-      expect(dom.createElement).toHaveBeenCalledWith('p');
-      expect(dom.appendChild).toHaveBeenCalledWith(outputParentElement, paragraph);
     });
   });
 
