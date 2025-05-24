@@ -6,21 +6,22 @@
   19:1  warning  './document.js' import is duplicated  no-duplicate-imports
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-     9:27   warning  Arrow function has a complexity of 9. Maximum allowed is 2                            complexity
-   155:10   warning  Arrow function has a complexity of 3. Maximum allowed is 2                            complexity
-   478:70   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
-   533:8    warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
-   534:10   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-   565:8    warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
-   583:89   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-   610:100  warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
-   661:70   warning  Arrow function has too many parameters (5). Maximum allowed is 3                      max-params
-   678:78   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-   708:113  warning  Arrow function has too many parameters (8). Maximum allowed is 3                      max-params
-   726:71   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-   962:32   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-   988:91   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-  1060:89   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
+    14:38   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
+    24:27   warning  Arrow function has a complexity of 6. Maximum allowed is 2                            complexity
+   166:10   warning  Arrow function has a complexity of 3. Maximum allowed is 2                            complexity
+   489:70   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
+   544:8    warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
+   545:10   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
+   576:8    warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
+   594:89   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+   621:100  warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
+   672:70   warning  Arrow function has too many parameters (5). Maximum allowed is 3                      max-params
+   689:78   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+   719:113  warning  Arrow function has too many parameters (8). Maximum allowed is 3                      max-params
+   737:71   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+   973:32   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
+   999:91   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+  1071:89   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1   warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
@@ -79,4 +80,4 @@
   1010:9   warning  Ternary operator used                                       no-ternary
   1032:40  warning  Ternary operator used                                       no-ternary
 
-✖ 50 problems (0 errors, 50 warnings)
+✖ 51 problems (0 errors, 51 warnings)

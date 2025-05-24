@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">94.92% </span>
+                <span class="strong">94.67% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>337/355</span>
+                <span class='fraction'>338/357</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">96.11% </span>
+                <span class="strong">95.19% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>99/103</span>
+                <span class='fraction'>99/104</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">94.98% </span>
+                <span class="strong">94.44% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>322/339</span>
+                <span class='fraction'>323/342</span>
             </div>
         
             
@@ -1137,7 +1137,23 @@
 <a name='L1072'></a><a href='#L1072'>1072</a>
 <a name='L1073'></a><a href='#L1073'>1073</a>
 <a name='L1074'></a><a href='#L1074'>1074</a>
-<a name='L1075'></a><a href='#L1075'>1075</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1075'></a><a href='#L1075'>1075</a>
+<a name='L1076'></a><a href='#L1076'>1076</a>
+<a name='L1077'></a><a href='#L1077'>1077</a>
+<a name='L1078'></a><a href='#L1078'>1078</a>
+<a name='L1079'></a><a href='#L1079'>1079</a>
+<a name='L1080'></a><a href='#L1080'>1080</a>
+<a name='L1081'></a><a href='#L1081'>1081</a>
+<a name='L1082'></a><a href='#L1082'>1082</a>
+<a name='L1083'></a><a href='#L1083'>1083</a>
+<a name='L1084'></a><a href='#L1084'>1084</a>
+<a name='L1085'></a><a href='#L1085'>1085</a>
+<a name='L1086'></a><a href='#L1086'>1086</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1146,13 +1162,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">17x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -2219,16 +2241,27 @@
  * @param {HTMLInputElement} inputElement - The input element containing the JSON string
  * @returns {Object} The parsed rows object
  */
+/**
+ * Converts an array of {key, value} objects to a key-value object
+ * @param {Array&lt;{key: string, value: any}&gt;} array - The array to convert
+ * @returns {Object} An object with keys and values from the array
+ */
+const convertArrayToKeyValueObject = <span class="fstat-no" title="function not covered" >(a</span>rray) =&gt; {
+  const result = <span class="cstat-no" title="statement not covered" >{};</span>
+<span class="cstat-no" title="statement not covered" >  for (const pair of array) {</span>
+<span class="cstat-no" title="statement not covered" >    if (pair.key !== undefined) {</span>
+<span class="cstat-no" title="statement not covered" >      result[pair.key] = pair.value ?? '';</span>
+    }
+  }
+<span class="cstat-no" title="statement not covered" >  return result;</span>
+};
+&nbsp;
 const parseExistingRows = (dom, inputElement) =&gt; {
   try {
     const existing = JSON.parse(dom.getValue(inputElement) || <span class="branch-1 cbranch-no" title="branch not covered" >'{}')</span>;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (Array.isArray(existing)) {
       // Convert legacy array format [{key, value}] to object
-      const newRows = <span class="cstat-no" title="statement not covered" >{};</span>
-<span class="cstat-no" title="statement not covered" >      for (const pair of existing) {</span>
-<span class="cstat-no" title="statement not covered" >        if (pair.key !== undefined) { <span class="cstat-no" title="statement not covered" >newRows[pair.key] = pair.value ?? ''; </span>}</span>
-      }
-<span class="cstat-no" title="statement not covered" >      return newRows;</span>
+<span class="cstat-no" title="statement not covered" >      return convertArrayToKeyValueObject(existing);</span>
     } else <span class="missing-if-branch" title="else path not taken" >E</span>if (existing &amp;&amp; typeof existing === 'object') {
       return { ...existing };
     }
@@ -3292,7 +3325,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-24T13:52:17.229Z
+                at 2025-05-24T14:40:04.588Z
             </div>
         <script src="../prettify.js"></script>
         <script>

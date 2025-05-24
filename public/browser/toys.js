@@ -6,16 +6,27 @@ import { createParagraphElement } from '../presenters/paragraph.js';
  * @param {HTMLInputElement} inputElement - The input element containing the JSON string
  * @returns {Object} The parsed rows object
  */
+/**
+ * Converts an array of {key, value} objects to a key-value object
+ * @param {Array<{key: string, value: any}>} array - The array to convert
+ * @returns {Object} An object with keys and values from the array
+ */
+const convertArrayToKeyValueObject = (array) => {
+  const result = {};
+  for (const pair of array) {
+    if (pair.key !== undefined) {
+      result[pair.key] = pair.value ?? '';
+    }
+  }
+  return result;
+};
+
 const parseExistingRows = (dom, inputElement) => {
   try {
     const existing = JSON.parse(dom.getValue(inputElement) || '{}');
     if (Array.isArray(existing)) {
       // Convert legacy array format [{key, value}] to object
-      const newRows = {};
-      for (const pair of existing) {
-        if (pair.key !== undefined) { newRows[pair.key] = pair.value ?? ''; }
-      }
-      return newRows;
+      return convertArrayToKeyValueObject(existing);
     } else if (existing && typeof existing === 'object') {
       return { ...existing };
     }
