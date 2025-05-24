@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/document.js
-  145:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
+  150:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
   19:1  warning  './document.js' import is duplicated  no-duplicate-imports

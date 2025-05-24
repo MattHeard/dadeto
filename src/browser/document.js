@@ -1,7 +1,12 @@
 // DOM helper functions
 export const getElementById = (id) => document.getElementById(id);
 export const querySelector = (el, selector) => el.querySelector(selector);
-export const querySelectorAll = (docOrEl, selector) => docOrEl.querySelectorAll(selector);
+/**
+ * Queries the document for all elements matching the given selector
+ * @param {string} selector - The CSS selector to match elements against
+ * @returns {NodeList} A NodeList of matching elements
+ */
+export const querySelectorAll = (selector) => document.querySelectorAll(selector);
 export const addClass = (element, className) => element.classList.add(className);
 
 export const setClassName = (element, className) => {
@@ -12,7 +17,7 @@ export const setClassName = (element, className) => {
  * Gets all audio elements in the document
  * @returns {NodeList} A NodeList of audio elements
  */
-export const getAudioElements = () => querySelectorAll(document, "audio");
+export const getAudioElements = () => querySelectorAll("audio");
 export const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
 export const createElement = (tag) => document.createElement(tag);
 export const createTextNode = (value) => document.createTextNode(value);
