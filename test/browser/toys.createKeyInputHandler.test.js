@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import * as toys from '../../src/browser/toys.js';
 const { createKeyInputHandler } = toys;
@@ -24,8 +20,8 @@ describe('createKeyInputHandler', () => {
     };
 
     // Mock elements
-    keyEl = document.createElement('input');
-    textInput = document.createElement('input');
+    keyEl = {};
+    textInput = {};
 
     // Initial rows state
     rows = { existingKey: 'value1' };

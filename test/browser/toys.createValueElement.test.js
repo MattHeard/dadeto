@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import { jest } from '@jest/globals';
 import { createValueElement } from '../../src/browser/toys.js';
 
@@ -17,7 +13,7 @@ describe('createValueElement', () => {
   beforeEach(() => {
     // Set up mock DOM utilities
     mockDom = {
-      createElement: jest.fn().mockReturnValue(document.createElement('input')),
+      createElement: jest.fn().mockReturnValue({}),
       setType: jest.fn(),
       setPlaceholder: jest.fn(),
       setValue: jest.fn(),

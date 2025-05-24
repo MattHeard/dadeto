@@ -1,14 +1,14 @@
-[32m20:28:47 (92320) INFO ProjectReader[39m Found 43 of 390 file(s) to be mutated.
-[32m20:28:48 (92320) INFO Instrumenter[39m Instrumented 43 source file(s) with 3139 mutant(s)
-[32m20:28:48 (92320) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
-[32m20:28:49 (92320) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
-[91m20:29:00 (92320) ERROR DryRunExecutor[39m One or more tests resulted in an error:
+[32m20:35:38 (93959) INFO ProjectReader[39m Found 43 of 390 file(s) to be mutated.
+[32m20:35:39 (93959) INFO Instrumenter[39m Instrumented 43 source file(s) with 3139 mutant(s)
+[32m20:35:39 (93959) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
+[32m20:35:39 (93959) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
+[91m20:35:51 (93959) ERROR DryRunExecutor[39m One or more tests resulted in an error:
 	
 Missing coverage results for:
-  * test/browser/toys.syncHiddenField.test.js
-  * test/browser/toys.setupRemoveButton.test.js
-  * test/browser/toys.createUpdateTextInputValue.test.js
-  (and 12 more)
+  * test/browser/toys.parseExistingRows.test.js
+  * test/browser/toys.createValueElement.test.js
+  * test/browser/toys.createKeyInputHandler.test.js
+  (and 9 more)
 
 You probably configured a test environment in jest that is not reporting code coverage to Stryker. 
 See also https://jestjs.io/docs/en/configuration.html#testenvironment-string
@@ -24,12 +24,12 @@ const { mixinJestEnvironment} = require('@stryker-mutator/jest-runner');
 module.exports = mixinJestEnvironment(MyCustomTestEnvironment);
 
 For more info, see https://stryker-mutator.io/docs/stryker-js/jest-runner#coverage-analysis
-[91m20:29:00 (92320) ERROR Stryker[39m Unexpected error occurred while running Stryker Error: Something went wrong in the initial test run
+[91m20:35:51 (93959) ERROR Stryker[39m Unexpected error occurred while running Stryker Error: Something went wrong in the initial test run
     at DryRunExecutor.validateResultCompleted (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/process/3-dry-run-executor.js:76:15)
     at DryRunExecutor.executeDryRun (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/process/3-dry-run-executor.js:96:14)
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
     at async WorkItem.execute (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/concurrent/pool.js:32:28)
     at async file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/concurrent/pool.js:69:13
-[32m20:29:00 (92320) INFO Stryker[39m This might be a known problem with a solution documented in our troubleshooting guide.
-[32m20:29:00 (92320) INFO Stryker[39m You can find it at https://stryker-mutator.io/docs/stryker-js/troubleshooting/
-[32m20:29:00 (92320) INFO Stryker[39m Still having trouble figuring out what went wrong? Try `npx stryker run --fileLogLevel trace --logLevel debug` to get some more info.
+[32m20:35:51 (93959) INFO Stryker[39m This might be a known problem with a solution documented in our troubleshooting guide.
+[32m20:35:51 (93959) INFO Stryker[39m You can find it at https://stryker-mutator.io/docs/stryker-js/troubleshooting/
+[32m20:35:51 (93959) INFO Stryker[39m Still having trouble figuring out what went wrong? Try `npx stryker run --fileLogLevel trace --logLevel debug` to get some more info.

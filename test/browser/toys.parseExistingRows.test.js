@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { parseExistingRows } from '../../src/browser/toys.js';
 
