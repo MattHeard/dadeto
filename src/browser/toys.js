@@ -147,7 +147,7 @@ const handleNumberType = (dom, container, textInput) => {
  * @param {HTMLElement} container - The container element
  * @param {HTMLInputElement} textInput - The text input element
  */
-const handleKVType = (dom, container, textInput) => {
+export const handleKVType = (dom, container, textInput) => {
   maybeRemoveNumber(container, dom);
   ensureKeyValueInput(container, textInput, dom);
 };
