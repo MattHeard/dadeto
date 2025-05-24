@@ -1,4 +1,10 @@
 import { jest } from '@jest/globals';
+
+// Mock the document object
+global.document = {
+  querySelectorAll: jest.fn().mockReturnValue([])
+};
+
 import {
   createPlayClickHandler,
   createPauseClickHandler,
