@@ -34,7 +34,6 @@ export function setupAudio(
   dom
 ) {
   const audioElements = dom.getAudioElements();
-
   audioElements.forEach(function(audio, index) {
     dom.removeControlsAttribute(audio);
     if (!audio.id) {
