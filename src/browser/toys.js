@@ -87,19 +87,42 @@ const inputHandlers = {
   }
 };
 
+/**
+ * Handles number type selection by removing any KV inputs and ensuring number input is present
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} container - The container element
+ * @param {HTMLInputElement} textInput - The text input element
+ */
+const handleNumberType = (dom, container, textInput) => {
+  maybeRemoveKV(container, dom);
+  ensureNumberInput(container, textInput, dom);
+};
+
+/**
+ * Handles key-value type selection by removing any number inputs and ensuring KV input is present
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} container - The container element
+ * @param {HTMLInputElement} textInput - The text input element
+ */
+const handleKVType = (dom, container, textInput) => {
+  maybeRemoveNumber(container, dom);
+  ensureKeyValueInput(container, textInput, dom);
+};
+
+/**
+ * Default handler that removes both number and KV inputs
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLElement} container - The container element
+ */
+const handleDefaultType = (dom, container) => {
+  maybeRemoveNumber(container, dom);
+  maybeRemoveKV(container, dom);
+};
+
 const typeHandlers = {
-  number: (dom, container, textInput) => {
-    maybeRemoveKV(container, dom);
-    ensureNumberInput(container, textInput, dom);
-  },
-  kv: (dom, container, textInput) => {
-    maybeRemoveNumber(container, dom);
-    ensureKeyValueInput(container, textInput, dom);
-  },
-  default: (dom, container) => {
-    maybeRemoveNumber(container, dom);
-    maybeRemoveKV(container, dom);
-  }
+  number: handleNumberType,
+  kv: handleKVType,
+  default: handleDefaultType
 };
 
 export const createInputDropdownHandler = (dom) => {
