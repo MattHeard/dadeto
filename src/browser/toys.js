@@ -496,7 +496,7 @@ export function createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenFie
  * @param {Function} syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
+export function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
   return e => {
     const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
     rows[rowKey] = dom.getTargetValue(e);

@@ -10,7 +10,7 @@
    412:70   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
    467:8    warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
    468:10   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-   499:1    warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
+   499:8    warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
    517:82   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
    544:93   warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
    595:63   warning  Arrow function has too many parameters (5). Maximum allowed is 3                      max-params
