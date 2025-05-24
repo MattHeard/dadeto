@@ -516,7 +516,7 @@ export function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenF
  * @param {Array<Function>} disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created key input element
  */
-const createKeyElement = (dom, key, textInput, rows, syncHiddenField, disposers) => {
+export const createKeyElement = (dom, key, textInput, rows, syncHiddenField, disposers) => {
   const keyEl = dom.createElement('input');
   dom.setType(keyEl, 'text');
   dom.setPlaceholder(keyEl, 'Key');
@@ -543,7 +543,7 @@ const createKeyElement = (dom, key, textInput, rows, syncHiddenField, disposers)
  * @param {Array<Function>} disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created value input element
  */
-const createValueElement = (dom, value, keyEl, textInput, rows, syncHiddenField, disposers) => {
+export const createValueElement = (dom, value, keyEl, textInput, rows, syncHiddenField, disposers) => {
   const valueEl = dom.createElement('input');
   dom.setType(valueEl, 'text');
   dom.setPlaceholder(valueEl, 'Value');
@@ -563,7 +563,7 @@ const createValueElement = (dom, value, keyEl, textInput, rows, syncHiddenField,
  * @param {Function} render - Function to re-render the key-value editor
  * @returns {Function} The click event handler function
  */
-function createOnAddHandler(rows, render) {
+export const createOnAddHandler = (rows, render) => {
   return () => {
     // Add a new empty key only if there isn't already one
     if (!Object.prototype.hasOwnProperty.call(rows, '')) {
@@ -571,7 +571,7 @@ function createOnAddHandler(rows, render) {
       render();
     }
   };
-}
+};
 
 /**
  * Creates an event handler for removing a key-value row
@@ -580,7 +580,7 @@ function createOnAddHandler(rows, render) {
  * @param {string} key - The key to remove
  * @returns {Function} The event handler function
  */
-const createOnRemove = (rows, render, key) => e => {
+export const createOnRemove = (rows, render, key) => e => {
   e.preventDefault();
   delete rows[key];
   render();
@@ -594,7 +594,7 @@ const createOnRemove = (rows, render, key) => e => {
  * @param {Function} render - The render function to update the UI
  * @param {Array} disposers - Array to store cleanup functions
  */
-const setupAddButton = (dom, button, rows, render, disposers) => {
+export const setupAddButton = (dom, button, rows, render, disposers) => {
   dom.setTextContent(button, '+');
   const onAdd = createOnAddHandler(rows, render);
   dom.addEventListener(button, 'click', onAdd);

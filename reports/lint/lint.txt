@@ -12,8 +12,8 @@
    470:10   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
    501:8    warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
    519:89   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-   546:93   warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
-   597:63   warning  Arrow function has too many parameters (5). Maximum allowed is 3                      max-params
+   546:100  warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
+   597:70   warning  Arrow function has too many parameters (5). Maximum allowed is 3                      max-params
    614:71   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
    644:106  warning  Arrow function has too many parameters (8). Maximum allowed is 3                      max-params
    662:71   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
@@ -49,6 +49,9 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/utils/validation.js
   25:8  warning  Function 'isValidBoolean' has a complexity of 4. Maximum allowed is 2  complexity
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/__mocks__/toys.js
+  3:95  warning  Arrow function has too many parameters (5). Maximum allowed is 3  max-params
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
   303:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
   304:20  warning  Ternary operator used                                       no-ternary
@@ -66,4 +69,4 @@
   1010:9   warning  Ternary operator used                                       no-ternary
   1032:40  warning  Ternary operator used                                       no-ternary
 
-✖ 43 problems (0 errors, 43 warnings)
+✖ 44 problems (0 errors, 44 warnings)
