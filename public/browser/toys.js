@@ -996,9 +996,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
     return render;
   };
 
-  // Create the render function with the required dependencies
-  const render = createRenderer(dom, disposers, kvContainer);
-
   // ---------------------------------------------------------------------
   // Initialise from existing JSON in the hidden field, if present
   // ---------------------------------------------------------------------
@@ -1015,6 +1012,10 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
     }
   } catch { /* ignore parse errors */ }
 
+  // Create the render function with the required dependencies
+  const render = createRenderer(dom, disposers, kvContainer, rows, textInput, syncHiddenField);
+  
+  // Initial render
   render();
 
   // Public API for cleanup by parent code
