@@ -968,13 +968,16 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // Renderer Factory
   // ---------------------------------------------------------------------
   /**
-   * Creates a render function with access to the given disposers array
+   * Creates a render function with access to the given disposers array and rows
    * @param {Object} dom - The DOM utilities object
    * @param {Array} disposersArray - Array to store cleanup functions
    * @param {HTMLElement} container - The container element for the key-value pairs
+   * @param {Object} rows - The rows object containing key-value pairs
+   * @param {HTMLInputElement} textInput - The hidden input element
+   * @param {Function} syncHiddenField - Function to sync the hidden field
    * @returns {Function} The render function
    */
-  const createRenderer = (dom, disposersArray, container) => {
+  const createRenderer = (dom, disposersArray, container, rows, textInput, syncHiddenField) => {
     /**
      * Renders the key-value input UI
      */
