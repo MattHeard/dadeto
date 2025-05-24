@@ -27,7 +27,7 @@ export const convertArrayToKeyValueObject = (array) => {
   return result;
 };
 
-const parseExistingRows = (dom, inputElement) => {
+export const parseExistingRows = (dom, inputElement) => {
   try {
     const existing = JSON.parse(dom.getValue(inputElement) || '{}');
     if (Array.isArray(existing)) {

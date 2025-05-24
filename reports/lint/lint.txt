@@ -7,7 +7,7 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
     14:45   warning  Arrow function has a complexity of 7. Maximum allowed is 2                            complexity
-    30:27   warning  Arrow function has a complexity of 6. Maximum allowed is 2                            complexity
+    30:34   warning  Arrow function has a complexity of 6. Maximum allowed is 2                            complexity
    172:10   warning  Arrow function has a complexity of 3. Maximum allowed is 2                            complexity
    495:70   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
    550:8    warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
