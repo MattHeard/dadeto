@@ -14,7 +14,7 @@
    519:89   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
    546:100  warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
    597:70   warning  Arrow function has too many parameters (5). Maximum allowed is 3                      max-params
-   614:71   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+   614:78   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
    644:106  warning  Arrow function has too many parameters (8). Maximum allowed is 3                      max-params
    662:71   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
    898:25   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity

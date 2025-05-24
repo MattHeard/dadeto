@@ -611,7 +611,7 @@ export const setupAddButton = (dom, button, rows, render, disposers) => {
  * @param {string} key - The key of the row to remove
  * @param {Array} disposers - Array to store cleanup functions
  */
-const setupRemoveButton = (dom, button, rows, render, key, disposers) => {
+export const setupRemoveButton = (dom, button, rows, render, key, disposers) => {
   dom.setTextContent(button, '×');
   const onRemove = createOnRemove(rows, render, key);
   dom.addEventListener(button, 'click', onRemove);
