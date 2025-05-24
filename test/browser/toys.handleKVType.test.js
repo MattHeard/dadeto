@@ -3,9 +3,10 @@ import { handleKVType } from '../../src/browser/toys';
 
 describe('handleKVType', () => {
   test('can be invoked with an empty DOM object', () => {
-    // Create querySelector mock
+    // Create mocks
+    const dispose = jest.fn();
     const querySelector = jest.fn(() => ({
-      _dispose: jest.fn()
+      _dispose: dispose
     }));
 
     // Create a DOM object with required methods
