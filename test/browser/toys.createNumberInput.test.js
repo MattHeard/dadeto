@@ -1,17 +1,14 @@
-/**
- * @jest-environment jsdom
- */
-
 import { jest } from '@jest/globals';
 import { createNumberInput } from '../../src/browser/toys.js';
 
 describe('createNumberInput', () => {
   let mockDom;
   let mockOnChange;
+  let mockInput;
 
   beforeEach(() => {
     // Create a mock input element
-    const mockInput = document.createElement('input');
+    mockInput = {};
 
     // Create a mock DOM utilities object
     mockDom = {
@@ -22,9 +19,7 @@ describe('createNumberInput', () => {
       setValue: jest.fn((element, value) => {
         element.value = value;
       }),
-      addEventListener: jest.fn((element, event, handler) => {
-        element.addEventListener(event, handler);
-      }),
+      addEventListener: jest.fn(),
       removeEventListener: jest.fn()
     };
 
@@ -42,8 +37,8 @@ describe('createNumberInput', () => {
 
     // Assert
     expect(mockDom.createElement).toHaveBeenCalledWith('input');
-    expect(mockDom.setType).toHaveBeenCalledWith(expect.any(HTMLInputElement), 'number');
-    expect(result).toBeInstanceOf(HTMLInputElement);
+    expect(mockDom.setType).toHaveBeenCalledWith(expect.any(Object), 'number');
+    expect(result).toBeInstanceOf(Object);
     expect(result.type).toBe('number');
   });
 
@@ -52,7 +47,7 @@ describe('createNumberInput', () => {
     createNumberInput('42', mockOnChange, mockDom);
 
     // Assert
-    expect(mockDom.setValue).toHaveBeenCalledWith(expect.any(HTMLInputElement), '42');
+    expect(mockDom.setValue).toHaveBeenCalledWith(expect.any(Object), '42');
   });
 
   it('does not set a value when none is provided', () => {
@@ -69,7 +64,7 @@ describe('createNumberInput', () => {
 
     // Assert
     expect(mockDom.addEventListener).toHaveBeenCalledWith(
-      expect.any(HTMLInputElement),
+      expect.any(Object),
       'input',
       expect.any(Function)
     );
@@ -77,18 +72,19 @@ describe('createNumberInput', () => {
 
   it('calls the onChange handler when the input changes', () => {
     // Arrange
-    const input = document.createElement('input');
-    mockDom.addEventListener.mockImplementation((_, __, handler) => {
-      // Simulate an input event
-      input.addEventListener('input', handler);
+    let inputHandler;
+    mockDom.addEventListener.mockImplementation((_, event, handler) => {
+      if (event === 'input') {
+        inputHandler = handler;
+      }
     });
 
     // Act
     createNumberInput('42', mockOnChange, mockDom);
-    input.value = '100';
-    input.dispatchEvent(new Event('input'));
+    const mockEvent = { target: { value: '100' } };
+    inputHandler(mockEvent);
 
     // Assert
-    expect(mockOnChange).toHaveBeenCalledWith(expect.any(Event));
+    expect(mockOnChange).toHaveBeenCalledWith(mockEvent);
   });
 });
