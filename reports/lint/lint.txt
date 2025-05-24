@@ -8,7 +8,7 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
     80:10   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
    412:70   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
-   467:1    warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
+   467:8    warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
    468:10   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
    499:1    warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
    517:82   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
@@ -49,14 +49,6 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/utils/validation.js
   25:8  warning  Function 'isValidBoolean' has a complexity of 4. Maximum allowed is 2  complexity
 
-/Users/matthew.heard/Code/Matt/dadeto/src/utils/wrappers.js
-   7:8   warning  Function 'wrapWith' has a complexity of 6. Maximum allowed is 2      complexity
-  29:8   warning  Function 'wrapWithHtml' has a complexity of 5. Maximum allowed is 2  complexity
-  33:15  warning  '_' is defined but never used                                        no-unused-vars
-  33:54  warning  Expected '!==' and instead saw '!='                                  eqeqeq
-  43:33  warning  Ternary operator used                                                no-ternary
-  44:20  warning  Ternary operator used                                                no-ternary
-
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
   303:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
   304:20  warning  Ternary operator used                                       no-ternary
@@ -74,4 +66,4 @@
   1010:9   warning  Ternary operator used                                       no-ternary
   1032:40  warning  Ternary operator used                                       no-ternary
 
-✖ 49 problems (0 errors, 49 warnings)
+✖ 43 problems (0 errors, 43 warnings)

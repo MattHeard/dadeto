@@ -464,7 +464,7 @@ function hasStringUrl(val) {
  * @param {Function} syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-function createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
+export function createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
   return e => {
     const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
     const newKey = dom.getTargetValue(e);
