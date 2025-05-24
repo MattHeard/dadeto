@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { jest } from '@jest/globals';
 import { convertArrayToKeyValueObject } from '../../src/browser/toys.js';
 
 describe('convertArrayToKeyValueObject', () => {

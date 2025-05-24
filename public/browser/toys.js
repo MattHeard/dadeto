@@ -13,12 +13,12 @@ import { createParagraphElement } from '../presenters/paragraph.js';
  */
 export const convertArrayToKeyValueObject = (array) => {
   const result = {};
-  
+
   // Return empty object if input is not an array
   if (!Array.isArray(array)) {
     return result;
   }
-  
+
   for (const pair of array) {
     if (pair && typeof pair === 'object' && 'key' in pair) {
       result[pair.key] = pair.value ?? '';
