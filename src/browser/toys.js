@@ -1036,7 +1036,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // ---------------------------------------------------------------------
   // State + bookkeeping
   // ---------------------------------------------------------------------
-  let rows = parseExistingRows(dom, textInput);
+  const rows = parseExistingRows(dom, textInput);
   const disposers = [];
 
   // Create the render function with the required dependencies
@@ -1049,7 +1049,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   const dispose = () => {
     clearDisposers(disposers);
     dom.removeAllChildren(kvContainer);
-    rows = [];
+    rows.length = 0;
   };
   kvContainer._dispose = dispose;
 

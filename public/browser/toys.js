@@ -1049,7 +1049,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   const dispose = () => {
     clearDisposers(disposers);
     dom.removeAllChildren(kvContainer);
-    rows = [];
+    rows.length = 0;
   };
   kvContainer._dispose = dispose;
 
