@@ -641,7 +641,7 @@ export const setupRemoveButton = (dom, button, rows, render, key, disposers) => 
  * @param {HTMLElement} container - The container to append the row to
  * @returns {Function} A function that takes [key, value] and index and creates a row
  */
-const createKeyValueRow = (dom, entries, textInput, rows, syncHiddenField, disposers, render, container) =>
+export const createKeyValueRow = (dom, entries, textInput, rows, syncHiddenField, disposers, render, container) =>
   ([key, value], idx) => {
     const rowEl = dom.createElement('div');
     dom.setClassName(rowEl, 'kv-row');
