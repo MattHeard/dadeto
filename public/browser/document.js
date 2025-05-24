@@ -8,7 +8,12 @@ export const setClassName = (element, className) => {
   element.className = className;
 };
 
-export const getAudioElements = () => querySelectorAll(document, "audio");
+/**
+ * Gets all audio elements in the document
+ * @param {Document} [doc=document] - The document to query (defaults to global document)
+ * @returns {NodeList} A NodeList of audio elements
+ */
+export const getAudioElements = (doc = document) => querySelectorAll(doc, "audio");
 export const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
 export const createElement = (tag) => document.createElement(tag);
 export const createTextNode = (value) => document.createTextNode(value);
