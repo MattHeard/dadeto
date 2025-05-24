@@ -1,4 +1,30 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
+
+/**
+ * Parses the existing rows from the text input
+ * @param {Object} dom - The DOM utilities object
+ * @param {HTMLInputElement} inputElement - The input element containing the JSON string
+ * @returns {Object} The parsed rows object
+ */
+const parseExistingRows = (dom, inputElement) => {
+  try {
+    const existing = JSON.parse(dom.getValue(inputElement) || '{}');
+    if (Array.isArray(existing)) {
+      // Convert legacy array format [{key, value}] to object
+      const newRows = {};
+      for (const pair of existing) {
+        if (pair.key !== undefined) { newRows[pair.key] = pair.value ?? ''; }
+      }
+      return newRows;
+    } else if (existing && typeof existing === 'object') {
+      return { ...existing };
+    }
+    return {};
+  } catch {
+    return {}; // Return empty object on parse errors
+  }
+};
+
 /**
  * Calls the _dispose function on an element
  * @param {HTMLElement} element - The element with a _dispose function
@@ -993,39 +1019,8 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // ---------------------------------------------------------------------
   // State + bookkeeping
   // ---------------------------------------------------------------------
-  let rows = {};
+  let rows = parseExistingRows(dom, textInput);
   const disposers = [];
-
-  // ---------------------------------------------------------------------
-  // Initialise from existing JSON in the hidden field, if present
-  // ---------------------------------------------------------------------
-  /**
-   * Parses the existing rows from the text input
-   * @param {Object} dom - The DOM utilities object
-   * @param {HTMLInputElement} inputElement - The input element containing the JSON string
-   * @returns {Object} The parsed rows object
-   */
-  const parseExistingRows = (dom, inputElement) => {
-    try {
-      const existing = JSON.parse(dom.getValue(inputElement) || '{}');
-      if (Array.isArray(existing)) {
-        // Convert legacy array format [{key, value}] to object
-        const newRows = {};
-        for (const pair of existing) {
-          if (pair.key !== undefined) { newRows[pair.key] = pair.value ?? ''; }
-        }
-        return newRows;
-      } else if (existing && typeof existing === 'object') {
-        return { ...existing };
-      }
-      return {};
-    } catch {
-      return {}; // Return empty object on parse errors
-    }
-  };
-
-  // Parse existing rows from the input
-  rows = parseExistingRows(dom, textInput);
 
   // Create the render function with the required dependencies
   const render = createRenderer(dom, disposers, kvContainer, rows, textInput, syncHiddenField);
@@ -1047,7 +1042,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
  * New version: accepts a config object and delegates to the original.
  * @param {object} config - An object containing win, doc, logFn, warnFn, getElementByIdFn, and createIntersectionObserverFn.
  */
-
 
 
 
