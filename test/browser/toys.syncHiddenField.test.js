@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import { jest } from '@jest/globals';
 import { syncHiddenField } from '../../src/browser/toys.js';
 
@@ -11,7 +7,7 @@ describe('syncHiddenField', () => {
 
   beforeEach(() => {
     // Setup mock text input
-    mockTextInput = document.createElement('input');
+    mockTextInput = {};
 
     // Setup mock DOM utilities
     mockDom = {

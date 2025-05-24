@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import { jest } from '@jest/globals';
 import { createUpdateTextInputValue } from '../../src/browser/toys.js';
 
@@ -12,7 +8,7 @@ describe('createUpdateTextInputValue', () => {
 
   beforeEach(() => {
     // Create a text input element
-    textInput = document.createElement('input');
+    textInput = {};
     textInput.type = 'text';
 
     // Create a mock DOM utilities object
@@ -23,7 +19,7 @@ describe('createUpdateTextInputValue', () => {
 
     // Create a mock event
     mockEvent = {
-      target: document.createElement('input'),
+      target: {},
       preventDefault: jest.fn()
     };
   });
@@ -94,7 +90,7 @@ describe('createUpdateTextInputValue', () => {
   it('can be used as an event handler for input events', () => {
     // Arrange
     const testValue = 'test input';
-    const inputElement = document.createElement('input');
+    const inputElement = {};
     inputElement.type = 'text';
     inputElement.value = testValue;
 

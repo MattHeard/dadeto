@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import { jest } from '@jest/globals';
 import { setupRemoveButton } from '../../src/browser/toys.js';
 
@@ -22,7 +18,7 @@ describe('setupRemoveButton', () => {
       removeEventListener: jest.fn()
     };
 
-    button = document.createElement('button');
+    button = {};
     rows = { [rowKey]: 'testValue', otherKey: 'otherValue' };
     render = jest.fn();
     disposers = [];
