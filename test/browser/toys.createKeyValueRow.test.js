@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import { jest } from '@jest/globals';
 import { createKeyValueRow } from '../../src/browser/toys.js';
 
@@ -19,11 +15,7 @@ describe('createKeyValueRow', () => {
   beforeEach(() => {
     // Setup mock DOM utilities
     mockDom = {
-      createElement: jest.fn().mockImplementation(() => ({
-        _dispose: jest.fn(),
-        value: '',
-        placeholder: ''
-      })),
+      createElement: jest.fn(),
       setClassName: jest.fn(),
       setType: jest.fn(),
       setTextContent: jest.fn(),
@@ -32,8 +24,8 @@ describe('createKeyValueRow', () => {
       getDataAttribute: jest.fn(),
       addEventListener: jest.fn(),
       appendChild: jest.fn(),
-      getValue: jest.fn().mockImplementation(el => el.value),
-      setValue: jest.fn().mockImplementation((el, value) => { el.value = value; }),
+      getValue: jest.fn(),
+      setValue: jest.fn(),
       removeEventListener: jest.fn()
     };
 
@@ -44,7 +36,7 @@ describe('createKeyValueRow', () => {
     ];
 
     // Setup mock text input
-    mockTextInput = document.createElement('input');
+    mockTextInput = {};
 
     // Setup mock rows object
     mockRows = {
@@ -62,7 +54,7 @@ describe('createKeyValueRow', () => {
     mockRender = jest.fn();
 
     // Setup mock container
-    mockContainer = document.createElement('div');
+    mockContainer = {};
 
     // Create the row creator function
     rowCreator = createKeyValueRow(
@@ -78,57 +70,89 @@ describe('createKeyValueRow', () => {
   });
 
   it('creates a row with key and value inputs', () => {
-    // Call the row creator with the first entry
-    rowCreator(mockEntries[0], 0);
+    // Setup mock elements that will be created
+    const mockRowElement = {};
+    const mockInputElement = {};
+
+    // Make createElement return our mock elements in order
+    mockDom.createElement
+      .mockReturnValueOnce(mockRowElement) // First call: row div
+      .mockReturnValueOnce(mockInputElement) // Second call: key input
+      .mockReturnValueOnce({}) // Third call: value input
+      .mockReturnValue({}); // Any other calls
+
+    // Call the row creator function
+    const rowElement = rowCreator('key1', 'value1', false);
 
     // Verify the row element was created with the correct class
     expect(mockDom.createElement).toHaveBeenCalledWith('div');
-    expect(mockDom.setClassName).toHaveBeenCalledWith(expect.any(Object), 'kv-row');
+    expect(mockDom.setClassName).toHaveBeenCalledWith(mockRowElement, 'kv-row');
 
     // Verify key and value elements were created
     expect(mockDom.createElement).toHaveBeenCalledWith('input');
-    expect(mockDom.setType).toHaveBeenCalledWith(expect.any(Object), 'text');
-
-    // Verify the button was created and set up
-    expect(mockDom.setTextContent).toHaveBeenCalledWith(expect.any(Object), expect.any(String));
+    expect(mockDom.setType).toHaveBeenCalledWith(mockInputElement, 'text');
+    expect(mockDom.setPlaceholder).toHaveBeenCalledWith(mockInputElement, 'Key');
+    expect(mockDom.setDataAttribute).toHaveBeenCalledWith(mockInputElement, 'prevKey', 'k');
 
     // Verify elements were appended to the row and the row was appended to the container
     expect(mockDom.appendChild).toHaveBeenCalledTimes(4); // row + 3 children + container.appendChild(row)
   });
 
   it('creates a remove button for non-last rows', () => {
-    // Call with the first entry (not the last one)
-    rowCreator(mockEntries[0], 0);
+    // Setup mock elements
+    const mockButton = {};
+    mockDom.createElement
+      .mockReturnValueOnce({}) // row div
+      .mockReturnValueOnce({}) // key input
+      .mockReturnValueOnce({}) // value input
+      .mockReturnValue(mockButton); // remove button
+
+    // Call the row creator function with isLast = false
+    rowCreator('key1', 'value1', false);
 
     // Should set up a remove button (×)
-    expect(mockDom.setTextContent).toHaveBeenCalledWith(expect.any(Object), '×');
+    expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '×');
   });
 
   it('creates an add button for the last row', () => {
-    // Call with the last entry
-    rowCreator(mockEntries[1], 1);
+    // Setup mock elements
+    const mockButton = {};
+    mockDom.createElement
+      .mockReturnValueOnce({}) // row div
+      .mockReturnValueOnce({}) // key input
+      .mockReturnValueOnce({}) // value input
+      .mockReturnValue(mockButton); // add button
 
-    // Should set up an add button (+)
-    expect(mockDom.setTextContent).toHaveBeenCalledWith(expect.any(Object), '+');
+    // Call the row creator function with isLast = true
+    rowCreator('key1', 'value1', true);
+
+    // Should set up an add button (×)
+    expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '×');
   });
 
   it('adds event listeners for key and value changes', () => {
-    // Call the row creator
-    rowCreator(mockEntries[0], 0);
+    // Setup mock elements
+    const mockKeyInput = {};
+    const mockValueInput = {};
+    const mockButton = {};
 
-    // Should add input event listeners for both key and value
-    expect(mockDom.addEventListener).toHaveBeenCalledWith(
-      expect.any(Object),
-      'input',
-      expect.any(Function)
-    );
+    let inputHandler;
 
-    // Should add click event listener for the button
-    expect(mockDom.addEventListener).toHaveBeenCalledWith(
-      expect.any(Object),
-      'click',
-      expect.any(Function)
-    );
+    mockDom.createElement
+      .mockReturnValueOnce({}) // row div
+      .mockReturnValueOnce(mockKeyInput) // key input
+      .mockReturnValueOnce(mockValueInput) // value input
+      .mockReturnValue(mockButton); // button
+
+    // Call the row creator function
+    rowCreator('key1', 'value1', false);
+
+    // Verify event listeners were added
+    expect(mockDom.addEventListener.mock.calls).toEqual([
+      [mockKeyInput, 'input', expect.any(Function)],
+      [mockValueInput, 'input', expect.any(Function)],
+      [mockButton, 'click', expect.any(Function)]
+    ]);
   });
 
   it('adds cleanup functions to disposers array', () => {

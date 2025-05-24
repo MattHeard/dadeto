@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1748110775397" clover="3.2.0">
-  <project timestamp="1748110775397" name="All files">
+<coverage generated="1748111293341" clover="3.2.0">
+  <project timestamp="1748111293341" name="All files">
     <metrics statements="1714" coveredstatements="1683" conditionals="526" coveredconditionals="517" methods="674" coveredmethods="662" elements="2914" coveredelements="2862" complexity="0" loc="1714" ncloc="1714" packages="19" files="40" classes="40"/>
     <package name="browser">
       <metrics statements="542" coveredstatements="511" conditionals="113" coveredconditionals="104" methods="168" coveredmethods="156"/>
@@ -418,7 +418,7 @@
         <line num="650" count="10" type="stmt"/>
         <line num="652" count="10" type="stmt"/>
         <line num="661" count="23" type="stmt"/>
-        <line num="662" count="12" type="stmt"/>
+        <line num="662" count="11" type="stmt"/>
         <line num="664" count="6" type="cond" truecount="2" falsecount="0"/>
         <line num="665" count="3" type="stmt"/>
         <line num="666" count="3" type="stmt"/>
@@ -427,17 +427,17 @@
         <line num="680" count="8" type="stmt"/>
         <line num="681" count="8" type="stmt"/>
         <line num="692" count="23" type="stmt"/>
-        <line num="693" count="8" type="stmt"/>
-        <line num="694" count="8" type="stmt"/>
-        <line num="695" count="8" type="stmt"/>
-        <line num="696" count="8" type="stmt"/>
-        <line num="697" count="8" type="stmt"/>
+        <line num="693" count="7" type="stmt"/>
+        <line num="694" count="7" type="stmt"/>
+        <line num="695" count="7" type="stmt"/>
+        <line num="696" count="7" type="stmt"/>
+        <line num="697" count="7" type="stmt"/>
         <line num="709" count="23" type="stmt"/>
-        <line num="710" count="11" type="stmt"/>
-        <line num="711" count="11" type="stmt"/>
-        <line num="712" count="11" type="stmt"/>
-        <line num="713" count="11" type="stmt"/>
-        <line num="714" count="11" type="stmt"/>
+        <line num="710" count="12" type="stmt"/>
+        <line num="711" count="12" type="stmt"/>
+        <line num="712" count="12" type="stmt"/>
+        <line num="713" count="12" type="stmt"/>
+        <line num="714" count="12" type="stmt"/>
         <line num="739" count="23" type="stmt"/>
         <line num="740" count="7" type="stmt"/>
         <line num="741" count="7" type="stmt"/>
@@ -453,8 +453,8 @@
         <line num="758" count="7" type="stmt"/>
         <line num="759" count="7" type="stmt"/>
         <line num="761" count="7" type="cond" truecount="2" falsecount="0"/>
-        <line num="762" count="2" type="stmt"/>
-        <line num="764" count="5" type="stmt"/>
+        <line num="762" count="1" type="stmt"/>
+        <line num="764" count="6" type="stmt"/>
         <line num="767" count="7" type="stmt"/>
         <line num="777" count="23" type="stmt"/>
         <line num="778" count="2" type="stmt"/>
