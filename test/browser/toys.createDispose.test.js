@@ -7,6 +7,6 @@ import { createDispose } from '../../src/browser/toys.js';
 
 describe('createDispose', () => {
   it('can be called', () => {
-    createDispose();
+    const dispose = createDispose();
   });
 });
