@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1748093799111" clover="3.2.0">
-  <project timestamp="1748093799111" name="All files">
-    <metrics statements="1704" coveredstatements="1689" conditionals="521" coveredconditionals="511" methods="672" coveredmethods="667" elements="2897" coveredelements="2867" complexity="0" loc="1704" ncloc="1704" packages="19" files="40" classes="40"/>
+<coverage generated="1748094137304" clover="3.2.0">
+  <project timestamp="1748094137304" name="All files">
+    <metrics statements="1709" coveredstatements="1691" conditionals="521" coveredconditionals="511" methods="673" coveredmethods="668" elements="2903" coveredelements="2870" complexity="0" loc="1709" ncloc="1709" packages="19" files="40" classes="40"/>
     <package name="browser">
-      <metrics statements="531" coveredstatements="517" conditionals="108" coveredconditionals="98" methods="165" coveredmethods="161"/>
+      <metrics statements="536" coveredstatements="519" conditionals="108" coveredconditionals="98" methods="166" coveredmethods="162"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -216,7 +216,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="335" coveredstatements="321" conditionals="60" coveredconditionals="50" methods="102" coveredmethods="98"/>
+        <metrics statements="340" coveredstatements="323" conditionals="60" coveredconditionals="50" methods="103" coveredmethods="99"/>
         <line num="7" count="17" type="stmt"/>
         <line num="8" count="3" type="stmt"/>
         <line num="20" count="17" type="stmt"/>
@@ -531,27 +531,32 @@
         <line num="996" count="1" type="stmt"/>
         <line num="997" count="1" type="stmt"/>
         <line num="1002" count="1" type="stmt"/>
-        <line num="1003" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="1003" count="1" type="stmt"/>
         <line num="1004" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="1006" count="0" type="stmt"/>
+        <line num="1005" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="1007" count="0" type="stmt"/>
-        <line num="1008" count="0" type="cond" truecount="0" falsecount="4"/>
-        <line num="1010" count="1" type="cond" truecount="3" falsecount="1"/>
-        <line num="1011" count="1" type="stmt"/>
-        <line num="1016" count="1" type="stmt"/>
-        <line num="1019" count="1" type="stmt"/>
+        <line num="1008" count="0" type="stmt"/>
+        <line num="1009" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="1011" count="0" type="stmt"/>
+        <line num="1012" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="1013" count="1" type="stmt"/>
+        <line num="1015" count="0" type="stmt"/>
+        <line num="1017" count="0" type="stmt"/>
         <line num="1022" count="1" type="stmt"/>
-        <line num="1023" count="0" type="stmt"/>
-        <line num="1024" count="0" type="stmt"/>
-        <line num="1025" count="0" type="stmt"/>
+        <line num="1025" count="1" type="stmt"/>
         <line num="1028" count="1" type="stmt"/>
-        <line num="1051" count="17" type="stmt"/>
-        <line num="1052" count="0" type="stmt"/>
-        <line num="1053" count="0" type="stmt"/>
-        <line num="1054" count="0" type="stmt"/>
-        <line num="1057" count="0" type="stmt"/>
-        <line num="1058" count="0" type="stmt"/>
-        <line num="1065" count="17" type="stmt"/>
+        <line num="1031" count="1" type="stmt"/>
+        <line num="1032" count="0" type="stmt"/>
+        <line num="1033" count="0" type="stmt"/>
+        <line num="1034" count="0" type="stmt"/>
+        <line num="1037" count="1" type="stmt"/>
+        <line num="1060" count="17" type="stmt"/>
+        <line num="1061" count="0" type="stmt"/>
+        <line num="1062" count="0" type="stmt"/>
+        <line num="1063" count="0" type="stmt"/>
+        <line num="1066" count="0" type="stmt"/>
+        <line num="1067" count="0" type="stmt"/>
+        <line num="1074" count="17" type="stmt"/>
       </file>
     </package>
     <package name="constants">

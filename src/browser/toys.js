@@ -999,18 +999,27 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // ---------------------------------------------------------------------
   // Initialise from existing JSON in the hidden field, if present
   // ---------------------------------------------------------------------
-  try {
-    const existing = JSON.parse(dom.getValue(textInput) || '{}');
-    if (Array.isArray(existing)) {
-      // Convert legacy array format [{key, value}] to object
-      rows = {};
-      for (const pair of existing) {
-        if (pair.key !== undefined) {rows[pair.key] = pair.value ?? '';}
+  const parseExistingRows = () => {
+    try {
+      const existing = JSON.parse(dom.getValue(textInput) || '{}');
+      if (Array.isArray(existing)) {
+        // Convert legacy array format [{key, value}] to object
+        const newRows = {};
+        for (const pair of existing) {
+          if (pair.key !== undefined) { newRows[pair.key] = pair.value ?? ''; }
+        }
+        return newRows;
+      } else if (existing && typeof existing === 'object') {
+        return { ...existing };
       }
-    } else if (existing && typeof existing === 'object') {
-      rows = { ...existing };
+      return {};
+    } catch {
+      return {}; // Return empty object on parse errors
     }
-  } catch { /* ignore parse errors */ }
+  };
+
+  // Parse existing rows from the input
+  rows = parseExistingRows();
 
   // Create the render function with the required dependencies
   const render = createRenderer(dom, disposers, kvContainer, rows, textInput, syncHiddenField);

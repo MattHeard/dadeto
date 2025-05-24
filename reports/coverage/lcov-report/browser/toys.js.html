@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">95.72% </span>
+                <span class="strong">94.94% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>336/351</span>
+                <span class='fraction'>338/356</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">96.07% </span>
+                <span class="strong">96.11% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>98/102</span>
+                <span class='fraction'>99/103</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">95.82% </span>
+                <span class="strong">95% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>321/335</span>
+                <span class='fraction'>323/340</span>
             </div>
         
             
@@ -1128,7 +1128,16 @@
 <a name='L1063'></a><a href='#L1063'>1063</a>
 <a name='L1064'></a><a href='#L1064'>1064</a>
 <a name='L1065'></a><a href='#L1065'>1065</a>
-<a name='L1066'></a><a href='#L1066'>1066</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1066'></a><a href='#L1066'>1066</a>
+<a name='L1067'></a><a href='#L1067'>1067</a>
+<a name='L1068'></a><a href='#L1068'>1068</a>
+<a name='L1069'></a><a href='#L1069'>1069</a>
+<a name='L1070'></a><a href='#L1070'>1070</a>
+<a name='L1071'></a><a href='#L1071'>1071</a>
+<a name='L1072'></a><a href='#L1072'>1072</a>
+<a name='L1073'></a><a href='#L1073'>1073</a>
+<a name='L1074'></a><a href='#L1074'>1074</a>
+<a name='L1075'></a><a href='#L1075'>1075</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2132,15 +2141,24 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -3194,22 +3212,31 @@ export const ensureKeyValueInput = (container, textInput, dom) =&gt; {
   // ---------------------------------------------------------------------
   // Initialise from existing JSON in the hidden field, if present
   // ---------------------------------------------------------------------
-  try {
-    const existing = JSON.parse(dom.getValue(textInput) || <span class="branch-1 cbranch-no" title="branch not covered" >'{}')</span>;
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (Array.isArray(existing)) {
-      // Convert legacy array format [{key, value}] to object
-<span class="cstat-no" title="statement not covered" >      rows = {};</span>
-<span class="cstat-no" title="statement not covered" >      for (const pair of existing) {</span>
-<span class="cstat-no" title="statement not covered" >        if (pair.key !== undefined) {<span class="cstat-no" title="statement not covered" >rows[pair.key] = pair.value ?? '';}</span></span>
+  const parseExistingRows = () =&gt; {
+    try {
+      const existing = JSON.parse(dom.getValue(textInput) || <span class="branch-1 cbranch-no" title="branch not covered" >'{}')</span>;
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (Array.isArray(existing)) {
+        // Convert legacy array format [{key, value}] to object
+        const newRows = <span class="cstat-no" title="statement not covered" >{};</span>
+<span class="cstat-no" title="statement not covered" >        for (const pair of existing) {</span>
+<span class="cstat-no" title="statement not covered" >          if (pair.key !== undefined) { <span class="cstat-no" title="statement not covered" >newRows[pair.key] = pair.value ?? ''; </span>}</span>
+        }
+<span class="cstat-no" title="statement not covered" >        return newRows;</span>
+      } else <span class="missing-if-branch" title="else path not taken" >E</span>if (existing &amp;&amp; typeof existing === 'object') {
+        return { ...existing };
       }
-    } else <span class="missing-if-branch" title="else path not taken" >E</span>if (existing &amp;&amp; typeof existing === 'object') {
-      rows = { ...existing };
+<span class="cstat-no" title="statement not covered" >      return {};</span>
+    } catch {
+<span class="cstat-no" title="statement not covered" >      return {}; </span>// Return empty object on parse errors
     }
-  } catch { /* ignore parse errors */ }
+  };
+  
+  // Parse existing rows from the input
+  rows = parseExistingRows();
 &nbsp;
   // Create the render function with the required dependencies
   const render = createRenderer(dom, disposers, kvContainer, rows, textInput, syncHiddenField);
-  
+&nbsp;
   // Initial render
   render();
 &nbsp;
@@ -3265,7 +3292,7 @@ export const getDeepStateCopy = (globalState) =&gt; JSON.parse(JSON.stringify(gl
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-24T13:36:39.070Z
+                at 2025-05-24T13:42:17.264Z
             </div>
         <script src="../prettify.js"></script>
         <script>
