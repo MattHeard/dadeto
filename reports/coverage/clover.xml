@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1748099859745" clover="3.2.0">
-  <project timestamp="1748099859745" name="All files">
-    <metrics statements="1714" coveredstatements="1705" conditionals="526" coveredconditionals="525" methods="674" coveredmethods="670" elements="2914" coveredelements="2900" complexity="0" loc="1714" ncloc="1714" packages="19" files="40" classes="40"/>
+<coverage generated="1748099944593" clover="3.2.0">
+  <project timestamp="1748099944593" name="All files">
+    <metrics statements="1715" coveredstatements="1706" conditionals="526" coveredconditionals="525" methods="675" coveredmethods="671" elements="2916" coveredelements="2902" complexity="0" loc="1715" ncloc="1715" packages="19" files="40" classes="40"/>
     <package name="browser">
-      <metrics statements="541" coveredstatements="533" conditionals="113" coveredconditionals="112" methods="167" coveredmethods="164"/>
+      <metrics statements="542" coveredstatements="534" conditionals="113" coveredconditionals="112" methods="168" coveredmethods="165"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -216,7 +216,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="345" coveredstatements="337" conditionals="65" coveredconditionals="64" methods="104" coveredmethods="101"/>
+        <metrics statements="346" coveredstatements="338" conditionals="65" coveredconditionals="64" methods="105" coveredmethods="102"/>
         <line num="14" count="20" type="stmt"/>
         <line num="15" count="12" type="stmt"/>
         <line num="18" count="12" type="cond" truecount="2" falsecount="0"/>
@@ -553,15 +553,16 @@
         <line num="1050" count="0" type="stmt"/>
         <line num="1051" count="0" type="stmt"/>
         <line num="1052" count="0" type="stmt"/>
-        <line num="1054" count="2" type="stmt"/>
         <line num="1056" count="2" type="stmt"/>
-        <line num="1078" count="20" type="stmt"/>
-        <line num="1079" count="0" type="stmt"/>
-        <line num="1080" count="0" type="stmt"/>
-        <line num="1081" count="0" type="stmt"/>
+        <line num="1057" count="2" type="stmt"/>
+        <line num="1059" count="2" type="stmt"/>
+        <line num="1081" count="20" type="stmt"/>
+        <line num="1082" count="0" type="stmt"/>
+        <line num="1083" count="0" type="stmt"/>
         <line num="1084" count="0" type="stmt"/>
-        <line num="1085" count="0" type="stmt"/>
-        <line num="1092" count="20" type="stmt"/>
+        <line num="1087" count="0" type="stmt"/>
+        <line num="1088" count="0" type="stmt"/>
+        <line num="1095" count="20" type="stmt"/>
       </file>
     </package>
     <package name="constants">

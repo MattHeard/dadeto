@@ -1036,7 +1036,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // ---------------------------------------------------------------------
   // State + bookkeeping
   // ---------------------------------------------------------------------
-  let rows = parseExistingRows(dom, textInput);
+  const rows = parseExistingRows(dom, textInput);
   const disposers = [];
 
   // Create the render function with the required dependencies
@@ -1045,12 +1045,15 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   // Initial render
   render();
 
-  // Public API for cleanup by parent code
-  const dispose = () => {
+  // Factory function for creating the dispose function
+  const createDispose = (disposers, dom, container, rows) => () => {
     clearDisposers(disposers);
-    dom.removeAllChildren(kvContainer);
+    dom.removeAllChildren(container);
     rows.length = 0;
   };
+
+  // Public API for cleanup by parent code
+  const dispose = createDispose(disposers, dom, kvContainer, rows);
   kvContainer._dispose = dispose;
 
   return kvContainer;
