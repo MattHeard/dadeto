@@ -3,201 +3,100 @@ description: How to write characterization tests to improve test coverage
 ---
 # Characterization Testing Workflow
 
-This workflow helps you systematically improve test coverage by writing characterization tests for untested code paths.
+Systematically improve test coverage by focusing on one function at a time, adding one test case at a time, and ensuring all tests pass before proceeding.
 
-## Prerequisites
-- Jest test runner with coverage enabled
-- Existing test suite
-- Source code with uncovered lines (as shown in coverage report)
+## Quick Start
 
-## Steps
+1. Run coverage: `npm test -- --coverage`
+2. Pick one untested function
+3. Add one test case
+4. Run test: `npm test -- path/to/test.js --watch`
+5. If test passes: `npm run tcr`
+6. Repeat until function is fully covered
 
-### 1. Identify Untested Code
-```bash
-# Run tests with coverage
-npm test -- --coverage
+## Detailed Steps
 
-# Or to run a specific test file with coverage
-npm test -- path/to/test/file.test.js --coverage
-```
+### 1. Select a Function
+- Run `npm test -- --coverage`
+- Check `coverage/lcov-report/index.html`
+- Choose one function with low coverage
 
-### 2. Select a Function to Test
-- Open the coverage report (typically in `coverage/lcov-report/index.html`)
-- Find a file with uncovered lines
-- Identify the function containing those lines
-
-### 3. Locate the Test Suite
-- Find or create a test file for the function
-- Convention: `path/to/function.js` → `path/to/__tests__/function.test.js`
-
-### 4. Analyze the Function
-- Review the function's parameters and return value
-- Identify the control flow that leads to the untested line
-- Determine what inputs would exercise that path
-
-### 5. Write a Basic Test
+### 2. Create Test File (if needed)
 ```javascript
-// Example test structure
+// test/path/to/function.test.js
+import { functionName } from '../../src/path/to/function.js';
+
 describe('functionName', () => {
-  it('should handle [specific case]', () => {
-    // Arrange
-    const args = { /* necessary arguments */ };
-    
-    // Act
-    const result = functionName(args);
-    
-    // Assert - start with no assertions
-  });
+  // Add one test case at a time
 });
 ```
 
-### 6. Run the Test
-```bash
-# Run the specific test in watch mode
-npm test -- path/to/test/file.test.js --watch
+### 3. Add One Test Case
+```javascript
+it('should [expected behavior] when [condition]', () => {
+  // Arrange - minimal setup
+  const input = { /* specific values */ };
+  
+  // Act - call the function
+  const result = functionName(input);
+  
+  // Assert - verify outcome
+  expect(result).toBe(/* expected value */);
+});
 ```
 
-### 7. Handle Test Results
+### 4. Run and Verify
+```bash
+npm test -- test/path/to/test.js --watch
+```
 
-#### If the test passes:
-- Add assertions to verify the function's behavior
-- Run build and TCR:
-  ```bash
-  npm run build && npm run tcr
-  ```
+### 5. Handle Results
+- **Test passes**:
+  1. Add assertions if needed
+  2. Commit with TCR: `npm run tcr`
+  3. Add next test case
 
-#### If the test fails with an error:
-- If the error is expected, add an assertion for it:
-  ```javascript
-  expect(() => functionName(args)).toThrow();
-  // or
-  expect(() => functionName(args)).toThrow('Expected error message');
-  ```
-
-#### If the test fails due to a programming error:
-- Revert changes using TCR:
-  ```bash
-  npm run tcr
-  ```
-- Return to step 5 and adjust your test case
-
-### 8. Add Meaningful Assertions
-- For passing tests, add assertions that verify:
-  - Return values
-  - Side effects
-  - State changes
-  - Function calls (if using mocks)
-
-### 9. Refine and Repeat
-- Make assertions more specific as you understand the behavior
-- Add more test cases for different input scenarios
-- Repeat the process for other untested code paths
+- **Test fails**:
+  1. If expected: add assertion for error
+  2. If unexpected: fix test or document bug
+  3. Run TCR to revert if needed
 
 ## Best Practices
-- Start with simple test cases and build up complexity
-- Focus on one behavior per test
-- Use descriptive test names that explain the scenario
-- Keep test setup clear and minimal
-- Don't test implementation details, focus on behavior
-- Prefer testing public interfaces over internal implementation details
-- When testing, think about the behavior from the consumer's perspective
-- Don't mock functions unless they are injected into the function under test
 
-## Avoiding JSDOM and Document Usage
+### Test Structure
+- One behavior per test
+- Start with happy path
+- Add edge cases
+- Test error conditions
 
-To ensure compatibility with mutation testing tools like Stryker, follow these guidelines:
-
-1. **Avoid using the global `document` object**
-   - Instead of creating real DOM elements, use simple mock objects
-   - Example:
-     ```javascript
-     // Instead of:
-     const element = document.createElement('div');
-     
-     // Use:
-     const element = { 
-       textContent: '',
-       className: '',
-       appendChild: jest.fn(),
-       removeChild: jest.fn(),
-       // Add other required properties/methods as needed
-     };
-     ```
-
-2. **Mock DOM utilities**
-   - Create simple mock implementations of DOM manipulation functions
-   - Example:
-     ```javascript
-     const dom = {
-       createElement: jest.fn(tag => ({
-         tagName: tag.toUpperCase(),
-         textContent: '',
-         className: '',
-         setAttribute: jest.fn(),
-         appendChild: jest.fn(),
-         removeChild: jest.fn()
-       })),
-       setTextContent: jest.fn(),
-       addClass: jest.fn(),
-       // Add other DOM methods as needed
-     };
-     ```
-
-3. **Test behavior, not implementation**
-   - Focus on testing the function's output and side effects rather than DOM structure
-   - Example:
-     ```javascript
-     // Instead of:
-     expect(element.innerHTML).toContain('<div class="error">');
-     
-     // Test the behavior:
-     expect(dom.setTextContent).toHaveBeenCalledWith(
-       expect.anything(),
-       'Error message'
-     );
-     ```
-
-4. **Use dependency injection**
-   - Pass DOM utilities as parameters to make them easier to mock
-   - Example:
-     ```javascript
-     // Instead of:
-     function updateElement() {
-       const el = document.getElementById('my-element');
-       el.textContent = 'Updated';
-     }
-     
-     // Use:
-     function updateElement(getElement) {
-       const el = getElement('my-element');
-       el.textContent = 'Updated';
-     }
-     ```
-
-5. **For event handling**
-   - Test event handlers by calling them directly with mock events
-   - Example:
-     ```javascript
-     // Instead of:
-     const event = new Event('click');
-     button.dispatchEvent(event);
-     
-     // Test the handler directly:
-     const event = { preventDefault: jest.fn() };
-     handleClick(event);
-     expect(event.preventDefault).toHaveBeenCalled();
-     ```
-
-## Testing Without JSDOM: Example
-
-Here's an example of how to test a function that manipulates the DOM without using JSDOM:
-
+### Mocking DOM
 ```javascript
-// Function to test
-export function updateStatus(element, status) {
-  element.textContent = status;
-  element.className = `status-${status.toLowerCase()}`;
-}
+// Instead of real DOM elements
+const mockElement = {
+  textContent: '',
+  className: '',
+  appendChild: jest.fn(),
+  removeChild: jest.fn()
+};
+
+// Mock event handlers
+const mockEvent = {
+  preventDefault: jest.fn(),
+  target: { value: 'test' }
+};
+```
+
+### Assertions
+- Test behavior, not implementation
+- Verify side effects
+- Check return values
+- Test error cases
+
+## Workflow Rules
+1. One function at a time
+2. One test case per commit
+3. Always run TCR after each change
+4. Keep tests focused and simple
 
 // Test
 describe('updateStatus', () => {
