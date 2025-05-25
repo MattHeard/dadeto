@@ -99,6 +99,10 @@ npm test -- path/to/test/file.test.js --watch
 - Use descriptive test names that explain the scenario
 - Keep test setup clear and minimal
 - Don't test implementation details, focus on behavior
+- Only mock functions that are explicitly injected into the function under test
+  - If a function is imported directly, don't mock it unless absolutely necessary
+  - Prefer to test the actual implementation with real dependencies when possible
+  - If a function needs to be mocked, consider refactoring to use dependency injection
 - Use snapshots sparingly and prefer specific assertions
 
 ## Example
