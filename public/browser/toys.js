@@ -856,7 +856,7 @@ function createHandleInputError(env, parent) {
   };
 }
 
-function processInputAndSetOutput(elements, processingFunction, env) {
+export function processInputAndSetOutput(elements, processingFunction, env) {
   const { inputElement, outputParentElement: parent, outputSelect, article } = elements;
   const { createEnv, dom } = env;
   const toyEnv = createEnv();
