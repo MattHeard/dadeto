@@ -103,6 +103,122 @@ npm test -- path/to/test/file.test.js --watch
 - When testing, think about the behavior from the consumer's perspective
 - Don't mock functions unless they are injected into the function under test
 
+## Avoiding JSDOM and Document Usage
+
+To ensure compatibility with mutation testing tools like Stryker, follow these guidelines:
+
+1. **Avoid using the global `document` object**
+   - Instead of creating real DOM elements, use simple mock objects
+   - Example:
+     ```javascript
+     // Instead of:
+     const element = document.createElement('div');
+     
+     // Use:
+     const element = { 
+       textContent: '',
+       className: '',
+       appendChild: jest.fn(),
+       removeChild: jest.fn(),
+       // Add other required properties/methods as needed
+     };
+     ```
+
+2. **Mock DOM utilities**
+   - Create simple mock implementations of DOM manipulation functions
+   - Example:
+     ```javascript
+     const dom = {
+       createElement: jest.fn(tag => ({
+         tagName: tag.toUpperCase(),
+         textContent: '',
+         className: '',
+         setAttribute: jest.fn(),
+         appendChild: jest.fn(),
+         removeChild: jest.fn()
+       })),
+       setTextContent: jest.fn(),
+       addClass: jest.fn(),
+       // Add other DOM methods as needed
+     };
+     ```
+
+3. **Test behavior, not implementation**
+   - Focus on testing the function's output and side effects rather than DOM structure
+   - Example:
+     ```javascript
+     // Instead of:
+     expect(element.innerHTML).toContain('<div class="error">');
+     
+     // Test the behavior:
+     expect(dom.setTextContent).toHaveBeenCalledWith(
+       expect.anything(),
+       'Error message'
+     );
+     ```
+
+4. **Use dependency injection**
+   - Pass DOM utilities as parameters to make them easier to mock
+   - Example:
+     ```javascript
+     // Instead of:
+     function updateElement() {
+       const el = document.getElementById('my-element');
+       el.textContent = 'Updated';
+     }
+     
+     // Use:
+     function updateElement(getElement) {
+       const el = getElement('my-element');
+       el.textContent = 'Updated';
+     }
+     ```
+
+5. **For event handling**
+   - Test event handlers by calling them directly with mock events
+   - Example:
+     ```javascript
+     // Instead of:
+     const event = new Event('click');
+     button.dispatchEvent(event);
+     
+     // Test the handler directly:
+     const event = { preventDefault: jest.fn() };
+     handleClick(event);
+     expect(event.preventDefault).toHaveBeenCalled();
+     ```
+
+## Testing Without JSDOM: Example
+
+Here's an example of how to test a function that manipulates the DOM without using JSDOM:
+
+```javascript
+// Function to test
+export function updateStatus(element, status) {
+  element.textContent = status;
+  element.className = `status-${status.toLowerCase()}`;
+}
+
+// Test
+describe('updateStatus', () => {
+  it('updates element text and class based on status', () => {
+    // Arrange
+    const element = {
+      textContent: '',
+      className: ''
+    };
+    const status = 'SUCCESS';
+    
+    // Act
+    updateStatus(element, status);
+    
+    // Assert
+    expect(element.textContent).toBe('SUCCESS');
+    expect(element.className).toBe('status-success');
+  });
+});
+```
+
 ## Exporting Functions for Testability
 
 When encountering untested code that's difficult to test, consider exporting the function to make it testable. This is particularly useful for:
