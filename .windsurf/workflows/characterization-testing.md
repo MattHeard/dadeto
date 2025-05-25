@@ -99,11 +99,97 @@ npm test -- path/to/test/file.test.js --watch
 - Use descriptive test names that explain the scenario
 - Keep test setup clear and minimal
 - Don't test implementation details, focus on behavior
-- Only mock functions that are explicitly injected into the function under test
-  - If a function is imported directly, don't mock it unless absolutely necessary
-  - Prefer to test the actual implementation with real dependencies when possible
-  - If a function needs to be mocked, consider refactoring to use dependency injection
-- Use snapshots sparingly and prefer specific assertions
+- Prefer testing public interfaces over internal implementation details
+- When testing, think about the behavior from the consumer's perspective
+- Don't mock functions unless they are injected into the function under test
+
+## Exporting Functions for Testability
+
+When encountering untested code that's difficult to test, consider exporting the function to make it testable. This is particularly useful for:
+
+1. **Pure functions** that don't have side effects
+2. **Helper functions** that are used internally but can be tested in isolation
+3. **Complex logic** that's buried inside larger functions
+
+### How to export a function for testing:
+
+1. **Identify** the function that contains the logic you want to test
+2. **Export** the function (if it's not already exported)
+3. **Write tests** for the exported function
+4. **Keep the original function** that calls it for backward compatibility
+
+Example:
+
+```javascript
+// Before (difficult to test)
+function processData(input) {
+  const cleaned = input.trim().toLowerCase();
+  // Complex logic here...
+  return result;
+}
+
+// After (testable)
+export function cleanInput(input) {
+  return input.trim().toLowerCase();
+}
+
+function processData(input) {
+  const cleaned = cleanInput(input);
+  // Rest of the logic...
+  return result;
+}
+
+export { processData }; // If it needs to be exported
+```
+
+Then test the individual function:
+
+```javascript
+import { cleanInput } from '../dataProcessor';
+
+describe('cleanInput', () => {
+  it('should trim whitespace and convert to lowercase', () => {
+    expect(cleanInput('  TEST  ')).toBe('test');
+  });
+});
+```
+
+> **Note:** While we focus on increasing test coverage in this workflow, remember that you can later refactor the exported functions to have a cleaner public API using the [Simplify Exported Functions Workflow](./simplify-exported-functions.md).
+
+## ES Module Mocking Guidelines
+
+When working with ES modules, follow these patterns instead of using `jest.requireActual`:
+
+### For mocking specific functions:
+
+```javascript
+// At the top of your test file
+import { functionToMock } from '../path/to/module';
+
+jest.mock('../path/to/module', () => ({
+  ...jest.requireActual('../path/to/module'),
+  functionToMock: jest.fn()
+}));
+
+describe('test suite', () => {
+  it('should test something', () => {
+    // Test implementation
+  });
+});
+```
+
+### For testing error cases:
+
+Instead of trying to mock the implementation, consider:
+1. Testing the error handling behavior
+2. Using dependency injection to provide test doubles
+3. Testing the error state through the public API
+
+### For testing side effects:
+
+1. Test the observable outcome rather than implementation details
+2. If you need to verify side effects, use the public API to check the results
+3. Consider restructuring the code to make it more testable if needed
 
 ## Example
 
