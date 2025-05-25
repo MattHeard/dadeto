@@ -95,6 +95,70 @@ npm test -- path/to/file.test.js
 
 * Do not use: jsdom, document, unstable_mockModule
 
+## Creating Minimal Test Cases
+
+When starting to test a complex function, begin with a minimal test case that only includes the function call with the bare minimum required arguments. This helps identify dependencies and required mocks.
+
+### Steps:
+
+1. **Start with an empty test case**
+   ```javascript
+   it('minimal test case', () => {
+     functionUnderTest();
+   });
+   ```
+
+2. **Add required arguments one by one** as tests fail
+   - Start with empty objects/arrays for complex parameters
+   - Add properties only when tests fail asking for them
+
+3. **Mock dependencies** as they're discovered
+   - Add mock implementations for required functions
+   - Start with empty functions and add behavior as needed
+
+4. **Example progression**:
+   ```javascript
+   // Start with minimal test
+   it('minimal test case', () => {
+     const elements = {};
+     const processingFunction = () => '';
+     const env = {};
+     
+     processInputAndSetOutput(elements, processingFunction, env);
+   });
+   
+   // Then add required properties as tests fail
+   it('minimal test case', () => {
+     const elements = {
+       inputElement: { value: '' },
+       outputSelect: { value: 'text' },
+       article: { id: 'test-article' }
+     };
+     const processingFunction = () => '';
+     const env = {
+       createEnv: () => ({
+         get: () => ({
+           getData: () => ({}),
+           setData: () => {}
+         })
+       }),
+       dom: {
+         removeAllChildren: () => {},
+         createElement: () => ({
+           style: {},
+           setAttribute: () => {}
+         }),
+         setTextContent: () => {},
+         appendChild: () => {}
+       }
+     };
+     
+     processInputAndSetOutput(elements, processingFunction, env);
+   });
+   ```
+
+5. **Only after the test passes** without assertions, start adding meaningful assertions
+
 ## Best Practices
 
 * Focus tests on behavior
