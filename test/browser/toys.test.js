@@ -18,7 +18,8 @@ import {
   handleDropdownChange,
   createAddDropdownListener,
   createInputDropdownHandler,
-  createUpdateTextInputValue
+  createUpdateTextInputValue,
+  getText
 } from '../../src/browser/toys.js';
 
 describe('createAddDropdownListener', () => {
@@ -907,6 +908,40 @@ describe('createInputDropdownHandler', () => {
 
       // Verify number input setup
       expect(dom.setType).toHaveBeenCalledWith(numberInput, 'number');
+    });
+  });
+
+  describe('getText', () => {
+    it('should call response.text() and return its result', async () => {
+      // Arrange
+      const mockText = 'test response text';
+      const mockResponse = {
+        text: jest.fn().mockResolvedValue(mockText)
+      };
+
+      // Act
+      const result = await getText(mockResponse);
+
+      // Assert
+      expect(mockResponse.text).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockText);
+    });
+
+    it('should propagate errors from response.text()', async () => {
+      // Arrange
+      const mockError = new Error('Network error');
+      const mockResponse = {
+        text: jest.fn().mockRejectedValue(mockError)
+      };
+
+      // Act & Assert
+      await expect(getText(mockResponse)).rejects.toThrow(mockError);
+    });
+
+    it('should throw when response is null or undefined', () => {
+      // Act & Assert
+      expect(() => getText(null)).toThrow(TypeError);
+      expect(() => getText(undefined)).toThrow(TypeError);
     });
   });
 });

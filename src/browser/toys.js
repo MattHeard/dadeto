@@ -449,7 +449,7 @@ export function enableInteractiveControls(elements, dom, presenterKey) {
   dom.removeWarning(parent);
 }
 
-function getText(response) {
+export function getText(response) {
   return response.text();
 }
 

@@ -521,7 +521,7 @@ FN:1088,(anonymous_102)
 FN:1089,(anonymous_103)
 FN:1102,(anonymous_104)
 FNF:105
-FNH:93
+FNH:94
 FNDA:12,(anonymous_0)
 FNDA:11,(anonymous_1)
 FNDA:4,(anonymous_2)
@@ -570,7 +570,7 @@ FNDA:6,(anonymous_44)
 FNDA:8,makeCreateIntersectionObserver
 FNDA:6,(anonymous_46)
 FNDA:6,enableInteractiveControls
-FNDA:0,getText
+FNDA:4,getText
 FNDA:0,makeDisplayBody
 FNDA:0,(anonymous_50)
 FNDA:0,getFetchErrorHandler
@@ -758,7 +758,7 @@ DA:446,6
 DA:447,6
 DA:448,6
 DA:449,6
-DA:453,0
+DA:453,4
 DA:457,0
 DA:458,0
 DA:463,0
@@ -974,7 +974,7 @@ DA:1094,1
 DA:1095,1
 DA:1102,23
 LF:346
-LH:315
+LH:316
 BRDA:18,0,0,5
 BRDA:18,0,1,7
 BRDA:23,1,0,15
