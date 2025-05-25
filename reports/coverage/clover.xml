@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1748161030234" clover="3.2.0">
-  <project timestamp="1748161030234" name="All files">
-    <metrics statements="1714" coveredstatements="1685" conditionals="526" coveredconditionals="517" methods="674" coveredmethods="664" elements="2914" coveredelements="2866" complexity="0" loc="1714" ncloc="1714" packages="19" files="40" classes="40"/>
+<coverage generated="1748161553374" clover="3.2.0">
+  <project timestamp="1748161553374" name="All files">
+    <metrics statements="1714" coveredstatements="1686" conditionals="526" coveredconditionals="517" methods="674" coveredmethods="665" elements="2914" coveredelements="2868" complexity="0" loc="1714" ncloc="1714" packages="19" files="40" classes="40"/>
     <package name="browser">
-      <metrics statements="542" coveredstatements="513" conditionals="113" coveredconditionals="104" methods="168" coveredmethods="158"/>
+      <metrics statements="542" coveredstatements="514" conditionals="113" coveredconditionals="104" methods="168" coveredmethods="159"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -216,7 +216,7 @@
         <line num="117" count="1" type="stmt"/>
       </file>
       <file name="toys.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js">
-        <metrics statements="346" coveredstatements="317" conditionals="65" coveredconditionals="56" methods="105" coveredmethods="95"/>
+        <metrics statements="346" coveredstatements="318" conditionals="65" coveredconditionals="56" methods="105" coveredmethods="96"/>
         <line num="14" count="24" type="stmt"/>
         <line num="15" count="12" type="stmt"/>
         <line num="18" count="12" type="cond" truecount="2" falsecount="0"/>
@@ -306,11 +306,11 @@
         <line num="267" count="24" type="stmt"/>
         <line num="268" count="3" type="stmt"/>
         <line num="271" count="24" type="stmt"/>
-        <line num="280" count="12" type="stmt"/>
-        <line num="281" count="12" type="stmt"/>
-        <line num="282" count="12" type="stmt"/>
-        <line num="283" count="12" type="stmt"/>
-        <line num="284" count="12" type="stmt"/>
+        <line num="280" count="13" type="stmt"/>
+        <line num="281" count="13" type="stmt"/>
+        <line num="282" count="13" type="stmt"/>
+        <line num="283" count="13" type="stmt"/>
+        <line num="284" count="13" type="stmt"/>
         <line num="301" count="5" type="stmt"/>
         <line num="302" count="1" type="stmt"/>
         <line num="323" count="5" type="stmt"/>
@@ -350,7 +350,7 @@
         <line num="449" count="6" type="stmt"/>
         <line num="453" count="4" type="stmt"/>
         <line num="457" count="1" type="stmt"/>
-        <line num="458" count="0" type="stmt"/>
+        <line num="458" count="1" type="stmt"/>
         <line num="463" count="0" type="stmt"/>
         <line num="464" count="0" type="stmt"/>
         <line num="465" count="0" type="stmt"/>
@@ -1000,9 +1000,9 @@
       </file>
       <file name="paragraph.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/paragraph.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
-        <line num="2" count="14" type="stmt"/>
-        <line num="3" count="14" type="stmt"/>
-        <line num="4" count="14" type="stmt"/>
+        <line num="2" count="15" type="stmt"/>
+        <line num="3" count="15" type="stmt"/>
+        <line num="4" count="15" type="stmt"/>
       </file>
       <file name="pre.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/presenters/pre.js">
         <metrics statements="13" coveredstatements="13" conditionals="8" coveredconditionals="8" methods="6" coveredmethods="6"/>
