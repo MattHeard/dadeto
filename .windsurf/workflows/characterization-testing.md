@@ -79,6 +79,25 @@ expect(() => functionName(args)).toThrow();
 * Add diverse input tests
 * Repeat for other untested paths
 
+## Handling Lint Warnings
+
+When writing characterization tests, you may encounter lint warnings that aren't directly related to the test's functionality. Here's how to handle them:
+
+1. **Temporarily Ignore Warnings**
+   - Focus on test functionality first
+   - Use `// eslint-disable-next-line` comments for specific rules when necessary
+   - Example: `// eslint-disable-next-line no-unused-vars`
+
+2. **Common Test-Specific Linting**
+   - Ignore unused variables in test setup (e.g., `_` for unused parameters)
+   - Suppress complexity warnings for test utilities
+   - Disable specific rules at the file level if needed
+
+3. **Clean Up After**
+   - Once tests are passing, review and address any remaining lint warnings
+   - Consider refactoring test utilities if they trigger complexity warnings
+   - Document intentional rule violations with comments
+
 ## Best Practices
 
 * Simple tests, increment complexity
@@ -88,6 +107,7 @@ expect(() => functionName(args)).toThrow();
 * Test behaviors, not internal implementations
 * Test public interfaces
 * Avoid unnecessary mocks
+* Address lint warnings after establishing test coverage
 
 ## Avoiding JSDOM for Mutation Testing
 
