@@ -28,7 +28,14 @@ npm test -- --coverage
 
 ### 3. Locate/Create Test Suite
 
-* Convention: `path/function.js` → `path/__tests__/function.test.js`
+* **Browser code** (`src/browser/`):
+  - `src/browser/file.js` → `test/browser/file.test.js`
+* **Toys** (`src/toys/`):
+  - `src/toys/YYYY-MM-DD/toyName.js` → `test/toys/YYYY-MM-DD/toyName.test.js`
+* **Presenters** (`src/presenters/`):
+  - `src/presenters/presenterName.js` → `test/presenters/presenterName.test.js`
+* **Utils** (`src/utils/`):
+  - `src/utils/utilName.js` → `test/utils/utilName.test.js`
 
 ### 4. Analyze Function
 
