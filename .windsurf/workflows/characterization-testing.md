@@ -2,19 +2,19 @@
 description: How to write characterization tests to improve test coverage
 ---
 
-# Characterization Testing Workflow (Condensed)
+# Characterization Testing Workflow
 
-This workflow guides systematic test coverage improvement via characterization tests.
+A concise guide for systematically improving test coverage via characterization tests.
 
 ## Prerequisites
 
 * Jest with coverage
 * Existing tests
-* Source with uncovered lines
+* Source code with uncovered lines
 
-## Steps
+## Workflow Steps
 
-### 1. Identify Untested Code
+### 1. Identify Code
 
 ```bash
 npm test -- --coverage
@@ -22,168 +22,89 @@ npm test -- --coverage
 
 ### 2. Select Function
 
-* Open coverage report (`reports/coverage/lcov.info`)
-* Choose file with uncovered lines
-* Identify target function
+* Check coverage report (`reports/coverage/lcov.info`)
+* Identify file and function with uncovered lines
 
-### 3. Locate/Create Test Suite
+### 3. Test File Structure
 
-* **Browser code** (`src/browser/`):
-  - `src/browser/file.js` → `test/browser/file.test.js`
-* **Toys** (`src/toys/`):
-  - `src/toys/YYYY-MM-DD/toyName.js` → `test/toys/YYYY-MM-DD/toyName.test.js`
-* **Presenters** (`src/presenters/`):
-  - `src/presenters/presenterName.js` → `test/presenters/presenterName.test.js`
-* **Utils** (`src/utils/`):
-  - `src/utils/utilName.js` → `test/utils/utilName.test.js`
+* Match `src/` to `test/` directories
 
-### 4. Analyze Function
+### 4. Analyze
 
-* Review parameters and return values
-* Determine inputs for untested paths
+* Determine inputs for uncovered paths
 
-### 5. Write Basic Test
+### 5. Basic Test
 
 ```javascript
 describe('functionName', () => {
-  it('handles [specific case]', () => {
-    const args = {/* arguments */};
-    const result = functionName(args);
-    // No assertions initially
+  it('handles case', () => {
+    const args = {};
+    functionName(args);
   });
 });
 ```
 
-### 6. Run Test
+### 6. Run Tests
 
 ```bash
 npm test -- path/to/file.test.js
 ```
 
-### 7. Handle Test Results
+### 7. Handle Results
 
-* **Pass:** Add assertions, then:
-
-```bash
-npm run build && npm run tcr
-```
-
-* **Expected error:**
-
-```javascript
-expect(() => functionName(args)).toThrow();
-```
-
-* **Programming error:** Revert changes (`npm run tcr`), adjust test.
+* **Pass:** Add assertions
+* **Error:** Assert expected errors
+* **Fail:** Adjust and rerun
 
 ### 8. Add Assertions
 
-* Validate return values, side effects, state, or mocked calls
+* Check returns, state, side effects
 
-### 9. Refine and Repeat
+### 9. Refine & Repeat
 
-* Clarify assertions
-* Add diverse input tests
-* Repeat for other untested paths
+* Expand tests for other paths
 
-## Handling Lint Warnings
+## Linting
 
-When writing characterization tests, you may encounter lint warnings that aren't directly related to the test's functionality. Here's how to handle them:
+* Temporarily disable unrelated warnings (`// eslint-disable-next-line`)
+* Address and document remaining issues later
 
-1. **Temporarily Ignore Warnings**
-   - Focus on test functionality first
-   - Use `// eslint-disable-next-line` comments for specific rules when necessary
-   - Example: `// eslint-disable-next-line no-unused-vars`
+## Organization
 
-2. **Common Test-Specific Linting**
-   - Ignore unused variables in test setup (e.g., `_` for unused parameters)
-   - Suppress complexity warnings for test utilities
-   - Disable specific rules at the file level if needed
+* Use nested `describe` blocks clearly
+* Simple, descriptive test names
 
-3. **Clean Up After**
-   - Once tests are passing, review and address any remaining lint warnings
-   - Consider refactoring test utilities if they trigger complexity warnings
-   - Document intentional rule violations with comments
+## Test Data
+
+* Use factory functions (`@faker-js/faker`) for realistic data
+
+## Coverage Analysis
+
+* Prioritize untested complex logic
+
+## Debugging
+
+* Use debug mode (`DEBUG=* npm test`)
+
+## Performance
+
+* Mock dependencies, limit DOM ops
+* Run targeted tests (`npm test -- --onlyChanged`)
 
 ## Best Practices
 
-* Simple tests, increment complexity
-* One behavior per test
-* Descriptive test names
-* Minimal, clear setup
-* Test behaviors, not internal implementations
-* Test public interfaces
-* Avoid unnecessary mocks
-* Address lint warnings after establishing test coverage
-
-## Avoiding JSDOM for Mutation Testing
-
-* Avoid global `document`; use simple mock objects:
-
-```javascript
-const element = { textContent: '', className: '', appendChild: jest.fn() };
-```
-
-* Mock DOM utilities explicitly:
-
-```javascript
-const dom = { createElement: jest.fn(() => ({ textContent: '', className: '' })) };
-```
-
-* Dependency injection for easier mocking:
-
-```javascript
-function updateElement(getElement) {
-  const el = getElement('my-element');
-  el.textContent = 'Updated';
-}
-```
-
-* Test event handlers directly with mock events:
-
-```javascript
-const event = { preventDefault: jest.fn() };
-handleClick(event);
-```
-
-## Exporting Functions for Testability
-
-* Export internal logic separately:
-
-```javascript
-export function cleanInput(input) { return input.trim().toLowerCase(); }
-function processData(input) { return cleanInput(input); }
-```
-
-* Test the exported functions individually:
-
-```javascript
-import { cleanInput } from '../dataProcessor';
-describe('cleanInput', () => {
-  it('trims and lowercases input', () => {
-    expect(cleanInput('  TEST  ')).toBe('test');
-  });
-});
-```
-
-## ES Module Mocking Guidelines
-
-* Mock specific functions explicitly:
-
-```javascript
-import { functionToMock } from '../module';
-jest.mock('../module', () => ({
-  ...jest.requireActual('../module'),
-  functionToMock: jest.fn()
-}));
-```
-
-* Prefer testing error handling via public APIs or dependency injection.
-* Verify observable outcomes rather than internal implementations.
+* Focus tests on behavior
+* Minimize setup and mocks
+* After TCR has run, check whether the changes were reverted.
+* Avoid JSDOM: Use simple mock objects and explicit DOM mocks
+* Export and isolate internal logic for simpler tests
+* Explicitly mock only necessary functions
+* Add only one test case at a time and do not advance until all tests are passing.
 
 ## Example
 
 ### Source (`math.js`)
+
 ```javascript
 export function divide(a, b) {
   if (b === 0) throw new Error('Division by zero');
@@ -201,7 +122,7 @@ describe('divide', () => {
     expect(divide(10, 2)).toBe(5);
   });
 
-  it('throws error on division by zero', () => {
+  it('throws on zero division', () => {
     expect(() => divide(10, 0)).toThrow('Division by zero');
   });
 });
