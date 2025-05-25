@@ -91,12 +91,15 @@ npm test -- path/to/file.test.js
 * Mock dependencies, limit DOM ops
 * Run targeted tests (`npm test -- --onlyChanged`)
 
+## Prohibited testing practices
+
+* Do not use: jsdom, document, unstable_mockModule
+
 ## Best Practices
 
 * Focus tests on behavior
 * Minimize setup and mocks
 * After TCR has run, check whether the changes were reverted.
-* Avoid JSDOM: Use simple mock objects and explicit DOM mocks
 * Export and isolate internal logic for simpler tests
 * Explicitly mock only necessary functions
 * Add only one test case at a time and do not advance until all tests are passing.
