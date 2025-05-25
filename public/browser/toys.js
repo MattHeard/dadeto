@@ -453,7 +453,7 @@ export function getText(response) {
   return response.text();
 }
 
-function makeDisplayBody(dom, parent, presenterKey) {
+export function makeDisplayBody(dom, parent, presenterKey) {
   return body => {
     setTextContent({ content: body, presenterKey }, dom, parent);
   };
