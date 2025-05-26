@@ -27,7 +27,11 @@ describe('processInputAndSetOutput', () => {
     const article = {};
     const outputSelect = {};
     const elements = { inputElement, article, outputSelect };
-    const processingFunctionResult = {};
+    const processingFunctionResult = {
+      request: {
+        url: ''
+      }
+    };
     const processingFunction = jest.fn(() => processingFunctionResult);
     const createEnv = jest.fn();
     const env = { createEnv };
