@@ -64,10 +64,15 @@ describe('processInputAndSetOutput', () => {
     // Setup environment with mocks
     env = {
       createEnv: jest.fn().mockReturnValue({
-        setOutput: mockSetOutput
+        setOutput: mockSetOutput,
+        get: jest.fn()
       }),
       dom: {
-        setTextContent: mockSetTextContent
+        setTextContent: mockSetTextContent,
+        removeAllChildren: jest.fn(),
+        createElement: jest.fn(() => ({})),
+        createTextNode: jest.fn(() => ({})),
+        appendChild: jest.fn()
       }
     };
 
