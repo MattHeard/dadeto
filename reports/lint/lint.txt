@@ -14,7 +14,6 @@
     76:64   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
    186:10   warning  Arrow function has a complexity of 3. Maximum allowed is 2                            complexity
    248:8    warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2           complexity
-   462:8    warning  Function 'getFetchErrorHandler' has a complexity of 3. Maximum allowed is 2           complexity
    509:70   warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
    564:8    warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
    565:10   warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
@@ -103,4 +102,4 @@
   867:9   warning  Ternary operator used                                       no-ternary
   889:40  warning  Ternary operator used                                       no-ternary
 
-✖ 64 problems (0 errors, 64 warnings)
+✖ 63 problems (0 errors, 63 warnings)

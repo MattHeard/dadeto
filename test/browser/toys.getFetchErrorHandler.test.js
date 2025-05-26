@@ -18,7 +18,8 @@ describe('getFetchErrorHandler', () => {
     };
 
     const presenterKey = 'text';
-    const errorHandler = getFetchErrorHandler({ dom }, null, presenterKey);
+    const errorFn = jest.fn();
+    const errorHandler = getFetchErrorHandler({ dom, errorFn }, null, presenterKey);
     const error = {};
     errorHandler(error);
   });
