@@ -805,6 +805,7 @@ function isValidParsedRequest(parsed) {
 
 export function handleParsedResult(parsed, env, options) {
   const isValid = isValidParsedRequest(parsed);
+  console.log('handleParsedResult - isValid:', isValid);
   if (isValid) {
     handleRequestResponse(parsed.request.url, env, options);
   }
@@ -867,7 +868,10 @@ export function processInputAndSetOutput(elements, processingFunction, env) {
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
   if (!handleParsedResult(parsed, env, { parent, presenterKey })) {
+    console.log('handle parsed result: false');
     setTextContent({ content: result, presenterKey }, dom, parent);
+  } else {
+    console.log('handle parsed result: true');
   }
 }
 
