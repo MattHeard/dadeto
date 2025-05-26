@@ -800,6 +800,7 @@ const createRemoveAddListener = (dom, btnEl, handler) => () =>
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
 function isValidParsedRequest(parsed) {
+  console.log('isValidParsedRequest - parsed:', parsed);
   return parsedRequestPredicates.every(fn => {
     const result = fn(parsed);
     console.log(`Predicate ${fn.name} returned:`, result);
@@ -822,6 +823,7 @@ export function handleParsedResult(parsed, env, options) {
  * @returns {object|null} The parsed object or null.
  */
 function parseJSONResult(result) {
+  console.log('parseJSONResult - input:', result);
   try {
     return JSON.parse(result);
   } catch {

@@ -10,13 +10,16 @@ describe('processInputAndSetOutput', () => {
     const article = {};
     const outputSelect = { value: 'text' };
     const elements = { inputElement, article, outputSelect };
-    const processingFunctionResult = {
-      request: {
-        url: ''
-      }
-    };
+    const processingFunctionResult = '{"request":{"url":""}}';
     const processingFunction = jest.fn(() => processingFunctionResult);
     const get = jest.fn();
+    const displayBodyCatch = jest.fn();
+    const displayBodyPromise = { catch: displayBodyCatch };
+    const urlGetTextThen = jest.fn(() => displayBodyPromise);
+    const fetchGetTextPromise = { then: urlGetTextThen };
+    const urlFetchThen = jest.fn(() => fetchGetTextPromise);
+    const fetchUrlPromise = { then: urlFetchThen };
+    const fetchFn = jest.fn(() => fetchUrlPromise);
     const toyEnv = { get };
     const createEnv = jest.fn(() => toyEnv);
     const removeAllChildren = jest.fn();
@@ -24,7 +27,7 @@ describe('processInputAndSetOutput', () => {
     const setTextContent = jest.fn();
     const appendChild = jest.fn();
     const dom = { removeAllChildren, createElement, setTextContent, appendChild };
-    const env = { createEnv, dom };
+    const env = { createEnv, dom, fetchFn };
 
     // Call with all required arguments
     processInputAndSetOutput(elements, processingFunction, env);
