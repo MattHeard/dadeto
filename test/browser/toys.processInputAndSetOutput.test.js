@@ -21,6 +21,20 @@ let toysModule;
 let processInputAndSetOutput;
 
 describe('processInputAndSetOutput', () => {
+  it('should handle being called with no arguments', () => {
+    // Define test variables
+    const inputElement = {};
+    const article = {};
+    const outputSelect = {};
+    const elements = { inputElement, article, outputSelect };
+    const processingFunction = jest.fn();
+    const createEnv = jest.fn();
+    const env = { createEnv };
+
+    // Call with all required arguments
+    processInputAndSetOutput(elements, processingFunction, env);
+  });
+
   let elements, processingFunction, env;
 
   beforeEach(async () => {
