@@ -883,9 +883,7 @@ function handleInputProcessing(elements, processingFunction, env) {
 
 export const createHandleSubmit = (elements, processingFunction, env) => (event) => {
   const { dom } = env;
-  if (event) {
-    dom.stopDefault(event);
-  }
+  dom.stopDefault(event);
   handleInputProcessing(elements, processingFunction, env);
 };
 
