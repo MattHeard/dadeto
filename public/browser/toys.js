@@ -800,17 +800,11 @@ const createRemoveAddListener = (dom, btnEl, handler) => () =>
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
 function isValidParsedRequest(parsed) {
-  console.log('isValidParsedRequest - parsed:', parsed);
-  return parsedRequestPredicates.every(fn => {
-    const result = fn(parsed);
-    console.log(`Predicate ${fn.name} returned:`, result);
-    return result;
-  });
+  return parsedRequestPredicates.every(fn => fn(parsed));
 }
 
 export function handleParsedResult(parsed, env, options) {
   const isValid = isValidParsedRequest(parsed);
-  console.log('handleParsedResult - isValid:', isValid);
   if (isValid) {
     handleRequestResponse(parsed.request.url, env, options);
   }
@@ -823,7 +817,6 @@ export function handleParsedResult(parsed, env, options) {
  * @returns {object|null} The parsed object or null.
  */
 function parseJSONResult(result) {
-  console.log('parseJSONResult - input:', result);
   try {
     return JSON.parse(result);
   } catch {
@@ -874,10 +867,7 @@ export function processInputAndSetOutput(elements, processingFunction, env) {
   const parsed = parseJSONResult(result);
   const presenterKey = outputSelect.value;
   if (!handleParsedResult(parsed, env, { parent, presenterKey })) {
-    console.log('handle parsed result: false');
     setTextContent({ content: result, presenterKey }, dom, parent);
-  } else {
-    console.log('handle parsed result: true');
   }
 }
 
