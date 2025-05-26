@@ -108,6 +108,7 @@ export const styles = `
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     overflow-x: auto;
+    margin: 1.5em 0px;
   }
   #audio-controls {
     background-color: #1A1A1A;
