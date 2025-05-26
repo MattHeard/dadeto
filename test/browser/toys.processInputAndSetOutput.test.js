@@ -28,7 +28,7 @@ describe('processInputAndSetOutput', () => {
     const outputSelect = {};
     const elements = { inputElement, article, outputSelect };
     const processingFunctionResult = {};
-    const processingFunction = jest.fn().mockReturnValue(processingFunctionResult);
+    const processingFunction = jest.fn(() => processingFunctionResult);
     const createEnv = jest.fn();
     const env = { createEnv };
 
