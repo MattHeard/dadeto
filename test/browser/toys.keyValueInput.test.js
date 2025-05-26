@@ -2,6 +2,27 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { ensureKeyValueInput, createKeyInputHandler, createValueInputHandler } from '../../src/browser/toys.js';
 
 describe('Key-Value Input', () => {
+  it('should fail when called with no arguments', () => {
+    const container = {};
+    const textInput = {};
+    const kvContainer = {};
+    const querySelector = jest.fn();
+    const createElement = jest.fn().mockReturnValue(kvContainer);
+    const setClassName = jest.fn();
+    const getNextSibling = jest.fn();
+    const insertBefore = jest.fn();
+    const removeAllChildren = jest.fn();
+    const setType = jest.fn();
+    const setPlaceholder = jest.fn();
+    const setValue = jest.fn();
+    const setDataAttribute = jest.fn();
+    const addEventListener = jest.fn();
+    const setTextContent = jest.fn();
+    const appendChild = jest.fn();
+    const dom = { querySelector, createElement, setClassName, getNextSibling, insertBefore, removeAllChildren, setType, setPlaceholder, setValue, setDataAttribute, addEventListener, setTextContent, appendChild };
+    ensureKeyValueInput(container, textInput, dom);
+  });
+
   let container;
   let textInput;
   let dom;
