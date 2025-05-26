@@ -459,7 +459,7 @@ export function makeDisplayBody(dom, parent, presenterKey) {
   };
 }
 
-export function getFetchErrorHandler(env = {}, parent, presenterKey) {
+export function getFetchErrorHandler(env, parent, presenterKey) {
   const { dom = {}, errorFn = console.error } = env;
   return error => {
     errorFn('Error fetching request URL:', error);
