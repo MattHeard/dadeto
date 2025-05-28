@@ -1,6 +1,8 @@
 export const styles = `
   body {
     background-color: #121212;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 100% 3px;
     color: #CCCCCC;
     font-family: "Sono", Consolas, monospace;
     font-size: 16px;
