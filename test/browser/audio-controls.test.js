@@ -326,5 +326,6 @@ describe('setupAudio', () => {
     // Then
     const timeElements = createdElements.filter(el => el.className === 'audio-time');
     expect(timeElements.length).toBeGreaterThan(0);
+    expect(timeElements[0].textContent).toBe('0:00');
   });
 });
