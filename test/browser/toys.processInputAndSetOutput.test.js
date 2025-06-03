@@ -1,5 +1,5 @@
-import { jest, describe, it } from '@jest/globals';
-import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import { jest, describe, it, expect } from '@jest/globals';
+import * as toys from '../../src/browser/toys.js';
 
 describe('processInputAndSetOutput', () => {
   it('should process input and set output with mocked DOM functions', () => {
@@ -26,10 +26,53 @@ describe('processInputAndSetOutput', () => {
     const createElement = jest.fn();
     const setTextContent = jest.fn();
     const appendChild = jest.fn();
-    const dom = { removeAllChildren, createElement, setTextContent, appendChild };
+    const dom = {
+      removeAllChildren,
+      createElement,
+      setTextContent,
+      appendChild,
+    };
     const env = { createEnv, dom, fetchFn };
 
     // Call with all required arguments
-    processInputAndSetOutput(elements, processingFunction, env);
+    toys.processInputAndSetOutput(elements, processingFunction, env);
+  });
+
+  it('displays raw result when the processing function returns invalid JSON', () => {
+    const inputElement = { value: 'ignored' };
+    const outputParentElement = {};
+    const outputSelect = { value: 'text' };
+    const article = { id: 'a1' };
+    const elements = {
+      inputElement,
+      outputParentElement,
+      outputSelect,
+      article,
+    };
+
+    const processingFunction = jest.fn(() => 'not-json');
+
+    const getData = jest.fn(() => ({}));
+    const setData = jest.fn();
+    const toyEnv = {
+      get: jest.fn(key => (key === 'getData' ? getData : setData)),
+    };
+    const createEnv = jest.fn(() => toyEnv);
+
+    const dom = {
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      appendChild: jest.fn(),
+    };
+
+    const env = { createEnv, dom, fetchFn: jest.fn(), errorFn: jest.fn() };
+
+    toys.processInputAndSetOutput(elements, processingFunction, env);
+
+    expect(dom.setTextContent).toHaveBeenCalledWith(
+      expect.any(Object),
+      'not-json'
+    );
   });
 });
