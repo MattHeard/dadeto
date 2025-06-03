@@ -4,7 +4,7 @@ const BLOG_STATUS = {
   IDLE: 'idle',
   LOADING: 'loading',
   LOADED: 'loaded',
-  ERROR: 'error'
+  ERROR: 'error',
 };
 
 function getBlogState(globalState) {
@@ -21,6 +21,12 @@ function isFetchInProgress(globalState) {
   return status === BLOG_STATUS.LOADING && fetchPromise;
 }
 
+/**
+ * Checks if a blog fetch is already in progress.
+ * @param {object} globalState - The application state.
+ * @param {function} logFn - Logging function used when fetch is active.
+ * @returns {boolean} True if a fetch is already running.
+ */
 export function shouldUseExistingFetch(globalState, logFn) {
   if (isFetchInProgress(globalState)) {
     logFn('Blog data fetch already in progress.');
@@ -37,12 +43,9 @@ export function shouldUseExistingFetch(globalState, logFn) {
  * @returns {function} encodeBase64 - Function that encodes a string to Base64
  */
 export function getEncodeBase64(btoa, unescape, encodeURIComponent) {
-  return (str) => btoa(unescape(encodeURIComponent(str)));
+  return str => btoa(unescape(encodeURIComponent(str)));
 }
 
-/**
- * Wrapper for fetchAndCacheBlogData (for migration/testing).
- */
 /**
  * Wrapper for fetchAndCacheBlogData with explicit arguments.
  * @param {object} state - The global state object.
@@ -88,8 +91,13 @@ export function fetchAndCacheBlogData(state, fetch, loggers) {
   return state.blogFetchPromise; // Return the promise for potential chaining
 }
 
-// Helper function needed by getData
-export const getDeepStateCopy = (globalState) => JSON.parse(JSON.stringify(globalState));
+/**
+ * Creates a deep copy of the provided state.
+ * @param {object} globalState - The state to copy.
+ * @returns {object} A cloned version of the state.
+ */
+export const getDeepStateCopy = globalState =>
+  JSON.parse(JSON.stringify(globalState));
 
 /**
  * Deeply merges two objects. Creates a new object with merged properties.
@@ -143,6 +151,11 @@ function restoreBlogState(globalState, blogState) {
   globalState.blog = blogState.data;
 }
 
+/**
+ * Determines whether state should be cloned before a blog fetch.
+ * @param {string} status - Current blog status value.
+ * @returns {boolean} True when a deep copy should be made.
+ */
 export function shouldCopyStateForFetch(status) {
   return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
 }
@@ -162,7 +175,9 @@ function isInvalidState(value) {
 function validateIncomingState(incomingState, errorFn) {
   if (isInvalidState(incomingState)) {
     errorFn('setData received invalid data structure:', incomingState);
-    throw new Error("setData requires an object with at least a 'temporary' property.");
+    throw new Error(
+      "setData requires an object with at least a 'temporary' property."
+    );
   }
 }
 
@@ -179,7 +194,7 @@ function tryFetchingBlog(state, fetch) {
 function maybeLogFetchError(state, logWarning) {
   const blogState = getBlogState(state);
   if (blogState.status === BLOG_STATUS.ERROR) {
-    logWarning("Blog data previously failed to load:", blogState.error);
+    logWarning('Blog data previously failed to load:', blogState.error);
   }
 }
 
@@ -199,6 +214,11 @@ function shouldDeepCopyForFetch(status) {
   return status === 'idle' || status === 'error';
 }
 
+/**
+ * Provides either the original state or a deep copy depending on status.
+ * @param {object} state - Global application state.
+ * @returns {object} State or a deep clone when needed.
+ */
 function getRelevantStateCopy(state) {
   const status = state.blogStatus;
   if (shouldDeepCopyForFetch(status)) {
@@ -210,16 +230,7 @@ function getRelevantStateCopy(state) {
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
- * @param {object} state - The main application state.
- * @param {function} fetch - The fetch function.
- * @param {function} logFn - The logging function.
- * @param {function} errorFn - The error logging function.
- * @param {function} logWarning - The logWarninging logging function.
- * @returns {object} A deep copy of the relevant state for the toy.
- */
-/**
- * Gets a deep copy of the current global state, suitable for passing to toys.
- * It also handles initiating the blog data fetch if needed.
+ * @query
  * @param {object} state - The main application state.
  * @param {function} fetch - The fetch function.
  * @param {object} loggers - An object with logInfo, logError, and logWarning functions.
@@ -231,36 +242,15 @@ export const getData = (state, fetch, loggers) => {
   stripInternalFields(stateCopy);
   return stateCopy;
 };
-
-// Alias for test compatibility
-
-
-
 /**
- * Updates the global state, preserving internal fetch/blog properties.
- * @param {object} incomingState - The new state object (must have 'temporary').
- * @param {object} globalState - The current global state to modify.
- * @param {function} logInfo - The logging function.
- * @param {function} logError - The error logging function.
- */
-
-/**
- * Wrapper for setData, for migration/testing.
- * @param {object} state - The state object containing both incomingState and globalState.
- * @param {object} state.incomingState - The new state object.
- * @param {object} state.globalState - The current global state to modify.
- * @param {object} loggers - The logging functions object.
- * @param {function} loggers.logInfo - The logging function.
- * @param {function} loggers.logError - The error logging function.
- */
-/**
- * Updates the global state with incoming state, with logging and validation.
- * @param {object} state - The state object containing both incomingState and globalState.
- * @param {object} state.incomingState - The new state object.
- * @param {object} state.globalState - The current global state to modify.
- * @param {object} loggers - The logging functions object.
- * @param {function} loggers.logInfo - The logging function.
- * @param {function} loggers.logError - The error logging function.
+ * Updates the global state with incoming data while preserving internal
+ * blog-fetch properties.
+ * @param {object} state - Contains desired and current state objects.
+ * @param {object} state.desired - The new state object (must have 'temporary').
+ * @param {object} state.current - The global state to be modified.
+ * @param {object} loggers - Logging functions.
+ * @param {function} loggers.logInfo - Information logger.
+ * @param {function} loggers.logError - Error logger.
  */
 export const setData = (state, loggers) => {
   const { desired, current } = state;
