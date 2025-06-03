@@ -2,14 +2,10 @@ import { jest } from '@jest/globals';
 import { handleParsedResult } from '../../src/browser/toys.js';
 
 describe('handleParsedResult', () => {
-  it('minimal test case', () => {
-    const parsed = {
-      request: {
-        url: 'https://example.com'
-      }
-    };
+  let parsed, env, options, dom;
 
-    const dom = {
+  beforeEach(() => {
+    dom = {
       removeAllChildren: jest.fn(),
       createElement: jest.fn().mockImplementation((tagName) => ({
         tagName: tagName.toUpperCase(),
@@ -20,17 +16,37 @@ describe('handleParsedResult', () => {
       appendChild: jest.fn()
     };
 
-    const env = {
-      fetchFn: () => Promise.resolve({ text: () => Promise.resolve('response') }),
+    env = {
+      fetchFn: jest.fn().mockResolvedValue({ text: () => Promise.resolve('response') }),
       dom,
       errorFn: jest.fn()
     };
 
-    const options = {
+    options = {
       parent: {},
       presenterKey: 'text'
     };
+  });
 
-    handleParsedResult(parsed, env, options);
+  it('calls handleRequestResponse when request is valid', () => {
+    parsed = {
+      request: {
+        url: 'https://example.com'
+      }
+    };
+
+    const result = handleParsedResult(parsed, env, options);
+
+    expect(env.fetchFn).toHaveBeenCalledWith('https://example.com');
+    expect(result).toBe(true);
+  });
+
+  it('does not call handleRequestResponse when request is invalid', () => {
+    parsed = { invalid: 'request' }; // Missing required 'request' property
+
+    const result = handleParsedResult(parsed, env, options);
+
+    expect(env.fetchFn).not.toHaveBeenCalled();
+    expect(result).toBe(false);
   });
 });
