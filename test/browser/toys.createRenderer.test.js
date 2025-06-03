@@ -24,14 +24,22 @@ describe('createRenderer', () => {
       setDataAttribute,
       addEventListener,
       setTextContent,
-      appendChild
+      appendChild,
     };
     const disposers = [];
     const container = undefined;
     const rows = { foo: 'bar' };
     const textInput = undefined;
     const syncHiddenField = jest.fn();
-    const render = createRenderer(dom, disposers, container, rows, textInput, syncHiddenField);
+    const render = createRenderer(
+      dom,
+      disposers,
+      container,
+      rows,
+      textInput,
+      syncHiddenField
+    );
     render();
+    expect(syncHiddenField).toHaveBeenCalled();
   });
 });

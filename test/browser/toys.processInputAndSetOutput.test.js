@@ -26,10 +26,16 @@ describe('processInputAndSetOutput', () => {
     const createElement = jest.fn();
     const setTextContent = jest.fn();
     const appendChild = jest.fn();
-    const dom = { removeAllChildren, createElement, setTextContent, appendChild };
+    const dom = {
+      removeAllChildren,
+      createElement,
+      setTextContent,
+      appendChild,
+    };
     const env = { createEnv, dom, fetchFn };
 
     // Call with all required arguments
     processInputAndSetOutput(elements, processingFunction, env);
+    expect(processingFunction).toHaveBeenCalled();
   });
 });

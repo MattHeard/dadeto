@@ -14,13 +14,18 @@ describe('getFetchErrorHandler', () => {
       createElement,
       setTextContent,
       appendChild,
-      addWarning
+      addWarning,
     };
 
     const presenterKey = 'text';
     const errorFn = jest.fn();
-    const errorHandler = getFetchErrorHandler({ dom, errorFn }, null, presenterKey);
+    const errorHandler = getFetchErrorHandler(
+      { dom, errorFn },
+      null,
+      presenterKey
+    );
     const error = {};
     errorHandler(error);
+    expect(errorFn).toHaveBeenCalled();
   });
 });
