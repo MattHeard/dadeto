@@ -799,7 +799,7 @@ const createRemoveAddListener = (dom, btnEl, handler) => () =>
 
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
-function isValidParsedRequest(parsed) {
+export function isValidParsedRequest(parsed) {
   return parsedRequestPredicates.every(fn => fn(parsed));
 }
 
