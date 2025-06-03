@@ -6,8 +6,10 @@ export default {
   jest: {
     configFile: "jest.config.mjs",
     enableFindRelatedTests: true,
-    projectType: "custom"
+    projectType: "custom",
+    watchman: false
   },
+  ignoreStatic: true,
   tempDirName: ".stryker-tmp",
   disableTypeChecks: false,
   testRunnerNodeArgs: ["--experimental-vm-modules"],
