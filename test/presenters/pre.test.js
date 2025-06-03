@@ -17,50 +17,24 @@ function createMockDom() {
 }
 
 describe('createPreElement', () => {
-  test('creates a <pre> element with the correct text content', () => {
+  test.each([
+    ['some\npre-formatted\ntext', 'some\npre-formatted\ntext'],
+    ['[a, b, c]', 'a\nb\nc'],
+    ['[]', ''],
+    ['[  x,   y  ,z ]', 'x\ny\nz'],
+    ['[single]', 'single'],
+    ['', ''],
+  ])('given %p when creating the element then it sets %p as text', (input, expected) => {
+    // Given
     const dom = createMockDom();
-    const input = 'some\npre-formatted\ntext';
+
+    // When
     const pre = createPreElement(input, dom);
+
+    // Then
     expect(pre.tagName).toBe('pre');
-    expect(pre.textContent).toBe(input);
+    expect(pre.textContent).toBe(expected);
     // Ensure the element is tracked in the mock DOM
     expect(dom.createdElements).toContain(pre);
-  });
-
-  test('renders comma-separated list inside brackets on separate lines', () => {
-    const dom = createMockDom();
-    const input = '[a, b, c]';
-    const pre = createPreElement(input, dom);
-    expect(pre.tagName).toBe('pre');
-    expect(pre.textContent).toBe('a\nb\nc');
-  });
-
-  test('renders empty string for empty brackets', () => {
-    const dom = createMockDom();
-    const input = '[]';
-    const pre = createPreElement(input, dom);
-    expect(pre.tagName).toBe('pre');
-    expect(pre.textContent).toBe('');
-  });
-
-  test('trims whitespace for each element', () => {
-    const dom = createMockDom();
-    const input = '[  x,   y  ,z ]';
-    const pre = createPreElement(input, dom);
-    expect(pre.textContent).toBe('x\ny\nz');
-  });
-
-  test('does not split if only one element in brackets', () => {
-    const dom = createMockDom();
-    const input = '[single]';
-    const pre = createPreElement(input, dom);
-    expect(pre.textContent).toBe('single');
-  });
-
-  test('handles empty string', () => {
-    const dom = createMockDom();
-    const pre = createPreElement('', dom);
-    expect(pre.tagName).toBe('pre');
-    expect(pre.textContent).toBe('');
   });
 });
