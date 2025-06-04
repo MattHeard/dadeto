@@ -205,16 +205,48 @@ describe('createKeyValueRow', () => {
   });
 
   it('handles cleanup when disposers are called', () => {
-    // Call the row creator
+    const rowEl = {};
+    const keyInput = {};
+    const valueInput = {};
+    const btnEl = {};
+    mockDom.createElement
+      .mockReturnValueOnce(rowEl)
+      .mockReturnValueOnce(keyInput)
+      .mockReturnValueOnce(valueInput)
+      .mockReturnValueOnce(btnEl);
+
     rowCreator(mockEntries[0], 0);
 
-    // Get all cleanup functions
-    const cleanupFunctions = [...mockDisposers];
+    const [
+      [addedKeyEl, , keyHandler],
+      [addedValueEl, , valueHandler],
+      [addedBtnEl, , btnHandler],
+    ] = mockDom.addEventListener.mock.calls;
 
-    // Call each cleanup function
-    cleanupFunctions.forEach(cleanup => cleanup());
+    const [keyDisposer, valueDisposer, btnDisposer] = mockDisposers;
 
-    // Verify removeEventListener was called for each cleanup
-    expect(mockDom.removeEventListener).toHaveBeenCalled();
+    mockDom.removeEventListener.mockClear();
+    keyDisposer();
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      addedKeyEl,
+      'input',
+      keyHandler
+    );
+
+    mockDom.removeEventListener.mockClear();
+    valueDisposer();
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      addedValueEl,
+      'input',
+      valueHandler
+    );
+
+    mockDom.removeEventListener.mockClear();
+    btnDisposer();
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      addedBtnEl,
+      'click',
+      btnHandler
+    );
   });
 });
