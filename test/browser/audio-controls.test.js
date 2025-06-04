@@ -402,6 +402,25 @@ describe('setupAudio', () => {
     expect(timeElements[0].textContent).toBe('0:00');
   });
 
+  it('creates anchor buttons with click handlers and hrefs', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    const controls = createdElements.filter(el =>
+      ['PLAY', 'PAUSE', 'STOP'].includes(el.textContent)
+    );
+    controls.forEach(el => {
+      expect(el.tagName).toBe('a');
+      expect(el.href).toBe('#');
+      expect(dom.addEventListener).toHaveBeenCalledWith(
+        el,
+        'click',
+        expect.any(Function)
+      );
+    });
+  });
+
   it('creates a div container for the controls', () => {
     // When
     setupAudio(dom);
