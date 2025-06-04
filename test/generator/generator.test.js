@@ -245,6 +245,25 @@ describe('Blog Generator', () => {
     expect(htmlNoLinks).not.toMatch('related-links');
   });
 
+  test('should omit related links section when value is not an array', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'STRL',
+          title: 'String Links',
+          publicationDate: '2024-06-03',
+          content: ['Still no links'],
+          relatedLinks: 'not-an-array',
+        },
+      ],
+    };
+
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<article class="entry" id="STRL">');
+    expect(html).not.toMatch('<div class="key">links</div>');
+    expect(html).not.toMatch('related-links');
+  });
+
   test('should contain a YouTube video for a post', () => {
     const blog = {
       posts: [
