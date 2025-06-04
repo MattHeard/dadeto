@@ -9,8 +9,12 @@ describe('makeHandleHideSpan', () => {
     const textNode2 = {};
     const dom = {
       createElement: jest.fn(tag => {
-        if (tag === 'span') {return spanEl;}
-        if (tag === 'a') {return hideLinkEl;}
+        if (tag === 'span') {
+          return spanEl;
+        }
+        if (tag === 'a') {
+          return hideLinkEl;
+        }
         return {};
       }),
       addClass: jest.fn(),
@@ -32,10 +36,15 @@ describe('makeHandleHideSpan', () => {
       'click',
       expect.any(Function)
     );
+    expect(dom.createTextNode).toHaveBeenCalledWith(' (');
+    expect(dom.appendChild).toHaveBeenCalledWith(spanEl, textNode1);
     expect(dom.insertBefore).toHaveBeenCalledWith(
       link.parentNode,
       spanEl,
       link.nextSibling
     );
+    expect(dom.createTextNode).toHaveBeenCalledWith(')');
+    expect(dom.appendChild).toHaveBeenCalledWith(spanEl, hideLinkEl);
+    expect(dom.appendChild).toHaveBeenCalledWith(spanEl, textNode2);
   });
 });
