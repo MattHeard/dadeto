@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
-import { createRenderer } from '../../src/browser/toys.js';
+import * as toys from '../../src/browser/toys.js';
+const { createRenderer } = toys;
 
 describe('createRenderer', () => {
   it('should create a renderer function', () => {
@@ -41,5 +42,35 @@ describe('createRenderer', () => {
     );
     render();
     expect(syncHiddenField).toHaveBeenCalled();
+  });
+
+  it('adds an empty row when no rows exist', () => {
+    const dom = {
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(),
+      setClassName: jest.fn(),
+      setType: jest.fn(),
+      setPlaceholder: jest.fn(),
+      setValue: jest.fn(),
+      setDataAttribute: jest.fn(),
+      addEventListener: jest.fn(),
+      setTextContent: jest.fn(),
+      appendChild: jest.fn(),
+    };
+    const disposers = [];
+    const container = {};
+    const rows = {};
+    const textInput = {};
+    const syncHiddenField = jest.fn();
+    const render = createRenderer(
+      dom,
+      disposers,
+      container,
+      rows,
+      textInput,
+      syncHiddenField
+    );
+    render();
+    expect(rows).toEqual({ '': '' });
   });
 });
