@@ -32,4 +32,29 @@ describe('utils/index', () => {
     expect(utils.CSS_CLASSES.LINK).toBe('markdown-link');
     expect(utils.DEFAULT_OPTIONS.tables).toBe(true);
   });
+
+  test('markdown marker characters are correct', () => {
+    expect(utils.MARKDOWN_MARKERS.UNDERSCORE).toBe('_');
+    expect(utils.MARKDOWN_MARKERS.BACKTICK).toBe('`');
+    expect(utils.MARKDOWN_MARKERS.TILDE).toBe('~');
+    expect(utils.MARKDOWN_MARKERS.DASH).toBe('-');
+    expect(utils.MARKDOWN_MARKERS.EQUAL).toBe('=');
+    expect(utils.MARKDOWN_MARKERS.HASH).toBe('#');
+    expect(utils.MARKDOWN_MARKERS.GREATER_THAN).toBe('>');
+    expect(utils.MARKDOWN_MARKERS.PIPE).toBe('|');
+    expect(utils.MARKDOWN_MARKERS.BACKSLASH).toBe('\\');
+    expect(utils.MARKDOWN_MARKERS.SLASH).toBe('/');
+    expect(utils.MARKDOWN_MARKERS.EXCLAMATION).toBe('!');
+    expect(utils.MARKDOWN_MARKERS.BRACKET_OPEN).toBe('[');
+    expect(utils.MARKDOWN_MARKERS.BRACKET_CLOSE).toBe(']');
+    expect(utils.MARKDOWN_MARKERS.PAREN_OPEN).toBe('(');
+    expect(utils.MARKDOWN_MARKERS.PAREN_CLOSE).toBe(')');
+  });
+
+  test('additional html tag constants are correct', () => {
+    expect(utils.HTML_TAGS.STRONG).toBe('strong');
+    expect(utils.HTML_TAGS.CODE).toBe('code');
+    expect(utils.HTML_TAGS.PARAGRAPH).toBe('p');
+    expect(utils.HTML_TAGS.BLOCKQUOTE).toBe('blockquote');
+  });
 });
