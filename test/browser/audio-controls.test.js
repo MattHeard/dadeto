@@ -547,6 +547,18 @@ describe('setupAudio', () => {
     expect(aCalls).toHaveLength(3);
   });
 
+  it('creates DOM elements in the correct order', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    expect(createElement).toHaveBeenNthCalledWith(1, 'div');
+    expect(createElement).toHaveBeenNthCalledWith(2, 'span');
+    expect(createElement).toHaveBeenNthCalledWith(3, 'a');
+    expect(createElement).toHaveBeenNthCalledWith(4, 'a');
+    expect(createElement).toHaveBeenNthCalledWith(5, 'a');
+  });
+
   it('inserts spaces between control buttons', () => {
     // When
     setupAudio(dom);
