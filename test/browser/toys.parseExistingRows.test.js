@@ -27,6 +27,16 @@ describe('parseExistingRows', () => {
     parseSpy.mockRestore();
   });
 
+  it('should parse undefined input using an empty object default', () => {
+    mockDom.getValue.mockReturnValue(undefined);
+    const parseSpy = jest.spyOn(JSON, 'parse');
+    const result = parseExistingRows(mockDom, mockInputElement);
+    expect(result).toEqual({});
+    expect(mockDom.getValue).toHaveBeenCalledWith(mockInputElement);
+    expect(parseSpy).toHaveBeenCalledWith('{}');
+    parseSpy.mockRestore();
+  });
+
   it('should parse a valid JSON object', () => {
     const testObj = { key1: 'value1', key2: 'value2' };
     mockDom.getValue.mockReturnValue(JSON.stringify(testObj));
