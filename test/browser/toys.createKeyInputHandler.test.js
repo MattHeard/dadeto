@@ -55,6 +55,18 @@ describe('createKeyInputHandler', () => {
     expect(dom.setDataAttribute).not.toHaveBeenCalled();
   });
 
+  it('should read previous key from the prevKey attribute', () => {
+    // Arrange
+    dom.getDataAttribute.mockReturnValue('anyKey');
+    dom.getTargetValue.mockReturnValue('anyKey');
+
+    // Act
+    handler(event);
+
+    // Assert
+    expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
+  });
+
   it('should update rows with new key when key is unique and non-empty', () => {
     // Arrange
     dom.getDataAttribute.mockReturnValue('oldKey');
