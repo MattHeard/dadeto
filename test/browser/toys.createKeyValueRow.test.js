@@ -26,13 +26,13 @@ describe('createKeyValueRow', () => {
       appendChild: jest.fn(),
       getValue: jest.fn(),
       setValue: jest.fn(),
-      removeEventListener: jest.fn()
+      removeEventListener: jest.fn(),
     };
 
     // Setup mock entries (key-value pairs)
     mockEntries = [
       ['key1', 'value1'],
-      ['key2', 'value2']
+      ['key2', 'value2'],
     ];
 
     // Setup mock text input
@@ -41,7 +41,7 @@ describe('createKeyValueRow', () => {
     // Setup mock rows object
     mockRows = {
       key1: 'value1',
-      key2: 'value2'
+      key2: 'value2',
     };
 
     // Setup mock sync function
@@ -91,8 +91,15 @@ describe('createKeyValueRow', () => {
     // Verify key and value elements were created
     expect(mockDom.createElement).toHaveBeenCalledWith('input');
     expect(mockDom.setType).toHaveBeenCalledWith(mockInputElement, 'text');
-    expect(mockDom.setPlaceholder).toHaveBeenCalledWith(mockInputElement, 'Key');
-    expect(mockDom.setDataAttribute).toHaveBeenCalledWith(mockInputElement, 'prevKey', 'k');
+    expect(mockDom.setPlaceholder).toHaveBeenCalledWith(
+      mockInputElement,
+      'Key'
+    );
+    expect(mockDom.setDataAttribute).toHaveBeenCalledWith(
+      mockInputElement,
+      'prevKey',
+      'k'
+    );
 
     // Verify elements were appended to the row and the row was appended to the container
     expect(mockDom.appendChild).toHaveBeenCalledTimes(4); // row + 3 children + container.appendChild(row)
@@ -130,6 +137,32 @@ describe('createKeyValueRow', () => {
     expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '×');
   });
 
+  it('uses the index to set up a remove button when not last', () => {
+    const mockButton = {};
+    mockDom.createElement
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValue(mockButton);
+
+    rowCreator(mockEntries[0], 0);
+
+    expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '×');
+  });
+
+  it('uses the index to set up an add button when last', () => {
+    const mockButton = {};
+    mockDom.createElement
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValue(mockButton);
+
+    rowCreator(mockEntries[1], 1);
+
+    expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '+');
+  });
+
   it('adds event listeners for key and value changes', () => {
     // Setup mock elements
     const mockKeyInput = {};
@@ -151,7 +184,7 @@ describe('createKeyValueRow', () => {
     expect(mockDom.addEventListener.mock.calls).toEqual([
       [mockKeyInput, 'input', expect.any(Function)],
       [mockValueInput, 'input', expect.any(Function)],
-      [mockButton, 'click', expect.any(Function)]
+      [mockButton, 'click', expect.any(Function)],
     ]);
   });
 
