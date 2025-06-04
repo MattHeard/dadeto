@@ -140,6 +140,46 @@ describe('toys', () => {
       expect(dom.createElement).toHaveBeenCalled();
       expect(dom.appendChild).toHaveBeenCalledWith(mockParent, mockElement);
     });
+
+    it('passes existing output to setTextContent', () => {
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-1' })),
+        parentNode: { querySelector: jest.fn(() => ({})) },
+      };
+      const getData = jest.fn(() => ({ output: { 'post-1': 'stored' } }));
+      const parent = {};
+      const element = {};
+      const dom = {
+        querySelector: jest.fn(() => parent),
+        setTextContent: jest.fn(),
+        removeAllChildren: jest.fn(),
+        appendChild: jest.fn(),
+        createElement: jest.fn(() => element),
+      };
+      handleDropdownChange(dropdown, getData, dom);
+      expect(dom.setTextContent).toHaveBeenCalledWith(element, 'stored');
+    });
+
+    it('uses empty string when output is missing', () => {
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-1' })),
+        parentNode: { querySelector: jest.fn(() => ({})) },
+      };
+      const getData = jest.fn(() => ({ output: {} }));
+      const parent = {};
+      const element = {};
+      const dom = {
+        querySelector: jest.fn(() => parent),
+        setTextContent: jest.fn(),
+        removeAllChildren: jest.fn(),
+        appendChild: jest.fn(),
+        createElement: jest.fn(() => element),
+      };
+      handleDropdownChange(dropdown, getData, dom);
+      expect(dom.setTextContent).toHaveBeenCalledWith(element, '');
+    });
   });
 
   let entry;
@@ -662,6 +702,47 @@ describe('toys', () => {
       listeners2.keypress({ key: 'a', preventDefault: jest.fn() });
       // Expectations at end
       expect(processingFunction).not.toHaveBeenCalled();
+    });
+
+    it('disables input and submit button during initialization', () => {
+      const inputElement = { disabled: false };
+      const submitButton = { disabled: false };
+      selectorMap.set('input', inputElement);
+      selectorMap.set('button', submitButton);
+      selectorMap.set('div.output > p', outputElement);
+      selectorMap.set('div.output', outputElement.outputParentElement);
+      const dom = {
+        querySelector,
+        addEventListener: jest.fn(),
+        setTextContent: jest.fn(),
+        removeAllChildren: jest.fn(),
+        removeWarning: jest.fn(),
+        createElement: jest.fn(() => ({})),
+        appendChild: jest.fn(),
+        removeChild: jest.fn(),
+        contains: () => true,
+        enable: jest.fn(el => {
+          expect(el.disabled).toBe(true);
+          el.disabled = false;
+        }),
+      };
+      const config = {
+        globalState: {},
+        createEnvFn: () => ({}),
+        errorFn: jest.fn(),
+        fetchFn: jest.fn(),
+        dom,
+        loggers: {
+          logInfo: jest.fn(),
+          logError: jest.fn(),
+          logWarning: jest.fn(),
+        },
+      };
+      initializeInteractiveComponent(article, jest.fn(), config);
+      expect(dom.enable).toHaveBeenCalledWith(inputElement);
+      expect(dom.enable).toHaveBeenCalledWith(submitButton);
+      expect(inputElement.disabled).toBe(false);
+      expect(submitButton.disabled).toBe(false);
     });
   });
 
