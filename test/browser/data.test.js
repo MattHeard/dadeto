@@ -277,6 +277,23 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(state.blog).toEqual({ title: 'preserved' }); // blog should be preserved
   });
 
+  it('setData preserves blog fetch related fields when incoming state omits them', () => {
+    const fetchPromise = Promise.resolve();
+    state.blogStatus = 'loading';
+    state.blogError = new Error('err');
+    state.blogFetchPromise = fetchPromise;
+    state.blog = { title: 'preserved' };
+    const incomingState = { temporary: false }; // omit blog fields
+    setData(
+      { desired: incomingState, current: state },
+      { logInfo: logFn, logError: errorFn }
+    );
+    expect(state.blogStatus).toBe('loading');
+    expect(state.blogError).toBeInstanceOf(Error);
+    expect(state.blogFetchPromise).toBe(fetchPromise);
+    expect(state.blog).toEqual({ title: 'preserved' });
+  });
+
   it('setData logs specific error message when blog is missing', () => {
     expect(() =>
       setData(
