@@ -66,10 +66,10 @@
   1:20  warning  'it' is defined but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
-  380:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
-  382:7   warning  Ternary operator used                                       no-ternary
-  385:24  warning  Ternary operator used                                       no-ternary
-  387:7   warning  Ternary operator used                                       no-ternary
+  397:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+  399:7   warning  Ternary operator used                                       no-ternary
+  402:24  warning  Ternary operator used                                       no-ternary
+  404:7   warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.createHandleSubmit.test.js
   1:10  warning  'jest' is defined but never used  no-unused-vars
