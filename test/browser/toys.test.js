@@ -78,6 +78,27 @@ describe('toys', () => {
       handleDropdownChange(mockDropdown, mockGetData, dom);
     });
 
+    it('gets the enclosing article using the correct selector', () => {
+      const mockArticle = { id: 'article-1' };
+      const dropdown = {
+        value: 'text',
+        parentNode: { querySelector: () => ({}) },
+        closest: jest.fn(() => mockArticle),
+      };
+      const getData = jest.fn(() => ({ output: {} }));
+      const dom = {
+        querySelector: jest.fn(() => ({})),
+        setTextContent: jest.fn(),
+        removeAllChildren: jest.fn(),
+        appendChild: jest.fn(),
+        createElement: jest.fn(() => ({})),
+      };
+
+      handleDropdownChange(dropdown, getData, dom);
+
+      expect(dropdown.closest).toHaveBeenCalledWith('article.entry');
+    });
+
     it('handles dropdown change with empty output data', () => {
       // Mock dropdown with required methods
       const dropdown = {
