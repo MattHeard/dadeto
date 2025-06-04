@@ -196,6 +196,35 @@ describe('toys', () => {
 
       expect(parent.child.textContent).toBe('');
     });
+
+    it('uses the article id to set the correct output text', () => {
+      const parent = { child: null, querySelector: jest.fn() };
+      parent.querySelector.mockReturnValue(parent);
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-99' })),
+        parentNode: parent,
+      };
+      const getData = jest.fn(() => ({ output: { 'post-99': 'result' } }));
+      const dom = {
+        querySelector: (el, selector) => el.querySelector(selector),
+        removeAllChildren: jest.fn(p => {
+          p.child = null;
+        }),
+        appendChild: jest.fn((p, c) => {
+          p.child = c;
+        }),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        setTextContent: jest.fn((el, txt) => {
+          el.textContent = txt;
+        }),
+      };
+
+      handleDropdownChange(dropdown, getData, dom);
+
+      expect(dropdown.closest).toHaveBeenCalledWith('article.entry');
+      expect(parent.child.textContent).toBe('result');
+    });
   });
 
   let entry;
