@@ -409,4 +409,16 @@ describe('setupAudio', () => {
     // Then
     expect(createElement).toHaveBeenCalledWith('div');
   });
+
+  it('registers a timeupdate listener on the audio element', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      audioElement,
+      'timeupdate',
+      expect.any(Function)
+    );
+  });
 });
