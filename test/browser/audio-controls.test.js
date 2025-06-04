@@ -352,6 +352,43 @@ describe('setupAudio', () => {
     expect(createdElements[0].className).toBe('audio-controls');
   });
 
+  it('sets the controls container id based on the audio element id', () => {
+    // Given
+    const element = {};
+
+    const audioElements = [element];
+    const getAudioElements = () => audioElements;
+    const dom = {
+      getAudioElements,
+      removeControlsAttribute,
+      createElement: () => {
+        const el = {
+          className: '',
+          id: '',
+          textContent: '',
+          href: '',
+          addEventListener: jest.fn(),
+          appendChild: jest.fn(),
+        };
+        createdElements.push(el);
+        return el;
+      },
+      createTextNode: jest.fn(text => ({ nodeType: 3, textContent: text })),
+      insertBefore: jest.fn(),
+      appendChild: jest.fn(),
+      addEventListener: jest.fn(),
+      pauseAudio,
+      playAudio,
+      stopDefault,
+    };
+
+    // When
+    setupAudio(dom);
+
+    // Then
+    expect(createdElements[0].id).toBe(`controls-${audioElements[0].id}`);
+  });
+
   it('sets correct text on control buttons', () => {
     // Given
     const element = {};
@@ -407,7 +444,9 @@ describe('setupAudio', () => {
     setupAudio(dom);
 
     // Then
-    const timeElement = createdElements.find(el => el.className === 'audio-time');
+    const timeElement = createdElements.find(
+      el => el.className === 'audio-time'
+    );
     expect(timeElement.tagName).toBe('span');
   });
 
