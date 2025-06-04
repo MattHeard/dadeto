@@ -140,6 +140,62 @@ describe('toys', () => {
       expect(dom.createElement).toHaveBeenCalled();
       expect(dom.appendChild).toHaveBeenCalledWith(mockParent, mockElement);
     });
+
+    it('sets the output text when output exists for the post', () => {
+      const parent = { child: null, querySelector: jest.fn() };
+      parent.querySelector.mockReturnValue(parent);
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-1' })),
+        parentNode: parent,
+      };
+      const getData = jest.fn(() => ({ output: { 'post-1': 'stored' } }));
+      const dom = {
+        querySelector: (el, selector) => el.querySelector(selector),
+        removeAllChildren: jest.fn(p => {
+          p.child = null;
+        }),
+        appendChild: jest.fn((p, c) => {
+          p.child = c;
+        }),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        setTextContent: jest.fn((el, txt) => {
+          el.textContent = txt;
+        }),
+      };
+
+      handleDropdownChange(dropdown, getData, dom);
+
+      expect(parent.child.textContent).toBe('stored');
+    });
+
+    it('defaults to empty text when no output exists for the post', () => {
+      const parent = { child: null, querySelector: jest.fn() };
+      parent.querySelector.mockReturnValue(parent);
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-2' })),
+        parentNode: parent,
+      };
+      const getData = jest.fn(() => ({ output: {} }));
+      const dom = {
+        querySelector: (el, selector) => el.querySelector(selector),
+        removeAllChildren: jest.fn(p => {
+          p.child = null;
+        }),
+        appendChild: jest.fn((p, c) => {
+          p.child = c;
+        }),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        setTextContent: jest.fn((el, txt) => {
+          el.textContent = txt;
+        }),
+      };
+
+      handleDropdownChange(dropdown, getData, dom);
+
+      expect(parent.child.textContent).toBe('');
+    });
   });
 
   let entry;
