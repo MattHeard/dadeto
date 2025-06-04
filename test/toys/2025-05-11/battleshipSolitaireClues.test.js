@@ -26,8 +26,8 @@ describe('generateClues', () => {
       width: 5,
       height: 5,
       ships: [
-        { start: { x: 1, y: 2 }, length: 3, direction: 'H' } // cells (1,2), (2,2), (3,2)
-      ]
+        { start: { x: 1, y: 2 }, length: 3, direction: 'H' }, // cells (1,2), (2,2), (3,2)
+      ],
     };
     const expectedRow = [0, 0, 3, 0, 0];
     const expectedCol = [0, 1, 1, 1, 0];
@@ -43,8 +43,8 @@ describe('generateClues', () => {
       height: 4,
       ships: [
         { start: { x: 0, y: 0 }, length: 4, direction: 'V' }, // (0,0)–(0,3)
-        { start: { x: 1, y: 1 }, length: 2, direction: 'H' } // (1,1), (2,1)
-      ]
+        { start: { x: 1, y: 1 }, length: 2, direction: 'H' }, // (1,1), (2,1)
+      ],
     };
     const expectedRow = [1, 3, 1, 1]; // rows 0–3
     const expectedCol = [4, 1, 1, 0]; // cols 0–3
@@ -59,11 +59,27 @@ describe('generateClues', () => {
       width: 3,
       height: 3,
       ships: [
-        { start: { x: 2, y: 2 }, length: 2, direction: 'H' } // (2,2) in, (3,2) out
-      ]
+        { start: { x: 2, y: 2 }, length: 2, direction: 'H' }, // (2,2) in, (3,2) out
+      ],
     };
     const expectedRow = [0, 0, 1];
     const expectedCol = [0, 0, 1];
+
+    const output = JSON.parse(generateClues(JSON.stringify(fleet)));
+    expect(output.rowClues).toEqual(expectedRow);
+    expect(output.colClues).toEqual(expectedCol);
+  });
+
+  it('ignores ship cells that exceed board height', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [
+        { start: { x: 1, y: 2 }, length: 2, direction: 'V' }, // (1,2) in, (1,3) out
+      ],
+    };
+    const expectedRow = [0, 0, 1];
+    const expectedCol = [0, 1, 0];
 
     const output = JSON.parse(generateClues(JSON.stringify(fleet)));
     expect(output.rowClues).toEqual(expectedRow);
