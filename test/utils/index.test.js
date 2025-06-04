@@ -31,6 +31,7 @@ describe('utils/index', () => {
     expect(utils.HTML_TAGS.LINK).toBe('a');
     expect(utils.CSS_CLASSES.LINK).toBe('markdown-link');
     expect(utils.DEFAULT_OPTIONS.tables).toBe(true);
+    expect(utils.DEFAULT_OPTIONS.langPrefix).toBe('language-');
   });
 
   test('markdown marker characters are correct', () => {
