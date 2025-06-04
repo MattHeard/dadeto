@@ -15,6 +15,7 @@ import {
   createUpdateTextInputValue,
   getText,
 } from '../../src/browser/toys.js';
+import * as toys from '../../src/browser/toys.js';
 
 describe('createAddDropdownListener', () => {
   it('adds a change event listener to the dropdown', () => {
@@ -593,6 +594,68 @@ describe('toys', () => {
         outputParentElement,
         paragraph
       );
+    });
+
+    it('passes the module function to initializeInteractiveComponent', () => {
+      const functionName = 'initFn';
+      const inputElement = { value: 'test', disabled: false };
+      const submitButton = { disabled: false };
+      const paragraph = {};
+      const outputParentElement = {};
+      const outputElement = { textContent: '', outputParentElement };
+      const selectorMap = new Map([
+        ['input', inputElement],
+        ['button', submitButton],
+        ['div.output > p', outputElement],
+        ['div.output', outputParentElement],
+      ]);
+      const querySelector = jest.fn(
+        (el, selector) => selectorMap.get(selector) || {}
+      );
+      const listeners = {};
+      const addEventListener = jest.fn((element, event, handler) => {
+        if (element === submitButton && event === 'click') {
+          listeners.click = handler;
+        }
+        if (element === inputElement && event === 'keypress') {
+          listeners.keypress = handler;
+        }
+      });
+      const dom = {
+        removeAllChildren: jest.fn(),
+        createElement: jest.fn(() => paragraph),
+        stopDefault: jest.fn(),
+        addWarning: jest.fn(),
+        addWarningFn: jest.fn(),
+        addEventListener,
+        removeChild: jest.fn(),
+        appendChild: jest.fn(),
+        querySelector,
+        setTextContent: jest.fn((el, text) => {
+          el.textContent = text;
+        }),
+        removeAllChildren: jest.fn(),
+        removeWarning: jest.fn(),
+        enable: jest.fn(),
+        contains: () => true,
+      };
+      const config = {
+        globalState: {},
+        createEnvFn: () => ({}),
+        errorFn: jest.fn(),
+        fetchFn: jest.fn(),
+        dom,
+        loggers: {
+          logInfo: jest.fn(),
+          logError: jest.fn(),
+          logWarning: jest.fn(),
+        },
+      };
+      const moduleFn = jest.fn(() => 'processed result');
+      const init = getModuleInitializer(article, functionName, config);
+      init({ [functionName]: moduleFn });
+      listeners.keypress({ key: 'Enter', preventDefault: jest.fn() });
+      expect(moduleFn).toHaveBeenCalledWith('test', expect.any(Object));
     });
   });
 
