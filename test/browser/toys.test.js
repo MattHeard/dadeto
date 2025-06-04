@@ -15,6 +15,7 @@ import {
   createUpdateTextInputValue,
   getText,
 } from '../../src/browser/toys.js';
+import * as toysModule from '../../src/browser/toys.js';
 
 describe('createAddDropdownListener', () => {
   it('adds a change event listener to the dropdown', () => {
@@ -194,6 +195,33 @@ describe('toys', () => {
 
       handleDropdownChange(dropdown, getData, dom);
 
+      expect(parent.child.textContent).toBe('');
+    });
+
+    it('handles missing output object without throwing', () => {
+      const parent = { child: null, querySelector: jest.fn() };
+      parent.querySelector.mockReturnValue(parent);
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-3' })),
+        parentNode: parent,
+      };
+      const getData = jest.fn(() => ({}));
+      const dom = {
+        querySelector: (el, selector) => el.querySelector(selector),
+        removeAllChildren: jest.fn(p => {
+          p.child = null;
+        }),
+        appendChild: jest.fn((p, c) => {
+          p.child = c;
+        }),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        setTextContent: jest.fn((el, txt) => {
+          el.textContent = txt;
+        }),
+      };
+
+      expect(() => handleDropdownChange(dropdown, getData, dom)).not.toThrow();
       expect(parent.child.textContent).toBe('');
     });
   });
@@ -510,6 +538,50 @@ describe('toys', () => {
         outputParentElement,
         paragraph
       );
+    });
+  });
+
+  describe('getModuleInitializer', () => {
+    it('uses the exported module function when handling submit', () => {
+      const functionName = 'process';
+      const moduleFunction = jest.fn();
+      const module = { [functionName]: moduleFunction };
+      const listeners = {};
+      const dom = {
+        removeAllChildren: jest.fn(),
+        querySelector: jest.fn(() => ({})),
+        addEventListener: jest.fn((el, event, handler) => {
+          listeners[event] = handler;
+        }),
+        stopDefault: jest.fn(),
+        addWarning: jest.fn(),
+        setTextContent: jest.fn(),
+        removeWarning: jest.fn(),
+        enable: jest.fn(),
+        removeChild: jest.fn(),
+        appendChild: jest.fn(),
+        createElement: jest.fn(() => ({})),
+        contains: () => true,
+      };
+      const config = {
+        globalState: {},
+        createEnvFn: jest.fn(() => jest.fn()),
+        errorFn: jest.fn(),
+        fetchFn: jest.fn(),
+        dom,
+        loggers: {
+          logInfo: jest.fn(),
+          logError: jest.fn(),
+          logWarning: jest.fn(),
+        },
+      };
+
+      const initializer = getModuleInitializer(article, functionName, config);
+      initializer(module);
+
+      listeners.click({ preventDefault: jest.fn() });
+
+      expect(moduleFunction).toHaveBeenCalled();
     });
   });
 
