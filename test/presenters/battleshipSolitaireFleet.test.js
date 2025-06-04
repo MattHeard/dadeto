@@ -84,4 +84,22 @@ describe('createBattleshipFleetBoardElement', () => {
     const gridString = dom.setTextContent.mock.calls[0][1];
     expect(gridString).toContain('# # ·');
   });
+
+  test('ignores ship segments that exceed board dimensions', () => {
+    const fleet = {
+      width: 2,
+      height: 2,
+      ships: [{ start: { x: 1, y: 0 }, length: 2, direction: 'H' }],
+    };
+    const input = JSON.stringify(fleet);
+    const el = createBattleshipFleetBoardElement(input, dom);
+    expect(el.tag).toBe('pre');
+    const lines = el.text.trim().split('\n');
+    expect(lines).toHaveLength(2);
+    for (const line of lines) {
+      expect(line.split(' ')).toHaveLength(2);
+    }
+    expect(lines[0].replace(/ /g, '')).toBe('·#');
+    expect(lines[1].replace(/ /g, '')).toBe('··');
+  });
 });
