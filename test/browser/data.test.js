@@ -351,6 +351,21 @@ describe('getData, setData, and getDeepStateCopy', () => {
     );
   });
 
+  it("setData throws an error with the expected message when 'temporary' is missing", () => {
+    const state = { blog: { title: 'preserved' } };
+    const logFn = jest.fn();
+    const errorFn = jest.fn();
+    const invalidState = { foo: 1 };
+    expect(() =>
+      setData(
+        { desired: invalidState, current: state },
+        { logInfo: logFn, logError: errorFn }
+      )
+    ).toThrow(
+      "setData requires an object with at least a 'temporary' property."
+    );
+  });
+
   it('setData throws and logs error if incoming state is null', () => {
     const state = { blog: { title: 'preserved' } };
     const logFn = jest.fn();
