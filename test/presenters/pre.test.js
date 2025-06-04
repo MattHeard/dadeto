@@ -12,7 +12,7 @@ function createMockDom() {
     },
     setTextContent(el, text) {
       el.textContent = text;
-    }
+    },
   };
 }
 
@@ -24,17 +24,22 @@ describe('createPreElement', () => {
     ['[  x,   y  ,z ]', 'x\ny\nz'],
     ['[single]', 'single'],
     ['', ''],
-  ])('given %p when creating the element then it sets %p as text', (input, expected) => {
-    // Given
-    const dom = createMockDom();
+    ['[a', '[a'],
+    ['a]', 'a]'],
+  ])(
+    'given %p when creating the element then it sets %p as text',
+    (input, expected) => {
+      // Given
+      const dom = createMockDom();
 
-    // When
-    const pre = createPreElement(input, dom);
+      // When
+      const pre = createPreElement(input, dom);
 
-    // Then
-    expect(pre.tagName).toBe('pre');
-    expect(pre.textContent).toBe(expected);
-    // Ensure the element is tracked in the mock DOM
-    expect(dom.createdElements).toContain(pre);
-  });
+      // Then
+      expect(pre.tagName).toBe('pre');
+      expect(pre.textContent).toBe(expected);
+      // Ensure the element is tracked in the mock DOM
+      expect(dom.createdElements).toContain(pre);
+    }
+  );
 });
