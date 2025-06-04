@@ -1,5 +1,15 @@
+import jestConfig from './jest.config.mjs';
+
+const jestExcludes = (jestConfig.collectCoverageFrom || [])
+  .filter((p) => p.startsWith('!'))
+  .map((p) => p.slice(1));
+
 export default {
-  mutate: ["src/**/*.js", "!**/*.html"],
+  mutate: [
+    "src/**/*.js",
+    "!**/*.html",
+    ...jestExcludes
+  ],
   testRunner: "jest",
   coverageAnalysis: "perTest",
   reporters: ["clear-text"],
