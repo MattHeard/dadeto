@@ -27,4 +27,8 @@ describe('markdown constants', () => {
     expect(CSS_CLASSES.HEADING).toBe('markdown-heading');
     expect(CSS_CLASSES.PARAGRAPH).toBe('markdown-paragraph');
   });
+
+  test('CSS_CLASSES includes a code class', () => {
+    expect(CSS_CLASSES.CODE).toBe('markdown-code');
+  });
 });
