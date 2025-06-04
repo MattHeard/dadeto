@@ -26,6 +26,7 @@ describe('createPreElement', () => {
     ['', ''],
     ['[a', '[a'],
     ['a]', 'a]'],
+    [42, 42],
   ])(
     'given %p when creating the element then it sets %p as text',
     (input, expected) => {
