@@ -470,6 +470,17 @@ describe('setupAudio', () => {
     expect(createElement).toHaveBeenCalledWith('div');
   });
 
+  it('inserts spacing between the control buttons', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    expect(dom.createTextNode).toHaveBeenCalledTimes(3);
+    dom.createTextNode.mock.calls.forEach(call => {
+      expect(call[0]).toBe(' ');
+    });
+  });
+
   it('wires up event listeners and button hrefs correctly', () => {
     // When
     setupAudio(dom);
