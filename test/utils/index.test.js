@@ -22,4 +22,11 @@ describe('utils/index', () => {
     expect(utils.CSS_CLASSES).toBeDefined();
     expect(utils.DEFAULT_OPTIONS).toBeDefined();
   });
+
+  test('markdown constants values are correct', () => {
+    expect(utils.MARKDOWN_MARKERS.ASTERISK).toBe('*');
+    expect(utils.HTML_TAGS.EMPHASIS).toBe('em');
+    expect(utils.CSS_CLASSES.CONTAINER).toBe('markdown-container');
+    expect(utils.DEFAULT_OPTIONS.gfm).toBe(true);
+  });
 });
