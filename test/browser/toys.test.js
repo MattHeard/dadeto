@@ -556,6 +556,19 @@ describe('toys', () => {
       );
     });
 
+    it('passes the article to querySelector when initializing', () => {
+      // --- GIVEN ---
+      createObserver(article, modulePath, functionName);
+      intersectionCallback([entry], observer);
+      const [, initializer] = dom.importModule.mock.calls[0];
+      dom.querySelector.mockClear();
+      const moduleFn = jest.fn();
+      // --- WHEN ---
+      initializer({ [functionName]: moduleFn });
+      // --- THEN ---
+      expect(dom.querySelector).toHaveBeenCalledWith(article, 'input');
+    });
+
     it('initializes module with the provided function name', () => {
       // --- GIVEN ---
       createObserver(article, modulePath, functionName);
