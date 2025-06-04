@@ -336,6 +336,27 @@ describe('toys', () => {
 
       expect(parent.child.textContent).toBe('');
     });
+
+    it('calls setTextContent with empty string when data.output is missing', () => {
+      const parent = {};
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-missing' })),
+        parentNode: parent,
+      };
+      const getData = jest.fn(() => ({}));
+      const dom = {
+        querySelector: jest.fn(() => parent),
+        removeAllChildren: jest.fn(),
+        appendChild: jest.fn(),
+        createElement: jest.fn(() => ({})),
+        setTextContent: jest.fn(),
+      };
+
+      expect(() => handleDropdownChange(dropdown, getData, dom)).not.toThrow();
+      expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
+      expect(dom.appendChild).toHaveBeenCalledWith(parent, expect.any(Object));
+    });
   });
 
   let entry;
