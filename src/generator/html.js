@@ -53,7 +53,10 @@ export const QUOTE = '"';
  * @returns {Array<string>} - Array of tag parts
  */
 export function getOpeningTagParts(name, attributes) {
-  return [TAG_OPEN, name, SPACE, attributes, TAG_CLOSE];
+  if (attributes) {
+    return [TAG_OPEN, name, SPACE, attributes, TAG_CLOSE];
+  }
+  return [TAG_OPEN, name, TAG_CLOSE];
 }
 
 /**
@@ -62,7 +65,7 @@ export function getOpeningTagParts(name, attributes) {
  * @param {string} attributes - The HTML attributes as a string
  * @returns {string} - The opening HTML tag
  */
-export function createOpeningTag(tagName, attributes) {
+export function createOpeningTag(tagName, attributes = '') {
   const tagParts = getOpeningTagParts(tagName, attributes);
   return join(tagParts);
 }
