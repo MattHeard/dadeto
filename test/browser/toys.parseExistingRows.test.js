@@ -19,9 +19,12 @@ describe('parseExistingRows', () => {
 
   it('should parse an empty input as an empty object', () => {
     mockDom.getValue.mockReturnValue('');
+    const parseSpy = jest.spyOn(JSON, 'parse');
     const result = parseExistingRows(mockDom, mockInputElement);
     expect(result).toEqual({});
     expect(mockDom.getValue).toHaveBeenCalledWith(mockInputElement);
+    expect(parseSpy).toHaveBeenCalledWith('{}');
+    parseSpy.mockRestore();
   });
 
   it('should parse a valid JSON object', () => {
