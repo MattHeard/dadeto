@@ -59,6 +59,19 @@ describe('convertArrayToKeyValueObject', () => {
     expect(convertArrayToKeyValueObject(input)).toEqual(expected);
   });
 
+  it('should skip null entries in the input array', () => {
+    const input = [
+      { key: 'name', value: 'John' },
+      null,
+      { key: 'age', value: 30 },
+    ];
+    const expected = {
+      name: 'John',
+      age: 30,
+    };
+    expect(convertArrayToKeyValueObject(input)).toEqual(expected);
+  });
+
   it('should return an empty object for an empty array', () => {
     expect(convertArrayToKeyValueObject([])).toEqual({});
   });
