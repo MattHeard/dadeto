@@ -454,6 +454,8 @@ describe('toys', () => {
     let functionName;
     let intersectionCallback;
     let isIntersecting;
+    let inputElement;
+    let submitButton;
 
     beforeEach(() => {
       expectedResult = {};
@@ -462,6 +464,23 @@ describe('toys', () => {
         return expectedResult;
       });
       isIntersecting = () => true;
+      inputElement = { disabled: false };
+      submitButton = { disabled: false };
+      const outputParent = {};
+      const outputSelect = {};
+      const selectorMap = new Map([
+        ['input', inputElement],
+        ['button', submitButton],
+        ['div.output', outputParent],
+        ['select.output', outputSelect],
+      ]);
+      const querySelector = jest.fn((el, selector) =>
+        selectorMap.get(selector)
+      );
+      const listeners = {};
+      const addEventListener = jest.fn((el, event, handler) => {
+        listeners[event] = handler;
+      });
       dom = {
         makeIntersectionObserver,
         importModule: jest.fn(),
@@ -469,9 +488,29 @@ describe('toys', () => {
         error: jest.fn(),
         isIntersecting,
         contains: () => true,
+        querySelector,
+        addEventListener,
+        removeAllChildren: jest.fn(),
+        createElement: jest.fn(() => ({})),
+        setTextContent: jest.fn(() => ({})),
+        appendChild: jest.fn(),
+        removeChild: jest.fn(),
+        enable: jest.fn(),
+        removeWarning: jest.fn(),
+        addWarning: jest.fn(),
+        stopDefault: jest.fn(),
+        listeners,
+        inputElement,
+        submitButton,
       };
       // Always provide loggers for moduleConfig compatibility
-      env = { loggers: { logError: jest.fn() } };
+      env = {
+        loggers: { logError: jest.fn(), logInfo: jest.fn() },
+        error: jest.fn(),
+        fetch: jest.fn(),
+        globalState: {},
+        createEnv: jest.fn(),
+      };
       createObserver = makeCreateIntersectionObserver(dom, env);
       functionName = 'fn';
       entry = {};
@@ -515,6 +554,19 @@ describe('toys', () => {
         expect.any(Function),
         expect.any(Function)
       );
+    });
+
+    it('initializes module with the provided function name', () => {
+      // --- GIVEN ---
+      createObserver(article, modulePath, functionName);
+      intersectionCallback([entry], observer);
+      const [, initializer] = dom.importModule.mock.calls[0];
+      const moduleFn = jest.fn();
+      // --- WHEN ---
+      initializer({ [functionName]: moduleFn });
+      dom.listeners.click({ preventDefault: jest.fn() });
+      // --- THEN ---
+      expect(moduleFn).toHaveBeenCalled();
     });
 
     it('calls disconnectObserver when entry is intersecting', () => {
