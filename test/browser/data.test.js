@@ -1,5 +1,14 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { fetchAndCacheBlogData, getData, setData, getDeepStateCopy, shouldUseExistingFetch, deepMerge, shouldCopyStateForFetch, getEncodeBase64 } from '../../src/browser/data.js';
+import {
+  fetchAndCacheBlogData,
+  getData,
+  setData,
+  getDeepStateCopy,
+  shouldUseExistingFetch,
+  deepMerge,
+  shouldCopyStateForFetch,
+  getEncodeBase64,
+} from '../../src/browser/data.js';
 
 describe('shouldCopyStateForFetch', () => {
   it('returns true for idle', () => {
@@ -24,8 +33,21 @@ describe('deepMerge', () => {
     // a should be deeply merged, b and c should be present
     expect(merged).toEqual({ a: { x: 1, y: 3 }, b: 2, c: 4 });
   });
-});
 
+  it('replaces array values instead of merging them', () => {
+    const target = { a: [1, 2] };
+    const source = { a: [3, 4] };
+    const merged = deepMerge(target, source);
+    expect(merged).toEqual({ a: [3, 4] });
+  });
+
+  it('does not merge an array with an object', () => {
+    const target = { a: [1, 2] };
+    const source = { a: { x: 3 } };
+    const merged = deepMerge(target, source);
+    expect(merged).toEqual({ a: { x: 3 } });
+  });
+});
 
 describe('fetchAndCacheBlogData', () => {
   let state;
@@ -45,13 +67,21 @@ describe('fetchAndCacheBlogData', () => {
   });
 
   it('should prevent multiple simultaneous fetches', async () => {
-    const promise = Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    const promise = Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({}),
+    });
     state.blogStatus = 'loading';
     state.blogFetchPromise = promise;
 
-    const result = fetchAndCacheBlogData(state, mockFetch, { logInfo: mockLog, logError: mockError });
+    const result = fetchAndCacheBlogData(state, mockFetch, {
+      logInfo: mockLog,
+      logError: mockError,
+    });
     expect(result).toBe(promise);
-    expect(mockLog).toHaveBeenCalledWith('Blog data fetch already in progress.');
+    expect(mockLog).toHaveBeenCalledWith(
+      'Blog data fetch already in progress.'
+    );
   });
 
   it('should start fetching blog data and update state on success', async () => {
@@ -60,7 +90,10 @@ describe('fetchAndCacheBlogData', () => {
       Promise.resolve({ ok: true, json: () => Promise.resolve(blogData) })
     );
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, { logInfo: mockLog, logError: mockError });
+    const promise = fetchAndCacheBlogData(state, mockFetch, {
+      logInfo: mockLog,
+      logError: mockError,
+    });
     expect(state.blogStatus).toBe('loading');
     expect(state.blogError).toBeNull();
 
@@ -69,13 +102,19 @@ describe('fetchAndCacheBlogData', () => {
     expect(state.blog).toEqual(blogData);
     expect(state.blogStatus).toBe('loaded');
     expect(state.blogFetchPromise).toBeNull();
-    expect(mockLog).toHaveBeenCalledWith('Blog data loaded successfully:', blogData);
+    expect(mockLog).toHaveBeenCalledWith(
+      'Blog data loaded successfully:',
+      blogData
+    );
   });
 
   it('should handle HTTP errors properly', async () => {
     mockFetch = jest.fn(() => Promise.resolve({ ok: false, status: 500 }));
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, { logInfo: mockLog, logError: mockError });
+    const promise = fetchAndCacheBlogData(state, mockFetch, {
+      logInfo: mockLog,
+      logError: mockError,
+    });
     await promise;
 
     expect(state.blogStatus).toBe('error');
@@ -92,7 +131,10 @@ describe('fetchAndCacheBlogData', () => {
     const error = new Error('Network failure');
     mockFetch = jest.fn(() => Promise.reject(error));
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, { logInfo: mockLog, logError: mockError });
+    const promise = fetchAndCacheBlogData(state, mockFetch, {
+      logInfo: mockLog,
+      logError: mockError,
+    });
     await promise;
 
     expect(state.blogStatus).toBe('error');
@@ -107,7 +149,10 @@ describe('fetchAndCacheBlogData', () => {
       Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
     );
 
-    await fetchAndCacheBlogData(state, mockFetch, { logInfo: mockLog, logError: mockError });
+    await fetchAndCacheBlogData(state, mockFetch, {
+      logInfo: mockLog,
+      logError: mockError,
+    });
 
     expect(mockFetch).toHaveBeenCalledWith('./blog.json');
     expect(mockLog).toHaveBeenCalledWith('Starting to fetch blog data...');
@@ -116,7 +161,10 @@ describe('fetchAndCacheBlogData', () => {
   it('throws specific error when response is not ok', async () => {
     mockFetch = jest.fn(() => Promise.resolve({ ok: false, status: 418 }));
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, { logInfo: mockLog, logError: mockError });
+    const promise = fetchAndCacheBlogData(state, mockFetch, {
+      logInfo: mockLog,
+      logError: mockError,
+    });
     await promise;
 
     expect(state.blogStatus).toBe('error');
@@ -126,8 +174,6 @@ describe('fetchAndCacheBlogData', () => {
     );
   });
 });
-
-
 
 describe('getData, setData, and getDeepStateCopy', () => {
   let state;
@@ -146,7 +192,12 @@ describe('getData, setData, and getDeepStateCopy', () => {
     logFn = jest.fn();
     errorFn = jest.fn();
     warnFn = jest.fn();
-    fetchFn = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ blog: 'content' }) }));
+    fetchFn = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ blog: 'content' }),
+      })
+    );
   });
 
   it('getDeepStateCopy returns a deep copy', () => {
@@ -167,7 +218,10 @@ describe('getData, setData, and getDeepStateCopy', () => {
     state.blogStatus = 'error';
     const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
     getData(state, fetchFn, loggers);
-    expect(warnFn).toHaveBeenCalledWith('Blog data previously failed to load:', state.blogError);
+    expect(warnFn).toHaveBeenCalledWith(
+      'Blog data previously failed to load:',
+      state.blogError
+    );
   });
 
   it('getData does nothing when status is loaded', () => {
@@ -192,7 +246,10 @@ describe('getData, setData, and getDeepStateCopy', () => {
   it('setData preserves existing blog if incoming state omits it', () => {
     state.blog = { title: 'preserved' };
     const incomingState = { temporary: true }; // no blog field
-    setData({ desired: incomingState, current: state }, { logInfo: logFn, logError: errorFn });
+    setData(
+      { desired: incomingState, current: state },
+      { logInfo: logFn, logError: errorFn }
+    );
     expect(state.blog).toEqual({ title: 'preserved' }); // blog should be preserved
   });
 
@@ -214,7 +271,12 @@ describe('getData, setData, and getDeepStateCopy', () => {
     const logFn = jest.fn();
     const errorFn = jest.fn();
     const invalidState = { foo: 1 };
-    expect(() => setData({ desired: invalidState, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
+    expect(() =>
+      setData(
+        { desired: invalidState, current: state },
+        { logInfo: logFn, logError: errorFn }
+      )
+    ).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       invalidState
@@ -225,7 +287,12 @@ describe('getData, setData, and getDeepStateCopy', () => {
     const state = { blog: { title: 'preserved' } };
     const logFn = jest.fn();
     const errorFn = jest.fn();
-    expect(() => setData({ desired: null, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
+    expect(() =>
+      setData(
+        { desired: null, current: state },
+        { logInfo: logFn, logError: errorFn }
+      )
+    ).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       null
@@ -236,7 +303,12 @@ describe('getData, setData, and getDeepStateCopy', () => {
     const state = { blog: { title: 'preserved' } };
     const logFn = jest.fn();
     const errorFn = jest.fn();
-    expect(() => setData({ desired: undefined, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
+    expect(() =>
+      setData(
+        { desired: undefined, current: state },
+        { logInfo: logFn, logError: errorFn }
+      )
+    ).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       undefined
@@ -248,7 +320,12 @@ describe('getData, setData, and getDeepStateCopy', () => {
     const logFn = jest.fn();
     const errorFn = jest.fn();
     const invalidState = Object.create(null);
-    expect(() => setData({ desired: invalidState, current: state }, { logInfo: logFn, logError: errorFn })).toThrow();
+    expect(() =>
+      setData(
+        { desired: invalidState, current: state },
+        { logInfo: logFn, logError: errorFn }
+      )
+    ).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       invalidState
@@ -301,10 +378,20 @@ describe('getData, setData, and getDeepStateCopy', () => {
   });
 
   it('getEncodeBase64 returns a function that encodes to base64 using provided helpers', () => {
-    const btoaFn = typeof btoa !== 'undefined' ? btoa : (str) => Buffer.from(str, 'binary').toString('base64');
-    const unescapeFn = typeof unescape !== 'undefined' ? unescape : (str) => str;
-    const encodeURIComponentFn = typeof encodeURIComponent !== 'undefined' ? encodeURIComponent : encodeURIComponent;
-    const encodeBase64 = getEncodeBase64(btoaFn, unescapeFn, encodeURIComponentFn);
+    const btoaFn =
+      typeof btoa !== 'undefined'
+        ? btoa
+        : str => Buffer.from(str, 'binary').toString('base64');
+    const unescapeFn = typeof unescape !== 'undefined' ? unescape : str => str;
+    const encodeURIComponentFn =
+      typeof encodeURIComponent !== 'undefined'
+        ? encodeURIComponent
+        : encodeURIComponent;
+    const encodeBase64 = getEncodeBase64(
+      btoaFn,
+      unescapeFn,
+      encodeURIComponentFn
+    );
     const input = 'hello world!';
     expect(encodeBase64(input)).toBe('aGVsbG8gd29ybGQh');
   });
