@@ -115,6 +115,12 @@ describe('get function with path traversal', () => {
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 
+  test('should treat whitespace-only input as empty', () => {
+    mockGetData.mockReturnValue(testData);
+    expect(get('   ', env)).toBe(JSON.stringify(testData));
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
+
   test('should handle numeric string keys in object', () => {
     const objWithNumericKeys = { "2025": { value: "future" } };
     mockGetData.mockReturnValue(objWithNumericKeys);
