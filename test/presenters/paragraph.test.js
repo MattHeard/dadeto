@@ -1,30 +1,31 @@
 // paragraph.test.js
-import { describe, it, expect } from '@jest/globals';
-import { createParagraphElement } from '../../src/presenters/paragraph';
+import { describe, test, expect } from '@jest/globals';
+import { createParagraphElement } from '../../src/presenters/paragraph.js';
+
+function createMockDom() {
+  const element = { textContent: '' };
+  return {
+    element,
+    createElement: () => element,
+    setTextContent: (el, text) => {
+      el.textContent = text;
+    },
+  };
+}
 
 describe('createParagraphElement', () => {
-  it('creates a <p> element with the correct text content', () => {
-    const mockElement = { textContent: '' };
-    const dom = {
-      createElement: () => mockElement,
-      setTextContent: (el, text) => { el.textContent = text; }
-    };
+  test.each(['Hello world', 'Another test string'])(
+    'given %p when creating the element then the text is set',
+    input => {
+      // Given
+      const dom = createMockDom();
 
-    const result = createParagraphElement('Hello world', dom);
+      // When
+      const result = createParagraphElement(input, dom);
 
-    expect(result).toBe(mockElement);
-    expect(result.textContent).toBe('Hello world');
-  });
-
-  it('works with different input strings', () => {
-    const mockElement = { textContent: '' };
-    const dom = {
-      createElement: () => mockElement,
-      setTextContent: (el, text) => { el.textContent = text; }
-    };
-
-    const result = createParagraphElement('Another test string', dom);
-
-    expect(result.textContent).toBe('Another test string');
-  });
+      // Then
+      expect(result).toBe(dom.element);
+      expect(result.textContent).toBe(input);
+    }
+  );
 });
