@@ -28,4 +28,27 @@ describe('getFetchErrorHandler', () => {
     errorHandler(error);
     expect(errorFn).toHaveBeenCalled();
   });
+
+  it('adds a warning with a prefixed message', () => {
+    const dom = {
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      appendChild: jest.fn(),
+      addWarning: jest.fn(),
+    };
+    const parent = {};
+    const presenterKey = 'text';
+    const errorFn = jest.fn();
+    const errorHandler = getFetchErrorHandler({ dom, errorFn }, parent, presenterKey);
+    const error = new Error('boom');
+
+    errorHandler(error);
+
+    expect(dom.setTextContent).toHaveBeenCalledWith(
+      expect.anything(),
+      'Error fetching URL: ' + error.message
+    );
+    expect(dom.addWarning).toHaveBeenCalledWith(parent);
+  });
 });
