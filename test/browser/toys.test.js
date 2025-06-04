@@ -252,6 +252,33 @@ describe('toys', () => {
       expect(dropdown.closest).toHaveBeenCalledWith('article.entry');
       expect(parent.child.textContent).toBe('answer');
     });
+
+    it('handles missing output object without throwing', () => {
+      const parent = { child: null, querySelector: jest.fn() };
+      parent.querySelector.mockReturnValue(parent);
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-x' })),
+        parentNode: parent,
+      };
+      const getData = jest.fn(() => ({}));
+      const dom = {
+        querySelector: (el, selector) => el.querySelector(selector),
+        removeAllChildren: jest.fn(p => {
+          p.child = null;
+        }),
+        appendChild: jest.fn((p, c) => {
+          p.child = c;
+        }),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        setTextContent: jest.fn((el, txt) => {
+          el.textContent = txt;
+        }),
+      };
+
+      expect(() => handleDropdownChange(dropdown, getData, dom)).not.toThrow();
+      expect(parent.child.textContent).toBe('');
+    });
   });
 
   let entry;
