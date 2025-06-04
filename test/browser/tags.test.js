@@ -1,13 +1,18 @@
 import { jest } from '@jest/globals';
-import { hideArticlesByClass, toggleHideLink, makeHandleClassName, makeHandleLink, makeHandleHideSpan } from '../../src/browser/tags.js';
-
+import {
+  hideArticlesByClass,
+  toggleHideLink,
+  makeHandleClassName,
+  makeHandleLink,
+  makeHandleHideSpan,
+} from '../../src/browser/tags.js';
 
 describe('hideArticlesByClass', () => {
   it('does not throw when given a class and no matching elements', () => {
     const dom = {
       getElementsByTagName: () => [],
       hasClass: () => false,
-      hide: () => {}
+      hide: () => {},
     };
 
     expect(() => {
@@ -22,8 +27,9 @@ describe('hideArticlesByClass', () => {
 
     const dom = {
       getElementsByTagName: () => articles,
-      hasClass: (el, className) => el === article1 && className === 'target-class',
-      hide: jest.fn()
+      hasClass: (el, className) =>
+        el === article1 && className === 'target-class',
+      hide: jest.fn(),
     };
 
     hideArticlesByClass('target-class', dom);
@@ -39,7 +45,7 @@ describe('toggleHideLink', () => {
     const dom = {
       hasNextSiblingClass: () => true,
       removeNextSibling: jest.fn(),
-      createHideSpan: jest.fn()
+      createHideSpan: jest.fn(),
     };
 
     toggleHideLink(link, 'some-class', dom);
@@ -53,7 +59,7 @@ describe('toggleHideLink', () => {
     const dom = {
       hasNextSiblingClass: () => false,
       removeNextSibling: jest.fn(),
-      createHideSpan: jest.fn()
+      createHideSpan: jest.fn(),
     };
 
     toggleHideLink(link, 'some-class', dom);
@@ -76,7 +82,11 @@ describe('makeHandleClassName', () => {
     const link = {};
     const handler = makeHandleClassName(dom, link);
     handler('tag-sample');
-    expect(addEventListener).toHaveBeenCalledWith(link, 'click', expect.any(Function));
+    expect(addEventListener).toHaveBeenCalledWith(
+      link,
+      'click',
+      expect.any(Function)
+    );
   });
 });
 
@@ -92,17 +102,18 @@ describe('makeHandleLink', () => {
 describe('makeHandleHideSpan', () => {
   it('invokes makeHandleHideSpan and its returned function with minimal mock dom', () => {
     const dom = {
-      createElement: () => ({}),
-      addClass: () => {},
-      appendChild: () => {},
-      createTextNode: () => ({}),
-      setTextContent: () => {},
-      addEventListener: () => {},
-      insertBefore: () => {},
+      createElement: jest.fn(() => ({})),
+      addClass: jest.fn(),
+      appendChild: jest.fn(),
+      createTextNode: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      insertBefore: jest.fn(),
     };
     const createHideSpan = makeHandleHideSpan(dom);
     const result = createHideSpan({}, 'some-class');
     expect(result).toBeUndefined();
+    expect(dom.createElement).toHaveBeenCalled();
   });
 
   it('creates a hide link span and inserts it after the link', () => {
@@ -148,7 +159,11 @@ describe('makeHandleHideSpan', () => {
     expect(appendChild).toHaveBeenCalledWith(span, hideLink);
     expect(createTextNode).toHaveBeenCalledWith(')');
     expect(appendChild).toHaveBeenCalledWith(span, textNodeClose);
-    expect(insertBefore).toHaveBeenCalledWith(link.parentNode, span, link.nextSibling);
+    expect(insertBefore).toHaveBeenCalledWith(
+      link.parentNode,
+      span,
+      link.nextSibling
+    );
   });
 });
 
