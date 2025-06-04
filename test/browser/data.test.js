@@ -321,26 +321,60 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(state.blog).toEqual({ title: 'existing' });
   });
 
+  it('setData merges non-blog properties while preserving existing blog fields', () => {
+    const fetchPromise = Promise.resolve();
+    const errorObj = new Error('old');
+    state.blogStatus = 'loaded';
+    state.blogError = errorObj;
+    state.blogFetchPromise = fetchPromise;
+    state.blog = { title: 'existing' };
+
+    const incomingState = {
+      temporary: false,
+      extra: 'value',
+      blogStatus: 'idle',
+      blogError: new Error('new'),
+      blogFetchPromise: Promise.resolve(),
+      blog: { title: 'incoming' },
+    };
+
+    setData(
+      { desired: incomingState, current: state },
+      { logInfo: logFn, logError: errorFn }
+    );
+
+    expect(state.temporary).toBe(false);
+    expect(state.extra).toBe('value');
+    expect(state.blogStatus).toBe('loaded');
+    expect(state.blogError).toBe(errorObj);
+    expect(state.blogFetchPromise).toBe(fetchPromise);
+    expect(state.blog).toEqual({ title: 'existing' });
+  });
+
   it('setData logs specific error message when blog is missing', () => {
     expect(() =>
       setData(
         { desired: {}, current: state },
         { logInfo: logFn, logError: errorFn }
       )
-    ).toThrow("setData requires an object with at least a 'temporary' property.");
+    ).toThrow(
+      "setData requires an object with at least a 'temporary' property."
+    );
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       {}
     );
   });
 
-  it("setData throws a descriptive error when blog data is missing", () => {
+  it('setData throws a descriptive error when blog data is missing', () => {
     expect(() =>
       setData(
         { desired: {}, current: state },
         { logInfo: logFn, logError: errorFn }
       )
-    ).toThrow("setData requires an object with at least a 'temporary' property.");
+    ).toThrow(
+      "setData requires an object with at least a 'temporary' property."
+    );
   });
 
   it('setData throws and logs error if incoming state is object but lacks temporary property', () => {
