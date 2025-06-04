@@ -105,6 +105,18 @@ describe('createKeyValueRow', () => {
     expect(mockDom.appendChild).toHaveBeenCalledTimes(4); // row + 3 children + container.appendChild(row)
   });
 
+  it('creates a button element with the correct tag', () => {
+    mockDom.createElement
+      .mockReturnValueOnce({}) // row div
+      .mockReturnValueOnce({}) // key input
+      .mockReturnValueOnce({}) // value input
+      .mockReturnValueOnce({}); // button element
+
+    rowCreator(mockEntries[0], 0);
+
+    expect(mockDom.createElement.mock.calls[3][0]).toBe('button');
+  });
+
   it('creates a remove button for non-last rows', () => {
     // Setup mock elements
     const mockButton = {};
