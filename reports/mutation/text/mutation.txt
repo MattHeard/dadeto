@@ -1,15 +1,15 @@
-[33m12:45:42 (50506) WARN ProjectReader[39m Glob pattern "**/node_modules/**" did not result in any files.
-[33m12:45:42 (50506) WARN ProjectReader[39m Glob pattern "**/vendor/**" did not result in any files.
-[32m12:45:42 (50506) INFO ProjectReader[39m Found 40 of 366 file(s) to be mutated.
-[32m12:45:42 (50506) INFO Instrumenter[39m Instrumented 40 source file(s) with 2923 mutant(s)
-[32m12:45:42 (50506) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
-[32m12:45:43 (50506) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
-[32m12:45:56 (50506) INFO DryRunExecutor[39m Initial test run succeeded. Ran 413 tests in 13 seconds (net 6341 ms, overhead 7121 ms).
-[33m12:45:57 (50506) WARN MutantTestPlanner[39m Detected 213 static mutants (7% of total) that are estimated to take 50% of the time running the tests!
+[33m14:39:32 (72736) WARN ProjectReader[39m Glob pattern "**/node_modules/**" did not result in any files.
+[33m14:39:32 (72736) WARN ProjectReader[39m Glob pattern "**/vendor/**" did not result in any files.
+[32m14:39:32 (72736) INFO ProjectReader[39m Found 40 of 366 file(s) to be mutated.
+[32m14:39:33 (72736) INFO Instrumenter[39m Instrumented 40 source file(s) with 2923 mutant(s)
+[32m14:39:33 (72736) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
+[32m14:39:35 (72736) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
+[32m14:39:52 (72736) INFO DryRunExecutor[39m Initial test run succeeded. Ran 418 tests in 17 seconds (net 8022 ms, overhead 9552 ms).
+[33m14:39:52 (72736) WARN MutantTestPlanner[39m Detected 213 static mutants (7% of total) that are estimated to take 50% of the time running the tests!
   You might want to enable "ignoreStatic" to ignore these static mutants for your next run. 
   For more information about static mutants visit: https://stryker-mutator.io/docs/mutation-testing-elements/static-mutants
   (disable "warnings.slow" to ignore this warning)
-[33m12:52:34 (50506) WARN ChildProcessProxy[39m Child process [pid 65301] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+[33m14:47:26 (72736) WARN ChildProcessProxy[39m Child process [pid 86556] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	Debugger attached.
 	watchman warning:  Recrawled this watch 5 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
@@ -17,22 +17,16 @@
 	To clear this warning, run:
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:842
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:842
 	        dom.addWarning(parent);
 	            ^
 	
 	TypeError: dom.addWarning is not a function
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:842:13
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:842:13
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 65301] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	 ChildProcessCrashedError: Child process [pid 86556] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	Debugger attached.
 	watchman warning:  Recrawled this watch 5 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
@@ -40,19 +34,13 @@
 	To clear this warning, run:
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:842
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:842
 	        dom.addWarning(parent);
 	            ^
 	
 	TypeError: dom.addWarning is not a function
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:842:13
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:842:13
 	
 	Node.js v23.5.0
 	
@@ -63,100 +51,18 @@
     at Socket.emit (node:events:513:28)
     at Pipe.<anonymous> (node:net:351:12) {
   innerError: undefined,
-  pid: 65301,
+  pid: 86556,
   exitCode: 1,
   signal: null
 }
-[33m12:52:37 (50506) WARN ChildProcessProxy[39m Child process [pid 62973] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
+[33m14:47:26 (72736) WARN ChildProcessProxy[39m Child process [pid 85819] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529
-	    const child = presenter(output.content, dom);
-	                  ^
-	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:838:9
-	
-	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 62973] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529
-	    const child = presenter(output.content, dom);
-	                  ^
-	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:838:9
-	
-	Node.js v23.5.0
-	
-    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
-    at ChildProcess.emit (node:events:513:28)
-    at maybeClose (node:internal/child_process:1101:16)
-    at Socket.<anonymous> (node:internal/child_process:457:11)
-    at Socket.emit (node:events:513:28)
-    at Pipe.<anonymous> (node:net:351:12) {
-  innerError: undefined,
-  pid: 62973,
-  exitCode: 1,
-  signal: null
-}
-[33m12:52:38 (50506) WARN ChildProcessProxy[39m Child process [pid 64971] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/test/browser/toys.handleRequestResponse.test.js:75
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/test/browser/toys.handleRequestResponse.test.js:75
 	    const error = new Error('Network error');
 	                  ^
 	
 	Error: Network error
-	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/test/browser/toys.handleRequestResponse.test.js:83:19)
+	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/test/browser/toys.handleRequestResponse.test.js:83:19)
 	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
 	    at new Promise (<anonymous>)
 	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
@@ -172,14 +78,14 @@
 	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 64971] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	 ChildProcessCrashedError: Child process [pid 85819] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/test/browser/toys.handleRequestResponse.test.js:75
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/test/browser/toys.handleRequestResponse.test.js:75
 	    const error = new Error('Network error');
 	                  ^
 	
 	Error: Network error
-	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/test/browser/toys.handleRequestResponse.test.js:83:19)
+	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/test/browser/toys.handleRequestResponse.test.js:83:19)
 	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
 	    at new Promise (<anonymous>)
 	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
@@ -203,12 +109,29 @@
     at Socket.emit (node:events:513:28)
     at Pipe.<anonymous> (node:net:351:12) {
   innerError: undefined,
-  pid: 64971,
+  pid: 85819,
   exitCode: 1,
   signal: null
 }
-[33m12:52:41 (50506) WARN ChildProcessProxy[39m Child process [pid 65706] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	Debugger attached.
+[33m14:47:31 (72736) WARN ChildProcessProxy[39m Child process [pid 85546] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
 	watchman warning:  Recrawled this watch 5 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -216,16 +139,34 @@
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:842
-	        dom.addWarning(parent);
-	            ^
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529
+	    const child = presenter(output.content, dom);
+	                  ^
 	
-	TypeError: dom.addWarning is not a function
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:842:13
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:838:9
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 65706] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	Debugger attached.
+	 ChildProcessCrashedError: Child process [pid 85546] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
 	watchman warning:  Recrawled this watch 5 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -233,12 +174,13 @@
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:842
-	        dom.addWarning(parent);
-	            ^
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529
+	    const child = presenter(output.content, dom);
+	                  ^
 	
-	TypeError: dom.addWarning is not a function
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:842:13
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:838:9
 	
 	Node.js v23.5.0
 	
@@ -249,66 +191,18 @@
     at Socket.emit (node:events:513:28)
     at Pipe.<anonymous> (node:net:351:12) {
   innerError: undefined,
-  pid: 65706,
+  pid: 85546,
   exitCode: 1,
   signal: null
 }
-[33m12:52:42 (50506) WARN ChildProcessProxy[39m Child process [pid 65870] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	Debugger attached.
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
+[33m14:47:33 (72736) WARN ChildProcessProxy[39m Child process [pid 86812] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529
-	    const child = presenter(output.content, dom);
-	                  ^
-	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:838:9
-	
-	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 65870] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	Debugger attached.
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529
-	    const child = presenter(output.content, dom);
-	                  ^
-	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:838:9
-	
-	Node.js v23.5.0
-	
-    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
-    at ChildProcess.emit (node:events:513:28)
-    at maybeClose (node:internal/child_process:1101:16)
-    at Socket.<anonymous> (node:internal/child_process:457:11)
-    at Socket.emit (node:events:513:28)
-    at Pipe.<anonymous> (node:net:351:12) {
-  innerError: undefined,
-  pid: 65870,
-  exitCode: 1,
-  signal: null
-}
-[33m12:52:42 (50506) WARN ChildProcessProxy[39m Child process [pid 65874] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/test/browser/toys.handleRequestResponse.test.js:75
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/test/browser/toys.handleRequestResponse.test.js:75
 	    const error = new Error('Network error');
 	                  ^
 	
 	Error: Network error
-	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/test/browser/toys.handleRequestResponse.test.js:83:19)
+	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/test/browser/toys.handleRequestResponse.test.js:83:19)
 	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
 	    at new Promise (<anonymous>)
 	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
@@ -324,14 +218,14 @@
 	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 65874] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	 ChildProcessCrashedError: Child process [pid 86812] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/test/browser/toys.handleRequestResponse.test.js:75
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/test/browser/toys.handleRequestResponse.test.js:75
 	    const error = new Error('Network error');
 	                  ^
 	
 	Error: Network error
-	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/test/browser/toys.handleRequestResponse.test.js:83:19)
+	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/test/browser/toys.handleRequestResponse.test.js:83:19)
 	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
 	    at new Promise (<anonymous>)
 	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
@@ -355,29 +249,12 @@
     at Socket.emit (node:events:513:28)
     at Pipe.<anonymous> (node:net:351:12) {
   innerError: undefined,
-  pid: 65874,
+  pid: 86812,
   exitCode: 1,
   signal: null
 }
-[33m13:15:59 (50506) WARN ChildProcessProxy[39m Child process [pid 36060] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
+[33m14:47:33 (72736) WARN ChildProcessProxy[39m Child process [pid 86811] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	Debugger attached.
 	watchman warning:  Recrawled this watch 5 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -385,34 +262,16 @@
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529
-	    const child = presenter(output.content, dom);
-	                  ^
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:842
+	        dom.addWarning(parent);
+	            ^
 	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:838:9
+	TypeError: dom.addWarning is not a function
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:842:13
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 36060] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 5 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
+	 ChildProcessCrashedError: Child process [pid 86811] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	Debugger attached.
 	watchman warning:  Recrawled this watch 5 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -420,13 +279,58 @@
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:842
+	        dom.addWarning(parent);
+	            ^
+	
+	TypeError: dom.addWarning is not a function
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:842:13
+	
+	Node.js v23.5.0
+	
+    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
+    at ChildProcess.emit (node:events:513:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:305:5) {
+  innerError: undefined,
+  pid: 86811,
+  exitCode: 1,
+  signal: null
+}
+[33m14:47:37 (72736) WARN ChildProcessProxy[39m Child process [pid 86955] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	Debugger attached.
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	Waiting for the debugger to disconnect...
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529
 	    const child = presenter(output.content, dom);
 	                  ^
 	
 	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:838:9
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:838:9
+	
+	Node.js v23.5.0
+	 ChildProcessCrashedError: Child process [pid 86955] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	Debugger attached.
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	Waiting for the debugger to disconnect...
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529
+	    const child = presenter(output.content, dom);
+	                  ^
+	
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:838:9
 	
 	Node.js v23.5.0
 	
@@ -437,12 +341,29 @@
     at Socket.emit (node:events:513:28)
     at Pipe.<anonymous> (node:net:351:12) {
   innerError: undefined,
-  pid: 36060,
+  pid: 86955,
   exitCode: 1,
   signal: null
 }
-[33m13:16:06 (50506) WARN ChildProcessProxy[39m Child process [pid 54385] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	Debugger attached.
+[33m15:07:52 (72736) WARN ChildProcessProxy[39m Child process [pid 56404] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
 	watchman warning:  Recrawled this watch 5 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -450,17 +371,34 @@
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529
 	    const child = presenter(output.content, dom);
 	                  ^
 	
 	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:838:9
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:838:9
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 54385] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	Debugger attached.
+	 ChildProcessCrashedError: Child process [pid 56404] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
 	watchman warning:  Recrawled this watch 5 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -468,13 +406,13 @@
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
 	Waiting for the debugger to disconnect...
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529
 	    const child = presenter(output.content, dom);
 	                  ^
 	
 	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:529:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-TND6LQ/src/browser/toys.js:838:9
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:838:9
 	
 	Node.js v23.5.0
 	
@@ -485,7 +423,55 @@
     at Socket.emit (node:events:513:28)
     at Pipe.<anonymous> (node:net:351:12) {
   innerError: undefined,
-  pid: 54385,
+  pid: 56404,
+  exitCode: 1,
+  signal: null
+}
+[33m15:07:58 (72736) WARN ChildProcessProxy[39m Child process [pid 73077] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	Debugger attached.
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	Waiting for the debugger to disconnect...
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529
+	    const child = presenter(output.content, dom);
+	                  ^
+	
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:838:9
+	
+	Node.js v23.5.0
+	 ChildProcessCrashedError: Child process [pid 73077] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	Debugger attached.
+	watchman warning:  Recrawled this watch 5 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	Waiting for the debugger to disconnect...
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529
+	    const child = presenter(output.content, dom);
+	                  ^
+	
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:529:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-C3zEbM/src/browser/toys.js:838:9
+	
+	Node.js v23.5.0
+	
+    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
+    at ChildProcess.emit (node:events:513:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at Socket.<anonymous> (node:internal/child_process:457:11)
+    at Socket.emit (node:events:513:28)
+    at Pipe.<anonymous> (node:net:351:12) {
+  innerError: undefined,
+  pid: 73077,
   exitCode: 1,
   signal: null
 }
@@ -509,103 +495,107 @@ All tests
       ✓ setupAudio adds audio-controls class to the created control element [line 318] (killed 1)
       ✓ setupAudio sets correct text on control buttons [line 355] (killed 3)
       ✓ setupAudio adds a time display element with class "audio-time" [line 393] (killed 2)
-      ✓ setupAudio creates a div container for the controls [line 405] (killed 1)
+      ✓ setupAudio uses a span element for the time display [line 405] (killed 1)
+      ✓ setupAudio attaches a timeupdate listener to the audio element [line 414] (killed 1)
+      ✓ setupAudio creates a div container for the controls [line 426] (killed 1)
+      ✓ setupAudio wires up event listeners and button hrefs correctly [line 434] (killed 6)
     clearDisposers.test.js
       ✓ clearDisposers calls all functions in the disposers array [line 9] (killed 2)
       ~ clearDisposers clears the disposers array after calling all functions [line 23] (covered 2)
       ~ clearDisposers handles an empty array without throwing [line 37] (covered 2)
       ~ clearDisposers calls functions in the order they appear in the array [line 46] (covered 2)
     data.test.js
-      ✓ shouldCopyStateForFetch returns true for idle [line 14] (killed 7)
-      ✓ shouldCopyStateForFetch returns true for error [line 17] (killed 2)
+      ✓ shouldCopyStateForFetch returns true for idle [line 14] (killed 6)
+      ✓ shouldCopyStateForFetch returns true for error [line 17] (killed 3)
       ✓ shouldCopyStateForFetch returns false for loaded [line 20] (killed 1)
       ~ shouldCopyStateForFetch returns false for loading [line 23] (covered 8)
       ✓ deepMerge should use the if branch when shouldDeepMerge is true (deep merge plain objects) [line 29] (killed 19)
       ✓ deepMerge replaces array values instead of merging them [line 37] (killed 1)
-      ✓ deepMerge does not merge an array with an object [line 44] (killed 1)
-      ✓ fetchAndCacheBlogData should prevent multiple simultaneous fetches [line 69] (killed 8)
-      ✓ fetchAndCacheBlogData should start fetching blog data and update state on success [line 87] (killed 8)
-      ✓ fetchAndCacheBlogData should handle HTTP errors properly [line 111] (killed 2)
-      ~ fetchAndCacheBlogData should handle fetch exceptions [line 130] (covered 16)
-      ~ fetchAndCacheBlogData calls fetch with the correct URL and logs starting message [line 147] (covered 20)
-      ✓ fetchAndCacheBlogData throws specific error when response is not ok [line 161] (killed 3)
-      ✓ getData, setData, and getDeepStateCopy getDeepStateCopy returns a deep copy [line 203] (killed 1)
-      ✓ getData, setData, and getDeepStateCopy getData triggers fetch if status is idle [line 211] (killed 7)
-      ✓ getData, setData, and getDeepStateCopy getData logs warning on error state [line 217] (killed 11)
-      ~ getData, setData, and getDeepStateCopy getData does nothing when status is loaded [line 227] (covered 31)
-      ✓ getData, setData, and getDeepStateCopy getData omits internal state fields [line 235] (killed 6)
-      ✓ getData, setData, and getDeepStateCopy getData returns a deep copy when status is idle [line 246] (killed 3)
-      ✓ getData, setData, and getDeepStateCopy getData returns original object when status is loaded [line 255] (killed 2)
-      ✓ getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it [line 263] (killed 4)
-      ✓ getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing [line 273] (killed 7)
-      ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is object but lacks temporary property [line 286] (covered 22)
-      ✓ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is null [line 303] (killed 1)
-      ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is undefined [line 319] (covered 16)
-      ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is an object with no prototype and no properties [line 335] (covered 22)
-      ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns true and logs when loading and promise exists [line 352] (killed 5)
-      ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is not loading [line 363] (killed 4)
-      ~ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is loading but no fetchPromise exists [line 374] (covered 12)
-      ~ getData, setData, and getDeepStateCopy getData returns cached blog data when already loaded [line 385] (covered 31)
-      ✓ getData, setData, and getDeepStateCopy getEncodeBase64 returns a function that encodes to base64 using provided helpers [line 397] (killed 2)
+      ~ deepMerge does not merge an array with an object [line 44] (covered 26)
+      ✓ deepMerge replaces an object value when the source provides a primitive [line 51] (killed 3)
+      ✓ fetchAndCacheBlogData should prevent multiple simultaneous fetches [line 76] (killed 10)
+      ✓ fetchAndCacheBlogData should start fetching blog data and update state on success [line 94] (killed 9)
+      ✓ fetchAndCacheBlogData should handle HTTP errors properly [line 118] (killed 2)
+      ~ fetchAndCacheBlogData should handle fetch exceptions [line 137] (covered 16)
+      ✓ fetchAndCacheBlogData calls fetch with the correct URL and logs starting message [line 154] (killed 2)
+      ✓ fetchAndCacheBlogData throws specific error when response is not ok [line 168] (killed 2)
+      ✓ getData, setData, and getDeepStateCopy getDeepStateCopy returns a deep copy [line 210] (killed 1)
+      ✓ getData, setData, and getDeepStateCopy getData triggers fetch if status is idle [line 218] (killed 9)
+      ✓ getData, setData, and getDeepStateCopy getData logs warning on error state [line 224] (killed 15)
+      ✓ getData, setData, and getDeepStateCopy getData does nothing when status is loaded [line 234] (killed 1)
+      ✓ getData, setData, and getDeepStateCopy getData omits internal state fields [line 242] (killed 4)
+      ✓ getData, setData, and getDeepStateCopy getData returns a deep copy when status is idle [line 253] (killed 2)
+      ✓ getData, setData, and getDeepStateCopy getData returns original object when status is loaded [line 262] (killed 1)
+      ✓ getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it [line 270] (killed 6)
+      ✓ getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing [line 280] (killed 7)
+      ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is object but lacks temporary property [line 293] (covered 22)
+      ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is null [line 310] (covered 16)
+      ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is undefined [line 326] (covered 16)
+      ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is an object with no prototype and no properties [line 342] (covered 22)
+      ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns true and logs when loading and promise exists [line 359] (killed 5)
+      ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is not loading [line 370] (killed 4)
+      ~ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is loading but no fetchPromise exists [line 381] (covered 12)
+      ~ getData, setData, and getDeepStateCopy getData returns cached blog data when already loaded [line 392] (covered 31)
+      ✓ getData, setData, and getDeepStateCopy getEncodeBase64 returns a function that encodes to base64 using provided helpers [line 404] (killed 2)
     setOutput.test.js
       ✓ setOutput returns an error for invalid JSON [line 5] (killed 4)
       ✓ setOutput returns an error for non-object input [line 10] (killed 5)
-      ✓ setOutput returns an error if merging throws [line 15] (killed 6)
-      ✓ setOutput resets newData.output if it is not an object [line 30] (killed 4)
+      ✓ setOutput returns an error if merging throws [line 15] (killed 5)
+      ✓ setOutput resets newData.output if it is not an object [line 30] (killed 7)
       ✓ setOutput handles null existing output [line 45] (killed 3)
       ✓ setOutput merges output data and calls setData [line 60] (killed 1)
     tags.createHandleClick.test.js
-      ✓ createHandleClick calls stopDefault and toggleHideLink with correct arguments [line 5] (killed 5)
+      ✓ createHandleClick calls stopDefault and toggleHideLink with correct arguments [line 5] (killed 2)
     tags.handleTagLinks.test.js
       ✓ handleTagLinks applies makeHandleLink(dom) to each <a> element [line 5] (killed 3)
     tags.makeHandleHideClick.test.js
-      ✓ makeHandleHideClick calls stopDefault and hides only articles with the given class [line 5] (killed 4)
+      ✓ makeHandleHideClick calls stopDefault and hides only articles with the given class [line 5] (killed 2)
     tags.test.js
       ~ hideArticlesByClass does not throw when given a class and no matching elements [line 6] (covered 2)
-      ✓ hideArticlesByClass hides articles with the given class [line 18] (killed 4)
-      ✓ toggleHideLink removes the next sibling when it has the hide-span class [line 37] (killed 1)
-      ✓ toggleHideLink creates a hide span when there is no next sibling with the hide-span class [line 51] (killed 1)
+      ✓ hideArticlesByClass hides articles with the given class [line 18] (killed 6)
+      ✓ toggleHideLink removes the next sibling when it has the hide-span class [line 37] (killed 3)
+      ✓ toggleHideLink creates a hide span when there is no next sibling with the hide-span class [line 51] (killed 2)
       ✓ makeHandleClassName returns a function when called with no arguments [line 67] (killed 5)
       ✓ makeHandleClassName calls addEventListener when className starts with tag- [line 73] (killed 7)
       ✓ makeHandleLink invokes the returned function with a mock dom and asserts its value is undefined [line 84] (killed 1)
       ✓ makeHandleHideSpan invokes makeHandleHideSpan and its returned function with minimal mock dom [line 93] (killed 1)
     toys.convertArrayToKeyValueObject.test.js
-      ✓ convertArrayToKeyValueObject should convert an array of key-value objects to a single object [line 5] (killed 5)
+      ✓ convertArrayToKeyValueObject should convert an array of key-value objects to a single object [line 5] (killed 1)
       ~ convertArrayToKeyValueObject should handle undefined or null values by converting them to empty strings [line 19] (covered 17)
-      ✓ convertArrayToKeyValueObject should skip objects without a key property [line 33] (killed 2)
+      ✓ convertArrayToKeyValueObject should skip objects without a key property [line 33] (killed 1)
       ~ convertArrayToKeyValueObject should return an empty object for an empty array [line 47] (covered 4)
       ✓ convertArrayToKeyValueObject should handle non-array inputs by returning an empty object [line 51] (killed 2)
     toys.createDispose.test.js
       ✓ createDispose can be called and disposed [line 5] (killed 2)
     toys.createDropdownInitializer.test.js
-      ✓ createDropdownInitializer should handle empty NodeList when querySelectorAll returns no elements [line 5] (killed 4)
+      ✓ createDropdownInitializer should handle empty NodeList when querySelectorAll returns no elements [line 5] (killed 3)
     toys.createHandleSubmit.test.js
       ✘ createHandleSubmit should handle being called without arguments [line 5] (covered 0)
     toys.createKeyInputHandler.test.js
       ~ createKeyInputHandler should sync hidden field when key does not change [line 39] (covered 7)
-      ✓ createKeyInputHandler should update rows with new key when key is unique and non-empty [line 52] (killed 4)
+      ✓ createKeyInputHandler should update rows with new key when key is unique and non-empty [line 52] (killed 3)
       ✓ createKeyInputHandler should not update rows when new key is empty [line 71] (killed 4)
       ~ createKeyInputHandler should not update rows when new key already exists [line 89] (covered 13)
     toys.createKeyValueRow.test.js
-      ✓ createKeyValueRow creates a row with key and value inputs [line 72] (killed 3)
-      ✓ createKeyValueRow creates a remove button for non-last rows [line 101] (killed 7)
+      ✓ createKeyValueRow creates a row with key and value inputs [line 72] (killed 6)
+      ✓ createKeyValueRow creates a remove button for non-last rows [line 101] (killed 5)
       ~ createKeyValueRow creates an add button for the last row [line 117] (covered 32)
-      ✓ createKeyValueRow adds event listeners for key and value changes [line 133] (killed 2)
-      ✓ createKeyValueRow adds cleanup functions to disposers array [line 158] (killed 1)
+      ✓ createKeyValueRow adds event listeners for key and value changes [line 133] (killed 3)
+      ✓ createKeyValueRow adds cleanup functions to disposers array [line 158] (killed 2)
       ~ createKeyValueRow handles cleanup when disposers are called [line 174] (covered 35)
     toys.createNumberInput.test.js
-      ✓ createNumberInput creates a number input element with the correct type [line 34] (killed 1)
+      ~ createNumberInput creates a number input element with the correct type [line 34] (covered 10)
       ✓ createNumberInput sets the initial value when provided [line 45] (killed 2)
       ✓ createNumberInput does not set a value when none is provided [line 53] (killed 1)
       ✓ createNumberInput sets up input event listeners [line 61] (killed 2)
       ~ createNumberInput calls the onChange handler when the input changes [line 73] (covered 10)
     toys.createOnAddHandler.test.js
-      ✓ createOnAddHandler adds an empty key-value pair when no empty key exists [line 16] (killed 6)
-      ✓ createOnAddHandler does not add a new empty key if one already exists [line 31] (killed 2)
+      ✓ createOnAddHandler adds an empty key-value pair when no empty key exists [line 16] (killed 2)
+      ✓ createOnAddHandler does not add a new empty key if one already exists [line 31] (killed 1)
       ~ createOnAddHandler preserves existing non-empty keys when adding an empty key [line 45] (covered 9)
       ~ createOnAddHandler does not add an empty key if one exists, even with other keys [line 64] (covered 6)
     toys.createOnRemove.test.js
-      ✓ createOnRemove removes the specified key from the rows object [line 26] (killed 1)
+      ~ createOnRemove removes the specified key from the rows object [line 26] (covered 1)
       ~ createOnRemove calls preventDefault on the event [line 41] (covered 1)
       ~ createOnRemove calls the render function after removing the key [line 49] (covered 1)
       ~ createOnRemove does nothing if the key does not exist [line 57] (covered 1)
@@ -616,7 +606,7 @@ All tests
       ~ createOutputDropdownHandler should work with different event targets [line 32] (covered 1)
       ~ createOutputDropdownHandler should pass through the event target and dom utilities to handleDropdownChange [line 55] (covered 1)
     toys.createRenderer.test.js
-      ✓ createRenderer should create a renderer function [line 5] (killed 2)
+      ✓ createRenderer should create a renderer function [line 5] (killed 1)
     toys.createUpdateTextInputValue.test.js
       ✓ createUpdateTextInputValue creates a function that updates the text input value from an event [line 31] (killed 2)
       ~ createUpdateTextInputValue handles empty string values correctly [line 45] (covered 1)
@@ -624,11 +614,11 @@ All tests
       ~ createUpdateTextInputValue handles null or undefined values by passing them through [line 73] (covered 1)
       ~ createUpdateTextInputValue can be used as an event handler for input events [line 90] (covered 1)
     toys.createValueElement.test.js
-      ✓ createValueElement creates a value input element with the correct initial properties [line 35] (killed 2)
-      ~ createValueElement updates the rows object and syncs when value is changed [line 60] (covered 9)
+      ✓ createValueElement creates a value input element with the correct initial properties [line 35] (killed 5)
+      ✓ createValueElement updates the rows object and syncs when value is changed [line 60] (killed 1)
       ✓ createValueElement cleans up event listeners when disposer is called [line 88] (killed 2)
     toys.createValueInputHandler.test.js
-      ✓ createValueInputHandler should update the value for an existing key and sync hidden field [line 41] (killed 2)
+      ~ createValueInputHandler should update the value for an existing key and sync hidden field [line 41] (covered 3)
       ~ createValueInputHandler should handle updating a different key [line 57] (covered 3)
       ~ createValueInputHandler should handle empty string values [line 74] (covered 3)
       ~ createValueInputHandler should update the value even if the key is not in rows [line 91] (covered 3)
@@ -641,48 +631,48 @@ All tests
     toys.getFetchErrorHandler.test.js
       ~ getFetchErrorHandler can be invoked with no args [line 5] (covered 8)
     toys.handleKVType.test.js
-      ✓ handleKVType can be invoked with an empty DOM object [line 5] (killed 4)
+      ✓ handleKVType can be invoked with an empty DOM object [line 5] (killed 2)
     toys.handleParsedResult.test.js
-      ✓ handleParsedResult calls handleRequestResponse when request is valid [line 31] (killed 2)
-      ✓ handleParsedResult does not call handleRequestResponse when request is invalid [line 44] (killed 1)
+      ✓ handleParsedResult calls handleRequestResponse when request is valid [line 31] (killed 6)
+      ~ handleParsedResult does not call handleRequestResponse when request is invalid [line 44] (covered 22)
     toys.handleRequestResponse.test.js
       ✓ handleRequestResponse should call fetch with the provided URL [line 54] (killed 1)
-      ✓ handleRequestResponse should process the response text and update the DOM [line 65] (killed 2)
+      ✓ handleRequestResponse should process the response text and update the DOM [line 65] (killed 1)
       ✓ handleRequestResponse should handle fetch errors [line 81] (killed 2)
       ~ handleRequestResponse should handle response.text() errors [line 97] (covered 11)
     toys.isValidParsedRequest.test.js
-      ✓ isValidParsedRequest returns true for a valid parsed request with string URL [line 4] (killed 4)
+      ✓ isValidParsedRequest returns true for a valid parsed request with string URL [line 4] (killed 5)
       ✓ isValidParsedRequest returns false for non-object input [line 13] (killed 1)
       ~ isValidParsedRequest returns false for object without request field [line 20] (covered 19)
       ✓ isValidParsedRequest returns false for request without url field [line 29] (killed 3)
       ~ isValidParsedRequest returns false for request with non-string url [line 38] (covered 26)
     toys.keyValueInput.test.js
       ✓ Key-Value Input should fail when called with no arguments [line 5] (killed 2)
-      ✓ Key-Value Input createKeyInputHandler should update rows when key is changed to a new unique key [line 91] (killed 4)
+      ✓ Key-Value Input createKeyInputHandler should update rows when key is changed to a new unique key [line 91] (killed 6)
     toys.makeDisplayBody.test.js
-      ✓ makeDisplayBody should return a function when called with required arguments [line 5] (killed 1)
+      ~ makeDisplayBody should return a function when called with required arguments [line 5] (covered 6)
     toys.parseExistingRows.test.js
       ✓ parseExistingRows should parse an empty input as an empty object [line 20] (killed 3)
       ✓ parseExistingRows should parse a valid JSON object [line 27] (killed 7)
-      ✓ parseExistingRows should convert an array of key-value pairs to an object [line 37] (killed 4)
+      ✓ parseExistingRows should convert an array of key-value pairs to an object [line 37] (killed 10)
       ✓ parseExistingRows should handle arrays with undefined/null values [line 52] (killed 1)
-      ~ parseExistingRows should skip items without a key property in array input [line 69] (covered 24)
+      ✓ parseExistingRows should skip items without a key property in array input [line 69] (killed 1)
       ✓ parseExistingRows should handle invalid JSON by returning an empty object [line 86] (killed 1)
-      ✓ parseExistingRows should handle non-object, non-array JSON values by returning an empty object [line 94] (killed 3)
+      ✓ parseExistingRows should handle non-object, non-array JSON values by returning an empty object [line 94] (killed 1)
     toys.processInputAndSetOutput.test.js
       ✓ processInputAndSetOutput should process input and set output with mocked DOM functions [line 5] (killed 14)
-      ✓ processInputAndSetOutput falls back to setTextContent when JSON cannot be parsed [line 44] (killed 5)
+      ✓ processInputAndSetOutput falls back to setTextContent when JSON cannot be parsed [line 44] (killed 7)
       ~ processInputAndSetOutput falls back to setTextContent when the parsed request is invalid [line 75] (covered 76)
     toys.setupAddButton.test.js
-      ✓ setupAddButton sets the button text content to "+" [line 25] (killed 2)
-      ✓ setupAddButton adds a click event listener to the button [line 31] (killed 1)
+      ✓ setupAddButton sets the button text content to "+" [line 25] (killed 1)
+      ✓ setupAddButton adds a click event listener to the button [line 31] (killed 2)
       ✓ setupAddButton adds a disposer function to the disposers array [line 41] (killed 1)
-      ✓ setupAddButton clicking the button adds a new empty row and calls render [line 48] (killed 1)
-      ~ setupAddButton does not add a new empty row if one already exists [line 70] (covered 10)
+      ✓ setupAddButton clicking the button adds a new empty row and calls render [line 48] (killed 4)
+      ✓ setupAddButton does not add a new empty row if one already exists [line 70] (killed 1)
       ✓ setupAddButton cleanup function removes the event listener [line 94] (killed 2)
     toys.setupRemoveButton.test.js
       ~ setupRemoveButton sets the button text content to "×" [line 27] (covered 4)
-      ~ setupRemoveButton adds a click event listener to the button [line 33] (covered 4)
+      ✓ setupRemoveButton adds a click event listener to the button [line 33] (killed 1)
       ~ setupRemoveButton adds a disposer function to the disposers array [line 43] (covered 4)
       ✓ setupRemoveButton clicking the button removes the corresponding row and calls render [line 50] (killed 1)
       ✓ setupRemoveButton cleanup function removes the event listener [line 75] (killed 2)
@@ -694,37 +684,37 @@ All tests
       ~ syncHiddenField handles non-string values by converting them to strings [line 90] (covered 6)
       ~ syncHiddenField preserves whitespace in keys and values [line 113] (covered 6)
     toys.test.js
-      ✓ createAddDropdownListener adds a change event listener to the dropdown [line 20] (killed 2)
-      ✓ toys handleDropdownChange logs the correct postId and selectedValue when dropdown changes [line 45] (killed 1)
-      ✓ toys handleDropdownChange handles dropdown change with empty output data [line 81] (killed 3)
-      ✓ toys makeObserverCallback calls importModule when entry is intersecting [line 166] (killed 9)
+      ✓ createAddDropdownListener adds a change event listener to the dropdown [line 20] (killed 3)
+      ✓ toys handleDropdownChange logs the correct postId and selectedValue when dropdown changes [line 45] (killed 2)
+      ✓ toys handleDropdownChange handles dropdown change with empty output data [line 81] (killed 4)
+      ✓ toys makeObserverCallback calls importModule when entry is intersecting [line 166] (killed 12)
       ~ toys makeObserverCallback calls disconnectObserver when entry is intersecting [line 177] (covered 17)
       ✓ toys makeCreateIntersectionObserver returns the result of makeIntersectionObserver [line 217] (killed 2)
       ~ toys makeCreateIntersectionObserver calls makeIntersectionObserver with a callback [line 224] (covered 8)
       ~ toys makeCreateIntersectionObserver calls importModule when entry is intersecting [line 233] (covered 20)
       ~ toys makeCreateIntersectionObserver calls disconnectObserver when entry is intersecting [line 242] (covered 20)
-      ~ toys makeCreateIntersectionObserver does not call importModule when not intersecting [line 251] (covered 12)
+      ✓ toys makeCreateIntersectionObserver does not call importModule when not intersecting [line 251] (killed 1)
       ~ toys makeCreateIntersectionObserver does not call disconnectObserver when not intersecting [line 274] (covered 12)
-      ✓ toys handleModuleError calls errorMock with the correct message [line 288] (killed 3)
+      ✓ toys handleModuleError calls errorMock with the correct message [line 288] (killed 2)
       ✓ toys enableInteractiveControls enables input and submit button [line 346] (killed 2)
       ✓ toys enableInteractiveControls sets output textContent to "Ready for input" using parent branch [line 354] (killed 1)
       ~ toys enableInteractiveControls removes "warning" class from parent element [line 368] (covered 6)
-      ✓ toys initialiseModule can be invoked with minimal arguments [line 377] (killed 8)
+      ✓ toys initialiseModule can be invoked with minimal arguments [line 377] (killed 9)
       ✓ toys getDeepStateCopy returns a deep copy of the global state object [line 440] (killed 1)
-      ✓ toys initializeInteractiveComponent attaches click and keypress listeners with expected arguments [line 489] (killed 14)
+      ✓ toys initializeInteractiveComponent attaches click and keypress listeners with expected arguments [line 489] (killed 19)
       ✓ toys initializeInteractiveComponent does not call handleSubmit when a non-Enter key is pressed [line 570] (killed 1)
-      ✓ toys initializeVisibleComponents warns if there are no interactive components [line 694] (killed 3)
+      ✓ toys initializeVisibleComponents warns if there are no interactive components [line 694] (killed 4)
       ✓ toys initializeVisibleComponents initializes and observes a valid interactive component [line 714] (killed 3)
       ~ toys initializeVisibleComponents attempts to initialize all interactive components, regardless of missing fields [line 743] (covered 5)
-      ✓ createInputDropdownHandler when select value is kv should call getCurrentTarget with the event [line 844] (killed 11)
-      ✓ createInputDropdownHandler when select value is text handles text input setup and cleanup of other input types [line 882] (killed 11)
-      ✓ createInputDropdownHandler when select value is number handles number input setup and cleanup when dropdown value is number [line 916] (killed 8)
+      ✓ createInputDropdownHandler when select value is kv should call getCurrentTarget with the event [line 844] (killed 12)
+      ✓ createInputDropdownHandler when select value is text handles text input setup and cleanup of other input types [line 882] (killed 12)
+      ✓ createInputDropdownHandler when select value is number handles number input setup and cleanup when dropdown value is number [line 916] (killed 10)
       ✓ createInputDropdownHandler getText should call response.text() and return its result [line 969] (killed 1)
       ~ createInputDropdownHandler getText should propagate errors from response.text() [line 984] (covered 1)
       ~ createInputDropdownHandler getText should throw when response is null or undefined [line 995] (covered 1)
   generator
     generator.test.js
-      ✓ Blog Generator should generate complete HTML page with multiple posts [line 8] (killed 346)
+      ✓ Blog Generator should generate complete HTML page with multiple posts [line 8] (killed 343)
       ✓ Blog Generator should contain content for posts [line 103] (killed 4)
       ✓ Blog Generator should contain an illustration for posts [line 129] (killed 1)
       ~ Blog Generator should contain audio elements [line 159] (covered 158)
@@ -734,7 +724,7 @@ All tests
       ✓ Blog Generator should display tags for posts [line 290] (killed 16)
       ✓ Blog Generator should render quotes as blockquotes [line 315] (killed 19)
     getBlogGenerationArgs.test.js
-      ✓ generateBlogOuter returns a string of HTML when given a blog object with an empty posts array [line 4] (killed 10)
+      ✓ generateBlogOuter returns a string of HTML when given a blog object with an empty posts array [line 4] (killed 13)
       ✓ getBlogGenerationArgs returns an object with header, footer, and wrapFunc [line 12] (killed 4)
     html.test.js
       ✓ html utilities createOpeningTag omits space when no attributes [line 5] (killed 2)
@@ -743,18 +733,18 @@ All tests
     battleshipSolitaireClues.test.js
       ✘ battleshipSolitaireClues presenter should be implemented [line 5] (covered 0)
       ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board on parse failure [line 49] (killed 17)
-      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object [line 55] (killed 2)
+      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object [line 55] (killed 7)
       ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when rowClues / colClues arrays are missing [line 61] (killed 5)
-      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when clue values are non‑numeric [line 68] (killed 5)
+      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when clue values are non‑numeric [line 68] (killed 6)
       ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when any array is empty [line 75] (killed 6)
-      ✓ createBattleshipCluesBoardElement – successful render renders padded multi‑digit row clues and stacked column clues [line 84] (killed 28)
+      ✓ createBattleshipCluesBoardElement – successful render renders padded multi‑digit row clues and stacked column clues [line 84] (killed 33)
     battleshipSolitaireFleet.test.js
-      ✓ createBattleshipFleetBoardElement renders a valid fleet as a <pre> element [line 14] (killed 74)
+      ✓ createBattleshipFleetBoardElement renders a valid fleet as a <pre> element [line 14] (killed 83)
       ✓ createBattleshipFleetBoardElement renders a 10x10 empty fleet for invalid JSON [line 40] (killed 2)
-      ✓ createBattleshipFleetBoardElement returns <p> with error for missing width [line 51] (killed 5)
+      ✓ createBattleshipFleetBoardElement returns <p> with error for missing width [line 51] (killed 6)
       ✓ createBattleshipFleetBoardElement returns <p> with error for missing height [line 58] (killed 3)
       ✓ createBattleshipFleetBoardElement returns <p> with error for missing ships [line 65] (killed 2)
-      ✓ createBattleshipFleetBoardElement skips malformed ships and still renders valid ones [line 72] (killed 9)
+      ✓ createBattleshipFleetBoardElement skips malformed ships and still renders valid ones [line 72] (killed 10)
     paragraph.test.js
       ~ createParagraphElement given "Hello world" when creating the element then the text is set [line 17] (covered 2)
       ~ createParagraphElement given "Another test string" when creating the element then the text is set [line 17] (covered 2)
@@ -766,7 +756,7 @@ pre-formatted
 text" as text [line 27] (killed 7)
       ✓ createPreElement given "[a, b, c]" when creating the element then it sets "a
 b
-c" as text [line 27] (killed 17)
+c" as text [line 27] (killed 20)
       ✓ createPreElement given "[]" when creating the element then it sets "" as text [line 27] (killed 2)
       ~ createPreElement given "[  x,   y  ,z ]" when creating the element then it sets "x
 y
@@ -776,14 +766,14 @@ z" as text [line 27] (covered 34)
     ticTacToeBoard.test.js
       ✓ createTicTacToeBoardElement renders an empty board if moves property is missing [line 12] (killed 7)
       ~ createTicTacToeBoardElement renders an empty board if moves is not an array [line 23] (covered 16)
-      ✓ createTicTacToeBoardElement ignores moves with invalid player [line 34] (killed 37)
+      ✓ createTicTacToeBoardElement ignores moves with invalid player [line 34] (killed 35)
       ✓ createTicTacToeBoardElement ignores moves with missing position [line 51] (killed 2)
       ✓ createTicTacToeBoardElement ignores moves with out-of-bounds position [line 68] (killed 2)
       ~ createTicTacToeBoardElement only applies the first move to a cell (overlapping moves) [line 85] (covered 78)
       ~ createTicTacToeBoardElement ignores moves with missing row/column [line 103] (covered 71)
       ~ createTicTacToeBoardElement ignores moves where the move is not an object (null, number, string, array) [line 120] (covered 75)
       ✓ createTicTacToeBoardElement ignores moves where position is null, number, string, or array [line 134] (killed 3)
-      ✓ createTicTacToeBoardElement renders an empty board for empty string input [line 154] (killed 1)
+      ✓ createTicTacToeBoardElement renders an empty board for empty string input [line 154] (killed 2)
       ~ createTicTacToeBoardElement renders an empty board for valid JSON but not an object [line 166] (covered 16)
       ~ createTicTacToeBoardElement renders a board with three moves [line 178] (covered 78)
       ~ createTicTacToeBoardElement renders an empty board when there are no moves [line 198] (covered 16)
@@ -892,9 +882,9 @@ z" as text [line 27] (covered 34)
     2025-04-06/ticTacToe.test.js
       ✓ returns optimal move for invalid input [line 4] (killed 21)
       ✓ minimax early tie return is triggered [line 12] (killed 132)
-      ✓ detects win for X and returns no additional move [line 32] (killed 20)
+      ✓ detects win for X and returns no additional move [line 32] (killed 21)
       ~ returns optimal move for malformed schema [line 48] (covered 44)
-      ✓ detects invalid player alternation [line 56] (killed 3)
+      ✓ detects invalid player alternation [line 56] (killed 4)
       ✓ detects duplicate positions [line 70] (killed 3)
       ✓ detects too many moves on the board [line 84] (killed 2)
       ✓ detects full board with no remaining moves [line 106] (killed 1)
@@ -949,6 +939,7 @@ z" as text [line 27] (covered 34)
     index.test.js
       ✘ utils/index exports all utility functions [line 5] (covered 0)
       ✘ utils/index exports markdown constants [line 19] (covered 0)
+      ✓ utils/index markdown constants values are correct [line 26] (killed 8)
     objectUtils.test.js
       ✓ pick picks specified properties from an object [line 5] (killed 8)
       ✓ pick returns empty object if source is not an object [line 10] (killed 4)
@@ -988,17 +979,6 @@ z" as text [line 27] (covered 34)
       ✓ isValidBoolean returns false for non-boolean values [line 61] (killed 4)
 
 [Survived] StringLiteral
-src/browser/audio-controls.js:47:43
--       const timeDisplay = dom.createElement("span");
-+       const timeDisplay = dom.createElement("");
-Tests ran:
-    setupAudio assigns a default id to an audio element with an empty id
-    setupAudio assigns a default id to an audio element with undefined id
-    setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
-
-
-[Survived] StringLiteral
 src/browser/audio-controls.js:45:28
 -       controlsContainer.id = "controls-" + audio.id;
 +       controlsContainer.id = "" + audio.id;
@@ -1006,18 +986,7 @@ Tests ran:
     setupAudio assigns a default id to an audio element with an empty id
     setupAudio assigns a default id to an audio element with undefined id
     setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:55:38
--       dom.addEventListener(playButton, "click", onPlayClick);
-+       dom.addEventListener(playButton, "", onPlayClick);
-Tests ran:
-    setupAudio assigns a default id to an audio element with an empty id
-    setupAudio assigns a default id to an audio element with undefined id
-    setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
+  and 7 more tests!
 
 
 [Survived] StringLiteral
@@ -1028,29 +997,7 @@ Tests ran:
     setupAudio assigns a default id to an audio element with an empty id
     setupAudio assigns a default id to an audio element with undefined id
     setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:60:24
--       pauseButton.href = "#";
-+       pauseButton.href = "";
-Tests ran:
-    setupAudio assigns a default id to an audio element with an empty id
-    setupAudio assigns a default id to an audio element with undefined id
-    setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:52:23
--       playButton.href = "#";
-+       playButton.href = "";
-Tests ran:
-    setupAudio assigns a default id to an audio element with an empty id
-    setupAudio assigns a default id to an audio element with undefined id
-    setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
+  and 7 more tests!
 
 
 [Survived] StringLiteral
@@ -1061,18 +1008,7 @@ Tests ran:
     setupAudio assigns a default id to an audio element with an empty id
     setupAudio assigns a default id to an audio element with undefined id
     setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:62:39
--       dom.addEventListener(pauseButton, "click", onPauseClick);
-+       dom.addEventListener(pauseButton, "", onPauseClick);
-Tests ran:
-    setupAudio assigns a default id to an audio element with an empty id
-    setupAudio assigns a default id to an audio element with undefined id
-    setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
+  and 7 more tests!
 
 
 [Survived] StringLiteral
@@ -1083,51 +1019,7 @@ Tests ran:
     setupAudio assigns a default id to an audio element with an empty id
     setupAudio assigns a default id to an audio element with undefined id
     setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:66:23
--       stopButton.href = "#";
-+       stopButton.href = "";
-Tests ran:
-    setupAudio assigns a default id to an audio element with an empty id
-    setupAudio assigns a default id to an audio element with undefined id
-    setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:71:33
--       dom.addEventListener(audio, "timeupdate", updateTimeDisplay);
-+       dom.addEventListener(audio, "", updateTimeDisplay);
-Tests ran:
-    setupAudio assigns a default id to an audio element with an empty id
-    setupAudio assigns a default id to an audio element with undefined id
-    setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:68:38
--       dom.addEventListener(stopButton, "click", onStopClick);
-+       dom.addEventListener(stopButton, "", onStopClick);
-Tests ran:
-    setupAudio assigns a default id to an audio element with an empty id
-    setupAudio assigns a default id to an audio element with undefined id
-    setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
-
-
-[Survived] StringLiteral
-src/browser/audio-controls.js:78:59
--       dom.appendChild(controlsContainer, dom.createTextNode(" "));
-+       dom.appendChild(controlsContainer, dom.createTextNode(""));
-Tests ran:
-    setupAudio assigns a default id to an audio element with an empty id
-    setupAudio assigns a default id to an audio element with undefined id
-    setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
+  and 7 more tests!
 
 
 [Survived] StringLiteral
@@ -1138,7 +1030,7 @@ Tests ran:
     setupAudio assigns a default id to an audio element with an empty id
     setupAudio assigns a default id to an audio element with undefined id
     setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
+  and 7 more tests!
 
 
 [Survived] StringLiteral
@@ -1149,18 +1041,18 @@ Tests ran:
     setupAudio assigns a default id to an audio element with an empty id
     setupAudio assigns a default id to an audio element with undefined id
     setupAudio does not overwrite existing audio element ids
-  and 4 more tests!
+  and 7 more tests!
 
 
-[Survived] LogicalOperator
-src/browser/data.js:116:10
--     return isNonNullObject(a) && isNonNullObject(b);
-+     return isNonNullObject(a) || isNonNullObject(b);
+[Survived] StringLiteral
+src/browser/audio-controls.js:78:59
+-       dom.appendChild(controlsContainer, dom.createTextNode(" "));
++       dom.appendChild(controlsContainer, dom.createTextNode(""));
 Tests ran:
-    deepMerge should use the if branch when shouldDeepMerge is true (deep merge plain objects)
-    deepMerge replaces array values instead of merging them
-    deepMerge does not merge an array with an object
-  and 5 more tests!
+    setupAudio assigns a default id to an audio element with an empty id
+    setupAudio assigns a default id to an audio element with undefined id
+    setupAudio does not overwrite existing audio element ids
+  and 7 more tests!
 
 
 [Survived] BlockStatement
@@ -1176,15 +1068,15 @@ Tests ran:
     getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it
 
 
-[Survived] ConditionalExpression
-src/browser/data.js:168:28
--     return Boolean(value) && typeof value === 'object';
-+     return Boolean(value) && true;
+[Survived] StringLiteral
+src/browser/data.js:179:7
+-         "setData requires an object with at least a 'temporary' property."
++         ""
 Tests ran:
-    deepMerge should use the if branch when shouldDeepMerge is true (deep merge plain objects)
-    deepMerge replaces array values instead of merging them
-    deepMerge does not merge an array with an object
-  and 4 more tests!
+    getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing
+    getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is object but lacks temporary property
+    getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is null
+  and 2 more tests!
 
 
 [Survived] ObjectLiteral
@@ -1194,6 +1086,22 @@ src/browser/tags.js:24:23
 Tests ran:
     makeHandleClassName calls addEventListener when className starts with tag-
     handleTagLinks applies makeHandleLink(dom) to each <a> element
+
+
+[Survived] StringLiteral
+src/browser/tags.js:71:46
+-       dom.appendChild(span, dom.createTextNode(" ("));
++       dom.appendChild(span, dom.createTextNode(""));
+Tests ran:
+    makeHandleHideSpan invokes makeHandleHideSpan and its returned function with minimal mock dom
+
+
+[Survived] StringLiteral
+src/browser/tags.js:70:24
+-       dom.addClass(span, 'hide-span');
++       dom.addClass(span, "");
+Tests ran:
+    makeHandleHideSpan invokes makeHandleHideSpan and its returned function with minimal mock dom
 
 
 [Survived] BlockStatement
@@ -1216,22 +1124,6 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/tags.js:70:24
--       dom.addClass(span, 'hide-span');
-+       dom.addClass(span, "");
-Tests ran:
-    makeHandleHideSpan invokes makeHandleHideSpan and its returned function with minimal mock dom
-
-
-[Survived] StringLiteral
-src/browser/tags.js:71:46
--       dom.appendChild(span, dom.createTextNode(" ("));
-+       dom.appendChild(span, dom.createTextNode(""));
-Tests ran:
-    makeHandleHideSpan invokes makeHandleHideSpan and its returned function with minimal mock dom
-
-
-[Survived] StringLiteral
 src/browser/tags.js:69:36
 -       const span = dom.createElement('span');
 +       const span = dom.createElement("");
@@ -1248,17 +1140,17 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/tags.js:74:34
--       dom.setTextContent(hideLink, "hide");
-+       dom.setTextContent(hideLink, "");
+src/browser/tags.js:77:36
+-       dom.addEventListener(hideLink, 'click', handleHideClick);
++       dom.addEventListener(hideLink, "", handleHideClick);
 Tests ran:
     makeHandleHideSpan invokes makeHandleHideSpan and its returned function with minimal mock dom
 
 
 [Survived] StringLiteral
-src/browser/tags.js:77:36
--       dom.addEventListener(hideLink, 'click', handleHideClick);
-+       dom.addEventListener(hideLink, "", handleHideClick);
+src/browser/tags.js:74:34
+-       dom.setTextContent(hideLink, "hide");
++       dom.setTextContent(hideLink, "");
 Tests ran:
     makeHandleHideSpan invokes makeHandleHideSpan and its returned function with minimal mock dom
 
@@ -1281,10 +1173,10 @@ Tests ran:
     makeHandleHideClick calls stopDefault and hides only articles with the given class
 
 
-[Survived] ConditionalExpression
+[Survived] LogicalOperator
 src/browser/toys.js:23:9
 -       if (pair && typeof pair === 'object' && 'key' in pair) {
-+       if (true && 'key' in pair) {
++       if (pair || typeof pair === 'object' && 'key' in pair) {
 Tests ran:
     parseExistingRows should convert an array of key-value pairs to an object
     parseExistingRows should handle arrays with undefined/null values
@@ -1292,10 +1184,10 @@ Tests ran:
   and 3 more tests!
 
 
-[Survived] LogicalOperator
+[Survived] ConditionalExpression
 src/browser/toys.js:23:9
 -       if (pair && typeof pair === 'object' && 'key' in pair) {
-+       if (pair || typeof pair === 'object' && 'key' in pair) {
++       if (true && 'key' in pair) {
 Tests ran:
     parseExistingRows should convert an array of key-value pairs to an object
     parseExistingRows should handle arrays with undefined/null values
@@ -1312,6 +1204,14 @@ Tests ran:
     parseExistingRows should handle arrays with undefined/null values
     parseExistingRows should skip items without a key property in array input
   and 3 more tests!
+
+
+[Survived] StringLiteral
+src/browser/toys.js:32:63
+-       const existing = JSON.parse(dom.getValue(inputElement) || '{}');
++       const existing = JSON.parse(dom.getValue(inputElement) || "");
+Tests ran:
+    parseExistingRows should parse an empty input as an empty object
 
 
 [Survived] BlockStatement
@@ -1334,40 +1234,10 @@ Tests ran:
     toys handleDropdownChange handles dropdown change with empty output data
 
 
-[Survived] BlockStatement
-src/browser/toys.js:243:38
--   function getDropdownPostId(dropdown) {
--     const article = getDropdownArticle(dropdown);
--     return article.id;
--   }
-+   function getDropdownPostId(dropdown) {}
-Tests ran:
-    toys handleDropdownChange logs the correct postId and selectedValue when dropdown changes
-    toys handleDropdownChange handles dropdown change with empty output data
-
-
-[Survived] OptionalChaining
-src/browser/toys.js:252:18
--     const output = data.output?.[postId];
-+     const output = data.output[postId];
-Tests ran:
-    toys handleDropdownChange logs the correct postId and selectedValue when dropdown changes
-    toys handleDropdownChange handles dropdown change with empty output data
-
-
 [Survived] ConditionalExpression
 src/browser/toys.js:255:58
 -     setTextContent({ presenterKey: selectedValue, content: output || '' }, dom, parent);
 +     setTextContent({ presenterKey: selectedValue, content: false }, dom, parent);
-Tests ran:
-    toys handleDropdownChange logs the correct postId and selectedValue when dropdown changes
-    toys handleDropdownChange handles dropdown change with empty output data
-
-
-[Survived] ConditionalExpression
-src/browser/toys.js:255:58
--     setTextContent({ presenterKey: selectedValue, content: output || '' }, dom, parent);
-+     setTextContent({ presenterKey: selectedValue, content: true }, dom, parent);
 Tests ran:
     toys handleDropdownChange logs the correct postId and selectedValue when dropdown changes
     toys handleDropdownChange handles dropdown change with empty output data
@@ -1398,17 +1268,6 @@ src/browser/toys.js:329:27
 +     return function(module) {};
 Tests ran:
     toys initialiseModule can be invoked with minimal arguments
-
-
-[Survived] ObjectLiteral
-src/browser/toys.js:422:24
--       const moduleInfo = { article, modulePath, functionName };
-+       const moduleInfo = {};
-Tests ran:
-    toys makeCreateIntersectionObserver returns the result of makeIntersectionObserver
-    toys makeCreateIntersectionObserver calls makeIntersectionObserver with a callback
-    toys makeCreateIntersectionObserver calls importModule when entry is intersecting
-  and 3 more tests!
 
 
 [Survived] StringLiteral
@@ -1486,6 +1345,17 @@ Tests ran:
 
 
 [Survived] StringLiteral
+src/browser/toys.js:615:35
+-     const keyEl = dom.createElement('input');
++     const keyEl = dom.createElement("");
+Tests ran:
+    createKeyValueRow creates a row with key and value inputs
+    createKeyValueRow creates a remove button for non-last rows
+    createKeyValueRow creates an add button for the last row
+  and 6 more tests!
+
+
+[Survived] StringLiteral
 src/browser/toys.js:616:22
 -     dom.setType(keyEl, 'text');
 +     dom.setType(keyEl, "");
@@ -1496,10 +1366,10 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] ConditionalExpression
-src/browser/toys.js:761:7
--     if (isAddButton) {
-+     if (false) {
+[Survived] ArrowFunction
+src/browser/toys.js:624:29
+-     const removeKeyListener = () => dom.removeEventListener(keyEl, 'input', onKey);
++     const removeKeyListener = () => undefined;
 Tests ran:
     createKeyValueRow creates a row with key and value inputs
     createKeyValueRow creates a remove button for non-last rows
@@ -1508,9 +1378,17 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/toys.js:759:23
--     dom.setType(button, 'button');
-+     dom.setType(button, "");
+src/browser/toys.js:624:66
+-     const removeKeyListener = () => dom.removeEventListener(keyEl, 'input', onKey);
++     const removeKeyListener = () => dom.removeEventListener(keyEl, "", onKey);
+Tests ran:
+    createKeyValueRow handles cleanup when disposers are called
+
+
+[Survived] ConditionalExpression
+src/browser/toys.js:749:37
+-       const btnEl = createButton(dom, idx === entries.length - 1, rows, render, key, disposers);
++       const btnEl = createButton(dom, false, rows, render, key, disposers);
 Tests ran:
     createKeyValueRow creates a row with key and value inputs
     createKeyValueRow creates a remove button for non-last rows
@@ -1529,16 +1407,15 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] BlockStatement
-src/browser/toys.js:761:20
+[Survived] ConditionalExpression
+src/browser/toys.js:761:7
 -     if (isAddButton) {
--       setupAddButton(dom, button, rows, render, disposers);
--     } else {
-+     if (isAddButton) {} else {
++     if (false) {
 Tests ran:
-    Key-Value Input should fail when called with no arguments
-    createRenderer should create a renderer function
-    handleKVType can be invoked with an empty DOM object
+    createKeyValueRow creates a row with key and value inputs
+    createKeyValueRow creates a remove button for non-last rows
+    createKeyValueRow creates an add button for the last row
+  and 6 more tests!
 
 
 [Survived] BlockStatement
@@ -1590,6 +1467,16 @@ Tests ran:
   and 1 more test!
 
 
+[Survived] ObjectLiteral
+src/browser/toys.js:869:40
+-     if (!handleParsedResult(parsed, env, { parent, presenterKey })) {
++     if (!handleParsedResult(parsed, env, {})) {
+Tests ran:
+    processInputAndSetOutput should process input and set output with mocked DOM functions
+    processInputAndSetOutput falls back to setTextContent when JSON cannot be parsed
+    processInputAndSetOutput falls back to setTextContent when the parsed request is invalid
+
+
 [Survived] BlockStatement
 src/browser/toys.js:879:15
 -     } catch (e) {
@@ -1600,10 +1487,13 @@ Tests ran:
     toys initializeInteractiveComponent attaches click and keypress listeners with expected arguments
 
 
-[Survived] BooleanLiteral
-src/browser/toys.js:903:27
+[Survived] BlockStatement
+src/browser/toys.js:901:60
+-   function disableInputAndButton(inputElement, submitButton) {
+-     inputElement.disabled = true;
 -     submitButton.disabled = true;
-+     submitButton.disabled = false;
+-   }
++   function disableInputAndButton(inputElement, submitButton) {}
 Tests ran:
     toys initialiseModule can be invoked with minimal arguments
     toys initializeInteractiveComponent attaches click and keypress listeners with expected arguments
@@ -1614,6 +1504,16 @@ Tests ran:
 src/browser/toys.js:902:27
 -     inputElement.disabled = true;
 +     inputElement.disabled = false;
+Tests ran:
+    toys initialiseModule can be invoked with minimal arguments
+    toys initializeInteractiveComponent attaches click and keypress listeners with expected arguments
+    toys initializeInteractiveComponent does not call handleSubmit when a non-Enter key is pressed
+
+
+[Survived] BooleanLiteral
+src/browser/toys.js:903:27
+-     submitButton.disabled = true;
++     submitButton.disabled = false;
 Tests ran:
     toys initialiseModule can be invoked with minimal arguments
     toys initializeInteractiveComponent attaches click and keypress listeners with expected arguments
@@ -1631,9 +1531,9 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/toys.js:921:51
--     const outputSelect = dom.querySelector(article, 'select.output');
-+     const outputSelect = dom.querySelector(article, "");
+src/browser/toys.js:920:51
+-     const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
++     const outputParent = dom.querySelector(article, ""); // Get the parent element
 Tests ran:
     toys initialiseModule can be invoked with minimal arguments
     toys initializeInteractiveComponent attaches click and keypress listeners with expected arguments
@@ -1641,9 +1541,9 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/browser/toys.js:920:51
--     const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
-+     const outputParent = dom.querySelector(article, ""); // Get the parent element
+src/browser/toys.js:921:51
+-     const outputSelect = dom.querySelector(article, 'select.output');
++     const outputSelect = dom.querySelector(article, "");
 Tests ran:
     toys initialiseModule can be invoked with minimal arguments
     toys initializeInteractiveComponent attaches click and keypress listeners with expected arguments
@@ -1690,41 +1590,12 @@ Tests ran:
     handleKVType can be invoked with an empty DOM object
 
 
-[Survived] EqualityOperator
-src/browser/toys.js:1026:9
--       if (Object.keys(rows).length === 0) {
-+       if (Object.keys(rows).length !== 0) {
-Tests ran:
-    Key-Value Input should fail when called with no arguments
-    createRenderer should create a renderer function
-    handleKVType can be invoked with an empty DOM object
-
-
 [Survived] BlockStatement
-src/browser/toys.js:1039:67
--   export const ensureKeyValueInput = (container, textInput, dom) => {
--     let kvContainer = dom.querySelector(container, '.kv-container');
--     if (!kvContainer) {
--       kvContainer = dom.createElement('div');
--       dom.setClassName(kvContainer, 'kv-container');
--       const nextSibling = dom.getNextSibling(textInput);
--       dom.insertBefore(container, kvContainer, nextSibling);
--     }
--     // ---------------------------------------------------------------------
--     // State + bookkeeping
--     // ---------------------------------------------------------------------
--     const rows = parseExistingRows(dom, textInput);
--     const disposers = [];
--     // Create the render function with the required dependencies
--     const render = createRenderer(dom, disposers, kvContainer, rows, textInput, syncHiddenField);
--     // Initial render
--     render();
--     // Public API for cleanup by parent code
--     const dispose = createDispose(disposers, dom, kvContainer, rows);
--     kvContainer._dispose = dispose;
--     return kvContainer;
--   };
-+   export const ensureKeyValueInput = (container, textInput, dom) => {};
+src/browser/toys.js:1026:41
+-       if (Object.keys(rows).length === 0) {
+-         rows[''] = '';
+-       }
++       if (Object.keys(rows).length === 0) {}
 Tests ran:
     Key-Value Input should fail when called with no arguments
     handleKVType can be invoked with an empty DOM object
@@ -1773,35 +1644,6 @@ Tests ran:
     Key-Value Input should fail when called with no arguments
 
 
-[Survived] ObjectLiteral
-src/constants/markdown.js:4:47
--   export const MARKDOWN_MARKERS = Object.freeze({
--     ASTERISK: '*',
--     UNDERSCORE: '_',
--     BACKTICK: '`',
--     TILDE: '~',
--     DASH: '-',
--     EQUAL: '=',
--     HASH: '#',
--     GREATER_THAN: '>',
--     PIPE: '|',
--     BACKSLASH: '\\',
--     SLASH: '/',
--     EXCLAMATION: '!',
--     BRACKET_OPEN: '[',
--     BRACKET_CLOSE: ']',
--     PAREN_OPEN: '(',
--     PAREN_CLOSE: ')'
--   });
-+   export const MARKDOWN_MARKERS = Object.freeze({});
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/constants/markdown.js:5:13
--     ASTERISK: '*',
-+     ASTERISK: "",
-Ran all tests for this mutant.
-
 [Survived] StringLiteral
 src/constants/markdown.js:6:15
 -     UNDERSCORE: '_',
@@ -1827,27 +1669,27 @@ src/constants/markdown.js:9:9
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/constants/markdown.js:10:10
--     EQUAL: '=',
-+     EQUAL: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/constants/markdown.js:12:17
--     GREATER_THAN: '>',
-+     GREATER_THAN: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/constants/markdown.js:11:9
 -     HASH: '#',
 +     HASH: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
+src/constants/markdown.js:10:10
+-     EQUAL: '=',
++     EQUAL: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
 src/constants/markdown.js:14:14
 -     BACKSLASH: '\\',
 +     BACKSLASH: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/constants/markdown.js:12:17
+-     GREATER_THAN: '>',
++     GREATER_THAN: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -1863,15 +1705,15 @@ src/constants/markdown.js:15:10
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/constants/markdown.js:17:17
--     BRACKET_OPEN: '[',
-+     BRACKET_OPEN: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/constants/markdown.js:16:16
 -     EXCLAMATION: '!',
 +     EXCLAMATION: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/constants/markdown.js:17:17
+-     BRACKET_OPEN: '[',
++     BRACKET_OPEN: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -1886,26 +1728,10 @@ src/constants/markdown.js:20:16
 +     PAREN_CLOSE: ""
 Ran all tests for this mutant.
 
-[Survived] ObjectLiteral
-src/constants/markdown.js:26:40
--   export const HTML_TAGS = Object.freeze({
--     EMPHASIS: 'em',
--     STRONG: 'strong',
--     CODE: 'code',
--     PARAGRAPH: 'p',
--     BLOCKQUOTE: 'blockquote',
--     LIST: 'ul',
--     LIST_ITEM: 'li',
--     ORDERED_LIST: 'ol',
--     HORIZONTAL_RULE: 'hr',
--     LINE_BREAK: 'br',
--     LINK: 'a',
--     IMAGE: 'img',
--     DIV: 'div',
--     SPAN: 'span',
--     PRE: 'pre'
--   });
-+   export const HTML_TAGS = Object.freeze({});
+[Survived] StringLiteral
+src/constants/markdown.js:19:15
+-     PAREN_OPEN: '(',
++     PAREN_OPEN: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -1915,27 +1741,9 @@ src/constants/markdown.js:28:11
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/constants/markdown.js:27:13
--     EMPHASIS: 'em',
-+     EMPHASIS: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/constants/markdown.js:29:9
 -     CODE: 'code',
 +     CODE: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/constants/markdown.js:19:15
--     PAREN_OPEN: '(',
-+     PAREN_OPEN: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/constants/markdown.js:31:15
--     BLOCKQUOTE: 'blockquote',
-+     BLOCKQUOTE: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -1945,21 +1753,21 @@ src/constants/markdown.js:30:14
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/constants/markdown.js:32:9
--     LIST: 'ul',
-+     LIST: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/constants/markdown.js:35:20
--     HORIZONTAL_RULE: 'hr',
-+     HORIZONTAL_RULE: "",
+src/constants/markdown.js:31:15
+-     BLOCKQUOTE: 'blockquote',
++     BLOCKQUOTE: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
 src/constants/markdown.js:33:14
 -     LIST_ITEM: 'li',
 +     LIST_ITEM: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/constants/markdown.js:32:9
+-     LIST: 'ul',
++     LIST: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -1975,21 +1783,27 @@ src/constants/markdown.js:36:15
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
+src/constants/markdown.js:35:20
+-     HORIZONTAL_RULE: 'hr',
++     HORIZONTAL_RULE: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
 src/constants/markdown.js:37:9
 -     LINK: 'a',
 +     LINK: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/constants/markdown.js:39:8
--     DIV: 'div',
-+     DIV: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
 src/constants/markdown.js:38:10
 -     IMAGE: 'img',
 +     IMAGE: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/constants/markdown.js:39:8
+-     DIV: 'div',
++     DIV: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -2004,46 +1818,10 @@ src/constants/markdown.js:41:8
 +     PRE: ""
 Ran all tests for this mutant.
 
-[Survived] ObjectLiteral
-src/constants/markdown.js:47:42
--   export const CSS_CLASSES = Object.freeze({
--     CONTAINER: 'markdown-container',
--     HEADING: 'markdown-heading',
--     PARAGRAPH: 'markdown-paragraph',
--     LIST: 'markdown-list',
--     LIST_ITEM: 'markdown-list-item',
--     BLOCKQUOTE: 'markdown-blockquote',
--     CODE: 'markdown-code',
--     INLINE_CODE: 'markdown-inline-code',
--     LINK: 'markdown-link',
--     IMAGE: 'markdown-image',
--     HORIZONTAL_RULE: 'markdown-hr'
--   });
-+   export const CSS_CLASSES = Object.freeze({});
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/constants/markdown.js:48:14
--     CONTAINER: 'markdown-container',
-+     CONTAINER: "",
-Ran all tests for this mutant.
-
 [Survived] StringLiteral
 src/constants/markdown.js:49:12
 -     HEADING: 'markdown-heading',
 +     HEADING: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/constants/markdown.js:52:14
--     LIST_ITEM: 'markdown-list-item',
-+     LIST_ITEM: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/constants/markdown.js:50:14
--     PARAGRAPH: 'markdown-paragraph',
-+     PARAGRAPH: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -2053,15 +1831,15 @@ src/constants/markdown.js:51:9
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/constants/markdown.js:55:16
--     INLINE_CODE: 'markdown-inline-code',
-+     INLINE_CODE: "",
+src/constants/markdown.js:50:14
+-     PARAGRAPH: 'markdown-paragraph',
++     PARAGRAPH: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/constants/markdown.js:54:9
--     CODE: 'markdown-code',
-+     CODE: "",
+src/constants/markdown.js:52:14
+-     LIST_ITEM: 'markdown-list-item',
++     LIST_ITEM: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -2071,50 +1849,15 @@ src/constants/markdown.js:53:15
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/constants/markdown.js:58:20
--     HORIZONTAL_RULE: 'markdown-hr'
-+     HORIZONTAL_RULE: ""
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
-src/constants/markdown.js:64:46
--   export const DEFAULT_OPTIONS = Object.freeze({
--     gfm: true,
--     tables: true,
--     breaks: false,
--     pedantic: false,
--     sanitize: false,
--     smartLists: true,
--     smartypants: false,
--     xhtml: false,
--     highlight: null,
--     langPrefix: 'language-',
--     headerIds: true,
--     headerPrefix: '',
--     mangle: true,
--     baseUrl: null,
--     linkTarget: null,
--     renderer: null
--   });
-+   export const DEFAULT_OPTIONS = Object.freeze({});
+src/constants/markdown.js:54:9
+-     CODE: 'markdown-code',
++     CODE: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/constants/markdown.js:57:10
--     IMAGE: 'markdown-image',
-+     IMAGE: "",
-Ran all tests for this mutant.
-
-[Survived] BooleanLiteral
-src/constants/markdown.js:65:8
--     gfm: true,
-+     gfm: false,
-Ran all tests for this mutant.
-
-[Survived] BooleanLiteral
-src/constants/markdown.js:66:11
--     tables: true,
-+     tables: false,
+src/constants/markdown.js:55:16
+-     INLINE_CODE: 'markdown-inline-code',
++     INLINE_CODE: "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -2123,16 +1866,22 @@ src/constants/markdown.js:56:9
 +     LINK: "",
 Ran all tests for this mutant.
 
-[Survived] BooleanLiteral
-src/constants/markdown.js:68:13
--     pedantic: false,
-+     pedantic: true,
+[Survived] StringLiteral
+src/constants/markdown.js:57:10
+-     IMAGE: 'markdown-image',
++     IMAGE: "",
+Ran all tests for this mutant.
+
+[Survived] StringLiteral
+src/constants/markdown.js:58:20
+-     HORIZONTAL_RULE: 'markdown-hr'
++     HORIZONTAL_RULE: ""
 Ran all tests for this mutant.
 
 [Survived] BooleanLiteral
-src/constants/markdown.js:69:13
--     sanitize: false,
-+     sanitize: true,
+src/constants/markdown.js:66:11
+-     tables: true,
++     tables: false,
 Ran all tests for this mutant.
 
 [Survived] BooleanLiteral
@@ -2142,15 +1891,21 @@ src/constants/markdown.js:67:11
 Ran all tests for this mutant.
 
 [Survived] BooleanLiteral
+src/constants/markdown.js:68:13
+-     pedantic: false,
++     pedantic: true,
+Ran all tests for this mutant.
+
+[Survived] BooleanLiteral
 src/constants/markdown.js:70:15
 -     smartLists: true,
 +     smartLists: false,
 Ran all tests for this mutant.
 
 [Survived] BooleanLiteral
-src/constants/markdown.js:71:16
--     smartypants: false,
-+     smartypants: true,
+src/constants/markdown.js:69:13
+-     sanitize: false,
++     sanitize: true,
 Ran all tests for this mutant.
 
 [Survived] BooleanLiteral
@@ -2166,21 +1921,27 @@ src/constants/markdown.js:74:15
 Ran all tests for this mutant.
 
 [Survived] BooleanLiteral
-src/constants/markdown.js:77:11
--     mangle: true,
-+     mangle: false,
-Ran all tests for this mutant.
-
-[Survived] BooleanLiteral
 src/constants/markdown.js:75:14
 -     headerIds: true,
 +     headerIds: false,
+Ran all tests for this mutant.
+
+[Survived] BooleanLiteral
+src/constants/markdown.js:71:16
+-     smartypants: false,
++     smartypants: true,
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
 src/constants/markdown.js:76:17
 -     headerPrefix: '',
 +     headerPrefix: "Stryker was here!",
+Ran all tests for this mutant.
+
+[Survived] BooleanLiteral
+src/constants/markdown.js:77:11
+-     mangle: true,
++     mangle: false,
 Ran all tests for this mutant.
 
 [Survived] ConditionalExpression
@@ -2216,10 +1977,26 @@ Tests ran:
   and 2 more tests!
 
 
-[Survived] ArrowFunction
-src/generator/generator.js:187:31
+[Survived] BlockStatement
+src/generator/generator.js:182:32
+-   function createHeaderContent() {
+-     const valueDivs = [
+-       createValueDiv(HEADER_BANNER),
+-       createValueDiv(METADATA_TEXT, [CLASS.METADATA])
+-     ];
 -     const parts = valueDivs.map(valueDiv => createLabeledSection({ label: '', valueHTML: valueDiv, wrapValueDiv: false }));
-+     const parts = valueDivs.map(() => undefined);
+-     return join(parts);
+-   }
++   function createHeaderContent() {}
+Tests ran:
+    generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
+    getBlogGenerationArgs returns an object with header, footer, and wrapFunc
+
+
+[Survived] ArrayDeclaration
+src/generator/generator.js:185:35
+-       createValueDiv(METADATA_TEXT, [CLASS.METADATA])
++       createValueDiv(METADATA_TEXT, [])
 Tests ran:
     generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
@@ -2237,26 +2014,10 @@ Tests ran:
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
 
 
-[Survived] ArrayDeclaration
-src/generator/generator.js:185:35
--       createValueDiv(METADATA_TEXT, [CLASS.METADATA])
-+       createValueDiv(METADATA_TEXT, [])
-Tests ran:
-    generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
-    getBlogGenerationArgs returns an object with header, footer, and wrapFunc
-
-
-[Survived] BlockStatement
-src/generator/generator.js:182:32
--   function createHeaderContent() {
--     const valueDivs = [
--       createValueDiv(HEADER_BANNER),
--       createValueDiv(METADATA_TEXT, [CLASS.METADATA])
--     ];
+[Survived] ObjectLiteral
+src/generator/generator.js:187:64
 -     const parts = valueDivs.map(valueDiv => createLabeledSection({ label: '', valueHTML: valueDiv, wrapValueDiv: false }));
--     return join(parts);
--   }
-+   function createHeaderContent() {}
++     const parts = valueDivs.map(valueDiv => createLabeledSection({}));
 Tests ran:
     generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
@@ -2271,15 +2032,6 @@ Tests ran:
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
 
 
-[Survived] ObjectLiteral
-src/generator/generator.js:187:64
--     const parts = valueDivs.map(valueDiv => createLabeledSection({ label: '', valueHTML: valueDiv, wrapValueDiv: false }));
-+     const parts = valueDivs.map(valueDiv => createLabeledSection({}));
-Tests ran:
-    generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
-    getBlogGenerationArgs returns an object with header, footer, and wrapFunc
-
-
 [Survived] BooleanLiteral
 src/generator/generator.js:187:112
 -     const parts = valueDivs.map(valueDiv => createLabeledSection({ label: '', valueHTML: valueDiv, wrapValueDiv: false }));
@@ -2289,14 +2041,21 @@ Tests ran:
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
 
 
+[Survived] ArrowFunction
+src/generator/generator.js:187:31
+-     const parts = valueDivs.map(valueDiv => createLabeledSection({ label: '', valueHTML: valueDiv, wrapValueDiv: false }));
++     const parts = valueDivs.map(() => undefined);
+Tests ran:
+    generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
+    getBlogGenerationArgs returns an object with header, footer, and wrapFunc
+
+
 [Survived] BlockStatement
-src/generator/generator.js:217:32
--   function createFooterContent() {
--     const classes = joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]);
--     const footerDiv = createDiv(classes, WARNING_MESSAGE);
--     return createLabeledSection({ label: '', valueHTML: footerDiv, wrapValueDiv: false });
+src/generator/generator.js:196:33
+-   function createSection(content) {
+-     return createDiv(CLASS.ENTRY, content);
 -   }
-+   function createFooterContent() {}
++   function createSection(content) {}
 Tests ran:
     generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
@@ -2315,20 +2074,13 @@ Tests ran:
 
 
 [Survived] BlockStatement
-src/generator/generator.js:196:33
--   function createSection(content) {
--     return createDiv(CLASS.ENTRY, content);
--   }
-+   function createSection(content) {}
-Tests ran:
-    generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
-    getBlogGenerationArgs returns an object with header, footer, and wrapFunc
-
-
-[Survived] ObjectLiteral
-src/generator/generator.js:220:31
+src/generator/generator.js:217:32
+-   function createFooterContent() {
+-     const classes = joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]);
+-     const footerDiv = createDiv(classes, WARNING_MESSAGE);
 -     return createLabeledSection({ label: '', valueHTML: footerDiv, wrapValueDiv: false });
-+     return createLabeledSection({});
+-   }
++   function createFooterContent() {}
 Tests ran:
     generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
@@ -2338,6 +2090,15 @@ Tests ran:
 src/generator/generator.js:218:31
 -     const classes = joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]);
 +     const classes = joinClasses([]);
+Tests ran:
+    generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
+    getBlogGenerationArgs returns an object with header, footer, and wrapFunc
+
+
+[Survived] ObjectLiteral
+src/generator/generator.js:220:31
+-     return createLabeledSection({ label: '', valueHTML: footerDiv, wrapValueDiv: false });
++     return createLabeledSection({});
 Tests ran:
     generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
@@ -2432,21 +2193,21 @@ Tests ran:
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
 
 
+[Survived] StringLiteral
+src/generator/generator.js:268:10
+-     return '</div>';
++     return "";
+Tests ran:
+    generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
+    getBlogGenerationArgs returns an object with header, footer, and wrapFunc
+
+
 [Survived] BlockStatement
 src/generator/generator.js:274:28
 -   function createBodyClose() {
 -     return '</body>';
 -   }
 +   function createBodyClose() {}
-Tests ran:
-    generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
-    getBlogGenerationArgs returns an object with header, footer, and wrapFunc
-
-
-[Survived] StringLiteral
-src/generator/generator.js:268:10
--     return '</div>';
-+     return "";
 Tests ran:
     generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
@@ -2462,18 +2223,18 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/generator/generator.js:286:5
--       '<script type="module" src="browser/main.js" defer></script>',
-+       "",
+src/generator/generator.js:283:5
+-       '',
++       "Stryker was here!",
 Tests ran:
     generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
 
 
 [Survived] StringLiteral
-src/generator/generator.js:283:5
--       '',
-+       "Stryker was here!",
+src/generator/generator.js:286:5
+-       '<script type="module" src="browser/main.js" defer></script>',
++       "",
 Tests ran:
     generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
     getBlogGenerationArgs returns an object with header, footer, and wrapFunc
@@ -2496,6 +2257,14 @@ Tests ran:
     Blog Generator should render quotes as blockquotes
 
 
+[Survived] ConditionalExpression
+src/generator/generator.js:544:38
+-     return Array.isArray(post.tags) && post.tags.length > 0;
++     return Array.isArray(post.tags) && true;
+Tests ran:
+    Blog Generator should display tags for posts
+
+
 [Survived] EqualityOperator
 src/generator/generator.js:544:38
 -     return Array.isArray(post.tags) && post.tags.length > 0;
@@ -2505,17 +2274,19 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/generator/generator.js:544:38
--     return Array.isArray(post.tags) && post.tags.length > 0;
-+     return Array.isArray(post.tags) && true;
-Tests ran:
-    Blog Generator should display tags for posts
-
-
-[Survived] ConditionalExpression
 src/generator/generator.js:580:10
 -     return Array.isArray(value) && value.length > 0;
 +     return true;
+Tests ran:
+    Blog Generator should generate complete HTML page with multiple posts
+    Blog Generator should contain related links for a post
+    Blog Generator should contain a toy component for a post
+
+
+[Survived] ConditionalExpression
+src/generator/generator.js:580:34
+-     return Array.isArray(value) && value.length > 0;
++     return Array.isArray(value) && true;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain related links for a post
@@ -2536,16 +2307,6 @@ Tests ran:
 src/generator/generator.js:580:34
 -     return Array.isArray(value) && value.length > 0;
 +     return Array.isArray(value) && value.length >= 0;
-Tests ran:
-    Blog Generator should generate complete HTML page with multiple posts
-    Blog Generator should contain related links for a post
-    Blog Generator should contain a toy component for a post
-
-
-[Survived] ConditionalExpression
-src/generator/generator.js:580:34
--     return Array.isArray(value) && value.length > 0;
-+     return Array.isArray(value) && true;
 Tests ran:
     Blog Generator should generate complete HTML page with multiple posts
     Blog Generator should contain related links for a post
@@ -2734,18 +2495,18 @@ Tests ran:
     generateBlogOuter returns a string of HTML when given a blog object with an empty posts array
 
 
+[Survived] StringLiteral
+src/generator/html.js:4:24
+-   export const DOCTYPE = '<!DOCTYPE html>';
++   export const DOCTYPE = "";
+Ran all tests for this mutant.
+
 [Survived] ObjectLiteral
 src/generator/html.js:7:25
 -   export const LANGUAGE = {
 -     EN: 'en',
 -   };
 +   export const LANGUAGE = {};
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/html.js:4:24
--   export const DOCTYPE = '<!DOCTYPE html>';
-+   export const DOCTYPE = "";
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -2766,6 +2527,12 @@ src/generator/html.js:16:9
 +     LANG: "",
 Ran all tests for this mutant.
 
+[Survived] ObjectLiteral
+src/generator/html.js:24:3
+-     { from: /</g, to: '&lt;' },
++     {},
+Ran all tests for this mutant.
+
 [Survived] StringLiteral
 src/generator/html.js:24:21
 -     { from: /</g, to: '&lt;' },
@@ -2773,14 +2540,8 @@ src/generator/html.js:24:21
 Ran all tests for this mutant.
 
 [Survived] ObjectLiteral
-src/generator/html.js:24:3
--     { from: /</g, to: '&lt;' },
-+     {},
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
-src/generator/html.js:25:3
--     { from: />/g, to: '&gt;' },
+src/generator/html.js:26:3
+-     { from: /"/g, to: '&quot;' },
 +     {},
 Ran all tests for this mutant.
 
@@ -2791,8 +2552,14 @@ src/generator/html.js:25:21
 Ran all tests for this mutant.
 
 [Survived] ObjectLiteral
-src/generator/html.js:26:3
--     { from: /"/g, to: '&quot;' },
+src/generator/html.js:25:3
+-     { from: />/g, to: '&gt;' },
++     {},
+Ran all tests for this mutant.
+
+[Survived] ObjectLiteral
+src/generator/html.js:27:3
+-     { from: /'/g, to: '&#039;' },
 +     {},
 Ran all tests for this mutant.
 
@@ -2800,12 +2567,6 @@ Ran all tests for this mutant.
 src/generator/html.js:26:21
 -     { from: /"/g, to: '&quot;' },
 +     { from: /"/g, to: "" },
-Ran all tests for this mutant.
-
-[Survived] ObjectLiteral
-src/generator/html.js:27:3
--     { from: /'/g, to: '&#039;' },
-+     {},
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -3039,12 +2800,63 @@ src/generator/title.js:10:30
 +   export const HEADER_BANNER = ``;
 Ran all tests for this mutant.
 
+[Survived] ConditionalExpression
+src/presenters/battleshipSolitaireClues.js:27:7
+-     if (!obj || typeof obj !== 'object') {return 'Invalid JSON object';}
++     if (false) {return 'Invalid JSON object';}
+Tests ran:
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when rowClues / colClues arrays are missing
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when clue values are non‑numeric
+  and 2 more tests!
+
+
+[Survived] LogicalOperator
+src/presenters/battleshipSolitaireClues.js:27:7
+-     if (!obj || typeof obj !== 'object') {return 'Invalid JSON object';}
++     if (!obj && typeof obj !== 'object') {return 'Invalid JSON object';}
+Tests ran:
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when rowClues / colClues arrays are missing
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when clue values are non‑numeric
+  and 2 more tests!
+
+
+[Survived] ConditionalExpression
+src/presenters/battleshipSolitaireClues.js:27:15
+-     if (!obj || typeof obj !== 'object') {return 'Invalid JSON object';}
++     if (!obj || false) {return 'Invalid JSON object';}
+Tests ran:
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when rowClues / colClues arrays are missing
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when clue values are non‑numeric
+  and 2 more tests!
+
+
 [Survived] BlockStatement
 src/presenters/battleshipSolitaireClues.js:27:40
 -     if (!obj || typeof obj !== 'object') {return 'Invalid JSON object';}
 +     if (!obj || typeof obj !== 'object') {}
 Tests ran:
     createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object
+
+
+[Survived] MethodExpression
+src/presenters/battleshipSolitaireClues.js:32:10
+-         || obj.colClues.some(n => typeof n !== 'number')) {
++         || obj.colClues.every(n => typeof n !== 'number')) {
+Tests ran:
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when any array is empty
+    createBattleshipCluesBoardElement – successful render renders padded multi‑digit row clues and stacked column clues
+
+
+[Survived] ArrowFunction
+src/presenters/battleshipSolitaireClues.js:32:28
+-         || obj.colClues.some(n => typeof n !== 'number')) {
++         || obj.colClues.some(() => undefined)) {
+Tests ran:
+    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when any array is empty
+    createBattleshipCluesBoardElement – successful render renders padded multi‑digit row clues and stacked column clues
 
 
 [Survived] ConditionalExpression
@@ -3064,17 +2876,6 @@ Tests ran:
     createBattleshipCluesBoardElement – successful render renders padded multi‑digit row clues and stacked column clues
 
 
-[Survived] ConditionalExpression
-src/presenters/battleshipSolitaireClues.js:52:22
--         rows[idx].push(ch === ' ' ? ' ' : ch);
-+         rows[idx].push(false ? ' ' : ch);
-Tests ran:
-    createBattleshipCluesBoardElement – error handling renders 10x10 empty board on parse failure
-    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object
-    createBattleshipCluesBoardElement – error handling renders 10x10 empty board when rowClues / colClues arrays are missing
-  and 3 more tests!
-
-
 [Survived] StringLiteral
 src/presenters/battleshipSolitaireClues.js:52:29
 -         rows[idx].push(ch === ' ' ? ' ' : ch);
@@ -3084,6 +2885,14 @@ Tests ran:
     createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object
     createBattleshipCluesBoardElement – error handling renders 10x10 empty board when rowClues / colClues arrays are missing
   and 3 more tests!
+
+
+[Survived] StringLiteral
+src/presenters/battleshipSolitaireClues.js:52:35
+-         rows[idx].push(ch === ' ' ? ' ' : ch);
++         rows[idx].push(ch === ' ' ? "" : ch);
+Tests ran:
+    createBattleshipCluesBoardElement – successful render renders padded multi‑digit row clues and stacked column clues
 
 
 [Survived] BlockStatement
@@ -3126,13 +2935,14 @@ Tests ran:
   and 3 more tests!
 
 
-[Survived] ConditionalExpression
-src/presenters/battleshipSolitaireFleet.js:60:7
+[Survived] BlockStatement
+src/presenters/battleshipSolitaireFleet.js:60:31
 -     if (ship.direction === 'V') {
-+     if (false) {
+-       return ship.start.y + i;
+-     }
++     if (ship.direction === 'V') {}
 Tests ran:
     createBattleshipFleetBoardElement renders a valid fleet as a <pre> element
-    createBattleshipFleetBoardElement skips malformed ships and still renders valid ones
 
 
 [Survived] StringLiteral
@@ -3148,16 +2958,6 @@ Tests ran:
 src/presenters/battleshipSolitaireFleet.js:61:12
 -       return ship.start.y + i;
 +       return ship.start.y - i;
-Tests ran:
-    createBattleshipFleetBoardElement renders a valid fleet as a <pre> element
-
-
-[Survived] BlockStatement
-src/presenters/battleshipSolitaireFleet.js:60:31
--     if (ship.direction === 'V') {
--       return ship.start.y + i;
--     }
-+     if (ship.direction === 'V') {}
 Tests ran:
     createBattleshipFleetBoardElement renders a valid fleet as a <pre> element
 
@@ -3197,6 +2997,26 @@ src/presenters/battleshipSolitaireFleet.js:100:32
 -     return typeof ship.length !== 'number';
 -   }
 +   function isInvalidLength(ship) {}
+Tests ran:
+    createBattleshipFleetBoardElement renders a valid fleet as a <pre> element
+    createBattleshipFleetBoardElement skips malformed ships and still renders valid ones
+
+
+[Survived] ConditionalExpression
+src/presenters/battleshipSolitaireFleet.js:101:10
+-     return typeof ship.length !== 'number';
++     return false;
+Tests ran:
+    createBattleshipFleetBoardElement renders a valid fleet as a <pre> element
+    createBattleshipFleetBoardElement skips malformed ships and still renders valid ones
+
+
+[Survived] BlockStatement
+src/presenters/battleshipSolitaireFleet.js:104:35
+-   function isInvalidDirection(ship) {
+-     return ship.direction !== 'H' && ship.direction !== 'V';
+-   }
++   function isInvalidDirection(ship) {}
 Tests ran:
     createBattleshipFleetBoardElement renders a valid fleet as a <pre> element
     createBattleshipFleetBoardElement skips malformed ships and still renders valid ones
@@ -3251,15 +3071,6 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/presenters/battleshipSolitaireFleet.js:114:19
--     return x < 0 || y < 0;
-+     return x < 0 || false;
-Tests ran:
-    createBattleshipFleetBoardElement renders a valid fleet as a <pre> element
-    createBattleshipFleetBoardElement skips malformed ships and still renders valid ones
-
-
-[Survived] ConditionalExpression
 src/presenters/battleshipSolitaireFleet.js:120:10
 -     return x >= width || y >= height;
 +     return false || y >= height;
@@ -3275,6 +3086,14 @@ src/presenters/battleshipSolitaireFleet.js:120:10
 Tests ran:
     createBattleshipFleetBoardElement renders a valid fleet as a <pre> element
     createBattleshipFleetBoardElement skips malformed ships and still renders valid ones
+
+
+[Survived] ArrayDeclaration
+src/presenters/battleshipSolitaireFleet.js:130:62
+-       return handleParsedFleet({ width: 10, height: 10, ships: [] }, dom);
++       return handleParsedFleet({ width: 10, height: 10, ships: ["Stryker was here"] }, dom);
+Tests ran:
+    createBattleshipFleetBoardElement renders a 10x10 empty fleet for invalid JSON
 
 
 [Survived] LogicalOperator
@@ -3388,6 +3207,28 @@ z" as text
   and 1 more test!
 
 
+[Survived] OptionalChaining
+src/presenters/ticTacToeBoard.js:11:10
+-     return move?.player;
++     return move.player;
+Tests ran:
+    createTicTacToeBoardElement ignores moves with invalid player
+    createTicTacToeBoardElement ignores moves with missing position
+    createTicTacToeBoardElement ignores moves with out-of-bounds position
+  and 5 more tests!
+
+
+[Survived] OptionalChaining
+src/presenters/ticTacToeBoard.js:15:10
+-     return move?.position;
++     return move.position;
+Tests ran:
+    createTicTacToeBoardElement ignores moves with invalid player
+    createTicTacToeBoardElement ignores moves with missing position
+    createTicTacToeBoardElement ignores moves with out-of-bounds position
+  and 5 more tests!
+
+
 [Survived] ConditionalExpression
 src/presenters/ticTacToeBoard.js:26:12
 -       return typeof position.row === 'number' && [0, 1, 2].includes(position.row);
@@ -3410,6 +3251,17 @@ Tests ran:
   and 5 more tests!
 
 
+[Survived] ConditionalExpression
+src/presenters/ticTacToeBoard.js:29:12
+-       return typeof position.column === 'number' && [0, 1, 2].includes(position.column);
++       return true && [0, 1, 2].includes(position.column);
+Tests ran:
+    createTicTacToeBoardElement ignores moves with invalid player
+    createTicTacToeBoardElement ignores moves with missing position
+    createTicTacToeBoardElement ignores moves with out-of-bounds position
+  and 5 more tests!
+
+
 [Survived] LogicalOperator
 src/presenters/ticTacToeBoard.js:29:12
 -       return typeof position.column === 'number' && [0, 1, 2].includes(position.column);
@@ -3422,28 +3274,6 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/presenters/ticTacToeBoard.js:29:12
--       return typeof position.column === 'number' && [0, 1, 2].includes(position.column);
-+       return true && [0, 1, 2].includes(position.column);
-Tests ran:
-    createTicTacToeBoardElement ignores moves with invalid player
-    createTicTacToeBoardElement ignores moves with missing position
-    createTicTacToeBoardElement ignores moves with out-of-bounds position
-  and 5 more tests!
-
-
-[Survived] ConditionalExpression
-src/presenters/ticTacToeBoard.js:32:12
--       return board[position.row][position.column] === ' ';
-+       return true;
-Tests ran:
-    createTicTacToeBoardElement ignores moves with invalid player
-    createTicTacToeBoardElement ignores moves with missing position
-    createTicTacToeBoardElement ignores moves with out-of-bounds position
-  and 4 more tests!
-
-
-[Survived] ConditionalExpression
 src/presenters/ticTacToeBoard.js:52:7
 -     if (isObject(position)) {
 +     if (true) {
@@ -3452,6 +3282,24 @@ Tests ran:
     createTicTacToeBoardElement ignores moves with missing position
     createTicTacToeBoardElement ignores moves with out-of-bounds position
   and 5 more tests!
+
+
+[Survived] ObjectLiteral
+src/presenters/ticTacToeBoard.js:65:41
+-       return renderTicTacToeBoardFromData({ moves: [] }, dom);
++       return renderTicTacToeBoardFromData({}, dom);
+Tests ran:
+    createTicTacToeBoardElement renders an empty board for empty string input
+    createTicTacToeBoardElement renders an empty board for invalid JSON
+
+
+[Survived] ArrayDeclaration
+src/presenters/ticTacToeBoard.js:65:50
+-       return renderTicTacToeBoardFromData({ moves: [] }, dom);
++       return renderTicTacToeBoardFromData({ moves: ["Stryker was here"] }, dom);
+Tests ran:
+    createTicTacToeBoardElement renders an empty board for empty string input
+    createTicTacToeBoardElement renders an empty board for invalid JSON
 
 
 [Survived] MethodExpression
@@ -3488,10 +3336,10 @@ Tests ran:
   and 5 more tests!
 
 
-[Survived] MethodExpression
+[Survived] OptionalChaining
 src/toys/2025-03-21/italics.js:9:11
 -     return !text?.trim();
-+     return !text;
++     return !text.trim();
 Tests ran:
     italics function leaves regular text unchanged
     italics function adds <em> tags around asterisk-style italics while preserving asterisks
@@ -3499,10 +3347,10 @@ Tests ran:
   and 5 more tests!
 
 
-[Survived] OptionalChaining
+[Survived] MethodExpression
 src/toys/2025-03-21/italics.js:9:11
 -     return !text?.trim();
-+     return !text.trim();
++     return !text;
 Tests ran:
     italics function leaves regular text unchanged
     italics function adds <em> tags around asterisk-style italics while preserving asterisks
@@ -3558,10 +3406,12 @@ Tests ran:
   and 1 more test!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-03-21/italics.js:149:7
--     if (beforeText) {
-+     if (true) {
+[Survived] BlockStatement
+src/toys/2025-03-21/italics.js:151:10
+-     } else {
+-       return '';
+-     }
++     } else {}
 Tests ran:
     italics function does not add <em> tags around bold double-asterisk markdown
     italics function does not add <em> tags around bold double-underscore markdown
@@ -3569,12 +3419,10 @@ Tests ran:
   and 1 more test!
 
 
-[Survived] BlockStatement
-src/toys/2025-03-21/italics.js:151:10
--     } else {
--       return '';
--     }
-+     } else {}
+[Survived] ConditionalExpression
+src/toys/2025-03-21/italics.js:149:7
+-     if (beforeText) {
++     if (true) {
 Tests ran:
     italics function does not add <em> tags around bold double-asterisk markdown
     italics function does not add <em> tags around bold double-underscore markdown
@@ -3688,6 +3536,17 @@ Tests ran:
   and 1 more test!
 
 
+[Survived] StringLiteral
+src/toys/2025-03-26/prettyFloat.js:94:18
+-     if (A.includes('.')) {
++     if (A.includes("")) {
+Tests ran:
+    formatDecimal toPrecision(17) can return a string without a decimal point for large integers
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+  and 2 more tests!
+
+
 [Survived] ConditionalExpression
 src/toys/2025-03-26/prettyFloat.js:94:7
 -     if (A.includes('.')) {
@@ -3699,15 +3558,15 @@ Tests ran:
   and 2 more tests!
 
 
-[Survived] StringLiteral
-src/toys/2025-03-26/prettyFloat.js:94:18
--     if (A.includes('.')) {
-+     if (A.includes("")) {
+[Survived] ConditionalExpression
+src/toys/2025-03-29/fishingGame.js:48:49
+-     const match = ranges.find(({ start, end }) => hour >= start && hour < end);
++     const match = ranges.find(({ start, end }) => true && hour < end);
 Tests ran:
-    formatDecimal toPrecision(17) can return a string without a decimal point for large integers
-    decomposeFloat handles positive powers of two
-    decomposeFloat handles small irrational approximations
-  and 2 more tests!
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
 
 
 [Survived] ObjectLiteral
@@ -3732,10 +3591,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-03-29/fishingGame.js:48:49
--     const match = ranges.find(({ start, end }) => hour >= start && hour < end);
-+     const match = ranges.find(({ start, end }) => true && hour < end);
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:121:15
+-       "insect": { modifier: 0.05, description: "a lively insect" },
++       "insect": {},
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -3754,10 +3613,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] ObjectLiteral
-src/toys/2025-03-29/fishingGame.js:121:15
--       "insect": { modifier: 0.05, description: "a lively insect" },
-+       "insect": {},
+[Survived] UnaryOperator
+src/toys/2025-03-29/fishingGame.js:122:26
+-       "bread": { modifier: -0.05, description: "a slice of bread" },
++       "bread": { modifier: +0.05, description: "a slice of bread" },
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -3765,10 +3624,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] UnaryOperator
-src/toys/2025-03-29/fishingGame.js:122:26
--       "bread": { modifier: -0.05, description: "a slice of bread" },
-+       "bread": { modifier: +0.05, description: "a slice of bread" },
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:126:13
+-       "grub": { modifier: 0.05, description: "a succulent grub" },
++       "grub": {},
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -3810,42 +3669,9 @@ Tests ran:
 
 
 [Survived] ObjectLiteral
-src/toys/2025-03-29/fishingGame.js:126:13
--       "grub": { modifier: 0.05, description: "a succulent grub" },
-+       "grub": {},
-Tests ran:
-    fishingGame handles empty input gracefully
-    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
-    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
-  and 4 more tests!
-
-
-[Survived] ObjectLiteral
 src/toys/2025-03-29/fishingGame.js:128:16
 -       "sausage": { modifier: 0.2, description: "a savory sausage" },
 +       "sausage": {},
-Tests ran:
-    fishingGame handles empty input gracefully
-    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
-    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
-  and 4 more tests!
-
-
-[Survived] StringLiteral
-src/toys/2025-03-29/fishingGame.js:128:46
--       "sausage": { modifier: 0.2, description: "a savory sausage" },
-+       "sausage": { modifier: 0.2, description: "" },
-Tests ran:
-    fishingGame handles empty input gracefully
-    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
-    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
-  and 4 more tests!
-
-
-[Survived] ObjectLiteral
-src/toys/2025-03-29/fishingGame.js:129:15
--       "maggot": { modifier: -0.1, description: "a squirming maggot" },
-+       "maggot": {},
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -3868,6 +3694,28 @@ Tests ran:
 src/toys/2025-03-29/fishingGame.js:129:27
 -       "maggot": { modifier: -0.1, description: "a squirming maggot" },
 +       "maggot": { modifier: +0.1, description: "a squirming maggot" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/toys/2025-03-29/fishingGame.js:128:46
+-       "sausage": { modifier: 0.2, description: "a savory sausage" },
++       "sausage": { modifier: 0.2, description: "" },
+Tests ran:
+    fishingGame handles empty input gracefully
+    fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
+    fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05)
+  and 4 more tests!
+
+
+[Survived] ObjectLiteral
+src/toys/2025-03-29/fishingGame.js:129:15
+-       "maggot": { modifier: -0.1, description: "a squirming maggot" },
++       "maggot": {},
 Tests ran:
     fishingGame handles empty input gracefully
     fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0)
@@ -3942,14 +3790,6 @@ Tests ran:
     Cyberpunk Text Game goes to Transport Hub and trades datapad
 
 
-[Survived] StringLiteral
-src/toys/2025-03-30/cyberpunkAdventure.js:73:18
--         nextState: "transport:trade",
-+         nextState: "",
-Tests ran:
-    Cyberpunk Text Game shows trade prompt if no datapad in inventory at transport:trade
-
-
 [Survived] EqualityOperator
 src/toys/2025-03-30/cyberpunkAdventure.js:82:19
 -     const success = stealthCheck > 0.3;
@@ -3957,6 +3797,14 @@ src/toys/2025-03-30/cyberpunkAdventure.js:82:19
 Tests ran:
     Cyberpunk Text Game goes to Back Alley and finds stimpack (success)
     Cyberpunk Text Game trips wire in alley if stealth check fails
+
+
+[Survived] StringLiteral
+src/toys/2025-03-30/cyberpunkAdventure.js:73:18
+-         nextState: "transport:trade",
++         nextState: "",
+Tests ran:
+    Cyberpunk Text Game shows trade prompt if no datapad in inventory at transport:trade
 
 
 [Survived] StringLiteral
@@ -3983,17 +3831,6 @@ Tests ran:
     Cyberpunk Text Game resets on unknown state (default switch case)
 
 
-[Survived] ArrayDeclaration
-src/toys/2025-03-30/cyberpunkAdventure.js:140:30
--     return scoped.inventory || [];
-+     return scoped.inventory || ["Stryker was here"];
-Tests ran:
-    Cyberpunk Text Game initial naming and intro
-    Cyberpunk Text Game goes to Hacker Den and requires password
-    Cyberpunk Text Game unknown input in hub
-  and 2 more tests!
-
-
 [Survived] BlockStatement
 src/toys/2025-03-30/cyberpunkAdventure.js:143:35
 -   function getPlayerVisited(scoped) {
@@ -4005,6 +3842,17 @@ Tests ran:
     Cyberpunk Text Game goes to Hacker Den and requires password
     Cyberpunk Text Game shows hint if incorrect hacker password is given
   and 8 more tests!
+
+
+[Survived] ArrayDeclaration
+src/toys/2025-03-30/cyberpunkAdventure.js:140:30
+-     return scoped.inventory || [];
++     return scoped.inventory || ["Stryker was here"];
+Tests ran:
+    Cyberpunk Text Game initial naming and intro
+    Cyberpunk Text Game goes to Hacker Den and requires password
+    Cyberpunk Text Game unknown input in hub
+  and 2 more tests!
 
 
 [Survived] ArrayDeclaration
@@ -4082,6 +3930,17 @@ Tests ran:
   and 22 more tests!
 
 
+[Survived] ConditionalExpression
+src/toys/2025-04-06/ticTacToe.js:36:9
+-       if (!acc) {
++       if (false) {
+Tests ran:
+    returns optimal move for invalid input
+    minimax early tie return is triggered
+    detects win for X and returns no additional move
+  and 22 more tests!
+
+
 [Survived] BooleanLiteral
 src/toys/2025-04-06/ticTacToe.js:36:9
 -       if (!acc) {
@@ -4094,20 +3953,9 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/toys/2025-04-06/ticTacToe.js:36:9
--       if (!acc) {
-+       if (false) {
-Tests ran:
-    returns optimal move for invalid input
-    minimax early tie return is triggered
-    detects win for X and returns no additional move
-  and 22 more tests!
-
-
-[Survived] LogicalOperator
 src/toys/2025-04-06/ticTacToe.js:49:10
 -     return isObject(val) && Array.isArray(val.moves);
-+     return isObject(val) || Array.isArray(val.moves);
++     return true;
 Tests ran:
     minimax early tie return is triggered
     detects win for X and returns no additional move
@@ -4115,10 +3963,10 @@ Tests ran:
   and 21 more tests!
 
 
-[Survived] ConditionalExpression
+[Survived] LogicalOperator
 src/toys/2025-04-06/ticTacToe.js:49:10
 -     return isObject(val) && Array.isArray(val.moves);
-+     return true;
++     return isObject(val) || Array.isArray(val.moves);
 Tests ran:
     minimax early tie return is triggered
     detects win for X and returns no additional move
@@ -4216,10 +4064,10 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] ArrayDeclaration
-src/toys/2025-04-06/ticTacToe.js:186:52
--     return getEmptyCells(board).reduce(scoreReducer, []);
-+     return getEmptyCells(board).reduce(scoreReducer, ["Stryker was here"]);
+[Survived] EqualityOperator
+src/toys/2025-04-06/ticTacToe.js:192:11
+-         if (current.moveScore > best.moveScore) {
++         if (current.moveScore >= best.moveScore) {
 Tests ran:
     minimax early tie return is triggered
     adds ninth move to result in a tie
@@ -4227,10 +4075,10 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] EqualityOperator
-src/toys/2025-04-06/ticTacToe.js:192:11
--         if (current.moveScore > best.moveScore) {
-+         if (current.moveScore >= best.moveScore) {
+[Survived] ArrayDeclaration
+src/toys/2025-04-06/ticTacToe.js:186:52
+-     return getEmptyCells(board).reduce(scoreReducer, []);
++     return getEmptyCells(board).reduce(scoreReducer, ["Stryker was here"]);
 Tests ran:
     minimax early tie return is triggered
     adds ninth move to result in a tie
@@ -4244,17 +4092,6 @@ src/toys/2025-04-06/ticTacToe.js:240:42
 -     return board.every(row => row[col] === player);
 -   }
 +   function isColumnWin(board, col, player) {}
-Tests ran:
-    minimax early tie return is triggered
-    detects win for X and returns no additional move
-    detects invalid player alternation
-  and 19 more tests!
-
-
-[Survived] ConditionalExpression
-src/toys/2025-04-06/ticTacToe.js:241:29
--     return board.every(row => row[col] === player);
-+     return board.every(row => false);
 Tests ran:
     minimax early tie return is triggered
     detects win for X and returns no additional move
@@ -4286,10 +4123,10 @@ Tests ran:
   and 19 more tests!
 
 
-[Survived] MethodExpression
-src/toys/2025-04-06/ticTacToe.js:245:10
--     return [0, 1, 2].some(col => isColumnWin(board, col, player));
-+     return [0, 1, 2].every(col => isColumnWin(board, col, player));
+[Survived] ConditionalExpression
+src/toys/2025-04-06/ticTacToe.js:241:29
+-     return board.every(row => row[col] === player);
++     return board.every(row => false);
 Tests ran:
     minimax early tie return is triggered
     detects win for X and returns no additional move
@@ -4319,6 +4156,17 @@ Tests ran:
   and 19 more tests!
 
 
+[Survived] MethodExpression
+src/toys/2025-04-06/ticTacToe.js:245:10
+-     return [0, 1, 2].some(col => isColumnWin(board, col, player));
++     return [0, 1, 2].every(col => isColumnWin(board, col, player));
+Tests ran:
+    minimax early tie return is triggered
+    detects win for X and returns no additional move
+    detects invalid player alternation
+  and 19 more tests!
+
+
 [Survived] BlockStatement
 src/toys/2025-04-06/ticTacToe.js:248:40
 -   function checkDiagonals(board, player) {
@@ -4334,10 +4182,10 @@ Tests ran:
   and 19 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-04-06/ticTacToe.js:249:44
+[Survived] ArrowFunction
+src/toys/2025-04-06/ticTacToe.js:249:39
 -     const leftToRight = [0, 1, 2].every(i => board[i][i] === player);
-+     const leftToRight = [0, 1, 2].every(i => false);
++     const leftToRight = [0, 1, 2].every(() => undefined);
 Tests ran:
     minimax early tie return is triggered
     detects win for X and returns no additional move
@@ -4345,10 +4193,10 @@ Tests ran:
   and 19 more tests!
 
 
-[Survived] ArrowFunction
-src/toys/2025-04-06/ticTacToe.js:249:39
+[Survived] ConditionalExpression
+src/toys/2025-04-06/ticTacToe.js:249:44
 -     const leftToRight = [0, 1, 2].every(i => board[i][i] === player);
-+     const leftToRight = [0, 1, 2].every(() => undefined);
++     const leftToRight = [0, 1, 2].every(i => false);
 Tests ran:
     minimax early tie return is triggered
     detects win for X and returns no additional move
@@ -4389,17 +4237,6 @@ Tests ran:
   and 19 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-04-06/ticTacToe.js:251:10
--     return leftToRight || rightToLeft;
-+     return false;
-Tests ran:
-    minimax early tie return is triggered
-    detects win for X and returns no additional move
-    detects invalid player alternation
-  and 19 more tests!
-
-
 [Survived] LogicalOperator
 src/toys/2025-04-06/ticTacToe.js:251:10
 -     return leftToRight || rightToLeft;
@@ -4412,14 +4249,14 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/toys/2025-04-06/ticTacToe.js:271:7
--     if (isWinPlayer()) {
-+     if (true) {
+src/toys/2025-04-06/ticTacToe.js:251:10
+-     return leftToRight || rightToLeft;
++     return false;
 Tests ran:
     minimax early tie return is triggered
-    selects optimal move in mid-game scenario
-    covers non-terminal state in minimax search
-  and 3 more tests!
+    detects win for X and returns no additional move
+    detects invalid player alternation
+  and 19 more tests!
 
 
 [Survived] ConditionalExpression
@@ -4431,6 +4268,17 @@ Tests ran:
     adds ninth move to result in a tie
     selects optimal move in mid-game scenario
   and 6 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-04-06/ticTacToe.js:271:7
+-     if (isWinPlayer()) {
++     if (true) {
+Tests ran:
+    minimax early tie return is triggered
+    selects optimal move in mid-game scenario
+    covers non-terminal state in minimax search
+  and 3 more tests!
 
 
 [Survived] ConditionalExpression
@@ -4524,6 +4372,30 @@ Tests ran:
 
 
 [Survived] ArrowFunction
+src/toys/2025-04-06/ticTacToe.js:309:25
+-     const isWinOpponent = () => isWin(params.board, opponent);
++     const isWinOpponent = () => undefined;
+Tests ran:
+    minimax early tie return is triggered
+    adds ninth move to result in a tie
+    selects optimal move in mid-game scenario
+  and 6 more tests!
+
+
+[Survived] BlockStatement
+src/toys/2025-04-06/ticTacToe.js:282:59
+-     if (shouldEvaluateTerminal(isWinPlayer, isWinOpponent)) {
+-       return getTerminalScore(isWinPlayer, depth);
+-     }
++     if (shouldEvaluateTerminal(isWinPlayer, isWinOpponent)) {}
+Tests ran:
+    minimax early tie return is triggered
+    selects optimal move in mid-game scenario
+    covers non-terminal state in minimax search
+  and 3 more tests!
+
+
+[Survived] ArrowFunction
 src/toys/2025-04-06/ticTacToe.js:308:23
 -     const isWinPlayer = () => isWin(params.board, params.player);
 +     const isWinPlayer = () => undefined;
@@ -4534,10 +4406,10 @@ Tests ran:
   and 6 more tests!
 
 
-[Survived] ArrowFunction
-src/toys/2025-04-06/ticTacToe.js:309:25
--     const isWinOpponent = () => isWin(params.board, opponent);
-+     const isWinOpponent = () => undefined;
+[Survived] ConditionalExpression
+src/toys/2025-04-06/ticTacToe.js:311:7
+-     if (terminalScore !== null) {
++     if (false) {
 Tests ran:
     minimax early tie return is triggered
     adds ninth move to result in a tie
@@ -4549,6 +4421,30 @@ Tests ran:
 src/toys/2025-04-06/ticTacToe.js:320:7
 -     if (isMax) {
 +     if (false) {
+Tests ran:
+    adds ninth move to result in a tie
+    selects optimal move in mid-game scenario
+    covers non-terminal state in minimax search
+  and 5 more tests!
+
+
+[Survived] BlockStatement
+src/toys/2025-04-06/ticTacToe.js:311:31
+-     if (terminalScore !== null) {
+-       return terminalScore;
+-     }
++     if (terminalScore !== null) {}
+Tests ran:
+    minimax early tie return is triggered
+    selects optimal move in mid-game scenario
+    covers non-terminal state in minimax search
+  and 3 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-04-06/ticTacToe.js:329:7
+-     if (isMax) {
++     if (true) {
 Tests ran:
     adds ninth move to result in a tie
     selects optimal move in mid-game scenario
@@ -4572,28 +4468,6 @@ Tests ran:
 [Survived] ConditionalExpression
 src/toys/2025-04-06/ticTacToe.js:329:7
 -     if (isMax) {
-+     if (true) {
-Tests ran:
-    adds ninth move to result in a tie
-    selects optimal move in mid-game scenario
-    covers non-terminal state in minimax search
-  and 5 more tests!
-
-
-[Survived] MethodExpression
-src/toys/2025-04-06/ticTacToe.js:321:12
--       return Math.max(...scores);
-+       return Math.min(...scores);
-Tests ran:
-    selects optimal move in mid-game scenario
-    covers non-terminal state in minimax search
-    assigns X to first move when moves list is empty
-  and 2 more tests!
-
-
-[Survived] ConditionalExpression
-src/toys/2025-04-06/ticTacToe.js:329:7
--     if (isMax) {
 +     if (false) {
 Tests ran:
     adds ninth move to result in a tie
@@ -4606,6 +4480,17 @@ Tests ran:
 src/toys/2025-04-06/ticTacToe.js:336:46
 -       const newBoard = params.board.map(row => row.slice());
 +       const newBoard = params.board.map(row => row);
+Tests ran:
+    selects optimal move in mid-game scenario
+    covers non-terminal state in minimax search
+    assigns X to first move when moves list is empty
+  and 2 more tests!
+
+
+[Survived] MethodExpression
+src/toys/2025-04-06/ticTacToe.js:321:12
+-       return Math.max(...scores);
++       return Math.min(...scores);
 Tests ran:
     selects optimal move in mid-game scenario
     covers non-terminal state in minimax search
@@ -4880,15 +4765,6 @@ Tests ran:
     generateFleet noTouching prevents vertical adjacency on narrow board
 
 
-[Survived] ConditionalExpression
-src/toys/2025-05-08/battleshipSolitaireFleet.js:64:10
--     return inBounds(n, cfg) && occupied.has(key(n.x, n.y));
-+     return true;
-Tests ran:
-    generateFleet noTouching true blocks all adjacent placements (full adjacency block)
-    generateFleet noTouching prevents vertical adjacency on narrow board
-
-
 [Survived] ArrayDeclaration
 src/toys/2025-05-08/battleshipSolitaireFleet.js:58:59
 -         [-1, 0, 1].reduce(dxReducerForNeighbour(coord, dy), [])
@@ -4902,6 +4778,15 @@ Tests ran:
 src/toys/2025-05-08/battleshipSolitaireFleet.js:60:6
 -     }, []);
 +     }, ["Stryker was here"]);
+Tests ran:
+    generateFleet noTouching true blocks all adjacent placements (full adjacency block)
+    generateFleet noTouching prevents vertical adjacency on narrow board
+
+
+[Survived] ConditionalExpression
+src/toys/2025-05-08/battleshipSolitaireFleet.js:64:10
+-     return inBounds(n, cfg) && occupied.has(key(n.x, n.y));
++     return true;
 Tests ran:
     generateFleet noTouching true blocks all adjacent placements (full adjacency block)
     generateFleet noTouching prevents vertical adjacency on narrow board
@@ -4934,10 +4819,10 @@ Tests ran:
     generateFleet noTouching prevents vertical adjacency on narrow board
 
 
-[Survived] EqualityOperator
+[Survived] ConditionalExpression
 src/toys/2025-05-08/battleshipSolitaireFleet.js:70:7
 -     if (dir === 'H') {
-+     if (dir !== 'H') {
++     if (false) {
 Tests ran:
     generateFleet places a vertical ship of length 3 somewhere
     generateFleet generates a valid fleet for simple input
@@ -4945,10 +4830,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] ArithmeticOperator
-src/toys/2025-05-08/battleshipSolitaireFleet.js:71:12
--       return x + i;
-+       return x - i;
+[Survived] EqualityOperator
+src/toys/2025-05-08/battleshipSolitaireFleet.js:70:7
+-     if (dir === 'H') {
++     if (dir !== 'H') {
 Tests ran:
     generateFleet places a vertical ship of length 3 somewhere
     generateFleet generates a valid fleet for simple input
@@ -4967,10 +4852,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-05-08/battleshipSolitaireFleet.js:70:7
--     if (dir === 'H') {
-+     if (false) {
+[Survived] ArithmeticOperator
+src/toys/2025-05-08/battleshipSolitaireFleet.js:71:12
+-       return x + i;
++       return x - i;
 Tests ran:
     generateFleet places a vertical ship of length 3 somewhere
     generateFleet generates a valid fleet for simple input
@@ -5048,17 +4933,6 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] BlockStatement
-src/toys/2025-05-08/battleshipSolitaireFleet.js:112:21
--       if (!acc.valid) {return acc;}
-+       if (!acc.valid) {}
-Tests ran:
-    generateFleet places a vertical ship of length 3 somewhere
-    generateFleet generates a valid fleet for simple input
-    generateFleet ignores diagonalAllowed property
-  and 2 more tests!
-
-
 [Survived] ConditionalExpression
 src/toys/2025-05-08/battleshipSolitaireFleet.js:112:9
 -       if (!acc.valid) {return acc;}
@@ -5068,6 +4942,17 @@ Tests ran:
     generateFleet generates a valid fleet for simple input
     generateFleet noTouching true blocks all adjacent placements (full adjacency block)
   and 4 more tests!
+
+
+[Survived] BlockStatement
+src/toys/2025-05-08/battleshipSolitaireFleet.js:112:21
+-       if (!acc.valid) {return acc;}
++       if (!acc.valid) {}
+Tests ran:
+    generateFleet places a vertical ship of length 3 somewhere
+    generateFleet generates a valid fleet for simple input
+    generateFleet ignores diagonalAllowed property
+  and 2 more tests!
 
 
 [Survived] ObjectLiteral
@@ -5155,10 +5040,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] MethodExpression
-src/toys/2025-05-08/battleshipSolitaireFleet.js:253:19
--     const lengths = cfg.ships.slice();
-+     const lengths = cfg.ships;
+[Survived] ConditionalExpression
+src/toys/2025-05-08/battleshipSolitaireFleet.js:258:7
+-     if (result !== null) {return result;}
++     if (true) {return result;}
 Tests ran:
     generateFleet returns empty fleet for invalid JSON
     generateFleet returns empty fleet for missing ships
@@ -5166,10 +5051,10 @@ Tests ran:
   and 7 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-05-08/battleshipSolitaireFleet.js:258:7
--     if (result !== null) {return result;}
-+     if (true) {return result;}
+[Survived] MethodExpression
+src/toys/2025-05-08/battleshipSolitaireFleet.js:253:19
+-     const lengths = cfg.ships.slice();
++     const lengths = cfg.ships;
 Tests ran:
     generateFleet returns empty fleet for invalid JSON
     generateFleet returns empty fleet for missing ships
@@ -5190,15 +5075,15 @@ Tests ran:
     generateFleet parses comma-separated string ships into array
 
 
-[Survived] MethodExpression
-src/toys/2025-05-08/battleshipSolitaireFleet.js:290:17
--       cfg.ships = cfg.ships
--         .split(',')
--         .map(s => parseInt(s.trim(), 10))
--         .filter(Boolean);
-+       cfg.ships = cfg.ships.split(',').map(s => parseInt(s.trim(), 10));
+[Survived] StringLiteral
+src/toys/2025-05-08/battleshipSolitaireFleet.js:289:28
+-     if (typeof cfg.ships === 'string') {
++     if (typeof cfg.ships === "") {
 Tests ran:
-    generateFleet parses comma-separated string ships into array
+    generateFleet returns empty fleet for invalid JSON
+    generateFleet returns empty fleet for missing ships
+    generateFleet returns error if ship segments exceed board area
+  and 8 more tests!
 
 
 [Survived] ConditionalExpression
@@ -5212,29 +5097,29 @@ Tests ran:
   and 8 more tests!
 
 
-[Survived] StringLiteral
-src/toys/2025-05-08/battleshipSolitaireFleet.js:289:28
--     if (typeof cfg.ships === 'string') {
-+     if (typeof cfg.ships === "") {
+[Survived] ArrowFunction
+src/toys/2025-05-08/battleshipSolitaireFleet.js:292:12
+-         .map(s => parseInt(s.trim(), 10))
++         .map(() => undefined)
 Tests ran:
-    generateFleet returns empty fleet for invalid JSON
-    generateFleet returns empty fleet for missing ships
-    generateFleet returns error if ship segments exceed board area
-  and 8 more tests!
+    generateFleet parses comma-separated string ships into array
+
+
+[Survived] MethodExpression
+src/toys/2025-05-08/battleshipSolitaireFleet.js:290:17
+-       cfg.ships = cfg.ships
+-         .split(',')
+-         .map(s => parseInt(s.trim(), 10))
+-         .filter(Boolean);
++       cfg.ships = cfg.ships.split(',').map(s => parseInt(s.trim(), 10));
+Tests ran:
+    generateFleet parses comma-separated string ships into array
 
 
 [Survived] StringLiteral
 src/toys/2025-05-08/battleshipSolitaireFleet.js:291:14
 -         .split(',')
 +         .split("")
-Tests ran:
-    generateFleet parses comma-separated string ships into array
-
-
-[Survived] ArrowFunction
-src/toys/2025-05-08/battleshipSolitaireFleet.js:292:12
--         .map(s => parseInt(s.trim(), 10))
-+         .map(() => undefined)
 Tests ran:
     generateFleet parses comma-separated string ships into array
 
@@ -5330,7 +5215,7 @@ Tests ran:
 [Survived] ConditionalExpression
 src/toys/2025-05-11/battleshipSolitaireClues.js:57:10
 -     return y >= 0 && y < board.height;
-+     return true && y < board.height;
++     return true;
 Tests ran:
     generateClues computes correct clues for a single horizontal ship
     generateClues computes correct clues for mixed horizontal and vertical ships
@@ -5350,17 +5235,7 @@ Tests ran:
 [Survived] ConditionalExpression
 src/toys/2025-05-11/battleshipSolitaireClues.js:57:10
 -     return y >= 0 && y < board.height;
-+     return true;
-Tests ran:
-    generateClues computes correct clues for a single horizontal ship
-    generateClues computes correct clues for mixed horizontal and vertical ships
-    generateClues ignores ship cells that fall outside the board
-
-
-[Survived] EqualityOperator
-src/toys/2025-05-11/battleshipSolitaireClues.js:57:20
--     return y >= 0 && y < board.height;
-+     return y >= 0 && y <= board.height;
++     return true && y < board.height;
 Tests ran:
     generateClues computes correct clues for a single horizontal ship
     generateClues computes correct clues for mixed horizontal and vertical ships
@@ -5377,6 +5252,16 @@ Tests ran:
     generateClues ignores ship cells that fall outside the board
 
 
+[Survived] EqualityOperator
+src/toys/2025-05-11/battleshipSolitaireClues.js:57:20
+-     return y >= 0 && y < board.height;
++     return y >= 0 && y <= board.height;
+Tests ran:
+    generateClues computes correct clues for a single horizontal ship
+    generateClues computes correct clues for mixed horizontal and vertical ships
+    generateClues ignores ship cells that fall outside the board
+
+
 [Survived] BlockStatement
 src/toys/2025-05-11/battleshipSolitaireClues.js:64:11
 -     } catch {
@@ -5385,6 +5270,17 @@ src/toys/2025-05-11/battleshipSolitaireClues.js:64:11
 +     } catch {}
 Tests ran:
     generateClues returns an error for invalid JSON
+
+
+[Survived] OptionalChaining
+src/toys/2025-05-11/battleshipSolitaireClues.js:75:12
+-       typeof fleet?.width === 'number' &&
++       typeof fleet.width === 'number' &&
+Tests ran:
+    generateClues returns an error for an invalid fleet structure
+    generateClues computes correct clues for a single horizontal ship
+    generateClues computes correct clues for mixed horizontal and vertical ships
+  and 1 more test!
 
 
 [Survived] ConditionalExpression
@@ -5408,17 +5304,6 @@ Tests ran:
 
 
 [Survived] OptionalChaining
-src/toys/2025-05-11/battleshipSolitaireClues.js:75:12
--       typeof fleet?.width === 'number' &&
-+       typeof fleet.width === 'number' &&
-Tests ran:
-    generateClues returns an error for an invalid fleet structure
-    generateClues computes correct clues for a single horizontal ship
-    generateClues computes correct clues for mixed horizontal and vertical ships
-  and 1 more test!
-
-
-[Survived] OptionalChaining
 src/toys/2025-05-11/battleshipSolitaireClues.js:77:19
 -       Array.isArray(fleet?.ships)
 +       Array.isArray(fleet.ships)
@@ -5437,21 +5322,21 @@ Tests ran:
     pick ignores non-existent properties
 
 
-Ran 7.59 tests per mutant on average.
+Ran 7.77 tests per mutant on average.
 -------------------------------|------------------|----------|-----------|------------|----------|----------|
                                | % Mutation score |          |           |            |          |          |
 File                           |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
 -------------------------------|--------|---------|----------|-----------|------------|----------|----------|
-All files                      |  85.50 |   85.53 |     2332 |       163 |        422 |        1 |        5 |
- browser                       |  86.73 |   86.73 |      429 |        61 |         75 |        0 |        4 |
-  audio-controls.js            |  63.41 |   63.41 |       26 |         0 |         15 |        0 |        0 |
+All files                      |  85.68 |   85.70 |     2407 |        93 |        417 |        1 |        5 |
+ browser                       |  88.32 |   88.32 |      466 |        33 |         66 |        0 |        4 |
+  audio-controls.js            |  82.93 |   82.93 |       34 |         0 |          7 |        0 |        0 |
   common.js                    | 100.00 |  100.00 |       14 |         0 |          0 |        0 |        0 |
-  data.js                      |  97.69 |   97.69 |      107 |        20 |          3 |        0 |        0 |
+  data.js                      |  98.46 |   98.46 |      119 |         9 |          2 |        0 |        0 |
   setOutput.js                 | 100.00 |  100.00 |       21 |         1 |          0 |        0 |        0 |
   tags.js                      |  76.19 |   76.19 |       32 |         0 |         10 |        0 |        0 |
-  toys.js                      |  85.13 |   85.13 |      229 |        40 |         47 |        0 |        4 |
- constants                     |   0.00 |    0.00 |        0 |         0 |         58 |        0 |        0 |
-  markdown.js                  |   0.00 |    0.00 |        0 |         0 |         58 |        0 |        0 |
+  toys.js                      |  85.13 |   85.13 |      246 |        23 |         47 |        0 |        4 |
+ constants                     |  13.79 |   13.79 |        8 |         0 |         50 |        0 |        0 |
+  markdown.js                  |  13.79 |   13.79 |        8 |         0 |         50 |        0 |        0 |
  generator                     |  85.71 |   85.90 |      402 |         0 |         66 |        1 |        1 |
   full-width.js                | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
   generator.js                 |  88.22 |   88.22 |      367 |         0 |         49 |        0 |        1 |
@@ -5459,13 +5344,13 @@ All files                      |  85.50 |   85.53 |     2332 |       163 |      
   html.js                      |  69.39 |   70.83 |       34 |         0 |         14 |        1 |        0 |
   styles.js                    |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
   title.js                     |   0.00 |    0.00 |        0 |         0 |          1 |        0 |        0 |
- presenters                    |  88.06 |   88.06 |      231 |        64 |         40 |        0 |        0 |
-  battleshipSolitaireClues.js  |  90.53 |   90.53 |       63 |        23 |          9 |        0 |        0 |
-  battleshipSolitaireFleet.js  |  87.88 |   87.88 |       95 |        21 |         16 |        0 |        0 |
+ presenters                    |  85.37 |   85.37 |      259 |        27 |         49 |        0 |        0 |
+  battleshipSolitaireClues.js  |  85.26 |   85.26 |       74 |         7 |         14 |        0 |        0 |
+  battleshipSolitaireFleet.js  |  87.12 |   87.12 |      106 |         9 |         17 |        0 |        0 |
   paragraph.js                 | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
-  pre.js                       |  80.56 |   80.56 |       26 |         3 |          7 |        0 |        0 |
-  ticTacToeBoard.js            |  88.57 |   88.57 |       45 |        17 |          8 |        0 |        0 |
- toys                          |  86.94 |   86.94 |     1174 |        38 |        182 |        0 |        0 |
+  pre.js                       |  80.56 |   80.56 |       29 |         0 |          7 |        0 |        0 |
+  ticTacToeBoard.js            |  84.29 |   84.29 |       48 |        11 |         11 |        0 |        0 |
+ toys                          |  86.73 |   86.73 |     1176 |        33 |        185 |        0 |        0 |
   2024-10-02                   | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
    hello.js                    | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
   2025-03-19                   | 100.00 |  100.00 |        1 |         0 |          0 |        0 |        0 |
@@ -5485,8 +5370,8 @@ All files                      |  85.50 |   85.53 |     2332 |       163 |      
    cyberpunkAdventure.js       |  89.17 |   89.17 |      140 |         0 |         17 |        0 |        0 |
   2025-04-05                   | 100.00 |  100.00 |        3 |         0 |          0 |        0 |        0 |
    httpRequest.js              | 100.00 |  100.00 |        3 |         0 |          0 |        0 |        0 |
-  2025-04-06                   |  81.48 |   81.48 |      223 |        19 |         55 |        0 |        0 |
-   ticTacToe.js                |  81.48 |   81.48 |      223 |        19 |         55 |        0 |        0 |
+  2025-04-06                   |  80.47 |   80.47 |      225 |        14 |         58 |        0 |        0 |
+   ticTacToe.js                |  80.47 |   80.47 |      225 |        14 |         58 |        0 |        0 |
   2025-04-16                   | 100.00 |  100.00 |       12 |         0 |          0 |        0 |        0 |
    colorPalette.js             | 100.00 |  100.00 |       12 |         0 |          0 |        0 |        0 |
   2025-05-08                   |  80.58 |   80.58 |      244 |         5 |         60 |        0 |        0 |
@@ -5503,4 +5388,4 @@ All files                      |  85.50 |   85.53 |     2332 |       163 |      
   stringUtils.js               | 100.00 |  100.00 |       22 |         0 |          0 |        0 |        0 |
   validation.js                | 100.00 |  100.00 |       37 |         0 |          0 |        0 |        0 |
 -------------------------------|--------|---------|----------|-----------|------------|----------|----------|
-[32m13:17:09 (50506) INFO MutationTestExecutor[39m Done in 31 minutes 27 seconds.
+[32m15:08:51 (72736) INFO MutationTestExecutor[39m Done in 29 minutes 19 seconds.
