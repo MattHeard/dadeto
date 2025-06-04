@@ -51,6 +51,7 @@ describe('createKeyInputHandler', () => {
     handler(event);
 
     // Assert
+    expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
     expect(dom.setDataAttribute).not.toHaveBeenCalled();
   });
