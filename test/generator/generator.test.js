@@ -18,7 +18,7 @@ describe('Blog Generator', () => {
             altText: 'a messy desk, digital art, black and white',
           },
           audio: {
-            fileType: 'mp3'
+            fileType: 'mp3',
           },
           relatedLinks: [
             {
@@ -26,13 +26,13 @@ describe('Blog Generator', () => {
               title: 'Blog',
               author: 'Wikipedia',
               source: 'Wikipedia (EN)',
-              type: 'article'
+              type: 'article',
             },
             {
               url: 'https://twitter.com/example/status/123456789',
               title: 'Thoughts on blogging',
               author: '@exampleuser',
-              type: 'microblog'
+              type: 'microblog',
             },
             {
               url: 'https://example.com/books/blogging-101',
@@ -40,8 +40,8 @@ describe('Blog Generator', () => {
               author: 'Jane Doe',
               source: 'Example Publishing',
               type: 'book',
-              quote: 'Blogging is an essential skill for the digital age'
-            }
+              quote: 'Blogging is an essential skill for the digital age',
+            },
           ],
         },
         {
@@ -68,7 +68,7 @@ describe('Blog Generator', () => {
               title: 'Video Tutorial',
               author: 'John Smith',
               source: 'Example Videos',
-              type: 'video'
+              type: 'video',
             },
             {
               url: 'https://example.org/report-2022',
@@ -76,19 +76,19 @@ describe('Blog Generator', () => {
               author: 'Research Team',
               source: 'Example Organization',
               type: 'report',
-              quote: 'Significant progress was made in all key areas'
+              quote: 'Significant progress was made in all key areas',
             },
             {
               url: 'https://example.net',
               title: 'Example Website',
               source: 'Example Net',
-              type: 'website'
-            }
+              type: 'website',
+            },
           ],
           toy: {
             modulePath: '/toys/2025-03-19/identity.js',
             functionName: 'identity',
-          }
+          },
         },
       ],
     };
@@ -113,11 +113,8 @@ describe('Blog Generator', () => {
           key: 'SECO1',
           title: 'Second',
           publicationDate: '2023-12-31',
-          content: [
-            'This post has two paragraphs.',
-            'Here is the second one.'
-          ]
-        }
+          content: ['This post has two paragraphs.', 'Here is the second one.'],
+        },
       ],
     };
 
@@ -135,7 +132,7 @@ describe('Blog Generator', () => {
           publicationDate: '2024-01-01',
           illustration: {
             fileType: 'png',
-            altText: 'An illustration'
+            altText: 'An illustration',
           },
         },
         {
@@ -145,9 +142,9 @@ describe('Blog Generator', () => {
           illustration: {
             fileType: 'svg',
             fileName: '2023-12-31-0',
-            altText: 'A diagram'
+            altText: 'A diagram',
           },
-        }
+        },
       ],
     };
 
@@ -164,7 +161,7 @@ describe('Blog Generator', () => {
           title: 'First',
           publicationDate: '2024-01-01',
           audio: {
-            fileType: 'mp3'
+            fileType: 'mp3',
           },
         },
         {
@@ -172,7 +169,7 @@ describe('Blog Generator', () => {
           title: 'Second',
           publicationDate: '2023-12-31',
           audio: {
-            fileType: 'wav'
+            fileType: 'wav',
           },
         },
       ],
@@ -197,22 +194,22 @@ describe('Blog Generator', () => {
               author: 'John Doe',
               source: 'Example Blog',
               type: 'article',
-              quote: 'This is an important quote'
+              quote: 'This is an important quote',
             },
             {
               url: 'https://example.org/book',
               title: 'Example Book',
               author: 'Jane Smith',
               source: 'Example Publishing',
-              type: 'book'
+              type: 'book',
             },
             {
               url: 'https://example.net',
               title: 'Example Website',
-              source: 'Example Net'
-            }
-          ]
-        }
+              source: 'Example Net',
+            },
+          ],
+        },
       ],
     };
 
@@ -231,9 +228,9 @@ describe('Blog Generator', () => {
           youtube: {
             id: 'dQw4w9WgXcQ',
             timestamp: 0,
-            title: 'Never Gonna Give You Up'
-          }
-        }
+            title: 'Never Gonna Give You Up',
+          },
+        },
       ],
     };
 
@@ -251,8 +248,8 @@ describe('Blog Generator', () => {
           publicationDate: '2024-03-01',
           toy: {
             modulePath: './toys/2024-03-01/calculator.js',
-            functionName: 'calculator'
-          }
+            functionName: 'calculator',
+          },
         },
         {
           key: 'LINK1',
@@ -264,21 +261,21 @@ describe('Blog Generator', () => {
               title: 'Example Article',
               author: 'John Doe',
               source: 'Example Blog',
-              type: 'article'
+              type: 'article',
             },
             {
               url: 'https://example.org/book',
               title: 'Programming Guide',
               author: 'Jane Smith',
               source: 'Tech Publishing',
-              type: 'book'
-            }
+              type: 'book',
+            },
           ],
           toy: {
             modulePath: './toys/2024-03-02/counter.js',
-            functionName: 'counter'
-          }
-        }
+            functionName: 'counter',
+          },
+        },
       ],
     };
 
@@ -295,21 +292,48 @@ describe('Blog Generator', () => {
           title: 'Post with Single Tag',
           publicationDate: '2024-04-01',
           content: ['This is a post with a single tag.'],
-          tags: ['tutorial']
+          tags: ['tutorial'],
         },
         {
           key: 'TAG02',
           title: 'Post with Multiple Tags',
           publicationDate: '2024-04-02',
           content: ['This is a post with multiple tags.'],
-          tags: ['javascript', 'programming', 'web-development']
-        }
+          tags: ['javascript', 'programming', 'web-development'],
+        },
       ],
     };
 
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry tag-tutorial" id="TAG01"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TAG01</div><div class="value"><h2><a href="#TAG01">Post with Single Tag</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Apr 2024</p><div class="key">tags</div><p class="value metadata"><a class="tag-tutorial">tutorial</a></p><div class="key">text</div><p class="value">This is a post with a single tag.</p></article><article class="entry tag-javascript tag-programming tag-web-development" id="TAG02"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TAG02</div><div class="value"><h2><a href="#TAG02">Post with Multiple Tags</a></h2></div><div class="key">pubAt</div><p class="value metadata">2 Apr 2024</p><div class="key">tags</div><p class="value metadata"><a class="tag-javascript">javascript</a>, <a class="tag-programming">programming</a>, <a class="tag-web-development">web-development</a></p><div class="key">text</div><p class="value">This is a post with multiple tags.</p></article></body></html>`;
     expect(html).toBe(expectedHtml);
+  });
+
+  // Posts with undefined or empty tag arrays shouldn't render tags
+  test('should omit tags section when none are provided', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'NO1',
+          title: 'No Tags',
+          publicationDate: '2024-04-03',
+          content: ['No tags here'],
+        },
+        {
+          key: 'NO2',
+          title: 'Empty Tags',
+          publicationDate: '2024-04-04',
+          content: ['Still no tags'],
+          tags: [],
+        },
+      ],
+    };
+
+    const htmlNoTags = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(htmlNoTags).toContain('<article class="entry" id="NO1">');
+    expect(htmlNoTags).toContain('<article class="entry" id="NO2">');
+    expect(htmlNoTags).not.toMatch('<div class="key">tags</div>');
+    expect(htmlNoTags).not.toMatch('tag-');
   });
 
   test('should render quotes as blockquotes', () => {
@@ -320,16 +344,19 @@ describe('Blog Generator', () => {
           title: 'First',
           publicationDate: '2024-01-01',
           content: [
-            { type: 'quote', content: 'This is the content of the first post.' },
+            {
+              type: 'quote',
+              content: 'This is the content of the first post.',
+            },
             {
               type: 'quote',
               content: [
                 'This is a quote with multiple lines.',
-                'Here is the second one.'
-              ]
+                'Here is the second one.',
+              ],
             },
           ],
-        }
+        },
       ],
     };
 
