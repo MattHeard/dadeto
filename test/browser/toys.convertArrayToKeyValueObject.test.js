@@ -6,12 +6,12 @@ describe('convertArrayToKeyValueObject', () => {
     const input = [
       { key: 'name', value: 'John' },
       { key: 'age', value: 30 },
-      { key: 'city', value: 'New York' }
+      { key: 'city', value: 'New York' },
     ];
     const expected = {
       name: 'John',
       age: 30,
-      city: 'New York'
+      city: 'New York',
     };
     expect(convertArrayToKeyValueObject(input)).toEqual(expected);
   });
@@ -20,12 +20,12 @@ describe('convertArrayToKeyValueObject', () => {
     const input = [
       { key: 'name', value: 'John' },
       { key: 'age', value: null },
-      { key: 'city' } // value is undefined
+      { key: 'city' }, // value is undefined
     ];
     const expected = {
       name: 'John',
       age: '',
-      city: ''
+      city: '',
     };
     expect(convertArrayToKeyValueObject(input)).toEqual(expected);
   });
@@ -35,11 +35,26 @@ describe('convertArrayToKeyValueObject', () => {
       { key: 'name', value: 'John' },
       { value: 'should be skipped' },
       { key: 'city', value: 'New York' },
-      { notKey: 'test', value: 'should be skipped' }
+      { notKey: 'test', value: 'should be skipped' },
     ];
     const expected = {
       name: 'John',
-      city: 'New York'
+      city: 'New York',
+    };
+    expect(convertArrayToKeyValueObject(input)).toEqual(expected);
+  });
+
+  it('should ignore non-object entries in the input array', () => {
+    const input = [
+      { key: 'name', value: 'John' },
+      null,
+      undefined,
+      'string',
+      { key: 'city', value: 'NY' },
+    ];
+    const expected = {
+      name: 'John',
+      city: 'NY',
     };
     expect(convertArrayToKeyValueObject(input)).toEqual(expected);
   });
