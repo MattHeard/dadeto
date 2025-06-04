@@ -1,5 +1,9 @@
 import { describe, test, expect } from '@jest/globals';
-import { HTML_TAGS, DEFAULT_OPTIONS } from '../../src/constants/markdown.js';
+import {
+  HTML_TAGS,
+  DEFAULT_OPTIONS,
+  CSS_CLASSES,
+} from '../../src/constants/markdown.js';
 
 describe('markdown constants', () => {
   test('HTML_TAGS contains expected tag names', () => {
@@ -17,5 +21,10 @@ describe('markdown constants', () => {
     expect(DEFAULT_OPTIONS.headerIds).toBe(true);
     expect(DEFAULT_OPTIONS.headerPrefix).toBe('');
     expect(DEFAULT_OPTIONS.mangle).toBe(true);
+  });
+
+  test('CSS_CLASSES includes heading and paragraph classes', () => {
+    expect(CSS_CLASSES.HEADING).toBe('markdown-heading');
+    expect(CSS_CLASSES.PARAGRAPH).toBe('markdown-paragraph');
   });
 });
