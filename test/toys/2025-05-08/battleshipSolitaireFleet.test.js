@@ -19,9 +19,11 @@ describe('generateFleet', () => {
   });
 
   test('returns error if ship segments exceed board area', () => {
-    const cfg = { width: 2, height: 2, ships: [3,3] };
+    const cfg = { width: 2, height: 2, ships: [3, 3] };
     const result = generateFleet(JSON.stringify(cfg), env);
-    expect(JSON.parse(result)).toEqual({ error: 'Ship segments exceed board area' });
+    expect(JSON.parse(result)).toEqual({
+      error: 'Ship segments exceed board area',
+    });
   });
 
   test('places a vertical ship of length 3 somewhere', () => {
@@ -37,9 +39,7 @@ describe('generateFleet', () => {
     // 3x3 board, place a vertical ship of length 3 somewhere
     const cfg = { width: 3, height: 3, ships: [3] };
     // getRandomNumber: () => 0.5 will select a vertical candidate in the shuffled list
-    const env = new Map([
-      ['getRandomNumber', () => 0.5],
-    ]);
+    const env = new Map([['getRandomNumber', () => 0.5]]);
     const result = generateFleet(JSON.stringify(cfg), env);
     const fleet = JSON.parse(result);
     expect(fleet.width).toBe(3);
@@ -67,7 +67,7 @@ describe('generateFleet', () => {
   });
 
   test('generates a valid fleet for simple input', () => {
-    const cfg = { width: 4, height: 4, ships: [2,2] };
+    const cfg = { width: 4, height: 4, ships: [2, 2] };
     const result = generateFleet(JSON.stringify(cfg), env);
     const fleet = JSON.parse(result);
     expect(fleet.width).toBe(4);
@@ -77,7 +77,7 @@ describe('generateFleet', () => {
     // Check expected structure
     for (const ship of fleet.ships) {
       expect(typeof ship.length).toBe('number');
-      expect(['H','V']).toContain(ship.direction);
+      expect(['H', 'V']).toContain(ship.direction);
       expect(typeof ship.start.x).toBe('number');
       expect(typeof ship.start.y).toBe('number');
     }
@@ -88,7 +88,9 @@ describe('generateFleet', () => {
     // All placements are blocked by adjacency, so fleet generation fails
     const cfg = { width: 2, height: 2, ships: [1, 1, 1, 1], noTouching: true };
     const result = generateFleet(JSON.stringify(cfg), env);
-    expect(JSON.parse(result)).toEqual({ error: 'Failed to generate fleet after max retries' });
+    expect(JSON.parse(result)).toEqual({
+      error: 'Failed to generate fleet after max retries',
+    });
   });
 
   test('ignores diagonalAllowed property', () => {
@@ -101,14 +103,14 @@ describe('generateFleet', () => {
   });
 
   test('parses comma-separated string ships into array', () => {
-    const cfg = { width: 4, height: 4, ships: "2, 3, 1" };
+    const cfg = { width: 4, height: 4, ships: '2, 3, 1' };
     const result = generateFleet(JSON.stringify(cfg), env);
     const fleet = JSON.parse(result);
     expect(Array.isArray(fleet.ships)).toBe(true);
   });
 
   test('parses string width and height into numbers', () => {
-    const cfg = { width: "5", height: "5", ships: [2] };
+    const cfg = { width: '5', height: '5', ships: [2] };
     const result = generateFleet(JSON.stringify(cfg), env);
     const fleet = JSON.parse(result);
     expect(fleet.width).toBe(5);
@@ -116,7 +118,7 @@ describe('generateFleet', () => {
   });
 
   test('uses empty config if JSON parse fails', () => {
-    const result = generateFleet("{bad json", env);
+    const result = generateFleet('{bad json', env);
     const fleet = JSON.parse(result);
     expect(fleet).toHaveProperty('width', 10);
     expect(fleet).toHaveProperty('height', 10);
@@ -126,6 +128,16 @@ describe('generateFleet', () => {
   test('noTouching prevents vertical adjacency on narrow board', () => {
     const cfg = { width: 1, height: 3, ships: [1, 1], noTouching: true };
     const result = generateFleet(JSON.stringify(cfg), env);
-    expect(JSON.parse(result)).toEqual({ error: 'Failed to generate fleet after max retries' });
+    expect(JSON.parse(result)).toEqual({
+      error: 'Failed to generate fleet after max retries',
+    });
+  });
+
+  test('shuffles ship order based on RNG', () => {
+    const cfg = { width: 4, height: 4, ships: [1, 2, 3] };
+    const env = new Map([['getRandomNumber', () => 0]]);
+    const fleet = JSON.parse(generateFleet(JSON.stringify(cfg), env));
+    const lengths = fleet.ships.map(ship => ship.length);
+    expect(lengths).toEqual([2, 3, 1]);
   });
 });
