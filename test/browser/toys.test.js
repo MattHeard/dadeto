@@ -100,6 +100,32 @@ describe('toys', () => {
       expect(dropdown.closest).toHaveBeenCalledWith('article.entry');
     });
 
+    it('does not throw when output object is missing', () => {
+      const parent = { child: null, querySelector: jest.fn(() => parent) };
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-missing' })),
+        parentNode: parent,
+      };
+      const dom = {
+        querySelector: jest.fn((el, selector) => el.querySelector(selector)),
+        removeAllChildren: jest.fn(p => {
+          p.child = null;
+        }),
+        appendChild: jest.fn((p, c) => {
+          p.child = c;
+        }),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        setTextContent: jest.fn((el, txt) => {
+          el.textContent = txt;
+        }),
+      };
+      const getData = jest.fn(() => ({}));
+
+      expect(() => handleDropdownChange(dropdown, getData, dom)).not.toThrow();
+      expect(parent.child.textContent).toBe('');
+    });
+
     it('handles dropdown change with empty output data', () => {
       // Mock dropdown with required methods
       const dropdown = {
