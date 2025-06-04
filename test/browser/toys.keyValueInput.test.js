@@ -103,6 +103,8 @@ describe('Key-Value Input', () => {
         newKey: 'someValue'
       });
       expect(rows).not.toHaveProperty('oldKey');
+      expect(dom.getDataAttribute).toHaveBeenCalledTimes(1);
+      expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
       expect(dom.setDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey', 'newKey');
       expect(mockSyncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
     });

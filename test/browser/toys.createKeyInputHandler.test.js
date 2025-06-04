@@ -64,6 +64,7 @@ describe('createKeyInputHandler', () => {
     handler(event);
 
     // Assert
+    expect(dom.getDataAttribute).toHaveBeenCalledTimes(1);
     expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
   });
 
