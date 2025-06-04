@@ -19,6 +19,13 @@ describe('pick', () => {
     expect(pick(obj, ['a', 'c'])).toEqual({ a: 1 });
   });
 
+  test('does not include missing keys', () => {
+    const obj = { a: 1, b: 2 };
+    const result = pick(obj, ['a', 'c']);
+    expect(result).toEqual({ a: 1 });
+    expect(result).not.toHaveProperty('c');
+  });
+
   test('returns empty object if no keys provided', () => {
     const obj = { a: 1, b: 2 };
     expect(pick(obj, [])).toEqual({});
@@ -28,7 +35,7 @@ describe('pick', () => {
 describe('mapValues', () => {
   test('transforms values using the provided function', () => {
     const obj = { a: 1, b: 2, c: 3 };
-    const result = mapValues(obj, (value) => value * 2);
+    const result = mapValues(obj, value => value * 2);
     expect(result).toEqual({ a: 2, b: 4, c: 6 });
   });
 
@@ -39,13 +46,13 @@ describe('mapValues', () => {
   });
 
   test('returns empty object if source is not an object', () => {
-    expect(mapValues(null, (v) => v)).toEqual({});
-    expect(mapValues(undefined, (v) => v)).toEqual({});
-    expect(mapValues('test', (v) => v)).toEqual({});
-    expect(mapValues(123, (v) => v)).toEqual({});
+    expect(mapValues(null, v => v)).toEqual({});
+    expect(mapValues(undefined, v => v)).toEqual({});
+    expect(mapValues('test', v => v)).toEqual({});
+    expect(mapValues(123, v => v)).toEqual({});
   });
 
   test('handles empty objects', () => {
-    expect(mapValues({}, (v) => v)).toEqual({});
+    expect(mapValues({}, v => v)).toEqual({});
   });
 });
