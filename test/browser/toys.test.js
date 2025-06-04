@@ -428,6 +428,20 @@ describe('toys', () => {
       expect(dom.importModule).toHaveBeenCalled();
     });
 
+    // Regression test for a Stryker survivor that removed module info
+    it('passes module info to importModule when entry is intersecting', () => {
+      // --- GIVEN ---
+      createObserver(article, modulePath, functionName);
+      // --- WHEN ---
+      intersectionCallback([entry], observer);
+      // --- THEN ---
+      expect(dom.importModule).toHaveBeenCalledWith(
+        modulePath,
+        expect.any(Function),
+        expect.any(Function)
+      );
+    });
+
     it('calls disconnectObserver when entry is intersecting', () => {
       // --- GIVEN ---
       createObserver(article, modulePath, functionName);
