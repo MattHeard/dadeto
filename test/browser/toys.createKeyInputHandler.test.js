@@ -16,7 +16,7 @@ describe('createKeyInputHandler', () => {
     dom = {
       getDataAttribute: jest.fn(),
       getTargetValue: jest.fn(),
-      setDataAttribute: jest.fn()
+      setDataAttribute: jest.fn(),
     };
 
     // Mock elements
@@ -30,7 +30,13 @@ describe('createKeyInputHandler', () => {
     syncHiddenField = jest.fn();
 
     // Create the handler
-    handler = createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
+    handler = createKeyInputHandler(
+      dom,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField
+    );
 
     // Mock event
     event = { target: keyEl };
@@ -62,9 +68,13 @@ describe('createKeyInputHandler', () => {
     expect(rows).toEqual({
       existingKey: 'value1',
       oldKey: undefined, // Should be deleted
-      newKey: 'someValue' // New key with old value
+      newKey: 'someValue', // New key with old value
     });
-    expect(dom.setDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey', 'newKey');
+    expect(dom.setDataAttribute).toHaveBeenCalledWith(
+      keyEl,
+      'prevKey',
+      'newKey'
+    );
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
   });
 
@@ -80,7 +90,7 @@ describe('createKeyInputHandler', () => {
     // Assert
     expect(rows).toEqual({
       existingKey: 'value1',
-      oldKey: 'someValue'
+      oldKey: 'someValue',
     }); // No change
     expect(dom.setDataAttribute).not.toHaveBeenCalled();
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
@@ -92,11 +102,17 @@ describe('createKeyInputHandler', () => {
     dom.getTargetValue.mockReturnValue('existingKey');
     const testRows = {
       key1: 'value1',
-      existingKey: 'value2'
+      existingKey: 'value2',
     };
 
     // Recreate handler with testRows
-    const localHandler = createKeyInputHandler(dom, keyEl, textInput, testRows, syncHiddenField);
+    const localHandler = createKeyInputHandler(
+      dom,
+      keyEl,
+      textInput,
+      testRows,
+      syncHiddenField
+    );
 
     // Act
     localHandler(event);
@@ -104,9 +120,31 @@ describe('createKeyInputHandler', () => {
     // Assert
     expect(testRows).toEqual({
       key1: 'value1',
-      existingKey: 'value2'
+      existingKey: 'value2',
     }); // No change
     expect(dom.setDataAttribute).not.toHaveBeenCalled();
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, testRows, dom);
+  });
+
+  it('should ignore unchanged keys that are missing from rows', () => {
+    // Arrange
+    rows = {};
+    handler = createKeyInputHandler(
+      dom,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField
+    );
+    dom.getDataAttribute.mockReturnValue('missingKey');
+    dom.getTargetValue.mockReturnValue('missingKey');
+
+    // Act
+    handler(event);
+
+    // Assert
+    expect(rows).toEqual({});
+    expect(dom.setDataAttribute).not.toHaveBeenCalled();
+    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
   });
 });

@@ -88,6 +88,17 @@ describe('createValueInputHandler', () => {
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
   });
 
+  it("calls getDataAttribute with 'prevKey'", () => {
+    // Arrange
+    dom.getDataAttribute.mockReturnValue('existingKey');
+
+    // Act
+    handler(event);
+
+    // Assert
+    expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
+  });
+
   it('should update the value even if the key is not in rows', () => {
     // Arrange
     dom.getDataAttribute.mockReturnValue('nonExistentKey');
