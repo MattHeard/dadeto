@@ -524,6 +524,20 @@ describe('setupAudio', () => {
     );
   });
 
+  it('creates play, pause and stop buttons as anchor elements', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    const playButton = createdElements.find(el => el.textContent === 'PLAY');
+    const pauseButton = createdElements.find(el => el.textContent === 'PAUSE');
+    const stopButton = createdElements.find(el => el.textContent === 'STOP');
+
+    expect(playButton.tagName).toBe('a');
+    expect(pauseButton.tagName).toBe('a');
+    expect(stopButton.tagName).toBe('a');
+  });
+
   it('inserts spaces between control buttons', () => {
     // When
     setupAudio(dom);
