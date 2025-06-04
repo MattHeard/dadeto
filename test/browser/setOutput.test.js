@@ -15,8 +15,13 @@ describe('setOutput', () => {
   it('returns an error if merging throws', () => {
     // env.get('getData') throws
     const env = new Map([
-      ['getData', () => { throw new Error('fail'); }],
-      ['setData', jest.fn()]
+      [
+        'getData',
+        () => {
+          throw new Error('fail');
+        },
+      ],
+      ['setData', jest.fn()],
     ]);
     const result = setOutput('{"foo": "bar"}', env);
     expect(result).toMatch(/Error updating output data/);
@@ -27,7 +32,22 @@ describe('setOutput', () => {
     const setData = jest.fn();
     const env = new Map([
       ['getData', () => initial],
-      ['setData', setData]
+      ['setData', setData],
+    ]);
+    const input = '{"b":2}';
+    const result = setOutput(input, env);
+    expect(result).toMatch(/Success: Output data deep merged/);
+    expect(setData).toHaveBeenCalled();
+    const callArg = setData.mock.calls[0][0];
+    expect(callArg.output).toMatchObject({ b: 2 });
+  });
+
+  it('handles null existing output', () => {
+    const initial = { output: null };
+    const setData = jest.fn();
+    const env = new Map([
+      ['getData', () => initial],
+      ['setData', setData],
     ]);
     const input = '{"b":2}';
     const result = setOutput(input, env);
@@ -42,7 +62,7 @@ describe('setOutput', () => {
     const setData = jest.fn();
     const env = new Map([
       ['getData', () => initial],
-      ['setData', setData]
+      ['setData', setData],
     ]);
     const input = '{"b":2}';
     const result = setOutput(input, env);
