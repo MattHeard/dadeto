@@ -243,6 +243,23 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(result).not.toHaveProperty('blogFetchPromise');
   });
 
+  it('getData returns a deep copy when status is idle', () => {
+    state.blog = { title: 'copy test' };
+    state.blogStatus = 'idle';
+    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
+    const result = getData(state, fetchFn, loggers);
+    expect(result).not.toBe(state);
+    expect(result.blog).not.toBe(state.blog);
+  });
+
+  it('getData returns original object when status is loaded', () => {
+    state.blog = { title: 'no copy' };
+    state.blogStatus = 'loaded';
+    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
+    const result = getData(state, fetchFn, loggers);
+    expect(result).toBe(state);
+  });
+
   it('setData preserves existing blog if incoming state omits it', () => {
     state.blog = { title: 'preserved' };
     const incomingState = { temporary: true }; // no blog field
