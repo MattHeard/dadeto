@@ -65,6 +65,7 @@ describe('createKeyInputHandler', () => {
     handler(event);
 
     // Assert
+    expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
     expect(rows).toEqual({
       existingKey: 'value1',
       oldKey: undefined, // Should be deleted
