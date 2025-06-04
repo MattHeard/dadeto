@@ -1,5 +1,6 @@
 import { jest, describe, it, expect } from '@jest/globals';
-import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import * as toys from '../../src/browser/toys.js';
+const { processInputAndSetOutput } = toys;
 
 describe('processInputAndSetOutput', () => {
   it('should process input and set output with mocked DOM functions', () => {
@@ -39,6 +40,43 @@ describe('processInputAndSetOutput', () => {
     expect(processingFunction).toHaveBeenCalled();
     expect(dom.setTextContent).not.toHaveBeenCalled();
     expect(fetchFn).toHaveBeenCalledWith('');
+  });
+
+  it('passes parent and presenterKey to handleParsedResult', async () => {
+    const inputElement = { value: '' };
+    const article = { id: 'post1' };
+    const outputSelect = { value: 'text' };
+    const outputParentElement = {};
+    const elements = {
+      inputElement,
+      article,
+      outputSelect,
+      outputParentElement,
+    };
+    const processingFunction = jest.fn(
+      () => '{"request":{"url":"http://e.com"}}'
+    );
+    const toyEnv = { get: jest.fn() };
+    const createEnv = jest.fn(() => toyEnv);
+    const setTextContent = jest.fn();
+    const dom = {
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setTextContent,
+      appendChild: jest.fn(),
+      addWarning: jest.fn(),
+    };
+    const fetchPromise = Promise.resolve({
+      text: () => Promise.resolve('body'),
+    });
+    const fetchFn = jest.fn(() => fetchPromise);
+    const env = { createEnv, dom, fetchFn, errorFn: jest.fn() };
+
+    processInputAndSetOutput(elements, processingFunction, env);
+
+    await new Promise(process.nextTick);
+
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
   });
 
   it('falls back to setTextContent when JSON cannot be parsed', () => {
