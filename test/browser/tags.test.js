@@ -31,6 +31,19 @@ describe('hideArticlesByClass', () => {
     expect(dom.hide).toHaveBeenCalledTimes(1);
     expect(dom.hide).toHaveBeenCalledWith(article1);
   });
+
+  it('calls getElementsByTagName with "article"', () => {
+    const getElementsByTagName = jest.fn(() => []);
+    const dom = {
+      getElementsByTagName,
+      hasClass: () => false,
+      hide: jest.fn(),
+    };
+
+    hideArticlesByClass('any-class', dom);
+
+    expect(getElementsByTagName).toHaveBeenCalledWith('article');
+  });
 });
 
 describe('toggleHideLink', () => {
