@@ -321,6 +321,33 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(state.blog).toEqual({ title: 'existing' });
   });
 
+  it('setData keeps prior blog-related state when incoming state tries to replace it', () => {
+    const originalPromise = {};
+    const originalError = new Error('prev');
+    state.blogStatus = 'loaded';
+    state.blogError = originalError;
+    state.blogFetchPromise = originalPromise;
+    state.blog = { title: 'preserve' };
+
+    const incomingState = {
+      temporary: true,
+      blogStatus: 'idle',
+      blogError: new Error('new'),
+      blogFetchPromise: {},
+      blog: { title: 'incoming' },
+    };
+
+    setData(
+      { desired: incomingState, current: state },
+      { logInfo: logFn, logError: errorFn },
+    );
+
+    expect(state.blogStatus).toBe('loaded');
+    expect(state.blogError).toBe(originalError);
+    expect(state.blogFetchPromise).toBe(originalPromise);
+    expect(state.blog).toEqual({ title: 'preserve' });
+  });
+
   it('setData logs specific error message when blog is missing', () => {
     expect(() =>
       setData(
