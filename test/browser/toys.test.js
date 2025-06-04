@@ -569,6 +569,14 @@ describe('toys', () => {
       expect(moduleFn).toHaveBeenCalled();
     });
 
+    it('passes the article to initializeInteractiveComponent', () => {
+      createObserver(article, modulePath, functionName);
+      intersectionCallback([entry], observer);
+      const [, initializer] = dom.importModule.mock.calls[0];
+      initializer({ [functionName]: jest.fn() });
+      expect(dom.querySelector).toHaveBeenCalledWith(article, 'input');
+    });
+
     it('calls disconnectObserver when entry is intersecting', () => {
       // --- GIVEN ---
       createObserver(article, modulePath, functionName);
