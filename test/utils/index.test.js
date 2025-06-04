@@ -59,6 +59,18 @@ describe('utils/index', () => {
     expect(utils.HTML_TAGS.BLOCKQUOTE).toBe('blockquote');
   });
 
+  test('remaining html tag constants are correct', () => {
+    expect(utils.HTML_TAGS.LIST).toBe('ul');
+    expect(utils.HTML_TAGS.LIST_ITEM).toBe('li');
+    expect(utils.HTML_TAGS.ORDERED_LIST).toBe('ol');
+    expect(utils.HTML_TAGS.HORIZONTAL_RULE).toBe('hr');
+    expect(utils.HTML_TAGS.LINE_BREAK).toBe('br');
+    expect(utils.HTML_TAGS.IMAGE).toBe('img');
+    expect(utils.HTML_TAGS.DIV).toBe('div');
+    expect(utils.HTML_TAGS.SPAN).toBe('span');
+    expect(utils.HTML_TAGS.PRE).toBe('pre');
+  });
+
   test('additional default option values are correct', () => {
     expect(utils.DEFAULT_OPTIONS.breaks).toBe(false);
     expect(utils.DEFAULT_OPTIONS.pedantic).toBe(false);
