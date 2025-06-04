@@ -47,6 +47,13 @@ describe('deepMerge', () => {
     const merged = deepMerge(target, source);
     expect(merged).toEqual({ a: { x: 3 } });
   });
+
+  it('replaces an object value when the source provides a primitive', () => {
+    const target = { a: { x: 1 } };
+    const source = { a: 5 };
+    const merged = deepMerge(target, source);
+    expect(merged).toEqual({ a: 5 });
+  });
 });
 
 describe('fetchAndCacheBlogData', () => {
