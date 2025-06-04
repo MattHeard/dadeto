@@ -490,6 +490,10 @@ describe('setupAudio', () => {
     const pauseButton = createdElements.find(el => el.textContent === 'PAUSE');
     const stopButton = createdElements.find(el => el.textContent === 'STOP');
 
+    expect(playButton.tagName).toBe('a');
+    expect(pauseButton.tagName).toBe('a');
+    expect(stopButton.tagName).toBe('a');
+
     expect(playButton.href).toBe('#');
     expect(pauseButton.href).toBe('#');
     expect(stopButton.href).toBe('#');
