@@ -6,7 +6,13 @@ import { generateClues } from '../../../src/toys/2025-05-11/battleshipSolitaireC
 describe('generateClues', () => {
   it('returns an error for invalid JSON', () => {
     const output = JSON.parse(generateClues('not json'));
-    expect(output).toHaveProperty('error');
+    expect(output).toHaveProperty('error', 'Invalid input JSON');
+  });
+
+  it('returns an error when required properties are missing', () => {
+    const badFleet = JSON.stringify({ width: 5, ships: [] });
+    const output = JSON.parse(generateClues(badFleet));
+    expect(output).toEqual({ error: 'Invalid fleet structure' });
   });
 
   it('returns an error for an invalid fleet structure', () => {
