@@ -17,7 +17,7 @@ describe('createKeyElement', () => {
       setValue: jest.fn(),
       setDataAttribute: jest.fn(),
       addEventListener: jest.fn(),
-      removeEventListener: jest.fn()
+      removeEventListener: jest.fn(),
     };
     textInput = {};
     rows = {};
@@ -41,7 +41,11 @@ describe('createKeyElement', () => {
     expect(mockDom.setType).toHaveBeenCalledWith(keyEl, 'text');
     expect(mockDom.setPlaceholder).toHaveBeenCalledWith(keyEl, 'Key');
     expect(mockDom.setValue).toHaveBeenCalledWith(keyEl, key);
-    expect(mockDom.setDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey', key);
+    expect(mockDom.setDataAttribute).toHaveBeenCalledWith(
+      keyEl,
+      'prevKey',
+      key
+    );
     expect(mockDom.addEventListener).toHaveBeenCalledWith(
       keyEl,
       'input',
@@ -57,6 +61,30 @@ describe('createKeyElement', () => {
       keyEl,
       'input',
       expect.any(Function)
+    );
+  });
+
+  it('removes the same listener that was added', () => {
+    const key = 'testKey';
+
+    keyEl = createKeyElement(
+      mockDom,
+      key,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
+
+    const handler = mockDom.addEventListener.mock.calls[0][2];
+    const disposer = disposers[0];
+
+    disposer();
+
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      keyEl,
+      'input',
+      handler
     );
   });
 });
