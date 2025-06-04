@@ -402,6 +402,27 @@ describe('setupAudio', () => {
     expect(timeElements[0].textContent).toBe('0:00');
   });
 
+  it('uses a span element for the time display', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    const timeElement = createdElements.find(el => el.className === 'audio-time');
+    expect(timeElement.tagName).toBe('span');
+  });
+
+  it('attaches a timeupdate listener to the audio element', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      audioElement,
+      'timeupdate',
+      expect.any(Function)
+    );
+  });
+
   it('creates a div container for the controls', () => {
     // When
     setupAudio(dom);
