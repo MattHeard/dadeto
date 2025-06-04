@@ -66,18 +66,18 @@
   1:20  warning  'it' is defined but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
-  448:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
-  450:7   warning  Ternary operator used                                       no-ternary
-  453:24  warning  Ternary operator used                                       no-ternary
-  455:7   warning  Ternary operator used                                       no-ternary
+  499:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+  501:7   warning  Ternary operator used                                       no-ternary
+  504:24  warning  Ternary operator used                                       no-ternary
+  506:7   warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.makeHandleHideSpan.test.js
   11:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  18:39  warning  Ternary operator used                                       no-ternary
+  22:39  warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js
-  113:43  warning  Ternary operator used  no-ternary
-  117:7   warning  Ternary operator used  no-ternary
+  137:43  warning  Ternary operator used  no-ternary
+  141:7   warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.createHandleSubmit.test.js
   1:10  warning  'jest' is defined but never used  no-unused-vars
@@ -98,15 +98,15 @@
   124:12  warning  'actualTextInput' is assigned a value but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
-    9:3   warning  'createHandleSubmit' is defined but never used              no-unused-vars
-   15:3   warning  'createUpdateTextInputValue' is defined but never used      no-unused-vars
-  785:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  786:7   warning  Ternary operator used                                       no-ternary
-  810:40  warning  Ternary operator used                                       no-ternary
-  811:40  warning  Ternary operator used                                       no-ternary
-  848:9   warning  Ternary operator used                                       no-ternary
-  886:9   warning  Ternary operator used                                       no-ternary
-  921:9   warning  Ternary operator used                                       no-ternary
-  943:39  warning  Ternary operator used                                       no-ternary
+     9:3   warning  'createHandleSubmit' is defined but never used              no-unused-vars
+    15:3   warning  'createUpdateTextInputValue' is defined but never used      no-unused-vars
+   862:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+   863:7   warning  Ternary operator used                                       no-ternary
+   887:40  warning  Ternary operator used                                       no-ternary
+   888:40  warning  Ternary operator used                                       no-ternary
+   925:9   warning  Ternary operator used                                       no-ternary
+   963:9   warning  Ternary operator used                                       no-ternary
+   998:9   warning  Ternary operator used                                       no-ternary
+  1020:39  warning  Ternary operator used                                       no-ternary
 
 ✖ 66 problems (0 errors, 66 warnings)
