@@ -1,13 +1,18 @@
 import { jest } from '@jest/globals';
-import { hideArticlesByClass, toggleHideLink, makeHandleClassName, makeHandleLink, makeHandleHideSpan } from '../../src/browser/tags.js';
-
+import {
+  hideArticlesByClass,
+  toggleHideLink,
+  makeHandleClassName,
+  makeHandleLink,
+  makeHandleHideSpan,
+} from '../../src/browser/tags.js';
 
 describe('hideArticlesByClass', () => {
   it('does not throw when given a class and no matching elements', () => {
     const dom = {
       getElementsByTagName: () => [],
       hasClass: () => false,
-      hide: () => {}
+      hide: () => {},
     };
 
     expect(() => {
@@ -22,8 +27,9 @@ describe('hideArticlesByClass', () => {
 
     const dom = {
       getElementsByTagName: () => articles,
-      hasClass: (el, className) => el === article1 && className === 'target-class',
-      hide: jest.fn()
+      hasClass: (el, className) =>
+        el === article1 && className === 'target-class',
+      hide: jest.fn(),
     };
 
     hideArticlesByClass('target-class', dom);
@@ -39,7 +45,7 @@ describe('toggleHideLink', () => {
     const dom = {
       hasNextSiblingClass: () => true,
       removeNextSibling: jest.fn(),
-      createHideSpan: jest.fn()
+      createHideSpan: jest.fn(),
     };
 
     toggleHideLink(link, 'some-class', dom);
@@ -53,7 +59,7 @@ describe('toggleHideLink', () => {
     const dom = {
       hasNextSiblingClass: () => false,
       removeNextSibling: jest.fn(),
-      createHideSpan: jest.fn()
+      createHideSpan: jest.fn(),
     };
 
     toggleHideLink(link, 'some-class', dom);
@@ -76,7 +82,27 @@ describe('makeHandleClassName', () => {
     const link = {};
     const handler = makeHandleClassName(dom, link);
     handler('tag-sample');
-    expect(addEventListener).toHaveBeenCalledWith(link, 'click', expect.any(Function));
+    expect(addEventListener).toHaveBeenCalledWith(
+      link,
+      'click',
+      expect.any(Function)
+    );
+  });
+  it('triggers the stored handler without errors', () => {
+    let storedHandler;
+    const dom = {
+      addEventListener: (_l, _e, h) => {
+        storedHandler = h;
+      },
+      stopDefault: jest.fn(),
+      hasNextSiblingClass: jest.fn(() => true),
+      removeNextSibling: jest.fn(),
+    };
+    const link = { parentNode: {} };
+    const handler = makeHandleClassName(dom, link);
+    handler('tag-fire');
+    expect(() => storedHandler('evt')).not.toThrow();
+    expect(dom.stopDefault).toHaveBeenCalledWith('evt');
   });
 });
 
@@ -148,7 +174,11 @@ describe('makeHandleHideSpan', () => {
     expect(appendChild).toHaveBeenCalledWith(span, hideLink);
     expect(createTextNode).toHaveBeenCalledWith(')');
     expect(appendChild).toHaveBeenCalledWith(span, textNodeClose);
-    expect(insertBefore).toHaveBeenCalledWith(link.parentNode, span, link.nextSibling);
+    expect(insertBefore).toHaveBeenCalledWith(
+      link.parentNode,
+      span,
+      link.nextSibling
+    );
   });
 });
 

@@ -470,6 +470,16 @@ describe('setupAudio', () => {
     expect(createElement).toHaveBeenCalledWith('div');
   });
 
+  it('creates anchor elements for control buttons', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    expect(createElement).toHaveBeenNthCalledWith(3, 'a');
+    expect(createElement).toHaveBeenNthCalledWith(4, 'a');
+    expect(createElement).toHaveBeenNthCalledWith(5, 'a');
+  });
+
   it('inserts spacing between the control buttons', () => {
     // When
     setupAudio(dom);

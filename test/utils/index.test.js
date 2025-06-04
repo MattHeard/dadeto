@@ -57,4 +57,17 @@ describe('utils/index', () => {
     expect(utils.HTML_TAGS.PARAGRAPH).toBe('p');
     expect(utils.HTML_TAGS.BLOCKQUOTE).toBe('blockquote');
   });
+
+  test('remaining default options are correct', () => {
+    expect(utils.DEFAULT_OPTIONS.breaks).toBe(false);
+    expect(utils.DEFAULT_OPTIONS.pedantic).toBe(false);
+    expect(utils.DEFAULT_OPTIONS.sanitize).toBe(false);
+    expect(utils.DEFAULT_OPTIONS.smartLists).toBe(true);
+    expect(utils.DEFAULT_OPTIONS.smartypants).toBe(false);
+    expect(utils.DEFAULT_OPTIONS.xhtml).toBe(false);
+    expect(utils.DEFAULT_OPTIONS.langPrefix).toBe('language-');
+    expect(utils.DEFAULT_OPTIONS.headerIds).toBe(true);
+    expect(utils.DEFAULT_OPTIONS.headerPrefix).toBe('');
+    expect(utils.DEFAULT_OPTIONS.mangle).toBe(true);
+  });
 });
