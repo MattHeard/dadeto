@@ -321,26 +321,57 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(state.blog).toEqual({ title: 'existing' });
   });
 
+  it('setData retains existing blog fetch properties when incoming state specifies them', () => {
+    const originalPromise = Promise.resolve('orig');
+    const originalError = new Error('orig');
+    state.blogStatus = 'loaded';
+    state.blogError = originalError;
+    state.blogFetchPromise = originalPromise;
+    state.blog = { title: 'orig' };
+
+    const incomingState = {
+      temporary: true,
+      blogStatus: 'idle',
+      blogError: new Error('new'),
+      blogFetchPromise: Promise.resolve('new'),
+      blog: { title: 'new' },
+    };
+
+    setData(
+      { desired: incomingState, current: state },
+      { logInfo: logFn, logError: errorFn }
+    );
+
+    expect(state.blogStatus).toBe('loaded');
+    expect(state.blogError).toBe(originalError);
+    expect(state.blogFetchPromise).toBe(originalPromise);
+    expect(state.blog).toEqual({ title: 'orig' });
+  });
+
   it('setData logs specific error message when blog is missing', () => {
     expect(() =>
       setData(
         { desired: {}, current: state },
         { logInfo: logFn, logError: errorFn }
       )
-    ).toThrow("setData requires an object with at least a 'temporary' property.");
+    ).toThrow(
+      "setData requires an object with at least a 'temporary' property."
+    );
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       {}
     );
   });
 
-  it("setData throws a descriptive error when blog data is missing", () => {
+  it('setData throws a descriptive error when blog data is missing', () => {
     expect(() =>
       setData(
         { desired: {}, current: state },
         { logInfo: logFn, logError: errorFn }
       )
-    ).toThrow("setData requires an object with at least a 'temporary' property.");
+    ).toThrow(
+      "setData requires an object with at least a 'temporary' property."
+    );
   });
 
   it('setData throws and logs error if incoming state is object but lacks temporary property', () => {
