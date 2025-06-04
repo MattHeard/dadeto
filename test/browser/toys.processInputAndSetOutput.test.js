@@ -140,4 +140,33 @@ describe('processInputAndSetOutput', () => {
     expect(dom.setTextContent).toHaveBeenCalled();
     expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
   });
+
+  it('calls setOutput with the result keyed by article id', async () => {
+    const inputElement = { value: 'ignored' };
+    const article = { id: 'post1' };
+    const outputSelect = { value: 'text' };
+    const outputParentElement = {};
+    const elements = { inputElement, article, outputSelect, outputParentElement };
+    const result = '{"request":{"url":""}}';
+    const processingFunction = jest.fn(() => result);
+    const setData = jest.fn();
+    const toyEnv = new Map([
+      ['getData', () => ({})],
+      ['setData', setData],
+    ]);
+    const createEnv = jest.fn(() => toyEnv);
+    const dom = {
+      setTextContent: jest.fn(),
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      appendChild: jest.fn(),
+    };
+    const fetchFn = jest.fn(() => Promise.resolve({ text: () => Promise.resolve('') }));
+    const env = { createEnv, dom, fetchFn };
+
+    processInputAndSetOutput(elements, processingFunction, env);
+
+    const expectedOutput = { [article.id]: result };
+    expect(setData).toHaveBeenCalledWith({ output: expectedOutput });
+  });
 });
