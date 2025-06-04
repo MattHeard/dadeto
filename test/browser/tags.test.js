@@ -151,3 +151,24 @@ describe('makeHandleHideSpan', () => {
     expect(insertBefore).toHaveBeenCalledWith(link.parentNode, span, link.nextSibling);
   });
 });
+
+describe('makeHandleClassName integration', () => {
+  it('uses DOM helpers when the click handler is triggered', () => {
+    let storedHandler;
+    const dom = {
+      addEventListener: (_link, _event, handler) => {
+        storedHandler = handler;
+      },
+      stopDefault: jest.fn(),
+      hasNextSiblingClass: jest.fn(() => true),
+      removeNextSibling: jest.fn(),
+      createHideSpan: jest.fn(),
+    };
+    const link = { parentNode: {} };
+    const handler = makeHandleClassName(dom, link);
+    handler('tag-test');
+    storedHandler('evt');
+    expect(dom.stopDefault).toHaveBeenCalledWith('evt');
+    expect(dom.removeNextSibling).toHaveBeenCalledWith(link);
+  });
+});
