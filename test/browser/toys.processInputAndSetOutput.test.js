@@ -37,6 +37,8 @@ describe('processInputAndSetOutput', () => {
     // Call with all required arguments
     processInputAndSetOutput(elements, processingFunction, env);
     expect(processingFunction).toHaveBeenCalled();
+    expect(dom.setTextContent).not.toHaveBeenCalled();
+    expect(fetchFn).toHaveBeenCalledWith('');
   });
 
   it('falls back to setTextContent when JSON cannot be parsed', () => {
@@ -66,6 +68,38 @@ describe('processInputAndSetOutput', () => {
 
     processInputAndSetOutput(elements, processingFunction, env);
 
+    expect(dom.setTextContent).toHaveBeenCalled();
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
+  });
+
+  it('falls back to setTextContent when the parsed request is invalid', () => {
+    const inputElement = { value: 'ignored' };
+    const article = { id: 'post1' };
+    const outputSelect = { value: 'text' };
+    const outputParentElement = {};
+    const elements = {
+      inputElement,
+      article,
+      outputSelect,
+      outputParentElement,
+    };
+    const processingFunction = jest.fn(() => '{"request":{"url":5}}');
+    const toyEnv = new Map([
+      ['getData', () => ({})],
+      ['setData', jest.fn()],
+    ]);
+    const createEnv = jest.fn(() => toyEnv);
+    const dom = {
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      appendChild: jest.fn(),
+    };
+    const env = { createEnv, dom, fetchFn: jest.fn() };
+
+    processInputAndSetOutput(elements, processingFunction, env);
+
+    expect(dom.setTextContent).toHaveBeenCalled();
     expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
   });
 });

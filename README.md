@@ -22,6 +22,14 @@ Dadeto is a lightweight, JavaScript-based static site generator designed to crea
 - Node.js (latest LTS version recommended)
 - npm
 
+### Installation
+
+Install project dependencies before running commands:
+
+```bash
+npm install
+```
+
 ### Usage
 
 1. Edit the blog content in `src/blog.json`

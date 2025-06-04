@@ -10,6 +10,7 @@ agents should interact with this code base.
 Always attempt to run `npm test` and `npm run lint` after making changes.
 If either command fails due to missing dependencies or other issues, note the
 failure in the PR message's Testing section.
+Before opening a pull request, ensure that branch coverage remains at 100%.
 
 ## Code Style
 
