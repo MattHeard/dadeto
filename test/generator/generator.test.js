@@ -218,6 +218,33 @@ describe('Blog Generator', () => {
     expect(html).toBe(expectedHtml);
   });
 
+  // Posts with undefined or empty relatedLinks shouldn't render the section
+  test('should omit related links section when none are provided', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'NOL1',
+          title: 'No Links',
+          publicationDate: '2024-06-01',
+          content: ['No links here'],
+        },
+        {
+          key: 'NOL2',
+          title: 'Empty Links',
+          publicationDate: '2024-06-02',
+          content: ['Still no links'],
+          relatedLinks: [],
+        },
+      ],
+    };
+
+    const htmlNoLinks = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(htmlNoLinks).toContain('<article class="entry" id="NOL1">');
+    expect(htmlNoLinks).toContain('<article class="entry" id="NOL2">');
+    expect(htmlNoLinks).not.toMatch('<div class="key">links</div>');
+    expect(htmlNoLinks).not.toMatch('related-links');
+  });
+
   test('should contain a YouTube video for a post', () => {
     const blog = {
       posts: [
