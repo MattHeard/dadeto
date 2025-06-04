@@ -327,7 +327,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
         { desired: {}, current: state },
         { logInfo: logFn, logError: errorFn }
       )
-    ).toThrow();
+    ).toThrow("setData requires an object with at least a 'temporary' property.");
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       {}
