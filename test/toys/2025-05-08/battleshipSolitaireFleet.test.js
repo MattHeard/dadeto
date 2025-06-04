@@ -122,4 +122,10 @@ describe('generateFleet', () => {
     expect(fleet).toHaveProperty('height', 10);
     expect(Array.isArray(fleet.ships)).toBe(true);
   });
+
+  test('noTouching prevents vertical adjacency on narrow board', () => {
+    const cfg = { width: 1, height: 3, ships: [1, 1], noTouching: true };
+    const result = generateFleet(JSON.stringify(cfg), env);
+    expect(JSON.parse(result)).toEqual({ error: 'Failed to generate fleet after max retries' });
+  });
 });
