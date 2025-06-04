@@ -216,6 +216,22 @@ describe('Blog Generator', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="LINK1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">LINK1</div><div class="value"><h2><a href="#LINK1">Post with Links</a></h2></div><div class="key">pubAt</div><p class="value metadata">15 Jan 2024</p><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="https://example.com/article" target="_blank" rel="noopener">"Example Article"</a> by John Doe, Example Blog ("This is an important quote")</li><li><a href="https://example.org/book" target="_blank" rel="noopener"><em>_Example Book_</em></a> by Jane Smith, Example Publishing</li><li><a href="https://example.net" target="_blank" rel="noopener">Example Website</a>, Example Net</li></ul></div></article></body></html>`;
     expect(html).toBe(expectedHtml);
+    const blogNoLinks = {
+      posts: [
+        {
+          key: 'EMPTY',
+          title: 'No Links',
+          publicationDate: '2024-06-01',
+          content: ['none'],
+          relatedLinks: [],
+        },
+      ],
+    };
+    const htmlNoLinks = generateBlog(
+      { blog: blogNoLinks, header, footer },
+      wrapHtml
+    );
+    expect(htmlNoLinks).not.toContain('related-links');
   });
 
   // Posts with undefined or empty relatedLinks shouldn't render the section
