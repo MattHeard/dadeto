@@ -76,6 +76,8 @@ describe('toys', () => {
         },
       };
       handleDropdownChange(mockDropdown, mockGetData, dom);
+
+      expect(mockDropdown.closest).toHaveBeenCalledWith('article.entry');
     });
 
     it('gets the enclosing article using the correct selector', () => {
@@ -178,6 +180,34 @@ describe('toys', () => {
         parentNode: parent,
       };
       const getData = jest.fn(() => ({ output: {} }));
+      const dom = {
+        querySelector: (el, selector) => el.querySelector(selector),
+        removeAllChildren: jest.fn(p => {
+          p.child = null;
+        }),
+        appendChild: jest.fn((p, c) => {
+          p.child = c;
+        }),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        setTextContent: jest.fn((el, txt) => {
+          el.textContent = txt;
+        }),
+      };
+
+      handleDropdownChange(dropdown, getData, dom);
+
+      expect(parent.child.textContent).toBe('');
+    });
+
+    it('defaults to empty text when output object is missing', () => {
+      const parent = { child: null, querySelector: jest.fn() };
+      parent.querySelector.mockReturnValue(parent);
+      const dropdown = {
+        value: 'text',
+        closest: jest.fn(() => ({ id: 'post-3' })),
+        parentNode: parent,
+      };
+      const getData = jest.fn(() => ({}));
       const dom = {
         querySelector: (el, selector) => el.querySelector(selector),
         removeAllChildren: jest.fn(p => {
