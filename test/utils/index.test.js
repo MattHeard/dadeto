@@ -28,5 +28,8 @@ describe('utils/index', () => {
     expect(utils.HTML_TAGS.EMPHASIS).toBe('em');
     expect(utils.CSS_CLASSES.CONTAINER).toBe('markdown-container');
     expect(utils.DEFAULT_OPTIONS.gfm).toBe(true);
+    expect(utils.HTML_TAGS.LINK).toBe('a');
+    expect(utils.CSS_CLASSES.LINK).toBe('markdown-link');
+    expect(utils.DEFAULT_OPTIONS.tables).toBe(true);
   });
 });
