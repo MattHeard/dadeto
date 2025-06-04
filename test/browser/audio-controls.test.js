@@ -538,6 +538,15 @@ describe('setupAudio', () => {
     expect(stopButton.tagName).toBe('a');
   });
 
+  it('calls createElement with "a" for each control button', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    const aCalls = createElement.mock.calls.filter(call => call[0] === 'a');
+    expect(aCalls).toHaveLength(3);
+  });
+
   it('inserts spaces between control buttons', () => {
     // When
     setupAudio(dom);
@@ -546,9 +555,23 @@ describe('setupAudio', () => {
     const spaceArgs = dom.createTextNode.mock.calls.map(call => call[0]);
     expect(spaceArgs).toEqual([' ', ' ', ' ']);
 
-    const textNodes = dom.createTextNode.mock.results.map(result => result.value);
-    expect(dom.appendChild).toHaveBeenNthCalledWith(2, createdElements[0], textNodes[0]);
-    expect(dom.appendChild).toHaveBeenNthCalledWith(4, createdElements[0], textNodes[1]);
-    expect(dom.appendChild).toHaveBeenNthCalledWith(6, createdElements[0], textNodes[2]);
+    const textNodes = dom.createTextNode.mock.results.map(
+      result => result.value
+    );
+    expect(dom.appendChild).toHaveBeenNthCalledWith(
+      2,
+      createdElements[0],
+      textNodes[0]
+    );
+    expect(dom.appendChild).toHaveBeenNthCalledWith(
+      4,
+      createdElements[0],
+      textNodes[1]
+    );
+    expect(dom.appendChild).toHaveBeenNthCalledWith(
+      6,
+      createdElements[0],
+      textNodes[2]
+    );
   });
 });
