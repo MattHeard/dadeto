@@ -409,4 +409,43 @@ describe('setupAudio', () => {
     // Then
     expect(createElement).toHaveBeenCalledWith('div');
   });
+
+  it('wires up event listeners and button hrefs correctly', () => {
+    // When
+    setupAudio(dom);
+
+    // Then
+    const playButton = createdElements.find(el => el.textContent === 'PLAY');
+    const pauseButton = createdElements.find(el => el.textContent === 'PAUSE');
+    const stopButton = createdElements.find(el => el.textContent === 'STOP');
+
+    expect(playButton.href).toBe('#');
+    expect(pauseButton.href).toBe('#');
+    expect(stopButton.href).toBe('#');
+
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      1,
+      playButton,
+      'click',
+      expect.any(Function)
+    );
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      2,
+      pauseButton,
+      'click',
+      expect.any(Function)
+    );
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      3,
+      stopButton,
+      'click',
+      expect.any(Function)
+    );
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      4,
+      audioElement,
+      'timeupdate',
+      expect.any(Function)
+    );
+  });
 });
