@@ -163,6 +163,20 @@ describe('createKeyValueRow', () => {
     expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '+');
   });
 
+  it('creates the button element with the correct type', () => {
+    const mockButton = {};
+    mockDom.createElement
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValue(mockButton);
+
+    rowCreator(mockEntries[0], 0);
+
+    expect(mockDom.createElement).toHaveBeenNthCalledWith(4, 'button');
+    expect(mockDom.setType).toHaveBeenCalledWith(mockButton, 'button');
+  });
+
   it('adds event listeners for key and value changes', () => {
     // Setup mock elements
     const mockKeyInput = {};
