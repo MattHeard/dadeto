@@ -38,4 +38,34 @@ describe('processInputAndSetOutput', () => {
     processInputAndSetOutput(elements, processingFunction, env);
     expect(processingFunction).toHaveBeenCalled();
   });
+
+  it('falls back to setTextContent when JSON cannot be parsed', () => {
+    const inputElement = { value: 'ignored' };
+    const article = { id: 'post1' };
+    const outputSelect = { value: 'text' };
+    const outputParentElement = {};
+    const elements = {
+      inputElement,
+      article,
+      outputSelect,
+      outputParentElement,
+    };
+    const processingFunction = jest.fn(() => 'not json');
+    const toyEnv = new Map([
+      ['getData', () => ({})],
+      ['setData', jest.fn()],
+    ]);
+    const createEnv = jest.fn(() => toyEnv);
+    const dom = {
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      appendChild: jest.fn(),
+    };
+    const env = { createEnv, dom, fetchFn: jest.fn() };
+
+    processInputAndSetOutput(elements, processingFunction, env);
+
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
+  });
 });
