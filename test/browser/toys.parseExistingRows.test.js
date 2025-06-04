@@ -8,7 +8,7 @@ describe('parseExistingRows', () => {
 
   beforeEach(() => {
     mockDom = {
-      getValue: jest.fn()
+      getValue: jest.fn(),
     };
     mockInputElement = {};
   });
@@ -37,7 +37,7 @@ describe('parseExistingRows', () => {
   it('should convert an array of key-value pairs to an object', () => {
     const testArray = [
       { key: 'name', value: 'John' },
-      { key: 'age', value: 30 }
+      { key: 'age', value: 30 },
     ];
     mockDom.getValue.mockReturnValue(JSON.stringify(testArray));
 
@@ -45,7 +45,7 @@ describe('parseExistingRows', () => {
 
     expect(result).toEqual({
       name: 'John',
-      age: 30
+      age: 30,
     });
   });
 
@@ -53,7 +53,7 @@ describe('parseExistingRows', () => {
     const testArray = [
       { key: 'name', value: 'John' },
       { key: 'age', value: null },
-      { key: 'city' } // value is undefined
+      { key: 'city' }, // value is undefined
     ];
     mockDom.getValue.mockReturnValue(JSON.stringify(testArray));
 
@@ -62,7 +62,7 @@ describe('parseExistingRows', () => {
     expect(result).toEqual({
       name: 'John',
       age: '',
-      city: ''
+      city: '',
     });
   });
 
@@ -71,7 +71,7 @@ describe('parseExistingRows', () => {
       { key: 'name', value: 'John' },
       { value: 'should be skipped' },
       { key: 'age', value: 30 },
-      { notKey: 'test', value: 'should be skipped' }
+      { notKey: 'test', value: 'should be skipped' },
     ];
     mockDom.getValue.mockReturnValue(JSON.stringify(testArray));
 
@@ -79,7 +79,25 @@ describe('parseExistingRows', () => {
 
     expect(result).toEqual({
       name: 'John',
-      age: 30
+      age: 30,
+    });
+  });
+
+  it('should ignore non-object items in array input', () => {
+    const testArray = [
+      { key: 'name', value: 'John' },
+      null,
+      undefined,
+      'string',
+      { key: 'age', value: 30 },
+    ];
+    mockDom.getValue.mockReturnValue(JSON.stringify(testArray));
+
+    const result = parseExistingRows(mockDom, mockInputElement);
+
+    expect(result).toEqual({
+      name: 'John',
+      age: 30,
     });
   });
 
