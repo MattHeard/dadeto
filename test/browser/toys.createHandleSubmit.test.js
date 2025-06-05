@@ -41,8 +41,9 @@ describe('createHandleSubmit', () => {
       article: { id: 'a1' },
     };
 
+    const processingError = new Error('boom');
     const processingFunction = jest.fn(() => {
-      throw new Error('boom');
+      throw processingError;
     });
 
     const handler = createHandleSubmit(elements, processingFunction, env);
@@ -60,5 +61,9 @@ describe('createHandleSubmit', () => {
       elements.outputParentElement
     );
     expect(appendChild).toHaveBeenCalled();
+    expect(setTextContent).toHaveBeenCalledWith(
+      expect.anything(),
+      'Error: ' + processingError.message
+    );
   });
 });
