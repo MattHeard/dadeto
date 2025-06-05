@@ -147,4 +147,8 @@ describe('generateClues', () => {
     const output = JSON.parse(generateClues('null'));
     expect(output).toEqual({ error: 'Invalid fleet structure' });
   });
+
+  it('does not throw when the fleet is null', () => {
+    expect(() => generateClues('null')).not.toThrow();
+  });
 });
