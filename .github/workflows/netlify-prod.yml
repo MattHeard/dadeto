@@ -1,0 +1,32 @@
+name: Deploy to Netlify (prod)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4     # pick the node version your build needs
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - run: npm ci                     # or pnpm / yarn
+      - run: npm run build              # produces the static folder (e.g., dist)
+      - run: npm install -g netlify-cli@17     # pin CLI version
+
+      # Upload the already-built files – costs 0 Netlify build-minutes
+      - run: netlify deploy \
+              --dir=dist \
+              --prod \
+              --message "GitHub ${{ github.sha }}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID:   ${{ secrets.NETLIFY_SITE_ID }}

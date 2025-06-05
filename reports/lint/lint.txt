@@ -71,6 +71,9 @@
   504:24  warning  Ternary operator used                                       no-ternary
   506:7   warning  Ternary operator used                                       no-ternary
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/initializeInteractiveComponent.enableInteractiveControls.test.js
+  10:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.makeHandleHideSpan.test.js
   11:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
   22:39  warning  Ternary operator used                                       no-ternary
@@ -96,6 +99,9 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.initializeInteractiveComponent.elements.test.js
   13:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.initializeInteractiveComponent.logInfo.dynamic.test.js
+  12:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.initializeInteractiveComponent.logInfo.test.js
   9:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
@@ -130,4 +136,4 @@
   1598:9   warning  Ternary operator used                                       no-ternary
   1620:39  warning  Ternary operator used                                       no-ternary
 
-✖ 77 problems (0 errors, 77 warnings)
+✖ 79 problems (0 errors, 79 warnings)
