@@ -20,11 +20,10 @@ jobs:
 
       - run: npm install -g netlify-cli@17     # pin CLI version
 
-      # Upload the files in ./public – costs 0 Netlify build‑minutes
-      - run: netlify deploy \
-              --dir=public \
-              --prod \
-              --message "GitHub ${{ github.sha }}"
+      - name: Deploy to Netlify production
+        run: |
+          echo "🟢 Starting production deploy…"
+          netlify deploy --prod --dir=public --message "GitHub ${{ github.sha }}"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID:   ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
