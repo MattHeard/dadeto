@@ -1281,10 +1281,18 @@ describe('toys', () => {
         removeChild: jest.fn(),
         appendChild: jest.fn(),
         querySelector: jest.fn((_, selector) => {
-          if (selector === 'input') {return inputElement;}
-          if (selector === 'button') {return submitButton;}
-          if (selector === 'div.output') {return outputParent;}
-          if (selector === 'select.output') {return {};}
+          if (selector === 'input') {
+            return inputElement;
+          }
+          if (selector === 'button') {
+            return submitButton;
+          }
+          if (selector === 'div.output') {
+            return outputParent;
+          }
+          if (selector === 'select.output') {
+            return {};
+          }
           return {};
         }),
         removeWarning: jest.fn(),
@@ -1309,6 +1317,7 @@ describe('toys', () => {
 
       expect(dom.enable).toHaveBeenCalledWith(inputElement);
       expect(dom.enable).toHaveBeenCalledWith(submitButton);
+      expect(dom.removeWarning).toHaveBeenCalledWith(outputParent);
     });
   });
 
