@@ -1,4 +1,7 @@
-import { getBlogGenerationArgs, generateBlogOuter } from '../../src/generator/generator.js';
+import {
+  getBlogGenerationArgs,
+  generateBlogOuter,
+} from '../../src/generator/generator.js';
 
 describe('generateBlogOuter', () => {
   it('returns a string of HTML when given a blog object with an empty posts array', () => {
@@ -26,5 +29,10 @@ describe('getBlogGenerationArgs', () => {
     expect(header).toContain('aria-label="Matt Heard"');
     expect(header).toContain('Software developer and philosopher in Berlin');
   });
-});
 
+  it('uses single spacing between classes in header metadata', () => {
+    const { header } = getBlogGenerationArgs();
+    expect(header).toContain('class="value metadata"');
+    expect(header).not.toMatch(/class="value\s{2,}metadata"/);
+  });
+});
