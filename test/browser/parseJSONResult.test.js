@@ -29,4 +29,9 @@ describe('parseJSONResult', () => {
     const result = parseJSONResult('{"a":1}');
     expect(result).toEqual({ a: 1 });
   });
+
+  it('returns null when called with undefined', async () => {
+    const parseJSONResult = await getParseJSONResult();
+    expect(parseJSONResult(undefined)).toBeNull();
+  });
 });
