@@ -66,6 +66,23 @@ describe('generateFleet', () => {
     }
   });
 
+  test('places a horizontal ship when only horizontal fit is possible', () => {
+    const cfg = { width: 3, height: 2, ships: [3] };
+    const env = new Map([['getRandomNumber', () => 0]]);
+    const fleet = JSON.parse(generateFleet(JSON.stringify(cfg), env));
+    expect(fleet).toEqual({
+      width: 3,
+      height: 2,
+      ships: [
+        {
+          start: { x: 0, y: 1 },
+          length: 3,
+          direction: 'H',
+        },
+      ],
+    });
+  });
+
   test('generates a valid fleet for simple input', () => {
     const cfg = { width: 4, height: 4, ships: [2, 2] };
     const result = generateFleet(JSON.stringify(cfg), env);
