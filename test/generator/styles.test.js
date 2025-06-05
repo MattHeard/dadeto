@@ -6,4 +6,8 @@ describe('styles constant', () => {
     expect(styles).toContain('background-color: #121212;');
     expect(styles).toContain('.article-title');
   });
+
+  test('starts with body selector', () => {
+    expect(styles.startsWith('\n  body {')).toBe(true);
+  });
 });
