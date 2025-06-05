@@ -301,6 +301,34 @@ test('handles out-of-bounds position', () => {
   });
 });
 
+test('handles invalid row with valid column', () => {
+  const env = new Map();
+  const input = {
+    moves: [{ player: 'X', position: { row: 5, column: 1 } }],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(1);
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
+});
+
+test('handles invalid column with valid row', () => {
+  const env = new Map();
+  const input = {
+    moves: [{ player: 'X', position: { row: 0, column: 5 } }],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(1);
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
+});
+
 test('assigns X to first move when moves list is empty', () => {
   const env = new Map();
   const input = {
