@@ -1,5 +1,20 @@
 import { jest, describe, it, expect } from '@jest/globals';
 import * as toys from '../../src/browser/toys.js';
+import { readFileSync } from 'fs';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const filePath = require.resolve('../../src/browser/toys.js');
+
+function getParseJSONResult() {
+  const code = readFileSync(filePath, 'utf8');
+  const match = code.match(/function parseJSONResult\(result\) {[^]*?\n}\n/);
+  if (!match) {
+    throw new Error('parseJSONResult not found');
+  }
+
+  return new Function(`${match[0]}; return parseJSONResult;`)();
+}
 const { processInputAndSetOutput } = toys;
 
 describe('processInputAndSetOutput', () => {
@@ -105,6 +120,9 @@ describe('processInputAndSetOutput', () => {
     const env = { createEnv, dom, fetchFn: jest.fn() };
 
     processInputAndSetOutput(elements, processingFunction, env);
+
+    const parseJSONResult = getParseJSONResult();
+    expect(parseJSONResult('not json')).toBeNull();
 
     expect(dom.setTextContent).toHaveBeenCalled();
     expect(dom.removeAllChildren).toHaveBeenCalledWith(outputParentElement);
@@ -231,9 +249,12 @@ describe('processInputAndSetOutput', () => {
     let data = {};
     const toyEnv = new Map([
       ['getData', () => data],
-      ['setData', (newData) => {
-        data = newData;
-      }],
+      [
+        'setData',
+        newData => {
+          data = newData;
+        },
+      ],
     ]);
     const createEnv = jest.fn(() => toyEnv);
     const dom = {
