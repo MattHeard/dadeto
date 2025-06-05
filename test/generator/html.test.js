@@ -5,7 +5,7 @@ import {
   escapeHtml,
   createHtmlTag,
   wrapHtml,
-} from "../../src/generator/html.js";
+} from '../../src/generator/html.js';
 
 describe('html utilities', () => {
   test('createOpeningTag omits space when no attributes', () => {
@@ -26,6 +26,10 @@ describe('html utilities', () => {
 
   test('escapeHtml replaces special characters', () => {
     expect(escapeHtml('<div>&"')).toBe('&lt;div&gt;&amp;&quot;');
+  });
+
+  test('escapeHtml escapes single quotes', () => {
+    expect(escapeHtml("'quote'")).toBe('&#039;quote&#039;');
   });
 
   test('createHtmlTag wraps content with html lang attribute', () => {
