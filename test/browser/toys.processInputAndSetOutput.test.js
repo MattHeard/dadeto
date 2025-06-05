@@ -12,8 +12,9 @@ function getParseJSONResult() {
   if (!match) {
     throw new Error('parseJSONResult not found');
   }
-
-  return new Function(`${match[0]}; return parseJSONResult;`)();
+  return new Function(
+    `${match[0]}\n//# sourceURL=${filePath}\nreturn parseJSONResult;`
+  )();
 }
 const { processInputAndSetOutput } = toys;
 
