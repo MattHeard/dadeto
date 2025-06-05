@@ -1,8 +1,12 @@
 import { describe, test, expect } from '@jest/globals';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, unlinkSync } from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { createAttrPair, createTag, ATTR_NAME } from '../../src/generator/html.js';
+import { fileURLToPath, pathToFileURL } from 'url';
+import {
+  createAttrPair,
+  createTag,
+  ATTR_NAME,
+} from '../../src/generator/html.js';
 
 const filePath = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -43,10 +47,44 @@ function getCreateValueDiv() {
   );
 }
 
+async function importCreateValueDiv() {
+  const code = readFileSync(filePath, 'utf8');
+  const tempPath = path.join(
+    path.dirname(filePath),
+    `tmp-create-value-div-${process.pid}.mjs`
+  );
+  writeFileSync(
+    tempPath,
+    `${code}\nexport { createValueDiv as __createValueDiv__ };`
+  );
+  const moduleUrl = pathToFileURL(tempPath).href;
+  const mod = await import(moduleUrl);
+  unlinkSync(tempPath);
+  return mod.__createValueDiv__;
+}
+
 describe('createValueDiv', () => {
   test('filters out falsy class names', () => {
     const createValueDiv = getCreateValueDiv();
-    const result = createValueDiv('content', ['foo', '', undefined, null, 'bar']);
+    const result = createValueDiv('content', [
+      'foo',
+      '',
+      undefined,
+      null,
+      'bar',
+    ]);
+    expect(result).toBe('<div class="value foo bar">content</div>');
+  });
+
+  test('module import filters out falsy class names', async () => {
+    const createValueDiv = await importCreateValueDiv();
+    const result = createValueDiv('content', [
+      'foo',
+      '',
+      undefined,
+      null,
+      'bar',
+    ]);
     expect(result).toBe('<div class="value foo bar">content</div>');
   });
 });
