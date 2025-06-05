@@ -18,8 +18,6 @@ jobs:
           node-version: 18
           cache: 'npm'
 
-      - run: npm ci                     # or pnpm / yarn
-      - run: npm run build              # produces the static folder (e.g., dist)
       - run: npm install -g netlify-cli@17     # pin CLI version
 
       # Upload the already-built files – costs 0 Netlify build-minutes
