@@ -6,8 +6,17 @@ describe('createBattleshipFleetBoardElement', () => {
   let dom;
   beforeEach(() => {
     dom = {
-      createElement: jest.fn(tag => ({ tag, text: '', children: [], setText: function (t) { this.text = t; } })),
-      setTextContent: jest.fn((el, text) => { el.text = text; }),
+      createElement: jest.fn(tag => ({
+        tag,
+        text: '',
+        children: [],
+        setText: function (t) {
+          this.text = t;
+        },
+      })),
+      setTextContent: jest.fn((el, text) => {
+        el.text = text;
+      }),
     };
   });
 
@@ -22,7 +31,14 @@ describe('createBattleshipFleetBoardElement', () => {
     };
     const input = JSON.stringify(fleet);
     // Patch dom.createElement to recognize 'pre'
-    dom.createElement = jest.fn(tag => ({ tag, text: '', children: [], setText: function (t) { this.text = t; } }));
+    dom.createElement = jest.fn(tag => ({
+      tag,
+      text: '',
+      children: [],
+      setText: function (t) {
+        this.text = t;
+      },
+    }));
     const el = createBattleshipFleetBoardElement(input, dom);
     expect(el.tag).toBe('pre');
     // Should render a grid with '#' for ships and '·' for water
@@ -35,6 +51,19 @@ describe('createBattleshipFleetBoardElement', () => {
     const gridString = dom.setTextContent.mock.calls[0][1];
     expect(gridString).toContain('# # · ·');
     expect(gridString).toContain('· · # ·');
+  });
+
+  test('renders a vertical ship occupying multiple rows', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [{ start: { x: 1, y: 0 }, length: 3, direction: 'V' }],
+    };
+    const input = JSON.stringify(fleet);
+    const el = createBattleshipFleetBoardElement(input, dom);
+    expect(el.tag).toBe('pre');
+    const lines = el.text.trim().split('\n');
+    expect(lines).toEqual(['· # ·', '· # ·', '· # ·']);
   });
 
   test('renders a 10x10 empty fleet for invalid JSON', () => {
