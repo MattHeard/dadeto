@@ -135,6 +135,24 @@ describe('createBattleshipFleetBoardElement', () => {
     expect(lines[2].replace(/ /g, '')).toBe('···');
   });
 
+  test('skips ships missing the start property', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [
+        { start: { x: 0, y: 0 }, length: 2, direction: 'H' },
+        { length: 2, direction: 'V' }, // malformed, missing start
+      ],
+    };
+    const input = JSON.stringify(fleet);
+    const el = createBattleshipFleetBoardElement(input, dom);
+    expect(el.tag).toBe('pre');
+    const lines = el.text.trim().split('\n');
+    expect(lines[0].replace(/ /g, '')).toBe('##·');
+    expect(lines[1].replace(/ /g, '')).toBe('···');
+    expect(lines[2].replace(/ /g, '')).toBe('···');
+  });
+
   test('ignores ship segments that exceed board dimensions', () => {
     const fleet = {
       width: 2,
