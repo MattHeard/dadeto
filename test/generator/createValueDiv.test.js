@@ -2,7 +2,11 @@ import { describe, test, expect } from '@jest/globals';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createAttrPair, createTag, ATTR_NAME } from '../../src/generator/html.js';
+import {
+  createAttrPair,
+  createTag,
+  ATTR_NAME,
+} from '../../src/generator/html.js';
 
 const filePath = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -46,7 +50,19 @@ function getCreateValueDiv() {
 describe('createValueDiv', () => {
   test('filters out falsy class names', () => {
     const createValueDiv = getCreateValueDiv();
-    const result = createValueDiv('content', ['foo', '', undefined, null, 'bar']);
+    const result = createValueDiv('content', [
+      'foo',
+      '',
+      undefined,
+      null,
+      'bar',
+    ]);
     expect(result).toBe('<div class="value foo bar">content</div>');
+  });
+
+  test('returns base class when all additional classes are falsy', () => {
+    const createValueDiv = getCreateValueDiv();
+    const result = createValueDiv('text', ['', false, undefined, null, 0]);
+    expect(result).toBe('<div class="value">text</div>');
   });
 });
