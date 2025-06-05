@@ -158,6 +158,37 @@ test('detects win for O and returns no additional move', () => {
   expect(output.moves).toEqual(input.moves); // game is over, no extra move
 });
 
+test('detects diagonal win for X from top left', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 0 } },
+      { player: 'O', position: { row: 0, column: 1 } },
+      { player: 'X', position: { row: 1, column: 1 } },
+      { player: 'O', position: { row: 2, column: 1 } },
+      { player: 'X', position: { row: 2, column: 2 } }, // diagonal win
+    ],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toEqual(input.moves);
+});
+
+test('detects diagonal win for X from top right', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 2 } },
+      { player: 'O', position: { row: 0, column: 0 } },
+      { player: 'X', position: { row: 1, column: 1 } },
+      { player: 'O', position: { row: 1, column: 0 } },
+      { player: 'X', position: { row: 2, column: 0 } }, // diagonal win
+    ],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toEqual(input.moves);
+});
 test('adds ninth move to result in a tie', () => {
   const env = new Map();
   const input = {
