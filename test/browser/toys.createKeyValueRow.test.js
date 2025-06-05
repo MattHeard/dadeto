@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
-import { createKeyValueRow } from '../../src/browser/toys.js';
+import * as toys from '../../src/browser/toys.js';
+const { createKeyValueRow } = toys;
 
 describe('createKeyValueRow', () => {
   let mockDom;
@@ -274,5 +275,26 @@ describe('createKeyValueRow', () => {
       'click',
       btnHandler
     );
+  });
+
+  it('creates different button types for each index', () => {
+    const btn0 = {};
+    const btn1 = {};
+
+    mockDom.createElement
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce(btn0)
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce(btn1);
+
+    rowCreator(mockEntries[0], 0);
+    rowCreator(mockEntries[1], 1);
+
+    expect(mockDom.setTextContent).toHaveBeenNthCalledWith(1, btn0, '×');
+    expect(mockDom.setTextContent).toHaveBeenNthCalledWith(2, btn1, '+');
   });
 });
