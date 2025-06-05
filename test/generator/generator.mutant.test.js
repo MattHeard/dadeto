@@ -1,0 +1,14 @@
+import { describe, test, expect, beforeAll } from '@jest/globals';
+
+let generateBlogOuter;
+
+beforeAll(async () => {
+  ({ generateBlogOuter } = await import('../../src/generator/generator.js'));
+});
+
+describe('generator mutants', () => {
+  test('output does not contain mutation marker', () => {
+    const html = generateBlogOuter({ posts: [] });
+    expect(html.includes('Stryker was here!')).toBe(false);
+  });
+});
