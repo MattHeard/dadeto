@@ -21,6 +21,13 @@ describe('generator constants usage', () => {
     expect(html).toContain('</body>');
   });
 
+  test('container div closes before the footer script', () => {
+    const html = generateBlogOuter({ posts: [] });
+    const regex =
+      /<\/div><\/div><\/div><script type="module" src="browser\/main.js" defer><\/script>/;
+    expect(html).toMatch(regex);
+  });
+
   test('footer content is not wrapped in an extra value div', () => {
     const html = generateBlogOuter({ posts: [] });
     expect(html.includes('<div class="value"><div class="footer')).toBe(false);
