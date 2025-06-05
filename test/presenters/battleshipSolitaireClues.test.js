@@ -133,7 +133,7 @@ describe('createBattleshipCluesBoardElement – successful render', () => {
     expect(topOnesLine.trim()).toBe('1 9 1 2');
 
     // ensure tens digits line preserves spaces for single‑digit clues
-    const topTensLine = lines[0];
+    // const topTensLine = lines[0]; // This was the redundant declaration
     expect(topTensLine).toBe('       1     ');
   });
 });
