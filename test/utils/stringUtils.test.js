@@ -62,4 +62,9 @@ describe('safeTrim', () => {
     expect(safeTrim('')).toBe('');
     expect(safeTrim('   ')).toBe('');
   });
+
+  test('preserves internal spacing', () => {
+    const str = 'te st';
+    expect(safeTrim(str)).toBe(str);
+  });
 });
