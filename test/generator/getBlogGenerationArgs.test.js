@@ -41,4 +41,10 @@ describe('getBlogGenerationArgs', () => {
     const { footer } = getBlogGenerationArgs();
     expect(footer).toContain('All content is authored by Matt Heard and is');
   });
+
+  it('includes the footer classes in the footer HTML', () => {
+    const { footer } = getBlogGenerationArgs();
+    expect(footer).toContain('class="footer value warning"');
+    expect(footer).not.toContain('undefined');
+  });
 });
