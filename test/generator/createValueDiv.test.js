@@ -11,11 +11,32 @@ const filePath = path.join(
 
 function getCreateValueDiv() {
   const code = readFileSync(filePath, 'utf8');
-  const match = code.match(/const CLASS[^]*?function createValueDiv\([^]*?\n\}/);
+  const match = code.match(/function createValueDiv\([^]*?\n\}/);
   if (!match) {
     throw new Error('createValueDiv not found');
   }
-  return new Function('createAttrPair', 'createTag', 'ATTR_NAME', `${match[0]}; return createValueDiv;`)(
+  const helperCode = `
+    const CLASS = {
+      KEY: 'key',
+      VALUE: 'value',
+      ENTRY: 'entry',
+      ARTICLE_TITLE: 'article-title',
+      METADATA: 'metadata',
+      FOOTER: 'footer',
+      WARNING: 'warning',
+      MEDIA: 'media',
+      FULL_WIDTH: 'full-width',
+    };
+    function joinClasses(classes) { return classes.join(' '); }
+    function createDiv(classes, content) {
+      const classAttr = createAttrPair(ATTR_NAME.CLASS, classes);
+      return createTag('div', classAttr, content);
+    }
+  `;
+  const functionCode = `${helperCode}
+    ${match[0]};
+    return createValueDiv;`;
+  return new Function('createAttrPair', 'createTag', 'ATTR_NAME', functionCode)(
     createAttrPair,
     createTag,
     ATTR_NAME
