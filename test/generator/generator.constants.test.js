@@ -39,4 +39,10 @@ describe('generator constants usage', () => {
       expect(content).toBe('');
     });
   });
+
+  test('footer key div is empty', () => {
+    const html = generateBlogOuter({ posts: [] });
+    const snippet = '<div class="key"></div><div class="footer value warning">';
+    expect(html.includes(snippet)).toBe(true);
+  });
 });
