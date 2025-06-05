@@ -30,4 +30,13 @@ describe('generator constants usage', () => {
     const html = generateBlogOuter({ posts: [] });
     expect(html.includes('<div class="value"><div class="value')).toBe(false);
   });
+
+  test('header key divs are empty', () => {
+    const html = generateBlogOuter({ posts: [] });
+    const keyDivs = [...html.matchAll(/<div class="key">([^<]*)<\/div>/g)];
+    expect(keyDivs.length).toBeGreaterThan(0);
+    keyDivs.forEach(([, content]) => {
+      expect(content).toBe('');
+    });
+  });
 });
