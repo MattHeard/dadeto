@@ -8,6 +8,7 @@ describe('generateBlogOuter', () => {
     const result = generateBlogOuter({ posts: [] });
     expect(typeof result).toBe('string');
     expect(result.length).toBeGreaterThan(0);
+    expect(result).toContain('id="container"');
   });
 });
 
@@ -22,6 +23,7 @@ describe('getBlogGenerationArgs', () => {
     expect(typeof result.wrapFunc).toBe('function');
     expect(result.header.length).toBeGreaterThan(0);
     expect(result.footer.length).toBeGreaterThan(0);
+    expect(result.header).toContain('<div id="container">');
   });
 
   it('includes the banner and metadata in the header HTML', () => {
