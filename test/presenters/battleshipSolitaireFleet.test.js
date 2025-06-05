@@ -56,6 +56,19 @@ describe('createBattleshipFleetBoardElement', () => {
     expect(lines[2].replace(/ /g, '')).toBe('··#·');
   });
 
+  test('renders a vertical ship occupying multiple rows', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [{ start: { x: 1, y: 0 }, length: 3, direction: 'V' }],
+    };
+    const input = JSON.stringify(fleet);
+    const el = createBattleshipFleetBoardElement(input, dom);
+    expect(el.tag).toBe('pre');
+    const lines = el.text.trim().split('\n');
+    expect(lines).toEqual(['· # ·', '· # ·', '· # ·']);
+  });
+
   test('renders a 10x10 empty fleet for invalid JSON', () => {
     const el = createBattleshipFleetBoardElement('not json', dom);
     expect(el.tag).toBe('pre');
