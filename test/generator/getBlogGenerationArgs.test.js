@@ -22,6 +22,15 @@ describe('generateBlogOuter', () => {
     expect(result).toContain('aria-label="Matt Heard"');
     expect(result).toContain('Software developer and philosopher in Berlin');
   });
+
+  it('closes the container before loading the browser script', () => {
+    const result = generateBlogOuter({ posts: [] });
+    expect(
+      result.includes(
+        '</div></div></div><script type="module" src="browser/main.js" defer></script>'
+      )
+    ).toBe(true);
+  });
 });
 
 describe('getBlogGenerationArgs', () => {
