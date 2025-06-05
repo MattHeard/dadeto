@@ -82,6 +82,23 @@ describe('createTicTacToeBoardElement', () => {
     );
   });
 
+  it('ignores moves with out-of-bounds column', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X', position: { row: 0, column: 3 } },
+        { player: 'O', position: { row: 1, column: 1 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   | O |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
   it('only applies the first move to a cell (overlapping moves)', () => {
     const input = JSON.stringify({
       moves: [
