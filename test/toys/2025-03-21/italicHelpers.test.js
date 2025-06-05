@@ -26,6 +26,19 @@ function getHelpers() {
   return new Function(functionCode)();
 }
 
+function getCreateItalicsPattern() {
+  const code = readFileSync(filePath, 'utf8');
+  const createMatch = code.match(/function createItalicsPattern[^]*?\n\}/);
+  const regexMatch = code.match(/const REGEX_SPECIAL_CHARS[^;]*;/);
+  if (!createMatch || !regexMatch) {
+    throw new Error('createItalicsPattern not found');
+  }
+  const fnCode = `${regexMatch[0]}
+    ${createMatch[0]}
+    return { createItalicsPattern };`;
+  return new Function(fnCode)();
+}
+
 describe('italic helper functions', () => {
   test('processItalicBefore returns empty string for falsy input', () => {
     const { processItalicBefore } = getHelpers();
@@ -37,5 +50,17 @@ describe('italic helper functions', () => {
     const { processBoldAfter } = getHelpers();
     expect(processBoldAfter('')).toBe('');
     expect(processBoldAfter(undefined)).toBe('');
+  });
+
+  describe('createItalicsPattern', () => {
+    test('does not escape non-special markers', () => {
+      const { createItalicsPattern } = getCreateItalicsPattern();
+      expect(createItalicsPattern('#').source).toBe('#(.*?)#');
+    });
+
+    test('escapes special regex markers', () => {
+      const { createItalicsPattern } = getCreateItalicsPattern();
+      expect(createItalicsPattern('*').source).toBe('\\*(.*?)\\*');
+    });
   });
 });
