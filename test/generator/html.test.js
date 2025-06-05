@@ -3,7 +3,9 @@ import {
   createOpeningTag,
   createTag,
   escapeHtml,
-} from '../../src/generator/html.js';
+  createHtmlTag,
+  wrapHtml,
+} from "../../src/generator/html.js";
 
 describe('html utilities', () => {
   test('createOpeningTag omits space when no attributes', () => {
@@ -24,5 +26,13 @@ describe('html utilities', () => {
 
   test('escapeHtml replaces special characters', () => {
     expect(escapeHtml('<div>&"')).toBe('&lt;div&gt;&amp;&quot;');
+  });
+
+  test('createHtmlTag wraps content with html lang attribute', () => {
+    expect(createHtmlTag('hi')).toBe('<html lang="en">hi</html>');
+  });
+
+  test('wrapHtml adds doctype and html tag', () => {
+    expect(wrapHtml('hi')).toBe('<!DOCTYPE html><html lang="en">hi</html>');
   });
 });
