@@ -83,4 +83,11 @@ describe('fishingGame', () => {
     const output = fishingGame('worm', env);
     expect(output).toMatch(/beneath a silent, starry sky/i);
   });
+
+  test('recognizes insect bait and applies small positive modifier', () => {
+    const env = createEnv(0.4, '2025-05-15T10:00:00'); // spring morning
+    const output = fishingGame('insect', env);
+    expect(output).toMatch(/lively insect/i);
+    expect(output).toMatch(/common carp surfaces gently/i);
+  });
 });
