@@ -13,8 +13,7 @@ describe('battleshipSolitaireClues presenter', () => {
  * Aim: 100 % branch coverage
  */
 
-import { createBattleshipCluesBoardElement }
-  from '../../src/presenters/battleshipSolitaireClues.js';
+import { createBattleshipCluesBoardElement } from '../../src/presenters/battleshipSolitaireClues.js';
 
 /* ---------- simple DOM stub ---------- */
 function makeDom() {
@@ -58,6 +57,12 @@ describe('createBattleshipCluesBoardElement – error handling', () => {
     expectEmpty10x10Board(el);
   });
 
+  test('renders 10x10 empty board when JSON is null', () => {
+    const dom = makeDom();
+    const el = createBattleshipCluesBoardElement('null', dom); // null value
+    expectEmpty10x10Board(el);
+  });
+
   test('renders 10x10 empty board when rowClues / colClues arrays are missing', () => {
     const dom = makeDom();
     const bad = JSON.stringify({ rowClues: [1, 2, 3] });
@@ -67,14 +72,14 @@ describe('createBattleshipCluesBoardElement – error handling', () => {
 
   test('renders 10x10 empty board when clue values are non‑numeric', () => {
     const dom = makeDom();
-    const bad = JSON.stringify({ rowClues: [1, "x"], colClues: [2, 3] });
+    const bad = JSON.stringify({ rowClues: [1, 'x'], colClues: [2, 3] });
     const el = createBattleshipCluesBoardElement(bad, dom);
     expectEmpty10x10Board(el);
   });
 
   test('renders 10x10 empty board when column clue values are non‑numeric', () => {
     const dom = makeDom();
-    const bad = JSON.stringify({ rowClues: [1, 2], colClues: [3, "x"] });
+    const bad = JSON.stringify({ rowClues: [1, 2], colClues: [3, 'x'] });
     const el = createBattleshipCluesBoardElement(bad, dom);
     expectEmpty10x10Board(el);
   });
