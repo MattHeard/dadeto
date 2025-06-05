@@ -117,6 +117,23 @@ describe('createTicTacToeBoardElement', () => {
     );
   });
 
+  it('does not allow a later move to overwrite an earlier one', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X', position: { row: 0, column: 0 } },
+        { player: 'O', position: { row: 0, column: 0 } },
+      ],
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      ' X |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
   it('ignores moves with missing row/column', () => {
     const input = JSON.stringify({
       moves: [
