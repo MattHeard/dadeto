@@ -94,11 +94,17 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.getModuleInitializer.test.js
   13:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.initializeInteractiveComponent.elements.test.js
+  13:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.initializeInteractiveComponent.logInfo.test.js
+  9:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.keyValueInput.test.js
-   2:54  warning  'createValueInputHandler' is defined but never used  no-unused-vars
-  26:7   warning  'container' is assigned a value but never used       no-unused-vars
-  30:7   warning  'mockRender' is assigned a value but never used      no-unused-vars
-  31:7   warning  'disposers' is assigned a value but never used       no-unused-vars
+   3:53  warning  'createValueInputHandler' is assigned a value but never used  no-unused-vars
+  45:7   warning  'container' is assigned a value but never used                no-unused-vars
+  49:7   warning  'mockRender' is assigned a value but never used               no-unused-vars
+  50:7   warning  'disposers' is assigned a value but never used                no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.makeProcessingFunction.test.js
   12:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
@@ -113,13 +119,15 @@
     15:3   warning  'createUpdateTextInputValue' is defined but never used      no-unused-vars
     18:13  warning  'toys' is defined but never used                            no-unused-vars
    839:40  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1347:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  1348:7   warning  Ternary operator used                                       no-ternary
-  1372:40  warning  Ternary operator used                                       no-ternary
-  1373:40  warning  Ternary operator used                                       no-ternary
-  1410:9   warning  Ternary operator used                                       no-ternary
-  1448:9   warning  Ternary operator used                                       no-ternary
-  1483:9   warning  Ternary operator used                                       no-ternary
-  1505:39  warning  Ternary operator used                                       no-ternary
+  1225:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1283:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1462:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  1463:7   warning  Ternary operator used                                       no-ternary
+  1487:40  warning  Ternary operator used                                       no-ternary
+  1488:40  warning  Ternary operator used                                       no-ternary
+  1525:9   warning  Ternary operator used                                       no-ternary
+  1563:9   warning  Ternary operator used                                       no-ternary
+  1598:9   warning  Ternary operator used                                       no-ternary
+  1620:39  warning  Ternary operator used                                       no-ternary
 
-✖ 73 problems (0 errors, 73 warnings)
+✖ 77 problems (0 errors, 77 warnings)
