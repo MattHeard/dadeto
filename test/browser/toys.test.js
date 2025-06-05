@@ -1204,6 +1204,58 @@ describe('toys', () => {
         articleWithId.id
       );
     });
+
+    it('sets initialising message using setTextContent', () => {
+      const createEnvFn = () => ({});
+      const errorFn = jest.fn();
+      const fetchFn = jest.fn();
+      const outputParent = {};
+      const setTextContent = jest.fn();
+      const createElement = jest.fn(() => ({ textContent: '' }));
+      const dom = {
+        removeAllChildren: jest.fn(),
+        createElement,
+        setTextContent,
+        stopDefault: jest.fn(),
+        addWarning: jest.fn(),
+        addWarningFn: jest.fn(),
+        addEventListener: jest.fn(),
+        removeChild: jest.fn(),
+        appendChild: jest.fn(),
+        querySelector: jest.fn((_, selector) => {
+          if (selector === 'input') {return {};}
+          if (selector === 'button') {return {};}
+          if (selector === 'div.output') {return outputParent;}
+          if (selector === 'select.output') {return {};}
+          return {};
+        }),
+        removeWarning: jest.fn(),
+        enable: jest.fn(),
+        contains: () => true,
+      };
+      const config = {
+        globalState: {},
+        createEnvFn,
+        errorFn,
+        fetchFn,
+        dom,
+        loggers: {
+          logInfo: jest.fn(),
+          logError: jest.fn(),
+          logWarning: jest.fn(),
+        },
+      };
+      const articleObj = {};
+      const processingFunction = jest.fn();
+
+      initializeInteractiveComponent(articleObj, processingFunction, config);
+
+      expect(setTextContent).toHaveBeenNthCalledWith(
+        1,
+        expect.any(Object),
+        'Initialising...'
+      );
+    });
   });
 
   describe('initializeVisibleComponents', () => {
