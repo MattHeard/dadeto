@@ -5,6 +5,11 @@ import {
   escapeHtml,
   createHtmlTag,
   wrapHtml,
+  getClosingTagParts,
+  createClosingTag,
+  TAG_OPEN,
+  SLASH,
+  TAG_CLOSE,
 } from '../../src/generator/html.js';
 
 describe('html utilities', () => {
@@ -38,5 +43,18 @@ describe('html utilities', () => {
 
   test('wrapHtml adds doctype and html tag', () => {
     expect(wrapHtml('hi')).toBe('<!DOCTYPE html><html lang="en">hi</html>');
+  });
+
+  test('getClosingTagParts returns correct parts', () => {
+    expect(getClosingTagParts('div')).toEqual([
+      TAG_OPEN,
+      SLASH,
+      'div',
+      TAG_CLOSE,
+    ]);
+  });
+
+  test('createClosingTag returns closing tag', () => {
+    expect(createClosingTag('span')).toBe('</span>');
   });
 });
