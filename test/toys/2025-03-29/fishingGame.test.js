@@ -83,4 +83,9 @@ describe('fishingGame', () => {
     const output = fishingGame('worm', env);
     expect(output).toMatch(/beneath a silent, starry sky/i);
   });
+  test('recognizes grub bait and mentions its description', () => {
+    const env = createEnv(0.4, '2025-07-15T10:00:00');
+    const output = fishingGame('grub', env);
+    expect(output).toMatch(/succulent grub/i);
+  });
 });
