@@ -12,7 +12,7 @@ async function loadCreateValueDiv() {
   const code = readFileSync(filePath, 'utf8');
   const injectedPath = path.join(
     path.dirname(filePath),
-    `__cvd_${process.pid}.mjs`
+    `__cvd_${process.pid}.js`
   );
   writeFileSync(
     injectedPath,
