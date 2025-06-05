@@ -170,4 +170,17 @@ describe('createBattleshipFleetBoardElement', () => {
     expect(lines[0].replace(/ /g, '')).toBe('·#');
     expect(lines[1].replace(/ /g, '')).toBe('··');
   });
+
+  test('ignores ships with negative start coordinates', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [{ start: { x: -1, y: 1 }, length: 2, direction: 'H' }],
+    };
+    const input = JSON.stringify(fleet);
+    const el = createBattleshipFleetBoardElement(input, dom);
+    expect(el.tag).toBe('pre');
+    const lines = el.text.trim().split('\n');
+    expect(lines).toEqual(['· · ·', '# · ·', '· · ·']);
+  });
 });
