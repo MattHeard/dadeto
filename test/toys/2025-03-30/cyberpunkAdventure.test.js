@@ -59,7 +59,7 @@ describe('Cyberpunk Text Game', () => {
     tempData = {
       name: 'Blaze',
       state: 'hub',
-      inventory: ['datapad'],
+      inventory: ['datapad', 'map'],
       visited: [],
     };
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
@@ -69,6 +69,7 @@ describe('Cyberpunk Text Game', () => {
     expect(cyberpunkAdventure(' ', env)).toMatch(/vendor offers/);
     expect(cyberpunkAdventure('trade datapad', env)).toMatch(/neural ticket/);
     expect(tempData.inventory).toContain('neural ticket');
+    expect(tempData.inventory).toContain('map');
     expect(tempData.inventory).not.toContain('datapad');
     expect(tempData.visited).toContain('transport');
   });
