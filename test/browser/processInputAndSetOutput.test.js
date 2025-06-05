@@ -67,4 +67,15 @@ describe('processInputAndSetOutput', () => {
       expect.anything()
     );
   });
+
+  it('stores the result keyed by article id', () => {
+    const result = 'ok';
+    processingFunction.mockReturnValue(result);
+
+    processInputAndSetOutput(elements, processingFunction, env);
+
+    const setData = toyEnv.get('setData');
+    const callArg = setData.mock.calls[0][0];
+    expect(callArg.output).toEqual({ [elements.article.id]: result });
+  });
 });
