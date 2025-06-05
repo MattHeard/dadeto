@@ -184,6 +184,19 @@ describe('createBattleshipFleetBoardElement', () => {
     expect(lines).toEqual(['· · ·', '# · ·', '· · ·']);
   });
 
+  test('ignores ships with negative start row', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [{ start: { x: 1, y: -1 }, length: 2, direction: 'V' }],
+    };
+    const input = JSON.stringify(fleet);
+    const el = createBattleshipFleetBoardElement(input, dom);
+    expect(el.tag).toBe('pre');
+    const lines = el.text.trim().split('\n');
+    expect(lines).toEqual(['· # ·', '· · ·', '· · ·']);
+  });
+
   test('skips ships with invalid direction', () => {
     const fleet = {
       width: 3,
