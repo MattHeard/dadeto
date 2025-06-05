@@ -107,6 +107,8 @@ describe('generateFleet', () => {
     const result = generateFleet(JSON.stringify(cfg), env);
     const fleet = JSON.parse(result);
     expect(Array.isArray(fleet.ships)).toBe(true);
+    const lengths = fleet.ships.map(ship => ship.length).sort((a, b) => a - b);
+    expect(lengths).toEqual([1, 2, 3]);
   });
 
   test('parses string width and height into numbers', () => {
