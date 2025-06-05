@@ -1,17 +1,17 @@
 import { describe, it, expect } from '@jest/globals';
 import { readFileSync } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
-const filePath = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../../src/browser/toys.js'
-);
+const require = createRequire(import.meta.url);
+
+const filePath = require.resolve('../../src/browser/toys.js');
 
 function getParseJSONResult() {
   const code = readFileSync(filePath, 'utf8');
   const match = code.match(/function parseJSONResult\(result\) {[^]*?\n}\n/);
-  if (!match) {throw new Error('parseJSONResult not found');}
+  if (!match) {
+    throw new Error('parseJSONResult not found');
+  }
 
   return new Function(`${match[0]}; return parseJSONResult;`)();
 }
