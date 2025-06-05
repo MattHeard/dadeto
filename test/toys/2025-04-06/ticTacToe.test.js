@@ -79,6 +79,24 @@ test('detects invalid player alternation', () => {
   });
 });
 
+test('stops processing after invalid move and ignores remaining moves', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 0 } },
+      { player: 'X', position: { row: 0, column: 1 } }, // invalid alternation
+      { player: 'O', position: { row: 0, column: 2 } },
+    ],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(1);
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
+});
+
 test('detects duplicate positions', () => {
   const env = new Map();
   const input = {
