@@ -1,5 +1,10 @@
-import { describe, test, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { beforeAll, describe, test, expect } from '@jest/globals';
+
+let generateBlogOuter;
+
+beforeAll(async () => {
+  ({ generateBlogOuter } = await import('../../src/generator/generator.js'));
+});
 
 describe('normalizeContentItem with null content', () => {
   test('generateBlogOuter handles null in post content array', () => {
