@@ -152,6 +152,17 @@ describe('generateFleet', () => {
     });
   });
 
+  test('noTouching allows placement when ships are separated', () => {
+    const cfg = { width: 3, height: 3, ships: [1, 1], noTouching: true };
+    const result = JSON.parse(generateFleet(JSON.stringify(cfg), env));
+    expect(Array.isArray(result.ships)).toBe(true);
+    expect(result.ships.length).toBe(2);
+    const [s1, s2] = result.ships;
+    const dx = Math.abs(s1.start.x - s2.start.x);
+    const dy = Math.abs(s1.start.y - s2.start.y);
+    expect(dx > 1 || dy > 1).toBe(true);
+  });
+
   test('shuffles ship order based on RNG', () => {
     const cfg = { width: 4, height: 4, ships: [1, 2, 3] };
     const env = new Map([['getRandomNumber', () => 0]]);
