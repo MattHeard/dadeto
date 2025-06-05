@@ -11,15 +11,20 @@ describe('Cyberpunk Text Game', () => {
       ['getRandomNumber', () => 0.5],
       ['getCurrentTime', () => '23:59'],
       ['getData', () => ({ temporary: { CYBE1: tempData } })],
-      ['setData', (data) => {
-        tempData = { ...tempData, ...data.temporary?.CYBE1 };
-      }],
+      [
+        'setData',
+        data => {
+          tempData = { ...tempData, ...data.temporary?.CYBE1 };
+        },
+      ],
     ]);
   });
 
   test('initial naming and intro', () => {
     expect(cyberpunkAdventure('Blaze', env)).toMatch(/Welcome, Blaze/);
-    expect(cyberpunkAdventure('start', env)).toMatch(/you're in the Neon Market/);
+    expect(cyberpunkAdventure('start', env)).toMatch(
+      /you're in the Neon Market/
+    );
   });
 
   test('goes to Hacker Den and requires password', () => {
@@ -36,12 +41,14 @@ describe('Cyberpunk Text Game', () => {
       name: 'Blaze',
       state: 'hacker:door',
       inventory: [],
-      visited: []
+      visited: [],
     };
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
     const result = cyberpunkAdventure('foobar', env);
     if (typeof result === 'object') {
-      expect(result.output).toMatch(/Hint: the password is a number and a name/);
+      expect(result.output).toMatch(
+        /Hint: the password is a number and a name/
+      );
       expect(result.nextState).toBe('hacker:door');
     } else {
       expect(result).toMatch(/Hint: the password is a number and a name/);
@@ -53,10 +60,12 @@ describe('Cyberpunk Text Game', () => {
       name: 'Blaze',
       state: 'hub',
       inventory: ['datapad'],
-      visited: []
+      visited: [],
     };
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
-    expect(cyberpunkAdventure('transport', env)).toMatch(/Trains screech overhead./);
+    expect(cyberpunkAdventure('transport', env)).toMatch(
+      /Trains screech overhead./
+    );
     expect(cyberpunkAdventure(' ', env)).toMatch(/vendor offers/);
     expect(cyberpunkAdventure('trade datapad', env)).toMatch(/neural ticket/);
     expect(tempData.inventory).toContain('neural ticket');
@@ -69,7 +78,7 @@ describe('Cyberpunk Text Game', () => {
       name: 'Blaze',
       state: 'transport:trade',
       inventory: [],
-      visited: []
+      visited: [],
     };
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
     const result = cyberpunkAdventure('trade datapad', env);
@@ -86,7 +95,7 @@ describe('Cyberpunk Text Game', () => {
       name: 'Blaze',
       state: 'hub',
       inventory: [],
-      visited: []
+      visited: [],
     };
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
     expect(cyberpunkAdventure('alley', env)).toMatch(/shadows move with you./);
@@ -100,17 +109,45 @@ describe('Cyberpunk Text Game', () => {
       name: 'Blaze',
       state: 'alley:stealth',
       inventory: [],
-      visited: []
+      visited: [],
     };
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
     env.set('getRandomNumber', () => 0.1); // fail
     const result = cyberpunkAdventure('sneak', env);
     if (typeof result === 'object') {
-      expect(result.output).toMatch(/trip a wire|Sirens start up|sprint back to the Market/i);
+      expect(result.output).toMatch(
+        /trip a wire|Sirens start up|sprint back to the Market/i
+      );
       expect(result.nextState).toBe('hub');
     } else {
-      expect(result).toMatch(/trip a wire|Sirens start up|sprint back to the Market/i);
+      expect(result).toMatch(
+        /trip a wire|Sirens start up|sprint back to the Market/i
+      );
     }
+  });
+
+  test('trips wire in alley if stealth check is exactly 0.3', () => {
+    tempData = {
+      name: 'Blaze',
+      state: 'alley:stealth',
+      inventory: [],
+      visited: [],
+    };
+    env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
+    env.set('getRandomNumber', () => 0.3); // boundary
+    const result = cyberpunkAdventure('sneak', env);
+    if (typeof result === 'object') {
+      expect(result.output).toMatch(
+        /trip a wire|Sirens start up|sprint back to the Market/i
+      );
+      expect(result.nextState).toBe('hub');
+    } else {
+      expect(result).toMatch(
+        /trip a wire|Sirens start up|sprint back to the Market/i
+      );
+    }
+    expect(tempData.inventory).not.toContain('stimpack');
+    expect(tempData.visited).not.toContain('alley');
   });
 
   test('unknown input in hub', () => {
@@ -124,7 +161,7 @@ describe('Cyberpunk Text Game', () => {
       name: 'Blaze',
       state: 'bogus:state',
       inventory: [],
-      visited: []
+      visited: [],
     };
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
     const result = cyberpunkAdventure('anything', env);
@@ -137,7 +174,9 @@ describe('Cyberpunk Text Game', () => {
   });
 
   test('returns SYSTEM ERROR if an exception is thrown (catch block)', () => {
-    env.set('getData', () => { throw new Error('fail!'); });
+    env.set('getData', () => {
+      throw new Error('fail!');
+    });
     const result = cyberpunkAdventure('anything', env);
     expect(result).toMatch(/SYSTEM ERROR: neural link failure/);
   });
@@ -145,7 +184,9 @@ describe('Cyberpunk Text Game', () => {
   test('starts new game if CYBE1 data is missing', () => {
     env.set('getData', () => ({ temporary: {} }));
     const result = cyberpunkAdventure('Blaze', env);
-    expect(result).toMatch(/Welcome, Blaze|your story begins|start to continue|Neon Market/i);
+    expect(result).toMatch(
+      /Welcome, Blaze|your story begins|start to continue|Neon Market/i
+    );
   });
 
   test("defaults name to 'Stray' if no input and no name in temporary data", () => {
