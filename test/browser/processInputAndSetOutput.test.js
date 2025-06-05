@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import * as setOutputModule from '../../src/browser/setOutput.js';
 import { processInputAndSetOutput } from '../../src/browser/toys.js';
 
 let elements;
@@ -65,6 +66,20 @@ describe('processInputAndSetOutput', () => {
     expect(env.dom.appendChild).toHaveBeenCalledWith(
       elements.outputParentElement,
       expect.anything()
+    );
+  });
+
+  it('calls setData with result mapped to article id', () => {
+    const result = 'value';
+    processingFunction.mockReturnValue(result);
+
+    processInputAndSetOutput(elements, processingFunction, env);
+
+    const setData = toyEnv.get('setData');
+    expect(setData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        output: { [elements.article.id]: result },
+      })
     );
   });
 });
