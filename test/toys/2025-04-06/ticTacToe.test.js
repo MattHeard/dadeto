@@ -6,7 +6,10 @@ test('returns optimal move for invalid input', () => {
   const result = ticTacToeMove('invalid json', env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('minimax early tie return is triggered', () => {
@@ -20,13 +23,16 @@ test('minimax early tie return is triggered', () => {
       { player: 'X', position: { row: 1, column: 2 } },
       { player: 'O', position: { row: 1, column: 1 } },
       { player: 'X', position: { row: 2, column: 1 } },
-      { player: 'O', position: { row: 2, column: 0 } }
-    ]
+      { player: 'O', position: { row: 2, column: 0 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(9);
-  expect(output.moves[8]).toEqual({ player: 'X', position: { row: 2, column: 2 } });
+  expect(output.moves[8]).toEqual({
+    player: 'X',
+    position: { row: 2, column: 2 },
+  });
 });
 
 test('detects win for X and returns no additional move', () => {
@@ -37,8 +43,8 @@ test('detects win for X and returns no additional move', () => {
       { player: 'O', position: { row: 1, column: 0 } },
       { player: 'X', position: { row: 0, column: 1 } },
       { player: 'O', position: { row: 1, column: 1 } },
-      { player: 'X', position: { row: 0, column: 2 } } // X wins across the top row
-    ]
+      { player: 'X', position: { row: 0, column: 2 } }, // X wins across the top row
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
@@ -50,7 +56,10 @@ test('returns optimal move for malformed schema', () => {
   const result = ticTacToeMove(JSON.stringify({ badKey: [] }), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('detects invalid player alternation', () => {
@@ -58,13 +67,16 @@ test('detects invalid player alternation', () => {
   const input = {
     moves: [
       { player: 'X', position: { row: 0, column: 0 } },
-      { player: 'X', position: { row: 0, column: 1 } }
-    ]
+      { player: 'X', position: { row: 0, column: 1 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('detects duplicate positions', () => {
@@ -72,13 +84,16 @@ test('detects duplicate positions', () => {
   const input = {
     moves: [
       { player: 'X', position: { row: 0, column: 0 } },
-      { player: 'O', position: { row: 0, column: 0 } }
-    ]
+      { player: 'O', position: { row: 0, column: 0 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('detects too many moves on the board', () => {
@@ -94,13 +109,16 @@ test('detects too many moves on the board', () => {
       { player: 'X', position: { row: 2, column: 0 } },
       { player: 'O', position: { row: 2, column: 1 } },
       { player: 'X', position: { row: 2, column: 2 } },
-      { player: 'O', position: { row: 0, column: 0 } }
-    ]
+      { player: 'O', position: { row: 0, column: 0 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('detects full board with no remaining moves', () => {
@@ -115,8 +133,8 @@ test('detects full board with no remaining moves', () => {
       { player: 'O', position: { row: 1, column: 2 } },
       { player: 'X', position: { row: 2, column: 0 } },
       { player: 'O', position: { row: 2, column: 1 } },
-      { player: 'X', position: { row: 2, column: 2 } }
-    ]
+      { player: 'X', position: { row: 2, column: 2 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
@@ -132,8 +150,8 @@ test('detects win for O and returns no additional move', () => {
       { player: 'X', position: { row: 0, column: 1 } },
       { player: 'O', position: { row: 1, column: 1 } },
       { player: 'X', position: { row: 2, column: 2 } },
-      { player: 'O', position: { row: 1, column: 2 } } // O wins across the middle row
-    ]
+      { player: 'O', position: { row: 1, column: 2 } }, // O wins across the middle row
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
@@ -151,14 +169,17 @@ test('adds ninth move to result in a tie', () => {
       { player: 'X', position: { row: 1, column: 0 } },
       { player: 'O', position: { row: 1, column: 2 } },
       { player: 'X', position: { row: 2, column: 1 } },
-      { player: 'O', position: { row: 2, column: 0 } }
-    ]
+      { player: 'O', position: { row: 2, column: 0 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(9);
   // The 9th move should be X at (2,2)
-  expect(output.moves[8]).toEqual({ player: 'X', position: { row: 2, column: 2 } });
+  expect(output.moves[8]).toEqual({
+    player: 'X',
+    position: { row: 2, column: 2 },
+  });
   // Ensure no win is detected (the board is a tie)
   // Optionally, if output contains a 'winner' or similar property, check it is undefined/null/empty
 });
@@ -175,8 +196,8 @@ test('detects tie game with no remaining moves', () => {
       { player: 'O', position: { row: 2, column: 0 } },
       { player: 'X', position: { row: 1, column: 2 } },
       { player: 'O', position: { row: 2, column: 2 } },
-      { player: 'X', position: { row: 2, column: 1 } }
-    ]
+      { player: 'X', position: { row: 2, column: 1 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
@@ -190,8 +211,8 @@ test('selects optimal move in mid-game scenario', () => {
       { player: 'X', position: { row: 0, column: 0 } },
       { player: 'O', position: { row: 1, column: 1 } },
       { player: 'X', position: { row: 0, column: 1 } },
-      { player: 'O', position: { row: 2, column: 1 } }
-    ]
+      { player: 'O', position: { row: 2, column: 1 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
@@ -209,8 +230,8 @@ test('covers non-terminal state in minimax search', () => {
     moves: [
       { player: 'X', position: { row: 1, column: 1 } },
       { player: 'O', position: { row: 0, column: 0 } },
-      { player: 'X', position: { row: 2, column: 2 } }
-    ]
+      { player: 'X', position: { row: 2, column: 2 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
@@ -220,47 +241,70 @@ test('covers non-terminal state in minimax search', () => {
   expect(output.moves[output.moves.length - 1].player).toBe('O');
 });
 
+test('determines next optimal position on a non-terminal board', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 1, column: 1 } },
+      { player: 'O', position: { row: 0, column: 0 } },
+      { player: 'X', position: { row: 2, column: 2 } },
+    ],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves.length).toBe(input.moves.length + 1);
+  expect(output.moves[3]).toEqual({
+    player: 'O',
+    position: { row: 0, column: 1 },
+  });
+});
+
 test('handles null move entry gracefully', () => {
   const env = new Map();
   const input = {
-    moves: [null]
+    moves: [null],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('handles invalid player', () => {
   const env = new Map();
   const input = {
-    moves: [
-      { player: 'Z', position: { row: 0, column: 0 } }
-    ]
+    moves: [{ player: 'Z', position: { row: 0, column: 0 } }],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('handles out-of-bounds position', () => {
   const env = new Map();
   const input = {
-    moves: [
-      { player: 'X', position: { row: 5, column: -1 } }
-    ]
+    moves: [{ player: 'X', position: { row: 5, column: -1 } }],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('assigns X to first move when moves list is empty', () => {
   const env = new Map();
   const input = {
-    moves: []
+    moves: [],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
@@ -271,14 +315,15 @@ test('assigns X to first move when moves list is empty', () => {
 test('handles position as non-object', () => {
   const env = new Map();
   const input = {
-    moves: [
-      { player: 'X', position: "invalid" }
-    ]
+    moves: [{ player: 'X', position: 'invalid' }],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('forces minimax to score a tie at max depth', () => {
@@ -292,14 +337,17 @@ test('forces minimax to score a tie at max depth', () => {
       { player: 'X', position: { row: 1, column: 2 } },
       { player: 'O', position: { row: 1, column: 1 } },
       { player: 'X', position: { row: 2, column: 1 } },
-      { player: 'O', position: { row: 2, column: 2 } }
-    ]
+      { player: 'O', position: { row: 2, column: 2 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   // Only one move left, and it leads to a tie
   expect(output.moves).toHaveLength(9);
-  expect(output.moves[8]).toEqual({ player: 'X', position: { row: 2, column: 0 } });
+  expect(output.moves[8]).toEqual({
+    player: 'X',
+    position: { row: 2, column: 0 },
+  });
 });
 
 test('handles duplicate board cell even if not duplicate position object', () => {
@@ -307,21 +355,22 @@ test('handles duplicate board cell even if not duplicate position object', () =>
   const input = {
     moves: [
       { player: 'X', position: { row: 1, column: 1 } },
-      { player: 'O', position: { row: 1, column: 1 } } // duplicate board cell
-    ]
+      { player: 'O', position: { row: 1, column: 1 } }, // duplicate board cell
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('forces minimax to run from O perspective', () => {
   const env = new Map();
   const input = {
-    moves: [
-      { player: 'X', position: { row: 0, column: 0 } }
-    ]
+    moves: [{ player: 'X', position: { row: 0, column: 0 } }],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
@@ -342,7 +391,7 @@ test('returns fallback when minimax fails to assign bestMove', () => {
   const env = new Map();
   // All cells are filled with null to simulate a fully corrupted board
   const input = {
-    moves: Array.from({ length: 9 }, function(_, i) {
+    moves: Array.from({ length: 9 }, function (_, i) {
       let player;
       if (i % 2 === 0) {
         player = 'X';
@@ -351,9 +400,9 @@ test('returns fallback when minimax fails to assign bestMove', () => {
       }
       return {
         player: player,
-        position: { row: Math.floor(i / 3), column: i % 3 }
+        position: { row: Math.floor(i / 3), column: i % 3 },
       };
-    })
+    }),
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
@@ -366,14 +415,20 @@ test('returns early if board cell is already filled but not caught by seen', () 
     moves: [
       { player: 'X', position: { row: 1, column: 1 } },
       // duplicate using a different object reference
-      { player: 'O', position: JSON.parse(JSON.stringify({ row: 1, column: 1 })) }
-    ]
+      {
+        player: 'O',
+        position: JSON.parse(JSON.stringify({ row: 1, column: 1 })),
+      },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   // Should fallback to initial move
   expect(output.moves).toHaveLength(1);
-  expect(output.moves[0]).toEqual({ player: 'X', position: { row: 1, column: 1 } });
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
 });
 
 test('triggers minimax tie return at full depth without win', () => {
@@ -387,11 +442,14 @@ test('triggers minimax tie return at full depth without win', () => {
       { player: 'X', position: { row: 1, column: 0 } },
       { player: 'O', position: { row: 1, column: 2 } },
       { player: 'X', position: { row: 2, column: 1 } },
-      { player: 'O', position: { row: 2, column: 0 } }
-    ]
+      { player: 'O', position: { row: 2, column: 0 } },
+    ],
   };
   const result = ticTacToeMove(JSON.stringify(input), env);
   const output = JSON.parse(result);
   expect(output.moves).toHaveLength(9);
-  expect(output.moves[8]).toEqual({ player: 'X', position: { row: 2, column: 2 } });
+  expect(output.moves[8]).toEqual({
+    player: 'X',
+    position: { row: 2, column: 2 },
+  });
 });
