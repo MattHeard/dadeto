@@ -1,10 +1,5 @@
-import { describe, test, expect, beforeAll } from '@jest/globals';
-
-let generateBlogOuter;
-
-beforeAll(async () => {
-  ({ generateBlogOuter } = await import('../../src/generator/generator.js'));
-});
+import { describe, test, expect } from '@jest/globals';
+import { generateBlogOuter } from '../../src/generator/generator.js';
 
 describe('generator mutants', () => {
   test('output does not contain mutation marker', () => {
