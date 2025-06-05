@@ -15,4 +15,9 @@ describe('generator constants usage', () => {
     expect(html).toContain('<body>');
     expect(html).toContain('</body>');
   });
+
+  test('footer content is not wrapped in an extra value div', () => {
+    const html = generateBlogOuter({ posts: [] });
+    expect(html.includes('<div class="value"><div class="footer')).toBe(false);
+  });
 });
