@@ -582,6 +582,22 @@ describe('toys', () => {
       expect(moduleFn).toHaveBeenCalled();
     });
 
+    it('initializes using the provided module info', () => {
+      // --- GIVEN ---
+      createObserver(article, modulePath, functionName);
+      intersectionCallback([entry], observer);
+      const [calledPath, initializer] = dom.importModule.mock.calls[0];
+      const moduleFn = jest.fn();
+      dom.querySelector.mockClear();
+      // --- WHEN ---
+      initializer({ [functionName]: moduleFn });
+      dom.listeners.click({ preventDefault: jest.fn() });
+      // --- THEN ---
+      expect(calledPath).toBe(modulePath);
+      expect(moduleFn).toHaveBeenCalled();
+      expect(dom.querySelector).toHaveBeenCalledWith(article, 'input');
+    });
+
     it('passes the article to initializeInteractiveComponent', () => {
       createObserver(article, modulePath, functionName);
       intersectionCallback([entry], observer);
