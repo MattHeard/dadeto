@@ -25,4 +25,10 @@ describe('generator constants usage', () => {
     const html = generateBlogOuter({ posts: [] });
     expect(html.includes('<div class="value"><div class="footer')).toBe(false);
   });
+
+  test('footer section has an empty key label', () => {
+    const html = generateBlogOuter({ posts: [] });
+    const expected = '<div class="entry"><div class="key"></div><div class="footer value warning">';
+    expect(html).toContain(expected);
+  });
 });
