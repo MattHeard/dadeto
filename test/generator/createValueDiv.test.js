@@ -39,7 +39,7 @@ function getCreateValueDiv() {
   `;
   const functionCode = `${helperCode}
     ${match[0]};
-    return createValueDiv;`;
+    return createValueDiv;\n//# sourceURL=${filePath}`;
   return new Function('createAttrPair', 'createTag', 'ATTR_NAME', functionCode)(
     createAttrPair,
     createTag,
