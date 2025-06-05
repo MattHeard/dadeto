@@ -1,5 +1,21 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  beforeAll,
+  afterEach,
+  jest,
+} from '@jest/globals';
+
+let toys;
+let processInputAndSetOutput;
+let handleParsedResult;
+
+beforeAll(async () => {
+  toys = await import('../../src/browser/toys.js');
+  ({ processInputAndSetOutput, handleParsedResult } = toys);
+});
 
 let elements;
 let env;
@@ -11,29 +27,31 @@ beforeEach(() => {
     inputElement: { value: 'input' },
     outputParentElement: {},
     outputSelect: { value: 'text' },
-    article: { id: 'post1' }
+    article: { id: 'post1' },
   };
   toyEnv = new Map([
     ['getData', () => ({ output: {} })],
-    ['setData', jest.fn()]
+    ['setData', jest.fn()],
   ]);
   env = {
     createEnv: jest.fn(() => toyEnv),
-    fetchFn: jest.fn(() => Promise.resolve({ text: jest.fn(() => Promise.resolve('')) })),
+    fetchFn: jest.fn(() =>
+      Promise.resolve({ text: jest.fn(() => Promise.resolve('')) })
+    ),
     dom: {
       setTextContent: jest.fn(),
       removeAllChildren: jest.fn(),
       appendChild: jest.fn(),
       createElement: jest.fn(() => ({})),
       addWarning: jest.fn(),
-      removeWarning: jest.fn()
+      removeWarning: jest.fn(),
     },
     errorFn: jest.fn(),
     loggers: {
       logInfo: jest.fn(),
       logError: jest.fn(),
-      logWarning: jest.fn()
-    }
+      logWarning: jest.fn(),
+    },
   };
   processingFunction = jest.fn();
 });
