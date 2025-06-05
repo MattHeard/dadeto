@@ -12,19 +12,19 @@ describe('handleRequestResponse', () => {
   beforeEach(() => {
     url = 'https://example.com';
     mockResponse = {
-      text: jest.fn().mockResolvedValue('response text')
+      text: jest.fn().mockResolvedValue('response text'),
     };
 
     mockParent = {
-      firstChild: null
+      firstChild: null,
     };
 
     mockDom = {
       removeAllChildren: jest.fn(),
-      createElement: jest.fn().mockImplementation((tagName) => ({
+      createElement: jest.fn().mockImplementation(tagName => ({
         tagName: tagName.toUpperCase(),
         textContent: '',
-        appendChild: jest.fn()
+        appendChild: jest.fn(),
       })),
       setTextContent: jest.fn(),
       appendChild: jest.fn().mockImplementation((parent, child) => {
@@ -32,18 +32,18 @@ describe('handleRequestResponse', () => {
         return child;
       }),
       addWarning: jest.fn(),
-      removeWarning: jest.fn()
+      removeWarning: jest.fn(),
     };
 
     mockEnv = {
       fetchFn: jest.fn().mockResolvedValue(mockResponse),
       dom: mockDom,
-      errorFn: jest.fn()
+      errorFn: jest.fn(),
     };
 
     mockOptions = {
       parent: mockParent,
-      presenterKey: 'text'
+      presenterKey: 'text',
     };
   });
 
@@ -75,7 +75,10 @@ describe('handleRequestResponse', () => {
 
     // Assert
     expect(mockDom.removeAllChildren).toHaveBeenCalledWith(mockParent);
-    expect(mockDom.appendChild).toHaveBeenCalledWith(mockParent, expect.anything());
+    expect(mockDom.appendChild).toHaveBeenCalledWith(
+      mockParent,
+      expect.anything()
+    );
   });
 
   it('should handle fetch errors', async () => {
@@ -90,11 +93,13 @@ describe('handleRequestResponse', () => {
     await new Promise(process.nextTick);
 
     // Assert
-    expect(mockEnv.errorFn).toHaveBeenCalledWith('Error fetching request URL:', error);
+    expect(mockEnv.errorFn).toHaveBeenCalledWith(
+      'Error fetching request URL:',
+      error
+    );
     expect(mockDom.setTextContent).toHaveBeenCalledWith(
-      { content: 'Error fetching URL: ' + error.message, presenterKey: mockOptions.presenterKey },
-      mockDom,
-      mockParent
+      expect.anything(),
+      'Error fetching URL: ' + error.message
     );
     expect(mockDom.addWarning).toHaveBeenCalledWith(mockParent);
   });
@@ -111,11 +116,13 @@ describe('handleRequestResponse', () => {
     await new Promise(process.nextTick);
 
     // Assert
-    expect(mockEnv.errorFn).toHaveBeenCalledWith('Error fetching request URL:', error);
+    expect(mockEnv.errorFn).toHaveBeenCalledWith(
+      'Error fetching request URL:',
+      error
+    );
     expect(mockDom.setTextContent).toHaveBeenCalledWith(
-      { content: 'Error fetching URL: ' + error.message, presenterKey: mockOptions.presenterKey },
-      mockDom,
-      mockParent
+      expect.anything(),
+      'Error fetching URL: ' + error.message
     );
     expect(mockDom.addWarning).toHaveBeenCalledWith(mockParent);
   });
