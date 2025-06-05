@@ -19,4 +19,10 @@ describe('header generation', () => {
     expect(html).toContain('aria-label="Matt Heard"');
     expect(html).toContain('Software developer and philosopher in Berlin');
   });
+
+  test('metadata div has the metadata class', async () => {
+    const { getBlogGenerationArgs } = await loadGenerator();
+    const { header } = getBlogGenerationArgs();
+    expect(header).toContain('class="value metadata"');
+  });
 });
