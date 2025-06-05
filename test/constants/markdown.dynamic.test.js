@@ -25,4 +25,15 @@ describe('markdown constants isolated', () => {
     expect(CSS_CLASSES.INLINE_CODE).toBe('markdown-inline-code');
     expect(CSS_CLASSES.IMAGE).toBe('markdown-image');
   });
+
+  test('CSS_CLASSES values via dynamic import', async () => {
+    jest.resetModules();
+    const module = await import('../../src/constants/markdown.js');
+    const { CSS_CLASSES } = module;
+    expect(CSS_CLASSES.LIST).toBe('markdown-list');
+    expect(CSS_CLASSES.LIST_ITEM).toBe('markdown-list-item');
+    expect(CSS_CLASSES.BLOCKQUOTE).toBe('markdown-blockquote');
+    expect(CSS_CLASSES.CODE).toBe('markdown-code');
+    expect(CSS_CLASSES.INLINE_CODE).toBe('markdown-inline-code');
+  });
 });
