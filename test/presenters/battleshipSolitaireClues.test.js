@@ -116,6 +116,10 @@ describe('createBattleshipCluesBoardElement – successful render', () => {
     // column clues: maxDigits = 2 → 2 top + grid(3) + 2 bottom = 7 lines
     expect(lines.length).toBe(7);
 
+    // check top column clues tens digit line
+    const topTensLine = lines[0];
+    expect(topTensLine).toBe('       1     ');
+
     // row clue padding width = 2  (because '12' is widest)
     // Row lines should start with left clue and end with right clue
     expect(lines[2].startsWith(' 5')).toBe(true);
