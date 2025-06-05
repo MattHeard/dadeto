@@ -39,4 +39,9 @@ describe('generator constants usage', () => {
       expect(content).toBe('');
     });
   });
+
+  test('container div is closed before the script tag', () => {
+    const html = generateBlogOuter({ posts: [] });
+    expect(html).toContain('</div><script type="module" src="browser/main.js" defer></script>');
+  });
 });
