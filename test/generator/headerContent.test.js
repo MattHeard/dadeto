@@ -25,4 +25,10 @@ describe('header generation', () => {
     const { header } = getBlogGenerationArgs();
     expect(header).toContain('class="value metadata"');
   });
+
+  test('header sections have empty labels', async () => {
+    const { getBlogGenerationArgs } = await loadGenerator();
+    const { header } = getBlogGenerationArgs();
+    expect(header).not.toContain('Stryker was here!');
+  });
 });
