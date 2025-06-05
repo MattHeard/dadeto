@@ -1165,6 +1165,45 @@ describe('toys', () => {
       expect(querySelector).toHaveBeenCalledWith(article, 'div.output');
       expect(querySelector).toHaveBeenCalledWith(article, 'select.output');
     });
+
+    it('logs initialization message with article id', () => {
+      const createEnvFn = () => ({});
+      const errorFn = jest.fn();
+      const fetchFn = jest.fn();
+      const logInfo = jest.fn();
+      const dom = {
+        removeAllChildren: jest.fn(),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        stopDefault: jest.fn(),
+        addWarning: jest.fn(),
+        addWarningFn: jest.fn(),
+        addEventListener: jest.fn(),
+        removeChild: jest.fn(),
+        appendChild: jest.fn(),
+        querySelector: jest.fn(() => ({})),
+        setTextContent: jest.fn(),
+        removeWarning: jest.fn(),
+        enable: jest.fn(),
+        contains: () => true,
+      };
+      const config = {
+        globalState: {},
+        createEnvFn,
+        errorFn,
+        fetchFn,
+        dom,
+        loggers: { logInfo, logError: jest.fn(), logWarning: jest.fn() },
+      };
+      const articleWithId = { id: 'article-1' };
+      const processingFunction = jest.fn();
+
+      initializeInteractiveComponent(articleWithId, processingFunction, config);
+
+      expect(logInfo).toHaveBeenCalledWith(
+        'Initializing interactive component for article',
+        articleWithId.id
+      );
+    });
   });
 
   describe('initializeVisibleComponents', () => {
