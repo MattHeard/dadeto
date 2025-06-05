@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
 import { processInputAndSetOutput } from '../../src/browser/toys.js';
 
 let elements;
@@ -11,29 +20,31 @@ beforeEach(() => {
     inputElement: { value: 'input' },
     outputParentElement: {},
     outputSelect: { value: 'text' },
-    article: { id: 'post1' }
+    article: { id: 'post1' },
   };
   toyEnv = new Map([
     ['getData', () => ({ output: {} })],
-    ['setData', jest.fn()]
+    ['setData', jest.fn()],
   ]);
   env = {
     createEnv: jest.fn(() => toyEnv),
-    fetchFn: jest.fn(() => Promise.resolve({ text: jest.fn(() => Promise.resolve('')) })),
+    fetchFn: jest.fn(() =>
+      Promise.resolve({ text: jest.fn(() => Promise.resolve('')) })
+    ),
     dom: {
       setTextContent: jest.fn(),
       removeAllChildren: jest.fn(),
       appendChild: jest.fn(),
       createElement: jest.fn(() => ({})),
       addWarning: jest.fn(),
-      removeWarning: jest.fn()
+      removeWarning: jest.fn(),
     },
     errorFn: jest.fn(),
     loggers: {
       logInfo: jest.fn(),
       logError: jest.fn(),
-      logWarning: jest.fn()
-    }
+      logWarning: jest.fn(),
+    },
   };
   processingFunction = jest.fn();
 });
@@ -66,6 +77,27 @@ describe('processInputAndSetOutput', () => {
       elements.outputParentElement,
       expect.anything()
     );
+  });
+
+  it('parseJSONResult returns null for invalid JSON input', () => {
+    const file = fs.readFileSync(
+      path.join(process.cwd(), 'src/browser/toys.js'),
+      'utf8'
+    );
+    const start = file.indexOf('function parseJSONResult');
+    const open = file.indexOf('{', start);
+    let count = 1;
+    let i = open + 1;
+    while (count > 0) {
+      const char = file[i];
+      if (char === '{') {count++;}
+      else if (char === '}') {count--;}
+      i++;
+    }
+    const funcString = file.slice(start, i);
+    const parseJSONResult = eval('(' + funcString + ')');
+
+    expect(parseJSONResult('invalid')).toBeNull();
   });
 
   it('stores the result keyed by article id', () => {
