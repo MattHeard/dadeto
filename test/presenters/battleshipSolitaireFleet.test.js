@@ -49,8 +49,11 @@ describe('createBattleshipFleetBoardElement', () => {
     // ··#·
     expect(dom.setTextContent).toHaveBeenCalled();
     const gridString = dom.setTextContent.mock.calls[0][1];
-    expect(gridString).toContain('# # · ·');
-    expect(gridString).toContain('· · # ·');
+    const lines = gridString.split('\n');
+    expect(lines).toHaveLength(3);
+    expect(lines[0].replace(/ /g, '')).toBe('##··');
+    expect(lines[1].replace(/ /g, '')).toBe('····');
+    expect(lines[2].replace(/ /g, '')).toBe('··#·');
   });
 
   test('renders a 10x10 empty fleet for invalid JSON', () => {
