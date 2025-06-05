@@ -20,5 +20,11 @@ describe('getBlogGenerationArgs', () => {
     expect(result.header.length).toBeGreaterThan(0);
     expect(result.footer.length).toBeGreaterThan(0);
   });
+
+  it('includes the banner and metadata in the header HTML', () => {
+    const { header } = getBlogGenerationArgs();
+    expect(header).toContain('aria-label="Matt Heard"');
+    expect(header).toContain('Software developer and philosopher in Berlin');
+  });
 });
 
