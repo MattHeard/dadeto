@@ -34,4 +34,9 @@ describe('getBlogGenerationArgs', () => {
     const { header } = getBlogGenerationArgs();
     expect(header).toContain('<div id="container">');
   });
+
+  it('includes the copyright warning message in the footer HTML', () => {
+    const { footer } = getBlogGenerationArgs();
+    expect(footer).toContain('All content is authored by Matt Heard and is');
+  });
 });
