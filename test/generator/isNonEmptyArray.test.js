@@ -1,4 +1,10 @@
-import { generateBlog } from '../../src/generator/generator.js';
+import { beforeAll, describe, test, expect } from '@jest/globals';
+
+let generateBlog;
+
+beforeAll(async () => {
+  ({ generateBlog } = await import('../../src/generator/generator.js'));
+});
 
 const header = '<body>';
 const footer = '</body>';

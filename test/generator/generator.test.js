@@ -1,4 +1,8 @@
-import { generateBlog } from '../../src/generator/generator.js';
+let generateBlog;
+
+beforeAll(async () => {
+  ({ generateBlog } = await import('../../src/generator/generator.js'));
+});
 
 const header = '<body>';
 const footer = '</body>';

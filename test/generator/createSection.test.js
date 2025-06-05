@@ -1,5 +1,12 @@
-import { describe, test, expect } from '@jest/globals';
-import { getBlogGenerationArgs } from '../../src/generator/generator.js';
+import { describe, test, expect, beforeAll } from '@jest/globals';
+
+let getBlogGenerationArgs;
+
+beforeAll(async () => {
+  ({ getBlogGenerationArgs } = await import(
+    '../../src/generator/generator.js'
+  ));
+});
 
 describe('createSection integration', () => {
   test('header and footer sections include entry div', () => {

@@ -1,7 +1,13 @@
-import {
-  getBlogGenerationArgs,
-  generateBlogOuter,
-} from '../../src/generator/generator.js';
+import { beforeAll, describe, it, expect } from '@jest/globals';
+
+let getBlogGenerationArgs;
+let generateBlogOuter;
+
+beforeAll(async () => {
+  ({ getBlogGenerationArgs, generateBlogOuter } = await import(
+    '../../src/generator/generator.js'
+  ));
+});
 
 describe('generateBlogOuter', () => {
   it('returns a string of HTML when given a blog object with an empty posts array', () => {
