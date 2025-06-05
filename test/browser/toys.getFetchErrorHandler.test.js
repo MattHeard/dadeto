@@ -30,14 +30,20 @@ describe('getFetchErrorHandler', () => {
   });
 
   it('adds a warning with a prefixed message', () => {
+    const parent = { firstChild: null };
     const dom = {
-      removeAllChildren: jest.fn(),
-      createElement: jest.fn(() => ({})),
-      setTextContent: jest.fn(),
-      appendChild: jest.fn(),
+      removeAllChildren: jest.fn(() => {
+        parent.firstChild = null;
+      }),
+      createElement: jest.fn(() => ({ textContent: '', appendChild: jest.fn() })),
+      setTextContent: jest.fn((el, text) => {
+        el.textContent = text;
+      }),
+      appendChild: jest.fn((p, child) => {
+        p.firstChild = child;
+      }),
       addWarning: jest.fn(),
     };
-    const parent = {};
     const presenterKey = 'text';
     const errorFn = jest.fn();
     const errorHandler = getFetchErrorHandler({ dom, errorFn }, parent, presenterKey);
@@ -47,6 +53,9 @@ describe('getFetchErrorHandler', () => {
 
     expect(dom.setTextContent).toHaveBeenCalledWith(
       expect.anything(),
+      'Error fetching URL: ' + error.message
+    );
+    expect(parent.firstChild.textContent).toBe(
       'Error fetching URL: ' + error.message
     );
     expect(dom.addWarning).toHaveBeenCalledWith(parent);
