@@ -57,6 +57,12 @@ describe('createBattleshipCluesBoardElement – error handling', () => {
     expectEmpty10x10Board(el);
   });
 
+  test('renders 10x10 empty board when JSON is null', () => {
+    const dom = makeDom();
+    const el = createBattleshipCluesBoardElement('null', dom); // null value
+    expectEmpty10x10Board(el);
+  });
+
   test('renders 10x10 empty board when rowClues / colClues arrays are missing', () => {
     const dom = makeDom();
     const bad = JSON.stringify({ rowClues: [1, 2, 3] });
