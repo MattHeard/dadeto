@@ -36,4 +36,28 @@ describe('isNonEmptyArray/hasRelatedLinks via generateBlog', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).not.toContain('related-links');
   });
+
+  test('renders related links when array has items', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'ONE',
+          title: 'One',
+          publicationDate: '2024-06-03',
+          content: ['text'],
+          relatedLinks: [
+            {
+              url: 'https://example.com',
+              title: 'Example',
+              author: 'Author',
+              type: 'article',
+            },
+          ],
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<ul class="related-links">');
+    expect(html).toContain('https://example.com');
+  });
 });
