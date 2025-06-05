@@ -30,4 +30,9 @@ describe('generator constants usage', () => {
     const html = generateBlogOuter({ posts: [] });
     expect(html.includes('<div class="value"><div class="value')).toBe(false);
   });
+
+  test('blog output includes the closing container div', () => {
+    const html = generateBlogOuter({ posts: [] });
+    expect(html).toContain('</div><script');
+  });
 });
