@@ -20,9 +20,9 @@ jobs:
 
       - run: npm install -g netlify-cli@17     # pin CLI version
 
-      # Upload the already-built files – costs 0 Netlify build-minutes
+      # Upload the files in ./public – costs 0 Netlify build‑minutes
       - run: netlify deploy \
-              --dir=dist \
+              --dir=public \
               --prod \
               --message "GitHub ${{ github.sha }}"
         env:
