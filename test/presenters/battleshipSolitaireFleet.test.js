@@ -6,8 +6,17 @@ describe('createBattleshipFleetBoardElement', () => {
   let dom;
   beforeEach(() => {
     dom = {
-      createElement: jest.fn(tag => ({ tag, text: '', children: [], setText: function (t) { this.text = t; } })),
-      setTextContent: jest.fn((el, text) => { el.text = text; }),
+      createElement: jest.fn(tag => ({
+        tag,
+        text: '',
+        children: [],
+        setText: function (t) {
+          this.text = t;
+        },
+      })),
+      setTextContent: jest.fn((el, text) => {
+        el.text = text;
+      }),
     };
   });
 
@@ -22,7 +31,14 @@ describe('createBattleshipFleetBoardElement', () => {
     };
     const input = JSON.stringify(fleet);
     // Patch dom.createElement to recognize 'pre'
-    dom.createElement = jest.fn(tag => ({ tag, text: '', children: [], setText: function (t) { this.text = t; } }));
+    dom.createElement = jest.fn(tag => ({
+      tag,
+      text: '',
+      children: [],
+      setText: function (t) {
+        this.text = t;
+      },
+    }));
     const el = createBattleshipFleetBoardElement(input, dom);
     expect(el.tag).toBe('pre');
     // Should render a grid with '#' for ships and '·' for water
@@ -83,6 +99,24 @@ describe('createBattleshipFleetBoardElement', () => {
     expect(el.tag).toBe('pre');
     const gridString = dom.setTextContent.mock.calls[0][1];
     expect(gridString).toContain('# # ·');
+  });
+
+  test('skips ships with non-number x coordinate', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [
+        { start: { x: 0, y: 0 }, length: 2, direction: 'H' },
+        { start: { x: '1', y: 1 }, length: 2, direction: 'V' }, // malformed x
+      ],
+    };
+    const input = JSON.stringify(fleet);
+    const el = createBattleshipFleetBoardElement(input, dom);
+    expect(el.tag).toBe('pre');
+    const lines = el.text.trim().split('\n');
+    expect(lines[0].replace(/ /g, '')).toBe('##·');
+    expect(lines[1].replace(/ /g, '')).toBe('···');
+    expect(lines[2].replace(/ /g, '')).toBe('···');
   });
 
   test('ignores ship segments that exceed board dimensions', () => {
