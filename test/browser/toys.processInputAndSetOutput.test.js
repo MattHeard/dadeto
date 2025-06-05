@@ -72,4 +72,42 @@ describe('processInputAndSetOutput', () => {
     expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
     expect(dom.appendChild).toHaveBeenCalled();
   });
+
+  it('stores the result keyed by article id', async () => {
+    const inputElement = { value: 'ignored' };
+    const parent = {};
+    const outputSelect = { value: 'text' };
+    const article = { id: 'a1' };
+    const elements = {
+      inputElement,
+      outputParentElement: parent,
+      outputSelect,
+      article,
+    };
+    const dom = {
+      removeAllChildren: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      addWarning: jest.fn(),
+    };
+    const setData = jest.fn();
+    const toyEnv = new Map([
+      ['getData', () => ({ output: {} })],
+      ['setData', setData],
+    ]);
+    const env = {
+      createEnv: jest.fn(() => toyEnv),
+      dom,
+      errorFn: jest.fn(),
+      fetchFn: jest.fn(),
+    };
+    const result = 'ok';
+    const processingFunction = jest.fn(() => result);
+
+    await processInputAndSetOutput(elements, processingFunction, env);
+
+    const callArg = setData.mock.calls[0][0];
+    expect(callArg.output).toEqual({ [article.id]: result });
+  });
 });
