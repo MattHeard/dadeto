@@ -21,4 +21,10 @@ describe('parseJSONResult', () => {
     const parseJSONResult = getParseJSONResult();
     expect(parseJSONResult('not json')).toBeNull();
   });
+
+  it('parses valid JSON into an object', () => {
+    const parseJSONResult = getParseJSONResult();
+    const result = parseJSONResult('{"a":1}');
+    expect(result).toEqual({ a: 1 });
+  });
 });
