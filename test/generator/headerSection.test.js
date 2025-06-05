@@ -17,4 +17,10 @@ describe('header section generation', () => {
       expect(text).toBe('');
     });
   });
+
+  test('header joins parts without unexpected separators', async () => {
+    const { getBlogGenerationArgs } = await import('../../src/generator/generator.js');
+    const { header } = getBlogGenerationArgs();
+    expect(header.includes('Stryker was here!')).toBe(false);
+  });
 });
