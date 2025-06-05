@@ -11,7 +11,10 @@ const filePath = require.resolve('../../src/browser/toys.js');
 async function getParseJSONResult() {
   const code = readFileSync(filePath, 'utf8');
   const tempPath = join(dirname(filePath), `parseJSONResult.${Date.now()}.js`);
-  writeFileSync(tempPath, `${code}\nexport { parseJSONResult };`);
+  writeFileSync(
+    tempPath,
+    `${code}\nexport { parseJSONResult };\n//# sourceURL=${filePath}`
+  );
   const module = await import(`${pathToFileURL(tempPath).href}`);
   const fn = module.parseJSONResult;
   await fsPromises.unlink(tempPath);
