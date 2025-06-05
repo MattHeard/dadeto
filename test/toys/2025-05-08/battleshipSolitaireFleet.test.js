@@ -142,4 +142,12 @@ describe('generateFleet', () => {
     const lengths = fleet.ships.map(ship => ship.length);
     expect(lengths).toEqual([2, 3, 1]);
   });
+
+  test('shuffles ship order differently for non-zero RNG', () => {
+    const cfg = { width: 4, height: 4, ships: [1, 2, 3] };
+    const env = new Map([['getRandomNumber', () => 0.5]]);
+    const fleet = JSON.parse(generateFleet(JSON.stringify(cfg), env));
+    const lengths = fleet.ships.map(ship => ship.length);
+    expect(lengths).toEqual([1, 3, 2]);
+  });
 });
