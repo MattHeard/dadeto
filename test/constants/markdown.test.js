@@ -40,4 +40,13 @@ describe('markdown constants', () => {
   test('CSS_CLASSES includes a code class', () => {
     expect(CSS_CLASSES.CODE).toBe('markdown-code');
   });
+
+  test('CSS_CLASSES includes list related classes', () => {
+    expect(CSS_CLASSES.LIST).toBe('markdown-list');
+    expect(CSS_CLASSES.LIST_ITEM).toBe('markdown-list-item');
+    expect(CSS_CLASSES.BLOCKQUOTE).toBe('markdown-blockquote');
+    expect(CSS_CLASSES.INLINE_CODE).toBe('markdown-inline-code');
+    expect(CSS_CLASSES.IMAGE).toBe('markdown-image');
+    expect(CSS_CLASSES.HORIZONTAL_RULE).toBe('markdown-hr');
+  });
 });
