@@ -101,6 +101,20 @@ describe('generateClues', () => {
     expect(output.rowClues).toEqual(expectedRow);
     expect(output.colClues).toEqual(expectedCol);
   });
+  it('ignores ship cells with y equal to board height', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [{ start: { x: 1, y: 3 }, length: 1, direction: 'V' }],
+    };
+    const expectedRow = [0, 0, 0];
+    const expectedCol = [0, 0, 0];
+
+    const output = JSON.parse(generateClues(JSON.stringify(fleet)));
+    expect(output.rowClues).toEqual(expectedRow);
+    expect(output.colClues).toEqual(expectedCol);
+  });
+
 
   it('computes correct clues for a vertical ship away from edges', () => {
     const fleet = {
