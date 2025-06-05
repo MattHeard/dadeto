@@ -24,6 +24,11 @@ describe('parseJSONResult', () => {
     expect(parseJSONResult('not json')).toBeNull();
   });
 
+  it('does not return undefined for invalid JSON', async () => {
+    const parseJSONResult = await getParseJSONResult();
+    expect(parseJSONResult('not json')).not.toBeUndefined();
+  });
+
   it('parses valid JSON into an object', async () => {
     const parseJSONResult = await getParseJSONResult();
     const result = parseJSONResult('{"a":1}');
