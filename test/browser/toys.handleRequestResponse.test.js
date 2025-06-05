@@ -91,6 +91,11 @@ describe('handleRequestResponse', () => {
 
     // Assert
     expect(mockEnv.errorFn).toHaveBeenCalledWith('Error fetching request URL:', error);
+    expect(mockDom.setTextContent).toHaveBeenCalledWith(
+      { content: 'Error fetching URL: ' + error.message, presenterKey: mockOptions.presenterKey },
+      mockDom,
+      mockParent
+    );
     expect(mockDom.addWarning).toHaveBeenCalledWith(mockParent);
   });
 
@@ -107,6 +112,11 @@ describe('handleRequestResponse', () => {
 
     // Assert
     expect(mockEnv.errorFn).toHaveBeenCalledWith('Error fetching request URL:', error);
+    expect(mockDom.setTextContent).toHaveBeenCalledWith(
+      { content: 'Error fetching URL: ' + error.message, presenterKey: mockOptions.presenterKey },
+      mockDom,
+      mockParent
+    );
     expect(mockDom.addWarning).toHaveBeenCalledWith(mockParent);
   });
 });
