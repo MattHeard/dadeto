@@ -1,5 +1,10 @@
-import { describe, test, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { describe, test, expect, beforeAll } from '@jest/globals';
+
+let generateBlogOuter;
+
+beforeAll(async () => {
+  ({ generateBlogOuter } = await import('../../src/generator/generator.js'));
+});
 
 describe('generator constants usage', () => {
   test('blog output includes container id and footer classes', () => {
