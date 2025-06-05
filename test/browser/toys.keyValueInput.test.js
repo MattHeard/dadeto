@@ -31,7 +31,7 @@ describe('Key-Value Input', () => {
       getValue: jest.fn(),
     };
     const result = ensureKeyValueInput(container, textInput, dom);
-    expect(createElement).toHaveBeenCalledWith('div');
+    expect(createElement).toHaveBeenNthCalledWith(1, 'div');
     expect(setClassName).toHaveBeenCalledWith(kvContainer, 'kv-container');
     expect(getNextSibling).toHaveBeenCalledWith(textInput);
     expect(insertBefore).toHaveBeenCalledWith(
