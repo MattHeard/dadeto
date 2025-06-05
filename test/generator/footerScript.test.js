@@ -4,6 +4,15 @@ import { generateBlogOuter } from '../../src/generator/generator.js';
 describe('footer script tag', () => {
   test('generateBlogOuter includes main script tag', () => {
     const html = generateBlogOuter({ posts: [] });
-    expect(html).toContain('<script type="module" src="browser/main.js" defer></script>');
+    expect(html).toContain(
+      '<script type="module" src="browser/main.js" defer></script>'
+    );
+  });
+
+  test('generateBlogOuter closes the container before the script tag', () => {
+    const html = generateBlogOuter({ posts: [] });
+    expect(html).toContain(
+      '</div></div></div><script type="module" src="browser/main.js" defer></script>'
+    );
   });
 });
