@@ -42,4 +42,9 @@ describe('parseJSONResult', () => {
     const parseJSONResult = await getParseJSONResult();
     expect(parseJSONResult(undefined)).toBeNull();
   });
+
+  it('returns null when called with an empty string', async () => {
+    const parseJSONResult = await getParseJSONResult();
+    expect(parseJSONResult('')).toBeNull();
+  });
 });
