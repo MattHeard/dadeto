@@ -1,17 +1,14 @@
 import { describe, test, expect } from '@jest/globals';
 import { readFileSync } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import {
   createAttrPair,
   createTag,
   ATTR_NAME,
 } from '../../src/generator/html.js';
 
-const filePath = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../../src/generator/generator.js'
-);
+const require = createRequire(import.meta.url);
+const filePath = require.resolve('../../src/generator/generator.js');
 
 function getCreateValueDiv() {
   const code = readFileSync(filePath, 'utf8');
