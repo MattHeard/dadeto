@@ -13,8 +13,7 @@ describe('battleshipSolitaireClues presenter', () => {
  * Aim: 100 % branch coverage
  */
 
-import { createBattleshipCluesBoardElement }
-  from '../../src/presenters/battleshipSolitaireClues.js';
+import { createBattleshipCluesBoardElement } from '../../src/presenters/battleshipSolitaireClues.js';
 
 /* ---------- simple DOM stub ---------- */
 function makeDom() {
@@ -67,14 +66,14 @@ describe('createBattleshipCluesBoardElement – error handling', () => {
 
   test('renders 10x10 empty board when clue values are non‑numeric', () => {
     const dom = makeDom();
-    const bad = JSON.stringify({ rowClues: [1, "x"], colClues: [2, 3] });
+    const bad = JSON.stringify({ rowClues: [1, 'x'], colClues: [2, 3] });
     const el = createBattleshipCluesBoardElement(bad, dom);
     expectEmpty10x10Board(el);
   });
 
   test('renders 10x10 empty board when column clue values are non‑numeric', () => {
     const dom = makeDom();
-    const bad = JSON.stringify({ rowClues: [1, 2], colClues: [3, "x"] });
+    const bad = JSON.stringify({ rowClues: [1, 2], colClues: [3, 'x'] });
     const el = createBattleshipCluesBoardElement(bad, dom);
     expectEmpty10x10Board(el);
   });
@@ -82,6 +81,13 @@ describe('createBattleshipCluesBoardElement – error handling', () => {
   test('renders 10x10 empty board when any array is empty', () => {
     const dom = makeDom();
     const bad = JSON.stringify({ rowClues: [], colClues: [1] });
+    const el = createBattleshipCluesBoardElement(bad, dom);
+    expectEmpty10x10Board(el);
+  });
+
+  test('renders 10x10 empty board when column clues array is empty', () => {
+    const dom = makeDom();
+    const bad = JSON.stringify({ rowClues: [1], colClues: [] });
     const el = createBattleshipCluesBoardElement(bad, dom);
     expectEmpty10x10Board(el);
   });
