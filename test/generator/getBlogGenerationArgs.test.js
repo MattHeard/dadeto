@@ -53,4 +53,13 @@ describe('getBlogGenerationArgs', () => {
     expect(footer).toContain('class="footer value warning"');
     expect(footer).not.toContain('undefined');
   });
+
+  it('generates header content when imported inside the test', async () => {
+    const { getBlogGenerationArgs } = await import(
+      '../../src/generator/generator.js'
+    );
+    const { header } = getBlogGenerationArgs();
+    expect(header).toContain('aria-label="Matt Heard"');
+    expect(header).toContain('Software developer and philosopher in Berlin');
+  });
 });
