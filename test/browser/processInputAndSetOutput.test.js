@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import * as toys from '../../src/browser/toys.js';
 
 let elements;
 let env;
@@ -78,4 +79,5 @@ describe('processInputAndSetOutput', () => {
     const callArg = setData.mock.calls[0][0];
     expect(callArg.output).toEqual({ [elements.article.id]: result });
   });
+
 });
