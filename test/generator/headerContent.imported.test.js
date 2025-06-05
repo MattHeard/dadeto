@@ -9,5 +9,6 @@ describe('generator header dynamic import', () => {
     expect(header).toContain('aria-label="Matt Heard"');
     expect(header).toContain('Software developer and philosopher in Berlin');
     expect(header).toContain('<div id="container">');
+    expect(header).toContain('class="value metadata"');
   });
 });
