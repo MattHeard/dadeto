@@ -1,21 +1,21 @@
 import { describe, it, expect } from '@jest/globals';
-import { readFileSync, writeFileSync, promises as fsPromises } from 'fs';
-import { join, dirname } from 'path';
+import { readFileSync } from 'fs';
 import { createRequire } from 'module';
-import { pathToFileURL } from 'url';
 
 const require = createRequire(import.meta.url);
 
 const filePath = require.resolve('../../src/browser/toys.js');
 
-async function getParseJSONResult() {
+function getParseJSONResult() {
   const code = readFileSync(filePath, 'utf8');
-  const tempPath = join(dirname(filePath), `parseJSONResult.${Date.now()}.mjs`);
-  writeFileSync(tempPath, `${code}\nexport { parseJSONResult };`);
-  const module = await import(`${pathToFileURL(tempPath).href}`);
-  const fn = module.parseJSONResult;
-  await fsPromises.unlink(tempPath);
-  return fn;
+  const match = code.match(/function parseJSONResult\(result\) {[^]*?\n}\n/);
+  if (!match) {
+    throw new Error('parseJSONResult not found');
+  }
+  const source = `${match[0]}\n`;
+  return new Function(
+    `${source}return parseJSONResult;\n//# sourceURL=${filePath}`
+  )();
 }
 
 describe('parseJSONResult', () => {
