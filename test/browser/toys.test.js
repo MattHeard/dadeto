@@ -599,6 +599,23 @@ describe('toys', () => {
       expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
     });
 
+    it('passes module path to the error handler', () => {
+      // --- GIVEN ---
+      createObserver(article, modulePath, functionName);
+      intersectionCallback([entry], observer);
+      const [, , errorHandler] = dom.importModule.mock.calls[0];
+      const error = new Error('oops');
+
+      // --- WHEN ---
+      errorHandler(error);
+
+      // --- THEN ---
+      expect(env.loggers.logError).toHaveBeenCalledWith(
+        'Error loading module ' + modulePath + ':',
+        error
+      );
+    });
+
     it('does not call importModule when not intersecting', () => {
       // --- GIVEN ---
       const makeIntersectionObserver = jest.fn(fn => {
