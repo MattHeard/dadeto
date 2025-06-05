@@ -73,4 +73,34 @@ describe('createRenderer', () => {
     render();
     expect(rows).toEqual({ '': '' });
   });
+
+  it('does not add an empty row when rows already contain values', () => {
+    const dom = {
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(),
+      setClassName: jest.fn(),
+      setType: jest.fn(),
+      setPlaceholder: jest.fn(),
+      setValue: jest.fn(),
+      setDataAttribute: jest.fn(),
+      addEventListener: jest.fn(),
+      setTextContent: jest.fn(),
+      appendChild: jest.fn(),
+    };
+    const disposers = [];
+    const container = {};
+    const rows = { existing: 'val' };
+    const textInput = {};
+    const syncHiddenField = jest.fn();
+    const render = createRenderer(
+      dom,
+      disposers,
+      container,
+      rows,
+      textInput,
+      syncHiddenField
+    );
+    render();
+    expect(rows).toEqual({ existing: 'val' });
+  });
 });
