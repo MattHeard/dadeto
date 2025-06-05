@@ -18,4 +18,10 @@ describe('header generation via getBlogGenerationArgs', () => {
     expect(header).toContain('aria-label="Matt Heard"');
     expect(header).toContain('Software developer and philosopher in Berlin');
   });
+
+  test('header section is wrapped in entry div', async () => {
+    const { getBlogGenerationArgs } = await loadGenerator();
+    const { header } = getBlogGenerationArgs();
+    expect(header).toContain('<div class="entry">');
+  });
 });
