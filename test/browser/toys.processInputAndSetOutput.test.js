@@ -1,5 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import * as toys from '../../src/browser/toys.js';
+const { processInputAndSetOutput } = toys;
 
 describe('processInputAndSetOutput', () => {
   it('handles valid JSON result using handleParsedResult', async () => {
