@@ -29,4 +29,9 @@ describe('parseJSONResult', () => {
     const result = parseJSONResult('{"a":1}');
     expect(result).toEqual({ a: 1 });
   });
+
+  it('returns null for JSON with syntax error', async () => {
+    const parseJSONResult = await getParseJSONResult();
+    expect(parseJSONResult('{"a":1,}')).toBeNull();
+  });
 });
