@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import { makeDisplayBody } from '../../src/browser/toys.js';
 
 describe('makeDisplayBody', () => {
@@ -19,5 +19,30 @@ describe('makeDisplayBody', () => {
 
     // Act & Assert - Invoke the result with a test body
     expect(() => result(testBody)).not.toThrow();
+  });
+
+  it('appends element from presenter with correct text', () => {
+    const removeAllChildren = jest.fn();
+    const appendChild = jest.fn();
+    const createElement = jest.fn(tag => ({ tagName: tag.toUpperCase(), textContent: '' }));
+    const setTextContent = jest.fn((el, text) => {
+      el.textContent = text;
+    });
+    const dom = { removeAllChildren, appendChild, createElement, setTextContent };
+    const parent = {};
+    const presenterKey = 'text';
+
+    const displayBody = makeDisplayBody(dom, parent, presenterKey);
+    const body = 'hello';
+    displayBody(body);
+
+    const [elementArg, textArg] = setTextContent.mock.calls[0];
+
+    expect(removeAllChildren).toHaveBeenCalledWith(parent);
+    expect(createElement).toHaveBeenCalledWith('p');
+    expect(textArg).toBe(body);
+    expect(appendChild).toHaveBeenCalledWith(parent, elementArg);
+    expect(elementArg.tagName).toBe('P');
+    expect(elementArg.textContent).toBe(body);
   });
 });
