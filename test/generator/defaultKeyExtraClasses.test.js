@@ -9,12 +9,10 @@ const filePath = path.join(
 );
 
 function getDefaultKeyExtraClasses() {
-  const code = readFileSync(filePath, 'utf8');
-  const match = code.match(/function defaultKeyExtraClasses\([^]*?\n\}/);
-  if (!match) {
-    throw new Error('defaultKeyExtraClasses not found');
-  }
-  return new Function(`${match[0]}; return defaultKeyExtraClasses;`)();
+  let code = readFileSync(filePath, 'utf8');
+  code = code.replace(/^import[^;]*;\n/gm, '');
+  code = code.replace(/export (function|const|let|var)/g, '$1');
+  return new Function(`${code}; return defaultKeyExtraClasses;`)();
 }
 
 describe('defaultKeyExtraClasses', () => {
@@ -24,5 +22,13 @@ describe('defaultKeyExtraClasses', () => {
     const result = defaultKeyExtraClasses(args);
     expect(result.keyExtraClasses).toBe('');
     expect(args.keyExtraClasses).toBe('');
+  });
+
+  test('does not override existing keyExtraClasses', () => {
+    const defaultKeyExtraClasses = getDefaultKeyExtraClasses();
+    const args = { keyExtraClasses: 'foo' };
+    const result = defaultKeyExtraClasses(args);
+    expect(result.keyExtraClasses).toBe('foo');
+    expect(args.keyExtraClasses).toBe('foo');
   });
 });
