@@ -87,4 +87,28 @@ describe('createKeyElement', () => {
       handler
     );
   });
+
+  it('calls removeEventListener exactly once when disposed', () => {
+    const key = 'testKey';
+
+    keyEl = createKeyElement(
+      mockDom,
+      key,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
+
+    mockDom.removeEventListener.mockClear();
+
+    disposers[0]();
+
+    expect(mockDom.removeEventListener).toHaveBeenCalledTimes(1);
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      keyEl,
+      'input',
+      expect.any(Function)
+    );
+  });
 });
