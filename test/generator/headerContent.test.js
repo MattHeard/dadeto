@@ -31,4 +31,10 @@ describe('header generation', () => {
     const { header } = getBlogGenerationArgs();
     expect(header).not.toContain('Stryker was here!');
   });
+
+  test('header includes HTML comment marker', async () => {
+    const { getBlogGenerationArgs } = await loadGenerator();
+    const { header } = getBlogGenerationArgs();
+    expect(header).toContain('<!-- Header -->');
+  });
 });
