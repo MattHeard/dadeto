@@ -12,6 +12,14 @@ If either command fails due to missing dependencies or other issues, note the
 failure in the PR message's Testing section.
 Before opening a pull request, ensure that branch coverage remains at 100%.
 
+## Jest Restrictions
+
+The following Jest features cause issues with Stryker mutation testing and must never be used:
+
+- `jest.resetModules`
+- `jest.unstable_mockModule`
+- `import.meta.url`
+
 ## Code Style
 
 - Follow the guidelines in `CLAUDE.md` for naming and formatting.
