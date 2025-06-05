@@ -53,4 +53,15 @@ describe('getBlogGenerationArgs', () => {
     expect(footer).toContain('class="footer value warning"');
     expect(footer).not.toContain('undefined');
   });
+
+  it('does not nest value divs in the header HTML', () => {
+    const { header } = getBlogGenerationArgs();
+    const headerFragment = header.substring(header.indexOf('<!-- Header -->'));
+    expect(headerFragment).not.toContain(
+      '<div class="value"><div class="value">'
+    );
+    expect(headerFragment).not.toContain(
+      '<div class="value"><div class="value metadata">'
+    );
+  });
 });
