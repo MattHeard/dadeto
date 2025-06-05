@@ -213,4 +213,46 @@ describe('processInputAndSetOutput', () => {
       output: { other: 'prev', [article.id]: result },
     });
   });
+
+  it('accumulates results for multiple articles', () => {
+    const firstElements = {
+      inputElement: { value: '' },
+      article: { id: 'one' },
+      outputSelect: { value: 'text' },
+      outputParentElement: {},
+    };
+    const secondElements = {
+      inputElement: { value: '' },
+      article: { id: 'two' },
+      outputSelect: { value: 'text' },
+      outputParentElement: {},
+    };
+    const processingFunction = jest.fn(() => '{"request":{"url":""}}');
+    let data = {};
+    const toyEnv = new Map([
+      ['getData', () => data],
+      ['setData', (newData) => {
+        data = newData;
+      }],
+    ]);
+    const createEnv = jest.fn(() => toyEnv);
+    const dom = {
+      setTextContent: jest.fn(),
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      appendChild: jest.fn(),
+    };
+    const fetchFn = jest.fn(() =>
+      Promise.resolve({ text: () => Promise.resolve('') })
+    );
+    const env = { createEnv, dom, fetchFn };
+
+    processInputAndSetOutput(firstElements, processingFunction, env);
+    processInputAndSetOutput(secondElements, processingFunction, env);
+
+    expect(data.output).toEqual({
+      one: '{"request":{"url":""}}',
+      two: '{"request":{"url":""}}',
+    });
+  });
 });
