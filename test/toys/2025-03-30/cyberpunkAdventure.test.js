@@ -189,6 +189,12 @@ describe('Cyberpunk Text Game', () => {
     );
   });
 
+  test('visited list starts empty when starting new game', () => {
+    cyberpunkAdventure('Blaze', env);
+    cyberpunkAdventure('start', env);
+    expect(tempData.visited).toEqual([]);
+  });
+
   test("defaults name to 'Stray' if no input and no name in temporary data", () => {
     env.set('getData', () => ({ temporary: {} }));
     const result = cyberpunkAdventure('   ', env);
