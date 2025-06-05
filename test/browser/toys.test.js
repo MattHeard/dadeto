@@ -1126,6 +1126,45 @@ describe('toys', () => {
       // Expectations at end
       expect(processingFunction).not.toHaveBeenCalled();
     });
+
+    it('queries the DOM for output elements using expected selectors', () => {
+      const createEnvFn = () => ({});
+      const errorFn = jest.fn();
+      const fetchFn = jest.fn();
+      const dom = {
+        removeAllChildren: jest.fn(),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        stopDefault: jest.fn(),
+        addWarning: jest.fn(),
+        addWarningFn: jest.fn(),
+        addEventListener: jest.fn(),
+        removeChild: jest.fn(),
+        appendChild: jest.fn(),
+        querySelector,
+        setTextContent: jest.fn(),
+        removeWarning: jest.fn(),
+        enable: jest.fn(),
+        contains: () => true,
+      };
+      const processingFunction = jest.fn();
+      const config = {
+        globalState: {},
+        createEnvFn,
+        errorFn,
+        fetchFn,
+        dom,
+        loggers: {
+          logInfo: jest.fn(),
+          logError: jest.fn(),
+          logWarning: jest.fn(),
+        },
+      };
+
+      initializeInteractiveComponent(article, processingFunction, config);
+
+      expect(querySelector).toHaveBeenCalledWith(article, 'div.output');
+      expect(querySelector).toHaveBeenCalledWith(article, 'select.output');
+    });
   });
 
   describe('initializeVisibleComponents', () => {
