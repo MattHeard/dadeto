@@ -131,5 +131,9 @@ describe('createBattleshipCluesBoardElement – successful render', () => {
     // check column clue stacking: ones digits should be in last top‑clue line
     const topOnesLine = lines[1]; // second of top two clue lines
     expect(topOnesLine.trim()).toBe('1 9 1 2');
+
+    // ensure tens digits line preserves spaces for single‑digit clues
+    const topTensLine = lines[0];
+    expect(topTensLine).toBe('       1     ');
   });
 });
