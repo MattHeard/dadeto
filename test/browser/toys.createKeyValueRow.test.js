@@ -215,6 +215,29 @@ describe('createKeyValueRow', () => {
     ]);
   });
 
+  it('key disposer removes the key input listener', () => {
+    const keyInput = {};
+    mockDom.createElement
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce(keyInput)
+      .mockReturnValueOnce({})
+      .mockReturnValue({});
+
+    rowCreator(mockEntries[0], 0);
+
+    const handler = mockDom.addEventListener.mock.calls[0][2];
+    const [keyDisposer] = mockDisposers;
+
+    mockDom.removeEventListener.mockClear();
+    keyDisposer();
+
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      keyInput,
+      'input',
+      handler
+    );
+  });
+
   it('adds cleanup functions to disposers array', () => {
     // Initial disposers count
     const initialDisposersCount = mockDisposers.length;
