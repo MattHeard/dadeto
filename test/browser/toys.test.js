@@ -1223,10 +1223,18 @@ describe('toys', () => {
         removeChild: jest.fn(),
         appendChild: jest.fn(),
         querySelector: jest.fn((_, selector) => {
-          if (selector === 'input') {return {};}
-          if (selector === 'button') {return {};}
-          if (selector === 'div.output') {return outputParent;}
-          if (selector === 'select.output') {return {};}
+          if (selector === 'input') {
+            return {};
+          }
+          if (selector === 'button') {
+            return {};
+          }
+          if (selector === 'div.output') {
+            return outputParent;
+          }
+          if (selector === 'select.output') {
+            return {};
+          }
           return {};
         }),
         removeWarning: jest.fn(),
@@ -1255,6 +1263,52 @@ describe('toys', () => {
         expect.any(Object),
         'Initialising...'
       );
+    });
+
+    it('passes expected elements to enableInteractiveControls', () => {
+      const createEnvFn = () => ({});
+      const errorFn = jest.fn();
+      const fetchFn = jest.fn();
+      const outputParent = {};
+      const dom = {
+        removeAllChildren: jest.fn(),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        setTextContent: jest.fn(),
+        stopDefault: jest.fn(),
+        addWarning: jest.fn(),
+        addWarningFn: jest.fn(),
+        addEventListener: jest.fn(),
+        removeChild: jest.fn(),
+        appendChild: jest.fn(),
+        querySelector: jest.fn((_, selector) => {
+          if (selector === 'input') {return inputElement;}
+          if (selector === 'button') {return submitButton;}
+          if (selector === 'div.output') {return outputParent;}
+          if (selector === 'select.output') {return {};}
+          return {};
+        }),
+        removeWarning: jest.fn(),
+        enable: jest.fn(),
+        contains: () => true,
+      };
+      const config = {
+        globalState: {},
+        createEnvFn,
+        errorFn,
+        fetchFn,
+        dom,
+        loggers: {
+          logInfo: jest.fn(),
+          logError: jest.fn(),
+          logWarning: jest.fn(),
+        },
+      };
+      const processingFunction = jest.fn();
+
+      initializeInteractiveComponent(article, processingFunction, config);
+
+      expect(dom.enable).toHaveBeenCalledWith(inputElement);
+      expect(dom.enable).toHaveBeenCalledWith(submitButton);
     });
   });
 
