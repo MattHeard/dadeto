@@ -86,6 +86,22 @@ describe('generateClues', () => {
     expect(output.colClues).toEqual(expectedCol);
   });
 
+  it('ignores ship cells with negative y coordinates', () => {
+    const fleet = {
+      width: 3,
+      height: 3,
+      ships: [
+        { start: { x: 1, y: -1 }, length: 2, direction: 'V' }, // (1,-1) out, (1,0) in
+      ],
+    };
+    const expectedRow = [1, 0, 0];
+    const expectedCol = [0, 1, 0];
+
+    const output = JSON.parse(generateClues(JSON.stringify(fleet)));
+    expect(output.rowClues).toEqual(expectedRow);
+    expect(output.colClues).toEqual(expectedCol);
+  });
+
   it('computes correct clues for a vertical ship away from edges', () => {
     const fleet = {
       width: 5,
