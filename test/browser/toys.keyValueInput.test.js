@@ -1,26 +1,45 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { ensureKeyValueInput, createKeyInputHandler, createValueInputHandler } from '../../src/browser/toys.js';
+import * as toys from '../../src/browser/toys.js';
+const { ensureKeyValueInput, createKeyInputHandler, createValueInputHandler } =
+  toys;
 
 describe('Key-Value Input', () => {
-  it('should fail when called with no arguments', () => {
+  it('creates a key-value container when none exists', () => {
     const container = {};
     const textInput = {};
     const kvContainer = {};
+    const nextSibling = {};
     const querySelector = jest.fn();
     const createElement = jest.fn().mockReturnValue(kvContainer);
     const setClassName = jest.fn();
-    const getNextSibling = jest.fn();
+    const getNextSibling = jest.fn().mockReturnValue(nextSibling);
     const insertBefore = jest.fn();
-    const removeAllChildren = jest.fn();
-    const setType = jest.fn();
-    const setPlaceholder = jest.fn();
-    const setValue = jest.fn();
-    const setDataAttribute = jest.fn();
-    const addEventListener = jest.fn();
-    const setTextContent = jest.fn();
-    const appendChild = jest.fn();
-    const dom = { querySelector, createElement, setClassName, getNextSibling, insertBefore, removeAllChildren, setType, setPlaceholder, setValue, setDataAttribute, addEventListener, setTextContent, appendChild };
-    ensureKeyValueInput(container, textInput, dom);
+    const dom = {
+      querySelector,
+      createElement,
+      setClassName,
+      getNextSibling,
+      insertBefore,
+      removeAllChildren: jest.fn(),
+      setType: jest.fn(),
+      setPlaceholder: jest.fn(),
+      setValue: jest.fn(),
+      setDataAttribute: jest.fn(),
+      addEventListener: jest.fn(),
+      setTextContent: jest.fn(),
+      appendChild: jest.fn(),
+      getValue: jest.fn(),
+    };
+    const result = ensureKeyValueInput(container, textInput, dom);
+    expect(createElement).toHaveBeenCalledWith('div');
+    expect(setClassName).toHaveBeenCalledWith(kvContainer, 'kv-container');
+    expect(getNextSibling).toHaveBeenCalledWith(textInput);
+    expect(insertBefore).toHaveBeenCalledWith(
+      container,
+      kvContainer,
+      nextSibling
+    );
+    expect(result).toBe(kvContainer);
   });
 
   let container;
@@ -85,7 +104,13 @@ describe('Key-Value Input', () => {
       rows = { existingKey: 'existingValue' };
       keyEl = {};
       event = { target: keyEl };
-      handler = createKeyInputHandler(dom, keyEl, textInput, rows, mockSyncHiddenField);
+      handler = createKeyInputHandler(
+        dom,
+        keyEl,
+        textInput,
+        rows,
+        mockSyncHiddenField
+      );
     });
 
     it('should update rows when key is changed to a new unique key', () => {
@@ -100,15 +125,17 @@ describe('Key-Value Input', () => {
       // Verify rows were updated
       expect(rows).toEqual({
         existingKey: 'existingValue',
-        newKey: 'someValue'
+        newKey: 'someValue',
       });
       expect(rows).not.toHaveProperty('oldKey');
       expect(dom.getDataAttribute).toHaveBeenCalledTimes(1);
       expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
-      expect(dom.setDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey', 'newKey');
+      expect(dom.setDataAttribute).toHaveBeenCalledWith(
+        keyEl,
+        'prevKey',
+        'newKey'
+      );
       expect(mockSyncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
     });
   });
-
-
 });
