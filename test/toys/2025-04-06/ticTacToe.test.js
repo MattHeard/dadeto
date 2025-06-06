@@ -208,6 +208,22 @@ test('detects diagonal win for X and returns no additional move', () => {
   expect(output.moves).toEqual(input.moves); // no additional move on diagonal win
 });
 
+test('detects right-to-left diagonal win for X and returns no additional move', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 2 } },
+      { player: 'O', position: { row: 0, column: 0 } },
+      { player: 'X', position: { row: 1, column: 1 } },
+      { player: 'O', position: { row: 1, column: 0 } },
+      { player: 'X', position: { row: 2, column: 0 } }, // X wins diagonal from top-right to bottom-left
+    ],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toEqual(input.moves); // no additional move on diagonal win
+});
+
 test('adds ninth move to result in a tie', () => {
   const env = new Map();
   const input = {
