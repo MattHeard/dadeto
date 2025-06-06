@@ -104,4 +104,11 @@ describe('fishingGame', () => {
     expect(output).toMatch(/glimmering trout appears/i);
     expect(output).toMatch(/warm, shimmering waves under a vibrant sun/i);
   });
+
+  test('recognizes shiny bait and applies its modifier', () => {
+    const env = createEnv(0.7, '2025-09-01T12:00:00');
+    const output = fishingGame('shiny bait', env);
+    expect(output).toMatch(/glittering lure/i);
+    expect(output).toMatch(/legendary golden fish leaps forth/i);
+  });
 });
