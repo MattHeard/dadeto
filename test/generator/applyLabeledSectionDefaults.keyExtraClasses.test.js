@@ -13,6 +13,7 @@ beforeAll(async () => {
     return `from '${absolute.href}'`;
   });
   src += '\nexport { applyLabeledSectionDefaults };';
+  src += `\n//# sourceURL=${generatorPath}`;
   ({ applyLabeledSectionDefaults } = await import(
     `data:text/javascript,${encodeURIComponent(src)}`
   ));
