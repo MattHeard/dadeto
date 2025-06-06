@@ -13,6 +13,7 @@ beforeAll(async () => {
     return `from '${absolute.href}'`;
   });
   src += '\nexport { defaultKeyExtraClasses };';
+  src += `\n//# sourceURL=${generatorPath}`;
   ({ defaultKeyExtraClasses } = await import(
     `data:text/javascript,${encodeURIComponent(src)}`
   ));
