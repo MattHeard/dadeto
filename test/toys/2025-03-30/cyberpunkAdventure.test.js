@@ -34,6 +34,8 @@ describe('Cyberpunk Text Game', () => {
     expect(cyberpunkAdventure('zero', env)).toMatch(/cracked implant/);
     expect(tempData.inventory).toContain('cracked implant');
     expect(tempData.visited).toContain('hacker');
+    // The state should advance to the hub after the correct password
+    expect(tempData.state).toBe('hub');
   });
 
   test('shows hint if incorrect hacker password is given', () => {
@@ -194,6 +196,7 @@ describe('Cyberpunk Text Game', () => {
     cyberpunkAdventure('Blaze', env);
     cyberpunkAdventure('start', env);
     expect(tempData.visited).toEqual([]);
+    expect(tempData.inventory).toEqual([]);
   });
 
   test("defaults name to 'Stray' if no input and no name in temporary data", () => {
