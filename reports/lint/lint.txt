@@ -97,6 +97,9 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.getModuleInitializer.test.js
   13:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.handleParsedResult.test.js
+  9:36  warning  'tagName' is defined but never used  no-unused-vars
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.initializeInteractiveComponent.elements.test.js
   13:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
@@ -136,4 +139,4 @@
   1598:9   warning  Ternary operator used                                       no-ternary
   1620:39  warning  Ternary operator used                                       no-ternary
 
-✖ 79 problems (0 errors, 79 warnings)
+✖ 80 problems (0 errors, 80 warnings)
