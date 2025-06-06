@@ -101,4 +101,9 @@ describe('italics function', () => {
     const expected = '**bold\ntext** and <em>_italic_</em>';
     expect(italics(input)).toBe(expected);
   });
+
+  test('preserves bold text with a newline and no italics', () => {
+    const input = '**multi\nline**';
+    expect(italics(input)).toBe(input);
+  });
 });
