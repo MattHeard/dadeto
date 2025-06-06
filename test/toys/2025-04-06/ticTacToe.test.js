@@ -192,6 +192,22 @@ test('detects column win for X and returns no additional move', () => {
   expect(output.moves).toEqual(input.moves); // no additional move since column win ends the game
 });
 
+test('detects diagonal win for X and returns no additional move', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 0 } },
+      { player: 'O', position: { row: 0, column: 1 } },
+      { player: 'X', position: { row: 1, column: 1 } },
+      { player: 'O', position: { row: 1, column: 0 } },
+      { player: 'X', position: { row: 2, column: 2 } }, // X wins diagonally
+    ],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toEqual(input.moves); // no additional move on diagonal win
+});
+
 test('adds ninth move to result in a tie', () => {
   const env = new Map();
   const input = {
