@@ -28,7 +28,7 @@ describe('handleParsedResult', () => {
     };
   });
 
-  it('calls handleRequestResponse when request is valid', () => {
+  it('initiates a fetch and returns true when a valid parsed request is provided', () => {
     parsed = {
       request: {
         url: 'https://example.com'
