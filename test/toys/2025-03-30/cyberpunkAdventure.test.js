@@ -201,4 +201,16 @@ describe('Cyberpunk Text Game', () => {
     const result = cyberpunkAdventure('   ', env);
     expect(result).toMatch(/Stray/);
   });
+
+  test('unknown state resets the player state to intro', () => {
+    tempData = {
+      name: 'Blaze',
+      state: 'glitch',
+      inventory: [],
+      visited: [],
+    };
+    env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
+    cyberpunkAdventure('whatever', env);
+    expect(tempData.state).toBe('intro');
+  });
 });
