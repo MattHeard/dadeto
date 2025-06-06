@@ -39,6 +39,14 @@ describe('fishingGame', () => {
     expect(output).toMatch(/warm, shimmering waves under a vibrant sun/i);
   });
 
+  test('negative modifier can reduce chance below silent threshold', () => {
+    const env = createEnv(0.25, '2025-06-10T14:00:00');
+    const output = fishingGame('bread', env);
+    // With base chance 0.25 and modifier -0.05, effective chance is 0.2 < 0.3
+    expect(output).toMatch(/slice of bread/i);
+    expect(output).toMatch(/water stays silent/i);
+  });
+
   test('applies positive modifier for good bait (e.g., cheese, modifier 0.1)', () => {
     const env = createEnv(0.75, '2025-09-05T19:00:00'); // fall evening
     const output = fishingGame('cheese', env);
