@@ -6,11 +6,14 @@ describe('handleParsedResult', () => {
 
   beforeEach(() => {
     const removeAllChildren = jest.fn();
-    const createElement = jest.fn((tagName) => ({
-      tagName: tagName.toUpperCase(),
-      textContent: '',
-      appendChild: jest.fn() // This appendChild is for the mocked element
-    }));
+    const createElement = jest.fn((tagName) => {
+      const elementAppendChild = jest.fn();
+      return {
+        tagName: tagName.toUpperCase(),
+        textContent: '',
+        appendChild: elementAppendChild // This appendChild is for the mocked element
+      };
+    });
     const setTextContent = jest.fn();
     const appendChild = jest.fn(); // This is the main appendChild for the dom mock
 
