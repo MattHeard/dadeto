@@ -88,4 +88,12 @@ describe('fishingGame', () => {
     const output = fishingGame('grub', env);
     expect(output).toMatch(/succulent grub/i);
   });
+
+  test('recognizes sausage bait and applies its modifier', () => {
+    const env = createEnv(0.5, '2025-06-10T14:00:00');
+    const output = fishingGame('sausage', env);
+    expect(output).toMatch(/savory sausage/i);
+    expect(output).toMatch(/glimmering trout appears/i);
+    expect(output).toMatch(/warm, shimmering waves under a vibrant sun/i);
+  });
 });
