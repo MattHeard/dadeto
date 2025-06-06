@@ -1,0 +1,34 @@
+import fs from 'fs';
+import path from 'path';
+import { pathToFileURL } from 'url';
+import { beforeAll, describe, expect, test } from '@jest/globals';
+
+let createBoldPatternPart;
+let createItalicsPattern;
+
+beforeAll(async () => {
+  const srcPath = path.join(process.cwd(), 'src/toys/2025-03-21/italics.js');
+  let src = fs.readFileSync(srcPath, 'utf8');
+  src = src.replace(/from '\.\/(.*?)'/g, (_, p) => {
+    const abs = pathToFileURL(path.join(path.dirname(srcPath), p));
+    return `from '${abs.href}'`;
+  });
+  src += '\nexport { createBoldPatternPart, createItalicsPattern };';
+  ({ createBoldPatternPart, createItalicsPattern } = await import(
+    `data:text/javascript,${encodeURIComponent(src)}`
+  ));
+});
+
+describe('regex escaping for italics helpers', () => {
+  test('createBoldPatternPart escapes special characters', () => {
+    const part = createBoldPatternPart('$');
+    expect(part).toBe('(?:\\$\\$.*?\\$\\$)');
+    expect(new RegExp(part).test('$$bold$$')).toBe(true);
+  });
+
+  test('createItalicsPattern escapes special characters', () => {
+    const regex = createItalicsPattern('$');
+    expect(regex.source).toBe('\\$(.*?)\\$');
+    expect('foo $bar$ baz'.replace(regex, 'X')).toBe('foo X baz');
+  });
+});
