@@ -12,8 +12,12 @@ beforeAll(async () => {
     const absolute = pathToFileURL(path.join(path.dirname(generatorPath), p));
     return `from '${absolute.href}'`;
   });
-  src += '\nexport { applyLabeledSectionDefaults };';
-  ({ applyLabeledSectionDefaults } = await import(`data:text/javascript,${encodeURIComponent(src)}`));
+  src +=
+    '\nexport { applyLabeledSectionDefaults };' +
+    `\n//# sourceURL=${pathToFileURL(generatorPath).href}`;
+  ({ applyLabeledSectionDefaults } = await import(
+    `data:text/javascript,${encodeURIComponent(src)}`
+  ));
 });
 
 describe('applyLabeledSectionDefaults', () => {
