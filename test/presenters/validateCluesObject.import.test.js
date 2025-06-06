@@ -1,11 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import { beforeAll, describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
 
-let validateCluesObject;
-
-beforeAll(async () => {
+async function loadValidateCluesObject() {
   const srcPath = path.join(process.cwd(), 'src/presenters/battleshipSolitaireClues.js');
   let src = fs.readFileSync(srcPath, 'utf8');
   src = src.replace(/from '((?:\.\.?\/).*?)'/g, (_, p) => {
@@ -13,11 +11,14 @@ beforeAll(async () => {
     return `from '${abs.href}'`;
   });
   src += '\nexport { validateCluesObject };';
-  ({ validateCluesObject } = await import(`data:text/javascript,${encodeURIComponent(src)}`));
-});
+  return (
+    await import(`data:text/javascript,${encodeURIComponent(src)}`)
+  ).validateCluesObject;
+}
 
 describe('validateCluesObject dynamic import', () => {
-  it('returns Invalid JSON object when input is not an object', () => {
+  it('returns Invalid JSON object when input is not an object', async () => {
+    const validateCluesObject = await loadValidateCluesObject();
     expect(validateCluesObject(42)).toBe('Invalid JSON object');
   });
 });
