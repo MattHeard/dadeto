@@ -151,6 +151,24 @@ describe('createTicTacToeBoardElement', () => {
     );
   });
 
+  it('ignores moves where row or column are not numbers', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X', position: { row: '0', column: 0 } },
+        { player: 'O', position: { row: 1, column: '1' } },
+        { player: 'X', position: { row: 1, column: 1 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   | X |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
   it('ignores moves where the move is not an object (null, number, string, array)', () => {
     const input = JSON.stringify({
       moves: [null, 42, "foo", [1,2,3], { player: 'X', position: { row: 0, column: 0 } }]
