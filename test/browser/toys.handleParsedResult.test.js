@@ -6,7 +6,7 @@ describe('handleParsedResult', () => {
 
   beforeEach(() => {
     const removeAllChildren = jest.fn();
-    const createElement = jest.fn().mockImplementation((tagName) => ({
+    const createElement = jest.fn((tagName) => ({
       tagName: tagName.toUpperCase(),
       textContent: '',
       appendChild: jest.fn() // This appendChild is for the mocked element
