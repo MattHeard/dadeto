@@ -21,10 +21,14 @@ describe('handleParsedResult', () => {
       appendChild
     };
 
+    const fetchFn = jest.fn().mockResolvedValue({ text: () => Promise.resolve('response') });
+    // dom is already defined and populated above
+    const errorFn = jest.fn();
+
     env = {
-      fetchFn: jest.fn().mockResolvedValue({ text: () => Promise.resolve('response') }),
+      fetchFn,
       dom,
-      errorFn: jest.fn()
+      errorFn
     };
 
     options = {
