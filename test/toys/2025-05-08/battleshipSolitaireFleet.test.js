@@ -186,4 +186,12 @@ describe('generateFleet', () => {
     const lengths = fleet.ships.map(ship => ship.length);
     expect(lengths).toEqual([1, 3, 2]);
   });
+  test("does not mutate the input ship lengths array", () => {
+    const cfg = { width: 4, height: 4, ships: [1, 2, 3] };
+    const env = new Map([["getRandomNumber", () => 0]]);
+    const cfgCopy = { ...cfg, ships: [...cfg.ships] };
+    generateFleet(JSON.stringify(cfgCopy), env);
+    expect(cfgCopy.ships).toEqual([1, 2, 3]);
+  });
+
 });
