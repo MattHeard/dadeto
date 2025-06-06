@@ -104,4 +104,11 @@ describe('fishingGame', () => {
     expect(output).toMatch(/glimmering trout appears/i);
     expect(output).toMatch(/warm, shimmering waves under a vibrant sun/i);
   });
+
+  test('bread bait negative modifier keeps result in common carp range', () => {
+    const env = createEnv(0.6, '2025-06-15T10:00:00');
+    const output = fishingGame('bread', env);
+    expect(output).toMatch(/slice of bread/i);
+    expect(output).toMatch(/common carp surfaces gently/i);
+  });
 });
