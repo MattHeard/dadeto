@@ -1,11 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import { beforeAll, describe, test, expect } from '@jest/globals';
+import { describe, test, expect } from '@jest/globals';
 
-let validateCluesObject;
-
-beforeAll(async () => {
+async function loadValidateCluesObject() {
   const presenterPath = path.join(
     process.cwd(),
     'src/presenters/battleshipSolitaireClues.js'
@@ -16,13 +14,14 @@ beforeAll(async () => {
     return `from '${absolute.href}'`;
   });
   src += '\nexport { validateCluesObject };';
-  ({ validateCluesObject } = await import(
-    `data:text/javascript,${encodeURIComponent(src)}`
-  ));
-});
+  return (
+    await import(`data:text/javascript,${encodeURIComponent(src)}`)
+  ).validateCluesObject;
+}
 
 describe('validateCluesObject', () => {
-  test('returns error when input is not an object', () => {
+  test('returns error when input is not an object', async () => {
+    const validateCluesObject = await loadValidateCluesObject();
     const result = validateCluesObject(42);
     expect(result).toBe('Invalid JSON object');
   });
