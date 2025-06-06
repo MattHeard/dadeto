@@ -104,4 +104,12 @@ describe('fishingGame', () => {
     expect(output).toMatch(/glimmering trout appears/i);
     expect(output).toMatch(/warm, shimmering waves under a vibrant sun/i);
   });
+
+  test('recognizes maggot bait and applies its modifier', () => {
+    const env = createEnv(0.4, '2025-06-10T14:00:00');
+    const output = fishingGame('maggot', env);
+    expect(output).toMatch(/squirming maggot/i);
+    expect(output).toMatch(/common carp surfaces gently/i);
+    expect(output).toMatch(/warm, shimmering waves under a vibrant sun/i);
+  });
 });
