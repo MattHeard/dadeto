@@ -41,7 +41,7 @@ describe('handleParsedResult', () => {
     expect(result).toBe(true);
   });
 
-  it('does not call handleRequestResponse when request is invalid', () => {
+  it('does not initiate a fetch and returns false when an invalid parsed request is provided', () => {
     parsed = { invalid: 'request' }; // Missing required 'request' property
 
     const result = handleParsedResult(parsed, env, options);
