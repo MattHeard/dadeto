@@ -101,4 +101,10 @@ describe('italics function', () => {
     const expected = '**bold\ntext** and <em>_italic_</em>';
     expect(italics(input)).toBe(expected);
   });
+
+  test('preserves bold with newline followed by asterisk italics', () => {
+    const input = '**bold\ntext** and *italic*';
+    const expected = '**bold\ntext** and <em>*italic*</em>';
+    expect(italics(input)).toBe(expected);
+  });
 });
