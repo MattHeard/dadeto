@@ -61,4 +61,10 @@ describe('italics function', () => {
     expect(italics('Text with **bold** and *italic* and __more bold__ and _more italic_'))
       .toBe('Text with **bold** and <em>*italic*</em> and __more bold__ and <em>_more italic_</em>');
   });
+
+  test('preserves bold text containing newlines', () => {
+    const input = '**bold\ntext** and _italic_';
+    const expected = '**bold\ntext** and <em>_italic_</em>';
+    expect(italics(input)).toBe(expected);
+  });
 });
