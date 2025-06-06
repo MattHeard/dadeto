@@ -128,6 +128,14 @@ describe('generateFleet', () => {
     expect(lengths).toEqual([1, 2, 3]);
   });
 
+  test('parses multi-digit ship lengths from string', () => {
+    const cfg = { width: 11, height: 11, ships: '10, 2' };
+    const result = generateFleet(JSON.stringify(cfg), env);
+    const fleet = JSON.parse(result);
+    const lengths = fleet.ships.map(s => s.length).sort((a, b) => a - b);
+    expect(lengths).toEqual([2, 10]);
+  });
+
   test('parses string width and height into numbers', () => {
     const cfg = { width: '5', height: '5', ships: [2] };
     const result = generateFleet(JSON.stringify(cfg), env);
