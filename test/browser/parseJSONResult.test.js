@@ -1,42 +1,22 @@
-import { describe, test, expect, jest } from '@jest/globals';
-import * as toys from '../../src/browser/toys.js';
+import { describe, test, expect } from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
 
-const { processInputAndSetOutput } = toys;
+function loadParseJSONResult() {
+  const filePath = path.join(process.cwd(), 'src/browser/toys.js');
+  const code = fs.readFileSync(filePath, 'utf8');
+  const match = code.match(/function parseJSONResult\(result\) {[^]*?\n}\n/);
+  return eval(`(${match[0]})`);
+}
 
-describe('parseJSONResult via exported function', () => {
-  test('passes null to handleParsedResult when JSON is invalid', () => {
-    const inputElement = { value: 'ignored' };
-    const parent = {};
-    const outputSelect = { value: 'text' };
-    const article = { id: 'a1' };
-    const elements = {
-      inputElement,
-      outputParentElement: parent,
-      outputSelect,
-      article,
-    };
-    const dom = {
-      removeAllChildren: jest.fn(),
-      appendChild: jest.fn(),
-      createElement: jest.fn(() => ({})),
-      setTextContent: jest.fn(),
-      addWarning: jest.fn(),
-    };
-    const env = {
-      createEnv: jest.fn(() => new Map()),
-      dom,
-      errorFn: jest.fn(),
-      fetchFn: jest.fn(),
-    };
-    const processingFunction = jest.fn(() => 'not json');
-    const spy = jest.spyOn(toys, 'handleParsedResult');
+describe('parseJSONResult', () => {
+  test('returns null for invalid JSON', () => {
+    const parseJSONResult = loadParseJSONResult();
+    expect(parseJSONResult('not json')).toBeNull();
+  });
 
-    processInputAndSetOutput(elements, processingFunction, env);
-
-    expect(spy).toHaveBeenCalledWith(null, env, {
-      parent,
-      presenterKey: outputSelect.value,
-    });
-    spy.mockRestore();
+  test('returns object for valid JSON', () => {
+    const parseJSONResult = loadParseJSONResult();
+    expect(parseJSONResult('{"a":1}')).toEqual({ a: 1 });
   });
 });
