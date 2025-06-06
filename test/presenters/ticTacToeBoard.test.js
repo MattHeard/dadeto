@@ -185,6 +185,23 @@ describe('createTicTacToeBoardElement', () => {
     );
   });
 
+  it('ignores moves with non-numeric column values', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X', position: { row: 1, column: "2" } },
+        { player: 'O', position: { row: 1, column: 1 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   | O |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
   it('renders an empty board for empty string input', () => {
     const el = createTicTacToeBoardElement('', mockDom());
     expect(el.tagName).toBe('pre');
