@@ -104,4 +104,12 @@ describe('fishingGame', () => {
     expect(output).toMatch(/glimmering trout appears/i);
     expect(output).toMatch(/warm, shimmering waves under a vibrant sun/i);
   });
+
+  test('recognizes maggot bait and applies its negative modifier', () => {
+    const env = createEnv(0.3, '2025-07-01T08:00:00');
+    const output = fishingGame('maggot', env);
+    expect(output).toMatch(/squirming maggot/i);
+    // Base chance 0.3 with modifier -0.1 results in 0.2 < 0.3
+    expect(output).toMatch(/water stays silent/i);
+  });
 });
