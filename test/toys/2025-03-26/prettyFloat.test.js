@@ -10,6 +10,15 @@ describe('formatDecimal', () => {
     // formatDecimal should return the same string, as there is no . or trailing zeros to strip
     expect(formatDecimal(value)).toBe('12345678901234568');
   });
+
+  test('toPrecision(17) preserves trailing zeros when there is no decimal point', () => {
+    const value = 10000000000000001;
+    const asPrecision = value.toPrecision(17);
+    expect(asPrecision).toBe('10000000000000000');
+    expect(asPrecision.includes('.')).toBe(false);
+    // formatDecimal should not strip trailing zeros when there is no decimal point
+    expect(formatDecimal(value)).toBe('10000000000000000');
+  });
 });
 
 describe('decomposeFloat', () => {
