@@ -120,4 +120,11 @@ describe('fishingGame', () => {
     // Base chance 0.3 with modifier -0.1 results in 0.2 < 0.3
     expect(output).toMatch(/water stays silent/i);
   });
+
+  test('recognizes shiny bait and applies its modifier', () => {
+    const env = createEnv(0.7, '2025-07-04T12:00:00');
+    const output = fishingGame('shiny bait', env);
+    expect(output).toMatch(/glittering lure/i);
+    expect(output).toMatch(/legendary golden fish leaps forth/i);
+  });
 });
