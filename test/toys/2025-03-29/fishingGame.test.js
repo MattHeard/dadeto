@@ -83,6 +83,14 @@ describe('fishingGame', () => {
     const output = fishingGame('worm', env);
     expect(output).toMatch(/beneath a silent, starry sky/i);
   });
+
+  test('recognizes insect bait and applies its modifier', () => {
+    const env = createEnv(0.1, '2025-05-02T09:00:00');
+    const output = fishingGame('insect', env);
+    expect(output).toMatch(/lively insect/i);
+    // baseChance 0.1 with modifier 0.05 keeps chance below 0.3
+    expect(output).toMatch(/water stays silent/i);
+  });
   test('recognizes grub bait and mentions its description', () => {
     const env = createEnv(0.4, '2025-07-15T10:00:00');
     const output = fishingGame('grub', env);
