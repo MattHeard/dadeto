@@ -95,4 +95,10 @@ describe('italics function', () => {
     const input = '**bold\n*italic***';
     expect(italics(input)).toBe(input);
   });
+
+  test('preserves bold text containing newlines', () => {
+    const input = '**bold\ntext** and _italic_';
+    const expected = '**bold\ntext** and <em>_italic_</em>';
+    expect(italics(input)).toBe(expected);
+  });
 });
