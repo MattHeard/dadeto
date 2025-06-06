@@ -27,4 +27,8 @@ describe('parseJSONResult eval import', () => {
   test('returns null for invalid JSON', () => {
     expect(parseJSONResult('{ invalid')).toBeNull();
   });
+
+  test('returns null for undefined input', () => {
+    expect(parseJSONResult(undefined)).toBeNull();
+  });
 });
