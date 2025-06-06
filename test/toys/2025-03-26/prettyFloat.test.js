@@ -10,6 +10,14 @@ describe('formatDecimal', () => {
     // formatDecimal should return the same string, as there is no . or trailing zeros to strip
     expect(formatDecimal(value)).toBe('12345678901234568');
   });
+
+  test('does not strip trailing zeros from large integers', () => {
+    const value = 10_000_000_000_000_000;
+    // toPrecision returns a whole number string with no decimal point
+    expect(value.toPrecision(17)).toBe('10000000000000000');
+    // formatDecimal should return the same unmodified string
+    expect(formatDecimal(value)).toBe('10000000000000000');
+  });
 });
 
 describe('decomposeFloat', () => {
