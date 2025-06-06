@@ -31,9 +31,12 @@ describe('handleParsedResult', () => {
       errorFn
     };
 
+    const parent = {};
+    const presenterKey = 'text';
+
     options = {
-      parent: {},
-      presenterKey: 'text'
+      parent,
+      presenterKey
     };
   });
 
