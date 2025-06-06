@@ -31,4 +31,16 @@ describe('regex escaping for italics helpers', () => {
     expect(regex.source).toBe('\\$(.*?)\\$');
     expect('foo $bar$ baz'.replace(regex, 'X')).toBe('foo X baz');
   });
+
+  test('createBoldPatternPart leaves non-special characters unescaped', () => {
+    const part = createBoldPatternPart('_');
+    expect(part).toBe('(?:__.*?__)');
+    expect(new RegExp(part).test('__bold__')).toBe(true);
+  });
+
+  test('createItalicsPattern leaves non-special characters unescaped', () => {
+    const regex = createItalicsPattern('_');
+    expect(regex.source).toBe('_(.*?)_');
+    expect('foo _bar_ baz'.replace(regex, 'X')).toBe('foo X baz');
+  });
 });
