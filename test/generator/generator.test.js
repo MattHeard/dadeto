@@ -284,6 +284,31 @@ describe('Blog Generator', () => {
     expect(html).not.toMatch('related-links');
   });
 
+  test('should escape related link fields when optional values are missing', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'MISS1',
+          title: 'Missing Fields',
+          publicationDate: '2024-07-01',
+          content: ['hi'],
+          relatedLinks: [
+            {
+              url: 'https://example.com',
+              type: 'article',
+            },
+          ],
+        },
+      ],
+    };
+
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain(
+      '<li><a href="https://example.com" target="_blank" rel="noopener">""</a></li>'
+    );
+    expect(html).not.toContain('undefined');
+  });
+
   test('should contain a YouTube video for a post', () => {
     const blog = {
       posts: [
