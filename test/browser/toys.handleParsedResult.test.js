@@ -5,15 +5,20 @@ describe('handleParsedResult', () => {
   let parsed, env, options, dom;
 
   beforeEach(() => {
+    const removeAllChildren = jest.fn();
+    const createElement = jest.fn().mockImplementation((tagName) => ({
+      tagName: tagName.toUpperCase(),
+      textContent: '',
+      appendChild: jest.fn() // This appendChild is for the mocked element
+    }));
+    const setTextContent = jest.fn();
+    const appendChild = jest.fn(); // This is the main appendChild for the dom mock
+
     dom = {
-      removeAllChildren: jest.fn(),
-      createElement: jest.fn().mockImplementation((tagName) => ({
-        tagName: tagName.toUpperCase(),
-        textContent: '',
-        appendChild: jest.fn()
-      })),
-      setTextContent: jest.fn(),
-      appendChild: jest.fn()
+      removeAllChildren,
+      createElement,
+      setTextContent,
+      appendChild
     };
 
     env = {
