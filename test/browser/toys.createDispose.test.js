@@ -26,4 +26,26 @@ describe('createDispose', () => {
     expect(dom.removeAllChildren).toHaveBeenCalledWith(container);
     expect(rows).toHaveLength(0);
   });
+
+  it('clears all registered disposers', () => {
+    const disposer1 = jest.fn();
+    const disposer2 = jest.fn();
+    const disposers = [disposer1, disposer2];
+    const dom = {
+      removeAllChildren: jest.fn(),
+    };
+    const container = {};
+    const rows = ['a', 'b'];
+
+    const dispose = createDispose(disposers, dom, container, rows);
+    expect(typeof dispose).toBe('function');
+
+    dispose();
+
+    expect(disposer1).toHaveBeenCalled();
+    expect(disposer2).toHaveBeenCalled();
+    expect(disposers).toHaveLength(0);
+    expect(rows).toHaveLength(0);
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(container);
+  });
 });
