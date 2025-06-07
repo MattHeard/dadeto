@@ -3,7 +3,7 @@ import path from 'path';
 import { pathToFileURL } from 'url';
 import { describe, it, expect } from '@jest/globals';
 
-async function loadValidateCluesObject() {
+export async function loadValidateCluesObject() {
   const srcPath = path.join(process.cwd(), 'src/presenters/battleshipSolitaireClues.js');
   let src = fs.readFileSync(srcPath, 'utf8');
   src = src.replace(/from '((?:\.\.?\/).*?)'/g, (_, p) => {

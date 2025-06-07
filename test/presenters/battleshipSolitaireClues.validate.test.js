@@ -1,5 +1,6 @@
 import { describe, test, expect } from '@jest/globals';
 import { createBattleshipCluesBoardElement } from '../../src/presenters/battleshipSolitaireClues.js';
+import { loadValidateCluesObject } from './validateCluesObject.import.test.js';
 
 function makeDom() {
   return {

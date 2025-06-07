@@ -203,6 +203,22 @@ describe('Cyberpunk Text Game', () => {
     expect(tempData.inventory).toEqual([]);
   });
 
+  test('preserves previously visited locations when adding new ones', () => {
+    tempData = {
+      name: 'Blaze',
+      state: 'hub',
+      inventory: ['datapad'],
+      visited: ['hacker'],
+    };
+    env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
+
+    cyberpunkAdventure('transport', env);
+    cyberpunkAdventure(' ', env);
+    cyberpunkAdventure('trade datapad', env);
+
+    expect(tempData.visited).toEqual(expect.arrayContaining(['hacker', 'transport']));
+  });
+
   test("defaults name to 'Stray' if no input and no name in temporary data", () => {
     env.set('getData', () => ({ temporary: {} }));
     const result = cyberpunkAdventure('   ', env);
