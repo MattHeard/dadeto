@@ -10,7 +10,7 @@ describe('createOutputDropdownHandler', () => {
     const handler = createOutputDropdownHandler(
       mockHandleDropdownChange,
       mockGetData,
-      mockDom,
+      mockDom
     );
 
     expect(typeof handler).toBe('function');
@@ -23,14 +23,18 @@ describe('createOutputDropdownHandler', () => {
     const mockDom = { querySelector: jest.fn() };
 
     // Create the handler
-    const handler = createOutputDropdownHandler(mockHandleDropdownChange, mockGetData, mockDom);
+    const handler = createOutputDropdownHandler(
+      mockHandleDropdownChange,
+      mockGetData,
+      mockDom
+    );
 
     // Simulate a dropdown change event
     const mockEvent = {
       currentTarget: {
         value: 'test-value',
-        parentNode: 'test-parent-node'
-      }
+        parentNode: 'test-parent-node',
+      },
     };
     handler(mockEvent);
 
@@ -54,13 +58,17 @@ describe('createOutputDropdownHandler', () => {
     const mockGetData = jest.fn().mockReturnValue({});
     const mockDom = { querySelector: jest.fn() };
 
-    const handler = createOutputDropdownHandler(mockHandleDropdownChange, mockGetData, mockDom);
+    const handler = createOutputDropdownHandler(
+      mockHandleDropdownChange,
+      mockGetData,
+      mockDom
+    );
 
     const testEvent = {
       currentTarget: {
         value: 'different-value',
-        parentNode: 'different-parent'
-      }
+        parentNode: 'different-parent',
+      },
     };
 
     handler(testEvent);
@@ -77,14 +85,18 @@ describe('createOutputDropdownHandler', () => {
     const mockGetData = jest.fn().mockReturnValue({});
     const mockDom = {
       querySelector: jest.fn(),
-      someUtility: jest.fn()
+      someUtility: jest.fn(),
     };
 
-    const handler = createOutputDropdownHandler(mockHandleDropdownChange, mockGetData, mockDom);
+    const handler = createOutputDropdownHandler(
+      mockHandleDropdownChange,
+      mockGetData,
+      mockDom
+    );
 
     const testTarget = {
       value: 'test',
-      parentNode: 'parent'
+      parentNode: 'parent',
     };
 
     handler({ currentTarget: testTarget });
@@ -95,7 +107,7 @@ describe('createOutputDropdownHandler', () => {
       mockGetData,
       expect.objectContaining({
         someUtility: expect.any(Function),
-        querySelector: expect.any(Function)
+        querySelector: expect.any(Function),
       })
     );
   });
@@ -107,10 +119,17 @@ describe('createOutputDropdownHandler', () => {
     const handler = createOutputDropdownHandler(
       mockHandleDropdownChange,
       mockGetData,
-      {},
+      {}
     );
 
     const result = handler({ currentTarget: {} });
     expect(result).toBe(expected);
+  });
+
+  test('expects three arguments and returns a unary function', () => {
+    const handler = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
+    expect(createOutputDropdownHandler.length).toBe(3);
+    expect(typeof handler).toBe('function');
+    expect(handler.length).toBe(1);
   });
 });
