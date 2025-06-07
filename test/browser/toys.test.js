@@ -39,6 +39,14 @@ describe('createAddDropdownListener', () => {
       mockOnChange
     );
   });
+
+  it('returns a listener function', () => {
+    const addListener = createAddDropdownListener(jest.fn(), {
+      addEventListener: jest.fn(),
+    });
+
+    expect(typeof addListener).toBe('function');
+  });
 });
 
 describe('toys', () => {
