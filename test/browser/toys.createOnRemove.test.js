@@ -23,6 +23,12 @@ describe('createOnRemove', () => {
     handler = createOnRemove(rows, render, keyToRemove);
   });
 
+  it('returns a function that expects an event parameter', () => {
+    const onRemove = createOnRemove(rows, render, keyToRemove);
+    expect(typeof onRemove).toBe('function');
+    expect(onRemove.length).toBe(1);
+  });
+
   it('removes the specified key from the rows object', () => {
     // Verify the key exists initially
     expect(rows).toHaveProperty(keyToRemove);
