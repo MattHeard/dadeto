@@ -24,4 +24,4 @@ describe('validateCluesObject dynamic import', () => {
   });
 });
 */
-it.skip('placeholder test to ensure Stryker and Jest proceed', () => {});
+it('placeholder test to ensure Stryker and Jest proceed', () => {});
