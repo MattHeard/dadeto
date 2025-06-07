@@ -26,9 +26,9 @@ describe('generateBlog missing related link fields', () => {
 
     const html = generateBlog({ blog, header, footer }, wrap);
     expect(html).toContain('<div class="key">links</div>');
-    expect(html).toContain(
-      '<a href="https://example.com" target="_blank" rel="noopener">""</a>'
-    );
+    const listItem =
+      '<li><a href="https://example.com" target="_blank" rel="noopener">""</a></li>';
+    expect(html).toContain(listItem);
     expect(html).not.toContain('undefined');
   });
 });

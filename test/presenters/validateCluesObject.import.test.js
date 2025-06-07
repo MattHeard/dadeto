@@ -1,24 +1,31 @@
-import fs from 'fs';
-import path from 'path';
-import { pathToFileURL } from 'url';
 import { describe, it, expect } from '@jest/globals';
+import { createBattleshipCluesBoardElement } from '../../src/presenters/battleshipSolitaireClues.js';
 
-async function loadValidateCluesObject() {
-  const srcPath = path.join(process.cwd(), 'src/presenters/battleshipSolitaireClues.js');
-  let src = fs.readFileSync(srcPath, 'utf8');
-  src = src.replace(/from '((?:\.\.?\/).*?)'/g, (_, p) => {
-    const abs = pathToFileURL(path.join(path.dirname(srcPath), p));
-    return `from '${abs.href}'`;
-  });
-  src += '\nexport { validateCluesObject };';
-  return (
-    await import(`data:text/javascript,${encodeURIComponent(src)}`)
-  ).validateCluesObject;
+function makeDom() {
+  return {
+    created: [],
+    createElement(tag) {
+      const el = { tag, text: '' };
+      this.created.push(el);
+      return el;
+    },
+    setTextContent(el, text) {
+      el.text = text;
+    },
+  };
 }
 
-describe('validateCluesObject dynamic import', () => {
-  it('returns Invalid JSON object when input is not an object', async () => {
-    const validateCluesObject = await loadValidateCluesObject();
-    expect(validateCluesObject(42)).toBe('Invalid JSON object');
+function expectEmptyBoard(el) {
+  expect(el.tag).toBe('pre');
+  const lines = el.text.trim().split('\n');
+  const gridLines = lines.filter(line => /^\s*0(\s+·){10}\s+0\s*$/.test(line));
+  expect(gridLines.length).toBe(10);
+}
+
+describe('createBattleshipCluesBoardElement invalid input', () => {
+  it('renders an empty board when JSON is not an object', () => {
+    const dom = makeDom();
+    const el = createBattleshipCluesBoardElement('42', dom);
+    expectEmptyBoard(el);
   });
 });
