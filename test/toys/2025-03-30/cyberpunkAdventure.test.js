@@ -93,6 +93,7 @@ describe('Cyberpunk Text Game', () => {
     } else {
       expect(result).toMatch(/Do you want to trade/);
     }
+    expect(tempData.state).toBe('transport:trade');
   });
 
   test('goes to Back Alley and finds stimpack (success)', () => {
