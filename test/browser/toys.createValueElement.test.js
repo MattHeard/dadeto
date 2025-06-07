@@ -123,4 +123,22 @@ describe('createValueElement', () => {
     // Ensure removeEventListener was called with the same handler
     expect(mockDom.removeEventListener).toHaveBeenCalledWith(el, eventName, handler);
   });
+
+  it('cleanup can be called multiple times', () => {
+    valueEl = createValueElement(
+      mockDom,
+      'multi',
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
+
+    const disposer = disposers[0];
+    disposer();
+    disposer();
+
+    expect(mockDom.removeEventListener).toHaveBeenCalledTimes(2);
+  });
 });
