@@ -29,6 +29,7 @@ describe('createAddDropdownListener', () => {
 
     // Act
     const addListener = createAddDropdownListener(mockOnChange, mockDom);
+    expect(typeof addListener).toBe('function');
     addListener(mockDropdown);
 
     // Assert
