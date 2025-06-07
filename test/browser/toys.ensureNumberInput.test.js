@@ -52,4 +52,36 @@ describe('ensureNumberInput', () => {
     );
     expect(result).toBe(createdInput);
   });
+
+  test('attaches an input listener that updates the text input', () => {
+    const nextSibling = {};
+    const createdInput = {};
+    const mockContainer = { insertBefore: jest.fn() };
+    const mockDom = {
+      querySelector: jest.fn(() => null),
+      createElement: jest.fn(() => createdInput),
+      setType: jest.fn(),
+      setValue: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      getNextSibling: jest.fn(() => nextSibling),
+      getTargetValue: jest.fn(() => '123'),
+    };
+    const textInput = { value: '0' };
+
+    ensureNumberInput(mockContainer, textInput, mockDom);
+
+    expect(mockDom.addEventListener).toHaveBeenCalledWith(
+      createdInput,
+      'input',
+      expect.any(Function)
+    );
+
+    const handler = mockDom.addEventListener.mock.calls[0][2];
+    const event = {};
+    handler(event);
+
+    expect(mockDom.getTargetValue).toHaveBeenCalledWith(event);
+    expect(mockDom.setValue).toHaveBeenCalledWith(textInput, '123');
+  });
 });
