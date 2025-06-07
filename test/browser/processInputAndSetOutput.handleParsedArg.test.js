@@ -1,27 +1,35 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'fs/promises';
 import { pathToFileURL } from 'url';
+import vm from 'vm';
 import { describe, it, expect } from '@jest/globals';
 
 async function loadModuleWithCapture() {
-  const filePath = path.join(process.cwd(), 'src/browser/toys.js');
-  let code = fs.readFileSync(filePath, 'utf8');
-  code = code.replace(/from '((?:\.\.?\/).*?)'/g, (_, p) => {
-    const abs = pathToFileURL(path.join(path.dirname(filePath), p));
-    return `from '${abs.href}'`;
-  });
+  const url = pathToFileURL('./src/browser/toys.js');
+  let code = await fs.readFile(url, 'utf8');
   code = code.replace(
     'function handleParsedResult(parsed, env, options) {',
     'function handleParsedResult(parsed, env, options) {\n  globalThis.__captured = parsed;'
   );
-  // processInputAndSetOutput is already exported in the source file
-  return import(`data:text/javascript,${encodeURIComponent(code)}`);
+  const context = vm.createContext({ globalThis });
+  async function linker(specifier, referencingModule) {
+    const modUrl = new URL(specifier, referencingModule.identifier);
+    const src = await fs.readFile(modUrl, 'utf8');
+    const m = new vm.SourceTextModule(src, { identifier: modUrl.href, context });
+    await m.link(linker);
+    return m;
+  }
+  const mod = new vm.SourceTextModule(code, { identifier: url.href, context });
+  await mod.link(linker);
+  await mod.evaluate();
+  return {
+    processInputAndSetOutput: mod.namespace.processInputAndSetOutput,
+    globalObj: context.globalThis,
+  };
 }
 
 describe('processInputAndSetOutput parsed arg', () => {
   it('passes null to handleParsedResult when JSON is invalid', async () => {
-    const mod = await loadModuleWithCapture();
-    const { processInputAndSetOutput } = mod;
+    const { processInputAndSetOutput, globalObj } = await loadModuleWithCapture();
 
     const elements = {
       inputElement: { value: 'x' },
@@ -50,6 +58,6 @@ describe('processInputAndSetOutput parsed arg', () => {
 
     processInputAndSetOutput(elements, () => 'not json', env);
 
-    expect(globalThis.__captured).toBeNull();
+    expect(globalObj.__captured).toBeNull();
   });
 });

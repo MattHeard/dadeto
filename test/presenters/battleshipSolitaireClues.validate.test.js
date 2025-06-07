@@ -1,5 +1,22 @@
+import fs from 'fs/promises';
+import vm from 'vm';
+import { pathToFileURL } from 'url';
 import { describe, test, expect } from '@jest/globals';
 import { createBattleshipCluesBoardElement } from '../../src/presenters/battleshipSolitaireClues.js';
+
+async function loadValidateCluesObject() {
+  const url = pathToFileURL('./src/presenters/battleshipSolitaireClues.js');
+  let code = await fs.readFile(url, 'utf8');
+  code += '\nglobalThis.__validateCluesObject = validateCluesObject;';
+  const context = vm.createContext({ globalThis });
+  const mod = new vm.SourceTextModule(code, {
+    identifier: url.href,
+    context,
+  });
+  await mod.link(async () => {});
+  await mod.evaluate();
+  return context.globalThis.__validateCluesObject;
+}
 
 function makeDom() {
   return {
@@ -37,7 +54,10 @@ describe('validateCluesObject via public API', () => {
 
   test('returns error when clue values are non-numeric', async () => {
     const validateCluesObject = await loadValidateCluesObject();
-    const result = validateCluesObject({ rowClues: [1, 'x'], colClues: [2, 3] });
+    const result = validateCluesObject({
+      rowClues: [1, 'x'],
+      colClues: [2, 3],
+    });
     expect(result).toBe('Clue values must be numbers');
   });
 

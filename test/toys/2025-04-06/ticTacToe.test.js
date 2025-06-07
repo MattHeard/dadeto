@@ -339,6 +339,26 @@ test('handles null move entry gracefully', () => {
   });
 });
 
+test('selects winning move when best option is not first empty cell', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 0, column: 0 } },
+      { player: 'O', position: { row: 1, column: 0 } },
+      { player: 'X', position: { row: 0, column: 1 } },
+      { player: 'O', position: { row: 1, column: 1 } },
+      { player: 'X', position: { row: 2, column: 0 } },
+    ],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(6);
+  expect(output.moves[5]).toEqual({
+    player: 'O',
+    position: { row: 1, column: 2 },
+  });
+});
+
 test('handles invalid player', () => {
   const env = new Map();
   const input = {
