@@ -57,6 +57,13 @@ describe('createBattleshipCluesBoardElement – error handling', () => {
     expectEmpty10x10Board(el);
   });
 
+  test('renders 10x10 empty board when JSON is a string', () => {
+    const dom = makeDom();
+    const input = '"foo"';
+    const el = createBattleshipCluesBoardElement(input, dom);
+    expectEmpty10x10Board(el);
+  });
+
   test('renders 10x10 empty board when JSON is null', () => {
     const dom = makeDom();
     const el = createBattleshipCluesBoardElement('null', dom); // null value
