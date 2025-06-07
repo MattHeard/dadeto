@@ -547,3 +547,20 @@ test('triggers minimax tie return at full depth without win', () => {
     position: { row: 2, column: 2 },
   });
 });
+
+test('computes best response from bottom-left opening', () => {
+  const env = new Map();
+  const input = {
+    moves: [
+      { player: 'X', position: { row: 2, column: 0 } },
+      { player: 'O', position: { row: 1, column: 1 } },
+    ],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(3);
+  expect(output.moves[2]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 0 },
+  });
+});
