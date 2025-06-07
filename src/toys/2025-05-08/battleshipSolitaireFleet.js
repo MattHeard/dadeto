@@ -358,4 +358,4 @@ function getFleetResultOrError(fleetResult) {
   return fleetRetryError();
 }
 
-export { generateFleet };
+export { generateFleet, placeAllShips };
