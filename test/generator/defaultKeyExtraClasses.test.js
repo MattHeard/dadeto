@@ -1,11 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import { beforeAll, describe, test, expect } from '@jest/globals';
+import { describe, test, expect } from '@jest/globals';
 
-let defaultKeyExtraClasses;
-
-beforeAll(async () => {
+async function loadDefaultKeyExtraClasses() {
   const generatorPath = path.join(process.cwd(), 'src/generator/generator.js');
   let src = fs.readFileSync(generatorPath, 'utf8');
   src = src.replace(/from '\.\/(.*?)'/g, (_, p) => {
@@ -14,19 +12,20 @@ beforeAll(async () => {
   });
   src += '\nexport { defaultKeyExtraClasses };';
   src += `\n//# sourceURL=${generatorPath}`;
-  ({ defaultKeyExtraClasses } = await import(
-    `data:text/javascript,${encodeURIComponent(src)}`
-  ));
-});
+  const mod = await import(`data:text/javascript,${encodeURIComponent(src)}`);
+  return mod.defaultKeyExtraClasses;
+}
 
 describe('defaultKeyExtraClasses', () => {
-  test('initializes undefined property to empty string', () => {
+  test('initializes undefined property to empty string', async () => {
+    const defaultKeyExtraClasses = await loadDefaultKeyExtraClasses();
     const args = {};
     const result = defaultKeyExtraClasses(args);
     expect(result.keyExtraClasses).toBe('');
   });
 
-  test('preserves provided property', () => {
+  test('preserves provided property', async () => {
+    const defaultKeyExtraClasses = await loadDefaultKeyExtraClasses();
     const args = { keyExtraClasses: 'existing' };
     const result = defaultKeyExtraClasses(args);
     expect(result.keyExtraClasses).toBe('existing');
