@@ -22,4 +22,10 @@ describe('fullWidthElement integration', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain(fullWidthElement);
   });
+
+  test('fullWidthElement has expected structure', () => {
+    expect(fullWidthElement).not.toHaveLength(0);
+    expect(fullWidthElement).toContain('class="key full-width"');
+    expect(fullWidthElement).toContain('class="value full-width"');
+  });
 });
