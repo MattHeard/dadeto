@@ -117,4 +117,10 @@ describe('createUpdateTextInputValue', () => {
     expect(mockDom.getTargetValue).toHaveBeenCalledWith(inputEvent);
     expect(mockDom.setValue).toHaveBeenCalledWith(textInput, testValue);
   });
+
+  it('returns a new handler instance on each call', () => {
+    const handler1 = createUpdateTextInputValue(textInput, mockDom);
+    const handler2 = createUpdateTextInputValue(textInput, mockDom);
+    expect(handler1).not.toBe(handler2);
+  });
 });
