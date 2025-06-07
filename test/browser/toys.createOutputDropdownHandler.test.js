@@ -2,6 +2,20 @@ import { describe, test, expect, jest } from '@jest/globals';
 import { createOutputDropdownHandler } from '../../src/browser/toys.js';
 
 describe('createOutputDropdownHandler', () => {
+  test('returns a function when invoked', () => {
+    const mockHandleDropdownChange = jest.fn();
+    const mockGetData = jest.fn();
+    const mockDom = {};
+
+    const handler = createOutputDropdownHandler(
+      mockHandleDropdownChange,
+      mockGetData,
+      mockDom,
+    );
+
+    expect(typeof handler).toBe('function');
+  });
+
   test('should create a handler that calls handleDropdownChange with correct arguments', () => {
     // Mock dependencies
     const mockHandleDropdownChange = jest.fn();
