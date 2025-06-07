@@ -1,8 +1,4 @@
-let generateBlog;
-
-beforeAll(async () => {
-  ({ generateBlog } = await import('../../src/generator/generator.js'));
-});
+import { generateBlog } from "../../src/generator/generator.js";
 
 const header = '<body>';
 const footer = '</body>';
@@ -480,5 +476,23 @@ describe('Blog Generator', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     const expectedHtml = `<html><body><article class="entry" id="FIRS1"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">FIRS1</div><div class="value"><h2><a href="#FIRS1">First</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2024</p><div class="key">text</div><blockquote class="value"><div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div><p>This is the content of the first post.</p></blockquote><div class="key"></div><blockquote class="value"><div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div><p>This is a quote with multiple lines.</p><p>Here is the second one.</p></blockquote></article></body></html>`;
     expect(html).toBe(expectedHtml);
+  });
+
+  test('should generate media sections when posts include media', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'MEDIA1',
+          title: 'Media Post',
+          publicationDate: '2024-06-01',
+          illustration: { fileType: 'png', altText: 'art' },
+          audio: { fileType: 'mp3' }
+        }
+      ]
+    };
+
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<img');
+    expect(html).toContain('<audio');
   });
 });
