@@ -21,6 +21,7 @@ describe('createPreElement', () => {
     ['some\npre-formatted\ntext', 'some\npre-formatted\ntext'],
     ['[a, b, c]', 'a\nb\nc'],
     ['[]', ''],
+    ['[   ]', ''],
     ['[  x,   y  ,z ]', 'x\ny\nz'],
     ['[single]', 'single'],
     ['', ''],
@@ -48,6 +49,14 @@ describe('createPreElement', () => {
     const dom = createMockDom();
     const spy = jest.spyOn(String.prototype, 'split');
     createPreElement('[]', dom);
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  test('given whitespace only bracket list then split is not called', () => {
+    const dom = createMockDom();
+    const spy = jest.spyOn(String.prototype, 'split');
+    createPreElement('[   ]', dom);
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
   });
