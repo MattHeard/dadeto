@@ -28,6 +28,12 @@ describe('createUpdateTextInputValue', () => {
     jest.clearAllMocks();
   });
 
+  it('returns a handler function that expects an event parameter', () => {
+    const updateHandler = createUpdateTextInputValue(textInput, mockDom);
+    expect(typeof updateHandler).toBe('function');
+    expect(updateHandler.length).toBe(1);
+  });
+
   it('creates a function that updates the text input value from an event', () => {
     // Arrange
     const testValue = 'test value';
