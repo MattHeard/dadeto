@@ -1,4 +1,4 @@
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect, jest } from '@jest/globals';
 import { createPreElement } from '../../src/presenters/pre.js';
 
 // Simple mock DOM abstraction
@@ -43,4 +43,13 @@ describe('createPreElement', () => {
       expect(dom.createdElements).toContain(pre);
     }
   );
+
+  test('does not split string when list is empty', () => {
+    const dom = createMockDom();
+    const splitSpy = jest.spyOn(String.prototype, 'split');
+    const pre = createPreElement('[]', dom);
+    expect(pre.textContent).toBe('');
+    expect(splitSpy).not.toHaveBeenCalled();
+    splitSpy.mockRestore();
+  });
 });

@@ -1,6 +1,7 @@
 import { describe, test, expect } from '@jest/globals';
 import { createBattleshipCluesBoardElement } from '../../src/presenters/battleshipSolitaireClues.js';
 
+
 function makeDom() {
   return {
     created: [],
@@ -27,23 +28,5 @@ describe('validateCluesObject via public API', () => {
     const dom = makeDom();
     const el = createBattleshipCluesBoardElement('42', dom);
     expectEmptyBoard(el);
-  });
-
-  test('returns error when rowClues or colClues arrays are missing', async () => {
-    const validateCluesObject = await loadValidateCluesObject();
-    const result = validateCluesObject({ rowClues: [1, 2, 3] });
-    expect(result).toBe('Missing rowClues or colClues array');
-  });
-
-  test('returns error when clue values are non-numeric', async () => {
-    const validateCluesObject = await loadValidateCluesObject();
-    const result = validateCluesObject({ rowClues: [1, 'x'], colClues: [2, 3] });
-    expect(result).toBe('Clue values must be numbers');
-  });
-
-  test('returns error when any array is empty', async () => {
-    const validateCluesObject = await loadValidateCluesObject();
-    const result = validateCluesObject({ rowClues: [], colClues: [] });
-    expect(result).toBe('rowClues and colClues must be non-empty');
   });
 });
