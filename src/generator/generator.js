@@ -76,12 +76,16 @@ function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
 }
 
 function defaultWrapValueDiv(args) {
-  if (args.wrapValueDiv === undefined) {args.wrapValueDiv = true;}
+  if (args.wrapValueDiv === undefined) {
+    args.wrapValueDiv = true;
+  }
   return args;
 }
 
-function defaultKeyExtraClasses(args) {
-  if (args.keyExtraClasses === undefined) {args.keyExtraClasses = '';}
+export function defaultKeyExtraClasses(args) {
+  if (args.keyExtraClasses === undefined) {
+    args.keyExtraClasses = '';
+  }
   return args;
 }
 
@@ -90,7 +94,8 @@ function applyLabeledSectionDefaults(args) {
 }
 
 function prepareLabeledSectionArgs(args) {
-  const { label, valueHTML, wrapValueDiv, keyExtraClasses } = applyLabeledSectionDefaults(args);
+  const { label, valueHTML, wrapValueDiv, keyExtraClasses } =
+    applyLabeledSectionDefaults(args);
   const keyClass = getKeyClass(keyExtraClasses);
   const keyDiv = createDiv(keyClass, label);
   return { keyDiv, valueHTML, wrapValueDiv };
@@ -107,7 +112,6 @@ function labeledSectionValuePart(valueHTML, wrapValueDiv) {
   }
   return valueHTML;
 }
-
 
 /**
  * Join CSS classes into a space-separated string
@@ -182,9 +186,15 @@ const METADATA_TEXT = `Software developer and philosopher in Berlin`;
 function createHeaderContent() {
   const valueDivs = [
     createValueDiv(HEADER_BANNER),
-    createValueDiv(METADATA_TEXT, [CLASS.METADATA])
+    createValueDiv(METADATA_TEXT, [CLASS.METADATA]),
   ];
-  const parts = valueDivs.map(valueDiv => createLabeledSection({ label: '', valueHTML: valueDiv, wrapValueDiv: false }));
+  const parts = valueDivs.map(valueDiv =>
+    createLabeledSection({
+      label: '',
+      valueHTML: valueDiv,
+      wrapValueDiv: false,
+    })
+  );
   return join(parts);
 }
 
@@ -217,7 +227,11 @@ const WARNING_MESSAGE =
 function createFooterContent() {
   const classes = joinClasses([CLASS.FOOTER, CLASS.VALUE, CLASS.WARNING]);
   const footerDiv = createDiv(classes, WARNING_MESSAGE);
-  return createLabeledSection({ label: '', valueHTML: footerDiv, wrapValueDiv: false });
+  return createLabeledSection({
+    label: '',
+    valueHTML: footerDiv,
+    wrapValueDiv: false,
+  });
 }
 
 /**
@@ -315,9 +329,7 @@ function formatArticleHTML(articleHTML) {
  * Process posts and join article HTML
  */
 function processPostsToHTML(posts) {
-  return posts.map(convertPostToArticleHTML)
-    .map(formatArticleHTML)
-    .join('');
+  return posts.map(convertPostToArticleHTML).map(formatArticleHTML).join('');
 }
 
 /**
@@ -416,14 +428,17 @@ function createContentItemWithIndex(text, index) {
 
 // Hardcoded normalization rules and content renderers
 const normalizationRules = [
-  [c => typeof c !== 'object' || c === null, c => ({ type: 'text', content: c })],
-  [() => true, c => c]
+  [
+    c => typeof c !== 'object' || c === null,
+    c => ({ type: 'text', content: c }),
+  ],
+  [() => true, c => c],
 ];
 
 const CONTENT_RENDERERS = {
   quote: createBlockquote,
   text: renderAsParagraph,
-  __default__: renderAsParagraph
+  __default__: renderAsParagraph,
 };
 
 /**
@@ -464,7 +479,6 @@ function renderValueDiv(normalizedContent) {
   const renderer = getContentRenderer(type);
   return renderer(content);
 }
-
 
 function renderAsParagraph(content) {
   return `<p class="${CLASS.VALUE}">${content}</p>`;
@@ -532,7 +546,11 @@ function generateTitleSection(post) {
  */
 function generateDateSection(post) {
   const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
-  return createLabeledSection({ label: 'pubAt', valueHTML, wrapValueDiv: false });
+  return createLabeledSection({
+    label: 'pubAt',
+    valueHTML,
+    wrapValueDiv: false,
+  });
 }
 
 /**
@@ -553,12 +571,18 @@ function generateTagsSection(post) {
   if (!hasTags(post)) {
     return '';
   }
-  const tagsContent = post.tags.map(tag => {
-    const escapedTag = escapeHtml(tag);
-    return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
-  }).join(', ');
+  const tagsContent = post.tags
+    .map(tag => {
+      const escapedTag = escapeHtml(tag);
+      return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
+    })
+    .join(', ');
   const tagsValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagsContent}</p>`;
-  return createLabeledSection({ label: 'tags', valueHTML: tagsValue, wrapValueDiv: false });
+  return createLabeledSection({
+    label: 'tags',
+    valueHTML: tagsValue,
+    wrapValueDiv: false,
+  });
 }
 
 /**
@@ -594,7 +618,6 @@ function hasRelatedLinks(post) {
  * @param {Object} post - The blog post
  * @returns {boolean} - True if post has tags
  */
-
 
 /**
  * Generate media content based on media type
@@ -633,7 +656,6 @@ function createYouTubeIframe(post) {
   return `<iframe height="300px" width="100%" src="https://www.youtube.com/embed/${youtubeId}?start=${timestamp}" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>`;
 }
 
-
 /**
  * Mapping for media sections.
  * Each key maps to a function that generates the corresponding media section.
@@ -648,8 +670,8 @@ const MEDIA_CONFIG = [
 // Declarative mapping for media content rendering
 const MEDIA_CONTENT_CONFIG = {
   illustration: { wrapperTag: 'div', fragment: createIllustrationImage },
-  audio:        { wrapperTag: 'audio', fragment: createAudioSource, controls: true },
-  youtube:      { wrapperTag: 'p', fragment: createYouTubeIframe },
+  audio: { wrapperTag: 'audio', fragment: createAudioSource, controls: true },
+  youtube: { wrapperTag: 'p', fragment: createYouTubeIframe },
 };
 
 // Generic builder for media content
@@ -672,18 +694,23 @@ function buildMediaSection(post, type, label) {
     label,
     valueHTML: generateMediaContent(post, type),
     wrapValueDiv: false,
-    keyExtraClasses: CLASS.MEDIA
+    keyExtraClasses: CLASS.MEDIA,
   });
 }
 
 const MEDIA_SECTIONS = Object.fromEntries(
-  MEDIA_CONFIG.map(([type, label]) => [type, post => buildMediaSection(post, type, label)])
+  MEDIA_CONFIG.map(([type, label]) => [
+    type,
+    post => buildMediaSection(post, type, label),
+  ])
 );
 /**
  * Generate all media sections for a blog post by iterating over the MEDIA_SECTIONS mapping.
  */
 function generateMediaSections(post) {
-  const sections = Object.values(MEDIA_SECTIONS).map(generator => generator(post));
+  const sections = Object.values(MEDIA_SECTIONS).map(generator =>
+    generator(post)
+  );
   return join(sections);
 }
 
@@ -695,14 +722,17 @@ function generateMediaSections(post) {
 const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
 function escapeRelatedLinkFields(link) {
   const fields = ['url', 'title', 'author', 'source', 'quote'];
-  return fields.reduce((acc, field) => {
-    if (link[field]) {
-      acc[field] = escapeHtml(link[field]);
-    } else {
-      acc[field] = '';
-    }
-    return acc;
-  }, { type: link.type });
+  return fields.reduce(
+    (acc, field) => {
+      if (link[field]) {
+        acc[field] = escapeHtml(link[field]);
+      } else {
+        acc[field] = '';
+      }
+      return acc;
+    },
+    { type: link.type }
+  );
 }
 
 function prefixIfPresent(prefix, value) {
@@ -718,7 +748,7 @@ function formatTitleByType(type, title) {
     book: t => `<em>_${t}_</em>`,
     microblog: t => `"${t}"`,
     article: t => `"${t}"`,
-    report: t => `"${t}"`
+    report: t => `"${t}"`,
   };
   let formatter;
   if (formatters[type]) {
@@ -747,7 +777,7 @@ function createLinkParts(baseLink, { author, source, quote }) {
     baseLink,
     prefixIfPresent(' by ', author),
     prefixIfPresent(', ', source),
-    wrapIfPresent(' ("', quote, '")')
+    wrapIfPresent(' ("', quote, '")'),
   ];
 }
 
@@ -757,7 +787,8 @@ function composeLinkParts(baseLink, meta) {
 }
 
 function formatRelatedLink(link) {
-  const { url, title, author, source, quote, type } = escapeRelatedLinkFields(link);
+  const { url, title, author, source, quote, type } =
+    escapeRelatedLinkFields(link);
   const baseLink = formatBaseLink(type, url, title);
   const linkProperties = { author, source, quote };
   return composeLinkParts(baseLink, linkProperties);
@@ -772,7 +803,9 @@ function generateRelatedLinksSection(post) {
   if (!hasRelatedLinks(post)) {
     return '';
   }
-  const linksList = post.relatedLinks.map(link => formatRelatedLink(link)).join('');
+  const linksList = post.relatedLinks
+    .map(link => formatRelatedLink(link))
+    .join('');
   const valueContent = `<ul class="related-links">${linksList}</ul>`;
   return createLabeledSection({ label: 'links', valueHTML: valueContent });
 }
@@ -791,7 +824,7 @@ function hasToy(post) {
     p => p,
     p => p.toy,
     p => p.toy.modulePath,
-    p => p.toy.functionName
+    p => p.toy.functionName,
   ]);
 }
 
@@ -807,15 +840,19 @@ const TOY_OUTPUT_TYPES = [
   ['pre', 'pre'],
   ['tic-tac-toe', 'tic-tac-toe'],
   ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
-  ['battleship-solitaire-clues-presenter', 'battleship-solitaire-clues-presenter'],
+  [
+    'battleship-solitaire-clues-presenter',
+    'battleship-solitaire-clues-presenter',
+  ],
 ];
 
 // Generic select builder for dropdowns
 function buildSelect(selectClass, entries) {
-  const options = entries.map(([value, label]) => `<option value="${value}">${label}</option>`).join('');
+  const options = entries
+    .map(([value, label]) => `<option value="${value}">${label}</option>`)
+    .join('');
   return `<select class="${selectClass}">${options}</select>`;
 }
-
 
 /**
  * Generate the output section for a toy component
@@ -844,7 +881,11 @@ function generateToyScript(post) {
 
 // Unified toy UI section abstraction
 const TOY_UI_SECTIONS = [
-  ['in', () => '<select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option></select><input type="text" disabled>'],
+  [
+    'in',
+    () =>
+      '<select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option></select><input type="text" disabled>',
+  ],
   ['', () => '<button type="submit" disabled>Submit</button>'],
   ['out', getToyOutputValueContent],
 ];
@@ -862,7 +903,11 @@ function generateToyUISection(post) {
   if (!hasToy(post)) {
     return '';
   }
-  return join(TOY_UI_SECTIONS.map(([label, buildHTML]) => buildToySection(label, buildHTML)));
+  return join(
+    TOY_UI_SECTIONS.map(([label, buildHTML]) =>
+      buildToySection(label, buildHTML)
+    )
+  );
 }
 
 /**
@@ -895,7 +940,7 @@ function getArticleSections(post) {
     contentSection,
     toyUISection,
     relatedLinksSection,
-    toyScriptSection
+    toyScriptSection,
   ];
 }
 
@@ -963,7 +1008,7 @@ export function getBlogGenerationArgs() {
   return { header, footer, wrapFunc };
 }
 
-export const generateBlogOuter = (blog) => {
+export const generateBlogOuter = blog => {
   const { header, footer, wrapFunc } = getBlogGenerationArgs();
   return generateBlog({ blog, header, footer }, wrapFunc);
 };
