@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
-import { createHandleSubmit } from '../../src/browser/toys.js';
+import * as toys from '../../src/browser/toys.js';
+const { createHandleSubmit } = toys;
 
 describe('createHandleSubmit', () => {
   it('should handle being called without arguments', () => {
@@ -107,5 +108,44 @@ describe('createHandleSubmit', () => {
 
     expect(stopDefault).toHaveBeenCalledWith(event);
     expect(processingFunction).toHaveBeenCalledWith('', toyEnv);
+  });
+
+  it('invokes processInputAndSetOutput with the provided arguments', () => {
+    const stopDefault = jest.fn();
+    const dom = {
+      stopDefault,
+      removeAllChildren: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      addWarning: jest.fn(),
+    };
+    const env = {
+      dom,
+      createEnv: jest.fn(
+        () =>
+          new Map([
+            ['getData', jest.fn()],
+            ['setData', jest.fn()],
+          ])
+      ),
+      errorFn: jest.fn(),
+      fetchFn: jest.fn(() =>
+        Promise.resolve({ text: jest.fn(() => Promise.resolve('body')) })
+      ),
+    };
+    const elements = {
+      inputElement: { value: '' },
+      outputParentElement: {},
+      outputSelect: { value: 'text' },
+      article: { id: 'a1' },
+    };
+    const processingFunction = jest.fn(() => 'result');
+
+    const handler = createHandleSubmit(elements, processingFunction, env);
+    handler({});
+
+    expect(stopDefault).toHaveBeenCalledWith({});
+    expect(env.createEnv).toHaveBeenCalled();
   });
 });
