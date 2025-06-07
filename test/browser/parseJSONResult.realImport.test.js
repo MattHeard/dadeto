@@ -1,13 +1,9 @@
 import { describe, it, expect } from '@jest/globals';
 import fs from 'fs';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
+import path from 'path';
 
 function loadParseJSONResult() {
-  const id = require.resolve('../../src/browser/toys.js');
-  require(id); // ensure module is loaded (mutated path when running under Stryker)
-  const filename = require.cache[id].filename; // path to file (mutated by Stryker)
+  const filename = path.join(process.cwd(), 'src/browser/toys.js');
   const code = fs.readFileSync(filename, 'utf8');
   const match = code.match(/function parseJSONResult\([^]*?\n\}/);
   return eval('(' + match[0] + ')');
