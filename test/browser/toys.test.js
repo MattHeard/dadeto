@@ -48,6 +48,18 @@ describe('createAddDropdownListener', () => {
 
     expect(typeof addListener).toBe('function');
   });
+
+  it('invokes the attached handler and returns undefined', () => {
+    const mockOnChange = jest.fn();
+    const mockDom = {
+      addEventListener: jest.fn(),
+    };
+    const addListener = createAddDropdownListener(mockOnChange, mockDom);
+    const result = addListener({});
+
+    expect(result).toBeUndefined();
+    expect(mockDom.addEventListener).toHaveBeenCalled();
+  });
 });
 
 describe('toys', () => {
