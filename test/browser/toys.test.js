@@ -48,6 +48,15 @@ describe('createAddDropdownListener', () => {
 
     expect(typeof addListener).toBe('function');
   });
+
+  it('creates a single-argument handler', () => {
+    const addListener = createAddDropdownListener(jest.fn(), {
+      addEventListener: jest.fn(),
+    });
+
+    expect(typeof addListener).toBe('function');
+    expect(addListener.length).toBe(1);
+  });
 });
 
 describe('toys', () => {
