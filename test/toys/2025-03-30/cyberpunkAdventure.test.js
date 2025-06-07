@@ -55,6 +55,8 @@ describe('Cyberpunk Text Game', () => {
     } else {
       expect(result).toMatch(/Hint: the password is a number and a name/);
     }
+    // State should remain on the hacker door when password is incorrect
+    expect(tempData.state).toBe('hacker:door');
   });
 
   test('goes to Transport Hub and trades datapad', () => {
