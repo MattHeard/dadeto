@@ -420,6 +420,20 @@ test('handles position as non-object', () => {
   });
 });
 
+test('handles null position gracefully', () => {
+  const env = new Map();
+  const input = {
+    moves: [{ player: 'X', position: null }],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(1);
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
+});
+
 test('forces minimax to score a tie at max depth', () => {
   const env = new Map();
   const input = {
