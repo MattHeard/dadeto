@@ -76,6 +76,8 @@ describe('Cyberpunk Text Game', () => {
     expect(tempData.inventory).toContain('map');
     expect(tempData.inventory).not.toContain('datapad');
     expect(tempData.visited).toContain('transport');
+    // Ensure state transitions back to the hub after a successful trade
+    expect(tempData.state).toBe('hub');
   });
 
   test('shows trade prompt if no datapad in inventory at transport:trade', () => {
