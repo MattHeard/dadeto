@@ -8,4 +8,13 @@ describe('headElement', () => {
       '<link rel="manifest" href="/site.webmanifest">'
     );
   });
+
+  test('includes style and script sections', () => {
+    expect(headElement.startsWith('<head>')).toBe(true);
+    expect(headElement).toContain('<style>');
+    expect(headElement).toContain('</style>');
+    expect(headElement).toContain('<script type="module">');
+    expect(headElement).toContain('window.addComponent');
+    expect(headElement.trim().endsWith('</head>')).toBe(true);
+  });
 });
