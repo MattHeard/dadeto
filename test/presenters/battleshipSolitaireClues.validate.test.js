@@ -26,4 +26,19 @@ describe('validateCluesObject', () => {
     const result = validateCluesObject(42);
     expect(result).toBe('Invalid JSON object');
   });
+
+  test('detects missing clue arrays', () => {
+    const result = validateCluesObject({ rowClues: [1, 2] });
+    expect(result).toBe('Missing rowClues or colClues array');
+  });
+
+  test('detects non-numeric clue values', () => {
+    const result = validateCluesObject({ rowClues: ['x'], colClues: [1] });
+    expect(result).toBe('Clue values must be numbers');
+  });
+
+  test('detects empty clue arrays', () => {
+    const result = validateCluesObject({ rowClues: [], colClues: [] });
+    expect(result).toBe('rowClues and colClues must be non-empty');
+  });
 });
