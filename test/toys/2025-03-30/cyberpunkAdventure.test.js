@@ -163,6 +163,8 @@ describe('Cyberpunk Text Game', () => {
     cyberpunkAdventure('Blaze', env);
     cyberpunkAdventure('start', env);
     expect(cyberpunkAdventure('xyz', env)).toMatch(/Unclear direction/);
+    // The state should remain hub when the player enters an unknown command
+    expect(tempData.state).toBe('hub');
   });
 
   test('resets on unknown state (default switch case)', () => {
@@ -218,7 +220,9 @@ describe('Cyberpunk Text Game', () => {
     cyberpunkAdventure(' ', env);
     cyberpunkAdventure('trade datapad', env);
 
-    expect(tempData.visited).toEqual(expect.arrayContaining(['hacker', 'transport']));
+    expect(tempData.visited).toEqual(
+      expect.arrayContaining(['hacker', 'transport'])
+    );
   });
 
   test("defaults name to 'Stray' if no input and no name in temporary data", () => {
