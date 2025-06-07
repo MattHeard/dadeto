@@ -103,6 +103,7 @@ describe('Cyberpunk Text Game', () => {
     env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
     expect(cyberpunkAdventure('alley', env)).toMatch(/shadows move with you./);
     expect(cyberpunkAdventure(' ', env)).toMatch(/hidden stash: a stimpack/);
+    expect(tempData.state).toBe('hub');
     expect(tempData.inventory).toContain('stimpack');
     expect(tempData.visited).toContain('alley');
   });
