@@ -136,6 +136,14 @@ describe('generateFleet', () => {
     expect(lengths).toEqual([2, 10]);
   });
 
+  test('parses ships string ignoring empty entries', () => {
+    const cfg = { width: 4, height: 4, ships: '2,,3' };
+    const result = generateFleet(JSON.stringify(cfg), env);
+    const fleet = JSON.parse(result);
+    const lengths = fleet.ships.map(ship => ship.length).sort((a, b) => a - b);
+    expect(lengths).toEqual([2, 3]);
+  });
+
   test('parses string width and height into numbers', () => {
     const cfg = { width: '5', height: '5', ships: [2] };
     const result = generateFleet(JSON.stringify(cfg), env);
