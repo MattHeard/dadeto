@@ -9,6 +9,7 @@ import {
   createClosingTag,
   TAG_OPEN,
   SLASH,
+  SPACE,
   TAG_CLOSE,
 } from '../../src/generator/html.js';
 
@@ -56,5 +57,23 @@ describe('html utilities', () => {
 
   test('createClosingTag returns closing tag', () => {
     expect(createClosingTag('span')).toBe('</span>');
+  });
+});
+
+describe('html constant values', () => {
+  test('TAG_OPEN is <', () => {
+    expect(TAG_OPEN).toBe('<');
+  });
+
+  test('TAG_CLOSE is >', () => {
+    expect(TAG_CLOSE).toBe('>');
+  });
+
+  test('SPACE is space character', () => {
+    expect(SPACE).toBe(' ');
+  });
+
+  test('SLASH is forward slash', () => {
+    expect(SLASH).toBe('/');
   });
 });
