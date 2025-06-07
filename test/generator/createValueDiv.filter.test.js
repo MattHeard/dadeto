@@ -13,6 +13,7 @@ beforeAll(async () => {
     return `from '${absolute.href}'`;
   });
   src += '\nexport { createValueDiv };';
+  src += `\n//# sourceURL=${generatorPath}`;
   ({ createValueDiv } = await import(`data:text/javascript,${encodeURIComponent(src)}`));
 });
 
