@@ -13,7 +13,7 @@ describe('setupAddButton', () => {
     mockDom = {
       setTextContent: jest.fn(),
       addEventListener: jest.fn(),
-      removeEventListener: jest.fn()
+      removeEventListener: jest.fn(),
     };
 
     button = {};
@@ -106,5 +106,16 @@ describe('setupAddButton', () => {
       'click',
       expect.any(Function)
     );
+  });
+
+  it('cleanup can be called multiple times', () => {
+    setupAddButton(mockDom, button, rows, render, disposers);
+
+    const cleanup = disposers[0];
+
+    cleanup();
+    cleanup();
+
+    expect(mockDom.removeEventListener).toHaveBeenCalledTimes(2);
   });
 });
