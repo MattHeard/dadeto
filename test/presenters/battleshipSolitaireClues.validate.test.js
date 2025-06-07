@@ -22,28 +22,31 @@ function expectEmptyBoard(el) {
   expect(gridLines.length).toBe(10);
 }
 
-describe('validateCluesObject via public API', () => {
+describe('createBattleshipCluesBoardElement validation', () => {
   test('returns empty board when JSON is not an object', () => {
     const dom = makeDom();
     const el = createBattleshipCluesBoardElement('42', dom);
     expectEmptyBoard(el);
   });
 
-  test('returns error when rowClues or colClues arrays are missing', async () => {
-    const validateCluesObject = await loadValidateCluesObject();
-    const result = validateCluesObject({ rowClues: [1, 2, 3] });
-    expect(result).toBe('Missing rowClues or colClues array');
+  test('returns empty board when rowClues or colClues arrays are missing', () => {
+    const dom = makeDom();
+    const bad = JSON.stringify({ rowClues: [1, 2, 3] });
+    const el = createBattleshipCluesBoardElement(bad, dom);
+    expectEmptyBoard(el);
   });
 
-  test('returns error when clue values are non-numeric', async () => {
-    const validateCluesObject = await loadValidateCluesObject();
-    const result = validateCluesObject({ rowClues: [1, 'x'], colClues: [2, 3] });
-    expect(result).toBe('Clue values must be numbers');
+  test('returns empty board when clue values are non-numeric', () => {
+    const dom = makeDom();
+    const bad = JSON.stringify({ rowClues: [1, 'x'], colClues: [2, 3] });
+    const el = createBattleshipCluesBoardElement(bad, dom);
+    expectEmptyBoard(el);
   });
 
-  test('returns error when any array is empty', async () => {
-    const validateCluesObject = await loadValidateCluesObject();
-    const result = validateCluesObject({ rowClues: [], colClues: [] });
-    expect(result).toBe('rowClues and colClues must be non-empty');
+  test('returns empty board when any array is empty', () => {
+    const dom = makeDom();
+    const bad = JSON.stringify({ rowClues: [], colClues: [] });
+    const el = createBattleshipCluesBoardElement(bad, dom);
+    expectEmptyBoard(el);
   });
 });

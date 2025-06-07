@@ -25,6 +25,7 @@ The following Jest features cause issues with Stryker mutation testing and must 
 - Do not load unexported functions by reading their source and using `eval`.
 - Prefer testing internal logic through an exported function that calls the function under test.
 - If direct testing is necessary, export the function instead of using the parse-eval method.
+- Avoid using dynamic asynchronous `import()` to load source modules in tests.
 
 ## Code Style
 
