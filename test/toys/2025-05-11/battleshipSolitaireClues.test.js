@@ -143,6 +143,17 @@ describe('generateClues', () => {
     expect(output.colClues).toEqual(expectedCol);
   });
 
+  it('computes correct clues for a single length-one ship', () => {
+    const fleet = {
+      width: 2,
+      height: 2,
+      ships: [{ start: { x: 1, y: 0 }, length: 1, direction: 'H' }],
+    };
+    const output = JSON.parse(generateClues(JSON.stringify(fleet)));
+    expect(output.rowClues).toEqual([1, 0]);
+    expect(output.colClues).toEqual([0, 1]);
+  });
+
   it('returns an error when the fleet is null', () => {
     const output = JSON.parse(generateClues('null'));
     expect(output).toEqual({ error: 'Invalid fleet structure' });
