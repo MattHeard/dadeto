@@ -98,6 +98,25 @@ describe('Cyberpunk Text Game', () => {
     expect(tempData.state).toBe('transport:trade');
   });
 
+  test('prompts for trade when command lacks trade keyword', () => {
+    tempData = {
+      name: 'Blaze',
+      state: 'transport:trade',
+      inventory: ['datapad'],
+      visited: [],
+    };
+    env.set('getData', () => ({ temporary: { CYBE1: tempData } }));
+    const result = cyberpunkAdventure('wait', env);
+    if (typeof result === 'object') {
+      expect(result.output).toMatch(/Do you want to trade/);
+      expect(result.nextState).toBe('transport:trade');
+    } else {
+      expect(result).toMatch(/Do you want to trade/);
+    }
+    expect(tempData.inventory).toContain('datapad');
+    expect(tempData.state).toBe('transport:trade');
+  });
+
   test('goes to Back Alley and finds stimpack (success)', () => {
     tempData = {
       name: 'Blaze',
