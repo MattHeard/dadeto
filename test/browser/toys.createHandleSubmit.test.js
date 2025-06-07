@@ -66,4 +66,46 @@ describe('createHandleSubmit', () => {
       'Error: ' + processingError.message
     );
   });
+
+  it('returns a handler that stops default behaviour', () => {
+    const stopDefault = jest.fn();
+    const dom = {
+      stopDefault,
+      removeAllChildren: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      addWarning: jest.fn(),
+    };
+    const toyEnv = new Map([
+      ['getData', () => ({ output: {} })],
+      ['setData', jest.fn()],
+    ]);
+    const env = {
+      dom,
+      createEnv: jest.fn(() => toyEnv),
+      errorFn: jest.fn(),
+      fetchFn: jest.fn(() =>
+        Promise.resolve({ text: jest.fn(() => Promise.resolve('body')) })
+      ),
+    };
+    const elements = {
+      inputElement: { value: '' },
+      outputParentElement: {},
+      outputSelect: { value: 'text' },
+      article: { id: 'a1' },
+    };
+    const json = '{"request":{"url":"https://example.com"}}';
+    const processingFunction = jest.fn(() => json);
+
+    const handler = createHandleSubmit(elements, processingFunction, env);
+
+    expect(typeof handler).toBe('function');
+
+    const event = {};
+    handler(event);
+
+    expect(stopDefault).toHaveBeenCalledWith(event);
+    expect(processingFunction).toHaveBeenCalledWith('', toyEnv);
+  });
 });
