@@ -101,4 +101,26 @@ describe('createValueElement', () => {
       expect.any(Function)
     );
   });
+
+  it('uses the same handler for add and remove listener', () => {
+    valueEl = createValueElement(
+      mockDom,
+      'testValue',
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
+
+    // Capture the handler passed to addEventListener
+    const [el, eventName, handler] = mockDom.addEventListener.mock.calls[0];
+
+    // Call the disposer returned from createValueElement
+    const disposer = disposers[0];
+    disposer();
+
+    // Ensure removeEventListener was called with the same handler
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(el, eventName, handler);
+  });
 });
