@@ -29,6 +29,12 @@ describe('createOutputDropdownHandler', () => {
     );
   });
 
+  test('returns a function that accepts an event object', () => {
+    const handler = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
+    expect(typeof handler).toBe('function');
+    expect(handler.length).toBe(1);
+  });
+
   test('should work with different event targets', () => {
     const mockHandleDropdownChange = jest.fn();
     const mockGetData = jest.fn().mockReturnValue({});
