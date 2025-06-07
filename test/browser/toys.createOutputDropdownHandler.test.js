@@ -99,4 +99,18 @@ describe('createOutputDropdownHandler', () => {
       })
     );
   });
+
+  test('returns the value from handleDropdownChange', () => {
+    const expected = 'result';
+    const mockHandleDropdownChange = jest.fn().mockReturnValue(expected);
+    const mockGetData = jest.fn();
+    const handler = createOutputDropdownHandler(
+      mockHandleDropdownChange,
+      mockGetData,
+      {},
+    );
+
+    const result = handler({ currentTarget: {} });
+    expect(result).toBe(expected);
+  });
 });
