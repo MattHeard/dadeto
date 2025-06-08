@@ -21,4 +21,17 @@ describe('BLOG_STATUS constants integration', () => {
 
     expect(state.blogStatus).toBe('loaded');
   });
+
+  it('fetchAndCacheBlogData transitions status to error on failure', async () => {
+    const state = {
+      blog: null,
+      blogStatus: 'idle',
+      blogError: null,
+      blogFetchPromise: null,
+    };
+    const fetchFn = jest.fn(() => Promise.reject(new Error('fail')));
+    const loggers = { logInfo: jest.fn(), logError: jest.fn() };
+    await fetchAndCacheBlogData(state, fetchFn, loggers);
+    expect(state.blogStatus).toBe('error');
+  });
 });
