@@ -7,26 +7,39 @@ describe('createInputDropdownHandler default branch', () => {
     const container = {};
     const textInput = {};
     const event = {};
+
+    const getCurrentTarget = jest.fn(() => select);
+    const getParentElement = jest.fn(() => container);
+    const querySelector = jest.fn((_, selector) =>
+      selector === 'input[type="text"]' ? textInput : null
+    );
+    const getValue = jest.fn(() => 'unknown');
+    const reveal = jest.fn();
+    const enable = jest.fn();
+    const hide = jest.fn();
+    const disable = jest.fn();
+    const removeChild = jest.fn();
+    const addEventListener = jest.fn();
+    const getNextSibling = jest.fn(() => null);
+
     const dom = {
-      getCurrentTarget: jest.fn(() => select),
-      getParentElement: jest.fn(() => container),
-      querySelector: jest.fn((_, selector) =>
-        selector === 'input[type="text"]' ? textInput : null
-      ),
-      getValue: jest.fn(() => 'unknown'),
-      reveal: jest.fn(),
-      enable: jest.fn(),
-      hide: jest.fn(),
-      disable: jest.fn(),
-      removeChild: jest.fn(),
-      addEventListener: jest.fn(),
-      getNextSibling: jest.fn(() => null),
+      getCurrentTarget,
+      getParentElement,
+      querySelector,
+      getValue,
+      reveal,
+      enable,
+      hide,
+      disable,
+      removeChild,
+      addEventListener,
+      getNextSibling,
     };
 
     const handler = createInputDropdownHandler(dom);
     handler(event);
 
-    expect(dom.hide).toHaveBeenCalledWith(textInput);
-    expect(dom.disable).toHaveBeenCalledWith(textInput);
+    expect(hide).toHaveBeenCalledWith(textInput);
+    expect(disable).toHaveBeenCalledWith(textInput);
   });
 });

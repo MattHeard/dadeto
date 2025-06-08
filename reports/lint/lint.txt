@@ -63,7 +63,7 @@
   1:20  warning  'it' is defined but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.default.test.js
-  14:9  warning  Ternary operator used  no-ternary
+  14:7  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
   516:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
