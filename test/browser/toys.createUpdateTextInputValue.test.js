@@ -14,18 +14,22 @@ describe('createUpdateTextInputValue', () => {
     // Create a mock DOM utilities object
     mockDom = {
       getTargetValue: jest.fn(),
-      setValue: jest.fn()
+      setValue: jest.fn(),
     };
 
     // Create a mock event
     mockEvent = {
       target: {},
-      preventDefault: jest.fn()
+      preventDefault: jest.fn(),
     };
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('expects two arguments (textInput and dom)', () => {
+    expect(createUpdateTextInputValue.length).toBe(2);
   });
 
   it('returns a handler function that expects an event parameter', () => {
@@ -101,12 +105,12 @@ describe('createUpdateTextInputValue', () => {
     inputElement.value = testValue;
 
     // Mock getTargetValue to return the input's value
-    mockDom.getTargetValue.mockImplementation((event) => event.target.value);
+    mockDom.getTargetValue.mockImplementation(event => event.target.value);
 
     // Create a custom event with a target property
     const inputEvent = {
       target: inputElement,
-      preventDefault: jest.fn()
+      preventDefault: jest.fn(),
     };
 
     // Act
