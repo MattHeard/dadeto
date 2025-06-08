@@ -118,4 +118,24 @@ describe('setupAddButton', () => {
 
     expect(mockDom.removeEventListener).toHaveBeenCalledTimes(2);
   });
+
+  it('cleanup removes the same handler that was added', () => {
+    let addedHandler;
+    mockDom.addEventListener.mockImplementation((_, eventType, handler) => {
+      if (eventType === 'click') {
+        addedHandler = handler;
+      }
+    });
+
+    setupAddButton(mockDom, button, rows, render, disposers);
+
+    const cleanup = disposers[0];
+    cleanup();
+
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      button,
+      'click',
+      addedHandler
+    );
+  });
 });
