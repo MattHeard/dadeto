@@ -1,4 +1,4 @@
-import { beforeAll, describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
 import { parseJSONResult } from '../../src/browser/toys.js';
 
 describe('parseJSONResult direct import', () => {
