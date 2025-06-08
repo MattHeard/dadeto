@@ -10,4 +10,11 @@ describe('getDeepStateCopy arrays from toys.js', () => {
     expect(copy.arr).not.toBe(original.arr);
     expect(copy.arr[2]).not.toBe(original.arr[2]);
   });
+
+  it('changing the copy does not mutate the original', () => {
+    const original = { arr: [1, { a: 'b' }] };
+    const copy = getDeepStateCopy(original);
+    copy.arr[1].a = 'c';
+    expect(original.arr[1].a).toBe('b');
+  });
 });
