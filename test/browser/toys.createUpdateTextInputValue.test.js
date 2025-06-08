@@ -154,4 +154,23 @@ describe('createUpdateTextInputValue', () => {
     expect(domA.setValue).toHaveBeenCalledWith(textInputA, 'a');
     expect(domB.setValue).toHaveBeenCalledWith(textInputB, 'b');
   });
+
+  it('calls dom utilities for each invocation', () => {
+    mockDom.getTargetValue
+      .mockReturnValueOnce('first')
+      .mockReturnValueOnce('second');
+
+    const firstEvent = {};
+    const secondEvent = {};
+
+    const handler = createUpdateTextInputValue(textInput, mockDom);
+
+    handler(firstEvent);
+    handler(secondEvent);
+
+    expect(mockDom.getTargetValue).toHaveBeenNthCalledWith(1, firstEvent);
+    expect(mockDom.getTargetValue).toHaveBeenNthCalledWith(2, secondEvent);
+    expect(mockDom.setValue).toHaveBeenNthCalledWith(1, textInput, 'first');
+    expect(mockDom.setValue).toHaveBeenNthCalledWith(2, textInput, 'second');
+  });
 });
