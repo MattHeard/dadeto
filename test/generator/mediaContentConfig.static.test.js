@@ -49,4 +49,19 @@ describe('MEDIA_CONTENT_CONFIG via generateBlog', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<audio class="value" controls>');
   });
+
+  test('youtube element wrapped in paragraph tag', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'YTP1',
+          title: 'Video',
+          publicationDate: '2024-06-01',
+          youtube: { id: 'abc', timestamp: 0, title: 'Example' },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<p class="value"><iframe');
+  });
 });
