@@ -87,4 +87,21 @@ describe('processInputAndSetOutput', () => {
     const callArg = setData.mock.calls[0][0];
     expect(callArg.output).toEqual({ [elements.article.id]: result });
   });
+
+  it('uses the presenter matching the outputSelect value', () => {
+    elements.outputSelect.value = 'pre';
+    processingFunction.mockReturnValue('line1\nline2');
+
+    const created = { tagName: 'pre', textContent: '' };
+    env.dom.createElement.mockImplementation(() => created);
+
+    processInputAndSetOutput(elements, processingFunction, env);
+
+    expect(env.dom.createElement).toHaveBeenCalledWith('pre');
+    expect(env.dom.setTextContent).toHaveBeenCalledWith(created, 'line1\nline2');
+    expect(env.dom.appendChild).toHaveBeenCalledWith(
+      elements.outputParentElement,
+      created,
+    );
+  });
 });
