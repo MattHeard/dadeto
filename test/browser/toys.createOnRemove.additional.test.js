@@ -21,4 +21,8 @@ describe('createOnRemove additional tests', () => {
     expect(typeof handler).toBe('function');
     expect(handler.length).toBe(1);
   });
+
+  it('createOnRemove expects three arguments', () => {
+    expect(createOnRemove.length).toBe(3);
+  });
 });
