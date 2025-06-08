@@ -259,6 +259,7 @@ describe('Blog Generator', () => {
     expect(htmlNoLinks).toContain('<article class="entry" id="NOL2">');
     expect(htmlNoLinks).not.toMatch('<div class="key">links</div>');
     expect(htmlNoLinks).not.toMatch('related-links');
+    expect(htmlNoLinks).not.toContain('undefined');
   });
 
   test('should omit related links section when value is not an array', () => {
@@ -278,6 +279,7 @@ describe('Blog Generator', () => {
     expect(html).toContain('<article class="entry" id="STRL">');
     expect(html).not.toMatch('<div class="key">links</div>');
     expect(html).not.toMatch('related-links');
+    expect(html).not.toContain('undefined');
   });
 
   test('should escape related link fields when optional values are missing', () => {
