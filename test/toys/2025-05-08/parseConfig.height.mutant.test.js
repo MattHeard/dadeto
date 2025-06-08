@@ -1,20 +1,12 @@
 import { describe, test, expect } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
+import { generateFleet } from '../../../src/toys/2025-05-08/battleshipSolitaireFleet.js';
 
-function loadParseConfig() {
-  const filePath = path.join(process.cwd(), 'src/toys/2025-05-08/battleshipSolitaireFleet.js');
-  const code = fs.readFileSync(filePath, 'utf8');
-  const parseMatch = code.match(/function parseConfig[^]*?return cfg;\n\}/);
-  const ensureMatch = code.match(/function ensureShipsArray[^]*?\n\}/);
-  return eval(`(() => {${ensureMatch[0]};${parseMatch[0]}; return parseConfig;})()`);
-}
+const env = new Map([['getRandomNumber', () => 0]]);
 
 describe('parseConfig height mutant', () => {
   test('preserves non-string height values', () => {
-    const parseConfig = loadParseConfig();
     const cfg = { width: 5, height: true, ships: [1] };
-    const result = parseConfig(JSON.stringify(cfg));
+    const result = JSON.parse(generateFleet(JSON.stringify(cfg), env));
     expect(result.height).toBe(true);
   });
 });
