@@ -24,4 +24,11 @@ describe('BLOG_STATUS dynamic import', () => {
     await promise;
     expect(state.blogStatus).toBe('loaded');
   });
+
+  it('shouldCopyStateForFetch relies on BLOG_STATUS constants', async () => {
+    const { shouldCopyStateForFetch } = await import('../../src/browser/data.js');
+    expect(shouldCopyStateForFetch('idle')).toBe(true);
+    expect(shouldCopyStateForFetch('error')).toBe(true);
+    expect(shouldCopyStateForFetch('loaded')).toBe(false);
+  });
 });
