@@ -38,6 +38,10 @@ describe('html utilities', () => {
     expect(escapeHtml("O'Reilly")).toBe('O&#039;Reilly');
   });
 
+  test('escapeHtml escapes all special characters together', () => {
+    expect(escapeHtml('&<>"\'')).toBe('&amp;&lt;&gt;&quot;&#039;');
+  });
+
   test('createHtmlTag wraps content with html lang attribute', () => {
     expect(createHtmlTag('hi')).toBe('<html lang="en">hi</html>');
   });
