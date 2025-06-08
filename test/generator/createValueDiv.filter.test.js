@@ -22,4 +22,9 @@ describe('createValueDiv falsey classes', () => {
     const html = createValueDiv('content', ['', undefined, 'extra']);
     expect(html).toBe('<div class="value extra">content</div>');
   });
+
+  test('ignores null and zero values in additional classes', () => {
+    const html = createValueDiv('text', [null, 0, 'foo']);
+    expect(html).toBe('<div class="value foo">text</div>');
+  });
 });
