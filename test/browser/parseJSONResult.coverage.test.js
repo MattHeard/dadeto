@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { parseJSONResult } from '../../src/browser/toys.js';
+import { parseJSONResult } from '../helpers/parseJSONResult.js';
 
 describe('parseJSONResult coverage', () => {
   it('returns null for invalid JSON', () => {

@@ -1,5 +1,5 @@
 import { beforeAll, describe, it, expect } from '@jest/globals';
-import { parseJSONResult } from '../../src/browser/toys.js';
+import { parseJSONResult } from '../helpers/parseJSONResult.js';
 
 let fn;
 
