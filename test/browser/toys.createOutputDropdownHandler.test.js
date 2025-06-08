@@ -126,6 +126,30 @@ describe('createOutputDropdownHandler', () => {
     expect(result).toBe(expected);
   });
 
+  test('invokes handleDropdownChange when the returned handler is called', () => {
+    const mockHandleDropdownChange = jest.fn().mockReturnValue('ok');
+    const mockGetData = jest.fn();
+    const mockDom = {};
+
+    const handler = createOutputDropdownHandler(
+      mockHandleDropdownChange,
+      mockGetData,
+      mockDom
+    );
+
+    const event = { currentTarget: { value: 'v', parentNode: 'p' } };
+    expect(mockHandleDropdownChange).not.toHaveBeenCalled();
+    const result = handler(event);
+
+    expect(mockHandleDropdownChange).toHaveBeenCalledTimes(1);
+    expect(mockHandleDropdownChange).toHaveBeenCalledWith(
+      event.currentTarget,
+      mockGetData,
+      mockDom
+    );
+    expect(result).toBe('ok');
+  });
+
   test('returns a new handler instance on each call', () => {
     const handler1 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
     const handler2 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
