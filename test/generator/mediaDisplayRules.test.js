@@ -31,5 +31,7 @@ describe('MEDIA_DISPLAY_RULES integration', () => {
     expect(html).toContain('<img');
     expect(html).toContain('<audio');
     expect(html).toContain('<iframe');
+    // Ensure media sections include the correct key class
+    expect(html).toContain('class="key media"');
   });
 });
