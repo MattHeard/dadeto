@@ -17,10 +17,17 @@ describe('createOnRemove', () => {
     rows = {
       [keyToRemove]: 'value1',
       key2: 'value2',
-      key3: 'value3'
+      key3: 'value3',
     };
     render = jest.fn();
     handler = createOnRemove(rows, render, keyToRemove);
+  });
+
+  it('exposes expected arity for factory and handler', () => {
+    expect(createOnRemove.length).toBe(3);
+    const fn = createOnRemove(rows, render, keyToRemove);
+    expect(typeof fn).toBe('function');
+    expect(fn.length).toBe(1);
   });
 
   it('returns an event handler function', () => {
@@ -39,7 +46,7 @@ describe('createOnRemove', () => {
     expect(rows).not.toHaveProperty(keyToRemove);
     expect(rows).toEqual({
       key2: 'value2',
-      key3: 'value3'
+      key3: 'value3',
     });
   });
 
@@ -70,7 +77,7 @@ describe('createOnRemove', () => {
     expect(rows).toEqual({
       [keyToRemove]: 'value1',
       key2: 'value2',
-      key3: 'value3'
+      key3: 'value3',
     });
 
     // Should still call preventDefault and render
