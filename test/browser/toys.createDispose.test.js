@@ -70,4 +70,17 @@ describe('createDispose', () => {
     expect(dom.removeAllChildren).toHaveBeenCalledTimes(2);
     expect(rows).toHaveLength(0);
   });
+
+  it('returns a zero argument function', () => {
+    const disposers = [];
+    const dom = {
+      removeAllChildren: jest.fn(),
+    };
+    const container = {};
+    const rows = [];
+
+    const dispose = createDispose(disposers, dom, container, rows);
+    expect(typeof dispose).toBe('function');
+    expect(dispose.length).toBe(0);
+  });
 });
