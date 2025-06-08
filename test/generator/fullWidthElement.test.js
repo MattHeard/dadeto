@@ -45,4 +45,8 @@ describe('fullWidthElement integration', () => {
     expect(fullWidthElement).toContain('class="key full-width"');
     expect(fullWidthElement).toContain('class="value full-width"');
   });
+
+  test('fullWidthElement has the correct length', () => {
+    expect(fullWidthElement).toHaveLength(206);
+  });
 });
