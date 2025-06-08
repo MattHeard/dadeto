@@ -1,12 +1,10 @@
 import { describe, it, expect, jest } from '@jest/globals';
+import { processInputAndSetOutput } from '../../src/browser/toys.js';
 
-// Dynamically import processInputAndSetOutput so coverage maps to this test
+// Validate setOutput behavior using a static import
 
-describe('processInputAndSetOutput dynamic setOutput', () => {
-  it('stores the result keyed by article id', async () => {
-    const { processInputAndSetOutput } = await import(
-      '../../src/browser/toys.js'
-    );
+describe('processInputAndSetOutput setOutput', () => {
+  it('stores the result keyed by article id', () => {
 
     const inputElement = { value: 'input' };
     const parent = {};
