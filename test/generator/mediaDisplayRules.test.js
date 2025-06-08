@@ -13,4 +13,23 @@ describe('MEDIA_DISPLAY_RULES integration', () => {
     expect(html).not.toContain('<audio');
     expect(html).not.toContain('<iframe');
   });
+
+  test('generateBlog includes media sections when post has media', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'MEDIA1',
+          title: 'With Media',
+          publicationDate: '2024-06-01',
+          illustration: { fileName: 'img', fileType: 'png', altText: 'alt' },
+          audio: { fileType: 'mp3' },
+          youtube: { id: 'vid', timestamp: 0, title: 'Video' },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<img');
+    expect(html).toContain('<audio');
+    expect(html).toContain('<iframe');
+  });
 });
