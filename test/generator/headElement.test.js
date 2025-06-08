@@ -17,4 +17,9 @@ describe('headElement', () => {
     expect(headElement).toContain('window.addComponent');
     expect(headElement.trim().endsWith('</head>')).toBe(true);
   });
+
+  test('contains page title', () => {
+    expect(headElement).toContain('<title>Matt Heard</title>');
+    expect(headElement.length).toBeGreaterThan(0);
+  });
 });
