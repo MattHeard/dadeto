@@ -62,14 +62,20 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/clearDisposers.test.js
   1:20  warning  'it' is defined but never used  no-unused-vars
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.default.test.js
+  14:9  warning  Ternary operator used  no-ternary
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
-  499:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
-  501:7   warning  Ternary operator used                                       no-ternary
-  504:24  warning  Ternary operator used                                       no-ternary
-  506:7   warning  Ternary operator used                                       no-ternary
+  516:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+  518:7   warning  Ternary operator used                                       no-ternary
+  521:24  warning  Ternary operator used                                       no-ternary
+  523:7   warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/initializeInteractiveComponent.enableInteractiveControls.test.js
   10:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/parseJSONResult.direct.test.js
+  1:10  warning  'beforeAll' is defined but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/parseJSONResult.realImport.test.js
   1:24  warning  'expect' is defined but never used  no-unused-vars
@@ -138,5 +144,6 @@
   1584:9   warning  Ternary operator used                                       no-ternary
   1619:9   warning  Ternary operator used                                       no-ternary
   1641:39  warning  Ternary operator used                                       no-ternary
+  1670:9   warning  Ternary operator used                                       no-ternary
 
-✖ 80 problems (0 errors, 80 warnings)
+✖ 83 problems (0 errors, 83 warnings)
