@@ -183,4 +183,15 @@ describe('createOutputDropdownHandler', () => {
     expect(handle).toHaveBeenNthCalledWith(2, secondEvent.currentTarget, getData, dom);
     expect(handle).toHaveBeenCalledTimes(2);
   });
+
+  test('returned handler can be invoked without throwing', () => {
+    const handle = jest.fn();
+    const getData = jest.fn();
+    const dom = {};
+    const handler = createOutputDropdownHandler(handle, getData, dom);
+    const event = { currentTarget: {} };
+
+    expect(() => handler(event)).not.toThrow();
+    expect(handle).toHaveBeenCalledWith(event.currentTarget, getData, dom);
+  });
 });
