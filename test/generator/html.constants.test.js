@@ -5,6 +5,7 @@ import {
   HTML_TAG_NAME,
   ATTR_NAME,
   HTML_ESCAPE_REPLACEMENTS,
+  escapeHtml,
 } from '../../src/generator/html.js';
 
 describe('html constants', () => {
@@ -34,5 +35,11 @@ describe('html constants', () => {
       { from: /'/g, to: '&#039;' },
     ];
     expect(HTML_ESCAPE_REPLACEMENTS).toEqual(expected);
+  });
+
+  test('escapeHtml applies all replacements', () => {
+    const input = '&<>"\'';
+    const expected = '&amp;&lt;&gt;&quot;&#039;';
+    expect(escapeHtml(input)).toBe(expected);
   });
 });
