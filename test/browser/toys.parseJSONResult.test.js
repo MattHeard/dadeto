@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
-import '../../src/browser/toys.js';
+import { parseJSONResult } from '../../src/browser/toys.js';
 
-describe.skip('parseJSONResult', () => {
+describe('parseJSONResult', () => {
   it('returns parsed object for valid JSON', () => {
     const obj = { a: 1 };
     const result = parseJSONResult(JSON.stringify(obj));
