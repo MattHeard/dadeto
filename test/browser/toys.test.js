@@ -404,6 +404,38 @@ describe('toys', () => {
       expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
       expect(dom.appendChild).toHaveBeenCalledWith(parent, expect.any(Object));
     });
+
+    it('uses the pre presenter when dropdown value is "pre"', () => {
+      const parent = { child: null, querySelector: jest.fn(() => parent) };
+      const dropdown = {
+        value: 'pre',
+        closest: jest.fn(() => ({ id: 'post-pre' })),
+        parentNode: parent,
+      };
+      const getData = jest.fn(() => ({ output: { 'post-pre': 'hello' } }));
+      const dom = {
+        querySelector: (el, selector) => el.querySelector(selector),
+        removeAllChildren: jest.fn(p => {
+          p.child = null;
+        }),
+        appendChild: jest.fn((p, c) => {
+          p.child = c;
+        }),
+        createElement: jest.fn(tag => ({
+          tagName: tag.toUpperCase(),
+          textContent: '',
+        })),
+        setTextContent: jest.fn((el, txt) => {
+          el.textContent = txt;
+        }),
+      };
+
+      handleDropdownChange(dropdown, getData, dom);
+
+      expect(dom.createElement).toHaveBeenCalledWith('pre');
+      expect(parent.child.tagName).toBe('PRE');
+      expect(parent.child.textContent).toBe('hello');
+    });
   });
 
   let entry;
