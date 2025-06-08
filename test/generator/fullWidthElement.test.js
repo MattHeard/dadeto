@@ -45,4 +45,21 @@ describe('fullWidthElement integration', () => {
     expect(fullWidthElement).toContain('class="key full-width"');
     expect(fullWidthElement).toContain('class="value full-width"');
   });
+
+  test('full width element appears at article start', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'FW2',
+          title: 'Another Test',
+          publicationDate: '2024-02-02',
+          content: ['Paragraph'],
+        },
+      ],
+    };
+
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    const regex = /<article[^>]*><div class="key full-width">/;
+    expect(html).toMatch(regex);
+  });
 });
