@@ -173,4 +173,12 @@ describe('createUpdateTextInputValue', () => {
     expect(mockDom.setValue).toHaveBeenNthCalledWith(1, textInput, 'first');
     expect(mockDom.setValue).toHaveBeenNthCalledWith(2, textInput, 'second');
   });
+  it('handles symbol values without conversion', () => {
+    const symbolValue = Symbol('sym');
+    mockDom.getTargetValue.mockReturnValue(symbolValue);
+    const handler = createUpdateTextInputValue(textInput, mockDom);
+    handler(mockEvent);
+    expect(mockDom.setValue).toHaveBeenCalledWith(textInput, symbolValue);
+  });
+
 });
