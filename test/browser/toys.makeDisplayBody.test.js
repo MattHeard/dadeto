@@ -42,4 +42,22 @@ describe('makeDisplayBody', () => {
       expect.anything()
     );
   });
+  it('calls the correct presenter based on key', () => {
+    const mockDom = {
+      removeAllChildren: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(tag => ({ tagName: tag.toUpperCase(), textContent: '' })),
+      setTextContent: (el, text) => {
+        el.textContent = text;
+      },
+    };
+    const parent = {};
+    const displayBody = makeDisplayBody(mockDom, parent, 'text');
+    displayBody('hello');
+    expect(mockDom.createElement).toHaveBeenCalledWith('p');
+    expect(mockDom.appendChild).toHaveBeenCalledWith(
+      parent,
+      expect.objectContaining({ tagName: 'P', textContent: 'hello' })
+    );
+  });
 });
