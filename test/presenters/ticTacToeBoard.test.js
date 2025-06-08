@@ -220,6 +220,24 @@ describe('createTicTacToeBoardElement', () => {
     );
   });
 
+  it('ignores moves with negative row or column', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'X', position: { row: -1, column: 0 } },
+        { player: 'O', position: { row: 0, column: -1 } },
+        { player: 'X', position: { row: 1, column: 1 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   | X |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
+
   it('renders an empty board for empty string input', () => {
     const el = createTicTacToeBoardElement('', mockDom());
     expect(el.tagName).toBe('pre');
