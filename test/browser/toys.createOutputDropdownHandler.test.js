@@ -144,4 +144,25 @@ describe('createOutputDropdownHandler', () => {
     const handler2 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
     expect(handler1).not.toBe(handler2);
   });
+
+  test('each returned handler calls its own dropdown change function', () => {
+    const handle1 = jest.fn();
+    const handle2 = jest.fn();
+    const getData = jest.fn();
+    const dom = {};
+
+    const event1 = { currentTarget: { value: 'a' } };
+    const event2 = { currentTarget: { value: 'b' } };
+
+    const handler1 = createOutputDropdownHandler(handle1, getData, dom);
+    const handler2 = createOutputDropdownHandler(handle2, getData, dom);
+
+    handler1(event1);
+    handler2(event2);
+
+    expect(handle1).toHaveBeenCalledWith(event1.currentTarget, getData, dom);
+    expect(handle2).toHaveBeenCalledWith(event2.currentTarget, getData, dom);
+    expect(handle1).toHaveBeenCalledTimes(1);
+    expect(handle2).toHaveBeenCalledTimes(1);
+  });
 });
