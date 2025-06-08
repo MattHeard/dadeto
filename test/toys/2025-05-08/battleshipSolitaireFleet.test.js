@@ -81,6 +81,18 @@ describe('generateFleet', () => {
         },
       ],
     });
+    const ship = fleet.ships[0];
+    const occupied = [];
+    for (let i = 0; i < ship.length; i++) {
+      const sx = ship.start.x + i;
+      const sy = ship.start.y;
+      occupied.push([sx, sy]);
+    }
+    expect(occupied).toEqual([
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ]);
   });
 
   test('generates a valid fleet for simple input', () => {
