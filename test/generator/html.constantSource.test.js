@@ -9,4 +9,9 @@ describe('html constants source definitions', () => {
     const src = fs.readFileSync(sourcePath, 'utf8');
     expect(src).toMatch(/export const TAG_OPEN = '<';/);
   });
+
+  test('DOCTYPE constant is defined correctly', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toMatch(/export const DOCTYPE = '<!DOCTYPE html>';/);
+  });
 });
