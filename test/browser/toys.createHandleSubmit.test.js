@@ -151,4 +151,39 @@ describe('createHandleSubmit', () => {
     expect(stopDefault).toHaveBeenCalledWith({});
     expect(env.createEnv).toHaveBeenCalled();
   });
+
+  it('fetches a URL when the processing function returns a request object', () => {
+    const stopDefault = jest.fn();
+    const fetchFn = jest.fn(() =>
+      Promise.resolve({ text: jest.fn(() => Promise.resolve('body')) })
+    );
+    const dom = {
+      stopDefault,
+      removeAllChildren: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      addWarning: jest.fn(),
+    };
+    const env = {
+      dom,
+      createEnv: jest.fn(() => new Map()),
+      errorFn: jest.fn(),
+      fetchFn,
+    };
+    const elements = {
+      inputElement: { value: '' },
+      outputParentElement: {},
+      outputSelect: { value: 'text' },
+      article: { id: 'a1' },
+    };
+    const json = '{"request":{"url":"https://example.com"}}';
+    const processingFunction = jest.fn(() => json);
+
+    const handler = createHandleSubmit(elements, processingFunction, env);
+    handler({});
+
+    expect(stopDefault).toHaveBeenCalled();
+    expect(fetchFn).toHaveBeenCalledWith('https://example.com');
+  });
 });
