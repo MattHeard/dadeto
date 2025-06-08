@@ -113,4 +113,23 @@ describe('button cleanup helpers', () => {
     expect(Object.keys(rows)).toHaveLength(1);
     expect(render).toHaveBeenCalledTimes(1);
   });
+  it("creates unique disposer functions per invocation", () => {
+    const dom = {
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+    const rows = {};
+    const render = jest.fn();
+    const disposers = [];
+
+    setupAddButton(dom, {}, rows, render, disposers);
+    setupAddButton(dom, {}, rows, render, disposers);
+
+    const [first, second] = disposers;
+    expect(typeof first).toBe("function");
+    expect(typeof second).toBe("function");
+    expect(first).not.toBe(second);
+  });
+
 });
