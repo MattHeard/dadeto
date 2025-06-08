@@ -55,4 +55,12 @@ describe('mapValues', () => {
   test('handles empty objects', () => {
     expect(mapValues({}, v => v)).toEqual({});
   });
+
+  test('does not mutate the source object', () => {
+    const obj = { a: 1, b: 2 };
+    const copy = { ...obj };
+    const result = mapValues(obj, v => v + 1);
+    expect(obj).toEqual(copy);
+    expect(result).toEqual({ a: 2, b: 3 });
+  });
 });
