@@ -165,4 +165,22 @@ describe('createOutputDropdownHandler', () => {
     expect(handle1).toHaveBeenCalledTimes(1);
     expect(handle2).toHaveBeenCalledTimes(1);
   });
+
+  test('returned handler delegates for multiple events', () => {
+    const handle = jest.fn();
+    const getData = jest.fn();
+    const dom = {};
+
+    const handler = createOutputDropdownHandler(handle, getData, dom);
+
+    const firstEvent = { currentTarget: { value: 'first' } };
+    const secondEvent = { currentTarget: { value: 'second' } };
+
+    handler(firstEvent);
+    handler(secondEvent);
+
+    expect(handle).toHaveBeenNthCalledWith(1, firstEvent.currentTarget, getData, dom);
+    expect(handle).toHaveBeenNthCalledWith(2, secondEvent.currentTarget, getData, dom);
+    expect(handle).toHaveBeenCalledTimes(2);
+  });
 });
