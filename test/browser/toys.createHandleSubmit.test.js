@@ -8,9 +8,12 @@ describe('createHandleSubmit', () => {
   });
   it('should handle being called without arguments', () => {
     // This test verifies that the function can be called without throwing
+    // and that it returns a handler function
+    let handler;
     expect(() => {
-      createHandleSubmit();
+      handler = createHandleSubmit();
     }).not.toThrow();
+    expect(typeof handler).toBe('function');
   });
 
   it('handles errors from the processing function', () => {
