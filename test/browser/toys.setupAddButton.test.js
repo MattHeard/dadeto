@@ -138,4 +138,19 @@ describe('setupAddButton', () => {
       addedHandler
     );
   });
+
+  it('returns a unique disposer for each setup call', () => {
+    setupAddButton(mockDom, button, rows, render, disposers);
+    const firstCleanup = disposers[0];
+
+    setupAddButton(mockDom, {}, rows, render, disposers);
+    const secondCleanup = disposers[1];
+
+    expect(firstCleanup).not.toBe(secondCleanup);
+
+    firstCleanup();
+    secondCleanup();
+
+    expect(mockDom.removeEventListener).toHaveBeenCalledTimes(2);
+  });
 });
