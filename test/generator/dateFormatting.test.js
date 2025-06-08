@@ -37,3 +37,27 @@ test('generateBlog formats dates using en-GB locale', () => {
   expect(spy).toHaveBeenCalledWith('en-GB', expect.any(Object));
   spy.mockRestore();
 });
+
+test('generateBlog uses numeric day, short month, and numeric year', () => {
+  const blog = {
+    posts: [
+      {
+        key: 'DATE3',
+        title: 'Format Options',
+        publicationDate: '2022-01-02',
+        content: ['Example'],
+      },
+    ],
+  };
+  const spy = jest.spyOn(Date.prototype, 'toLocaleDateString');
+  generateBlog({ blog, header, footer }, wrapHtml);
+  expect(spy).toHaveBeenCalledWith(
+    'en-GB',
+    expect.objectContaining({
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })
+  );
+  spy.mockRestore();
+});
