@@ -127,4 +127,9 @@ describe('createUpdateTextInputValue', () => {
     const handler2 = createUpdateTextInputValue(textInput, mockDom);
     expect(handler1).not.toBe(handler2);
   });
+
+  it('returns a callable handler', () => {
+    const handler = createUpdateTextInputValue(textInput, mockDom);
+    expect(() => handler(mockEvent)).not.toThrow();
+  });
 });
