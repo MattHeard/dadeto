@@ -3,6 +3,8 @@ import { createDispose } from '../../src/browser/toys.js';
 
 describe('createDispose', () => {
   it('can be called and disposed', () => {
+    // Verify the factory function expects four parameters
+    expect(createDispose.length).toBe(4);
     // Mock the required parameters
     const disposer = jest.fn();
     const disposers = [disposer];
@@ -28,6 +30,7 @@ describe('createDispose', () => {
   });
 
   it('clears all registered disposers', () => {
+    expect(createDispose.length).toBe(4);
     const disposer1 = jest.fn();
     const disposer2 = jest.fn();
     const disposers = [disposer1, disposer2];
