@@ -61,3 +61,26 @@ test('generateBlog uses numeric day, short month, and numeric year', () => {
   );
   spy.mockRestore();
 });
+
+test('generateBlog passes the exact date format options', () => {
+  const blog = {
+    posts: [
+      {
+        key: 'DATE4',
+        title: 'Exact Options',
+        publicationDate: '2022-06-15',
+        content: ['Example'],
+      },
+    ],
+  };
+  const spy = jest.spyOn(Date.prototype, 'toLocaleDateString');
+  generateBlog({ blog, header, footer }, wrapHtml);
+  expect(spy).toHaveBeenCalledTimes(1);
+  const [, options] = spy.mock.calls[0];
+  expect(options).toEqual({
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  spy.mockRestore();
+});
