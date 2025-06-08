@@ -102,4 +102,19 @@ describe('createOnRemove', () => {
     expect(singleRow).toEqual({});
     expect(render).toHaveBeenCalledTimes(1);
   });
+
+  it('removes a key when called directly', () => {
+    const localRows = { a: 1, b: 2 };
+    const localRender = jest.fn();
+    const evt = { preventDefault: jest.fn() };
+
+    const fn = createOnRemove(localRows, localRender, 'a');
+    expect(typeof fn).toBe('function');
+
+    fn(evt);
+
+    expect(evt.preventDefault).toHaveBeenCalled();
+    expect(localRows).toEqual({ b: 2 });
+    expect(localRender).toHaveBeenCalled();
+  });
 });
