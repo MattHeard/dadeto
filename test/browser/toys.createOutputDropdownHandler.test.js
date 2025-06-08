@@ -132,4 +132,10 @@ describe('createOutputDropdownHandler', () => {
     expect(typeof handler).toBe('function');
     expect(handler.length).toBe(1);
   });
+
+  test('returns a new handler instance on each call', () => {
+    const handler1 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
+    const handler2 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
+    expect(handler1).not.toBe(handler2);
+  });
 });
