@@ -15,6 +15,7 @@ describe('isValidParsedRequest', () => {
     expect(isValidParsedRequest(undefined)).toBe(false);
     expect(isValidParsedRequest(42)).toBe(false);
     expect(isValidParsedRequest('string')).toBe(false);
+    expect(isValidParsedRequest({})).toBe(false);
   });
 
   it('returns false for object without request field', () => {
