@@ -57,4 +57,15 @@ describe('handleParsedResult', () => {
     expect(env.fetchFn).not.toHaveBeenCalled();
     expect(result).toBe(false);
   });
+
+  it('returns false when request.url is not a string', () => {
+    parsed = {
+      request: { url: 123 }
+    };
+
+    const result = handleParsedResult(parsed, env, options);
+
+    expect(env.fetchFn).not.toHaveBeenCalled();
+    expect(result).toBe(false);
+  });
 });
