@@ -24,4 +24,45 @@ describe('createKeyValueRow return value', () => {
     expect(typeof rowHandler).toBe('function');
     expect(rowHandler.length).toBe(2);
   });
+
+  it('has an arity of 8 and each call returns a new unary function', () => {
+    const dom = {};
+    const entries = [];
+    const textInput = {};
+    const rows = {};
+    const syncHiddenField = () => {};
+    const disposers = [];
+    const render = () => {};
+    const container = {};
+
+    expect(createKeyValueRow.length).toBe(8);
+
+    const first = createKeyValueRow(
+      dom,
+      entries,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+      render,
+      container
+    );
+
+    const second = createKeyValueRow(
+      dom,
+      entries,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+      render,
+      container
+    );
+
+    expect(typeof first).toBe('function');
+    expect(typeof second).toBe('function');
+    expect(first).not.toBe(second);
+    expect(first.length).toBe(2);
+    expect(second.length).toBe(2);
+  });
 });
