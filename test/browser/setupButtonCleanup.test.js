@@ -113,4 +113,30 @@ describe('button cleanup helpers', () => {
     expect(Object.keys(rows)).toHaveLength(1);
     expect(render).toHaveBeenCalledTimes(1);
   });
+
+  it('setupAddButton disposer is idempotent', () => {
+    const dom = {
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+    const button = {};
+    const rows = {};
+    const render = jest.fn();
+    const disposers = [];
+
+    setupAddButton(dom, button, rows, render, disposers);
+
+    const dispose = disposers[0];
+    dispose();
+    expect(dom.removeEventListener).toHaveBeenCalledTimes(1);
+
+    dispose();
+    expect(dom.removeEventListener).toHaveBeenCalledTimes(2);
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      button,
+      'click',
+      expect.any(Function)
+    );
+  });
 });
