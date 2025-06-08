@@ -34,4 +34,26 @@ describe('BLOG_STATUS constants integration', () => {
     await fetchAndCacheBlogData(state, fetchFn, loggers);
     expect(state.blogStatus).toBe('error');
   });
+
+  it('clears blogError and reuses BLOG_STATUS when retrying after failure', async () => {
+    const state = {
+      blog: null,
+      blogStatus: 'error',
+      blogError: new Error('previous failure'),
+      blogFetchPromise: null,
+    };
+    const fetchFn = jest.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
+    );
+    const loggers = { logInfo: jest.fn(), logError: jest.fn() };
+
+    const promise = fetchAndCacheBlogData(state, fetchFn, loggers);
+    expect(state.blogStatus).toBe('loading');
+    expect(state.blogError).toBeNull();
+
+    await promise;
+
+    expect(state.blogStatus).toBe('loaded');
+    expect(state.blogError).toBeNull();
+  });
 });
