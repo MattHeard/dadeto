@@ -6,4 +6,9 @@ describe('styles constant', () => {
     expect(typeof styles).toBe('string');
     expect(styles).toContain('background-color: #121212');
   });
+
+  test('contains multiple CSS rules', () => {
+    const ruleCount = (styles.match(/\{/g) || []).length;
+    expect(ruleCount).toBeGreaterThan(5);
+  });
 });
