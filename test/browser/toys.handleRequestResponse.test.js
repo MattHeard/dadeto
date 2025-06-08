@@ -8,8 +8,19 @@ describe('handleRequestResponse', () => {
   let mockResponse;
   let mockParent;
   let url;
+  /**
+   * Captures unhandled promise rejections during tests so they surface as
+   * failures instead of crashing the process. This helps Stryker mark mutants
+   * as killed rather than timing out when the promise chain is broken.
+   */
+  let unhandled;
 
   beforeEach(() => {
+    unhandled = (err) => {
+      throw err;
+    };
+    process.on('unhandledRejection', unhandled);
+
     url = 'https://example.com';
     mockResponse = {
       text: jest.fn().mockResolvedValue('response text'),
@@ -48,6 +59,7 @@ describe('handleRequestResponse', () => {
   });
 
   afterEach(() => {
+    process.off('unhandledRejection', unhandled);
     jest.clearAllMocks();
   });
 
