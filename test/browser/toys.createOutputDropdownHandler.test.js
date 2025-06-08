@@ -126,6 +126,12 @@ describe('createOutputDropdownHandler', () => {
     expect(result).toBe(expected);
   });
 
+  test('returns a new handler instance on each call', () => {
+    const handler1 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
+    const handler2 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
+    expect(handler1).not.toBe(handler2);
+  });
+
   test('expects three arguments and returns a unary function', () => {
     const handler = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
     expect(createOutputDropdownHandler.length).toBe(3);
