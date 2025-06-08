@@ -1663,6 +1663,25 @@ describe('createInputDropdownHandler', () => {
     });
   });
 
+  describe('when select value is unknown', () => {
+    it('falls back to the default handler', () => {
+      const selectValue = 'unknown';
+      const getValue = jest.fn(element =>
+        element === select ? selectValue : null
+      );
+      const dom = {
+        ...baseDom,
+        getValue,
+      };
+
+      const handler = createInputDropdownHandler(dom);
+
+      expect(() => handler(event)).not.toThrow();
+      expect(hide).toHaveBeenCalledWith(textInput);
+      expect(disable).toHaveBeenCalledWith(textInput);
+    });
+  });
+
   describe('getText', () => {
     it('should call response.text() and return its result', async () => {
       // Arrange
