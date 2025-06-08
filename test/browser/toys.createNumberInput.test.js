@@ -87,4 +87,19 @@ describe('createNumberInput', () => {
     // Assert
     expect(mockOnChange).toHaveBeenCalledWith(mockEvent);
   });
+
+  it('provides a disposer that removes the input listener', () => {
+    createNumberInput('1', mockOnChange, mockDom);
+
+    const [[inputEl, , handler]] = mockDom.addEventListener.mock.calls;
+    expect(typeof inputEl._dispose).toBe('function');
+
+    inputEl._dispose();
+
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      inputEl,
+      'input',
+      handler
+    );
+  });
 });
