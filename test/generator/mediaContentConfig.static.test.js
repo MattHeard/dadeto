@@ -34,4 +34,19 @@ describe('MEDIA_CONTENT_CONFIG via generateBlog', () => {
     expect(html).toContain('<audio');
     expect(html).toContain('<img');
   });
+
+  test('audio element includes the controls attribute', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'AUDIO',
+          title: 'With Audio',
+          publicationDate: '2024-04-01',
+          audio: { fileType: 'mp3' },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<audio class="value" controls>');
+  });
 });
