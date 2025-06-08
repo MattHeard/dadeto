@@ -23,4 +23,19 @@ describe('createBlockquote integration', () => {
     expect(html).toContain('corner corner-bl');
     expect(html).toContain('corner corner-br');
   });
+  test('blockquote corners appear exactly four times', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'BQ02',
+          title: 'Quote Count',
+          publicationDate: '2024-06-02',
+          content: [{ type: 'quote', content: 'Hello again' }],
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    const matches = html.match(/corner-/g) || [];
+    expect(matches.length).toBe(4);
+  });
 });
