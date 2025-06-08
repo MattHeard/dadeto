@@ -51,4 +51,23 @@ describe('createDispose', () => {
     expect(rows).toHaveLength(0);
     expect(dom.removeAllChildren).toHaveBeenCalledWith(container);
   });
+
+  it('can be called multiple times without errors', () => {
+    const disposer = jest.fn();
+    const disposers = [disposer];
+    const dom = {
+      removeAllChildren: jest.fn(),
+    };
+    const container = {};
+    const rows = ['x'];
+
+    const dispose = createDispose(disposers, dom, container, rows);
+
+    expect(() => dispose()).not.toThrow();
+    expect(() => dispose()).not.toThrow();
+
+    expect(disposer).toHaveBeenCalledTimes(1);
+    expect(dom.removeAllChildren).toHaveBeenCalledTimes(2);
+    expect(rows).toHaveLength(0);
+  });
 });
