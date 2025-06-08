@@ -83,4 +83,19 @@ describe('createDispose', () => {
     expect(typeof dispose).toBe('function');
     expect(dispose.length).toBe(0);
   });
+
+  it('handles empty disposers without errors', () => {
+    const disposers = [];
+    const dom = {
+      removeAllChildren: jest.fn(),
+    };
+    const container = {};
+    const rows = ['x'];
+
+    const dispose = createDispose(disposers, dom, container, rows);
+
+    expect(() => dispose()).not.toThrow();
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(container);
+    expect(rows).toHaveLength(0);
+  });
 });
