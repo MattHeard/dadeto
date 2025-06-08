@@ -267,6 +267,23 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(result).toBe(state);
   });
 
+  it('getData sets status to loading then loaded when fetch completes', async () => {
+    const blogData = { title: 'blog' };
+    fetchFn = jest.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve(blogData) })
+    );
+    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
+
+    getData(state, fetchFn, loggers);
+
+    expect(state.blogStatus).toBe('loading');
+    const promise = state.blogFetchPromise;
+    await promise;
+
+    expect(state.blogStatus).toBe('loaded');
+    expect(state.blog).toEqual(blogData);
+  });
+
   it('setData preserves existing blog if incoming state omits it', () => {
     state.blog = { title: 'preserved' };
     const incomingState = { temporary: true }; // no blog field
