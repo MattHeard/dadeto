@@ -44,4 +44,10 @@ describe('isValidParsedRequest', () => {
     };
     expect(isValidParsedRequest(invalidRequest)).toBe(false);
   });
+
+  it('returns false for arrays and boolean values', () => {
+    expect(isValidParsedRequest([])).toBe(false);
+    expect(isValidParsedRequest(true)).toBe(false);
+    expect(isValidParsedRequest(false)).toBe(false);
+  });
 });
