@@ -89,6 +89,17 @@ describe('setupRemoveButton', () => {
     );
   });
 
+  it('cleanup can be called multiple times', () => {
+    setupRemoveButton(mockDom, button, rows, render, rowKey, disposers);
+
+    const cleanup = disposers[0];
+
+    cleanup();
+    cleanup();
+
+    expect(mockDom.removeEventListener).toHaveBeenCalledTimes(2);
+  });
+
   it('handles clicking when the key does not exist in rows', () => {
     const nonExistentKey = 'nonExistent';
 
