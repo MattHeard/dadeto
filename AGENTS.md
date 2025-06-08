@@ -26,6 +26,7 @@ The following Jest features cause issues with Stryker mutation testing and must 
 - Prefer testing internal logic through an exported function that calls the function under test.
 - If direct testing is necessary, export the function instead of using the parse-eval method.
 - Do not use dynamic `import()` to load source modules. Use static imports instead.
+- Avoid using `vm.SourceTextModule` or other dynamic module evaluation to load modules as Stryker cannot instrument them.
 
 ## Code Style
 

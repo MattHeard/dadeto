@@ -29,13 +29,19 @@ describe('processInputAndSetOutput invalid JSON handling', () => {
       fetchFn: jest.fn(() => Promise.resolve({ text: jest.fn() })),
       dom,
       errorFn: jest.fn(),
-      loggers: { logInfo: jest.fn(), logError: jest.fn(), logWarning: jest.fn() },
+      loggers: {
+        logInfo: jest.fn(),
+        logError: jest.fn(),
+        logWarning: jest.fn(),
+      },
     };
 
     expect(() =>
       processInputAndSetOutput(elements, () => 'not json', env)
     ).not.toThrow();
 
-    expect(dom.removeAllChildren).toHaveBeenCalledWith(elements.outputParentElement);
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(
+      elements.outputParentElement
+    );
   });
 });

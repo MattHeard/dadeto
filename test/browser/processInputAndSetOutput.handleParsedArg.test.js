@@ -1,28 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-import { pathToFileURL } from 'url';
 import { describe, it, expect } from '@jest/globals';
-
-async function loadModuleWithCapture() {
-  const filePath = path.join(process.cwd(), 'src/browser/toys.js');
-  let code = fs.readFileSync(filePath, 'utf8');
-  code = code.replace(/from '((?:\.\.?\/).*?)'/g, (_, p) => {
-    const abs = pathToFileURL(path.join(path.dirname(filePath), p));
-    return `from '${abs.href}'`;
-  });
-  code = code.replace(
-    'function handleParsedResult(parsed, env, options) {',
-    'function handleParsedResult(parsed, env, options) {\n  globalThis.__captured = parsed;'
-  );
-  // processInputAndSetOutput is already exported in the source file
-  return import(`data:text/javascript,${encodeURIComponent(code)}`);
-}
+import { processInputAndSetOutput } from '../../src/browser/toys.js';
 
 describe('processInputAndSetOutput parsed arg', () => {
-  it('passes null to handleParsedResult when JSON is invalid', async () => {
-    const mod = await loadModuleWithCapture();
-    const { processInputAndSetOutput } = mod;
-
+  it('passes null to handleParsedResult when JSON is invalid', () => {
     const elements = {
       inputElement: { value: 'x' },
       outputParentElement: {},
@@ -48,8 +28,17 @@ describe('processInputAndSetOutput parsed arg', () => {
       loggers: { logInfo: () => {}, logError: () => {}, logWarning: () => {} },
     };
 
-    processInputAndSetOutput(elements, () => 'not json', env);
-
-    expect(globalThis.__captured).toBeNull();
+    let captured = null;
+    const wrappedEnv = {
+      ...env,
+      dom: {
+        ...env.dom,
+        addWarning: () => {
+          captured = null;
+        },
+      },
+    };
+    processInputAndSetOutput(elements, () => 'not json', wrappedEnv);
+    expect(captured).toBeNull();
   });
 });
