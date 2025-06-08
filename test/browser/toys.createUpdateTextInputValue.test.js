@@ -173,4 +173,12 @@ describe('createUpdateTextInputValue', () => {
     expect(mockDom.setValue).toHaveBeenNthCalledWith(1, textInput, 'first');
     expect(mockDom.setValue).toHaveBeenNthCalledWith(2, textInput, 'second');
   });
+
+  it('returned handler can be invoked without throwing', () => {
+    const handler = createUpdateTextInputValue(textInput, mockDom);
+    mockDom.getTargetValue.mockReturnValue('foo');
+
+    expect(() => handler(mockEvent)).not.toThrow();
+    expect(mockDom.setValue).toHaveBeenCalledWith(textInput, 'foo');
+  });
 });
