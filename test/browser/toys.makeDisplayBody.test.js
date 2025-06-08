@@ -34,12 +34,13 @@ describe('makeDisplayBody', () => {
 
     const displayBody = makeDisplayBody(mockDom, mockParent, presenterKey);
     const body = 'content';
-    displayBody(body);
+    const returnValue = displayBody(body);
 
     expect(mockDom.removeAllChildren).toHaveBeenCalledWith(mockParent);
     expect(mockDom.appendChild).toHaveBeenCalledWith(
       mockParent,
       expect.anything()
     );
+    expect(returnValue).toBeUndefined();
   });
 });
