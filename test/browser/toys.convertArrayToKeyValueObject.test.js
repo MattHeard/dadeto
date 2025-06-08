@@ -83,4 +83,18 @@ describe('convertArrayToKeyValueObject', () => {
     expect(convertArrayToKeyValueObject(123)).toEqual({});
     expect(convertArrayToKeyValueObject({})).toEqual({});
   });
+
+  it('should preserve falsy but defined values', () => {
+    const input = [
+      { key: 'count', value: 0 },
+      { key: 'active', value: false },
+      { key: 'empty', value: '' },
+    ];
+    const expected = {
+      count: 0,
+      active: false,
+      empty: '',
+    };
+    expect(convertArrayToKeyValueObject(input)).toEqual(expected);
+  });
 });
