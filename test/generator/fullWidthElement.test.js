@@ -23,6 +23,23 @@ describe('fullWidthElement integration', () => {
     expect(html).toContain(fullWidthElement);
   });
 
+  test('blog articles include full width markup', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'FW1',
+          title: 'Full Width Test',
+          publicationDate: '2024-01-01',
+          content: ['Paragraph'],
+        },
+      ],
+    };
+
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<div class="key full-width">');
+    expect(html).toContain('<div class="value full-width">');
+  });
+
   test('fullWidthElement has expected structure', () => {
     expect(fullWidthElement).not.toHaveLength(0);
     expect(fullWidthElement).toContain('class="key full-width"');
