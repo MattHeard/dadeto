@@ -65,4 +65,24 @@ describe('button cleanup helpers', () => {
       expect.any(Function)
     );
   });
+
+  it('setupRemoveButton disposer removes the specific listener that was added', () => {
+    const dom = {
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+    const button = {};
+    const rows = { k: 'v' };
+    const render = jest.fn();
+    const disposers = [];
+
+    setupRemoveButton(dom, button, rows, render, 'k', disposers);
+
+    const [, , onRemove] = dom.addEventListener.mock.calls[0];
+    const dispose = disposers[0];
+    dispose();
+
+    expect(dom.removeEventListener).toHaveBeenCalledWith(button, 'click', onRemove);
+  });
 });
