@@ -127,4 +127,31 @@ describe('createUpdateTextInputValue', () => {
     const handler2 = createUpdateTextInputValue(textInput, mockDom);
     expect(handler1).not.toBe(handler2);
   });
+
+  it('binds the provided dom and textInput to the handler', () => {
+    const textInputA = {};
+    const textInputB = {};
+    const domA = {
+      getTargetValue: jest.fn(() => 'a'),
+      setValue: jest.fn(),
+    };
+    const domB = {
+      getTargetValue: jest.fn(() => 'b'),
+      setValue: jest.fn(),
+    };
+
+    const eventA = {};
+    const eventB = {};
+
+    const handlerA = createUpdateTextInputValue(textInputA, domA);
+    const handlerB = createUpdateTextInputValue(textInputB, domB);
+
+    handlerA(eventA);
+    handlerB(eventB);
+
+    expect(domA.getTargetValue).toHaveBeenCalledWith(eventA);
+    expect(domB.getTargetValue).toHaveBeenCalledWith(eventB);
+    expect(domA.setValue).toHaveBeenCalledWith(textInputA, 'a');
+    expect(domB.setValue).toHaveBeenCalledWith(textInputB, 'b');
+  });
 });
