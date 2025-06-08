@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
-import '../../src/browser/toys.js';
+import { parseJSONResult } from '../../src/browser/toys.js';
 
-describe.skip('parseJSONResult via vm', () => {
+describe('parseJSONResult via vm', () => {
   it('returns null for invalid JSON', () => {
     expect(parseJSONResult('not json')).toBeNull();
   });
