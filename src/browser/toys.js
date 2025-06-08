@@ -816,7 +816,7 @@ export function handleParsedResult(parsed, env, options) {
  * @param {string} result - The JSON string to parse.
  * @returns {object|null} The parsed object or null.
  */
-function parseJSONResult(result) {
+export function parseJSONResult(result) {
   try {
     return JSON.parse(result);
   } catch {

@@ -71,6 +71,9 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/initializeInteractiveComponent.enableInteractiveControls.test.js
   10:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/parseJSONResult.realImport.test.js
+  1:24  warning  'expect' is defined but never used  no-unused-vars
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.makeHandleHideSpan.test.js
   11:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
   22:39  warning  Ternary operator used                                       no-ternary
@@ -124,16 +127,16 @@
      9:3   warning  'createHandleSubmit' is defined but never used              no-unused-vars
     15:3   warning  'createUpdateTextInputValue' is defined but never used      no-unused-vars
     18:13  warning  'toys' is defined but never used                            no-unused-vars
-   839:40  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1225:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1283:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1462:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  1463:7   warning  Ternary operator used                                       no-ternary
-  1487:40  warning  Ternary operator used                                       no-ternary
-  1488:40  warning  Ternary operator used                                       no-ternary
-  1525:9   warning  Ternary operator used                                       no-ternary
-  1563:9   warning  Ternary operator used                                       no-ternary
-  1598:9   warning  Ternary operator used                                       no-ternary
-  1620:39  warning  Ternary operator used                                       no-ternary
+   860:40  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1246:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1304:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1483:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  1484:7   warning  Ternary operator used                                       no-ternary
+  1508:40  warning  Ternary operator used                                       no-ternary
+  1509:40  warning  Ternary operator used                                       no-ternary
+  1546:9   warning  Ternary operator used                                       no-ternary
+  1584:9   warning  Ternary operator used                                       no-ternary
+  1619:9   warning  Ternary operator used                                       no-ternary
+  1641:39  warning  Ternary operator used                                       no-ternary
 
-✖ 79 problems (0 errors, 79 warnings)
+✖ 80 problems (0 errors, 80 warnings)
