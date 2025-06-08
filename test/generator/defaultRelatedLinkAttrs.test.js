@@ -22,5 +22,8 @@ describe('DEFAULT_RELATED_LINK_ATTRS usage', () => {
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('target="_blank" rel="noopener"');
+    expect(html).toContain(
+      '<a href="https://example.com" target="_blank" rel="noopener">"Example"</a>'
+    );
   });
 });
