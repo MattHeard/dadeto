@@ -162,4 +162,9 @@ describe('generateClues', () => {
   it('does not throw when the fleet is null', () => {
     expect(() => generateClues('null')).not.toThrow();
   });
+
+  it('returns exact error string when fleet is null', () => {
+    const result = generateClues('null');
+    expect(result).toBe('{"error":"Invalid fleet structure"}');
+  });
 });
