@@ -1712,6 +1712,29 @@ describe('createInputDropdownHandler', () => {
       expect(hide).toHaveBeenCalledWith(textInput);
       expect(disable).toHaveBeenCalledWith(textInput);
     });
+
+    it('hides and disables text input when select value is unknown', () => {
+      // select, container, textInput, event, hide, disable, baseDom are from outer beforeEach
+
+      // Specific mock for this test case
+      const getValue = jest.fn(element =>
+        element === select ? 'unknown' : null
+      );
+
+      // Construct dom object for the handler, using baseDom and overriding getValue
+      // querySelector from baseDom should correctly return textInput based on its setup
+      const dom = {
+        ...baseDom, // Includes getCurrentTarget, getParentElement, querySelector, hide, disable etc.
+        getValue,
+      };
+
+      const handler = createInputDropdownHandler(dom);
+      handler(event); // event is from outer beforeEach
+
+      // Assertions use hide, disable, textInput from outer beforeEach
+      expect(hide).toHaveBeenCalledWith(textInput);
+      expect(disable).toHaveBeenCalledWith(textInput);
+    });
   });
 
   describe('getText', () => {

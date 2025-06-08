@@ -142,5 +142,6 @@
   1619:9   warning  Ternary operator used                                       no-ternary
   1641:39  warning  Ternary operator used                                       no-ternary
   1670:9   warning  Ternary operator used                                       no-ternary
+  1689:9   warning  Ternary operator used                                       no-ternary
 
-✖ 82 problems (0 errors, 82 warnings)
+✖ 83 problems (0 errors, 83 warnings)
