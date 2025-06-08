@@ -1,18 +1,12 @@
-import { beforeAll, describe, test, expect } from '@jest/globals';
-import '../../src/browser/toys.js';
+import { describe, test, expect } from '@jest/globals';
+import { parseJSONResult } from '../../src/browser/toys.js';
 
-let fn;
-
-beforeAll(() => {
-  fn = parseJSONResult;
-});
-
-describe.skip('parseJSONResult dynamic import', () => {
+describe('parseJSONResult dynamic import', () => {
   test('returns null for invalid JSON', () => {
-    expect(fn('{ invalid')).toBeNull();
+    expect(parseJSONResult('{ invalid')).toBeNull();
   });
 
   test('returns object for valid JSON', () => {
-    expect(fn('{"a":1}')).toEqual({ a: 1 });
+    expect(parseJSONResult('{"a":1}')).toEqual({ a: 1 });
   });
 });
