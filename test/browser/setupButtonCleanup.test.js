@@ -65,4 +65,52 @@ describe('button cleanup helpers', () => {
       expect.any(Function)
     );
   });
+
+  it('setupAddButton disposer prevents further clicks from modifying rows', () => {
+    const handlers = [];
+    const dom = {
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn((_, event, handler) => {
+        if (event === 'click') {
+          handlers.push(handler);
+        }
+      }),
+      removeEventListener: jest.fn((_, event, handler) => {
+        if (event === 'click') {
+          const idx = handlers.indexOf(handler);
+          if (idx !== -1) {
+            handlers.splice(idx, 1);
+          }
+        }
+      }),
+    };
+    const button = {};
+    const rows = {};
+    const render = jest.fn();
+    const disposers = [];
+
+    setupAddButton(dom, button, rows, render, disposers);
+
+    // Capture the click handler
+    const clickHandler = handlers[0];
+    expect(typeof clickHandler).toBe('function');
+
+    // Trigger the click once
+    clickHandler();
+    expect(rows).toHaveProperty('');
+    expect(render).toHaveBeenCalledTimes(1);
+
+    // Dispose and simulate another click
+    const dispose = disposers[0];
+    dispose();
+    expect(handlers).toHaveLength(0);
+
+    if (clickHandler) {
+      clickHandler();
+    }
+
+    // Rows and render should remain unchanged after dispose
+    expect(Object.keys(rows)).toHaveLength(1);
+    expect(render).toHaveBeenCalledTimes(1);
+  });
 });
