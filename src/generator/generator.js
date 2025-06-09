@@ -770,8 +770,6 @@ function formatBaseLink(type, url, title) {
 function wrapIfPresent(prefix, value, suffix) {
   if (value) {
     return prefix + value + suffix;
-  } else {
-    return '';
   }
 }
 
