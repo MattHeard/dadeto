@@ -21,5 +21,6 @@ describe('BLOCKQUOTE_CORNERS single post', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     const matches = html.match(/corner-/g) || [];
     expect(matches).toHaveLength(4);
+    expect(html).toContain('<div class="corner corner-tl">');
   });
 });
