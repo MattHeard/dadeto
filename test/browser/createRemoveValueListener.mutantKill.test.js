@@ -20,15 +20,46 @@ describe('createRemoveValueListener unique disposers', () => {
     const sync = jest.fn();
 
     const disposers1 = [];
-    createValueElement(dom, '', keyEl, textInput, rows, sync, disposers1);
+    const valueEl1 = createValueElement(
+      dom,
+      '',
+      keyEl,
+      textInput,
+      rows,
+      sync,
+      disposers1
+    );
     const disposer1 = disposers1[0];
 
     const disposers2 = [];
-    createValueElement(dom, '', keyEl, textInput, rows, sync, disposers2);
+    const valueEl2 = createValueElement(
+      dom,
+      '',
+      keyEl,
+      textInput,
+      rows,
+      sync,
+      disposers2
+    );
     const disposer2 = disposers2[0];
 
     expect(typeof disposer1).toBe('function');
     expect(typeof disposer2).toBe('function');
     expect(disposer1).not.toBe(disposer2);
+
+    const handler1 = dom.addEventListener.mock.calls[0][2];
+    const handler2 = dom.addEventListener.mock.calls[1][2];
+    disposer1();
+    disposer2();
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      valueEl1,
+      'input',
+      handler1
+    );
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      valueEl2,
+      'input',
+      handler2
+    );
   });
 });
