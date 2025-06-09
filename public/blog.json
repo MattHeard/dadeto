@@ -6,11 +6,15 @@
       "publicationDate": "2025-06-09",
       "release": "beta",
       "content": ["Returns a random UUID."],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a black fingerprint with spiral-like ridges is centered on an off-white square background, intersected by minimal black wireframe lines and a solid black dot anchoring one corner of the composition"
+      },
       "toy": {
         "modulePath": "/2025-06-09/uuid.js",
         "functionName": "uuidToy"
       },
-      "tags": ["toy", "uuid", "beta"]
+      "tags": ["toy", "uuid", "unique", "random"]
     },
     {
       "key": "SELF1",
