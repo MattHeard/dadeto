@@ -90,3 +90,5 @@ function renderTicTacToeBoardFromData(data, dom) {
   dom.setTextContent(pre, content);
   return pre;
 }
+
+export { getPlayer, getPosition };

@@ -1,23 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-import { pathToFileURL } from 'url';
-import { beforeAll, describe, it, expect } from '@jest/globals';
-
-let getPlayer;
-let getPosition;
-
-beforeAll(async () => {
-  const srcPath = path.join(process.cwd(), 'src/presenters/ticTacToeBoard.js');
-  let src = fs.readFileSync(srcPath, 'utf8');
-  src = src.replace(/from '((?:\.\.?\/).*?)'/g, (_, p) => {
-    const abs = pathToFileURL(path.join(path.dirname(srcPath), p));
-    return `from '${abs.href}'`;
-  });
-  src += '\nexport { getPlayer, getPosition };';
-  ({ getPlayer, getPosition } = await import(
-    `data:text/javascript,${encodeURIComponent(src)}`
-  ));
-});
+import { describe, it, expect } from '@jest/globals';
+import {
+  getPlayer,
+  getPosition
+} from '../../src/presenters/ticTacToeBoard.js';
 
 describe('ticTacToeBoard internal functions', () => {
   it('getPlayer returns undefined for undefined move', () => {
