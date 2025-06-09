@@ -11,7 +11,7 @@ import { createParagraphElement } from '../presenters/paragraph.js';
  * @param {Array<{key: string, value: any}>} array - The array to convert
  * @returns {Object} An object with keys and values from the array
  */
-export const convertArrayToKeyValueObject = (array) => {
+export const convertArrayToKeyValueObject = array => {
   const result = {};
 
   // Return empty object if input is not an array
@@ -47,7 +47,7 @@ export const parseExistingRows = (dom, inputElement) => {
  * @param {HTMLElement} element - The element with a _dispose function
  * @returns {void}
  */
-const disposeListeners = (element) => {
+const disposeListeners = element => {
   element._dispose();
 };
 
@@ -60,7 +60,7 @@ const disposeListeners = (element) => {
  * @param {Array<Function>} disposersArray - The array of disposer functions to clear
  * @returns {void}
  */
-export const clearDisposers = (disposersArray) => {
+export const clearDisposers = disposersArray => {
   disposersArray.forEach(fn => fn());
   disposersArray.length = 0; // Clear array in place for better performance
 };
@@ -89,7 +89,7 @@ import { createBattleshipCluesBoardElement } from '../presenters/battleshipSolit
  * @param {Object} dom - The DOM utilities object
  * @returns {HTMLInputElement} The created input element
  */
-const createBaseNumberInput = (dom) => {
+const createBaseNumberInput = dom => {
   const input = dom.createElement('input');
   dom.setType(input, 'number');
   return input;
@@ -102,7 +102,10 @@ const createBaseNumberInput = (dom) => {
  * @returns {void}
  */
 const maybeRemoveNumber = (containerElement, dom) => {
-  const numberInput = dom.querySelector(containerElement, 'input[type="number"]');
+  const numberInput = dom.querySelector(
+    containerElement,
+    'input[type="number"]'
+  );
   if (numberInput) {
     disposeListeners(numberInput);
     dom.removeChild(containerElement, numberInput);
@@ -141,7 +144,7 @@ const inputHandlers = {
   default: (dom, _container, textInput) => {
     dom.hide(textInput);
     dom.disable(textInput);
-  }
+  },
 };
 
 /**
@@ -179,11 +182,11 @@ const handleDefaultType = (dom, container) => {
 const typeHandlers = {
   number: handleNumberType,
   kv: handleKVType,
-  default: handleDefaultType
+  default: handleDefaultType,
 };
 
-export const createInputDropdownHandler = (dom) => {
-  return (event) => {
+export const createInputDropdownHandler = dom => {
+  return event => {
     const select = dom.getCurrentTarget(event);
     const container = dom.getParentElement(select);
     const textInput = dom.querySelector(container, 'input[type="text"]');
@@ -218,14 +221,24 @@ const setupInputEvents = (input, onChange, dom) => {
  * @param {Function} createIntersectionObserver - Function to create an intersection observer
  * @returns {Function} A function that initializes a component with an intersection observer
  */
-export function getComponentInitializer(getElement, logWarning, createIntersectionObserver) {
+export function getComponentInitializer(
+  getElement,
+  logWarning,
+  createIntersectionObserver
+) {
   return component => {
     const article = getElement(component.id);
     if (!article) {
-      logWarning(`Could not find article element with ID: ${component.id} for component initialization.`);
+      logWarning(
+        `Could not find article element with ID: ${component.id} for component initialization.`
+      );
       return;
     }
-    const observer = createIntersectionObserver(article, component.modulePath, component.functionName);
+    const observer = createIntersectionObserver(
+      article,
+      component.modulePath,
+      component.functionName
+    );
     observer.observe(article);
   };
 }
@@ -237,7 +250,7 @@ export function getComponentInitializer(getElement, logWarning, createIntersecti
  * @param {Function} logInfo - Logging function to use for output. Must be provided.
  */
 function getDropdownArticle(dropdown) {
-  return dropdown.closest('article.entry')
+  return dropdown.closest('article.entry');
 }
 
 function getDropdownPostId(dropdown) {
@@ -252,10 +265,12 @@ export function handleDropdownChange(dropdown, getData, dom) {
   const output = data.output?.[postId];
 
   const parent = dom.querySelector(dropdown.parentNode, 'div.output');
-  setTextContent({ presenterKey: selectedValue, content: output || '' }, dom, parent);
+  setTextContent(
+    { presenterKey: selectedValue, content: output || '' },
+    dom,
+    parent
+  );
 }
-
-
 
 /**
  * Creates a handler function for output dropdown changes.
@@ -264,8 +279,9 @@ export function handleDropdownChange(dropdown, getData, dom) {
  * @param {Object} dom - The DOM utilities object
  * @returns {Function} An event handler function for dropdown changes
  */
-export const createOutputDropdownHandler = (handleDropdownChange, getData, dom) =>
-  event => handleDropdownChange(event.currentTarget, getData, dom);
+export const createOutputDropdownHandler =
+  (handleDropdownChange, getData, dom) => event =>
+    handleDropdownChange(event.currentTarget, getData, dom);
 
 // Map of presenter keys to presenter functions
 const presentersMap = {
@@ -298,7 +314,7 @@ function setTextContent(output, dom, parent) {
  * @returns {Function} Error handler function.
  */
 export function handleModuleError(modulePath, logError) {
-  return (e) => {
+  return e => {
     logError('Error loading module ' + modulePath + ':', e);
   };
 }
@@ -308,7 +324,7 @@ export function handleModuleError(modulePath, logError) {
  *
  * @param {HTMLElement} article - The article element containing the toy.
  * @param {string} functionName - The name of the exported function to use from the module.
- * @param {object} env - Environment object containing globalState, createEnv, error, and fetch.
+ * @param {object} env - Environment object containing globalState, createEnv, getUuid, error, and fetch.
  * @param {object} dom - Object containing DOM helper functions.
  * @returns {Function} A function that takes a module and initializes the interactive component.
  */
@@ -322,17 +338,17 @@ export function handleModuleError(modulePath, logError) {
 export function getModuleInitializer(article, functionName, config) {
   const getProcessing = makeProcessingFunction(functionName);
   const initialize = makeInteractiveInitializer(article, config);
-  return (module) => runModuleInitializer(module, getProcessing, initialize);
+  return module => runModuleInitializer(module, getProcessing, initialize);
 }
 
 function makeProcessingFunction(functionName) {
-  return function(module) {
+  return function (module) {
     return module[functionName];
   };
 }
 
 function makeInteractiveInitializer(article, config) {
-  return function(processingFunction) {
+  return function (processingFunction) {
     initializeInteractiveComponent(article, processingFunction, config);
   };
 }
@@ -347,7 +363,11 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
   const logError = loggers.logError;
   dom.importModule(
     moduleInfo.modulePath,
-    getModuleInitializer(moduleInfo.article, moduleInfo.functionName, moduleConfig),
+    getModuleInitializer(
+      moduleInfo.article,
+      moduleInfo.functionName,
+      moduleConfig
+    ),
     handleModuleError(moduleInfo.modulePath, logError)
   );
 }
@@ -373,20 +393,16 @@ function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
 
 function getEntryHandler(moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
-  return (observer) => (entry) => {
+  return observer => entry => {
     if (dom.isIntersecting(entry)) {
       handleIntersectingEntry(observer, moduleInfo, moduleConfig);
     }
   };
 }
 
-
-
-
-
 /**
  * Creates a moduleConfig object from env and dom
- * @param {object} env - Environment
+ * @param {object} env - Environment including getUuid
  * @param {object} dom - DOM helpers
  * @returns {object} moduleConfig
  */
@@ -397,7 +413,8 @@ export function makeModuleConfig(env, dom) {
     errorFn: env.error,
     fetchFn: env.fetch,
     loggers: env.loggers,
-    dom
+    dom,
+    getUuid: env.getUuid,
   };
 }
 
@@ -423,7 +440,6 @@ export function makeCreateIntersectionObserver(dom, env) {
     const observerCallback = makeObserverCallback(moduleInfo, env, dom);
     return dom.makeIntersectionObserver(observerCallback);
   };
-
 }
 
 /**
@@ -463,7 +479,11 @@ export function getFetchErrorHandler(env, parent, presenterKey) {
   const { dom, errorFn } = env;
   return error => {
     errorFn('Error fetching request URL:', error);
-    setTextContent({ content: 'Error fetching URL: ' + error.message, presenterKey }, dom, parent);
+    setTextContent(
+      { content: 'Error fetching URL: ' + error.message, presenterKey },
+      dom,
+      parent
+    );
     dom.addWarning(parent);
   };
 }
@@ -473,12 +493,8 @@ export function handleRequestResponse(url, env, options) {
   const { fetchFn, dom } = env;
   const displayBody = makeDisplayBody(dom, parent, presenterKey);
   const handleFetchError = getFetchErrorHandler(env, parent, presenterKey);
-  fetchFn(url)
-    .then(getText)
-    .then(displayBody)
-    .catch(handleFetchError);
+  fetchFn(url).then(getText).then(displayBody).catch(handleFetchError);
 }
-
 
 import { isObject } from './common.js';
 
@@ -539,7 +555,7 @@ export const ensureNumberInput = (container, textInput, dom) => {
  * @param {Object} dom - The DOM utilities object
  * @returns {Function} An event handler function
  */
-export const createUpdateTextInputValue = (textInput, dom) => (event) => {
+export const createUpdateTextInputValue = (textInput, dom) => event => {
   const targetValue = dom.getTargetValue(event);
   dom.setValue(textInput, targetValue);
 };
@@ -561,7 +577,13 @@ function hasStringUrl(val) {
  * @param {Function} syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-export function createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
+export function createKeyInputHandler(
+  dom,
+  keyEl,
+  textInput,
+  rows,
+  syncHiddenField
+) {
   return e => {
     const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
     const newKey = dom.getTargetValue(e);
@@ -593,7 +615,13 @@ export function createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenFie
  * @param {Function} syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-export function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField) {
+export function createValueInputHandler(
+  dom,
+  keyEl,
+  textInput,
+  rows,
+  syncHiddenField
+) {
   return e => {
     const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
     rows[rowKey] = dom.getTargetValue(e);
@@ -611,7 +639,14 @@ export function createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenF
  * @param {Array<Function>} disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created key input element
  */
-export const createKeyElement = (dom, key, textInput, rows, syncHiddenField, disposers) => {
+export const createKeyElement = (
+  dom,
+  key,
+  textInput,
+  rows,
+  syncHiddenField,
+  disposers
+) => {
   const keyEl = dom.createElement('input');
   dom.setType(keyEl, 'text');
   dom.setPlaceholder(keyEl, 'Key');
@@ -619,9 +654,16 @@ export const createKeyElement = (dom, key, textInput, rows, syncHiddenField, dis
   // store the current key so we can track renames without re‑rendering
   dom.setDataAttribute(keyEl, 'prevKey', key);
 
-  const onKey = createKeyInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
+  const onKey = createKeyInputHandler(
+    dom,
+    keyEl,
+    textInput,
+    rows,
+    syncHiddenField
+  );
   dom.addEventListener(keyEl, 'input', onKey);
-  const removeKeyListener = () => dom.removeEventListener(keyEl, 'input', onKey);
+  const removeKeyListener = () =>
+    dom.removeEventListener(keyEl, 'input', onKey);
   disposers.push(removeKeyListener);
 
   return keyEl;
@@ -638,13 +680,27 @@ export const createKeyElement = (dom, key, textInput, rows, syncHiddenField, dis
  * @param {Array<Function>} disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created value input element
  */
-export const createValueElement = (dom, value, keyEl, textInput, rows, syncHiddenField, disposers) => {
+export const createValueElement = (
+  dom,
+  value,
+  keyEl,
+  textInput,
+  rows,
+  syncHiddenField,
+  disposers
+) => {
   const valueEl = dom.createElement('input');
   dom.setType(valueEl, 'text');
   dom.setPlaceholder(valueEl, 'Value');
   dom.setValue(valueEl, value);
 
-  const onValue = createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
+  const onValue = createValueInputHandler(
+    dom,
+    keyEl,
+    textInput,
+    rows,
+    syncHiddenField
+  );
   dom.addEventListener(valueEl, 'input', onValue);
   const removeValueListener = createRemoveValueListener(dom, valueEl, onValue);
   disposers.push(removeValueListener);
@@ -706,11 +762,22 @@ export const setupAddButton = (dom, button, rows, render, disposers) => {
  * @param {string} key - The key of the row to remove
  * @param {Array} disposers - Array to store cleanup functions
  */
-export const setupRemoveButton = (dom, button, rows, render, key, disposers) => {
+export const setupRemoveButton = (
+  dom,
+  button,
+  rows,
+  render,
+  key,
+  disposers
+) => {
   dom.setTextContent(button, '×');
   const onRemove = createOnRemove(rows, render, key);
   dom.addEventListener(button, 'click', onRemove);
-  const removeRemoveListener = createRemoveRemoveListener(dom, button, onRemove);
+  const removeRemoveListener = createRemoveRemoveListener(
+    dom,
+    button,
+    onRemove
+  );
   disposers.push(removeRemoveListener);
 };
 
@@ -736,17 +803,49 @@ export const setupRemoveButton = (dom, button, rows, render, key, disposers) => 
  * @param {HTMLElement} container - The container to append the row to
  * @returns {Function} A function that takes [key, value] and index and creates a row
  */
-export const createKeyValueRow = (dom, entries, textInput, rows, syncHiddenField, disposers, render, container) =>
+export const createKeyValueRow =
+  (
+    dom,
+    entries,
+    textInput,
+    rows,
+    syncHiddenField,
+    disposers,
+    render,
+    container
+  ) =>
   ([key, value], idx) => {
     const rowEl = dom.createElement('div');
     dom.setClassName(rowEl, 'kv-row');
 
     // Create key and value elements
-    const keyEl = createKeyElement(dom, key, textInput, rows, syncHiddenField, disposers);
-    const valueEl = createValueElement(dom, value, keyEl, textInput, rows, syncHiddenField, disposers);
+    const keyEl = createKeyElement(
+      dom,
+      key,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
+    const valueEl = createValueElement(
+      dom,
+      value,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
 
     // Create and set up the appropriate button type
-    const btnEl = createButton(dom, idx === entries.length - 1, rows, render, key, disposers);
+    const btnEl = createButton(
+      dom,
+      idx === entries.length - 1,
+      rows,
+      render,
+      key,
+      disposers
+    );
 
     dom.appendChild(rowEl, keyEl);
     dom.appendChild(rowEl, valueEl);
@@ -841,7 +940,6 @@ export function parseJSONResult(result) {
  * @returns {Function} An event handler function.
  */
 
-
 import { setOutput } from './setOutput.js';
 
 // New wrapper function
@@ -849,15 +947,24 @@ function createHandleInputError(env, parent) {
   const logError = env.errorFn;
   const dom = env.dom;
   const addWarning = dom.addWarning;
-  return (e) => {
+  return e => {
     logError('Error processing input:', e);
-    setTextContent({ content: 'Error: ' + e.message, presenterKey: 'text' }, dom, parent);
+    setTextContent(
+      { content: 'Error: ' + e.message, presenterKey: 'text' },
+      dom,
+      parent
+    );
     addWarning(parent);
   };
 }
 
 export function processInputAndSetOutput(elements, processingFunction, env) {
-  const { inputElement, outputParentElement: parent, outputSelect, article } = elements;
+  const {
+    inputElement,
+    outputParentElement: parent,
+    outputSelect,
+    article,
+  } = elements;
   const { createEnv, dom } = env;
   const toyEnv = createEnv();
   const inputValue = inputElement.value;
@@ -881,11 +988,12 @@ function handleInputProcessing(elements, processingFunction, env) {
   }
 }
 
-export const createHandleSubmit = (elements, processingFunction, env) => (event) => {
-  const { dom } = env;
-  dom.stopDefault(event);
-  handleInputProcessing(elements, processingFunction, env);
-};
+export const createHandleSubmit =
+  (elements, processingFunction, env) => event => {
+    const { dom } = env;
+    dom.stopDefault(event);
+    handleInputProcessing(elements, processingFunction, env);
+  };
 
 /**
  * Initializes the interactive elements (input, button, output) within a toy's article element.
@@ -908,11 +1016,15 @@ function disableInputAndButton(inputElement, submitButton) {
  * Sets up event listeners and initial state.
  * @param {HTMLElement} article - The article element containing the toy.
  * @param {Function} processingFunction - The toy's core logic function.
- * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, and dom.
+ * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, dom, and getUuid.
  */
-export function initializeInteractiveComponent(article, processingFunction, config) {
+export function initializeInteractiveComponent(
+  article,
+  processingFunction,
+  config
+) {
   const logInfo = config.loggers.logInfo;
-  const { globalState, createEnvFn, errorFn, fetchFn, dom } = config;
+  const { globalState, createEnvFn, errorFn, fetchFn, dom, getUuid } = config;
   logInfo('Initializing interactive component for article', article.id);
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
@@ -925,7 +1037,11 @@ export function initializeInteractiveComponent(article, processingFunction, conf
 
   const presenterKey = 'text';
   // Update message to show JS is running, replacing <p.output> with paragraph
-  const initialisingWarning = setTextContent({ content: 'Initialising...', presenterKey }, dom, outputParent);
+  const initialisingWarning = setTextContent(
+    { content: 'Initialising...', presenterKey },
+    dom,
+    outputParent
+  );
 
   // Use logInfo directly from config
   const env = {
@@ -934,18 +1050,38 @@ export function initializeInteractiveComponent(article, processingFunction, conf
     errorFn,
     fetchFn,
     dom,
-    logInfo
+    logInfo,
+    getUuid,
   };
-  const handleSubmit = createHandleSubmit({ inputElement, outputElement: initialisingWarning, outputParent, outputParentElement: outputParent, outputSelect, article }, processingFunction, env);
+  const handleSubmit = createHandleSubmit(
+    {
+      inputElement,
+      outputElement: initialisingWarning,
+      outputParent,
+      outputParentElement: outputParent,
+      outputSelect,
+      article,
+    },
+    processingFunction,
+    env
+  );
 
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);
 
   // Add event listener for Enter key in the input field
-  dom.addEventListener(inputElement, 'keypress', createHandleKeyPress(handleSubmit));
+  dom.addEventListener(
+    inputElement,
+    'keypress',
+    createHandleKeyPress(handleSubmit)
+  );
 
   // Enable controls when initialization is complete using the function from this module
-  enableInteractiveControls({ inputElement, submitButton, parent: outputParent }, dom, presenterKey);
+  enableInteractiveControls(
+    { inputElement, submitButton, parent: outputParent },
+    dom,
+    presenterKey
+  );
 }
 
 /**
@@ -954,7 +1090,7 @@ export function initializeInteractiveComponent(article, processingFunction, conf
  * @returns {Function} Keypress event handler.
  */
 function createHandleKeyPress(handleSubmit) {
-  return (event) => {
+  return event => {
     if (event.key === 'Enter') {
       handleSubmit(event);
     }
@@ -976,8 +1112,16 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
   }
   const interactiveComponents = env.getInteractiveComponents(win);
   const interactiveComponentCount = env.getInteractiveComponentCount(win);
-  logInfo('Initializing', interactiveComponentCount, 'interactive components via IntersectionObserver');
-  const init = env.getComponentInitializer(getElement, logWarning, createIntersectionObserver);
+  logInfo(
+    'Initializing',
+    interactiveComponentCount,
+    'interactive components via IntersectionObserver'
+  );
+  const init = env.getComponentInitializer(
+    getElement,
+    logWarning,
+    createIntersectionObserver
+  );
   interactiveComponents.forEach(init);
 }
 
@@ -992,7 +1136,9 @@ export const syncHiddenField = (textInput, rows, dom) => {
   // Only include keys with non-empty key or value
   const filtered = {};
   for (const [k, v] of Object.entries(rows)) {
-    if (k || v) {filtered[k] = v;}
+    if (k || v) {
+      filtered[k] = v;
+    }
   }
   dom.setValue(textInput, JSON.stringify(filtered));
 };
@@ -1014,7 +1160,14 @@ export const syncHiddenField = (textInput, rows, dom) => {
  * @param {Function} syncHiddenField - Function to sync the hidden field
  * @returns {Function} The render function
  */
-export const createRenderer = (dom, disposersArray, container, rows, textInput, syncHiddenField) => {
+export const createRenderer = (
+  dom,
+  disposersArray,
+  container,
+  rows,
+  textInput,
+  syncHiddenField
+) => {
   /**
    * Renders the key-value input UI
    */
@@ -1028,7 +1181,18 @@ export const createRenderer = (dom, disposersArray, container, rows, textInput, 
     }
 
     const entries = Object.entries(rows);
-    entries.forEach(createKeyValueRow(dom, entries, textInput, rows, syncHiddenField, disposersArray, render, container));
+    entries.forEach(
+      createKeyValueRow(
+        dom,
+        entries,
+        textInput,
+        rows,
+        syncHiddenField,
+        disposersArray,
+        render,
+        container
+      )
+    );
 
     syncHiddenField(textInput, rows, dom);
   };
@@ -1052,7 +1216,14 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   const disposers = [];
 
   // Create the render function with the required dependencies
-  const render = createRenderer(dom, disposers, kvContainer, rows, textInput, syncHiddenField);
+  const render = createRenderer(
+    dom,
+    disposers,
+    kvContainer,
+    rows,
+    textInput,
+    syncHiddenField
+  );
 
   // Initial render
   render();
@@ -1069,13 +1240,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
  * @param {object} config - An object containing win, doc, logFn, warnFn, getElementByIdFn, and createIntersectionObserverFn.
  */
 
-
-
-
-
-
-
-
 /**
  * Creates a function that initializes dropdown event listeners
  * @param {Function} onOutputChange - Handler for output dropdown changes
@@ -1083,13 +1247,21 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
  * @param {Object} dom - The DOM utilities object
  * @returns {Function} A function that initializes dropdown event listeners
  */
-export const createDropdownInitializer = (onOutputChange, onInputChange, dom) => {
+export const createDropdownInitializer = (
+  onOutputChange,
+  onInputChange,
+  dom
+) => {
   return () => {
-    const outputDropdowns = Array.from(dom.querySelectorAll('article.entry .value > select.output'));
+    const outputDropdowns = Array.from(
+      dom.querySelectorAll('article.entry .value > select.output')
+    );
     outputDropdowns.forEach(createAddDropdownListener(onOutputChange, dom));
 
     // Add event listeners to toy input dropdowns
-    const inputDropdowns = Array.from(dom.querySelectorAll('article.entry .value > select.input'));
+    const inputDropdowns = Array.from(
+      dom.querySelectorAll('article.entry .value > select.input')
+    );
     inputDropdowns.forEach(createAddDropdownListener(onInputChange, dom));
   };
 };
@@ -1097,4 +1269,5 @@ export const createDropdownInitializer = (onOutputChange, onInputChange, dom) =>
 /**
  * Helper function needed by getData
  */
-export const getDeepStateCopy = (globalState) => JSON.parse(JSON.stringify(globalState));
+export const getDeepStateCopy = globalState =>
+  JSON.parse(JSON.stringify(globalState));
