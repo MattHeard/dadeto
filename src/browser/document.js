@@ -166,6 +166,15 @@ export const removeEventListener = (target, event, handler, options) => {
 };
 
 /**
+ * Determines if the current URL contains the `beta` query parameter
+ * @returns {boolean} True when the page URL includes `?beta`
+ */
+export const hasBetaParam = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.has('beta');
+};
+
+/**
  * Sets the type of an input element
  * @param {HTMLInputElement} element - The input element to set the type for
  * @param {string} type - The type to set (e.g., 'text', 'number', 'email')
@@ -283,6 +292,7 @@ export const dom = {
   getValue,
   getTargetValue,
   setTargetValue,
+  hasBetaParam,
   reveal,
 };
 

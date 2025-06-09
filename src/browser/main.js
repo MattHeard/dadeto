@@ -18,6 +18,7 @@ import {
 } from './toys.js';
 
 import { dom } from './document.js';
+import { revealBetaArticles } from './beta.js';
 
 import {
   getElementById,
@@ -136,4 +137,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('article.entry .value > select.input')
   );
   inputDropdowns.forEach(createAddDropdownListener(onInputDropdownChange, dom));
+
+  revealBetaArticles(dom);
 });
