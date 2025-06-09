@@ -10,6 +10,10 @@ export const querySelectorAll = selector => document.querySelectorAll(selector);
 export const addClass = (element, className) =>
   element.classList.add(className);
 
+export const removeClass = (element, className) => {
+  element.classList.remove(className);
+};
+
 export const setClassName = (element, className) => {
   element.className = className;
 };
@@ -250,6 +254,7 @@ export const dom = {
   setDataAttribute,
   getDataAttribute,
   addClass,
+  removeClass,
   removeEventListener,
   appendChild,
   createTextNode,
