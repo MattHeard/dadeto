@@ -9,4 +9,8 @@ describe('parseJSONResult', () => {
   test('returns object for valid JSON', () => {
     expect(parseJSONResult('{"a":1}')).toEqual({ a: 1 });
   });
+
+  test('returns null for undefined input', () => {
+    expect(parseJSONResult(undefined)).toBeNull();
+  });
 });
