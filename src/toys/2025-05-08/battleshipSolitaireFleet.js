@@ -358,4 +358,10 @@ function getFleetResultOrError(fleetResult) {
   return fleetRetryError();
 }
 
-export { generateFleet, placeAllShips };
+export {
+  generateFleet,
+  placeAllShips,
+  isCoordNonNegative,
+  isCoordWithinBoard,
+  neighbours
+};
