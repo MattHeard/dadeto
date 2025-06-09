@@ -28,7 +28,7 @@ describe('setOutput', () => {
   });
 
   it('resets newData.output if it is not an object', () => {
-    const initial = { output: 42 };
+    const initial = { output: [1, 2] };
     const setData = jest.fn();
     const env = new Map([
       ['getData', () => initial],
@@ -39,7 +39,7 @@ describe('setOutput', () => {
     expect(result).toMatch(/Success: Output data deep merged/);
     expect(setData).toHaveBeenCalled();
     const callArg = setData.mock.calls[0][0];
-    expect(callArg.output).toMatchObject({ b: 2 });
+    expect(callArg.output).toStrictEqual({ b: 2 });
   });
 
   it('handles null existing output', () => {
