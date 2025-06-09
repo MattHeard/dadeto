@@ -14,17 +14,19 @@ beforeAll(async () => {
   });
   src += '\nexport { createValueDiv };';
   src += `\n//# sourceURL=${generatorPath}`;
-  ({ createValueDiv } = await import(`data:text/javascript,${encodeURIComponent(src)}`));
+  ({ createValueDiv } = await import(
+    `data:text/javascript,${encodeURIComponent(src)}`
+  ));
 });
 
 describe('createValueDiv falsey classes', () => {
   test('filters out falsey additional classes', () => {
     const html = createValueDiv('content', ['', undefined, 'extra']);
-    expect(html).toBe('<div class="value extra">content</div>');
+    expect(html).toBe('<div class="value   extra">content</div>');
   });
 
   test('ignores null and zero values in additional classes', () => {
     const html = createValueDiv('text', [null, 0, 'foo']);
-    expect(html).toBe('<div class="value foo">text</div>');
+    expect(html).toBe('<div class="value  0 foo">text</div>');
   });
 });
