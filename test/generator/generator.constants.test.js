@@ -42,6 +42,11 @@ describe('generator constants usage', () => {
     });
   });
 
+  test('blog output uses the key class for labels', () => {
+    const html = generateBlogOuter({ posts: [] });
+    expect(html).toMatch(/<div class="key(?: |\")/);
+  });
+
   test('blog output closes container before script tag', () => {
     const html = generateBlogOuter({ posts: [] });
     expect(html).toContain(
