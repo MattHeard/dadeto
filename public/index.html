@@ -332,21 +332,54 @@
           Software developer and philosopher in Berlin
         </div>
       </div>
-      <article class="entry release-beta" id="BETA1">
+      <article class="entry tag-toy tag-uuid tag-beta release-beta" id="UUID1">
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
         <div class="value full-width">
           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
         </div>
-        <div class="key article-title">BETA1</div>
+        <div class="key article-title">UUID1</div>
         <div class="value">
-          <h2><a href="#BETA1">Beta Post</a></h2>
+          <h2><a href="#UUID1">UUID</a></h2>
         </div>
         <div class="key">pubAt</div>
-        <p class="value metadata">1 Jan 2030</p>
-        <div class="key">text</div>
-        <p class="value">
-          This is a beta post used for testing the beta feature flag.
+        <p class="value metadata">9 Jun 2025</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-uuid">uuid</a>,
+          <a class="tag-beta">beta</a>
         </p>
+        <div class="key">text</div>
+        <p class="value">Returns a random UUID.</p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="number">number</option>
+            <option value="kv">kv</option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value"><button type="submit" disabled>Submit</button></div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent('UUID1', '/2025-06-09/uuid.js', 'uuidToy');
+        </script>
       </article>
       <article
         class="entry tag-self tag-misunderstanding tag-communication tag-language tag-mind tag-perception"

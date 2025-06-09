@@ -62,6 +62,10 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/clearDisposers.test.js
   1:20  warning  'it' is defined but never used  no-unused-vars
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.allTypes.mutantKill.test.js
+  17:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  21:18  warning  Ternary operator used                                       no-ternary
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.default.test.js
   14:7  warning  Ternary operator used  no-ternary
   55:7  warning  Ternary operator used  no-ternary
@@ -78,6 +82,13 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.number.test.js
   20:30  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.numberThenKv.mutantKill.test.js
+  15:28  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.numberThenText.test.js
+  11:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  43:36  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.objectLiteral.mutantKill.test.js
   15:30  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
 
@@ -86,6 +97,12 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.randomMutantKill.test.js
   14:7  warning  Ternary operator used  no-ternary
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.sequenceAdditional.test.js
+  15:9  warning  Ternary operator used  no-ternary
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.sequentialValues.test.js
+  13:46  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createNumberInput.dispose.test.js
   48:17  warning  'event' is assigned a value but never used  no-unused-vars
@@ -172,4 +189,10 @@
   1702:9   warning  Ternary operator used                                       no-ternary
   1721:9   warning  Ternary operator used                                       no-ternary
 
-✖ 93 problems (0 errors, 93 warnings)
+/Users/matthew.heard/Code/Matt/dadeto/test/generator/dateFormatOptions.runtime.test.js
+  1:34  warning  'jest' is defined but never used  no-unused-vars
+
+/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-06-09/uuid.test.js
+  8:32  warning  Ternary operator used  no-ternary
+
+✖ 102 problems (0 errors, 102 warnings)
