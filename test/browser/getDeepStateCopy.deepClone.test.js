@@ -1,8 +1,8 @@
 import { describe, it, expect } from '@jest/globals';
 import { getDeepStateCopy } from '../../src/browser/toys.js';
 
-describe('getDeepStateCopy deep clone validation', () => {
-  it('clones nested objects without keeping references', () => {
+describe('getDeepStateCopy deep clone', () => {
+  it('creates a deep clone of the provided object', () => {
     const original = { level1: { level2: { value: 'x' } } };
     const copy = getDeepStateCopy(original);
     expect(copy).toEqual(original);
