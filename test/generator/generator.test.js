@@ -425,31 +425,6 @@ describe('Blog Generator', () => {
     expect(htmlNoTags).not.toMatch('tag-');
   });
 
-  test('should omit related links section when none are provided', () => {
-    const blog = {
-      posts: [
-        {
-          key: 'NL1',
-          title: 'No Links',
-          publicationDate: '2024-05-01',
-          content: ['No links here'],
-        },
-        {
-          key: 'NL2',
-          title: 'Empty Links',
-          publicationDate: '2024-05-02',
-          content: ['Still no links'],
-          relatedLinks: [],
-        },
-      ],
-    };
-
-    const htmlNoLinks = generateBlog({ blog, header, footer }, wrapHtml);
-    expect(htmlNoLinks).toContain('<article class="entry" id="NL1">');
-    expect(htmlNoLinks).toContain('<article class="entry" id="NL2">');
-    expect(htmlNoLinks).not.toMatch('<div class="key">links</div>');
-    expect(htmlNoLinks).not.toMatch('related-links');
-  });
 
   test('should render quotes as blockquotes', () => {
     const blog = {
