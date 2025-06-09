@@ -4,7 +4,6 @@
       "key": "UUID1",
       "title": "UUID",
       "publicationDate": "2025-06-09",
-      "release": "beta",
       "content": ["Returns a random UUID."],
       "illustration": {
         "fileType": "png",
