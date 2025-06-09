@@ -64,4 +64,19 @@ describe('MEDIA_CONTENT_CONFIG via generateBlog', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<p class="value"><iframe');
   });
+
+  test('illustration element wrapped in div tag', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'ILLU1',
+          title: 'Has Image',
+          publicationDate: '2024-07-01',
+          illustration: { fileType: 'jpg', altText: 'art' },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<div class="value"><img');
+  });
 });
