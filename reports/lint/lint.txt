@@ -3,7 +3,7 @@
   27:23  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/document.js
-  164:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
+  168:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
   23:1  warning  './document.js' import is duplicated  no-duplicate-imports
@@ -66,7 +66,25 @@
   14:7  warning  Ternary operator used  no-ternary
   55:7  warning  Ternary operator used  no-ternary
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.defaultHandler2.test.js
+  11:35  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.kv.test.js
+  15:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.mutant.test.js
+  14:7  warning  Ternary operator used  no-ternary
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.number.test.js
+  20:30  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.objectLiteral.mutantKill.test.js
+  15:30  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.order.test.js
+  14:7  warning  Ternary operator used  no-ternary
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.randomMutantKill.test.js
   14:7  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createNumberInput.dispose.test.js
@@ -154,4 +172,4 @@
   1702:9   warning  Ternary operator used                                       no-ternary
   1721:9   warning  Ternary operator used                                       no-ternary
 
-✖ 87 problems (0 errors, 87 warnings)
+✖ 93 problems (0 errors, 93 warnings)
