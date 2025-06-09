@@ -322,4 +322,21 @@ describe('createTicTacToeBoardElement', () => {
       '   |   |   '
     );
   });
+
+  it('ignores multiple moves with invalid players', () => {
+    const input = JSON.stringify({
+      moves: [
+        { player: 'Q', position: { row: 0, column: 0 } },
+        { player: 'P', position: { row: 2, column: 2 } }
+      ]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
 });
