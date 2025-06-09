@@ -356,6 +356,9 @@ function getTagClassList(post) {
 
 function createArticleClassAttr(post) {
   const classes = [CLASS.ENTRY, ...getTagClassList(post)];
+  if (post.release === 'beta') {
+    classes.push('release-beta');
+  }
   const classValue = joinClasses(classes);
   return createAttrPair(ATTR_NAME.CLASS, classValue);
 }

@@ -222,4 +222,8 @@ export const styles = `
     bottom: 0;
     right: 0;
   }
+
+  .release-beta {
+    display: none;
+  }
 `;

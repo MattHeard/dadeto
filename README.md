@@ -123,6 +123,14 @@ Blog posts are defined in the `src/blog.json` file with the following structure:
 }
 ```
 
+## Beta Feature Flag
+
+Posts can be marked as beta by adding `"release": "beta"` in `blog.json`.
+Beta posts are hidden by default with the `release-beta` class. When the
+current page URL includes a `beta` query parameter (e.g. `?beta`), the
+`revealBetaArticles` function makes these posts visible using the
+`hasBetaParam` helper from the DOM utilities.
+
 ## License
 
 All content is authored by Matt Heard and is [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), unless otherwise noted.

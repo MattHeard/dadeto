@@ -11,4 +11,8 @@ describe('styles constant', () => {
     const ruleCount = (styles.match(/\{/g) || []).length;
     expect(ruleCount).toBeGreaterThan(5);
   });
+
+  test('includes rule to hide beta posts', () => {
+    expect(styles).toMatch(/\.release-beta\s*{\s*display: none;\s*}/);
+  });
 });
