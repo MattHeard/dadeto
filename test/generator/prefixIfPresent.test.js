@@ -27,5 +27,6 @@ describe('prefixIfPresent', () => {
     expect(prefixIfPresent(' by ', '')).toBe('');
     expect(prefixIfPresent(' by ', null)).toBe('');
     expect(prefixIfPresent(' by ', undefined)).toBe('');
+    expect(prefixIfPresent(' by ', 0)).toBe('');
   });
 });
