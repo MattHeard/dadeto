@@ -77,6 +77,19 @@ describe('processInputAndSetOutput', () => {
     );
   });
 
+  it('sets text content when parsed result lacks request url', () => {
+    const json = JSON.stringify({ request: {} });
+    processingFunction.mockReturnValue(json);
+
+    processInputAndSetOutput(elements, processingFunction, env);
+
+    expect(env.fetchFn).not.toHaveBeenCalled();
+    expect(env.dom.appendChild).toHaveBeenCalledWith(
+      elements.outputParentElement,
+      expect.anything()
+    );
+  });
+
   it('stores the result keyed by article id', () => {
     const result = 'ok';
     processingFunction.mockReturnValue(result);
