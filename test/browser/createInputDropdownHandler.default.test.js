@@ -78,9 +78,11 @@ describe('createInputDropdownHandler default branch', () => {
     };
 
     const handler = createInputDropdownHandler(dom);
-    handler(event);
+    expect(() => handler(event)).not.toThrow();
 
     expect(reveal).toHaveBeenCalledWith(textInput);
     expect(enable).toHaveBeenCalledWith(textInput);
+    expect(hide).not.toHaveBeenCalled();
+    expect(disable).not.toHaveBeenCalled();
   });
 });
