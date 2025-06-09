@@ -28,5 +28,8 @@ describe('createHandleSubmit string representation', () => {
     expect(typeof handler).toBe('function');
     expect(handler.length).toBe(1);
     expect(handler.toString()).toContain('stopDefault');
+    // Additional assertion to help eliminate mutation that removes
+    // the handleInputProcessing call within the handler
+    expect(handler.toString()).toContain('handleInputProcessing');
   });
 });
