@@ -63,6 +63,10 @@ describe('safeTrim', () => {
     expect(safeTrim('   ')).toBe('');
   });
 
+  test('handles whitespace with newlines and tabs', () => {
+    expect(safeTrim('\n\t  \t')).toBe('');
+  });
+
   test('preserves internal spacing', () => {
     const str = 'te st';
     expect(safeTrim(str)).toBe(str);
