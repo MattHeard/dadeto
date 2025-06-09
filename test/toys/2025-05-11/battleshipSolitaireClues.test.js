@@ -154,17 +154,11 @@ describe('generateClues', () => {
     expect(output.colClues).toEqual([0, 1]);
   });
 
-  it('returns an error when the fleet is null', () => {
-    const output = JSON.parse(generateClues('null'));
-    expect(output).toEqual({ error: 'Invalid fleet structure' });
-  });
-
-  it('does not throw when the fleet is null', () => {
-    expect(() => generateClues('null')).not.toThrow();
-  });
-
-  it('returns exact error string when fleet is null', () => {
-    const result = generateClues('null');
-    expect(result).toBe('{"error":"Invalid fleet structure"}');
+  it('handles a null fleet', () => {
+    const call = () => generateClues('null');
+    expect(call).not.toThrow();
+    const parsed = JSON.parse(call());
+    expect(parsed).toEqual({ error: 'Invalid fleet structure' });
+    expect(call()).toBe('{"error":"Invalid fleet structure"}');
   });
 });
