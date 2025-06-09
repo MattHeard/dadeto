@@ -153,6 +153,7 @@ describe('Cyberpunk Text Game', () => {
         /trip a wire|Sirens start up|sprint back to the Market/i
       );
     }
+    expect(tempData.state).toBe('hub');
   });
 
   test('trips wire in alley if stealth check is exactly 0.3', () => {
@@ -177,6 +178,7 @@ describe('Cyberpunk Text Game', () => {
     }
     expect(tempData.inventory).not.toContain('stimpack');
     expect(tempData.visited).not.toContain('alley');
+    expect(tempData.state).toBe('hub');
   });
 
   test('unknown input in hub', () => {
