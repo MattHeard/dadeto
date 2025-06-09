@@ -1,31 +1,41 @@
 // html.js - Core HTML utilities layer
 
 // Constants for HTML structure
-export const DOCTYPE = '<!DOCTYPE html>';
+export function doctype() {
+  return '<!DOCTYPE html>';
+}
 
 // Language settings
-export const LANGUAGE = {
-  EN: 'en',
-};
+export function language() {
+  return {
+    EN: 'en',
+  };
+}
 
 // HTML tag names
-export const HTML_TAG_NAME = 'html';
+export function htmlTagName() {
+  return 'html';
+}
 
 // HTML attribute names
-export const ATTR_NAME = {
-  LANG: 'lang',
-  CLASS: 'class',
-  ID: 'id',
-};
+export function attrName() {
+  return {
+    LANG: 'lang',
+    CLASS: 'class',
+    ID: 'id',
+  };
+}
 
 // HTML escape replacements
-export const HTML_ESCAPE_REPLACEMENTS = [
-  { from: /&/g, to: '&amp;' },
-  { from: /</g, to: '&lt;' },
-  { from: />/g, to: '&gt;' },
-  { from: /"/g, to: '&quot;' },
-  { from: /'/g, to: '&#039;' },
-];
+export function htmlEscapeReplacements() {
+  return [
+    { from: /&/g, to: '&amp;' },
+    { from: /</g, to: '&lt;' },
+    { from: />/g, to: '&gt;' },
+    { from: /"/g, to: '&quot;' },
+    { from: /'/g, to: '&#039;' },
+  ];
+}
 
 // HTML utilities
 
@@ -39,12 +49,24 @@ export function join(parts) {
 }
 
 // HTML tag and attribute symbols
-export const TAG_OPEN = '<';
-export const TAG_CLOSE = '>';
-export const SPACE = ' ';
-export const SLASH = '/';
-export const EQUALS = '=';
-export const QUOTE = '"';
+export function tagOpen() {
+  return '<';
+}
+export function tagClose() {
+  return '>';
+}
+export function space() {
+  return ' ';
+}
+export function slash() {
+  return '/';
+}
+export function equals() {
+  return '=';
+}
+export function quote() {
+  return '"';
+}
 
 /**
  * Get the parts that make up an opening HTML tag
@@ -54,9 +76,9 @@ export const QUOTE = '"';
  */
 export function getOpeningTagParts(name, attributes) {
   if (attributes) {
-    return [TAG_OPEN, name, SPACE, attributes, TAG_CLOSE];
+    return [tagOpen(), name, space(), attributes, tagClose()];
   }
-  return [TAG_OPEN, name, TAG_CLOSE];
+  return [tagOpen(), name, tagClose()];
 }
 
 /**
@@ -76,7 +98,7 @@ export function createOpeningTag(tagName, attributes = '') {
  * @returns {Array<string>} - Array of tag parts
  */
 export function getClosingTagParts(name) {
-  return [TAG_OPEN, SLASH, name, TAG_CLOSE];
+  return [tagOpen(), slash(), name, tagClose()];
 }
 
 /**
@@ -110,7 +132,7 @@ export function createTag(tagName, attributes, content) {
  * @returns {Array<string>} - Array of attribute parts
  */
 export function getAttrPairParts(attrName, attrValue) {
-  return [attrName, EQUALS, QUOTE, attrValue, QUOTE];
+  return [attrName, equals(), quote(), attrValue, quote()];
 }
 
 /**
@@ -153,7 +175,7 @@ export function applyAllHtmlEscapeReplacements(text, replacements) {
  * @returns {string} - HTML-escaped text
  */
 export function escapeHtml(text) {
-  return applyAllHtmlEscapeReplacements(text, HTML_ESCAPE_REPLACEMENTS);
+  return applyAllHtmlEscapeReplacements(text, htmlEscapeReplacements());
 }
 
 /**
@@ -162,8 +184,8 @@ export function escapeHtml(text) {
  * @returns {string} - The HTML tag with content
  */
 export function createHtmlTag(content) {
-  const langAttr = createAttrPair(ATTR_NAME.LANG, LANGUAGE.EN);
-  return createTag(HTML_TAG_NAME, langAttr, content);
+  const langAttr = createAttrPair(attrName().LANG, language().EN);
+  return createTag(htmlTagName(), langAttr, content);
 }
 
 /**
@@ -173,5 +195,5 @@ export function createHtmlTag(content) {
  */
 export function wrapHtml(content) {
   const htmlTag = createHtmlTag(content);
-  return join([DOCTYPE, htmlTag]);
+  return join([doctype(), htmlTag]);
 }

@@ -1,6 +1,6 @@
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
-import { HEADER_BANNER } from './title.js';
+import { headerBanner } from './title.js';
 import {
   createTag,
   createAttrPair,
@@ -185,7 +185,7 @@ const METADATA_TEXT = `Software developer and philosopher in Berlin`;
  */
 function createHeaderContent() {
   const valueDivs = [
-    createValueDiv(HEADER_BANNER),
+    createValueDiv(headerBanner()),
     createValueDiv(METADATA_TEXT, [CLASS.METADATA]),
   ];
   const parts = valueDivs.map(valueDiv =>
@@ -258,7 +258,7 @@ function createContainerDivOpen() {
  */
 function createHeaderContentArray(headerElement) {
   return [
-    headElement,
+    headElement(),
     '<body>',
     createContainerDivOpen(),
     '<!-- Header -->',
@@ -373,7 +373,7 @@ function createArticleAttributes(post) {
  * Format article content with full width element
  */
 function formatArticleContent(content) {
-  return `${fullWidthElement}${content}`;
+  return `${fullWidthElement()}${content}`;
 }
 
 /**

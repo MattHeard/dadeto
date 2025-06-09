@@ -1,4 +1,5 @@
-export const styles = `
+export function styles() {
+  return `
   body {
     background-color: #121212;
     background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
@@ -227,3 +228,4 @@ export const styles = `
     display: none;
   }
 `;
+}
