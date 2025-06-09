@@ -9,7 +9,7 @@ describe('createDispose', () => {
     const disposer = jest.fn();
     const disposers = [disposer];
     const dom = {
-      removeAllChildren: jest.fn()
+      removeAllChildren: jest.fn(),
     };
     const container = {};
     const rows = ['row'];
@@ -82,6 +82,10 @@ describe('createDispose', () => {
     const dispose = createDispose(disposers, dom, container, rows);
     expect(typeof dispose).toBe('function');
     expect(dispose.length).toBe(0);
+
+    dispose();
+    expect(dom.removeAllChildren).toHaveBeenCalledWith(container);
+    expect(rows).toHaveLength(0);
   });
 
   it('handles empty disposers without errors', () => {
