@@ -39,7 +39,11 @@ describe('createHandleSubmit error handling via createHandleInputError', () => {
 
     const handler = createHandleSubmit(elements, processingFunction, env);
 
-    expect(() => handler({})).not.toThrow();
+    let result;
+    expect(() => {
+      result = handler({});
+    }).not.toThrow();
+    expect(result).toBeUndefined();
 
     expect(env.errorFn).toHaveBeenCalledWith(
       'Error processing input:',
