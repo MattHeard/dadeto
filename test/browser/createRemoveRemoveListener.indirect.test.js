@@ -24,4 +24,21 @@ describe('createRemoveRemoveListener via setupRemoveButton', () => {
 
     expect(dom.removeEventListener).toHaveBeenCalledWith(button, 'click', addedHandler);
   });
+
+  it('returned disposer expects no parameters', () => {
+    const dom = {
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+    const button = {};
+    const rows = {};
+    const render = jest.fn();
+    const disposers = [];
+
+    setupRemoveButton(dom, button, rows, render, 'k', disposers);
+
+    const dispose = disposers[0];
+    expect(dispose.length).toBe(0);
+  });
 });
