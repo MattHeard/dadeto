@@ -11,6 +11,8 @@ import {
   SLASH,
   SPACE,
   TAG_CLOSE,
+  EQUALS,
+  QUOTE,
 } from '../../src/generator/html.js';
 
 describe('html utilities', () => {
@@ -79,5 +81,13 @@ describe('html constant values', () => {
 
   test('SLASH is forward slash', () => {
     expect(SLASH).toBe('/');
+  });
+
+  test('EQUALS is =', () => {
+    expect(EQUALS).toBe('=');
+  });
+
+  test('QUOTE is "', () => {
+    expect(QUOTE).toBe('"');
   });
 });
