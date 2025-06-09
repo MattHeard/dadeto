@@ -129,7 +129,7 @@ function joinClasses(classes) {
  * @returns {string} - HTML div element with value class and any additional classes
  */
 function createValueDiv(content, additionalClasses = []) {
-  const classes = [CLASS.VALUE, ...additionalClasses].filter(Boolean);
+  const classes = [CLASS.VALUE, ...additionalClasses];
   const joinedClasses = joinClasses(classes);
   return createDiv(joinedClasses, content);
 }
