@@ -1,11 +1,16 @@
 {
   "posts": [
     {
-      "key": "BETA1",
-      "title": "Beta Post",
-      "publicationDate": "2030-01-01",
+      "key": "UUID1",
+      "title": "UUID",
+      "publicationDate": "2025-06-09",
       "release": "beta",
-      "content": ["This is a beta post used for testing the beta feature flag."]
+      "content": ["Returns a random UUID."],
+      "toy": {
+        "modulePath": "/2025-06-09/uuid.js",
+        "functionName": "uuidToy"
+      },
+      "tags": ["toy", "uuid", "beta"]
     },
     {
       "key": "SELF1",
