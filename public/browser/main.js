@@ -1,7 +1,10 @@
 import { setupAudio } from './audio-controls.js';
 import { handleTagLinks } from './tags.js';
 import {
-  fetchAndCacheBlogData, getData, setData, getEncodeBase64
+  fetchAndCacheBlogData,
+  getData,
+  setData,
+  getEncodeBase64,
 } from './data.js';
 import {
   createOutputDropdownHandler,
@@ -11,10 +14,11 @@ import {
   getComponentInitializer,
   makeCreateIntersectionObserver,
   initializeVisibleComponents,
-  createDropdownInitializer
+  createDropdownInitializer,
 } from './toys.js';
 
 import { dom } from './document.js';
+import { revealBetaArticles } from './beta.js';
 
 import {
   getElementById,
@@ -22,18 +26,18 @@ import {
   warn,
   getCurrentTime,
   getRandomNumber,
+  getUuid,
   hasNoInteractiveComponents,
   getInteractiveComponentCount,
   getInteractiveComponents,
 } from './document.js';
-
 
 const globalState = {
   blog: null, // Holds the fetched blog data
   blogStatus: 'idle', // 'idle', 'loading', 'loaded', 'error'
   blogError: null, // Stores any error during fetch
   blogFetchPromise: null, // Tracks the ongoing fetch promise
-  temporary: {} // Holds data managed by toys like setTemporary
+  temporary: {}, // Holds data managed by toys like setTemporary
 };
 
 /**
@@ -50,15 +54,26 @@ const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
 
 function createEnv() {
   return new Map([
-    ["getRandomNumber", getRandomNumber],
-    ["getCurrentTime", getCurrentTime],
-    ["getData", () => getData(globalState, fetch, loggers)],
-    ["setData", (newData) => setData({ desired: newData, current: globalState }, loggers)],
-    ["encodeBase64", getEncodeBase64(btoa, unescape, encodeURIComponent)]
+    ['getRandomNumber', getRandomNumber],
+    ['getCurrentTime', getCurrentTime],
+    ['getUuid', getUuid],
+    ['getData', () => getData(globalState, fetch, loggers)],
+    [
+      'setData',
+      newData => setData({ desired: newData, current: globalState }, loggers),
+    ],
+    ['encodeBase64', getEncodeBase64(btoa, unescape, encodeURIComponent)],
   ]);
 }
 
-const env = { globalState, createEnv, error: dom.logError, fetch, loggers };
+const env = {
+  globalState,
+  createEnv,
+  error: dom.logError,
+  fetch,
+  loggers,
+  getUuid,
+};
 
 // --- Interactive Components ---
 
@@ -71,7 +86,7 @@ initializeVisibleComponents(
     hasNoInteractiveComponents,
     getInteractiveComponents,
     getInteractiveComponentCount,
-    getComponentInitializer
+    getComponentInitializer,
   },
   makeCreateIntersectionObserver(dom, env)
 );
@@ -81,7 +96,10 @@ initializeVisibleComponents(
 handleTagLinks(dom);
 
 // --- Initial Data Fetch ---
-fetchAndCacheBlogData(globalState, fetch, { logInfo: log, logError: dom.logError });
+fetchAndCacheBlogData(globalState, fetch, {
+  logInfo: log,
+  logError: dom.logError,
+});
 
 setupAudio(dom);
 
@@ -97,16 +115,28 @@ const onOutputDropdownChange = createOutputDropdownHandler(
 
 const onInputDropdownChange = createInputDropdownHandler(dom);
 
-const initializeDropdowns = createDropdownInitializer(onOutputDropdownChange, onInputDropdownChange, dom);
+const initializeDropdowns = createDropdownInitializer(
+  onOutputDropdownChange,
+  onInputDropdownChange,
+  dom
+);
 
 // Initialize dropdowns after DOM is fully loaded
 window.addEventListener('DOMContentLoaded', () => {
   initializeDropdowns();
 
   // Get all dropdowns and add event listeners with the dom parameter
-  const outputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.output'));
-  outputDropdowns.forEach(createAddDropdownListener(onOutputDropdownChange, dom));
+  const outputDropdowns = Array.from(
+    document.querySelectorAll('article.entry .value > select.output')
+  );
+  outputDropdowns.forEach(
+    createAddDropdownListener(onOutputDropdownChange, dom)
+  );
 
-  const inputDropdowns = Array.from(document.querySelectorAll('article.entry .value > select.input'));
+  const inputDropdowns = Array.from(
+    document.querySelectorAll('article.entry .value > select.input')
+  );
   inputDropdowns.forEach(createAddDropdownListener(onInputDropdownChange, dom));
+
+  revealBetaArticles(dom);
 });

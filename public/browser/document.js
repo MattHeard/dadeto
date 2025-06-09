@@ -1,13 +1,14 @@
 // DOM helper functions
-export const getElementById = (id) => document.getElementById(id);
+export const getElementById = id => document.getElementById(id);
 export const querySelector = (el, selector) => el.querySelector(selector);
 /**
  * Queries the document for all elements matching the given selector
  * @param {string} selector - The CSS selector to match elements against
  * @returns {NodeList} A NodeList of matching elements
  */
-export const querySelectorAll = (selector) => document.querySelectorAll(selector);
-export const addClass = (element, className) => element.classList.add(className);
+export const querySelectorAll = selector => document.querySelectorAll(selector);
+export const addClass = (element, className) =>
+  element.classList.add(className);
 
 export const setClassName = (element, className) => {
   element.className = className;
@@ -17,25 +18,30 @@ export const setClassName = (element, className) => {
  * Gets all audio elements in the document
  * @returns {NodeList} A NodeList of audio elements
  */
-export const getAudioElements = () => querySelectorAll("audio");
-export const removeControlsAttribute = (audio) => audio.removeAttribute("controls");
-export const createElement = (tag) => document.createElement(tag);
-export const createTextNode = (value) => document.createTextNode(value);
-export const getElementsByTagName = (tagName) => document.getElementsByTagName(tagName);
+export const getAudioElements = () => querySelectorAll('audio');
+export const removeControlsAttribute = audio =>
+  audio.removeAttribute('controls');
+export const createElement = tag => document.createElement(tag);
+export const createTextNode = value => document.createTextNode(value);
+export const getElementsByTagName = tagName =>
+  document.getElementsByTagName(tagName);
 export const hasClass = (element, cls) => element.classList.contains(cls);
-export const hide = (element) => element.style.display = 'none';
-export const addEventListener = (element, event, func) => element.addEventListener(event, func);
-export const appendChild = (parentNode, newChild) => parentNode.appendChild(newChild);
-export const insertBefore = (parentNode, newChild, refChild) => parentNode.insertBefore(newChild, refChild);
+export const hide = element => (element.style.display = 'none');
+export const addEventListener = (element, event, func) =>
+  element.addEventListener(event, func);
+export const appendChild = (parentNode, newChild) =>
+  parentNode.appendChild(newChild);
+export const insertBefore = (parentNode, newChild, refChild) =>
+  parentNode.insertBefore(newChild, refChild);
 export const removeChild = (parentNode, child) => parentNode.removeChild(child);
 
 /**
  * Removes all children from the given DOM element.
  * @param {HTMLElement} element - The parent element to clear.
  */
-const removeChildNode = (element) => element.removeChild(element.firstChild);
+const removeChildNode = element => element.removeChild(element.firstChild);
 
-export const removeAllChildren = (element) => {
+export const removeAllChildren = element => {
   while (element.firstChild) {
     removeChildNode(element);
   }
@@ -43,11 +49,10 @@ export const removeAllChildren = (element) => {
 
 export const contains = (parent, child) => parent.contains(child);
 
-
 // Event handlers
-export const stopDefault = (e) => e.preventDefault();
-export const playAudio = (audio) => audio.play();
-export const pauseAudio = (audio) => audio.pause();
+export const stopDefault = e => e.preventDefault();
+export const playAudio = audio => audio.play();
+export const pauseAudio = audio => audio.pause();
 
 // Console logging wrappers
 export const log = (...args) => console.log(...args);
@@ -55,31 +60,39 @@ export const warn = (...args) => console.warn(...args);
 export const logError = (...args) => console.error(...args);
 
 // Utility functions
-export const getClasses = (el) => Array.from(el.classList);
+export const getClasses = el => Array.from(el.classList);
 export const getRandomNumber = () => Math.random();
 export const getCurrentTime = () => new Date().toISOString();
-export const hasNextSiblingClass = (link, cls) => link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
+/**
+ * Generates a random UUID using the browser's crypto API.
+ * `crypto.randomUUID` is supported in modern browsers.
+ * @returns {string} The generated UUID
+ */
+export const getUuid = () => crypto.randomUUID();
+export const hasNextSiblingClass = (link, cls) =>
+  link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
 
 // DOM manipulation functions
-export const addWarning = (parent) => parent.classList.add('warning');
-export const removeWarning = (outputElement) => outputElement.classList.remove('warning');
+export const addWarning = parent => parent.classList.add('warning');
+export const removeWarning = outputElement =>
+  outputElement.classList.remove('warning');
 
 // Reveals the given element by resetting its display style
-export const reveal = (element) => element.style.display = '';
+export const reveal = element => (element.style.display = '');
 
 /**
  * Gets the current target of an event
  * @param {Event} event - The event object
  * @returns {EventTarget} The current target of the event
  */
-export const getCurrentTarget = (event) => event.currentTarget;
+export const getCurrentTarget = event => event.currentTarget;
 
 /**
  * Gets the parent element of the given element
  * @param {Element} element - The element to get the parent of
  * @returns {Element|null} The parent element, or null if the element has no parent
  */
-export const getParentElement = (element) => element.parentElement;
+export const getParentElement = element => element.parentElement;
 
 /**
  * Gets the value from an event target
@@ -102,7 +115,7 @@ export const setTargetValue = (event, value) => {
  * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element - The form element to get the value from (assumed to be truthy)
  * @returns {string|number|boolean|Array<string>|FileList} The value of the element (assumed to be truthy)
  */
-export const getValue = (element) => element.value;
+export const getValue = element => element.value;
 
 /**
  * Sets the value of a form element
@@ -118,7 +131,7 @@ export const setValue = (element, value) => {
  * Enables the given input element by setting its disabled property to false
  * @param {HTMLElement} input - The input element to enable
  */
-export const enable = (input) => {
+export const enable = input => {
   input.disabled = false;
 };
 
@@ -126,7 +139,7 @@ export const enable = (input) => {
  * Disables the given input element by setting its disabled property to true
  * @param {HTMLElement} input - The input element to disable
  */
-export const disable = (input) => {
+export const disable = input => {
   input.disabled = true;
 };
 
@@ -135,9 +148,10 @@ export const disable = (input) => {
  * @param {Node} element - The element to get the next sibling of
  * @returns {Node|null} The next sibling node (which could be an element, text node, etc.), or null if there isn't one
  */
-export const getNextSibling = (element) => element.nextSibling;
+export const getNextSibling = element => element.nextSibling;
 
-export const removeNextSibling = link => link.nextElementSibling && link.nextElementSibling.remove();
+export const removeNextSibling = link =>
+  link.nextElementSibling && link.nextElementSibling.remove();
 
 /**
  * Removes an event listener from an element
@@ -149,6 +163,15 @@ export const removeNextSibling = link => link.nextElementSibling && link.nextEle
  */
 export const removeEventListener = (target, event, handler, options) => {
   target.removeEventListener(event, handler, options);
+};
+
+/**
+ * Determines if the current URL contains the `beta` query parameter
+ * @returns {boolean} True when the page URL includes `?beta`
+ */
+export const hasBetaParam = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.has('beta');
 };
 
 /**
@@ -197,14 +220,14 @@ export const setTextContent = (element, content) => {
  * @param {Object} options - IntersectionObserver options
  * @returns {IntersectionObserver}
  */
-export const makeIntersectionObserver = (callback) =>
+export const makeIntersectionObserver = callback =>
   new IntersectionObserver(callback, { root: null, threshold: 0.1 });
 
-export const disconnectObserver = (observer) => {
+export const disconnectObserver = observer => {
   observer.disconnect();
 };
 
-export const isIntersecting = (entry) => entry.isIntersecting;
+export const isIntersecting = entry => entry.isIntersecting;
 
 /**
  * Dynamically imports a module
@@ -269,7 +292,8 @@ export const dom = {
   getValue,
   getTargetValue,
   setTargetValue,
-  reveal
+  hasBetaParam,
+  reveal,
 };
 
 /**
@@ -277,7 +301,7 @@ export const dom = {
  * @param {Window} win - The window object to check
  * @returns {boolean} True if there are no interactive components, false otherwise
  */
-export const hasNoInteractiveComponents = (win) => {
+export const hasNoInteractiveComponents = win => {
   return !win.interactiveComponents || win.interactiveComponents.length === 0;
 };
 
@@ -286,7 +310,7 @@ export const hasNoInteractiveComponents = (win) => {
  * @param {Window} win - The window object to check
  * @returns {number} The count of interactive components, or 0 if none exist
  */
-export const getInteractiveComponentCount = (win) => {
+export const getInteractiveComponentCount = win => {
   if (win.interactiveComponents) {
     return win.interactiveComponents.length;
   } else {
@@ -299,6 +323,6 @@ export const getInteractiveComponentCount = (win) => {
  * @param {Window} win - The window object to get components from
  * @returns {Array} An array of interactive components, or an empty array if none exist
  */
-export const getInteractiveComponents = (win) => {
+export const getInteractiveComponents = win => {
   return win.interactiveComponents || [];
 };

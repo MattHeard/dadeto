@@ -1,6 +1,13 @@
 {
   "posts": [
     {
+      "key": "BETA1",
+      "title": "Beta Post",
+      "publicationDate": "2030-01-01",
+      "release": "beta",
+      "content": ["This is a beta post used for testing the beta feature flag."]
+    },
+    {
       "key": "SELF1",
       "title": "Self-Serving Misunderstanding",
       "publicationDate": "2025-05-22",
@@ -47,9 +54,7 @@
       "key": "STRI1",
       "title": "String to Array",
       "publicationDate": "2025-05-15",
-      "content": [
-        "Converts a delimited string into an array."
-      ],
+      "content": ["Converts a delimited string into an array."],
       "illustration": {
         "fileType": "png",
         "altText": "a watercolor painting with four soft-edged rectangles in yellow, red, green, and blue arranged in a row, framed by a wavy red-orange line above and a straight line below, all set against a textured background blending beige, peach, and light blue tones"
@@ -58,12 +63,7 @@
         "modulePath": "/2025-05-15/stringToJsonArray.js",
         "functionName": "stringToJsonArrayToy"
       },
-      "tags": [
-        "toy",
-        "string",
-        "json",
-        "array"
-      ]
+      "tags": ["toy", "string", "json", "array"]
     },
     {
       "key": "BASE1",
@@ -80,12 +80,7 @@
         "modulePath": "/2025-05-13/base64Encoder.js",
         "functionName": "encodeBase64"
       },
-      "tags": [
-        "toy",
-        "base64",
-        "encoding",
-        "string"
-      ]
+      "tags": ["toy", "base64", "encoding", "string"]
     },
 
     {
@@ -103,12 +98,7 @@
         "modulePath": "/2025-05-11/battleshipSolitaireClues.js",
         "functionName": "generateClues"
       },
-      "tags": [
-        "toy",
-        "battleship",
-        "puzzle",
-        "clues"
-      ]
+      "tags": ["toy", "battleship", "puzzle", "clues"]
     },
     {
       "key": "BATT2",
@@ -125,20 +115,13 @@
         "modulePath": "/2025-05-08/battleshipSolitaireFleet.js",
         "functionName": "generateFleet"
       },
-      "tags": [
-        "toy",
-        "battleship",
-        "puzzle",
-        "generator"
-      ]
+      "tags": ["toy", "battleship", "puzzle", "generator"]
     },
     {
       "key": "COLO1",
       "title": "Colour Palette",
       "publicationDate": "2025-04-16",
-      "content": [
-        "Generates a random colour palette of hex codes."
-      ],
+      "content": ["Generates a random colour palette of hex codes."],
       "illustration": {
         "fileType": "png",
         "altText": "a 2d digital illustration of a painter's palette with twelve colorful paint blobs arranged in two rows on a beige background"
@@ -147,11 +130,7 @@
         "modulePath": "/2025-04-16/colorPalette.js",
         "functionName": "generatePalette"
       },
-      "tags": [
-        "toy",
-        "color",
-        "palette"
-      ]
+      "tags": ["toy", "color", "palette"]
     },
     {
       "key": "VIBE1",
@@ -164,19 +143,13 @@
         "fileType": "png",
         "altText": "a digital illustration in a modern, geometric, and futuristic style showing a conductor orchestrating a glowing ai-powered pipeline with symbols and icons, against a dark background with blue and purple gradients"
       },
-      "tags": [
-        "ai",
-        "vibe-coding",
-        "tools"
-      ]
+      "tags": ["ai", "vibe-coding", "tools"]
     },
     {
       "key": "TICT1",
       "title": "Tic Tac Toe",
       "publicationDate": "2025-04-06",
-      "content": [
-        "A tic-tac-toe game."
-      ],
+      "content": ["A tic-tac-toe game."],
       "illustration": {
         "fileType": "png",
         "altText": "a flat, graphic digital illustration depicts a tic-tac-toe game on a slightly irregular 3x3 grid with bold 'x' and 'o' symbols in textured navy-blue and orange-yellow hues; a stylized hand points to an empty square, indicating the next move with a curved arrow, all set against a vintage off-white background"
@@ -185,11 +158,7 @@
         "modulePath": "/2025-04-06/ticTacToe.js",
         "functionName": "ticTacToeMove"
       },
-      "tags": [
-        "toy",
-        "game",
-        "tic-tac-toe"
-      ]
+      "tags": ["toy", "game", "tic-tac-toe"]
     },
     {
       "key": "HTTP1",
@@ -199,18 +168,12 @@
         "fileType": "png",
         "altText": "an abstract geometric illustration featuring a dynamic orange circle with radiating black curves, a purple triangle, linked teal circles, and a rounded black rectangle, all set against a textured off-white background with a balanced composition and a sense of visual flow"
       },
-      "content": [
-        "Sends a GET request and prints the response."
-      ],
+      "content": ["Sends a GET request and prints the response."],
       "toy": {
         "modulePath": "/2025-04-05/httpRequest.js",
         "functionName": "httpRequest"
       },
-      "tags": [
-        "toy",
-        "http",
-        "web"
-      ]
+      "tags": ["toy", "http", "web"]
     },
     {
       "key": "FLUS1",
@@ -223,19 +186,13 @@
         "fileType": "png",
         "altText": "a person sitting at a desk writing on paper, surrounded by crumpled pages and a glowing lightbulb above their head, symbolizing the creative process of refining ideas"
       },
-      "tags": [
-        "writing",
-        "quality",
-        "ideas"
-      ]
+      "tags": ["writing", "quality", "ideas"]
     },
     {
       "key": "CYBE1",
       "title": "Cyberpunk Adventure",
       "publicationDate": "2025-03-30",
-      "content": [
-        "A cyberpunk text adventure."
-      ],
+      "content": ["A cyberpunk text adventure."],
       "illustration": {
         "fileType": "png",
         "altText": "a neon-lit cyberpunk market with glowing signs in blues and purples, crowded with blurred figures and a silhouetted man in a high-collared jacket in the foreground"
@@ -244,12 +201,7 @@
         "modulePath": "/2025-03-30/cyberpunkAdventure.js",
         "functionName": "cyberpunkAdventure"
       },
-      "tags": [
-        "toy",
-        "game",
-        "text-adventure",
-        "cyberpunk"
-      ]
+      "tags": ["toy", "game", "text-adventure", "cyberpunk"]
     },
     {
       "key": "SETT1",
@@ -260,26 +212,20 @@
       ],
       "illustration": {
         "fileType": "png",
-        "fileName": "2025-03-29-2", 
+        "fileName": "2025-03-29-2",
         "altText": "a flat-style digital illustration depicts a young woman with red-orange hair in a ponytail, wearing a yellow shirt, working at a laptop and placing a turquoise sticky note on a nearby calendar, with a warm, textured background and bold outlines"
       },
       "toy": {
         "modulePath": "/2025-03-29/setTemporary.js",
         "functionName": "setTemporary"
       },
-      "tags": [
-        "toy",
-        "data",
-        "state"
-      ]
+      "tags": ["toy", "data", "state"]
     },
     {
       "key": "GETD1",
       "title": "Get Data Item",
       "publicationDate": "2025-03-29",
-      "content": [
-        "Gets specific data."
-      ],
+      "content": ["Gets specific data."],
       "illustration": {
         "fileType": "png",
         "fileName": "2025-03-29-1",
@@ -289,11 +235,7 @@
         "modulePath": "/2025-03-29/get.js",
         "functionName": "get"
       },
-      "tags": [
-        "toy",
-        "data",
-        "state"
-      ]
+      "tags": ["toy", "data", "state"]
     },
     {
       "key": "FISH1",
@@ -303,18 +245,12 @@
         "fileType": "png",
         "altText": "a pixel art digital illustration in 2d depicts a tranquil lakeside fishing scene inspired by snes and game boy aesthetics. a character in a floppy hat sits at the end of a wooden dock, holding a fishing rod over the rippling water. the lake reflects the warm tones of a setting sun, while tall reeds and trees line the far shore. soft, muted colors and low-resolution textures evoke a nostalgic, calming atmosphere. a few gentle ripples hint at unseen fish, and birds drift quietly in the sky above."
       },
-      "content": [
-        "A fishing game. Feel free to choose your bait."
-      ],
+      "content": ["A fishing game. Feel free to choose your bait."],
       "toy": {
         "modulePath": "/2025-03-29/fishingGame.js",
         "functionName": "fishingGame"
       },
-      "tags": [
-        "toy",
-        "game",
-        "fishing"
-      ]
+      "tags": ["toy", "game", "fishing"]
     },
     {
       "key": "RAND1",
@@ -324,9 +260,7 @@
         "fileType": "png",
         "altText": "a fantasy-style illustration of six personified random number generators seated around a round stone table. at the center of the table glows a large 20-sided die showing the number 20. the characters include: a robed wizard with runes (representing the mersenne twister), a stern monk with a staff (linear congruential generator), a robotic knight with copper plating (hardware rng), a translucent ghost-like figure floating behind (quantum rng), a hooded rogue with a padlock on their cloak (cryptographically secure rng), and a wide-eyed jester juggling dice into a fire (middle square method). behind them hangs a glowing bell curve tapestry. the lighting is warm and dramatic."
       },
-      "content": [
-        "Produces random numbers."
-      ],
+      "content": ["Produces random numbers."],
       "toy": {
         "modulePath": "/2025-03-28/rand.js",
         "functionName": "rand"
@@ -338,11 +272,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "toy",
-        "random",
-        "number"
-      ]
+      "tags": ["toy", "random", "number"]
     },
     {
       "key": "PRET1",
@@ -359,11 +289,7 @@
         "modulePath": "/2025-03-26/prettyFloat.js",
         "functionName": "decomposeFloat"
       },
-      "tags": [
-        "toy",
-        "float",
-        "number"
-      ]
+      "tags": ["toy", "float", "number"]
     },
     {
       "key": "BOOL1",
@@ -374,9 +300,7 @@
         "fileName": "2025-03-21-1",
         "altText": "a brutalist-style abstract illustration symbolizing the coercion of values into boolean outcomes. the image features a jagged, concrete-like central structure resembling a processing unit. angular, geometric shapes flow into this structure and emerge as three outcomes: a solid green cube representing truth, a red cube for falsehood, and scattered grey fragments symbolizing discarded or unrecognized values. the color palette is mostly grayscale with stark accents of green and red, evoking a heavy, industrial atmosphere. the visual language is raw, minimalist, and symbolic, with no text or labels."
       },
-      "content": [
-        "Converts a value to either 'true' or 'false' or nothing."
-      ],
+      "content": ["Converts a value to either 'true' or 'false' or nothing."],
       "toy": {
         "modulePath": "/2025-03-21/booleanCoercer.js",
         "functionName": "coerceToBoolean"
@@ -388,11 +312,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "toy",
-        "coercion",
-        "truthiness"
-      ]
+      "tags": ["toy", "coercion", "truthiness"]
     },
     {
       "key": "ITAL1",
@@ -417,11 +337,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "toy",
-        "emphasis",
-        "typography"
-      ]
+      "tags": ["toy", "emphasis", "typography"]
     },
     {
       "key": "IDEN1",
@@ -431,9 +347,7 @@
         "fileType": "png",
         "altText": "a brutalist web style illustration showing a symmetrical, monochrome browser window split down the middle. both sides contain identical grid-based layouts with harsh lines, broken ui elements, and raw html-like boxes. the background is flat grey. the design emphasizes the idea of identity as self-sameness through mirrored structure and rigid repetition, using a gritty, utilitarian aesthetic with no text or ornamentation."
       },
-      "content": [
-        "Returns the input."
-      ],
+      "content": ["Returns the input."],
       "toy": {
         "modulePath": "/2025-03-20/identity.js",
         "functionName": "identity"
@@ -445,11 +359,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "toy",
-        "equality",
-        "functions"
-      ]
+      "tags": ["toy", "equality", "functions"]
     },
     {
       "key": "GETT1",
@@ -487,11 +397,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "productivity",
-        "organisation",
-        "mental-health"
-      ]
+      "tags": ["productivity", "organisation", "mental-health"]
     },
     {
       "key": "SYMP1",
@@ -544,11 +450,7 @@
           "type": "book"
         }
       ],
-      "tags": [
-  "consciousness",
-  "philosophy",
-  "sympathy"
-]
+      "tags": ["consciousness", "philosophy", "sympathy"]
     },
     {
       "key": "DETE1",
@@ -564,11 +466,7 @@
       "audio": {
         "fileType": "m4a"
       },
-      "tags": [
-        "determinism",
-        "morality",
-        "politics"
-      ]
+      "tags": ["determinism", "morality", "politics"]
     },
     {
       "key": "HILO1",
@@ -583,9 +481,7 @@
         "fileType": "png",
         "altText": "a kawaii techno-pop illustration of a smiling cartoon computer displaying “hello world” in colorful pixel text. the computer has blushing cheeks, big shiny eyes, and sits against a pastel background filled with sparkles, hearts, stars, and floating digital icons like a floppy disk and keyboard. the overall vibe is cheerful, playful, and digitally cute."
       },
-      "content": [
-        "Returns 'Hello world'."
-      ],
+      "content": ["Returns 'Hello world'."],
       "toy": {
         "modulePath": "/2024-10-02/hello.js",
         "functionName": "hello"
@@ -607,11 +503,7 @@
       "audio": {
         "fileType": "m4a"
       },
-      "tags": [
-        "philosophy",
-        "language",
-        "properties"
-      ]
+      "tags": ["philosophy", "language", "properties"]
     },
     {
       "key": "ONAM1",
@@ -619,15 +511,18 @@
       "publicationDate": "2024-04-13",
       "content": [
         "_Lonely and Horny_ was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in _Lonely and Horny_. He gives a spirited, funny, and coherent defence of philosophical egoism that I haven’t seen often.",
-        { "type": "quote", "content": "_\"I'm the only one that I am, dude… I don't care about *other* people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in *my* feelings *being good* for *me*.\"_" }
+        {
+          "type": "quote",
+          "content": "_\"I'm the only one that I am, dude… I don't care about *other* people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in *my* feelings *being good* for *me*.\"_"
+        }
       ],
       "audio": {
         "fileType": "m4a"
       },
       "youtube": {
-          "id": "EdlrqPPI_YQ",
-          "title": "Lonely & Horny Episode 2 - Orion",
-          "timestamp": 420
+        "id": "EdlrqPPI_YQ",
+        "title": "Lonely & Horny Episode 2 - Orion",
+        "timestamp": 420
       },
       "relatedLinks": [
         {
@@ -637,11 +532,7 @@
           "type": "book"
         }
       ],
-      "tags": [
-        "philosophy",
-        "egoism",
-        "television"
-      ]
+      "tags": ["philosophy", "egoism", "television"]
     },
     {
       "key": "ETHI1",
@@ -657,11 +548,7 @@
       "audio": {
         "fileType": "m4a"
       },
-      "tags": [
-        "philosophy",
-        "ethics",
-        "religion"
-      ]
+      "tags": ["philosophy", "ethics", "religion"]
     },
     {
       "key": "HOLD1",
@@ -684,11 +571,7 @@
       "audio": {
         "fileType": "m4a"
       },
-      "tags": [
-        "philosophy",
-        "ethics",
-        "moral-pluralism"
-      ]
+      "tags": ["philosophy", "ethics", "moral-pluralism"]
     },
     {
       "key": "APPR1",
@@ -704,11 +587,7 @@
       "audio": {
         "fileType": "m4a"
       },
-      "tags": [
-        "philosophy",
-        "pluralism",
-        "dilemmas"
-      ]
+      "tags": ["philosophy", "pluralism", "dilemmas"]
     },
     {
       "key": "COMP1",
@@ -800,11 +679,7 @@
           "type": "report"
         }
       ],
-      "tags": [
-        "environment",
-        "trade-offs",
-        "extraction"
-      ]
+      "tags": ["environment", "trade-offs", "extraction"]
     },
     {
       "key": "ANUN1",
@@ -840,11 +715,7 @@
           "type": "website"
         }
       ],
-      "tags": [
-        "ai",
-        "future",
-        "uncertainty"
-      ]
+      "tags": ["ai", "future", "uncertainty"]
     },
     {
       "key": "JOHN1",
@@ -878,11 +749,7 @@
           "type": "video"
         }
       ],
-      "tags": [
-        "film",
-        "music",
-        "violence"
-      ]
+      "tags": ["film", "music", "violence"]
     },
     {
       "key": "ACRO1",
@@ -916,11 +783,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "geology",
-        "fossils",
-        "continental-drift"
-      ]
+      "tags": ["geology", "fossils", "continental-drift"]
     },
     {
       "key": "ABRA1",
@@ -940,11 +803,7 @@
       "audio": {
         "fileType": "mp3"
       },
-      "tags": [
-        "fatigue",
-        "pandemic",
-        "overwhelmed"
-      ]
+      "tags": ["fatigue", "pandemic", "overwhelmed"]
     },
     {
       "key": "THES1",
@@ -980,11 +839,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "extinction",
-        "human-nature",
-        "climate"
-      ]
+      "tags": ["extinction", "human-nature", "climate"]
     },
     {
       "key": "CLIM1",
@@ -1012,11 +867,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "climate",
-        "activism",
-        "hope"
-      ]
+      "tags": ["climate", "activism", "hope"]
     },
     {
       "key": "COST1",
@@ -1045,11 +896,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "software",
-        "complexity",
-        "trade-offs"
-      ]
+      "tags": ["software", "complexity", "trade-offs"]
     },
     {
       "key": "FAIL1",
@@ -1085,11 +932,7 @@
           "quote": "Too busy to have your voice heard, I see."
         }
       ],
-      "tags": [
-        "voting",
-        "regret",
-        "civic-duty"
-      ]
+      "tags": ["voting", "regret", "civic-duty"]
     },
     {
       "key": "OPPO1",
@@ -1109,11 +952,7 @@
           "type": "website"
         }
       ],
-      "tags": [
-        "economics",
-        "ethics",
-        "priorities"
-      ]
+      "tags": ["economics", "ethics", "priorities"]
     },
     {
       "key": "QUES1",
@@ -1134,11 +973,7 @@
         "fileType": "png",
         "altText": "a victorian woman resting in a garden, hugging her knee, looking wistfully into the distance, oil painting"
       },
-      "tags": [
-        "introspection",
-        "habits",
-        "goals"
-      ]
+      "tags": ["introspection", "habits", "goals"]
     },
     {
       "key": "MUTE1",
@@ -1156,11 +991,7 @@
         "fileType": "png",
         "altText": "a desert planet with rocks in the background and a colourful sky, pencil and watercolour"
       },
-      "tags": [
-        "television",
-        "parenting",
-        "nostalgia"
-      ]
+      "tags": ["television", "parenting", "nostalgia"]
     },
     {
       "key": "PERM1",
@@ -1188,11 +1019,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "philosophy",
-        "ethics",
-        "decision-making"
-      ]
+      "tags": ["philosophy", "ethics", "decision-making"]
     },
     {
       "key": "PROV1",
@@ -1235,11 +1062,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-  "terrorism",
-  "refugees",
-  "media"
-]
+      "tags": ["terrorism", "refugees", "media"]
     },
     {
       "key": "FIRS1",
@@ -1261,11 +1084,7 @@
           "type": "website"
         }
       ],
-      "tags": [
-        "parenting",
-        "baking",
-        "gender-roles"
-      ]
+      "tags": ["parenting", "baking", "gender-roles"]
     },
     {
       "key": "THEW1",
@@ -1302,11 +1121,7 @@
           "quote": "A subplot is going to be how the general public has become 'bored' of dinosaurs and are in need of a shiny new attraction to revitalize interest…"
         }
       ],
-      "tags": [
-        "film",
-        "spectacle",
-        "meta-commentary"
-      ]
+      "tags": ["film", "spectacle", "meta-commentary"]
     },
     {
       "key": "SNOW1",
@@ -1340,11 +1155,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "technology",
-        "virtual-reality",
-        "social-networks"
-      ]
+      "tags": ["technology", "virtual-reality", "social-networks"]
     },
     {
       "key": "THEP1",
@@ -1374,11 +1185,7 @@
           "quote": "Dr. Frank Chilton, a California nuclear scientist who specializes in nuclear explosion engineering, said Phillips' design, outlined in a 34-page paper, would be 'pretty much guaranteed to work.'"
         }
       ],
-      "tags": [
-        "technology",
-        "infrastructure",
-        "fragility"
-      ]
+      "tags": ["technology", "infrastructure", "fragility"]
     },
     {
       "key": "FEMI1",
@@ -1408,11 +1215,7 @@
           "quote": "'The problem is the [earnings] averages don't work, because there are not enough parts for women to star in to get paid,' shared Amy Pascal, co-chair of Sony Pictures Entertainment…"
         }
       ],
-      "tags": [
-        "film",
-        "feminism",
-        "villains"
-      ]
+      "tags": ["film", "feminism", "villains"]
     },
     {
       "key": "RIGH1",
@@ -1440,11 +1243,7 @@
           "type": "website"
         }
       ],
-      "tags": [
-        "cycling",
-        "safety",
-        "consequentialism"
-      ]
+      "tags": ["cycling", "safety", "consequentialism"]
     },
     {
       "key": "VICT1",
@@ -1473,11 +1272,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "ethics",
-        "consequentialism",
-        "blame"
-      ]
+      "tags": ["ethics", "consequentialism", "blame"]
     },
     {
       "key": "EFFE1",
@@ -1548,11 +1343,7 @@
           "quote": "… our analysis shows that livestock and their byproducts actually account for at least 32,564 million tons of CO₂e per year, or 51 percent of annual worldwide GHG emissions."
         }
       ],
-      "tags": [
-        "veganism",
-        "climate",
-        "advocacy"
-      ]
+      "tags": ["veganism", "climate", "advocacy"]
     },
     {
       "key": "MAND1",
@@ -1593,11 +1384,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "maths",
-        "music",
-        "loss"
-      ]
+      "tags": ["maths", "music", "loss"]
     },
     {
       "key": "FOSS1",
@@ -1632,11 +1419,7 @@
           "type": "website"
         }
       ],
-      "tags": [
-        "climate",
-        "finance",
-        "activism"
-      ]
+      "tags": ["climate", "finance", "activism"]
     },
     {
       "key": "INCL1",
@@ -1671,11 +1454,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "feminism",
-        "language",
-        "advocacy"
-      ]
+      "tags": ["feminism", "language", "advocacy"]
     },
     {
       "key": "THEG1",
@@ -1716,11 +1495,7 @@
           "type": "website"
         }
       ],
-      "tags": [
-        "history",
-        "inequality",
-        "resilience"
-      ]
+      "tags": ["history", "inequality", "resilience"]
     },
     {
       "key": "TRUS1",
@@ -1754,11 +1529,7 @@
           "type": "article"
         }
       ],
-      "tags": [
-        "epistemology",
-        "science",
-        "authority"
-      ]
+      "tags": ["epistemology", "science", "authority"]
     },
     {
       "key": "WOME1",
@@ -1767,11 +1538,7 @@
       "content": [
         "Yashar Ali wrote a good summary of how dismissing women's negative reactions to sexism can make women feel like they are being irrational. There is an unfair stereotype that women are crazy, so if a woman responds to sexism in a negative way, she must be 'overreacting'. Saying \"you're so sensitive!\" undermines her perspective. Some people see this rejection of women's opinions as inconsiderate, most don't notice it at all. But it fuels a cruel stereotype by muting women's viewpoints, as it seeds self-doubt and self-censoring. If this causes women to be hesitant to speak up, communities lose valuable voices."
       ],
-      "tags": [
-        "sexism",
-        "stereotypes",
-        "feminism"
-      ]
+      "tags": ["sexism", "stereotypes", "feminism"]
     },
     {
       "key": "SORT1",
@@ -1780,11 +1547,7 @@
       "content": [
         "I was reading the newly-launched FiveThirtyEight blog today (it's not difficult to notice my nerd crush on Nate Silver) and he used his bookcase as an example of the 'trade-off between vividness and scalability'. My wife and I have been sorting our books by spine colour for a while now, but it's not as impressive as his. I have been curious about 'objective' algorithms for sorting by spine colour because some multi-colour books, like Nassim Nicholas Taleb's Antifragile, just refuse to be cleanly categorised. What about fitting spine rectangles into a 2-dimensional bookcase rectangle, optimising for minimal distance between similarly coloured pixels?"
       ],
-      "tags": [
-        "books",
-        "aesthetics",
-        "algorithms"
-      ]
+      "tags": ["books", "aesthetics", "algorithms"]
     },
     {
       "key": "DUNG1",
@@ -1793,11 +1556,7 @@
       "content": [
         "I met my wife playing Dungeons & Dragons. The world-building, improv, and camaraderie made it feel like the perfect hobby for me, but a few factors have caused me to drop it. I'm geographically further away from my D&D group than I was during university (albeit most players still live in the same city as me) and I don't have as much free time to waste on map-making, which was one of the best parts. Finally, the stress from juggling increasingly powerful players alongside expanding permutations of game-breaking abilities burned me out. Even so, I'm feeling drawn to DMing again."
       ],
-      "tags": [
-        "gaming",
-        "storytelling",
-        "burnout"
-      ]
+      "tags": ["gaming", "storytelling", "burnout"]
     },
     {
       "key": "BLAC1",
@@ -1806,11 +1565,7 @@
       "content": [
         "I was scrolling through my friends' Instagram photos and noticed that most were of girls wearing Black Milk leggings. I rolled my eyes and thought about how overrated they were, but then felt bad. The patterned leggings actually look pretty cool, and I reckon that Instagram has worked well as a word-of-mouth platform. I don't wear them myself, but I think I might be the kind of person to post photos of how they looked if I did. I don't particularly care about leggings, but I just thought it was interesting how I reacted negatively to a stream of photos."
       ],
-      "tags": [
-        "fashion",
-        "social-media",
-        "self-awareness"
-      ]
+      "tags": ["fashion", "social-media", "self-awareness"]
     },
     {
       "key": "OFRA1",
@@ -1819,11 +1574,7 @@
       "content": [
         "One of the sexiest things I've ever seen was one of my best friends impressing a girl by reciting Lewis Caroll's 'Jabberwocky' to her from memory. The poem shows why Alice's pair of books are incredibly insightful into the puzzles of language. Half of the words (like 'vorpal' and 'chortle') are made up, but the words still have meanings (even if Alice doesn't 'exactly know what they are'). We derive meanings from context, allowing us to learn new vocabulary. Even when half of the words are made up, we can understand them from how they reflect off of known words."
       ],
-      "tags": [
-        "poetry",
-        "language",
-        "romance"
-      ]
+      "tags": ["poetry", "language", "romance"]
     },
     {
       "key": "REGU1",
@@ -1832,11 +1583,7 @@
       "content": [
         "Where does the line get drawn about what can be said? Dissent? Ignorant hatred? Inciting imminent violence? Trolling religious zealots? I generally believe that the better response to hate speech is more speech, presented in a civil manner, to expose the ignorance of the haters. But how does that protect the victims of hate speech? When racial slurs are aimed at children, how should a liberal respond? A hedonistic liberal would say that liberty is virtuous only for the sake of making people happier. Freedom of speech almost always does that, but I can imagine situations when it does not."
       ],
-      "tags": [
-        "free-speech",
-        "ethics",
-        "harm"
-      ]
+      "tags": ["free-speech", "ethics", "harm"]
     },
     {
       "key": "LOSI1",
@@ -1845,11 +1592,7 @@
       "content": [
         "As I hope you have noticed, I put at least as much effort into visually laying out my blog posts as I do into writing them. I carefully use Markdown to format my text and GIMP to shoop my decorative images maybe obsessively. So, when the Tumblr app on my phone strips my drafts of their formatting, it frustrates me. Back when I was a teenager, I would evangelise OpenOffice.org as a reasonable alternative to Microsoft Office, but it was difficult to justify making my documents look nice if exporting to Word was just going to butcher the layout."
       ],
-      "tags": [
-        "writing",
-        "software",
-        "frustration"
-      ]
+      "tags": ["writing", "software", "frustration"]
     },
     {
       "key": "SUCK1",
@@ -1858,11 +1601,7 @@
       "content": [
         "_Sucker Punch_ suffers from problems like poor pacing and shallow character depth, but while the form has obscured the message, the message is much more interesting than the story or visual effects. On one side of the coin, you are presented with a criticism of modern female exploitation: these animated exaggerations are not real women -- they are geek fantasies. But on the other side, the film is shamelessly indulging in the very fetishes it criticises. The sucker punch is thrown at the audience, drawing them in to see a video game fantasy, and then reprimanding them by breaking their toys."
       ],
-      "tags": [
-        "film",
-        "feminism",
-        "critique"
-      ]
+      "tags": ["film", "feminism", "critique"]
     },
     {
       "key": "INDO1",
@@ -1871,11 +1610,7 @@
       "content": [
         "A month ago we put an avocado stone and some spring onion stumps in water and placed them on the window sill. They are growing faster than I thought and my delusions of grandeur are giving me dreams of an indoor vegetable farm. My girlfriend bet me that the avocado stone would sprout within four weeks and I bet that it wouldn't. It sprouted a week later. Because I lost the bet, I'll have to run up to the top of the street in my underwear, and I don't know when she will make me do it. Dumb, over-achieving avocado!"
       ],
-      "tags": [
-        "gardening",
-        "wagers",
-        "surprise"
-      ]
+      "tags": ["gardening", "wagers", "surprise"]
     },
     {
       "key": "DRIN1",
@@ -1884,11 +1619,7 @@
       "content": [
         "When someone is criminally punished only for driving while intoxicated, they are not being punished for an action which caused harm but because they performed a combination of actions which are statistically significantly linked with harm being caused. Due to an element of moral \"luck\", it is certainly possible for a drunk or high driver to drive somewhere without causing harm but we still consider that criminal. How does the act consequentialist reconcile this? Argue that driving drunk is not intrinsically wrong? Or develop a possibly convoluted argument for how each individual action of driving drunk somehow causes harm indirectly?"
       ],
-      "tags": [
-        "ethics",
-        "risk",
-        "law"
-      ]
+      "tags": ["ethics", "risk", "law"]
     },
     {
       "key": "CODE1",
@@ -1897,11 +1628,7 @@
       "content": [
         "I was arguing/discussing with my future wife about what is considered \"art\". I believe that the artist's intentions are irrelevant and that whether something is \"art\" is determined by how the viewer observes it.  Looking for counterexamples and illustrations, I asked her: would you consider it possible for a computer program to be \"art\"? I would, but she wasn't sure. Undoubtedly, almost all computer programs are primarily functional, but there is elegant code and there is inelegant code. Does elegance make code artistic?  If it does, I should start a gallery of clips of elegant code from open-source software."
       ],
-      "tags": [
-        "software",
-        "aesthetics",
-        "art"
-      ]
+      "tags": ["software", "aesthetics", "art"]
     },
     {
       "key": "REVE1",
@@ -1910,11 +1637,7 @@
       "content": [
         "I attended a dawn memorial service for ANZAC veterans this morning and thought about how annual commemoration for military personnel serves as a type of intangible compensation for their unusually sacrificial employment. A soldier going to war risks much more than I do when I go to work, but I do not believe they get a \"heroism\" bonus in their paycheck. Instead, our social contract teaches us to \"pay\" them our respect. A similar honour is bestowed upon public servants with life-threatening careers such as firefighting and law enforcement. Do we have a duty to remember and enshrine our valiant?"
       ],
-      "tags": [
-        "sacrifice",
-        "commemoration",
-        "duty"
-      ]
+      "tags": ["sacrifice", "commemoration", "duty"]
     },
     {
       "key": "JAYZ1",
@@ -1970,11 +1693,7 @@
       "content": [
         "My understanding of compassion in free market economics is that reducing the prices of goods and services through increasing market efficiency will help poor _consumers_ more than government intervention will help poor _workers_. But there are barriers to entry which are avoidable and are not caused by government intervention. Does aversion to multiculturalism act as a barrier to entry? When a fat, white woman yells \"Speak English!\" at a Chinese shopkeeper, the shopkeeper pays a hidden cost to continue working. In a maximally competitive market, where race shouldn't affect labour, neither should foreign cultural expression. More tolerance brings more competition."
       ],
-      "tags": [
-        "economics",
-        "multiculturalism",
-        "tolerance"
-      ]
+      "tags": ["economics", "multiculturalism", "tolerance"]
     },
     {
       "key": "WELL2",
@@ -1983,11 +1702,7 @@
       "content": [
         "I took some photos of actors I like when I visited the red carpet today for the premiere of the first _Hobbit_ film. When I was in high school, I rushed with my friends down Kent Terrace towards the Embassy Theatre to see if we could get a good spot to see Viggo Mortensen, Ian McKellan, Elijah Wood and others at the premiere of _The Return of the King_. It was good fun: I remember yelling \"Viggo! Viggo! Viggo!\" in adoration at the top of my lungs. My reaction was more subdued today, but I enjoyed seeing glamourous actors again."
       ],
-      "tags": [
-        "film",
-        "celebrities",
-        "wellington"
-      ]
+      "tags": ["film", "celebrities", "wellington"]
     },
     {
       "key": "SLOW1",
@@ -1996,11 +1711,7 @@
       "content": [
         "My future wife and I took a scenic rafting trip down the Rangitikei River for Christmas last year and earlier this year we picked a random weekend to take the trip. That random weekend turned out to be warm and sunny, and perfect for a relaxing drift down a river a few hours away from home.  As expected, the escape from the city made us consider quitting our day jobs, even though I haven't even properly started mine yet. I'm definitely more at home where there are paved roads and cellphone service, but I need adventures too."
       ],
-      "tags": [
-        "adventure",
-        "nature",
-        "relaxation"
-      ]
+      "tags": ["adventure", "nature", "relaxation"]
     },
     {
       "key": "NATE1",
@@ -2009,11 +1720,7 @@
       "content": [
         "Whether their leaders admit it or not, Republican losses across the board in US elections of legislative and executive branches indicate a shift away from the Tea Party.  But considering the issues needing immediate attention, the Democrat gains are not enough to deserve substantial celebration: the election doesn't solve the problems with the ongoing political stalemate.  But there was one clear winner: Nate Silver, who stood at the foreground of the battle between statisticians and pundits, led the number-crunchers to an overwhelming victory.  I feel more vindicated as long-time reader of Silver's blog than as an Obama supporter."
       ],
-      "tags": [
-        "politics",
-        "statistics",
-        "prediction"
-      ]
+      "tags": ["politics", "statistics", "prediction"]
     },
     {
       "key": "AVOI1",
@@ -2022,11 +1729,7 @@
       "content": [
         "After closely following the US presidential election for at least the last year, I am actively avoiding reading any news about the results today.  I am attending an \"election party\" this evening where we will watch the news and tally electoral votes ourselves as the states report their results.  Unfortunately, because I live in New Zealand, the party is effectively time-shifted several hours after the actual election. Our party starts at 6pm, when the election will actually be wrapping up (waiting only for inconsequential results from a few West Coast states, Alaska and Hawaii).  Thank god for the DVR!"
       ],
-      "tags": [
-        "politics",
-        "elections",
-        "avoidance"
-      ]
+      "tags": ["politics", "elections", "avoidance"]
     },
     {
       "key": "POLI1",
@@ -2035,11 +1738,7 @@
       "content": [
         "As I showered this morning, I imagined how I would act as police chief in charge of maintaining law and order during an \"Occupy Wall Street\"-style protest. Balancing the goals of prosecuting trespassers and keeping the peace is undeniably a difficult task, but I think that \"perception\" of police brutality against protesters creates a Streisand effect by rallying more support for the protesters and encouraging rioters and violent opportunists.  Wouldn't it be better to videotape any non-violent crimes (like trespassing) and not evict protesters, waiting for them leave out of boredom? The police can then prosecute peacefully later."
       ],
-      "tags": [
-        "politics",
-        "protests",
-        "policing"
-      ]
+      "tags": ["politics", "protests", "policing"]
     },
     {
       "key": "RHET1",
@@ -2048,11 +1747,7 @@
       "content": [
         "Reading Joseph Romm's Language Intelligence has led me to pick up my previously put-aside interest in practicing effective rhetoric. With my background in philosophy and computer science, I have overvalued the role that unemotional logic has to play in crafting convincing speech. Just as I repeated my lines again and again and again when learning to play Friar Lawrence in school, I have been repeating the lines of Martin Luther King Jr's  \"I Have a Dream\". Starting with _anaphora_ and alliteration, I am keeping a keen eye on figures of speech that focus my future approaches to effective arguing."
       ],
-      "tags": [
-        "rhetoric",
-        "language",
-        "persuasion"
-      ]
+      "tags": ["rhetoric", "language", "persuasion"]
     },
     {
       "key": "ARCT1",
@@ -2061,11 +1756,7 @@
       "content": [
         "This Arctic summer has broken records for the least sea ice in recent history. Lots of that melted ice will return this winter, but the total thick ice is decreasing. There are two issues to note. First, this melting trend exemplifies the clarity of the physical evidence for global warming. While Arctic sea ice levels alone do not establish human attribution, they identify much-needed climatic research. Second, the distinction between single- and multi-year ice highlights feedback loops. As more ice thaws and refreezes, less remains thick enough to maintain the albedo needed to prevent extra absorption of sunlight, accelerating warming."
       ],
-      "tags": [
-        "climate",
-        "arctic",
-        "sea-ice"
-      ]
+      "tags": ["climate", "arctic", "sea-ice"]
     },
     {
       "key": "BLOG1",
@@ -2074,11 +1765,7 @@
       "content": [
         "Wouldn't only a narcissist create a website about themselves? I benefit and suffer from an inflated ego, of course. I wouldn't consider my opinions worth blogging about if I didn't. But I don't think that my blog was intended as a soapbox for me to grab attention. 21st century identities are forged much more so on the internet than 20th century identities, and with a blog and a Twitter handle and a Facebook wall and a Google+ profile, I can manage the definition of \"Matt Heard\" more effectively. If I don't, computers will deduce my personality from my search terms."
       ],
-      "tags": [
-        "blogging",
-        "identity",
-        "self-promotion"
-      ]
+      "tags": ["blogging", "identity", "self-promotion"]
     },
     {
       "key": "INTR1",
@@ -2087,18 +1774,17 @@
       "content": [
         "I have a habit of reading in sprints, consuming several books in one month and then not picking up any for the next several months. My future wife and I challenged each other to read more by starting from one end of our bookcase and reading each book one at a time. I just finished my second book: _Introducing Political Philosophy_. I was cheating, though, because it is short and each page has a large picture. But it's interesting and seems to be a good summary of the history of political thought. My next is _Brave New World_ by Aldous Huxley."
       ],
-      "tags": [
-        "philosophy",
-        "politics",
-        "reading"
-      ]
+      "tags": ["philosophy", "politics", "reading"]
     },
     {
       "key": "WHYM1",
       "title": "Why Must Everybody Like You?",
       "publicationDate": "2006-05-05",
       "content": [
-        { "type": "quote", "content": "\"Why must everybody like you? Who liked J. P. Morgan? Was he impressive? In a Turkish bath he'd look like a butcher. But with his pockets on he was very well liked.\" (Miller, 72)" },
+        {
+          "type": "quote",
+          "content": "\"Why must everybody like you? Who liked J. P. Morgan? Was he impressive? In a Turkish bath he'd look like a butcher. But with his pockets on he was very well liked.\" (Miller, 72)"
+        },
         "First of all, I was disappointed by Circa's 3rd of May performance of \"Death of a Salesman\" - not because the play was so badly done (it was great), but instead because my expectations were so high. For the few days before viewing it, I received the notion that the play in general, and also this Circa presentation of it were brilliant. I heard nothing but criticism for both, and so my expectations ran rampant and free.",
         "I criticise the play in general for trying so hard to be depressing, and although it succeeded at achieving this, it seems like a cheap attraction for audiences. We go to horror films to watch people in situations we wouldn't enjoy being in ourselves - watch _Saw_ or its sequel. (I haven't watched _Saw_ but from the impression I get from others who have watched it, it's addictive in a disturbing way.) I believe that people watch depressing films and plays to cheer themselves up, and I disagree with how a lot of people believe that making a film or play depressing makes it a better film or play.",
         "The play presents the idea of the \"American Dream\" and how it fails to transfer from an idealistic perspective of the social and economic world to a realistic perspective. The main fault of the idea is that although everyone may be capable of achieving success and reaching the top of the metaphorical mountain, not everyone can be on top, so people must fail for others to succeed. And this is where the majority of criticism of capitalism comes from: for one person to become richer, another must become poorer.",
@@ -2160,7 +1846,10 @@
         "But that's no where near as interesting as one of the philosophical themes or motifs (or whatever the hell they call them) of the film: coincidence. Many of the characters of the film, especially V, don't believe in the notion of coincidence: \"There is no such thing as coincidence, just the illusion of coincidence.\" But if you do not believe in coincidence, then you must believe in something connecting events, whether it be Fate or God or Gaia. Do you believe that you have Free Will to choose what to do with your life, or do you believe that every choice you make is not really a choice, but just causality playing its role on the neurons in your brain, causing you to make a certain 'choice' because of the way your brain is wired? I would hate to live with the idea that everything is run by causality.",
         "I'm just going to ramble on a tangent for just a moment longer. The idea of causality is flawed, as it implies that every event is caused by a stimulus, which in turn would be its own event. This means that a giant tree of events would exist and there must've been an initial event at the start of time (ie. the Big Bang) which was caused by something. Either something outside of the existence of the universe from 'before' the existence of the universe must have started the Big Bang.",
         "Wow, that's really off-topic.",
-        { "type": "quote", "content": "\"Voilà! In view, a humble vaudevillian veteran, cast vicariously as both victim and villain by the vicissitudes of Fate. This visage, no mere veneer of vanity, is it vestige of the vox populi, now vacant, vanished, as the once vital voice of the verisimilitude now venerates what they once vilified. However, this valorous visitation of a by-gone vexation, stands vivified, and has vowed to vanquish these venal and virulent vermin vanguarding vice and vouchsafing the violently vicious and voracious violation of volition. The only verdict is vengeance; a vendetta, held as a votive, not in vain, for the value and veracity of such shall one day vindicate the vigilant and the virtuous. Verily, this vichyssoise of verbiage veers most verbose vis-à-vis an introduction, and so it is my very good honor to meet you and you may call me V.\"" }
+        {
+          "type": "quote",
+          "content": "\"Voilà! In view, a humble vaudevillian veteran, cast vicariously as both victim and villain by the vicissitudes of Fate. This visage, no mere veneer of vanity, is it vestige of the vox populi, now vacant, vanished, as the once vital voice of the verisimilitude now venerates what they once vilified. However, this valorous visitation of a by-gone vexation, stands vivified, and has vowed to vanquish these venal and virulent vermin vanguarding vice and vouchsafing the violently vicious and voracious violation of volition. The only verdict is vengeance; a vendetta, held as a votive, not in vain, for the value and veracity of such shall one day vindicate the vigilant and the virtuous. Verily, this vichyssoise of verbiage veers most verbose vis-à-vis an introduction, and so it is my very good honor to meet you and you may call me V.\""
+        }
       ]
     },
     {
@@ -2265,7 +1954,10 @@
       "title": "good sense",
       "publicationDate": "2005-02-07",
       "content": [
-        { "type": "quote", "content": "Good sense is, of all things among men, the most equally distributed; for everyone thinks himself so abundantly provided with it, that those even who are the most difficult to satisfy in everything else, do not usually desire a larger measure of this quality than they already possess." },
+        {
+          "type": "quote",
+          "content": "Good sense is, of all things among men, the most equally distributed; for everyone thinks himself so abundantly provided with it, that those even who are the most difficult to satisfy in everything else, do not usually desire a larger measure of this quality than they already possess."
+        },
         "*- Rene Descartes*",
         "_A Discourse on Method_"
       ]
