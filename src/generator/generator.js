@@ -1,13 +1,13 @@
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
-import { HEADER_BANNER } from './title.js';
+import { headerBanner } from './title.js';
 import {
   createTag,
   createAttrPair,
   escapeHtml,
   wrapHtml,
   join,
-  ATTR_NAME,
+  attrName,
 } from './html.js';
 
 function createParagraphs(content) {
@@ -52,7 +52,7 @@ const CONTAINER_ID = 'container';
  * @returns {string} - HTML div element
  */
 function createDiv(classes, content) {
-  const classAttr = createAttrPair(ATTR_NAME.CLASS, classes);
+  const classAttr = createAttrPair(attrName().CLASS, classes);
   return createTag(DIV_TAG_NAME, classAttr, content);
 }
 
@@ -185,7 +185,7 @@ const METADATA_TEXT = `Software developer and philosopher in Berlin`;
  */
 function createHeaderContent() {
   const valueDivs = [
-    createValueDiv(HEADER_BANNER),
+    createValueDiv(headerBanner()),
     createValueDiv(METADATA_TEXT, [CLASS.METADATA]),
   ];
   const parts = valueDivs.map(valueDiv =>
@@ -249,7 +249,7 @@ function createFooterSection() {
  * @returns {string} - Opening div tag with container ID
  */
 function createContainerDivOpen() {
-  const idAttr = createAttrPair(ATTR_NAME.ID, CONTAINER_ID);
+  const idAttr = createAttrPair(attrName().ID, CONTAINER_ID);
   return `<${DIV_TAG_NAME} ${idAttr}>`;
 }
 
@@ -258,7 +258,7 @@ function createContainerDivOpen() {
  */
 function createHeaderContentArray(headerElement) {
   return [
-    headElement,
+    headElement(),
     '<body>',
     createContainerDivOpen(),
     '<!-- Header -->',
@@ -343,7 +343,7 @@ function generateArticles(posts) {
  * Create attributes for an article element
  */
 export function createIdAttributeIfNeeded(post) {
-  return ' ' + createAttrPair(ATTR_NAME.ID, post.key);
+  return ' ' + createAttrPair(attrName().ID, post.key);
 }
 
 function getTagClassList(post) {
@@ -360,7 +360,7 @@ function createArticleClassAttr(post) {
     classes.push('release-beta');
   }
   const classValue = joinClasses(classes);
-  return createAttrPair(ATTR_NAME.CLASS, classValue);
+  return createAttrPair(attrName().CLASS, classValue);
 }
 
 function createArticleAttributes(post) {
@@ -373,7 +373,7 @@ function createArticleAttributes(post) {
  * Format article content with full width element
  */
 function formatArticleContent(content) {
-  return `${fullWidthElement}${content}`;
+  return `${fullWidthElement()}${content}`;
 }
 
 /**

@@ -5,7 +5,8 @@ describe('headElement dynamic import', () => {
     const { headElement } = await import(
       '../../src/generator/head.js?' + Math.random()
     );
-    expect(headElement).toContain('<meta charset="UTF-8">');
-    expect(headElement.trim().endsWith('</head>')).toBe(true);
+    const head = headElement();
+    expect(head).toContain('<meta charset="UTF-8">');
+    expect(head.trim().endsWith('</head>')).toBe(true);
   });
 });

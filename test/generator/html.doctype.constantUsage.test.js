@@ -1,9 +1,9 @@
 import { describe, test, expect } from '@jest/globals';
-import { wrapHtml, DOCTYPE } from '../../src/generator/html.js';
+import { wrapHtml, doctype } from '../../src/generator/html.js';
 
 describe('wrapHtml DOCTYPE usage', () => {
   test('uses the exported DOCTYPE constant', () => {
     const html = wrapHtml('hi');
-    expect(html.startsWith(DOCTYPE)).toBe(true);
+    expect(html.startsWith(doctype())).toBe(true);
   });
 });

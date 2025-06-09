@@ -1,6 +1,7 @@
 import { styles } from './styles.js';
 
-export const headElement = `<head>
+export function headElement() {
+  return `<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
   <title>Matt Heard</title>
@@ -22,7 +23,7 @@ export const headElement = `<head>
   <!-- Web App Manifest (optional but recommended for PWA or better platform integration) -->
   <link rel="manifest" href="/site.webmanifest">
   <style>
-    ${styles}
+    ${styles()}
   </style>
   
   <!-- Define the component management system in the head -->
@@ -61,3 +62,4 @@ export const headElement = `<head>
     window.addComponent = createComponentAdder();
   </script>
 </head>`;
+}

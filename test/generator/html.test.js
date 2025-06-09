@@ -7,12 +7,12 @@ import {
   wrapHtml,
   getClosingTagParts,
   createClosingTag,
-  TAG_OPEN,
-  SLASH,
-  SPACE,
-  TAG_CLOSE,
-  EQUALS,
-  QUOTE,
+  tagOpen,
+  slash,
+  space,
+  tagClose,
+  equals,
+  quote,
 } from '../../src/generator/html.js';
 
 describe('html utilities', () => {
@@ -54,10 +54,10 @@ describe('html utilities', () => {
 
   test('getClosingTagParts returns correct parts', () => {
     expect(getClosingTagParts('div')).toEqual([
-      TAG_OPEN,
-      SLASH,
+      tagOpen(),
+      slash(),
       'div',
-      TAG_CLOSE,
+      tagClose(),
     ]);
   });
 
@@ -68,26 +68,26 @@ describe('html utilities', () => {
 
 describe('html constant values', () => {
   test('TAG_OPEN is <', () => {
-    expect(TAG_OPEN).toBe('<');
+    expect(tagOpen()).toBe('<');
   });
 
   test('TAG_CLOSE is >', () => {
-    expect(TAG_CLOSE).toBe('>');
+    expect(tagClose()).toBe('>');
   });
 
   test('SPACE is space character', () => {
-    expect(SPACE).toBe(' ');
+    expect(space()).toBe(' ');
   });
 
   test('SLASH is forward slash', () => {
-    expect(SLASH).toBe('/');
+    expect(slash()).toBe('/');
   });
 
   test('EQUALS is =', () => {
-    expect(EQUALS).toBe('=');
+    expect(equals()).toBe('=');
   });
 
   test('QUOTE is "', () => {
-    expect(QUOTE).toBe('"');
+    expect(quote()).toBe('"');
   });
 });

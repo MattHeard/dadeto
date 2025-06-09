@@ -7,13 +7,15 @@
  * ASCII art banner for the blog header
  * @type {string}
  */
-export const HEADER_BANNER = `<pre aria-label="Matt Heard" role="heading" aria-level="1">
-▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖      
-▐▛▚▞▜▌▐▌ ▐▌ █    █        
-▐▌  ▐▌▐▛▀▜▌ █    █        
-▐▌  ▐▌▐▌ ▐▌ █    █        
-▗▖ ▗▖▗▄▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄  
-▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █ 
-▐▛▀▜▌▐▛▀▀▘▐▛▀▜▌▐▛▀▚▖▐▌  █ 
+export function headerBanner() {
+  return `<pre aria-label="Matt Heard" role="heading" aria-level="1">
+▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖
+▐▛▚▞▜▌▐▌ ▐▌ █    █
+▐▌  ▐▌▐▛▀▜▌ █    █
+▐▌  ▐▌▐▌ ▐▌ █    █
+▗▖ ▗▖▗▄▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄
+▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █
+▐▛▀▜▌▐▛▀▀▘▐▛▀▜▌▐▛▀▚▖▐▌  █
 ▐▌ ▐▌▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀
 </pre>`;
+}
