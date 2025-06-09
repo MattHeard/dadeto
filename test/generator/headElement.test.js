@@ -3,23 +3,26 @@ import { headElement } from '../../src/generator/head.js';
 
 describe('headElement', () => {
   test('contains required meta tags', () => {
-    expect(headElement).toContain('<meta charset="UTF-8">');
-    expect(headElement).toContain(
+    const head = headElement();
+    expect(head).toContain('<meta charset="UTF-8">');
+    expect(head).toContain(
       '<link rel="manifest" href="/site.webmanifest">'
     );
   });
 
   test('includes style and script sections', () => {
-    expect(headElement.startsWith('<head>')).toBe(true);
-    expect(headElement).toContain('<style>');
-    expect(headElement).toContain('</style>');
-    expect(headElement).toContain('<script type="module">');
-    expect(headElement).toContain('window.addComponent');
-    expect(headElement.trim().endsWith('</head>')).toBe(true);
+    const head = headElement();
+    expect(head.startsWith('<head>')).toBe(true);
+    expect(head).toContain('<style>');
+    expect(head).toContain('</style>');
+    expect(head).toContain('<script type="module">');
+    expect(head).toContain('window.addComponent');
+    expect(head.trim().endsWith('</head>')).toBe(true);
   });
 
   test('contains page title', () => {
-    expect(headElement).toContain('<title>Matt Heard</title>');
-    expect(headElement.length).toBeGreaterThan(0);
+    const head = headElement();
+    expect(head).toContain('<title>Matt Heard</title>');
+    expect(head.length).toBeGreaterThan(0);
   });
 });

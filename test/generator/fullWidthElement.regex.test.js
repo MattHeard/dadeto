@@ -6,6 +6,6 @@ import { fullWidthElement } from '../../src/generator/full-width.js';
 describe('fullWidthElement structure', () => {
   test('contains full-width key and value divs', () => {
     const regex = /<div class="key full-width">[^<]*<\/div><div class="value full-width">[^<]*<\/div>/;
-    expect(fullWidthElement).toMatch(regex);
+    expect(fullWidthElement()).toMatch(regex);
   });
 });

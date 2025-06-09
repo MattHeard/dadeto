@@ -17,74 +17,83 @@ describe('utils/index', () => {
   });
 
   test('exports markdown constants', () => {
-    expect(utils.MARKDOWN_MARKERS).toBeDefined();
-    expect(utils.HTML_TAGS).toBeDefined();
-    expect(utils.CSS_CLASSES).toBeDefined();
-    expect(utils.DEFAULT_OPTIONS).toBeDefined();
+    expect(utils.markdownMarkers).toBeDefined();
+    expect(utils.htmlTags).toBeDefined();
+    expect(utils.cssClasses).toBeDefined();
+    expect(utils.defaultOptions).toBeDefined();
   });
 
   test('markdown constants values are correct', () => {
-    expect(utils.MARKDOWN_MARKERS.ASTERISK).toBe('*');
-    expect(utils.HTML_TAGS.EMPHASIS).toBe('em');
-    expect(utils.CSS_CLASSES.CONTAINER).toBe('markdown-container');
-    expect(utils.DEFAULT_OPTIONS.gfm).toBe(true);
-    expect(utils.HTML_TAGS.LINK).toBe('a');
-    expect(utils.CSS_CLASSES.LINK).toBe('markdown-link');
-    expect(utils.DEFAULT_OPTIONS.tables).toBe(true);
-    expect(utils.DEFAULT_OPTIONS.langPrefix).toBe('language-');
+    const MARKDOWN_MARKERS = utils.markdownMarkers();
+    const HTML_TAGS = utils.htmlTags();
+    const CSS_CLASSES = utils.cssClasses();
+    const DEFAULT_OPTIONS = utils.defaultOptions();
+    expect(MARKDOWN_MARKERS.ASTERISK).toBe('*');
+    expect(HTML_TAGS.EMPHASIS).toBe('em');
+    expect(CSS_CLASSES.CONTAINER).toBe('markdown-container');
+    expect(DEFAULT_OPTIONS.gfm).toBe(true);
+    expect(HTML_TAGS.LINK).toBe('a');
+    expect(CSS_CLASSES.LINK).toBe('markdown-link');
+    expect(DEFAULT_OPTIONS.tables).toBe(true);
+    expect(DEFAULT_OPTIONS.langPrefix).toBe('language-');
   });
 
   test('markdown marker characters are correct', () => {
-    expect(utils.MARKDOWN_MARKERS.UNDERSCORE).toBe('_');
-    expect(utils.MARKDOWN_MARKERS.BACKTICK).toBe('`');
-    expect(utils.MARKDOWN_MARKERS.TILDE).toBe('~');
-    expect(utils.MARKDOWN_MARKERS.DASH).toBe('-');
-    expect(utils.MARKDOWN_MARKERS.EQUAL).toBe('=');
-    expect(utils.MARKDOWN_MARKERS.HASH).toBe('#');
-    expect(utils.MARKDOWN_MARKERS.GREATER_THAN).toBe('>');
-    expect(utils.MARKDOWN_MARKERS.PIPE).toBe('|');
-    expect(utils.MARKDOWN_MARKERS.BACKSLASH).toBe('\\');
-    expect(utils.MARKDOWN_MARKERS.SLASH).toBe('/');
-    expect(utils.MARKDOWN_MARKERS.EXCLAMATION).toBe('!');
-    expect(utils.MARKDOWN_MARKERS.BRACKET_OPEN).toBe('[');
-    expect(utils.MARKDOWN_MARKERS.BRACKET_CLOSE).toBe(']');
-    expect(utils.MARKDOWN_MARKERS.PAREN_OPEN).toBe('(');
-    expect(utils.MARKDOWN_MARKERS.PAREN_CLOSE).toBe(')');
+    const MARKDOWN_MARKERS = utils.markdownMarkers();
+    expect(MARKDOWN_MARKERS.UNDERSCORE).toBe('_');
+    expect(MARKDOWN_MARKERS.BACKTICK).toBe('`');
+    expect(MARKDOWN_MARKERS.TILDE).toBe('~');
+    expect(MARKDOWN_MARKERS.DASH).toBe('-');
+    expect(MARKDOWN_MARKERS.EQUAL).toBe('=');
+    expect(MARKDOWN_MARKERS.HASH).toBe('#');
+    expect(MARKDOWN_MARKERS.GREATER_THAN).toBe('>');
+    expect(MARKDOWN_MARKERS.PIPE).toBe('|');
+    expect(MARKDOWN_MARKERS.BACKSLASH).toBe('\\');
+    expect(MARKDOWN_MARKERS.SLASH).toBe('/');
+    expect(MARKDOWN_MARKERS.EXCLAMATION).toBe('!');
+    expect(MARKDOWN_MARKERS.BRACKET_OPEN).toBe('[');
+    expect(MARKDOWN_MARKERS.BRACKET_CLOSE).toBe(']');
+    expect(MARKDOWN_MARKERS.PAREN_OPEN).toBe('(');
+    expect(MARKDOWN_MARKERS.PAREN_CLOSE).toBe(')');
   });
 
   test('additional html tag constants are correct', () => {
-    expect(utils.HTML_TAGS.STRONG).toBe('strong');
-    expect(utils.HTML_TAGS.CODE).toBe('code');
-    expect(utils.HTML_TAGS.PARAGRAPH).toBe('p');
-    expect(utils.HTML_TAGS.BLOCKQUOTE).toBe('blockquote');
+    const HTML_TAGS = utils.htmlTags();
+    expect(HTML_TAGS.STRONG).toBe('strong');
+    expect(HTML_TAGS.CODE).toBe('code');
+    expect(HTML_TAGS.PARAGRAPH).toBe('p');
+    expect(HTML_TAGS.BLOCKQUOTE).toBe('blockquote');
   });
 
   test('remaining html tag constants are correct', () => {
-    expect(utils.HTML_TAGS.LIST).toBe('ul');
-    expect(utils.HTML_TAGS.LIST_ITEM).toBe('li');
-    expect(utils.HTML_TAGS.ORDERED_LIST).toBe('ol');
-    expect(utils.HTML_TAGS.HORIZONTAL_RULE).toBe('hr');
-    expect(utils.HTML_TAGS.LINE_BREAK).toBe('br');
-    expect(utils.HTML_TAGS.IMAGE).toBe('img');
-    expect(utils.HTML_TAGS.DIV).toBe('div');
-    expect(utils.HTML_TAGS.SPAN).toBe('span');
-    expect(utils.HTML_TAGS.PRE).toBe('pre');
-    expect(utils.CSS_CLASSES.HORIZONTAL_RULE).toBe('markdown-hr');
+    const HTML_TAGS = utils.htmlTags();
+    const CSS_CLASSES = utils.cssClasses();
+    expect(HTML_TAGS.LIST).toBe('ul');
+    expect(HTML_TAGS.LIST_ITEM).toBe('li');
+    expect(HTML_TAGS.ORDERED_LIST).toBe('ol');
+    expect(HTML_TAGS.HORIZONTAL_RULE).toBe('hr');
+    expect(HTML_TAGS.LINE_BREAK).toBe('br');
+    expect(HTML_TAGS.IMAGE).toBe('img');
+    expect(HTML_TAGS.DIV).toBe('div');
+    expect(HTML_TAGS.SPAN).toBe('span');
+    expect(HTML_TAGS.PRE).toBe('pre');
+    expect(CSS_CLASSES.HORIZONTAL_RULE).toBe('markdown-hr');
   });
 
   test('additional default option values are correct', () => {
-    expect(utils.DEFAULT_OPTIONS.breaks).toBe(false);
-    expect(utils.DEFAULT_OPTIONS.pedantic).toBe(false);
-    expect(utils.DEFAULT_OPTIONS.sanitize).toBe(false);
-    expect(utils.DEFAULT_OPTIONS.smartLists).toBe(true);
-    expect(utils.DEFAULT_OPTIONS.smartypants).toBe(false);
-    expect(utils.DEFAULT_OPTIONS.xhtml).toBe(false);
-    expect(utils.DEFAULT_OPTIONS.headerIds).toBe(true);
-    expect(utils.DEFAULT_OPTIONS.headerPrefix).toBe('');
-    expect(utils.DEFAULT_OPTIONS.mangle).toBe(true);
-    expect(utils.DEFAULT_OPTIONS.highlight).toBeNull();
-    expect(utils.DEFAULT_OPTIONS.baseUrl).toBeNull();
-    expect(utils.DEFAULT_OPTIONS.linkTarget).toBeNull();
-    expect(utils.DEFAULT_OPTIONS.renderer).toBeNull();
+    const DEFAULT_OPTIONS = utils.defaultOptions();
+    expect(DEFAULT_OPTIONS.breaks).toBe(false);
+    expect(DEFAULT_OPTIONS.pedantic).toBe(false);
+    expect(DEFAULT_OPTIONS.sanitize).toBe(false);
+    expect(DEFAULT_OPTIONS.smartLists).toBe(true);
+    expect(DEFAULT_OPTIONS.smartypants).toBe(false);
+    expect(DEFAULT_OPTIONS.xhtml).toBe(false);
+    expect(DEFAULT_OPTIONS.headerIds).toBe(true);
+    expect(DEFAULT_OPTIONS.headerPrefix).toBe('');
+    expect(DEFAULT_OPTIONS.mangle).toBe(true);
+    expect(DEFAULT_OPTIONS.highlight).toBeNull();
+    expect(DEFAULT_OPTIONS.baseUrl).toBeNull();
+    expect(DEFAULT_OPTIONS.linkTarget).toBeNull();
+    expect(DEFAULT_OPTIONS.renderer).toBeNull();
   });
 });

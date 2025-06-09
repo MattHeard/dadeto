@@ -20,7 +20,7 @@ describe('fullWidthElement integration', () => {
     };
 
     const html = generateBlog({ blog, header, footer }, wrapHtml);
-    expect(html).toContain(fullWidthElement);
+    expect(html).toContain(fullWidthElement());
   });
 
   test('blog articles include full width markup', () => {
@@ -41,9 +41,10 @@ describe('fullWidthElement integration', () => {
   });
 
   test('fullWidthElement has expected structure', () => {
-    expect(fullWidthElement).not.toHaveLength(0);
-    expect(fullWidthElement).toContain('class="key full-width"');
-    expect(fullWidthElement).toContain('class="value full-width"');
+    const html = fullWidthElement();
+    expect(html).not.toHaveLength(0);
+    expect(html).toContain('class="key full-width"');
+    expect(html).toContain('class="value full-width"');
   });
 
   test('full width element appears at article start', () => {

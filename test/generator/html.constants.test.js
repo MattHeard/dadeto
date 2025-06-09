@@ -1,29 +1,29 @@
 import { describe, test, expect } from '@jest/globals';
 import {
-  DOCTYPE,
-  LANGUAGE,
-  HTML_TAG_NAME,
-  ATTR_NAME,
-  HTML_ESCAPE_REPLACEMENTS,
+  doctype,
+  language,
+  htmlTagName,
+  attrName,
+  htmlEscapeReplacements,
   escapeHtml,
 } from '../../src/generator/html.js';
 
 describe('html constants', () => {
   test('DOCTYPE constant is correct', () => {
-    expect(DOCTYPE).toBe('<!DOCTYPE html>');
+    expect(doctype()).toBe('<!DOCTYPE html>');
   });
 
   test('LANGUAGE constants include EN', () => {
-    expect(LANGUAGE).toEqual({ EN: 'en' });
-    expect(Object.isFrozen(LANGUAGE)).toBe(false);
+    expect(language()).toEqual({ EN: 'en' });
+    expect(Object.isFrozen(language())).toBe(false);
   });
 
   test('HTML_TAG_NAME constant is html', () => {
-    expect(HTML_TAG_NAME).toBe('html');
+    expect(htmlTagName()).toBe('html');
   });
 
   test('ATTR_NAME constants', () => {
-    expect(ATTR_NAME).toEqual({ LANG: 'lang', CLASS: 'class', ID: 'id' });
+    expect(attrName()).toEqual({ LANG: 'lang', CLASS: 'class', ID: 'id' });
   });
 
   test('HTML_ESCAPE_REPLACEMENTS contains standard replacements', () => {
@@ -34,7 +34,7 @@ describe('html constants', () => {
       { from: /"/g, to: '&quot;' },
       { from: /'/g, to: '&#039;' },
     ];
-    expect(HTML_ESCAPE_REPLACEMENTS).toEqual(expected);
+    expect(htmlEscapeReplacements()).toEqual(expected);
   });
 
   test('escapeHtml applies all replacements', () => {

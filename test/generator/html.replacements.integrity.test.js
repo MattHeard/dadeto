@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { HTML_ESCAPE_REPLACEMENTS } from '../../src/generator/html.js';
+import { htmlEscapeReplacements } from '../../src/generator/html.js';
 
 function escapeWithReplacements(text, replacements) {
   return replacements.reduce((acc, { from, to }) => acc.replace(from, to), text);
@@ -14,12 +14,12 @@ describe('HTML_ESCAPE_REPLACEMENTS integrity', () => {
       { from: /"/g, to: '&quot;' },
       { from: /'/g, to: '&#039;' },
     ];
-    expect(HTML_ESCAPE_REPLACEMENTS).toEqual(expected);
+    expect(htmlEscapeReplacements()).toEqual(expected);
   });
 
   test('replacements escape all special characters', () => {
     const input = '&<>"\'';
-    const escaped = escapeWithReplacements(input, HTML_ESCAPE_REPLACEMENTS);
+    const escaped = escapeWithReplacements(input, htmlEscapeReplacements());
     expect(escaped).toBe('&amp;&lt;&gt;&quot;&#039;');
   });
 });

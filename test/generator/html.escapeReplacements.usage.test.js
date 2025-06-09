@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { HTML_ESCAPE_REPLACEMENTS, escapeHtml } from '../../src/generator/html.js';
+import { htmlEscapeReplacements, escapeHtml } from '../../src/generator/html.js';
 
 describe('HTML_ESCAPE_REPLACEMENTS usage', () => {
   test('escapeHtml replaces all characters using replacements', () => {
@@ -9,7 +9,8 @@ describe('HTML_ESCAPE_REPLACEMENTS usage', () => {
   });
 
   test('HTML_ESCAPE_REPLACEMENTS array has five entries', () => {
-    expect(Array.isArray(HTML_ESCAPE_REPLACEMENTS)).toBe(true);
-    expect(HTML_ESCAPE_REPLACEMENTS).toHaveLength(5);
+    const reps = htmlEscapeReplacements();
+    expect(Array.isArray(reps)).toBe(true);
+    expect(reps).toHaveLength(5);
   });
 });
