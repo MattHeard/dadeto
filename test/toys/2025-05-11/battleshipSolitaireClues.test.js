@@ -9,6 +9,11 @@ describe('generateClues', () => {
     expect(output).toHaveProperty('error', 'Invalid input JSON');
   });
 
+  it('returns an error when JSON is a number', () => {
+    const output = JSON.parse(generateClues('42'));
+    expect(output).toEqual({ error: 'Invalid fleet structure' });
+  });
+
   it('returns an error when required properties are missing', () => {
     const badFleet = JSON.stringify({ width: 5, ships: [] });
     const output = JSON.parse(generateClues(badFleet));
