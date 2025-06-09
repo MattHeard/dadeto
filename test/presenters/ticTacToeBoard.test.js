@@ -308,4 +308,18 @@ describe('createTicTacToeBoardElement', () => {
       '   |   |   '
     );
   });
+
+  it('renders an empty board when the only move has an invalid player', () => {
+    const input = JSON.stringify({
+      moves: [{ player: 'Q', position: { row: 0, column: 0 } }]
+    });
+    const el = createTicTacToeBoardElement(input, mockDom());
+    expect(el.textContent).toBe(
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   \n' +
+      '---+---+---\n' +
+      '   |   |   '
+    );
+  });
 });
