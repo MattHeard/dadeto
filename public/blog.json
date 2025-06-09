@@ -7,8 +7,8 @@
       "content": ["Starts a local Dendrite story from JSON input."],
       "illustration": {
         "fileType": "png",
-        "fileName": "2025-06-09-1",
-        "altText": "four checkboxes arranged below a question"
+        "fileName": "2025-06-09-0",
+        "altText": "a young adventurer with a walking stick stands at a fork in a sunlit forest path, facing two large trees where the trail splits, surrounded by lush green foliage and soft painterly lighting"
       },
       "toy": {
         "modulePath": "/2025-06-09/startLocalDendriteStory.js",
