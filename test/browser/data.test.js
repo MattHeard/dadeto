@@ -267,6 +267,14 @@ describe('getData, setData, and getDeepStateCopy', () => {
     expect(result).toBe(state);
   });
 
+  it('getData does nothing when status is blank', () => {
+    state.blogStatus = '';
+    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
+    getData(state, fetchFn, loggers);
+    expect(fetchFn).not.toHaveBeenCalled();
+    expect(warnFn).not.toHaveBeenCalled();
+  });
+
   it('getData sets status to loading then loaded when fetch completes', async () => {
     const blogData = { title: 'blog' };
     fetchFn = jest.fn(() =>
