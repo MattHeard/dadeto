@@ -1,6 +1,23 @@
 {
   "posts": [
     {
+      "key": "DEND1",
+      "title": "Start local Dendrite story",
+      "publicationDate": "2025-06-09",
+      "content": ["Starts a local Dendrite story from JSON input."],
+      "illustration": {
+        "fileType": "png",
+        "fileName": "2025-06-09-1",
+        "altText": "four checkboxes arranged below a question"
+      },
+      "toy": {
+        "modulePath": "/2025-06-09/startLocalDendriteStory.js",
+        "functionName": "startLocalDendriteStory"
+      },
+      "release": "beta",
+      "tags": ["toy", "story", "dendrite"]
+    },
+    {
       "key": "UUID1",
       "title": "UUID",
       "publicationDate": "2025-06-09",

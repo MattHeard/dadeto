@@ -45,6 +45,9 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-15/stringToJsonArray.js
   17:12  warning  'e' is defined but never used  no-unused-vars
 
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-06-09/startLocalDendriteStory.js
+  1:8  warning  Function 'startLocalDendriteStory' has a complexity of 9. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/src/utils/objectUtils.js
    7:8  warning  Function 'pick' has a complexity of 3. Maximum allowed is 2       complexity
   24:8  warning  Function 'mapValues' has a complexity of 3. Maximum allowed is 2  complexity
@@ -66,12 +69,18 @@
   17:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
   21:18  warning  Ternary operator used                                       no-ternary
 
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.cleanupDefault.test.js
+  16:30  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.default.test.js
   14:7  warning  Ternary operator used  no-ternary
   55:7  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.defaultHandler2.test.js
   11:35  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.defaultOrder.test.js
+  14:7  warning  Ternary operator used  no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.kv.test.js
   15:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
@@ -195,4 +204,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-06-09/uuid.test.js
   8:32  warning  Ternary operator used  no-ternary
 
-✖ 102 problems (0 errors, 102 warnings)
+✖ 105 problems (0 errors, 105 warnings)
