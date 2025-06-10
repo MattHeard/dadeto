@@ -18,6 +18,10 @@ const publicBrowserDir = path.join(publicDir, 'browser');
 const srcUtilsDir = path.resolve(srcDir, 'utils');
 const publicUtilsDir = path.join(publicDir, 'utils');
 
+// New directory with handlers used by interactive components
+const srcInputHandlersDir = path.resolve(srcDir, 'inputHandlers');
+const publicInputHandlersDir = path.join(publicDir, 'inputHandlers');
+
 // Ensure public directory exists
 if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
@@ -71,7 +75,10 @@ function accumulateJsFiles(jsFiles, entry, dir) {
 
 function findJsFiles(dir) {
   const entries = getDirEntries(dir);
-  return entries.reduce((jsFiles, entry) => accumulateJsFiles(jsFiles, entry, dir), []);
+  return entries.reduce(
+    (jsFiles, entry) => accumulateJsFiles(jsFiles, entry, dir),
+    []
+  );
 }
 
 // Find all JS files in src/toys
@@ -114,7 +121,9 @@ if (fs.existsSync(srcPresentersDir)) {
   });
   console.log('Presenter files copied successfully!');
 } else {
-  console.warn(`Warning: presenters directory not found at ${srcPresentersDir}`);
+  console.warn(
+    `Warning: presenters directory not found at ${srcPresentersDir}`
+  );
 }
 
 // --- Copy src/utils to public/utils ---
@@ -123,6 +132,16 @@ if (fs.existsSync(srcUtilsDir)) {
   console.log('Utils files copied successfully!');
 } else {
   console.warn(`Warning: utils directory not found at ${srcUtilsDir}`);
+}
+
+// --- Copy src/inputHandlers to public/inputHandlers ---
+if (fs.existsSync(srcInputHandlersDir)) {
+  copyDirRecursive(srcInputHandlersDir, publicInputHandlersDir);
+  console.log('Input handler files copied successfully!');
+} else {
+  console.warn(
+    `Warning: inputHandlers directory not found at ${srcInputHandlersDir}`
+  );
 }
 
 // --- Copy src/browser to public/browser ---
