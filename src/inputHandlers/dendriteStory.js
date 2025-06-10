@@ -16,7 +16,12 @@ export function dendriteStoryHandler(dom, container, textInput) {
   dom.insertBefore(container, form, nextSibling);
 
   const disposers = [];
-  const data = {};
+  let data = {};
+  try {
+    data = JSON.parse(dom.getValue(textInput) || '{}');
+  } catch {
+    data = {};
+  }
   const fields = [
     ['title', 'Title'],
     ['content', 'Content'],
@@ -27,17 +32,27 @@ export function dendriteStoryHandler(dom, container, textInput) {
   ];
 
   fields.forEach(([key, placeholder]) => {
+    const wrapper = dom.createElement('div');
+    const label = dom.createElement('label');
+    dom.setTextContent(label, placeholder);
     const input = dom.createElement('input');
     dom.setType(input, 'text');
     dom.setPlaceholder(input, placeholder);
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      dom.setValue(input, data[key]);
+    }
     const onInput = () => {
       data[key] = dom.getValue(input);
       dom.setValue(textInput, JSON.stringify(data));
     };
     dom.addEventListener(input, 'input', onInput);
     disposers.push(() => dom.removeEventListener(input, 'input', onInput));
-    dom.appendChild(form, input);
+    dom.appendChild(wrapper, label);
+    dom.appendChild(wrapper, input);
+    dom.appendChild(form, wrapper);
   });
+
+  dom.setValue(textInput, JSON.stringify(data));
 
   form._dispose = () => {
     disposers.forEach(fn => fn());

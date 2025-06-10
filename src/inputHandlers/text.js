@@ -11,4 +11,9 @@ export function textHandler(dom, container, textInput) {
     kvContainer._dispose();
     dom.removeChild(container, kvContainer);
   }
+  const dendriteForm = dom.querySelector(container, '.dendrite-form');
+  if (dendriteForm && typeof dendriteForm._dispose === 'function') {
+    dendriteForm._dispose();
+    dom.removeChild(container, dendriteForm);
+  }
 }

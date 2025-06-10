@@ -2,9 +2,9 @@ import { dendriteStoryHandler } from '../../src/inputHandlers/dendriteStory.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('dendriteStoryHandler', () => {
-  test('creates form and updates hidden input', () => {
+  test('creates form, prepopulates values and updates hidden input', () => {
     const container = {};
-    const textInput = { value: '' };
+    const textInput = { value: '{"title":"Existing"}' };
     const elements = [];
     let createCount = 0;
     const dom = {
@@ -22,6 +22,7 @@ describe('dendriteStoryHandler', () => {
       insertBefore: jest.fn(),
       setType: jest.fn(),
       setPlaceholder: jest.fn(),
+      setTextContent: jest.fn(),
       addEventListener: jest.fn((el, _evt, handler) => {
         el.handler = handler;
       }),
@@ -36,8 +37,9 @@ describe('dendriteStoryHandler', () => {
     const form = dendriteStoryHandler(dom, container, textInput);
     expect(dom.hide).toHaveBeenCalledWith(textInput);
     expect(dom.disable).toHaveBeenCalledWith(textInput);
-    expect(dom.createElement).toHaveBeenCalledTimes(7);
-    const firstInput = elements[1];
+    expect(dom.createElement).toHaveBeenCalledTimes(19);
+    const firstInput = elements[3];
+    expect(firstInput.value).toBe('Existing');
     firstInput.value = 'Hello';
     firstInput.handler({ target: firstInput });
     expect(textInput.value).toBe(JSON.stringify({ title: 'Hello' }));
@@ -58,6 +60,7 @@ describe('dendriteStoryHandler', () => {
       insertBefore: jest.fn(),
       setType: jest.fn(),
       setPlaceholder: jest.fn(),
+      setTextContent: jest.fn(),
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
       appendChild: jest.fn(),

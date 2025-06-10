@@ -12,4 +12,6 @@ export function defaultHandler(dom, container, textInput) {
   dispose(numberInput, dom, container);
   const kvContainer = dom.querySelector(container, '.kv-container');
   dispose(kvContainer, dom, container);
+  const dendriteForm = dom.querySelector(container, '.dendrite-form');
+  dispose(dendriteForm, dom, container);
 }
