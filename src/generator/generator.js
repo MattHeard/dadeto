@@ -884,7 +884,7 @@ const TOY_UI_SECTIONS = [
   [
     'in',
     () =>
-      '<select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option></select><input type="text" disabled>',
+      '<select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option><option value="dendrite-story">dendrite-story</option></select><input type="text" disabled>',
   ],
   ['', () => '<button type="submit" disabled>Submit</button>'],
   ['out', getToyOutputValueContent],
