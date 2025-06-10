@@ -1,17 +1,22 @@
-import { describe, it, expect } from "@jest/globals";
-import {
-  getPlayer,
-  getPosition
-} from "../../src/presenters/ticTacToeBoard.js";
+import { describe, it, expect } from '@jest/globals';
+import { getPlayer, getPosition } from '../../src/presenters/ticTacToeBoard.js';
 
-describe("ticTacToeBoard getters", () => {
-  it("getPlayer returns undefined for null or undefined", () => {
-    expect(getPlayer(undefined)).toBeUndefined();
-    expect(getPlayer(null)).toBeUndefined();
+describe('ticTacToeBoard getters', () => {
+  const invalidInputs = [
+    [null, 'null move'],
+    [undefined, 'undefined move'],
+    [{}, 'missing property'],
+  ];
+
+  invalidInputs.forEach(([input, desc]) => {
+    it(`returns undefined for ${desc}`, () => {
+      expect(getPlayer(input)).toBeUndefined();
+      expect(getPosition(input)).toBeUndefined();
+    });
   });
 
-  it("getPosition returns undefined for null or undefined", () => {
-    expect(getPosition(undefined)).toBeUndefined();
-    expect(getPosition(null)).toBeUndefined();
+  it('does not throw when move is null', () => {
+    expect(() => getPlayer(null)).not.toThrow();
+    expect(() => getPosition(null)).not.toThrow();
   });
 });
