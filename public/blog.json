@@ -1,7 +1,7 @@
 {
   "posts": [
     {
-      "key": "DEND1",
+      "key": "DEND1", 
       "title": "Start local Dendrite story",
       "publicationDate": "2025-06-09",
       "content": ["Starts a local Dendrite story from JSON input."],
