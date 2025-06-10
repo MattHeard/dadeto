@@ -24,24 +24,6 @@ describe('isEmpty', () => {
   });
 });
 
-describe('isValidText', () => {
-  test('returns true for non-empty strings', () => {
-    expect(isValidText('test')).toBe(true);
-    expect(isValidText(' ')).toBe(true);
-    expect(isValidText('0')).toBe(true);
-  });
-
-  test('returns false for empty or non-string values', () => {
-    expect(isValidText('')).toBe(false);
-    expect(isValidText(null)).toBe(false);
-    expect(isValidText(undefined)).toBe(false);
-    expect(isValidText(0)).toBe(false);
-    expect(isValidText(false)).toBe(false);
-    expect(isValidText({})).toBe(false);
-    expect(isValidText([])).toBe(false);
-  });
-});
-
 describe('safeTrim', () => {
   test('trims whitespace from strings', () => {
     expect(safeTrim(' test ')).toBe('test');

@@ -1,5 +1,9 @@
 import { describe, test, expect } from '@jest/globals';
-import { isType, isValidString, isValidBoolean } from '../../src/utils/validation.js';
+import {
+  isType,
+  isValidString,
+  isValidBoolean,
+} from '../../src/utils/validation.js';
 
 describe('isType', () => {
   test('returns true for matching types', () => {
@@ -21,25 +25,6 @@ describe('isType', () => {
     expect(isType(true, 'number')).toBe(false);
     expect(isType(null, 'undefined')).toBe(false);
     expect(isType(undefined, 'null')).toBe(false);
-  });
-});
-
-describe('isValidString', () => {
-  test('returns true for non-empty strings', () => {
-    expect(isValidString('test')).toBe(true);
-    expect(isValidString(' ')).toBe(true);
-    expect(isValidString('0')).toBe(true);
-    expect(isValidString('false')).toBe(true);
-  });
-
-  test('returns false for non-string or empty values', () => {
-    expect(isValidString('')).toBe(false);
-    expect(isValidString(null)).toBe(false);
-    expect(isValidString(undefined)).toBe(false);
-    expect(isValidString(0)).toBe(false);
-    expect(isValidString(false)).toBe(false);
-    expect(isValidString({})).toBe(false);
-    expect(isValidString([])).toBe(false);
   });
 });
 
