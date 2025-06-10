@@ -8,8 +8,17 @@ function maybeRemoveNumber(container, dom) {
   }
 }
 
+function maybeRemoveDendrite(container, dom) {
+  const dendriteForm = dom.querySelector(container, '.dendrite-form');
+  if (dendriteForm && typeof dendriteForm._dispose === 'function') {
+    dendriteForm._dispose();
+    dom.removeChild(container, dendriteForm);
+  }
+}
+
 export function handleKVType(dom, container, textInput) {
   maybeRemoveNumber(container, dom);
+  maybeRemoveDendrite(container, dom);
   ensureKeyValueInput(container, textInput, dom);
 }
 

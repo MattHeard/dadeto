@@ -8,9 +8,18 @@ function maybeRemoveKV(container, dom) {
   }
 }
 
+function maybeRemoveDendrite(container, dom) {
+  const dendriteForm = dom.querySelector(container, '.dendrite-form');
+  if (dendriteForm && typeof dendriteForm._dispose === 'function') {
+    dendriteForm._dispose();
+    dom.removeChild(container, dendriteForm);
+  }
+}
+
 export function numberHandler(dom, container, textInput) {
   dom.hide(textInput);
   dom.disable(textInput);
   maybeRemoveKV(container, dom);
+  maybeRemoveDendrite(container, dom);
   ensureNumberInput(container, textInput, dom);
 }

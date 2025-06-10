@@ -20,7 +20,7 @@ describe('TOY_UI_SECTIONS full HTML', () => {
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     const inSection =
-      '<div class="key">in</div><div class="value"><select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option></select><input type="text" disabled></div>';
+      '<div class="key">in</div><div class="value"><select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option><option value="dendrite-story">dendrite-story</option></select><input type="text" disabled></div>';
     expect(html).toContain(inSection);
   });
 });
