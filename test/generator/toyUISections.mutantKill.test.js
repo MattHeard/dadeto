@@ -1,0 +1,32 @@
+import { describe, test, expect } from '@jest/globals';
+import { generateBlog } from '../../src/generator/generator.js';
+
+const header = '<body>';
+const footer = '</body>';
+const wrapHtml = c => c;
+
+describe('TOY_UI_SECTIONS exact markup', () => {
+  test('generateBlog includes full input and button sections', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'TOYUI',
+          title: 'Toy Post',
+          publicationDate: '2024-01-01',
+          content: ['text'],
+          toy: {
+            modulePath: './toys/2024-01-01/example.js',
+            functionName: 'example',
+          },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    const inSection =
+      '<div class="key">in</div><div class="value"><select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option></select><input type="text" disabled></div>';
+    const buttonSection =
+      '<div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div>';
+    expect(html).toContain(inSection);
+    expect(html).toContain(buttonSection);
+  });
+});
