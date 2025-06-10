@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1749583583378" clover="3.2.0">
-  <project timestamp="1749583583378" name="All files">
-    <metrics statements="1834" coveredstatements="1829" conditionals="587" coveredconditionals="581" methods="707" coveredmethods="707" elements="3128" coveredelements="3117" complexity="0" loc="1834" ncloc="1834" packages="21" files="48" classes="48"/>
+<coverage generated="1749586684812" clover="3.2.0">
+  <project timestamp="1749586684812" name="All files">
+    <metrics statements="1835" coveredstatements="1830" conditionals="591" coveredconditionals="585" methods="707" coveredmethods="707" elements="3133" coveredelements="3122" complexity="0" loc="1835" ncloc="1835" packages="21" files="48" classes="48"/>
     <package name="browser">
       <metrics statements="522" coveredstatements="522" conditionals="107" coveredconditionals="107" methods="162" coveredmethods="162"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -879,7 +879,7 @@
       </file>
     </package>
     <package name="inputHandlers">
-      <metrics statements="100" coveredstatements="95" conditionals="48" coveredconditionals="42" methods="18" coveredmethods="18"/>
+      <metrics statements="101" coveredstatements="96" conditionals="52" coveredconditionals="46" methods="18" coveredmethods="18"/>
       <file name="default.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/inputHandlers/default.js">
         <metrics statements="11" coveredstatements="11" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
         <line num="2" count="33" type="cond" truecount="4" falsecount="0"/>
@@ -895,7 +895,7 @@
         <line num="16" count="11" type="stmt"/>
       </file>
       <file name="dendriteStory.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/inputHandlers/dendriteStory.js">
-        <metrics statements="48" coveredstatements="47" conditionals="16" coveredconditionals="15" methods="8" coveredmethods="8"/>
+        <metrics statements="49" coveredstatements="48" conditionals="20" coveredconditionals="19" methods="8" coveredmethods="8"/>
         <line num="2" count="3" type="stmt"/>
         <line num="3" count="3" type="cond" truecount="4" falsecount="0"/>
         <line num="4" count="2" type="stmt"/>
@@ -927,23 +927,24 @@
         <line num="54" count="18" type="stmt"/>
         <line num="55" count="18" type="stmt"/>
         <line num="56" count="18" type="stmt"/>
-        <line num="57" count="18" type="stmt"/>
-        <line num="58" count="18" type="stmt"/>
-        <line num="59" count="18" type="stmt"/>
-        <line num="60" count="18" type="cond" truecount="2" falsecount="0"/>
-        <line num="61" count="1" type="stmt"/>
-        <line num="63" count="18" type="stmt"/>
-        <line num="64" count="1" type="stmt"/>
-        <line num="65" count="1" type="stmt"/>
-        <line num="67" count="18" type="stmt"/>
+        <line num="58" count="18" type="cond" truecount="2" falsecount="0"/>
+        <line num="61" count="18" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="15" type="stmt"/>
+        <line num="64" count="18" type="stmt"/>
+        <line num="65" count="18" type="cond" truecount="2" falsecount="0"/>
+        <line num="66" count="1" type="stmt"/>
         <line num="68" count="18" type="stmt"/>
-        <line num="69" count="18" type="stmt"/>
-        <line num="70" count="18" type="stmt"/>
-        <line num="71" count="18" type="stmt"/>
-        <line num="74" count="3" type="stmt"/>
-        <line num="76" count="3" type="stmt"/>
-        <line num="77" count="6" type="stmt"/>
-        <line num="80" count="3" type="stmt"/>
+        <line num="69" count="1" type="stmt"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="72" count="18" type="stmt"/>
+        <line num="73" count="18" type="stmt"/>
+        <line num="74" count="18" type="stmt"/>
+        <line num="75" count="18" type="stmt"/>
+        <line num="76" count="18" type="stmt"/>
+        <line num="79" count="3" type="stmt"/>
+        <line num="81" count="3" type="stmt"/>
+        <line num="82" count="6" type="stmt"/>
+        <line num="85" count="3" type="stmt"/>
       </file>
       <file name="kv.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/inputHandlers/kv.js">
         <metrics statements="14" coveredstatements="14" conditionals="8" coveredconditionals="7" methods="4" coveredmethods="4"/>
