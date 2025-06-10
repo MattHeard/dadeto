@@ -23,4 +23,11 @@ describe('applyLabeledSectionDefaults', () => {
     const result = applyLabeledSectionDefaults({ ...args });
     expect(result.keyExtraClasses).toBe('');
   });
+
+  test('sets default keyExtraClasses and wrapValueDiv', () => {
+    const args = { label: 'l', valueHTML: '<span>v</span>' };
+    const result = applyLabeledSectionDefaults(args);
+    expect(result.keyExtraClasses).toBe('');
+    expect(result.wrapValueDiv).toBe(true);
+  });
 });

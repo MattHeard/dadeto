@@ -113,22 +113,51 @@ describe('makeHandleLink', () => {
 });
 
 describe('makeHandleHideSpan', () => {
-  it('invokes makeHandleHideSpan and its returned function with minimal mock dom', () => {
+  it('creates a hide link span and inserts it after the link', () => {
+    const spanEl = {};
+    const hideLinkEl = {};
+    const textNode1 = {};
+    const textNode2 = {};
     const dom = {
-      createElement: jest.fn(() => ({})),
+      createElement: jest.fn(tag => {
+        if (tag === 'span') {
+          return spanEl;
+        }
+        if (tag === 'a') {
+          return hideLinkEl;
+        }
+        return {};
+      }),
       addClass: jest.fn(),
       appendChild: jest.fn(),
-      createTextNode: jest.fn(() => ({})),
+      createTextNode: jest.fn(txt => (txt === ' (' ? textNode1 : textNode2)),
       setTextContent: jest.fn(),
       addEventListener: jest.fn(),
       insertBefore: jest.fn(),
     };
+    const link = { parentNode: {}, nextSibling: {} };
     const createHideSpan = makeHandleHideSpan(dom);
-    const result = createHideSpan({}, 'some-class');
-    expect(result).toBeUndefined();
-    expect(dom.createElement).toHaveBeenCalled();
+    createHideSpan(link, 'foo');
+    expect(dom.createElement).toHaveBeenCalledWith('span');
+    expect(dom.addClass).toHaveBeenCalledWith(spanEl, 'hide-span');
+    expect(dom.createElement).toHaveBeenCalledWith('a');
+    expect(dom.setTextContent).toHaveBeenCalledWith(hideLinkEl, 'hide');
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      hideLinkEl,
+      'click',
+      expect.any(Function)
+    );
+    expect(dom.createTextNode).toHaveBeenCalledWith(' (');
+    expect(dom.appendChild).toHaveBeenCalledWith(spanEl, textNode1);
+    expect(dom.insertBefore).toHaveBeenCalledWith(
+      link.parentNode,
+      spanEl,
+      link.nextSibling
+    );
+    expect(dom.createTextNode).toHaveBeenCalledWith(')');
+    expect(dom.appendChild).toHaveBeenCalledWith(spanEl, hideLinkEl);
+    expect(dom.appendChild).toHaveBeenCalledWith(spanEl, textNode2);
   });
-
 });
 
 describe('makeHandleClassName integration', () => {
