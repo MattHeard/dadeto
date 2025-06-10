@@ -880,15 +880,30 @@ function generateToyScript(post) {
 }
 
 // Unified toy UI section abstraction
-const TOY_UI_SECTIONS = [
-  [
-    'in',
-    () =>
-      '<select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option><option value="dendrite-story">dendrite-story</option></select><input type="text" disabled>',
-  ],
-  ['', () => '<button type="submit" disabled>Submit</button>'],
-  ['out', getToyOutputValueContent],
-];
+const INPUT_METHODS = ['text', 'number', 'kv', 'dendrite-story'];
+
+/**
+ * Build the input dropdown for a toy
+ * @param {string} defaultMethod - The configured default input method
+ * @returns {string} - HTML for the dropdown and text input
+ */
+function buildToyInputDropdown(defaultMethod) {
+  const selectedMethod =
+    defaultMethod && defaultMethod !== 'text' ? defaultMethod : undefined;
+  const options = INPUT_METHODS.map(method => {
+    const selected = method === selectedMethod ? ' selected' : '';
+    return `<option value="${method}"${selected}>${method}</option>`;
+  }).join('');
+  return `<select class="input">${options}</select><input type="text" disabled>`;
+}
+
+function getToyUISections(defaultMethod) {
+  return [
+    ['in', () => buildToyInputDropdown(defaultMethod)],
+    ['', () => '<button type="submit" disabled>Submit</button>'],
+    ['out', getToyOutputValueContent],
+  ];
+}
 
 function buildToySection(label, buildHTML) {
   return createLabeledSection({ label, valueHTML: buildHTML() });
@@ -903,10 +918,13 @@ function generateToyUISection(post) {
   if (!hasToy(post)) {
     return '';
   }
+  const defaultMethod =
+    post.toy && post.toy.defaultInputMethod
+      ? post.toy.defaultInputMethod
+      : 'text';
+  const sections = getToyUISections(defaultMethod);
   return join(
-    TOY_UI_SECTIONS.map(([label, buildHTML]) =>
-      buildToySection(label, buildHTML)
-    )
+    sections.map(([label, buildHTML]) => buildToySection(label, buildHTML))
   );
 }
 

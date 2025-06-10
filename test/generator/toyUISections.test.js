@@ -25,4 +25,44 @@ describe('TOY_UI_SECTIONS integration', () => {
     expect(html).toContain('<select class="input">');
     expect(html).toContain('<button type="submit" disabled>Submit</button>');
   });
+
+  test('generateBlog selects configured default input method', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'SELDEF',
+          title: 'Select Default',
+          publicationDate: '2024-01-02',
+          content: ['x'],
+          toy: {
+            modulePath: './toys/2024-01-02/example.js',
+            functionName: 'example',
+            defaultInputMethod: 'number',
+          },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<option value="number" selected>number</option>');
+  });
+
+  test('generateBlog defaults to text input method', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'NODEFAULT',
+          title: 'No Default',
+          publicationDate: '2024-01-03',
+          content: ['x'],
+          toy: {
+            modulePath: './toys/2024-01-03/example.js',
+            functionName: 'example',
+          },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<select class="input">');
+    expect(html).not.toContain('selected');
+  });
 });
