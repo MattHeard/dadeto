@@ -1,6 +1,25 @@
+function maybeRemoveNumber(container, dom) {
+  const numberInput = dom.querySelector(container, 'input[type="number"]');
+  if (numberInput && typeof numberInput._dispose === 'function') {
+    numberInput._dispose();
+    dom.removeChild(container, numberInput);
+  }
+}
+
+function maybeRemoveKV(container, dom) {
+  const kvContainer = dom.querySelector(container, '.kv-container');
+  if (kvContainer && typeof kvContainer._dispose === 'function') {
+    kvContainer._dispose();
+    dom.removeChild(container, kvContainer);
+  }
+}
+
 export function dendriteStoryHandler(dom, container, textInput) {
   dom.hide(textInput);
   dom.disable(textInput);
+
+  maybeRemoveNumber(container, dom);
+  maybeRemoveKV(container, dom);
 
   const existing = dom.querySelector(container, '.dendrite-form');
   if (existing) {
