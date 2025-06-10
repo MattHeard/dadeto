@@ -12,7 +12,8 @@
       },
       "toy": {
         "modulePath": "/2025-06-09/startLocalDendriteStory.js",
-        "functionName": "startLocalDendriteStory"
+        "functionName": "startLocalDendriteStory",
+        "defaultInputMethod": "dendrite-story"
       },
       "tags": ["toy", "story", "dendrite"]
     },
