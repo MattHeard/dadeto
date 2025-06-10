@@ -1,7 +1,7 @@
 import { test, expect, jest } from '@jest/globals';
 import { createOutputDropdownHandler } from '../../src/browser/toys.js';
 
-test('createOutputDropdownHandler delegates via unary handler', () => {
+test('createOutputDropdownHandler handles multiple events', () => {
   const handleDropdownChange = jest
     .fn()
     .mockReturnValueOnce('first')
