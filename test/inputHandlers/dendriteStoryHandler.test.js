@@ -1,0 +1,72 @@
+import { dendriteStoryHandler } from '../../src/inputHandlers/dendriteStory.js';
+import { describe, test, expect, jest } from '@jest/globals';
+
+describe('dendriteStoryHandler', () => {
+  test('creates form and updates hidden input', () => {
+    const container = {};
+    const textInput = { value: '' };
+    const elements = [];
+    let createCount = 0;
+    const dom = {
+      hide: jest.fn(),
+      disable: jest.fn(),
+      querySelector: jest.fn(() => null),
+      removeChild: jest.fn(),
+      createElement: jest.fn(() => {
+        const el = { id: createCount++ };
+        elements.push(el);
+        return el;
+      }),
+      setClassName: jest.fn(),
+      getNextSibling: jest.fn(() => ({})),
+      insertBefore: jest.fn(),
+      setType: jest.fn(),
+      setPlaceholder: jest.fn(),
+      addEventListener: jest.fn((el, _evt, handler) => {
+        el.handler = handler;
+      }),
+      removeEventListener: jest.fn(),
+      appendChild: jest.fn(),
+      getValue: jest.fn(el => el.value),
+      setValue: jest.fn((el, val) => {
+        el.value = val;
+      }),
+    };
+
+    const form = dendriteStoryHandler(dom, container, textInput);
+    expect(dom.hide).toHaveBeenCalledWith(textInput);
+    expect(dom.disable).toHaveBeenCalledWith(textInput);
+    expect(dom.createElement).toHaveBeenCalledTimes(7);
+    const firstInput = elements[1];
+    firstInput.value = 'Hello';
+    firstInput.handler({ target: firstInput });
+    expect(textInput.value).toBe(JSON.stringify({ title: 'Hello' }));
+    form._dispose();
+    expect(dom.removeEventListener).toHaveBeenCalled();
+  });
+
+  test('disposes existing form', () => {
+    const existing = { _dispose: jest.fn() };
+    const dom = {
+      hide: jest.fn(),
+      disable: jest.fn(),
+      querySelector: jest.fn(() => existing),
+      removeChild: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setClassName: jest.fn(),
+      getNextSibling: jest.fn(() => ({})),
+      insertBefore: jest.fn(),
+      setType: jest.fn(),
+      setPlaceholder: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      appendChild: jest.fn(),
+      getValue: jest.fn(el => el.value),
+      setValue: jest.fn(),
+    };
+
+    dendriteStoryHandler(dom, {}, {});
+    expect(existing._dispose).toHaveBeenCalled();
+    expect(dom.removeChild).toHaveBeenCalledWith({}, existing);
+  });
+});

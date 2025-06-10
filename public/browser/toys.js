@@ -100,6 +100,7 @@ import { textHandler } from '../inputHandlers/text.js';
 import { numberHandler } from '../inputHandlers/number.js';
 import { kvHandler, handleKVType } from '../inputHandlers/kv.js';
 import { defaultHandler } from '../inputHandlers/default.js';
+import { dendriteStoryHandler } from '../inputHandlers/dendriteStory.js';
 
 export { handleKVType } from '../inputHandlers/kv.js';
 
@@ -107,6 +108,7 @@ const inputHandlersMap = {
   text: textHandler,
   number: numberHandler,
   kv: kvHandler,
+  'dendrite-story': dendriteStoryHandler,
   default: defaultHandler,
 };
 
