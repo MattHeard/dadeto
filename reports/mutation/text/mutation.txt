@@ -1,11 +1,11 @@
-[33m11:12:52 (31585) WARN ProjectReader[39m Glob pattern "**/node_modules/**" did not result in any files.
-[33m11:12:52 (31585) WARN ProjectReader[39m Glob pattern "**/vendor/**" did not result in any files.
-[32m11:12:52 (31585) INFO ProjectReader[39m Found 46 of 678 file(s) to be mutated.
-[32m11:12:52 (31585) INFO Instrumenter[39m Instrumented 46 source file(s) with 3018 mutant(s)
-[32m11:12:52 (31585) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
-[32m11:12:53 (31585) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
-[32m11:13:06 (31585) INFO DryRunExecutor[39m Initial test run succeeded. Ran 983 tests in 12 seconds (net 4419 ms, overhead 8214 ms).
-[33m11:19:41 (31585) WARN ChildProcessProxy[39m Child process [pid 46608] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+[33m11:46:41 (59768) WARN ProjectReader[39m Glob pattern "**/node_modules/**" did not result in any files.
+[33m11:46:41 (59768) WARN ProjectReader[39m Glob pattern "**/vendor/**" did not result in any files.
+[32m11:46:41 (59768) INFO ProjectReader[39m Found 46 of 673 file(s) to be mutated.
+[32m11:46:42 (59768) INFO Instrumenter[39m Instrumented 46 source file(s) with 3017 mutant(s)
+[32m11:46:42 (59768) INFO ConcurrencyTokenProvider[39m Creating 7 test runner process(es).
+[32m11:46:42 (59768) INFO DryRunExecutor[39m Starting initial test run (jest test runner with "perTest" coverage analysis). This may take a while.
+[32m11:46:54 (59768) INFO DryRunExecutor[39m Initial test run succeeded. Ran 978 tests in 12 seconds (net 4275 ms, overhead 7875 ms).
+[33m11:52:51 (59768) WARN ChildProcessProxy[39m Child process [pid 71246] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	watchman warning:  Recrawled this watch 15 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -30,15 +30,15 @@
 	To clear this warning, run:
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:718
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:718
 	        dom.addWarning(parent);
 	            ^
 	
 	TypeError: dom.addWarning is not a function
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:718:13
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:718:13
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 46608] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	 ChildProcessCrashedError: Child process [pid 71246] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	watchman warning:  Recrawled this watch 15 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -63,248 +63,12 @@
 	To clear this warning, run:
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:718
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:718
 	        dom.addWarning(parent);
 	            ^
 	
 	TypeError: dom.addWarning is not a function
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:718:13
-	
-	Node.js v23.5.0
-	
-    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
-    at ChildProcess.emit (node:events:513:28)
-    at maybeClose (node:internal/child_process:1101:16)
-    at Socket.<anonymous> (node:internal/child_process:457:11)
-    at Socket.emit (node:events:513:28)
-    at Pipe.<anonymous> (node:net:351:12) {
-  innerError: undefined,
-  pid: 46608,
-  exitCode: 1,
-  signal: null
-}
-[33m11:19:43 (31585) WARN ChildProcessProxy[39m Child process [pid 45855] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404
-	    const child = presenter(output.content, dom);
-	                  ^
-	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:714:9
-	
-	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 45855] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404
-	    const child = presenter(output.content, dom);
-	                  ^
-	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:714:9
-	
-	Node.js v23.5.0
-	
-    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
-    at ChildProcess.emit (node:events:513:28)
-    at maybeClose (node:internal/child_process:1101:16)
-    at Socket.<anonymous> (node:internal/child_process:457:11)
-    at Socket.emit (node:events:513:28)
-    at Pipe.<anonymous> (node:net:351:12) {
-  innerError: undefined,
-  pid: 45855,
-  exitCode: 1,
-  signal: null
-}
-[33m11:19:43 (31585) WARN ChildProcessProxy[39m Child process [pid 46723] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/test/browser/toys.handleRequestResponse.test.js:86
-	    const error = new Error('Network error');
-	                  ^
-	
-	Error: Network error
-	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/test/browser/toys.handleRequestResponse.test.js:98:19)
-	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
-	    at new Promise (<anonymous>)
-	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
-	    at _callCircusTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:316:40)
-	    at processTicksAndRejections (node:internal/process/task_queues:105:5)
-	    at _runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:252:3)
-	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:126:9)
-	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:121:9)
-	    at run (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:71:3)
-	    at runAndTransformResultsToJestFormat (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-	    at jestAdapter (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-	    at runTestInternal (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:367:16)
-	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
-	
-	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 46723] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/test/browser/toys.handleRequestResponse.test.js:86
-	    const error = new Error('Network error');
-	                  ^
-	
-	Error: Network error
-	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/test/browser/toys.handleRequestResponse.test.js:98:19)
-	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
-	    at new Promise (<anonymous>)
-	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
-	    at _callCircusTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:316:40)
-	    at processTicksAndRejections (node:internal/process/task_queues:105:5)
-	    at _runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:252:3)
-	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:126:9)
-	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:121:9)
-	    at run (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:71:3)
-	    at runAndTransformResultsToJestFormat (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-	    at jestAdapter (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-	    at runTestInternal (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:367:16)
-	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
-	
-	Node.js v23.5.0
-	
-    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
-    at ChildProcess.emit (node:events:513:28)
-    at maybeClose (node:internal/child_process:1101:16)
-    at Socket.<anonymous> (node:internal/child_process:457:11)
-    at Socket.emit (node:events:513:28)
-    at Pipe.<anonymous> (node:net:351:12) {
-  innerError: undefined,
-  pid: 46723,
-  exitCode: 1,
-  signal: null
-}
-[33m11:19:45 (31585) WARN ChildProcessProxy[39m Child process [pid 47833] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404
-	    const child = presenter(output.content, dom);
-	                  ^
-	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:714:9
-	
-	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 47833] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404
-	    const child = presenter(output.content, dom);
-	                  ^
-	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:714:9
-	
-	Node.js v23.5.0
-	
-    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
-    at ChildProcess.emit (node:events:513:28)
-    at maybeClose (node:internal/child_process:1101:16)
-    at Socket.<anonymous> (node:internal/child_process:457:11)
-    at Socket.emit (node:events:513:28)
-    at Pipe.<anonymous> (node:net:351:12) {
-  innerError: undefined,
-  pid: 47833,
-  exitCode: 1,
-  signal: null
-}
-[33m11:19:46 (31585) WARN ChildProcessProxy[39m Child process [pid 47854] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/test/browser/toys.handleRequestResponse.test.js:86
-	    const error = new Error('Network error');
-	                  ^
-	
-	Error: Network error
-	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/test/browser/toys.handleRequestResponse.test.js:98:19)
-	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
-	    at new Promise (<anonymous>)
-	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
-	    at _callCircusTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:316:40)
-	    at processTicksAndRejections (node:internal/process/task_queues:105:5)
-	    at _runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:252:3)
-	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:126:9)
-	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:121:9)
-	    at run (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:71:3)
-	    at runAndTransformResultsToJestFormat (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-	    at jestAdapter (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-	    at runTestInternal (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:367:16)
-	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
-	
-	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 47854] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/test/browser/toys.handleRequestResponse.test.js:86
-	    const error = new Error('Network error');
-	                  ^
-	
-	Error: Network error
-	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/test/browser/toys.handleRequestResponse.test.js:98:19)
-	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
-	    at new Promise (<anonymous>)
-	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
-	    at _callCircusTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:316:40)
-	    at processTicksAndRejections (node:internal/process/task_queues:105:5)
-	    at _runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:252:3)
-	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:126:9)
-	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:121:9)
-	    at run (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:71:3)
-	    at runAndTransformResultsToJestFormat (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-	    at jestAdapter (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-	    at runTestInternal (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:367:16)
-	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:718:13
 	
 	Node.js v23.5.0
 	
@@ -313,38 +77,94 @@
     at maybeClose (node:internal/child_process:1101:16)
     at ChildProcess._handle.onexit (node:internal/child_process:305:5) {
   innerError: undefined,
-  pid: 47854,
+  pid: 71246,
   exitCode: 1,
   signal: null
 }
-[33m11:19:47 (31585) WARN ChildProcessProxy[39m Child process [pid 47772] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+[33m11:52:53 (59768) WARN ChildProcessProxy[39m Child process [pid 74444] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/test/browser/toys.handleRequestResponse.test.js:86
+	    const error = new Error('Network error');
+	                  ^
+	
+	Error: Network error
+	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/test/browser/toys.handleRequestResponse.test.js:98:19)
+	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
+	    at new Promise (<anonymous>)
+	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
+	    at _callCircusTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:316:40)
+	    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+	    at _runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:252:3)
+	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:126:9)
+	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:121:9)
+	    at run (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:71:3)
+	    at runAndTransformResultsToJestFormat (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+	    at jestAdapter (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+	    at runTestInternal (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:367:16)
+	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
+	
+	Node.js v23.5.0
+	 ChildProcessCrashedError: Child process [pid 74444] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/test/browser/toys.handleRequestResponse.test.js:86
+	    const error = new Error('Network error');
+	                  ^
+	
+	Error: Network error
+	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/test/browser/toys.handleRequestResponse.test.js:98:19)
+	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
+	    at new Promise (<anonymous>)
+	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
+	    at _callCircusTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:316:40)
+	    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+	    at _runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:252:3)
+	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:126:9)
+	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:121:9)
+	    at run (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:71:3)
+	    at runAndTransformResultsToJestFormat (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+	    at jestAdapter (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+	    at runTestInternal (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:367:16)
+	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
+	
+	Node.js v23.5.0
+	
+    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
+    at ChildProcess.emit (node:events:513:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at Socket.<anonymous> (node:internal/child_process:457:11)
+    at Socket.emit (node:events:513:28)
+    at Pipe.<anonymous> (node:net:351:12) {
+  innerError: undefined,
+  pid: 74444,
+  exitCode: 1,
+  signal: null
+}
+[33m11:52:54 (59768) WARN ChildProcessProxy[39m Child process [pid 75714] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	watchman warning:  Recrawled this watch 15 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
 	To clear this warning, run:
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:718
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:718
 	        dom.addWarning(parent);
 	            ^
 	
 	TypeError: dom.addWarning is not a function
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:718:13
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:718:13
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 47772] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	 ChildProcessCrashedError: Child process [pid 75714] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	watchman warning:  Recrawled this watch 15 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
 	To clear this warning, run:
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:718
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:718
 	        dom.addWarning(parent);
 	            ^
 	
 	TypeError: dom.addWarning is not a function
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:718:13
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:718:13
 	
 	Node.js v23.5.0
 	
@@ -355,11 +175,11 @@
     at Socket.emit (node:events:513:28)
     at Pipe.<anonymous> (node:net:351:12) {
   innerError: undefined,
-  pid: 47772,
+  pid: 75714,
   exitCode: 1,
   signal: null
 }
-[33m11:22:09 (31585) WARN ChildProcessProxy[39m Child process [pid 51558] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+[33m11:52:56 (59768) WARN ChildProcessProxy[39m Child process [pid 73671] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	watchman warning:  Recrawled this watch 15 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -384,16 +204,16 @@
 	To clear this warning, run:
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404
 	    const child = presenter(output.content, dom);
 	                  ^
 	
 	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:714:9
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:714:9
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 51558] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	 ChildProcessCrashedError: Child process [pid 73671] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
 	watchman warning:  Recrawled this watch 15 times, most recently because:
 	MustScanSubDirs UserDroppedTo resolve, please review the information on
 	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
@@ -418,13 +238,13 @@
 	To clear this warning, run:
 	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
 	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404
 	    const child = presenter(output.content, dom);
 	                  ^
 	
 	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:714:9
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:714:9
 	
 	Node.js v23.5.0
 	
@@ -435,40 +255,52 @@
     at Socket.emit (node:events:513:28)
     at Pipe.<anonymous> (node:net:351:12) {
   innerError: undefined,
-  pid: 51558,
+  pid: 73671,
   exitCode: 1,
   signal: null
 }
-[33m11:22:13 (31585) WARN ChildProcessProxy[39m Child process [pid 53515] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404
-	    const child = presenter(output.content, dom);
+[33m11:52:59 (59768) WARN ChildProcessProxy[39m Child process [pid 75819] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/test/browser/toys.handleRequestResponse.test.js:86
+	    const error = new Error('Network error');
 	                  ^
 	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:714:9
+	Error: Network error
+	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/test/browser/toys.handleRequestResponse.test.js:98:19)
+	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
+	    at new Promise (<anonymous>)
+	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
+	    at _callCircusTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:316:40)
+	    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+	    at _runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:252:3)
+	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:126:9)
+	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:121:9)
+	    at run (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:71:3)
+	    at runAndTransformResultsToJestFormat (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+	    at jestAdapter (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+	    at runTestInternal (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:367:16)
+	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
 	
 	Node.js v23.5.0
-	 ChildProcessCrashedError: Child process [pid 53515] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
-	watchman warning:  Recrawled this watch 15 times, most recently because:
-	MustScanSubDirs UserDroppedTo resolve, please review the information on
-	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
-	To clear this warning, run:
-	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
-	
-	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404
-	    const child = presenter(output.content, dom);
+	 ChildProcessCrashedError: Child process [pid 75819] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/test/browser/toys.handleRequestResponse.test.js:86
+	    const error = new Error('Network error');
 	                  ^
 	
-	TypeError: presenter is not a function
-	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:404:19)
-	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-6g3cUV/src/browser/toys.js:714:9
+	Error: Network error
+	    at Object.<anonymous> (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/test/browser/toys.handleRequestResponse.test.js:98:19)
+	    at Promise.then.completed (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:298:28)
+	    at new Promise (<anonymous>)
+	    at callAsyncCircusFn (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/utils.js:231:10)
+	    at _callCircusTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:316:40)
+	    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+	    at _runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:252:3)
+	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:126:9)
+	    at _runTestsForDescribeBlock (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:121:9)
+	    at run (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/run.js:71:3)
+	    at runAndTransformResultsToJestFormat (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+	    at jestAdapter (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+	    at runTestInternal (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:367:16)
+	    at runTest (/Users/matthew.heard/Code/Matt/dadeto/node_modules/jest-runner/build/runTest.js:444:34)
 	
 	Node.js v23.5.0
 	
@@ -479,7 +311,175 @@
     at Socket.emit (node:events:513:28)
     at Pipe.<anonymous> (node:net:351:12) {
   innerError: undefined,
-  pid: 53515,
+  pid: 75819,
+  exitCode: 1,
+  signal: null
+}
+[33m11:53:02 (59768) WARN ChildProcessProxy[39m Child process [pid 76053] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404
+	    const child = presenter(output.content, dom);
+	                  ^
+	
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:714:9
+	
+	Node.js v23.5.0
+	 ChildProcessCrashedError: Child process [pid 76053] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404
+	    const child = presenter(output.content, dom);
+	                  ^
+	
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:714:9
+	
+	Node.js v23.5.0
+	
+    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
+    at ChildProcess.emit (node:events:513:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at Socket.<anonymous> (node:internal/child_process:457:11)
+    at Socket.emit (node:events:513:28)
+    at Pipe.<anonymous> (node:net:351:12) {
+  innerError: undefined,
+  pid: 76053,
+  exitCode: 1,
+  signal: null
+}
+[33m11:55:12 (59768) WARN ChildProcessProxy[39m Child process [pid 78535] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404
+	    const child = presenter(output.content, dom);
+	                  ^
+	
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:714:9
+	
+	Node.js v23.5.0
+	 ChildProcessCrashedError: Child process [pid 78535] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404
+	    const child = presenter(output.content, dom);
+	                  ^
+	
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:714:9
+	
+	Node.js v23.5.0
+	
+    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
+    at ChildProcess.emit (node:events:513:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at Socket.<anonymous> (node:internal/child_process:457:11)
+    at Socket.emit (node:events:513:28)
+    at Pipe.<anonymous> (node:net:351:12) {
+  innerError: undefined,
+  pid: 78535,
+  exitCode: 1,
+  signal: null
+}
+[33m11:55:15 (59768) WARN ChildProcessProxy[39m Child process [pid 81430] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404
+	    const child = presenter(output.content, dom);
+	                  ^
+	
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:714:9
+	
+	Node.js v23.5.0
+	 ChildProcessCrashedError: Child process [pid 81430] exited unexpectedly with exit code 1 (without signal). Last part of stdout and stderr was:
+	watchman warning:  Recrawled this watch 15 times, most recently because:
+	MustScanSubDirs UserDroppedTo resolve, please review the information on
+	https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+	To clear this warning, run:
+	`watchman watch-del '/Users/matthew.heard/Code/Matt/dadeto' ; watchman watch-project '/Users/matthew.heard/Code/Matt/dadeto'`
+	
+	/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404
+	    const child = presenter(output.content, dom);
+	                  ^
+	
+	TypeError: presenter is not a function
+	    at setTextContent (/Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:404:19)
+	    at /Users/matthew.heard/Code/Matt/dadeto/.stryker-tmp/sandbox-gBdzlK/src/browser/toys.js:714:9
+	
+	Node.js v23.5.0
+	
+    at ChildProcess.handleUnexpectedExit (file:///Users/matthew.heard/Code/Matt/dadeto/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy.js:178:31)
+    at ChildProcess.emit (node:events:513:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at Socket.<anonymous> (node:internal/child_process:457:11)
+    at Socket.emit (node:events:513:28)
+    at Pipe.<anonymous> (node:net:351:12) {
+  innerError: undefined,
+  pid: 81430,
   exitCode: 1,
   signal: null
 }
@@ -513,16 +513,9 @@ All tests
       ~ setupAudio calls createElement with "a" for each control button [line 541] (covered 33)
       ~ setupAudio creates DOM elements in the correct order [line 550] (covered 33)
       ~ setupAudio inserts spaces between control buttons [line 562] (covered 33)
-    blogStatus.constant.runtime.test.js
-      ✓ BLOG_STATUS runtime usage shouldUseExistingFetch returns true when loading and promise exists [line 8] (killed 1)
-      ✓ BLOG_STATUS runtime usage fetchAndCacheBlogData transitions status using BLOG_STATUS values [line 19] (killed 2)
     blogStatus.constant.test.js
       ~ BLOG_STATUS constant behavior shouldCopyStateForFetch returns correct booleans [line 8] (covered 8)
       ~ BLOG_STATUS constant behavior fetchAndCacheBlogData updates state using BLOG_STATUS values [line 15] (covered 20)
-    blogStatus.constants.static.test.js
-      ~ BLOG_STATUS constants static import transitions status from idle to loaded [line 5] (covered 20)
-    blogStatus.dynamicValue.test.js
-      ~ BLOG_STATUS dynamic value check shouldCopyStateForFetch returns true for idle status [line 5] (covered 6)
     blogStatus.errorState.additional.test.js
       ~ BLOG_STATUS error transition additional check sets status to error on fetch failure and qualifies for state copy [line 5] (covered 24)
     blogStatus.fetchFailure.test.js
@@ -559,8 +552,6 @@ All tests
       ~ createAddDropdownListener mutation extra returns a unary listener that registers change handler once when invoked [line 5] (covered 2)
     createAddDropdownListener.mutationGuard.test.js
       ~ createAddDropdownListener mutation guard creates distinct handlers that register change listeners [line 5] (covered 2)
-    createAddDropdownListener.mutationKill.test.js
-      ~ createAddDropdownListener mutant killer registers change handler and returns undefined [line 8] (covered 2)
     createAddDropdownListener.noDom.test.js
       ~ createAddDropdownListener missing dom.addEventListener throws a TypeError mentioning addEventListener when dom lacks it [line 5] (covered 2)
     createAddDropdownListener.repeat.test.js
@@ -574,11 +565,11 @@ All tests
     createAddDropdownListener.survivor.test.js
       ~ createAddDropdownListener survivor check returns a unary function that registers the handler and forwards events [line 5] (covered 2)
     createDispose.export.test.js
-      ~ createDispose export is a function that expects four parameters [line 6] (covered 25)
+      ✓ createDispose export is a function that expects four parameters [line 6] (killed 1)
     createDispose.instance.test.js
       ~ createDispose instances returns a new dispose function on each call [line 5] (covered 3)
     createHandleInputError.test.js
-      ✓ createHandleSubmit error handling via createHandleInputError logs and warns when processing function throws [line 5] (killed 4)
+      ✓ createHandleSubmit error handling via createHandleInputError logs and warns when processing function throws [line 5] (killed 2)
     createHandleSubmit.callsProcess.test.js
       ~ createHandleSubmit fetch usage does not call fetchFn when processingFunction returns plain data [line 5] (covered 51)
     createHandleSubmit.handlerLength.test.js
@@ -594,34 +585,34 @@ All tests
     createHandleSubmit.string.test.js
       ✘ createHandleSubmit string representation includes stopDefault call in the returned handler [line 5] (covered 0)
     createInputDropdownHandler.allTypes.mutantKill.test.js
-      ✓ createInputDropdownHandler all types invokes handlers for text, number, kv and unknown types [line 5] (killed 2)
+      ~ createInputDropdownHandler all types invokes handlers for text, number, kv and unknown types [line 5] (covered 120)
     createInputDropdownHandler.cleanupDefault.test.js
       ✓ createInputDropdownHandler cleanup default removes number and kv inputs for unknown value [line 5] (killed 8)
     createInputDropdownHandler.default.test.js
-      ✓ createInputDropdownHandler default branch hides and disables text input when select value is unknown [line 5] (killed 2)
+      ~ createInputDropdownHandler default branch hides and disables text input when select value is unknown [line 5] (covered 13)
       ~ createInputDropdownHandler default branch reveals and enables text input when select value is text [line 46] (covered 15)
     createInputDropdownHandler.defaultHandler2.test.js
       ~ createInputDropdownHandler default fallback uses default handler for unknown select values [line 5] (covered 13)
     createInputDropdownHandler.defaultOrder.test.js
       ~ createInputDropdownHandler hides before disabling text input [line 4] (covered 13)
     createInputDropdownHandler.kv.test.js
-      ✓ createInputDropdownHandler kv type removes number input and ensures kv container [line 5] (killed 4)
+      ✓ createInputDropdownHandler kv type removes number input and ensures kv container [line 5] (killed 3)
     createInputDropdownHandler.mutant.test.js
-      ~ createInputDropdownHandler invokes visibility handlers [line 4] (covered 15)
+      ✓ createInputDropdownHandler invokes visibility handlers [line 4] (killed 4)
     createInputDropdownHandler.number.test.js
-      ✓ createInputDropdownHandler number type removes KV container and ensures a number input [line 10] (killed 2)
+      ✓ createInputDropdownHandler number type removes KV container and ensures a number input [line 10] (killed 3)
     createInputDropdownHandler.numberThenKv.mutantKill.test.js
-      ✓ createInputDropdownHandler handles number then kv sequentially [line 4] (killed 1)
+      ✓ createInputDropdownHandler handles number then kv sequentially [line 4] (killed 2)
     createInputDropdownHandler.numberThenText.test.js
-      ✓ createInputDropdownHandler handles number then text sequentially [line 4] (killed 5)
+      ✓ createInputDropdownHandler handles number then text sequentially [line 4] (killed 3)
     createInputDropdownHandler.objectLiteral.mutantKill.test.js
       ~ createInputDropdownHandler object literal mutant killer handles known select values without throwing [line 5] (covered 23)
     createInputDropdownHandler.order.test.js
-      ✓ createInputDropdownHandler reveals before enabling text input [line 4] (killed 2)
+      ~ createInputDropdownHandler reveals before enabling text input [line 4] (covered 15)
     createInputDropdownHandler.randomMutantKill.test.js
       ~ createInputDropdownHandler handles sequential text then unknown values [line 4] (covered 22)
     createInputDropdownHandler.sequenceAdditional.test.js
-      ✓ createInputDropdownHandler sequential values handles text then unknown then text again [line 5] (killed 2)
+      ~ createInputDropdownHandler sequential values handles text then unknown then text again [line 5] (covered 22)
     createInputDropdownHandler.sequentialValues.test.js
       ~ createInputDropdownHandler handles text, unknown, then text [line 4] (covered 22)
     createInputDropdownHandler.textOnly.mutant.test.js
@@ -631,7 +622,7 @@ All tests
     createKeyValueRow.appendChild.test.js
       ~ createKeyValueRow DOM appends appends key, value and button elements to the row and container [line 5] (covered 32)
     createKeyValueRow.args.test.js
-      ~ createKeyValueRow argument handling creates elements using provided key and value [line 5] (covered 32)
+      ✓ createKeyValueRow argument handling creates elements using provided key and value [line 5] (killed 1)
     createKeyValueRow.return.test.js
       ✘ createKeyValueRow return value returns a handler function accepting [key,value] and index [line 5] (covered 0)
       ✘ createKeyValueRow return value has an arity of 8 and each call returns a new unary function [line 28] (covered 0)
@@ -639,7 +630,7 @@ All tests
       ~ createNumberInput disposer removes the input event listener when _dispose is called [line 5] (covered 11)
       ~ createNumberInput disposer allows _dispose to be called multiple times [line 31] (covered 11)
     createOnRemove.dynamic.test.js
-      ✓ createOnRemove dynamic import removes the key and calls render [line 4] (killed 1)
+      ✓ createOnRemove dynamic import removes the key and calls render [line 4] (killed 2)
     createOnRemove.length.test.js
       ✘ createOnRemove argument length expects three parameters and returns a unary function [line 5] (covered 0)
     createOutputDropdownHandler.additionalKill.test.js
@@ -650,6 +641,8 @@ All tests
       ~ createOutputDropdownHandler arrow behaviour forwards the event target using provided dependencies [line 5] (covered 1)
     createOutputDropdownHandler.eventReturn.test.js
       ~ createOutputDropdownHandler delegates via unary handler [line 4] (covered 1)
+    createOutputDropdownHandler.length.test.js
+      ~ createOutputDropdownHandler additional returns unary handler that delegates to handleDropdownChange [line 5] (covered 1)
     createOutputDropdownHandler.multiple.test.js
       ~ createOutputDropdownHandler multiple instances binds dependencies for each returned handler [line 5] (covered 1)
     createOutputDropdownHandler.multipleCalls.test.js
@@ -664,12 +657,8 @@ All tests
       ~ createOutputDropdownHandler null target forwards null currentTarget to handler [line 5] (covered 1)
     createOutputDropdownHandler.randomKill.test.js
       ~ createOutputDropdownHandler forwards events via unary handler [line 4] (covered 1)
-    createOutputDropdownHandler.resultPropagation.test.js
-      ~ createOutputDropdownHandler forwards handler result and parameters [line 4] (covered 1)
     createOutputDropdownHandler.returnMultiple.test.js
       ~ createOutputDropdownHandler returns handler result for each event [line 4] (covered 1)
-    createOutputDropdownHandler.returnValue.test.js
-      ~ createOutputDropdownHandler returns handler result [line 4] (covered 1)
     createOutputDropdownHandler.sequenceCalls.test.js
       ~ createOutputDropdownHandler repeated calls delegates each event to handleDropdownChange [line 5] (covered 1)
     createOutputDropdownHandler.survivor.test.js
@@ -680,8 +669,10 @@ All tests
       ~ createRemoveAddListener additional coverage disposer removes listener and is idempotent [line 5] (covered 6)
     createRemoveAddListener.direct.test.js
       ~ createRemoveAddListener returns disposer that removes click handler [line 4] (covered 6)
+    createRemoveAddListener.handlerUse.test.js
+      ~ setupAddButton disposer removes the exact click handler after invocation [line 4] (covered 14)
     createRemoveAddListener.mutantKill.test.js
-      ✓ createRemoveAddListener mutant killer returns a disposer that removes the added listener [line 8] (killed 2)
+      ~ createRemoveAddListener mutant killer returns a disposer that removes the added listener [line 8] (covered 6)
     createRemoveAddListener.unique.test.js
       ~ createRemoveAddListener unique disposers returns distinct dispose functions for each call [line 5] (covered 6)
     createRemoveRemoveListener.count.test.js
@@ -701,7 +692,7 @@ All tests
     createRemoveValueListener.doubleRemoval.test.js
       ~ createRemoveValueListener multiple removals disposers remove listeners for each value element [line 5] (covered 8)
     createRemoveValueListener.handleKVType.integration.test.js
-      ✓ handleKVType integration with createRemoveValueListener disposes the number input listener when removing the input [line 7] (killed 2)
+      ✓ handleKVType integration with createRemoveValueListener disposes the number input listener when removing the input [line 7] (killed 1)
     createRemoveValueListener.multipleCalls.new.test.js
       ~ createRemoveValueListener repeated calls calls removeEventListener each time disposer is invoked [line 5] (covered 8)
     createRemoveValueListener.mutantKill.test.js
@@ -709,8 +700,8 @@ All tests
     createUpdateTextInputValue.isolated.test.js
       ✓ createUpdateTextInputValue isolated import forwards the value [line 10] (killed 1)
     data.blogStatus.constants.dynamic.test.js
-      ✓ BLOG_STATUS dynamic import fetchAndCacheBlogData uses BLOG_STATUS values [line 9] (killed 1)
-      ~ BLOG_STATUS dynamic import shouldCopyStateForFetch relies on BLOG_STATUS constants [line 28] (covered 8)
+      ✓ BLOG_STATUS dynamic import fetchAndCacheBlogData uses BLOG_STATUS values [line 9] (killed 2)
+      ✓ BLOG_STATUS dynamic import shouldCopyStateForFetch relies on BLOG_STATUS constants [line 28] (killed 1)
     data.blogStatusConstants.test.js
       ~ BLOG_STATUS constants integration fetchAndCacheBlogData transitions status from loading to loaded [line 5] (covered 20)
       ~ BLOG_STATUS constants integration fetchAndCacheBlogData transitions status to error on failure [line 25] (covered 16)
@@ -723,46 +714,46 @@ All tests
     data.fetchStatus.integration.test.js
       ~ fetchAndCacheBlogData status integration transitions from loading to loaded on success [line 5] (covered 20)
     data.internalKeys.mutant.test.js
-      ✓ getData dynamic import omits internal state fields [line 8] (killed 4)
+      ✓ getData dynamic import omits internal state fields [line 8] (killed 5)
     data.restoreBlogState.test.js
-      ✓ restoreBlogState via setData restores blog fetch fields when incoming state provides them [line 5] (killed 3)
+      ✓ restoreBlogState via setData restores blog fetch fields when incoming state provides them [line 5] (killed 2)
     data.test.js
-      ~ shouldCopyStateForFetch returns true for idle [line 14] (covered 6)
-      ~ shouldCopyStateForFetch returns true for error [line 17] (covered 8)
+      ✓ shouldCopyStateForFetch returns true for idle [line 14] (killed 4)
+      ✓ shouldCopyStateForFetch returns true for error [line 17] (killed 2)
       ✓ shouldCopyStateForFetch returns false for loaded [line 20] (killed 1)
       ~ shouldCopyStateForFetch returns false for loading [line 23] (covered 8)
-      ✓ deepMerge should use the if branch when shouldDeepMerge is true (deep merge plain objects) [line 29] (killed 17)
+      ✓ deepMerge should use the if branch when shouldDeepMerge is true (deep merge plain objects) [line 29] (killed 15)
       ✓ deepMerge replaces array values instead of merging them [line 37] (killed 1)
       ✓ deepMerge does not merge an array with an object [line 44] (killed 1)
-      ✓ deepMerge replaces an object value when the source provides a primitive [line 51] (killed 2)
-      ✓ fetchAndCacheBlogData should prevent multiple simultaneous fetches [line 76] (killed 5)
-      ✓ fetchAndCacheBlogData should start fetching blog data and update state on success [line 94] (killed 3)
+      ✓ deepMerge replaces an object value when the source provides a primitive [line 51] (killed 3)
+      ✓ fetchAndCacheBlogData should prevent multiple simultaneous fetches [line 76] (killed 7)
+      ✓ fetchAndCacheBlogData should start fetching blog data and update state on success [line 94] (killed 7)
       ✓ fetchAndCacheBlogData should handle HTTP errors properly [line 118] (killed 2)
       ~ fetchAndCacheBlogData should handle fetch exceptions [line 137] (covered 16)
-      ✓ fetchAndCacheBlogData calls fetch with the correct URL and logs starting message [line 154] (killed 1)
-      ✓ fetchAndCacheBlogData throws specific error when response is not ok [line 168] (killed 2)
+      ✓ fetchAndCacheBlogData calls fetch with the correct URL and logs starting message [line 154] (killed 2)
+      ✓ fetchAndCacheBlogData throws specific error when response is not ok [line 168] (killed 3)
       ✘ getData, setData, and getDeepStateCopy getDeepStateCopy returns a deep copy [line 210] (covered 0)
-      ✓ getData, setData, and getDeepStateCopy getData triggers fetch if status is idle [line 218] (killed 9)
-      ✓ getData, setData, and getDeepStateCopy getData logs warning on error state [line 224] (killed 15)
+      ✓ getData, setData, and getDeepStateCopy getData triggers fetch if status is idle [line 218] (killed 6)
+      ✓ getData, setData, and getDeepStateCopy getData logs warning on error state [line 224] (killed 14)
       ✓ getData, setData, and getDeepStateCopy getData does nothing when status is loaded [line 234] (killed 1)
       ✓ getData, setData, and getDeepStateCopy getData omits internal state fields [line 242] (killed 2)
       ✓ getData, setData, and getDeepStateCopy getData returns a deep copy when status is idle [line 253] (killed 3)
       ✓ getData, setData, and getDeepStateCopy getData returns original object when status is loaded [line 262] (killed 2)
       ~ getData, setData, and getDeepStateCopy getData does nothing when status is blank [line 270] (covered 31)
       ~ getData, setData, and getDeepStateCopy getData sets status to loading then loaded when fetch completes [line 278] (covered 48)
-      ✓ getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it [line 295] (killed 5)
+      ✓ getData, setData, and getDeepStateCopy setData preserves existing blog if incoming state omits it [line 295] (killed 6)
       ~ getData, setData, and getDeepStateCopy setData preserves blog fetch related fields when incoming state omits them [line 305] (covered 22)
       ✓ getData, setData, and getDeepStateCopy setData restores existing blog fields when incoming state provides new ones [line 322] (killed 1)
       ~ getData, setData, and getDeepStateCopy setData keeps prior blog-related state when incoming state tries to replace it [line 349] (covered 22)
-      ✓ getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing [line 376] (killed 5)
+      ✓ getData, setData, and getDeepStateCopy setData logs specific error message when blog is missing [line 376] (killed 9)
       ~ getData, setData, and getDeepStateCopy setData throws a descriptive error when blog data is missing [line 389] (covered 22)
       ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is object but lacks temporary property [line 398] (covered 22)
       ~ getData, setData, and getDeepStateCopy setData throws an error with the expected message when 'temporary' is missing [line 415] (covered 22)
       ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is null [line 430] (covered 16)
       ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is undefined [line 446] (covered 16)
       ~ getData, setData, and getDeepStateCopy setData throws and logs error if incoming state is an object with no prototype and no properties [line 462] (covered 22)
-      ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns true and logs when loading and promise exists [line 479] (killed 4)
-      ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is not loading [line 490] (killed 3)
+      ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns true and logs when loading and promise exists [line 479] (killed 3)
+      ✓ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is not loading [line 490] (killed 1)
       ~ getData, setData, and getDeepStateCopy shouldUseExistingFetch returns false if status is loading but no fetchPromise exists [line 501] (covered 12)
       ~ getData, setData, and getDeepStateCopy getData returns cached blog data when already loaded [line 512] (covered 31)
       ✓ getData, setData, and getDeepStateCopy getEncodeBase64 returns a function that encodes to base64 using provided helpers [line 524] (killed 2)
@@ -792,7 +783,7 @@ All tests
     getDeepStateCopy.toys.runtime.test.js
       ✘ getDeepStateCopy from toys module clones deeply when imported [line 4] (covered 0)
     getDeepStateCopy.toys.runtimeImport.test.js
-      ~ getDeepStateCopy dynamically imported from toys makes a deep clone [line 6] (covered 25)
+      ✓ getDeepStateCopy dynamically imported from toys makes a deep clone [line 6] (killed 1)
     handleDropdownChange.nullOutput.test.js
       ~ handleDropdownChange null output does not throw when data.output is null [line 5] (covered 14)
     handleDropdownChange.presenterUsage.test.js
@@ -804,50 +795,50 @@ All tests
     makeModuleConfig.getUuid.test.js
       ~ makeModuleConfig includes getUuid from env [line 5] (covered 2)
     parseJSONResult.additional.test.js
-      ✓ parseJSONResult additional cases returns null for JSON with extra characters [line 5] (killed 1)
+      ~ parseJSONResult additional cases returns null for JSON with extra characters [line 5] (covered 3)
       ~ parseJSONResult additional cases parses valid JSON with surrounding whitespace [line 9] (covered 2)
     parseJSONResult.realImport.test.js
-      ✓ processInputAndSetOutput via dynamic import captures parsed result from invalid JSON [line 7] (killed 2)
+      ~ processInputAndSetOutput via dynamic import captures parsed result from invalid JSON [line 7] (covered 67)
     parseJSONResult.test.js
-      ~ parseJSONResult returns null for invalid JSON [line 5] (covered 3)
+      ✓ parseJSONResult returns null for invalid JSON [line 5] (killed 1)
       ~ parseJSONResult returns object for valid JSON [line 9] (covered 2)
       ~ parseJSONResult returns null for undefined input [line 13] (covered 3)
     processInputAndSetOutput.handleParsedArg.test.js
       ~ processInputAndSetOutput parsed arg passes null to handleParsedResult when JSON is invalid [line 5] (covered 67)
     processInputAndSetOutput.invalidJson.test.js
-      ✓ processInputAndSetOutput invalid JSON handling handles parse errors gracefully [line 5] (killed 1)
+      ~ processInputAndSetOutput invalid JSON handling handles parse errors gracefully [line 5] (covered 68)
     processInputAndSetOutput.setOutput.test.js
-      ✓ processInputAndSetOutput integration stores result with article id key via setOutput [line 42] (killed 5)
+      ✓ processInputAndSetOutput integration stores result with article id key via setOutput [line 42] (killed 9)
     processInputAndSetOutput.test.js
       ✓ processInputAndSetOutput does not set text when handleParsedResult returns true [line 55] (killed 5)
-      ✓ processInputAndSetOutput sets text content when parsed result is invalid [line 68] (killed 4)
-      ✓ processInputAndSetOutput sets text content when parsed result lacks request url [line 80] (killed 1)
-      ✓ processInputAndSetOutput stores the result keyed by article id [line 93] (killed 9)
-      ✓ processInputAndSetOutput uses the presenter matching the outputSelect value [line 104] (killed 1)
+      ✓ processInputAndSetOutput sets text content when parsed result is invalid [line 68] (killed 2)
+      ~ processInputAndSetOutput sets text content when parsed result lacks request url [line 80] (covered 75)
+      ✓ processInputAndSetOutput stores the result keyed by article id [line 93] (killed 1)
+      ✓ processInputAndSetOutput uses the presenter matching the outputSelect value [line 104] (killed 2)
     revealBetaArticles.test.js
       ✓ revealBetaArticles reveals beta articles when query parameter is present [line 5] (killed 6)
       ✓ revealBetaArticles does nothing when query parameter is absent [line 23] (killed 1)
     setOutput.test.js
-      ✓ setOutput returns an error for invalid JSON [line 5] (killed 1)
+      ✓ setOutput returns an error for invalid JSON [line 5] (killed 4)
       ✓ setOutput returns an error for non-object input [line 10] (killed 4)
-      ✓ setOutput returns an error if merging throws [line 15] (killed 4)
-      ✓ setOutput resets newData.output if it is not an object [line 30] (killed 2)
+      ✓ setOutput returns an error if merging throws [line 15] (killed 6)
+      ✓ setOutput resets newData.output if it is not an object [line 30] (killed 7)
       ~ setOutput handles null existing output [line 45] (covered 48)
-      ~ setOutput merges output data and calls setData [line 60] (covered 47)
+      ✓ setOutput merges output data and calls setData [line 60] (killed 1)
     setupButtonCleanup.test.js
       ✓ button cleanup helpers setupAddButton disposer removes event listener [line 5] (killed 1)
       ~ button cleanup helpers setupAddButton disposer removes the specific listener that was added [line 27] (covered 6)
-      ~ button cleanup helpers setupRemoveButton disposer removes event listener [line 47] (covered 5)
-      ~ button cleanup helpers setupAddButton disposer prevents further clicks from modifying rows [line 69] (covered 14)
+      ✓ button cleanup helpers setupRemoveButton disposer removes event listener [line 47] (killed 1)
+      ✓ button cleanup helpers setupAddButton disposer prevents further clicks from modifying rows [line 69] (killed 8)
       ~ button cleanup helpers setupAddButton disposer is idempotent [line 117] (covered 6)
     setupRemoveButton.additional.test.js
       ~ setupRemoveButton additional cases adds a unique disposer for each invocation [line 5] (covered 4)
     setupRemoveButton.handlerRemoval.test.js
-      ~ setupRemoveButton removes specific listener cleanup removes the same handler that was added [line 5] (covered 5)
+      ✓ setupRemoveButton removes specific listener cleanup removes the same handler that was added [line 5] (killed 2)
     setupRemoveButton.specificListener.test.js
       ~ setupRemoveButton disposers removes the specific handler that was added [line 5] (covered 5)
     shouldCopyStateForFetch.dynamic.test.js
-      ✓ shouldCopyStateForFetch dynamic import returns true for idle and error statuses [line 4] (killed 9)
+      ✓ shouldCopyStateForFetch dynamic import returns true for idle and error statuses [line 4] (killed 3)
     shouldCopyStateForFetch.mutantKill.test.js
       ~ shouldCopyStateForFetch mutant killer returns true only for "idle" or "error" [line 5] (covered 8)
     tags.createHandleClick.test.js
@@ -857,7 +848,7 @@ All tests
     tags.makeHandleHideClick.test.js
       ✓ makeHandleHideClick calls stopDefault and hides only articles with the given class [line 5] (killed 4)
     tags.makeHandleHideSpan.test.js
-      ✓ makeHandleHideSpan creates a hide link span and inserts it after the link [line 5] (killed 8)
+      ✓ makeHandleHideSpan creates a hide link span and inserts it after the link [line 5] (killed 9)
     tags.test.js
       ~ hideArticlesByClass does not throw when given a class and no matching elements [line 11] (covered 2)
       ✓ hideArticlesByClass hides articles with the given class [line 23] (killed 4)
@@ -867,58 +858,58 @@ All tests
       ✓ makeHandleClassName returns a function when called with no arguments [line 86] (killed 4)
       ✓ makeHandleClassName calls addEventListener when className starts with tag- [line 92] (killed 6)
       ~ makeHandleLink invokes the returned function with a mock dom and asserts its value is undefined [line 107] (covered 1)
-      ✓ makeHandleHideSpan invokes makeHandleHideSpan and its returned function with minimal mock dom [line 116] (killed 1)
+      ~ makeHandleHideSpan invokes makeHandleHideSpan and its returned function with minimal mock dom [line 116] (covered 10)
       ✓ makeHandleClassName integration uses DOM helpers when the click handler is triggered [line 135] (killed 1)
     toys.convertArrayToKeyValueObject.test.js
-      ✓ convertArrayToKeyValueObject should convert an array of key-value objects to a single object [line 5] (killed 4)
+      ~ convertArrayToKeyValueObject should convert an array of key-value objects to a single object [line 5] (covered 16)
       ~ convertArrayToKeyValueObject should handle undefined or null values by converting them to empty strings [line 19] (covered 17)
-      ✓ convertArrayToKeyValueObject should skip objects without a key property [line 33] (killed 1)
-      ✓ convertArrayToKeyValueObject should ignore non-object entries in the input array [line 47] (killed 3)
+      ~ convertArrayToKeyValueObject should skip objects without a key property [line 33] (covered 16)
+      ~ convertArrayToKeyValueObject should ignore non-object entries in the input array [line 47] (covered 16)
       ~ convertArrayToKeyValueObject should skip null entries in the input array [line 62] (covered 16)
       ~ convertArrayToKeyValueObject should return an empty object for an empty array [line 75] (covered 4)
-      ✓ convertArrayToKeyValueObject should handle non-array inputs by returning an empty object [line 79] (killed 2)
+      ~ convertArrayToKeyValueObject should handle non-array inputs by returning an empty object [line 79] (covered 5)
       ~ convertArrayToKeyValueObject should preserve falsy but defined values [line 87] (covered 16)
     toys.createDispose.empty.test.js
       ~ createDispose with empty arrays returns a disposer function even with empty parameters [line 5] (covered 3)
     toys.createDispose.test.js
-      ✓ createDispose can be called and disposed [line 5] (killed 2)
+      ✓ createDispose can be called and disposed [line 5] (killed 3)
       ~ createDispose clears all registered disposers [line 32] (covered 3)
       ~ createDispose can be called multiple times without errors [line 55] (covered 3)
       ~ createDispose returns a zero argument function [line 74] (covered 3)
       ~ createDispose handles empty disposers without errors [line 91] (covered 3)
     toys.createDropdownInitializer.test.js
-      ✓ createDropdownInitializer should handle empty NodeList when querySelectorAll returns no elements [line 5] (killed 2)
+      ✓ createDropdownInitializer should handle empty NodeList when querySelectorAll returns no elements [line 5] (killed 4)
     toys.createHandleSubmit.instance.test.js
       ~ createHandleSubmit instances returns a new handler function on each invocation [line 5] (covered 51)
     toys.createHandleSubmit.test.js
       ✘ createHandleSubmit expects three parameters [line 6] (covered 0)
       ✘ createHandleSubmit should handle being called without arguments [line 9] (covered 0)
-      ✓ createHandleSubmit handles errors from the processing function [line 19] (killed 1)
+      ✓ createHandleSubmit handles errors from the processing function [line 19] (killed 2)
       ~ createHandleSubmit returns a handler that stops default behaviour [line 77] (covered 84)
       ~ createHandleSubmit invokes processInputAndSetOutput with the provided arguments [line 119] (covered 51)
-      ✓ createHandleSubmit fetches a URL when the processing function returns a request object [line 158] (killed 7)
+      ✓ createHandleSubmit fetches a URL when the processing function returns a request object [line 158] (killed 4)
       ~ createHandleSubmit returns undefined after handling submit [line 193] (covered 51)
     toys.createKeyElement.test.js
-      ✓ createKeyElement creates a key input element with the correct initial properties [line 28] (killed 3)
+      ✓ createKeyElement creates a key input element with the correct initial properties [line 28] (killed 1)
       ~ createKeyElement removes the same listener that was added [line 67] (covered 9)
       ~ createKeyElement calls removeEventListener each time the disposer runs [line 91] (covered 9)
     toys.createKeyInputHandler.test.js
-      ✓ createKeyInputHandler should sync hidden field when key does not change [line 45] (killed 2)
+      ✓ createKeyInputHandler should sync hidden field when key does not change [line 45] (killed 1)
       ~ createKeyInputHandler should read previous key from the prevKey attribute [line 59] (covered 7)
-      ✓ createKeyInputHandler should update rows with new key when key is unique and non-empty [line 72] (killed 5)
+      ✓ createKeyInputHandler should update rows with new key when key is unique and non-empty [line 72] (killed 7)
       ✓ createKeyInputHandler should not update rows when new key is empty [line 96] (killed 4)
       ~ createKeyInputHandler should not update rows when new key already exists [line 114] (covered 13)
       ✓ createKeyInputHandler should ignore unchanged keys that are missing from rows [line 144] (killed 2)
     toys.createKeyValueRow.test.js
-      ✓ createKeyValueRow creates a row with key and value inputs [line 73] (killed 5)
-      ✓ createKeyValueRow creates a button element with the correct tag [line 109] (killed 3)
+      ✓ createKeyValueRow creates a row with key and value inputs [line 73] (killed 3)
+      ✓ createKeyValueRow creates a button element with the correct tag [line 109] (killed 2)
       ✓ createKeyValueRow creates a remove button for non-last rows [line 121] (killed 4)
       ~ createKeyValueRow creates an add button for the last row [line 137] (covered 32)
       ~ createKeyValueRow uses the index to set up a remove button when not last [line 153] (covered 32)
       ✓ createKeyValueRow uses the index to set up an add button when last [line 166] (killed 4)
       ✓ createKeyValueRow creates the button element with the correct type [line 179] (killed 1)
-      ✓ createKeyValueRow adds event listeners for key and value changes [line 193] (killed 4)
-      ~ createKeyValueRow key disposer removes the key input listener [line 218] (covered 33)
+      ✓ createKeyValueRow adds event listeners for key and value changes [line 193] (killed 3)
+      ✓ createKeyValueRow key disposer removes the key input listener [line 218] (killed 2)
       ~ createKeyValueRow adds cleanup functions to disposers array [line 241] (covered 32)
       ✓ createKeyValueRow handles cleanup when disposers are called [line 257] (killed 2)
       ~ createKeyValueRow creates different button types for each index [line 303] (covered 38)
@@ -930,7 +921,7 @@ All tests
       ~ createNumberInput calls the onChange handler when the input changes [line 73] (covered 10)
       ~ createNumberInput provides a disposer that removes the input listener [line 91] (covered 11)
     toys.createOnAddHandler.test.js
-      ✓ createOnAddHandler adds an empty key-value pair when no empty key exists [line 16] (killed 2)
+      ✓ createOnAddHandler adds an empty key-value pair when no empty key exists [line 16] (killed 1)
       ~ createOnAddHandler does not add a new empty key if one already exists [line 31] (covered 6)
       ~ createOnAddHandler preserves existing non-empty keys when adding an empty key [line 45] (covered 9)
       ~ createOnAddHandler does not add an empty key if one exists, even with other keys [line 64] (covered 6)
@@ -963,7 +954,7 @@ All tests
       ~ createOutputDropdownHandler returned handler can be invoked without throwing [line 187] (covered 1)
     toys.createRenderer.test.js
       ✓ createRenderer should create a renderer function [line 6] (killed 1)
-      ✓ createRenderer adds an empty row when no rows exist [line 47] (killed 4)
+      ✓ createRenderer adds an empty row when no rows exist [line 47] (killed 3)
       ✓ createRenderer does not add an empty row when rows already contain values [line 77] (killed 1)
     toys.createUpdateTextInputValue.test.js
       ✘ createUpdateTextInputValue expects two arguments (textInput and dom) [line 31] (covered 0)
@@ -980,43 +971,43 @@ All tests
     toys.createValueElement.test.js
       ✓ createValueElement creates a value input element with the correct initial properties [line 35] (killed 3)
       ✓ createValueElement updates the rows object and syncs when value is changed [line 60] (killed 1)
-      ✓ createValueElement cleans up event listeners when disposer is called [line 88] (killed 2)
+      ~ createValueElement cleans up event listeners when disposer is called [line 88] (covered 8)
       ~ createValueElement uses the same handler for add and remove listener [line 105] (covered 8)
       ~ createValueElement cleanup can be called multiple times [line 127] (covered 8)
     toys.createValueInputHandler.test.js
       ~ createValueInputHandler should update the value for an existing key and sync hidden field [line 41] (covered 3)
       ~ createValueInputHandler should handle updating a different key [line 57] (covered 3)
       ~ createValueInputHandler should handle empty string values [line 74] (covered 3)
-      ~ createValueInputHandler calls getDataAttribute with 'prevKey' [line 91] (covered 3)
+      ✓ createValueInputHandler calls getDataAttribute with 'prevKey' [line 91] (killed 1)
       ~ createValueInputHandler should update the value even if the key is not in rows [line 102] (covered 3)
     toys.ensureNumberInput.test.js
       ✓ ensureNumberInput should return existing number input without creating a new one [line 5] (killed 2)
-      ~ ensureNumberInput creates and inserts a number input when one does not exist [line 26] (covered 17)
+      ✓ ensureNumberInput creates and inserts a number input when one does not exist [line 26] (killed 2)
       ✓ ensureNumberInput attaches an input listener that updates the text input [line 56] (killed 1)
     toys.getComponentInitializer.test.js
       ✓ getComponentInitializer returns a function that initializes a component [line 5] (killed 4)
-      ✓ getComponentInitializer logs a warning if the element is not found [line 53] (killed 3)
+      ✓ getComponentInitializer logs a warning if the element is not found [line 53] (killed 2)
       ~ getComponentInitializer passes the correct parameters to createIntersectionObserver [line 88] (covered 5)
     toys.getFetchErrorHandler.test.js
       ~ getFetchErrorHandler can be invoked with no args [line 5] (covered 8)
       ~ getFetchErrorHandler adds a warning with a prefixed message [line 32] (covered 8)
     toys.getModuleInitializer.calls.test.js
-      ✓ getModuleInitializer invokes module function when submit handler runs [line 5] (killed 2)
+      ~ getModuleInitializer invokes module function when submit handler runs [line 5] (covered 65)
     toys.getModuleInitializer.invoke.test.js
-      ✓ getModuleInitializer minimal invoke calls the module function when submit is clicked [line 5] (killed 4)
+      ✓ getModuleInitializer minimal invoke calls the module function when submit is clicked [line 5] (killed 1)
       ✓ getModuleInitializer minimal invoke handles errors from the module function [line 62] (killed 2)
     toys.getModuleInitializer.test.js
-      ✓ getModuleInitializer invokes the module function when submit button handler is triggered [line 5] (killed 1)
+      ~ getModuleInitializer invokes the module function when submit button handler is triggered [line 5] (covered 79)
     toys.handleDropdownChange.missingOutput.test.js
       ~ handleDropdownChange missing output does not throw when output object is missing [line 5] (covered 14)
     toys.handleKVType.effects.test.js
-      ✓ handleKVType effects removes number input and sets up key-value container [line 5] (killed 1)
+      ✓ handleKVType effects removes number input and sets up key-value container [line 5] (killed 3)
       ✓ handleKVType effects creates a kv-container div and applies the class [line 50] (killed 2)
     toys.handleKVType.test.js
       ✓ handleKVType can be invoked with an empty DOM object [line 5] (killed 1)
-      ✓ handleKVType removes number input and ensures key-value container [line 37] (killed 5)
+      ✓ handleKVType removes number input and ensures key-value container [line 37] (killed 4)
     toys.handleParsedResult.test.js
-      ✓ handleParsedResult initiates a fetch and returns true when a valid parsed request is provided [line 39] (killed 2)
+      ~ handleParsedResult initiates a fetch and returns true when a valid parsed request is provided [line 39] (covered 39)
       ~ handleParsedResult does not initiate a fetch and returns false when an invalid parsed request is provided [line 52] (covered 22)
       ~ handleParsedResult returns false when request.url is not a string [line 61] (covered 29)
     toys.handleRequestResponse.test.js
@@ -1025,49 +1016,49 @@ All tests
       ✓ handleRequestResponse should handle fetch errors [line 96] (killed 3)
       ~ handleRequestResponse should handle response.text() errors [line 119] (covered 11)
     toys.initializeInteractiveComponent.elements.test.js
-      ✓ initializeInteractiveComponent dynamic import enables controls for the provided elements [line 6] (killed 2)
+      ✓ initializeInteractiveComponent dynamic import enables controls for the provided elements [line 6] (killed 1)
       ~ initializeInteractiveComponent dynamic import sets an initializing message in the output [line 64] (covered 24)
     toys.initializeInteractiveComponent.logInfo.test.js
       ✓ initializeInteractiveComponent logs initialization message with article id [line 5] (killed 1)
     toys.isValidParsedRequest.dynamic.test.js
-      ✓ isValidParsedRequest dynamic import validates parsed requests using predicates [line 4] (killed 3)
+      ✓ isValidParsedRequest dynamic import validates parsed requests using predicates [line 4] (killed 2)
     toys.isValidParsedRequest.test.js
-      ✓ isValidParsedRequest returns true for a valid parsed request with string URL [line 4] (killed 3)
-      ~ isValidParsedRequest returns false for non-object input [line 13] (covered 19)
+      ✓ isValidParsedRequest returns true for a valid parsed request with string URL [line 4] (killed 5)
+      ✓ isValidParsedRequest returns false for non-object input [line 13] (killed 2)
       ~ isValidParsedRequest returns false for object without request field [line 21] (covered 19)
-      ✓ isValidParsedRequest returns false for request without url field [line 30] (killed 2)
+      ✓ isValidParsedRequest returns false for request without url field [line 30] (killed 3)
       ~ isValidParsedRequest returns false for request with non-string url [line 39] (covered 26)
       ~ isValidParsedRequest returns false for arrays and boolean values [line 48] (covered 17)
     toys.keyValueInput.test.js
-      ~ Key-Value Input creates a key-value container when none exists [line 7] (covered 73)
+      ✓ Key-Value Input creates a key-value container when none exists [line 7] (killed 2)
     toys.makeDisplayBody.test.js
       ✓ makeDisplayBody should return a function when called with required arguments [line 5] (killed 1)
-      ✓ makeDisplayBody updates the DOM using setTextContent [line 24] (killed 2)
+      ✓ makeDisplayBody updates the DOM using setTextContent [line 24] (killed 1)
       ✓ makeDisplayBody calls the correct presenter based on key [line 46] (killed 1)
     toys.makeProcessingFunction.test.js
-      ✓ getModuleInitializer makeProcessingFunction integration uses the module's exported function when events fire [line 5] (killed 1)
+      ✓ getModuleInitializer makeProcessingFunction integration uses the module's exported function when events fire [line 5] (killed 3)
     toys.parseExistingRows.test.js
       ✓ parseExistingRows should parse an empty input as an empty object [line 20] (killed 6)
       ~ parseExistingRows should parse undefined input using an empty object default [line 30] (covered 16)
       ✓ parseExistingRows should parse a valid JSON object [line 40] (killed 6)
-      ✓ parseExistingRows should convert an array of key-value pairs to an object [line 50] (killed 6)
+      ✓ parseExistingRows should convert an array of key-value pairs to an object [line 50] (killed 8)
       ✓ parseExistingRows should handle arrays with undefined/null values [line 65] (killed 1)
       ✓ parseExistingRows should skip items without a key property in array input [line 82] (killed 1)
-      ~ parseExistingRows should ignore non-object items in array input [line 99] (covered 24)
+      ✓ parseExistingRows should ignore non-object items in array input [line 99] (killed 3)
       ✓ parseExistingRows should handle invalid JSON by returning an empty object [line 117] (killed 1)
       ✓ parseExistingRows should handle non-object, non-array JSON values by returning an empty object [line 125] (killed 3)
     toys.setTextContent.test.js
       ~ setTextContent via handleDropdownChange uses the paragraph presenter for "text" output [line 5] (covered 13)
-      ~ setTextContent via handleDropdownChange uses the pre presenter for "pre" output [line 27] (covered 29)
+      ✓ setTextContent via handleDropdownChange uses the pre presenter for "pre" output [line 27] (killed 1)
     toys.setTextContent.ticTacToe.test.js
       ✓ setTextContent via handleDropdownChange tic-tac-toe uses the tic-tac-toe presenter for "tic-tac-toe" output [line 5] (killed 1)
     toys.setupAddButton.test.js
-      ~ setupAddButton sets the button text content to "+" [line 25] (covered 5)
-      ✓ setupAddButton adds a click event listener to the button [line 31] (killed 1)
+      ✓ setupAddButton sets the button text content to "+" [line 25] (killed 2)
+      ~ setupAddButton adds a click event listener to the button [line 31] (covered 5)
       ~ setupAddButton adds a disposer function to the disposers array [line 41] (covered 5)
-      ✓ setupAddButton clicking the button adds a new empty row and calls render [line 48] (killed 4)
-      ✓ setupAddButton does not add a new empty row if one already exists [line 70] (killed 2)
-      ~ setupAddButton cleanup function removes the event listener [line 94] (covered 6)
+      ~ setupAddButton clicking the button adds a new empty row and calls render [line 48] (covered 13)
+      ~ setupAddButton does not add a new empty row if one already exists [line 70] (covered 10)
+      ✓ setupAddButton cleanup function removes the event listener [line 94] (killed 2)
       ~ setupAddButton cleanup can be called multiple times [line 111] (covered 6)
       ~ setupAddButton cleanup removes the same handler that was added [line 122] (covered 6)
       ~ setupAddButton returns a unique disposer for each setup call [line 142] (covered 6)
@@ -1080,7 +1071,7 @@ All tests
       ~ setupRemoveButton cleanup can be called multiple times [line 92] (covered 5)
       ~ setupRemoveButton handles clicking when the key does not exist in rows [line 103] (covered 5)
     toys.syncHiddenField.test.js
-      ✓ syncHiddenField includes entries where either key or value is truthy [line 18] (killed 5)
+      ✓ syncHiddenField includes entries where either key or value is truthy [line 18] (killed 6)
       ~ syncHiddenField handles empty rows object [line 47] (covered 1)
       ~ syncHiddenField excludes entries where both key and value are falsy [line 58] (covered 6)
       ~ syncHiddenField handles non-string values by converting them to strings [line 90] (covered 6)
@@ -1089,9 +1080,9 @@ All tests
       ✓ createAddDropdownListener adds a change event listener to the dropdown [line 21] (killed 2)
       ✘ createAddDropdownListener returns a listener function [line 44] (covered 0)
       ~ createAddDropdownListener invokes the attached handler and returns undefined [line 52] (covered 2)
-      ✓ toys handleDropdownChange logs the correct postId and selectedValue when dropdown changes [line 67] (killed 1)
-      ✓ toys handleDropdownChange gets the enclosing article using the correct selector [line 103] (killed 2)
-      ✓ toys handleDropdownChange does not throw when output object is missing [line 124] (killed 6)
+      ✓ toys handleDropdownChange logs the correct postId and selectedValue when dropdown changes [line 67] (killed 2)
+      ✓ toys handleDropdownChange gets the enclosing article using the correct selector [line 103] (killed 3)
+      ✓ toys handleDropdownChange does not throw when output object is missing [line 124] (killed 5)
       ✓ toys handleDropdownChange handles dropdown change with empty output data [line 150] (killed 1)
       ~ toys handleDropdownChange sets the output text when output exists for the post [line 192] (covered 13)
       ~ toys handleDropdownChange defaults to empty text when no output exists for the post [line 220] (covered 14)
@@ -1102,18 +1093,18 @@ All tests
       ~ toys handleDropdownChange handles undefined output without failing [line 359] (covered 14)
       ~ toys handleDropdownChange calls setTextContent with empty string when data.output is missing [line 387] (covered 14)
       ~ toys handleDropdownChange uses the pre presenter when dropdown value is "pre" [line 408] (covered 29)
-      ✓ toys makeObserverCallback calls importModule when entry is intersecting [line 483] (killed 12)
+      ✓ toys makeObserverCallback calls importModule when entry is intersecting [line 483] (killed 13)
       ~ toys makeObserverCallback calls disconnectObserver when entry is intersecting [line 494] (covered 17)
       ✓ toys makeCreateIntersectionObserver returns the result of makeIntersectionObserver [line 573] (killed 2)
       ~ toys makeCreateIntersectionObserver calls makeIntersectionObserver with a callback [line 580] (covered 8)
       ~ toys makeCreateIntersectionObserver calls importModule when entry is intersecting [line 589] (covered 20)
       ✓ toys makeCreateIntersectionObserver passes module info to importModule when entry is intersecting [line 599] (killed 1)
-      ✓ toys makeCreateIntersectionObserver passes the article to querySelector when initializing [line 612] (killed 6)
-      ✓ toys makeCreateIntersectionObserver initializes module with the provided function name [line 625] (killed 3)
+      ✓ toys makeCreateIntersectionObserver passes the article to querySelector when initializing [line 612] (killed 10)
+      ✓ toys makeCreateIntersectionObserver initializes module with the provided function name [line 625] (killed 6)
       ~ toys makeCreateIntersectionObserver initializes using the provided module info [line 638] (covered 80)
       ~ toys makeCreateIntersectionObserver passes the article to initializeInteractiveComponent [line 654] (covered 47)
       ~ toys makeCreateIntersectionObserver calls disconnectObserver when entry is intersecting [line 662] (covered 20)
-      ✓ toys makeCreateIntersectionObserver passes module path to the error handler [line 671] (killed 1)
+      ✓ toys makeCreateIntersectionObserver passes module path to the error handler [line 671] (killed 3)
       ✓ toys makeCreateIntersectionObserver does not call importModule when not intersecting [line 688] (killed 1)
       ~ toys makeCreateIntersectionObserver does not call disconnectObserver when not intersecting [line 711] (covered 12)
       ~ toys handleModuleError calls errorMock with the correct message [line 725] (covered 4)
@@ -1128,13 +1119,13 @@ All tests
       ✓ toys initializeInteractiveComponent does not call handleSubmit when a non-Enter key is pressed [line 1107] (killed 1)
       ✓ toys initializeInteractiveComponent queries the DOM for output elements using expected selectors [line 1183] (killed 2)
       ✓ toys initializeInteractiveComponent sets initialising message using setTextContent [line 1223] (killed 1)
-      ~ toys initializeInteractiveComponent passes expected elements to enableInteractiveControls [line 1283] (covered 24)
+      ✓ toys initializeInteractiveComponent passes expected elements to enableInteractiveControls [line 1283] (killed 1)
       ✓ toys initializeVisibleComponents warns if there are no interactive components [line 1386] (killed 4)
-      ✓ toys initializeVisibleComponents initializes and observes a valid interactive component [line 1406] (killed 2)
+      ✓ toys initializeVisibleComponents initializes and observes a valid interactive component [line 1406] (killed 3)
       ~ toys initializeVisibleComponents attempts to initialize all interactive components, regardless of missing fields [line 1435] (covered 5)
-      ✓ createInputDropdownHandler when select value is kv should call getCurrentTarget with the event [line 1536] (killed 2)
-      ✓ createInputDropdownHandler when select value is text handles text input setup and cleanup of other input types [line 1574] (killed 11)
-      ✓ createInputDropdownHandler when select value is number handles number input setup and cleanup when dropdown value is number [line 1608] (killed 11)
+      ✓ createInputDropdownHandler when select value is kv should call getCurrentTarget with the event [line 1536] (killed 7)
+      ✓ createInputDropdownHandler when select value is text handles text input setup and cleanup of other input types [line 1574] (killed 9)
+      ✓ createInputDropdownHandler when select value is number handles number input setup and cleanup when dropdown value is number [line 1608] (killed 9)
       ~ createInputDropdownHandler when select value is unknown falls back to the default handler [line 1661] (covered 17)
       ✓ createInputDropdownHandler getText should call response.text() and return its result [line 1681] (killed 1)
       ~ createInputDropdownHandler getText should propagate errors from response.text() [line 1696] (covered 1)
@@ -1152,34 +1143,38 @@ All tests
     articleTagName.count.test.js
       ~ ARTICLE_TAG_NAME count number of <article> tags matches posts length [line 9] (covered 191)
     articleTagName.runtime.kill.test.js
-      ~ ARTICLE_TAG_NAME runtime kill generateBlog outputs article tags [line 9] (covered 191)
+      ✓ ARTICLE_TAG_NAME runtime kill generateBlog outputs article tags [line 9] (killed 1)
     articleTagUsage.test.js
-      ~ ARTICLE_TAG_NAME usage generateBlog uses article tag for posts [line 9] (covered 191)
+      ✓ ARTICLE_TAG_NAME usage generateBlog uses article tag for posts [line 9] (killed 2)
+    articleTitleClass.count.test.js
+      ✓ generator article-title class count appears once per post [line 5] (killed 3)
     articleTitleClass.test.js
-      ✓ generator article title class generated blog includes article-title class [line 5] (killed 1)
+      ~ generator article title class generated blog includes article-title class [line 5] (covered 246)
     blockquoteCorners.exact.test.js
-      ✓ BLOCKQUOTE_CORNERS exact output generateBlogOuter inserts the full BLOCKQUOTE_CORNERS HTML [line 6] (killed 4)
+      ~ BLOCKQUOTE_CORNERS exact output generateBlogOuter inserts the full BLOCKQUOTE_CORNERS HTML [line 6] (covered 252)
     blockquoteCorners.inside.test.js
       ~ BLOCKQUOTE_CORNERS inside blockquote corners appear within the blockquote element [line 9] (covered 197)
     blockquoteCorners.multiple.test.js
-      ~ BLOCKQUOTE_CORNERS multiple posts blockquote corners appear for each quoted post [line 9] (covered 197)
+      ✓ BLOCKQUOTE_CORNERS multiple posts blockquote corners appear for each quoted post [line 9] (killed 1)
     blockquoteCorners.order.test.js
-      ✓ BLOCKQUOTE_CORNERS order corners appear in correct order at start of blockquote [line 9] (killed 1)
+      ~ BLOCKQUOTE_CORNERS order corners appear in correct order at start of blockquote [line 9] (covered 197)
     blockquoteCorners.single.test.js
       ~ BLOCKQUOTE_CORNERS single post blockquote corners appear for a quoted post [line 9] (covered 197)
     blockquoteCorners.start.test.js
-      ~ BLOCKQUOTE_CORNERS placement blockquote corners appear immediately after blockquote tag [line 9] (covered 197)
+      ✓ BLOCKQUOTE_CORNERS placement blockquote corners appear immediately after blockquote tag [line 9] (killed 1)
     classConstants.additional.test.js
-      ✓ generator CLASS constants additional uses expected CSS classes in generated blog output [line 5] (killed 3)
+      ~ generator CLASS constants additional uses expected CSS classes in generated blog output [line 5] (covered 220)
     classConstants.mutantKill.test.js
-      ✓ generateBlogOuter uses entry and footer classes [line 4] (killed 3)
+      ~ generateBlogOuter uses entry and footer classes [line 4] (covered 220)
     contentRenderers.mapping.test.js
-      ~ content renderers mapping generateBlog renders text and quote content [line 9] (covered 201)
+      ✓ content renderers mapping generateBlog renders text and quote content [line 9] (killed 1)
     createBlockquote.integration.test.js
       ~ createBlockquote integration generateBlog includes blockquote corners for quote content [line 9] (covered 197)
       ~ createBlockquote integration blockquote corners appear exactly four times [line 26] (covered 197)
     dateFormat.additional.test.js
       ✓ generateBlog formats another publication date with short month [line 8] (killed 1)
+    dateFormat.blogOutput.test.js
+      ~ generateBlogOuter formats publication dates in en-GB style [line 4] (covered 220)
     dateFormat.survivorKill.test.js
       ~ generateBlog formats publication date with short month name [line 8] (covered 191)
     dateFormat.test.js
@@ -1187,14 +1182,12 @@ All tests
     dateFormatOptions.additionalKill.test.js
       ~ DATE_FORMAT_OPTIONS additional kill generateBlog outputs date without slashes [line 9] (covered 191)
     dateFormatOptions.runtime.test.js
-      ~ DATE_FORMAT_OPTIONS runtime generateBlog uses short month formatting [line 9] (covered 191)
+      ✓ DATE_FORMAT_OPTIONS runtime generateBlog uses short month formatting [line 9] (killed 1)
     dateFormatting.test.js
       ✓ generateBlog formats publication dates with year included [line 8] (killed 1)
       ~ generateBlog formats dates using en-GB locale [line 24] (covered 191)
       ~ generateBlog uses numeric day, short month, and numeric year [line 41] (covered 191)
       ~ generateBlog passes the exact date format options [line 65] (covered 191)
-    defaultKeyExtraClasses.mutant.test.js
-      ~ defaultKeyExtraClasses mutant initializes undefined keyExtraClasses to empty string [line 5] (covered 6)
     defaultKeyExtraClasses.test.js
       ✓ defaultKeyExtraClasses initializes undefined property to empty string [line 5] (killed 2)
       ~ defaultKeyExtraClasses preserves provided property [line 11] (covered 4)
@@ -1202,36 +1195,36 @@ All tests
     defaultRelatedLinkAttrs.attributeOrder.test.js
       ~ DEFAULT_RELATED_LINK_ATTRS attribute order default attributes appear in correct order [line 9] (covered 267)
     defaultRelatedLinkAttrs.extra.test.js
-      ~ DEFAULT_RELATED_LINK_ATTRS extra check generated link has no trailing space before closing bracket [line 9] (covered 267)
+      ✓ DEFAULT_RELATED_LINK_ATTRS extra check generated link has no trailing space before closing bracket [line 9] (killed 1)
     defaultRelatedLinkAttrs.isolated.test.js
-      ✓ DEFAULT_RELATED_LINK_ATTRS isolated import includes target and rel attributes [line 10] (killed 13)
+      ✓ DEFAULT_RELATED_LINK_ATTRS isolated import includes target and rel attributes [line 10] (killed 8)
     defaultRelatedLinkAttrs.multiple.test.js
       ~ DEFAULT_RELATED_LINK_ATTRS multiple links each related link includes target and rel attributes [line 9] (covered 267)
     defaultRelatedLinkAttrs.test.js
-      ~ DEFAULT_RELATED_LINK_ATTRS usage anchors contain default attributes for Example [line 16] (covered 267)
+      ✓ DEFAULT_RELATED_LINK_ATTRS usage anchors contain default attributes for Example [line 16] (killed 2)
       ~ DEFAULT_RELATED_LINK_ATTRS usage anchors contain default attributes for Exact [line 16] (covered 267)
       ~ DEFAULT_RELATED_LINK_ATTRS usage anchors contain default attributes for Reload Test [line 16] (covered 267)
       ~ DEFAULT_RELATED_LINK_ATTRS usage anchors contain default attributes for Single [line 16] (covered 267)
     entryClass.test.js
-      ~ generateBlogOuter applies entry class to header, article, and footer [line 4] (covered 246)
+      ✓ generateBlogOuter applies entry class to header, article, and footer [line 4] (killed 1)
     footerScript.test.js
-      ✓ footer script tag generateBlogOuter includes main script tag [line 5] (killed 1)
+      ~ footer script tag generateBlogOuter includes main script tag [line 5] (covered 122)
       ~ footer script tag container is closed before the main script tag [line 12] (covered 122)
       ~ footer script tag generateBlogOuter closes the container before the script tag [line 19] (covered 122)
     footerSection.test.js
-      ✓ footer section renders empty key div [line 10] (killed 1)
+      ~ footer section renders empty key div [line 10] (covered 122)
     footerStart.test.js
       ~ footer start getBlogGenerationArgs footer starts with entry div [line 5] (covered 102)
     footerWarningClass.test.js
       ~ footer warning class appears exactly once [line 4] (covered 122)
     footerWarningMessage.exact.test.js
-      ~ footer warning message exact text generateBlogOuter includes the full warning message exactly once [line 5] (covered 122)
+      ✓ footer warning message exact text generateBlogOuter includes the full warning message exactly once [line 5] (killed 2)
     footerWarningMessage.position.test.js
       ✓ footer warning message position warning message is inside footer value div [line 5] (killed 1)
     footerWarningMessage.test.js
       ~ footer warning message generateBlogOuter includes copyright notice [line 5] (covered 122)
     fullWidthElement.begin.test.js
-      ✓ fullWidthElement placement article output includes fullWidthElement at start [line 10] (killed 3)
+      ~ fullWidthElement placement article output includes fullWidthElement at start [line 10] (covered 191)
       ~ fullWidthElement placement fullWidthElement constant length is unchanged [line 20] (covered 2)
     fullWidthElement.blockCount.test.js
       ~ fullWidthElement block characters contains expected number of block characters [line 5] (covered 2)
@@ -1250,24 +1243,24 @@ All tests
     generateBlogOuter.doctype.test.js
       ✓ generateBlogOuter DOCTYPE prepends DOCTYPE to generated HTML [line 7] (killed 2)
     generateBlogOuter.headMeta.test.js
-      ~ generateBlogOuter head meta tags generated HTML includes essential head metadata [line 5] (covered 122)
+      ✓ generateBlogOuter head meta tags generated HTML includes essential head metadata [line 5] (killed 2)
     generator.constants.test.js
-      ✓ generator constants usage blog output includes container id and footer classes [line 5] (killed 4)
-      ✓ generator constants usage blog output contains the body tags [line 13] (killed 2)
-      ✓ generator constants usage container div closes before the footer script [line 19] (killed 4)
-      ~ generator constants usage footer content is not wrapped in an extra value div [line 26] (covered 122)
+      ✓ generator constants usage blog output includes container id and footer classes [line 5] (killed 19)
+      ✓ generator constants usage blog output contains the body tags [line 13] (killed 3)
+      ✓ generator constants usage container div closes before the footer script [line 19] (killed 5)
+      ✓ generator constants usage footer content is not wrapped in an extra value div [line 26] (killed 1)
       ✓ generator constants usage header content is not wrapped in an extra value div [line 31] (killed 1)
-      ✓ generator constants usage header key divs are empty [line 36] (killed 2)
+      ✓ generator constants usage header key divs are empty [line 36] (killed 1)
       ~ generator constants usage blog output uses the key class for labels [line 45] (covered 122)
       ~ generator constants usage blog output closes container before script tag [line 50] (covered 122)
       ~ generator constants usage warning message appears exactly once [line 57] (covered 122)
     generator.mutant.test.js
-      ✓ generator mutants output does not contain mutation marker [line 5] (killed 2)
+      ✓ generator mutants output does not contain mutation marker [line 5] (killed 4)
     generator.relatedLinksMissingFields.test.js
-      ✓ generateBlog missing related link fields renders related link with empty strings and no undefined values [line 9] (killed 1)
+      ~ generateBlog missing related link fields renders related link with empty strings and no undefined values [line 9] (covered 267)
     generator.test.js
-      ✓ Blog Generator should generate complete HTML page with multiple posts [line 8] (killed 202)
-      ✓ Blog Generator should contain content for posts [line 103] (killed 2)
+      ✓ Blog Generator should generate complete HTML page with multiple posts [line 8] (killed 196)
+      ✓ Blog Generator should contain content for posts [line 103] (killed 1)
       ✓ Blog Generator should contain an illustration for posts [line 126] (killed 1)
       ~ Blog Generator should contain audio elements [line 156] (covered 181)
       ✓ Blog Generator should contain related links for a post [line 183] (killed 5)
@@ -1278,50 +1271,50 @@ All tests
       ~ Blog Generator should contain a toy component for a post [line 331] (covered 260)
       ✓ Blog Generator should display tags for posts [line 376] (killed 16)
       ✓ Blog Generator should omit tags section when none are provided [line 402] (killed 2)
-      ✓ Blog Generator should render quotes as blockquotes [line 429] (killed 11)
+      ✓ Blog Generator should render quotes as blockquotes [line 429] (killed 10)
       ~ Blog Generator should generate media sections when posts include media [line 458] (covered 187)
     getBlogGenerationArgs.head.test.js
-      ✓ getBlogGenerationArgs head contents header includes head meta tags [line 5] (killed 2)
+      ~ getBlogGenerationArgs head contents header includes head meta tags [line 5] (covered 102)
     getBlogGenerationArgs.test.js
-      ✓ generateBlogOuter returns a string of HTML when given a blog object with an empty posts array [line 13] (killed 4)
+      ✓ generateBlogOuter returns a string of HTML when given a blog object with an empty posts array [line 13] (killed 5)
       ✓ generateBlogOuter includes the banner and metadata in the generated HTML [line 20] (killed 2)
-      ✓ generateBlogOuter closes the container before loading the browser script [line 26] (killed 1)
+      ✓ generateBlogOuter closes the container before loading the browser script [line 26] (killed 3)
       ~ getBlogGenerationArgs returns an object with header, footer, and wrapFunc [line 37] (covered 102)
       ~ getBlogGenerationArgs includes the banner and metadata in the header HTML [line 50] (covered 102)
       ~ getBlogGenerationArgs includes the container element in the header HTML [line 56] (covered 102)
       ✓ getBlogGenerationArgs includes the header comment in the header HTML [line 61] (killed 1)
-      ✓ getBlogGenerationArgs includes the copyright warning message in the footer HTML [line 66] (killed 1)
-      ~ getBlogGenerationArgs includes the footer classes in the footer HTML [line 71] (covered 102)
+      ~ getBlogGenerationArgs includes the copyright warning message in the footer HTML [line 66] (covered 102)
+      ✓ getBlogGenerationArgs includes the footer classes in the footer HTML [line 71] (killed 3)
       ~ getBlogGenerationArgs generates header content when imported inside the test [line 77] (covered 102)
     getContentNormalizer.mutantKill.test.js
-      ✓ getContentNormalizer mutant kill renders primitive content types correctly [line 9] (killed 2)
+      ~ getContentNormalizer mutant kill renders primitive content types correctly [line 9] (covered 193)
     headElement.test.js
       ~ headElement contains required meta tags [line 5] (covered 2)
       ~ headElement includes style and script sections [line 13] (covered 2)
       ~ headElement contains page title [line 23] (covered 2)
     headerAndFooterStart.test.js
-      ✓ entry class usage header and footer include entry class [line 5] (killed 1)
+      ~ entry class usage header and footer include entry class [line 5] (covered 102)
     headerContent.countKeyDivs.test.js
-      ✓ header content key divs getBlogGenerationArgs header has two empty key divs [line 5] (killed 8)
+      ✓ header content key divs getBlogGenerationArgs header has two empty key divs [line 5] (killed 1)
     headerContent.imported.test.js
-      ✓ generator header dynamic import header includes banner, metadata and container [line 4] (killed 10)
+      ✓ generator header dynamic import header includes banner, metadata and container [line 4] (killed 6)
     headerContent.instrumented.test.js
-      ✓ header generation instrumented import includes metadata in the generated blog HTML [line 4] (killed 2)
+      ~ header generation instrumented import includes metadata in the generated blog HTML [line 4] (covered 202)
     headerContent.noCache.test.js
-      ✓ header generation without cache busting generateBlogOuter includes banner and metadata [line 5] (killed 1)
+      ~ header generation without cache busting generateBlogOuter includes banner and metadata [line 5] (covered 122)
     headerSection.test.js
-      ✓ header section generation generateBlogOuter includes banner and metadata when importing normally [line 4] (killed 1)
+      ✓ header section generation generateBlogOuter includes banner and metadata when importing normally [line 4] (killed 4)
       ~ header section generation header labeled sections have empty keys [line 11] (covered 102)
       ✓ header section generation header joins parts without unexpected separators [line 21] (killed 1)
     html.constants.source.test.js
-      ✓ html constant functions tagOpen returns < [line 5] (killed 2)
+      ~ html constant functions tagOpen returns < [line 5] (covered 2)
       ~ html constant functions doctype returns the HTML doctype [line 9] (covered 2)
     html.constants.test.js
       ~ html constants DOCTYPE constant is correct [line 12] (covered 2)
-      ~ html constants LANGUAGE constants include EN [line 16] (covered 3)
-      ~ html constants HTML_TAG_NAME constant is html [line 21] (covered 2)
+      ✓ html constants LANGUAGE constants include EN [line 16] (killed 3)
+      ✓ html constants HTML_TAG_NAME constant is html [line 21] (killed 1)
       ~ html constants ATTR_NAME constants [line 25] (covered 5)
-      ✓ html constants HTML_ESCAPE_REPLACEMENTS contains standard replacements [line 29] (killed 7)
+      ✓ html constants HTML_ESCAPE_REPLACEMENTS contains standard replacements [line 29] (killed 1)
       ~ html constants escapeHtml applies all replacements [line 40] (covered 15)
     html.doctype.constantUsage.test.js
       ~ wrapHtml DOCTYPE usage uses the exported DOCTYPE constant [line 5] (covered 43)
@@ -1335,19 +1328,19 @@ All tests
       ~ HTML_ESCAPE_REPLACEMENTS usage escapeHtml replaces all characters using replacements [line 5] (covered 15)
       ~ HTML_ESCAPE_REPLACEMENTS usage HTML_ESCAPE_REPLACEMENTS array has five entries [line 11] (covered 12)
     html.replacements.integrity.test.js
-      ~ HTML_ESCAPE_REPLACEMENTS integrity contains all standard replacements [line 9] (covered 12)
+      ✓ HTML_ESCAPE_REPLACEMENTS integrity contains all standard replacements [line 9] (killed 1)
       ~ HTML_ESCAPE_REPLACEMENTS integrity replacements escape all special characters [line 20] (covered 12)
     html.tagName.runtime.test.js
-      ~ HTML_TAG_NAME usage wrapHtml wraps content in html tag [line 5] (covered 43)
+      ✓ HTML_TAG_NAME usage wrapHtml wraps content in html tag [line 5] (killed 1)
     html.test.js
-      ✓ html utilities createOpeningTag omits space when no attributes [line 19] (killed 4)
+      ✓ html utilities createOpeningTag omits space when no attributes [line 19] (killed 3)
       ~ html utilities createOpeningTag adds space when attributes are provided [line 23] (covered 14)
-      ~ html utilities createTag handles empty attributes [line 27] (covered 18)
+      ✓ html utilities createTag handles empty attributes [line 27] (killed 1)
       ~ html utilities createTag includes attributes when provided [line 31] (covered 21)
-      ✓ html utilities escapeHtml replaces special characters [line 35] (killed 7)
+      ✓ html utilities escapeHtml replaces special characters [line 35] (killed 6)
       ~ html utilities escapeHtml escapes single quotes [line 39] (covered 15)
       ~ html utilities escapeHtml escapes all special characters together [line 43] (covered 15)
-      ✓ html utilities createHtmlTag wraps content with html lang attribute [line 47] (killed 4)
+      ✓ html utilities createHtmlTag wraps content with html lang attribute [line 47] (killed 1)
       ~ html utilities wrapHtml adds doctype and html tag [line 51] (covered 43)
       ~ html utilities getClosingTagParts returns correct parts [line 55] (covered 8)
       ~ html utilities createClosingTag returns closing tag [line 64] (covered 11)
@@ -1358,28 +1351,30 @@ All tests
       ~ html constant values EQUALS is = [line 86] (covered 2)
       ~ html constant values QUOTE is " [line 90] (covered 2)
     isNonEmptyArray.test.js
-      ~ isNonEmptyArray/hasRelatedLinks via generateBlog does not render related links for empty array [line 14] (covered 198)
+      ✓ isNonEmptyArray/hasRelatedLinks via generateBlog does not render related links for empty array [line 14] (killed 3)
       ~ isNonEmptyArray/hasRelatedLinks via generateBlog does not render related links for non-array value [line 30] (covered 195)
-      ✓ isNonEmptyArray/hasRelatedLinks via generateBlog renders related links when array has items [line 46] (killed 1)
+      ✓ isNonEmptyArray/hasRelatedLinks via generateBlog renders related links when array has items [line 46] (killed 2)
       ✓ isNonEmptyArray/hasRelatedLinks via generateBlog does not render related links when getter returns empty array on second access [line 70] (killed 1)
     mediaAudioControls.exact.test.js
-      ~ MEDIA_CONTENT_CONFIG audio controls exact output audio section renders with controls attribute [line 9] (covered 181)
+      ✓ MEDIA_CONTENT_CONFIG audio controls exact output audio section renders with controls attribute [line 9] (killed 3)
     mediaAudioControls.static.test.js
       ~ MEDIA_CONTENT_CONFIG audio controls attribute audio tag includes controls attribute [line 9] (covered 181)
     mediaClassUsage.test.js
       ✓ CLASS.MEDIA usage youtube media section uses media key class [line 9] (killed 1)
     mediaConfig.count.test.js
-      ~ MEDIA_CONFIG completeness generateBlog outputs labels for all media types [line 9] (covered 202)
+      ✓ MEDIA_CONFIG completeness generateBlog outputs labels for all media types [line 9] (killed 2)
     mediaContentConfig.audioOnly.test.js
-      ~ MEDIA_CONTENT_CONFIG single audio generateBlog only outputs audio section when only audio present [line 9] (covered 181)
+      ✓ MEDIA_CONTENT_CONFIG single audio generateBlog only outputs audio section when only audio present [line 9] (killed 2)
+    mediaContentConfig.controls.additionalKill.test.js
+      ~ MEDIA_CONTENT_CONFIG audio controls additional kill audio tags always include controls attribute [line 9] (covered 207)
     mediaContentConfig.controls.count.test.js
-      ~ MEDIA_CONTENT_CONFIG audio controls count audio controls attribute appears for each audio post [line 9] (covered 181)
+      ✓ MEDIA_CONTENT_CONFIG audio controls count audio controls attribute appears for each audio post [line 9] (killed 3)
     mediaContentConfig.controls.test.js
       ~ MEDIA_CONTENT_CONFIG audio controls audio elements include the controls attribute [line 9] (covered 181)
     mediaContentConfig.controlsFull.test.js
-      ~ MEDIA_CONTENT_CONFIG audio controls exact HTML audio section includes controls attribute with source [line 9] (covered 181)
+      ✓ MEDIA_CONTENT_CONFIG audio controls exact HTML audio section includes controls attribute with source [line 9] (killed 1)
     mediaContentConfig.static.test.js
-      ✓ MEDIA_CONTENT_CONFIG via generateBlog generates media sections for youtube, audio and illustration [line 9] (killed 2)
+      ✓ MEDIA_CONTENT_CONFIG via generateBlog generates media sections for youtube, audio and illustration [line 9] (killed 1)
       ~ MEDIA_CONTENT_CONFIG via generateBlog audio element includes the controls attribute [line 38] (covered 181)
       ~ MEDIA_CONTENT_CONFIG via generateBlog youtube element wrapped in paragraph tag [line 53] (covered 193)
       ~ MEDIA_CONTENT_CONFIG via generateBlog illustration element wrapped in div tag [line 68] (covered 182)
@@ -1391,88 +1386,86 @@ All tests
     mediaLabels.test.js
       ~ MEDIA_CONFIG labels generateBlog uses expected labels for media sections [line 9] (covered 202)
     mediaSections.dynamic.test.js
-      ✓ media sections dynamic import blog with all media types renders each section [line 10] (killed 22)
+      ✓ media sections dynamic import blog with all media types renders each section [line 10] (killed 29)
     mediaSections.mutant.test.js
-      ✓ media sections mutant blog html should not contain undefined when media present [line 5] (killed 1)
+      ~ media sections mutant blog html should not contain undefined when media present [line 5] (covered 248)
       ~ media sections mutant blog html includes labeled sections for all media types [line 21] (covered 257)
     normalizeContentItem.additionalKill.test.js
-      ~ normalizeContentItem additional array kill generateBlog renders primitives and quote content in order [line 9] (covered 201)
+      ✓ normalizeContentItem additional array kill generateBlog renders primitives and quote content in order [line 9] (killed 3)
     normalizeContentItem.arrayDeclaration.dynamic.test.js
-      ✓ normalizeContentItem array declaration dynamic import generateBlog handles primitive and object content [line 8] (killed 13)
+      ✓ normalizeContentItem array declaration dynamic import generateBlog handles primitive and object content [line 8] (killed 18)
     normalizeContentItem.arrayDeclarationKill.test.js
-      ✓ normalizeContentItem array declaration kill generateBlog handles multiple primitive content types [line 9] (killed 1)
+      ~ normalizeContentItem array declaration kill generateBlog handles multiple primitive content types [line 9] (covered 201)
     normalizeContentItem.booleanContent.test.js
       ~ normalizeContentItem boolean content generateBlog handles boolean content items [line 9] (covered 191)
     normalizeContentItem.mixed.test.js
-      ~ normalizeContentItem mixed content generateBlog handles string, number, and null content [line 9] (covered 193)
+      ✓ normalizeContentItem mixed content generateBlog handles string, number, and null content [line 9] (killed 2)
     normalizeContentItem.mixedContent.test.js
-      ✓ normalizeContentItem mixed content array generateBlog handles string, number, null and quote content [line 9] (killed 3)
+      ✓ normalizeContentItem mixed content array generateBlog handles string, number, null and quote content [line 9] (killed 2)
     normalizeContentItem.null.static.test.js
       ✓ normalizeContentItem null static import generateBlogOuter handles null in post content array [line 5] (killed 2)
     normalizeContentItem.numberContent.test.js
-      ✓ normalizeContentItem numeric content generateBlog handles numeric content items [line 9] (killed 1)
+      ~ normalizeContentItem numeric content generateBlog handles numeric content items [line 9] (covered 191)
     normalizeContentItem.predicateKill.test.js
       ~ normalizeContentItem predicate kill generateBlog does not throw for primitive string content [line 9] (covered 191)
     normalizeContentItem.stringContent.test.js
       ~ normalizeContentItem integration generateBlog renders string content as paragraphs [line 9] (covered 191)
     normalizeContentItem.unknownType.test.js
-      ~ normalizeContentItem unknown type generateBlog throws on unrecognized content type [line 9] (covered 133)
+      ✓ normalizeContentItem unknown type generateBlog throws on unrecognized content type [line 9] (killed 2)
     normalizeQuoteContent.test.js
       ~ normalizeContentItem with quote object generateBlogOuter renders blockquote content [line 5] (covered 252)
     relatedLinks.quote.test.js
-      ✓ generateBlog related link quotes omits quote parentheses when quote is missing [line 9] (killed 1)
+      ✓ generateBlog related link quotes omits quote parentheses when quote is missing [line 9] (killed 2)
       ~ generateBlog related link quotes includes quote when provided [line 35] (covered 268)
     relatedLinks.spacing.test.js
       ✓ generateBlog related links spacing omits extra spaces when optional fields are missing [line 9] (killed 1)
     releaseBeta.test.js
-      ✓ beta release posts posts with release beta include release-beta class [line 5] (killed 5)
+      ✓ beta release posts posts with release beta include release-beta class [line 5] (killed 6)
     toyOutputDropdown.test.js
-      ~ toy output dropdown includes all output type options [line 28] (covered 187)
+      ✓ toy output dropdown includes all output type options [line 28] (killed 2)
       ~ toy output dropdown contains expected number of options [line 35] (covered 187)
       ~ toy output dropdown options appear in fixed order [line 43] (covered 187)
       ~ toy output dropdown renders dropdown with expected markup [line 51] (covered 187)
     toyOutputTypes.test.js
-      ✓ TOY_OUTPUT_TYPES dropdown generateBlog includes all toy output options [line 9] (killed 2)
+      ~ TOY_OUTPUT_TYPES dropdown generateBlog includes all toy output options [line 9] (covered 187)
     toyUiSections.mutant.test.js
-      ✓ toy UI sections mutant toy UI includes input, submit and output sections [line 9] (killed 8)
+      ~ toy UI sections mutant toy UI includes input, submit and output sections [line 9] (covered 187)
     toyUISections.test.js
-      ✓ TOY_UI_SECTIONS integration generateBlog includes input dropdown and submit button [line 9] (killed 3)
+      ✓ TOY_UI_SECTIONS integration generateBlog includes input dropdown and submit button [line 9] (killed 1)
     wrapHtml.empty.test.js
-      ✓ wrapHtml handles empty content [line 4] (killed 1)
+      ~ wrapHtml handles empty content [line 4] (covered 43)
   presenters
     battleshipSolitaireClues.test.js
       ✘ battleshipSolitaireClues presenter should be implemented [line 5] (covered 0)
-      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board on parse failure [line 48] (killed 18)
-      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object [line 54] (killed 6)
+      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board on parse failure [line 48] (killed 15)
+      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is not an object [line 54] (killed 7)
       ~ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is a string [line 60] (covered 58)
       ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when JSON is null [line 67] (killed 4)
       ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when rowClues / colClues arrays are missing [line 73] (killed 5)
-      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when clue values are non‑numeric [line 80] (killed 5)
-      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when column clue values are non‑numeric [line 87] (killed 2)
-      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when any array is empty [line 94] (killed 2)
+      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when clue values are non‑numeric [line 80] (killed 7)
+      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when column clue values are non‑numeric [line 87] (killed 3)
+      ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when any array is empty [line 94] (killed 6)
       ✓ createBattleshipCluesBoardElement – error handling renders 10x10 empty board when column clues array is empty [line 101] (killed 2)
-      ✓ createBattleshipCluesBoardElement – successful render renders padded multi‑digit row clues and stacked column clues [line 110] (killed 32)
+      ✓ createBattleshipCluesBoardElement – successful render renders padded multi‑digit row clues and stacked column clues [line 110] (killed 33)
     battleshipSolitaireFleet.negativeStartX.test.js
-      ~ createBattleshipFleetBoardElement negative start x skips cells with negative x and renders remaining cells [line 5] (covered 121)
+      ✓ createBattleshipFleetBoardElement negative start coordinates skips cells with negative x and renders remaining cells [line 5] (killed 7)
+      ✓ createBattleshipFleetBoardElement negative start coordinates skips cells with negative y and renders remaining cells [line 19] (killed 5)
     battleshipSolitaireFleet.test.js
-      ✓ createBattleshipFleetBoardElement renders a valid fleet as a <pre> element [line 23] (killed 80)
+      ✓ createBattleshipFleetBoardElement renders a valid fleet as a <pre> element [line 23] (killed 74)
       ✓ createBattleshipFleetBoardElement renders a vertical ship occupying multiple rows [line 59] (killed 5)
       ✓ createBattleshipFleetBoardElement renders a 10x10 empty fleet for invalid JSON [line 72] (killed 2)
-      ✓ createBattleshipFleetBoardElement returns <p> with error for missing width [line 83] (killed 7)
+      ✓ createBattleshipFleetBoardElement returns <p> with error for missing width [line 83] (killed 5)
       ✓ createBattleshipFleetBoardElement returns <p> with error for missing height [line 90] (killed 3)
       ✓ createBattleshipFleetBoardElement returns <p> with error for missing ships [line 97] (killed 2)
-      ✓ createBattleshipFleetBoardElement skips malformed ships and still renders valid ones [line 104] (killed 6)
+      ✓ createBattleshipFleetBoardElement skips malformed ships and still renders valid ones [line 104] (killed 9)
       ✓ createBattleshipFleetBoardElement skips ships with non-number x coordinate [line 120] (killed 1)
       ✓ createBattleshipFleetBoardElement skips ships with non-number length (first invalid) [line 155] (killed 2)
       ~ createBattleshipFleetBoardElement skips ships with non-number length (second invalid) [line 155] (covered 121)
       ✓ createBattleshipFleetBoardElement skips ships missing the start property [line 170] (killed 1)
-      ✓ createBattleshipFleetBoardElement ignores ship segments that exceed board dimensions [line 188] (killed 1)
+      ✓ createBattleshipFleetBoardElement ignores ship segments that exceed board dimensions [line 188] (killed 2)
       ~ createBattleshipFleetBoardElement ignores ships with negative start coordinates [line 206] (covered 121)
-      ✓ createBattleshipFleetBoardElement ignores ships with negative start row [line 219] (killed 3)
-      ✓ createBattleshipFleetBoardElement skips ships with invalid direction [line 232] (killed 2)
-    isNegativeCoordinate.integration.test.js
-      ✓ isNegativeCoordinate integration horizontal ship with negative start x occupies only the second cell [line 14] (killed 3)
-      ✓ isNegativeCoordinate integration vertical ship with negative start y occupies only the second cell [line 25] (killed 1)
+      ✓ createBattleshipFleetBoardElement ignores ships with negative start row [line 219] (killed 1)
+      ✓ createBattleshipFleetBoardElement skips ships with invalid direction [line 232] (killed 1)
     paragraph.test.js
       ~ createParagraphElement given "Hello world" when creating the element then the text is set [line 17] (covered 2)
       ~ createParagraphElement given "Another test string" when creating the element then the text is set [line 17] (covered 2)
@@ -1484,7 +1477,7 @@ pre-formatted
 text" as text [line 31] (killed 4)
       ✓ createPreElement given "[a, b, c]" when creating the element then it sets "a
 b
-c" as text [line 31] (killed 16)
+c" as text [line 31] (killed 20)
       ✓ createPreElement given "[]" when creating the element then it sets "" as text [line 31] (killed 2)
       ~ createPreElement given "[   ]" when creating the element then it sets "" as text [line 31] (covered 31)
       ~ createPreElement given "[  x,   y  ,z ]" when creating the element then it sets "x
@@ -1494,20 +1487,20 @@ z" as text [line 31] (covered 34)
       ~ createPreElement given "" when creating the element then it sets "" as text [line 31] (covered 18)
       ✓ createPreElement given "[a" when creating the element then it sets "[a" as text [line 31] (killed 2)
       ✓ createPreElement given "a]" when creating the element then it sets "a]" as text [line 31] (killed 1)
-      ~ createPreElement given 42 when creating the element then it sets 42 as text [line 31] (covered 12)
+      ✓ createPreElement given 42 when creating the element then it sets 42 as text [line 31] (killed 1)
       ✓ createPreElement given empty bracket list then split is not called [line 48] (killed 2)
       ✓ createPreElement given whitespace only bracket list then split is not called [line 56] (killed 1)
       ~ createPreElement given populated bracket list then split is called [line 64] (covered 34)
     ticTacToeBoard.getters.test.js
-      ✓ ticTacToeBoard getters returns undefined for null move [line 12] (killed 2)
+      ✓ ticTacToeBoard getters returns undefined for null move [line 12] (killed 1)
       ~ ticTacToeBoard getters returns undefined for undefined move [line 12] (covered 4)
       ~ ticTacToeBoard getters returns undefined for missing property [line 12] (covered 4)
       ~ ticTacToeBoard getters does not throw when move is null [line 18] (covered 4)
     ticTacToeBoard.test.js
-      ✓ createTicTacToeBoardElement renders an empty board if moves property is missing [line 12] (killed 11)
+      ✓ createTicTacToeBoardElement renders an empty board if moves property is missing [line 12] (killed 9)
       ~ createTicTacToeBoardElement renders an empty board if moves is not an array [line 23] (covered 16)
-      ✓ createTicTacToeBoardElement ignores moves with invalid player [line 34] (killed 35)
-      ✓ createTicTacToeBoardElement ignores moves with missing position [line 51] (killed 3)
+      ✓ createTicTacToeBoardElement ignores moves with invalid player [line 34] (killed 40)
+      ✓ createTicTacToeBoardElement ignores moves with missing position [line 51] (killed 2)
       ✓ createTicTacToeBoardElement ignores moves with out-of-bounds position [line 68] (killed 2)
       ~ createTicTacToeBoardElement ignores moves with out-of-bounds column [line 85] (covered 78)
       ~ createTicTacToeBoardElement only applies the first move to a cell (overlapping moves) [line 102] (covered 78)
@@ -1573,10 +1566,10 @@ z" as text [line 31] (covered 34)
       ~ rand returns different values when getRandomNumber returns different values [line 33] (covered 2)
     2025-03-29
       fishingGame.modifier.test.js
-        ✓ fishingGame modifier effects negative modifier alters outcome category [line 12] (killed 6)
+        ~ fishingGame modifier effects negative modifier alters outcome category [line 12] (covered 100)
       fishingGame.test.js
-        ✓ fishingGame handles empty input gracefully [line 14] (killed 40)
-        ✓ fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0) [line 23] (killed 22)
+        ✓ fishingGame handles empty input gracefully [line 14] (killed 41)
+        ✓ fishingGame recognizes a known bait and applies its modifier (e.g., worm, modifier 0.0) [line 23] (killed 27)
         ✓ fishingGame applies negative modifier for poor bait (e.g., bread, modifier -0.05) [line 32] (killed 16)
         ✓ fishingGame negative modifier can reduce chance below silent threshold [line 42] (killed 2)
         ✓ fishingGame applies positive modifier for good bait (e.g., cheese, modifier 0.1) [line 50] (killed 15)
@@ -1687,51 +1680,51 @@ z" as text [line 31] (covered 34)
       ✓ generatePalette (2025-04-16) generates correct colors for input count [line 14] (killed 1)
     2025-05-08
       battleshipSolitaireFleet.horizontalAdjacency.test.js
-        ✓ generateFleet noTouching horizontal adjacency fails on single row board due to adjacency [line 5] (killed 3)
+        ~ generateFleet noTouching horizontal adjacency fails on single row board due to adjacency [line 5] (covered 284)
       battleshipSolitaireFleet.minimalBoard.test.js
         ~ generateFleet minimal board places a single length-1 ship on a 2x2 board [line 9] (covered 242)
       battleshipSolitaireFleet.neighbours.mutant.test.js
-        ✓ neighbours mutants does not include origin coordinate [line 5] (killed 3)
+        ✓ neighbours mutants does not include origin coordinate [line 5] (killed 2)
         ~ neighbours mutants returns eight unique neighbours for various coords [line 12] (covered 25)
       battleshipSolitaireFleet.test.js
-        ✓ generateFleet returns empty fleet for invalid JSON [line 10] (killed 47)
+        ✓ generateFleet returns empty fleet for invalid JSON [line 10] (killed 42)
         ✓ generateFleet returns empty fleet for missing ships [line 15] (killed 5)
         ✓ generateFleet returns error if ship segments exceed board area [line 21] (killed 11)
-        ✓ generateFleet places a vertical ship of length 3 somewhere [line 29] (killed 106)
-        ✓ generateFleet places a horizontal ship when only horizontal fit is possible [line 69] (killed 28)
+        ✓ generateFleet places a vertical ship of length 3 somewhere [line 29] (killed 104)
+        ✓ generateFleet places a horizontal ship when only horizontal fit is possible [line 69] (killed 30)
         ✓ generateFleet generates a valid fleet for simple input [line 98] (killed 2)
-        ✓ generateFleet noTouching true blocks all adjacent placements (full adjacency block) [line 115] (killed 13)
+        ✓ generateFleet noTouching true blocks all adjacent placements (full adjacency block) [line 115] (killed 17)
         ~ generateFleet ignores diagonalAllowed property [line 125] (covered 244)
         ✓ generateFleet parses comma-separated string ships into array [line 134] (killed 5)
         ✓ generateFleet parses multi-digit ship lengths from string [line 143] (killed 1)
         ✓ generateFleet parses ships string ignoring empty entries [line 151] (killed 1)
-        ✓ generateFleet parses string width and height into numbers [line 159] (killed 8)
+        ✓ generateFleet parses string width and height into numbers [line 159] (killed 7)
         ~ generateFleet uses empty config if JSON parse fails [line 167] (covered 82)
-        ✓ generateFleet noTouching prevents vertical adjacency on narrow board [line 175] (killed 17)
-        ✓ generateFleet noTouching allows placement when ships are separated [line 183] (killed 7)
+        ✓ generateFleet noTouching prevents vertical adjacency on narrow board [line 175] (killed 20)
+        ✓ generateFleet noTouching allows placement when ships are separated [line 183] (killed 6)
         ✓ generateFleet shuffles ship order based on RNG [line 194] (killed 3)
         ✓ generateFleet shuffles ship order differently for non-zero RNG [line 202] (killed 2)
         ~ generateFleet does not mutate the input ship lengths array [line 209] (covered 249)
         ✓ generateFleet noTouching prevents adjacency for mixed ship lengths [line 217] (killed 9)
       isCoordNonNegative.mutant.test.js
-        ✓ isCoordNonNegative mutant returns false when either coordinate is negative [line 7] (killed 4)
-        ~ isCoordNonNegative mutant returns true when both coordinates are non-negative [line 12] (covered 10)
+        ✓ isCoordNonNegative mutant returns false when either coordinate is negative [line 7] (killed 6)
+        ✓ isCoordNonNegative mutant returns true when both coordinates are non-negative [line 12] (killed 2)
       isCoordWithinBoard.mutant.test.js
         ~ isCoordWithinBoard mutant returns false when coordinate equals board width or height [line 7] (covered 10)
         ~ isCoordWithinBoard mutant returns true for coordinates strictly within bounds [line 13] (covered 10)
       neighbours.output.test.js
-        ✓ neighbours output neighbours({"x": 1, "y": 2}) returns correct cells [line 32] (killed 11)
+        ✓ neighbours output neighbours({"x": 1, "y": 2}) returns correct cells [line 32] (killed 5)
         ~ neighbours output neighbours({"x": 5, "y": 5}) returns correct cells [line 32] (covered 25)
       parseConfig.height.mutant.test.js
-        ✓ parseConfig height mutant preserves non-string height values [line 7] (killed 2)
+        ✓ parseConfig height mutant preserves non-string height values [line 7] (killed 6)
       parseConfig.width.mutant.test.js
-        ✓ parseConfig width mutant preserves non-string width values [line 7] (killed 1)
+        ✓ parseConfig width mutant preserves non-string width values [line 7] (killed 3)
       placeAllShips.mutant.test.js
         ✓ placeAllShips mutation does not mutate cfg.ships for {"height": 3, "ships": [Array], "width": 3} [line 8] (killed 1)
     2025-05-11
       battleshipSolitaireClues.test.js
         ✓ generateClues returns an error for invalid JSON [line 7] (killed 9)
-        ✓ generateClues returns an error when JSON is a number [line 12] (killed 1)
+        ✓ generateClues returns an error when JSON is a number [line 12] (killed 6)
         ✓ generateClues returns an error when required properties are missing [line 17] (killed 5)
         ✓ generateClues returns an error for an invalid fleet structure [line 23] (killed 2)
         ✓ generateClues computes correct clues for a single horizontal ship [line 29] (killed 38)
@@ -1749,7 +1742,7 @@ z" as text [line 31] (covered 34)
       generateClues.nullInput.parse.test.js
         ~ generateClues returns error JSON for null input [line 6] (covered 23)
       generateClues.nullInput.test.js
-        ✓ generateClues gracefully handles "null" input [line 4] (killed 5)
+        ~ generateClues gracefully handles "null" input [line 4] (covered 23)
     2025-05-13/base64Encoder.test.js
       ✓ encodeBase64 encodes a string to Base64 using the provided environment function [line 5] (killed 2)
     2025-05-15/stringToJsonArray.test.js
@@ -1760,17 +1753,16 @@ z" as text [line 31] (covered 34)
       ~ stringToJsonArrayToy handles single value [line 29] (covered 6)
       ~ stringToJsonArrayToy handles values with internal commas [line 35] (covered 6)
     2025-06-09
-      startLocalDendriteStory.append.test.js
-        ✓ startLocalDendriteStory appends to existing temporary array [line 4] (killed 4)
       startLocalDendriteStory.branch.test.js
         ✓ startLocalDendriteStory missing temporary creates temporary structure when absent [line 5] (killed 2)
-        ✓ startLocalDendriteStory missing temporary overwrites non-object temporary value [line 18] (killed 3)
+        ✓ startLocalDendriteStory missing temporary overwrites non-object temporary value [line 18] (killed 2)
       startLocalDendriteStory.nonArray.test.js
         ~ startLocalDendriteStory replaces non-array DEND1 [line 4] (covered 27)
       startLocalDendriteStory.test.js
         ✓ startLocalDendriteStory builds poll post from json string and stores it [line 5] (killed 23)
         ✓ startLocalDendriteStory skips empty options [line 41] (killed 2)
         ✓ startLocalDendriteStory handles missing first and fourth options [line 66] (killed 2)
+        ✓ startLocalDendriteStory appends to existing temporary array [line 89] (killed 5)
         ✓ startLocalDendriteStory returns empty object string on parse error [line 114] (killed 1)
       uuid.test.js
         ✓ uuidToy returns the uuid from the environment [line 5] (killed 2)
@@ -1836,56 +1828,6 @@ Ran all tests for this mutant.
 src/browser/toys.js:204:3
 -     (handleDropdownChange, getData, dom) => event =>
 -       handleDropdownChange(event.currentTarget, getData, dom);
-+     () => undefined;
-Ran all tests for this mutant.
-
-[Survived] ArrowFunction
-src/browser/toys.js:728:3
--     (
--       dom,
--       entries,
--       textInput,
--       rows,
--       syncHiddenField,
--       disposers,
--       render,
--       container
--     ) =>
--       ([key, value], idx) => {
--         const rowEl = dom.createElement('div');
--         dom.setClassName(rowEl, 'kv-row');
--         // Create key and value elements
--         const keyEl = createKeyElement(
--           dom,
--           key,
--           textInput,
--           rows,
--           syncHiddenField,
--           disposers
--         );
--         const valueEl = createValueElement(
--           dom,
--           value,
--           keyEl,
--           textInput,
--           rows,
--           syncHiddenField,
--           disposers
--         );
--         // Create and set up the appropriate button type
--         const btnEl = createButton(
--           dom,
--           idx === entries.length - 1,
--           rows,
--           render,
--           key,
--           disposers
--         );
--         dom.appendChild(rowEl, keyEl);
--         dom.appendChild(rowEl, valueEl);
--         dom.appendChild(rowEl, btnEl);
--         dom.appendChild(container, rowEl);
--       };
 +     () => undefined;
 Ran all tests for this mutant.
 
@@ -2020,33 +1962,6 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/constants/markdown.js:13:19
--       GREATER_THAN: '>',
-+       GREATER_THAN: "",
-Tests ran:
-    markdown constants mutants constant objects are frozen
-    markdown constants mutants constant objects cannot be modified
-
-
-[Survived] StringLiteral
-src/constants/markdown.js:12:11
--       HASH: '#',
-+       HASH: "",
-Tests ran:
-    markdown constants mutants constant objects are frozen
-    markdown constants mutants constant objects cannot be modified
-
-
-[Survived] StringLiteral
-src/constants/markdown.js:14:11
--       PIPE: '|',
-+       PIPE: "",
-Tests ran:
-    markdown constants mutants constant objects are frozen
-    markdown constants mutants constant objects cannot be modified
-
-
-[Survived] StringLiteral
 src/constants/markdown.js:11:12
 -       EQUAL: '=',
 +       EQUAL: "",
@@ -2056,9 +1971,9 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/constants/markdown.js:17:18
--       EXCLAMATION: '!',
-+       EXCLAMATION: "",
+src/constants/markdown.js:12:11
+-       HASH: '#',
++       HASH: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2083,6 +1998,33 @@ Tests ran:
 
 
 [Survived] StringLiteral
+src/constants/markdown.js:14:11
+-       PIPE: '|',
++       PIPE: "",
+Tests ran:
+    markdown constants mutants constant objects are frozen
+    markdown constants mutants constant objects cannot be modified
+
+
+[Survived] StringLiteral
+src/constants/markdown.js:13:19
+-       GREATER_THAN: '>',
++       GREATER_THAN: "",
+Tests ran:
+    markdown constants mutants constant objects are frozen
+    markdown constants mutants constant objects cannot be modified
+
+
+[Survived] StringLiteral
+src/constants/markdown.js:17:18
+-       EXCLAMATION: '!',
++       EXCLAMATION: "",
+Tests ran:
+    markdown constants mutants constant objects are frozen
+    markdown constants mutants constant objects cannot be modified
+
+
+[Survived] StringLiteral
 src/constants/markdown.js:18:19
 -       BRACKET_OPEN: '[',
 +       BRACKET_OPEN: "",
@@ -2095,6 +2037,31 @@ Tests ran:
 src/constants/markdown.js:19:20
 -       BRACKET_CLOSE: ']',
 +       BRACKET_CLOSE: "",
+Tests ran:
+    markdown constants mutants constant objects are frozen
+    markdown constants mutants constant objects cannot be modified
+
+
+[Survived] ObjectLiteral
+src/constants/markdown.js:29:24
+-     return Object.freeze({
+-       EMPHASIS: 'em',
+-       STRONG: 'strong',
+-       CODE: 'code',
+-       PARAGRAPH: 'p',
+-       BLOCKQUOTE: 'blockquote',
+-       LIST: 'ul',
+-       LIST_ITEM: 'li',
+-       ORDERED_LIST: 'ol',
+-       HORIZONTAL_RULE: 'hr',
+-       LINE_BREAK: 'br',
+-       LINK: 'a',
+-       IMAGE: 'img',
+-       DIV: 'div',
+-       SPAN: 'span',
+-       PRE: 'pre',
+-     });
++     return Object.freeze({});
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2113,6 +2080,15 @@ Tests ran:
 src/constants/markdown.js:21:18
 -       PAREN_CLOSE: ')',
 +       PAREN_CLOSE: "",
+Tests ran:
+    markdown constants mutants constant objects are frozen
+    markdown constants mutants constant objects cannot be modified
+
+
+[Survived] StringLiteral
+src/constants/markdown.js:30:15
+-       EMPHASIS: 'em',
++       EMPHASIS: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2145,62 +2121,10 @@ Tests ran:
     markdown constants mutants constant objects cannot be modified
 
 
-[Survived] ObjectLiteral
-src/constants/markdown.js:29:24
--     return Object.freeze({
--       EMPHASIS: 'em',
--       STRONG: 'strong',
--       CODE: 'code',
--       PARAGRAPH: 'p',
--       BLOCKQUOTE: 'blockquote',
--       LIST: 'ul',
--       LIST_ITEM: 'li',
--       ORDERED_LIST: 'ol',
--       HORIZONTAL_RULE: 'hr',
--       LINE_BREAK: 'br',
--       LINK: 'a',
--       IMAGE: 'img',
--       DIV: 'div',
--       SPAN: 'span',
--       PRE: 'pre',
--     });
-+     return Object.freeze({});
-Tests ran:
-    markdown constants mutants constant objects are frozen
-    markdown constants mutants constant objects cannot be modified
-
-
-[Survived] StringLiteral
-src/constants/markdown.js:30:15
--       EMPHASIS: 'em',
-+       EMPHASIS: "",
-Tests ran:
-    markdown constants mutants constant objects are frozen
-    markdown constants mutants constant objects cannot be modified
-
-
 [Survived] StringLiteral
 src/constants/markdown.js:31:13
 -       STRONG: 'strong',
 +       STRONG: "",
-Tests ran:
-    markdown constants mutants constant objects are frozen
-    markdown constants mutants constant objects cannot be modified
-
-
-[Survived] StringLiteral
-src/constants/markdown.js:34:17
--       BLOCKQUOTE: 'blockquote',
-+       BLOCKQUOTE: "",
-Tests ran:
-    markdown constants mutants constant objects are frozen
-    markdown constants mutants constant objects cannot be modified
-
-
-[Survived] StringLiteral
-src/constants/markdown.js:33:16
--       PARAGRAPH: 'p',
-+       PARAGRAPH: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2216,9 +2140,18 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/constants/markdown.js:36:16
--       LIST_ITEM: 'li',
-+       LIST_ITEM: "",
+src/constants/markdown.js:39:17
+-       LINE_BREAK: 'br',
++       LINE_BREAK: "",
+Tests ran:
+    markdown constants mutants constant objects are frozen
+    markdown constants mutants constant objects cannot be modified
+
+
+[Survived] StringLiteral
+src/constants/markdown.js:33:16
+-       PARAGRAPH: 'p',
++       PARAGRAPH: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2243,18 +2176,27 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/constants/markdown.js:38:22
--       HORIZONTAL_RULE: 'hr',
-+       HORIZONTAL_RULE: "",
+src/constants/markdown.js:34:17
+-       BLOCKQUOTE: 'blockquote',
++       BLOCKQUOTE: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
 
 
 [Survived] StringLiteral
-src/constants/markdown.js:39:17
--       LINE_BREAK: 'br',
-+       LINE_BREAK: "",
+src/constants/markdown.js:36:16
+-       LIST_ITEM: 'li',
++       LIST_ITEM: "",
+Tests ran:
+    markdown constants mutants constant objects are frozen
+    markdown constants mutants constant objects cannot be modified
+
+
+[Survived] StringLiteral
+src/constants/markdown.js:38:22
+-       HORIZONTAL_RULE: 'hr',
++       HORIZONTAL_RULE: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2270,15 +2212,6 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/constants/markdown.js:42:10
--       DIV: 'div',
-+       DIV: "",
-Tests ran:
-    markdown constants mutants constant objects are frozen
-    markdown constants mutants constant objects cannot be modified
-
-
-[Survived] StringLiteral
 src/constants/markdown.js:41:12
 -       IMAGE: 'img',
 +       IMAGE: "",
@@ -2288,18 +2221,27 @@ Tests ran:
 
 
 [Survived] StringLiteral
-src/constants/markdown.js:43:11
--       SPAN: 'span',
-+       SPAN: "",
+src/constants/markdown.js:44:10
+-       PRE: 'pre',
++       PRE: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
 
 
 [Survived] StringLiteral
-src/constants/markdown.js:44:10
--       PRE: 'pre',
-+       PRE: "",
+src/constants/markdown.js:42:10
+-       DIV: 'div',
++       DIV: "",
+Tests ran:
+    markdown constants mutants constant objects are frozen
+    markdown constants mutants constant objects cannot be modified
+
+
+[Survived] StringLiteral
+src/constants/markdown.js:43:11
+-       SPAN: 'span',
++       SPAN: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2369,9 +2311,9 @@ Tests ran:
 
 
 [Survived] BooleanLiteral
-src/constants/markdown.js:75:15
--       pedantic: false,
-+       pedantic: true,
+src/constants/markdown.js:72:10
+-       gfm: true,
++       gfm: false,
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2387,9 +2329,9 @@ Tests ran:
 
 
 [Survived] BooleanLiteral
-src/constants/markdown.js:72:10
--       gfm: true,
-+       gfm: false,
+src/constants/markdown.js:75:15
+-       pedantic: false,
++       pedantic: true,
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2405,18 +2347,18 @@ Tests ran:
 
 
 [Survived] BooleanLiteral
-src/constants/markdown.js:77:17
--       smartLists: true,
-+       smartLists: false,
+src/constants/markdown.js:78:18
+-       smartypants: false,
++       smartypants: true,
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
 
 
-[Survived] BooleanLiteral
-src/constants/markdown.js:78:18
--       smartypants: false,
-+       smartypants: true,
+[Survived] StringLiteral
+src/constants/markdown.js:81:17
+-       langPrefix: 'language-',
++       langPrefix: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2426,6 +2368,15 @@ Tests ran:
 src/constants/markdown.js:79:12
 -       xhtml: false,
 +       xhtml: true,
+Tests ran:
+    markdown constants mutants constant objects are frozen
+    markdown constants mutants constant objects cannot be modified
+
+
+[Survived] BooleanLiteral
+src/constants/markdown.js:77:17
+-       smartLists: true,
++       smartLists: false,
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2444,15 +2395,6 @@ Tests ran:
 src/constants/markdown.js:82:16
 -       headerIds: true,
 +       headerIds: false,
-Tests ran:
-    markdown constants mutants constant objects are frozen
-    markdown constants mutants constant objects cannot be modified
-
-
-[Survived] StringLiteral
-src/constants/markdown.js:81:17
--       langPrefix: 'language-',
-+       langPrefix: "",
 Tests ran:
     markdown constants mutants constant objects are frozen
     markdown constants mutants constant objects cannot be modified
@@ -2492,25 +2434,19 @@ src/generator/generator.js:32:12
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:34:15
--     FULL_WIDTH: 'full-width',
-+     FULL_WIDTH: "",
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/generator.js:37:28
--   const BLOCKQUOTE_CORNERS = `<div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>`;
-+   const BLOCKQUOTE_CORNERS = ``;
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/generator.js:39:26
+src/generator/generator.js:38:26
 -   const ARTICLE_TAG_NAME = 'article';
 +   const ARTICLE_TAG_NAME = "";
 Ran all tests for this mutant.
 
+[Survived] StringLiteral
+src/generator/generator.js:36:28
+-   const BLOCKQUOTE_CORNERS = `<div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>`;
++   const BLOCKQUOTE_CORNERS = ``;
+Ran all tests for this mutant.
+
 [Survived] ObjectLiteral
-src/generator/generator.js:41:29
+src/generator/generator.js:40:29
 -   const DATE_FORMAT_OPTIONS = {
 -     day: 'numeric',
 -     month: 'short',
@@ -2520,31 +2456,31 @@ src/generator/generator.js:41:29
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:221:3
+src/generator/generator.js:220:3
 -     'All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.';
 +     "";
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:675:31
+src/generator/generator.js:674:31
 -     illustration: { wrapperTag: 'div', fragment: createIllustrationImage },
 +     illustration: { wrapperTag: "", fragment: createIllustrationImage },
 Ran all tests for this mutant.
 
 [Survived] BooleanLiteral
-src/generator/generator.js:676:72
+src/generator/generator.js:675:72
 -     audio: { wrapperTag: 'audio', fragment: createAudioSource, controls: true },
 +     audio: { wrapperTag: 'audio', fragment: createAudioSource, controls: false },
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:677:26
+src/generator/generator.js:676:26
 -     youtube: { wrapperTag: 'p', fragment: createYouTubeIframe },
 +     youtube: { wrapperTag: "", fragment: createYouTubeIframe },
 Ran all tests for this mutant.
 
 [Survived] BlockStatement
-src/generator/generator.js:744:10
+src/generator/generator.js:743:10
 -     } else {
 -       return '';
 -     }
@@ -2557,7 +2493,7 @@ Tests ran:
 
 
 [Survived] MethodExpression
-src/generator/generator.js:787:22
+src/generator/generator.js:786:22
 -     return `<li>${join(parts.filter(Boolean))}</li>`;
 +     return `<li>${join(parts)}</li>`;
 Tests ran:
@@ -2568,7 +2504,7 @@ Tests ran:
 
 
 [Survived] ArrayDeclaration
-src/generator/generator.js:839:26
+src/generator/generator.js:838:26
 -   const TOY_OUTPUT_TYPES = [
 -     ['text', 'text'],
 -     ['pre', 'pre'],
@@ -2582,68 +2518,68 @@ src/generator/generator.js:839:26
 +   const TOY_OUTPUT_TYPES = [];
 Ran all tests for this mutant.
 
+[Survived] ArrayDeclaration
+src/generator/generator.js:839:3
+-     ['text', 'text'],
++     [],
+Ran all tests for this mutant.
+
 [Survived] StringLiteral
-src/generator/generator.js:840:4
+src/generator/generator.js:839:4
 -     ['text', 'text'],
 +     ["", 'text'],
 Ran all tests for this mutant.
 
-[Survived] ArrayDeclaration
-src/generator/generator.js:840:3
--     ['text', 'text'],
-+     [],
-Ran all tests for this mutant.
-
 [Survived] StringLiteral
-src/generator/generator.js:841:4
+src/generator/generator.js:840:4
 -     ['pre', 'pre'],
 +     ["", 'pre'],
 Ran all tests for this mutant.
 
+[Survived] StringLiteral
+src/generator/generator.js:839:12
+-     ['text', 'text'],
++     ['text', ""],
+Ran all tests for this mutant.
+
 [Survived] ArrayDeclaration
-src/generator/generator.js:841:3
+src/generator/generator.js:840:3
 -     ['pre', 'pre'],
 +     [],
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:840:12
--     ['text', 'text'],
-+     ['text', ""],
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/generator.js:841:11
+src/generator/generator.js:840:11
 -     ['pre', 'pre'],
 +     ['pre', ""],
 Ran all tests for this mutant.
 
 [Survived] ArrayDeclaration
-src/generator/generator.js:842:3
+src/generator/generator.js:841:3
 -     ['tic-tac-toe', 'tic-tac-toe'],
 +     [],
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:842:4
+src/generator/generator.js:841:4
 -     ['tic-tac-toe', 'tic-tac-toe'],
 +     ["", 'tic-tac-toe'],
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:842:19
+src/generator/generator.js:841:19
 -     ['tic-tac-toe', 'tic-tac-toe'],
 +     ['tic-tac-toe', ""],
 Ran all tests for this mutant.
 
-[Survived] ArrayDeclaration
-src/generator/generator.js:843:3
+[Survived] StringLiteral
+src/generator/generator.js:842:4
 -     ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
-+     [],
++     ["", 'battleship-solitaire-fleet'],
 Ran all tests for this mutant.
 
 [Survived] ArrayDeclaration
-src/generator/generator.js:844:3
+src/generator/generator.js:843:3
 -     [
 -       'battleship-solitaire-clues-presenter',
 -       'battleship-solitaire-clues-presenter',
@@ -2652,15 +2588,9 @@ src/generator/generator.js:844:3
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:843:4
--     ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
-+     ["", 'battleship-solitaire-fleet'],
-Ran all tests for this mutant.
-
-[Survived] StringLiteral
-src/generator/generator.js:843:34
--     ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
-+     ['battleship-solitaire-fleet', ""],
+src/generator/generator.js:844:5
+-       'battleship-solitaire-clues-presenter',
++       "",
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
@@ -2669,14 +2599,8 @@ src/generator/generator.js:845:5
 +       "",
 Ran all tests for this mutant.
 
-[Survived] StringLiteral
-src/generator/generator.js:846:5
--       'battleship-solitaire-clues-presenter',
-+       "",
-Ran all tests for this mutant.
-
 [Survived] ArrayDeclaration
-src/generator/generator.js:884:25
+src/generator/generator.js:883:25
 -   const TOY_UI_SECTIONS = [
 -     [
 -       'in',
@@ -2689,8 +2613,15 @@ src/generator/generator.js:884:25
 +   const TOY_UI_SECTIONS = [];
 Ran all tests for this mutant.
 
+[Survived] ArrowFunction
+src/generator/generator.js:886:5
+-       () =>
+-         '<select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option></select><input type="text" disabled>',
++       () => undefined,
+Ran all tests for this mutant.
+
 [Survived] ArrayDeclaration
-src/generator/generator.js:885:3
+src/generator/generator.js:884:3
 -     [
 -       'in',
 -       () =>
@@ -2700,40 +2631,39 @@ src/generator/generator.js:885:3
 Ran all tests for this mutant.
 
 [Survived] StringLiteral
-src/generator/generator.js:886:5
+src/generator/generator.js:885:5
 -       'in',
 +       "",
 Ran all tests for this mutant.
 
-[Survived] ArrowFunction
-src/generator/generator.js:887:5
--       () =>
--         '<select class="input"><option value="text">text</option><option value="number">number</option><option value="kv">kv</option></select><input type="text" disabled>',
-+       () => undefined,
-Ran all tests for this mutant.
-
 [Survived] StringLiteral
-src/generator/generator.js:890:4
+src/generator/generator.js:889:4
 -     ['', () => '<button type="submit" disabled>Submit</button>'],
 +     ["Stryker was here!", () => '<button type="submit" disabled>Submit</button>'],
 Ran all tests for this mutant.
 
+[Survived] ArrayDeclaration
+src/generator/generator.js:889:3
+-     ['', () => '<button type="submit" disabled>Submit</button>'],
++     [],
+Ran all tests for this mutant.
+
 [Survived] ArrowFunction
-src/generator/generator.js:890:8
+src/generator/generator.js:889:8
 -     ['', () => '<button type="submit" disabled>Submit</button>'],
 +     ['', () => undefined],
 Ran all tests for this mutant.
 
-[Survived] ArrayDeclaration
-src/generator/generator.js:891:3
--     ['out', getToyOutputValueContent],
-+     [],
-Ran all tests for this mutant.
-
 [Survived] StringLiteral
-src/generator/generator.js:891:4
+src/generator/generator.js:890:4
 -     ['out', getToyOutputValueContent],
 +     ["", getToyOutputValueContent],
+Ran all tests for this mutant.
+
+[Survived] ArrayDeclaration
+src/generator/generator.js:890:3
+-     ['out', getToyOutputValueContent],
++     [],
 Ran all tests for this mutant.
 
 [Survived] ConditionalExpression
@@ -2758,6 +2688,17 @@ Tests ran:
   and 5 more tests!
 
 
+[Survived] ConditionalExpression
+src/inputHandlers/kv.js:5:22
+-     if (numberInput && typeof numberInput._dispose === 'function') {
++     if (numberInput && true) {
+Tests ran:
+    handleKVType effects removes number input and sets up key-value container
+    handleKVType effects creates a kv-container div and applies the class
+    createInputDropdownHandler all types invokes handlers for text, number, kv and unknown types
+  and 5 more tests!
+
+
 [Survived] LogicalOperator
 src/inputHandlers/kv.js:5:7
 -     if (numberInput && typeof numberInput._dispose === 'function') {
@@ -2770,25 +2711,13 @@ Tests ran:
 
 
 [Survived] ConditionalExpression
-src/inputHandlers/kv.js:5:22
+src/inputHandlers/text.js:5:22
 -     if (numberInput && typeof numberInput._dispose === 'function') {
 +     if (numberInput && true) {
 Tests ran:
-    handleKVType effects removes number input and sets up key-value container
-    handleKVType effects creates a kv-container div and applies the class
-    createInputDropdownHandler all types invokes handlers for text, number, kv and unknown types
-  and 5 more tests!
-
-
-[Survived] ConditionalExpression
-src/inputHandlers/number.js:5:22
--     if (kvContainer && typeof kvContainer._dispose === 'function') {
-+     if (kvContainer && true) {
-Tests ran:
-    createInputDropdownHandler when select value is number handles number input setup and cleanup when dropdown value is number
-    createInputDropdownHandler all types invokes handlers for text, number, kv and unknown types
-    createInputDropdownHandler handles number then kv sequentially
-  and 1 more test!
+    createInputDropdownHandler when select value is text handles text input setup and cleanup of other input types
+    createInputDropdownHandler handles number then text sequentially
+    createInputDropdownHandler object literal mutant killer handles known select values without throwing
 
 
 [Survived] ConditionalExpression
@@ -2871,7 +2800,7 @@ Tests ran:
     createBattleshipFleetBoardElement renders a valid fleet as a <pre> element
     createBattleshipFleetBoardElement renders a vertical ship occupying multiple rows
     createBattleshipFleetBoardElement skips malformed ships and still renders valid ones
-  and 11 more tests!
+  and 10 more tests!
 
 
 [Survived] ArrayDeclaration
@@ -2966,17 +2895,6 @@ Tests ran:
     createTicTacToeBoardElement renders an empty board for invalid JSON
 
 
-[Survived] MethodExpression
-src/presenters/ticTacToeBoard.js:78:13
--       moves = data.moves.filter(Boolean);
-+       moves = data.moves;
-Tests ran:
-    createTicTacToeBoardElement ignores moves with invalid player
-    createTicTacToeBoardElement ignores moves with missing position
-    createTicTacToeBoardElement ignores moves with out-of-bounds position
-  and 15 more tests!
-
-
 [Survived] ArrayDeclaration
 src/presenters/ticTacToeBoard.js:80:13
 -       moves = [];
@@ -3012,10 +2930,10 @@ Tests ran:
   and 8 more tests!
 
 
-[Survived] MethodExpression
-src/toys/2025-03-21/italics.js:9:11
--     return !text?.trim();
-+     return !text;
+[Survived] ConditionalExpression
+src/toys/2025-03-21/italics.js:45:7
+-     if (REGEX_SPECIAL_CHARS.test(marker)) {
++     if (true) {
 Tests ran:
     italics function leaves regular text unchanged
     italics function adds <em> tags around asterisk-style italics while preserving asterisks
@@ -3023,10 +2941,10 @@ Tests ran:
   and 8 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-03-21/italics.js:45:7
--     if (REGEX_SPECIAL_CHARS.test(marker)) {
-+     if (true) {
+[Survived] MethodExpression
+src/toys/2025-03-21/italics.js:9:11
+-     return !text?.trim();
++     return !text;
 Tests ran:
     italics function leaves regular text unchanged
     italics function adds <em> tags around asterisk-style italics while preserving asterisks
@@ -3071,10 +2989,12 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-03-21/italics.js:157:7
--     if (afterText) {
-+     if (true) {
+[Survived] BlockStatement
+src/toys/2025-03-21/italics.js:151:10
+-     } else {
+-       return '';
+-     }
++     } else {}
 Tests ran:
     italics function does not add <em> tags around bold double-asterisk markdown
     italics function does not add <em> tags around bold double-underscore markdown
@@ -3082,12 +3002,10 @@ Tests ran:
   and 4 more tests!
 
 
-[Survived] BlockStatement
-src/toys/2025-03-21/italics.js:151:10
--     } else {
--       return '';
--     }
-+     } else {}
+[Survived] ConditionalExpression
+src/toys/2025-03-21/italics.js:157:7
+-     if (afterText) {
++     if (true) {
 Tests ran:
     italics function does not add <em> tags around bold double-asterisk markdown
     italics function does not add <em> tags around bold double-underscore markdown
@@ -3130,19 +3048,6 @@ Tests ran:
   and 1 more test!
 
 
-[Survived] BlockStatement
-src/toys/2025-03-26/prettyFloat.js:40:10
--     } else {
--       return null;
--     }
-+     } else {}
-Tests ran:
-    decomposeFloat handles positive powers of two
-    decomposeFloat handles small irrational approximations
-    decomposeFloat handles negative values
-  and 1 more test!
-
-
 [Survived] ConditionalExpression
 src/toys/2025-03-26/prettyFloat.js:38:7
 -     if (zeroResult) {
@@ -3166,16 +3071,16 @@ Tests ran:
 
 
 [Survived] BlockStatement
-src/toys/2025-03-26/prettyFloat.js:71:10
+src/toys/2025-03-26/prettyFloat.js:40:10
 -     } else {
 -       return null;
 -     }
 +     } else {}
 Tests ran:
-    decomposeFloat handles zero
     decomposeFloat handles positive powers of two
     decomposeFloat handles small irrational approximations
-  and 2 more tests!
+    decomposeFloat handles negative values
+  and 1 more test!
 
 
 [Survived] BlockStatement
@@ -3189,6 +3094,19 @@ Tests ran:
     decomposeFloat handles small irrational approximations
     decomposeFloat handles negative values
   and 1 more test!
+
+
+[Survived] BlockStatement
+src/toys/2025-03-26/prettyFloat.js:71:10
+-     } else {
+-       return null;
+-     }
++     } else {}
+Tests ran:
+    decomposeFloat handles zero
+    decomposeFloat handles positive powers of two
+    decomposeFloat handles small irrational approximations
+  and 2 more tests!
 
 
 [Survived] MethodExpression
@@ -3266,10 +3184,10 @@ Tests ran:
   and 30 more tests!
 
 
-[Survived] LogicalOperator
+[Survived] ConditionalExpression
 src/toys/2025-04-06/ticTacToe.js:49:10
 -     return isObject(val) && Array.isArray(val.moves);
-+     return isObject(val) || Array.isArray(val.moves);
++     return true;
 Tests ran:
     minimax early tie return is triggered
     detects win for X and returns no additional move
@@ -3277,10 +3195,10 @@ Tests ran:
   and 29 more tests!
 
 
-[Survived] ConditionalExpression
+[Survived] LogicalOperator
 src/toys/2025-04-06/ticTacToe.js:49:10
 -     return isObject(val) && Array.isArray(val.moves);
-+     return true;
++     return isObject(val) || Array.isArray(val.moves);
 Tests ran:
     minimax early tie return is triggered
     detects win for X and returns no additional move
@@ -3343,17 +3261,6 @@ Tests ran:
   and 17 more tests!
 
 
-[Survived] ConditionalExpression
-src/toys/2025-05-08/battleshipSolitaireFleet.js:112:9
--       if (!acc.valid) {return acc;}
-+       if (false) {return acc;}
-Tests ran:
-    generateFleet places a vertical ship of length 3 somewhere
-    generateFleet places a horizontal ship when only horizontal fit is possible
-    generateFleet generates a valid fleet for simple input
-  and 17 more tests!
-
-
 [Survived] BlockStatement
 src/toys/2025-05-08/battleshipSolitaireFleet.js:112:21
 -       if (!acc.valid) {return acc;}
@@ -3363,6 +3270,17 @@ Tests ran:
     generateFleet places a horizontal ship when only horizontal fit is possible
     generateFleet generates a valid fleet for simple input
   and 10 more tests!
+
+
+[Survived] ConditionalExpression
+src/toys/2025-05-08/battleshipSolitaireFleet.js:112:9
+-       if (!acc.valid) {return acc;}
++       if (false) {return acc;}
+Tests ran:
+    generateFleet places a vertical ship of length 3 somewhere
+    generateFleet places a horizontal ship when only horizontal fit is possible
+    generateFleet generates a valid fleet for simple input
+  and 17 more tests!
 
 
 [Survived] ObjectLiteral
@@ -3496,39 +3414,39 @@ Tests ran:
   and 6 more tests!
 
 
-Ran 17.99 tests per mutant on average.
+Ran 18.54 tests per mutant on average.
 -------------------------------|------------------|----------|-----------|------------|----------|----------|
                                | % Mutation score |          |           |            |          |          |
 File                           |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
 -------------------------------|--------|---------|----------|-----------|------------|----------|----------|
-All files                      |  94.59 |   94.59 |     2681 |       152 |        162 |        0 |        4 |
- browser                       |  98.72 |   98.72 |      489 |        53 |          7 |        0 |        4 |
+All files                      |  94.72 |   94.72 |     2717 |       118 |        158 |        0 |        5 |
+ browser                       |  98.91 |   98.91 |      504 |        39 |          6 |        0 |        4 |
   audio-controls.js            | 100.00 |  100.00 |       41 |         0 |          0 |        0 |        0 |
   beta.js                      | 100.00 |  100.00 |        7 |         0 |          0 |        0 |        0 |
   common.js                    | 100.00 |  100.00 |       14 |         0 |          0 |        0 |        0 |
-  data.js                      | 100.00 |  100.00 |      112 |        18 |          0 |        0 |        0 |
-  setOutput.js                 | 100.00 |  100.00 |       16 |         6 |          0 |        0 |        0 |
+  data.js                      | 100.00 |  100.00 |      115 |        15 |          0 |        0 |        0 |
+  setOutput.js                 | 100.00 |  100.00 |       21 |         1 |          0 |        0 |        0 |
   tags.js                      | 100.00 |  100.00 |       39 |         0 |          0 |        0 |        0 |
-  toys.js                      |  97.64 |   97.64 |      260 |        29 |          7 |        0 |        4 |
+  toys.js                      |  97.97 |   97.97 |      267 |        23 |          6 |        0 |        4 |
  constants                     |  20.97 |   20.97 |       13 |         0 |         49 |        0 |        0 |
   markdown.js                  |  20.97 |   20.97 |       13 |         0 |         49 |        0 |        0 |
- generator                     |  92.18 |   92.18 |      424 |        24 |         38 |        0 |        0 |
-  full-width.js                | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
-  generator.js                 |  90.95 |   90.95 |      365 |        17 |         38 |        0 |        0 |
+ generator                     |  92.56 |   92.56 |      433 |        15 |         36 |        0 |        1 |
+  full-width.js                | 100.00 |  100.00 |        1 |         1 |          0 |        0 |        0 |
+  generator.js                 |  91.39 |   91.39 |      370 |        12 |         36 |        0 |        1 |
   head.js                      | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
-  html.js                      | 100.00 |  100.00 |       53 |         7 |          0 |        0 |        0 |
+  html.js                      | 100.00 |  100.00 |       58 |         2 |          0 |        0 |        0 |
   title.js                     | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
  inputHandlers                 |  87.76 |   87.76 |       38 |         5 |          6 |        0 |        0 |
   default.js                   |  90.91 |   90.91 |       10 |         0 |          1 |        0 |        0 |
-  kv.js                        |  72.73 |   72.73 |        5 |         3 |          3 |        0 |        0 |
-  number.js                    |  90.00 |   90.00 |        9 |         0 |          1 |        0 |        0 |
-  text.js                      |  94.12 |   94.12 |       14 |         2 |          1 |        0 |        0 |
- presenters                    |  94.93 |   94.93 |      283 |        35 |         17 |        0 |        0 |
-  battleshipSolitaireClues.js  |  93.68 |   93.68 |       76 |        13 |          6 |        0 |        0 |
-  battleshipSolitaireFleet.js  |  98.48 |   98.48 |      119 |        11 |          2 |        0 |        0 |
+  kv.js                        |  72.73 |   72.73 |        8 |         0 |          3 |        0 |        0 |
+  number.js                    | 100.00 |  100.00 |        8 |         2 |          0 |        0 |        0 |
+  text.js                      |  88.24 |   88.24 |       12 |         3 |          2 |        0 |        0 |
+ presenters                    |  95.22 |   95.22 |      295 |        24 |         16 |        0 |        0 |
+  battleshipSolitaireClues.js  |  93.68 |   93.68 |       82 |         7 |          6 |        0 |        0 |
+  battleshipSolitaireFleet.js  |  98.48 |   98.48 |      120 |        10 |          2 |        0 |        0 |
   paragraph.js                 | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
-  pre.js                       | 100.00 |  100.00 |       29 |         7 |          0 |        0 |        0 |
-  ticTacToeBoard.js            |  87.14 |   87.14 |       57 |         4 |          9 |        0 |        0 |
+  pre.js                       | 100.00 |  100.00 |       36 |         0 |          0 |        0 |        0 |
+  ticTacToeBoard.js            |  88.57 |   88.57 |       55 |         7 |          8 |        0 |        0 |
  toys                          |  96.83 |   96.83 |     1338 |        35 |         45 |        0 |        0 |
   2024-10-02                   | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
    hello.js                    | 100.00 |  100.00 |        2 |         0 |          0 |        0 |        0 |
@@ -3570,4 +3488,4 @@ All files                      |  94.59 |   94.59 |     2681 |       152 |      
   stringUtils.js               | 100.00 |  100.00 |       22 |         0 |          0 |        0 |        0 |
   validation.js                | 100.00 |  100.00 |       37 |         0 |          0 |        0 |        0 |
 -------------------------------|--------|---------|----------|-----------|------------|----------|----------|
-[32m11:46:18 (31585) INFO MutationTestExecutor[39m Done in 33 minutes 26 seconds.
+[32m12:17:54 (59768) INFO MutationTestExecutor[39m Done in 31 minutes 12 seconds.
