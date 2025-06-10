@@ -227,5 +227,21 @@ export function styles() {
   .release-beta {
     display: none;
   }
+
+  .dendrite-form > div {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5em;
+  }
+
+  .dendrite-form label {
+    margin-bottom: 0.25em;
+  }
+
+  .dendrite-form input {
+    display: block;
+    width: 100%;
+    margin: 0;
+  }
 `;
 }
