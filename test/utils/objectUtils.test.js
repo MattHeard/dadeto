@@ -1,17 +1,22 @@
 import { describe, test, expect } from '@jest/globals';
 import { pick, mapValues } from '../../src/utils/objectUtils.js';
 
+describe.each([
+  ['pick', obj => pick(obj, ['a'])],
+  ['mapValues', obj => mapValues(obj, v => v)],
+])('%s', (name, fn) => {
+  test('returns empty object if source is not an object', () => {
+    expect(fn(null)).toEqual({});
+    expect(fn(undefined)).toEqual({});
+    expect(fn('test')).toEqual({});
+    expect(fn(123)).toEqual({});
+  });
+});
+
 describe('pick', () => {
   test('picks specified properties from an object', () => {
     const obj = { a: 1, b: 2, c: 3 };
     expect(pick(obj, ['a', 'c'])).toEqual({ a: 1, c: 3 });
-  });
-
-  test('returns empty object if source is not an object', () => {
-    expect(pick(null, ['a'])).toEqual({});
-    expect(pick(undefined, ['a'])).toEqual({});
-    expect(pick('test', ['a'])).toEqual({});
-    expect(pick(123, ['a'])).toEqual({});
   });
 
   test('ignores non-existent properties', () => {
@@ -43,13 +48,6 @@ describe('mapValues', () => {
     const obj = { a: 1, b: 2 };
     const result = mapValues(obj, (value, key) => `${key}_${value}`);
     expect(result).toEqual({ a: 'a_1', b: 'b_2' });
-  });
-
-  test('returns empty object if source is not an object', () => {
-    expect(mapValues(null, v => v)).toEqual({});
-    expect(mapValues(undefined, v => v)).toEqual({});
-    expect(mapValues('test', v => v)).toEqual({});
-    expect(mapValues(123, v => v)).toEqual({});
   });
 
   test('handles empty objects', () => {

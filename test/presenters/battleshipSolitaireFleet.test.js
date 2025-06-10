@@ -135,23 +135,37 @@ describe('createBattleshipFleetBoardElement', () => {
     expect(lines[2].replace(/ /g, '')).toBe('···');
   });
 
-  test('skips ships with non-number length', () => {
-    const fleet = {
-      width: 3,
-      height: 3,
-      ships: [
+  test.each([
+    [
+      'first',
+      [
         { start: { x: 0, y: 0 }, length: '2', direction: 'H' },
         { start: { x: 1, y: 1 }, length: 2, direction: 'V' },
       ],
-    };
-    const input = JSON.stringify(fleet);
-    const el = createBattleshipFleetBoardElement(input, dom);
-    expect(el.tag).toBe('pre');
-    const lines = el.text.trim().split('\n');
-    expect(lines[0].replace(/ /g, '')).toBe('···');
-    expect(lines[1].replace(/ /g, '')).toBe('·#·');
-    expect(lines[2].replace(/ /g, '')).toBe('·#·');
-  });
+      ['···', '·#·', '·#·'],
+    ],
+    [
+      'second',
+      [
+        { start: { x: 0, y: 0 }, length: 2, direction: 'H' },
+        { start: { x: 1, y: 1 }, length: '2', direction: 'H' },
+      ],
+      ['##·', '···', '···'],
+    ],
+  ])(
+    'skips ships with non-number length (%s invalid)',
+    (_, ships, expected) => {
+      const fleet = { width: 3, height: 3, ships };
+      const input = JSON.stringify(fleet);
+      const el = createBattleshipFleetBoardElement(input, dom);
+      expect(el.tag).toBe('pre');
+      const lines = el.text
+        .trim()
+        .split('\n')
+        .map(l => l.replace(/ /g, ''));
+      expect(lines).toEqual(expected);
+    }
+  );
 
   test('skips ships missing the start property', () => {
     const fleet = {
@@ -222,24 +236,6 @@ describe('createBattleshipFleetBoardElement', () => {
       ships: [
         { start: { x: 0, y: 0 }, length: 2, direction: 'H' },
         { start: { x: 1, y: 1 }, length: 2, direction: 'X' },
-      ],
-    };
-    const input = JSON.stringify(fleet);
-    const el = createBattleshipFleetBoardElement(input, dom);
-    expect(el.tag).toBe('pre');
-    const lines = el.text.trim().split('\n');
-    expect(lines[0].replace(/ /g, '')).toBe('##·');
-    expect(lines[1].replace(/ /g, '')).toBe('···');
-    expect(lines[2].replace(/ /g, '')).toBe('···');
-  });
-
-  test('skips ships with non-number length', () => {
-    const fleet = {
-      width: 3,
-      height: 3,
-      ships: [
-        { start: { x: 0, y: 0 }, length: 2, direction: 'H' },
-        { start: { x: 1, y: 1 }, length: '2', direction: 'H' },
       ],
     };
     const input = JSON.stringify(fleet);
