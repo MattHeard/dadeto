@@ -72,4 +72,38 @@ describe('dendriteStoryHandler', () => {
     expect(existing._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith({}, existing);
   });
+
+  test('removes number and kv inputs', () => {
+    const numberInput = { _dispose: jest.fn() };
+    const kvContainer = { _dispose: jest.fn() };
+    const querySelector = jest.fn((container, selector) => {
+      if (selector === 'input[type="number"]') {return numberInput;}
+      if (selector === '.kv-container') {return kvContainer;}
+      return null;
+    });
+    const dom = {
+      hide: jest.fn(),
+      disable: jest.fn(),
+      querySelector,
+      removeChild: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setClassName: jest.fn(),
+      getNextSibling: jest.fn(() => ({})),
+      insertBefore: jest.fn(),
+      setType: jest.fn(),
+      setPlaceholder: jest.fn(),
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      appendChild: jest.fn(),
+      getValue: jest.fn(() => '{}'),
+      setValue: jest.fn(),
+    };
+
+    dendriteStoryHandler(dom, {}, {});
+    expect(numberInput._dispose).toHaveBeenCalled();
+    expect(dom.removeChild).toHaveBeenCalledWith({}, numberInput);
+    expect(kvContainer._dispose).toHaveBeenCalled();
+    expect(dom.removeChild).toHaveBeenCalledWith({}, kvContainer);
+  });
 });
