@@ -21,6 +21,7 @@ describe('createRemoveValueListener additional', () => {
     const disposers = [];
 
     const el = createValueElement(dom, '', keyEl, textInput, rows, sync, disposers);
+    expect(el).toBeDefined();
     expect(disposers).toHaveLength(1);
     const dispose = disposers[0];
     expect(typeof dispose).toBe('function');
