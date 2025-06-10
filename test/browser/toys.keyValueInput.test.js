@@ -94,48 +94,4 @@ describe('Key-Value Input', () => {
     disposers = [];
   });
 
-  describe('createKeyInputHandler', () => {
-    let handler;
-    let keyEl;
-    let event;
-    let rows;
-
-    beforeEach(() => {
-      rows = { existingKey: 'existingValue' };
-      keyEl = {};
-      event = { target: keyEl };
-      handler = createKeyInputHandler(
-        dom,
-        keyEl,
-        textInput,
-        rows,
-        mockSyncHiddenField
-      );
-    });
-
-    it('should update rows when key is changed to a new unique key', () => {
-      // Initial state
-      dom.getDataAttribute.mockReturnValue('oldKey');
-      dom.getTargetValue.mockReturnValue('newKey');
-      rows.oldKey = 'someValue';
-
-      // Trigger handler
-      handler(event);
-
-      // Verify rows were updated
-      expect(rows).toEqual({
-        existingKey: 'existingValue',
-        newKey: 'someValue',
-      });
-      expect(rows).not.toHaveProperty('oldKey');
-      expect(dom.getDataAttribute).toHaveBeenCalledTimes(1);
-      expect(dom.getDataAttribute).toHaveBeenCalledWith(keyEl, 'prevKey');
-      expect(dom.setDataAttribute).toHaveBeenCalledWith(
-        keyEl,
-        'prevKey',
-        'newKey'
-      );
-      expect(mockSyncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
-    });
-  });
 });

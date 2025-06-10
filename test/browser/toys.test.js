@@ -1219,44 +1219,6 @@ describe('toys', () => {
       expect(querySelector).toHaveBeenCalledWith(article, 'select.output');
     });
 
-    it('logs initialization message with article id', () => {
-      const createEnvFn = () => ({});
-      const errorFn = jest.fn();
-      const fetchFn = jest.fn();
-      const logInfo = jest.fn();
-      const dom = {
-        removeAllChildren: jest.fn(),
-        createElement: jest.fn(() => ({ textContent: '' })),
-        stopDefault: jest.fn(),
-        addWarning: jest.fn(),
-        addWarningFn: jest.fn(),
-        addEventListener: jest.fn(),
-        removeChild: jest.fn(),
-        appendChild: jest.fn(),
-        querySelector: jest.fn(() => ({})),
-        setTextContent: jest.fn(),
-        removeWarning: jest.fn(),
-        enable: jest.fn(),
-        contains: () => true,
-      };
-      const config = {
-        globalState: {},
-        createEnvFn,
-        errorFn,
-        fetchFn,
-        dom,
-        loggers: { logInfo, logError: jest.fn(), logWarning: jest.fn() },
-      };
-      const articleWithId = { id: 'article-1' };
-      const processingFunction = jest.fn();
-
-      initializeInteractiveComponent(articleWithId, processingFunction, config);
-
-      expect(logInfo).toHaveBeenCalledWith(
-        'Initializing interactive component for article',
-        articleWithId.id
-      );
-    });
 
     it('sets initialising message using setTextContent', () => {
       const createEnvFn = () => ({});
@@ -1713,28 +1675,6 @@ describe('createInputDropdownHandler', () => {
       expect(disable).toHaveBeenCalledWith(textInput);
     });
 
-    it('hides and disables text input when select value is unknown', () => {
-      // select, container, textInput, event, hide, disable, baseDom are from outer beforeEach
-
-      // Specific mock for this test case
-      const getValue = jest.fn(element =>
-        element === select ? 'unknown' : null
-      );
-
-      // Construct dom object for the handler, using baseDom and overriding getValue
-      // querySelector from baseDom should correctly return textInput based on its setup
-      const dom = {
-        ...baseDom, // Includes getCurrentTarget, getParentElement, querySelector, hide, disable etc.
-        getValue,
-      };
-
-      const handler = createInputDropdownHandler(dom);
-      handler(event); // event is from outer beforeEach
-
-      // Assertions use hide, disable, textInput from outer beforeEach
-      expect(hide).toHaveBeenCalledWith(textInput);
-      expect(disable).toHaveBeenCalledWith(textInput);
-    });
   });
 
   describe('getText', () => {

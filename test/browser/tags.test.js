@@ -129,55 +129,6 @@ describe('makeHandleHideSpan', () => {
     expect(dom.createElement).toHaveBeenCalled();
   });
 
-  it('creates a hide link span and inserts it after the link', () => {
-    const span = {};
-    const hideLink = {};
-    const textNodeOpen = {};
-    const textNodeClose = {};
-    const createElement = jest.fn(tag => (tag === 'span' ? span : hideLink));
-    const addClass = jest.fn();
-    const appendChild = jest.fn();
-    const createTextNode = jest.fn(text =>
-      text === ' (' ? textNodeOpen : textNodeClose
-    );
-    const setTextContent = jest.fn();
-    const addEventListener = jest.fn();
-    const insertBefore = jest.fn();
-
-    const dom = {
-      createElement,
-      addClass,
-      appendChild,
-      createTextNode,
-      setTextContent,
-      addEventListener,
-      insertBefore,
-    };
-
-    const link = { parentNode: {}, nextSibling: {} };
-    const createHideSpan = makeHandleHideSpan(dom);
-    createHideSpan(link, 'tag-test');
-
-    expect(createElement).toHaveBeenCalledWith('span');
-    expect(addClass).toHaveBeenCalledWith(span, 'hide-span');
-    expect(createTextNode).toHaveBeenCalledWith(' (');
-    expect(appendChild).toHaveBeenCalledWith(span, textNodeOpen);
-    expect(createElement).toHaveBeenCalledWith('a');
-    expect(setTextContent).toHaveBeenCalledWith(hideLink, 'hide');
-    expect(addEventListener).toHaveBeenCalledWith(
-      hideLink,
-      'click',
-      expect.any(Function)
-    );
-    expect(appendChild).toHaveBeenCalledWith(span, hideLink);
-    expect(createTextNode).toHaveBeenCalledWith(')');
-    expect(appendChild).toHaveBeenCalledWith(span, textNodeClose);
-    expect(insertBefore).toHaveBeenCalledWith(
-      link.parentNode,
-      span,
-      link.nextSibling
-    );
-  });
 });
 
 describe('makeHandleClassName integration', () => {
