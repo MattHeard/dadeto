@@ -486,14 +486,6 @@ test('forces minimax to run from O perspective', () => {
   expect(output.moves[1].player).toBe('O');
 });
 
-test('handles empty board that reaches nextPlayer assignment', () => {
-  const env = new Map();
-  const input = { moves: [] };
-  // This test is duplicated to ensure nextPlayer assignment is executed
-  const result = ticTacToeMove(JSON.stringify(input), env);
-  const output = JSON.parse(result);
-  expect(output.moves[0].player).toBe('X');
-});
 
 test('returns fallback when minimax fails to assign bestMove', () => {
   const env = new Map();
