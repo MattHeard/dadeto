@@ -5,48 +5,30 @@ const header = '<body>';
 const footer = '</body>';
 const wrapHtml = content => ['<html>', content, '</html>'].join('');
 
+const cases = [
+  ['Example', 'https://example.com', 'Example'],
+  ['Exact', 'https://exact.com', 'Exact'],
+  ['Reload Test', 'https://reloaded.com', 'R'],
+  ['Single', 'https://one.com', 'One'],
+];
+
 describe('DEFAULT_RELATED_LINK_ATTRS usage', () => {
-  test('generated links contain target and rel attributes', () => {
+  test.each(cases)('anchors contain default attributes for %s', (title, url, linkTitle) => {
     const blog = {
       posts: [
         {
-          key: 'LINK1',
-          title: 'Example',
+          key: title.toUpperCase().replace(/ /g, ''),
+          title,
           publicationDate: '2024-01-01',
           content: ['Test'],
-          relatedLinks: [
-            { url: 'https://example.com', type: 'article', title: 'Example' },
-          ],
-        },
-      ],
-    };
-    const html = generateBlog({ blog, header, footer }, wrapHtml);
-    expect(html).toContain('target="_blank" rel="noopener"');
-    expect(html).toContain(
-      '<a href="https://example.com" target="_blank" rel="noopener">"Example"</a>'
-    );
-  });
-
-  test('only one set of default attributes appears', () => {
-    const blog = {
-      posts: [
-        {
-          key: 'LINK2',
-          title: 'Example2',
-          publicationDate: '2024-01-02',
-          content: ['Test2'],
-          relatedLinks: [
-            {
-              url: 'https://example.com/2',
-              type: 'article',
-              title: 'Example2',
-            },
-          ],
+          relatedLinks: [{ url, type: 'article', title: linkTitle }],
         },
       ],
     };
 
     const html = generateBlog({ blog, header, footer }, wrapHtml);
+    const expected = `<a href="${url}" target="_blank" rel="noopener">"${linkTitle}"</a>`;
+    expect(html).toContain(expected);
     const matches = html.match(/target="_blank" rel="noopener"/g) || [];
     expect(matches).toHaveLength(1);
   });
