@@ -157,10 +157,6 @@
   11:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
   22:39  warning  Ternary operator used                                       no-ternary
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js
-  137:43  warning  Ternary operator used  no-ternary
-  141:7   warning  Ternary operator used  no-ternary
-
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.createKeyValueRow.test.js
    86:11  warning  'rowElement' is assigned a value but never used  no-unused-vars
   199:9   warning  'inputHandler' is defined but never used         no-unused-vars
@@ -182,15 +178,16 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.initializeInteractiveComponent.elements.test.js
   13:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.initializeInteractiveComponent.logInfo.dynamic.test.js
-  12:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.initializeInteractiveComponent.logInfo.test.js
   9:35  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.keyValueInput.test.js
+   3:30  warning  'createKeyInputHandler' is assigned a value but never used    no-unused-vars
    3:53  warning  'createValueInputHandler' is assigned a value but never used  no-unused-vars
   45:7   warning  'container' is assigned a value but never used                no-unused-vars
+  46:7   warning  'textInput' is assigned a value but never used                no-unused-vars
+  47:7   warning  'dom' is assigned a value but never used                      no-unused-vars
+  48:7   warning  'mockSyncHiddenField' is assigned a value but never used      no-unused-vars
   49:7   warning  'mockRender' is assigned a value but never used               no-unused-vars
   50:7   warning  'disposers' is assigned a value but never used                no-unused-vars
 
@@ -207,18 +204,17 @@
     15:3   warning  'createUpdateTextInputValue' is defined but never used      no-unused-vars
     18:13  warning  'toys' is defined but never used                            no-unused-vars
    892:40  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1278:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1336:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1515:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  1516:7   warning  Ternary operator used                                       no-ternary
-  1540:40  warning  Ternary operator used                                       no-ternary
-  1541:40  warning  Ternary operator used                                       no-ternary
+  1240:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1298:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1477:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  1478:7   warning  Ternary operator used                                       no-ternary
+  1502:40  warning  Ternary operator used                                       no-ternary
+  1503:40  warning  Ternary operator used                                       no-ternary
+  1540:9   warning  Ternary operator used                                       no-ternary
   1578:9   warning  Ternary operator used                                       no-ternary
-  1616:9   warning  Ternary operator used                                       no-ternary
-  1651:9   warning  Ternary operator used                                       no-ternary
-  1673:39  warning  Ternary operator used                                       no-ternary
-  1702:9   warning  Ternary operator used                                       no-ternary
-  1721:9   warning  Ternary operator used                                       no-ternary
+  1613:9   warning  Ternary operator used                                       no-ternary
+  1635:39  warning  Ternary operator used                                       no-ternary
+  1664:9   warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/generator/dateFormatOptions.runtime.test.js
   1:34  warning  'jest' is defined but never used  no-unused-vars
