@@ -43,15 +43,6 @@ export const parseExistingRows = (dom, inputElement) => {
 };
 
 /**
- * Calls the _dispose function on an element
- * @param {HTMLElement} element - The element with a _dispose function
- * @returns {void}
- */
-const disposeListeners = element => {
-  element._dispose();
-};
-
-/**
  * Clears all disposer functions and empties the array
  * @param {Array<Function>} disposersArray - The array of disposer functions to clear
  */
@@ -96,37 +87,6 @@ const createBaseNumberInput = dom => {
 };
 
 /**
- * Removes a number input element if it exists in the container
- * @param {HTMLElement} containerElement - The container element to search in
- * @param {Object} dom - The DOM utilities object
- * @returns {void}
- */
-const maybeRemoveNumber = (containerElement, dom) => {
-  const numberInput = dom.querySelector(
-    containerElement,
-    'input[type="number"]'
-  );
-  if (numberInput) {
-    disposeListeners(numberInput);
-    dom.removeChild(containerElement, numberInput);
-  }
-};
-
-/**
- * Removes a key-value input container if it exists
- * @param {HTMLElement} container - The container element to search in
- * @param {Object} dom - The DOM utilities object
- * @returns {void}
- */
-const maybeRemoveKV = (container, dom) => {
-  const kvContainer = dom.querySelector(container, '.kv-container');
-  if (kvContainer) {
-    disposeListeners(kvContainer);
-    dom.removeChild(container, kvContainer);
-  }
-};
-
-/**
  * Creates a handler for input dropdown changes
  * @param {Function} onChange - The change handler function
  * @param {Object} dom - The DOM utilities object
@@ -136,53 +96,18 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
   dom.addEventListener(dropdown, 'change', onChange);
 };
 
-const inputHandlers = {
-  text: (dom, container, textInput) => {
-    dom.reveal(textInput);
-    dom.enable(textInput);
-  },
-  default: (dom, _container, textInput) => {
-    dom.hide(textInput);
-    dom.disable(textInput);
-  },
-};
+import { textHandler } from '../inputHandlers/text.js';
+import { numberHandler } from '../inputHandlers/number.js';
+import { kvHandler, handleKVType } from '../inputHandlers/kv.js';
+import { defaultHandler } from '../inputHandlers/default.js';
 
-/**
- * Handles number type selection by removing any KV inputs and ensuring number input is present
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLElement} container - The container element
- * @param {HTMLInputElement} textInput - The text input element
- */
-const handleNumberType = (dom, container, textInput) => {
-  maybeRemoveKV(container, dom);
-  ensureNumberInput(container, textInput, dom);
-};
+export { handleKVType } from '../inputHandlers/kv.js';
 
-/**
- * Handles key-value type selection by removing any number inputs and ensuring KV input is present
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLElement} container - The container element
- * @param {HTMLInputElement} textInput - The text input element
- */
-export const handleKVType = (dom, container, textInput) => {
-  maybeRemoveNumber(container, dom);
-  ensureKeyValueInput(container, textInput, dom);
-};
-
-/**
- * Default handler that removes both number and KV inputs
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLElement} container - The container element
- */
-const handleDefaultType = (dom, container) => {
-  maybeRemoveNumber(container, dom);
-  maybeRemoveKV(container, dom);
-};
-
-const typeHandlers = {
-  number: handleNumberType,
-  kv: handleKVType,
-  default: handleDefaultType,
+const inputHandlersMap = {
+  text: textHandler,
+  number: numberHandler,
+  kv: kvHandler,
+  default: defaultHandler,
 };
 
 export const createInputDropdownHandler = dom => {
@@ -192,13 +117,9 @@ export const createInputDropdownHandler = dom => {
     const textInput = dom.querySelector(container, 'input[type="text"]');
     const selectValue = dom.getValue(select);
 
-    // Handle input visibility
-    const handleInput = inputHandlers[selectValue] || inputHandlers.default;
+    const handleInput =
+      inputHandlersMap[selectValue] || inputHandlersMap.default;
     handleInput(dom, container, textInput);
-
-    // Handle type-specific behavior
-    const handleType = typeHandlers[selectValue] || typeHandlers.default;
-    handleType(dom, container, textInput);
   };
 };
 
