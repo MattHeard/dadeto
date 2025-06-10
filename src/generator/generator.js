@@ -31,7 +31,6 @@ const CLASS = {
   FOOTER: 'footer',
   WARNING: 'warning',
   MEDIA: 'media',
-  FULL_WIDTH: 'full-width',
 };
 
 const BLOCKQUOTE_CORNERS = `<div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div>`;
