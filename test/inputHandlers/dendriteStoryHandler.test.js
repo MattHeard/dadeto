@@ -35,6 +35,7 @@ describe('dendriteStoryHandler', () => {
     };
 
     const form = dendriteStoryHandler(dom, container, textInput);
+    expect(dom.querySelector).toHaveBeenCalledWith(container, '.dendrite-form');
     expect(dom.hide).toHaveBeenCalledWith(textInput);
     expect(dom.disable).toHaveBeenCalledWith(textInput);
     expect(dom.createElement).toHaveBeenCalledTimes(19);
