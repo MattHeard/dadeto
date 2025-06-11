@@ -125,18 +125,5 @@ const initializeDropdowns = createDropdownInitializer(
 window.addEventListener('DOMContentLoaded', () => {
   initializeDropdowns();
 
-  // Get all dropdowns and add event listeners with the dom parameter
-  const outputDropdowns = Array.from(
-    document.querySelectorAll('article.entry .value > select.output')
-  );
-  outputDropdowns.forEach(
-    createAddDropdownListener(onOutputDropdownChange, dom)
-  );
-
-  const inputDropdowns = Array.from(
-    document.querySelectorAll('article.entry .value > select.input')
-  );
-  inputDropdowns.forEach(createAddDropdownListener(onInputDropdownChange, dom));
-
   revealBetaArticles(dom);
 });
