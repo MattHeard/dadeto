@@ -6,7 +6,8 @@
   168:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  23:1  warning  './document.js' import is duplicated  no-duplicate-imports
+  12:3  warning  'createAddDropdownListener' is defined but never used  no-unused-vars
+  23:1  warning  './document.js' import is duplicated                   no-duplicate-imports
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
     14:45  warning  Arrow function has a complexity of 7. Maximum allowed is 2                            complexity
@@ -26,6 +27,13 @@
    779:71  warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
   1058:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
   1093:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
+  890:1   warning  Function 'buildToyInputDropdown' has a complexity of 3. Maximum allowed is 2  complexity
+  892:5   warning  Ternary operator used                                                         no-ternary
+  894:22  warning  Ternary operator used                                                         no-ternary
+  917:1   warning  Function 'generateToyUISection' has a complexity of 4. Maximum allowed is 2   complexity
+  922:5   warning  Ternary operator used                                                         no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/src/inputHandlers/default.js
   1:1  warning  Function 'dispose' has a complexity of 3. Maximum allowed is 2  complexity
@@ -97,11 +105,12 @@
   14:7  warning  Ternary operator used  no-ternary
   55:7  warning  Ternary operator used  no-ternary
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.defaultHandler2.test.js
-  11:35  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.defaultOrder.test.js
   14:7  warning  Ternary operator used  no-ternary
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.dendriteStory.test.js
+  19:30  warning  Arrow function has a complexity of 9. Maximum allowed is 2  complexity
+  29:36  warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.kv.test.js
   15:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
@@ -169,6 +178,9 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/tags.test.js
   122:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
   133:39  warning  Ternary operator used                                       no-ternary
+
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.createDropdownInitializer.input.test.js
+  11:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.createKeyValueRow.test.js
    86:11  warning  'rowElement' is assigned a value but never used  no-unused-vars
@@ -244,4 +256,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/utils/validation.test.js
   4:3  warning  'isValidString' is defined but never used  no-unused-vars
 
-✖ 125 problems (0 errors, 125 warnings)
+✖ 133 problems (0 errors, 133 warnings)
