@@ -309,7 +309,14 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
  * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
  */
 function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
-  const { dom } = moduleConfig;
+  const { dom, loggers } = moduleConfig;
+  const logInfo = loggers && loggers.logInfo ? loggers.logInfo : () => {};
+  logInfo(
+    'Starting module import for article',
+    moduleInfo.article.id,
+    'module',
+    moduleInfo.modulePath
+  );
   importModuleForIntersection(moduleInfo, moduleConfig);
   dom.disconnectObserver(observer);
 }
@@ -344,9 +351,16 @@ export function makeModuleConfig(env, dom) {
 export function makeObserverCallback(moduleInfo, env, dom) {
   const moduleConfig = makeModuleConfig(env, dom);
   const handleEntryFactory = getEntryHandler(moduleInfo, moduleConfig);
+  const logInfo =
+    moduleConfig.loggers && moduleConfig.loggers.logInfo
+      ? moduleConfig.loggers.logInfo
+      : () => {};
   return (entries, observer) => {
     const handleEntry = handleEntryFactory(observer);
-    entries.forEach(handleEntry);
+    entries.forEach(entry => {
+      logInfo('Observer callback for article', moduleInfo.article.id);
+      handleEntry(entry);
+    });
   };
 }
 
