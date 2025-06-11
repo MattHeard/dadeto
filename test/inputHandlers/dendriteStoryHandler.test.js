@@ -12,8 +12,8 @@ describe('dendriteStoryHandler', () => {
       disable: jest.fn(),
       querySelector: jest.fn(() => null),
       removeChild: jest.fn(),
-      createElement: jest.fn(() => {
-        const el = { id: createCount++ };
+      createElement: jest.fn(tag => {
+        const el = { id: createCount++, tag };
         elements.push(el);
         return el;
       }),
@@ -38,6 +38,14 @@ describe('dendriteStoryHandler', () => {
     expect(dom.hide).toHaveBeenCalledWith(textInput);
     expect(dom.disable).toHaveBeenCalledWith(textInput);
     expect(dom.createElement).toHaveBeenCalledTimes(19);
+    const textareaCalls = dom.createElement.mock.calls.filter(
+      ([tag]) => tag === 'textarea'
+    ).length;
+    expect(textareaCalls).toBe(1);
+    expect(dom.setType).toHaveBeenCalledTimes(5);
+    dom.setType.mock.calls.forEach(([el]) => {
+      expect(el.tag).toBe('input');
+    });
     const firstInput = elements[3];
     expect(firstInput.value).toBe('Existing');
     firstInput.value = 'Hello';
