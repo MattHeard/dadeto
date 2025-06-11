@@ -73,6 +73,31 @@ describe('dendriteStoryHandler', () => {
     expect(dom.removeChild).toHaveBeenCalledWith({}, existing);
   });
 
+  test('queries for an existing dendrite form', () => {
+    const dom = {
+      hide: jest.fn(),
+      disable: jest.fn(),
+      querySelector: jest.fn(() => null),
+      removeChild: jest.fn(),
+      createElement: jest.fn(() => ({})),
+      setClassName: jest.fn(),
+      getNextSibling: jest.fn(() => ({})),
+      insertBefore: jest.fn(),
+      setType: jest.fn(),
+      setPlaceholder: jest.fn(),
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      appendChild: jest.fn(),
+      getValue: jest.fn(() => '{}'),
+      setValue: jest.fn(),
+    };
+
+    const container = {};
+    dendriteStoryHandler(dom, container, {});
+    expect(dom.querySelector).toHaveBeenCalledWith(container, '.dendrite-form');
+  });
+
   test('removes number and kv inputs', () => {
     const numberInput = { _dispose: jest.fn() };
     const kvContainer = { _dispose: jest.fn() };
