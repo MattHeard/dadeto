@@ -1,6 +1,6 @@
 import { ensureKeyValueInput } from '../browser/toys.js';
 
-function maybeRemoveNumber(container, dom) {
+export function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
   if (numberInput && typeof numberInput._dispose === 'function') {
     numberInput._dispose();
@@ -8,7 +8,7 @@ function maybeRemoveNumber(container, dom) {
   }
 }
 
-function maybeRemoveDendrite(container, dom) {
+export function maybeRemoveDendrite(container, dom) {
   const dendriteForm = dom.querySelector(container, '.dendrite-form');
   if (dendriteForm && typeof dendriteForm._dispose === 'function') {
     dendriteForm._dispose();
