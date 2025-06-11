@@ -77,8 +77,12 @@ describe('dendriteStoryHandler', () => {
     const numberInput = { _dispose: jest.fn() };
     const kvContainer = { _dispose: jest.fn() };
     const querySelector = jest.fn((container, selector) => {
-      if (selector === 'input[type="number"]') {return numberInput;}
-      if (selector === '.kv-container') {return kvContainer;}
+      if (selector === 'input[type="number"]') {
+        return numberInput;
+      }
+      if (selector === '.kv-container') {
+        return kvContainer;
+      }
       return null;
     });
     const dom = {
@@ -106,4 +110,55 @@ describe('dendriteStoryHandler', () => {
     expect(kvContainer._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith({}, kvContainer);
   });
+});
+
+test('removes existing form without dispose method', () => {
+  const existing = {};
+  const dom = {
+    hide: jest.fn(),
+    disable: jest.fn(),
+    querySelector: jest.fn(() => existing),
+    removeChild: jest.fn(),
+    createElement: jest.fn(() => ({})),
+    setClassName: jest.fn(),
+    getNextSibling: jest.fn(() => ({})),
+    insertBefore: jest.fn(),
+    setType: jest.fn(),
+    setPlaceholder: jest.fn(),
+    setTextContent: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    appendChild: jest.fn(),
+    getValue: jest.fn(el => el.value),
+    setValue: jest.fn(),
+  };
+
+  dendriteStoryHandler(dom, {}, {});
+  expect(dom.removeChild).toHaveBeenCalledWith({}, existing);
+});
+
+test('handles invalid JSON input', () => {
+  const textInput = { value: '{invalid}' };
+  const dom = {
+    hide: jest.fn(),
+    disable: jest.fn(),
+    querySelector: jest.fn(() => null),
+    removeChild: jest.fn(),
+    createElement: jest.fn(() => ({})),
+    setClassName: jest.fn(),
+    getNextSibling: jest.fn(() => ({})),
+    insertBefore: jest.fn(),
+    setType: jest.fn(),
+    setPlaceholder: jest.fn(),
+    setTextContent: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    appendChild: jest.fn(),
+    getValue: jest.fn(el => el.value),
+    setValue: jest.fn(),
+  };
+
+  const form = dendriteStoryHandler(dom, {}, textInput);
+  expect(form).toBeDefined();
+  expect(dom.setValue).toHaveBeenCalledWith(textInput, '{}');
 });
