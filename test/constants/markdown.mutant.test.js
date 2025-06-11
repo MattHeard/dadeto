@@ -26,6 +26,28 @@ describe('markdown constants mutants', () => {
     });
   });
 
+  test('MARKDOWN_MARKERS object has expected values', () => {
+    const MARKDOWN_MARKERS = markdownMarkers();
+    expect(MARKDOWN_MARKERS).toEqual({
+      ASTERISK: '*',
+      UNDERSCORE: '_',
+      BACKTICK: '`',
+      TILDE: '~',
+      DASH: '-',
+      EQUAL: '=',
+      HASH: '#',
+      GREATER_THAN: '>',
+      PIPE: '|',
+      BACKSLASH: '\\',
+      SLASH: '/',
+      EXCLAMATION: '!',
+      BRACKET_OPEN: '[',
+      BRACKET_CLOSE: ']',
+      PAREN_OPEN: '(',
+      PAREN_CLOSE: ')',
+    });
+  });
+
   test('constant objects are frozen', () => {
     const MARKDOWN_MARKERS = markdownMarkers();
     const HTML_TAGS = htmlTags();
