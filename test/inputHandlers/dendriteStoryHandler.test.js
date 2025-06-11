@@ -38,6 +38,7 @@ describe('dendriteStoryHandler', () => {
     expect(dom.querySelector).toHaveBeenCalledWith(container, '.dendrite-form');
     expect(dom.hide).toHaveBeenCalledWith(textInput);
     expect(dom.disable).toHaveBeenCalledWith(textInput);
+    expect(dom.querySelector).toHaveBeenCalledWith(container, '.dendrite-form');
     expect(dom.createElement).toHaveBeenCalledTimes(19);
     const textareaCalls = dom.createElement.mock.calls.filter(
       ([tag]) => tag === 'textarea'
