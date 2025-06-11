@@ -81,4 +81,15 @@ describe('kv input handlers', () => {
 
     expect(dom.removeChild).not.toHaveBeenCalled();
   });
+
+  test('maybeRemoveDendrite queries for the dendrite form selector', () => {
+    const dom = {
+      querySelector: jest.fn(() => null),
+      removeChild: jest.fn(),
+    };
+
+    maybeRemoveDendrite({}, dom);
+
+    expect(dom.querySelector).toHaveBeenCalledWith({}, '.dendrite-form');
+  });
 });
