@@ -162,3 +162,40 @@ test('handles invalid JSON input', () => {
   expect(form).toBeDefined();
   expect(dom.setValue).toHaveBeenCalledWith(textInput, '{}');
 });
+
+test('sets expected placeholders and label text', () => {
+  const dom = {
+    hide: jest.fn(),
+    disable: jest.fn(),
+    querySelector: jest.fn(() => null),
+    removeChild: jest.fn(),
+    createElement: jest.fn(() => ({})),
+    setClassName: jest.fn(),
+    getNextSibling: jest.fn(() => ({})),
+    insertBefore: jest.fn(),
+    setType: jest.fn(),
+    setPlaceholder: jest.fn(),
+    setTextContent: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    appendChild: jest.fn(),
+    getValue: jest.fn(() => '{}'),
+    setValue: jest.fn(),
+  };
+
+  dendriteStoryHandler(dom, {}, { value: '{}' });
+
+  const expected = [
+    'Title',
+    'Content',
+    'First option',
+    'Second option',
+    'Third option',
+    'Fourth option',
+  ];
+
+  const placeholders = dom.setPlaceholder.mock.calls.map(call => call[1]);
+  const labels = dom.setTextContent.mock.calls.map(call => call[1]);
+  expect(placeholders).toEqual(expected);
+  expect(labels).toEqual(expected);
+});
