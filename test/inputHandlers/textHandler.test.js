@@ -45,4 +45,26 @@ describe('textHandler', () => {
 
     expect(dom.removeChild).not.toHaveBeenCalled();
   });
+
+  test('ignores elements without dispose methods', () => {
+    const numberInput = {};
+    const kvContainer = {};
+    const dendriteForm = {};
+    const querySelector = jest.fn((_, selector) => {
+      if (selector === 'input[type="number"]') {return numberInput;}
+      if (selector === '.kv-container') {return kvContainer;}
+      if (selector === '.dendrite-form') {return dendriteForm;}
+      return null;
+    });
+    const dom = {
+      reveal: jest.fn(),
+      enable: jest.fn(),
+      querySelector,
+      removeChild: jest.fn(),
+    };
+
+    textHandler(dom, {}, {});
+
+    expect(dom.removeChild).not.toHaveBeenCalled();
+  });
 });

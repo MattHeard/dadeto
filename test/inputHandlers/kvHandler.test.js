@@ -57,4 +57,28 @@ describe('kv input handlers', () => {
 
     expect(dom.removeChild).not.toHaveBeenCalled();
   });
+
+  test('maybeRemoveNumber ignores element without dispose', () => {
+    const numberInput = {};
+    const dom = {
+      querySelector: jest.fn(() => numberInput),
+      removeChild: jest.fn(),
+    };
+
+    maybeRemoveNumber({}, dom);
+
+    expect(dom.removeChild).not.toHaveBeenCalled();
+  });
+
+  test('maybeRemoveDendrite ignores element without dispose', () => {
+    const dendriteForm = {};
+    const dom = {
+      querySelector: jest.fn(() => dendriteForm),
+      removeChild: jest.fn(),
+    };
+
+    maybeRemoveDendrite({}, dom);
+
+    expect(dom.removeChild).not.toHaveBeenCalled();
+  });
 });
