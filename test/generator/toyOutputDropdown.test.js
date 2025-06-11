@@ -53,4 +53,24 @@ describe('toy output dropdown', () => {
     const expected = `<select class="output">${OPTIONS.join('')}</select>`;
     expect(html).toContain(expected);
   });
+
+  test('parsed dropdown options match expected pairs', () => {
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    const match = html.match(/<select class="output">([\s\S]*?)<\/select>/);
+    expect(match).not.toBeNull();
+    const optionRegex = /<option value="([^\"]+)">([^<]*)<\/option>/g;
+    const pairs = [];
+    let m;
+    while ((m = optionRegex.exec(match[1])) !== null) {
+      pairs.push([m[1], m[2]]);
+    }
+    const expectedPairs = [
+      ['text', 'text'],
+      ['pre', 'pre'],
+      ['tic-tac-toe', 'tic-tac-toe'],
+      ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
+      ['battleship-solitaire-clues-presenter', 'battleship-solitaire-clues-presenter'],
+    ];
+    expect(pairs).toEqual(expectedPairs);
+  });
 });
