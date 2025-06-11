@@ -138,7 +138,8 @@
       },
       "toy": {
         "modulePath": "/2025-05-08/battleshipSolitaireFleet.js",
-        "functionName": "generateFleet"
+        "functionName": "generateFleet",
+        "defaultInputMethod": "kv"
       },
       "tags": ["toy", "battleship", "puzzle", "generator"]
     },
@@ -181,7 +182,8 @@
       },
       "toy": {
         "modulePath": "/2025-04-06/ticTacToe.js",
-        "functionName": "ticTacToeMove"
+        "functionName": "ticTacToeMove",
+        "defaultInputMethod": "kv"
       },
       "tags": ["toy", "game", "tic-tac-toe"]
     },
@@ -242,7 +244,8 @@
       },
       "toy": {
         "modulePath": "/2025-03-29/setTemporary.js",
-        "functionName": "setTemporary"
+        "functionName": "setTemporary",
+        "defaultInputMethod": "kv"
       },
       "tags": ["toy", "data", "state"]
     },
@@ -312,7 +315,8 @@
       ],
       "toy": {
         "modulePath": "/2025-03-26/prettyFloat.js",
-        "functionName": "decomposeFloat"
+        "functionName": "decomposeFloat",
+        "defaultInputMethod": "number"
       },
       "tags": ["toy", "float", "number"]
     },
