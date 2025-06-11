@@ -15,18 +15,22 @@
     67:64  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
    101:21  warning  'handleKVType' is defined but never used                                              no-unused-vars
    184:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2           complexity
-   448:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
-   503:8   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
-   510:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-   541:8   warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
-   572:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-   614:3   warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
-   671:70  warning  Arrow function has too many parameters (5). Maximum allowed is 3                      max-params
-   695:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-   739:5   warning  Arrow function has too many parameters (8). Maximum allowed is 3                      max-params
-   779:71  warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-  1058:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-  1093:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+   311:1   warning  Function 'handleIntersectingEntry' has a complexity of 3. Maximum allowed is 2        complexity
+   313:19  warning  Ternary operator used                                                                 no-ternary
+   351:8   warning  Function 'makeObserverCallback' has a complexity of 3. Maximum allowed is 2           complexity
+   355:5   warning  Ternary operator used                                                                 no-ternary
+   462:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
+   517:8   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
+   524:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
+   555:8   warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
+   586:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+   628:3   warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
+   685:70  warning  Arrow function has too many parameters (5). Maximum allowed is 3                      max-params
+   709:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+   753:5   warning  Arrow function has too many parameters (8). Maximum allowed is 3                      max-params
+   793:71  warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+  1072:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
+  1107:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
   890:1   warning  Function 'buildToyInputDropdown' has a complexity of 3. Maximum allowed is 2  complexity
@@ -248,7 +252,7 @@
   1:34  warning  'jest' is defined but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/inputHandlers/dendriteStoryHandler.test.js
-  79:35  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  114:35  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/inputHandlers/kvHandler.test.js
   3:3  warning  'kvHandler' is defined but never used     no-unused-vars
@@ -272,4 +276,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/utils/validation.test.js
   4:3  warning  'isValidString' is defined but never used  no-unused-vars
 
-✖ 141 problems (0 errors, 141 warnings)
+✖ 145 problems (0 errors, 145 warnings)
