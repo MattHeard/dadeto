@@ -65,4 +65,34 @@ describe('TOY_UI_SECTIONS integration', () => {
     expect(html).toContain('<select class="input">');
     expect(html).not.toContain('selected');
   });
+
+  test('generateBlog input dropdown includes all input method options', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'ALLINPUTS',
+          title: 'All Inputs',
+          publicationDate: '2025-01-01',
+          content: ['text'],
+          toy: {
+            modulePath: './toys/2024-01-01/example.js',
+            functionName: 'example',
+          },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    const match = html.match(/<select class="input">([\s\S]*?)<\/select>/);
+    expect(match).not.toBeNull();
+    const dropdown = match[1];
+    const expectedOptions = [
+      'text',
+      'number',
+      'kv',
+      'dendrite-story',
+    ];
+    for (const value of expectedOptions) {
+      expect(dropdown).toContain(`<option value="${value}">${value}</option>`);
+    }
+  });
 });
