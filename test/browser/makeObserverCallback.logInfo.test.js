@@ -25,6 +25,11 @@ describe('makeObserverCallback logging', () => {
     observerCallback([entry], observer);
 
     expect(logInfo).toHaveBeenCalledWith(
+      'Observer callback for article',
+      moduleInfo.article.id
+    );
+
+    expect(logInfo).toHaveBeenCalledWith(
       'Starting module import for article',
       moduleInfo.article.id,
       'module',
