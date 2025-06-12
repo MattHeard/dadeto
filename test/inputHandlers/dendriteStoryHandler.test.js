@@ -62,7 +62,9 @@ describe('dendriteStoryHandler', () => {
     const dom = {
       hide: jest.fn(),
       disable: jest.fn(),
-      querySelector: jest.fn(() => existing),
+      querySelector: jest.fn((container, selector) => {
+        return selector === '.dendrite-form' ? existing : null;
+      }),
       removeChild: jest.fn(),
       createElement: jest.fn(() => ({})),
       setClassName: jest.fn(),
@@ -79,7 +81,7 @@ describe('dendriteStoryHandler', () => {
     };
 
     dendriteStoryHandler(dom, {}, {});
-    expect(existing._dispose).toHaveBeenCalled();
+    expect(existing._dispose).toHaveBeenCalledTimes(1);
     expect(dom.removeChild).toHaveBeenCalledWith({}, existing);
   });
 
