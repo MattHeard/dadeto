@@ -7,10 +7,18 @@ describe('initializeInteractiveComponent', () => {
     const submitButton = {};
     const outputParent = {};
     const querySelector = jest.fn((_, selector) => {
-      if (selector === 'input') {return inputElement;}
-      if (selector === 'button') {return submitButton;}
-      if (selector === 'div.output') {return outputParent;}
-      if (selector === 'select.output') {return {};}
+      if (selector === 'input') {
+        return inputElement;
+      }
+      if (selector === 'button') {
+        return submitButton;
+      }
+      if (selector === 'div.output') {
+        return outputParent;
+      }
+      if (selector === 'select.output') {
+        return {};
+      }
       return {};
     });
     const dom = {
@@ -47,9 +55,11 @@ describe('initializeInteractiveComponent', () => {
 
     const { logInfo } = config.loggers;
     const initCalls = logInfo.mock.calls.filter(
-      call => call[0] === 'Initializing interactive component for article'
+      call =>
+        call[0] === `[${article.id}]` &&
+        call[1] === 'Initializing interactive component for article'
     );
     expect(initCalls.length).toBe(1);
-    expect(initCalls[0][1]).toBe(article.id);
+    expect(initCalls[0][2]).toBe(article.id);
   });
 });

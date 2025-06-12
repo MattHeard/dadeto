@@ -23,6 +23,7 @@ describe('makeObserverCallback observer log', () => {
     const entry = {};
     observerCallback([entry], observer);
     expect(logInfo).toHaveBeenCalledWith(
+      `[${moduleInfo.article.id}]`,
       'Observer callback for article',
       moduleInfo.article.id
     );

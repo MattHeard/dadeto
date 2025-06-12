@@ -25,11 +25,13 @@ describe('makeObserverCallback logging', () => {
     observerCallback([entry], observer);
 
     expect(logInfo).toHaveBeenCalledWith(
+      `[${moduleInfo.article.id}]`,
       'Observer callback for article',
       moduleInfo.article.id
     );
 
     expect(logInfo).toHaveBeenCalledWith(
+      `[${moduleInfo.article.id}]`,
       'Starting module import for article',
       moduleInfo.article.id,
       'module',
@@ -61,6 +63,7 @@ describe('makeObserverCallback logging', () => {
 
     expect(logInfo).toHaveBeenNthCalledWith(
       1,
+      `[${moduleInfo.article.id}]`,
       'Observer callback for article',
       moduleInfo.article.id
     );

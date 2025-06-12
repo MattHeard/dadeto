@@ -509,7 +509,11 @@ describe('toys', () => {
       };
       const logInfo = jest.fn();
       const env = { loggers: { logInfo, logError: jest.fn() } };
-      const moduleInfo = { modulePath, article: { id: 'art' }, functionName: 'fn' };
+      const moduleInfo = {
+        modulePath,
+        article: { id: 'art' },
+        functionName: 'fn',
+      };
       const callback = makeObserverCallback(moduleInfo, env, dom);
       const obs = {};
       const ent = {};
@@ -517,6 +521,7 @@ describe('toys', () => {
       callback([ent], obs);
 
       expect(logInfo).toHaveBeenCalledWith(
+        `[${moduleInfo.article.id}]`,
         'Starting module import for article',
         moduleInfo.article.id,
         'module',
@@ -1245,7 +1250,6 @@ describe('toys', () => {
       expect(querySelector).toHaveBeenCalledWith(article, 'select.output');
     });
 
-
     it('sets initialising message using setTextContent', () => {
       const createEnvFn = () => ({});
       const errorFn = jest.fn();
@@ -1700,7 +1704,6 @@ describe('createInputDropdownHandler', () => {
       expect(hide).toHaveBeenCalledWith(textInput);
       expect(disable).toHaveBeenCalledWith(textInput);
     });
-
   });
 
   describe('getText', () => {
