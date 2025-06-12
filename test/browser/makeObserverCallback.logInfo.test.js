@@ -13,7 +13,11 @@ describe('makeObserverCallback logging', () => {
     };
     const logInfo = jest.fn();
     const env = { loggers: { logInfo, logError: jest.fn() } };
-    const moduleInfo = { modulePath: 'mod.js', article: { id: 'art' }, functionName: 'fn' };
+    const moduleInfo = {
+      modulePath: 'mod.js',
+      article: { id: 'art' },
+      functionName: 'fn',
+    };
     const observerCallback = makeObserverCallback(moduleInfo, env, dom);
     const observer = {};
     const entry = {};
@@ -25,6 +29,32 @@ describe('makeObserverCallback logging', () => {
       moduleInfo.article.id,
       'module',
       moduleInfo.modulePath
+    );
+  });
+
+  it('logs an observer callback message', () => {
+    const dom = {
+      removeAllChildren: jest.fn(),
+      importModule: jest.fn(),
+      disconnectObserver: jest.fn(),
+      isIntersecting: () => false,
+      error: jest.fn(),
+      contains: () => true,
+    };
+    const logInfo = jest.fn();
+    const env = { loggers: { logInfo, logError: jest.fn() } };
+    const moduleInfo = {
+      modulePath: 'mod.js',
+      article: { id: 'art' },
+      functionName: 'fn',
+    };
+    const observerCallback = makeObserverCallback(moduleInfo, env, dom);
+
+    observerCallback([{}], {});
+
+    expect(logInfo).toHaveBeenCalledWith(
+      'Observer callback for article',
+      moduleInfo.article.id
     );
   });
 });
