@@ -45,8 +45,9 @@ describe('dendriteStoryHandler', () => {
     ).length;
     expect(textareaCalls).toBe(1);
     expect(dom.setType).toHaveBeenCalledTimes(5);
-    dom.setType.mock.calls.forEach(([el]) => {
+    dom.setType.mock.calls.forEach(([el, type]) => {
       expect(el.tag).toBe('input');
+      expect(type).toBe('text');
     });
     const firstInput = elements[3];
     expect(firstInput.value).toBe('Existing');
