@@ -25,4 +25,18 @@ describe('createOnRemove additional tests', () => {
   it('createOnRemove expects three arguments', () => {
     expect(createOnRemove.length).toBe(3);
   });
+
+  it('can be called multiple times on the same handler', () => {
+    const rows = { a: '1' };
+    const render = jest.fn();
+    const event = { preventDefault: jest.fn() };
+    const handler = createOnRemove(rows, render, 'a');
+
+    handler(event);
+    handler(event);
+
+    expect(event.preventDefault).toHaveBeenCalledTimes(2);
+    expect(render).toHaveBeenCalledTimes(2);
+    expect(rows).toEqual({});
+  });
 });
