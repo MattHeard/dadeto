@@ -497,6 +497,32 @@ describe('toys', () => {
       // --- THEN ---
       expect(disconnectObserver).toHaveBeenCalledWith(observer);
     });
+
+    it('logs module import when entry is intersecting', () => {
+      const dom = {
+        removeAllChildren: jest.fn(),
+        importModule: jest.fn(),
+        disconnectObserver: jest.fn(),
+        isIntersecting: () => true,
+        error: jest.fn(),
+        contains: () => true,
+      };
+      const logInfo = jest.fn();
+      const env = { loggers: { logInfo, logError: jest.fn() } };
+      const moduleInfo = { modulePath, article: { id: 'art' }, functionName: 'fn' };
+      const callback = makeObserverCallback(moduleInfo, env, dom);
+      const obs = {};
+      const ent = {};
+
+      callback([ent], obs);
+
+      expect(logInfo).toHaveBeenCalledWith(
+        'Starting module import for article',
+        moduleInfo.article.id,
+        'module',
+        moduleInfo.modulePath
+      );
+    });
   });
 
   describe('makeCreateIntersectionObserver', () => {
