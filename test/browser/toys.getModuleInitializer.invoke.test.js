@@ -12,8 +12,8 @@ describe('getModuleInitializer minimal invoke', () => {
     const paragraph = {};
     const handlers = {};
     const selectorMap = new Map([
-      ['input', inputElement],
-      ['button', submitButton],
+      ['input[type="text"]', inputElement],
+      ['button[type="submit"]', submitButton],
       ['div.output', outputParent],
       ['div.output > p', paragraph],
       ['select.output', outputSelect],
@@ -69,8 +69,8 @@ describe('getModuleInitializer minimal invoke', () => {
     const paragraph = {};
     const handlers = {};
     const selectorMap = new Map([
-      ['input', inputElement],
-      ['button', submitButton],
+      ['input[type="text"]', inputElement],
+      ['button[type="submit"]', submitButton],
       ['div.output', outputParent],
       ['div.output > p', paragraph],
       ['select.output', outputSelect],
