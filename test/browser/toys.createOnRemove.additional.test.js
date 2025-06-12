@@ -39,4 +39,17 @@ describe('createOnRemove additional tests', () => {
     expect(render).toHaveBeenCalledTimes(2);
     expect(rows).toEqual({});
   });
+
+  it('handles missing key without error', () => {
+    const rows = { a: '1' };
+    const render = jest.fn();
+    const event = { preventDefault: jest.fn() };
+    const handler = createOnRemove(rows, render, 'b');
+
+    handler(event);
+
+    expect(rows).toEqual({ a: '1' });
+    expect(event.preventDefault).toHaveBeenCalledTimes(1);
+    expect(render).toHaveBeenCalledTimes(1);
+  });
 });
