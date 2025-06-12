@@ -68,4 +68,32 @@ describe('makeObserverCallback logging', () => {
       moduleInfo.article.id
     );
   });
+
+  it('handles missing loggers without throwing', () => {
+    const dom = {
+      removeAllChildren: jest.fn(),
+      importModule: jest.fn(),
+      disconnectObserver: jest.fn(),
+      isIntersecting: () => true,
+      error: jest.fn(),
+      contains: () => true,
+    };
+    const env = { loggers: {} }; // loggers without logInfo
+    const moduleInfo = {
+      modulePath: 'mod.js',
+      article: { id: 'art' },
+      functionName: 'fn',
+    };
+    const observerCallback = makeObserverCallback(moduleInfo, env, dom);
+    const observer = {};
+    const entry = {};
+
+    expect(() => observerCallback([entry], observer)).not.toThrow();
+    expect(dom.importModule).toHaveBeenCalledWith(
+      moduleInfo.modulePath,
+      expect.any(Function),
+      expect.any(Function)
+    );
+    expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
+  });
 });
