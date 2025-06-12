@@ -969,8 +969,8 @@ export function initializeInteractiveComponent(
   const { globalState, createEnvFn, errorFn, fetchFn, dom, getUuid } = config;
   logInfo('Initializing interactive component for article', article.id);
   // Get the elements within the article
-  const inputElement = dom.querySelector(article, 'input');
-  const submitButton = dom.querySelector(article, 'button');
+  const inputElement = dom.querySelector(article, 'input[type="text"]');
+  const submitButton = dom.querySelector(article, 'button[type="submit"]');
   // Temporary debug logging for issue investigation
   logInfo('Found input element:', inputElement);
   logInfo('Found button element:', submitButton);

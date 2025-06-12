@@ -553,8 +553,8 @@ describe('toys', () => {
       const outputParent = {};
       const outputSelect = {};
       const selectorMap = new Map([
-        ['input', inputElement],
-        ['button', submitButton],
+        ['input[type="text"]', inputElement],
+        ['button[type="submit"]', submitButton],
         ['div.output', outputParent],
         ['select.output', outputSelect],
       ]);
@@ -650,7 +650,10 @@ describe('toys', () => {
       // --- WHEN ---
       initializer({ [functionName]: moduleFn });
       // --- THEN ---
-      expect(dom.querySelector).toHaveBeenCalledWith(article, 'input');
+      expect(dom.querySelector).toHaveBeenCalledWith(
+        article,
+        'input[type="text"]'
+      );
     });
 
     it('initializes module with the provided function name', () => {
@@ -679,7 +682,10 @@ describe('toys', () => {
       // --- THEN ---
       expect(calledPath).toBe(modulePath);
       expect(moduleFn).toHaveBeenCalled();
-      expect(dom.querySelector).toHaveBeenCalledWith(article, 'input');
+      expect(dom.querySelector).toHaveBeenCalledWith(
+        article,
+        'input[type="text"]'
+      );
     });
 
     it('passes the article to initializeInteractiveComponent', () => {
@@ -687,7 +693,10 @@ describe('toys', () => {
       intersectionCallback([entry], observer);
       const [, initializer] = dom.importModule.mock.calls[0];
       initializer({ [functionName]: jest.fn() });
-      expect(dom.querySelector).toHaveBeenCalledWith(article, 'input');
+      expect(dom.querySelector).toHaveBeenCalledWith(
+        article,
+        'input[type="text"]'
+      );
     });
 
     it('calls disconnectObserver when entry is intersecting', () => {
@@ -854,8 +863,8 @@ describe('toys', () => {
       const outputElement = { textContent: '', outputParentElement };
       // Refactored querySelector to use a Map for selector-object pairs
       const selectorMap = new Map([
-        ['input', {}],
-        ['button', {}],
+        ['input[type="text"]', {}],
+        ['button[type="submit"]', {}],
         ['div.output > p', outputElement],
         ['div.output', outputElement.outputParentElement],
       ]);
@@ -912,8 +921,8 @@ describe('toys', () => {
       const outputParentElement = {};
       const outputElement = { textContent: '', outputParentElement };
       const selectorMap = new Map([
-        ['input', inputElement],
-        ['button', submitButton],
+        ['input[type="text"]', inputElement],
+        ['button[type="submit"]', submitButton],
         ['div.output > p', outputElement],
         ['div.output', outputParentElement],
       ]);
@@ -1007,8 +1016,8 @@ describe('toys', () => {
         },
       };
       selectorMap = new Map([
-        ['input', inputElement],
-        ['button', submitButton],
+        ['input[type="text"]', inputElement],
+        ['button[type="submit"]', submitButton],
         ['div.output > p', outputElement],
         ['div.output', outputElement.outputParentElement],
       ]);
@@ -1146,8 +1155,8 @@ describe('toys', () => {
         outputParentElement,
       };
       // Populate selectorMap for this test
-      selectorMap.set('input', inputElement);
-      selectorMap.set('button', submitButton);
+      selectorMap.set('input[type="text"]', inputElement);
+      selectorMap.set('button[type="submit"]', submitButton);
       selectorMap.set('div.output > p', outputElement);
       selectorMap.set('div.output', outputElement.outputParentElement);
       const globalState = {};
@@ -1269,10 +1278,10 @@ describe('toys', () => {
         removeChild: jest.fn(),
         appendChild: jest.fn(),
         querySelector: jest.fn((_, selector) => {
-          if (selector === 'input') {
+          if (selector === 'input[type="text"]') {
             return {};
           }
-          if (selector === 'button') {
+          if (selector === 'button[type="submit"]') {
             return {};
           }
           if (selector === 'div.output') {
@@ -1327,10 +1336,10 @@ describe('toys', () => {
         removeChild: jest.fn(),
         appendChild: jest.fn(),
         querySelector: jest.fn((_, selector) => {
-          if (selector === 'input') {
+          if (selector === 'input[type="text"]') {
             return inputElement;
           }
-          if (selector === 'button') {
+          if (selector === 'button[type="submit"]') {
             return submitButton;
           }
           if (selector === 'div.output') {

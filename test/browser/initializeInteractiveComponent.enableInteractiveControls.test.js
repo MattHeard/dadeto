@@ -8,8 +8,8 @@ describe('initializeInteractiveComponent', () => {
     const outputParent = {};
     const dom = {
       querySelector: jest.fn((_, selector) => {
-        if (selector === 'input') {return inputElement;}
-        if (selector === 'button') {return submitButton;}
+        if (selector === 'input[type="text"]') {return inputElement;}
+        if (selector === 'button[type="submit"]') {return submitButton;}
         if (selector === 'div.output') {return outputParent;}
         if (selector === 'select.output') {return {};}
         return {};

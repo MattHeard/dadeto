@@ -11,9 +11,9 @@ describe('getModuleInitializer makeProcessingFunction integration', () => {
     const dom = {
       querySelector: jest.fn((el, selector) => {
         switch (selector) {
-        case 'input':
+        case 'input[type="text"]':
           return inputEl;
-        case 'button':
+        case 'button[type="submit"]':
           return buttonEl;
         case 'div.output':
           return outputParent;

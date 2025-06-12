@@ -11,10 +11,10 @@ describe('initializeInteractiveComponent dynamic import', () => {
     const submitButton = {};
     const outputParent = {};
     const querySelector = jest.fn((_, selector) => {
-      if (selector === 'input') {
+      if (selector === 'input[type="text"]') {
         return inputElement;
       }
-      if (selector === 'button') {
+      if (selector === 'button[type="submit"]') {
         return submitButton;
       }
       if (selector === 'div.output') {

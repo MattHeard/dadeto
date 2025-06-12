@@ -12,9 +12,9 @@ describe('initializeInteractiveComponent keypress event object', () => {
     const dom = {
       querySelector: jest.fn((_, selector) => {
         switch (selector) {
-        case 'input':
+        case 'input[type="text"]':
           return inputElement;
-        case 'button':
+        case 'button[type="submit"]':
           return submitButton;
         case 'div.output':
           return outputParent;
