@@ -23,5 +23,10 @@ describe('MEDIA_CONFIG labels', () => {
     expect(html).toContain('<div class="key media">illus</div>');
     expect(html).toContain('<div class="key media">audio</div>');
     expect(html).toContain('<div class="key media">video</div>');
+
+    // Verify media sections render expected HTML elements
+    expect(html).toContain('<img');
+    expect(html).toContain('<audio');
+    expect(html).toContain('<iframe');
   });
 });
