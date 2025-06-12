@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>344/344</span>
+                <span class='fraction'>345/345</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">96.92% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>65/65</span>
+                <span class='fraction'>63/65</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">98.03% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>102/102</span>
+                <span class='fraction'>100/102</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>331/331</span>
+                <span class='fraction'>332/332</span>
             </div>
         
             
@@ -1282,7 +1282,13 @@
 <a name='L1217'></a><a href='#L1217'>1217</a>
 <a name='L1218'></a><a href='#L1218'>1218</a>
 <a name='L1219'></a><a href='#L1219'>1219</a>
-<a name='L1220'></a><a href='#L1220'>1220</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1220'></a><a href='#L1220'>1220</a>
+<a name='L1221'></a><a href='#L1221'>1221</a>
+<a name='L1222'></a><a href='#L1222'>1222</a>
+<a name='L1223'></a><a href='#L1223'>1223</a>
+<a name='L1224'></a><a href='#L1224'>1224</a>
+<a name='L1225'></a><a href='#L1225'>1225</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1634,6 +1640,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">21x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">21x</span>
@@ -2502,6 +2512,7 @@
 <span class="cline-any cline-yes">156x</span>
 <span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { createParagraphElement } from '../presenters/paragraph.js';
+import { createPrefixedLoggers } from './document.js';
 &nbsp;
 /**
  * Parses the existing rows from the text input
@@ -2813,7 +2824,7 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
  */
 function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
   const { dom, loggers } = moduleConfig;
-  const logInfo = loggers &amp;&amp; loggers.logInfo ? loggers.logInfo : () =&gt; {};
+  const logInfo = loggers &amp;&amp; loggers.logInfo ? loggers.logInfo : <span class="fstat-no" title="function not covered" ><span class="branch-1 cbranch-no" title="branch not covered" >()</span> =&gt; {};</span>
   logInfo(
     'Starting module import for article',
     moduleInfo.article.id,
@@ -2853,11 +2864,15 @@ export function makeModuleConfig(env, dom) {
 &nbsp;
 export function makeObserverCallback(moduleInfo, env, dom) {
   const moduleConfig = makeModuleConfig(env, dom);
+  moduleConfig.loggers = createPrefixedLoggers(
+    moduleConfig.loggers,
+    `[${moduleInfo.article.id}]`
+  );
   const handleEntryFactory = getEntryHandler(moduleInfo, moduleConfig);
   const logInfo =
     moduleConfig.loggers &amp;&amp; moduleConfig.loggers.logInfo
       ? moduleConfig.loggers.logInfo
-      : () =&gt; {};
+      : <span class="fstat-no" title="function not covered" ><span class="branch-1 cbranch-no" title="branch not covered" >()</span> =&gt; {};</span>
   return (entries, observer) =&gt; {
     const handleEntry = handleEntryFactory(observer);
     entries.forEach(entry =&gt; {
@@ -3254,44 +3269,44 @@ export const createKeyValueRow =
     render,
     container
   ) =&gt;
-    ([key, value], idx) =&gt; {
-      const rowEl = dom.createElement('div');
-      dom.setClassName(rowEl, 'kv-row');
+  ([key, value], idx) =&gt; {
+    const rowEl = dom.createElement('div');
+    dom.setClassName(rowEl, 'kv-row');
 &nbsp;
-      // Create key and value elements
-      const keyEl = createKeyElement(
-        dom,
-        key,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers
-      );
-      const valueEl = createValueElement(
-        dom,
-        value,
-        keyEl,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers
-      );
+    // Create key and value elements
+    const keyEl = createKeyElement(
+      dom,
+      key,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
+    const valueEl = createValueElement(
+      dom,
+      value,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
 &nbsp;
-      // Create and set up the appropriate button type
-      const btnEl = createButton(
-        dom,
-        idx === entries.length - 1,
-        rows,
-        render,
-        key,
-        disposers
-      );
+    // Create and set up the appropriate button type
+    const btnEl = createButton(
+      dom,
+      idx === entries.length - 1,
+      rows,
+      render,
+      key,
+      disposers
+    );
 &nbsp;
-      dom.appendChild(rowEl, keyEl);
-      dom.appendChild(rowEl, valueEl);
-      dom.appendChild(rowEl, btnEl);
-      dom.appendChild(container, rowEl);
-    };
+    dom.appendChild(rowEl, keyEl);
+    dom.appendChild(rowEl, valueEl);
+    dom.appendChild(rowEl, btnEl);
+    dom.appendChild(container, rowEl);
+  };
 &nbsp;
 const createButton = (dom, isAddButton, rows, render, key, disposers) =&gt; {
   const button = dom.createElement('button');
@@ -3727,7 +3742,7 @@ export const getDeepStateCopy = globalState =&gt;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-12T09:37:58.144Z
+                at 2025-06-12T11:02:23.274Z
             </div>
         <script src="../prettify.js"></script>
         <script>

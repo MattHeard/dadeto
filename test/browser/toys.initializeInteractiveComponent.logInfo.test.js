@@ -54,12 +54,18 @@ describe('initializeInteractiveComponent', () => {
     initializeInteractiveComponent(article, processingFunction, config);
 
     const { logInfo } = config.loggers;
-    const initCalls = logInfo.mock.calls.filter(
-      call =>
-        call[0] === `[${article.id}]` &&
-        call[1] === 'Initializing interactive component for article'
+    expect(logInfo).toHaveBeenCalledWith(
+      'Initializing interactive component for article',
+      article.id
     );
-    expect(initCalls.length).toBe(1);
-    expect(initCalls[0][2]).toBe(article.id);
+
+    // Ensure this specific call happens exactly once
+    const specificCalls = logInfo.mock.calls.filter(
+      call =>
+        call.length === 2 &&
+        call[0] === 'Initializing interactive component for article' &&
+        call[1] === article.id
+    );
+    expect(specificCalls.length).toBe(1);
   });
 });

@@ -756,44 +756,44 @@ export const createKeyValueRow =
     render,
     container
   ) =>
-  ([key, value], idx) => {
-    const rowEl = dom.createElement('div');
-    dom.setClassName(rowEl, 'kv-row');
+    ([key, value], idx) => {
+      const rowEl = dom.createElement('div');
+      dom.setClassName(rowEl, 'kv-row');
 
-    // Create key and value elements
-    const keyEl = createKeyElement(
-      dom,
-      key,
-      textInput,
-      rows,
-      syncHiddenField,
-      disposers
-    );
-    const valueEl = createValueElement(
-      dom,
-      value,
-      keyEl,
-      textInput,
-      rows,
-      syncHiddenField,
-      disposers
-    );
+      // Create key and value elements
+      const keyEl = createKeyElement(
+        dom,
+        key,
+        textInput,
+        rows,
+        syncHiddenField,
+        disposers
+      );
+      const valueEl = createValueElement(
+        dom,
+        value,
+        keyEl,
+        textInput,
+        rows,
+        syncHiddenField,
+        disposers
+      );
 
-    // Create and set up the appropriate button type
-    const btnEl = createButton(
-      dom,
-      idx === entries.length - 1,
-      rows,
-      render,
-      key,
-      disposers
-    );
+      // Create and set up the appropriate button type
+      const btnEl = createButton(
+        dom,
+        idx === entries.length - 1,
+        rows,
+        render,
+        key,
+        disposers
+      );
 
-    dom.appendChild(rowEl, keyEl);
-    dom.appendChild(rowEl, valueEl);
-    dom.appendChild(rowEl, btnEl);
-    dom.appendChild(container, rowEl);
-  };
+      dom.appendChild(rowEl, keyEl);
+      dom.appendChild(rowEl, valueEl);
+      dom.appendChild(rowEl, btnEl);
+      dom.appendChild(container, rowEl);
+    };
 
 const createButton = (dom, isAddButton, rows, render, key, disposers) => {
   const button = dom.createElement('button');
