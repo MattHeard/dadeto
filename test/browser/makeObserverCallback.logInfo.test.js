@@ -13,12 +13,21 @@ describe('makeObserverCallback logging', () => {
     };
     const logInfo = jest.fn();
     const env = { loggers: { logInfo, logError: jest.fn() } };
-    const moduleInfo = { modulePath: 'mod.js', article: { id: 'art' }, functionName: 'fn' };
+    const moduleInfo = {
+      modulePath: 'mod.js',
+      article: { id: 'art' },
+      functionName: 'fn',
+    };
     const observerCallback = makeObserverCallback(moduleInfo, env, dom);
     const observer = {};
     const entry = {};
 
     observerCallback([entry], observer);
+
+    expect(logInfo).toHaveBeenCalledWith(
+      'Observer callback for article',
+      moduleInfo.article.id
+    );
 
     expect(logInfo).toHaveBeenCalledWith(
       'Starting module import for article',
