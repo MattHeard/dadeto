@@ -967,10 +967,18 @@ export function initializeInteractiveComponent(
 ) {
   const logInfo = config.loggers.logInfo;
   const { globalState, createEnvFn, errorFn, fetchFn, dom, getUuid } = config;
+  const logWarning = config.loggers.logWarning;
   logInfo('Initializing interactive component for article', article.id);
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input[type="text"]');
   const submitButton = dom.querySelector(article, 'button[type="submit"]');
+  if (!inputElement || !submitButton) {
+    logWarning(
+      'Interactive component missing input or button in article',
+      article.id
+    );
+    return;
+  }
   // Temporary debug logging for issue investigation
   logInfo('Found input element:', inputElement);
   logInfo('Found button element:', submitButton);
