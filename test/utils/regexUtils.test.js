@@ -33,6 +33,12 @@ describe('createPattern', () => {
     expect('*TEST*'.match(pattern)?.[0]).toBe('*TEST*');
   });
 
+  test('captures content between markers', () => {
+    const pattern = createPattern('*');
+    const match = pattern.exec('*hello*');
+    expect(match?.[1]).toBe('hello');
+  });
+
   test('handles special characters in the marker', () => {
     const pattern = createPattern('*+?');
     expect('*+?test*+?'.match(pattern)?.[0]).toBe('*+?test*+?');
@@ -42,6 +48,12 @@ describe('createPattern', () => {
     const pattern = createPattern('*', { isDouble: true });
     expect('**test**'.match(pattern)?.[0]).toBe('**test**');
     expect('*test*'.match(pattern)).toBeNull();
+  });
+
+  test('captures content between double markers', () => {
+    const pattern = createPattern('*', { isDouble: true });
+    const match = pattern.exec('**value**');
+    expect(match?.[1]).toBe('value');
   });
 });
 
