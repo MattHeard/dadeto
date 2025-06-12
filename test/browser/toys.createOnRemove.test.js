@@ -124,4 +124,18 @@ describe('createOnRemove', () => {
     expect(localRows).toEqual({ b: 2 });
     expect(localRender).toHaveBeenCalled();
   });
+
+  it('can be called multiple times safely', () => {
+    const rowsObj = { x: 1 };
+    const renderFn = jest.fn();
+    const evt = { preventDefault: jest.fn() };
+    const handler = createOnRemove(rowsObj, renderFn, 'x');
+
+    handler(evt);
+    handler(evt);
+
+    expect(rowsObj).toEqual({});
+    expect(renderFn).toHaveBeenCalledTimes(2);
+    expect(evt.preventDefault).toHaveBeenCalledTimes(2);
+  });
 });
