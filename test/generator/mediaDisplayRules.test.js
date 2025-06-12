@@ -34,4 +34,21 @@ describe('MEDIA_DISPLAY_RULES integration', () => {
     // Ensure media sections include the correct key class
     expect(html).toContain('class="key media"');
   });
+
+  test('generateBlog includes only audio section when post has only audio', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'AUDIO1',
+          title: 'Audio Only',
+          publicationDate: '2024-06-01',
+          audio: { fileType: 'mp3' },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<audio');
+    expect(html).not.toContain('<img');
+    expect(html).not.toContain('<iframe');
+  });
 });
