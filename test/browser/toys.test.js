@@ -497,6 +497,26 @@ describe('toys', () => {
       // --- THEN ---
       expect(disconnectObserver).toHaveBeenCalledWith(observer);
     });
+
+    it('calls logInfo when entry is intersecting', () => {
+      const logInfo = jest.fn();
+      const envWithLog = { loggers: { logInfo, logError: jest.fn() } };
+      const moduleInfo = { modulePath, article: 'art', functionName: 'fn' };
+      const dom = {
+        removeAllChildren: jest.fn(),
+        importModule: jest.fn(),
+        disconnectObserver: jest.fn(),
+        isIntersecting: jest.fn(() => true),
+        error: jest.fn(),
+        contains: () => true,
+      };
+      const callback = makeObserverCallback(moduleInfo, envWithLog, dom);
+      callback([entry], observer);
+      expect(logInfo).toHaveBeenCalledWith(
+        'Observer callback for article',
+        moduleInfo.article.id
+      );
+    });
   });
 
   describe('makeCreateIntersectionObserver', () => {
@@ -1219,7 +1239,6 @@ describe('toys', () => {
       expect(querySelector).toHaveBeenCalledWith(article, 'select.output');
     });
 
-
     it('sets initialising message using setTextContent', () => {
       const createEnvFn = () => ({});
       const errorFn = jest.fn();
@@ -1674,7 +1693,6 @@ describe('createInputDropdownHandler', () => {
       expect(hide).toHaveBeenCalledWith(textInput);
       expect(disable).toHaveBeenCalledWith(textInput);
     });
-
   });
 
   describe('getText', () => {
