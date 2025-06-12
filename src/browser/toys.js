@@ -966,6 +966,9 @@ export function initializeInteractiveComponent(
   // Get the elements within the article
   const inputElement = dom.querySelector(article, 'input');
   const submitButton = dom.querySelector(article, 'button');
+  // Temporary debug logging for issue investigation
+  logInfo('Found input element:', inputElement);
+  logInfo('Found button element:', submitButton);
   const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
   const outputSelect = dom.querySelector(article, 'select.output');
 
