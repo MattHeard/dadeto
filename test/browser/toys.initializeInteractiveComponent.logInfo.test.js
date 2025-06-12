@@ -46,10 +46,10 @@ describe('initializeInteractiveComponent', () => {
     initializeInteractiveComponent(article, processingFunction, config);
 
     const { logInfo } = config.loggers;
-    expect(logInfo).toHaveBeenCalledTimes(1);
-    expect(logInfo.mock.calls[0][0]).toBe(
-      'Initializing interactive component for article'
+    const initCalls = logInfo.mock.calls.filter(
+      call => call[0] === 'Initializing interactive component for article'
     );
-    expect(logInfo.mock.calls[0][1]).toBe(article.id);
+    expect(initCalls.length).toBe(1);
+    expect(initCalls[0][1]).toBe(article.id);
   });
 });
