@@ -25,8 +25,9 @@ describe('makeObserverCallback observer message', () => {
     observerCallback([entry], observer);
 
     expect(logInfo).toHaveBeenCalledWith(
+      `[${moduleInfo.article.id}]`,
       'Observer callback for article',
-      moduleInfo.article.id,
+      moduleInfo.article.id
     );
   });
 });
