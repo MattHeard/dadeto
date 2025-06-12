@@ -27,4 +27,33 @@ describe('defaultHandler', () => {
     expect(dom.removeChild).toHaveBeenCalledWith(container, number);
     expect(dom.removeChild).toHaveBeenCalledTimes(1);
   });
+
+  test('removes an existing dendrite form when present', () => {
+    const container = {};
+    const textInput = {};
+    const number = null;
+    const kv = null;
+    const dendrite = { _dispose: jest.fn() };
+    const querySelector = jest
+      .fn()
+      .mockReturnValueOnce(number)
+      .mockReturnValueOnce(kv)
+      .mockReturnValueOnce(dendrite);
+    const dom = {
+      hide: jest.fn(),
+      disable: jest.fn(),
+      querySelector,
+      removeChild: jest.fn(),
+    };
+
+    defaultHandler(dom, container, textInput);
+
+    expect(querySelector).toHaveBeenNthCalledWith(
+      3,
+      container,
+      '.dendrite-form'
+    );
+    expect(dendrite._dispose).toHaveBeenCalled();
+    expect(dom.removeChild).toHaveBeenCalledWith(container, dendrite);
+  });
 });
