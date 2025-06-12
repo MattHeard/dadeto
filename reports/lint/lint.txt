@@ -11,27 +11,28 @@
   23:1  warning  './document.js' import is duplicated                   no-duplicate-imports
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-    15:45  warning  Arrow function has a complexity of 7. Maximum allowed is 2                            complexity
-    31:34  warning  Arrow function has a complexity of 6. Maximum allowed is 2                            complexity
-    68:64  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
-   102:21  warning  'handleKVType' is defined but never used                                              no-unused-vars
-   185:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2           complexity
-   312:1   warning  Function 'handleIntersectingEntry' has a complexity of 3. Maximum allowed is 2        complexity
-   314:19  warning  Ternary operator used                                                                 no-ternary
-   352:8   warning  Function 'makeObserverCallback' has a complexity of 3. Maximum allowed is 2           complexity
-   360:5   warning  Ternary operator used                                                                 no-ternary
-   467:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3                      max-params
-   522:8   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3    max-params
-   529:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-   560:8   warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3  max-params
-   591:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-   633:3   warning  Arrow function has too many parameters (7). Maximum allowed is 3                      max-params
-   690:70  warning  Arrow function has too many parameters (5). Maximum allowed is 3                      max-params
-   714:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-   758:5   warning  Arrow function has too many parameters (8). Maximum allowed is 3                      max-params
-   798:71  warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
-  1080:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                            complexity
-  1115:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                      max-params
+    15:45  warning  Arrow function has a complexity of 7. Maximum allowed is 2                             complexity
+    31:34  warning  Arrow function has a complexity of 6. Maximum allowed is 2                             complexity
+    68:64  warning  Arrow function has too many parameters (4). Maximum allowed is 3                       max-params
+   102:21  warning  'handleKVType' is defined but never used                                               no-unused-vars
+   185:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2            complexity
+   312:1   warning  Function 'handleIntersectingEntry' has a complexity of 3. Maximum allowed is 2         complexity
+   314:19  warning  Ternary operator used                                                                  no-ternary
+   352:8   warning  Function 'makeObserverCallback' has a complexity of 3. Maximum allowed is 2            complexity
+   360:5   warning  Ternary operator used                                                                  no-ternary
+   467:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3                       max-params
+   522:8   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3     max-params
+   529:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
+   560:8   warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3   max-params
+   591:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   633:3   warning  Arrow function has too many parameters (7). Maximum allowed is 3                       max-params
+   690:70  warning  Arrow function has too many parameters (5). Maximum allowed is 3                       max-params
+   714:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   758:5   warning  Arrow function has too many parameters (8). Maximum allowed is 3                       max-params
+   798:71  warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   963:8   warning  Function 'initializeInteractiveComponent' has a complexity of 3. Maximum allowed is 2  complexity
+  1088:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
+  1123:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
   890:1   warning  Function 'buildToyInputDropdown' has a complexity of 3. Maximum allowed is 2  complexity
@@ -237,18 +238,18 @@
      9:3   warning  'createHandleSubmit' is defined but never used              no-unused-vars
     15:3   warning  'createUpdateTextInputValue' is defined but never used      no-unused-vars
     18:13  warning  'toys' is defined but never used                            no-unused-vars
-   924:40  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1271:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1329:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1508:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  1509:7   warning  Ternary operator used                                       no-ternary
-  1533:40  warning  Ternary operator used                                       no-ternary
-  1534:40  warning  Ternary operator used                                       no-ternary
-  1571:9   warning  Ternary operator used                                       no-ternary
-  1609:9   warning  Ternary operator used                                       no-ternary
-  1644:9   warning  Ternary operator used                                       no-ternary
-  1666:39  warning  Ternary operator used                                       no-ternary
-  1695:9   warning  Ternary operator used                                       no-ternary
+   933:40  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1280:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1338:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1517:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  1518:7   warning  Ternary operator used                                       no-ternary
+  1542:40  warning  Ternary operator used                                       no-ternary
+  1543:40  warning  Ternary operator used                                       no-ternary
+  1580:9   warning  Ternary operator used                                       no-ternary
+  1618:9   warning  Ternary operator used                                       no-ternary
+  1653:9   warning  Ternary operator used                                       no-ternary
+  1675:39  warning  Ternary operator used                                       no-ternary
+  1704:9   warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/generator/dateFormatOptions.runtime.test.js
   1:34  warning  'jest' is defined but never used  no-unused-vars
@@ -284,4 +285,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/utils/validation.test.js
   4:3  warning  'isValidString' is defined but never used  no-unused-vars
 
-✖ 151 problems (0 errors, 151 warnings)
+✖ 152 problems (0 errors, 152 warnings)
