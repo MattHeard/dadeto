@@ -236,3 +236,33 @@ test('sets expected placeholders and label text', () => {
   expect(placeholders).toEqual(expected);
   expect(labels).toEqual(expected);
 });
+
+test('does not set input values when data is missing', () => {
+  const container = {};
+  const textInput = { value: '{}' };
+  const dom = {
+    hide: jest.fn(),
+    disable: jest.fn(),
+    querySelector: jest.fn(() => null),
+    removeChild: jest.fn(),
+    createElement: jest.fn(() => ({})),
+    setClassName: jest.fn(),
+    getNextSibling: jest.fn(() => ({})),
+    insertBefore: jest.fn(),
+    setType: jest.fn(),
+    setPlaceholder: jest.fn(),
+    setTextContent: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    appendChild: jest.fn(),
+    getValue: jest.fn(el => el.value),
+    setValue: jest.fn((el, val) => {
+      el.value = val;
+    }),
+  };
+
+  dendriteStoryHandler(dom, container, textInput);
+
+  expect(dom.setValue.mock.calls).toHaveLength(1);
+  expect(dom.setValue).toHaveBeenCalledWith(textInput, '{}');
+});
