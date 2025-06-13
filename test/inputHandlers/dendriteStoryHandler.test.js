@@ -270,3 +270,43 @@ test('does not set input values when data is missing', () => {
   expect(dom.setValue.mock.calls).toHaveLength(1);
   expect(dom.setValue).toHaveBeenCalledWith(textInput, '{}');
 });
+
+test('updates hidden input using firstOption key', () => {
+  const container = {};
+  const textInput = { value: '{}' };
+  const inputMap = new Map();
+  let createCount = 0;
+  const dom = {
+    hide: jest.fn(),
+    disable: jest.fn(),
+    querySelector: jest.fn(() => null),
+    removeChild: jest.fn(),
+    createElement: jest.fn(tag => ({ tag, id: createCount++ })),
+    setClassName: jest.fn(),
+    getNextSibling: jest.fn(() => ({})),
+    insertBefore: jest.fn(),
+    setType: jest.fn(),
+    setPlaceholder: jest.fn((el, placeholder) => {
+      el.placeholder = placeholder;
+      inputMap.set(placeholder, el);
+    }),
+    setTextContent: jest.fn(),
+    addEventListener: jest.fn((el, _evt, handler) => {
+      el.handler = handler;
+    }),
+    removeEventListener: jest.fn(),
+    appendChild: jest.fn(),
+    getValue: jest.fn(el => el.value),
+    setValue: jest.fn((el, val) => {
+      el.value = val;
+    }),
+  };
+
+  dendriteStoryHandler(dom, container, textInput);
+
+  const firstOptionInput = inputMap.get('First option');
+  firstOptionInput.value = 'foo';
+  firstOptionInput.handler({ target: firstOptionInput });
+
+  expect(textInput.value).toBe(JSON.stringify({ firstOption: 'foo' }));
+});
