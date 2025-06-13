@@ -139,12 +139,6 @@ describe('createOutputDropdownHandler', () => {
     expect(handler.length).toBe(1);
   });
 
-  test('returns a new handler instance on each invocation', () => {
-    const handler1 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
-    const handler2 = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
-    expect(handler1).not.toBe(handler2);
-  });
-
   test('each returned handler calls its own dropdown change function', () => {
     const handle1 = jest.fn();
     const handle2 = jest.fn();
@@ -193,5 +187,76 @@ describe('createOutputDropdownHandler', () => {
 
     expect(() => handler(event)).not.toThrow();
     expect(handle).toHaveBeenCalledWith(event.currentTarget, getData, dom);
+  });
+
+  test('handles null currentTarget', () => {
+    const handle = jest.fn(() => 'ok');
+    const getData = jest.fn();
+    const handler = createOutputDropdownHandler(handle, getData, {});
+
+    const result = handler({ currentTarget: null });
+
+    expect(result).toBe('ok');
+    expect(handle).toHaveBeenCalledWith(null, getData, {});
+  });
+
+  test('handles missing currentTarget', () => {
+    const handle = jest.fn();
+    const getData = jest.fn();
+    const handler = createOutputDropdownHandler(handle, getData, {});
+
+    const result = handler({});
+
+    expect(result).toBeUndefined();
+    expect(handle).toHaveBeenCalledWith(undefined, getData, {});
+  });
+
+  test('creates independent handlers for different dependencies', () => {
+    const handleA = jest.fn().mockReturnValue('A');
+    const handleB = jest.fn().mockReturnValue('B');
+    const getDataA = jest.fn();
+    const getDataB = jest.fn();
+    const dom = {};
+
+    const handlerA = createOutputDropdownHandler(handleA, getDataA, dom);
+    const handlerB = createOutputDropdownHandler(handleB, getDataB, dom);
+
+    const eventA = { currentTarget: { id: 'a' } };
+    const eventB = { currentTarget: { id: 'b' } };
+
+    const resultA = handlerA(eventA);
+    const resultB = handlerB(eventB);
+
+    expect(resultA).toBe('A');
+    expect(resultB).toBe('B');
+    expect(handleA).toHaveBeenCalledWith(eventA.currentTarget, getDataA, dom);
+    expect(handleB).toHaveBeenCalledWith(eventB.currentTarget, getDataB, dom);
+  });
+
+  test('delegates return values for sequential events', () => {
+    const handle = jest
+      .fn()
+      .mockReturnValueOnce('first')
+      .mockReturnValueOnce('second');
+    const handler = createOutputDropdownHandler(handle, jest.fn(), {});
+
+    const evt1 = { currentTarget: { id: 'a' } };
+    const evt2 = { currentTarget: { id: 'b' } };
+
+    const res1 = handler(evt1);
+    const res2 = handler(evt2);
+
+    expect(res1).toBe('first');
+    expect(res2).toBe('second');
+    expect(handle).toHaveBeenNthCalledWith(1, evt1.currentTarget, expect.any(Function), {});
+    expect(handle).toHaveBeenNthCalledWith(2, evt2.currentTarget, expect.any(Function), {});
+  });
+
+  test('string representation uses arrow syntax', () => {
+    const handler = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
+    const fnString = handler.toString();
+    expect(fnString.startsWith('event =>')).toBe(true);
+    expect(fnString).toContain('handleDropdownChange(event.currentTarget, getData, dom)');
+    expect(handler.length).toBe(1);
   });
 });
