@@ -39,11 +39,11 @@ export function shouldUseExistingFetch(globalState, logFn) {
  * Returns a Base64 encoding function using the provided btoa, unescape, and encodeURIComponent.
  * @param {function} btoa - The btoa function
  * @param {function} unescape - The unescape function
- * @param {function} encodeURIComponent - The encodeURIComponent function
+ * @param {function} encodeURIComponentFn - The encodeURIComponent function
  * @returns {function} encodeBase64 - Function that encodes a string to Base64
  */
-export function getEncodeBase64(btoa, unescape, encodeURIComponent) {
-  return str => btoa(unescape(encodeURIComponent(str)));
+export function getEncodeBase64(btoa, unescape, encodeURIComponentFn) {
+  return str => btoa(unescape(encodeURIComponentFn(str)));
 }
 
 /**
