@@ -38,4 +38,82 @@ describe('initializeInteractiveComponent missing elements', () => {
     expect(dom.addEventListener).not.toHaveBeenCalled();
     expect(dom.enable).not.toHaveBeenCalled();
   });
+
+  it('logs warning when input element is missing but button exists', () => {
+    const dom = {
+      querySelector: jest.fn((_, selector) =>
+        selector === 'input[type="text"]' ? null : {}
+      ),
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({ textContent: '' })),
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      removeWarning: jest.fn(),
+      enable: jest.fn(),
+      stopDefault: jest.fn(),
+      removeChild: jest.fn(),
+      addWarning: jest.fn(),
+      appendChild: jest.fn(),
+      contains: () => true,
+    };
+    const logWarning = jest.fn();
+    const config = {
+      globalState: {},
+      createEnvFn: () => ({}),
+      errorFn: jest.fn(),
+      fetchFn: jest.fn(),
+      dom,
+      loggers: { logInfo: jest.fn(), logError: jest.fn(), logWarning },
+    };
+    const article = { id: 'missing-input' };
+    const processingFunction = jest.fn();
+
+    initializeInteractiveComponent(article, processingFunction, config);
+
+    expect(logWarning).toHaveBeenCalledWith(
+      'Interactive component missing input or button in article',
+      article.id
+    );
+    expect(dom.addEventListener).not.toHaveBeenCalled();
+    expect(dom.enable).not.toHaveBeenCalled();
+  });
+
+  it('logs warning when button is missing but input element exists', () => {
+    const dom = {
+      querySelector: jest.fn((_, selector) =>
+        selector === 'button[type="submit"]' ? null : {}
+      ),
+      removeAllChildren: jest.fn(),
+      createElement: jest.fn(() => ({ textContent: '' })),
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      removeWarning: jest.fn(),
+      enable: jest.fn(),
+      stopDefault: jest.fn(),
+      removeChild: jest.fn(),
+      addWarning: jest.fn(),
+      appendChild: jest.fn(),
+      contains: () => true,
+    };
+    const logWarning = jest.fn();
+    const config = {
+      globalState: {},
+      createEnvFn: () => ({}),
+      errorFn: jest.fn(),
+      fetchFn: jest.fn(),
+      dom,
+      loggers: { logInfo: jest.fn(), logError: jest.fn(), logWarning },
+    };
+    const article = { id: 'missing-button' };
+    const processingFunction = jest.fn();
+
+    initializeInteractiveComponent(article, processingFunction, config);
+
+    expect(logWarning).toHaveBeenCalledWith(
+      'Interactive component missing input or button in article',
+      article.id
+    );
+    expect(dom.addEventListener).not.toHaveBeenCalled();
+    expect(dom.enable).not.toHaveBeenCalled();
+  });
 });
