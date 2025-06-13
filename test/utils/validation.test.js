@@ -1,9 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import {
-  isType,
-  isValidString,
-  isValidBoolean,
-} from '../../src/utils/validation.js';
+import { isType, isValidBoolean } from '../../src/utils/validation.js';
 
 describe('isType', () => {
   test('returns true for matching types', () => {

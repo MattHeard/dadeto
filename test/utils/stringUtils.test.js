@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { isEmpty, isValidText, safeTrim } from '../../src/utils/stringUtils.js';
+import { isEmpty, safeTrim } from '../../src/utils/stringUtils.js';
 
 describe('isEmpty', () => {
   test('returns true for empty or whitespace strings', () => {
