@@ -23,4 +23,20 @@ describe('createAddDropdownListener basic behavior', () => {
       onChange
     );
   });
+
+  it('can attach the same handler to multiple dropdowns', () => {
+    const onChange = jest.fn();
+    const dom = { addEventListener: jest.fn() };
+    const dropdownA = {};
+    const dropdownB = {};
+
+    const addListener = createAddDropdownListener(onChange, dom);
+
+    addListener(dropdownA);
+    addListener(dropdownB);
+
+    expect(dom.addEventListener).toHaveBeenCalledTimes(2);
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(1, dropdownA, 'change', onChange);
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(2, dropdownB, 'change', onChange);
+  });
 });
