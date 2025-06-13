@@ -47,6 +47,10 @@ describe('dendriteStoryHandler', () => {
       ([tag]) => tag === 'textarea'
     ).length;
     expect(textareaCalls).toBe(1);
+    const divCalls = dom.createElement.mock.calls.filter(
+      ([tag]) => tag === 'div'
+    ).length;
+    expect(divCalls).toBe(7);
     expect(dom.setType).toHaveBeenCalledTimes(5);
     dom.setType.mock.calls.forEach(([el, type]) => {
       expect(el.tag).toBe('input');
