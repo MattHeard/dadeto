@@ -96,7 +96,7 @@ export const getCurrentTime = () => new Date().toISOString();
  */
 export const getUuid = () => crypto.randomUUID();
 export const hasNextSiblingClass = (link, cls) =>
-  link.nextElementSibling && link.nextElementSibling.classList.contains(cls);
+  link.nextElementSibling?.classList.contains(cls);
 
 // DOM manipulation functions
 export const addWarning = parent => parent.classList.add('warning');
