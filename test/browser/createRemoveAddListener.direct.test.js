@@ -21,5 +21,8 @@ test('createRemoveAddListener returns disposer that removes click handler', () =
   const [, , handler] = dom.addEventListener.mock.calls[0];
   const result = dispose();
   expect(result).toBeUndefined();
-  expect(dom.removeEventListener).toHaveBeenCalledWith(btn, 'click', handler);
+  dispose();
+
+  expect(dom.removeEventListener).toHaveBeenNthCalledWith(1, btn, 'click', handler);
+  expect(dom.removeEventListener).toHaveBeenNthCalledWith(2, btn, 'click', handler);
 });

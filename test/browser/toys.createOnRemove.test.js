@@ -118,8 +118,9 @@ describe('createOnRemove', () => {
     const fn = createOnRemove(localRows, localRender, 'a');
     expect(typeof fn).toBe('function');
 
-    fn(evt);
+    const result = fn(evt);
 
+    expect(result).toBeUndefined();
     expect(evt.preventDefault).toHaveBeenCalled();
     expect(localRows).toEqual({ b: 2 });
     expect(localRender).toHaveBeenCalled();
