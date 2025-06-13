@@ -1,5 +1,8 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { fetchAndCacheBlogData } from '../../src/browser/data.js';
+import {
+  fetchAndCacheBlogData,
+  shouldCopyStateForFetch,
+} from '../../src/browser/data.js';
 
 describe('BLOG_STATUS fetch failure handling', () => {
   it('sets status to error on fetch rejection', async () => {
@@ -19,5 +22,6 @@ describe('BLOG_STATUS fetch failure handling', () => {
       'Error fetching blog data:',
       expect.any(Error)
     );
+    expect(shouldCopyStateForFetch(state.blogStatus)).toBe(true);
   });
 });
