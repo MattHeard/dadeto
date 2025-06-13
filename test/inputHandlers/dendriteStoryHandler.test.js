@@ -270,3 +270,39 @@ test('does not set input values when data is missing', () => {
   expect(dom.setValue.mock.calls).toHaveLength(1);
   expect(dom.setValue).toHaveBeenCalledWith(textInput, '{}');
 });
+
+test('updates text input value with firstOption key on input', () => {
+  const container = {};
+  const textInput = { value: '{}' };
+  const handlers = [];
+  const dom = {
+    hide: jest.fn(),
+    disable: jest.fn(),
+    querySelector: jest.fn(() => null),
+    removeChild: jest.fn(),
+    createElement: jest.fn(tag => ({ tag, value: '' })),
+    setClassName: jest.fn(),
+    getNextSibling: jest.fn(() => ({})),
+    insertBefore: jest.fn(),
+    setType: jest.fn(),
+    setPlaceholder: jest.fn(),
+    setTextContent: jest.fn(),
+    addEventListener: jest.fn((el, _evt, handler) => {
+      handlers.push({ el, handler });
+    }),
+    removeEventListener: jest.fn(),
+    appendChild: jest.fn(),
+    getValue: jest.fn(el => el.value),
+    setValue: jest.fn((el, val) => {
+      el.value = val;
+    }),
+  };
+
+  dendriteStoryHandler(dom, container, textInput);
+
+  const { el: firstOptionInput, handler } = handlers[2];
+  firstOptionInput.value = 'X';
+  handler();
+
+  expect(textInput.value).toBe(JSON.stringify({ firstOption: 'X' }));
+});
