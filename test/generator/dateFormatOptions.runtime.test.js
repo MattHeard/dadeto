@@ -20,5 +20,6 @@ describe('DATE_FORMAT_OPTIONS runtime', () => {
 
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<p class="value metadata">4 May 2024</p>');
+    expect(html).not.toContain('04/05/2024');
   });
 });
