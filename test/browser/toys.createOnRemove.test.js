@@ -126,16 +126,43 @@ describe('createOnRemove', () => {
   });
 
   it('can be called multiple times safely', () => {
-    const rowsObj = { x: 1 };
+    const rowsMap = { x: 1 };
     const renderFn = jest.fn();
     const evt = { preventDefault: jest.fn() };
-    const handler = createOnRemove(rowsObj, renderFn, 'x');
+    const handler = createOnRemove(rowsMap, renderFn, 'x');
 
     handler(evt);
     handler(evt);
 
-    expect(rowsObj).toEqual({});
+    expect(rowsMap).toEqual({});
     expect(renderFn).toHaveBeenCalledTimes(2);
     expect(evt.preventDefault).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns undefined after removing the key', () => {
+    const rowsMap = { a: 1 };
+    const renderFn = jest.fn();
+    const evt = { preventDefault: jest.fn() };
+    const result = createOnRemove(rowsMap, renderFn, 'a')(evt);
+    expect(result).toBeUndefined();
+    expect(rowsMap).toEqual({});
+    expect(renderFn).toHaveBeenCalledTimes(1);
+    expect(evt.preventDefault).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates independent handlers for different keys', () => {
+    const rowsMap = { a: '1', b: '2' };
+    const renderFn = jest.fn();
+    const evtA = { preventDefault: jest.fn() };
+    const evtB = { preventDefault: jest.fn() };
+    const handlerA = createOnRemove(rowsMap, renderFn, 'a');
+    const handlerB = createOnRemove(rowsMap, renderFn, 'b');
+    expect(handlerA).not.toBe(handlerB);
+    handlerA(evtA);
+    handlerB(evtB);
+    expect(rowsMap).toEqual({});
+    expect(renderFn).toHaveBeenCalledTimes(2);
+    expect(evtA.preventDefault).toHaveBeenCalledTimes(1);
+    expect(evtB.preventDefault).toHaveBeenCalledTimes(1);
   });
 });
