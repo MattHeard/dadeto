@@ -31,8 +31,8 @@ function traversePathSegments(data, pathSegments) {
 
 function handlePathSegmentIteration(currentValue, segment, currentPath) {
   const result = traverseSegment(currentValue, segment, currentPath);
-  if (isErrorString(result)) {
-    return { error: result };
+  if (result.error) {
+    return { error: result.error };
   }
   return { value: result.value, path: result.path, error: null };
 }
@@ -41,9 +41,14 @@ function traverseSegment(currentValue, segment, currentPath) {
   const nextPath = getNextPath(currentPath, segment);
   const nonObjectError = getNonObjectSegmentError(currentValue, segment, nextPath);
   if (nonObjectError !== null) {
-    return nonObjectError;
+    return { error: nonObjectError };
   }
-  return getSegmentValueOrError(currentValue, segment, nextPath);
+
+  const result = getSegmentValueOrError(currentValue, segment, nextPath);
+  if (isErrorString(result)) {
+    return { error: result };
+  }
+  return { value: result.value, path: result.path, error: null };
 }
 
 function getNextPath(currentPath, segment) {
