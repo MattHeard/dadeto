@@ -208,7 +208,8 @@ export function italics(text) {
  * @private
  */
 function findBoldSegments(text) {
-  const boldMatch = text.match(createBoldPattern());
+  const boldPattern = createBoldPattern();
+  const boldMatch = boldPattern.exec(text);
 
   if (!boldMatch) {
     return null;
