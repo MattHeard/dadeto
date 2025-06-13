@@ -198,16 +198,9 @@
    86:11  warning  'rowElement' is assigned a value but never used  no-unused-vars
   199:9   warning  'inputHandler' is defined but never used         no-unused-vars
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.getModuleInitializer.calls.test.js
-  17:35  warning  Arrow function has a complexity of 6. Maximum allowed is 2  complexity
-  37:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.getModuleInitializer.invoke.test.js
   23:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
   80:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.getModuleInitializer.test.js
-  13:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.handleParsedResult.test.js
   9:36  warning  'tagName' is defined but never used  no-unused-vars
@@ -288,4 +281,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/utils/validation.test.js
   4:3  warning  'isValidString' is defined but never used  no-unused-vars
 
-✖ 153 problems (0 errors, 153 warnings)
+✖ 150 problems (0 errors, 150 warnings)
