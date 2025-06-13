@@ -166,4 +166,28 @@ describe('createOnRemove', () => {
     expect(evtA.preventDefault).toHaveBeenCalledTimes(1);
     expect(evtB.preventDefault).toHaveBeenCalledTimes(1);
   });
+
+  it('creates independent handlers when called repeatedly with same arguments', () => {
+    const rowsA = { a: 1 };
+    const rowsB = { a: 1 };
+    const renderA = jest.fn();
+    const renderB = jest.fn();
+    const evtA = { preventDefault: jest.fn() };
+    const evtB = { preventDefault: jest.fn() };
+
+    const handlerA = createOnRemove(rowsA, renderA, 'a');
+    const handlerB = createOnRemove(rowsB, renderB, 'a');
+
+    expect(handlerA).not.toBe(handlerB);
+
+    handlerA(evtA);
+    handlerB(evtB);
+
+    expect(rowsA).toEqual({});
+    expect(rowsB).toEqual({});
+    expect(renderA).toHaveBeenCalledTimes(1);
+    expect(renderB).toHaveBeenCalledTimes(1);
+    expect(evtA.preventDefault).toHaveBeenCalledTimes(1);
+    expect(evtB.preventDefault).toHaveBeenCalledTimes(1);
+  });
 });
