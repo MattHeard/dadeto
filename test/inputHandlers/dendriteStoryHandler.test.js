@@ -270,3 +270,38 @@ test('does not set input values when data is missing', () => {
   expect(dom.setValue.mock.calls).toHaveLength(1);
   expect(dom.setValue).toHaveBeenCalledWith(textInput, '{}');
 });
+
+test('adds input listeners and disposers remove them', () => {
+  const container = {};
+  const textInput = { value: '{}' };
+  const dom = {
+    hide: jest.fn(),
+    disable: jest.fn(),
+    querySelector: jest.fn(() => null),
+    removeChild: jest.fn(),
+    createElement: jest.fn(() => ({})),
+    setClassName: jest.fn(),
+    getNextSibling: jest.fn(() => ({})),
+    insertBefore: jest.fn(),
+    setType: jest.fn(),
+    setPlaceholder: jest.fn(),
+    setTextContent: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    appendChild: jest.fn(),
+    getValue: jest.fn(el => el.value),
+    setValue: jest.fn(),
+  };
+
+  const form = dendriteStoryHandler(dom, container, textInput);
+
+  expect(dom.addEventListener).toHaveBeenCalled();
+  dom.addEventListener.mock.calls.forEach(([, evt]) => {
+    expect(evt).toBe('input');
+  });
+
+  form._dispose();
+  dom.removeEventListener.mock.calls.forEach(([, evt]) => {
+    expect(evt).toBe('input');
+  });
+});
