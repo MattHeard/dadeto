@@ -7,16 +7,15 @@
  */
 
 function stringToJsonArrayToy(input) {
-  try {
-    const delimiter = ',';
-    const arr = input
-      .split(delimiter)
-      .map(s => s.trim())
-      .filter(Boolean);
-    return JSON.stringify(arr);
-  } catch (e) {
+  if (typeof input !== 'string') {
     return JSON.stringify([]);
   }
+  const delimiter = ',';
+  const arr = input
+    .split(delimiter)
+    .map(s => s.trim())
+    .filter(Boolean);
+  return JSON.stringify(arr);
 }
 
 export { stringToJsonArrayToy };
