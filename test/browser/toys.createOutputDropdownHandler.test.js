@@ -259,4 +259,11 @@ describe('createOutputDropdownHandler', () => {
     expect(fnString).toContain('handleDropdownChange(event.currentTarget, getData, dom)');
     expect(handler.length).toBe(1);
   });
+
+  test('factory function source includes inner arrow', () => {
+    const fnString = createOutputDropdownHandler.toString();
+    expect(fnString).toContain('event =>');
+    expect(fnString).toContain('handleDropdownChange');
+    expect(createOutputDropdownHandler.length).toBe(3);
+  });
 });
