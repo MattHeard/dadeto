@@ -1,7 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
 import {
-  kvHandler,
-  handleKVType,
   maybeRemoveNumber,
   maybeRemoveDendrite,
 } from '../../src/inputHandlers/kv.js';
