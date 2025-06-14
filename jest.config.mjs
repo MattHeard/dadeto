@@ -24,7 +24,8 @@ const config = {
   // Ensure coverage is collected for all files, including those not tested
   collectCoverage: Boolean(process.env.STRYKER_TEST_ENV),
   // Ensure all files are included in coverage, even if not required
-  forceCoverageMatch: process.env.STRYKER_TEST_ENV ? ['**/*.js'] : []
+  forceCoverageMatch: [],
+  ...(process.env.STRYKER_TEST_ENV && { forceCoverageMatch: ['**/*.js'] })
 };
 
 export default config;
