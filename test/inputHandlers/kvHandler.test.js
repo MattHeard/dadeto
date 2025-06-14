@@ -1,7 +1,6 @@
 import { describe, test, expect, jest } from '@jest/globals';
 import {
-  kvHandler,
-  handleKVType,
+  // kvHandler is complex to mock and isn't needed for these tests
   maybeRemoveNumber,
   maybeRemoveDendrite,
 } from '../../src/inputHandlers/kv.js';
