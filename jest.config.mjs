@@ -1,3 +1,8 @@
+const forceCoverageMatch = [];
+if (process.env.STRYKER_TEST_ENV) {
+  forceCoverageMatch.push("**/*.js");
+}
+
 const config = {
   transform: {
     '^.+\\.js$': 'babel-jest'
@@ -24,7 +29,7 @@ const config = {
   // Ensure coverage is collected for all files, including those not tested
   collectCoverage: Boolean(process.env.STRYKER_TEST_ENV),
   // Ensure all files are included in coverage, even if not required
-  forceCoverageMatch: process.env.STRYKER_TEST_ENV ? ['**/*.js'] : []
+  forceCoverageMatch,
 };
 
 export default config;
