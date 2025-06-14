@@ -22,5 +22,8 @@ export function isValidText(value) {
  * @returns {string} The trimmed string, or undefined if input is not a string
  */
 export function safeTrim(text) {
-  return typeof text === 'string' ? text.trim() : undefined;
+  if (typeof text !== 'string') {
+    return undefined;
+  }
+  return text.trim();
 }
