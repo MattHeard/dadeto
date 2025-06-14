@@ -83,7 +83,7 @@ describe('createKeyValueRow', () => {
       .mockReturnValue({}); // Any other calls
 
     // Call the row creator function
-    const rowElement = rowCreator('key1', 'value1', false);
+    rowCreator('key1', 'value1', false);
 
     // Verify the row element was created with the correct class
     expect(mockDom.createElement).toHaveBeenCalledWith('div');
