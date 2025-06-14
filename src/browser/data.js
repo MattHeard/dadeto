@@ -160,8 +160,13 @@ export function shouldCopyStateForFetch(status) {
   return status === BLOG_STATUS.IDLE || status === BLOG_STATUS.ERROR;
 }
 
+/**
+ * Determine if an object includes its own `temporary` property.
+ * @param {object} obj
+ * @returns {boolean}
+ */
 function hasTemporaryProperty(obj) {
-  return Object.prototype.hasOwnProperty.call(obj, 'temporary');
+  return Object.hasOwn(obj, 'temporary');
 }
 
 function isNonNullObject(value) {
