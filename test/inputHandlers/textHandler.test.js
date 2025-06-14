@@ -9,10 +9,12 @@ describe('textHandler', () => {
     const kvContainer = { _dispose: jest.fn() };
     const dendriteForm = { _dispose: jest.fn() };
     const querySelector = jest.fn((el, selector) => {
-      if (selector === 'input[type="number"]') {return numberInput;}
-      if (selector === '.kv-container') {return kvContainer;}
-      if (selector === '.dendrite-form') {return dendriteForm;}
-      return null;
+      const mapping = {
+        'input[type="number"]': numberInput,
+        '.kv-container': kvContainer,
+        '.dendrite-form': dendriteForm,
+      };
+      return mapping[selector] ?? null;
     });
     const dom = {
       reveal: jest.fn(),
@@ -51,10 +53,12 @@ describe('textHandler', () => {
     const kvContainer = {};
     const dendriteForm = {};
     const querySelector = jest.fn((_, selector) => {
-      if (selector === 'input[type="number"]') {return numberInput;}
-      if (selector === '.kv-container') {return kvContainer;}
-      if (selector === '.dendrite-form') {return dendriteForm;}
-      return null;
+      const mapping = {
+        'input[type="number"]': numberInput,
+        '.kv-container': kvContainer,
+        '.dendrite-form': dendriteForm,
+      };
+      return mapping[selector] ?? null;
     });
     const dom = {
       reveal: jest.fn(),
