@@ -9,7 +9,6 @@ import {
 import {
   createOutputDropdownHandler,
   createInputDropdownHandler,
-  createAddDropdownListener,
   handleDropdownChange,
   getComponentInitializer,
   makeCreateIntersectionObserver,
