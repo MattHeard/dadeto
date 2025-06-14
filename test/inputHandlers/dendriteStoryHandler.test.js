@@ -245,6 +245,34 @@ test('sets expected placeholders and label text', () => {
   expect(labels).toEqual(expected);
 });
 
+test('creates a label element for each field', () => {
+  const dom = {
+    hide: jest.fn(),
+    disable: jest.fn(),
+    querySelector: jest.fn(() => null),
+    removeChild: jest.fn(),
+    createElement: jest.fn(() => ({})),
+    setClassName: jest.fn(),
+    getNextSibling: jest.fn(() => ({})),
+    insertBefore: jest.fn(),
+    setType: jest.fn(),
+    setPlaceholder: jest.fn(),
+    setTextContent: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    appendChild: jest.fn(),
+    getValue: jest.fn(() => '{}'),
+    setValue: jest.fn(),
+  };
+
+  dendriteStoryHandler(dom, {}, { value: '{}' });
+
+  const labelCalls = dom.createElement.mock.calls.filter(
+    ([tag]) => tag === 'label'
+  );
+  expect(labelCalls).toHaveLength(6);
+});
+
 test('does not set input values when data is missing', () => {
   const container = {};
   const textInput = { value: '{}' };
