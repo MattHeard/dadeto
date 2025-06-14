@@ -9,7 +9,6 @@ import {
 import {
   createOutputDropdownHandler,
   createInputDropdownHandler,
-  createAddDropdownListener,
   handleDropdownChange,
   getComponentInitializer,
   makeCreateIntersectionObserver,
@@ -17,10 +16,10 @@ import {
   createDropdownInitializer,
 } from './toys.js';
 
-import { dom } from './document.js';
 import { revealBetaArticles } from './beta.js';
 
 import {
+  dom,
   getElementById,
   log,
   warn,
