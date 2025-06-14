@@ -176,8 +176,7 @@ export const disable = input => {
  */
 export const getNextSibling = element => element.nextSibling;
 
-export const removeNextSibling = link =>
-  link.nextElementSibling && link.nextElementSibling.remove();
+export const removeNextSibling = link => link.nextElementSibling?.remove();
 
 /**
  * Removes an event listener from an element

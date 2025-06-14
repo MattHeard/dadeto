@@ -24,12 +24,16 @@
  */
 
 function validateCluesObject(obj) {
-  if (!obj || typeof obj !== 'object') {return 'Invalid JSON object';}
+  if (!obj || typeof obj !== 'object') {
+    return 'Invalid JSON object';
+  }
   if (!Array.isArray(obj.rowClues) || !Array.isArray(obj.colClues)) {
     return 'Missing rowClues or colClues array';
   }
-  if (obj.rowClues.some(n => typeof n !== 'number')
-      || obj.colClues.some(n => typeof n !== 'number')) {
+  if (
+    obj.rowClues.some(n => typeof n !== 'number') ||
+    obj.colClues.some(n => typeof n !== 'number')
+  ) {
     return 'Clue values must be numbers';
   }
   if (obj.rowClues.length === 0 || obj.colClues.length === 0) {
@@ -65,22 +69,24 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
   }
   if (!invalid) {
     const error = validateCluesObject(clues);
-    if (error) {invalid = true;}
+    if (error) {
+      invalid = true;
+    }
   }
   if (invalid) {
     clues = { rowClues: Array(10).fill(0), colClues: Array(10).fill(0) };
   }
 
   const { rowClues, colClues } = clues;
-  const height = rowClues.length;
   const width = colClues.length;
 
   const rowPad = Math.max(...rowClues).toString().length;
 
   /* ---------- TOP COLUMN CLUES ---------- */
   const colLines = buildColumnDigitMatrix(colClues); // [maxDigits][width]
-  const topClueLines = colLines.map(lineArr =>
-    padLeft('', rowPad) + ' ' + lineArr.join(' ') + ' ' + padLeft('', rowPad)
+  const topClueLines = colLines.map(
+    lineArr =>
+      padLeft('', rowPad) + ' ' + lineArr.join(' ') + ' ' + padLeft('', rowPad)
   );
 
   /* ---------- GRID WITH ROW CLUES ---------- */

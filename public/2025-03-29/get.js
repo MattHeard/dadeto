@@ -90,7 +90,7 @@ function isNonObjectValue(value) {
 }
 
 function hasOwnSegment(currentValue, segment) {
-  return Object.prototype.hasOwnProperty.call(currentValue, segment);
+  return Object.hasOwn(currentValue, segment);
 }
 
 function getSegmentNotFoundError(currentValue, segment, currentPath) {

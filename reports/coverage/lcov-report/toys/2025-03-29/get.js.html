@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>69/69</span>
+                <span class='fraction'>72/72</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>36/36</span>
+                <span class='fraction'>38/38</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>69/69</span>
+                <span class='fraction'>72/72</span>
             </div>
         
             
@@ -244,14 +244,23 @@
 <a name='L179'></a><a href='#L179'>179</a>
 <a name='L180'></a><a href='#L180'>180</a>
 <a name='L181'></a><a href='#L181'>181</a>
-<a name='L182'></a><a href='#L182'>182</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">54x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -289,7 +298,12 @@
 <span class="cline-any cline-yes">39x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">34x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -305,6 +319,10 @@
 <span class="cline-any cline-yes">34x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -458,8 +476,8 @@ function traversePathSegments(data, pathSegments) {
 &nbsp;
 function handlePathSegmentIteration(currentValue, segment, currentPath) {
   const result = traverseSegment(currentValue, segment, currentPath);
-  if (isErrorString(result)) {
-    return { error: result };
+  if (result.error) {
+    return { error: result.error };
   }
   return { value: result.value, path: result.path, error: null };
 }
@@ -468,9 +486,14 @@ function traverseSegment(currentValue, segment, currentPath) {
   const nextPath = getNextPath(currentPath, segment);
   const nonObjectError = getNonObjectSegmentError(currentValue, segment, nextPath);
   if (nonObjectError !== null) {
-    return nonObjectError;
+    return { error: nonObjectError };
   }
-  return getSegmentValueOrError(currentValue, segment, nextPath);
+&nbsp;
+  const result = getSegmentValueOrError(currentValue, segment, nextPath);
+  if (result.error) {
+    return { error: result.error };
+  }
+  return { value: result.value, path: result.path, error: null };
 }
 &nbsp;
 function getNextPath(currentPath, segment) {
@@ -483,9 +506,13 @@ function getNextPath(currentPath, segment) {
 &nbsp;
 function getSegmentValueOrError(currentValue, segment, nextPath) {
   if (hasOwnSegment(currentValue, segment)) {
-    return { value: currentValue[segment], path: nextPath };
+    return { value: currentValue[segment], path: nextPath, error: null };
   }
-  return getSegmentNotFoundError(currentValue, segment, nextPath);
+  return {
+    value: undefined,
+    path: nextPath,
+    error: getSegmentNotFoundError(currentValue, segment, nextPath)
+  };
 }
 &nbsp;
 function getNonObjectSegmentError(currentValue, segment, currentPath) {
@@ -508,7 +535,7 @@ function isNonObjectValue(value) {
 }
 &nbsp;
 function hasOwnSegment(currentValue, segment) {
-  return Object.prototype.hasOwnProperty.call(currentValue, segment);
+  return Object.hasOwn(currentValue, segment);
 }
 &nbsp;
 function getSegmentNotFoundError(currentValue, segment, currentPath) {
@@ -613,7 +640,7 @@ function getValidDataResultAfterEmptyCheck(data, input) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-13T18:59:59.729Z
+                at 2025-06-14T14:46:59.804Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
