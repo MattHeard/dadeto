@@ -17,10 +17,8 @@ import {
   createDropdownInitializer,
 } from './toys.js';
 
-import { dom } from './document.js';
-import { revealBetaArticles } from './beta.js';
-
 import {
+  dom,
   getElementById,
   log,
   warn,
@@ -31,6 +29,7 @@ import {
   getInteractiveComponentCount,
   getInteractiveComponents,
 } from './document.js';
+import { revealBetaArticles } from './beta.js';
 
 const globalState = {
   blog: null, // Holds the fetched blog data
