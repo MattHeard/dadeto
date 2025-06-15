@@ -63,6 +63,7 @@ describe('TOY_UI_SECTIONS integration', () => {
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<select class="input">');
+    expect(html).toContain('<option value="text">text</option>');
     expect(html).not.toContain('selected');
   });
 
@@ -85,12 +86,7 @@ describe('TOY_UI_SECTIONS integration', () => {
     const match = html.match(/<select class="input">([\s\S]*?)<\/select>/);
     expect(match).not.toBeNull();
     const dropdown = match[1];
-    const expectedOptions = [
-      'text',
-      'number',
-      'kv',
-      'dendrite-story',
-    ];
+    const expectedOptions = ['text', 'number', 'kv', 'dendrite-story'];
     for (const value of expectedOptions) {
       expect(dropdown).toContain(`<option value="${value}">${value}</option>`);
     }
