@@ -740,8 +740,6 @@ function escapeRelatedLinkFields(link) {
 function prefixIfPresent(prefix, value) {
   if (value) {
     return `${prefix}${value}`;
-  } else {
-    return '';
   }
 }
 

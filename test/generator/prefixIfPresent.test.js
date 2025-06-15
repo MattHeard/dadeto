@@ -23,10 +23,10 @@ describe('prefixIfPresent', () => {
     expect(prefixIfPresent(' by ', 'Alice')).toBe(' by Alice');
   });
 
-  test('returns empty string when value is missing', () => {
-    expect(prefixIfPresent(' by ', '')).toBe('');
-    expect(prefixIfPresent(' by ', null)).toBe('');
-    expect(prefixIfPresent(' by ', undefined)).toBe('');
-    expect(prefixIfPresent(' by ', 0)).toBe('');
+  test('returns undefined when value is missing', () => {
+    expect(prefixIfPresent(' by ', '')).toBeUndefined();
+    expect(prefixIfPresent(' by ', null)).toBeUndefined();
+    expect(prefixIfPresent(' by ', undefined)).toBeUndefined();
+    expect(prefixIfPresent(' by ', 0)).toBeUndefined();
   });
 });
