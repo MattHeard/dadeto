@@ -2,7 +2,7 @@ import { describe, it, expect, jest } from '@jest/globals';
 import { createAddDropdownListener } from '../../src/browser/toys.js';
 
 describe('createAddDropdownListener callback behavior', () => {
-  it('invokes onChange when the event fires', () => {
+  it('registers a change handler and forwards the event', () => {
     const onChange = jest.fn();
     const dropdown = {};
     const dom = {
@@ -13,10 +13,12 @@ describe('createAddDropdownListener callback behavior', () => {
     };
 
     const addListener = createAddDropdownListener(onChange, dom);
+    expect(typeof addListener).toBe('function');
     expect(addListener.length).toBe(1);
 
-    addListener(dropdown);
+    const result = addListener(dropdown);
 
+    expect(result).toBeUndefined();
     expect(dom.addEventListener).toHaveBeenCalledWith(
       dropdown,
       'change',
