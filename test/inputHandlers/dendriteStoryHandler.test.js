@@ -71,7 +71,10 @@ describe('dendriteStoryHandler', () => {
       hide: jest.fn(),
       disable: jest.fn(),
       querySelector: jest.fn((container, selector) => {
-        return selector === '.dendrite-form' ? existing : null;
+        if (selector === '.dendrite-form') {
+          return existing;
+        }
+        return null;
       }),
       removeChild: jest.fn(),
       createElement: jest.fn(() => ({})),
