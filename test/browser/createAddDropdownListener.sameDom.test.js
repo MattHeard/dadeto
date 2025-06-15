@@ -1,6 +1,9 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { createAddDropdownListener } from '../../src/browser/toys.js';
 
+// Consolidated test from createAddDropdownListener.instance.test.js
+// Verifies a new handler is returned on each call while using the same dom
+
 describe('createAddDropdownListener using same dom', () => {
   it('returns a new handler on each invocation', () => {
     const dom = { addEventListener: jest.fn() };
