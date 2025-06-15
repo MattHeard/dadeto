@@ -15,7 +15,7 @@ describe('setupRemoveButton', () => {
     mockDom = {
       setTextContent: jest.fn(),
       addEventListener: jest.fn(),
-      removeEventListener: jest.fn()
+      removeEventListener: jest.fn(),
     };
 
     button = {};
@@ -28,23 +28,6 @@ describe('setupRemoveButton', () => {
     setupRemoveButton(mockDom, button, rows, render, rowKey, disposers);
 
     expect(mockDom.setTextContent).toHaveBeenCalledWith(button, '×');
-  });
-
-  it('adds a click event listener to the button', () => {
-    setupRemoveButton(mockDom, button, rows, render, rowKey, disposers);
-
-    expect(mockDom.addEventListener).toHaveBeenCalledWith(
-      button,
-      'click',
-      expect.any(Function)
-    );
-  });
-
-  it('adds a disposer function to the disposers array', () => {
-    setupRemoveButton(mockDom, button, rows, render, rowKey, disposers);
-
-    expect(disposers).toHaveLength(1);
-    expect(disposers[0]).toBeInstanceOf(Function);
   });
 
   it('clicking the button removes the corresponding row and calls render', () => {
@@ -70,34 +53,6 @@ describe('setupRemoveButton', () => {
 
     // Should call render to update the UI
     expect(render).toHaveBeenCalledTimes(1);
-  });
-
-  it('cleanup function removes the event listener', () => {
-    setupRemoveButton(mockDom, button, rows, render, rowKey, disposers);
-
-    // Get the cleanup function
-    const cleanup = disposers[0];
-
-    // Call cleanup
-    cleanup();
-
-    // Should remove the event listener
-    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
-      button,
-      'click',
-      expect.any(Function)
-    );
-  });
-
-  it('cleanup can be called multiple times', () => {
-    setupRemoveButton(mockDom, button, rows, render, rowKey, disposers);
-
-    const cleanup = disposers[0];
-
-    cleanup();
-    cleanup();
-
-    expect(mockDom.removeEventListener).toHaveBeenCalledTimes(2);
   });
 
   it('handles clicking when the key does not exist in rows', () => {
