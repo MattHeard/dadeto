@@ -1,13 +1,24 @@
 import { describe, test, expect } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
+import { generateBlog } from '../../src/generator/generator.js';
 
-const generatorPath = path.join(process.cwd(), 'src/generator/generator.js');
+const header = '<body>';
+const footer = '</body>';
+const wrapHtml = html => html;
 
 describe('DATE_FORMAT_OPTIONS constant', () => {
-  test('is defined with numeric day, short month, and numeric year', () => {
-    const source = fs.readFileSync(generatorPath, 'utf8');
-    const regex = /const DATE_FORMAT_OPTIONS = \{\s*day: 'numeric',\s*month: 'short',\s*year: 'numeric',?\s*\}/;
-    expect(source).toMatch(regex);
+  test('generates dates in "4 May 2024" format', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'CONST',
+          title: 'Const Test',
+          publicationDate: '2024-05-04',
+          content: ['x'],
+        },
+      ],
+    };
+
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<p class="value metadata">4 May 2024</p>');
   });
 });
