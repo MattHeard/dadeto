@@ -1,6 +1,9 @@
 import { describe, test, expect, jest } from '@jest/globals';
 import { numberHandler } from '../../src/inputHandlers/number.js';
 
+const createQuerySelector = mapping =>
+  jest.fn((_, selector) => mapping[selector] || null);
+
 describe('numberHandler', () => {
   test('removes kv and dendrite elements and leaves existing number input', () => {
     const container = {};
@@ -8,11 +11,10 @@ describe('numberHandler', () => {
     const numberInput = {};
     const kvContainer = { _dispose: jest.fn() };
     const dendriteForm = { _dispose: jest.fn() };
-    const querySelector = jest.fn((el, selector) => {
-      if (selector === '.kv-container') {return kvContainer;}
-      if (selector === '.dendrite-form') {return dendriteForm;}
-      if (selector === 'input[type="number"]') {return numberInput;}
-      return null;
+    const querySelector = createQuerySelector({
+      '.kv-container': kvContainer,
+      '.dendrite-form': dendriteForm,
+      'input[type="number"]': numberInput,
     });
     const removeChild = jest.fn();
     const dom = {
@@ -39,9 +41,12 @@ describe('numberHandler', () => {
 
   test('no elements to remove', () => {
     const numberInput = {};
-    const querySelector = jest.fn((_, selector) =>
-      selector === 'input[type="number"]' ? numberInput : null
-    );
+    const querySelector = jest.fn((_, selector) => {
+      if (selector === 'input[type="number"]') {
+        return numberInput;
+      }
+      return null;
+    });
     const dom = {
       hide: jest.fn(),
       disable: jest.fn(),
@@ -58,11 +63,10 @@ describe('numberHandler', () => {
   test('ignores elements without dispose methods', () => {
     const kvContainer = {};
     const dendriteForm = {};
-    const querySelector = jest.fn((_, selector) => {
-      if (selector === '.kv-container') {return kvContainer;}
-      if (selector === '.dendrite-form') {return dendriteForm;}
-      if (selector === 'input[type="number"]') {return {};}
-      return null;
+    const querySelector = createQuerySelector({
+      '.kv-container': kvContainer,
+      '.dendrite-form': dendriteForm,
+      'input[type="number"]': {},
     });
     const dom = {
       hide: jest.fn(),
