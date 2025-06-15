@@ -311,7 +311,7 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
  */
 function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
   const { dom, loggers } = moduleConfig;
-  const logInfo = loggers && loggers.logInfo ? loggers.logInfo : () => {};
+  const { logInfo } = loggers;
   logInfo(
     'Starting module import for article',
     moduleInfo.article.id,
@@ -357,9 +357,7 @@ export function makeObserverCallback(moduleInfo, env, dom) {
   );
   const handleEntryFactory = getEntryHandler(moduleInfo, moduleConfig);
   const logInfo =
-    moduleConfig.loggers && moduleConfig.loggers.logInfo
-      ? moduleConfig.loggers.logInfo
-      : () => {};
+    (moduleConfig.loggers && moduleConfig.loggers.logInfo) || (() => {});
   return (entries, observer) => {
     const handleEntry = handleEntryFactory(observer);
     entries.forEach(entry => {
