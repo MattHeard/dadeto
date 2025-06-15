@@ -11,7 +11,9 @@ describe('createNumberInput disposer', () => {
       setType: jest.fn(),
       setValue: jest.fn(),
       addEventListener: jest.fn((el, event, h) => {
-        if (event === 'input') {handler = h;}
+        if (event === 'input') {
+          handler = h;
+        }
       }),
       removeEventListener: jest.fn(),
     };
@@ -45,7 +47,7 @@ describe('createNumberInput disposer', () => {
     input._dispose();
     input._dispose();
 
-    const [[el, event, handler]] = dom.addEventListener.mock.calls;
+    const [[el, , handler]] = dom.addEventListener.mock.calls;
     expect(dom.removeEventListener).toHaveBeenCalledTimes(2);
     expect(dom.removeEventListener).toHaveBeenNthCalledWith(
       1,
