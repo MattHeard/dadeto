@@ -21,6 +21,7 @@ describe('normalizeContentItem with quote object', () => {
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<blockquote class="value">');
+    expect(html).toContain('<div class="corner corner-tl">');
     expect(html).toContain('<p>Hello world</p>');
   });
 });
