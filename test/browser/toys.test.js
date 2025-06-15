@@ -5,17 +5,13 @@ import {
   enableInteractiveControls,
   getModuleInitializer,
   initializeVisibleComponents,
-  getDeepStateCopy,
-  createHandleSubmit,
   initializeInteractiveComponent,
   handleModuleError,
   handleDropdownChange,
   createAddDropdownListener,
   createInputDropdownHandler,
-  createUpdateTextInputValue,
   getText,
 } from '../../src/browser/toys.js';
-import * as toys from '../../src/browser/toys.js';
 
 describe('createAddDropdownListener', () => {
   it('adds a change event listener to the dropdown', () => {
