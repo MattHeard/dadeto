@@ -152,8 +152,8 @@
   91:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setupButton.shared.test.js
-   8:49  warning  Arrow function has too many parameters (6). Maximum allowed is 3  max-params
-  14:49  warning  Arrow function has too many parameters (6). Maximum allowed is 3  max-params
+  11:49  warning  Arrow function has too many parameters (6). Maximum allowed is 3  max-params
+  17:49  warning  Arrow function has too many parameters (6). Maximum allowed is 3  max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setupButtonCleanup.test.js
   78:36  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
@@ -198,11 +198,6 @@
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.makeProcessingFunction.test.js
   12:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.syncHiddenField.test.js
-   30:12  warning  'actualTextInput' is assigned a value but never used  no-unused-vars
-   71:12  warning  'actualTextInput' is assigned a value but never used  no-unused-vars
-  124:12  warning  'actualTextInput' is assigned a value but never used  no-unused-vars
-
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
    824:40  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
   1150:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
@@ -220,4 +215,4 @@
   11:35  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
   70:35  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
 
-✖ 115 problems (0 errors, 115 warnings)
+✖ 112 problems (0 errors, 112 warnings)
