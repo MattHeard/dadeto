@@ -66,8 +66,10 @@ describe('initializeInteractiveComponent keypress handling', () => {
     keypressHandler({ key: 'a' });
     expect(dom.stopDefault).not.toHaveBeenCalled();
 
-    // Enter key triggers submit
-    keypressHandler({ key: 'Enter' });
+    // Enter key triggers submit and forwards the event object
+    const evt = { key: 'Enter' };
+    keypressHandler(evt);
     expect(dom.stopDefault).toHaveBeenCalledTimes(1);
+    expect(dom.stopDefault).toHaveBeenCalledWith(evt);
   });
 });
