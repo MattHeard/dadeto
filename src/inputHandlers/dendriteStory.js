@@ -54,10 +54,8 @@ export function dendriteStoryHandler(dom, container, textInput) {
     const wrapper = dom.createElement('div');
     const label = dom.createElement('label');
     dom.setTextContent(label, placeholder);
-    const input =
-      key === 'content'
-        ? dom.createElement('textarea')
-        : dom.createElement('input');
+    // eslint-disable-next-line no-ternary
+    const input = key === 'content' ? dom.createElement('textarea') : dom.createElement('input');
     if (key !== 'content') {
       dom.setType(input, 'text');
     }
