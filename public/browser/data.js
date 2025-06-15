@@ -37,8 +37,8 @@ export function shouldUseExistingFetch(globalState, logFn) {
 
 /**
  * Returns a Base64 encoding function using the provided btoa and
- * encodeURIComponent. It converts percent-encoded bytes back to a
- * binary string to avoid relying on the deprecated unescape.
+ * encodeURIComponent. This avoids the deprecated unescape by manually
+ * converting percent-encoded bytes back to a binary string.
  * @param {function} btoa - The btoa function
  * @param {function} encodeURIComponentFn - The encodeURIComponent function
  * @returns {function} encodeBase64 - Function that encodes a string to Base64

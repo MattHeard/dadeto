@@ -1,30 +1,26 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/document.js
-   74:3   warning  Ternary operator used                                             no-ternary
-  189:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
+  193:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3  max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
     15:45  warning  Arrow function has a complexity of 7. Maximum allowed is 2                             complexity
     31:34  warning  Arrow function has a complexity of 6. Maximum allowed is 2                             complexity
     68:64  warning  Arrow function has too many parameters (4). Maximum allowed is 3                       max-params
    185:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2            complexity
-   312:1   warning  Function 'handleIntersectingEntry' has a complexity of 3. Maximum allowed is 2         complexity
-   314:19  warning  Ternary operator used                                                                  no-ternary
    352:8   warning  Function 'makeObserverCallback' has a complexity of 3. Maximum allowed is 2            complexity
-   360:5   warning  Ternary operator used                                                                  no-ternary
-   467:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3                       max-params
-   522:8   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3     max-params
-   529:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
-   560:8   warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3   max-params
-   591:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
-   633:3   warning  Arrow function has too many parameters (7). Maximum allowed is 3                       max-params
-   690:70  warning  Arrow function has too many parameters (5). Maximum allowed is 3                       max-params
-   714:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
-   758:5   warning  Arrow function has too many parameters (8). Maximum allowed is 3                       max-params
-   798:71  warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
-   963:8   warning  Function 'initializeInteractiveComponent' has a complexity of 3. Maximum allowed is 2  complexity
-  1088:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
-  1123:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   465:70  warning  Arrow function has too many parameters (4). Maximum allowed is 3                       max-params
+   520:8   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3     max-params
+   527:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
+   558:8   warning  Function 'createValueInputHandler' has too many parameters (5). Maximum allowed is 3   max-params
+   589:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   631:3   warning  Arrow function has too many parameters (7). Maximum allowed is 3                       max-params
+   688:70  warning  Arrow function has too many parameters (5). Maximum allowed is 3                       max-params
+   712:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   756:5   warning  Arrow function has too many parameters (8). Maximum allowed is 3                       max-params
+   796:71  warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   961:8   warning  Function 'initializeInteractiveComponent' has a complexity of 3. Maximum allowed is 2  complexity
+  1086:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
+  1121:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
   890:1   warning  Function 'buildToyInputDropdown' has a complexity of 3. Maximum allowed is 2  complexity
@@ -84,9 +80,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/utils/validation.js
   25:8  warning  Function 'isValidBoolean' has a complexity of 4. Maximum allowed is 2  complexity
-
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/clearDisposers.test.js
-  1:20  warning  'it' is defined but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/createInputDropdownHandler.allTypes.mutantKill.test.js
   17:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
@@ -150,10 +143,9 @@
   48:17  warning  'event' is assigned a value but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/data.test.js
-  524:90  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
+  524:90  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
   526:7   warning  Ternary operator used                                       no-ternary
-  529:24  warning  Ternary operator used                                       no-ternary
-  531:7   warning  Ternary operator used                                       no-ternary
+  530:7   warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/initializeInteractiveComponent.keypress.event.test.js
   13:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
@@ -174,8 +166,9 @@
    8:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
   50:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/parseJSONResult.realImport.test.js
-  1:24  warning  'expect' is defined but never used  no-unused-vars
+/Users/matthew.heard/Code/Matt/dadeto/test/browser/setupButton.shared.test.js
+   8:49  warning  Arrow function has too many parameters (6). Maximum allowed is 3  max-params
+  14:49  warning  Arrow function has too many parameters (6). Maximum allowed is 3  max-params
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/setupButtonCleanup.test.js
   78:36  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
@@ -226,32 +219,29 @@
   124:12  warning  'actualTextInput' is assigned a value but never used  no-unused-vars
 
 /Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
+     8:3   warning  'getDeepStateCopy' is defined but never used                no-unused-vars
      9:3   warning  'createHandleSubmit' is defined but never used              no-unused-vars
     15:3   warning  'createUpdateTextInputValue' is defined but never used      no-unused-vars
     18:13  warning  'toys' is defined but never used                            no-unused-vars
    933:40  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1280:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1338:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1517:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  1518:7   warning  Ternary operator used                                       no-ternary
-  1542:40  warning  Ternary operator used                                       no-ternary
-  1543:40  warning  Ternary operator used                                       no-ternary
-  1580:9   warning  Ternary operator used                                       no-ternary
-  1618:9   warning  Ternary operator used                                       no-ternary
-  1653:9   warning  Ternary operator used                                       no-ternary
-  1675:39  warning  Ternary operator used                                       no-ternary
-  1704:9   warning  Ternary operator used                                       no-ternary
+  1261:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1319:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1498:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  1499:7   warning  Ternary operator used                                       no-ternary
+  1523:40  warning  Ternary operator used                                       no-ternary
+  1524:40  warning  Ternary operator used                                       no-ternary
+  1561:9   warning  Ternary operator used                                       no-ternary
+  1599:9   warning  Ternary operator used                                       no-ternary
+  1634:9   warning  Ternary operator used                                       no-ternary
+  1656:39  warning  Ternary operator used                                       no-ternary
+  1685:9   warning  Ternary operator used                                       no-ternary
 
 /Users/matthew.heard/Code/Matt/dadeto/test/inputHandlers/dendriteStoryHandler.test.js
-   74:16  warning  Ternary operator used                                       no-ternary
-  124:35  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  127:35  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/test/inputHandlers/numberHandler.test.js
   11:35  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
   43:7   warning  Ternary operator used                                       no-ternary
   61:35  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
 
-/Users/matthew.heard/Code/Matt/dadeto/test/toys/2025-06-09/uuid.test.js
-  8:32  warning  Ternary operator used  no-ternary
-
-✖ 137 problems (0 errors, 137 warnings)
+✖ 131 problems (0 errors, 131 warnings)

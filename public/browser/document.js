@@ -70,8 +70,12 @@ export const logError = (...args) => console.error(...args);
  * @param {string} prefix - The prefix string to prepend
  * @returns {Function} The prefixed logger function
  */
-export const createPrefixedLogger = (logger, prefix) =>
-  logger ? (...args) => logger(prefix, ...args) : () => {};
+export const createPrefixedLogger = (logger, prefix) => {
+  if (logger) {
+    return (...args) => logger(prefix, ...args);
+  }
+  return () => {};
+};
 
 /**
  * Creates a loggers object with each logger prefixed using the given prefix.
