@@ -5,7 +5,13 @@ describe('uuidToy', () => {
   it('returns the uuid from the environment', () => {
     const mockUuid = '84f8e1f2-3e9d-4fd1-b1a2-d9c2bd34fdba';
     const getUuid = jest.fn(() => mockUuid);
-    const env = { get: key => (key === 'getUuid' ? getUuid : undefined) };
+    const get = key => {
+      if (key === 'getUuid') {
+        return getUuid;
+      }
+      return undefined;
+    };
+    const env = { get };
     expect(uuidToy(undefined, env)).toBe(mockUuid);
   });
 });
