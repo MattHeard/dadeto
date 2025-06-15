@@ -888,10 +888,15 @@ const INPUT_METHODS = ['text', 'number', 'kv', 'dendrite-story'];
  * @returns {string} - HTML for the dropdown and text input
  */
 function buildToyInputDropdown(defaultMethod) {
-  const selectedMethod =
-    defaultMethod && defaultMethod !== 'text' ? defaultMethod : undefined;
+  let selectedMethod;
+  if (defaultMethod && defaultMethod !== 'text') {
+    selectedMethod = defaultMethod;
+  }
   const options = INPUT_METHODS.map(method => {
-    const selected = method === selectedMethod ? ' selected' : '';
+    let selected = '';
+    if (method === selectedMethod) {
+      selected = ' selected';
+    }
     return `<option value="${method}"${selected}>${method}</option>`;
   }).join('');
   return `<select class="input">${options}</select><input type="text" disabled>`;
@@ -918,10 +923,10 @@ function generateToyUISection(post) {
   if (!hasToy(post)) {
     return '';
   }
-  const defaultMethod =
-    post.toy && post.toy.defaultInputMethod
-      ? post.toy.defaultInputMethod
-      : 'text';
+  let defaultMethod = 'text';
+  if (post.toy && post.toy.defaultInputMethod) {
+    defaultMethod = post.toy.defaultInputMethod;
+  }
   const sections = getToyUISections(defaultMethod);
   return join(
     sections.map(([label, buildHTML]) => buildToySection(label, buildHTML))
