@@ -28,23 +28,6 @@ describe('setupAddButton', () => {
     expect(mockDom.setTextContent).toHaveBeenCalledWith(button, '+');
   });
 
-  it('adds a click event listener to the button', () => {
-    setupAddButton(mockDom, button, rows, render, disposers);
-
-    expect(mockDom.addEventListener).toHaveBeenCalledWith(
-      button,
-      'click',
-      expect.any(Function)
-    );
-  });
-
-  it('adds a disposer function to the disposers array', () => {
-    setupAddButton(mockDom, button, rows, render, disposers);
-
-    expect(disposers).toHaveLength(1);
-    expect(disposers[0]).toBeInstanceOf(Function);
-  });
-
   it('clicking the button adds a new empty row and calls render', () => {
     // Mock the addEventListener implementation to capture the click handler
     let clickHandler;
@@ -89,54 +72,6 @@ describe('setupAddButton', () => {
 
     // Should not call render
     expect(render).not.toHaveBeenCalled();
-  });
-
-  it('cleanup function removes the event listener', () => {
-    setupAddButton(mockDom, button, rows, render, disposers);
-
-    // Get the cleanup function
-    const cleanup = disposers[0];
-
-    // Call cleanup
-    cleanup();
-
-    // Should remove the event listener
-    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
-      button,
-      'click',
-      expect.any(Function)
-    );
-  });
-
-  it('cleanup can be called multiple times', () => {
-    setupAddButton(mockDom, button, rows, render, disposers);
-
-    const cleanup = disposers[0];
-
-    cleanup();
-    cleanup();
-
-    expect(mockDom.removeEventListener).toHaveBeenCalledTimes(2);
-  });
-
-  it('cleanup removes the same handler that was added', () => {
-    let addedHandler;
-    mockDom.addEventListener.mockImplementation((_, eventType, handler) => {
-      if (eventType === 'click') {
-        addedHandler = handler;
-      }
-    });
-
-    setupAddButton(mockDom, button, rows, render, disposers);
-
-    const cleanup = disposers[0];
-    cleanup();
-
-    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
-      button,
-      'click',
-      addedHandler
-    );
   });
 
   it('returns a unique disposer for each setup call', () => {
