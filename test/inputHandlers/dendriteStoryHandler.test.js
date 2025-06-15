@@ -124,15 +124,13 @@ describe('dendriteStoryHandler', () => {
   test('removes number and kv inputs', () => {
     const numberInput = { _dispose: jest.fn() };
     const kvContainer = { _dispose: jest.fn() };
-    const querySelector = jest.fn((container, selector) => {
-      if (selector === 'input[type="number"]') {
-        return numberInput;
-      }
-      if (selector === '.kv-container') {
-        return kvContainer;
-      }
-      return null;
-    });
+    const selectorMap = {
+      'input[type="number"]': numberInput,
+      '.kv-container': kvContainer,
+    };
+    const querySelector = jest.fn(
+      (_, selector) => selectorMap[selector] ?? null
+    );
     const dom = {
       hide: jest.fn(),
       disable: jest.fn(),
