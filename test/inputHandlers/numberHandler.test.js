@@ -9,9 +9,15 @@ describe('numberHandler', () => {
     const kvContainer = { _dispose: jest.fn() };
     const dendriteForm = { _dispose: jest.fn() };
     const querySelector = jest.fn((el, selector) => {
-      if (selector === '.kv-container') {return kvContainer;}
-      if (selector === '.dendrite-form') {return dendriteForm;}
-      if (selector === 'input[type="number"]') {return numberInput;}
+      if (selector === '.kv-container') {
+        return kvContainer;
+      }
+      if (selector === '.dendrite-form') {
+        return dendriteForm;
+      }
+      if (selector === 'input[type="number"]') {
+        return numberInput;
+      }
       return null;
     });
     const removeChild = jest.fn();
@@ -62,9 +68,15 @@ describe('numberHandler', () => {
     const kvContainer = {};
     const dendriteForm = {};
     const querySelector = jest.fn((_, selector) => {
-      if (selector === '.kv-container') {return kvContainer;}
-      if (selector === '.dendrite-form') {return dendriteForm;}
-      if (selector === 'input[type="number"]') {return {};}
+      if (selector === '.kv-container') {
+        return kvContainer;
+      }
+      if (selector === '.dendrite-form') {
+        return dendriteForm;
+      }
+      if (selector === 'input[type="number"]') {
+        return {};
+      }
       return null;
     });
     const dom = {
