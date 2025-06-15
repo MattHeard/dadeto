@@ -297,91 +297,8 @@ describe('toys', () => {
       expect(parent.child.textContent).toBe('answer');
     });
 
-    it('handles missing output object without throwing', () => {
-      const parent = { child: null, querySelector: jest.fn() };
-      parent.querySelector.mockReturnValue(parent);
-      const dropdown = {
-        value: 'text',
-        closest: jest.fn(() => ({ id: 'post-x' })),
-        parentNode: parent,
-      };
-      const getData = jest.fn(() => ({}));
-      const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
-        removeAllChildren: jest.fn(p => {
-          p.child = null;
-        }),
-        appendChild: jest.fn((p, c) => {
-          p.child = c;
-        }),
-        createElement: jest.fn(() => ({ textContent: '' })),
-        setTextContent: jest.fn((el, txt) => {
-          el.textContent = txt;
-        }),
-      };
-
-      expect(() => handleDropdownChange(dropdown, getData, dom)).not.toThrow();
-      expect(parent.child.textContent).toBe('');
-    });
-
-    it('appends empty output when the output object is missing', () => {
-      const parent = { child: null, querySelector: jest.fn() };
-      parent.querySelector.mockReturnValue(parent);
-      const dropdown = {
-        value: 'text',
-        closest: jest.fn(() => ({ id: 'post-y' })),
-        parentNode: parent,
-      };
-      const getData = jest.fn(() => ({}));
-      const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
-        removeAllChildren: jest.fn(p => {
-          p.child = null;
-        }),
-        appendChild: jest.fn((p, c) => {
-          p.child = c;
-        }),
-        createElement: jest.fn(() => ({ textContent: '' })),
-        setTextContent: jest.fn((el, txt) => {
-          el.textContent = txt;
-        }),
-      };
-
-      expect(() => handleDropdownChange(dropdown, getData, dom)).not.toThrow();
-      expect(dom.appendChild).toHaveBeenCalledWith(parent, expect.any(Object));
-      expect(parent.child.textContent).toBe('');
-    });
-
-    it('handles undefined output without failing', () => {
-      const parent = { child: null, querySelector: jest.fn() };
-      parent.querySelector.mockReturnValue(parent);
-      const dropdown = {
-        value: 'text',
-        closest: jest.fn(() => ({ id: 'post-z' })),
-        parentNode: parent,
-      };
-      const getData = jest.fn(() => ({}));
-      const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
-        removeAllChildren: jest.fn(p => {
-          p.child = null;
-        }),
-        appendChild: jest.fn((p, c) => {
-          p.child = c;
-        }),
-        createElement: jest.fn(() => ({ textContent: '' })),
-        setTextContent: jest.fn((el, txt) => {
-          el.textContent = txt;
-        }),
-      };
-
-      handleDropdownChange(dropdown, getData, dom);
-
-      expect(parent.child.textContent).toBe('');
-    });
-
-    it('calls setTextContent with empty string when data.output is missing', () => {
-      const parent = {};
+    it('creates empty output when data.output is missing', () => {
+      const parent = { child: null, querySelector: jest.fn(() => parent) };
       const dropdown = {
         value: 'text',
         closest: jest.fn(() => ({ id: 'post-missing' })),
@@ -389,16 +306,24 @@ describe('toys', () => {
       };
       const getData = jest.fn(() => ({}));
       const dom = {
-        querySelector: jest.fn(() => parent),
-        removeAllChildren: jest.fn(),
-        appendChild: jest.fn(),
-        createElement: jest.fn(() => ({})),
-        setTextContent: jest.fn(),
+        querySelector: (el, selector) => el.querySelector(selector),
+        removeAllChildren: jest.fn(p => {
+          p.child = null;
+        }),
+        appendChild: jest.fn((p, c) => {
+          p.child = c;
+        }),
+        createElement: jest.fn(() => ({ textContent: '' })),
+        setTextContent: jest.fn((el, txt) => {
+          el.textContent = txt;
+        }),
       };
 
       expect(() => handleDropdownChange(dropdown, getData, dom)).not.toThrow();
       expect(dom.removeAllChildren).toHaveBeenCalledWith(parent);
       expect(dom.appendChild).toHaveBeenCalledWith(parent, expect.any(Object));
+      expect(dom.setTextContent).toHaveBeenCalledWith(expect.any(Object), '');
+      expect(parent.child.textContent).toBe('');
     });
 
     it('uses the pre presenter when dropdown value is "pre"', () => {
