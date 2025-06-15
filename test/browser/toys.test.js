@@ -976,8 +976,6 @@ describe('toys', () => {
     });
   });
 
-
-
   describe('initializeInteractiveComponent', () => {
     let querySelector;
     let selectorMap;
@@ -1495,9 +1493,12 @@ describe('createInputDropdownHandler', () => {
 
   // Helper function to create a querySelector mock
   const createQuerySelector = selectorMap =>
-    jest.fn((parent, selector) =>
-      parent === container ? selectorMap.get(selector) || null : null
-    );
+    jest.fn((parent, selector) => {
+      if (parent !== container) {
+        return null;
+      }
+      return selectorMap.get(selector) || null;
+    });
 
   beforeEach(() => {
     // Given
