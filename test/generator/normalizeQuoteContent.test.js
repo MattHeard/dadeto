@@ -1,8 +1,12 @@
 import { describe, test, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { generateBlog } from '../../src/generator/generator.js';
+
+const header = '<body>';
+const footer = '</body>';
+const wrapHtml = c => ['<html>', c, '</html>'].join('');
 
 describe('normalizeContentItem with quote object', () => {
-  test('generateBlogOuter renders blockquote content', () => {
+  test('generateBlog renders quote content object', () => {
     const blog = {
       posts: [
         {
@@ -15,7 +19,7 @@ describe('normalizeContentItem with quote object', () => {
         }
       ]
     };
-    const html = generateBlogOuter(blog);
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<blockquote class="value">');
     expect(html).toContain('<p>Hello world</p>');
   });
