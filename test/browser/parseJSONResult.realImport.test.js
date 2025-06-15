@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it } from '@jest/globals';
 import { processInputAndSetOutput } from '../../src/browser/toys.js';
 
 // This test indirectly covers parseJSONResult by invoking processInputAndSetOutput

@@ -1,4 +1,4 @@
-import { describe, it, expect, jest } from '@jest/globals';
+import { describe, expect, jest } from '@jest/globals';
 import { clearDisposers } from '../../src/browser/toys.js';
 
 describe('clearDisposers', () => {
@@ -27,7 +27,6 @@ describe('clearDisposers', () => {
 
     // Act
     clearDisposers(disposers);
-
 
     // Assert
     expect(disposers).toHaveLength(0);
