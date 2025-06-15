@@ -36,14 +36,19 @@ export function shouldUseExistingFetch(globalState, logFn) {
 }
 
 /**
- * Returns a Base64 encoding function using the provided btoa, unescape, and encodeURIComponent.
+ * Returns a Base64 encoding function using the provided btoa and
+ * encodeURIComponent. It converts percent-encoded bytes back to a
+ * binary string to avoid relying on the deprecated unescape.
  * @param {function} btoa - The btoa function
- * @param {function} unescape - The unescape function
  * @param {function} encodeURIComponentFn - The encodeURIComponent function
  * @returns {function} encodeBase64 - Function that encodes a string to Base64
  */
-export function getEncodeBase64(btoa, unescape, encodeURIComponentFn) {
-  return str => btoa(unescape(encodeURIComponentFn(str)));
+export function getEncodeBase64(btoa, encodeURIComponentFn) {
+  const toBinary = str =>
+    encodeURIComponentFn(str).replace(/%([0-9A-F]{2})/g, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    );
+  return str => btoa(toBinary(str));
 }
 
 /**

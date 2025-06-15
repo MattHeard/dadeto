@@ -60,7 +60,7 @@ function createEnv() {
       'setData',
       newData => setData({ desired: newData, current: globalState }, loggers),
     ],
-    ['encodeBase64', getEncodeBase64(btoa, unescape, encodeURIComponent)],
+    ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
   ]);
 }
 
