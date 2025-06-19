@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1750341808482" clover="3.2.0">
-  <project timestamp="1750341808483" name="All files">
+<coverage generated="1750342415234" clover="3.2.0">
+  <project timestamp="1750342415234" name="All files">
     <metrics statements="1874" coveredstatements="1874" conditionals="612" coveredconditionals="611" methods="716" coveredmethods="715" elements="3202" coveredelements="3200" complexity="0" loc="1874" ncloc="1874" packages="21" files="48" classes="48"/>
     <package name="browser">
       <metrics statements="541" coveredstatements="541" conditionals="114" coveredconditionals="113" methods="168" coveredmethods="167"/>
@@ -76,8 +76,8 @@
       </file>
       <file name="data.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js">
         <metrics statements="86" coveredstatements="86" conditionals="32" coveredconditionals="32" methods="34" coveredmethods="34"/>
-        <line num="1" count="146" type="stmt"/>
-        <line num="3" count="146" type="stmt"/>
+        <line num="1" count="147" type="stmt"/>
+        <line num="3" count="147" type="stmt"/>
         <line num="11" count="47" type="stmt"/>
         <line num="20" count="22" type="stmt"/>
         <line num="21" count="22" type="cond" truecount="2" falsecount="0"/>
@@ -108,7 +108,7 @@
         <line num="90" count="7" type="stmt"/>
         <line num="93" count="16" type="stmt"/>
         <line num="96" count="16" type="stmt"/>
-        <line num="104" count="146" type="stmt"/>
+        <line num="104" count="147" type="stmt"/>
         <line num="105" count="2" type="stmt"/>
         <line num="117" count="3" type="cond" truecount="2" falsecount="0"/>
         <line num="121" count="18" type="cond" truecount="2" falsecount="0"/>
@@ -150,12 +150,12 @@
         <line num="234" count="10" type="cond" truecount="2" falsecount="0"/>
         <line num="235" count="4" type="stmt"/>
         <line num="237" count="6" type="stmt"/>
-        <line num="249" count="146" type="stmt"/>
+        <line num="249" count="147" type="stmt"/>
         <line num="250" count="10" type="stmt"/>
         <line num="251" count="10" type="stmt"/>
         <line num="252" count="10" type="stmt"/>
         <line num="253" count="10" type="stmt"/>
-        <line num="265" count="146" type="stmt"/>
+        <line num="265" count="147" type="stmt"/>
         <line num="266" count="12" type="stmt"/>
         <line num="267" count="12" type="stmt"/>
         <line num="269" count="12" type="stmt"/>
