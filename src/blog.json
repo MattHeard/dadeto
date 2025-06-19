@@ -1,6 +1,45 @@
 {
   "posts": [
     {
+      "key": "MARY1",
+      "title": "Mary Sees Red",
+      "publicationDate": "2025-06-19",
+      "content": ["Mary grew up in a black-and-white room and learned every fact about colour and about people who see colours, without ever seeing something colourful herself. One day she left the room and saw a red object for the first time. For Frank Jackson, Mary learned something about others upon seeing red that she couldn't have learned in the room. She gained some new factual knowledge, a knowledge of what others experience when they see red. This could not have been gained inside the room. Because Mary's physical knowledge from inside the room was incomplete, Jackson concluded physicalism was false."],
+      "illustration": {
+        "fileType": "png",
+        "altText": "abstract color-field painting with a soft gradient gray area on the left blending into an intense solid red block on the right, the two hues meeting in a hazy vertical transition"
+      },
+      "tags": ["philosophy", "colour", "experience", "consciousness", "qualia", "physicalism"],
+      "relatedLinks": [
+        {
+          "url": "#SYMP1",
+          "title": "Sympathy for P-Zombies",
+          "type": "article"
+        },
+        {
+          "url": "https://www.sfu.ca/~jillmc/JacksonfromJStore.pdf",
+          "title": "Epiphenomenal Qualia",
+          "author": "Frank Jackson",
+          "source": "The Philosophical Quarterly, Vol. 32, No. 127. (Apr., 1982), pp. 127-136.",
+          "type": "article"
+        },
+        {
+          "url": "https://courses.physics.illinois.edu/phys419/sp2021/Jackson1986_WhatMaryDidntKnow.pdf",
+          "title": "What Mary Didn't Know",
+          "author": "Frank Jackson",
+          "source": "The Journal of Philosophy, Vol. 83, No. 5 (May, 1986), pp. 291-295.",
+          "type": "article"
+        },
+        {
+          "url": "https://plato.stanford.edu/entries/qualia-knowledge/",
+          "title": "Qualia: The Knowledge Argument",
+          "author": "Nida-Rümelin, Martine and Donnchadh O Conaill",
+          "source": "The Stanford Encyclopedia of Philosophy",
+          "type": "article"
+        }
+      ]
+    },
+    {
       "key": "DEND1",
       "title": "Start local Dendrite story",
       "publicationDate": "2025-06-09",
@@ -107,7 +146,6 @@
       },
       "tags": ["toy", "base64", "encoding", "string"]
     },
-
     {
       "key": "BATT3",
       "title": "Battleship Solitaire Clues",
