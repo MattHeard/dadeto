@@ -1,6 +1,6 @@
 const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
 
-const BLOG_STATUS = {
+export const BLOG_STATUS = {
   IDLE: 'idle',
   LOADING: 'loading',
   LOADED: 'loaded',

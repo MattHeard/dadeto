@@ -1,10 +1,57 @@
 {
   "posts": [
     {
+      "key": "ABIL1",
+      "title": "Ability, Not Fact",
+      "publicationDate": "2025-06-21",
+      "content": [
+        "When Mary first sees red, the experience leaves a neural impression, but she does not learn a non-physical fact. She gains an ability to recognise red, mirroring an ability others already possessed; she did not learn something about those people. Calling this \"know-how\" knowledge overextends the word \"know\". This echoes the \"ability hypothesis\" counter-argument by David Lewis and Laurence Nemirow. Because Mary gains a new ability through this experience that is reducible to physical explanation, no new non-physical fact like qualia is required. While intuitive, Jackson's \"knowledge argument\" about Mary's room fails to achieve its goal of disproving physicalism."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "altText": "a flat, mid-century-style graphic: three stacked icons (eye, person silhouette, open hand) on the left with an orange arrow pointing right toward a black profile head; inside the head a stylized blue brain holds a red circle, symbolizing a new neural ability"
+      },
+      "tags": [
+        "philosophy",
+        "consciousness",
+        "qualia",
+        "physicalism",
+        "knowledge",
+        "ability"
+      ],
+      "relatedLinks": [
+        {
+          "url": "#MARY1",
+          "title": "Mary Sees Red",
+          "type": "article"
+        },
+        {
+          "url": "https://beisecker.faculty.unlv.edu/Courses/PHIL-352/Dave%20-%20Consciousness%20PDFs/Lewis-WhatExperienceTeaches.PDF",
+          "title": "What Experience Teaches",
+          "author": "David Lewis",
+          "type": "article"
+        },
+        {
+          "url": "https://philpapers.org/rec/NEMPAT",
+          "title": "Physicalism and the Cognitive Role of Acquaintance",
+          "author": "Laurence Nemirow",
+          "type": "article"
+        },
+        {
+          "url": "https://philpapers.org/rec/NEMSTI",
+          "title": "So This Is What It’s Like: A Defense of the Ability Hypothesis",
+          "author": "Laurence Nemirow",
+          "type": "article"
+        }
+      ]
+    },
+    {
       "key": "MARY1",
       "title": "Mary Sees Red",
       "publicationDate": "2025-06-19",
-      "content": ["Mary grew up in a black-and-white room and learned every fact about colour and about people who see colours, without ever seeing something colourful herself. One day she left the room and saw a red object for the first time. For Frank Jackson, Mary learned something about others upon seeing red that she couldn't have learned in the room. She gained some new factual knowledge, a knowledge of what others experience when they see red. This could not have been gained inside the room. Because Mary's physical knowledge from inside the room was incomplete, Jackson concluded physicalism was false."],
+      "content": [
+        "Mary grew up in a black-and-white room and learned every fact about colour and about people who see colours, without ever seeing something colourful herself. One day she left the room and saw a red object for the first time. For Frank Jackson, Mary learned something about others upon seeing red that she couldn't have learned in the room. She gained some new factual knowledge, a knowledge of what others experience when they see red. This could not have been gained inside the room. Because Mary's physical knowledge from inside the room was incomplete, Jackson concluded physicalism was false."
+      ],
       "illustration": {
         "fileType": "png",
         "altText": "abstract color-field painting with a soft gradient gray area on the left blending into an intense solid red block on the right, the two hues meeting in a hazy vertical transition"
