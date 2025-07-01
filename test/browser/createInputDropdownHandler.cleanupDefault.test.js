@@ -14,16 +14,12 @@ describe('createInputDropdownHandler cleanup default', () => {
       getCurrentTarget: jest.fn(() => select),
       getParentElement: jest.fn(() => container),
       querySelector: jest.fn((parent, selector) => {
-        if (selector === 'input[type="text"]') {
-          return textInput;
-        }
-        if (selector === 'input[type="number"]') {
-          return numberInput;
-        }
-        if (selector === '.kv-container') {
-          return kvContainer;
-        }
-        return null;
+        const map = {
+          'input[type="text"]': textInput,
+          'input[type="number"]': numberInput,
+          '.kv-container': kvContainer,
+        };
+        return map[selector] ?? null;
       }),
       createElement: jest.fn(() => ({})),
       setType: jest.fn(),
