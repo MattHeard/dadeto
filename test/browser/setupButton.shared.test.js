@@ -9,7 +9,13 @@ describe.each([
     'setupAddButton',
     setupAddButton,
     (...params) =>
-      setupAddButton(params[0], params[1], params[2], params[3], params[5]),
+      setupAddButton({
+        dom: params[0],
+        button: params[1],
+        rows: params[2],
+        render: params[3],
+        disposers: params[5],
+      }),
   ],
   [
     'setupRemoveButton',

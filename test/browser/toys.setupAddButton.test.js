@@ -23,7 +23,7 @@ describe('setupAddButton', () => {
   });
 
   it('sets the button text content to "+"', () => {
-    setupAddButton(mockDom, button, rows, render, disposers);
+    setupAddButton({ dom: mockDom, button, rows, render, disposers });
 
     expect(mockDom.setTextContent).toHaveBeenCalledWith(button, '+');
   });
@@ -37,7 +37,7 @@ describe('setupAddButton', () => {
       }
     });
 
-    setupAddButton(mockDom, button, rows, render, disposers);
+    setupAddButton({ dom: mockDom, button, rows, render, disposers });
 
     // Simulate button click
     clickHandler();
@@ -62,7 +62,7 @@ describe('setupAddButton', () => {
       }
     });
 
-    setupAddButton(mockDom, button, rows, render, disposers);
+    setupAddButton({ dom: mockDom, button, rows, render, disposers });
 
     // Simulate button click
     clickHandler();
@@ -75,10 +75,10 @@ describe('setupAddButton', () => {
   });
 
   it('returns a unique disposer for each setup call', () => {
-    setupAddButton(mockDom, button, rows, render, disposers);
+    setupAddButton({ dom: mockDom, button, rows, render, disposers });
     const firstCleanup = disposers[0];
 
-    setupAddButton(mockDom, {}, rows, render, disposers);
+    setupAddButton({ dom: mockDom, button: {}, rows, render, disposers });
     const secondCleanup = disposers[1];
 
     expect(firstCleanup).not.toBe(secondCleanup);

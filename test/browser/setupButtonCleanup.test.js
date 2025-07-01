@@ -12,7 +12,7 @@ describe('button cleanup helpers', () => {
     const rows = {};
     const render = jest.fn();
     const disposers = [];
-    setupAddButton(dom, button, rows, render, disposers);
+    setupAddButton({ dom, button, rows, render, disposers });
     expect(disposers).toHaveLength(1);
     const dispose = disposers[0];
     expect(typeof dispose).toBe('function');
@@ -35,7 +35,7 @@ describe('button cleanup helpers', () => {
     const render = jest.fn();
     const disposers = [];
 
-    setupAddButton(dom, button, rows, render, disposers);
+    setupAddButton({ dom, button, rows, render, disposers });
 
     const [, , onAdd] = dom.addEventListener.mock.calls[0];
     const dispose = disposers[0];
@@ -79,7 +79,7 @@ describe('button cleanup helpers', () => {
           handlers.push(handler);
         }
       }),
-      // eslint-disable-next-line complexity
+
       removeEventListener: jest.fn((_, event, handler) => {
         if (event === 'click') {
           handlers.splice(handlers.indexOf(handler) >>> 0, 1);
@@ -91,7 +91,7 @@ describe('button cleanup helpers', () => {
     const render = jest.fn();
     const disposers = [];
 
-    setupAddButton(dom, button, rows, render, disposers);
+    setupAddButton({ dom, button, rows, render, disposers });
 
     // Capture the click handler
     const clickHandler = handlers[0];
@@ -127,7 +127,7 @@ describe('button cleanup helpers', () => {
     const render = jest.fn();
     const disposers = [];
 
-    setupAddButton(dom, button, rows, render, disposers);
+    setupAddButton({ dom, button, rows, render, disposers });
 
     const dispose = disposers[0];
     dispose();
