@@ -1417,6 +1417,7 @@ describe('createInputDropdownHandler', () => {
       }
       return null;
     });
+
     getParentElement = jest.fn(arg => {
       if (arg === select) {
         return container;
