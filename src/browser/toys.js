@@ -577,22 +577,23 @@ export function createValueInputHandler({
 
 /**
  * Creates a key input element with event listeners
- * @param {Object} dom - The DOM utilities object
- * @param {string} key - The initial key value
- * @param {HTMLElement} textInput - The hidden text input element
- * @param {Object} rows - The rows object containing key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field with current state
- * @param {Array<Function>} disposers - Array to store cleanup functions
+ * @param {Object} options - Function options
+ * @param {Object} options.dom - The DOM utilities object
+ * @param {string} options.key - The initial key value
+ * @param {HTMLElement} options.textInput - The hidden text input element
+ * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
+ * @param {Array<Function>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created key input element
  */
-export const createKeyElement = (
+export const createKeyElement = ({
   dom,
   key,
   textInput,
   rows,
   syncHiddenField,
-  disposers
-) => {
+  disposers,
+}) => {
   const keyEl = dom.createElement('input');
   dom.setType(keyEl, 'text');
   dom.setPlaceholder(keyEl, 'Key');
@@ -765,14 +766,14 @@ export const createKeyValueRow =
       dom.setClassName(rowEl, 'kv-row');
 
       // Create key and value elements
-      const keyEl = createKeyElement(
+      const keyEl = createKeyElement({
         dom,
         key,
         textInput,
         rows,
         syncHiddenField,
-        disposers
-      );
+        disposers,
+      });
       const valueEl = createValueElement(
         dom,
         value,
