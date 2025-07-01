@@ -7,19 +7,13 @@ describe('initializeInteractiveComponent', () => {
     const submitButton = {};
     const outputParent = {};
     const querySelector = jest.fn((_, selector) => {
-      if (selector === 'input[type="text"]') {
-        return inputElement;
-      }
-      if (selector === 'button[type="submit"]') {
-        return submitButton;
-      }
-      if (selector === 'div.output') {
-        return outputParent;
-      }
-      if (selector === 'select.output') {
-        return {};
-      }
-      return {};
+      const map = {
+        'input[type="text"]': inputElement,
+        'button[type="submit"]': submitButton,
+        'div.output': outputParent,
+        'select.output': {},
+      };
+      return map[selector] ?? {};
     });
     const dom = {
       removeAllChildren: jest.fn(),
@@ -60,12 +54,10 @@ describe('initializeInteractiveComponent', () => {
     );
 
     // Ensure this specific call happens exactly once
-    const specificCalls = logInfo.mock.calls.filter(
-      call =>
-        call.length === 2 &&
-        call[0] === 'Initializing interactive component for article' &&
-        call[1] === article.id
-    );
+    const isSpecificCall = ([text, id]) =>
+      text === 'Initializing interactive component for article' &&
+      id === article.id;
+    const specificCalls = logInfo.mock.calls.filter(isSpecificCall);
     expect(specificCalls.length).toBe(1);
   });
 });
