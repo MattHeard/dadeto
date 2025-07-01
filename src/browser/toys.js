@@ -13,19 +13,15 @@ import { createPrefixedLoggers } from './document.js';
  * @returns {Object} An object with keys and values from the array
  */
 export const convertArrayToKeyValueObject = array => {
-  const result = {};
-
-  // Return empty object if input is not an array
   if (!Array.isArray(array)) {
-    return result;
+    return {};
   }
-
-  for (const pair of array) {
+  return array.reduce((obj, pair) => {
     if (pair && typeof pair === 'object' && 'key' in pair) {
-      result[pair.key] = pair.value ?? '';
+      obj[pair.key] = pair.value ?? '';
     }
-  }
-  return result;
+    return obj;
+  }, {});
 };
 
 export const parseExistingRows = (dom, inputElement) => {
@@ -461,7 +457,7 @@ export const createNumberInput = (value, onChange, dom) => {
  * @param {Object} dom - The DOM utilities object
  * @returns {void}
  */
-const positionNumberInput = (container, textInput, numberInput, dom) => {
+const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
   const nextSibling = dom.getNextSibling(textInput);
   container.insertBefore(numberInput, nextSibling);
 };
@@ -482,7 +478,12 @@ export const ensureNumberInput = (container, textInput, dom) => {
       createUpdateTextInputValue(textInput, dom),
       dom
     );
-    positionNumberInput(container, textInput, numberInput, dom);
+    positionNumberInput({
+      container,
+      textInput,
+      numberInput,
+      dom,
+    });
   }
 
   return numberInput;
