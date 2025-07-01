@@ -12,24 +12,20 @@ describe('initializeInteractiveComponent keypress handling', () => {
     let keypressHandler;
 
     const dom = {
-      querySelector: jest.fn((_, selector) => {
-        switch (selector) {
-        case 'input[type="text"]':
-          return inputElement;
-        case 'button[type="submit"]':
-          return submitButton;
-        case 'div.output':
-          return outputParent;
-        case 'select.output':
-          return outputSelect;
-        default:
-          return {};
-        }
-      }),
+      querySelector: jest.fn((_, selector) => ({
+        'input[type="text"]': inputElement,
+        'button[type="submit"]': submitButton,
+        'div.output': outputParent,
+        'select.output': outputSelect,
+      }[selector] || {})),
       addEventListener: jest.fn((el, event, handler) => {
-        if (el === inputElement && event === 'keypress') {
-          keypressHandler = handler;
+        if (el !== inputElement) {
+          return;
         }
+        if (event !== 'keypress') {
+          return;
+        }
+        keypressHandler = handler;
       }),
       removeAllChildren: jest.fn(),
       createElement: jest.fn(() => ({ textContent: '' })),
