@@ -28,14 +28,14 @@ describe('createKeyElement', () => {
   it('creates a key input element with the correct initial properties', () => {
     const key = 'testKey';
 
-    keyEl = createKeyElement(
-      mockDom,
+    keyEl = createKeyElement({
+      dom: mockDom,
       key,
       textInput,
       rows,
       syncHiddenField,
-      disposers
-    );
+      disposers,
+    });
 
     expect(mockDom.createElement).toHaveBeenCalledWith('input');
     expect(mockDom.setType).toHaveBeenCalledWith(keyEl, 'text');
@@ -67,14 +67,14 @@ describe('createKeyElement', () => {
   it('removes the same listener that was added', () => {
     const key = 'testKey';
 
-    keyEl = createKeyElement(
-      mockDom,
+    keyEl = createKeyElement({
+      dom: mockDom,
       key,
       textInput,
       rows,
       syncHiddenField,
-      disposers
-    );
+      disposers,
+    });
 
     const handler = mockDom.addEventListener.mock.calls[0][2];
     const disposer = disposers[0];
@@ -91,14 +91,14 @@ describe('createKeyElement', () => {
   it('calls removeEventListener each time the disposer runs', () => {
     const key = 'testKey';
 
-    keyEl = createKeyElement(
-      mockDom,
+    keyEl = createKeyElement({
+      dom: mockDom,
       key,
       textInput,
       rows,
       syncHiddenField,
-      disposers
-    );
+      disposers,
+    });
 
     const disposer = disposers[0];
 
