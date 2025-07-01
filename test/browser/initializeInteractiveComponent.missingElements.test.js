@@ -43,11 +43,12 @@ describe('initializeInteractiveComponent missing elements', () => {
     const button = {};
     const dom = {
       querySelector: jest.fn((_, selector) => {
-        if (selector === 'input[type="text"]') {
-          return null;
-        }
-        if (selector === 'button[type="submit"]') {
-          return button;
+        const elements = {
+          'input[type="text"]': null,
+          'button[type="submit"]': button,
+        };
+        if (Object.prototype.hasOwnProperty.call(elements, selector)) {
+          return elements[selector];
         }
         return {};
       }),
@@ -89,11 +90,12 @@ describe('initializeInteractiveComponent missing elements', () => {
     const input = {};
     const dom = {
       querySelector: jest.fn((_, selector) => {
-        if (selector === 'input[type="text"]') {
-          return input;
-        }
-        if (selector === 'button[type="submit"]') {
-          return null;
+        const elements = {
+          'input[type="text"]': input,
+          'button[type="submit"]': null,
+        };
+        if (Object.prototype.hasOwnProperty.call(elements, selector)) {
+          return elements[selector];
         }
         return {};
       }),
