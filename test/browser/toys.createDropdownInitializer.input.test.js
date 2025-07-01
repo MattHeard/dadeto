@@ -9,9 +9,6 @@ describe('createDropdownInitializer input init', () => {
 
     const dom = {
       querySelectorAll: jest.fn(selector => {
-        if (selector === 'article.entry .value > select.output') {
-          return [];
-        }
         if (selector === 'article.entry .value > select.input') {
           return [dropdown];
         }
