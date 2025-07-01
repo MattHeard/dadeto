@@ -11,9 +11,14 @@ test('createInputDropdownHandler handles unknown select values without throwing'
     getCurrentTarget: jest.fn(() => select),
     getParentElement: jest.fn(() => container),
     querySelector: jest.fn((_, selector) => {
-      if (selector === 'input[type="text"]') {return textInput;}
-      if (selector === 'input[type="number"]') {return { _dispose: jest.fn() };}
-      if (selector === '.kv-container') {return { _dispose: jest.fn() };}
+      const elements = {
+        'input[type="text"]': textInput,
+        'input[type="number"]': { _dispose: jest.fn() },
+        '.kv-container': { _dispose: jest.fn() },
+      };
+      if (Object.prototype.hasOwnProperty.call(elements, selector)) {
+        return elements[selector];
+      }
       return null;
     }),
     getValue: jest.fn(() => 'mystery'),

@@ -10,6 +10,11 @@ describe('initializeInteractiveComponent keypress handling', () => {
     const outputParent = {};
     const outputSelect = {};
     let keypressHandler;
+    function handleAddEvent(_el, event, handler) {
+      if (event === 'keypress') {
+        keypressHandler = handler;
+      }
+    }
 
     const dom = {
       querySelector: jest.fn((_, selector) => ({
@@ -18,15 +23,7 @@ describe('initializeInteractiveComponent keypress handling', () => {
         'div.output': outputParent,
         'select.output': outputSelect,
       }[selector] || {})),
-      addEventListener: jest.fn((el, event, handler) => {
-        if (el !== inputElement) {
-          return;
-        }
-        if (event !== 'keypress') {
-          return;
-        }
-        keypressHandler = handler;
-      }),
+      addEventListener: jest.fn(handleAddEvent),
       removeAllChildren: jest.fn(),
       createElement: jest.fn(() => ({ textContent: '' })),
       appendChild: jest.fn(),
