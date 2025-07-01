@@ -1500,9 +1500,12 @@ describe('createInputDropdownHandler', () => {
     it('handles text input setup and cleanup of other input types', () => {
       // Given
       const selectValue = 'text';
-      const getValue = jest.fn(element =>
-        element === select ? selectValue : null
-      );
+      const getValue = jest.fn(element => {
+        if (element === select) {
+          return selectValue;
+        }
+        return null;
+      });
 
       // Create DOM mock object by extending baseDom
       const dom = {
