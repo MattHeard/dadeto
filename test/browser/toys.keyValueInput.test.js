@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import * as toys from '../../src/browser/toys.js';
-const { ensureKeyValueInput, createKeyInputHandler, createValueInputHandler } =
-  toys;
+const { ensureKeyValueInput } = toys;
 
 describe('Key-Value Input', () => {
   it('creates a key-value container when none exists', () => {
@@ -42,56 +41,8 @@ describe('Key-Value Input', () => {
     expect(result).toBe(kvContainer);
   });
 
-  let container;
-  let textInput;
-  let dom;
-  let mockSyncHiddenField;
-  let mockRender;
-  let disposers;
-
-  beforeEach(() => {
-    // Create container and text input
-    container = {};
-    textInput = {};
-
-    // Mock DOM utilities with no-op functions
-    dom = {
-      createElement: jest.fn(),
-      setType: jest.fn(),
-      setPlaceholder: jest.fn(),
-      setValue: jest.fn(),
-      getValue: jest.fn(),
-      setDataAttribute: jest.fn(),
-      getDataAttribute: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      setTextContent: jest.fn(),
-      setClassName: jest.fn(),
-      appendChild: jest.fn(),
-      removeChild: jest.fn(),
-      querySelector: jest.fn(),
-      querySelectorAll: jest.fn(),
-      createTextNode: jest.fn(),
-      insertBefore: jest.fn(),
-      removeAttribute: jest.fn(),
-      setAttribute: jest.fn(),
-      hasAttribute: jest.fn(),
-      focus: jest.fn(),
-      click: jest.fn(),
-      createDocumentFragment: jest.fn(),
-      getTargetValue: jest.fn(),
-      getNextSibling: jest.fn(),
-      removeAllChildren: jest.fn(),
-    };
-
-    // Mock sync function
-    mockSyncHiddenField = jest.fn();
-
-    // Mock render function
-    mockRender = jest.fn();
-
-    // Initialize disposers array
-    disposers = [];
-  });
+  // Previously additional setup was defined here for more tests, but the
+  // corresponding test cases were removed. The leftover variables and beforeEach
+  // block have been deleted to resolve linter warnings about unused variables.
 
 });
