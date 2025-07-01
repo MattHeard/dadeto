@@ -119,15 +119,7 @@ describe('makeHandleHideSpan', () => {
     const textNode1 = {};
     const textNode2 = {};
     const dom = {
-      createElement: jest.fn(tag => {
-        if (tag === 'span') {
-          return spanEl;
-        }
-        if (tag === 'a') {
-          return hideLinkEl;
-        }
-        return {};
-      }),
+      createElement: jest.fn(tag => ({ span: spanEl, a: hideLinkEl }[tag] || {})),
       addClass: jest.fn(),
       appendChild: jest.fn(),
       createTextNode: jest.fn(txt => {
