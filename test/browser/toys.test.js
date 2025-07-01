@@ -1459,9 +1459,12 @@ describe('createInputDropdownHandler', () => {
     it('should call getCurrentTarget with the event', () => {
       // Given
       const selectValue = 'kv';
-      const getValue = jest.fn(element =>
-        element === select ? selectValue : null
-      );
+      const getValue = jest.fn(element => {
+        if (element === select) {
+          return selectValue;
+        }
+        return null;
+      });
       const createElement = jest.fn();
       const querySelector = jest.fn(() => null);
       const removeAllChildren = jest.fn();
@@ -1497,9 +1500,12 @@ describe('createInputDropdownHandler', () => {
     it('handles text input setup and cleanup of other input types', () => {
       // Given
       const selectValue = 'text';
-      const getValue = jest.fn(element =>
-        element === select ? selectValue : null
-      );
+      const getValue = jest.fn(element => {
+        if (element === select) {
+          return selectValue;
+        }
+        return null;
+      });
 
       // Create DOM mock object by extending baseDom
       const dom = {
@@ -1532,9 +1538,12 @@ describe('createInputDropdownHandler', () => {
       // Given
       const eventTargetValue = {};
       const selectValue = 'number';
-      const getValue = jest.fn(element =>
-        element === select ? selectValue : null
-      );
+      const getValue = jest.fn(element => {
+        if (element === select) {
+          return selectValue;
+        }
+        return null;
+      });
 
       // Create createElement mock
       const createElement = jest.fn(tagName => {
@@ -1555,7 +1564,12 @@ describe('createInputDropdownHandler', () => {
         ...baseDom,
         getValue,
         createElement,
-        getTargetValue: jest.fn(e => (e === event ? eventTargetValue : null)),
+        getTargetValue: jest.fn(e => {
+          if (e === event) {
+            return eventTargetValue;
+          }
+          return null;
+        }),
         setType: jest.fn(),
         setValue: jest.fn(),
         querySelector: createQuerySelector(numberSelectorMap),
@@ -1583,9 +1597,12 @@ describe('createInputDropdownHandler', () => {
   describe('when select value is unknown', () => {
     it('falls back to the default handler', () => {
       const selectValue = 'unknown';
-      const getValue = jest.fn(element =>
-        element === select ? selectValue : null
-      );
+      const getValue = jest.fn(element => {
+        if (element === select) {
+          return selectValue;
+        }
+        return null;
+      });
       const dom = {
         ...baseDom,
         getValue,
