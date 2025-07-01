@@ -8,18 +8,12 @@ describe('numberHandler', () => {
     const numberInput = {};
     const kvContainer = { _dispose: jest.fn() };
     const dendriteForm = { _dispose: jest.fn() };
-    const querySelector = jest.fn((el, selector) => {
-      if (selector === '.kv-container') {
-        return kvContainer;
-      }
-      if (selector === '.dendrite-form') {
-        return dendriteForm;
-      }
-      if (selector === 'input[type="number"]') {
-        return numberInput;
-      }
-      return null;
-    });
+    const selectorMap = new Map([
+      ['.kv-container', kvContainer],
+      ['.dendrite-form', dendriteForm],
+      ['input[type="number"]', numberInput],
+    ]);
+    const querySelector = jest.fn((el, selector) => selectorMap.get(selector));
     const removeChild = jest.fn();
     const dom = {
       hide: jest.fn(),
@@ -67,18 +61,12 @@ describe('numberHandler', () => {
   test('ignores elements without dispose methods', () => {
     const kvContainer = {};
     const dendriteForm = {};
-    const querySelector = jest.fn((_, selector) => {
-      if (selector === '.kv-container') {
-        return kvContainer;
-      }
-      if (selector === '.dendrite-form') {
-        return dendriteForm;
-      }
-      if (selector === 'input[type="number"]') {
-        return {};
-      }
-      return null;
-    });
+    const selectorMap = new Map([
+      ['.kv-container', kvContainer],
+      ['.dendrite-form', dendriteForm],
+      ['input[type="number"]', {}],
+    ]);
+    const querySelector = jest.fn((_, selector) => selectorMap.get(selector));
     const dom = {
       hide: jest.fn(),
       disable: jest.fn(),
