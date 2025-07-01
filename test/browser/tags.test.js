@@ -130,7 +130,12 @@ describe('makeHandleHideSpan', () => {
       }),
       addClass: jest.fn(),
       appendChild: jest.fn(),
-      createTextNode: jest.fn(txt => (txt === ' (' ? textNode1 : textNode2)),
+      createTextNode: jest.fn(txt => {
+        if (txt === ' (') {
+          return textNode1;
+        }
+        return textNode2;
+      }),
       setTextContent: jest.fn(),
       addEventListener: jest.fn(),
       insertBefore: jest.fn(),
