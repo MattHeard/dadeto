@@ -885,18 +885,24 @@ const INPUT_METHODS = ['text', 'number', 'kv', 'dendrite-story'];
  * @param {string} defaultMethod - The configured default input method
  * @returns {string} - HTML for the dropdown and text input
  */
-function buildToyInputDropdown(defaultMethod) {
-  let selectedMethod;
+function getSelectedMethod(defaultMethod) {
   if (defaultMethod && defaultMethod !== 'text') {
-    selectedMethod = defaultMethod;
+    return defaultMethod;
   }
-  const options = INPUT_METHODS.map(method => {
-    let selected = '';
-    if (method === selectedMethod) {
-      selected = ' selected';
-    }
-    return `<option value="${method}"${selected}>${method}</option>`;
-  }).join('');
+  return undefined;
+}
+
+function buildOption(method, selectedMethod) {
+  let selected = '';
+  if (method === selectedMethod) {
+    selected = ' selected';
+  }
+  return `<option value="${method}"${selected}>${method}</option>`;
+}
+
+function buildToyInputDropdown(defaultMethod) {
+  const selectedMethod = getSelectedMethod(defaultMethod);
+  const options = INPUT_METHODS.map(method => buildOption(method, selectedMethod)).join('');
   return `<select class="input">${options}</select><input type="text" disabled>`;
 }
 
