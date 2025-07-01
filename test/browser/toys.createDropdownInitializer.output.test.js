@@ -9,9 +9,6 @@ describe('createDropdownInitializer output init', () => {
         if (selector === 'article.entry .value > select.output') {
           return [dropdown];
         }
-        if (selector === 'article.entry .value > select.input') {
-          return [];
-        }
         return [];
       }),
       addEventListener: jest.fn(),
