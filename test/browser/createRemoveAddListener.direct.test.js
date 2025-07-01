@@ -12,7 +12,7 @@ test('createRemoveAddListener returns disposer that removes click handler', () =
   const render = jest.fn();
   const disposers = [];
 
-  setupAddButton(dom, btn, rows, render, disposers);
+  setupAddButton({ dom, button: btn, rows, render, disposers });
 
   expect(disposers).toHaveLength(1);
   const dispose = disposers[0];

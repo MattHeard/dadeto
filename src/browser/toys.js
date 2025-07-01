@@ -692,7 +692,7 @@ export const createOnRemove = (rows, render, key) => e => {
  * @param {Function} render - The render function to update the UI
  * @param {Array} disposers - Array to store cleanup functions
  */
-export const setupAddButton = (dom, button, rows, render, disposers) => {
+export const setupAddButton = ({ dom, button, rows, render, disposers }) => {
   dom.setTextContent(button, '+');
   const onAdd = createOnAddHandler(rows, render);
   dom.addEventListener(button, 'click', onAdd);
@@ -806,7 +806,7 @@ const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
   dom.setType(button, 'button');
 
   if (isAddButton) {
-    setupAddButton(dom, button, rows, render, disposers);
+    setupAddButton({ dom, button, rows, render, disposers });
   } else {
     setupRemoveButton(dom, button, rows, render, key, disposers);
   }

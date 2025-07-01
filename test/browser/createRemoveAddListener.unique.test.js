@@ -13,11 +13,11 @@ describe('createRemoveAddListener unique disposers', () => {
     const disposers = [];
 
     const btnA = {};
-    setupAddButton(dom, btnA, rows, render, disposers);
+    setupAddButton({ dom, button: btnA, rows, render, disposers });
     const disposeA = disposers.pop();
 
     const btnB = {};
-    setupAddButton(dom, btnB, rows, render, disposers);
+    setupAddButton({ dom, button: btnB, rows, render, disposers });
     const disposeB = disposers.pop();
 
     expect(typeof disposeA).toBe('function');
