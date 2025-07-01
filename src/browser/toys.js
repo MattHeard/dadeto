@@ -729,12 +729,13 @@ export const setupRemoveButton = (
 
 /**
  * Creates and sets up a button element as either an add or remove button
- * @param {Object} dom - The DOM utilities object
- * @param {boolean} isAddButton - Whether to create an add button (true) or remove button (false)
- * @param {Object} rows - The rows object for the key-value editor
- * @param {Function} render - The render function to update the UI
- * @param {string} key - The key of the row (for remove button)
- * @param {Array} disposers - Array to store cleanup functions
+ * @param {Object} opts - Options for button creation
+ * @param {Object} opts.dom - The DOM utilities object
+ * @param {boolean} opts.isAddButton - Whether to create an add button
+ * @param {Object} opts.rows - The rows object for the key-value editor
+ * @param {Function} opts.render - The render function to update the UI
+ * @param {string} opts.key - The key of the row (for remove button)
+ * @param {Array} opts.disposers - Array to store cleanup functions
  * @returns {HTMLElement} The created and configured button element
  */
 /**
@@ -784,14 +785,14 @@ export const createKeyValueRow =
       );
 
       // Create and set up the appropriate button type
-      const btnEl = createButton(
+      const btnEl = createButton({
         dom,
-        idx === entries.length - 1,
+        isAddButton: idx === entries.length - 1,
         rows,
         render,
         key,
-        disposers
-      );
+        disposers,
+      });
 
       dom.appendChild(rowEl, keyEl);
       dom.appendChild(rowEl, valueEl);
@@ -799,7 +800,7 @@ export const createKeyValueRow =
       dom.appendChild(container, rowEl);
     };
 
-const createButton = (dom, isAddButton, rows, render, key, disposers) => {
+const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
   const button = dom.createElement('button');
   dom.setType(button, 'button');
 
