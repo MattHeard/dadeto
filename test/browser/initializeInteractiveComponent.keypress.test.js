@@ -13,21 +13,16 @@ describe('initializeInteractiveComponent keypress handling', () => {
 
     const dom = {
       querySelector: jest.fn((_, selector) => {
-        switch (selector) {
-        case 'input[type="text"]':
-          return inputElement;
-        case 'button[type="submit"]':
-          return submitButton;
-        case 'div.output':
-          return outputParent;
-        case 'select.output':
-          return outputSelect;
-        default:
-          return {};
-        }
+        const elements = {
+          'input[type="text"]': inputElement,
+          'button[type="submit"]': submitButton,
+          'div.output': outputParent,
+          'select.output': outputSelect,
+        };
+        return elements[selector] ?? {};
       }),
-      addEventListener: jest.fn((el, event, handler) => {
-        if (el === inputElement && event === 'keypress') {
+      addEventListener: jest.fn((el, _event, handler) => {
+        if (el === inputElement) {
           keypressHandler = handler;
         }
       }),
@@ -47,7 +42,9 @@ describe('initializeInteractiveComponent keypress handling', () => {
       globalState: {},
       createEnvFn: () => ({}),
       errorFn: jest.fn(),
-      fetchFn: jest.fn().mockResolvedValue({ text: jest.fn().mockResolvedValue('{}') }),
+      fetchFn: jest
+        .fn()
+        .mockResolvedValue({ text: jest.fn().mockResolvedValue('{}') }),
       dom,
       loggers: {
         logInfo: jest.fn(),
