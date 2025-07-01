@@ -196,8 +196,6 @@ describe('createKeyValueRow', () => {
     const mockValueInput = {};
     const mockButton = {};
 
-    let inputHandler;
-
     mockDom.createElement
       .mockReturnValueOnce({}) // row div
       .mockReturnValueOnce(mockKeyInput) // key input
