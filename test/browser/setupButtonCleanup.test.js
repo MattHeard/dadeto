@@ -76,12 +76,11 @@ describe('button cleanup helpers', () => {
         }
       }),
       removeEventListener: jest.fn((_, event, handler) => {
-        if (event === 'click') {
-          const idx = handlers.indexOf(handler);
-          if (idx !== -1) {
-            handlers.splice(idx, 1);
-          }
+        if (event !== 'click') {
+          return;
         }
+        const idx = handlers.indexOf(handler);
+        handlers.splice(idx, 1);
       }),
     };
     const button = {};
