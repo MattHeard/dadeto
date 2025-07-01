@@ -22,12 +22,8 @@ export function pick(obj, keys) {
  * @returns {Object} A new object with transformed values
  */
 export function mapValues(obj, fn) {
-  if (!obj || typeof obj !== 'object') {
-    return {};
-  }
-
-  return Object.entries(obj).reduce((result, [key, value]) => {
-    result[key] = fn(value, key);
-    return result;
-  }, {});
+  const source = Object(obj) === obj ? obj : {};
+  return Object.fromEntries(
+    Object.entries(source).map(([key, value]) => [key, fn(value, key)])
+  );
 }
