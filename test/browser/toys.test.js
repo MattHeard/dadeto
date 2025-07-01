@@ -418,7 +418,6 @@ describe('toys', () => {
       // --- THEN ---
       expect(disconnectObserver).toHaveBeenCalledWith(observer);
     });
-
   });
 
   describe('makeCreateIntersectionObserver', () => {
@@ -1418,6 +1417,7 @@ describe('createInputDropdownHandler', () => {
       }
       return null;
     });
+
     getParentElement = jest.fn(arg => {
       if (arg === select) {
         return container;
