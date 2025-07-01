@@ -3,8 +3,8 @@ import { createDispose } from '../../src/browser/toys.js';
 
 describe('createDispose', () => {
   it('can be called and disposed', () => {
-    // Verify the factory function expects four parameters
-    expect(createDispose.length).toBe(4);
+    // Verify the factory function expects one parameter
+    expect(createDispose.length).toBe(1);
     // Mock the required parameters
     const disposer = jest.fn();
     const disposers = [disposer];
@@ -15,7 +15,7 @@ describe('createDispose', () => {
     const rows = ['row'];
 
     // Create and call dispose
-    const dispose = createDispose(disposers, dom, container, rows);
+    const dispose = createDispose({ disposers, dom, container, rows });
 
     // Ensure a function was returned
     expect(typeof dispose).toBe('function');
@@ -30,7 +30,7 @@ describe('createDispose', () => {
   });
 
   it('clears all registered disposers', () => {
-    expect(createDispose.length).toBe(4);
+    expect(createDispose.length).toBe(1);
     const disposer1 = jest.fn();
     const disposer2 = jest.fn();
     const disposers = [disposer1, disposer2];
@@ -40,7 +40,7 @@ describe('createDispose', () => {
     const container = {};
     const rows = ['a', 'b'];
 
-    const dispose = createDispose(disposers, dom, container, rows);
+    const dispose = createDispose({ disposers, dom, container, rows });
     expect(typeof dispose).toBe('function');
 
     dispose();
@@ -61,7 +61,7 @@ describe('createDispose', () => {
     const container = {};
     const rows = ['x'];
 
-    const dispose = createDispose(disposers, dom, container, rows);
+    const dispose = createDispose({ disposers, dom, container, rows });
 
     expect(() => dispose()).not.toThrow();
     expect(() => dispose()).not.toThrow();
@@ -79,7 +79,7 @@ describe('createDispose', () => {
     const container = {};
     const rows = [];
 
-    const dispose = createDispose(disposers, dom, container, rows);
+    const dispose = createDispose({ disposers, dom, container, rows });
     expect(typeof dispose).toBe('function');
     expect(dispose.length).toBe(0);
 
@@ -94,7 +94,7 @@ describe('createDispose', () => {
     // scenario: array has an existing row
     const dom1 = { removeAllChildren: jest.fn() };
     const rows1 = ['x'];
-    const dispose1 = createDispose([], dom1, container, rows1);
+    const dispose1 = createDispose({ disposers: [], dom: dom1, container, rows: rows1 });
     expect(() => dispose1()).not.toThrow();
     expect(dom1.removeAllChildren).toHaveBeenCalledWith(container);
     expect(rows1).toHaveLength(0);
@@ -102,7 +102,7 @@ describe('createDispose', () => {
     // scenario: array already empty
     const dom2 = { removeAllChildren: jest.fn() };
     const rows2 = [];
-    const dispose2 = createDispose([], dom2, container, rows2);
+    const dispose2 = createDispose({ disposers: [], dom: dom2, container, rows: rows2 });
     expect(typeof dispose2).toBe('function');
     expect(() => dispose2()).not.toThrow();
     expect(dom2.removeAllChildren).toHaveBeenCalledWith(container);

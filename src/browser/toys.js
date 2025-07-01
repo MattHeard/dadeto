@@ -12,16 +12,20 @@ import { createPrefixedLoggers } from './document.js';
  * @param {Array<{key: string, value: any}>} array - The array to convert
  * @returns {Object} An object with keys and values from the array
  */
+function isKeyValuePair(pair) {
+  if (!pair || typeof pair !== 'object') {
+    return false;
+  }
+  return 'key' in pair;
+}
+
 export const convertArrayToKeyValueObject = array => {
   if (!Array.isArray(array)) {
     return {};
   }
-  return array.reduce((obj, pair) => {
-    if (pair && typeof pair === 'object' && 'key' in pair) {
-      obj[pair.key] = pair.value ?? '';
-    }
-    return obj;
-  }, {});
+  return Object.fromEntries(
+    array.filter(isKeyValuePair).map(pair => [pair.key, pair.value ?? ''])
+  );
 };
 
 export const parseExistingRows = (dom, inputElement) => {
@@ -61,7 +65,7 @@ export const clearDisposers = disposersArray => {
  * @param {Array} rows - The rows array to clear
  * @returns {Function} A function that cleans up resources
  */
-export const createDispose = (disposers, dom, container, rows) => () => {
+export const createDispose = ({ disposers, dom, container, rows }) => () => {
   clearDisposers(disposers);
   dom.removeAllChildren(container);
   rows.length = 0;
@@ -1180,7 +1184,12 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   render();
 
   // Public API for cleanup by parent code
-  const dispose = createDispose(disposers, dom, kvContainer, rows);
+  const dispose = createDispose({
+    disposers,
+    dom,
+    container: kvContainer,
+    rows,
+  });
   kvContainer._dispose = dispose;
 
   return kvContainer;
