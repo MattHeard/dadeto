@@ -526,10 +526,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
       typeof btoa !== 'undefined'
         ? btoa
         : str => Buffer.from(str, 'binary').toString('base64');
-    const encodeURIComponentFn =
-      typeof encodeURIComponent !== 'undefined'
-        ? encodeURIComponent
-        : encodeURIComponent;
+    const encodeURIComponentFn = encodeURIComponent;
     const encodeBase64 = getEncodeBase64(btoaFn, encodeURIComponentFn);
     const input = 'hello world!';
     expect(encodeBase64(input)).toBe('aGVsbG8gd29ybGQh');
