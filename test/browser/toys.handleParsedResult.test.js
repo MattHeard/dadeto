@@ -6,7 +6,7 @@ describe('handleParsedResult', () => {
 
   beforeEach(() => {
     const removeAllChildren = jest.fn();
-    const createElement = jest.fn((tagName) => ({}));
+    const createElement = jest.fn(() => ({}));
     const setTextContent = jest.fn();
     const appendChild = jest.fn(); // This is the main appendChild for the dom mock
 
@@ -14,17 +14,19 @@ describe('handleParsedResult', () => {
       removeAllChildren,
       createElement,
       setTextContent,
-      appendChild
+      appendChild,
     };
 
-    const fetchFn = jest.fn().mockResolvedValue({ text: () => Promise.resolve('response') });
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue({ text: () => Promise.resolve('response') });
     // dom is already defined and populated above
     const errorFn = jest.fn();
 
     env = {
       fetchFn,
       dom,
-      errorFn
+      errorFn,
     };
 
     const parent = {};
@@ -32,15 +34,15 @@ describe('handleParsedResult', () => {
 
     options = {
       parent,
-      presenterKey
+      presenterKey,
     };
   });
 
   it('initiates a fetch and returns true when a valid parsed request is provided', () => {
     parsed = {
       request: {
-        url: 'https://example.com'
-      }
+        url: 'https://example.com',
+      },
     };
 
     const result = handleParsedResult(parsed, env, options);
@@ -60,7 +62,7 @@ describe('handleParsedResult', () => {
 
   it('returns false when request.url is not a string', () => {
     parsed = {
-      request: { url: 123 }
+      request: { url: 123 },
     };
 
     const result = handleParsedResult(parsed, env, options);
