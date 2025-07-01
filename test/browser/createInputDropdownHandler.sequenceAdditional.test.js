@@ -11,9 +11,12 @@ describe('createInputDropdownHandler sequential values', () => {
     const dom = {
       getCurrentTarget: jest.fn(() => select),
       getParentElement: jest.fn(() => container),
-      querySelector: jest.fn((_, selector) =>
-        selector === 'input[type="text"]' ? textInput : null
-      ),
+      querySelector: jest.fn((_, selector) => {
+        if (selector === 'input[type="text"]') {
+          return textInput;
+        }
+        return null;
+      }),
       getValue: jest
         .fn()
         .mockReturnValueOnce('text')
