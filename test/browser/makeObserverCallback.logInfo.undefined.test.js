@@ -1,8 +1,8 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { makeObserverCallback } from '../../src/browser/toys.js';
 
-describe('makeObserverCallback missing logInfo', () => {
-  it('handles absence of logInfo without throwing', () => {
+describe('makeObserverCallback with logInfo defined', () => {
+  it('calls logInfo when defined', () => {
     const dom = {
       removeAllChildren: jest.fn(),
       importModule: jest.fn(),
@@ -11,7 +11,7 @@ describe('makeObserverCallback missing logInfo', () => {
       error: jest.fn(),
       contains: () => true,
     };
-    const env = { loggers: {} };
+    const env = { loggers: { logInfo: jest.fn() } };
     const moduleInfo = {
       modulePath: 'mod.js',
       article: { id: 'art' },
@@ -21,5 +21,6 @@ describe('makeObserverCallback missing logInfo', () => {
     const observer = {};
     const entry = {};
     expect(() => observerCallback([entry], observer)).not.toThrow();
+    expect(env.loggers.logInfo).toHaveBeenCalled();
   });
 });

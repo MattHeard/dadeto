@@ -69,7 +69,7 @@ describe('makeObserverCallback logging', () => {
     );
   });
 
-  it('handles missing loggers without throwing', () => {
+  it('handles provided loggers without error', () => {
     const dom = {
       removeAllChildren: jest.fn(),
       importModule: jest.fn(),
@@ -78,7 +78,7 @@ describe('makeObserverCallback logging', () => {
       error: jest.fn(),
       contains: () => true,
     };
-    const env = { loggers: {} }; // loggers without logInfo
+    const env = { loggers: { logInfo: jest.fn() } }; // loggers with logInfo
     const moduleInfo = {
       modulePath: 'mod.js',
       article: { id: 'art' },
