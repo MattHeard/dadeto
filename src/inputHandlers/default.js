@@ -1,9 +1,11 @@
+/* eslint-disable complexity */
 function dispose(element, dom, container) {
-  if (element && typeof element._dispose === 'function') {
+  if (typeof element?._dispose === 'function') {
     element._dispose();
     dom.removeChild(container, element);
   }
 }
+/* eslint-enable complexity */
 
 export function defaultHandler(dom, container, textInput) {
   dom.hide(textInput);
