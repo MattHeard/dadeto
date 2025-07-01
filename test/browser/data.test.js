@@ -522,10 +522,12 @@ describe('getData, setData, and getDeepStateCopy', () => {
   });
 
   it('getEncodeBase64 returns a function that encodes to base64 using provided helpers', () => {
-    const btoaFn =
-      typeof btoa !== 'undefined'
-        ? btoa
-        : str => Buffer.from(str, 'binary').toString('base64');
+    let btoaFn;
+    if (typeof btoa !== 'undefined') {
+      btoaFn = btoa;
+    } else {
+      btoaFn = str => Buffer.from(str, 'binary').toString('base64');
+    }
     const encodeURIComponentFn = encodeURIComponent;
     const encodeBase64 = getEncodeBase64(btoaFn, encodeURIComponentFn);
     const input = 'hello world!';
