@@ -79,6 +79,7 @@ describe('button cleanup helpers', () => {
           handlers.push(handler);
         }
       }),
+
       // eslint-disable-next-line complexity
       removeEventListener: jest.fn((_, event, handler) => {
         if (event === 'click') {
