@@ -65,11 +65,13 @@ export const clearDisposers = disposersArray => {
  * @param {Array} rows - The rows array to clear
  * @returns {Function} A function that cleans up resources
  */
-export const createDispose = ({ disposers, dom, container, rows }) => () => {
-  clearDisposers(disposers);
-  dom.removeAllChildren(container);
-  rows.length = 0;
-};
+export const createDispose =
+  ({ disposers, dom, container, rows }) =>
+    () => {
+      clearDisposers(disposers);
+      dom.removeAllChildren(container);
+      rows.length = 0;
+    };
 
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
@@ -559,13 +561,13 @@ export function createKeyInputHandler(
  * @param {Function} syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-export function createValueInputHandler(
+export function createValueInputHandler({
   dom,
   keyEl,
   textInput,
   rows,
-  syncHiddenField
-) {
+  syncHiddenField,
+}) {
   return e => {
     const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
     rows[rowKey] = dom.getTargetValue(e);
@@ -638,13 +640,13 @@ export const createValueElement = (
   dom.setPlaceholder(valueEl, 'Value');
   dom.setValue(valueEl, value);
 
-  const onValue = createValueInputHandler(
+  const onValue = createValueInputHandler({
     dom,
     keyEl,
     textInput,
     rows,
-    syncHiddenField
-  );
+    syncHiddenField,
+  });
   dom.addEventListener(valueEl, 'input', onValue);
   const removeValueListener = createRemoveValueListener(dom, valueEl, onValue);
   disposers.push(removeValueListener);

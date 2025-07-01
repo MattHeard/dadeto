@@ -555,13 +555,13 @@ export function createKeyInputHandler(
  * @param {Function} syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-export function createValueInputHandler(
+export function createValueInputHandler({
   dom,
   keyEl,
   textInput,
   rows,
-  syncHiddenField
-) {
+  syncHiddenField,
+}) {
   return e => {
     const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
     rows[rowKey] = dom.getTargetValue(e);
@@ -634,13 +634,13 @@ export const createValueElement = (
   dom.setPlaceholder(valueEl, 'Value');
   dom.setValue(valueEl, value);
 
-  const onValue = createValueInputHandler(
+  const onValue = createValueInputHandler({
     dom,
     keyEl,
     textInput,
     rows,
-    syncHiddenField
-  );
+    syncHiddenField,
+  });
   dom.addEventListener(valueEl, 'input', onValue);
   const removeValueListener = createRemoveValueListener(dom, valueEl, onValue);
   disposers.push(removeValueListener);
@@ -754,44 +754,44 @@ export const createKeyValueRow =
     render,
     container
   ) =>
-    ([key, value], idx) => {
-      const rowEl = dom.createElement('div');
-      dom.setClassName(rowEl, 'kv-row');
+  ([key, value], idx) => {
+    const rowEl = dom.createElement('div');
+    dom.setClassName(rowEl, 'kv-row');
 
-      // Create key and value elements
-      const keyEl = createKeyElement(
-        dom,
-        key,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers
-      );
-      const valueEl = createValueElement(
-        dom,
-        value,
-        keyEl,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers
-      );
+    // Create key and value elements
+    const keyEl = createKeyElement(
+      dom,
+      key,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
+    const valueEl = createValueElement(
+      dom,
+      value,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers
+    );
 
-      // Create and set up the appropriate button type
-      const btnEl = createButton(
-        dom,
-        idx === entries.length - 1,
-        rows,
-        render,
-        key,
-        disposers
-      );
+    // Create and set up the appropriate button type
+    const btnEl = createButton(
+      dom,
+      idx === entries.length - 1,
+      rows,
+      render,
+      key,
+      disposers
+    );
 
-      dom.appendChild(rowEl, keyEl);
-      dom.appendChild(rowEl, valueEl);
-      dom.appendChild(rowEl, btnEl);
-      dom.appendChild(container, rowEl);
-    };
+    dom.appendChild(rowEl, keyEl);
+    dom.appendChild(rowEl, valueEl);
+    dom.appendChild(rowEl, btnEl);
+    dom.appendChild(container, rowEl);
+  };
 
 const createButton = (dom, isAddButton, rows, render, key, disposers) => {
   const button = dom.createElement('button');

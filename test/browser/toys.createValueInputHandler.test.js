@@ -15,7 +15,7 @@ describe('createValueInputHandler', () => {
     // Mock DOM utilities
     dom = {
       getDataAttribute: jest.fn(),
-      getTargetValue: jest.fn(() => 'newValue')
+      getTargetValue: jest.fn(() => 'newValue'),
     };
 
     // Mock elements
@@ -25,14 +25,20 @@ describe('createValueInputHandler', () => {
     // Initial rows state
     rows = {
       existingKey: 'oldValue',
-      anotherKey: 'anotherValue'
+      anotherKey: 'anotherValue',
     };
 
     // Mock sync function
     syncHiddenField = jest.fn();
 
     // Create the handler
-    handler = createValueInputHandler(dom, keyEl, textInput, rows, syncHiddenField);
+    handler = createValueInputHandler({
+      dom,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+    });
 
     // Mock event
     event = { target: { value: 'newValue' } };
@@ -49,7 +55,7 @@ describe('createValueInputHandler', () => {
     // Assert
     expect(rows).toEqual({
       existingKey: 'newValue',
-      anotherKey: 'anotherValue'
+      anotherKey: 'anotherValue',
     });
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
   });
@@ -66,7 +72,7 @@ describe('createValueInputHandler', () => {
     // Assert
     expect(rows).toEqual({
       existingKey: 'oldValue',
-      anotherKey: 'updatedAnotherValue'
+      anotherKey: 'updatedAnotherValue',
     });
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
   });
@@ -83,7 +89,7 @@ describe('createValueInputHandler', () => {
     // Assert
     expect(rows).toEqual({
       existingKey: '',
-      anotherKey: 'anotherValue'
+      anotherKey: 'anotherValue',
     });
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
   });
@@ -111,7 +117,7 @@ describe('createValueInputHandler', () => {
     expect(rows).toEqual({
       existingKey: 'oldValue',
       anotherKey: 'anotherValue',
-      nonExistentKey: 'newValue'
+      nonExistentKey: 'newValue',
     });
     expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
   });
