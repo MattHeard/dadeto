@@ -22,11 +22,11 @@ export function pick(obj, keys) {
  * @returns {Object} A new object with transformed values
  */
 export function mapValues(obj, fn) {
-  if (Object(obj) !== obj) {
-    return {};
+  let source = {};
+  if (Object(obj) === obj) {
+    source = obj;
   }
-
   return Object.fromEntries(
-    Object.entries(obj).map(([key, value]) => [key, fn(value, key)])
+    Object.entries(source).map(([key, value]) => [key, fn(value, key)])
   );
 }
