@@ -2,7 +2,7 @@ import { ensureKeyValueInput } from '../browser/toys.js';
 
 export function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (numberInput?._dispose) {
+  if (typeof numberInput?._dispose === 'function') {
     numberInput._dispose();
     dom.removeChild(container, numberInput);
   }
