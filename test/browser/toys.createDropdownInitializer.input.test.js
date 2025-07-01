@@ -7,15 +7,13 @@ describe('createDropdownInitializer input init', () => {
   it('calls onInputChange for existing dropdown selection', () => {
     const dropdown = { value: 'dendrite-story' };
 
+    const SELECT_INPUT = 'article.entry .value > select.input';
     const dom = {
       querySelectorAll: jest.fn(selector => {
-        if (selector === 'article.entry .value > select.output') {
-          return [];
-        }
-        if (selector === 'article.entry .value > select.input') {
-          return [dropdown];
-        }
-        return [];
+        const mapping = {
+          [SELECT_INPUT]: [dropdown],
+        };
+        return mapping[selector] || [];
       }),
       addEventListener: jest.fn(),
     };
