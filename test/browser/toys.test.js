@@ -418,7 +418,6 @@ describe('toys', () => {
       // --- THEN ---
       expect(disconnectObserver).toHaveBeenCalledWith(observer);
     });
-
   });
 
   describe('makeCreateIntersectionObserver', () => {
@@ -1412,8 +1411,18 @@ describe('createInputDropdownHandler', () => {
     };
 
     // Mock DOM functions
-    getCurrentTarget = jest.fn(arg => (arg === event ? select : null));
-    getParentElement = jest.fn(arg => (arg === select ? container : null));
+    getCurrentTarget = jest.fn(arg => {
+      if (arg === event) {
+        return select;
+      }
+      return null;
+    });
+    getParentElement = jest.fn(arg => {
+      if (arg === select) {
+        return container;
+      }
+      return null;
+    });
 
     const selectorMap = new Map([
       ['input[type="text"]', textInput],
