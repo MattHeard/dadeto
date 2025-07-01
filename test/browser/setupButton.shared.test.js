@@ -8,13 +8,13 @@ describe.each([
   [
     'setupAddButton',
     setupAddButton,
-    (dom, button, rows, render, key, disposers) =>
+    ({ dom, button, rows, render, disposers }) =>
       setupAddButton(dom, button, rows, render, disposers),
   ],
   [
     'setupRemoveButton',
     setupRemoveButton,
-    (dom, button, rows, render, key, disposers) =>
+    ({ dom, button, rows, render, key, disposers }) =>
       setupRemoveButton(dom, button, rows, render, key, disposers),
   ],
 ])('%s common behaviour', (_name, _setup, invoke) => {
@@ -38,7 +38,7 @@ describe.each([
   });
 
   it('adds a click event listener to the button', () => {
-    invoke(dom, button, rows, render, rowKey, disposers);
+    invoke({ dom, button, rows, render, key: rowKey, disposers });
 
     expect(dom.addEventListener).toHaveBeenCalledWith(
       button,
@@ -48,14 +48,14 @@ describe.each([
   });
 
   it('adds a disposer function to the disposers array', () => {
-    invoke(dom, button, rows, render, rowKey, disposers);
+    invoke({ dom, button, rows, render, key: rowKey, disposers });
 
     expect(disposers).toHaveLength(1);
     expect(disposers[0]).toBeInstanceOf(Function);
   });
 
   it('cleanup function removes the event listener', () => {
-    invoke(dom, button, rows, render, rowKey, disposers);
+    invoke({ dom, button, rows, render, key: rowKey, disposers });
 
     const cleanup = disposers[0];
     cleanup();
@@ -68,7 +68,7 @@ describe.each([
   });
 
   it('cleanup can be called multiple times', () => {
-    invoke(dom, button, rows, render, rowKey, disposers);
+    invoke({ dom, button, rows, render, key: rowKey, disposers });
 
     const cleanup = disposers[0];
     cleanup();
@@ -85,7 +85,7 @@ describe.each([
       }
     });
 
-    invoke(dom, button, rows, render, rowKey, disposers);
+    invoke({ dom, button, rows, render, key: rowKey, disposers });
 
     const cleanup = disposers[0];
     cleanup();
