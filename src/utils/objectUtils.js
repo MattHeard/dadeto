@@ -5,14 +5,14 @@
  * @returns {Object} A new object with only the specified keys
  */
 export function pick(obj, keys) {
-  if (!obj || typeof obj !== 'object') {return {};}
+  let source = {};
+  if (Object(obj) === obj) {
+    source = obj;
+  }
 
-  return keys.reduce((result, key) => {
-    if (key in obj) {
-      result[key] = obj[key];
-    }
-    return result;
-  }, {});
+  return Object.fromEntries(
+    keys.filter(key => key in source).map(key => [key, source[key]])
+  );
 }
 
 /**
@@ -22,7 +22,9 @@ export function pick(obj, keys) {
  * @returns {Object} A new object with transformed values
  */
 export function mapValues(obj, fn) {
-  if (!obj || typeof obj !== 'object') {return {};}
+  if (!obj || typeof obj !== 'object') {
+    return {};
+  }
 
   return Object.entries(obj).reduce((result, [key, value]) => {
     result[key] = fn(value, key);
