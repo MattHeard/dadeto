@@ -21,12 +21,15 @@ export function pick(obj, keys) {
  * @param {Function} fn - The transformation function
  * @returns {Object} A new object with transformed values
  */
-export function mapValues(obj, fn) {
-  let source = {};
-  if (Object(obj) === obj) {
-    source = obj;
-  }
+function transformEntries(source, fn) {
   return Object.fromEntries(
     Object.entries(source).map(([key, value]) => [key, fn(value, key)])
   );
+}
+
+export function mapValues(obj, fn) {
+  if (Object(obj) !== obj) {
+    return {};
+  }
+  return transformEntries(obj, fn);
 }
