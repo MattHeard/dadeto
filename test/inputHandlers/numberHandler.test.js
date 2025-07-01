@@ -39,12 +39,10 @@ describe('numberHandler', () => {
 
   test('no elements to remove', () => {
     const numberInput = {};
-    const querySelector = jest.fn((_, selector) => {
-      if (selector === 'input[type="number"]') {
-        return numberInput;
-      }
-      return null;
-    });
+    const selectorMap = new Map([['input[type="number"]', numberInput]]);
+    const querySelector = jest.fn(
+      (_, selector) => selectorMap.get(selector) || null
+    );
     const dom = {
       hide: jest.fn(),
       disable: jest.fn(),
