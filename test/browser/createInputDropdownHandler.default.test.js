@@ -10,9 +10,12 @@ describe('createInputDropdownHandler default branch', () => {
 
     const getCurrentTarget = jest.fn(() => select);
     const getParentElement = jest.fn(() => container);
-    const querySelector = jest.fn((_, selector) =>
-      selector === 'input[type="text"]' ? textInput : null
-    );
+    const querySelector = jest.fn((_, selector) => {
+      if (selector === 'input[type="text"]') {
+        return textInput;
+      }
+      return null;
+    });
     const getValue = jest.fn(() => 'unknown');
     const reveal = jest.fn();
     const enable = jest.fn();
@@ -51,9 +54,12 @@ describe('createInputDropdownHandler default branch', () => {
 
     const getCurrentTarget = jest.fn(() => select);
     const getParentElement = jest.fn(() => container);
-    const querySelector = jest.fn((_, selector) =>
-      selector === 'input[type="text"]' ? textInput : null
-    );
+    const querySelector = jest.fn((_, selector) => {
+      if (selector === 'input[type="text"]') {
+        return textInput;
+      }
+      return null;
+    });
     const getValue = jest.fn(() => 'text');
     const reveal = jest.fn();
     const enable = jest.fn();
