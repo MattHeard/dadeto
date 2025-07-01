@@ -1459,9 +1459,12 @@ describe('createInputDropdownHandler', () => {
     it('should call getCurrentTarget with the event', () => {
       // Given
       const selectValue = 'kv';
-      const getValue = jest.fn(element =>
-        element === select ? selectValue : null
-      );
+      const getValue = jest.fn(element => {
+        if (element === select) {
+          return selectValue;
+        }
+        return null;
+      });
       const createElement = jest.fn();
       const querySelector = jest.fn(() => null);
       const removeAllChildren = jest.fn();
