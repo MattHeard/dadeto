@@ -53,7 +53,7 @@ function buildColumnDigitMatrix(colClues) {
   colClues.forEach(clue => {
     const padded = padLeft(clue.toString(), maxDigits);
     [...padded].forEach((ch, idx) => {
-      rows[idx].push(ch === ' ' ? ' ' : ch);
+      rows[idx].push(ch);
     });
   });
   return rows; // order: tens→ones (top→bottom)

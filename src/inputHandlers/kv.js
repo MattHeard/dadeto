@@ -2,10 +2,12 @@ import { ensureKeyValueInput } from '../browser/toys.js';
 
 export function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (numberInput && typeof numberInput._dispose === 'function') {
-    numberInput._dispose();
-    dom.removeChild(container, numberInput);
+  const dispose = numberInput?._dispose;
+  if (typeof dispose !== 'function') {
+    return;
   }
+  dispose.call(numberInput);
+  dom.removeChild(container, numberInput);
 }
 
 export function maybeRemoveDendrite(container, dom) {
