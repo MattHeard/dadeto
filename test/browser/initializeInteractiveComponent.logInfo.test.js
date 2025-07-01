@@ -14,20 +14,15 @@ describe('initializeInteractiveComponent logging', () => {
     const outputSelect = {};
     const logInfo = jest.fn();
 
-    const querySelector = jest.fn((_, selector) => {
-      switch (selector) {
-      case 'input[type="text"]':
-        return inputElement;
-      case 'button[type="submit"]':
-        return submitButton;
-      case 'div.output':
-        return outputParent;
-      case 'select.output':
-        return outputSelect;
-      default:
-        return {};
-      }
-    });
+    const queryElements = {
+      'input[type="text"]': inputElement,
+      'button[type="submit"]': submitButton,
+      'div.output': outputParent,
+      'select.output': outputSelect,
+    };
+    const querySelector = jest.fn(
+      (_, selector) => queryElements[selector] ?? {}
+    );
 
     const dom = {
       removeAllChildren: jest.fn(),
