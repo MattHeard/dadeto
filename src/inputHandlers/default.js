@@ -1,5 +1,5 @@
 /* eslint-disable complexity */
-function dispose(element, dom, container) {
+export function dispose(element, dom, container) {
   if (typeof element?._dispose === 'function') {
     element._dispose();
     dom.removeChild(container, element);
