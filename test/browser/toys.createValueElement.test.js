@@ -35,7 +35,15 @@ describe('createValueElement', () => {
   it('creates a value input element with the correct initial properties', () => {
     const initialValue = 'testValue';
 
-    valueEl = createValueElement(mockDom, initialValue, keyEl, textInput, rows, syncHiddenField, disposers);
+    valueEl = createValueElement({
+      dom: mockDom,
+      value: initialValue,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
 
     // Verify element creation
     expect(mockDom.createElement).toHaveBeenCalledWith('input');
@@ -66,7 +74,15 @@ describe('createValueElement', () => {
     rows[key] = initialValue;
 
     // Create the value element
-    valueEl = createValueElement(mockDom, initialValue, keyEl, textInput, rows, syncHiddenField, disposers);
+    valueEl = createValueElement({
+      dom: mockDom,
+      value: initialValue,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
 
     // Get the input event handler
     const inputHandler = mockDom.addEventListener.mock.calls[0][2];
@@ -86,7 +102,15 @@ describe('createValueElement', () => {
   });
 
   it('cleans up event listeners when disposer is called', () => {
-    valueEl = createValueElement(mockDom, 'testValue', keyEl, textInput, rows, syncHiddenField, disposers);
+    valueEl = createValueElement({
+      dom: mockDom,
+      value: 'testValue',
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
 
     // Get the disposer function
     const disposer = disposers[0];
@@ -103,15 +127,15 @@ describe('createValueElement', () => {
   });
 
   it('uses the same handler for add and remove listener', () => {
-    valueEl = createValueElement(
-      mockDom,
-      'testValue',
+    valueEl = createValueElement({
+      dom: mockDom,
+      value: 'testValue',
       keyEl,
       textInput,
       rows,
       syncHiddenField,
-      disposers
-    );
+      disposers,
+    });
 
     // Capture the handler passed to addEventListener
     const [el, eventName, handler] = mockDom.addEventListener.mock.calls[0];
@@ -125,15 +149,15 @@ describe('createValueElement', () => {
   });
 
   it('cleanup can be called multiple times', () => {
-    valueEl = createValueElement(
-      mockDom,
-      'multi',
+    valueEl = createValueElement({
+      dom: mockDom,
+      value: 'multi',
       keyEl,
       textInput,
       rows,
       syncHiddenField,
-      disposers
-    );
+      disposers,
+    });
 
     const disposer = disposers[0];
     disposer();
