@@ -1412,7 +1412,12 @@ describe('createInputDropdownHandler', () => {
     };
 
     // Mock DOM functions
-    getCurrentTarget = jest.fn(arg => (arg === event ? select : null));
+    getCurrentTarget = jest.fn(arg => {
+      if (arg === event) {
+        return select;
+      }
+      return null;
+    });
     getParentElement = jest.fn(arg => (arg === select ? container : null));
 
     const selectorMap = new Map([
