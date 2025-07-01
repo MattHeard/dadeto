@@ -12,16 +12,19 @@ import { createPrefixedLoggers } from './document.js';
  * @param {Array<{key: string, value: any}>} array - The array to convert
  * @returns {Object} An object with keys and values from the array
  */
+const toKeyValueEntry = pair => {
+  if (pair && typeof pair === 'object' && 'key' in pair) {
+    return [pair.key, pair.value ?? ''];
+  }
+  return null;
+};
+
 export const convertArrayToKeyValueObject = array => {
   if (!Array.isArray(array)) {
     return {};
   }
-  return array.reduce((obj, pair) => {
-    if (pair && typeof pair === 'object' && 'key' in pair) {
-      obj[pair.key] = pair.value ?? '';
-    }
-    return obj;
-  }, {});
+  const entries = array.map(toKeyValueEntry).filter(Boolean);
+  return Object.fromEntries(entries);
 };
 
 export const parseExistingRows = (dom, inputElement) => {
