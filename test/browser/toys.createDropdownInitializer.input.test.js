@@ -10,10 +10,10 @@ describe('createDropdownInitializer input init', () => {
     const SELECT_INPUT = 'article.entry .value > select.input';
     const dom = {
       querySelectorAll: jest.fn(selector => {
-        const mapping = {
-          [SELECT_INPUT]: [dropdown],
-        };
-        return mapping[selector] || [];
+        if (selector === SELECT_INPUT) {
+          return [dropdown];
+        }
+        return [];
       }),
       addEventListener: jest.fn(),
     };
