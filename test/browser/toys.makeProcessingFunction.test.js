@@ -10,18 +10,13 @@ describe('getModuleInitializer makeProcessingFunction integration', () => {
     const outputSelect = { value: 'text' };
     const dom = {
       querySelector: jest.fn((el, selector) => {
-        switch (selector) {
-        case 'input[type="text"]':
-          return inputEl;
-        case 'button[type="submit"]':
-          return buttonEl;
-        case 'div.output':
-          return outputParent;
-        case 'select.output':
-          return outputSelect;
-        default:
-          return null;
-        }
+        const elements = {
+          'input[type="text"]': inputEl,
+          'button[type="submit"]': buttonEl,
+          'div.output': outputParent,
+          'select.output': outputSelect,
+        };
+        return elements[selector] || null;
       }),
       addEventListener: jest.fn(),
       removeAllChildren: jest.fn(),
