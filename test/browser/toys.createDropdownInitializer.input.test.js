@@ -8,13 +8,9 @@ describe('createDropdownInitializer input init', () => {
     const dropdown = { value: 'dendrite-story' };
 
     const SELECT_INPUT = 'article.entry .value > select.input';
+    const dropdownMap = { [SELECT_INPUT]: [dropdown] };
     const dom = {
-      querySelectorAll: jest.fn(selector => {
-        if (selector === SELECT_INPUT) {
-          return [dropdown];
-        }
-        return [];
-      }),
+      querySelectorAll: jest.fn(selector => dropdownMap[selector] || []),
       addEventListener: jest.fn(),
     };
 
