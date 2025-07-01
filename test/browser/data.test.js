@@ -364,7 +364,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
 
     setData(
       { desired: incomingState, current: state },
-      { logInfo: logFn, logError: errorFn },
+      { logInfo: logFn, logError: errorFn }
     );
 
     expect(state.blogStatus).toBe('loaded');
@@ -379,20 +379,24 @@ describe('getData, setData, and getDeepStateCopy', () => {
         { desired: {}, current: state },
         { logInfo: logFn, logError: errorFn }
       )
-    ).toThrow("setData requires an object with at least a 'temporary' property.");
+    ).toThrow(
+      "setData requires an object with at least a 'temporary' property."
+    );
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       {}
     );
   });
 
-  it("setData throws a descriptive error when blog data is missing", () => {
+  it('setData throws a descriptive error when blog data is missing', () => {
     expect(() =>
       setData(
         { desired: {}, current: state },
         { logInfo: logFn, logError: errorFn }
       )
-    ).toThrow("setData requires an object with at least a 'temporary' property.");
+    ).toThrow(
+      "setData requires an object with at least a 'temporary' property."
+    );
   });
 
   it('setData throws and logs error if incoming state is object but lacks temporary property', () => {
@@ -522,10 +526,12 @@ describe('getData, setData, and getDeepStateCopy', () => {
   });
 
   it('getEncodeBase64 returns a function that encodes to base64 using provided helpers', () => {
-    const btoaFn =
-      typeof btoa !== 'undefined'
-        ? btoa
-        : str => Buffer.from(str, 'binary').toString('base64');
+    let btoaFn;
+    if (typeof btoa !== 'undefined') {
+      btoaFn = btoa;
+    } else {
+      btoaFn = str => Buffer.from(str, 'binary').toString('base64');
+    }
     const encodeURIComponentFn = encodeURIComponent;
     const encodeBase64 = getEncodeBase64(btoaFn, encodeURIComponentFn);
     const input = 'hello world!';
