@@ -364,7 +364,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
 
     setData(
       { desired: incomingState, current: state },
-      { logInfo: logFn, logError: errorFn },
+      { logInfo: logFn, logError: errorFn }
     );
 
     expect(state.blogStatus).toBe('loaded');
@@ -379,20 +379,24 @@ describe('getData, setData, and getDeepStateCopy', () => {
         { desired: {}, current: state },
         { logInfo: logFn, logError: errorFn }
       )
-    ).toThrow("setData requires an object with at least a 'temporary' property.");
+    ).toThrow(
+      "setData requires an object with at least a 'temporary' property."
+    );
     expect(errorFn).toHaveBeenCalledWith(
       'setData received invalid data structure:',
       {}
     );
   });
 
-  it("setData throws a descriptive error when blog data is missing", () => {
+  it('setData throws a descriptive error when blog data is missing', () => {
     expect(() =>
       setData(
         { desired: {}, current: state },
         { logInfo: logFn, logError: errorFn }
       )
-    ).toThrow("setData requires an object with at least a 'temporary' property.");
+    ).toThrow(
+      "setData requires an object with at least a 'temporary' property."
+    );
   });
 
   it('setData throws and logs error if incoming state is object but lacks temporary property', () => {
