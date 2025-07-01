@@ -516,20 +516,21 @@ function hasStringUrl(val) {
 
 /**
  * Creates a key input event handler for a key-value row
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLElement} keyEl - The key input element
- * @param {HTMLElement} textInput - The hidden text input element
- * @param {Object} rows - The rows object containing key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field with current state
+ * @param {Object} options - Function options
+ * @param {Object} options.dom - The DOM utilities object
+ * @param {HTMLElement} options.keyEl - The key input element
+ * @param {HTMLElement} options.textInput - The hidden text input element
+ * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-export function createKeyInputHandler(
+export function createKeyInputHandler({
   dom,
   keyEl,
   textInput,
   rows,
-  syncHiddenField
-) {
+  syncHiddenField,
+}) {
   return e => {
     const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
     const newKey = dom.getTargetValue(e);
@@ -601,13 +602,13 @@ export const createKeyElement = ({
   // store the current key so we can track renames without re‑rendering
   dom.setDataAttribute(keyEl, 'prevKey', key);
 
-  const onKey = createKeyInputHandler(
+  const onKey = createKeyInputHandler({
     dom,
     keyEl,
     textInput,
     rows,
-    syncHiddenField
-  );
+    syncHiddenField,
+  });
   dom.addEventListener(keyEl, 'input', onKey);
   const removeKeyListener = () =>
     dom.removeEventListener(keyEl, 'input', onKey);

@@ -30,13 +30,13 @@ describe('createKeyInputHandler', () => {
     syncHiddenField = jest.fn();
 
     // Create the handler
-    handler = createKeyInputHandler(
+    handler = createKeyInputHandler({
       dom,
       keyEl,
       textInput,
       rows,
-      syncHiddenField
-    );
+      syncHiddenField,
+    });
 
     // Mock event
     event = { target: keyEl };
@@ -121,13 +121,13 @@ describe('createKeyInputHandler', () => {
     };
 
     // Recreate handler with testRows
-    const localHandler = createKeyInputHandler(
+    const localHandler = createKeyInputHandler({
       dom,
       keyEl,
       textInput,
-      testRows,
-      syncHiddenField
-    );
+      rows: testRows,
+      syncHiddenField,
+    });
 
     // Act
     localHandler(event);
@@ -144,13 +144,13 @@ describe('createKeyInputHandler', () => {
   it('should ignore unchanged keys that are missing from rows', () => {
     // Arrange
     rows = {};
-    handler = createKeyInputHandler(
+    handler = createKeyInputHandler({
       dom,
       keyEl,
       textInput,
       rows,
-      syncHiddenField
-    );
+      syncHiddenField,
+    });
     dom.getDataAttribute.mockReturnValue('missingKey');
     dom.getTargetValue.mockReturnValue('missingKey');
 
