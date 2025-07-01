@@ -1,9 +1,17 @@
+function isDisposable(element) {
+  if (!element) {
+    return false;
+  }
+  return typeof element._dispose === 'function';
+}
+
 function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (numberInput && typeof numberInput._dispose === 'function') {
-    numberInput._dispose();
-    dom.removeChild(container, numberInput);
+  if (!isDisposable(numberInput)) {
+    return;
   }
+  numberInput._dispose();
+  dom.removeChild(container, numberInput);
 }
 
 function maybeRemoveKV(container, dom) {
@@ -54,8 +62,11 @@ export function dendriteStoryHandler(dom, container, textInput) {
     const wrapper = dom.createElement('div');
     const label = dom.createElement('label');
     dom.setTextContent(label, placeholder);
-    // eslint-disable-next-line no-ternary
-    const input = key === 'content' ? dom.createElement('textarea') : dom.createElement('input');
+
+    const input =
+      key === 'content'
+        ? dom.createElement('textarea')
+        : dom.createElement('input');
     if (key !== 'content') {
       dom.setType(input, 'text');
     }
