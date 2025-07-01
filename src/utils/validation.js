@@ -23,10 +23,5 @@ export function isValidString(str) {
  * @returns {boolean} True if the value is a valid boolean or boolean string
  */
 export function isValidBoolean(value) {
-  if (typeof value === 'boolean') {return true;}
-  if (typeof value === 'string') {
-    const lower = value.toLowerCase();
-    return lower === 'true' || lower === 'false';
-  }
-  return false;
+  return typeof value === 'boolean' || /^(?:true|false)$/i.test(String(value));
 }
