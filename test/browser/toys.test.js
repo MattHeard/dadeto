@@ -1417,7 +1417,13 @@ describe('createInputDropdownHandler', () => {
       }
       return null;
     });
-    getParentElement = jest.fn(arg => (arg === select ? container : null));
+
+    getParentElement = jest.fn(arg => {
+      if (arg === select) {
+        return container;
+      }
+      return null;
+    });
 
     const selectorMap = new Map([
       ['input[type="text"]', textInput],
