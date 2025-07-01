@@ -10,21 +10,15 @@ describe('initializeInteractiveComponent dynamic import', () => {
     const inputElement = {};
     const submitButton = {};
     const outputParent = {};
-    const querySelector = jest.fn((_, selector) => {
-      if (selector === 'input[type="text"]') {
-        return inputElement;
-      }
-      if (selector === 'button[type="submit"]') {
-        return submitButton;
-      }
-      if (selector === 'div.output') {
-        return outputParent;
-      }
-      if (selector === 'select.output') {
-        return {};
-      }
-      return {};
-    });
+    const elementsBySelector = {
+      'input[type="text"]': inputElement,
+      'button[type="submit"]': submitButton,
+      'div.output': outputParent,
+      'select.output': {},
+    };
+    const querySelector = jest.fn(
+      (_, selector) => elementsBySelector[selector] || {}
+    );
     const dom = {
       removeAllChildren: jest.fn(),
       createElement: jest.fn(() => ({ textContent: '' })),
