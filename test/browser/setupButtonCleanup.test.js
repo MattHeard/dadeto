@@ -41,7 +41,11 @@ describe('button cleanup helpers', () => {
     const dispose = disposers[0];
     dispose();
 
-    expect(dom.removeEventListener).toHaveBeenCalledWith(button, 'click', onAdd);
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      button,
+      'click',
+      onAdd
+    );
   });
 
   it('setupRemoveButton disposer removes event listener', () => {
@@ -77,10 +81,7 @@ describe('button cleanup helpers', () => {
       }),
       removeEventListener: jest.fn((_, event, handler) => {
         if (event === 'click') {
-          const idx = handlers.indexOf(handler);
-          if (idx !== -1) {
-            handlers.splice(idx, 1);
-          }
+          handlers.splice(handlers.indexOf(handler) >>> 0, 1);
         }
       }),
     };

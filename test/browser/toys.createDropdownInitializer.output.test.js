@@ -5,15 +5,13 @@ describe('createDropdownInitializer output init', () => {
   it('handles existing output dropdowns', () => {
     const dropdown = { value: 'text' };
     const dom = {
-      querySelectorAll: jest.fn(selector => {
-        if (selector === 'article.entry .value > select.output') {
-          return [dropdown];
-        }
-        if (selector === 'article.entry .value > select.input') {
-          return [];
-        }
-        return [];
-      }),
+      querySelectorAll: jest.fn(
+        selector =>
+          ({
+            'article.entry .value > select.output': [dropdown],
+            'article.entry .value > select.input': [],
+          })[selector] || []
+      ),
       addEventListener: jest.fn(),
     };
     const onOutputChange = jest.fn();
