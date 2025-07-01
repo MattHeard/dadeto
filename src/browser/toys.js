@@ -619,24 +619,25 @@ export const createKeyElement = ({
 
 /**
  * Creates a value input element with event listeners
- * @param {Object} dom - The DOM utilities object
- * @param {string} value - The initial value
- * @param {HTMLElement} keyEl - The corresponding key input element
- * @param {HTMLElement} textInput - The hidden text input element
- * @param {Object} rows - The rows object containing key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field with current state
- * @param {Array<Function>} disposers - Array to store cleanup functions
+ * @param {Object} options - Function options
+ * @param {Object} options.dom - The DOM utilities object
+ * @param {string} options.value - The initial value
+ * @param {HTMLElement} options.keyEl - The corresponding key input element
+ * @param {HTMLElement} options.textInput - The hidden text input element
+ * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
+ * @param {Array<Function>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created value input element
  */
-export const createValueElement = (
+export const createValueElement = ({
   dom,
   value,
   keyEl,
   textInput,
   rows,
   syncHiddenField,
-  disposers
-) => {
+  disposers,
+}) => {
   const valueEl = dom.createElement('input');
   dom.setType(valueEl, 'text');
   dom.setPlaceholder(valueEl, 'Value');
@@ -776,15 +777,15 @@ export const createKeyValueRow =
         syncHiddenField,
         disposers,
       });
-      const valueEl = createValueElement(
+      const valueEl = createValueElement({
         dom,
         value,
         keyEl,
         textInput,
         rows,
         syncHiddenField,
-        disposers
-      );
+        disposers,
+      });
 
       // Create and set up the appropriate button type
       const btnEl = createButton({

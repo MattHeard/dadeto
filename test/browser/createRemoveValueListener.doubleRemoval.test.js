@@ -20,24 +20,24 @@ describe('createRemoveValueListener multiple removals', () => {
     const sync = jest.fn();
     const disposers = [];
 
-    const valueEl1 = createValueElement(
+    const valueEl1 = createValueElement({
       dom,
-      '',
+      value: '',
       keyEl,
       textInput,
       rows,
-      sync,
-      disposers
-    );
-    const valueEl2 = createValueElement(
+      syncHiddenField: sync,
+      disposers,
+    });
+    const valueEl2 = createValueElement({
       dom,
-      '',
+      value: '',
       keyEl,
       textInput,
       rows,
-      sync,
-      disposers
-    );
+      syncHiddenField: sync,
+      disposers,
+    });
 
     const handler1 = dom.addEventListener.mock.calls[0][2];
     const handler2 = dom.addEventListener.mock.calls[1][2];

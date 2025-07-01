@@ -15,7 +15,15 @@ describe('createRemoveValueListener repeated calls', () => {
       setDataAttribute: jest.fn(),
     };
     const disposers = [];
-    const el = createValueElement(dom, '', {}, {}, {}, jest.fn(), disposers);
+    const el = createValueElement({
+      dom,
+      value: '',
+      keyEl: {},
+      textInput: {},
+      rows: {},
+      syncHiddenField: jest.fn(),
+      disposers,
+    });
     const dispose = disposers[0];
     const handler = dom.addEventListener.mock.calls[0][2];
 

@@ -20,27 +20,27 @@ describe('createRemoveValueListener unique disposers', () => {
     const sync = jest.fn();
 
     const disposers1 = [];
-    const valueEl1 = createValueElement(
+    const valueEl1 = createValueElement({
       dom,
-      '',
+      value: '',
       keyEl,
       textInput,
       rows,
-      sync,
-      disposers1
-    );
+      syncHiddenField: sync,
+      disposers: disposers1,
+    });
     const disposer1 = disposers1[0];
 
     const disposers2 = [];
-    const valueEl2 = createValueElement(
+    const valueEl2 = createValueElement({
       dom,
-      '',
+      value: '',
       keyEl,
       textInput,
       rows,
-      sync,
-      disposers2
-    );
+      syncHiddenField: sync,
+      disposers: disposers2,
+    });
     const disposer2 = disposers2[0];
 
     expect(typeof disposer1).toBe('function');
