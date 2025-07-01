@@ -356,8 +356,7 @@ export function makeObserverCallback(moduleInfo, env, dom) {
     `[${moduleInfo.article.id}]`
   );
   const handleEntryFactory = getEntryHandler(moduleInfo, moduleConfig);
-  const logInfo =
-    (moduleConfig.loggers && moduleConfig.loggers.logInfo) || (() => {});
+  const logInfo = moduleConfig.loggers.logInfo;
   return (entries, observer) => {
     const handleEntry = handleEntryFactory(observer);
     entries.forEach(entry => {

@@ -1,8 +1,8 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { makeObserverCallback } from '../../src/browser/toys.js';
 
-describe('makeObserverCallback missing loggers.logInfo', () => {
-  it('falls back to a noop logger and still imports the module', () => {
+describe('makeObserverCallback with logInfo present', () => {
+  it('imports the module when logInfo is provided', () => {
     const dom = {
       removeAllChildren: jest.fn(),
       importModule: jest.fn(),
@@ -11,13 +11,14 @@ describe('makeObserverCallback missing loggers.logInfo', () => {
       error: jest.fn(),
       contains: () => true,
     };
-    const env = { loggers: { logError: jest.fn() } };
+    const env = { loggers: { logError: jest.fn(), logInfo: jest.fn() } };
     const moduleInfo = { modulePath: 'mod.js', article: { id: 'art' }, functionName: 'fn' };
     const callback = makeObserverCallback(moduleInfo, env, dom);
     const observer = {};
     const entry = {};
 
     expect(() => callback([entry], observer)).not.toThrow();
+    expect(env.loggers.logInfo).toHaveBeenCalled();
     expect(dom.importModule).toHaveBeenCalledWith('mod.js', expect.any(Function), expect.any(Function));
     expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
   });
