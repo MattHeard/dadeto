@@ -15,12 +15,19 @@ describe('createInputDropdownHandler all types', () => {
       getCurrentTarget: jest.fn(() => select),
       getParentElement: jest.fn(() => container),
       querySelector: jest.fn((el, selector) => {
-        if (selector === 'input[type="text"]') {return textInput;}
+        if (selector === 'input[type="text"]') {
+          return textInput;
+        }
         if (selector === 'input[type="number"]') {
           numberQueryCount += 1;
-          return numberQueryCount === 1 ? null : numberInput;
+          if (numberQueryCount === 1) {
+            return null;
+          }
+          return numberInput;
         }
-        if (selector === '.kv-container') {return kvContainer;}
+        if (selector === '.kv-container') {
+          return kvContainer;
+        }
         return null;
       }),
       createElement: jest.fn(() => ({})),
