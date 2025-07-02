@@ -4,7 +4,9 @@
  * Toy signature:  generateClues(input: string): string
  *   input : JSON string of a { width, height, ships } object
  * Returns a JSON string of { rowClues: number[], colClues: number[] }  or { error }
- */
+*/
+
+import { safeParseJson } from '../../utils/jsonUtils.js';
 
 function generateClues(input) {
   const fleet = parseFleet(input);
@@ -64,17 +66,24 @@ function isValidY(y, board) {
   return y >= 0 && y < board.height;
 }
 
+
 function parseFleet(input) {
-  let fleet;
-  try {
-    fleet = JSON.parse(input);
-  } catch {
-    return { error: 'Invalid input JSON' };
-  }
-  if (!isValidFleet(fleet)) {
-    return { error: 'Invalid fleet structure' };
+  const fleet = safeParseJson(input);
+  const error = computeFleetError(fleet);
+  if (error) {
+    return { error };
   }
   return fleet;
+}
+
+const fleetChecks = [
+  [fleet => fleet === undefined, 'Invalid input JSON'],
+  [fleet => !isValidFleet(fleet), 'Invalid fleet structure'],
+];
+
+function computeFleetError(fleet) {
+  const found = fleetChecks.find(([predicate]) => predicate(fleet));
+  return found ? found[1] : '';
 }
 
 function isNumber(value) {

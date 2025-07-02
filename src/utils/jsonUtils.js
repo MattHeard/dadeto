@@ -4,10 +4,15 @@
  * @param {*} [fallback={}] - The value to return on failure
  * @returns {*} The parsed value or the fallback
  */
-export function parseJsonOrDefault(json, fallback = {}) {
+export function safeParseJson(json) {
   try {
     return JSON.parse(json);
   } catch {
-    return fallback;
+    return undefined;
   }
+}
+
+export function parseJsonOrDefault(json, fallback = {}) {
+  const value = safeParseJson(json);
+  return value === undefined ? fallback : value;
 }
