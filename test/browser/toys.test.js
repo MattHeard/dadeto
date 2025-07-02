@@ -1137,6 +1137,15 @@ describe('toys', () => {
       const outputParent = {};
       const setTextContent = jest.fn();
       const createElement = jest.fn(() => ({ textContent: '' }));
+      const makeQuerySelector = () => {
+        const map = {
+          'input[type="text"]': {},
+          'button[type="submit"]': {},
+          'div.output': outputParent,
+          'select.output': {},
+        };
+        return (_, selector) => map[selector] || {};
+      };
       const dom = {
         removeAllChildren: jest.fn(),
         createElement,
@@ -1147,21 +1156,7 @@ describe('toys', () => {
         addEventListener: jest.fn(),
         removeChild: jest.fn(),
         appendChild: jest.fn(),
-        querySelector: jest.fn((_, selector) => {
-          if (selector === 'input[type="text"]') {
-            return {};
-          }
-          if (selector === 'button[type="submit"]') {
-            return {};
-          }
-          if (selector === 'div.output') {
-            return outputParent;
-          }
-          if (selector === 'select.output') {
-            return {};
-          }
-          return {};
-        }),
+        querySelector: jest.fn(makeQuerySelector()),
         removeWarning: jest.fn(),
         enable: jest.fn(),
         contains: () => true,
@@ -1195,6 +1190,15 @@ describe('toys', () => {
       const errorFn = jest.fn();
       const fetchFn = jest.fn();
       const outputParent = {};
+      const makeQuerySelector = () => {
+        const map = {
+          'input[type="text"]': inputElement,
+          'button[type="submit"]': submitButton,
+          'div.output': outputParent,
+          'select.output': {},
+        };
+        return (_, selector) => map[selector] || {};
+      };
       const dom = {
         removeAllChildren: jest.fn(),
         createElement: jest.fn(() => ({ textContent: '' })),
@@ -1205,21 +1209,7 @@ describe('toys', () => {
         addEventListener: jest.fn(),
         removeChild: jest.fn(),
         appendChild: jest.fn(),
-        querySelector: jest.fn((_, selector) => {
-          if (selector === 'input[type="text"]') {
-            return inputElement;
-          }
-          if (selector === 'button[type="submit"]') {
-            return submitButton;
-          }
-          if (selector === 'div.output') {
-            return outputParent;
-          }
-          if (selector === 'select.output') {
-            return {};
-          }
-          return {};
-        }),
+        querySelector: jest.fn(makeQuerySelector()),
         removeWarning: jest.fn(),
         enable: jest.fn(),
         contains: () => true,
