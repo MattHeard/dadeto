@@ -2,7 +2,7 @@ import { describe, it, expect, jest } from '@jest/globals';
 import { makeObserverCallback } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback observer log', () => {
-  it('logs a message for each observer entry when intersecting', () => {
+  it('logs when observer entry intersects', () => {
     const dom = {
       removeAllChildren: jest.fn(),
       importModule: jest.fn(),
@@ -24,8 +24,10 @@ describe('makeObserverCallback observer log', () => {
     observerCallback([entry], observer);
     expect(logInfo).toHaveBeenCalledWith(
       `[${moduleInfo.article.id}]`,
-      'Observer callback for article',
-      moduleInfo.article.id
+      'Starting module import for article',
+      moduleInfo.article.id,
+      'module',
+      moduleInfo.modulePath
     );
   });
 });

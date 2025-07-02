@@ -26,12 +26,6 @@ describe('makeObserverCallback logging', () => {
 
     expect(logInfo).toHaveBeenCalledWith(
       `[${moduleInfo.article.id}]`,
-      'Observer callback for article',
-      moduleInfo.article.id
-    );
-
-    expect(logInfo).toHaveBeenCalledWith(
-      `[${moduleInfo.article.id}]`,
       'Starting module import for article',
       moduleInfo.article.id,
       'module',
@@ -39,7 +33,7 @@ describe('makeObserverCallback logging', () => {
     );
   });
 
-  it('logs observer callback when entry is intersecting', () => {
+  it('logs module import when entry is intersecting once', () => {
     const dom = {
       removeAllChildren: jest.fn(),
       importModule: jest.fn(),
@@ -64,8 +58,10 @@ describe('makeObserverCallback logging', () => {
     expect(logInfo).toHaveBeenNthCalledWith(
       1,
       `[${moduleInfo.article.id}]`,
-      'Observer callback for article',
-      moduleInfo.article.id
+      'Starting module import for article',
+      moduleInfo.article.id,
+      'module',
+      moduleInfo.modulePath
     );
   });
 
