@@ -77,12 +77,13 @@ function parseFleet(input) {
   return fleet;
 }
 
+function isNumber(value) {
+  return typeof value === 'number';
+}
+
 function isValidFleet(fleet) {
-  return (
-    typeof fleet?.width === 'number' &&
-    typeof fleet?.height === 'number' &&
-    Array.isArray(fleet?.ships)
-  );
+  const { width, height, ships } = Object(fleet);
+  return [width, height].every(isNumber) && Array.isArray(ships);
 }
 
 export { generateClues };
