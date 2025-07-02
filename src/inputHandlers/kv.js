@@ -1,22 +1,24 @@
 import { ensureKeyValueInput } from '../browser/toys.js';
 
+function isDisposable(element) {
+  return Boolean(element) && typeof element._dispose === 'function';
+}
+
 export function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  const dispose = numberInput?._dispose;
-  if (typeof dispose !== 'function') {
+  if (!isDisposable(numberInput)) {
     return;
   }
-  dispose.call(numberInput);
+  numberInput._dispose();
   dom.removeChild(container, numberInput);
 }
 
 export function maybeRemoveDendrite(container, dom) {
   const dendriteForm = dom.querySelector(container, '.dendrite-form');
-  const dispose = dendriteForm?._dispose;
-  if (typeof dispose !== 'function') {
+  if (!isDisposable(dendriteForm)) {
     return;
   }
-  dispose.call(dendriteForm);
+  dendriteForm._dispose();
   dom.removeChild(container, dendriteForm);
 }
 
