@@ -1197,7 +1197,8 @@ describe('toys', () => {
           'div.output': outputParent,
           'select.output': {},
         };
-        return (_, selector) => map[selector] || {};
+        const querySelector = (_, selector) => map[selector] || {};
+        return querySelector;
       };
       const dom = {
         removeAllChildren: jest.fn(),
