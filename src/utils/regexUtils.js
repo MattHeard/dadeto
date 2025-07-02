@@ -22,10 +22,7 @@ export function escapeRegex(str) {
  */
 const computeActualMarker = (marker, isDouble) => {
   const escaped = escapeRegex(marker);
-  if (isDouble) {
-    return `${escaped}{2}`;
-  }
-  return escaped;
+  return isDouble ? `${escaped}{2}` : escaped;
 };
 
 export function createPattern(marker, { isDouble = false, flags = 'g' } = {}) {
