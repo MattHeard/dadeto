@@ -3,7 +3,7 @@
 #!/usr/bin/env bash
 #
 # Fetch the first page (max 500 rows) of *unresolved* SonarCloud issues for the
-# dadeto project and save them as a trimmed JSON array in `sonar_issues.json`.
+# dadeto project and save them as a trimmed JSON array in `reports/sonar/sonar_issues.json`.
 #
 # Prerequisites
 # ─────────────
@@ -23,6 +23,9 @@
 #
 
 set -euo pipefail
+
+# Ensure output directory exists
+mkdir -p reports/sonar
 
 # Verify that the token is present
 if [[ -z "${SONAR_TOKEN:-}" ]]; then
@@ -44,6 +47,6 @@ curl -s -u "${SONAR_TOKEN}:" \
           message,
           tags,
           creationDate } ]' \
-> sonar_issues.json
+> reports/sonar/sonar_issues.json
 
-echo "✅ Wrote $(jq length sonar_issues.json) issues to sonar_issues.json"
+echo "✅ Wrote $(jq length reports/sonar/sonar_issues.json) issues to reports/sonar/sonar_issues.json"
