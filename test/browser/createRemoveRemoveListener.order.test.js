@@ -14,9 +14,23 @@ describe('createRemoveRemoveListener order of disposal', () => {
     const render = jest.fn();
     const disposers = [];
 
-    setupRemoveButton(dom, buttonA, rows, render, 'a', disposers);
+    setupRemoveButton({
+      dom,
+      button: buttonA,
+      rows,
+      render,
+      key: 'a',
+      disposers,
+    });
     const disposeA = disposers.pop();
-    setupRemoveButton(dom, buttonB, rows, render, 'b', disposers);
+    setupRemoveButton({
+      dom,
+      button: buttonB,
+      rows,
+      render,
+      key: 'b',
+      disposers,
+    });
     const disposeB = disposers.pop();
 
     const handlerA = dom.addEventListener.mock.calls[0][2];

@@ -58,7 +58,14 @@ describe('button cleanup helpers', () => {
     const rows = { k: 'v' };
     const render = jest.fn();
     const disposers = [];
-    setupRemoveButton(dom, button, rows, render, 'k', disposers);
+    setupRemoveButton({
+      dom,
+      button,
+      rows,
+      render,
+      key: 'k',
+      disposers,
+    });
     expect(disposers).toHaveLength(1);
     const dispose = disposers[0];
     expect(typeof dispose).toBe('function');
