@@ -88,14 +88,20 @@ function buildForm(dom, container, textInput, data, disposers) {
   return form;
 }
 
-export function dendriteStoryHandler(dom, container, textInput) {
+function prepareTextInput(dom, textInput) {
   dom.hide(textInput);
   dom.disable(textInput);
+}
 
+function cleanContainer(dom, container) {
   maybeRemoveNumber(container, dom);
   maybeRemoveKV(container, dom);
-
   removeExistingForm(container, dom);
+}
+
+export function dendriteStoryHandler(dom, container, textInput) {
+  prepareTextInput(dom, textInput);
+  cleanContainer(dom, container);
 
   const disposers = [];
   const data = parseDendriteData(dom, textInput);
