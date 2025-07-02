@@ -58,7 +58,7 @@ describe('toy output dropdown', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     const match = html.match(/<select class="output">([\s\S]*?)<\/select>/);
     expect(match).not.toBeNull();
-    const optionRegex = /<option value="([^\"]+)">([^<]*)<\/option>/g;
+    const optionRegex = /<option value="([^"]+)">([^<]*)<\/option>/g;
     const pairs = [];
     let m;
     while ((m = optionRegex.exec(match[1])) !== null) {

@@ -14,7 +14,7 @@ describe('fullWidthElement placement', () => {
       ],
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
-    expect(html).toContain(`<article class=\"entry\" id=\"FWX\">${fullWidthElement()}`);
+    expect(html).toContain(`<article class="entry" id="FWX">${fullWidthElement()}`);
   });
 
   test('fullWidthElement constant length is unchanged', () => {
