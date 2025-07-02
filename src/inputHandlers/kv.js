@@ -4,20 +4,25 @@ function isDisposable(element) {
   return Boolean(element) && typeof element._dispose === 'function';
 }
 
+function disposeAndRemove(element, container, dom) {
+  element._dispose();
+  dom.removeChild(container, element);
+}
+
+function maybeRemoveElement(element, container, dom) {
+  if (isDisposable(element)) {
+    disposeAndRemove(element, container, dom);
+  }
+}
+
 export function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (isDisposable(numberInput)) {
-    numberInput._dispose();
-    dom.removeChild(container, numberInput);
-  }
+  maybeRemoveElement(numberInput, container, dom);
 }
 
 export function maybeRemoveDendrite(container, dom) {
   const dendriteForm = dom.querySelector(container, '.dendrite-form');
-  if (isDisposable(dendriteForm)) {
-    dendriteForm._dispose();
-    dom.removeChild(container, dendriteForm);
-  }
+  maybeRemoveElement(dendriteForm, container, dom);
 }
 
 export function handleKVType(dom, container, textInput) {
