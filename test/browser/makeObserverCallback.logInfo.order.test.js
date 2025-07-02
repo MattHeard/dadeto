@@ -2,7 +2,7 @@ import { describe, it, expect, jest } from '@jest/globals';
 import { makeObserverCallback } from '../../src/browser/toys.js';
 
 describe('makeObserverCallback logging order', () => {
-  it('logs observer callback then module import', () => {
+  it('logs module import first', () => {
     const dom = {
       removeAllChildren: jest.fn(),
       importModule: jest.fn(),
@@ -27,17 +27,11 @@ describe('makeObserverCallback logging order', () => {
     expect(logInfo).toHaveBeenNthCalledWith(
       1,
       `[${moduleInfo.article.id}]`,
-      'Observer callback for article',
-      moduleInfo.article.id
-    );
-    expect(logInfo).toHaveBeenNthCalledWith(
-      2,
-      `[${moduleInfo.article.id}]`,
       'Starting module import for article',
       moduleInfo.article.id,
       'module',
       moduleInfo.modulePath
     );
-    expect(logInfo).toHaveBeenCalledTimes(2);
+    expect(logInfo).toHaveBeenCalledTimes(1);
   });
 });
