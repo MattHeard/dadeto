@@ -20,13 +20,16 @@ export function escapeRegex(str) {
  * @param {string} [options.flags='g'] - Regex flags
  * @returns {RegExp} The compiled regular expression
  */
+function buildPattern(marker, flags) {
+  return new RegExp(`${marker}(.*?)${marker}`, flags);
+}
+
 export function createPattern(marker, { isDouble = false, flags = 'g' } = {}) {
   const escaped = escapeRegex(marker);
-  let actualMarker = escaped;
   if (isDouble) {
-    actualMarker = `${escaped}{2}`;
+    return buildPattern(`${escaped}{2}`, flags);
   }
-  return new RegExp(`${actualMarker}(.*?)${actualMarker}`, flags);
+  return buildPattern(escaped, flags);
 }
 
 /**
