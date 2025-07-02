@@ -14,7 +14,7 @@ function generateClues(input) {
   const board = { width, height };
   ships.forEach(ship => {
     getShipCells(ship).forEach(([x, y]) => {
-      incrementClues(x, y, board, clues);
+      incrementClues({ x, y }, board, clues);
     });
   });
   return JSON.stringify({ rowClues: clues.row, colClues: clues.col });
@@ -42,11 +42,16 @@ function getVerticalCells(ship) {
 }
 
 
-function incrementClues(x, y, board, clues) {
-  if (isValidX(x, board) && isValidY(y, board)) {
+function incrementClues(position, board, clues) {
+  if (isValidCell(position, board)) {
+    const { x, y } = position;
     clues.row[y] += 1;
     clues.col[x] += 1;
   }
+}
+
+function isValidCell({ x, y }, board) {
+  return isValidX(x, board) && isValidY(y, board);
 }
 
 function isValidX(x, board) {

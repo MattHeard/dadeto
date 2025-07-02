@@ -20,21 +20,12 @@
 /workspace/dadeto/src/toys/2025-03-29/get.js
   40:1  warning  Function 'traverseSegment' has a complexity of 3. Maximum allowed is 2  complexity
 
-/workspace/dadeto/src/toys/2025-05-08/battleshipSolitaireFleet.js
-  281:1  warning  Function 'parseConfig' has a complexity of 5. Maximum allowed is 2  complexity
-
 /workspace/dadeto/src/toys/2025-05-11/battleshipSolitaireClues.js
   67:1  warning  Function 'parseFleet' has a complexity of 3. Maximum allowed is 2    complexity
   80:1  warning  Function 'isValidFleet' has a complexity of 6. Maximum allowed is 2  complexity
 
-/workspace/dadeto/src/toys/2025-06-09/startLocalDendriteStory.js
-  1:8  warning  Function 'startLocalDendriteStory' has a complexity of 9. Maximum allowed is 2  complexity
-
 /workspace/dadeto/src/utils/regexUtils.js
-  31:8  warning  Function 'createPattern' has a complexity of 3. Maximum allowed is 2  complexity
-
-/workspace/dadeto/test/browser/initializeInteractiveComponent.keypress.test.js
-  21:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  31:8  warning  Function 'createPattern' has a complexity of 4. Maximum allowed is 2  complexity
 
 /workspace/dadeto/test/browser/toys.getModuleInitializer.invoke.test.js
   23:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
@@ -45,4 +36,4 @@
   1208:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
   1387:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 22 problems (0 errors, 22 warnings)
+✖ 19 problems (0 errors, 19 warnings)
