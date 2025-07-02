@@ -22,11 +22,12 @@ export function escapeRegex(str) {
  */
 export function createPattern(marker, { isDouble = false, flags = 'g' } = {}) {
   const escaped = escapeRegex(marker);
-  let actualMarker = escaped;
-  if (isDouble) {
-    actualMarker = `${escaped}{2}`;
-  }
+  const actualMarker = getActualMarker(escaped, isDouble);
   return new RegExp(`${actualMarker}(.*?)${actualMarker}`, flags);
+}
+
+function getActualMarker(escaped, isDouble) {
+  return isDouble ? `${escaped}{2}` : escaped;
 }
 
 /**
