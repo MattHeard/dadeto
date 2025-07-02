@@ -1,11 +1,8 @@
-/* eslint-disable complexity */
+import { maybeRemoveElement } from './disposeHelpers.js';
+
 export function dispose(element, dom, container) {
-  if (typeof element?._dispose === 'function') {
-    element._dispose();
-    dom.removeChild(container, element);
-  }
+  maybeRemoveElement(element, container, dom);
 }
-/* eslint-enable complexity */
 
 export function defaultHandler(dom, container, textInput) {
   dom.hide(textInput);

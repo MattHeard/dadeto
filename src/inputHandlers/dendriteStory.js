@@ -1,26 +1,13 @@
-function isDisposable(element) {
-  if (!element) {
-    return false;
-  }
-  return typeof element._dispose === 'function';
-}
+import { maybeRemoveElement } from './disposeHelpers.js';
 
 function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (!isDisposable(numberInput)) {
-    return;
-  }
-  numberInput._dispose();
-  dom.removeChild(container, numberInput);
+  maybeRemoveElement(numberInput, container, dom);
 }
 
 function maybeRemoveKV(container, dom) {
   const kvContainer = dom.querySelector(container, '.kv-container');
-  if (!kvContainer?._dispose) {
-    return;
-  }
-  kvContainer._dispose();
-  dom.removeChild(container, kvContainer);
+  maybeRemoveElement(kvContainer, container, dom);
 }
 
 export function dendriteStoryHandler(dom, container, textInput) {
