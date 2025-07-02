@@ -223,7 +223,7 @@ export function handleDropdownChange(dropdown, getData, dom) {
 }
 
 function hasOutputForPostId(output, postId) {
-  return Boolean(output && output[postId]);
+  return Boolean(output?.[postId]);
 }
 
 function outputForPostId(output, postId) {
