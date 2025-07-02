@@ -23,5 +23,8 @@ export function isValidString(str) {
  * @returns {boolean} True if the value is a valid boolean or boolean string
  */
 export function isValidBoolean(value) {
-  return typeof value === 'boolean' || /^(?:true|false)$/i.test(String(value));
+  if (typeof value === 'boolean') {
+    return true;
+  }
+  return /^(?:true|false)$/i.test(String(value));
 }
