@@ -23,23 +23,27 @@
  *    (ones) is closest to the grid
  */
 
-function validateCluesObject(obj) {
-  if (!obj || typeof obj !== 'object') {
-    return 'Invalid JSON object';
-  }
-  if (!Array.isArray(obj.rowClues) || !Array.isArray(obj.colClues)) {
-    return 'Missing rowClues or colClues array';
-  }
-  if (
-    obj.rowClues.some(n => typeof n !== 'number') ||
-    obj.colClues.some(n => typeof n !== 'number')
-  ) {
-    return 'Clue values must be numbers';
-  }
-  if (obj.rowClues.length === 0 || obj.colClues.length === 0) {
-    return 'rowClues and colClues must be non-empty';
-  }
-  return '';
+const VALIDATION_CHECKS = [
+  [o => !o || typeof o !== 'object', 'Invalid JSON object'],
+  [
+    o => !Array.isArray(o.rowClues) || !Array.isArray(o.colClues),
+    'Missing rowClues or colClues array',
+  ],
+  [
+    o =>
+      o.rowClues.some(n => typeof n !== 'number') ||
+      o.colClues.some(n => typeof n !== 'number'),
+    'Clue values must be numbers',
+  ],
+  [
+    o => o.rowClues.length === 0 || o.colClues.length === 0,
+    'rowClues and colClues must be non-empty',
+  ],
+];
+
+function findValidationError(obj) {
+  const found = VALIDATION_CHECKS.find(([pred]) => pred(obj));
+  return found ? found[1] : '';
 }
 
 function padLeft(numStr, width) {
@@ -68,7 +72,7 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
     invalid = true;
   }
   if (!invalid) {
-    const error = validateCluesObject(clues);
+    const error = findValidationError(clues);
     if (error) {
       invalid = true;
     }

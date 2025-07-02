@@ -43,20 +43,21 @@ function getClueArrays(obj) {
   return [obj.rowClues, obj.colClues];
 }
 
-function validateCluesObject(obj) {
-  const checks = [
-    [o => !isObject(o), 'Invalid JSON object'],
-    [o => !hasValidClueArrays(o), 'Missing rowClues or colClues array'],
-    [
-      o => getClueArrays(o).some(hasNonNumberValues),
-      'Clue values must be numbers',
-    ],
-    [
-      o => getClueArrays(o).some(isEmpty),
-      'rowClues and colClues must be non-empty',
-    ],
-  ];
-  const found = checks.find(([predicate]) => predicate(obj));
+const VALIDATION_CHECKS = [
+  [o => !isObject(o), 'Invalid JSON object'],
+  [o => !hasValidClueArrays(o), 'Missing rowClues or colClues array'],
+  [
+    o => getClueArrays(o).some(hasNonNumberValues),
+    'Clue values must be numbers',
+  ],
+  [
+    o => getClueArrays(o).some(isEmpty),
+    'rowClues and colClues must be non-empty',
+  ],
+];
+
+function findValidationError(obj) {
+  const found = VALIDATION_CHECKS.find(([predicate]) => predicate(obj));
   if (found) {
     return found[1];
   }
@@ -89,7 +90,7 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
     invalid = true;
   }
   if (!invalid) {
-    const error = validateCluesObject(clues);
+    const error = findValidationError(clues);
     if (error) {
       invalid = true;
     }
