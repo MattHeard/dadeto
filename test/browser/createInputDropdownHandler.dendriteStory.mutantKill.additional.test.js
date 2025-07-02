@@ -13,14 +13,21 @@ test('createInputDropdownHandler dendrite-story branch initializes form and then
   const dom = {
     getCurrentTarget: jest.fn(() => select),
     getParentElement: jest.fn(() => container),
-    querySelector: jest.fn((el, selector) => {
-      if (selector === 'input[type="text"]') {return textInput;}
-      if (selector === 'input[type="number"]') {return numberInput;}
-      if (selector === '.kv-container') {return kvContainer;}
-      if (selector === '.dendrite-form') {return null;}
-      return null;
+    querySelector: jest.fn((_el, selector) => {
+      const map = {
+        'input[type="text"]': textInput,
+        'input[type="number"]': numberInput,
+        '.kv-container': kvContainer,
+        '.dendrite-form': null,
+      };
+      return map[selector] ?? null;
     }),
-    getValue: jest.fn(() => 'dendrite-story'),
+    getValue: jest.fn(target => {
+      if (target === select) {
+        return 'dendrite-story';
+      }
+      return '';
+    }),
     hide: jest.fn(),
     disable: jest.fn(),
     removeChild: jest.fn(),
