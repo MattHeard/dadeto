@@ -1251,6 +1251,8 @@ describe('toys', () => {
     let component;
     let env;
     let getComponentInitializer;
+    // Explicit declaration ensures this mock is reset between tests
+    let initializeComponent;
 
     beforeEach(() => {
       interactiveComponents = [];
@@ -1382,7 +1384,9 @@ describe('createInputDropdownHandler', () => {
 
   // Helper function to create a querySelector mock
   const createQuerySelector = selectorMap =>
-    jest.fn((parent, selector) => getElementFromMap(selectorMap, parent, selector));
+    jest.fn((parent, selector) =>
+      getElementFromMap(selectorMap, parent, selector)
+    );
 
   beforeEach(() => {
     // Given
