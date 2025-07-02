@@ -8,7 +8,7 @@
  * @type {string}
  */
 export function headerBanner() {
-  return `<pre aria-label="Matt Heard" role="heading" aria-level="1">
+  return `<h1 class="ascii-art" aria-label="Matt Heard">
 ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖
 ▐▛▚▞▜▌▐▌ ▐▌ █    █
 ▐▌  ▐▌▐▛▀▜▌ █    █
@@ -17,5 +17,5 @@ export function headerBanner() {
 ▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █
 ▐▛▀▜▌▐▛▀▀▘▐▛▀▜▌▐▛▀▚▖▐▌  █
 ▐▌ ▐▌▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀
-</pre>`;
+</h1>`;
 }
