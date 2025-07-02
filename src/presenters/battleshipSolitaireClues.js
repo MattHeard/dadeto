@@ -39,18 +39,26 @@ function isEmpty(arr) {
   return arr.length === 0;
 }
 
+function getClueArrays(obj) {
+  return [obj.rowClues, obj.colClues];
+}
+
 function validateCluesObject(obj) {
-  if (!isObject(obj)) {
-    return 'Invalid JSON object';
-  }
-  if (!hasValidClueArrays(obj)) {
-    return 'Missing rowClues or colClues array';
-  }
-  if ([obj.rowClues, obj.colClues].some(hasNonNumberValues)) {
-    return 'Clue values must be numbers';
-  }
-  if ([obj.rowClues, obj.colClues].some(isEmpty)) {
-    return 'rowClues and colClues must be non-empty';
+  const checks = [
+    [o => !isObject(o), 'Invalid JSON object'],
+    [o => !hasValidClueArrays(o), 'Missing rowClues or colClues array'],
+    [
+      o => getClueArrays(o).some(hasNonNumberValues),
+      'Clue values must be numbers',
+    ],
+    [
+      o => getClueArrays(o).some(isEmpty),
+      'rowClues and colClues must be non-empty',
+    ],
+  ];
+  const found = checks.find(([predicate]) => predicate(obj));
+  if (found) {
+    return found[1];
   }
   return '';
 }
