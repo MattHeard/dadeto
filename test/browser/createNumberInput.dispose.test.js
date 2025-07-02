@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { createNumberInput } from '../../src/browser/toys.js';
+import { createNumberInput } from '../../src/inputHandlers/number.js';
 
 describe('createNumberInput disposer', () => {
   it('removes the input event listener when _dispose is called', () => {

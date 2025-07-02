@@ -1,5 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import * as toys from '../../src/browser/toys.js';
+import { createNumberInput } from '../../src/inputHandlers/number.js';
 
 // Test ensuring createRemoveValueListener disposer runs when handleKVType removes a number input
 
@@ -30,7 +31,7 @@ describe('handleKVType integration with createRemoveValueListener', () => {
     const textInput = { value: '1' };
     const onChange = jest.fn();
 
-    const numberInput = toys.createNumberInput('1', onChange, dom);
+    const numberInput = createNumberInput('1', onChange, dom);
 
     dom.querySelector.mockImplementation((el, selector) => {
       if (selector === 'input[type="number"]') {
