@@ -1,0 +1,10 @@
+[
+  {
+    "path": "src/inputHandlers/kv.js",
+    "duplicated_lines_density": 86.8
+  },
+  {
+    "path": "src/browser/toys.js",
+    "duplicated_lines_density": 4.8
+  }
+]

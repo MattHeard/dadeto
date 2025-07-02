@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Fetch the first page (max 500 rows) of *unresolved* SonarCloud issues for the
-# dadeto project and save them as a trimmed JSON array in `reports/sonar/sonar_issues.json`.
+# dadeto project and save them as a trimmed JSON array in `reports/sonar/issues.json` and also fetch duplication metrics to `reports/sonar/duplications.json`.
 #
 # Prerequisites
 # ─────────────
@@ -45,6 +45,15 @@ curl -s -u "${SONAR_TOKEN}:" \
           message,
           tags,
           creationDate } ]' \
-> reports/sonar/sonar_issues.json
+> reports/sonar/issues.json
 
-echo "✅ Wrote $(jq length reports/sonar/sonar_issues.json) issues to reports/sonar/sonar_issues.json"
+# Call SonarCloud API for per‑file duplication density (non‑zero only)
+curl -s -u "${SONAR_TOKEN}:" \
+  "https://sonarcloud.io/api/measures/component_tree?component=MattHeard_dadeto&metricKeys=duplicated_lines_density&qualifiers=FIL&p=1&ps=500" \
+| jq '[ .components[]
+        | { path: .path
+          , duplicated_lines_density: (.measures[0].value | tonumber) }
+        | select(.duplicated_lines_density > 0) ]' \
+> reports/sonar/duplications.json
+
+echo "✅ Wrote $(jq length reports/sonar/issues.json) issues and $(jq length reports/sonar/duplications.json) duplication entries to reports/sonar/"
