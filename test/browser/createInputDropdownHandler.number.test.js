@@ -23,7 +23,11 @@ describe('createInputDropdownHandler number type', () => {
           'input[type="number"]': null,
           '.kv-container': kvContainer,
         };
-        return map[selector] ?? null;
+        const result = map[selector];
+        if (result === undefined) {
+          return null;
+        }
+        return result;
       }),
       createElement: jest.fn(() => ({})),
       setType: jest.fn(),

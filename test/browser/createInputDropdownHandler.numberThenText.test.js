@@ -8,12 +8,8 @@ test('createInputDropdownHandler handles number then text sequentially', () => {
   const numberInput = {};
   const event = {};
 
-  const querySelector = jest.fn((_, selector) => {
-    if (selector === 'input[type="text"]') {
-      return textInput;
-    }
-    return null;
-  });
+  const selectorMap = { 'input[type="text"]': textInput };
+  const querySelector = jest.fn((_, selector) => selectorMap[selector] || null);
 
   const dom = {
     getCurrentTarget: jest.fn(() => select),
@@ -44,6 +40,7 @@ test('createInputDropdownHandler handles number then text sequentially', () => {
   expect(dom.disable).toHaveBeenCalledWith(textInput);
 
   // After first call, number input exists
+
   querySelector.mockImplementation((_, selector) => {
     const mapping = {
       'input[type="text"]': textInput,

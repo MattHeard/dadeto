@@ -3,19 +3,15 @@
     15:1   warning  Function 'isKeyValuePair' has a complexity of 3. Maximum allowed is 2                  complexity
     31:34  warning  Arrow function has a complexity of 6. Maximum allowed is 2                             complexity
    187:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2            complexity
-   526:8   warning  Function 'createKeyInputHandler' has too many parameters (5). Maximum allowed is 3     max-params
-   533:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
-   638:3   warning  Arrow function has too many parameters (7). Maximum allowed is 3                       max-params
-   695:70  warning  Arrow function has too many parameters (5). Maximum allowed is 3                       max-params
-   719:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
-   764:5   warning  Arrow function has too many parameters (8). Maximum allowed is 3                       max-params
-   969:8   warning  Function 'initializeInteractiveComponent' has a complexity of 3. Maximum allowed is 2  complexity
-  1094:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
-  1129:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   534:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
+   721:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   766:5   warning  Arrow function has too many parameters (8). Maximum allowed is 3                       max-params
+   971:8   warning  Function 'initializeInteractiveComponent' has a complexity of 3. Maximum allowed is 2  complexity
+  1096:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
+  1131:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
 
 /workspace/dadeto/src/generator/generator.js
-  888:1  warning  Function 'getSelectedMethod' has a complexity of 3. Maximum allowed is 2     complexity
-  926:1  warning  Function 'generateToyUISection' has a complexity of 4. Maximum allowed is 2  complexity
+  928:1  warning  Function 'generateToyUISection' has a complexity of 4. Maximum allowed is 2  complexity
 
 /workspace/dadeto/src/inputHandlers/dendriteStory.js
   17:1   warning  Function 'maybeRemoveKV' has a complexity of 3. Maximum allowed is 2         complexity
@@ -23,15 +19,12 @@
   61:18  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
 
 /workspace/dadeto/src/inputHandlers/kv.js
-   3:8  warning  Function 'maybeRemoveNumber' has a complexity of 3. Maximum allowed is 2    complexity
-  11:8  warning  Function 'maybeRemoveDendrite' has a complexity of 3. Maximum allowed is 2  complexity
+  3:8  warning  Function 'maybeRemoveNumber' has a complexity of 3. Maximum allowed is 2    complexity
+  9:8  warning  Function 'maybeRemoveDendrite' has a complexity of 3. Maximum allowed is 2  complexity
 
 /workspace/dadeto/src/inputHandlers/number.js
-   3:1  warning  Function 'maybeRemoveKV' has a complexity of 3. Maximum allowed is 2        complexity
-  11:1  warning  Function 'maybeRemoveDendrite' has a complexity of 3. Maximum allowed is 2  complexity
-
-/workspace/dadeto/src/inputHandlers/text.js
-  1:8  warning  Function 'textHandler' has a complexity of 7. Maximum allowed is 2  complexity
+  3:1  warning  Function 'maybeRemoveKV' has a complexity of 4. Maximum allowed is 2        complexity
+  9:1  warning  Function 'maybeRemoveDendrite' has a complexity of 4. Maximum allowed is 2  complexity
 
 /workspace/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1  warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
@@ -58,41 +51,23 @@
 /workspace/dadeto/test/browser/createInputDropdownHandler.allTypes.mutantKill.test.js
   17:30  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
-/workspace/dadeto/test/browser/createInputDropdownHandler.cleanupDefault.test.js
-  16:30  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
-
 /workspace/dadeto/test/browser/createInputDropdownHandler.dendriteStory.mutantKill.additional.test.js
   16:28  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
 
 /workspace/dadeto/test/browser/createInputDropdownHandler.dendriteStory.test.js
   19:30  warning  Arrow function has a complexity of 9. Maximum allowed is 2  complexity
-  29:36  warning  Ternary operator used                                       no-ternary
 
 /workspace/dadeto/test/browser/createInputDropdownHandler.kv.test.js
   15:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
-/workspace/dadeto/test/browser/createInputDropdownHandler.number.test.js
-  20:30  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
-
 /workspace/dadeto/test/browser/createInputDropdownHandler.numberThenKv.mutantKill.test.js
   15:28  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
-
-/workspace/dadeto/test/browser/createInputDropdownHandler.numberThenText.test.js
-  11:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  43:36  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-
-/workspace/dadeto/test/browser/createInputDropdownHandler.objectLiteral.mutantKill.test.js
-  15:30  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
 
 /workspace/dadeto/test/browser/createInputDropdownHandler.unknownMutantKill.test.js
   13:28  warning  Arrow function has a complexity of 4. Maximum allowed is 2  complexity
 
 /workspace/dadeto/test/browser/initializeInteractiveComponent.keypress.test.js
   21:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-
-/workspace/dadeto/test/browser/initializeInteractiveComponent.missingElements.test.js
-  45:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  91:30  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
 /workspace/dadeto/test/browser/toys.getModuleInitializer.invoke.test.js
   23:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
@@ -104,4 +79,4 @@
   1207:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
   1386:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 53 problems (0 errors, 53 warnings)
+✖ 40 problems (0 errors, 40 warnings)
