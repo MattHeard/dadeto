@@ -886,10 +886,10 @@ const INPUT_METHODS = ['text', 'number', 'kv', 'dendrite-story'];
  * @returns {string} - HTML for the dropdown and text input
  */
 function getSelectedMethod(defaultMethod) {
-  if (defaultMethod && defaultMethod !== 'text') {
-    return defaultMethod;
+  if (defaultMethod === 'text') {
+    return undefined;
   }
-  return undefined;
+  return defaultMethod;
 }
 
 function buildOption(method, selectedMethod) {
@@ -902,7 +902,9 @@ function buildOption(method, selectedMethod) {
 
 function buildToyInputDropdown(defaultMethod) {
   const selectedMethod = getSelectedMethod(defaultMethod);
-  const options = INPUT_METHODS.map(method => buildOption(method, selectedMethod)).join('');
+  const options = INPUT_METHODS.map(method =>
+    buildOption(method, selectedMethod)
+  ).join('');
   return `<select class="input">${options}</select><input type="text" disabled>`;
 }
 
