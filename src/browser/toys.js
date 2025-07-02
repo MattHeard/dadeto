@@ -189,7 +189,7 @@ export function handleDropdownChange(dropdown, getData, dom) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
   const data = getData();
-  const output = getOutput(data, postId);
+  const output = outputForPostId(data.output, postId);
 
   const parent = dom.querySelector(dropdown.parentNode, 'div.output');
   setTextContent(
@@ -199,11 +199,11 @@ export function handleDropdownChange(dropdown, getData, dom) {
   );
 }
 
-function getOutput(data, postId) {
-  if (!data.output) {
-    return '';
+function outputForPostId(output, postId) {
+  if (output && output[postId]) {
+    return output[postId];
   }
-  return data.output[postId] || '';
+  return '';
 }
 
 /**
