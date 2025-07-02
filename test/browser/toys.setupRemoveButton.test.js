@@ -25,7 +25,14 @@ describe('setupRemoveButton', () => {
   });
 
   it('sets the button text content to "×"', () => {
-    setupRemoveButton(mockDom, button, rows, render, rowKey, disposers);
+    setupRemoveButton({
+      dom: mockDom,
+      button,
+      rows,
+      render,
+      key: rowKey,
+      disposers,
+    });
 
     expect(mockDom.setTextContent).toHaveBeenCalledWith(button, '×');
   });
@@ -39,7 +46,14 @@ describe('setupRemoveButton', () => {
       }
     });
 
-    setupRemoveButton(mockDom, button, rows, render, rowKey, disposers);
+    setupRemoveButton({
+      dom: mockDom,
+      button,
+      rows,
+      render,
+      key: rowKey,
+      disposers,
+    });
 
     // Simulate button click
     clickHandler(mockEvent);
@@ -66,7 +80,14 @@ describe('setupRemoveButton', () => {
       }
     });
 
-    setupRemoveButton(mockDom, button, rows, render, nonExistentKey, disposers);
+    setupRemoveButton({
+      dom: mockDom,
+      button,
+      rows,
+      render,
+      key: nonExistentKey,
+      disposers,
+    });
 
     // Simulate button click
     clickHandler(mockEvent);

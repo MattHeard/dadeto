@@ -13,7 +13,14 @@ describe('createRemoveRemoveListener call count', () => {
     const render = jest.fn();
     const disposers = [];
 
-    setupRemoveButton(dom, button, rows, render, 'k', disposers);
+    setupRemoveButton({
+      dom,
+      button,
+      rows,
+      render,
+      key: 'k',
+      disposers,
+    });
 
     expect(disposers).toHaveLength(1);
     const dispose = disposers[0];

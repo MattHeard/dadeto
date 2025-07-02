@@ -14,7 +14,14 @@ describe('createRemoveRemoveListener triple calls', () => {
     const buttons = [{}, {}, {}];
 
     buttons.forEach((btn, idx) => {
-      setupRemoveButton(dom, btn, rows, render, 'k' + idx, disposers);
+      setupRemoveButton({
+        dom,
+        button: btn,
+        rows,
+        render,
+        key: 'k' + idx,
+        disposers,
+      });
       const disposer = disposers[idx];
       expect(typeof disposer).toBe('function');
       const handler = dom.addEventListener.mock.calls[idx][2];

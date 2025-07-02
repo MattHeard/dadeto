@@ -701,14 +701,14 @@ export const setupAddButton = ({ dom, button, rows, render, disposers }) => {
  * @param {string} key - The key of the row to remove
  * @param {Array} disposers - Array to store cleanup functions
  */
-export const setupRemoveButton = (
+export const setupRemoveButton = ({
   dom,
   button,
   rows,
   render,
   key,
-  disposers
-) => {
+  disposers,
+}) => {
   dom.setTextContent(button, '×');
   const onRemove = createOnRemove(rows, render, key);
   dom.addEventListener(button, 'click', onRemove);
@@ -800,7 +800,7 @@ const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
   if (isAddButton) {
     setupAddButton({ dom, button, rows, render, disposers });
   } else {
-    setupRemoveButton(dom, button, rows, render, key, disposers);
+    setupRemoveButton({ dom, button, rows, render, key, disposers });
   }
 
   return button;

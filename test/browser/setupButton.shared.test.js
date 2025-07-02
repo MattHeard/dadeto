@@ -20,7 +20,15 @@ describe.each([
   [
     'setupRemoveButton',
     setupRemoveButton,
-    (...params) => setupRemoveButton(...params),
+    (...params) =>
+      setupRemoveButton({
+        dom: params[0],
+        button: params[1],
+        rows: params[2],
+        render: params[3],
+        key: params[4],
+        disposers: params[5],
+      }),
   ],
 ])('%s common behaviour', (_name, _setup, invoke) => {
   let dom;

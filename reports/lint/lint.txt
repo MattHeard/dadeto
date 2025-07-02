@@ -3,12 +3,10 @@
     15:1   warning  Function 'isKeyValuePair' has a complexity of 3. Maximum allowed is 2                  complexity
     31:34  warning  Arrow function has a complexity of 6. Maximum allowed is 2                             complexity
    187:8   warning  Function 'handleDropdownChange' has a complexity of 3. Maximum allowed is 2            complexity
-   534:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
-   721:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
-   766:5   warning  Arrow function has too many parameters (8). Maximum allowed is 3                       max-params
-   971:8   warning  Function 'initializeInteractiveComponent' has a complexity of 3. Maximum allowed is 2  complexity
-  1096:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
-  1131:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
+   529:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
+   961:8   warning  Function 'initializeInteractiveComponent' has a complexity of 3. Maximum allowed is 2  complexity
+  1086:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
+  1121:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
 
 /workspace/dadeto/src/generator/generator.js
   928:1  warning  Function 'generateToyUISection' has a complexity of 4. Maximum allowed is 2  complexity
@@ -21,10 +19,6 @@
 /workspace/dadeto/src/inputHandlers/kv.js
   3:8  warning  Function 'maybeRemoveNumber' has a complexity of 3. Maximum allowed is 2    complexity
   9:8  warning  Function 'maybeRemoveDendrite' has a complexity of 3. Maximum allowed is 2  complexity
-
-/workspace/dadeto/src/inputHandlers/number.js
-  3:1  warning  Function 'maybeRemoveKV' has a complexity of 4. Maximum allowed is 2        complexity
-  9:1  warning  Function 'maybeRemoveDendrite' has a complexity of 4. Maximum allowed is 2  complexity
 
 /workspace/dadeto/src/presenters/battleshipSolitaireClues.js
   26:1  warning  Function 'validateCluesObject' has a complexity of 9. Maximum allowed is 2                complexity
@@ -74,9 +68,8 @@
   80:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
 /workspace/dadeto/test/browser/toys.test.js
-   823:40  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1149:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1207:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1386:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
+  1150:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1208:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
+  1387:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 40 problems (0 errors, 40 warnings)
+✖ 35 problems (0 errors, 35 warnings)

@@ -18,11 +18,25 @@ describe('setupRemoveButton multiple disposers', () => {
     const disposers = [];
 
     // First setup
-    setupRemoveButton(dom, buttonA, rows, render, 'a', disposers);
+    setupRemoveButton({
+      dom,
+      button: buttonA,
+      rows,
+      render,
+      key: 'a',
+      disposers,
+    });
     const disposerA = disposers.pop();
 
     // Second setup
-    setupRemoveButton(dom, buttonB, rows, render, 'b', disposers);
+    setupRemoveButton({
+      dom,
+      button: buttonB,
+      rows,
+      render,
+      key: 'b',
+      disposers,
+    });
     const disposerB = disposers.pop();
 
     expect(typeof disposerA).toBe('function');
