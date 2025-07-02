@@ -1137,15 +1137,14 @@ describe('toys', () => {
       const outputParent = {};
       const setTextContent = jest.fn();
       const createElement = jest.fn(() => ({ textContent: '' }));
-      const makeQuerySelector = () => {
-        const map = {
-          'input[type="text"]': {},
-          'button[type="submit"]': {},
-          'div.output': outputParent,
-          'select.output': {},
-        };
-        return (_, selector) => map[selector] || {};
+      const selectorMap = {
+        'input[type="text"]': {},
+        'button[type="submit"]': {},
+        'div.output': outputParent,
+        'select.output': {},
       };
+      const querySelectorFn = (_, selector) => selectorMap[selector] || {};
+      const makeQuerySelector = () => querySelectorFn;
       const dom = {
         removeAllChildren: jest.fn(),
         createElement,
