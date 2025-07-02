@@ -169,6 +169,7 @@ describe('setupAudio', () => {
     playAudio,
     pauseAudio;
   let audioElement, audioElements, dom;
+  let addEventListener, appendChild, insertBefore;
   beforeEach(() => {
     createdElements = [];
     removeControlsAttribute = () => {};
