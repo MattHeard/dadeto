@@ -10,12 +10,16 @@ function maybeRemoveKV(container, dom) {
   maybeRemoveElement(kvContainer, container, dom);
 }
 
+function disposeIfPossible(node) {
+  if (typeof node._dispose === 'function') {
+    node._dispose();
+  }
+}
+
 function removeExistingForm(container, dom) {
   const existing = dom.querySelector(container, '.dendrite-form');
   if (existing) {
-    if (typeof existing._dispose === 'function') {
-      existing._dispose();
-    }
+    disposeIfPossible(existing);
     dom.removeChild(container, existing);
   }
 }
