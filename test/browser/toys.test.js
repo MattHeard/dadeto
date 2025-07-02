@@ -1185,16 +1185,13 @@ describe('toys', () => {
       const errorFn = jest.fn();
       const fetchFn = jest.fn();
       const outputParent = {};
-      const makeQuerySelector = () => {
-        const map = {
-          'input[type="text"]': inputElement,
-          'button[type="submit"]': submitButton,
-          'div.output': outputParent,
-          'select.output': {},
-        };
-        const querySelector = (_, selector) => map[selector] || {};
-        return querySelector;
+      const selectorMap = {
+        'input[type="text"]': inputElement,
+        'button[type="submit"]': submitButton,
+        'div.output': outputParent,
+        'select.output': {},
       };
+      const querySelector = (_, selector) => selectorMap[selector] || {};
       const dom = {
         removeAllChildren: jest.fn(),
         createElement: jest.fn(() => ({ textContent: '' })),
@@ -1205,7 +1202,7 @@ describe('toys', () => {
         addEventListener: jest.fn(),
         removeChild: jest.fn(),
         appendChild: jest.fn(),
-        querySelector: jest.fn(makeQuerySelector()),
+        querySelector: jest.fn(querySelector),
         removeWarning: jest.fn(),
         enable: jest.fn(),
         contains: () => true,
