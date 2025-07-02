@@ -542,7 +542,7 @@ export const createUpdateTextInputValue = (textInput, dom) => event => {
 };
 
 function hasRequestField(val) {
-  return Object.prototype.hasOwnProperty.call(val, 'request');
+  return Object.hasOwn(val, 'request');
 }
 
 function hasStringUrl(val) {
