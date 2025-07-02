@@ -754,7 +754,7 @@ export const setupRemoveButton = (
  * @returns {Function} A function that takes [key, value] and index and creates a row
  */
 export const createKeyValueRow =
-  (
+  ({
     dom,
     entries,
     textInput,
@@ -762,8 +762,8 @@ export const createKeyValueRow =
     syncHiddenField,
     disposers,
     render,
-    container
-  ) =>
+    container,
+  }) =>
     ([key, value], idx) => {
       const rowEl = dom.createElement('div');
       dom.setClassName(rowEl, 'kv-row');
@@ -1143,16 +1143,16 @@ export const createRenderer = (
 
     const entries = Object.entries(rows);
     entries.forEach(
-      createKeyValueRow(
+      createKeyValueRow({
         dom,
         entries,
         textInput,
         rows,
         syncHiddenField,
-        disposersArray,
+        disposers: disposersArray,
         render,
-        container
-      )
+        container,
+      })
     );
 
     syncHiddenField(textInput, rows, dom);

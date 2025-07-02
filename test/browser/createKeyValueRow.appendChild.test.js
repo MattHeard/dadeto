@@ -26,16 +26,16 @@ describe('createKeyValueRow DOM appends', () => {
       addEventListener: jest.fn(),
     };
 
-    const rowCreator = createKeyValueRow(
+    const rowCreator = createKeyValueRow({
       dom,
-      [],
-      {},
-      {},
-      () => {},
-      [],
-      () => {},
-      container
-    );
+      entries: [],
+      textInput: {},
+      rows: {},
+      syncHiddenField: () => {},
+      disposers: [],
+      render: () => {},
+      container,
+    });
 
     rowCreator(['a', 'b'], 0);
 
