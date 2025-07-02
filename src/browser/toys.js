@@ -770,44 +770,44 @@ export const createKeyValueRow =
     render,
     container,
   }) =>
-    ([key, value], idx) => {
-      const rowEl = dom.createElement('div');
-      dom.setClassName(rowEl, 'kv-row');
+  ([key, value], idx) => {
+    const rowEl = dom.createElement('div');
+    dom.setClassName(rowEl, 'kv-row');
 
-      // Create key and value elements
-      const keyEl = createKeyElement({
-        dom,
-        key,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers,
-      });
-      const valueEl = createValueElement({
-        dom,
-        value,
-        keyEl,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers,
-      });
+    // Create key and value elements
+    const keyEl = createKeyElement({
+      dom,
+      key,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
+    const valueEl = createValueElement({
+      dom,
+      value,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
 
-      // Create and set up the appropriate button type
-      const btnEl = createButton({
-        dom,
-        isAddButton: idx === entries.length - 1,
-        rows,
-        render,
-        key,
-        disposers,
-      });
+    // Create and set up the appropriate button type
+    const btnEl = createButton({
+      dom,
+      isAddButton: idx === entries.length - 1,
+      rows,
+      render,
+      key,
+      disposers,
+    });
 
-      dom.appendChild(rowEl, keyEl);
-      dom.appendChild(rowEl, valueEl);
-      dom.appendChild(rowEl, btnEl);
-      dom.appendChild(container, rowEl);
-    };
+    dom.appendChild(rowEl, keyEl);
+    dom.appendChild(rowEl, valueEl);
+    dom.appendChild(rowEl, btnEl);
+    dom.appendChild(container, rowEl);
+  };
 
 const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
   const button = dom.createElement('button');
@@ -967,10 +967,14 @@ function disableInputAndButton(inputElement, submitButton) {
   submitButton.disabled = true;
 }
 
+function hasMissingElement(elements) {
+  return elements.some(el => !el);
+}
+
 function getInteractiveElements(dom, article, logWarning) {
   const inputElement = dom.querySelector(article, 'input[type="text"]');
   const submitButton = dom.querySelector(article, 'button[type="submit"]');
-  if (!inputElement || !submitButton) {
+  if (hasMissingElement([inputElement, submitButton])) {
     logWarning(
       'Interactive component missing input or button in article',
       article.id
