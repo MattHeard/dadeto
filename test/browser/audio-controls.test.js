@@ -169,7 +169,6 @@ describe('setupAudio', () => {
     playAudio,
     pauseAudio;
   let audioElement, audioElements, dom;
-  let addEventListener, appendChild, insertBefore;
   beforeEach(() => {
     createdElements = [];
     removeControlsAttribute = () => {};
@@ -190,9 +189,6 @@ describe('setupAudio', () => {
     stopDefault = () => {};
     playAudio = () => {};
     pauseAudio = () => {};
-    addEventListener = jest.fn();
-    appendChild = jest.fn();
-    insertBefore = jest.fn();
     audioElement = {};
     audioElements = [audioElement];
     dom = {
