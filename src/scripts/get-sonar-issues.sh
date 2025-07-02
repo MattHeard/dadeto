@@ -1,5 +1,3 @@
-
-
 #!/usr/bin/env bash
 #
 # Fetch the first page (max 500 rows) of *unresolved* SonarCloud issues for the
