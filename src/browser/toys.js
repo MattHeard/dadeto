@@ -1110,14 +1110,9 @@ export const syncHiddenField = (textInput, rows, dom) => {
  * @param {Function} options.syncHiddenField - Function to sync the hidden field
  * @returns {Function} The render function
  */
-export const createRenderer = ({
-  dom,
-  disposersArray,
-  container,
-  rows,
-  textInput,
-  syncHiddenField,
-}) => {
+export const createRenderer = options => {
+  const { dom, disposersArray, container, rows, textInput, syncHiddenField } =
+    options;
   /**
    * Renders the key-value input UI
    */
