@@ -491,46 +491,6 @@ export const createNumberInput = (value, onChange, dom) => {
 };
 
 /**
- * Positions the number input in the DOM relative to the text input
- * @param {HTMLElement} container - The container element
- * @param {HTMLInputElement} textInput - The text input element
- * @param {HTMLInputElement} numberInput - The number input element to position
- * @param {Object} dom - The DOM utilities object
- * @returns {void}
- */
-const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
-  const nextSibling = dom.getNextSibling(textInput);
-  container.insertBefore(numberInput, nextSibling);
-};
-
-/**
- * Ensures a single <input type="number"> exists just after the text input
- * @param {HTMLElement} container - The container element
- * @param {HTMLInputElement} textInput - The text input element
- * @param {Object} dom - The DOM utilities object
- * @returns {HTMLInputElement} The number input element
- */
-export const ensureNumberInput = (container, textInput, dom) => {
-  let numberInput = dom.querySelector(container, 'input[type="number"]');
-
-  if (!numberInput) {
-    numberInput = createNumberInput(
-      textInput.value, // textInput is assumed to be truthy
-      createUpdateTextInputValue(textInput, dom),
-      dom
-    );
-    positionNumberInput({
-      container,
-      textInput,
-      numberInput,
-      dom,
-    });
-  }
-
-  return numberInput;
-};
-
-/**
  * Creates an event handler that updates a text input's value from an event
  * @param {HTMLInputElement} textInput - The text input element to update
  * @param {Object} dom - The DOM utilities object

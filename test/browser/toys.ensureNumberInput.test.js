@@ -1,5 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { ensureNumberInput } from '../../src/browser/toys.js';
+import { ensureNumberInput } from '../../src/inputHandlers/number.js';
 
 describe('ensureNumberInput', () => {
   test('should return existing number input without creating a new one', () => {
