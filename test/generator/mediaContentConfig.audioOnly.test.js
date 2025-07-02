@@ -19,6 +19,8 @@ describe('MEDIA_CONTENT_CONFIG single audio', () => {
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<audio');
+    // Ensure the audio tag includes the controls attribute
+    expect(html).toContain('<audio class="value" controls>');
     expect(html).not.toContain('<img');
     expect(html).not.toContain('<iframe');
   });
