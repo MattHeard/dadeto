@@ -54,9 +54,7 @@ function dxReducerForNeighbour(coord, dy) {
 
 function neighbours(coord) {
   return [-1, 0, 1].reduce((acc, dy) => {
-    return acc.concat(
-      [-1, 0, 1].reduce(dxReducerForNeighbour(coord, dy), [])
-    );
+    return acc.concat([-1, 0, 1].reduce(dxReducerForNeighbour(coord, dy), []));
   }, []);
 }
 
@@ -64,7 +62,8 @@ function isNeighbourOccupied(n, cfg, occupied) {
   return inBounds(n, cfg) && occupied.has(key(n.x, n.y));
 }
 
-const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg => !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
+const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg =>
+  !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
 
 function getSx(dir, x, i) {
   if (dir === 'H') {
@@ -105,11 +104,14 @@ function getEndCoord(dir, start, len) {
 // ─────────────────── Placement attempt (single pass) ─────────────────── //
 
 function makeSegReducer(dir, start, occupied) {
-  return (acc, _, i) => handleSegment({ acc, placement: { dir, start } }, occupied, i);
+  return (acc, _, i) =>
+    handleSegment({ acc, placement: { dir, start } }, occupied, i);
 
   function handleSegment(segment, occupied, i) {
     const { acc, placement } = segment;
-    if (!acc.valid) {return acc;}
+    if (!acc.valid) {
+      return acc;
+    }
     const { dir, start } = placement;
     const sx = getSx(dir, start.x, i);
     const sy = getSy(dir, start.y, i);
@@ -134,20 +136,30 @@ function makeSegReducer(dir, start, occupied) {
   }
 }
 
-
 const allSegsHaveNoOccupiedNeighbour = (cfg, occupied, segs) => {
-  const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(cfg, occupied);
+  const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(
+    cfg,
+    occupied
+  );
   return segs.every(segHasNoOccupiedNeighbour);
 };
 
 function isForbiddenTouch(cfg, occupied, segs) {
-  return cfg.noTouching === true && !allSegsHaveNoOccupiedNeighbour(cfg, occupied, segs);
+  return (
+    cfg.noTouching === true &&
+    !allSegsHaveNoOccupiedNeighbour(cfg, occupied, segs)
+  );
 }
 
-
 function isValidCandidate(boardState, segs, valid) {
-  if (!valid) {return false;}
-  const forbiddenTouch = isForbiddenTouch(boardState.cfg, boardState.occupied, segs);
+  if (!valid) {
+    return false;
+  }
+  const forbiddenTouch = isForbiddenTouch(
+    boardState.cfg,
+    boardState.occupied,
+    segs
+  );
   return !forbiddenTouch;
 }
 
@@ -155,13 +167,33 @@ function collectCandidatesForStart({ start, length, cfg, occupied }) {
   const directions = ['H', 'V'];
   const candidates = [];
   for (const direction of directions) {
-    collectCandidatesForDirection({ direction, start, length, cfg, occupied, candidates });
+    collectCandidatesForDirection({
+      direction,
+      start,
+      length,
+      cfg,
+      occupied,
+      candidates,
+    });
   }
   return candidates;
 }
 
-function collectCandidatesForDirection({ direction, start, length, cfg, occupied, candidates }) {
-  const candidate = getCandidateIfInBounds({ direction, start, length, cfg, occupied });
+function collectCandidatesForDirection({
+  direction,
+  start,
+  length,
+  cfg,
+  occupied,
+  candidates,
+}) {
+  const candidate = getCandidateIfInBounds({
+    direction,
+    start,
+    length,
+    cfg,
+    occupied,
+  });
   if (candidate) {
     candidates.push(candidate);
   }
@@ -177,10 +209,10 @@ function getCandidateIfInBounds({ direction, start, length, cfg, occupied }) {
 
 function getValidCandidate({ direction, start, length, cfg, occupied }) {
   const segReducer = makeSegReducer(direction, start, occupied);
-  const { segs, valid } = Array.from({ length }).reduce(
-    segReducer,
-    { segs: [], valid: true }
-  );
+  const { segs, valid } = Array.from({ length }).reduce(segReducer, {
+    segs: [],
+    valid: true,
+  });
   if (isValidCandidate({ cfg, occupied }, segs, valid)) {
     return { start, length, direction };
   }
@@ -198,7 +230,12 @@ function collectAllCandidates(length, cfg, occupied) {
 function collectCandidatesForRow({ y, length, cfg, occupied, candidates }) {
   for (let x = 0; x < cfg.width; x++) {
     const start = { x, y };
-    const localCandidates = collectCandidatesForStart({ start, length, cfg, occupied });
+    const localCandidates = collectCandidatesForStart({
+      start,
+      length,
+      cfg,
+      occupied,
+    });
     candidates.push(...localCandidates);
   }
 }
@@ -212,7 +249,9 @@ function markOccupiedSquares(chosen, occupied, length) {
 }
 
 function chooseAndMarkCandidate({ candidates, length }, env, occupied) {
-  if (candidates.length === 0) {return null;} // dead end
+  if (candidates.length === 0) {
+    return null;
+  } // dead end
   const getRandomNumber = env.get('getRandomNumber');
   const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
   // Mark occupied squares
@@ -231,22 +270,19 @@ function makePlaceShip(cfg, env) {
   return len => placeShip(len, { cfg, occupied }, env);
 }
 
-
-
-
-
 function shouldAbortPlaceShip(acc, placeShipWithArgs, len) {
   return !acc || !placeShipWithArgs(len);
 }
 
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (shouldAbortPlaceShip(acc, placeShipWithArgs, len)) {return null;}
+    if (shouldAbortPlaceShip(acc, placeShipWithArgs, len)) {
+      return null;
+    }
     const placed = placeShipWithArgs(len);
     acc.push(placed);
     return acc;
   };
-
 }
 
 function placeAllShips(cfg, env) {
@@ -255,13 +291,17 @@ function placeAllShips(cfg, env) {
   const placeShipWithArgs = makePlaceShip(cfg, env);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
-  if (result !== null) {return result;}
+  if (result !== null) {
+    return result;
+  }
   return null;
 }
 
 function attemptPlacement(cfg, env) {
   const ships = placeAllShips(cfg, env);
-  if (!ships) {return null;}
+  if (!ships) {
+    return null;
+  }
   return { width: cfg.width, height: cfg.height, ships };
 }
 
@@ -278,27 +318,39 @@ function ensureShipsArray(cfg) {
 
 // ─────────────────────────── Public toy ─────────────────────────── //
 
-function parseConfig(input) {
-  let cfg;
+function safeJsonParse(input) {
   try {
-    cfg = JSON.parse(input);
+    return JSON.parse(input);
   } catch {
-    cfg = { width: 10, height: 10, ships: [] };
+    return { width: 10, height: 10, ships: [] };
   }
-  // If ships is a string, interpret as comma-delimited and convert to array
+}
+
+function convertShipsToArray(cfg) {
   if (typeof cfg.ships === 'string') {
     cfg.ships = cfg.ships
       .split(',')
       .map(s => parseInt(s.trim(), 10))
       .filter(Boolean);
   }
-  // Parse width and height if they are strings
-  if (typeof cfg.width === 'string') {
-    cfg.width = parseInt(cfg.width, 10);
+}
+
+function parseDimension(value) {
+  if (typeof value === 'string') {
+    return parseInt(value, 10);
   }
-  if (typeof cfg.height === 'string') {
-    cfg.height = parseInt(cfg.height, 10);
-  }
+  return value;
+}
+
+function parseDimensions(cfg) {
+  cfg.width = parseDimension(cfg.width);
+  cfg.height = parseDimension(cfg.height);
+}
+
+function parseConfig(input) {
+  const cfg = safeJsonParse(input);
+  convertShipsToArray(cfg);
+  parseDimensions(cfg);
   ensureShipsArray(cfg);
   return cfg;
 }
@@ -308,12 +360,15 @@ function fleetAreaError() {
 }
 
 function fleetRetryError() {
-  return JSON.stringify({ error: 'Failed to generate fleet after max retries' });
+  return JSON.stringify({
+    error: 'Failed to generate fleet after max retries',
+  });
 }
 
-
 function maybeReturnFleet(fleet) {
-  if (fleet !== null) {return fleet;}
+  if (fleet !== null) {
+    return fleet;
+  }
   return null;
 }
 
@@ -324,7 +379,11 @@ function processFleetLoopIteration(i, cfg, env) {
 }
 
 function fleetLoopFor(maxTries, cb) {
-  return Array.from({ length: maxTries }, (_, i) => cb(i)).find(result => result !== null) || null;
+  return (
+    Array.from({ length: maxTries }, (_, i) => cb(i)).find(
+      result => result !== null
+    ) || null
+  );
 }
 
 function runFleetLoop(cfg, env, maxTries) {
@@ -337,13 +396,17 @@ function findValidFleet(cfg, env, maxTries) {
 
 function tryGenerateFleet(cfg, env, maxTries) {
   const fleet = findValidFleet(cfg, env, maxTries);
-  if (fleet !== null) {return JSON.stringify(fleet);}
+  if (fleet !== null) {
+    return JSON.stringify(fleet);
+  }
   return null;
 }
 
 function generateFleet(input, env) {
   const cfg = parseConfig(input);
-  if (shouldReturnAreaError(cfg)) {return fleetAreaError();}
+  if (shouldReturnAreaError(cfg)) {
+    return fleetAreaError();
+  }
   const MAX_TRIES = 100;
   const fleetResult = tryGenerateFleet(cfg, env, MAX_TRIES);
   return getFleetResultOrError(fleetResult);
@@ -354,7 +417,9 @@ function shouldReturnAreaError(cfg) {
 }
 
 function getFleetResultOrError(fleetResult) {
-  if (fleetResult !== null) {return fleetResult;}
+  if (fleetResult !== null) {
+    return fleetResult;
+  }
   return fleetRetryError();
 }
 
@@ -363,5 +428,5 @@ export {
   placeAllShips,
   isCoordNonNegative,
   isCoordWithinBoard,
-  neighbours
+  neighbours,
 };

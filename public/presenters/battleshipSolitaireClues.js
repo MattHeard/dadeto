@@ -23,32 +23,68 @@
  *    (ones) is closest to the grid
  */
 
+function isObject(value) {
+  return value && typeof value === 'object';
+}
+
+function hasValidClueArrays(obj) {
+  return Array.isArray(obj.rowClues) && Array.isArray(obj.colClues);
+}
+
+function hasNonNumberValues(arr) {
+  return arr.some(n => typeof n !== 'number');
+}
+
+function isEmpty(arr) {
+  return arr.length === 0;
+}
+
+function getClueArrays(obj) {
+  return [obj.rowClues, obj.colClues];
+}
+
 const VALIDATION_CHECKS = [
-  [o => !o || typeof o !== 'object', 'Invalid JSON object'],
+  [o => !isObject(o), 'Invalid JSON object'],
+  [o => !hasValidClueArrays(o), 'Missing rowClues or colClues array'],
   [
-    o => !Array.isArray(o.rowClues) || !Array.isArray(o.colClues),
-    'Missing rowClues or colClues array',
-  ],
-  [
-    o =>
-      o.rowClues.some(n => typeof n !== 'number') ||
-      o.colClues.some(n => typeof n !== 'number'),
+    o => getClueArrays(o).some(hasNonNumberValues),
     'Clue values must be numbers',
   ],
   [
-    o => o.rowClues.length === 0 || o.colClues.length === 0,
+    o => getClueArrays(o).some(isEmpty),
     'rowClues and colClues must be non-empty',
   ],
 ];
 
 function findValidationError(obj) {
-  const found = VALIDATION_CHECKS.find(([pred]) => pred(obj));
-  return found ? found[1] : '';
+  const found = VALIDATION_CHECKS.find(([predicate]) => predicate(obj));
+  if (found) {
+    return found[1];
+  }
+  return '';
 }
 
 function padLeft(numStr, width) {
   return numStr.padStart(width, ' ');
 }
+
+const DEFAULT_CLUES = {
+  rowClues: Array(10).fill(0),
+  colClues: Array(10).fill(0),
+};
+
+function safeJsonParse(str) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
+}
+
+const INVALID_CLUE_CHECKS = [
+  obj => obj === null,
+  obj => Boolean(findValidationError(obj)),
+];
 
 function buildColumnDigitMatrix(colClues) {
   const maxDigits = Math.max(...colClues).toString().length;
@@ -57,29 +93,27 @@ function buildColumnDigitMatrix(colClues) {
   colClues.forEach(clue => {
     const padded = padLeft(clue.toString(), maxDigits);
     [...padded].forEach((ch, idx) => {
-      rows[idx].push(ch === ' ' ? ' ' : ch);
+      rows[idx].push(ch);
     });
   });
   return rows; // order: tens→ones (top→bottom)
 }
 
+/**
+ * Parse JSON input and return clue object or default 10×10 grid clues.
+ * @param {string} inputString
+ * @returns {{rowClues: number[], colClues: number[]}}
+ */
+function parseCluesOrDefault(inputString) {
+  const obj = safeJsonParse(inputString);
+  if (INVALID_CLUE_CHECKS.some(fn => fn(obj))) {
+    return DEFAULT_CLUES;
+  }
+  return obj;
+}
+
 export function createBattleshipCluesBoardElement(inputString, dom) {
-  let clues;
-  let invalid = false;
-  try {
-    clues = JSON.parse(inputString);
-  } catch {
-    invalid = true;
-  }
-  if (!invalid) {
-    const error = findValidationError(clues);
-    if (error) {
-      invalid = true;
-    }
-  }
-  if (invalid) {
-    clues = { rowClues: Array(10).fill(0), colClues: Array(10).fill(0) };
-  }
+  const clues = parseCluesOrDefault(inputString);
 
   const { rowClues, colClues } = clues;
   const width = colClues.length;

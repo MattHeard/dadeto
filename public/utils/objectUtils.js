@@ -5,14 +5,14 @@
  * @returns {Object} A new object with only the specified keys
  */
 export function pick(obj, keys) {
-  if (!obj || typeof obj !== 'object') {return {};}
+  let source = {};
+  if (Object(obj) === obj) {
+    source = obj;
+  }
 
-  return keys.reduce((result, key) => {
-    if (key in obj) {
-      result[key] = obj[key];
-    }
-    return result;
-  }, {});
+  return Object.fromEntries(
+    keys.filter(key => key in source).map(key => [key, source[key]])
+  );
 }
 
 /**
@@ -21,11 +21,15 @@ export function pick(obj, keys) {
  * @param {Function} fn - The transformation function
  * @returns {Object} A new object with transformed values
  */
-export function mapValues(obj, fn) {
-  if (!obj || typeof obj !== 'object') {return {};}
+function transformEntries(source, fn) {
+  return Object.fromEntries(
+    Object.entries(source).map(([key, value]) => [key, fn(value, key)])
+  );
+}
 
-  return Object.entries(obj).reduce((result, [key, value]) => {
-    result[key] = fn(value, key);
-    return result;
-  }, {});
+export function mapValues(obj, fn) {
+  if (Object(obj) !== obj) {
+    return {};
+  }
+  return transformEntries(obj, fn);
 }

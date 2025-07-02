@@ -1,8 +1,7 @@
-function dispose(element, dom, container) {
-  if (element && typeof element._dispose === 'function') {
-    element._dispose();
-    dom.removeChild(container, element);
-  }
+import { maybeRemoveElement } from './disposeHelpers.js';
+
+export function dispose(element, dom, container) {
+  maybeRemoveElement(element, container, dom);
 }
 
 export function defaultHandler(dom, container, textInput) {

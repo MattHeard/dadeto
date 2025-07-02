@@ -8,7 +8,9 @@
 
 function generateClues(input) {
   const fleet = parseFleet(input);
-  if (fleet.error) {return JSON.stringify({ error: fleet.error });}
+  if (fleet.error) {
+    return JSON.stringify({ error: fleet.error });
+  }
   const { width, height, ships } = fleet;
   const clues = { row: Array(height).fill(0), col: Array(width).fill(0) };
   const board = { width, height };
@@ -21,7 +23,9 @@ function generateClues(input) {
 }
 
 function getShipCells(ship) {
-  if (ship.direction === 'H') {return getHorizontalCells(ship);}
+  if (ship.direction === 'H') {
+    return getHorizontalCells(ship);
+  }
   return getVerticalCells(ship);
 }
 
@@ -41,12 +45,10 @@ function getVerticalCells(ship) {
   return cells;
 }
 
-
 function incrementClues(position, board, clues) {
   if (isValidCell(position, board)) {
-    const { x, y } = position;
-    clues.row[y] += 1;
-    clues.col[x] += 1;
+    clues.row[position.y] += 1;
+    clues.col[position.x] += 1;
   }
 }
 
@@ -75,12 +77,13 @@ function parseFleet(input) {
   return fleet;
 }
 
+function isNumber(value) {
+  return typeof value === 'number';
+}
+
 function isValidFleet(fleet) {
-  return (
-    typeof fleet?.width === 'number' &&
-    typeof fleet?.height === 'number' &&
-    Array.isArray(fleet?.ships)
-  );
+  const { width, height, ships } = Object(fleet);
+  return [width, height].every(isNumber) && Array.isArray(ships);
 }
 
 export { generateClues };

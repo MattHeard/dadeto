@@ -12,20 +12,17 @@ import { createPrefixedLoggers } from './document.js';
  * @param {Array<{key: string, value: any}>} array - The array to convert
  * @returns {Object} An object with keys and values from the array
  */
+function isKeyValuePair(pair) {
+  return 'key' in Object(pair);
+}
+
 export const convertArrayToKeyValueObject = array => {
-  const result = {};
-
-  // Return empty object if input is not an array
   if (!Array.isArray(array)) {
-    return result;
+    return {};
   }
-
-  for (const pair of array) {
-    if (pair && typeof pair === 'object' && 'key' in pair) {
-      result[pair.key] = pair.value ?? '';
-    }
-  }
-  return result;
+  return Object.fromEntries(
+    array.filter(isKeyValuePair).map(pair => [pair.key, pair.value ?? ''])
+  );
 };
 
 export const parseExistingRows = (dom, inputElement) => {
@@ -65,10 +62,13 @@ export const clearDisposers = disposersArray => {
  * @param {Array} rows - The rows array to clear
  * @returns {Function} A function that cleans up resources
  */
-export const createDispose = (disposers, dom, container, rows) => () => {
-  clearDisposers(disposers);
-  dom.removeAllChildren(container);
-  rows.length = 0;
+export const createDispose = config => {
+  const { disposers, dom, container, rows } = config;
+  return () => {
+    clearDisposers(disposers);
+    dom.removeAllChildren(container);
+    rows.length = 0;
+  };
 };
 
 import { createPreElement } from '../presenters/pre.js';
@@ -186,7 +186,7 @@ export function handleDropdownChange(dropdown, getData, dom) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
   const data = getData();
-  const output = data.output?.[postId];
+  const output = getOutput(data, postId);
 
   const parent = dom.querySelector(dropdown.parentNode, 'div.output');
   setTextContent(
@@ -194,6 +194,13 @@ export function handleDropdownChange(dropdown, getData, dom) {
     dom,
     parent
   );
+}
+
+function getOutput(data, postId) {
+  if (!data.output) {
+    return '';
+  }
+  return data.output[postId] || '';
 }
 
 /**
@@ -356,8 +363,7 @@ export function makeObserverCallback(moduleInfo, env, dom) {
     `[${moduleInfo.article.id}]`
   );
   const handleEntryFactory = getEntryHandler(moduleInfo, moduleConfig);
-  const logInfo =
-    (moduleConfig.loggers && moduleConfig.loggers.logInfo) || (() => {});
+  const logInfo = moduleConfig.loggers.logInfo;
   return (entries, observer) => {
     const handleEntry = handleEntryFactory(observer);
     entries.forEach(entry => {
@@ -462,7 +468,7 @@ export const createNumberInput = (value, onChange, dom) => {
  * @param {Object} dom - The DOM utilities object
  * @returns {void}
  */
-const positionNumberInput = (container, textInput, numberInput, dom) => {
+const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
   const nextSibling = dom.getNextSibling(textInput);
   container.insertBefore(numberInput, nextSibling);
 };
@@ -483,7 +489,12 @@ export const ensureNumberInput = (container, textInput, dom) => {
       createUpdateTextInputValue(textInput, dom),
       dom
     );
-    positionNumberInput(container, textInput, numberInput, dom);
+    positionNumberInput({
+      container,
+      textInput,
+      numberInput,
+      dom,
+    });
   }
 
   return numberInput;
@@ -510,20 +521,16 @@ function hasStringUrl(val) {
 
 /**
  * Creates a key input event handler for a key-value row
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLElement} keyEl - The key input element
- * @param {HTMLElement} textInput - The hidden text input element
- * @param {Object} rows - The rows object containing key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field with current state
+ * @param {Object} options - Function options
+ * @param {Object} options.dom - The DOM utilities object
+ * @param {HTMLElement} options.keyEl - The key input element
+ * @param {HTMLElement} options.textInput - The hidden text input element
+ * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-export function createKeyInputHandler(
-  dom,
-  keyEl,
-  textInput,
-  rows,
-  syncHiddenField
-) {
+export function createKeyInputHandler(options) {
+  const { dom, keyEl, textInput, rows, syncHiddenField } = options;
   return e => {
     const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
     const newKey = dom.getTargetValue(e);
@@ -555,13 +562,8 @@ export function createKeyInputHandler(
  * @param {Function} syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-export function createValueInputHandler({
-  dom,
-  keyEl,
-  textInput,
-  rows,
-  syncHiddenField,
-}) {
+export function createValueInputHandler(options) {
+  const { dom, keyEl, textInput, rows, syncHiddenField } = options;
   return e => {
     const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
     rows[rowKey] = dom.getTargetValue(e);
@@ -571,22 +573,23 @@ export function createValueInputHandler({
 
 /**
  * Creates a key input element with event listeners
- * @param {Object} dom - The DOM utilities object
- * @param {string} key - The initial key value
- * @param {HTMLElement} textInput - The hidden text input element
- * @param {Object} rows - The rows object containing key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field with current state
- * @param {Array<Function>} disposers - Array to store cleanup functions
+ * @param {Object} options - Function options
+ * @param {Object} options.dom - The DOM utilities object
+ * @param {string} options.key - The initial key value
+ * @param {HTMLElement} options.textInput - The hidden text input element
+ * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
+ * @param {Array<Function>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created key input element
  */
-export const createKeyElement = (
+export const createKeyElement = ({
   dom,
   key,
   textInput,
   rows,
   syncHiddenField,
-  disposers
-) => {
+  disposers,
+}) => {
   const keyEl = dom.createElement('input');
   dom.setType(keyEl, 'text');
   dom.setPlaceholder(keyEl, 'Key');
@@ -594,13 +597,13 @@ export const createKeyElement = (
   // store the current key so we can track renames without re‑rendering
   dom.setDataAttribute(keyEl, 'prevKey', key);
 
-  const onKey = createKeyInputHandler(
+  const onKey = createKeyInputHandler({
     dom,
     keyEl,
     textInput,
     rows,
-    syncHiddenField
-  );
+    syncHiddenField,
+  });
   dom.addEventListener(keyEl, 'input', onKey);
   const removeKeyListener = () =>
     dom.removeEventListener(keyEl, 'input', onKey);
@@ -611,24 +614,25 @@ export const createKeyElement = (
 
 /**
  * Creates a value input element with event listeners
- * @param {Object} dom - The DOM utilities object
- * @param {string} value - The initial value
- * @param {HTMLElement} keyEl - The corresponding key input element
- * @param {HTMLElement} textInput - The hidden text input element
- * @param {Object} rows - The rows object containing key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field with current state
- * @param {Array<Function>} disposers - Array to store cleanup functions
+ * @param {Object} options - Function options
+ * @param {Object} options.dom - The DOM utilities object
+ * @param {string} options.value - The initial value
+ * @param {HTMLElement} options.keyEl - The corresponding key input element
+ * @param {HTMLElement} options.textInput - The hidden text input element
+ * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
+ * @param {Array<Function>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created value input element
  */
-export const createValueElement = (
+export const createValueElement = ({
   dom,
   value,
   keyEl,
   textInput,
   rows,
   syncHiddenField,
-  disposers
-) => {
+  disposers,
+}) => {
   const valueEl = dom.createElement('input');
   dom.setType(valueEl, 'text');
   dom.setPlaceholder(valueEl, 'Value');
@@ -685,7 +689,7 @@ export const createOnRemove = (rows, render, key) => e => {
  * @param {Function} render - The render function to update the UI
  * @param {Array} disposers - Array to store cleanup functions
  */
-export const setupAddButton = (dom, button, rows, render, disposers) => {
+export const setupAddButton = ({ dom, button, rows, render, disposers }) => {
   dom.setTextContent(button, '+');
   const onAdd = createOnAddHandler(rows, render);
   dom.addEventListener(button, 'click', onAdd);
@@ -702,14 +706,14 @@ export const setupAddButton = (dom, button, rows, render, disposers) => {
  * @param {string} key - The key of the row to remove
  * @param {Array} disposers - Array to store cleanup functions
  */
-export const setupRemoveButton = (
+export const setupRemoveButton = ({
   dom,
   button,
   rows,
   render,
   key,
-  disposers
-) => {
+  disposers,
+}) => {
   dom.setTextContent(button, '×');
   const onRemove = createOnRemove(rows, render, key);
   dom.addEventListener(button, 'click', onRemove);
@@ -723,12 +727,13 @@ export const setupRemoveButton = (
 
 /**
  * Creates and sets up a button element as either an add or remove button
- * @param {Object} dom - The DOM utilities object
- * @param {boolean} isAddButton - Whether to create an add button (true) or remove button (false)
- * @param {Object} rows - The rows object for the key-value editor
- * @param {Function} render - The render function to update the UI
- * @param {string} key - The key of the row (for remove button)
- * @param {Array} disposers - Array to store cleanup functions
+ * @param {Object} opts - Options for button creation
+ * @param {Object} opts.dom - The DOM utilities object
+ * @param {boolean} opts.isAddButton - Whether to create an add button
+ * @param {Object} opts.rows - The rows object for the key-value editor
+ * @param {Function} opts.render - The render function to update the UI
+ * @param {string} opts.key - The key of the row (for remove button)
+ * @param {Array} opts.disposers - Array to store cleanup functions
  * @returns {HTMLElement} The created and configured button element
  */
 /**
@@ -744,7 +749,7 @@ export const setupRemoveButton = (
  * @returns {Function} A function that takes [key, value] and index and creates a row
  */
 export const createKeyValueRow =
-  (
+  ({
     dom,
     entries,
     textInput,
@@ -752,55 +757,55 @@ export const createKeyValueRow =
     syncHiddenField,
     disposers,
     render,
-    container
-  ) =>
-  ([key, value], idx) => {
-    const rowEl = dom.createElement('div');
-    dom.setClassName(rowEl, 'kv-row');
+    container,
+  }) =>
+    ([key, value], idx) => {
+      const rowEl = dom.createElement('div');
+      dom.setClassName(rowEl, 'kv-row');
 
-    // Create key and value elements
-    const keyEl = createKeyElement(
-      dom,
-      key,
-      textInput,
-      rows,
-      syncHiddenField,
-      disposers
-    );
-    const valueEl = createValueElement(
-      dom,
-      value,
-      keyEl,
-      textInput,
-      rows,
-      syncHiddenField,
-      disposers
-    );
+      // Create key and value elements
+      const keyEl = createKeyElement({
+        dom,
+        key,
+        textInput,
+        rows,
+        syncHiddenField,
+        disposers,
+      });
+      const valueEl = createValueElement({
+        dom,
+        value,
+        keyEl,
+        textInput,
+        rows,
+        syncHiddenField,
+        disposers,
+      });
 
-    // Create and set up the appropriate button type
-    const btnEl = createButton(
-      dom,
-      idx === entries.length - 1,
-      rows,
-      render,
-      key,
-      disposers
-    );
+      // Create and set up the appropriate button type
+      const btnEl = createButton({
+        dom,
+        isAddButton: idx === entries.length - 1,
+        rows,
+        render,
+        key,
+        disposers,
+      });
 
-    dom.appendChild(rowEl, keyEl);
-    dom.appendChild(rowEl, valueEl);
-    dom.appendChild(rowEl, btnEl);
-    dom.appendChild(container, rowEl);
-  };
+      dom.appendChild(rowEl, keyEl);
+      dom.appendChild(rowEl, valueEl);
+      dom.appendChild(rowEl, btnEl);
+      dom.appendChild(container, rowEl);
+    };
 
-const createButton = (dom, isAddButton, rows, render, key, disposers) => {
+const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
   const button = dom.createElement('button');
   dom.setType(button, 'button');
 
   if (isAddButton) {
-    setupAddButton(dom, button, rows, render, disposers);
+    setupAddButton({ dom, button, rows, render, disposers });
   } else {
-    setupRemoveButton(dom, button, rows, render, key, disposers);
+    setupRemoveButton({ dom, button, rows, render, key, disposers });
   }
 
   return button;
@@ -1103,22 +1108,18 @@ export const syncHiddenField = (textInput, rows, dom) => {
  */
 /**
  * Creates a render function with access to the given disposers array and rows
- * @param {Object} dom - The DOM utilities object
- * @param {Array} disposersArray - Array to store cleanup functions
- * @param {HTMLElement} container - The container element for the key-value pairs
- * @param {Object} rows - The rows object containing key-value pairs
- * @param {HTMLInputElement} textInput - The hidden input element
- * @param {Function} syncHiddenField - Function to sync the hidden field
+ * @param {Object} options - Configuration options
+ * @param {Object} options.dom - The DOM utilities object
+ * @param {Array} options.disposersArray - Array to store cleanup functions
+ * @param {HTMLElement} options.container - The container element for the key-value pairs
+ * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {HTMLInputElement} options.textInput - The hidden input element
+ * @param {Function} options.syncHiddenField - Function to sync the hidden field
  * @returns {Function} The render function
  */
-export const createRenderer = (
-  dom,
-  disposersArray,
-  container,
-  rows,
-  textInput,
-  syncHiddenField
-) => {
+export const createRenderer = options => {
+  const { dom, disposersArray, container, rows, textInput, syncHiddenField } =
+    options;
   /**
    * Renders the key-value input UI
    */
@@ -1133,16 +1134,16 @@ export const createRenderer = (
 
     const entries = Object.entries(rows);
     entries.forEach(
-      createKeyValueRow(
+      createKeyValueRow({
         dom,
         entries,
         textInput,
         rows,
         syncHiddenField,
-        disposersArray,
+        disposers: disposersArray,
         render,
-        container
-      )
+        container,
+      })
     );
 
     syncHiddenField(textInput, rows, dom);
@@ -1167,20 +1168,25 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   const disposers = [];
 
   // Create the render function with the required dependencies
-  const render = createRenderer(
+  const render = createRenderer({
     dom,
-    disposers,
-    kvContainer,
+    disposersArray: disposers,
+    container: kvContainer,
     rows,
     textInput,
-    syncHiddenField
-  );
+    syncHiddenField,
+  });
 
   // Initial render
   render();
 
   // Public API for cleanup by parent code
-  const dispose = createDispose(disposers, dom, kvContainer, rows);
+  const dispose = createDispose({
+    disposers,
+    dom,
+    container: kvContainer,
+    rows,
+  });
   kvContainer._dispose = dispose;
 
   return kvContainer;

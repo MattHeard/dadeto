@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>35/35</span>
+                <span class='fraction'>38/38</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>17/17</span>
+                <span class='fraction'>16/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>11/11</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>31/31</span>
+                <span class='fraction'>36/36</span>
             </div>
         
             
@@ -143,7 +143,16 @@
 <a name='L78'></a><a href='#L78'>78</a>
 <a name='L79'></a><a href='#L79'>79</a>
 <a name='L80'></a><a href='#L80'>80</a>
-<a name='L81'></a><a href='#L81'>81</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -154,6 +163,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">26x</span>
 <span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">10x</span>
@@ -167,6 +178,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -187,11 +200,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">23x</span>
 <span class="cline-any cline-yes">17x</span>
 <span class="cline-any cline-yes">17x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">23x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -216,10 +232,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">36x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">25x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -233,20 +251,24 @@
 &nbsp;
 function generateClues(input) {
   const fleet = parseFleet(input);
-  if (fleet.error) {return JSON.stringify({ error: fleet.error });}
+  if (fleet.error) {
+    return JSON.stringify({ error: fleet.error });
+  }
   const { width, height, ships } = fleet;
   const clues = { row: Array(height).fill(0), col: Array(width).fill(0) };
   const board = { width, height };
   ships.forEach(ship =&gt; {
     getShipCells(ship).forEach(([x, y]) =&gt; {
-      incrementClues(x, y, board, clues);
+      incrementClues({ x, y }, board, clues);
     });
   });
   return JSON.stringify({ rowClues: clues.row, colClues: clues.col });
 }
 &nbsp;
 function getShipCells(ship) {
-  if (ship.direction === 'H') {return getHorizontalCells(ship);}
+  if (ship.direction === 'H') {
+    return getHorizontalCells(ship);
+  }
   return getVerticalCells(ship);
 }
 &nbsp;
@@ -266,12 +288,15 @@ function getVerticalCells(ship) {
   return cells;
 }
 &nbsp;
-&nbsp;
-function incrementClues(x, y, board, clues) {
-  if (isValidX(x, board) &amp;&amp; isValidY(y, board)) {
-    clues.row[y] += 1;
-    clues.col[x] += 1;
+function incrementClues(position, board, clues) {
+  if (isValidCell(position, board)) {
+    clues.row[position.y] += 1;
+    clues.col[position.x] += 1;
   }
+}
+&nbsp;
+function isValidCell({ x, y }, board) {
+  return isValidX(x, board) &amp;&amp; isValidY(y, board);
 }
 &nbsp;
 function isValidX(x, board) {
@@ -295,22 +320,24 @@ function parseFleet(input) {
   return fleet;
 }
 &nbsp;
-function isValidFleet(fleet) {
-  return (
-    typeof fleet?.width === 'number' &amp;&amp;
-    typeof fleet?.height === 'number' &amp;&amp;
-    Array.isArray(fleet?.ships)
-  );
+function isNumber(value) {
+  return typeof value === 'number';
 }
 &nbsp;
-export { generateClues };</pre></td></tr></table></pre>
+function isValidFleet(fleet) {
+  const { width, height, ships } = Object(fleet);
+  return [width, height].every(isNumber) &amp;&amp; Array.isArray(ships);
+}
+&nbsp;
+export { generateClues };
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-01T17:40:01.734Z
+                at 2025-07-02T12:43:05.219Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

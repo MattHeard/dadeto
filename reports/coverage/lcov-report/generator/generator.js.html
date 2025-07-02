@@ -32,14 +32,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>59/59</span>
+                <span class='fraction'>55/55</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>126/126</span>
+                <span class='fraction'>128/128</span>
             </div>
         
             
@@ -1098,7 +1098,13 @@
 <a name='L1033'></a><a href='#L1033'>1033</a>
 <a name='L1034'></a><a href='#L1034'>1034</a>
 <a name='L1035'></a><a href='#L1035'>1035</a>
-<a name='L1036'></a><a href='#L1036'>1036</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1036'></a><a href='#L1036'>1036</a>
+<a name='L1037'></a><a href='#L1037'>1037</a>
+<a name='L1038'></a><a href='#L1038'>1038</a>
+<a name='L1039'></a><a href='#L1039'>1039</a>
+<a name='L1040'></a><a href='#L1040'>1040</a>
+<a name='L1041'></a><a href='#L1041'>1041</a>
+<a name='L1042'></a><a href='#L1042'>1042</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1986,15 +1992,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">60x</span>
 <span class="cline-any cline-yes">60x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">60x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">60x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
@@ -2023,11 +2037,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">45x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -3020,18 +3032,26 @@ const INPUT_METHODS = ['text', 'number', 'kv', 'dendrite-story'];
  * @param {string} defaultMethod - The configured default input method
  * @returns {string} - HTML for the dropdown and text input
  */
-function buildToyInputDropdown(defaultMethod) {
-  let selectedMethod;
-  if (defaultMethod &amp;&amp; defaultMethod !== 'text') {
-    selectedMethod = defaultMethod;
+function getSelectedMethod(defaultMethod) {
+  if (defaultMethod === 'text') {
+    return undefined;
   }
-  const options = INPUT_METHODS.map(method =&gt; {
-    let selected = '';
-    if (method === selectedMethod) {
-      selected = ' selected';
-    }
-    return `&lt;option value="${method}"${selected}&gt;${method}&lt;/option&gt;`;
-  }).join('');
+  return defaultMethod;
+}
+&nbsp;
+function buildOption(method, selectedMethod) {
+  let selected = '';
+  if (method === selectedMethod) {
+    selected = ' selected';
+  }
+  return `&lt;option value="${method}"${selected}&gt;${method}&lt;/option&gt;`;
+}
+&nbsp;
+function buildToyInputDropdown(defaultMethod) {
+  const selectedMethod = getSelectedMethod(defaultMethod);
+  const options = INPUT_METHODS.map(method =&gt;
+    buildOption(method, selectedMethod)
+  ).join('');
   return `&lt;select class="input"&gt;${options}&lt;/select&gt;&lt;input type="text" disabled&gt;`;
 }
 &nbsp;
@@ -3056,13 +3076,11 @@ function generateToyUISection(post) {
   if (!hasToy(post)) {
     return '';
   }
-  let defaultMethod = 'text';
-  if (post.toy &amp;&amp; post.toy.defaultInputMethod) {
-    defaultMethod = post.toy.defaultInputMethod;
-  }
-  const sections = getToyUISections(defaultMethod);
+  const defaultMethod = post.toy?.defaultInputMethod ?? 'text';
   return join(
-    sections.map(([label, buildHTML]) =&gt; buildToySection(label, buildHTML))
+    getToyUISections(defaultMethod).map(([label, buildHTML]) =&gt;
+      buildToySection(label, buildHTML)
+    )
   );
 }
 &nbsp;
@@ -3175,7 +3193,7 @@ export const generateBlogOuter = blog =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-01T17:40:01.734Z
+                at 2025-07-02T12:43:05.219Z
             </div>
         <script src="../prettify.js"></script>
         <script>

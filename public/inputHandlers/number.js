@@ -1,19 +1,14 @@
 import { ensureNumberInput } from '../browser/toys.js';
+import { maybeRemoveElement } from './disposeHelpers.js';
 
 function maybeRemoveKV(container, dom) {
   const kvContainer = dom.querySelector(container, '.kv-container');
-  if (kvContainer && typeof kvContainer._dispose === 'function') {
-    kvContainer._dispose();
-    dom.removeChild(container, kvContainer);
-  }
+  maybeRemoveElement(kvContainer, container, dom);
 }
 
 function maybeRemoveDendrite(container, dom) {
   const dendriteForm = dom.querySelector(container, '.dendrite-form');
-  if (dendriteForm && typeof dendriteForm._dispose === 'function') {
-    dendriteForm._dispose();
-    dom.removeChild(container, dendriteForm);
-  }
+  maybeRemoveElement(dendriteForm, container, dom);
 }
 
 export function numberHandler(dom, container, textInput) {

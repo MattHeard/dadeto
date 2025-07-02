@@ -1,20 +1,19 @@
 import { ensureKeyValueInput } from '../browser/toys.js';
+import { maybeRemoveElement } from './disposeHelpers.js';
 
-export function maybeRemoveNumber(container, dom) {
-  const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (numberInput && typeof numberInput._dispose === 'function') {
-    numberInput._dispose();
-    dom.removeChild(container, numberInput);
-  }
-}
+export const maybeRemoveNumber = (container, dom) =>
+  maybeRemoveElement(
+    dom.querySelector(container, 'input[type="number"]'),
+    container,
+    dom
+  );
 
-export function maybeRemoveDendrite(container, dom) {
-  const dendriteForm = dom.querySelector(container, '.dendrite-form');
-  if (dendriteForm && typeof dendriteForm._dispose === 'function') {
-    dendriteForm._dispose();
-    dom.removeChild(container, dendriteForm);
-  }
-}
+export const maybeRemoveDendrite = (container, dom) =>
+  maybeRemoveElement(
+    dom.querySelector(container, '.dendrite-form'),
+    container,
+    dom
+  );
 
 export function handleKVType(dom, container, textInput) {
   maybeRemoveNumber(container, dom);

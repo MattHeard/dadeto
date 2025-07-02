@@ -6,7 +6,9 @@ const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\-]/g;
  * @returns {string} The escaped string
  */
 export function escapeRegex(str) {
-  if (typeof str !== 'string') {return '';}
+  if (typeof str !== 'string') {
+    return '';
+  }
   return str.replace(REGEX_SPECIAL_CHARS, '\\$&');
 }
 
@@ -18,9 +20,16 @@ export function escapeRegex(str) {
  * @param {string} [options.flags='g'] - Regex flags
  * @returns {RegExp} The compiled regular expression
  */
-export function createPattern(marker, { isDouble = false, flags = 'g' } = {}) {
+const computeActualMarker = (marker, isDouble) => {
   const escaped = escapeRegex(marker);
-  const actualMarker = isDouble ? `${escaped}{2}` : escaped;
+  if (isDouble) {
+    return `${escaped}{2}`;
+  }
+  return escaped;
+};
+
+export function createPattern(marker, { isDouble = false, flags = 'g' } = {}) {
+  const actualMarker = computeActualMarker(marker, isDouble);
   return new RegExp(`${actualMarker}(.*?)${actualMarker}`, flags);
 }
 

@@ -1,17 +1,13 @@
+import { maybeRemoveElement } from './disposeHelpers.js';
+
 function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (numberInput && typeof numberInput._dispose === 'function') {
-    numberInput._dispose();
-    dom.removeChild(container, numberInput);
-  }
+  maybeRemoveElement(numberInput, container, dom);
 }
 
 function maybeRemoveKV(container, dom) {
   const kvContainer = dom.querySelector(container, '.kv-container');
-  if (kvContainer && typeof kvContainer._dispose === 'function') {
-    kvContainer._dispose();
-    dom.removeChild(container, kvContainer);
-  }
+  maybeRemoveElement(kvContainer, container, dom);
 }
 
 export function dendriteStoryHandler(dom, container, textInput) {
@@ -54,8 +50,13 @@ export function dendriteStoryHandler(dom, container, textInput) {
     const wrapper = dom.createElement('div');
     const label = dom.createElement('label');
     dom.setTextContent(label, placeholder);
-    // eslint-disable-next-line no-ternary
-    const input = key === 'content' ? dom.createElement('textarea') : dom.createElement('input');
+
+    let input;
+    if (key === 'content') {
+      input = dom.createElement('textarea');
+    } else {
+      input = dom.createElement('input');
+    }
     if (key !== 'content') {
       dom.setType(input, 'text');
     }

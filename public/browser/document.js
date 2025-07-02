@@ -187,11 +187,10 @@ export const removeNextSibling = link => link.nextElementSibling?.remove();
  * @param {EventTarget} target - The target element to remove the listener from
  * @param {string} event - The event type to remove
  * @param {Function} handler - The event handler function to remove
- * @param {boolean|Object} [options] - Options that were used when adding the event listener
  * @returns {void}
  */
-export const removeEventListener = (target, event, handler, options) => {
-  target.removeEventListener(event, handler, options);
+export const removeEventListener = (target, event, handler) => {
+  target.removeEventListener(event, handler);
 };
 
 /**
