@@ -46,7 +46,10 @@ function isBlank(value) {
  * @returns {string} The JSON to parse
  */
 function getDefaultRowsJson(value) {
-  return isBlank(value) ? '{}' : value;
+  if (isBlank(value)) {
+    return '{}';
+  }
+  return value;
 }
 
 function getRowsJson(dom, inputElement) {
