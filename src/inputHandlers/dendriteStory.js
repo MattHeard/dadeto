@@ -39,7 +39,11 @@ function createInputElement(dom, key) {
   return element;
 }
 
-function createField(dom, form, key, placeholder, data, textInput, disposers) {
+function createField(
+  dom,
+  form,
+  { key, placeholder, data, textInput, disposers }
+) {
   const wrapper = dom.createElement('div');
   const label = dom.createElement('label');
   dom.setTextContent(label, placeholder);
@@ -76,7 +80,13 @@ function buildForm(dom, { container, textInput, data, disposers }) {
   ];
 
   fields.forEach(([key, placeholder]) =>
-    createField(dom, form, key, placeholder, data, textInput, disposers)
+    createField(dom, form, {
+      key,
+      placeholder,
+      data,
+      textInput,
+      disposers,
+    })
   );
 
   dom.setValue(textInput, JSON.stringify(data));
