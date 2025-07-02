@@ -43,12 +43,7 @@ function traverseSegment(currentValue, segment, currentPath) {
   if (nonObjectError !== null) {
     return { error: nonObjectError };
   }
-
-  const result = getSegmentValueOrError(currentValue, segment, nextPath);
-  if (result.error) {
-    return { error: result.error };
-  }
-  return { value: result.value, path: result.path, error: null };
+  return getSegmentValueOrError(currentValue, segment, nextPath);
 }
 
 function getNextPath(currentPath, segment) {
