@@ -45,13 +45,11 @@ test('createInputDropdownHandler handles number then text sequentially', () => {
 
   // After first call, number input exists
   querySelector.mockImplementation((_, selector) => {
-    if (selector === 'input[type="text"]') {
-      return textInput;
-    }
-    if (selector === 'input[type="number"]') {
-      return numberInput;
-    }
-    return null;
+    const mapping = {
+      'input[type="text"]': textInput,
+      'input[type="number"]': numberInput,
+    };
+    return mapping[selector] ?? null;
   });
 
   dom.hide.mockClear();
