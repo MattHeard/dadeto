@@ -30,6 +30,35 @@ function parseDendriteData(dom, textInput) {
   return parseJsonOrDefault(value, {});
 }
 
+function createField(dom, form, key, placeholder, data, textInput, disposers) {
+  const wrapper = dom.createElement('div');
+  const label = dom.createElement('label');
+  dom.setTextContent(label, placeholder);
+
+  let input;
+  if (key === 'content') {
+    input = dom.createElement('textarea');
+  } else {
+    input = dom.createElement('input');
+  }
+  if (key !== 'content') {
+    dom.setType(input, 'text');
+  }
+  dom.setPlaceholder(input, placeholder);
+  if (Object.prototype.hasOwnProperty.call(data, key)) {
+    dom.setValue(input, data[key]);
+  }
+  const onInput = () => {
+    data[key] = dom.getValue(input);
+    dom.setValue(textInput, JSON.stringify(data));
+  };
+  dom.addEventListener(input, 'input', onInput);
+  disposers.push(() => dom.removeEventListener(input, 'input', onInput));
+  dom.appendChild(wrapper, label);
+  dom.appendChild(wrapper, input);
+  dom.appendChild(form, wrapper);
+}
+
 export function dendriteStoryHandler(dom, container, textInput) {
   dom.hide(textInput);
   dom.disable(textInput);
@@ -55,34 +84,9 @@ export function dendriteStoryHandler(dom, container, textInput) {
     ['fourthOption', 'Fourth option'],
   ];
 
-  fields.forEach(([key, placeholder]) => {
-    const wrapper = dom.createElement('div');
-    const label = dom.createElement('label');
-    dom.setTextContent(label, placeholder);
-
-    let input;
-    if (key === 'content') {
-      input = dom.createElement('textarea');
-    } else {
-      input = dom.createElement('input');
-    }
-    if (key !== 'content') {
-      dom.setType(input, 'text');
-    }
-    dom.setPlaceholder(input, placeholder);
-    if (Object.prototype.hasOwnProperty.call(data, key)) {
-      dom.setValue(input, data[key]);
-    }
-    const onInput = () => {
-      data[key] = dom.getValue(input);
-      dom.setValue(textInput, JSON.stringify(data));
-    };
-    dom.addEventListener(input, 'input', onInput);
-    disposers.push(() => dom.removeEventListener(input, 'input', onInput));
-    dom.appendChild(wrapper, label);
-    dom.appendChild(wrapper, input);
-    dom.appendChild(form, wrapper);
-  });
+  fields.forEach(([key, placeholder]) =>
+    createField(dom, form, key, placeholder, data, textInput, disposers)
+  );
 
   dom.setValue(textInput, JSON.stringify(data));
 
