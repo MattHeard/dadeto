@@ -1,6 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import * as toys from '../../src/browser/toys.js';
-const { ensureKeyValueInput } = toys;
+import { ensureKeyValueInput } from '../../src/inputHandlers/kv.js';
 
 describe('Key-Value Input', () => {
   it('creates a key-value container when none exists', () => {
@@ -44,5 +43,4 @@ describe('Key-Value Input', () => {
   // Previously additional setup was defined here for more tests, but the
   // corresponding test cases were removed. The leftover variables and beforeEach
   // block have been deleted to resolve linter warnings about unused variables.
-
 });

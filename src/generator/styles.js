@@ -113,6 +113,14 @@ export function styles() {
     overflow-x: auto;
     margin: 1.5em 0px;
   }
+  h1.ascii-art {
+    background: linear-gradient(0deg, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    overflow-x: auto;
+    margin: 1.5em 0px;
+    white-space: pre;
+  }
   #audio-controls {
     background-color: #1A1A1A;
     color: #00FFFF;

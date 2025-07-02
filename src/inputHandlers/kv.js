@@ -1,5 +1,44 @@
-import { ensureKeyValueInput } from '../browser/toys.js';
+import {
+  parseExistingRows,
+  createRenderer,
+  createDispose,
+  syncHiddenField,
+} from '../browser/toys.js';
 import { maybeRemoveElement } from './disposeHelpers.js';
+
+export const ensureKeyValueInput = (container, textInput, dom) => {
+  let kvContainer = dom.querySelector(container, '.kv-container');
+  if (!kvContainer) {
+    kvContainer = dom.createElement('div');
+    dom.setClassName(kvContainer, 'kv-container');
+    const nextSibling = dom.getNextSibling(textInput);
+    dom.insertBefore(container, kvContainer, nextSibling);
+  }
+
+  const rows = parseExistingRows(dom, textInput);
+  const disposers = [];
+
+  const render = createRenderer({
+    dom,
+    disposersArray: disposers,
+    container: kvContainer,
+    rows,
+    textInput,
+    syncHiddenField,
+  });
+
+  render();
+
+  const dispose = createDispose({
+    disposers,
+    dom,
+    container: kvContainer,
+    rows,
+  });
+  kvContainer._dispose = dispose;
+
+  return kvContainer;
+};
 
 export const maybeRemoveNumber = (container, dom) =>
   maybeRemoveElement(
