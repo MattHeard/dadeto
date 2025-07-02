@@ -11,16 +11,18 @@ describe('createInputDropdownHandler all types', () => {
     const event = {};
     let numberQueryCount = 0;
 
+    function handleNumberQuery() {
+      numberQueryCount += 1;
+      if (numberQueryCount > 1) {
+        return numberInput;
+      }
+      return null;
+    }
+
     const queryHandlers = {
       'input[type="text"]': () => textInput,
       '.kv-container': () => kvContainer,
-      'input[type="number"]': () => {
-        numberQueryCount += 1;
-        if (numberQueryCount === 1) {
-          return null;
-        }
-        return numberInput;
-      },
+      'input[type="number"]': handleNumberQuery,
     };
 
     function mockQuerySelector(_, selector) {
