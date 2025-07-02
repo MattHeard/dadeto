@@ -227,7 +227,10 @@ function hasOutputForPostId(output, postId) {
 }
 
 function outputForPostId(output, postId) {
-  return hasOutputForPostId(output, postId) ? output[postId] : '';
+  if (hasOutputForPostId(output, postId)) {
+    return output[postId];
+  }
+  return '';
 }
 
 /**
