@@ -1,19 +1,5 @@
 import { ensureKeyValueInput } from '../browser/toys.js';
-
-function isDisposable(element) {
-  return Boolean(element) && typeof element._dispose === 'function';
-}
-
-function disposeAndRemove(element, container, dom) {
-  element._dispose();
-  dom.removeChild(container, element);
-}
-
-function maybeRemoveElement(element, container, dom) {
-  if (isDisposable(element)) {
-    disposeAndRemove(element, container, dom);
-  }
-}
+import { maybeRemoveElement } from './disposeHelpers.js';
 
 export function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
