@@ -50,7 +50,7 @@ function createField(
 
   const input = createInputElement(dom, key);
   dom.setPlaceholder(input, placeholder);
-  if (Object.prototype.hasOwnProperty.call(data, key)) {
+  if (Object.hasOwn(data, key)) {
     dom.setValue(input, data[key]);
   }
   const onInput = () => {
