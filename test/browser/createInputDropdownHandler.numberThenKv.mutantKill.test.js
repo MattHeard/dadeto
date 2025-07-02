@@ -1,7 +1,7 @@
-import { test, expect, jest } from "@jest/globals";
-import { createInputDropdownHandler } from "../../src/browser/toys.js";
+import { test, expect, jest } from '@jest/globals';
+import { createInputDropdownHandler } from '../../src/browser/toys.js';
 
-test("createInputDropdownHandler handles number then kv sequentially", () => {
+test('createInputDropdownHandler handles number then kv sequentially', () => {
   const select = {};
   const container = { insertBefore: jest.fn() };
   const textInput = {};
@@ -13,10 +13,12 @@ test("createInputDropdownHandler handles number then kv sequentially", () => {
     getCurrentTarget: jest.fn(() => select),
     getParentElement: jest.fn(() => container),
     querySelector: jest.fn((_, selector) => {
-      if (selector === "input[type=\"text\"]") {return textInput;}
-      if (selector === "input[type=\"number\"]") {return numberInput;}
-      if (selector === ".kv-container") {return kvContainer;}
-      return null;
+      const map = {
+        'input[type="text"]': textInput,
+        'input[type="number"]': numberInput,
+        '.kv-container': kvContainer,
+      };
+      return map[selector] ?? null;
     }),
     createElement: jest.fn(() => ({})),
     getNextSibling: jest.fn(() => null),
@@ -34,7 +36,7 @@ test("createInputDropdownHandler handles number then kv sequentially", () => {
     appendChild: jest.fn(),
     querySelectorAll: jest.fn(),
     createTextNode: jest.fn(),
-    getValue: jest.fn().mockReturnValueOnce("number").mockReturnValueOnce("kv"),
+    getValue: jest.fn().mockReturnValueOnce('number').mockReturnValueOnce('kv'),
     reveal: jest.fn(),
     enable: jest.fn(),
     hide: jest.fn(),
