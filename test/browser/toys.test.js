@@ -820,12 +820,13 @@ describe('toys', () => {
         (el, selector) => selectorMap.get(selector) || {}
       );
       const listeners = {};
+      const listenerTargets = new Map([
+        [submitButton, 'click'],
+        [inputElement, 'keypress'],
+      ]);
       const addEventListener = jest.fn((element, event, handler) => {
-        if (element === submitButton && event === 'click') {
-          listeners.click = handler;
-        }
-        if (element === inputElement && event === 'keypress') {
-          listeners.keypress = handler;
+        if (listenerTargets.get(element) === event) {
+          listeners[event] = handler;
         }
       });
       const dom = {

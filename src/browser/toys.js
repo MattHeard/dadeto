@@ -524,13 +524,8 @@ function hasStringUrl(val) {
  * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-export function createKeyInputHandler({
-  dom,
-  keyEl,
-  textInput,
-  rows,
-  syncHiddenField,
-}) {
+export function createKeyInputHandler(options) {
+  const { dom, keyEl, textInput, rows, syncHiddenField } = options;
   return e => {
     const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
     const newKey = dom.getTargetValue(e);
@@ -562,13 +557,8 @@ export function createKeyInputHandler({
  * @param {Function} syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
-export function createValueInputHandler({
-  dom,
-  keyEl,
-  textInput,
-  rows,
-  syncHiddenField,
-}) {
+export function createValueInputHandler(options) {
+  const { dom, keyEl, textInput, rows, syncHiddenField } = options;
   return e => {
     const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
     rows[rowKey] = dom.getTargetValue(e);

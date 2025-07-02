@@ -40,11 +40,14 @@ test('createInputDropdownHandler handles number then text sequentially', () => {
   expect(dom.disable).toHaveBeenCalledWith(textInput);
 
   // After first call, number input exists
-  const selectorMap2 = {
-    'input[type="text"]': textInput,
-    'input[type="number"]': numberInput,
-  };
-  querySelector.mockImplementation((_, selector) => selectorMap2[selector] || null);
+
+  querySelector.mockImplementation((_, selector) => {
+    const mapping = {
+      'input[type="text"]': textInput,
+      'input[type="number"]': numberInput,
+    };
+    return mapping[selector] ?? null;
+  });
 
   dom.hide.mockClear();
   dom.disable.mockClear();
