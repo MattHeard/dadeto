@@ -767,14 +767,12 @@ describe('toys', () => {
         querySelector,
         addEventListener: jest.fn(),
         setTextContent: jest.fn(),
-        removeAllChildren: jest.fn(),
         removeWarning: jest.fn(),
         enable: jest.fn(),
         removeChild: jest.fn(),
         appendChild: jest.fn(),
         createElement: jest.fn(() => paragraph),
         contains: () => true,
-        removeAllChildren: jest.fn(),
       };
       // Pass globalState, createEnv, error, and fetch directly
       // Create config object as passed to initializeAndRenderComponent
@@ -843,7 +841,6 @@ describe('toys', () => {
         setTextContent: jest.fn((el, text) => {
           el.textContent = text;
         }),
-        removeAllChildren: jest.fn(),
         removeWarning: jest.fn(),
         enable: jest.fn(),
         contains: () => true,
@@ -939,11 +936,9 @@ describe('toys', () => {
         setTextContent: jest.fn((el, text) => {
           el.textContent = text;
         }),
-        removeAllChildren: jest.fn(),
         removeWarning: jest.fn(),
         enable: jest.fn(),
         contains: () => true,
-        removeAllChildren: jest.fn(),
       };
       const processingFunction = jest.fn(() => 'processed result');
       const config = {
