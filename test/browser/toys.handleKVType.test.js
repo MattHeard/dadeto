@@ -1,5 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import * as toys from '../../src/browser/toys.js';
+import { handleKVType } from '../../src/inputHandlers/kv.js';
 
 describe('handleKVType', () => {
   test('can be invoked with an empty DOM object', () => {
@@ -30,7 +30,7 @@ describe('handleKVType', () => {
 
     // This test verifies the function can be called with an empty DOM object without throwing an error
     expect(() => {
-      toys.handleKVType(dom, {}, {});
+      handleKVType(dom, {}, {});
     }).not.toThrow();
   });
 
@@ -67,7 +67,7 @@ describe('handleKVType', () => {
       createTextNode: jest.fn(),
     };
 
-    toys.handleKVType(dom, container, textInput);
+    handleKVType(dom, container, textInput);
 
     expect(querySelector).toHaveBeenCalledWith(
       container,
