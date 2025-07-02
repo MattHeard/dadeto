@@ -1,4 +1,5 @@
 import { maybeRemoveElement } from './disposeHelpers.js';
+import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 
 function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
@@ -25,11 +26,8 @@ function removeExistingForm(container, dom) {
 }
 
 function parseDendriteData(dom, textInput) {
-  try {
-    return JSON.parse(dom.getValue(textInput) || '{}');
-  } catch {
-    return {};
-  }
+  const value = dom.getValue(textInput) || '{}';
+  return parseJsonOrDefault(value, {});
 }
 
 export function dendriteStoryHandler(dom, container, textInput) {
