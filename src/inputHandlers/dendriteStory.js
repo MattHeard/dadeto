@@ -16,11 +16,10 @@ function maybeRemoveNumber(container, dom) {
 
 function maybeRemoveKV(container, dom) {
   const kvContainer = dom.querySelector(container, '.kv-container');
-  const dispose = kvContainer?._dispose;
-  if (typeof dispose !== 'function') {
+  if (!kvContainer?._dispose) {
     return;
   }
-  dispose.call(kvContainer);
+  kvContainer._dispose();
   dom.removeChild(container, kvContainer);
 }
 

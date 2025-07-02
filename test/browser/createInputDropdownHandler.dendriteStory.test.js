@@ -17,19 +17,13 @@ describe('createInputDropdownHandler dendrite-story', () => {
       getCurrentTarget: jest.fn(() => select),
       getParentElement: jest.fn(() => container),
       querySelector: jest.fn((el, selector) => {
-        if (el === container && selector === 'input[type="text"]') {
-          return textInput;
-        }
-        if (el === container && selector === 'input[type="number"]') {
-          return numberInput;
-        }
-        if (el === container && selector === '.kv-container') {
-          return kvContainer;
-        }
-        if (el === container && selector === '.dendrite-form') {
-          return null;
-        }
-        return null;
+        const map = {
+          [`${container}|input[type="text"]`]: textInput,
+          [`${container}|input[type="number"]`]: numberInput,
+          [`${container}|.kv-container`]: kvContainer,
+          [`${container}|.dendrite-form`]: null,
+        };
+        return map[`${el}|${selector}`] ?? null;
       }),
       getValue: jest.fn(target => {
         if (target === select) {
