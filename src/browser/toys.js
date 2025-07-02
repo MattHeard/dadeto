@@ -13,10 +13,7 @@ import { createPrefixedLoggers } from './document.js';
  * @returns {Object} An object with keys and values from the array
  */
 function isKeyValuePair(pair) {
-  if (!pair || typeof pair !== 'object') {
-    return false;
-  }
-  return 'key' in pair;
+  return 'key' in Object(pair);
 }
 
 export const convertArrayToKeyValueObject = array => {
