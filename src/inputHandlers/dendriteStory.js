@@ -16,10 +16,12 @@ function maybeRemoveNumber(container, dom) {
 
 function maybeRemoveKV(container, dom) {
   const kvContainer = dom.querySelector(container, '.kv-container');
-  if (kvContainer && typeof kvContainer._dispose === 'function') {
-    kvContainer._dispose();
-    dom.removeChild(container, kvContainer);
+  const dispose = kvContainer?._dispose;
+  if (typeof dispose !== 'function') {
+    return;
   }
+  dispose.call(kvContainer);
+  dom.removeChild(container, kvContainer);
 }
 
 export function dendriteStoryHandler(dom, container, textInput) {
