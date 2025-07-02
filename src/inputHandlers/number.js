@@ -1,8 +1,32 @@
-import {
-  createNumberInput,
-  createUpdateTextInputValue,
-} from '../browser/toys.js';
 import { maybeRemoveElement } from './disposeHelpers.js';
+
+const createRemoveValueListener = (dom, el, handler) => () =>
+  dom.removeEventListener(el, 'input', handler);
+
+const createBaseNumberInput = dom => {
+  const input = dom.createElement('input');
+  dom.setType(input, 'number');
+  return input;
+};
+
+const setupInputEvents = (input, onChange, dom) => {
+  dom.addEventListener(input, 'input', onChange);
+  input._dispose = createRemoveValueListener(dom, input, onChange);
+};
+
+export const createNumberInput = (value, onChange, dom) => {
+  const input = createBaseNumberInput(dom);
+  if (value) {
+    dom.setValue(input, value);
+  }
+  setupInputEvents(input, onChange, dom);
+  return input;
+};
+
+export const createUpdateTextInputValue = (textInput, dom) => event => {
+  const targetValue = dom.getTargetValue(event);
+  dom.setValue(textInput, targetValue);
+};
 
 const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
   const nextSibling = dom.getNextSibling(textInput);

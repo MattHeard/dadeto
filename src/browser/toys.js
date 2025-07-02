@@ -102,16 +102,6 @@ import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolitaireFleet.js';
 import { createBattleshipCluesBoardElement } from '../presenters/battleshipSolitaireClues.js';
 
-/**
- * Creates a basic number input element
- * @param {Object} dom - The DOM utilities object
- * @returns {HTMLInputElement} The created input element
- */
-const createBaseNumberInput = dom => {
-  const input = dom.createElement('input');
-  dom.setType(input, 'number');
-  return input;
-};
 
 /**
  * Creates a handler for input dropdown changes
@@ -152,17 +142,6 @@ export const createInputDropdownHandler = dom => {
   };
 };
 
-/**
- * Sets up the event listener and disposal for the input
- * @param {HTMLInputElement} input - The input element
- * @param {Function} onChange - The change handler
- * @param {Object} dom - The DOM utilities object
- * @returns {void}
- */
-const setupInputEvents = (input, onChange, dom) => {
-  dom.addEventListener(input, 'input', onChange);
-  input._dispose = createRemoveValueListener(dom, input, onChange);
-};
 
 /**
  * Creates a component initializer function for setting up intersection observers.
@@ -479,25 +458,6 @@ import { isObject } from './common.js';
  * @param {Object} dom - The DOM utilities object
  * @returns {HTMLInputElement} The created number input element
  */
-export const createNumberInput = (value, onChange, dom) => {
-  const input = createBaseNumberInput(dom);
-  if (value) {
-    dom.setValue(input, value);
-  }
-  setupInputEvents(input, onChange, dom);
-  return input;
-};
-
-/**
- * Creates an event handler that updates a text input's value from an event
- * @param {HTMLInputElement} textInput - The text input element to update
- * @param {Object} dom - The DOM utilities object
- * @returns {Function} An event handler function
- */
-export const createUpdateTextInputValue = (textInput, dom) => event => {
-  const targetValue = dom.getTargetValue(event);
-  dom.setValue(textInput, targetValue);
-};
 
 function hasRequestField(val) {
   return Object.hasOwn(val, 'request');
