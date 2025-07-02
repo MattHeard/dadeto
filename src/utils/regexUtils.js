@@ -28,9 +28,8 @@ function computeActualMarker(marker, isDouble) {
   return escaped;
 }
 
-export function createPattern(marker, options = {}) {
-  const actualMarker = computeActualMarker(marker, options.isDouble);
-  const flags = options.flags || 'g';
+export function createPattern(marker, { isDouble = false, flags = 'g' } = {}) {
+  const actualMarker = computeActualMarker(marker, isDouble);
   return new RegExp(`${actualMarker}(.*?)${actualMarker}`, flags);
 }
 
