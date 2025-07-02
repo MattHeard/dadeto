@@ -23,20 +23,33 @@
  *    (ones) is closest to the grid
  */
 
+function isObject(value) {
+  return value && typeof value === 'object';
+}
+
+function hasValidClueArrays(obj) {
+  return Array.isArray(obj.rowClues) && Array.isArray(obj.colClues);
+}
+
+function hasNonNumberValues(arr) {
+  return arr.some(n => typeof n !== 'number');
+}
+
+function isEmpty(arr) {
+  return arr.length === 0;
+}
+
 function validateCluesObject(obj) {
-  if (!obj || typeof obj !== 'object') {
+  if (!isObject(obj)) {
     return 'Invalid JSON object';
   }
-  if (!Array.isArray(obj.rowClues) || !Array.isArray(obj.colClues)) {
+  if (!hasValidClueArrays(obj)) {
     return 'Missing rowClues or colClues array';
   }
-  if (
-    obj.rowClues.some(n => typeof n !== 'number') ||
-    obj.colClues.some(n => typeof n !== 'number')
-  ) {
+  if ([obj.rowClues, obj.colClues].some(hasNonNumberValues)) {
     return 'Clue values must be numbers';
   }
-  if (obj.rowClues.length === 0 || obj.colClues.length === 0) {
+  if ([obj.rowClues, obj.colClues].some(isEmpty)) {
     return 'rowClues and colClues must be non-empty';
   }
   return '';
