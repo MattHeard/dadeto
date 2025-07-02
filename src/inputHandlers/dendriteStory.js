@@ -10,13 +10,7 @@ function maybeRemoveKV(container, dom) {
   maybeRemoveElement(kvContainer, container, dom);
 }
 
-export function dendriteStoryHandler(dom, container, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
-
-  maybeRemoveNumber(container, dom);
-  maybeRemoveKV(container, dom);
-
+function removeExistingForm(container, dom) {
   const existing = dom.querySelector(container, '.dendrite-form');
   if (existing) {
     if (typeof existing._dispose === 'function') {
@@ -24,6 +18,24 @@ export function dendriteStoryHandler(dom, container, textInput) {
     }
     dom.removeChild(container, existing);
   }
+}
+
+function parseDendriteData(dom, textInput) {
+  try {
+    return JSON.parse(dom.getValue(textInput) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+export function dendriteStoryHandler(dom, container, textInput) {
+  dom.hide(textInput);
+  dom.disable(textInput);
+
+  maybeRemoveNumber(container, dom);
+  maybeRemoveKV(container, dom);
+
+  removeExistingForm(container, dom);
 
   const form = dom.createElement('div');
   dom.setClassName(form, 'dendrite-form');
@@ -31,12 +43,7 @@ export function dendriteStoryHandler(dom, container, textInput) {
   dom.insertBefore(container, form, nextSibling);
 
   const disposers = [];
-  let data = {};
-  try {
-    data = JSON.parse(dom.getValue(textInput) || '{}');
-  } catch {
-    data = {};
-  }
+  const data = parseDendriteData(dom, textInput);
   const fields = [
     ['title', 'Title'],
     ['content', 'Content'],
