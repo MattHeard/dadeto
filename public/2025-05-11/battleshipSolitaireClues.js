@@ -6,6 +6,8 @@
  * Returns a JSON string of { rowClues: number[], colClues: number[] }  or { error }
  */
 
+import { safeParseJson } from '../../utils/jsonUtils.js';
+
 function generateClues(input) {
   const fleet = parseFleet(input);
   if (fleet.error) {
@@ -65,16 +67,25 @@ function isValidY(y, board) {
 }
 
 function parseFleet(input) {
-  let fleet;
-  try {
-    fleet = JSON.parse(input);
-  } catch {
-    return { error: 'Invalid input JSON' };
-  }
-  if (!isValidFleet(fleet)) {
-    return { error: 'Invalid fleet structure' };
+  const fleet = safeParseJson(input);
+  const error = computeFleetError(fleet);
+  if (error) {
+    return { error };
   }
   return fleet;
+}
+
+const fleetChecks = [
+  [fleet => fleet === undefined, 'Invalid input JSON'],
+  [fleet => !isValidFleet(fleet), 'Invalid fleet structure'],
+];
+
+function computeFleetError(fleet) {
+  const found = fleetChecks.find(([predicate]) => predicate(fleet));
+  if (found) {
+    return found[1];
+  }
+  return '';
 }
 
 function isNumber(value) {

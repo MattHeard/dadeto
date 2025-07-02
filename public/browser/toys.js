@@ -1,5 +1,6 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPrefixedLoggers } from './document.js';
+import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 
 /**
  * Parses the existing rows from the text input
@@ -25,19 +26,44 @@ export const convertArrayToKeyValueObject = array => {
   );
 };
 
-export const parseExistingRows = (dom, inputElement) => {
-  try {
-    const existing = JSON.parse(dom.getValue(inputElement) || '{}');
-    if (Array.isArray(existing)) {
-      // Convert legacy array format [{key, value}] to object
-      return convertArrayToKeyValueObject(existing);
-    } else if (existing && typeof existing === 'object') {
-      return { ...existing };
-    }
-    return {};
-  } catch {
-    return {}; // Return empty object on parse errors
+function normalizeExisting(existing) {
+  const converters = [
+    [Array.isArray, convertArrayToKeyValueObject],
+    [value => value && typeof value === 'object', value => ({ ...value })],
+  ];
+  const match = converters.find(([check]) => check(existing));
+  if (match) {
+    return match[1](existing);
   }
+  return {};
+}
+
+function isBlank(value) {
+  return value === '' || value === undefined;
+}
+
+/**
+ * Returns the JSON string to parse for rows
+ * @param {Object} dom - DOM utilities
+ * @param {HTMLElement} inputElement - The input element
+ * @returns {string} The JSON to parse
+ */
+function getDefaultRowsJson(value) {
+  if (isBlank(value)) {
+    return '{}';
+  }
+  return value;
+}
+
+function getRowsJson(dom, inputElement) {
+  const value = dom.getValue?.(inputElement);
+  return getDefaultRowsJson(value);
+}
+
+export const parseExistingRows = (dom, inputElement) => {
+  const jsonToParse = getRowsJson(dom, inputElement);
+  const existing = parseJsonOrDefault(jsonToParse, {});
+  return normalizeExisting(existing);
 };
 
 /**
@@ -196,8 +222,12 @@ export function handleDropdownChange(dropdown, getData, dom) {
   );
 }
 
+function hasOutputForPostId(output, postId) {
+  return Boolean(output && output[postId]);
+}
+
 function outputForPostId(output, postId) {
-  if (output && output[postId]) {
+  if (hasOutputForPostId(output, postId)) {
     return output[postId];
   }
   return '';
@@ -529,6 +559,21 @@ function hasStringUrl(val) {
  * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
+function isUniqueNonEmpty(key, rows) {
+  if (key === '') {
+    return false;
+  }
+  return !(key in rows);
+}
+
+function migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom }) {
+  if (isUniqueNonEmpty(newKey, rows)) {
+    rows[newKey] = rows[prevKey];
+    delete rows[prevKey];
+    dom.setDataAttribute(keyEl, 'prevKey', newKey);
+  }
+}
+
 export function createKeyInputHandler(options) {
   const { dom, keyEl, textInput, rows, syncHiddenField } = options;
   return e => {
@@ -541,14 +586,7 @@ export function createKeyInputHandler(options) {
       return;
     }
 
-    // If the new key is non‑empty and unique, migrate the value.
-    if (newKey !== '' && !(newKey in rows)) {
-      rows[newKey] = rows[prevKey];
-      delete rows[prevKey];
-      dom.setDataAttribute(keyEl, 'prevKey', newKey); // track latest key name
-    }
-    // Otherwise (empty or duplicate), leave the mapping under prevKey.
-
+    migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom });
     syncHiddenField(textInput, rows, dom);
   };
 }
@@ -956,6 +994,23 @@ function disableInputAndButton(inputElement, submitButton) {
   submitButton.disabled = true;
 }
 
+function hasMissingElement(elements) {
+  return elements.some(el => !el);
+}
+
+function getInteractiveElements(dom, article, logWarning) {
+  const inputElement = dom.querySelector(article, 'input[type="text"]');
+  const submitButton = dom.querySelector(article, 'button[type="submit"]');
+  if (hasMissingElement([inputElement, submitButton])) {
+    logWarning(
+      'Interactive component missing input or button in article',
+      article.id
+    );
+    return null;
+  }
+  return { inputElement, submitButton };
+}
+
 /**
  * Initializes the interactive elements (input, button, output) within a toy's article element.
  * Sets up event listeners and initial state.
@@ -972,16 +1027,11 @@ export function initializeInteractiveComponent(
   const { globalState, createEnvFn, errorFn, fetchFn, dom, getUuid } = config;
   const logWarning = config.loggers.logWarning;
   logInfo('Initializing interactive component for article', article.id);
-  // Get the elements within the article
-  const inputElement = dom.querySelector(article, 'input[type="text"]');
-  const submitButton = dom.querySelector(article, 'button[type="submit"]');
-  if (!inputElement || !submitButton) {
-    logWarning(
-      'Interactive component missing input or button in article',
-      article.id
-    );
+  const elements = getInteractiveElements(dom, article, logWarning);
+  if (!elements) {
     return;
   }
+  const { inputElement, submitButton } = elements;
   // Temporary debug logging for issue investigation
   logInfo('Found input element:', inputElement);
   logInfo('Found button element:', submitButton);
@@ -1088,14 +1138,11 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
  * @param {Object} rows - The key-value pairs to sync
  * @param {Object} dom - The DOM utilities object
  */
+const filterNonEmptyEntries = rows =>
+  Object.fromEntries(Object.entries(rows).filter(([k, v]) => k || v));
+
 export const syncHiddenField = (textInput, rows, dom) => {
-  // Only include keys with non-empty key or value
-  const filtered = {};
-  for (const [k, v] of Object.entries(rows)) {
-    if (k || v) {
-      filtered[k] = v;
-    }
-  }
+  const filtered = filterNonEmptyEntries(rows);
   dom.setValue(textInput, JSON.stringify(filtered));
 };
 

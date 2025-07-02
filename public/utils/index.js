@@ -12,3 +12,6 @@ export * from './objectUtils';
 
 // Constants
 export * from '../constants/markdown';
+
+// JSON utilities
+export * from './jsonUtils.js';
