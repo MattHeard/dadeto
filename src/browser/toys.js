@@ -12,12 +12,7 @@ import { createPrefixedLoggers } from './document.js';
  * @param {Array<{key: string, value: any}>} array - The array to convert
  * @returns {Object} An object with keys and values from the array
  */
-function isKeyValuePair(pair) {
-  if (!pair || typeof pair !== 'object') {
-    return false;
-  }
-  return 'key' in pair;
-}
+const isKeyValuePair = pair => 'key' in Object(pair);
 
 export const convertArrayToKeyValueObject = array => {
   if (!Array.isArray(array)) {
@@ -67,11 +62,11 @@ export const clearDisposers = disposersArray => {
  */
 export const createDispose =
   ({ disposers, dom, container, rows }) =>
-    () => {
-      clearDisposers(disposers);
-      dom.removeAllChildren(container);
-      rows.length = 0;
-    };
+  () => {
+    clearDisposers(disposers);
+    dom.removeAllChildren(container);
+    rows.length = 0;
+  };
 
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
@@ -754,44 +749,44 @@ export const createKeyValueRow =
     render,
     container,
   }) =>
-    ([key, value], idx) => {
-      const rowEl = dom.createElement('div');
-      dom.setClassName(rowEl, 'kv-row');
+  ([key, value], idx) => {
+    const rowEl = dom.createElement('div');
+    dom.setClassName(rowEl, 'kv-row');
 
-      // Create key and value elements
-      const keyEl = createKeyElement({
-        dom,
-        key,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers,
-      });
-      const valueEl = createValueElement({
-        dom,
-        value,
-        keyEl,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers,
-      });
+    // Create key and value elements
+    const keyEl = createKeyElement({
+      dom,
+      key,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
+    const valueEl = createValueElement({
+      dom,
+      value,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
 
-      // Create and set up the appropriate button type
-      const btnEl = createButton({
-        dom,
-        isAddButton: idx === entries.length - 1,
-        rows,
-        render,
-        key,
-        disposers,
-      });
+    // Create and set up the appropriate button type
+    const btnEl = createButton({
+      dom,
+      isAddButton: idx === entries.length - 1,
+      rows,
+      render,
+      key,
+      disposers,
+    });
 
-      dom.appendChild(rowEl, keyEl);
-      dom.appendChild(rowEl, valueEl);
-      dom.appendChild(rowEl, btnEl);
-      dom.appendChild(container, rowEl);
-    };
+    dom.appendChild(rowEl, keyEl);
+    dom.appendChild(rowEl, valueEl);
+    dom.appendChild(rowEl, btnEl);
+    dom.appendChild(container, rowEl);
+  };
 
 const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
   const button = dom.createElement('button');
