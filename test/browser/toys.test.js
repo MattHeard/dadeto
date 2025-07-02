@@ -1372,14 +1372,17 @@ describe('createInputDropdownHandler', () => {
   let getCurrentTarget, getParentElement, querySelector;
   let reveal, enable, hide, disable, removeChild;
 
+  // Helper function to get an element from the selector map
+  const getElementFromMap = (selectorMap, parent, selector) => {
+    if (parent !== container) {
+      return null;
+    }
+    return selectorMap.get(selector);
+  };
+
   // Helper function to create a querySelector mock
   const createQuerySelector = selectorMap =>
-    jest.fn((parent, selector) => {
-      if (parent !== container) {
-        return null;
-      }
-      return selectorMap.get(selector) || null;
-    });
+    jest.fn((parent, selector) => getElementFromMap(selectorMap, parent, selector));
 
   beforeEach(() => {
     // Given
