@@ -7,16 +7,15 @@ function isDisposable(element) {
 
 function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (!isDisposable(numberInput)) {
-    return;
+  if (isDisposable(numberInput)) {
+    numberInput._dispose();
+    dom.removeChild(container, numberInput);
   }
-  numberInput._dispose();
-  dom.removeChild(container, numberInput);
 }
 
 function maybeRemoveKV(container, dom) {
   const kvContainer = dom.querySelector(container, '.kv-container');
-  if (kvContainer && typeof kvContainer._dispose === 'function') {
+  if (isDisposable(kvContainer)) {
     kvContainer._dispose();
     dom.removeChild(container, kvContainer);
   }
