@@ -24,7 +24,6 @@ export const makeHandleClassName = (dom, link) => className => {
     const clickDeps = { ...dom, createHideSpan };
     const handleClick = createHandleClick(clickDeps, link, className);
     dom.addEventListener(link, 'click', handleClick);
-    return; // exit after first tag- match
   }
 };
 
