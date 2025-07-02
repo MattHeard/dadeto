@@ -6,20 +6,18 @@ function isDisposable(element) {
 
 export function maybeRemoveNumber(container, dom) {
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (!isDisposable(numberInput)) {
-    return;
+  if (isDisposable(numberInput)) {
+    numberInput._dispose();
+    dom.removeChild(container, numberInput);
   }
-  numberInput._dispose();
-  dom.removeChild(container, numberInput);
 }
 
 export function maybeRemoveDendrite(container, dom) {
   const dendriteForm = dom.querySelector(container, '.dendrite-form');
-  if (!isDisposable(dendriteForm)) {
-    return;
+  if (isDisposable(dendriteForm)) {
+    dendriteForm._dispose();
+    dom.removeChild(container, dendriteForm);
   }
-  dendriteForm._dispose();
-  dom.removeChild(container, dendriteForm);
 }
 
 export function handleKVType(dom, container, textInput) {
