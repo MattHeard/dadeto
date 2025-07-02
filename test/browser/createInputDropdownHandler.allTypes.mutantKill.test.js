@@ -11,25 +11,30 @@ describe('createInputDropdownHandler all types', () => {
     const event = {};
     let numberQueryCount = 0;
 
+    const queryHandlers = {
+      'input[type="text"]': () => textInput,
+      '.kv-container': () => kvContainer,
+      'input[type="number"]': () => {
+        numberQueryCount += 1;
+        if (numberQueryCount === 1) {
+          return null;
+        }
+        return numberInput;
+      },
+    };
+
+    function mockQuerySelector(_, selector) {
+      const handler = queryHandlers[selector];
+      if (handler) {
+        return handler();
+      }
+      return null;
+    }
+
     const dom = {
       getCurrentTarget: jest.fn(() => select),
       getParentElement: jest.fn(() => container),
-      querySelector: jest.fn((el, selector) => {
-        if (selector === 'input[type="text"]') {
-          return textInput;
-        }
-        if (selector === 'input[type="number"]') {
-          numberQueryCount += 1;
-          if (numberQueryCount === 1) {
-            return null;
-          }
-          return numberInput;
-        }
-        if (selector === '.kv-container') {
-          return kvContainer;
-        }
-        return null;
-      }),
+      querySelector: jest.fn(mockQuerySelector),
       createElement: jest.fn(() => ({})),
       setClassName: jest.fn(),
       getNextSibling: jest.fn(() => null),
