@@ -1,5 +1,6 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPrefixedLoggers } from './document.js';
+import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 
 /**
  * Parses the existing rows from the text input
@@ -35,12 +36,10 @@ function normalizeExisting(existing) {
 }
 
 export const parseExistingRows = (dom, inputElement) => {
-  try {
-    const existing = JSON.parse(dom.getValue(inputElement) || '{}');
-    return normalizeExisting(existing);
-  } catch {
-    return {}; // Return empty object on parse errors
-  }
+  const rawValue = dom.getValue?.(inputElement);
+  const jsonToParse = rawValue ? rawValue : '{}';
+  const existing = parseJsonOrDefault(jsonToParse, {});
+  return normalizeExisting(existing);
 };
 
 /**
@@ -771,44 +770,44 @@ export const createKeyValueRow =
     render,
     container,
   }) =>
-    ([key, value], idx) => {
-      const rowEl = dom.createElement('div');
-      dom.setClassName(rowEl, 'kv-row');
+  ([key, value], idx) => {
+    const rowEl = dom.createElement('div');
+    dom.setClassName(rowEl, 'kv-row');
 
-      // Create key and value elements
-      const keyEl = createKeyElement({
-        dom,
-        key,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers,
-      });
-      const valueEl = createValueElement({
-        dom,
-        value,
-        keyEl,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers,
-      });
+    // Create key and value elements
+    const keyEl = createKeyElement({
+      dom,
+      key,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
+    const valueEl = createValueElement({
+      dom,
+      value,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
 
-      // Create and set up the appropriate button type
-      const btnEl = createButton({
-        dom,
-        isAddButton: idx === entries.length - 1,
-        rows,
-        render,
-        key,
-        disposers,
-      });
+    // Create and set up the appropriate button type
+    const btnEl = createButton({
+      dom,
+      isAddButton: idx === entries.length - 1,
+      rows,
+      render,
+      key,
+      disposers,
+    });
 
-      dom.appendChild(rowEl, keyEl);
-      dom.appendChild(rowEl, valueEl);
-      dom.appendChild(rowEl, btnEl);
-      dom.appendChild(container, rowEl);
-    };
+    dom.appendChild(rowEl, keyEl);
+    dom.appendChild(rowEl, valueEl);
+    dom.appendChild(rowEl, btnEl);
+    dom.appendChild(container, rowEl);
+  };
 
 const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
   const button = dom.createElement('button');
