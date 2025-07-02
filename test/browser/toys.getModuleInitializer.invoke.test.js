@@ -18,10 +18,11 @@ describe('getModuleInitializer minimal invoke', () => {
       ['div.output > p', paragraph],
       ['select.output', outputSelect],
     ]);
+    const isSubmitClick = (el, event) => el === submitButton && event === 'click';
     const dom = {
       querySelector: jest.fn((el, selector) => selectorMap.get(selector)),
       addEventListener: jest.fn((el, event, handler) => {
-        if (el === submitButton && event === 'click') {
+        if (isSubmitClick(el, event)) {
           handlers.click = handler;
         }
       }),
@@ -75,10 +76,11 @@ describe('getModuleInitializer minimal invoke', () => {
       ['div.output > p', paragraph],
       ['select.output', outputSelect],
     ]);
+    const isSubmitClick = (el, event) => el === submitButton && event === 'click';
     const dom = {
       querySelector: jest.fn((el, selector) => selectorMap.get(selector)),
       addEventListener: jest.fn((el, event, handler) => {
-        if (el === submitButton && event === 'click') {
+        if (isSubmitClick(el, event)) {
           handlers.click = handler;
         }
       }),
