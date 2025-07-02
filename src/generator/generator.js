@@ -916,8 +916,26 @@ function getToyUISections(defaultMethod) {
   ];
 }
 
-function buildToySection(label, buildHTML) {
+/**
+ * Convert tuple [label, buildHTML] to toy section HTML
+ * @param {[string, function]} section - Tuple with label and section builder
+ * @returns {string} - HTML for labeled section
+ */
+function toToySection([label, buildHTML]) {
   return createLabeledSection({ label, valueHTML: buildHTML() });
+}
+
+function shouldSkipToy(post) {
+  return !hasToy(post);
+}
+
+function getDefaultInputMethod(post) {
+  const toy = post.toy ?? { defaultInputMethod: "text" };
+  return toy.defaultInputMethod;
+}
+
+function buildToySections(defaultMethod) {
+  return getToyUISections(defaultMethod).map(toToySection);
 }
 
 /**
@@ -926,15 +944,12 @@ function buildToySection(label, buildHTML) {
  * @returns {string} - HTML for the toy UI components
  */
 function generateToyUISection(post) {
-  if (!hasToy(post)) {
+  if (shouldSkipToy(post)) {
     return '';
   }
-  const defaultMethod = post.toy?.defaultInputMethod ?? 'text';
-  return join(
-    getToyUISections(defaultMethod).map(([label, buildHTML]) =>
-      buildToySection(label, buildHTML)
-    )
-  );
+  const defaultMethod = getDefaultInputMethod(post);
+  const sections = buildToySections(defaultMethod);
+  return join(sections);
 }
 
 /**
