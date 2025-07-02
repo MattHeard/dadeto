@@ -1,6 +1,8 @@
 import { jest } from '@jest/globals';
 import { syncHiddenField } from '../../src/browser/toys.js';
 
+const compareStrings = (a, b) => a.localeCompare(b);
+
 describe('syncHiddenField', () => {
   let mockTextInput;
   let mockDom;
@@ -39,8 +41,8 @@ describe('syncHiddenField', () => {
     });
 
     // Verify no unexpected entries
-    expect(Object.keys(actual).sort()).toEqual(
-      ['key1', 'emptyValue', 'key2'].sort()
+    expect(Object.keys(actual).sort(compareStrings)).toEqual(
+      ['key1', 'emptyValue', 'key2'].sort(compareStrings)
     );
   });
 
@@ -82,8 +84,8 @@ describe('syncHiddenField', () => {
     });
 
     // Verify no unexpected entries
-    expect(Object.keys(actual).sort()).toEqual(
-      ['key1', '', 'key2', 'key3', '0', 'false'].sort()
+    expect(Object.keys(actual).sort(compareStrings)).toEqual(
+      ['key1', '', 'key2', 'key3', '0', 'false'].sort(compareStrings)
     );
   });
 
@@ -133,8 +135,8 @@ describe('syncHiddenField', () => {
     });
 
     // Verify no unexpected entries
-    expect(Object.keys(actual).sort()).toEqual(
-      ['  key  ', 'key2', '  ', '  key3  '].sort()
+    expect(Object.keys(actual).sort(compareStrings)).toEqual(
+      ['  key  ', 'key2', '  ', '  key3  '].sort(compareStrings)
     );
   });
 });
