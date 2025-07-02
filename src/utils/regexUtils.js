@@ -27,7 +27,10 @@ export function createPattern(marker, { isDouble = false, flags = 'g' } = {}) {
 }
 
 function getActualMarker(escaped, isDouble) {
-  return isDouble ? `${escaped}{2}` : escaped;
+  if (isDouble) {
+    return `${escaped}{2}`;
+  }
+  return escaped;
 }
 
 /**
