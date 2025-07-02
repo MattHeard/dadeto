@@ -12,12 +12,15 @@ test("createInputDropdownHandler handles number then kv sequentially", () => {
   const dom = {
     getCurrentTarget: jest.fn(() => select),
     getParentElement: jest.fn(() => container),
-    querySelector: jest.fn((_, selector) => {
-      if (selector === "input[type=\"text\"]") {return textInput;}
-      if (selector === "input[type=\"number\"]") {return numberInput;}
-      if (selector === ".kv-container") {return kvContainer;}
-      return null;
-    }),
+    querySelector: jest.fn((_, selector) =>
+      (
+        {
+          'input[type="text"]': textInput,
+          'input[type="number"]': numberInput,
+          '.kv-container': kvContainer,
+        }[selector] || null
+      )
+    ),
     createElement: jest.fn(() => ({})),
     getNextSibling: jest.fn(() => null),
     insertBefore: jest.fn(),
