@@ -30,20 +30,21 @@ function parseDendriteData(dom, textInput) {
   return parseJsonOrDefault(value, {});
 }
 
+function createInputElement(dom, key) {
+  if (key === 'content') {
+    return dom.createElement('textarea');
+  }
+  const element = dom.createElement('input');
+  dom.setType(element, 'text');
+  return element;
+}
+
 function createField(dom, form, key, placeholder, data, textInput, disposers) {
   const wrapper = dom.createElement('div');
   const label = dom.createElement('label');
   dom.setTextContent(label, placeholder);
 
-  let input;
-  if (key === 'content') {
-    input = dom.createElement('textarea');
-  } else {
-    input = dom.createElement('input');
-  }
-  if (key !== 'content') {
-    dom.setType(input, 'text');
-  }
+  const input = createInputElement(dom, key);
   dom.setPlaceholder(input, placeholder);
   if (Object.prototype.hasOwnProperty.call(data, key)) {
     dom.setValue(input, data[key]);
