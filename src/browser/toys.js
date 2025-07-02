@@ -65,13 +65,14 @@ export const clearDisposers = disposersArray => {
  * @param {Array} rows - The rows array to clear
  * @returns {Function} A function that cleans up resources
  */
-export const createDispose =
-  ({ disposers, dom, container, rows }) =>
-    () => {
-      clearDisposers(disposers);
-      dom.removeAllChildren(container);
-      rows.length = 0;
-    };
+export const createDispose = config => {
+  const { disposers, dom, container, rows } = config;
+  return () => {
+    clearDisposers(disposers);
+    dom.removeAllChildren(container);
+    rows.length = 0;
+  };
+};
 
 import { createPreElement } from '../presenters/pre.js';
 import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
