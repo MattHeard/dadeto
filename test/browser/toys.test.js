@@ -745,7 +745,8 @@ describe('toys', () => {
     it('can be invoked with minimal arguments', () => {
       const functionName = 'process';
       const globalState = {};
-      const createEnv = () => ({ get: () => {} });
+      const get = () => {};
+      const createEnv = () => ({ get });
       const error = () => {};
       const fetch = () => {};
       const paragraph = {};
