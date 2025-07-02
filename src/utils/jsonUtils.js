@@ -12,7 +12,10 @@ export function safeParseJson(json) {
   }
 }
 
-export function parseJsonOrDefault(json, fallback = {}) {
-  const value = safeParseJson(json);
+export function valueOr(value, fallback) {
   return value === undefined ? fallback : value;
+}
+
+export function parseJsonOrDefault(json, fallback = {}) {
+  return valueOr(safeParseJson(json), fallback);
 }
