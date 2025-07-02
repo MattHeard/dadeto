@@ -659,7 +659,7 @@ export const createValueElement = ({
 export const createOnAddHandler = (rows, render) => {
   return () => {
     // Add a new empty key only if there isn't already one
-    if (!Object.prototype.hasOwnProperty.call(rows, '')) {
+    if (!Object.hasOwn(rows, '')) {
       rows[''] = '';
       render();
     }
