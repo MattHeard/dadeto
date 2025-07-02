@@ -60,22 +60,12 @@ function createField(dom, form, key, placeholder, data, textInput, disposers) {
   dom.appendChild(form, wrapper);
 }
 
-export function dendriteStoryHandler(dom, container, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
-
-  maybeRemoveNumber(container, dom);
-  maybeRemoveKV(container, dom);
-
-  removeExistingForm(container, dom);
-
+function buildForm(dom, container, textInput, data, disposers) {
   const form = dom.createElement('div');
   dom.setClassName(form, 'dendrite-form');
   const nextSibling = dom.getNextSibling(textInput);
   dom.insertBefore(container, form, nextSibling);
 
-  const disposers = [];
-  const data = parseDendriteData(dom, textInput);
   const fields = [
     ['title', 'Title'],
     ['content', 'Content'],
@@ -96,4 +86,18 @@ export function dendriteStoryHandler(dom, container, textInput) {
   };
 
   return form;
+}
+
+export function dendriteStoryHandler(dom, container, textInput) {
+  dom.hide(textInput);
+  dom.disable(textInput);
+
+  maybeRemoveNumber(container, dom);
+  maybeRemoveKV(container, dom);
+
+  removeExistingForm(container, dom);
+
+  const disposers = [];
+  const data = parseDendriteData(dom, textInput);
+  return buildForm(dom, container, textInput, data, disposers);
 }
