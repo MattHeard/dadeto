@@ -1,7 +1,7 @@
 import { ensureNumberInput } from '../browser/toys.js';
 
 function isDisposable(element) {
-  return !!element && typeof element._dispose === 'function';
+  return Boolean(element) && typeof element._dispose === 'function';
 }
 
 function maybeRemoveKV(container, dom) {
