@@ -25,16 +25,19 @@ export const convertArrayToKeyValueObject = array => {
   );
 };
 
+function normalizeExisting(existing) {
+  const converters = [
+    [Array.isArray, convertArrayToKeyValueObject],
+    [value => value && typeof value === 'object', value => ({ ...value })],
+  ];
+  const match = converters.find(([check]) => check(existing));
+  return match ? match[1](existing) : {};
+}
+
 export const parseExistingRows = (dom, inputElement) => {
   try {
     const existing = JSON.parse(dom.getValue(inputElement) || '{}');
-    if (Array.isArray(existing)) {
-      // Convert legacy array format [{key, value}] to object
-      return convertArrayToKeyValueObject(existing);
-    } else if (existing && typeof existing === 'object') {
-      return { ...existing };
-    }
-    return {};
+    return normalizeExisting(existing);
   } catch {
     return {}; // Return empty object on parse errors
   }
