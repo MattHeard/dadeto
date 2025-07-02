@@ -11,7 +11,7 @@ describe('createKeyValueRow return value', () => {
     const disposers = [];
     const render = () => {};
     const container = {};
-    const rowHandler = createKeyValueRow(
+    const rowHandler = createKeyValueRow({
       dom,
       entries,
       textInput,
@@ -19,13 +19,13 @@ describe('createKeyValueRow return value', () => {
       syncHiddenField,
       disposers,
       render,
-      container
-    );
+      container,
+    });
     expect(typeof rowHandler).toBe('function');
     expect(rowHandler.length).toBe(2);
   });
 
-  it('has an arity of 8 and each call returns a new unary function', () => {
+  it('has an arity of 1 and each call returns a new unary function', () => {
     const dom = {};
     const entries = [];
     const textInput = {};
@@ -35,9 +35,9 @@ describe('createKeyValueRow return value', () => {
     const render = () => {};
     const container = {};
 
-    expect(createKeyValueRow.length).toBe(8);
+    expect(createKeyValueRow.length).toBe(1);
 
-    const first = createKeyValueRow(
+    const first = createKeyValueRow({
       dom,
       entries,
       textInput,
@@ -45,10 +45,10 @@ describe('createKeyValueRow return value', () => {
       syncHiddenField,
       disposers,
       render,
-      container
-    );
+      container,
+    });
 
-    const second = createKeyValueRow(
+    const second = createKeyValueRow({
       dom,
       entries,
       textInput,
@@ -56,8 +56,8 @@ describe('createKeyValueRow return value', () => {
       syncHiddenField,
       disposers,
       render,
-      container
-    );
+      container,
+    });
 
     expect(typeof first).toBe('function');
     expect(typeof second).toBe('function');

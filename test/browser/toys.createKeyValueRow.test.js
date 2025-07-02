@@ -58,16 +58,16 @@ describe('createKeyValueRow', () => {
     mockContainer = {};
 
     // Create the row creator function
-    rowCreator = createKeyValueRow(
-      mockDom,
-      mockEntries,
-      mockTextInput,
-      mockRows,
-      mockSyncHiddenField,
-      mockDisposers,
-      mockRender,
-      mockContainer
-    );
+    rowCreator = createKeyValueRow({
+      dom: mockDom,
+      entries: mockEntries,
+      textInput: mockTextInput,
+      rows: mockRows,
+      syncHiddenField: mockSyncHiddenField,
+      disposers: mockDisposers,
+      render: mockRender,
+      container: mockContainer,
+    });
   });
 
   it('creates a row with key and value inputs', () => {
@@ -83,7 +83,7 @@ describe('createKeyValueRow', () => {
       .mockReturnValue({}); // Any other calls
 
     // Call the row creator function
-    rowCreator('key1', 'value1', false);
+    rowCreator(['key1', 'value1'], 0);
 
     // Verify the row element was created with the correct class
     expect(mockDom.createElement).toHaveBeenCalledWith('div');
@@ -99,7 +99,7 @@ describe('createKeyValueRow', () => {
     expect(mockDom.setDataAttribute).toHaveBeenCalledWith(
       mockInputElement,
       'prevKey',
-      'k'
+      'key1'
     );
 
     // Verify elements were appended to the row and the row was appended to the container
@@ -128,7 +128,7 @@ describe('createKeyValueRow', () => {
       .mockReturnValue(mockButton); // remove button
 
     // Call the row creator function with isLast = false
-    rowCreator('key1', 'value1', false);
+    rowCreator(['key1', 'value1'], 0);
 
     // Should set up a remove button (×)
     expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '×');
@@ -144,10 +144,10 @@ describe('createKeyValueRow', () => {
       .mockReturnValue(mockButton); // add button
 
     // Call the row creator function with isLast = true
-    rowCreator('key1', 'value1', true);
+    rowCreator(['key1', 'value1'], 1);
 
-    // Should set up an add button (×)
-    expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '×');
+    // Should set up an add button (+)
+    expect(mockDom.setTextContent).toHaveBeenCalledWith(mockButton, '+');
   });
 
   it('uses the index to set up a remove button when not last', () => {
@@ -196,7 +196,6 @@ describe('createKeyValueRow', () => {
     const mockValueInput = {};
     const mockButton = {};
 
-
     mockDom.createElement
       .mockReturnValueOnce({}) // row div
       .mockReturnValueOnce(mockKeyInput) // key input
@@ -204,7 +203,7 @@ describe('createKeyValueRow', () => {
       .mockReturnValue(mockButton); // button
 
     // Call the row creator function
-    rowCreator('key1', 'value1', false);
+    rowCreator(['key1', 'value1'], 0);
 
     // Verify event listeners were added
     expect(mockDom.addEventListener.mock.calls).toEqual([
