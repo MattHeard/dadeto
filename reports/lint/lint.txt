@@ -1,31 +1,12 @@
 
-/Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
-    28:34  warning  Arrow function has a complexity of 6. Maximum allowed is 2                             complexity
-   199:1   warning  Function 'getOutput' has a complexity of 3. Maximum allowed is 2                       complexity
-   534:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
-   966:8   warning  Function 'initializeInteractiveComponent' has a complexity of 3. Maximum allowed is 2  complexity
-  1091:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
+/workspace/dadeto/src/browser/toys.js
+  35:10  warning  Ternary operator used  no-ternary
+  49:10  warning  Ternary operator used  no-ternary
 
-/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  928:1  warning  Function 'generateToyUISection' has a complexity of 4. Maximum allowed is 2  complexity
+/workspace/dadeto/src/inputHandlers/dendriteStory.js
+  42:1  warning  Function 'createField' has too many parameters (7). Maximum allowed is 3  max-params
 
-/Users/matthew.heard/Code/Matt/dadeto/src/inputHandlers/dendriteStory.js
-  13:8   warning  Function 'dendriteStoryHandler' has a complexity of 5. Maximum allowed is 2  complexity
-  49:18  warning  Arrow function has a complexity of 4. Maximum allowed is 2                   complexity
+/workspace/dadeto/src/toys/2025-05-11/battleshipSolitaireClues.js
+  86:10  warning  Ternary operator used  no-ternary
 
-/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-05-11/battleshipSolitaireClues.js
-  67:1  warning  Function 'parseFleet' has a complexity of 3. Maximum allowed is 2  complexity
-
-/Users/matthew.heard/Code/Matt/dadeto/src/utils/regexUtils.js
-  31:8  warning  Function 'createPattern' has a complexity of 4. Maximum allowed is 2  complexity
-
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.getModuleInitializer.invoke.test.js
-  23:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-  80:33  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-
-/Users/matthew.heard/Code/Matt/dadeto/test/browser/toys.test.js
-  1150:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1208:32  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
-  1387:13  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
-
-✖ 15 problems (0 errors, 15 warnings)
+✖ 4 problems (0 errors, 4 warnings)
