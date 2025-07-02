@@ -47,10 +47,10 @@ describe('initializeInteractiveComponent missing elements', () => {
           'input[type="text"]': null,
           'button[type="submit"]': button,
         };
-        if (Object.prototype.hasOwnProperty.call(mapping, selector)) {
-          return mapping[selector];
+        if (!Object.prototype.hasOwnProperty.call(mapping, selector)) {
+          return {};
         }
-        return {};
+        return mapping[selector];
       }),
       removeAllChildren: jest.fn(),
       createElement: jest.fn(() => ({ textContent: '' })),
@@ -94,10 +94,10 @@ describe('initializeInteractiveComponent missing elements', () => {
           'input[type="text"]': input,
           'button[type="submit"]': null,
         };
-        if (Object.prototype.hasOwnProperty.call(mapping, selector)) {
-          return mapping[selector];
+        if (!Object.prototype.hasOwnProperty.call(mapping, selector)) {
+          return {};
         }
-        return {};
+        return mapping[selector];
       }),
       removeAllChildren: jest.fn(),
       createElement: jest.fn(() => ({ textContent: '' })),
