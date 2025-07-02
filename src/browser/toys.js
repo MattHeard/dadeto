@@ -557,7 +557,7 @@ function isUniqueNonEmpty(key, rows) {
   return !(key in rows);
 }
 
-function migrateRowIfValid(prevKey, newKey, rows, keyEl, dom) {
+function migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom }) {
   if (isUniqueNonEmpty(newKey, rows)) {
     rows[newKey] = rows[prevKey];
     delete rows[prevKey];
@@ -577,7 +577,7 @@ export function createKeyInputHandler(options) {
       return;
     }
 
-    migrateRowIfValid(prevKey, newKey, rows, keyEl, dom);
+    migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom });
     syncHiddenField(textInput, rows, dom);
   };
 }
