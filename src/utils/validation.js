@@ -40,6 +40,8 @@ export function isBooleanString(value) {
  * @param {*} value - The value to check
  * @returns {boolean} True if the value is a valid boolean or boolean string
  */
+const booleanValidators = [isBooleanType, isBooleanString];
+
 export function isValidBoolean(value) {
-  return isBooleanType(value) || isBooleanString(value);
+  return booleanValidators.some((predicate) => predicate(value));
 }
