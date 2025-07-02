@@ -32,7 +32,10 @@ function normalizeExisting(existing) {
     [value => value && typeof value === 'object', value => ({ ...value })],
   ];
   const match = converters.find(([check]) => check(existing));
-  return match ? match[1](existing) : {};
+  if (match) {
+    return match[1](existing);
+  }
+  return {};
 }
 
 function isBlank(value) {
