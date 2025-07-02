@@ -18,13 +18,28 @@ export function isValidString(str) {
 }
 
 /**
+ * Checks if a value is strictly a boolean
+ * @param {*} value - The value to check
+ * @returns {boolean} True if the value is of boolean type
+ */
+export function isBooleanType(value) {
+  return typeof value === 'boolean';
+}
+
+/**
+ * Determines if a string represents a boolean value
+ * @param {*} value - The value to check
+ * @returns {boolean} True if the value is a boolean string
+ */
+export function isBooleanString(value) {
+  return /^(?:true|false)$/i.test(String(value));
+}
+
+/**
  * Checks if a value is a valid boolean or can be converted to one
  * @param {*} value - The value to check
  * @returns {boolean} True if the value is a valid boolean or boolean string
  */
 export function isValidBoolean(value) {
-  if (typeof value === 'boolean') {
-    return true;
-  }
-  return /^(?:true|false)$/i.test(String(value));
+  return isBooleanType(value) || isBooleanString(value);
 }
