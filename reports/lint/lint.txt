@@ -1,0 +1,67 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/reports/duplication/html/js/prism.js
+   7:13     warning  Ternary operator used                                                    no-ternary
+   7:48     warning  Ternary operator used                                                    no-ternary
+   7:136    warning  Function has a complexity of 14. Maximum allowed is 2                    complexity
+   7:148    warning  Unexpected var, use let or const instead                                 no-var
+   7:313    warning  Method 'encode' has a complexity of 3. Maximum allowed is 2              complexity
+   7:334    warning  Ternary operator used                                                    no-ternary
+   7:384    warning  Ternary operator used                                                    no-ternary
+   7:641    warning  Method 'clone' has a complexity of 8. Maximum allowed is 2               complexity
+   7:864    warning  Ternary operator used                                                    no-ternary
+   7:961    warning  Method 'getLanguage' has a complexity of 5. Maximum allowed is 2         complexity
+   7:1030   warning  Ternary operator used                                                    no-ternary
+   7:1105   warning  Method 'currentScript' has a complexity of 8. Maximum allowed is 2       complexity
+   7:1405   warning  Expected '===' and instead saw '=='                                      eqeqeq
+   7:1447   warning  Method 'isActive' has a complexity of 4. Maximum allowed is 2            complexity
+   7:1740   warning  Method 'insertBefore' has too many parameters (4). Maximum allowed is 3  max-params
+   7:1753   warning  Method 'insertBefore' has a complexity of 8. Maximum allowed is 2        complexity
+   7:1852   warning  Expected '===' and instead saw '=='                                      eqeqeq
+   7:2000   warning  Function has a complexity of 3. Maximum allowed is 2                     complexity
+   7:2022   warning  Expected '!==' and instead saw '!='                                      eqeqeq
+   7:2045   warning  Method 'DFS' has too many parameters (4). Maximum allowed is 3           max-params
+   7:2049   warning  Method 'DFS' has a complexity of 9. Maximum allowed is 2                 complexity
+   7:2192   warning  Ternary operator used                                                    no-ternary
+   7:2708   warning  Unexpected var, use let or const instead                                 no-var
+   7:2797   warning  Method 'highlightElement' has a complexity of 11. Maximum allowed is 2   complexity
+   7:4073   warning  Method 'tokenize' has a complexity of 3. Maximum allowed is 2            complexity
+   7:4220   warning  't' is never reassigned. Use 'const' instead                             prefer-const
+   7:4381   warning  Method 'run' has a complexity of 4. Maximum allowed is 2                 complexity
+   7:4438   warning  Unexpected var, use let or const instead                                 no-var
+   7:4477   warning  Function 's' has too many parameters (4). Maximum allowed is 3           max-params
+   7:4566   warning  Function 'i' has too many parameters (4). Maximum allowed is 3           max-params
+   7:4566   warning  Function 'i' has a complexity of 4. Maximum allowed is 2                 complexity
+   7:4692   warning  Function 'l' has too many parameters (6). Maximum allowed is 3           max-params
+   7:4692   warning  Function 'l' has a complexity of 32. Maximum allowed is 2                complexity
+   7:4777   warning  Ternary operator used                                                    no-ternary
+   7:4841   warning  Expected '===' and instead saw '=='                                      eqeqeq
+   7:5162   warning  Blocks are nested too deeply (5). Maximum allowed is 4                   max-depth
+   7:5192   warning  Blocks are nested too deeply (5). Maximum allowed is 4                   max-depth
+   7:5214   warning  Unexpected var, use let or const instead                                 no-var
+   7:5224   warning  Blocks are nested too deeply (6). Maximum allowed is 4                   max-depth
+   7:5230   warning  Blocks are nested too deeply (7). Maximum allowed is 4                   max-depth
+   7:5257   warning  Unexpected var, use let or const instead                                 no-var
+   7:5297   warning  Blocks are nested too deeply (7). Maximum allowed is 4                   max-depth
+   7:5354   warning  Blocks are nested too deeply (7). Maximum allowed is 4                   max-depth
+   7:5409   warning  Blocks are nested too deeply (7). Maximum allowed is 4                   max-depth
+   7:5676   warning  Blocks are nested too deeply (5). Maximum allowed is 4                   max-depth
+   7:5732   warning  Ternary operator used                                                    no-ternary
+   7:6101   warning  Function 'c' has a complexity of 3. Maximum allowed is 2                 complexity
+   7:6123   warning  Unexpected var, use let or const instead                                 no-var
+   7:6226   warning  Function 'e' has a complexity of 7. Maximum allowed is 2                 complexity
+   7:6471   warning  Ternary operator used                                                    no-ternary
+   7:6774   warning  Ternary operator used                                                    no-ternary
+   7:7187   warning  Ternary operator used                                                    no-ternary
+   7:7280   warning  Ternary operator used                                                    no-ternary
+  15:8922   warning  Function has a complexity of 5. Maximum allowed is 2                     complexity
+  15:9115   warning  Unexpected var, use let or const instead                                 no-var
+  15:9506   warning  Function has a complexity of 6. Maximum allowed is 2                     complexity
+  15:9666   warning  'u' is never reassigned. Use 'const' instead                             prefer-const
+  15:9912   warning  Function has a complexity of 5. Maximum allowed is 2                     complexity
+  15:9932   warning  Expected '===' and instead saw '=='                                      eqeqeq
+  15:9949   warning  Ternary operator used                                                    no-ternary
+  15:10083  warning  Ternary operator used                                                    no-ternary
+  15:10295  warning  Method 'highlight' has a complexity of 3. Maximum allowed is 2           complexity
+  15:10311  warning  Unexpected var, use let or const instead                                 no-var
+
+✖ 63 problems (0 errors, 63 warnings)

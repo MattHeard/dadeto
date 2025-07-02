@@ -1,0 +1,849 @@
+{
+  "statistics": {
+    "detectionDate": "2025-07-02T20:44:25.594Z",
+    "formats": {
+      "javascript": {
+        "sources": {
+          "src/toys/2025-06-09/uuid.js": {
+            "lines": 6,
+            "tokens": 42,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-06-09/startLocalDendriteStory.js": {
+            "lines": 42,
+            "tokens": 389,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-05-15/stringToJsonArray.js": {
+            "lines": 21,
+            "tokens": 113,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-05-13/base64Encoder.js": {
+            "lines": 7,
+            "tokens": 44,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-05-11/battleshipSolitaireClues.js": {
+            "lines": 100,
+            "tokens": 911,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-05-08/battleshipSolitaireFleet.js": {
+            "lines": 432,
+            "tokens": 3736,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-04-16/colorPalette.js": {
+            "lines": 10,
+            "tokens": 171,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-04-06/ticTacToe.js": {
+            "lines": 379,
+            "tokens": 3561,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-04-05/httpRequest.js": {
+            "lines": 8,
+            "tokens": 57,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-03-30/cyberpunkAdventure.js": {
+            "lines": 227,
+            "tokens": 1674,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-03-29/setTemporary.js": {
+            "lines": 87,
+            "tokens": 571,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 22,
+            "duplicatedTokens": 210,
+            "percentage": 25.29,
+            "percentageTokens": 36.78,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-03-29/get.js": {
+            "lines": 185,
+            "tokens": 1439,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-03-29/fishingGame.js": {
+            "lines": 161,
+            "tokens": 1572,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-03-28/rand.js": {
+            "lines": 16,
+            "tokens": 50,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-03-26/prettyFloat.js": {
+            "lines": 148,
+            "tokens": 1143,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-03-21/italics.js": {
+            "lines": 295,
+            "tokens": 1145,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 16,
+            "duplicatedTokens": 120,
+            "percentage": 5.42,
+            "percentageTokens": 10.48,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-03-21/booleanCoercer.js": {
+            "lines": 31,
+            "tokens": 200,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2025-03-19/identity.js": {
+            "lines": 9,
+            "tokens": 20,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/toys/2024-10-02/hello.js": {
+            "lines": 7,
+            "tokens": 19,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/validation.js": {
+            "lines": 47,
+            "tokens": 187,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/stringUtils.js": {
+            "lines": 29,
+            "tokens": 120,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/regexUtils.js": {
+            "lines": 49,
+            "tokens": 271,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/objectUtils.js": {
+            "lines": 35,
+            "tokens": 220,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/jsonUtils.js": {
+            "lines": 24,
+            "tokens": 128,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/presenters/ticTacToeBoard.js": {
+            "lines": 94,
+            "tokens": 810,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/presenters/pre.js": {
+            "lines": 39,
+            "tokens": 268,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/presenters/paragraph.js": {
+            "lines": 4,
+            "tokens": 47,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/presenters/battleshipSolitaireFleet.js": {
+            "lines": 167,
+            "tokens": 1326,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/presenters/battleshipSolitaireClues.js": {
+            "lines": 147,
+            "tokens": 1022,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/inputHandlers/text.js": {
+            "lines": 9,
+            "tokens": 113,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/inputHandlers/number.js": {
+            "lines": 72,
+            "tokens": 637,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 7,
+            "duplicatedTokens": 50,
+            "percentage": 9.72,
+            "percentageTokens": 7.85,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/inputHandlers/kv.js": {
+            "lines": 67,
+            "tokens": 480,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/inputHandlers/disposeHelpers.js": {
+            "lines": 14,
+            "tokens": 121,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/inputHandlers/dendriteStory.js": {
+            "lines": 122,
+            "tokens": 1086,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 7,
+            "duplicatedTokens": 50,
+            "percentage": 5.74,
+            "percentageTokens": 4.6,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/inputHandlers/default.js": {
+            "lines": 16,
+            "tokens": 176,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/generator/title.js": {
+            "lines": 21,
+            "tokens": 22,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/generator/styles.js": {
+            "lines": 255,
+            "tokens": 17,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/generator/html.js": {
+            "lines": 199,
+            "tokens": 951,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/generator/head.js": {
+            "lines": 65,
+            "tokens": 37,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/generator/copy.js": {
+            "lines": 179,
+            "tokens": 1537,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/constants/markdown.js": {
+            "lines": 89,
+            "tokens": 520,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/browser/tags.js": {
+            "lines": 117,
+            "tokens": 731,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/browser/setOutput.js": {
+            "lines": 41,
+            "tokens": 357,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 7,
+            "duplicatedTokens": 62,
+            "percentage": 17.07,
+            "percentageTokens": 17.37,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/browser/main.js": {
+            "lines": 127,
+            "tokens": 662,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/browser/document.js": {
+            "lines": 357,
+            "tokens": 2001,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/browser/data.js": {
+            "lines": 273,
+            "tokens": 1646,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 15,
+            "duplicatedTokens": 148,
+            "percentage": 5.49,
+            "percentageTokens": 8.99,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/browser/common.js": {
+            "lines": 14,
+            "tokens": 68,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/browser/beta.js": {
+            "lines": 9,
+            "tokens": 85,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/browser/audio-controls.js": {
+            "lines": 83,
+            "tokens": 838,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 4935,
+          "tokens": 33341,
+          "sources": 49,
+          "clones": 4,
+          "duplicatedLines": 37,
+          "duplicatedTokens": 320,
+          "percentage": 0.75,
+          "percentageTokens": 0.96,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "bash": {
+        "sources": {
+          "src/scripts/run-sonar.sh": {
+            "lines": 106,
+            "tokens": 353,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/scripts/install-docker-compose.sh": {
+            "lines": 15,
+            "tokens": 71,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/scripts/get-sonar-issues.sh": {
+            "lines": 58,
+            "tokens": 169,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 179,
+          "tokens": 593,
+          "sources": 3,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "markdown": {
+        "sources": {
+          "src/ideas/colorPalette.md": {
+            "lines": 44,
+            "tokens": 412,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 44,
+          "tokens": 412,
+          "sources": 1,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      }
+    },
+    "total": {
+      "lines": 5158,
+      "tokens": 34346,
+      "sources": 53,
+      "clones": 4,
+      "duplicatedLines": 37,
+      "duplicatedTokens": 320,
+      "percentage": 0.72,
+      "percentageTokens": 0.93,
+      "newDuplicatedLines": 0,
+      "newClones": 0
+    }
+  },
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 9,
+      "fragment": "(marker) {\n  // Escape marker if it's a special regex character\n  let escapedMarker;\n  if (REGEX_SPECIAL_CHARS.test(marker)) {\n    escapedMarker = `\\\\${marker}`;\n  } else {\n    escapedMarker = marker;\n  }\n  return",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/toys/2025-03-21/italics.js",
+        "start": 85,
+        "end": 93,
+        "startLoc": {
+          "line": 85,
+          "column": 21,
+          "position": 347
+        },
+        "endLoc": {
+          "line": 93,
+          "column": 7,
+          "position": 407
+        }
+      },
+      "secondFile": {
+        "name": "src/toys/2025-03-21/italics.js",
+        "start": 42,
+        "end": 50,
+        "startLoc": {
+          "line": 42,
+          "column": 22,
+          "position": 132
+        },
+        "endLoc": {
+          "line": 50,
+          "column": 6,
+          "position": 192
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 8,
+      "fragment": "\n\nfunction maybeRemoveKV(container, dom) {\n  const kvContainer = dom.querySelector(container, '.kv-container');\n  maybeRemoveElement(kvContainer, container, dom);\n}\n\nfunction disposeIfPossible",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/inputHandlers/dendriteStory.js",
+        "start": 7,
+        "end": 14,
+        "startLoc": {
+          "line": 7,
+          "column": 2,
+          "position": 71
+        },
+        "endLoc": {
+          "line": 14,
+          "column": 18,
+          "position": 121
+        }
+      },
+      "secondFile": {
+        "name": "src/inputHandlers/number.js",
+        "start": 54,
+        "end": 61,
+        "startLoc": {
+          "line": 54,
+          "column": 2,
+          "position": 474
+        },
+        "endLoc": {
+          "line": 61,
+          "column": 20,
+          "position": 524
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 8,
+      "fragment": "(input, env) {\n  let inputJson;\n  try {\n    inputJson = JSON.parse(input);\n  } catch (parseError) {\n    return `Error: Invalid JSON input. ${parseError.message}`;\n  }\n  return processSetOutput",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/browser/setOutput.js",
+        "start": 4,
+        "end": 11,
+        "startLoc": {
+          "line": 4,
+          "column": 10,
+          "position": 32
+        },
+        "endLoc": {
+          "line": 11,
+          "column": 17,
+          "position": 94
+        }
+      },
+      "secondFile": {
+        "name": "src/toys/2025-03-29/setTemporary.js",
+        "start": 50,
+        "end": 57,
+        "startLoc": {
+          "line": 50,
+          "column": 13,
+          "position": 248
+        },
+        "endLoc": {
+          "line": 57,
+          "column": 20,
+          "position": 310
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 16,
+      "fragment": "function deepMerge(target, source) {\n  const output = { ...target };\n  const mergeKey = key => {\n    const targetValue = target[key];\n    const sourceValue = source[key];\n    if (shouldDeepMerge(targetValue, sourceValue)) {\n      output[key] = deepMerge(targetValue, sourceValue);\n    } else {\n      output[key] = sourceValue;\n    }\n  };\n  Object.keys(source).forEach(mergeKey);\n  return output;\n}\n\nfunction stripInternalFields",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/browser/data.js",
+        "start": 131,
+        "end": 146,
+        "startLoc": {
+          "line": 131,
+          "column": 2,
+          "position": 752
+        },
+        "endLoc": {
+          "line": 146,
+          "column": 20,
+          "position": 900
+        }
+      },
+      "secondFile": {
+        "name": "src/toys/2025-03-29/setTemporary.js",
+        "start": 23,
+        "end": 38,
+        "startLoc": {
+          "line": 23,
+          "column": 1,
+          "position": 63
+        },
+        "endLoc": {
+          "line": 38,
+          "column": 16,
+          "position": 211
+        }
+      }
+    }
+  ]
+}
