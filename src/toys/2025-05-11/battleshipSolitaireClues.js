@@ -8,20 +8,24 @@
 
 function generateClues(input) {
   const fleet = parseFleet(input);
-  if (fleet.error) {return JSON.stringify({ error: fleet.error });}
+  if (fleet.error) {
+    return JSON.stringify({ error: fleet.error });
+  }
   const { width, height, ships } = fleet;
   const clues = { row: Array(height).fill(0), col: Array(width).fill(0) };
   const board = { width, height };
   ships.forEach(ship => {
     getShipCells(ship).forEach(([x, y]) => {
-      incrementClues(x, y, board, clues);
+      incrementClues({ x, y }, board, clues);
     });
   });
   return JSON.stringify({ rowClues: clues.row, colClues: clues.col });
 }
 
 function getShipCells(ship) {
-  if (ship.direction === 'H') {return getHorizontalCells(ship);}
+  if (ship.direction === 'H') {
+    return getHorizontalCells(ship);
+  }
   return getVerticalCells(ship);
 }
 
@@ -41,12 +45,15 @@ function getVerticalCells(ship) {
   return cells;
 }
 
-
-function incrementClues(x, y, board, clues) {
-  if (isValidX(x, board) && isValidY(y, board)) {
-    clues.row[y] += 1;
-    clues.col[x] += 1;
+function incrementClues(position, board, clues) {
+  if (isValidCell(position, board)) {
+    clues.row[position.y] += 1;
+    clues.col[position.x] += 1;
   }
+}
+
+function isValidCell({ x, y }, board) {
+  return isValidX(x, board) && isValidY(y, board);
 }
 
 function isValidX(x, board) {
