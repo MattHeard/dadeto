@@ -1159,45 +1159,6 @@ export const createRenderer = options => {
   return render;
 };
 
-export const ensureKeyValueInput = (container, textInput, dom) => {
-  let kvContainer = dom.querySelector(container, '.kv-container');
-  if (!kvContainer) {
-    kvContainer = dom.createElement('div');
-    dom.setClassName(kvContainer, 'kv-container');
-    const nextSibling = dom.getNextSibling(textInput);
-    dom.insertBefore(container, kvContainer, nextSibling);
-  }
-
-  // ---------------------------------------------------------------------
-  // State + bookkeeping
-  // ---------------------------------------------------------------------
-  const rows = parseExistingRows(dom, textInput);
-  const disposers = [];
-
-  // Create the render function with the required dependencies
-  const render = createRenderer({
-    dom,
-    disposersArray: disposers,
-    container: kvContainer,
-    rows,
-    textInput,
-    syncHiddenField,
-  });
-
-  // Initial render
-  render();
-
-  // Public API for cleanup by parent code
-  const dispose = createDispose({
-    disposers,
-    dom,
-    container: kvContainer,
-    rows,
-  });
-  kvContainer._dispose = dispose;
-
-  return kvContainer;
-};
 
 /**
  * New version: accepts a config object and delegates to the original.

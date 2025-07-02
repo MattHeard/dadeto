@@ -491,46 +491,6 @@ export const createNumberInput = (value, onChange, dom) => {
 };
 
 /**
- * Positions the number input in the DOM relative to the text input
- * @param {HTMLElement} container - The container element
- * @param {HTMLInputElement} textInput - The text input element
- * @param {HTMLInputElement} numberInput - The number input element to position
- * @param {Object} dom - The DOM utilities object
- * @returns {void}
- */
-const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
-  const nextSibling = dom.getNextSibling(textInput);
-  container.insertBefore(numberInput, nextSibling);
-};
-
-/**
- * Ensures a single <input type="number"> exists just after the text input
- * @param {HTMLElement} container - The container element
- * @param {HTMLInputElement} textInput - The text input element
- * @param {Object} dom - The DOM utilities object
- * @returns {HTMLInputElement} The number input element
- */
-export const ensureNumberInput = (container, textInput, dom) => {
-  let numberInput = dom.querySelector(container, 'input[type="number"]');
-
-  if (!numberInput) {
-    numberInput = createNumberInput(
-      textInput.value, // textInput is assumed to be truthy
-      createUpdateTextInputValue(textInput, dom),
-      dom
-    );
-    positionNumberInput({
-      container,
-      textInput,
-      numberInput,
-      dom,
-    });
-  }
-
-  return numberInput;
-};
-
-/**
  * Creates an event handler that updates a text input's value from an event
  * @param {HTMLInputElement} textInput - The text input element to update
  * @param {Object} dom - The DOM utilities object
@@ -797,44 +757,44 @@ export const createKeyValueRow =
     render,
     container,
   }) =>
-  ([key, value], idx) => {
-    const rowEl = dom.createElement('div');
-    dom.setClassName(rowEl, 'kv-row');
+    ([key, value], idx) => {
+      const rowEl = dom.createElement('div');
+      dom.setClassName(rowEl, 'kv-row');
 
-    // Create key and value elements
-    const keyEl = createKeyElement({
-      dom,
-      key,
-      textInput,
-      rows,
-      syncHiddenField,
-      disposers,
-    });
-    const valueEl = createValueElement({
-      dom,
-      value,
-      keyEl,
-      textInput,
-      rows,
-      syncHiddenField,
-      disposers,
-    });
+      // Create key and value elements
+      const keyEl = createKeyElement({
+        dom,
+        key,
+        textInput,
+        rows,
+        syncHiddenField,
+        disposers,
+      });
+      const valueEl = createValueElement({
+        dom,
+        value,
+        keyEl,
+        textInput,
+        rows,
+        syncHiddenField,
+        disposers,
+      });
 
-    // Create and set up the appropriate button type
-    const btnEl = createButton({
-      dom,
-      isAddButton: idx === entries.length - 1,
-      rows,
-      render,
-      key,
-      disposers,
-    });
+      // Create and set up the appropriate button type
+      const btnEl = createButton({
+        dom,
+        isAddButton: idx === entries.length - 1,
+        rows,
+        render,
+        key,
+        disposers,
+      });
 
-    dom.appendChild(rowEl, keyEl);
-    dom.appendChild(rowEl, valueEl);
-    dom.appendChild(rowEl, btnEl);
-    dom.appendChild(container, rowEl);
-  };
+      dom.appendChild(rowEl, keyEl);
+      dom.appendChild(rowEl, valueEl);
+      dom.appendChild(rowEl, btnEl);
+      dom.appendChild(container, rowEl);
+    };
 
 const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
   const button = dom.createElement('button');
@@ -1199,45 +1159,6 @@ export const createRenderer = options => {
   return render;
 };
 
-export const ensureKeyValueInput = (container, textInput, dom) => {
-  let kvContainer = dom.querySelector(container, '.kv-container');
-  if (!kvContainer) {
-    kvContainer = dom.createElement('div');
-    dom.setClassName(kvContainer, 'kv-container');
-    const nextSibling = dom.getNextSibling(textInput);
-    dom.insertBefore(container, kvContainer, nextSibling);
-  }
-
-  // ---------------------------------------------------------------------
-  // State + bookkeeping
-  // ---------------------------------------------------------------------
-  const rows = parseExistingRows(dom, textInput);
-  const disposers = [];
-
-  // Create the render function with the required dependencies
-  const render = createRenderer({
-    dom,
-    disposersArray: disposers,
-    container: kvContainer,
-    rows,
-    textInput,
-    syncHiddenField,
-  });
-
-  // Initial render
-  render();
-
-  // Public API for cleanup by parent code
-  const dispose = createDispose({
-    disposers,
-    dom,
-    container: kvContainer,
-    rows,
-  });
-  kvContainer._dispose = dispose;
-
-  return kvContainer;
-};
 
 /**
  * New version: accepts a config object and delegates to the original.
