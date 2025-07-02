@@ -1,19 +1,17 @@
+function disposeElement(container, element, dom) {
+  if (typeof element?._dispose === 'function') {
+    element._dispose();
+    dom.removeChild(container, element);
+  }
+}
+
 export function textHandler(dom, container, textInput) {
   dom.reveal(textInput);
   dom.enable(textInput);
   const numberInput = dom.querySelector(container, 'input[type="number"]');
-  if (numberInput && typeof numberInput._dispose === 'function') {
-    numberInput._dispose();
-    dom.removeChild(container, numberInput);
-  }
+  disposeElement(container, numberInput, dom);
   const kvContainer = dom.querySelector(container, '.kv-container');
-  if (kvContainer && typeof kvContainer._dispose === 'function') {
-    kvContainer._dispose();
-    dom.removeChild(container, kvContainer);
-  }
+  disposeElement(container, kvContainer, dom);
   const dendriteForm = dom.querySelector(container, '.dendrite-form');
-  if (dendriteForm && typeof dendriteForm._dispose === 'function') {
-    dendriteForm._dispose();
-    dom.removeChild(container, dendriteForm);
-  }
+  disposeElement(container, dendriteForm, dom);
 }
