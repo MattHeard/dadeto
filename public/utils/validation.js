@@ -22,11 +22,13 @@ export function isValidString(str) {
  * @param {*} value - The value to check
  * @returns {boolean} True if the value is a valid boolean or boolean string
  */
+export function isBooleanString(value) {
+  return /^(?:true|false)$/i.test(String(value));
+}
+
 export function isValidBoolean(value) {
-  if (typeof value === 'boolean') {return true;}
-  if (typeof value === 'string') {
-    const lower = value.toLowerCase();
-    return lower === 'true' || lower === 'false';
+  if (typeof value === 'boolean') {
+    return true;
   }
-  return false;
+  return isBooleanString(value);
 }
