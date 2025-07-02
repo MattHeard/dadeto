@@ -23,15 +23,11 @@ export function escapeRegex(str) {
 export function createPattern(marker, options) {
   const { isDouble = false, flags = 'g' } = options ?? {};
   const escaped = escapeRegex(marker);
-  const actualMarker = computeActualMarker(escaped, isDouble);
-  return new RegExp(`${actualMarker}(.*?)${actualMarker}`, flags);
-}
-
-function computeActualMarker(escaped, isDouble) {
+  let actualMarker = escaped;
   if (isDouble) {
-    return `${escaped}{2}`;
+    actualMarker = `${escaped}{2}`;
   }
-  return escaped;
+  return new RegExp(`${actualMarker}(.*?)${actualMarker}`, flags);
 }
 
 /**
