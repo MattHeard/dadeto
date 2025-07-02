@@ -45,9 +45,13 @@ function isBlank(value) {
  * @param {HTMLElement} inputElement - The input element
  * @returns {string} The JSON to parse
  */
+function getDefaultRowsJson(value) {
+  return isBlank(value) ? '{}' : value;
+}
+
 function getRowsJson(dom, inputElement) {
   const value = dom.getValue?.(inputElement);
-  return isBlank(value) ? '{}' : value;
+  return getDefaultRowsJson(value);
 }
 
 export const parseExistingRows = (dom, inputElement) => {
