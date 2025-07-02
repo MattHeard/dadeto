@@ -32,14 +32,14 @@ describe('createRenderer', () => {
     const rows = { foo: 'bar' };
     const textInput = undefined;
     const syncHiddenField = jest.fn();
-    const render = createRenderer(
+    const render = createRenderer({
       dom,
-      disposers,
+      disposersArray: disposers,
       container,
       rows,
       textInput,
-      syncHiddenField
-    );
+      syncHiddenField,
+    });
     render();
     expect(syncHiddenField).toHaveBeenCalled();
   });
@@ -62,14 +62,14 @@ describe('createRenderer', () => {
     const rows = {};
     const textInput = {};
     const syncHiddenField = jest.fn();
-    const render = createRenderer(
+    const render = createRenderer({
       dom,
-      disposers,
+      disposersArray: disposers,
       container,
       rows,
       textInput,
-      syncHiddenField
-    );
+      syncHiddenField,
+    });
     render();
     expect(rows).toEqual({ '': '' });
   });
@@ -92,14 +92,14 @@ describe('createRenderer', () => {
     const rows = { existing: 'val' };
     const textInput = {};
     const syncHiddenField = jest.fn();
-    const render = createRenderer(
+    const render = createRenderer({
       dom,
-      disposers,
+      disposersArray: disposers,
       container,
       rows,
       textInput,
-      syncHiddenField
-    );
+      syncHiddenField,
+    });
     render();
     expect(rows).toEqual({ existing: 'val' });
   });

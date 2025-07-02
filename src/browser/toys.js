@@ -1101,22 +1101,23 @@ export const syncHiddenField = (textInput, rows, dom) => {
  */
 /**
  * Creates a render function with access to the given disposers array and rows
- * @param {Object} dom - The DOM utilities object
- * @param {Array} disposersArray - Array to store cleanup functions
- * @param {HTMLElement} container - The container element for the key-value pairs
- * @param {Object} rows - The rows object containing key-value pairs
- * @param {HTMLInputElement} textInput - The hidden input element
- * @param {Function} syncHiddenField - Function to sync the hidden field
+ * @param {Object} options - Configuration options
+ * @param {Object} options.dom - The DOM utilities object
+ * @param {Array} options.disposersArray - Array to store cleanup functions
+ * @param {HTMLElement} options.container - The container element for the key-value pairs
+ * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {HTMLInputElement} options.textInput - The hidden input element
+ * @param {Function} options.syncHiddenField - Function to sync the hidden field
  * @returns {Function} The render function
  */
-export const createRenderer = (
+export const createRenderer = ({
   dom,
   disposersArray,
   container,
   rows,
   textInput,
-  syncHiddenField
-) => {
+  syncHiddenField,
+}) => {
   /**
    * Renders the key-value input UI
    */
@@ -1165,14 +1166,14 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   const disposers = [];
 
   // Create the render function with the required dependencies
-  const render = createRenderer(
+  const render = createRenderer({
     dom,
-    disposers,
-    kvContainer,
+    disposersArray: disposers,
+    container: kvContainer,
     rows,
     textInput,
-    syncHiddenField
-  );
+    syncHiddenField,
+  });
 
   // Initial render
   render();

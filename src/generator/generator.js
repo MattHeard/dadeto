@@ -929,13 +929,11 @@ function generateToyUISection(post) {
   if (!hasToy(post)) {
     return '';
   }
-  let defaultMethod = 'text';
-  if (post.toy && post.toy.defaultInputMethod) {
-    defaultMethod = post.toy.defaultInputMethod;
-  }
-  const sections = getToyUISections(defaultMethod);
+  const defaultMethod = post.toy?.defaultInputMethod ?? 'text';
   return join(
-    sections.map(([label, buildHTML]) => buildToySection(label, buildHTML))
+    getToyUISections(defaultMethod).map(([label, buildHTML]) =>
+      buildToySection(label, buildHTML)
+    )
   );
 }
 
