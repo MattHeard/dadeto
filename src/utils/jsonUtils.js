@@ -13,7 +13,10 @@ export function safeParseJson(json) {
 }
 
 export function valueOr(value, fallback) {
-  return value === undefined ? fallback : value;
+  if (value === undefined) {
+    return fallback;
+  }
+  return value;
 }
 
 export function parseJsonOrDefault(json, fallback = {}) {
