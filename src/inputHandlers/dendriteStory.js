@@ -99,11 +99,14 @@ function cleanContainer(dom, container) {
   removeExistingForm(container, dom);
 }
 
-export function dendriteStoryHandler(dom, container, textInput) {
-  prepareTextInput(dom, textInput);
-  cleanContainer(dom, container);
-
+function createDendriteForm(dom, container, textInput) {
   const disposers = [];
   const data = parseDendriteData(dom, textInput);
   return buildForm(dom, container, textInput, data, disposers);
+}
+
+export function dendriteStoryHandler(dom, container, textInput) {
+  prepareTextInput(dom, textInput);
+  cleanContainer(dom, container);
+  return createDendriteForm(dom, container, textInput);
 }
