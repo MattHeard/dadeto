@@ -1,3 +1,20 @@
+function createOptions(data, getUuid) {
+  const keys = ['firstOption', 'secondOption', 'thirdOption', 'fourthOption'];
+  return keys
+    .filter(key => data[key])
+    .map(key => ({ id: getUuid(), content: data[key] }));
+}
+
+function hasValidTemporary(obj) {
+  return Array.isArray(obj.temporary?.DEND1);
+}
+
+function ensureTemporaryData(obj) {
+  if (!hasValidTemporary(obj)) {
+    obj.temporary = { DEND1: [] };
+  }
+}
+
 export function startLocalDendriteStory(input, env) {
   try {
     const data = JSON.parse(input);
@@ -5,36 +22,16 @@ export function startLocalDendriteStory(input, env) {
     const getData = env.get('getData');
     const setData = env.get('setData');
 
-    const resultId = getUuid();
-    const options = [];
-    if (data.firstOption) {
-      options.push({ id: getUuid(), content: data.firstOption });
-    }
-    if (data.secondOption) {
-      options.push({ id: getUuid(), content: data.secondOption });
-    }
-    if (data.thirdOption) {
-      options.push({ id: getUuid(), content: data.thirdOption });
-    }
-    if (data.fourthOption) {
-      options.push({ id: getUuid(), content: data.fourthOption });
-    }
-
     const result = {
-      id: resultId,
+      id: getUuid(),
       title: data.title,
       content: data.content,
-      options,
+      options: createOptions(data, getUuid),
     };
 
     const currentData = getData();
     const newData = JSON.parse(JSON.stringify(currentData));
-    if (!newData.temporary || typeof newData.temporary !== 'object') {
-      newData.temporary = {};
-    }
-    if (!Array.isArray(newData.temporary.DEND1)) {
-      newData.temporary.DEND1 = [];
-    }
+    ensureTemporaryData(newData);
     newData.temporary.DEND1.push(result);
     setData(newData);
 
