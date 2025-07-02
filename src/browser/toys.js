@@ -532,6 +532,21 @@ function hasStringUrl(val) {
  * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
  * @returns {Function} The event handler function
  */
+function isUniqueNonEmpty(key, rows) {
+  if (key === '') {
+    return false;
+  }
+  return !(key in rows);
+}
+
+function migrateRowIfValid(prevKey, newKey, rows, keyEl, dom) {
+  if (isUniqueNonEmpty(newKey, rows)) {
+    rows[newKey] = rows[prevKey];
+    delete rows[prevKey];
+    dom.setDataAttribute(keyEl, 'prevKey', newKey);
+  }
+}
+
 export function createKeyInputHandler(options) {
   const { dom, keyEl, textInput, rows, syncHiddenField } = options;
   return e => {
@@ -544,14 +559,7 @@ export function createKeyInputHandler(options) {
       return;
     }
 
-    // If the new key is non‑empty and unique, migrate the value.
-    if (newKey !== '' && !(newKey in rows)) {
-      rows[newKey] = rows[prevKey];
-      delete rows[prevKey];
-      dom.setDataAttribute(keyEl, 'prevKey', newKey); // track latest key name
-    }
-    // Otherwise (empty or duplicate), leave the mapping under prevKey.
-
+    migrateRowIfValid(prevKey, newKey, rows, keyEl, dom);
     syncHiddenField(textInput, rows, dom);
   };
 }
