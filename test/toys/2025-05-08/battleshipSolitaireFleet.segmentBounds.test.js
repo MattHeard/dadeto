@@ -3,6 +3,8 @@ import { describe, test, expect } from '@jest/globals';
 
 /**
  * Ensure generated ship segments stay within board bounds.
+ * @param {{start: {x: number, y: number}, direction: 'H' | 'V', length: number}} ship - Ship configuration
+ * @param {{width: number, height: number}} fleet - Board configuration
  */
 function assertSegmentInsideBoard(ship, fleet) {
   for (let i = 0; i < ship.length; i++) {
