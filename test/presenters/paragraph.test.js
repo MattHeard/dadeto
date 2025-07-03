@@ -2,6 +2,14 @@
 import { describe, test, expect } from '@jest/globals';
 import { createParagraphElement } from '../../src/presenters/paragraph.js';
 
+/**
+ * Creates a DOM mock for testing.
+ * @returns {{
+ *   element: { textContent: string },
+ *   createElement: () => { textContent: string },
+ *   setTextContent: (el: { textContent: string }, text: string) => void
+ * }} Mock DOM helpers
+ */
 function createMockDom() {
   const element = { textContent: '' };
   return {
