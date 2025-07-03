@@ -1,3 +1,7 @@
+/**
+ * Reveal beta articles if the browser URL includes a beta parameter.
+ * @param {object} dom - DOM helper with utility methods.
+ */
 export function revealBetaArticles(dom) {
   if (dom.hasBetaParam()) {
     const articles = dom.querySelectorAll('article.release-beta');
