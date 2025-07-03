@@ -1,8 +1,12 @@
 import eslintJs from "@eslint/js";
 import globals from "globals";
+import jsdoc from "eslint-plugin-jsdoc";
+import prettierPlugin from "eslint-plugin-prettier";
+import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 export default [
   { ignores: ["public/", ".stryker-tmp/"] },
+  jsdoc.configs["flat/recommended"],
   {
     // Apply recommended rules and configure general JS settings
     ...eslintJs.configs.recommended,
@@ -13,6 +17,10 @@ export default [
         ...globals.browser,
         ...globals.node,
       }
+    },
+    plugins: {
+      jsdoc,
+      prettier: prettierPlugin
     },
     rules: {
       complexity: ["warn", { max: 2 }], // Keep existing complexity rule
@@ -31,9 +39,17 @@ export default [
       "max-depth": ["warn", 4],
       "max-params": ["warn", 3],
       "indent": ["warn", 2],
+      "jsdoc/require-jsdoc": "warn",
+      "jsdoc/check-tag-names": "warn",
+      camelcase: ["warn", { properties: "always" }],
+      "prefer-template": "warn",
+      "consistent-return": "warn",
+      "no-unused-expressions": "warn",
+      "prettier/prettier": "warn",
       // Add other project-specific rules here if needed
     }
   },
+  eslintConfigPrettier,
   {
     // Specific configuration for test files
     files: ["**/*.test.js"],
