@@ -6,20 +6,11 @@ function getOpponent(player) {
   }
 }
 
-function tryParseJSON(input) {
-  try {
-    return JSON.parse(input);
-  } catch {
-    return null;
-  }
-}
+import { parseJsonOrDefault } from '../../utils/jsonUtils.js';
+import { isObject } from '../../browser/common.js';
 
 function respectsTurnOrder({ move, index, moves }) {
   return index === 0 || move.player !== moves[index - 1].player;
-}
-
-function isObject(val) {
-  return typeof val === "object" && val !== null;
 }
 
 function getValidParsedMoves(parsed) {
@@ -50,7 +41,7 @@ function hasMovesArray(val) {
 }
 
 function parseInputSafely(input) {
-  const parsed = tryParseJSON(input);
+  const parsed = parseJsonOrDefault(input, null);
   return getValidParsedMoves(parsed);
 }
 
@@ -303,7 +294,7 @@ function simulateMoves(board, accumulateScores) {
 
 
 
-function minimax(depth, isMax, params) {
+export function minimax(depth, isMax, params) {
   const opponent = getOpponent(params.player);
   const isWinPlayer = () => isWin(params.board, params.player);
   const isWinOpponent = () => isWin(params.board, opponent);
