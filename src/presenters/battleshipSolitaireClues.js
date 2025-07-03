@@ -23,9 +23,7 @@
  *    (ones) is closest to the grid
  */
 
-function isObject(value) {
-  return value && typeof value === 'object';
-}
+import { isObject } from '../browser/common.js';
 
 function hasValidClueArrays(obj) {
   return Array.isArray(obj.rowClues) && Array.isArray(obj.colClues);
