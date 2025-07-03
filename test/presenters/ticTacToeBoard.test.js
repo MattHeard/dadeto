@@ -1,6 +1,10 @@
 import { createTicTacToeBoardElement } from '../../src/presenters/ticTacToeBoard.js';
 
-/** Very small stub of the DOM abstraction used in tests */
+/**
+ * Very small stub of the DOM abstraction used in tests
+ *
+ * @returns {object} DOM stub
+ */
 function mockDom() {
   return {
     createElement: tag => ({ tagName: tag, textContent: '' }),
