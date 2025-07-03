@@ -1,6 +1,13 @@
 import { describe, test, expect } from '@jest/globals';
 import { htmlEscapeReplacements } from '../../src/generator/html.js';
 
+/**
+ * Replace characters in `text` using the provided replacement pairs.
+ *
+ * @param {string} text - The text to update.
+ * @param {{from: RegExp, to: string}[]} replacements - Pairs of values to replace.
+ * @returns {string} The escaped text.
+ */
 function escapeWithReplacements(text, replacements) {
   return replacements.reduce((acc, { from, to }) => acc.replace(from, to), text);
 }
