@@ -56,7 +56,10 @@ describe('initializeInteractiveComponent logging', () => {
 
     initializeInteractiveComponent(article, processingFunction, config);
 
-    expect(logInfo).toHaveBeenCalledWith('Found input element:', inputElement);
+    expect(logInfo).not.toHaveBeenCalledWith(
+      'Found input element:',
+      inputElement
+    );
     expect(logInfo).toHaveBeenCalledWith('Found button element:', submitButton);
   });
 });
