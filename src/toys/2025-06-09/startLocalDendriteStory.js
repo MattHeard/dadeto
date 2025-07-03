@@ -1,4 +1,5 @@
 import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
+import { deepClone } from '../../utils/objectUtils.js';
 
 function createOptions(data, getUuid) {
   const keys = DENDRITE_OPTION_KEYS;
@@ -32,7 +33,7 @@ export function startLocalDendriteStory(input, env) {
     };
 
     const currentData = getData();
-    const newData = JSON.parse(JSON.stringify(currentData));
+    const newData = deepClone(currentData);
     ensureTemporaryData(newData);
     newData.temporary.DEND1.push(result);
     setData(newData);

@@ -1,5 +1,6 @@
 import { isObject } from './common.js';
 import { deepMerge } from './data.js';
+import { deepClone } from '../utils/objectUtils.js';
 
 /**
  * Creates a function that merges JSON input into a section of the data object.
@@ -22,7 +23,10 @@ function parseJsonObject(input) {
   try {
     json = JSON.parse(input);
   } catch (parseError) {
-    return { ok: false, message: `Error: Invalid JSON input. ${parseError.message}` };
+    return {
+      ok: false,
+      message: `Error: Invalid JSON input. ${parseError.message}`,
+    };
   }
   if (!isObject(json)) {
     return { ok: false, message: 'Error: Input JSON must be a plain object.' };
@@ -35,7 +39,7 @@ function mergeSection(section, inputJson, env) {
   const setData = env.get('setData');
   try {
     const currentData = getData();
-    const newData = JSON.parse(JSON.stringify(currentData));
+    const newData = deepClone(currentData);
     if (!isObject(newData[section])) {
       newData[section] = {};
     }
