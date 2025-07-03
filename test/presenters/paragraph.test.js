@@ -2,6 +2,10 @@
 import { describe, test, expect } from '@jest/globals';
 import { createParagraphElement } from '../../src/presenters/paragraph.js';
 
+/**
+ * Creates a lightweight DOM used for testing.
+ * @returns {object} mock DOM interface
+ */
 function createMockDom() {
   const element = { textContent: '' };
   return {
