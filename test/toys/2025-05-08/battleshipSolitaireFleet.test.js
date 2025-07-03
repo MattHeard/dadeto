@@ -27,6 +27,11 @@ describe('generateFleet', () => {
   });
 
   test('places a vertical ship of length 3 somewhere', () => {
+    /**
+     * Get occupied coordinates for a ship.
+     * @param {{start: {x: number, y: number}, length: number}} ship - Ship to inspect
+     * @returns {Array<[number, number]>} List of occupied cells
+     */
     function getOccupiedCells(ship) {
       const occupied = [];
       for (let i = 0; i < ship.length; i++) {
