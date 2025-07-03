@@ -2,6 +2,10 @@ import { describe, test, expect, jest } from '@jest/globals';
 import { createPreElement } from '../../src/presenters/pre.js';
 
 // Simple mock DOM abstraction
+/**
+ * Creates a minimal DOM stub used in tests.
+ * @returns {{createdElements: any[], createElement: Function, setTextContent: Function}} DOM stub for tests
+ */
 function createMockDom() {
   return {
     createdElements: [],
