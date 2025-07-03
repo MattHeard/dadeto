@@ -18,6 +18,11 @@ export function createSectionSetter(section) {
   };
 }
 
+/**
+ * Parse JSON input into an object.
+ * @param {string} input - JSON string to parse.
+ * @returns {{ok: boolean, message?: string, data?: object}} Result object.
+ */
 function parseJsonObject(input) {
   let json;
   try {
