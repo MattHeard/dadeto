@@ -23,9 +23,7 @@
  *    (ones) is closest to the grid
  */
 
-function isObject(value) {
-  return value && typeof value === 'object';
-}
+import { isObject } from '../browser/common.js';
 
 function hasValidClueArrays(obj) {
   return Array.isArray(obj.rowClues) && Array.isArray(obj.colClues);
@@ -73,13 +71,7 @@ const DEFAULT_CLUES = {
   colClues: Array(10).fill(0),
 };
 
-function safeJsonParse(str) {
-  try {
-    return JSON.parse(str);
-  } catch {
-    return null;
-  }
-}
+import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 
 const INVALID_CLUE_CHECKS = [
   obj => obj === null,
@@ -105,7 +97,7 @@ function buildColumnDigitMatrix(colClues) {
  * @returns {{rowClues: number[], colClues: number[]}}
  */
 function parseCluesOrDefault(inputString) {
-  const obj = safeJsonParse(inputString);
+  const obj = parseJsonOrDefault(inputString, null);
   if (INVALID_CLUE_CHECKS.some(fn => fn(obj))) {
     return DEFAULT_CLUES;
   }
