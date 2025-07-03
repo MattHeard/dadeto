@@ -1,4 +1,4 @@
-import { isObject } from '../browser/common.js';
+import { isObject } from '../utils/objectUtils.js';
 
 /**
  * createTicTacToeBoardElement

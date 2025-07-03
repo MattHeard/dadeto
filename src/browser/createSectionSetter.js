@@ -1,4 +1,4 @@
-import { isObject } from './common.js';
+import { isObject } from '../utils/objectUtils.js';
 import { deepMerge } from './data.js';
 
 /**
