@@ -175,10 +175,20 @@ function hasTemporaryProperty(obj) {
   return Object.hasOwn(obj, 'temporary');
 }
 
+/**
+ * Check if a value is an object and not null.
+ * @param {object} value - Value to test.
+ * @returns {boolean} True when the value is a non-null object.
+ */
 function isNonNullObject(value) {
   return Boolean(value) && typeof value === 'object';
 }
 
+/**
+ * Determine whether a state object has required properties.
+ * @param {object} value - Candidate state object.
+ * @returns {boolean} True if the state is missing required fields.
+ */
 function isInvalidState(value) {
   return !isNonNullObject(value) || !hasTemporaryProperty(value);
 }
