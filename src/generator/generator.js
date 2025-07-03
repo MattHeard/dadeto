@@ -885,7 +885,7 @@ const INPUT_METHODS = ['text', 'number', 'kv', 'dendrite-story'];
  * @param {string} defaultMethod - The configured default input method
  * @returns {string} - HTML for the dropdown and text input
  */
-function getSelectedMethod(defaultMethod) {
+export function getSelectedMethod(defaultMethod) {
   if (defaultMethod === 'text') {
     return undefined;
   }
@@ -929,7 +929,7 @@ function shouldSkipToy(post) {
   return !hasToy(post);
 }
 
-function getDefaultInputMethod(post) {
+export function getDefaultInputMethod(post) {
   const toy = post.toy ?? { defaultInputMethod: "text" };
   return toy.defaultInputMethod;
 }
