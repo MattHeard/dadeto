@@ -1,6 +1,7 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPrefixedLoggers } from './document.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
+import { deepClone } from '../utils/objectUtils.js';
 
 /**
  * Parses the existing rows from the text input
@@ -1333,5 +1334,4 @@ export const createDropdownInitializer = (
  * Helper function needed by getData
  * @param globalState
  */
-export const getDeepStateCopy = globalState =>
-  JSON.parse(JSON.stringify(globalState));
+export const getDeepStateCopy = globalState => deepClone(globalState);

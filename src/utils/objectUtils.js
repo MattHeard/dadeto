@@ -33,3 +33,12 @@ export function mapValues(obj, fn) {
   }
   return transformEntries(obj, fn);
 }
+
+/**
+ * Creates a deep clone of the provided value using JSON serialization.
+ * @param {*} value - The value to clone
+ * @returns {*} The cloned value
+ */
+export function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}

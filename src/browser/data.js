@@ -1,3 +1,5 @@
+import { deepClone } from '../utils/objectUtils.js';
+
 const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
 
 export const BLOG_STATUS = {
@@ -101,8 +103,7 @@ export function fetchAndCacheBlogData(state, fetch, loggers) {
  * @param {object} globalState - The state to copy.
  * @returns {object} A cloned version of the state.
  */
-export const getDeepStateCopy = globalState =>
-  JSON.parse(JSON.stringify(globalState));
+export const getDeepStateCopy = globalState => deepClone(globalState);
 
 /**
  * Deeply merges two objects. Creates a new object with merged properties.
@@ -232,7 +233,7 @@ function shouldDeepCopyForFetch(status) {
 function getRelevantStateCopy(state) {
   const status = state.blogStatus;
   if (shouldDeepCopyForFetch(status)) {
-    return JSON.parse(JSON.stringify(state));
+    return deepClone(state);
   }
   return state;
 }
