@@ -1,5 +1,7 @@
+import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
+
 function createOptions(data, getUuid) {
-  const keys = ['firstOption', 'secondOption', 'thirdOption', 'fourthOption'];
+  const keys = DENDRITE_OPTION_KEYS;
   return keys
     .filter(key => data[key])
     .map(key => ({ id: getUuid(), content: data[key] }));

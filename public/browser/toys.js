@@ -115,11 +115,9 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 
 import { textHandler } from '../inputHandlers/text.js';
 import { numberHandler } from '../inputHandlers/number.js';
-import { kvHandler } from '../inputHandlers/kv.js';
 import { defaultHandler } from '../inputHandlers/default.js';
 import { dendriteStoryHandler } from '../inputHandlers/dendriteStory.js';
-
-export { handleKVType } from '../inputHandlers/kv.js';
+import { kvHandler } from '../inputHandlers/kv.js';
 
 const inputHandlersMap = {
   text: textHandler,
@@ -1160,3 +1158,4 @@ export const createDropdownInitializer = (
  */
 export const getDeepStateCopy = globalState =>
   JSON.parse(JSON.stringify(globalState));
+

@@ -1,3 +1,4 @@
+import { DENDRITE_FIELDS } from '../constants/dendrite.js';
 import { maybeRemoveElement } from './disposeHelpers.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 
@@ -50,7 +51,7 @@ function createField(
 
   const input = createInputElement(dom, key);
   dom.setPlaceholder(input, placeholder);
-  if (Object.prototype.hasOwnProperty.call(data, key)) {
+  if (Object.hasOwn(data, key)) {
     dom.setValue(input, data[key]);
   }
   const onInput = () => {
@@ -70,16 +71,7 @@ function buildForm(dom, { container, textInput, data, disposers }) {
   const nextSibling = dom.getNextSibling(textInput);
   dom.insertBefore(container, form, nextSibling);
 
-  const fields = [
-    ['title', 'Title'],
-    ['content', 'Content'],
-    ['firstOption', 'First option'],
-    ['secondOption', 'Second option'],
-    ['thirdOption', 'Third option'],
-    ['fourthOption', 'Fourth option'],
-  ];
-
-  fields.forEach(([key, placeholder]) =>
+  DENDRITE_FIELDS.forEach(([key, placeholder]) =>
     createField(dom, form, {
       key,
       placeholder,
