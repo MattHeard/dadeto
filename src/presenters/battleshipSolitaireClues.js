@@ -22,10 +22,7 @@
  *  – Column clues shown on top & bottom, stacked so lowest digit line
  *    (ones) is closest to the grid
  */
-
-function isObject(value) {
-  return value && typeof value === 'object';
-}
+import { isObject } from '../utils/objectUtils.js';
 
 function hasValidClueArrays(obj) {
   return Array.isArray(obj.rowClues) && Array.isArray(obj.colClues);

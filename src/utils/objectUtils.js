@@ -33,3 +33,12 @@ export function mapValues(obj, fn) {
   }
   return transformEntries(obj, fn);
 }
+
+/**
+ * Determines if a value is a plain object (not null and not an array).
+ * @param {*} value - The value to test.
+ * @returns {boolean} True when the value is an object.
+ */
+export function isObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}

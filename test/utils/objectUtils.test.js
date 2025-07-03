@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { pick, mapValues } from '../../src/utils/objectUtils.js';
+import { pick, mapValues, isObject } from '../../src/utils/objectUtils.js';
 
 describe.each([
   ['pick', obj => pick(obj, ['a'])],
@@ -60,5 +60,19 @@ describe('mapValues', () => {
     const result = mapValues(obj, v => v + 1);
     expect(obj).toEqual(copy);
     expect(result).toEqual({ a: 2, b: 3 });
+  });
+});
+
+describe('isObject', () => {
+  test('detects plain objects', () => {
+    expect(isObject({})).toBe(true);
+    expect(isObject({ a: 1 })).toBe(true);
+  });
+
+  test('rejects arrays, null, and primitives', () => {
+    expect(isObject([])).toBe(false);
+    expect(isObject(null)).toBe(false);
+    expect(isObject(123)).toBe(false);
+    expect(isObject('str')).toBe(false);
   });
 });

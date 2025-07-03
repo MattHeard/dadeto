@@ -1,8 +1,10 @@
+import { isObject } from '../../utils/objectUtils.js';
+
 function getOpponent(player) {
-  if (player === "X") {
-    return "O";
+  if (player === 'X') {
+    return 'O';
   } else {
-    return "X";
+    return 'X';
   }
 }
 
@@ -16,10 +18,6 @@ function tryParseJSON(input) {
 
 function respectsTurnOrder({ move, index, moves }) {
   return index === 0 || move.player !== moves[index - 1].player;
-}
-
-function isObject(val) {
-  return typeof val === "object" && val !== null;
 }
 
 function getValidParsedMoves(parsed) {
@@ -73,21 +71,27 @@ export function ticTacToeMove(input) {
   const moves = parseInputSafely(input);
 
   // Inline validateAndApplyMoves
-  if (isInvalidMoves(moves)) {return returnInitialOptimalMove();}
+  if (isInvalidMoves(moves)) {
+    return returnInitialOptimalMove();
+  }
   return handleValidMoves(moves);
 }
 
 function handleValidMoves(moves) {
   const { board, seen } = initializeBoardAndSeen();
   const result = applyMovesSequentially(moves, board, seen);
-  if (!result.valid) {return returnInitialOptimalMove();}
+  if (!result.valid) {
+    return returnInitialOptimalMove();
+  }
   return handleValidAppliedMoves(moves, board, result);
 }
 
 function handleValidAppliedMoves(moves, board, result) {
   const earlyWin = result.earlyWin;
 
-  if (shouldSkipMove(earlyWin, moves)) {return buildMoveResponseWithoutNewMove(moves);}
+  if (shouldSkipMove(earlyWin, moves)) {
+    return buildMoveResponseWithoutNewMove(moves);
+  }
 
   const nextPlayer = determineNextPlayer(moves);
   const bestMove = findBestMove(board, nextPlayer, moves);
@@ -130,7 +134,7 @@ function shouldStop(valid, earlyWin) {
 }
 
 function applyMoveReducer(moves, board, seen) {
-  return function(acc, _, i) {
+  return function (acc, _, i) {
     if (acc.stop) {
       return acc;
     }
@@ -150,7 +154,6 @@ function applyMovesSequentially(moves, board, seen) {
   const result = moves.reduce(reducer, initial);
   return { valid: result.valid, earlyWin: result.earlyWin };
 }
-
 
 function copyBoard(board) {
   return board.map(row => row.slice());
@@ -210,21 +213,21 @@ function findBestMove(board, nextPlayer, moves) {
 }
 
 function getEmptyCells(board) {
-  return board.reduce((cells, row, r) =>
-    row.reduce((acc, cell, c) => {
-      if (!cell) {
-        acc.push({ r, c });
-      }
-      return acc;
-    }, cells),
-  []
+  return board.reduce(
+    (cells, row, r) =>
+      row.reduce((acc, cell, c) => {
+        if (!cell) {
+          acc.push({ r, c });
+        }
+        return acc;
+      }, cells),
+    []
   );
 }
 
-
 function determineNextPlayer(moves) {
   if (moves.length === 0) {
-    return "X";
+    return 'X';
   }
   return getOpponent(moves[moves.length - 1].player);
 }
@@ -252,7 +255,7 @@ function checkDiagonals(board, player) {
 }
 
 function checkEarlyWin(board) {
-  return isWin(board, "X") || isWin(board, "O");
+  return isWin(board, 'X') || isWin(board, 'O');
 }
 
 function applyMoveToBoard(board, move, seen) {
@@ -260,7 +263,9 @@ function applyMoveToBoard(board, move, seen) {
   const { row, column } = position;
 
   const key = `${row},${column}`;
-  if (seen.has(key)) {return false;}
+  if (seen.has(key)) {
+    return false;
+  }
   seen.add(key);
 
   board[row][column] = player;
@@ -286,14 +291,15 @@ function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
 }
 
 function getAvailableMoves(board) {
-  return board.reduce((moves, row, r) =>
-    row.reduce((acc, cell, c) => {
-      if (!cell) {
-        acc.push([r, c]);
-      }
-      return acc;
-    }, moves),
-  []
+  return board.reduce(
+    (moves, row, r) =>
+      row.reduce((acc, cell, c) => {
+        if (!cell) {
+          acc.push([r, c]);
+        }
+        return acc;
+      }, moves),
+    []
   );
 }
 
@@ -301,13 +307,15 @@ function simulateMoves(board, accumulateScores) {
   return getAvailableMoves(board).reduce(accumulateScores, []);
 }
 
-
-
 function minimax(depth, isMax, params) {
   const opponent = getOpponent(params.player);
   const isWinPlayer = () => isWin(params.board, params.player);
   const isWinOpponent = () => isWin(params.board, opponent);
-  const terminalScore = evaluateTerminalState(isWinPlayer, isWinOpponent, depth);
+  const terminalScore = evaluateTerminalState(
+    isWinPlayer,
+    isWinOpponent,
+    depth
+  );
   if (terminalScore !== null) {
     return terminalScore;
   }
@@ -335,7 +343,11 @@ function makeAccumulateScores(params, depth, isMax) {
     // Deep copy the board
     const newBoard = params.board.map(row => row.slice());
     newBoard[r][c] = value;
-    const newParams = { board: newBoard, player: params.player, moves: params.moves };
+    const newParams = {
+      board: newBoard,
+      player: params.player,
+      moves: params.moves,
+    };
     const score = minimax(depth + 1, !isMax, newParams);
     scores.push(score);
     return scores;
@@ -343,12 +355,14 @@ function makeAccumulateScores(params, depth, isMax) {
 }
 
 function hasValidPlayer({ move }) {
-  return ["X", "O"].includes(move.player);
+  return ['X', 'O'].includes(move.player);
 }
 
 function hasValidPosition({ move }) {
   const position = move.position;
-  if (!isObject(position)) { return false; }
+  if (!isObject(position)) {
+    return false;
+  }
   const { row, column } = position;
   return isValidRowAndColumn(row, column);
 }
@@ -358,7 +372,9 @@ function isValidRowAndColumn(row, column) {
 }
 
 function canMoveBeApplied(move, index, moves) {
-  if (!isObject(move)) { return false; }
+  if (!isObject(move)) {
+    return false;
+  }
   return isMoveDetailsValid({ move, index, moves });
 }
 
@@ -374,6 +390,6 @@ function isWin(board, player) {
 
 function returnInitialOptimalMove() {
   // In an empty board, the optimal first move is the center
-  const optimal = { player: "X", position: { row: 1, column: 1 } };
+  const optimal = { player: 'X', position: { row: 1, column: 1 } };
   return JSON.stringify({ moves: [optimal] });
 }
