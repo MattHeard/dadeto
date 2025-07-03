@@ -6,6 +6,7 @@ import {
   maybeRemoveKV,
 } from './removeElements.js';
 import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
+import { hideAndDisable } from './inputState.js';
 
 function disposeIfPossible(node) {
   if (typeof node._dispose === 'function') {
@@ -86,8 +87,7 @@ function buildForm(dom, { container, textInput, data, disposers }) {
 }
 
 function prepareTextInput(dom, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
+  hideAndDisable(textInput, dom);
 }
 
 function cleanContainer(dom, container) {
