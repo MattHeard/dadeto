@@ -2,6 +2,10 @@ import { describe, test, expect, jest } from '@jest/globals';
 import { createPreElement } from '../../src/presenters/pre.js';
 
 // Simple mock DOM abstraction
+/**
+ * Creates a minimal mock DOM implementation for testing.
+ * @returns {object} mock DOM utilities
+ */
 function createMockDom() {
   return {
     createdElements: [],
