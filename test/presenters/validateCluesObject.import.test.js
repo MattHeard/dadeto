@@ -3,17 +3,23 @@ import path from 'path';
 import { pathToFileURL } from 'url';
 import { it /*, describe, expect */ } from '@jest/globals';
 
+/**
+ * Dynamically loads the `validateCluesObject` function from the source module.
+ * @returns {Promise<Function>} resolves with the `validateCluesObject` function
+ */
 export async function loadValidateCluesObject() {
-  const srcPath = path.join(process.cwd(), 'src/presenters/battleshipSolitaireClues.js');
+  const srcPath = path.join(
+    process.cwd(),
+    'src/presenters/battleshipSolitaireClues.js'
+  );
   let src = fs.readFileSync(srcPath, 'utf8');
   src = src.replace(/from '((?:\.\.?\/).*?)'/g, (_, p) => {
     const abs = pathToFileURL(path.join(path.dirname(srcPath), p));
     return `from '${abs.href}'`;
   });
   src += '\nexport { validateCluesObject };';
-  return (
-    await import(`data:text/javascript,${encodeURIComponent(src)}`)
-  ).validateCluesObject;
+  return (await import(`data:text/javascript,${encodeURIComponent(src)}`))
+    .validateCluesObject;
 }
 
 /*
