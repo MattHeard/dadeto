@@ -9,6 +9,7 @@ import {
   maybeRemoveDendrite,
 } from './removeElements.js';
 import { KV_CONTAINER_SELECTOR } from '../constants/selectors.js';
+import { hideAndDisable } from './inputState.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
   let kvContainer = dom.querySelector(container, KV_CONTAINER_SELECTOR);
@@ -52,7 +53,6 @@ export function handleKVType(dom, container, textInput) {
 }
 
 export function kvHandler(dom, container, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
+  hideAndDisable(textInput, dom);
   handleKVType(dom, container, textInput);
 }
