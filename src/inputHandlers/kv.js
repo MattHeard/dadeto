@@ -4,11 +4,9 @@ import {
   createDispose,
   syncHiddenField,
 } from '../browser/toys.js';
-import {
-  maybeRemoveNumber,
-  maybeRemoveDendrite,
-} from './removeElements.js';
+import { maybeRemoveNumber, maybeRemoveDendrite } from './removeElements.js';
 import { KV_CONTAINER_SELECTOR } from '../constants/selectors.js';
+import { hideAndDisable } from '../utils/domUtils.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
   let kvContainer = dom.querySelector(container, KV_CONTAINER_SELECTOR);
@@ -44,7 +42,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   return kvContainer;
 };
 
-
 export function handleKVType(dom, container, textInput) {
   maybeRemoveNumber(container, dom);
   maybeRemoveDendrite(container, dom);
@@ -52,7 +49,6 @@ export function handleKVType(dom, container, textInput) {
 }
 
 export function kvHandler(dom, container, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
+  hideAndDisable(dom, textInput);
   handleKVType(dom, container, textInput);
 }

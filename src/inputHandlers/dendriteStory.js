@@ -1,11 +1,9 @@
 import { DENDRITE_FIELDS } from '../constants/dendrite.js';
 import { maybeRemoveElement } from './disposeHelpers.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
-import {
-  maybeRemoveNumber,
-  maybeRemoveKV,
-} from './removeElements.js';
+import { maybeRemoveNumber, maybeRemoveKV } from './removeElements.js';
 import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
+import { hideAndDisable } from '../utils/domUtils.js';
 
 function disposeIfPossible(node) {
   if (typeof node._dispose === 'function') {
@@ -85,11 +83,6 @@ function buildForm(dom, { container, textInput, data, disposers }) {
   return form;
 }
 
-function prepareTextInput(dom, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
-}
-
 function cleanContainer(dom, container) {
   maybeRemoveNumber(container, dom);
   maybeRemoveKV(container, dom);
@@ -103,7 +96,7 @@ function createDendriteForm(dom, container, textInput) {
 }
 
 export function dendriteStoryHandler(dom, container, textInput) {
-  prepareTextInput(dom, textInput);
+  hideAndDisable(dom, textInput);
   cleanContainer(dom, container);
   return createDendriteForm(dom, container, textInput);
 }
