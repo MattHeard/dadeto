@@ -1,6 +1,14 @@
 import { describe, test, expect } from '@jest/globals';
 import { htmlEscapeReplacements } from '../../src/generator/html.js';
 
+/**
+ * Replace each special HTML character in `text` using the provided
+ * replacement pairs.
+ *
+ * @param {string} text - The text to escape.
+ * @param {{from: RegExp, to: string}[]} replacements - Replacement pairs.
+ * @returns {string} The escaped text.
+ */
 function escapeWithReplacements(text, replacements) {
   return replacements.reduce((acc, { from, to }) => acc.replace(from, to), text);
 }
