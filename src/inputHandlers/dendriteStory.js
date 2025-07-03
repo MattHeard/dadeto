@@ -1,16 +1,11 @@
 import { DENDRITE_FIELDS } from '../constants/dendrite.js';
 import { maybeRemoveElement } from './disposeHelpers.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
-
-function maybeRemoveNumber(container, dom) {
-  const numberInput = dom.querySelector(container, 'input[type="number"]');
-  maybeRemoveElement(numberInput, container, dom);
-}
-
-function maybeRemoveKV(container, dom) {
-  const kvContainer = dom.querySelector(container, '.kv-container');
-  maybeRemoveElement(kvContainer, container, dom);
-}
+import {
+  maybeRemoveNumber,
+  maybeRemoveKV,
+} from './removeElements.js';
+import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
 
 function disposeIfPossible(node) {
   if (typeof node._dispose === 'function') {
@@ -19,7 +14,7 @@ function disposeIfPossible(node) {
 }
 
 function removeExistingForm(container, dom) {
-  const existing = dom.querySelector(container, '.dendrite-form');
+  const existing = dom.querySelector(container, DENDRITE_FORM_SELECTOR);
   if (existing) {
     disposeIfPossible(existing);
     dom.removeChild(container, existing);
@@ -67,7 +62,7 @@ function createField(
 
 function buildForm(dom, { container, textInput, data, disposers }) {
   const form = dom.createElement('div');
-  dom.setClassName(form, 'dendrite-form');
+  dom.setClassName(form, DENDRITE_FORM_SELECTOR.slice(1));
   const nextSibling = dom.getNextSibling(textInput);
   dom.insertBefore(container, form, nextSibling);
 
