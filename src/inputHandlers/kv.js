@@ -4,13 +4,17 @@ import {
   createDispose,
   syncHiddenField,
 } from '../browser/toys.js';
-import { maybeRemoveElement } from './disposeHelpers.js';
+import {
+  maybeRemoveNumber,
+  maybeRemoveDendrite,
+} from './removeElements.js';
+import { KV_CONTAINER_SELECTOR } from '../constants/selectors.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
-  let kvContainer = dom.querySelector(container, '.kv-container');
+  let kvContainer = dom.querySelector(container, KV_CONTAINER_SELECTOR);
   if (!kvContainer) {
     kvContainer = dom.createElement('div');
-    dom.setClassName(kvContainer, 'kv-container');
+    dom.setClassName(kvContainer, KV_CONTAINER_SELECTOR.slice(1));
     const nextSibling = dom.getNextSibling(textInput);
     dom.insertBefore(container, kvContainer, nextSibling);
   }
@@ -40,19 +44,6 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   return kvContainer;
 };
 
-export const maybeRemoveNumber = (container, dom) =>
-  maybeRemoveElement(
-    dom.querySelector(container, 'input[type="number"]'),
-    container,
-    dom
-  );
-
-export const maybeRemoveDendrite = (container, dom) =>
-  maybeRemoveElement(
-    dom.querySelector(container, '.dendrite-form'),
-    container,
-    dom
-  );
 
 export function handleKVType(dom, container, textInput) {
   maybeRemoveNumber(container, dom);

@@ -2,7 +2,7 @@ import { describe, test, expect, jest } from '@jest/globals';
 import {
   maybeRemoveNumber,
   maybeRemoveDendrite,
-} from "../../src/inputHandlers/kv.js";
+} from "../../src/inputHandlers/removeElements.js";
 
 // kvHandler relies on ensureKeyValueInput which is complex to mock in ES modules.
 // These tests focus on the removable helper functions to achieve full branch coverage.
