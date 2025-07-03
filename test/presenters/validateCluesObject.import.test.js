@@ -3,6 +3,11 @@ import path from 'path';
 import { pathToFileURL } from 'url';
 import { it /*, describe, expect */ } from '@jest/globals';
 
+/**
+ * Dynamically loads and returns the `validateCluesObject` function.
+ *
+ * @returns {Promise<Function>} resolves with the validateCluesObject export
+ */
 export async function loadValidateCluesObject() {
   const srcPath = path.join(process.cwd(), 'src/presenters/battleshipSolitaireClues.js');
   let src = fs.readFileSync(srcPath, 'utf8');
