@@ -1,6 +1,10 @@
 import { test, expect } from '@jest/globals';
 
 // Dynamically import with cache-busting query to avoid module caching
+/**
+ * Load getDeepStateCopy from the module with a cache-busting query.
+ * @returns {Promise<Function>} getDeepStateCopy
+ */
 async function loadModule() {
   const suffix = `?cacheBust=${Date.now()}`;
   const module = await import(`../../src/browser/toys.js${suffix}`);
