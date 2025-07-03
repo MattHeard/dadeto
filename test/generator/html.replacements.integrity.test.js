@@ -1,8 +1,17 @@
 import { describe, test, expect } from '@jest/globals';
 import { htmlEscapeReplacements } from '../../src/generator/html.js';
 
+/**
+ * Escapes characters in {@code text} using the provided replacement list.
+ * @param {string} text - The text to escape.
+ * @param {{ from: RegExp, to: string }[]} replacements - Replacement rules.
+ * @returns {string} The escaped text.
+ */
 function escapeWithReplacements(text, replacements) {
-  return replacements.reduce((acc, { from, to }) => acc.replace(from, to), text);
+  return replacements.reduce(
+    (acc, { from, to }) => acc.replace(from, to),
+    text
+  );
 }
 
 describe('HTML_ESCAPE_REPLACEMENTS integrity', () => {
