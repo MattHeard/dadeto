@@ -21,6 +21,8 @@ const publicUtilsDir = path.join(publicDir, 'utils');
 // New directory with handlers used by interactive components
 const srcInputHandlersDir = path.resolve(srcDir, 'inputHandlers');
 const publicInputHandlersDir = path.join(publicDir, 'inputHandlers');
+const srcConstantsDir = path.resolve(srcDir, 'constants');
+const publicConstantsDir = path.join(publicDir, 'constants');
 
 // Ensure public directory exists
 if (!fs.existsSync(publicDir)) {
@@ -142,6 +144,14 @@ if (fs.existsSync(srcInputHandlersDir)) {
   console.warn(
     `Warning: inputHandlers directory not found at ${srcInputHandlersDir}`
   );
+}
+
+// --- Copy src/constants to public/constants ---
+if (fs.existsSync(srcConstantsDir)) {
+  copyDirRecursive(srcConstantsDir, publicConstantsDir);
+  console.log('Constants files copied successfully!');
+} else {
+  console.warn(`Warning: constants directory not found at ${srcConstantsDir}`);
 }
 
 // --- Copy src/browser to public/browser ---
