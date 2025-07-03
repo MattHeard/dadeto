@@ -1,18 +1,25 @@
 import { DENDRITE_FIELDS } from '../constants/dendrite.js';
 import { maybeRemoveElement } from './disposeHelpers.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
-import {
-  maybeRemoveNumber,
-  maybeRemoveKV,
-} from './removeElements.js';
+import { hideAndDisableInput } from './inputHelpers.js';
+import { maybeRemoveNumber, maybeRemoveKV } from './removeElements.js';
 import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
 
+/**
+ *
+ * @param node
+ */
 function disposeIfPossible(node) {
   if (typeof node._dispose === 'function') {
     node._dispose();
   }
 }
 
+/**
+ *
+ * @param container
+ * @param dom
+ */
 function removeExistingForm(container, dom) {
   const existing = dom.querySelector(container, DENDRITE_FORM_SELECTOR);
   if (existing) {
@@ -21,11 +28,21 @@ function removeExistingForm(container, dom) {
   }
 }
 
+/**
+ *
+ * @param dom
+ * @param textInput
+ */
 function parseDendriteData(dom, textInput) {
   const value = dom.getValue(textInput) || '{}';
   return parseJsonOrDefault(value, {});
 }
 
+/**
+ *
+ * @param dom
+ * @param key
+ */
 function createInputElement(dom, key) {
   if (key === 'content') {
     return dom.createElement('textarea');
@@ -35,6 +52,17 @@ function createInputElement(dom, key) {
   return element;
 }
 
+/**
+ *
+ * @param dom
+ * @param form
+ * @param root0
+ * @param root0.key
+ * @param root0.placeholder
+ * @param root0.data
+ * @param root0.textInput
+ * @param root0.disposers
+ */
 function createField(
   dom,
   form,
@@ -60,6 +88,15 @@ function createField(
   dom.appendChild(form, wrapper);
 }
 
+/**
+ *
+ * @param dom
+ * @param root0
+ * @param root0.container
+ * @param root0.textInput
+ * @param root0.data
+ * @param root0.disposers
+ */
 function buildForm(dom, { container, textInput, data, disposers }) {
   const form = dom.createElement('div');
   dom.setClassName(form, DENDRITE_FORM_SELECTOR.slice(1));
@@ -85,25 +122,37 @@ function buildForm(dom, { container, textInput, data, disposers }) {
   return form;
 }
 
-function prepareTextInput(dom, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
-}
-
+/**
+ *
+ * @param dom
+ * @param container
+ */
 function cleanContainer(dom, container) {
   maybeRemoveNumber(container, dom);
   maybeRemoveKV(container, dom);
   removeExistingForm(container, dom);
 }
 
+/**
+ *
+ * @param dom
+ * @param container
+ * @param textInput
+ */
 function createDendriteForm(dom, container, textInput) {
   const disposers = [];
   const data = parseDendriteData(dom, textInput);
   return buildForm(dom, { container, textInput, data, disposers });
 }
 
+/**
+ *
+ * @param dom
+ * @param container
+ * @param textInput
+ */
 export function dendriteStoryHandler(dom, container, textInput) {
-  prepareTextInput(dom, textInput);
+  hideAndDisableInput(dom, textInput);
   cleanContainer(dom, container);
   return createDendriteForm(dom, container, textInput);
 }
