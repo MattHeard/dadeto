@@ -1,4 +1,4 @@
-import { isObject } from './common.js';
+import { isObject } from '../utils/typeUtils.js';
 import { deepMerge } from './data.js';
 
 export function setOutput(input, env) {

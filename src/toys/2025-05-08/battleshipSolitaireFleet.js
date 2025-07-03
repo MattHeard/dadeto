@@ -10,6 +10,7 @@
  *   • Assumes input is trusted – minimal sanity checks only.
  *   • No diagonal placement; honours optional noTouching flag.
  */
+import { parseJsonOrDefault } from '../../utils/jsonUtils.js';
 
 // ────────────────────── Helper utilities ────────────────────── //
 
@@ -318,13 +319,6 @@ function ensureShipsArray(cfg) {
 
 // ─────────────────────────── Public toy ─────────────────────────── //
 
-function safeJsonParse(input) {
-  try {
-    return JSON.parse(input);
-  } catch {
-    return { width: 10, height: 10, ships: [] };
-  }
-}
 
 function convertShipsToArray(cfg) {
   if (typeof cfg.ships === 'string') {
@@ -348,7 +342,7 @@ function parseDimensions(cfg) {
 }
 
 function parseConfig(input) {
-  const cfg = safeJsonParse(input);
+  const cfg = parseJsonOrDefault(input, { width: 10, height: 10, ships: [] });
   convertShipsToArray(cfg);
   parseDimensions(cfg);
   ensureShipsArray(cfg);
