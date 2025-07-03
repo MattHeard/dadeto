@@ -11,6 +11,9 @@ describe('createInputDropdownHandler all types', () => {
     const event = {};
     let numberQueryCount = 0;
 
+    /**
+     *
+     */
     function handleNumberQuery() {
       numberQueryCount += 1;
       if (numberQueryCount > 1) {
@@ -25,6 +28,12 @@ describe('createInputDropdownHandler all types', () => {
       'input[type="number"]': handleNumberQuery,
     };
 
+    /**
+     * Looks up a query handler for the provided selector.
+     * @param {*} _ - unused element reference
+     * @param {string} selector - selector to look up
+     * @returns {*} the result of the handler or null
+     */
     function mockQuerySelector(_, selector) {
       const handler = queryHandlers[selector];
       if (handler) {
