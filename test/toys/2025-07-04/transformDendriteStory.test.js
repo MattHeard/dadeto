@@ -22,7 +22,7 @@ describe('transformDendriteStory', () => {
       ],
     });
     const result = transformDendriteStory(input, env);
-    expect(result).toEqual({
+    expect(JSON.parse(result)).toEqual({
       stories: [{ id: 's1', title: 'Title' }],
       pages: [{ id: 's1', storyId: 's1', content: 'Body' }],
       options: [
@@ -56,7 +56,7 @@ describe('transformDendriteStory', () => {
       options: [],
     });
     const result = transformDendriteStory(input, env);
-    expect(result.stories[0]).toEqual({ id: 'a', title: 't' });
+    expect(JSON.parse(result).stories[0]).toEqual({ id: 'a', title: 't' });
     expect(env.get('setData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
@@ -74,7 +74,7 @@ describe('transformDendriteStory', () => {
       ['setData', jest.fn()],
     ]);
     const result = transformDendriteStory('not json', env);
-    expect(result).toEqual({ stories: [], pages: [], options: [] });
+    expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
     expect(env.get('setData')).not.toHaveBeenCalled();
   });
   test('repairs invalid DEND2 structure', () => {
@@ -112,7 +112,7 @@ describe('transformDendriteStory', () => {
     ]);
     const bad = JSON.stringify({ id: 'c', title: 't' });
     const result = transformDendriteStory(bad, env);
-    expect(result).toEqual({ stories: [], pages: [], options: [] });
+    expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
     expect(env.get('setData')).not.toHaveBeenCalled();
   });
 });

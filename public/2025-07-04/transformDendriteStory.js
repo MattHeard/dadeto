@@ -43,7 +43,7 @@ function isValidStory(obj) {
  * Transform and store a Dendrite story submission.
  * @param {string} input - JSON string of a Dendrite story submission.
  * @param {Map<string, Function>} env - Environment providing getData/setData.
- * @returns {{stories: object[], pages: object[], options: object[]}} New objects.
+ * @returns {string} JSON string of the new objects.
  */
 export function transformDendriteStory(input, env) {
   try {
@@ -69,8 +69,8 @@ export function transformDendriteStory(input, env) {
     newData.temporary.DEND2.options.push(...opts);
     setData(newData);
 
-    return { stories: [story], pages: [page], options: opts };
+    return JSON.stringify({ stories: [story], pages: [page], options: opts });
   } catch {
-    return { stories: [], pages: [], options: [] };
+    return JSON.stringify({ stories: [], pages: [], options: [] });
   }
 }
