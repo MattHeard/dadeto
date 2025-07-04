@@ -1,6 +1,9 @@
 /**
- *
- * @param context
+ * Resolve the interaction at the hacker door.
+ * @param {{lowerInput: string, nextInventory: string[], nextVisited: Set<string>}} context -
+ *   Player context for this step.
+ * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}}
+ *   Resulting state transition information.
  */
 function handleHackerDoor(context) {
   if (context.lowerInput.includes('zero')) {
@@ -24,10 +27,9 @@ function handleHackerDoor(context) {
 }
 
 /**
- *
- * @param root0
- * @param root0.name
- * @param root0.time
+ * Produce the introductory message for the adventure.
+ * @param {{name: string, time: string}} param0 - Player name and current time.
+ * @returns {{output: string, nextState: string}} Introductory prompt and state.
  */
 function handleIntro({ name, time }) {
   return {
@@ -37,18 +39,19 @@ function handleIntro({ name, time }) {
 }
 
 /**
- *
- * @param lowerInput
- * @param keywordMap
+ * Find a keyword contained within the player's input.
+ * @param {string} lowerInput - Normalised player input.
+ * @param {Record<string, any>} keywordMap - Map of keywords to responses.
+ * @returns {string|undefined} The matched keyword if found.
  */
 function findMatchingKeyword(lowerInput, keywordMap) {
   return Object.keys(keywordMap).find(keyword => lowerInput.includes(keyword));
 }
 
 /**
- *
- * @param root0
- * @param root0.lowerInput
+ * Handle input while the player is in the hub area.
+ * @param {{lowerInput: string}} param0 - Object containing normalised input.
+ * @returns {{output: string, nextState: string}} Hub response and next state.
  */
 function handleHub({ lowerInput }) {
   const keywordMap = {
@@ -76,7 +79,8 @@ function handleHub({ lowerInput }) {
 }
 
 /**
- *
+ * Describe the transport platform scene.
+ * @returns {{output: string, nextState: string}} Narrative response.
  */
 function handleTransportPlatform() {
   return {
@@ -86,20 +90,21 @@ function handleTransportPlatform() {
 }
 
 /**
- *
- * @param nextInventory
- * @param lowerInput
+ * Determine whether the player wants to trade the datapad.
+ * @param {string[]} nextInventory - Pending inventory items.
+ * @param {string} lowerInput - Normalised player input.
+ * @returns {boolean} True when the trade should occur.
  */
 function shouldTradeDatapad(nextInventory, lowerInput) {
   return nextInventory.includes('datapad') && lowerInput.includes('trade');
 }
 
 /**
- *
- * @param root0
- * @param root0.nextInventory
- * @param root0.nextVisited
- * @param root0.lowerInput
+ * Handle the trade interaction at the transport vendor.
+ * @param {{nextInventory: string[], nextVisited: Set<string>, lowerInput: string}} param0 -
+ *   Player context for the trade.
+ * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}}
+ *   Trade result and next state.
  */
 function handleTransportTrade({ nextInventory, nextVisited, lowerInput }) {
   if (shouldTradeDatapad(nextInventory, lowerInput)) {
@@ -123,11 +128,11 @@ function handleTransportTrade({ nextInventory, nextVisited, lowerInput }) {
 }
 
 /**
- *
- * @param root0
- * @param root0.getRandomNumber
- * @param root0.nextInventory
- * @param root0.nextVisited
+ * Attempt to sneak through the alley.
+ * @param {{getRandomNumber: Function, nextInventory: string[], nextVisited: Set<string>}} param0 -
+ *   Utilities and player state.
+ * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}}
+ *   Outcome of the stealth attempt.
  */
 function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
   const stealthCheck = getRandomNumber();
@@ -152,15 +157,18 @@ function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
 }
 
 /**
- *
+ * Provide a fallback result when no handler matches the state.
+ * @returns {{output: string, nextState: string}} Default response.
  */
 function getDefaultAdventureResult() {
   return { output: `> Glitch in the grid. Resetting...`, nextState: 'intro' };
 }
 
 /**
- *
- * @param context
+ * Execute the handler for the current adventure state.
+ * @param {{state: string}} context - Current player context.
+ * @returns {{output: string, nextState: string, nextInventory?: string[], nextVisited?: Set<string>}}
+ *   Resulting state data.
  */
 function getAdventureResult(context) {
   const stateHandlers = {
@@ -180,66 +188,74 @@ function getAdventureResult(context) {
 }
 
 /**
- *
- * @param data
+ * Extract temporary adventure data from the environment.
+ * @param {{temporary?: {CYBE1?: object}}} data - Full data object from env.
+ * @returns {object} Scoped state for this adventure.
  */
 function getScopedState(data) {
   return data.temporary.CYBE1 || {};
 }
 
 /**
- *
- * @param scoped
- * @param input
+ * Determine the player's name from stored state or input.
+ * @param {object} scoped - Stored temporary state.
+ * @param {string} input - Raw player input.
+ * @returns {string} Normalised name string.
  */
 function getNameOrInput(scoped, input) {
   return scoped.name || input.trim();
 }
 
 /**
- *
- * @param scoped
- * @param input
+ * Resolve the player name, defaulting when absent.
+ * @param {object} scoped - Temporary state.
+ * @param {string} input - Raw player input.
+ * @returns {string} Determined player name.
  */
 function getPlayerName(scoped, input) {
   return getNameOrInput(scoped, input) || 'Stray';
 }
 
 /**
- *
- * @param scoped
+ * Obtain the player's current adventure state.
+ * @param {object} scoped - Temporary state.
+ * @returns {string} Adventure state name.
  */
 function getPlayerState(scoped) {
   return scoped.state || 'intro';
 }
 
 /**
- *
- * @param scoped
+ * Retrieve the player's inventory list.
+ * @param {object} scoped - Temporary state.
+ * @returns {string[]} Inventory array.
  */
 function getPlayerInventory(scoped) {
   return scoped.inventory || [];
 }
 
 /**
- *
- * @param scoped
+ * Convert stored visited locations into a Set.
+ * @param {object} scoped - Temporary state.
+ * @returns {Set<string>} Collection of visited identifiers.
  */
 function getPlayerVisited(scoped) {
   return new Set(scoped.visited || []);
 }
 
 /**
- *
- * @param root0
- * @param root0.state
- * @param root0.name
- * @param root0.time
- * @param root0.lowerInput
- * @param root0.nextInventory
- * @param root0.nextVisited
- * @param root0.getRandomNumber
- * @param root0.setTemporaryData
+ * Execute a single step of the adventure state machine.
+ * @param {{
+ *   state: string,
+ *   name: string,
+ *   time: string,
+ *   lowerInput: string,
+ *   nextInventory: string[],
+ *   nextVisited: Set<string>,
+ *   getRandomNumber: Function,
+ *   setTemporaryData: Function,
+ * }} param0 - Context and utilities for the step.
+ * @returns {string} Output text describing the result.
  */
 function processAdventureStep({
   state,
@@ -282,27 +298,30 @@ function processAdventureStep({
 }
 
 /**
- *
- * @param result
- * @param nextInventory
+ * Choose the inventory to store after a step.
+ * @param {{nextInventory?: string[]}} result - Result from a handler.
+ * @param {string[]} nextInventory - Current pending inventory.
+ * @returns {string[]} Updated inventory array.
  */
 function getUpdatedInventory(result, nextInventory) {
   return result.nextInventory || nextInventory;
 }
 
 /**
- *
- * @param result
- * @param nextVisited
+ * Choose the visited set to store after a step.
+ * @param {{nextVisited?: Set<string>}} result - Result from a handler.
+ * @param {Set<string>} nextVisited - Existing visited locations.
+ * @returns {Set<string>} Updated visited locations.
  */
 function getUpdatedVisited(result, nextVisited) {
   return result.nextVisited || nextVisited;
 }
 
 /**
- *
- * @param input
- * @param env
+ * Core adventure logic executed for each player command.
+ * @param {string} input - Raw player command.
+ * @param {Map<string, Function>} env - Environment accessor map.
+ * @returns {string} Output generated by the command.
  */
 function runAdventure(input, env) {
   const getRandomNumber = env.get('getRandomNumber');
@@ -340,9 +359,10 @@ function runAdventure(input, env) {
 }
 
 /**
- *
- * @param input
- * @param env
+ * Public entry point for the cyberpunk adventure.
+ * @param {string} input - Player command.
+ * @param {Map<string, Function>} env - Environment utilities.
+ * @returns {string} Narrative response.
  */
 export function cyberpunkAdventure(input, env) {
   try {
