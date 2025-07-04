@@ -15,8 +15,7 @@
         "functionName": "transformDendriteStory",
         "defaultInputMethod": "dendrite-story"
       },
-      "tags": ["toy", "story", "dendrite"],
-      "release": "beta"
+      "tags": ["toy", "story", "dendrite"]
     },
     {
       "key": "JACK1",
