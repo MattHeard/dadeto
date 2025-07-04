@@ -1,4 +1,5 @@
 import { deepClone } from '../../utils/objectUtils.js';
+import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 
 /**
  * Ensure the data object has a valid temporary.DEND2 structure.
@@ -26,17 +27,19 @@ function ensureDend2(data) {
  * @param {object} obj - Parsed object.
  * @returns {boolean} True when valid.
  */
-function isValidStory(obj) {
+function isValidInput(obj) {
   return (
     obj &&
-    typeof obj.id === 'string' &&
     typeof obj.title === 'string' &&
-    typeof obj.content === 'string' &&
-    Array.isArray(obj.options) &&
-    obj.options.every(
-      o => o && typeof o.id === 'string' && typeof o.content === 'string'
-    )
+    typeof obj.content === 'string'
   );
+}
+
+function createOptions(data, getUuid) {
+  return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => ({
+    id: getUuid(),
+    content: data[key],
+  }));
 }
 
 /**
@@ -48,19 +51,21 @@ function isValidStory(obj) {
 export function transformDendriteStory(input, env) {
   try {
     const parsed = JSON.parse(input);
-    if (!isValidStory(parsed)) {
+    if (!isValidInput(parsed)) {
       throw new Error('invalid');
     }
-    const story = { id: parsed.id, title: parsed.title };
-    const page = { id: parsed.id, storyId: parsed.id, content: parsed.content };
-    const opts = parsed.options.map(o => ({
-      id: o.id,
-      pageId: parsed.id,
-      content: o.content,
-    }));
 
+    const getUuid = env.get('getUuid');
     const getData = env.get('getData');
     const setData = env.get('setData');
+    const id = getUuid();
+    const opts = createOptions(parsed, getUuid).map(o => ({
+      ...o,
+      pageId: id,
+    }));
+    const story = { id, title: parsed.title };
+    const page = { id, storyId: id, content: parsed.content };
+
     const currentData = getData();
     const newData = deepClone(currentData);
     ensureDend2(newData);
