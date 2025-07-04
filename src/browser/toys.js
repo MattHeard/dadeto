@@ -363,9 +363,13 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
 }
 
 /**
- * @param observer
- * @param moduleInfo
- * @param moduleConfig
+ * Handles an intersection event by importing the module and disconnecting the
+ * observer.
+ * @param {IntersectionObserver} observer - The observer reporting the entry.
+ * @param {{article: HTMLElement, modulePath: string, functionName: string}} moduleInfo -
+ *   Information about the module to import.
+ * @param {object} moduleConfig - Configuration with DOM helpers and loggers.
+ * @returns {void}
  */
 function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
   const { dom, loggers } = moduleConfig;
@@ -381,9 +385,11 @@ function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
 }
 
 /**
- *
- * @param moduleInfo
- * @param moduleConfig
+ * Creates a handler for IntersectionObserver entries.
+ * @param {{article: HTMLElement, modulePath: string, functionName: string}} moduleInfo -
+ *   Module information.
+ * @param {object} moduleConfig - Configuration with DOM helpers and loggers.
+ * @returns {Function} Entry handler factory.
  */
 function getEntryHandler(moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
@@ -448,19 +454,12 @@ export function makeCreateIntersectionObserver(dom, env) {
 }
 
 /**
- * Enable controls and update status message for an interactive component
- * @param {HTMLInputElement} inputElement
- * @param {HTMLButtonElement} submitButton
- * @param {HTMLElement} outputElement
- */
-/**
- * Enable controls and update status message for an interactive component
- * @param {HTMLInputElement} inputElement
- * @param {HTMLButtonElement} submitButton
- * @param elements
- * @param {object} dom - DOM helper object
- * @param {HTMLElement} parent
- * @param {string} presenterKey - The presenter key to use (e.g., 'text', 'pre').
+ * Enable controls and update the status message for an interactive component.
+ * @param {{inputElement: HTMLInputElement, submitButton: HTMLButtonElement, parent: HTMLElement}} elements -
+ *   Elements that make up the interactive component.
+ * @param {object} dom - DOM helper object.
+ * @param {string} presenterKey - Presenter key to use when rendering output.
+ * @returns {void}
  */
 export function enableInteractiveControls(elements, dom, presenterKey) {
   const { inputElement, submitButton, parent } = elements;
@@ -472,18 +471,20 @@ export function enableInteractiveControls(elements, dom, presenterKey) {
 }
 
 /**
- *
- * @param response
+ * Extracts the response body text.
+ * @param {Response} response - The fetch response object.
+ * @returns {Promise<string>} Resolves with the response text.
  */
 export function getText(response) {
   return response.text();
 }
 
 /**
- *
- * @param dom
- * @param parent
- * @param presenterKey
+ * Creates a function that displays fetched body text using a presenter.
+ * @param {object} dom - DOM helper object.
+ * @param {HTMLElement} parent - Parent element to render into.
+ * @param {string} presenterKey - Presenter key for rendering output.
+ * @returns {Function} Display callback accepting body text.
  */
 export function makeDisplayBody(dom, parent, presenterKey) {
   return body => {
@@ -492,10 +493,11 @@ export function makeDisplayBody(dom, parent, presenterKey) {
 }
 
 /**
- *
- * @param env
- * @param parent
- * @param presenterKey
+ * Creates a fetch error handler that logs and displays an error message.
+ * @param {object} env - Environment object with dom and errorFn.
+ * @param {HTMLElement} parent - Element to display the error in.
+ * @param {string} presenterKey - Presenter key for rendering output.
+ * @returns {Function} Error handler callback.
  */
 export function getFetchErrorHandler(env, parent, presenterKey) {
   const { dom, errorFn } = env;
@@ -511,10 +513,11 @@ export function getFetchErrorHandler(env, parent, presenterKey) {
 }
 
 /**
- *
- * @param url
- * @param env
- * @param options
+ * Fetches a URL and displays the response body.
+ * @param {string} url - The request URL.
+ * @param {object} env - Environment containing fetchFn and dom helpers.
+ * @param {{parent: HTMLElement, presenterKey: string}} options - Display options.
+ * @returns {void}
  */
 export function handleRequestResponse(url, env, options) {
   const { parent, presenterKey } = options;
@@ -918,18 +921,20 @@ const createRemoveAddListener = (dom, btnEl, handler) => () =>
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
 /**
- *
- * @param parsed
+ * Determines if a parsed request object has the expected shape.
+ * @param {object} parsed - Parsed JSON result.
+ * @returns {boolean} True when the object contains a request with a URL.
  */
 export function isValidParsedRequest(parsed) {
   return parsedRequestPredicates.every(fn => fn(parsed));
 }
 
 /**
- *
- * @param parsed
- * @param env
- * @param options
+ * Handles a parsed request object if it is valid.
+ * @param {object} parsed - Parsed JSON result.
+ * @param {object} env - Environment with fetchFn and dom helpers.
+ * @param {{parent: HTMLElement, presenterKey: string}} options - Display options.
+ * @returns {boolean} True if the parsed object was valid.
  */
 export function handleParsedResult(parsed, env, options) {
   const isValid = isValidParsedRequest(parsed);
@@ -972,9 +977,10 @@ import { setOutput } from './setOutput.js';
 
 // New wrapper function
 /**
- *
- * @param env
- * @param parent
+ * Creates an error handler for input processing failures.
+ * @param {object} env - Environment containing dom and errorFn.
+ * @param {HTMLElement} parent - Element to display the error in.
+ * @returns {Function} Error handler callback.
  */
 function createHandleInputError(env, parent) {
   const logError = env.errorFn;
@@ -992,10 +998,11 @@ function createHandleInputError(env, parent) {
 }
 
 /**
- *
- * @param elements
- * @param processingFunction
- * @param env
+ * Processes the input value and updates the output element.
+ * @param {object} elements - DOM elements used by the toy.
+ * @param {Function} processingFunction - Function to process the input.
+ * @param {object} env - Environment providing DOM helpers and state.
+ * @returns {void}
  */
 export function processInputAndSetOutput(elements, processingFunction, env) {
   const {
@@ -1018,10 +1025,11 @@ export function processInputAndSetOutput(elements, processingFunction, env) {
 }
 
 /**
- *
- * @param elements
- * @param processingFunction
- * @param env
+ * Wraps processing with error handling.
+ * @param {object} elements - DOM elements used by the toy.
+ * @param {Function} processingFunction - Function to process the input.
+ * @param {object} env - Environment providing DOM helpers and state.
+ * @returns {void}
  */
 function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement } = elements;
@@ -1045,13 +1053,10 @@ export const createHandleSubmit =
  * Sets up event listeners and initial state.
  * @param {HTMLElement} article - The article element containing the toy.
  * @param {Function} processingFunction - The toy's core logic function.
- * @param {object} globalState - The shared application state.
- * @param {Function} createEnvFn - Function to create the environment map for the toy.
- * @param {Function} error - Function for logging errors.
- * @param {Function} fetchFn - Function for making HTTP requests.
- * @param {object} dom - Object containing DOM functions.
- * @param inputElement
- * @param submitButton
+ * Disable input and submit elements during initialization.
+ * @param {HTMLInputElement} inputElement - Input field to disable.
+ * @param {HTMLButtonElement} submitButton - Submit button to disable.
+ * @returns {void}
  */
 function disableInputAndButton(inputElement, submitButton) {
   inputElement.disabled = true;
@@ -1059,18 +1064,21 @@ function disableInputAndButton(inputElement, submitButton) {
 }
 
 /**
- *
- * @param elements
+ * Checks for any falsy elements in the list.
+ * @param {Array<HTMLElement>} elements - Elements to verify.
+ * @returns {boolean} True if any element is missing.
  */
 function hasMissingElement(elements) {
   return elements.some(el => !el);
 }
 
 /**
- *
- * @param dom
- * @param article
- * @param logWarning
+ * Retrieves the input and submit elements for a toy article.
+ * @param {object} dom - DOM helper object.
+ * @param {HTMLElement} article - Article containing the toy.
+ * @param {Function} logWarning - Logger for missing elements.
+ * @returns {{inputElement: HTMLInputElement, submitButton: HTMLButtonElement}|null}
+ *   Object with elements or null if missing.
  */
 function getInteractiveElements(dom, article, logWarning) {
   const inputElement = dom.querySelector(article, 'input[type="text"]');
