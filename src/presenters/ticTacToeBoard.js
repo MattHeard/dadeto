@@ -1,20 +1,18 @@
 import { isObject } from '../browser/common.js';
 
 /**
- * createTicTacToeBoardElement
- * ---------------------------
- * @param {string} inputString – JSON-encoded moves array
- * @param {object} dom         – abstraction with createElement / setTextContent
- * @param move
- * @returns {HTMLElement}      – <pre> (board) or <p> (error)
+ * Extract the player from a move object.
+ * @param {{player?: string}} move - Move object that may contain a `player`.
+ * @returns {string | undefined} The player symbol or `undefined`.
  */
 function getPlayer(move) {
   return move?.player;
 }
 
 /**
- *
- * @param move
+ * Extract the position from a move object.
+ * @param {{position?: {row: number, column: number}}} move - Move object.
+ * @returns {{row: number, column: number} | undefined} Board coordinates.
  */
 function getPosition(move) {
   return move?.position;
@@ -41,9 +39,11 @@ const moveValidators = [
 ];
 
 /**
- *
- * @param move
- * @param board
+ * Determine if a move is legal.
+ * @param {{player?: string, position?: {row: number, column: number}}} move -
+ * Move to validate.
+ * @param {string[][]} board - Current board state.
+ * @returns {boolean} Whether the move can be applied.
  */
 function isLegalMove(move, board) {
   const player = getPlayer(move);
@@ -53,9 +53,11 @@ function isLegalMove(move, board) {
 }
 
 /**
- *
- * @param move
- * @param board
+ * Update the board if the provided move is legal.
+ * @param {{player?: string, position?: {row: number, column: number}}} move -
+ * Candidate move.
+ * @param {string[][]} board - Board to update.
+ * @returns {void}
  */
 function updateBoardIfLegal(move, board) {
   if (isLegalMove(move, board)) {
@@ -65,9 +67,11 @@ function updateBoardIfLegal(move, board) {
 }
 
 /**
- *
- * @param move
- * @param board
+ * Apply a move to the board if it contains a valid position.
+ * @param {{player?: string, position?: {row: number, column: number}}} move -
+ * Move to attempt.
+ * @param {string[][]} board - Board to mutate.
+ * @returns {void}
  */
 function applyMove(move, board) {
   const position = getPosition(move);
@@ -77,9 +81,11 @@ function applyMove(move, board) {
 }
 
 /**
- *
- * @param inputString
- * @param dom
+ * Create a DOM element representing a tic‑tac‑toe board.
+ * @param {string} inputString - JSON encoded array of moves.
+ * @param {{createElement: Function, setTextContent: Function}} dom - DOM
+ * abstraction used for creation and rendering.
+ * @returns {HTMLElement} `<pre>` containing the board layout.
  */
 export function createTicTacToeBoardElement(inputString, dom) {
   let data;
@@ -96,9 +102,11 @@ export function createTicTacToeBoardElement(inputString, dom) {
 }
 
 /**
- *
- * @param data
- * @param dom
+ * Render a tic‑tac‑toe board from parsed data.
+ * @param {{moves?: Array<object>}} data - Parsed moves object.
+ * @param {{createElement: Function, setTextContent: Function}} dom - DOM
+ * abstraction for element creation.
+ * @returns {HTMLElement} `<pre>` element representing the board.
  */
 function renderTicTacToeBoardFromData(data, dom) {
   // 2. Initialise empty 3 × 3 grid
