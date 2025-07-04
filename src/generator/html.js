@@ -2,7 +2,8 @@
 
 // Constants for HTML structure
 /**
- *
+ * Provide the HTML doctype declaration.
+ * @returns {string} The doctype string.
  */
 export function doctype() {
   return '<!DOCTYPE html>';
@@ -10,7 +11,8 @@ export function doctype() {
 
 // Language settings
 /**
- *
+ * Supported language codes.
+ * @returns {{EN: string}} Mapping of language constants.
  */
 export function language() {
   return {
@@ -20,7 +22,8 @@ export function language() {
 
 // HTML tag names
 /**
- *
+ * Name of the root HTML tag.
+ * @returns {string} The tag name.
  */
 export function htmlTagName() {
   return 'html';
@@ -28,7 +31,8 @@ export function htmlTagName() {
 
 // HTML attribute names
 /**
- *
+ * Attribute names commonly used in generated markup.
+ * @returns {{LANG: string, CLASS: string, ID: string}} Attribute name constants.
  */
 export function attrName() {
   return {
@@ -40,7 +44,8 @@ export function attrName() {
 
 // HTML escape replacements
 /**
- *
+ * Mapping of characters to their HTML escape sequences.
+ * @returns {Array<{from: RegExp, to: string}>} Replacement definitions.
  */
 export function htmlEscapeReplacements() {
   return [
@@ -65,37 +70,43 @@ export function join(parts) {
 
 // HTML tag and attribute symbols
 /**
- *
+ * Character used to start an HTML tag.
+ * @returns {string} The opening tag character.
  */
 export function tagOpen() {
   return '<';
 }
 /**
- *
+ * Character used to end an HTML tag.
+ * @returns {string} The closing tag character.
  */
 export function tagClose() {
   return '>';
 }
 /**
- *
+ * Whitespace character used when building tags.
+ * @returns {string} A single space.
  */
 export function space() {
   return ' ';
 }
 /**
- *
+ * Slash character for self-closing tags.
+ * @returns {string} The slash character.
  */
 export function slash() {
   return '/';
 }
 /**
- *
+ * Equals sign used in attribute pairs.
+ * @returns {string} The equals character.
  */
 export function equals() {
   return '=';
 }
 /**
- *
+ * Quote character used around attribute values.
+ * @returns {string} The double quote character.
  */
 export function quote() {
   return '"';

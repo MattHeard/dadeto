@@ -56,10 +56,11 @@ export const ensureNumberInput = (container, textInput, dom) => {
 };
 
 /**
- *
- * @param dom
- * @param container
- * @param textInput
+ * Switch the UI to use a numeric input field.
+ * @param {object} dom - DOM helper utilities.
+ * @param {HTMLElement} container - Container element housing the input.
+ * @param {HTMLInputElement} textInput - The text input element.
+ * @returns {void}
  */
 export function numberHandler(dom, container, textInput) {
   hideAndDisable(textInput, dom);
