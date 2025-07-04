@@ -26,32 +26,36 @@
 import { isObject } from '../browser/common.js';
 
 /**
- *
- * @param obj
+ * Check that the given object has rowClues and colClues arrays.
+ * @param {object} obj - Parsed JSON object.
+ * @returns {boolean} True when both arrays are present.
  */
 function hasValidClueArrays(obj) {
   return Array.isArray(obj.rowClues) && Array.isArray(obj.colClues);
 }
 
 /**
- *
- * @param arr
+ * Determine if an array contains non-number values.
+ * @param {Array} arr - Array to inspect.
+ * @returns {boolean} True if any value is not a number.
  */
 function hasNonNumberValues(arr) {
   return arr.some(n => typeof n !== 'number');
 }
 
 /**
- *
- * @param arr
+ * Check whether an array is empty.
+ * @param {Array} arr - Array to check.
+ * @returns {boolean} True if the array has no items.
  */
 function isEmpty(arr) {
   return arr.length === 0;
 }
 
 /**
- *
- * @param obj
+ * Extract row and column clue arrays from the object.
+ * @param {object} obj - Parsed clue object.
+ * @returns {Array[]} A pair [rowClues, colClues].
  */
 function getClueArrays(obj) {
   return [obj.rowClues, obj.colClues];
@@ -97,8 +101,9 @@ const DEFAULT_CLUES = {
 };
 
 /**
- *
- * @param str
+ * Safely parse a JSON string.
+ * @param {string} str - JSON to parse.
+ * @returns {object|null} Parsed object or null on error.
  */
 function safeJsonParse(str) {
   try {
@@ -114,8 +119,9 @@ const INVALID_CLUE_CHECKS = [
 ];
 
 /**
- *
- * @param colClues
+ * Build a matrix of digit strings for the column clues.
+ * @param {number[]} colClues - Column clue values.
+ * @returns {string[][]} Matrix of digits by line.
  */
 function buildColumnDigitMatrix(colClues) {
   const maxDigits = Math.max(...colClues).toString().length;
@@ -144,9 +150,10 @@ function parseCluesOrDefault(inputString) {
 }
 
 /**
- *
- * @param inputString
- * @param dom
+ * Build a preformatted Battleship-Solitaire clue board.
+ * @param {string} inputString - JSON clue configuration.
+ * @param {object} dom - DOM utilities.
+ * @returns {HTMLElement} The generated <pre> element.
  */
 export function createBattleshipCluesBoardElement(inputString, dom) {
   const clues = parseCluesOrDefault(inputString);
