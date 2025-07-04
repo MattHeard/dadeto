@@ -3,7 +3,7 @@ import { describe, test, expect, jest } from '@jest/globals';
 
 describe('transformDendriteStory', () => {
   test('transforms and stores story data', () => {
-    const uuids = ['story', 'a', 'b'];
+    const uuids = ['story', 'page', 'a', 'b'];
     let idx = 0;
     const env = new Map([
       [
@@ -24,20 +24,20 @@ describe('transformDendriteStory', () => {
     const result = JSON.parse(transformDendriteStory(input, env));
     expect(result).toEqual({
       stories: [{ id: 'story', title: 'Title' }],
-      pages: [{ id: 'story', storyId: 'story', content: 'Body' }],
+      pages: [{ id: 'page', storyId: 'story', content: 'Body' }],
       options: [
-        { id: 'a', pageId: 'story', content: 'A' },
-        { id: 'b', pageId: 'story', content: 'B' },
+        { id: 'a', pageId: 'page', content: 'A' },
+        { id: 'b', pageId: 'page', content: 'B' },
       ],
     });
     expect(env.get('setData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
           stories: [{ id: 'story', title: 'Title' }],
-          pages: [{ id: 'story', storyId: 'story', content: 'Body' }],
+          pages: [{ id: 'page', storyId: 'story', content: 'Body' }],
           options: [
-            { id: 'a', pageId: 'story', content: 'A' },
-            { id: 'b', pageId: 'story', content: 'B' },
+            { id: 'a', pageId: 'page', content: 'A' },
+            { id: 'b', pageId: 'page', content: 'B' },
           ],
         },
       },
@@ -45,19 +45,21 @@ describe('transformDendriteStory', () => {
   });
 
   test('creates missing DEND2 structure', () => {
+    const uuids = ['s', 'p'];
+    let i = 0;
     const env = new Map([
       ['getData', () => ({})],
       ['setData', jest.fn()],
-      ['getUuid', () => 'id'],
+      ['getUuid', () => uuids[i++]],
     ]);
     const input = JSON.stringify({ title: 't', content: 'c' });
     const result = JSON.parse(transformDendriteStory(input, env));
-    expect(result.stories[0]).toEqual({ id: 'id', title: 't' });
+    expect(result.stories[0]).toEqual({ id: 's', title: 't' });
     expect(env.get('setData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
-          stories: [{ id: 'id', title: 't' }],
-          pages: [{ id: 'id', storyId: 'id', content: 'c' }],
+          stories: [{ id: 's', title: 't' }],
+          pages: [{ id: 'p', storyId: 's', content: 'c' }],
           options: [],
         },
       },
@@ -74,7 +76,7 @@ describe('transformDendriteStory', () => {
     expect(env.get('setData')).not.toHaveBeenCalled();
   });
   test('repairs invalid DEND2 structure', () => {
-    const uuids = ['id'];
+    const uuids = ['s', 'p'];
     const env = new Map([
       [
         'getData',
@@ -90,8 +92,8 @@ describe('transformDendriteStory', () => {
     expect(env.get('setData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
-          stories: [{ id: 'id', title: 'title' }],
-          pages: [{ id: 'id', storyId: 'id', content: 'body' }],
+          stories: [{ id: 's', title: 'title' }],
+          pages: [{ id: 'p', storyId: 's', content: 'body' }],
           options: [],
         },
       },

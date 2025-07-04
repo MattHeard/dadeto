@@ -61,13 +61,14 @@ export function transformDendriteStory(input, env) {
     const getUuid = env.get('getUuid');
     const getData = env.get('getData');
     const setData = env.get('setData');
-    const id = getUuid();
+    const storyId = getUuid();
+    const pageId = getUuid();
     const opts = createOptions(parsed, getUuid).map(o => ({
       ...o,
-      pageId: id,
+      pageId,
     }));
-    const story = { id, title: parsed.title };
-    const page = { id, storyId: id, content: parsed.content };
+    const story = { id: storyId, title: parsed.title };
+    const page = { id: pageId, storyId, content: parsed.content };
 
     const currentData = getData();
     const newData = deepClone(currentData);
