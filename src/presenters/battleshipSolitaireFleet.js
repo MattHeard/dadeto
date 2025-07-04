@@ -2,9 +2,9 @@
  * createBattleshipFleetBoardElement
  * ---------------------------------
  * Renders a Battleship-Solitaire fleet into a monospace text grid.
- *
  * @param {string} inputString – JSON-encoded RevealedBattleshipFleet
  * @param {object} dom         – abstraction with createElement / setTextContent
+ * @param fleet
  * @returns {HTMLElement}      – <pre> element (board) or <p> element (error)
  *
  * Fleet JSON shape:
@@ -28,27 +28,45 @@ function validateFleetObject(fleet) {
   return found[1];
 }
 
+/**
+ *
+ * @param boardInfo
+ * @param ships
+ */
 function placeShipsOnBoard(boardInfo, ships) {
   const placeShip = ship => placeSingleShipOnBoard(boardInfo, ship);
   ships.forEach(placeShip);
 }
 
+/**
+ *
+ * @param boardInfo
+ * @param ship
+ */
 function placeSingleShipOnBoard(boardInfo, ship) {
   if (isMalformedShip(ship)) {
     return; // skip malformed
   }
   fillShipOnBoard(boardInfo, ship);
-
 }
 
+/**
+ *
+ * @param boardInfo
+ * @param ship
+ */
 function fillShipOnBoard(boardInfo, ship) {
   Array.from({ length: ship.length }).forEach((_, i) => {
     fillShipCell(boardInfo, ship, i);
   });
-
 }
 
-
+/**
+ *
+ * @param boardInfo
+ * @param ship
+ * @param i
+ */
 function fillShipCell(boardInfo, ship, i) {
   const x = getShipCellX(ship, i);
   const y = getShipCellY(ship, i);
@@ -56,6 +74,11 @@ function fillShipCell(boardInfo, ship, i) {
   markShipCellOnBoard(boardInfo, coord);
 }
 
+/**
+ *
+ * @param ship
+ * @param i
+ */
 function getShipCellY(ship, i) {
   if (ship.direction === 'V') {
     return ship.start.y + i;
@@ -63,6 +86,11 @@ function getShipCellY(ship, i) {
   return ship.start.y;
 }
 
+/**
+ *
+ * @param ship
+ * @param i
+ */
 function getShipCellX(ship, i) {
   if (ship.direction === 'H') {
     return ship.start.x + i;
@@ -70,6 +98,11 @@ function getShipCellX(ship, i) {
   return ship.start.x;
 }
 
+/**
+ *
+ * @param boardInfo
+ * @param coord
+ */
 function markShipCellOnBoard(boardInfo, coord) {
   const { board, dimensions } = boardInfo;
   if (isOutOfBounds(coord, dimensions)) {
@@ -79,6 +112,10 @@ function markShipCellOnBoard(boardInfo, coord) {
   board[y][x] = '#';
 }
 
+/**
+ *
+ * @param ship
+ */
 function isMalformedShip(ship) {
   const validators = [
     isMissingStart,
@@ -89,37 +126,75 @@ function isMalformedShip(ship) {
   return validators.some(validator => validator(ship));
 }
 
+/**
+ *
+ * @param ship
+ */
 function isMissingStart(ship) {
   return !ship.start;
 }
 
+/**
+ *
+ * @param ship
+ */
 function isInvalidStartCoordinates(ship) {
   return typeof ship.start.x !== 'number' || typeof ship.start.y !== 'number';
 }
 
+/**
+ *
+ * @param ship
+ */
 function isInvalidLength(ship) {
   return typeof ship.length !== 'number';
 }
 
+/**
+ *
+ * @param ship
+ */
 function isInvalidDirection(ship) {
   return ship.direction !== 'H' && ship.direction !== 'V';
 }
 
+/**
+ *
+ * @param coord
+ * @param dimensions
+ */
 function isOutOfBounds(coord, dimensions) {
-  return isNegativeCoordinate(coord) || isCoordinateExceedsDimensions(coord, dimensions);
+  return (
+    isNegativeCoordinate(coord) ||
+    isCoordinateExceedsDimensions(coord, dimensions)
+  );
 }
 
+/**
+ *
+ * @param coord
+ */
 function isNegativeCoordinate(coord) {
   const { x, y } = coord;
   return x < 0 || y < 0;
 }
 
+/**
+ *
+ * @param coord
+ * @param dimensions
+ */
 function isCoordinateExceedsDimensions(coord, dimensions) {
   const { x, y } = coord;
   const { width, height } = dimensions;
   return x >= width || y >= height;
 }
 
+/**
+ *
+ * @param inputString
+ * @param dom
+ */
 export function createBattleshipFleetBoardElement(inputString, dom) {
   let fleet;
   // 1. Parse input safely
@@ -132,6 +207,11 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
   return handleParsedFleet(fleet, dom);
 }
 
+/**
+ *
+ * @param fleet
+ * @param dom
+ */
 function handleParsedFleet(fleet, dom) {
   const errorMsg = validateFleetObject(fleet);
   if (errorMsg) {
@@ -142,6 +222,11 @@ function handleParsedFleet(fleet, dom) {
   return renderFleetBoard(fleet, dom);
 }
 
+/**
+ *
+ * @param fleet
+ * @param dom
+ */
 function renderFleetBoard(fleet, dom) {
   const { width, height } = fleet;
   // 2. Initialise empty grid with water symbols
@@ -164,4 +249,3 @@ function renderFleetBoard(fleet, dom) {
   dom.setTextContent(pre, content);
   return pre;
 }
-

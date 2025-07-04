@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>38/38</span>
+                <span class='fraction'>33/33</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>36/36</span>
+                <span class='fraction'>31/31</span>
             </div>
         
             
@@ -132,26 +132,25 @@
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
 <a name='L69'></a><a href='#L69'>69</a>
-<a name='L70'></a><a href='#L70'>70</a>
-<a name='L71'></a><a href='#L71'>71</a>
-<a name='L72'></a><a href='#L72'>72</a>
-<a name='L73'></a><a href='#L73'>73</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L70'></a><a href='#L70'>70</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">134x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">133x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">134x</span>
+<span class="cline-any cline-yes">133x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">134x</span>
+<span class="cline-any cline-yes">133x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">134x</span>
+<span class="cline-any cline-yes">133x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-yes">11x</span>
@@ -160,17 +159,17 @@
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">134x</span>
+<span class="cline-any cline-yes">133x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">134x</span>
+<span class="cline-any cline-yes">133x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">134x</span>
+<span class="cline-any cline-yes">133x</span>
 <span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">11x</span>
@@ -191,23 +190,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { maybeRemoveElement } from './disposeHelpers.js';
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { maybeRemoveKV, maybeRemoveDendrite } from './removeElements.js';
+import { NUMBER_INPUT_SELECTOR } from '../constants/selectors.js';
+import { hideAndDisable } from './inputState.js';
 &nbsp;
 const createRemoveValueListener = (dom, el, handler) =&gt; () =&gt;
   dom.removeEventListener(el, 'input', handler);
@@ -243,7 +239,7 @@ const positionNumberInput = ({ container, textInput, numberInput, dom }) =&gt; {
 };
 &nbsp;
 export const ensureNumberInput = (container, textInput, dom) =&gt; {
-  let numberInput = dom.querySelector(container, 'input[type="number"]');
+  let numberInput = dom.querySelector(container, NUMBER_INPUT_SELECTOR);
 &nbsp;
   if (!numberInput) {
     numberInput = createNumberInput(
@@ -262,19 +258,14 @@ export const ensureNumberInput = (container, textInput, dom) =&gt; {
   return numberInput;
 };
 &nbsp;
-function maybeRemoveKV(container, dom) {
-  const kvContainer = dom.querySelector(container, '.kv-container');
-  maybeRemoveElement(kvContainer, container, dom);
-}
-&nbsp;
-function maybeRemoveDendrite(container, dom) {
-  const dendriteForm = dom.querySelector(container, '.dendrite-form');
-  maybeRemoveElement(dendriteForm, container, dom);
-}
-&nbsp;
+/**
+ *
+ * @param dom
+ * @param container
+ * @param textInput
+ */
 export function numberHandler(dom, container, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
+  hideAndDisable(textInput, dom);
   maybeRemoveKV(container, dom);
   maybeRemoveDendrite(container, dom);
   ensureNumberInput(container, textInput, dom);
@@ -286,7 +277,7 @@ export function numberHandler(dom, container, textInput) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-03T06:34:46.498Z
+                at 2025-07-04T06:14:35.212Z
             </div>
         <script src="../prettify.js"></script>
         <script>

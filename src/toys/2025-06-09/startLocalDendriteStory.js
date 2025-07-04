@@ -1,6 +1,11 @@
 import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 import { deepClone } from '../../utils/objectUtils.js';
 
+/**
+ *
+ * @param data
+ * @param getUuid
+ */
 function createOptions(data, getUuid) {
   const keys = DENDRITE_OPTION_KEYS;
   return keys
@@ -8,16 +13,29 @@ function createOptions(data, getUuid) {
     .map(key => ({ id: getUuid(), content: data[key] }));
 }
 
+/**
+ *
+ * @param obj
+ */
 function hasValidTemporary(obj) {
   return Array.isArray(obj.temporary?.DEND1);
 }
 
+/**
+ *
+ * @param obj
+ */
 function ensureTemporaryData(obj) {
   if (!hasValidTemporary(obj)) {
     obj.temporary = { DEND1: [] };
   }
 }
 
+/**
+ *
+ * @param input
+ * @param env
+ */
 export function startLocalDendriteStory(input, env) {
   try {
     const data = JSON.parse(input);

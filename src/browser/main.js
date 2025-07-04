@@ -50,6 +50,9 @@ const globalState = {
  */
 const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
 
+/**
+ *
+ */
 function createEnv() {
   return new Map([
     ['getRandomNumber', getRandomNumber],

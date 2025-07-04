@@ -97,7 +97,7 @@ const _self =
             }
           },
           isActive: function (e, t, a) {
-            for (let n = 'no-' + t; e; ) {
+            for (let n = `no-${t}`; e; ) {
               const r = e.classList;
               if (r.contains(t)) {
                 return !0;
@@ -182,21 +182,23 @@ const _self =
         highlightElement: function (a, n, s) {
           const i = r.util.getLanguage(a),
             l = r.languages[i];
-          a.className =
-            a.className.replace(t, '').replace(/\s+/g, ' ') + ' language-' + i;
+          a.className = `${a.className.replace(t, '').replace(/\s+/g, ' ')} language-${i}`;
           let o = a.parentElement;
           o &&
             'pre' === o.nodeName.toLowerCase() &&
-            (o.className =
-              o.className.replace(t, '').replace(/\s+/g, ' ') +
-              ' language-' +
-              i);
+            (o.className = `${o.className
+              .replace(t, '')
+              .replace(/\s+/g, ' ')} language-${i}`);
           const u = {
             element: a,
             language: i,
             grammar: l,
             code: a.textContent,
           };
+          /**
+           *
+           * @param e
+           */
           function c(e) {
             (u.highlightedCode = e),
               r.hooks.run('before-insert', u),
@@ -283,12 +285,26 @@ const _self =
         },
         Token: s,
       };
+    /**
+     *
+     * @param e
+     * @param t
+     * @param a
+     * @param n
+     */
     function s(e, t, a, n) {
       (this.type = e),
         (this.content = t),
         (this.alias = a),
         (this.length = 0 | (n || '').length);
     }
+    /**
+     *
+     * @param e
+     * @param t
+     * @param a
+     * @param n
+     */
     function i(e, t, a, n) {
       e.lastIndex = t;
       const r = e.exec(a);
@@ -298,13 +314,22 @@ const _self =
       }
       return r;
     }
+    /**
+     *
+     * @param e
+     * @param t
+     * @param a
+     * @param n
+     * @param o
+     * @param g
+     */
     function l(e, t, a, n, o, g) {
       for (const d in a) {
         if (a.hasOwnProperty(d) && a[d]) {
           let p = a[d];
           p = Array.isArray(p) ? p : [p];
           for (let m = 0; m < p.length; ++m) {
-            if (g && g.cause == d + ',' + m) {
+            if (g && g.cause == `${d},${m}`) {
               return;
             }
             const h = p[m],
@@ -314,7 +339,7 @@ const _self =
               y = h.alias;
             if (b && !h.pattern.global) {
               const F = h.pattern.toString().match(/[imsuy]*$/)[0];
-              h.pattern = RegExp(h.pattern.source, F + 'g');
+              h.pattern = RegExp(h.pattern.source, `${F}g`);
             }
             for (
               let k = h.pattern || h, x = n.next, w = o;
@@ -366,7 +391,7 @@ const _self =
                   z && u(t, x, z),
                   $ > 1)
                 ) {
-                  const L = { cause: d + ',' + m, reach: T };
+                  const L = { cause: `${d},${m}`, reach: T };
                   l(e, t, a, x.prev, w, L),
                     g && L.reach > g.reach && (g.reach = L.reach);
                 }
@@ -376,16 +401,31 @@ const _self =
         }
       }
     }
+    /**
+     *
+     */
     function o() {
       const e = { value: null, prev: null, next: null },
         t = { value: null, prev: e, next: null };
       (e.next = t), (this.head = e), (this.tail = t), (this.length = 0);
     }
+    /**
+     *
+     * @param e
+     * @param t
+     * @param a
+     */
     function u(e, t, a) {
       const n = t.next,
         r = { value: a, prev: t, next: n };
       return (t.next = r), (n.prev = r), e.length++, r;
     }
+    /**
+     *
+     * @param e
+     * @param t
+     * @param a
+     */
     function c(e, t, a) {
       for (var n = t.next, r = 0; r < a && n !== e.tail; r++) {
         n = n.next;
@@ -423,26 +463,11 @@ const _self =
           r.hooks.run('wrap', s);
         let l = '';
         for (const o in s.attributes) {
-          l +=
-            ' ' +
-            o +
-            '="' +
-            (s.attributes[o] || '').replace(/"/g, '&quot;') +
-            '"';
+          l += ` ${o}="${(s.attributes[o] || '').replace(/"/g, '&quot;')}"`;
         }
-        return (
-          '<' +
-          s.tag +
-          ' class="' +
-          s.classes.join(' ') +
-          '"' +
-          l +
-          '>' +
-          s.content +
-          '</' +
-          s.tag +
-          '>'
-        );
+        return `<${s.tag} class="${s.classes.join(' ')}"${l}>${s.content}</${
+          s.tag
+        }>`;
       }),
       !e.document)
     ) {
@@ -464,6 +489,9 @@ const _self =
         : r;
     }
     const g = r.util.currentScript();
+    /**
+     *
+     */
     function d() {
       r.manual || r.highlightAll();
     }
@@ -484,7 +512,6 @@ const _self =
   })(_self);
 /**
  * Prism: Lightweight, robust, elegant syntax highlighting
- *
  * @license MIT <https://opensource.org/licenses/MIT>
  * @author Lea Verou <https://lea.verou.me>
  * @namespace
@@ -551,7 +578,7 @@ const _self =
   Object.defineProperty(Prism.languages.markup.tag, 'addInlined', {
     value: function (e, t) {
       const a = {};
-      (a['language-' + t] = {
+      (a[`language-${t}`] = {
         pattern: /(^<!\[CDATA\[)[\s\S]+?(?=\]\]>$)/i,
         lookbehind: !0,
         inside: Prism.languages[t],
@@ -560,7 +587,7 @@ const _self =
       const n = {
         'included-cdata': { pattern: /<!\[CDATA\[[\s\S]*?\]\]>/i, inside: a },
       };
-      n['language-' + t] = { pattern: /[\s\S]+/, inside: Prism.languages[t] };
+      n[`language-${t}`] = { pattern: /[\s\S]+/, inside: Prism.languages[t] };
       const r = {};
       (r[e] = {
         pattern: RegExp(
@@ -583,11 +610,9 @@ const _self =
     value: function (e, t) {
       Prism.languages.markup.tag.inside['special-attr'].push({
         pattern: RegExp(
-          /(^|["'\s])/.source +
-            '(?:' +
-            e +
-            ')' +
-            /\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))/.source,
+          `${/(^|["'\s])/.source}(?:${e})${
+            /\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))/.source
+          }`,
           'i'
         ),
         lookbehind: !0,
@@ -599,7 +624,7 @@ const _self =
               value: {
                 pattern: /(^=\s*(["']|(?!["'])))\S[\s\S]*(?=\2$)/,
                 lookbehind: !0,
-                alias: [t, 'language-' + t],
+                alias: [t, `language-${t}`],
                 inside: Prism.languages[t],
               },
               punctuation: [{ pattern: /^=/, alias: 'attr-equals' }, /"|'/],
@@ -639,25 +664,21 @@ const _self =
       },
       url: {
         pattern: RegExp(
-          '\\burl\\((?:' +
-            t.source +
-            '|' +
-            /(?:[^\\\r\n()"']|\\[\s\S])*/.source +
-            ')\\)',
+          `\\burl\\((?:${t.source}|${/(?:[^\\\r\n()"']|\\[\s\S])*/.source})\\)`,
           'i'
         ),
         greedy: !0,
         inside: {
           function: /^url/i,
           punctuation: /^\(|\)$/,
-          string: { pattern: RegExp('^' + t.source + '$'), alias: 'url' },
+          string: { pattern: RegExp(`^${t.source}$`), alias: 'url' },
         },
       },
       selector: {
         pattern: RegExp(
-          '(^|[{}\\s])[^{}\\s](?:[^{};"\'\\s]|\\s+(?![\\s{])|' +
-            t.source +
-            ')*(?=\\s*\\{)'
+          `(^|[{}\\s])[^{}\\s](?:[^{};"'\\s]|\\s+(?![\\s{])|${
+            t.source
+          })*(?=\\s*\\{)`
         ),
         lookbehind: !0,
       },
@@ -834,7 +855,7 @@ const _self =
           'pre[data-src]:not([data-src-status="loaded"]):not([data-src-status="loading"])',
         s = /\blang(?:uage)?-([\w-]+)\b/i;
       Prism.hooks.add('before-highlightall', function (e) {
-        e.selector += ', ' + r;
+        e.selector += `, ${r}`;
       }),
         Prism.hooks.add('before-sanity-check', function (s) {
           const i = s.element;
@@ -865,7 +886,7 @@ const _self =
                         ? (o.textContent =
                             ((e = p.status),
                             (a = p.statusText),
-                            '✖ Error ' + e + ' while fetching file: ' + a))
+                            `✖ Error ${e} while fetching file: ${a}`))
                         : (o.textContent =
                             '✖ Error: File does not exist or is empty')));
               }),
@@ -893,9 +914,14 @@ const _self =
           Prism.plugins.fileHighlight.highlight.apply(this, arguments);
       };
     }
+    /**
+     *
+     * @param e
+     * @param t
+     */
     function l(e, t) {
       let a = e.className;
-      (a = a.replace(s, ' ') + ' language-' + t),
+      (a = `${a.replace(s, ' ')} language-${t}`),
         (e.className = a.replace(/\s+/g, ' ').trim());
     }
   })();

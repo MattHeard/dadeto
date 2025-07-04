@@ -6,7 +6,13 @@ describe('shuffle call count mutant kill', () => {
     const cfg = { width: 0, height: 0, ships: [1] };
     let count = 0;
     const env = new Map([
-      ['getRandomNumber', () => { count++; return 0; }]
+      [
+        'getRandomNumber',
+        () => {
+          count++;
+          return 0;
+        },
+      ],
     ]);
 
     placeAllShips(cfg, env);

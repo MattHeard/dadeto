@@ -16,6 +16,9 @@ describe('battleshipSolitaireClues presenter', () => {
 import { createBattleshipCluesBoardElement } from '../../src/presenters/battleshipSolitaireClues.js';
 
 /* ---------- simple DOM stub ---------- */
+/**
+ *
+ */
 function makeDom() {
   return {
     created: [],
@@ -31,6 +34,10 @@ function makeDom() {
 }
 
 describe('createBattleshipCluesBoardElement – error handling', () => {
+  /**
+   *
+   * @param el
+   */
   function expectEmpty10x10Board(el) {
     expect(el.tag).toBe('pre');
     const lines = el.text.trim().split('\n');

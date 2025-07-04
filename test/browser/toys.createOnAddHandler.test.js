@@ -54,7 +54,7 @@ describe('createOnAddHandler', () => {
     expect(rows).toEqual({
       key1: 'value1',
       key2: 'value2',
-      '': ''
+      '': '',
     });
 
     // Should call render to update the UI
@@ -72,7 +72,7 @@ describe('createOnAddHandler', () => {
     // Should not modify the rows object
     expect(rows).toEqual({
       '': 'existing',
-      key1: 'value1'
+      key1: 'value1',
     });
 
     // Should not call render

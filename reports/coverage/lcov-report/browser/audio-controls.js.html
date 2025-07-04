@@ -146,7 +146,23 @@
 <a name='L81'></a><a href='#L81'>81</a>
 <a name='L82'></a><a href='#L82'>82</a>
 <a name='L83'></a><a href='#L83'>83</a>
-<a name='L84'></a><a href='#L84'>84</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -174,7 +190,11 @@
 <span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -200,16 +220,28 @@
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
@@ -230,21 +262,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export const createPlayClickHandler = (audio, stopDefault, playAudio) =&gt; {
-  return (e) =&gt; {
+  return e =&gt; {
     stopDefault(e);
     playAudio(audio);
   };
 };
 &nbsp;
 export const createPauseClickHandler = (audio, stopDefault, pauseAudio) =&gt; {
-  return (e) =&gt; {
+  return e =&gt; {
     stopDefault(e);
     pauseAudio(audio);
   };
 };
 &nbsp;
 export const createStopClickHandler = (audio, stopDefault, pauseAudio) =&gt; {
-  return (e) =&gt; {
+  return e =&gt; {
     stopDefault(e);
     pauseAudio(audio);
     audio.currentTime = 0;
@@ -256,57 +288,73 @@ import { setTextContent } from './document.js';
 export const createUpdateTimeDisplay = (audio, timeDisplay) =&gt; {
   return () =&gt; {
     const minutes = Math.floor(audio.currentTime / 60);
-    const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, "0");
-    setTextContent(timeDisplay, minutes + ":" + seconds);
+    const seconds = Math.floor(audio.currentTime % 60)
+      .toString()
+      .padStart(2, '0');
+    setTextContent(timeDisplay, `${minutes}:${seconds}`);
   };
 };
 &nbsp;
-export function setupAudio(
-  dom
-) {
+/**
+ * Set up custom audio controls.
+ * @param {object} dom - DOM utilities for creating and modifying elements.
+ */
+export function setupAudio(dom) {
   const audioElements = dom.getAudioElements();
-  audioElements.forEach(function(audio, index) {
+  audioElements.forEach(function (audio, index) {
     dom.removeControlsAttribute(audio);
     if (!audio.id) {
-      audio.id = "audio-" + index;
+      audio.id = `audio-${index}`;
     }
 &nbsp;
-    const controlsContainer = dom.createElement("div");
-    controlsContainer.className = "audio-controls";
-    controlsContainer.id = "controls-" + audio.id;
+    const controlsContainer = dom.createElement('div');
+    controlsContainer.className = 'audio-controls';
+    controlsContainer.id = `controls-${audio.id}`;
 &nbsp;
-    const timeDisplay = dom.createElement("span");
-    timeDisplay.className = "audio-time";
-    timeDisplay.textContent = "0:00";
+    const timeDisplay = dom.createElement('span');
+    timeDisplay.className = 'audio-time';
+    timeDisplay.textContent = '0:00';
 &nbsp;
-    const playButton = dom.createElement("a");
-    playButton.href = "#";
-    playButton.textContent = "PLAY";
-    const onPlayClick = createPlayClickHandler(audio, dom.stopDefault, dom.playAudio);
-    dom.addEventListener(playButton, "click", onPlayClick);
+    const playButton = dom.createElement('a');
+    playButton.href = '#';
+    playButton.textContent = 'PLAY';
+    const onPlayClick = createPlayClickHandler(
+      audio,
+      dom.stopDefault,
+      dom.playAudio
+    );
+    dom.addEventListener(playButton, 'click', onPlayClick);
 &nbsp;
-    const onPauseClick = createPauseClickHandler(audio, dom.stopDefault, dom.pauseAudio);
+    const onPauseClick = createPauseClickHandler(
+      audio,
+      dom.stopDefault,
+      dom.pauseAudio
+    );
 &nbsp;
-    const pauseButton = dom.createElement("a");
-    pauseButton.href = "#";
-    pauseButton.textContent = "PAUSE";
-    dom.addEventListener(pauseButton, "click", onPauseClick);
+    const pauseButton = dom.createElement('a');
+    pauseButton.href = '#';
+    pauseButton.textContent = 'PAUSE';
+    dom.addEventListener(pauseButton, 'click', onPauseClick);
 &nbsp;
-    const onStopClick = createStopClickHandler(audio, dom.stopDefault, dom.pauseAudio);
-    const stopButton = dom.createElement("a");
-    stopButton.href = "#";
-    stopButton.textContent = "STOP";
-    dom.addEventListener(stopButton, "click", onStopClick);
+    const onStopClick = createStopClickHandler(
+      audio,
+      dom.stopDefault,
+      dom.pauseAudio
+    );
+    const stopButton = dom.createElement('a');
+    stopButton.href = '#';
+    stopButton.textContent = 'STOP';
+    dom.addEventListener(stopButton, 'click', onStopClick);
 &nbsp;
     const updateTimeDisplay = createUpdateTimeDisplay(audio, timeDisplay);
-    dom.addEventListener(audio, "timeupdate", updateTimeDisplay);
+    dom.addEventListener(audio, 'timeupdate', updateTimeDisplay);
 &nbsp;
     dom.appendChild(controlsContainer, playButton);
-    dom.appendChild(controlsContainer, dom.createTextNode(" "));
+    dom.appendChild(controlsContainer, dom.createTextNode(' '));
     dom.appendChild(controlsContainer, pauseButton);
-    dom.appendChild(controlsContainer, dom.createTextNode(" "));
+    dom.appendChild(controlsContainer, dom.createTextNode(' '));
     dom.appendChild(controlsContainer, stopButton);
-    dom.appendChild(controlsContainer, dom.createTextNode(" "));
+    dom.appendChild(controlsContainer, dom.createTextNode(' '));
     dom.appendChild(controlsContainer, timeDisplay);
 &nbsp;
     dom.insertBefore(audio.parentNode, controlsContainer, audio.nextSibling);
@@ -319,7 +367,7 @@ export function setupAudio(
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-03T06:34:46.498Z
+                at 2025-07-04T06:14:35.212Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -5,9 +5,7 @@ describe('headElement', () => {
   test('contains required meta tags', () => {
     const head = headElement();
     expect(head).toContain('<meta charset="UTF-8">');
-    expect(head).toContain(
-      '<link rel="manifest" href="/site.webmanifest">'
-    );
+    expect(head).toContain('<link rel="manifest" href="/site.webmanifest">');
   });
 
   test('includes style and script sections', () => {

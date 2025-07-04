@@ -1,8 +1,8 @@
 /**
  * Creates a shallow copy of an object with only the specified keys
- * @param {Object} obj - The source object
+ * @param {object} obj - The source object
  * @param {string[]} keys - The keys to include in the new object
- * @returns {Object} A new object with only the specified keys
+ * @returns {object} A new object with only the specified keys
  */
 export function pick(obj, keys) {
   let source = {};
@@ -17,9 +17,10 @@ export function pick(obj, keys) {
 
 /**
  * Creates a new object with the same keys but with values transformed by a function
- * @param {Object} obj - The source object
+ * @param {object} obj - The source object
+ * @param source
  * @param {Function} fn - The transformation function
- * @returns {Object} A new object with transformed values
+ * @returns {object} A new object with transformed values
  */
 function transformEntries(source, fn) {
   return Object.fromEntries(
@@ -27,6 +28,11 @@ function transformEntries(source, fn) {
   );
 }
 
+/**
+ *
+ * @param obj
+ * @param fn
+ */
 export function mapValues(obj, fn) {
   if (Object(obj) !== obj) {
     return {};

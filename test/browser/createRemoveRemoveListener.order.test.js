@@ -38,10 +38,19 @@ describe('createRemoveRemoveListener order of disposal', () => {
 
     disposeA();
     expect(dom.removeEventListener).toHaveBeenCalledTimes(1);
-    expect(dom.removeEventListener).toHaveBeenCalledWith(buttonA, 'click', handlerA);
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      buttonA,
+      'click',
+      handlerA
+    );
 
     disposeB();
     expect(dom.removeEventListener).toHaveBeenCalledTimes(2);
-    expect(dom.removeEventListener).toHaveBeenNthCalledWith(2, buttonB, 'click', handlerB);
+    expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+      2,
+      buttonB,
+      'click',
+      handlerB
+    );
   });
 });

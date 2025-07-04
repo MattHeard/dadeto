@@ -9,8 +9,18 @@ describe('createDispose instances', () => {
     const rows1 = ['a'];
     const rows2 = ['b'];
 
-    const first = createDispose({ disposers: [], dom, container: container1, rows: rows1 });
-    const second = createDispose({ disposers: [], dom, container: container2, rows: rows2 });
+    const first = createDispose({
+      disposers: [],
+      dom,
+      container: container1,
+      rows: rows1,
+    });
+    const second = createDispose({
+      disposers: [],
+      dom,
+      container: container2,
+      rows: rows2,
+    });
 
     expect(typeof first).toBe('function');
     expect(typeof second).toBe('function');

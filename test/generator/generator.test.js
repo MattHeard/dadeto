@@ -1,4 +1,4 @@
-import { generateBlog } from "../../src/generator/generator.js";
+import { generateBlog } from '../../src/generator/generator.js';
 
 const header = '<body>';
 const footer = '</body>';
@@ -425,7 +425,6 @@ describe('Blog Generator', () => {
     expect(htmlNoTags).not.toMatch('tag-');
   });
 
-
   test('should render quotes as blockquotes', () => {
     const blog = {
       posts: [
@@ -463,9 +462,9 @@ describe('Blog Generator', () => {
           title: 'Media Post',
           publicationDate: '2024-06-01',
           illustration: { fileType: 'png', altText: 'art' },
-          audio: { fileType: 'mp3' }
-        }
-      ]
+          audio: { fileType: 'mp3' },
+        },
+      ],
     };
 
     const html = generateBlog({ blog, header, footer }, wrapHtml);

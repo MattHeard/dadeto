@@ -8,7 +8,9 @@ beforeAll(async () => {
   const filePath = path.join(process.cwd(), 'src/toys/2025-03-21/italics.js');
   let src = fs.readFileSync(filePath, 'utf8');
   src += '\nexport { isEmptyText };';
-  ({ isEmptyText } = await import(`data:text/javascript,${encodeURIComponent(src)}`));
+  ({ isEmptyText } = await import(
+    `data:text/javascript,${encodeURIComponent(src)}`
+  ));
 });
 
 describe('isEmptyText', () => {

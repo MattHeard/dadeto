@@ -13,9 +13,9 @@ describe('normalizeContentItem mixed content array', () => {
           key: 'MIX',
           title: 'Mixed',
           publicationDate: '2024-01-01',
-          content: ['a', 42, null, { type: 'quote', content: 'Q' }]
-        }
-      ]
+          content: ['a', 42, null, { type: 'quote', content: 'Q' }],
+        },
+      ],
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<p class="value">a</p>');

@@ -15,9 +15,10 @@ export function escapeRegex(str) {
 /**
  * Creates a regex pattern for matching text between markers
  * @param {string} marker - The marker character(s) to match between
- * @param {Object} options - Configuration options
- * @param {boolean} [options.isDouble=false] - Whether to use double markers
- * @param {string} [options.flags='g'] - Regex flags
+ * @param {object} options - Configuration options
+ * @param {boolean} [options.isDouble] - Whether to use double markers
+ * @param {string} [options.flags] - Regex flags
+ * @param isDouble
  * @returns {RegExp} The compiled regular expression
  */
 const computeActualMarker = (marker, isDouble) => {
@@ -28,10 +29,19 @@ const computeActualMarker = (marker, isDouble) => {
   return escaped;
 };
 
+/**
+ *
+ * @param options
+ */
 function normalizePatternOptions(options = {}) {
   return { isDouble: false, flags: 'g', ...options };
 }
 
+/**
+ *
+ * @param marker
+ * @param options
+ */
 export function createPattern(marker, options) {
   const { isDouble, flags } = normalizePatternOptions(options);
   const actualMarker = computeActualMarker(marker, isDouble);

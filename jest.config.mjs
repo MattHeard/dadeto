@@ -1,6 +1,6 @@
 const config = {
   transform: {
-    '^.+\\.js$': 'babel-jest'
+    '^.+\\.js$': 'babel-jest',
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
@@ -13,18 +13,18 @@ const config = {
   }),
   testPathIgnorePatterns: ['<rootDir>/.stryker-tmp/'],
   collectCoverageFrom: [
-    "src/**/*.js",
-    "!**/node_modules/**",
-    "!**/vendor/**",
-    "!src/browser/main.js",
-    "!src/browser/document.js",
-    "!src/generator/copy.js"
+    'src/**/*.js',
+    '!**/node_modules/**',
+    '!**/vendor/**',
+    '!src/browser/main.js',
+    '!src/browser/document.js',
+    '!src/generator/copy.js',
   ],
   coverageDirectory: 'reports/coverage',
   // Ensure coverage is collected for all files, including those not tested
   collectCoverage: Boolean(process.env.STRYKER_TEST_ENV),
   // Ensure all files are included in coverage, even if not required
-  forceCoverageMatch: process.env.STRYKER_TEST_ENV && ['**/*.js'] || []
+  forceCoverageMatch: (process.env.STRYKER_TEST_ENV && ['**/*.js']) || [],
 };
 
 export default config;

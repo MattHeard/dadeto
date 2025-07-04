@@ -3,7 +3,6 @@ import { describe, test, expect } from '@jest/globals';
 
 /**
  * Create environment map for the fishing game.
- *
  * @param {number} rand - Random value to return.
  * @param {number} current - Current time value.
  * @returns {Map<string, () => number>} Environment map with getters.

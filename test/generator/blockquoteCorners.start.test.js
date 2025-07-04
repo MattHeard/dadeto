@@ -13,11 +13,13 @@ describe('BLOCKQUOTE_CORNERS placement', () => {
           key: 'BQSTART',
           title: 'Quote Start',
           publicationDate: '2024-06-05',
-          content: [{ type: 'quote', content: 'Hi there' }]
-        }
-      ]
+          content: [{ type: 'quote', content: 'Hi there' }],
+        },
+      ],
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
-    expect(html).toContain('<blockquote class="value"><div class="corner corner-tl"');
+    expect(html).toContain(
+      '<blockquote class="value"><div class="corner corner-tl"'
+    );
   });
 });

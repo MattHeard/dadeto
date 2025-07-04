@@ -4,8 +4,8 @@ describe('isValidParsedRequest', () => {
   it('returns true for a valid parsed request with string URL', () => {
     const validRequest = {
       request: {
-        url: 'https://example.com'
-      }
+        url: 'https://example.com',
+      },
     };
     expect(isValidParsedRequest(validRequest)).toBe(true);
   });
@@ -21,8 +21,8 @@ describe('isValidParsedRequest', () => {
   it('returns false for object without request field', () => {
     const invalidRequest = {
       notRequest: {
-        url: 'https://example.com'
-      }
+        url: 'https://example.com',
+      },
     };
     expect(isValidParsedRequest(invalidRequest)).toBe(false);
   });
@@ -30,8 +30,8 @@ describe('isValidParsedRequest', () => {
   it('returns false for request without url field', () => {
     const invalidRequest = {
       request: {
-        notUrl: 'https://example.com'
-      }
+        notUrl: 'https://example.com',
+      },
     };
     expect(isValidParsedRequest(invalidRequest)).toBe(false);
   });
@@ -39,8 +39,8 @@ describe('isValidParsedRequest', () => {
   it('returns false for request with non-string url', () => {
     const invalidRequest = {
       request: {
-        url: 12345
-      }
+        url: 12345,
+      },
     };
     expect(isValidParsedRequest(invalidRequest)).toBe(false);
   });

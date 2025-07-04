@@ -10,6 +10,10 @@ import {
   attrName,
 } from './html.js';
 
+/**
+ *
+ * @param content
+ */
 function createParagraphs(content) {
   if (Array.isArray(content)) {
     return content.map(para => `<p>${para}</p>`).join('');
@@ -18,6 +22,10 @@ function createParagraphs(content) {
   }
 }
 
+/**
+ *
+ * @param content
+ */
 function createBlockquote(content) {
   return `<blockquote class="${CLASS.VALUE}">${BLOCKQUOTE_CORNERS}${createParagraphs(content)}</blockquote>`;
 }
@@ -59,7 +67,8 @@ function createDiv(classes, content) {
  * Build a key-value section.
  * @param {string} label – text for the key div
  * @param {string} valueHTML – full HTML for the value element
- * @param {boolean} [wrapValueDiv=true] – whether to wrap valueHTML in a value div
+ * @param {boolean} [wrapValueDiv] – whether to wrap valueHTML in a value div
+ * @param keyExtraClasses
  * @returns {string} formatted section HTML
  */
 function getKeyClass(keyExtraClasses) {
@@ -69,11 +78,21 @@ function getKeyClass(keyExtraClasses) {
   return CLASS.KEY;
 }
 
+/**
+ *
+ * @param keyDiv
+ * @param valueHTML
+ * @param wrapValueDiv
+ */
 function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
   const valuePart = labeledSectionValuePart(valueHTML, wrapValueDiv);
   return createPair(keyDiv, valuePart);
 }
 
+/**
+ *
+ * @param args
+ */
 function defaultWrapValueDiv(args) {
   if (args.wrapValueDiv === undefined) {
     args.wrapValueDiv = true;
@@ -81,6 +100,10 @@ function defaultWrapValueDiv(args) {
   return args;
 }
 
+/**
+ *
+ * @param args
+ */
 export function defaultKeyExtraClasses(args) {
   if (args.keyExtraClasses === undefined) {
     args.keyExtraClasses = '';
@@ -88,10 +111,18 @@ export function defaultKeyExtraClasses(args) {
   return args;
 }
 
+/**
+ *
+ * @param args
+ */
 function applyLabeledSectionDefaults(args) {
   return defaultKeyExtraClasses(defaultWrapValueDiv(args));
 }
 
+/**
+ *
+ * @param args
+ */
 function prepareLabeledSectionArgs(args) {
   const { label, valueHTML, wrapValueDiv, keyExtraClasses } =
     applyLabeledSectionDefaults(args);
@@ -100,11 +131,20 @@ function prepareLabeledSectionArgs(args) {
   return { keyDiv, valueHTML, wrapValueDiv };
 }
 
+/**
+ *
+ * @param args
+ */
 function createLabeledSection(args) {
   const { keyDiv, valueHTML, wrapValueDiv } = prepareLabeledSectionArgs(args);
   return buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv);
 }
 
+/**
+ *
+ * @param valueHTML
+ * @param wrapValueDiv
+ */
 function labeledSectionValuePart(valueHTML, wrapValueDiv) {
   if (wrapValueDiv) {
     return createValueDiv(valueHTML);
@@ -254,6 +294,7 @@ function createContainerDivOpen() {
 
 /**
  * Create the header content array
+ * @param headerElement
  */
 function createHeaderContentArray(headerElement) {
   return [
@@ -290,6 +331,7 @@ function createBodyClose() {
 
 /**
  * Create the footer content array
+ * @param footerElement
  */
 function createFooterContentArray(footerElement) {
   return [
@@ -312,6 +354,7 @@ function createPageFooter() {
 
 /**
  * Convert a post to article HTML
+ * @param post
  */
 function convertPostToArticleHTML(post) {
   return generateArticle(post);
@@ -319,6 +362,7 @@ function convertPostToArticleHTML(post) {
 
 /**
  * Format article HTML with indentation
+ * @param articleHTML
  */
 function formatArticleHTML(articleHTML) {
   return articleHTML;
@@ -326,6 +370,7 @@ function formatArticleHTML(articleHTML) {
 
 /**
  * Process posts and join article HTML
+ * @param posts
  */
 function processPostsToHTML(posts) {
   return posts.map(convertPostToArticleHTML).map(formatArticleHTML).join('');
@@ -333,6 +378,7 @@ function processPostsToHTML(posts) {
 
 /**
  * Generate HTML for all articles in the blog
+ * @param posts
  */
 function generateArticles(posts) {
   return processPostsToHTML(posts);
@@ -340,11 +386,16 @@ function generateArticles(posts) {
 
 /**
  * Create attributes for an article element
+ * @param post
  */
 export function createIdAttributeIfNeeded(post) {
-  return ' ' + createAttrPair(attrName().ID, post.key);
+  return ` ${createAttrPair(attrName().ID, post.key)}`;
 }
 
+/**
+ *
+ * @param post
+ */
 function getTagClassList(post) {
   if (hasTags(post)) {
     return post.tags.map(tag => `tag-${tag}`);
@@ -353,6 +404,10 @@ function getTagClassList(post) {
   }
 }
 
+/**
+ *
+ * @param post
+ */
 function createArticleClassAttr(post) {
   const classes = [CLASS.ENTRY, ...getTagClassList(post)];
   if (post.release === 'beta') {
@@ -362,6 +417,10 @@ function createArticleClassAttr(post) {
   return createAttrPair(attrName().CLASS, classValue);
 }
 
+/**
+ *
+ * @param post
+ */
 function createArticleAttributes(post) {
   const classAttr = createArticleClassAttr(post);
   const idAttr = createIdAttributeIfNeeded(post);
@@ -370,6 +429,7 @@ function createArticleAttributes(post) {
 
 /**
  * Format article content with full width element
+ * @param content
  */
 function formatArticleContent(content) {
   return `${fullWidthElement()}${content}`;
@@ -377,6 +437,7 @@ function formatArticleContent(content) {
 
 /**
  * Create an article from a blog post
+ * @param post
  */
 function generateArticle(post) {
   const content = generateArticleContent(post);
@@ -387,6 +448,7 @@ function generateArticle(post) {
 
 /**
  * Get content array from post, defaulting to empty array if not present
+ * @param post
  */
 function getContentArray(post) {
   return post.content || [];
@@ -394,6 +456,7 @@ function getContentArray(post) {
 
 /**
  * Determine if an item is the first in the content array
+ * @param index
  */
 function isFirstContentItem(index) {
   return index === 0;
@@ -401,6 +464,8 @@ function isFirstContentItem(index) {
 
 /**
  * Create a content item with index awareness
+ * @param text
+ * @param index
  */
 function createContentItemWithIndex(text, index) {
   const isFirst = isFirstContentItem(index);
@@ -411,17 +476,17 @@ function createContentItemWithIndex(text, index) {
  * Normalize a content item.
  * If content is already an object, return it unchanged;
  * otherwise, wrap it in an object with type 'text' and content fields.
- * @param {Object|string} content - The content item to normalize.
- * @returns {Object} - Normalized content object.
+ * @param {object | string} content - The content item to normalize.
+ * @returns {object} - Normalized content object.
  */
 /**
- * @typedef {Object} NormalizedContent
+ * @typedef {object} NormalizedContent
  * @property {string} type - The normalized content type.
  * @property {*} content - The normalized content data.
  */
 
 /**
- * @typedef {Object} ContentTypeHandler
+ * @typedef {object} ContentTypeHandler
  * @property {function(*): boolean} predicate - Returns true if this handler matches the content.
  * @property {function(*): NormalizedContent} normalize - Normalizes the content to a standard object.
  * @property {string} type - The normalized content type name.
@@ -482,13 +547,17 @@ function renderValueDiv(normalizedContent) {
   return renderer(content);
 }
 
+/**
+ *
+ * @param content
+ */
 function renderAsParagraph(content) {
   return `<p class="${CLASS.VALUE}">${content}</p>`;
 }
 
 /**
  * Create a content section item with exact formatting
- * @param {Object|string} content - The content object or text
+ * @param {object | string} content - The content object or text
  * @param {boolean} isFirst - Whether this is the first content item
  * @returns {string} - Formatted content section HTML
  */
@@ -505,6 +574,7 @@ function createContentSectionItem(content, isFirst) {
 
 /**
  * Generate the text content sections for a blog post
+ * @param post
  */
 function generateContentSections(post) {
   const contentArray = getContentArray(post);
@@ -514,6 +584,7 @@ function generateContentSections(post) {
 
 /**
  * Generate header section for a blog post
+ * @param post
  */
 function generateHeaderSection(post) {
   const titleSection = generateTitleSection(post);
@@ -524,6 +595,7 @@ function generateHeaderSection(post) {
 
 /**
  * Create the title value for a blog post
+ * @param post
  */
 function createTitleValue(post) {
   const titleLink = `<a href="#${post.key}">${post.title}</a>`;
@@ -533,6 +605,7 @@ function createTitleValue(post) {
 
 /**
  * Generate the title section for a blog post
+ * @param post
  */
 function generateTitleSection(post) {
   const titleClasses = joinClasses([CLASS.KEY, CLASS.ARTICLE_TITLE]);
@@ -543,7 +616,7 @@ function generateTitleSection(post) {
 
 /**
  * Generate the date section for a blog post
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
  * @returns {string} - HTML for the date section
  */
 function generateDateSection(post) {
@@ -557,7 +630,7 @@ function generateDateSection(post) {
 
 /**
  * Check if post has tags
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
  * @returns {boolean} - True if post has tags
  */
 function hasTags(post) {
@@ -566,7 +639,7 @@ function hasTags(post) {
 
 /**
  * Generate the tags section for a blog post
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
  * @returns {string} - HTML for the tags section
  */
 function generateTagsSection(post) {
@@ -597,18 +670,27 @@ const MEDIA_DISPLAY_RULES = {
   youtube: post => Boolean(post.youtube),
 };
 
+/**
+ *
+ * @param post
+ * @param type
+ */
 function shouldDisplayMedia(post, type) {
   const rule = MEDIA_DISPLAY_RULES[type];
   return rule(post);
 }
 
+/**
+ *
+ * @param value
+ */
 function isNonEmptyArray(value) {
   return Array.isArray(value) && value.length > 0;
 }
 
 /**
  * Check if post has related links
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
  * @returns {boolean} - True if post has related links
  */
 function hasRelatedLinks(post) {
@@ -617,12 +699,14 @@ function hasRelatedLinks(post) {
 
 /**
  * Check if post has tags
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
  * @returns {boolean} - True if post has tags
  */
 
 /**
  * Generate media content based on media type
+ * @param post
+ * @param mediaType
  */
 function generateMediaContent(post, mediaType) {
   return buildMediaContent(post, mediaType);
@@ -631,6 +715,7 @@ function generateMediaContent(post, mediaType) {
 /**
 /**
  * Create illustration image element
+ * @param post
  */
 function createIllustrationImage(post) {
   // Use fileName if provided, otherwise fall back to publicationDate
@@ -642,6 +727,7 @@ function createIllustrationImage(post) {
 
 /**
  * Create audio source element
+ * @param post
  */
 function createAudioSource(post) {
   const audioSrc = `${post.publicationDate}.${post.audio.fileType}`;
@@ -650,6 +736,7 @@ function createAudioSource(post) {
 
 /**
  * Create YouTube iframe with proper attributes
+ * @param post
  */
 function createYouTubeIframe(post) {
   const youtubeId = post.youtube.id;
@@ -677,6 +764,11 @@ const MEDIA_CONTENT_CONFIG = {
 };
 
 // Generic builder for media content
+/**
+ *
+ * @param post
+ * @param type
+ */
 function buildMediaContent(post, type) {
   const { wrapperTag, fragment, controls } = MEDIA_CONTENT_CONFIG[type];
   const innerHTML = fragment(post);
@@ -688,6 +780,12 @@ function buildMediaContent(post, type) {
 }
 
 // Generic media section builder
+/**
+ *
+ * @param post
+ * @param type
+ * @param label
+ */
 function buildMediaSection(post, type, label) {
   if (!shouldDisplayMedia(post, type)) {
     return '';
@@ -708,6 +806,7 @@ const MEDIA_SECTIONS = Object.fromEntries(
 );
 /**
  * Generate all media sections for a blog post by iterating over the MEDIA_SECTIONS mapping.
+ * @param post
  */
 function generateMediaSections(post) {
   const sections = Object.values(MEDIA_SECTIONS).map(generator =>
@@ -718,10 +817,14 @@ function generateMediaSections(post) {
 
 /**
  * Format a related link to display in the list
- * @param {Object} link - The related link object
+ * @param {object} link - The related link object
  * @returns {string} - Formatted HTML for a related link
  */
 const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
+/**
+ *
+ * @param link
+ */
 function escapeRelatedLinkFields(link) {
   const fields = ['url', 'title', 'author', 'source', 'quote'];
   return fields.reduce(
@@ -737,12 +840,22 @@ function escapeRelatedLinkFields(link) {
   );
 }
 
+/**
+ *
+ * @param prefix
+ * @param value
+ */
 function prefixIfPresent(prefix, value) {
   if (value) {
     return `${prefix}${value}`;
   }
 }
 
+/**
+ *
+ * @param type
+ * @param title
+ */
 function formatTitleByType(type, title) {
   const formatters = {
     book: t => `<em>_${t}_</em>`,
@@ -759,17 +872,37 @@ function formatTitleByType(type, title) {
   return formatter(title);
 }
 
+/**
+ *
+ * @param type
+ * @param url
+ * @param title
+ */
 function formatBaseLink(type, url, title) {
   const formattedTitle = formatTitleByType(type, title);
   return `<a href="${url}" ${DEFAULT_RELATED_LINK_ATTRS}>${formattedTitle}</a>`;
 }
 
+/**
+ *
+ * @param prefix
+ * @param value
+ * @param suffix
+ */
 function wrapIfPresent(prefix, value, suffix) {
   if (value) {
     return prefix + value + suffix;
   }
 }
 
+/**
+ *
+ * @param baseLink
+ * @param root0
+ * @param root0.author
+ * @param root0.source
+ * @param root0.quote
+ */
 function createLinkParts(baseLink, { author, source, quote }) {
   return [
     baseLink,
@@ -779,11 +912,20 @@ function createLinkParts(baseLink, { author, source, quote }) {
   ];
 }
 
+/**
+ *
+ * @param baseLink
+ * @param meta
+ */
 function composeLinkParts(baseLink, meta) {
   const parts = createLinkParts(baseLink, meta);
   return `<li>${join(parts.filter(Boolean))}</li>`;
 }
 
+/**
+ *
+ * @param link
+ */
 function formatRelatedLink(link) {
   const { url, title, author, source, quote, type } =
     escapeRelatedLinkFields(link);
@@ -794,7 +936,7 @@ function formatRelatedLink(link) {
 
 /**
  * Generate the related links section for a blog post
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
  * @returns {string} - HTML for the related links section
  */
 function generateRelatedLinksSection(post) {
@@ -810,13 +952,19 @@ function generateRelatedLinksSection(post) {
 
 /**
  * Check if post has a toy component
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
+ * @param obj
+ * @param fns
  * @returns {boolean} - True if post has a toy component
  */
 function allTruthy(obj, fns) {
   return fns.every(fn => Boolean(fn(obj)));
 }
 
+/**
+ *
+ * @param post
+ */
 function hasToy(post) {
   return allTruthy(post, [
     p => p,
@@ -845,6 +993,11 @@ const TOY_OUTPUT_TYPES = [
 ];
 
 // Generic select builder for dropdowns
+/**
+ *
+ * @param selectClass
+ * @param entries
+ */
 function buildSelect(selectClass, entries) {
   const options = entries
     .map(([value, label]) => `<option value="${value}">${label}</option>`)
@@ -860,6 +1013,9 @@ function getToyOutputSelectDropdown() {
   return buildSelect('output', TOY_OUTPUT_TYPES);
 }
 
+/**
+ *
+ */
 function getToyOutputValueContent() {
   const selectDropdown = getToyOutputSelectDropdown();
   const warningParagraph = '<p>This toy requires Javascript to run.</p>';
@@ -869,7 +1025,7 @@ function getToyOutputValueContent() {
 
 /**
  * Generate script tag to add the component
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
  * @returns {string} - HTML script tag
  */
 function generateToyScript(post) {
@@ -892,6 +1048,11 @@ export function getSelectedMethod(defaultMethod) {
   return defaultMethod;
 }
 
+/**
+ *
+ * @param method
+ * @param selectedMethod
+ */
 function buildOption(method, selectedMethod) {
   let selected = '';
   if (method === selectedMethod) {
@@ -900,6 +1061,10 @@ function buildOption(method, selectedMethod) {
   return `<option value="${method}"${selected}>${method}</option>`;
 }
 
+/**
+ *
+ * @param defaultMethod
+ */
 function buildToyInputDropdown(defaultMethod) {
   const selectedMethod = getSelectedMethod(defaultMethod);
   const options = INPUT_METHODS.map(method =>
@@ -908,6 +1073,10 @@ function buildToyInputDropdown(defaultMethod) {
   return `<select class="input">${options}</select><input type="text" disabled>`;
 }
 
+/**
+ *
+ * @param defaultMethod
+ */
 function getToyUISections(defaultMethod) {
   return [
     ['in', () => buildToyInputDropdown(defaultMethod)],
@@ -918,29 +1087,41 @@ function getToyUISections(defaultMethod) {
 
 /**
  * Convert tuple [label, buildHTML] to toy section HTML
- * @param {[string, function]} section - Tuple with label and section builder
+ * @param {[string, Function]} section - Tuple with label and section builder
  * @returns {string} - HTML for labeled section
  */
 function toToySection([label, buildHTML]) {
   return createLabeledSection({ label, valueHTML: buildHTML() });
 }
 
+/**
+ *
+ * @param post
+ */
 function shouldSkipToy(post) {
   return !hasToy(post);
 }
 
+/**
+ *
+ * @param post
+ */
 export function getDefaultInputMethod(post) {
-  const toy = post.toy ?? { defaultInputMethod: "text" };
+  const toy = post.toy ?? { defaultInputMethod: 'text' };
   return toy.defaultInputMethod;
 }
 
+/**
+ *
+ * @param defaultMethod
+ */
 function buildToySections(defaultMethod) {
   return getToyUISections(defaultMethod).map(toToySection);
 }
 
 /**
  * Generate the toy UI components for a blog post
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
  * @returns {string} - HTML for the toy UI components
  */
 function generateToyUISection(post) {
@@ -954,7 +1135,7 @@ function generateToyUISection(post) {
 
 /**
  * Generate the toy script section for a blog post
- * @param {Object} post - The blog post
+ * @param {object} post - The blog post
  * @returns {string} - HTML for the toy script section
  */
 function generateToyScriptSection(post) {
@@ -966,7 +1147,7 @@ function generateToyScriptSection(post) {
 
 /**
  * Get all sections for a blog post article.
- * @param {Object} post - The blog post.
+ * @param {object} post - The blog post.
  * @returns {string[]} - An array of HTML sections.
  */
 function getArticleSections(post) {
@@ -988,6 +1169,7 @@ function getArticleSections(post) {
 
 /**
  * Generate the content of a blog post article
+ * @param post
  */
 function generateArticleContent(post) {
   return join(getArticleSections(post));
@@ -1009,7 +1191,7 @@ function getBlogHtmlContent(header, articles, footer) {
 
 /**
  * Retrieve the HTML for all articles from the blog.
- * @param {Object} blog - The blog object.
+ * @param {object} blog - The blog object.
  * @returns {string} - Combined HTML for all articles.
  */
 function getArticles(blog) {
@@ -1019,7 +1201,7 @@ function getArticles(blog) {
 /**
  * Assemble the blog HTML content by combining header, articles, and footer.
  * @param {string} header - The header HTML.
- * @param {Object} blog - The blog object.
+ * @param {object} blog - The blog object.
  * @param {string} footer - The footer HTML.
  * @returns {string} - The combined HTML content.
  */
@@ -1028,6 +1210,11 @@ function assembleBlogHTML(header, blog, footer) {
   return getBlogHtmlContent(header, articles, footer);
 }
 
+/**
+ *
+ * @param parts
+ * @param wrapHtml
+ */
 export function generateBlog(parts, wrapHtml) {
   const { blog, header, footer } = parts;
   const htmlContents = assembleBlogHTML(header, blog, footer);
@@ -1042,7 +1229,7 @@ const createBlogComponents = () => ({
 
 /**
  * Extracts the blog generation arguments from the blog components.
- * @returns {Object} - An object containing header, footer, and wrapFunc.
+ * @returns {object} - An object containing header, footer, and wrapFunc.
  */
 export function getBlogGenerationArgs() {
   const components = createBlogComponents();

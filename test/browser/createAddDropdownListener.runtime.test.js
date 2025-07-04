@@ -15,5 +15,9 @@ test('createAddDropdownListener imported at runtime registers change handler', a
   const result = listener(dropdown);
 
   expect(result).toBeUndefined();
-  expect(dom.addEventListener).toHaveBeenCalledWith(dropdown, 'change', onChange);
+  expect(dom.addEventListener).toHaveBeenCalledWith(
+    dropdown,
+    'change',
+    onChange
+  );
 });

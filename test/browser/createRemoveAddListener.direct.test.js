@@ -23,6 +23,16 @@ test('createRemoveAddListener returns disposer that removes click handler', () =
   expect(result).toBeUndefined();
   dispose();
 
-  expect(dom.removeEventListener).toHaveBeenNthCalledWith(1, btn, 'click', handler);
-  expect(dom.removeEventListener).toHaveBeenNthCalledWith(2, btn, 'click', handler);
+  expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+    1,
+    btn,
+    'click',
+    handler
+  );
+  expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+    2,
+    btn,
+    'click',
+    handler
+  );
 });

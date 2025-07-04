@@ -1,9 +1,15 @@
 import { describe, test, expect } from '@jest/globals';
-import { escapeRegex, createPattern, matchesPattern } from '../../src/utils/regexUtils.js';
+import {
+  escapeRegex,
+  createPattern,
+  matchesPattern,
+} from '../../src/utils/regexUtils.js';
 
 describe('escapeRegex', () => {
   test('escapes special regex characters', () => {
-    expect(escapeRegex('.*+?^${}()|[]\\')).toBe('\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\');
+    expect(escapeRegex('.*+?^${}()|[]\\')).toBe(
+      '\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\'
+    );
   });
 
   test('returns empty string for non-string input', () => {

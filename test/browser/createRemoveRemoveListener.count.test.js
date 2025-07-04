@@ -29,6 +29,10 @@ describe('createRemoveRemoveListener call count', () => {
     dispose();
 
     expect(dom.removeEventListener).toHaveBeenCalledTimes(1);
-    expect(dom.removeEventListener).toHaveBeenCalledWith(button, 'click', handler);
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      button,
+      'click',
+      handler
+    );
   });
 });

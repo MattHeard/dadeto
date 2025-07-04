@@ -3,7 +3,7 @@ import { makeHandleHideClick } from '../../src/browser/tags.js';
 
 describe('makeHandleHideClick', () => {
   it('calls stopDefault and hides only articles with the given class', () => {
-    const article1 = { classList: { contains: (cls) => cls === 'foo' } };
+    const article1 = { classList: { contains: cls => cls === 'foo' } };
     const article2 = { classList: { contains: () => false } };
     const articles = [article1, article2];
     const stopDefault = jest.fn();
@@ -12,7 +12,7 @@ describe('makeHandleHideClick', () => {
       stopDefault,
       getElementsByTagName: jest.fn(() => articles),
       hasClass: (el, className) => el.classList.contains(className),
-      hide
+      hide,
     };
     const handler = makeHandleHideClick(dom, 'foo');
     const fakeEvent = {};

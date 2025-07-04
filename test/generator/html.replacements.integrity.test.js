@@ -3,7 +3,6 @@ import { htmlEscapeReplacements } from '../../src/generator/html.js';
 
 /**
  * Escape a string using the provided replacements.
- *
  * @param {string} text input text to escape
  * @param {{from: RegExp, to: string}[]} replacements replacement pairs
  * @returns {string} escaped string

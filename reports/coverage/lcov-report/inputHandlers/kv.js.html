@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>24/24</span>
+                <span class='fraction'>19/19</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>24/24</span>
+                <span class='fraction'>19/19</span>
             </div>
         
             
@@ -129,8 +129,7 @@
 <a name='L64'></a><a href='#L64'>64</a>
 <a name='L65'></a><a href='#L65'>65</a>
 <a name='L66'></a><a href='#L66'>66</a>
-<a name='L67'></a><a href='#L67'>67</a>
-<a name='L68'></a><a href='#L68'>68</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L67'></a><a href='#L67'>67</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -138,7 +137,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">129x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">128x</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">6x</span>
@@ -172,15 +173,7 @@
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">129x</span>
-<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">129x</span>
-<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -193,7 +186,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -203,13 +201,15 @@
   createDispose,
   syncHiddenField,
 } from '../browser/toys.js';
-import { maybeRemoveElement } from './disposeHelpers.js';
+import { maybeRemoveNumber, maybeRemoveDendrite } from './removeElements.js';
+import { KV_CONTAINER_SELECTOR } from '../constants/selectors.js';
+import { hideAndDisable } from './inputState.js';
 &nbsp;
 export const ensureKeyValueInput = (container, textInput, dom) =&gt; {
-  let kvContainer = dom.querySelector(container, '.kv-container');
+  let kvContainer = dom.querySelector(container, KV_CONTAINER_SELECTOR);
   if (!kvContainer) {
     kvContainer = dom.createElement('div');
-    dom.setClassName(kvContainer, 'kv-container');
+    dom.setClassName(kvContainer, KV_CONTAINER_SELECTOR.slice(1));
     const nextSibling = dom.getNextSibling(textInput);
     dom.insertBefore(container, kvContainer, nextSibling);
   }
@@ -239,29 +239,26 @@ export const ensureKeyValueInput = (container, textInput, dom) =&gt; {
   return kvContainer;
 };
 &nbsp;
-export const maybeRemoveNumber = (container, dom) =&gt;
-  maybeRemoveElement(
-    dom.querySelector(container, 'input[type="number"]'),
-    container,
-    dom
-  );
-&nbsp;
-export const maybeRemoveDendrite = (container, dom) =&gt;
-  maybeRemoveElement(
-    dom.querySelector(container, '.dendrite-form'),
-    container,
-    dom
-  );
-&nbsp;
+/**
+ *
+ * @param dom
+ * @param container
+ * @param textInput
+ */
 export function handleKVType(dom, container, textInput) {
   maybeRemoveNumber(container, dom);
   maybeRemoveDendrite(container, dom);
   ensureKeyValueInput(container, textInput, dom);
 }
 &nbsp;
+/**
+ *
+ * @param dom
+ * @param container
+ * @param textInput
+ */
 export function kvHandler(dom, container, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
+  hideAndDisable(textInput, dom);
   handleKVType(dom, container, textInput);
 }
 &nbsp;</pre></td></tr></table></pre>
@@ -271,7 +268,7 @@ export function kvHandler(dom, container, textInput) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-03T06:34:46.498Z
+                at 2025-07-04T06:14:35.212Z
             </div>
         <script src="../prettify.js"></script>
         <script>

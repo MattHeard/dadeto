@@ -38,19 +38,36 @@ console.log('Copied: src/blog.json -> public/blog.json');
 // --- Copy Toy Files ---
 
 // Predicate to check if an entry is a JS file (excluding .test.js)
+/**
+ *
+ * @param entry
+ */
 function isCorrectJsFileEnding(entry) {
   return entry.name.endsWith('.js') && !entry.name.endsWith('.test.js');
 }
 
+/**
+ *
+ * @param entry
+ */
 function isJsFile(entry) {
   return entry.isFile() && isCorrectJsFileEnding(entry);
 }
 
 // Function to recursively find JS files in a directory (excluding .test.js)
+/**
+ *
+ * @param dir
+ */
 function getDirEntries(dir) {
   return fs.readdirSync(dir, { withFileTypes: true });
 }
 
+/**
+ *
+ * @param entry
+ * @param fullPath
+ */
 function getActualNewFiles(entry, fullPath) {
   if (entry.isDirectory()) {
     return findJsFiles(fullPath);
@@ -58,10 +75,19 @@ function getActualNewFiles(entry, fullPath) {
   return [fullPath];
 }
 
+/**
+ *
+ * @param entry
+ */
 function shouldCheckEntry(entry) {
   return entry.isDirectory() || isJsFile(entry);
 }
 
+/**
+ *
+ * @param entry
+ * @param fullPath
+ */
 function getPossibleNewFiles(entry, fullPath) {
   if (shouldCheckEntry(entry)) {
     return getActualNewFiles(entry, fullPath);
@@ -69,12 +95,22 @@ function getPossibleNewFiles(entry, fullPath) {
   return [];
 }
 
+/**
+ *
+ * @param jsFiles
+ * @param entry
+ * @param dir
+ */
 function accumulateJsFiles(jsFiles, entry, dir) {
   const fullPath = path.join(dir, entry.name);
   const newFiles = getPossibleNewFiles(entry, fullPath);
   return jsFiles.concat(newFiles);
 }
 
+/**
+ *
+ * @param dir
+ */
 function findJsFiles(dir) {
   const entries = getDirEntries(dir);
   return entries.reduce(
@@ -156,6 +192,12 @@ if (fs.existsSync(srcConstantsDir)) {
 
 // --- Copy src/browser to public/browser ---
 
+/**
+ *
+ * @param entry
+ * @param src
+ * @param dest
+ */
 function handleDirectoryEntry(entry, src, dest) {
   const srcPath = path.join(src, entry.name);
   const destPath = path.join(dest, entry.name);
@@ -167,12 +209,23 @@ function handleDirectoryEntry(entry, src, dest) {
   }
 }
 
+/**
+ *
+ * @param entries
+ * @param src
+ * @param dest
+ */
 function processDirectoryEntries(entries, src, dest) {
   for (const entry of entries) {
     handleDirectoryEntry(entry, src, dest);
   }
 }
 
+/**
+ *
+ * @param src
+ * @param dest
+ */
 function copyDirRecursive(src, dest) {
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });

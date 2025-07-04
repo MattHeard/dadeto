@@ -111,10 +111,13 @@ describe('processInputAndSetOutput', () => {
     processInputAndSetOutput(elements, processingFunction, env);
 
     expect(env.dom.createElement).toHaveBeenCalledWith('pre');
-    expect(env.dom.setTextContent).toHaveBeenCalledWith(created, 'line1\nline2');
+    expect(env.dom.setTextContent).toHaveBeenCalledWith(
+      created,
+      'line1\nline2'
+    );
     expect(env.dom.appendChild).toHaveBeenCalledWith(
       elements.outputParentElement,
-      created,
+      created
     );
   });
 });

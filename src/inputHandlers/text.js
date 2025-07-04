@@ -5,6 +5,12 @@ import {
 } from './removeElements.js';
 import { revealAndEnable } from './inputState.js';
 
+/**
+ *
+ * @param dom
+ * @param container
+ * @param textInput
+ */
 export function textHandler(dom, container, textInput) {
   revealAndEnable(textInput, dom);
   maybeRemoveNumber(container, dom);

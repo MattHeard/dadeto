@@ -11,7 +11,11 @@ describe('createAddDropdownListener forward event', () => {
     const addListener = createAddDropdownListener(onChange, dom);
     const result = addListener(dropdown);
     expect(result).toBeUndefined();
-    expect(dom.addEventListener).toHaveBeenCalledWith(dropdown, 'change', onChange);
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      dropdown,
+      'change',
+      onChange
+    );
     expect(onChange).toHaveBeenCalledWith('evt');
   });
 });

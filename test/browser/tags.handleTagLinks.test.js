@@ -16,7 +16,7 @@ describe('handleTagLinks', () => {
           return ['tag-bar'];
         }
       }),
-      addEventListener: jest.fn()
+      addEventListener: jest.fn(),
     };
     // Run
     handleTagLinks(dom);

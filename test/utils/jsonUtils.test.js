@@ -1,5 +1,9 @@
 import { describe, test, expect } from '@jest/globals';
-import { safeParseJson, valueOr, parseJsonOrDefault } from '../../src/utils/jsonUtils.js';
+import {
+  safeParseJson,
+  valueOr,
+  parseJsonOrDefault,
+} from '../../src/utils/jsonUtils.js';
 
 describe('safeParseJson', () => {
   test('parses valid JSON strings', () => {

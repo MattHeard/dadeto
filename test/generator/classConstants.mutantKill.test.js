@@ -4,8 +4,8 @@ import { generateBlogOuter } from '../../src/generator/generator.js';
 test('generateBlogOuter uses entry and footer classes', () => {
   const blog = {
     posts: [
-      { key: 'A1', title: 'Title', publicationDate: '2024-01-01', content: [] }
-    ]
+      { key: 'A1', title: 'Title', publicationDate: '2024-01-01', content: [] },
+    ],
   };
   const html = generateBlogOuter(blog);
   expect(html).toContain('<div class="entry">');

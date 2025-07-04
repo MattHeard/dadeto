@@ -36,7 +36,17 @@ describe('createAddDropdownListener basic behavior', () => {
     addListener(dropdownB);
 
     expect(dom.addEventListener).toHaveBeenCalledTimes(2);
-    expect(dom.addEventListener).toHaveBeenNthCalledWith(1, dropdownA, 'change', onChange);
-    expect(dom.addEventListener).toHaveBeenNthCalledWith(2, dropdownB, 'change', onChange);
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      1,
+      dropdownA,
+      'change',
+      onChange
+    );
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      2,
+      dropdownB,
+      'change',
+      onChange
+    );
   });
 });

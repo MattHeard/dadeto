@@ -21,7 +21,17 @@ describe('createAddDropdownListener using same dom', () => {
     first(dropdown1);
     second(dropdown2);
 
-    expect(dom.addEventListener).toHaveBeenNthCalledWith(1, dropdown1, 'change', onChange);
-    expect(dom.addEventListener).toHaveBeenNthCalledWith(2, dropdown2, 'change', onChange);
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      1,
+      dropdown1,
+      'change',
+      onChange
+    );
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      2,
+      dropdown2,
+      'change',
+      onChange
+    );
   });
 });

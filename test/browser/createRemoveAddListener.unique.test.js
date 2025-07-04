@@ -30,7 +30,17 @@ describe('createRemoveAddListener unique disposers', () => {
     disposeA();
     disposeB();
 
-    expect(dom.removeEventListener).toHaveBeenNthCalledWith(1, btnA, 'click', handlerA);
-    expect(dom.removeEventListener).toHaveBeenNthCalledWith(2, btnB, 'click', handlerB);
+    expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+      1,
+      btnA,
+      'click',
+      handlerA
+    );
+    expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+      2,
+      btnB,
+      'click',
+      handlerB
+    );
   });
 });

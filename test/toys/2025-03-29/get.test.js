@@ -10,22 +10,20 @@ describe('get function with path traversal', () => {
       age: 30,
       address: {
         city: 'London',
-        zip: 'ABC 123'
+        zip: 'ABC 123',
       },
       orders: [
         { id: 1, item: 'Book' },
-        { id: 2, item: 'Pen' }
-      ]
+        { id: 2, item: 'Pen' },
+      ],
     },
-    status: 'active'
+    status: 'active',
   };
 
   beforeEach(() => {
     // Reset mocks and environment before each test
     mockGetData = jest.fn().mockReturnValue(testData);
-    env = new Map([
-      ['getData', mockGetData]
-    ]);
+    env = new Map([['getData', mockGetData]]);
   });
 
   test('should return the value for a top-level key', () => {
@@ -46,8 +44,12 @@ describe('get function with path traversal', () => {
   });
 
   test('should return the full object/array if path points to it', () => {
-    expect(get('user.address', env)).toBe(JSON.stringify({ city: 'London', zip: 'ABC 123' }));
-    expect(get('user.orders.1', env)).toBe(JSON.stringify({ id: 2, item: 'Pen' }));
+    expect(get('user.address', env)).toBe(
+      JSON.stringify({ city: 'London', zip: 'ABC 123' })
+    );
+    expect(get('user.orders.1', env)).toBe(
+      JSON.stringify({ id: 2, item: 'Pen' })
+    );
     expect(mockGetData).toHaveBeenCalledTimes(2);
   });
 
@@ -75,19 +77,24 @@ describe('get function with path traversal', () => {
     circular.myself = circular;
     const circularData = { top: { nested: circular } };
     mockGetData.mockReturnValue(circularData);
-    expect(get('top.nested', env)).toMatch(/^Error stringifying final value at path "top.nested":/);
+    expect(get('top.nested', env)).toMatch(
+      /^Error stringifying final value at path "top.nested":/
+    );
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 
-
-  test("should return error if getData returns null", () => {
+  test('should return error if getData returns null', () => {
     mockGetData.mockReturnValue(null);
-    expect(get("any.path", env)).toBe("Error: 'getData' did not return a valid object or array.");
+    expect(get('any.path', env)).toBe(
+      "Error: 'getData' did not return a valid object or array."
+    );
   });
 
-  test("should return error if getData returns a primitive", () => {
+  test('should return error if getData returns a primitive', () => {
     mockGetData.mockReturnValue(42);
-    expect(get("any.path", env)).toBe("Error: 'getData' did not return a valid object or array.");
+    expect(get('any.path', env)).toBe(
+      "Error: 'getData' did not return a valid object or array."
+    );
   });
 
   test('should short-circuit reducer when acc.error is set (indirect via get)', () => {
@@ -100,9 +107,9 @@ describe('get function with path traversal', () => {
     const dataWithUndefined = {
       user: {
         settings: {
-          theme: undefined
-        }
-      }
+          theme: undefined,
+        },
+      },
     };
     mockGetData.mockReturnValue(dataWithUndefined);
     expect(get('user.settings.theme', env)).toBe(JSON.stringify(undefined));
@@ -122,7 +129,7 @@ describe('get function with path traversal', () => {
   });
 
   test('should handle numeric string keys in object', () => {
-    const objWithNumericKeys = { "2025": { value: "future" } };
+    const objWithNumericKeys = { 2025: { value: 'future' } };
     mockGetData.mockReturnValue(objWithNumericKeys);
     expect(get('2025.value', env)).toBe(JSON.stringify('future'));
     expect(mockGetData).toHaveBeenCalledTimes(1);
@@ -133,7 +140,9 @@ describe('get function with path traversal', () => {
     mockGetData.mockImplementation(() => {
       throw new Error(errorMessage);
     });
-    expect(get('user.name', env)).toBe(`Error during data retrieval or path traversal for "user.name": ${errorMessage}`);
+    expect(get('user.name', env)).toBe(
+      `Error during data retrieval or path traversal for "user.name": ${errorMessage}`
+    );
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 

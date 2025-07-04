@@ -8,7 +8,7 @@ describe('makeDisplayBody', () => {
       removeAllChildren: () => {},
       appendChild: () => {},
       createElement: () => ({}), // Return empty object as mock element
-      setTextContent: () => {}
+      setTextContent: () => {},
     };
     const mockParent = {};
     const presenterKey = 'text';
@@ -47,7 +47,10 @@ describe('makeDisplayBody', () => {
     const mockDom = {
       removeAllChildren: jest.fn(),
       appendChild: jest.fn(),
-      createElement: jest.fn(tag => ({ tagName: tag.toUpperCase(), textContent: '' })),
+      createElement: jest.fn(tag => ({
+        tagName: tag.toUpperCase(),
+        textContent: '',
+      })),
       setTextContent: (el, text) => {
         el.textContent = text;
       },

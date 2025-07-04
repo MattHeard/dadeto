@@ -1,9 +1,9 @@
-import { maybeRemoveElement } from "./disposeHelpers.js";
+import { maybeRemoveElement } from './disposeHelpers.js';
 import {
   NUMBER_INPUT_SELECTOR,
   KV_CONTAINER_SELECTOR,
   DENDRITE_FORM_SELECTOR,
-} from "../constants/selectors.js";
+} from '../constants/selectors.js';
 
 /**
  * Removes a number input element if present.

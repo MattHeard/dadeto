@@ -486,7 +486,6 @@ test('forces minimax to run from O perspective', () => {
   expect(output.moves[1].player).toBe('O');
 });
 
-
 test('returns fallback when minimax fails to assign bestMove', () => {
   const env = new Map();
   // All cells are filled with null to simulate a fully corrupted board

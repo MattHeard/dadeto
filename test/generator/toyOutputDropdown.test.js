@@ -11,7 +11,10 @@ const blog = {
       key: 'TOY',
       title: 'Toy Post',
       publicationDate: '2024-01-01',
-      toy: { modulePath: './toys/2024-01-01/example.js', functionName: 'example' },
+      toy: {
+        modulePath: './toys/2024-01-01/example.js',
+        functionName: 'example',
+      },
     },
   ],
 };
@@ -69,7 +72,10 @@ describe('toy output dropdown', () => {
       ['pre', 'pre'],
       ['tic-tac-toe', 'tic-tac-toe'],
       ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
-      ['battleship-solitaire-clues-presenter', 'battleship-solitaire-clues-presenter'],
+      [
+        'battleship-solitaire-clues-presenter',
+        'battleship-solitaire-clues-presenter',
+      ],
     ];
     expect(pairs).toEqual(expectedPairs);
   });

@@ -17,11 +17,11 @@ describe('generateBlog related links spacing', () => {
           relatedLinks: [
             {
               url: 'https://example.com',
-              type: 'article'
-            }
-          ]
-        }
-      ]
+              type: 'article',
+            },
+          ],
+        },
+      ],
     };
 
     const html = generateBlog({ blog, header, footer }, wrap);

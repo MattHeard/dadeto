@@ -13,12 +13,17 @@ beforeAll(async () => {
     return `from '${absolute.href}'`;
   });
   src += '\nexport { escapeRelatedLinkFields };';
-  ({ escapeRelatedLinkFields } = await import(`data:text/javascript,${encodeURIComponent(src)}`));
+  ({ escapeRelatedLinkFields } = await import(
+    `data:text/javascript,${encodeURIComponent(src)}`
+  ));
 });
 
 describe('escapeRelatedLinkFields', () => {
   test('fills in empty strings for missing fields', () => {
-    const result = escapeRelatedLinkFields({ url: 'https://example.com', type: 'article' });
+    const result = escapeRelatedLinkFields({
+      url: 'https://example.com',
+      type: 'article',
+    });
     expect(result).toEqual({
       type: 'article',
       url: 'https://example.com',

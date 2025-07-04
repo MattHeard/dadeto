@@ -245,7 +245,7 @@ export const setTextContent = (element, content) => {
 /**
  * Wrapper for IntersectionObserver constructor
  * @param {Function} callback - IntersectionObserver callback
- * @param {Object} options - IntersectionObserver options
+ * @param {object} options - IntersectionObserver options
  * @returns {IntersectionObserver}
  */
 export const makeIntersectionObserver = callback =>

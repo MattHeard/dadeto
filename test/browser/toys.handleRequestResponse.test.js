@@ -16,7 +16,7 @@ describe('handleRequestResponse', () => {
   let unhandled;
 
   beforeEach(() => {
-    unhandled = (err) => {
+    unhandled = err => {
       throw err;
     };
     process.on('unhandledRejection', unhandled);
@@ -111,7 +111,7 @@ describe('handleRequestResponse', () => {
     );
     expect(mockDom.setTextContent).toHaveBeenCalledWith(
       expect.anything(),
-      'Error fetching URL: ' + error.message
+      `Error fetching URL: ${error.message}`
     );
     expect(mockDom.addWarning).toHaveBeenCalledWith(mockParent);
   });
@@ -134,7 +134,7 @@ describe('handleRequestResponse', () => {
     );
     expect(mockDom.setTextContent).toHaveBeenCalledWith(
       expect.anything(),
-      'Error fetching URL: ' + error.message
+      `Error fetching URL: ${error.message}`
     );
     expect(mockDom.addWarning).toHaveBeenCalledWith(mockParent);
   });

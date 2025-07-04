@@ -5,12 +5,17 @@ import { isObject } from '../browser/common.js';
  * ---------------------------
  * @param {string} inputString – JSON-encoded moves array
  * @param {object} dom         – abstraction with createElement / setTextContent
+ * @param move
  * @returns {HTMLElement}      – <pre> (board) or <p> (error)
  */
 function getPlayer(move) {
   return move?.player;
 }
 
+/**
+ *
+ * @param move
+ */
 function getPosition(move) {
   return move?.position;
 }
@@ -26,13 +31,20 @@ const moveValidators = [
     return typeof position.row === 'number' && [0, 1, 2].includes(position.row);
   },
   function validColumn({ position }) {
-    return typeof position.column === 'number' && [0, 1, 2].includes(position.column);
+    return (
+      typeof position.column === 'number' && [0, 1, 2].includes(position.column)
+    );
   },
   function cellIsEmpty({ position, board }) {
     return board[position.row][position.column] === ' ';
-  }
+  },
 ];
 
+/**
+ *
+ * @param move
+ * @param board
+ */
 function isLegalMove(move, board) {
   const player = getPlayer(move);
   const position = getPosition(move);
@@ -40,6 +52,11 @@ function isLegalMove(move, board) {
   return moveValidators.every(fn => fn(args));
 }
 
+/**
+ *
+ * @param move
+ * @param board
+ */
 function updateBoardIfLegal(move, board) {
   if (isLegalMove(move, board)) {
     const { row, column } = getPosition(move);
@@ -47,6 +64,11 @@ function updateBoardIfLegal(move, board) {
   }
 }
 
+/**
+ *
+ * @param move
+ * @param board
+ */
 function applyMove(move, board) {
   const position = getPosition(move);
   if (isObject(position)) {
@@ -54,6 +76,11 @@ function applyMove(move, board) {
   }
 }
 
+/**
+ *
+ * @param inputString
+ * @param dom
+ */
 export function createTicTacToeBoardElement(inputString, dom) {
   let data;
 
@@ -68,6 +95,11 @@ export function createTicTacToeBoardElement(inputString, dom) {
   return renderTicTacToeBoardFromData(data, dom);
 }
 
+/**
+ *
+ * @param data
+ * @param dom
+ */
 function renderTicTacToeBoardFromData(data, dom) {
   // 2. Initialise empty 3 × 3 grid
   const board = Array.from({ length: 3 }, () => Array(3).fill(' '));

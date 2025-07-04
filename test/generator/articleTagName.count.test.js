@@ -9,8 +9,18 @@ describe('ARTICLE_TAG_NAME count', () => {
   test('number of <article> tags matches posts length', () => {
     const blog = {
       posts: [
-        { key: 'A1', title: 'One', publicationDate: '2024-01-01', content: ['x'] },
-        { key: 'A2', title: 'Two', publicationDate: '2024-01-02', content: ['y'] },
+        {
+          key: 'A1',
+          title: 'One',
+          publicationDate: '2024-01-01',
+          content: ['x'],
+        },
+        {
+          key: 'A2',
+          title: 'Two',
+          publicationDate: '2024-01-02',
+          content: ['y'],
+        },
       ],
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);

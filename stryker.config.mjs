@@ -5,7 +5,12 @@ const jestExcludes = (jestConfig.collectCoverageFrom || [])
   .map(p => p.slice(1));
 
 export default {
-  mutate: ['src/**/*.js', '!**/*.html', '!src/generator/styles.js', ...jestExcludes],
+  mutate: [
+    'src/**/*.js',
+    '!**/*.html',
+    '!src/generator/styles.js',
+    ...jestExcludes,
+  ],
   testRunner: 'jest',
   coverageAnalysis: 'perTest',
   reporters: ['clear-text'],

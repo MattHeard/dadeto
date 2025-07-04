@@ -2,17 +2,28 @@
  * Retrieves a value from data provided by the environment using the input as a path.
  * @param {string} input - The path (e.g., 'key1.key2.0.key3') to look up in the data.
  * @param {Map<string, Function>} env - Environment map containing dependencies. Expected: 'getData'.
+ * @param value
  * @returns {string} The JSON stringified value found at the path, or an error message.
  */
 function isErrorString(value) {
   return typeof value === 'string' && value.startsWith('Error:');
 }
 
+/**
+ *
+ * @param data
+ * @param input
+ */
 function getValueAtPath(data, input) {
   const pathSegments = input.split('.');
   return traversePathSegments(data, pathSegments);
 }
 
+/**
+ *
+ * @param data
+ * @param pathSegments
+ */
 function traversePathSegments(data, pathSegments) {
   const initialState = { value: data, path: '', error: null };
   const reducer = (acc, segment) => {
@@ -29,6 +40,12 @@ function traversePathSegments(data, pathSegments) {
   }
 }
 
+/**
+ *
+ * @param currentValue
+ * @param segment
+ * @param currentPath
+ */
 function handlePathSegmentIteration(currentValue, segment, currentPath) {
   const result = traverseSegment(currentValue, segment, currentPath);
   if (result.error) {
@@ -37,15 +54,30 @@ function handlePathSegmentIteration(currentValue, segment, currentPath) {
   return { value: result.value, path: result.path, error: null };
 }
 
+/**
+ *
+ * @param currentValue
+ * @param segment
+ * @param currentPath
+ */
 function traverseSegment(currentValue, segment, currentPath) {
   const nextPath = getNextPath(currentPath, segment);
-  const nonObjectError = getNonObjectSegmentError(currentValue, segment, nextPath);
+  const nonObjectError = getNonObjectSegmentError(
+    currentValue,
+    segment,
+    nextPath
+  );
   if (nonObjectError !== null) {
     return { error: nonObjectError };
   }
   return getSegmentValueOrError(currentValue, segment, nextPath);
 }
 
+/**
+ *
+ * @param currentPath
+ * @param segment
+ */
 function getNextPath(currentPath, segment) {
   if (currentPath) {
     return `${currentPath}.${segment}`;
@@ -54,6 +86,12 @@ function getNextPath(currentPath, segment) {
   }
 }
 
+/**
+ *
+ * @param currentValue
+ * @param segment
+ * @param nextPath
+ */
 function getSegmentValueOrError(currentValue, segment, nextPath) {
   if (hasOwnSegment(currentValue, segment)) {
     return { value: currentValue[segment], path: nextPath, error: null };
@@ -61,39 +99,61 @@ function getSegmentValueOrError(currentValue, segment, nextPath) {
   return {
     value: undefined,
     path: nextPath,
-    error: getSegmentNotFoundError(currentValue, segment, nextPath)
+    error: getSegmentNotFoundError(currentValue, segment, nextPath),
   };
 }
 
+/**
+ *
+ * @param currentValue
+ * @param segment
+ * @param currentPath
+ */
 function getNonObjectSegmentError(currentValue, segment, currentPath) {
   if (isNonObjectValue(currentValue)) {
-    return (
-      "Error: Cannot access property '" +
-      segment +
-      "' on non-object value at path '" +
-      currentPath.substring(0, currentPath.lastIndexOf('.')) +
-      "'. Value is: " +
-      JSON.stringify(currentValue)
-    );
+    return `Error: Cannot access property '${
+      segment
+    }' on non-object value at path '${currentPath.substring(
+      0,
+      currentPath.lastIndexOf('.')
+    )}'. Value is: ${JSON.stringify(currentValue)}`;
   } else {
     return null;
   }
 }
 
+/**
+ *
+ * @param value
+ */
 function isNonObjectValue(value) {
   return value === null || typeof value !== 'object';
 }
 
+/**
+ *
+ * @param currentValue
+ * @param segment
+ */
 function hasOwnSegment(currentValue, segment) {
   return Object.hasOwn(currentValue, segment);
 }
 
+/**
+ *
+ * @param currentValue
+ * @param segment
+ * @param currentPath
+ */
 function getSegmentNotFoundError(currentValue, segment, currentPath) {
   return `Error: Path segment '${segment}' not found at '${currentPath}'. Available keys/indices: ${Object.keys(currentValue).join(', ')}`;
 }
 
-
-
+/**
+ *
+ * @param input
+ * @param data
+ */
 function handleEmptyInputInGet(input, data) {
   if (input.trim() === '') {
     return JSON.stringify(data);
@@ -101,7 +161,11 @@ function handleEmptyInputInGet(input, data) {
   return null;
 }
 
-
+/**
+ *
+ * @param valueOrError
+ * @param input
+ */
 function handleValueOrErrorResult(valueOrError, input) {
   if (isErrorString(valueOrError)) {
     return valueOrError;
@@ -109,6 +173,11 @@ function handleValueOrErrorResult(valueOrError, input) {
   return safeStringifyValueAtPath(valueOrError, input);
 }
 
+/**
+ *
+ * @param value
+ * @param input
+ */
 function safeStringifyValueAtPath(value, input) {
   try {
     return JSON.stringify(value);
@@ -117,6 +186,10 @@ function safeStringifyValueAtPath(value, input) {
   }
 }
 
+/**
+ *
+ * @param data
+ */
 function checkDataValidityInGet(data) {
   if (isInvalidGetDataResult(data)) {
     return "Error: 'getData' did not return a valid object or array.";
@@ -124,22 +197,36 @@ function checkDataValidityInGet(data) {
   return null;
 }
 
+/**
+ *
+ * @param data
+ */
 function isInvalidGetDataResult(data) {
   return data === null || isNotObjectOrArray(data);
 }
 
+/**
+ *
+ * @param data
+ */
 function isNotObjectOrArray(data) {
   return typeof data !== 'object' && !Array.isArray(data);
 }
 
-
+/**
+ *
+ * @param data
+ * @param input
+ */
 function getFinalResultInGet(data, input) {
   const value = getValueAtPath(data, input);
   return handleValueOrErrorResult(value, input);
 }
 
-
-
+/**
+ *
+ * @param error
+ */
 function handleDataRetrievalErrorInGet(error) {
   if (error) {
     return error;
@@ -147,14 +234,26 @@ function handleDataRetrievalErrorInGet(error) {
   return null;
 }
 
+/**
+ *
+ * @param getData
+ * @param input
+ */
 function getDataWithCatch(getData, input) {
   try {
     return { data: getData() };
   } catch (error) {
-    return { error: `Error during data retrieval or path traversal for "${input}": ${error.message}` };
+    return {
+      error: `Error during data retrieval or path traversal for "${input}": ${error.message}`,
+    };
   }
 }
 
+/**
+ *
+ * @param input
+ * @param env
+ */
 export function get(input, env) {
   const getData = env.get('getData');
   const { data, error } = getDataWithCatch(getData, input);
@@ -166,6 +265,11 @@ export function get(input, env) {
   return getFinalResultAfterRetrieval(input, data);
 }
 
+/**
+ *
+ * @param input
+ * @param data
+ */
 function getFinalResultAfterRetrieval(input, data) {
   const emptyInput = handleEmptyInputInGet(input, data);
   if (emptyInput !== null) {
@@ -175,6 +279,11 @@ function getFinalResultAfterRetrieval(input, data) {
   return getValidDataResultAfterEmptyCheck(data, input);
 }
 
+/**
+ *
+ * @param data
+ * @param input
+ */
 function getValidDataResultAfterEmptyCheck(data, input) {
   const invalidData = checkDataValidityInGet(data);
   if (invalidData) {

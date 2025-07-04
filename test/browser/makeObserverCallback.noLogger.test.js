@@ -11,7 +11,13 @@ describe('makeObserverCallback logInfo required', () => {
       error: jest.fn(),
       contains: () => true,
     };
-    const env = { loggers: { logError: jest.fn(), logWarning: jest.fn(), logInfo: jest.fn() } };
+    const env = {
+      loggers: {
+        logError: jest.fn(),
+        logWarning: jest.fn(),
+        logInfo: jest.fn(),
+      },
+    };
     const moduleInfo = {
       modulePath: 'mod.js',
       article: { id: 'art2' },

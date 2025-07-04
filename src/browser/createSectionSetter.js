@@ -4,7 +4,6 @@ import { deepClone } from '../utils/objectUtils.js';
 
 /**
  * Creates a function that merges JSON input into a section of the data object.
- *
  * @param {string} section - The property name to merge into.
  * @returns {(input: string, env: Map<string, Function>) => string} Setter function
  */
@@ -39,6 +38,12 @@ function parseJsonObject(input) {
   return { ok: true, data: json };
 }
 
+/**
+ *
+ * @param section
+ * @param inputJson
+ * @param env
+ */
 function mergeSection(section, inputJson, env) {
   const getData = env.get('getData');
   const setData = env.get('setData');

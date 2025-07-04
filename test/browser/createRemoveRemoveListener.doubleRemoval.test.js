@@ -31,7 +31,17 @@ describe('createRemoveRemoveListener multiple disposals', () => {
     dispose();
     dispose();
 
-    expect(dom.removeEventListener).toHaveBeenNthCalledWith(1, button, 'click', handler);
-    expect(dom.removeEventListener).toHaveBeenNthCalledWith(2, button, 'click', handler);
+    expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+      1,
+      button,
+      'click',
+      handler
+    );
+    expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+      2,
+      button,
+      'click',
+      handler
+    );
   });
 });

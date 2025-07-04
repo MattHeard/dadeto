@@ -11,7 +11,7 @@ describe('createHandleClick', () => {
       stopDefault,
       hasNextSiblingClass,
       removeNextSibling,
-      createHideSpan: jest.fn()
+      createHideSpan: jest.fn(),
     };
     const link = { id: 'link1' };
     const className = 'tag-foo';
@@ -23,6 +23,5 @@ describe('createHandleClick', () => {
     expect(stopDefault).toHaveBeenCalledWith(fakeEvent);
     expect(hasNextSiblingClass).toHaveBeenCalledWith(link, 'hide-span');
     expect(removeNextSibling).toHaveBeenCalledWith(link);
-
   });
 });

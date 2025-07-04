@@ -42,6 +42,10 @@ export function isBooleanString(value) {
  */
 const booleanValidators = [isBooleanType, isBooleanString];
 
+/**
+ *
+ * @param value
+ */
 export function isValidBoolean(value) {
-  return booleanValidators.some((predicate) => predicate(value));
+  return booleanValidators.some(predicate => predicate(value));
 }

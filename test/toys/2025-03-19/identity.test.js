@@ -24,7 +24,7 @@ describe('identity function', () => {
     const complexObj = {
       name: 'test',
       nested: { value: 123 },
-      array: [1, 2, { key: 'value' }]
+      array: [1, 2, { key: 'value' }],
     };
 
     const result = identity(complexObj);

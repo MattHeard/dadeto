@@ -13,9 +13,9 @@ describe('normalizeContentItem boolean content', () => {
           key: 'B1',
           title: 'Boolean Post',
           publicationDate: '2024-01-01',
-          content: [true]
-        }
-      ]
+          content: [true],
+        },
+      ],
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<p class="value">true</p>');

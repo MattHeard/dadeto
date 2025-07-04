@@ -1,11 +1,17 @@
 // html.js - Core HTML utilities layer
 
 // Constants for HTML structure
+/**
+ *
+ */
 export function doctype() {
   return '<!DOCTYPE html>';
 }
 
 // Language settings
+/**
+ *
+ */
 export function language() {
   return {
     EN: 'en',
@@ -13,11 +19,17 @@ export function language() {
 }
 
 // HTML tag names
+/**
+ *
+ */
 export function htmlTagName() {
   return 'html';
 }
 
 // HTML attribute names
+/**
+ *
+ */
 export function attrName() {
   return {
     LANG: 'lang',
@@ -27,6 +39,9 @@ export function attrName() {
 }
 
 // HTML escape replacements
+/**
+ *
+ */
 export function htmlEscapeReplacements() {
   return [
     { from: /&/g, to: '&amp;' },
@@ -49,21 +64,39 @@ export function join(parts) {
 }
 
 // HTML tag and attribute symbols
+/**
+ *
+ */
 export function tagOpen() {
   return '<';
 }
+/**
+ *
+ */
 export function tagClose() {
   return '>';
 }
+/**
+ *
+ */
 export function space() {
   return ' ';
 }
+/**
+ *
+ */
 export function slash() {
   return '/';
 }
+/**
+ *
+ */
 export function equals() {
   return '=';
 }
+/**
+ *
+ */
 export function quote() {
   return '"';
 }
@@ -149,7 +182,7 @@ export function createAttrPair(attrName, attrValue) {
 /**
  * Apply a single HTML escape replacement
  * @param {string} text - The text to process
- * @param {Object} replacement - The replacement definition
+ * @param {object} replacement - The replacement definition
  * @param {RegExp} replacement.from - The pattern to replace
  * @param {string} replacement.to - The replacement string
  * @returns {string} - Text with the replacement applied
@@ -162,7 +195,7 @@ export function applyHtmlEscapeReplacement(text, replacement) {
 /**
  * Apply all HTML escape replacements
  * @param {string} text - The text to process
- * @param {Array<Object>} replacements - Array of replacement definitions
+ * @param {Array<object>} replacements - Array of replacement definitions
  * @returns {string} - Text with all replacements applied
  */
 export function applyAllHtmlEscapeReplacements(text, replacements) {

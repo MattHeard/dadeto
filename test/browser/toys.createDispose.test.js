@@ -94,7 +94,12 @@ describe('createDispose', () => {
     // scenario: array has an existing row
     const dom1 = { removeAllChildren: jest.fn() };
     const rows1 = ['x'];
-    const dispose1 = createDispose({ disposers: [], dom: dom1, container, rows: rows1 });
+    const dispose1 = createDispose({
+      disposers: [],
+      dom: dom1,
+      container,
+      rows: rows1,
+    });
     expect(() => dispose1()).not.toThrow();
     expect(dom1.removeAllChildren).toHaveBeenCalledWith(container);
     expect(rows1).toHaveLength(0);
@@ -102,7 +107,12 @@ describe('createDispose', () => {
     // scenario: array already empty
     const dom2 = { removeAllChildren: jest.fn() };
     const rows2 = [];
-    const dispose2 = createDispose({ disposers: [], dom: dom2, container, rows: rows2 });
+    const dispose2 = createDispose({
+      disposers: [],
+      dom: dom2,
+      container,
+      rows: rows2,
+    });
     expect(typeof dispose2).toBe('function');
     expect(() => dispose2()).not.toThrow();
     expect(dom2.removeAllChildren).toHaveBeenCalledWith(container);

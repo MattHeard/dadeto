@@ -8,7 +8,12 @@ describe('cyberpunkAdventure input trimming', () => {
       ['getRandomNumber', () => 0.5],
       ['getCurrentTime', () => '00:00'],
       ['getData', () => ({ temporary: { CYBE1: tempData } })],
-      ['setData', data => { tempData = { ...tempData, ...data.temporary?.CYBE1 }; }],
+      [
+        'setData',
+        data => {
+          tempData = { ...tempData, ...data.temporary?.CYBE1 };
+        },
+      ],
     ]);
 
     cyberpunkAdventure('Blaze', env);

@@ -1,5 +1,8 @@
 import { styles } from './styles.js';
 
+/**
+ *
+ */
 export function headElement() {
   return `<head>
   <meta charset="UTF-8">

@@ -9,9 +9,9 @@ describe('generator article title class', () => {
           key: 'A1',
           title: 'Hello',
           publicationDate: '2024-01-01',
-          content: ['Paragraph']
-        }
-      ]
+          content: ['Paragraph'],
+        },
+      ],
     };
     const html = generateBlogOuter(blog);
     expect(html).toContain('class="key article-title"');

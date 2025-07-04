@@ -17,7 +17,7 @@ const blog = require('./src/blog.json');
 const outputHTML = generateBlogOuter(blog);
 
 // Format the HTML using Prettier
-const formatHTML = async (html) => {
+const formatHTML = async html => {
   const options = await prettier.resolveConfig('./.prettierrc');
   return prettier.format(html, {
     ...options,
@@ -30,7 +30,9 @@ const writeFormattedHTML = async () => {
   try {
     const formattedHTML = await formatHTML(outputHTML);
     fs.writeFileSync('public/index.html', formattedHTML, 'utf8');
-    console.log('HTML formatted with Prettier and written to public/index.html');
+    console.log(
+      'HTML formatted with Prettier and written to public/index.html'
+    );
   } catch (error) {
     console.error('Error formatting HTML:', error);
     // Fall back to unformatted HTML if formatting fails

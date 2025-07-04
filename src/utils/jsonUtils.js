@@ -1,7 +1,7 @@
 /**
  * Parses a JSON string or returns a fallback value if parsing fails
  * @param {string} json - The JSON string to parse
- * @param {*} [fallback={}] - The value to return on failure
+ * @param {*} [fallback] - The value to return on failure
  * @returns {*} The parsed value or the fallback
  */
 export function safeParseJson(json) {
@@ -12,6 +12,11 @@ export function safeParseJson(json) {
   }
 }
 
+/**
+ *
+ * @param value
+ * @param fallback
+ */
 export function valueOr(value, fallback) {
   if (value === undefined) {
     return fallback;
@@ -19,6 +24,11 @@ export function valueOr(value, fallback) {
   return value;
 }
 
+/**
+ *
+ * @param json
+ * @param fallback
+ */
 export function parseJsonOrDefault(json, fallback = {}) {
   return valueOr(safeParseJson(json), fallback);
 }

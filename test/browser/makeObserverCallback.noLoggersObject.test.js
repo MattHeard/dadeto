@@ -12,14 +12,22 @@ describe('makeObserverCallback with logInfo present', () => {
       contains: () => true,
     };
     const env = { loggers: { logError: jest.fn(), logInfo: jest.fn() } };
-    const moduleInfo = { modulePath: 'mod.js', article: { id: 'art' }, functionName: 'fn' };
+    const moduleInfo = {
+      modulePath: 'mod.js',
+      article: { id: 'art' },
+      functionName: 'fn',
+    };
     const callback = makeObserverCallback(moduleInfo, env, dom);
     const observer = {};
     const entry = {};
 
     expect(() => callback([entry], observer)).not.toThrow();
     expect(env.loggers.logInfo).toHaveBeenCalled();
-    expect(dom.importModule).toHaveBeenCalledWith('mod.js', expect.any(Function), expect.any(Function));
+    expect(dom.importModule).toHaveBeenCalledWith(
+      'mod.js',
+      expect.any(Function),
+      expect.any(Function)
+    );
     expect(dom.disconnectObserver).toHaveBeenCalledWith(observer);
   });
 });

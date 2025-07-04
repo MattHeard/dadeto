@@ -173,8 +173,18 @@ describe('createOutputDropdownHandler', () => {
     handler(firstEvent);
     handler(secondEvent);
 
-    expect(handle).toHaveBeenNthCalledWith(1, firstEvent.currentTarget, getData, dom);
-    expect(handle).toHaveBeenNthCalledWith(2, secondEvent.currentTarget, getData, dom);
+    expect(handle).toHaveBeenNthCalledWith(
+      1,
+      firstEvent.currentTarget,
+      getData,
+      dom
+    );
+    expect(handle).toHaveBeenNthCalledWith(
+      2,
+      secondEvent.currentTarget,
+      getData,
+      dom
+    );
     expect(handle).toHaveBeenCalledTimes(2);
   });
 
@@ -248,15 +258,27 @@ describe('createOutputDropdownHandler', () => {
 
     expect(res1).toBe('first');
     expect(res2).toBe('second');
-    expect(handle).toHaveBeenNthCalledWith(1, evt1.currentTarget, expect.any(Function), {});
-    expect(handle).toHaveBeenNthCalledWith(2, evt2.currentTarget, expect.any(Function), {});
+    expect(handle).toHaveBeenNthCalledWith(
+      1,
+      evt1.currentTarget,
+      expect.any(Function),
+      {}
+    );
+    expect(handle).toHaveBeenNthCalledWith(
+      2,
+      evt2.currentTarget,
+      expect.any(Function),
+      {}
+    );
   });
 
   test('string representation uses arrow syntax', () => {
     const handler = createOutputDropdownHandler(jest.fn(), jest.fn(), {});
     const fnString = handler.toString();
     expect(fnString.startsWith('event =>')).toBe(true);
-    expect(fnString).toContain('handleDropdownChange(event.currentTarget, getData, dom)');
+    expect(fnString).toContain(
+      'handleDropdownChange(event.currentTarget, getData, dom)'
+    );
     expect(handler.length).toBe(1);
   });
 

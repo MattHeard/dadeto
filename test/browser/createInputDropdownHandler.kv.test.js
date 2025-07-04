@@ -12,10 +12,13 @@ describe('createInputDropdownHandler kv type', () => {
     const dom = {
       getCurrentTarget: jest.fn(() => select),
       getParentElement: jest.fn(() => container),
-      querySelector: jest.fn((el, selector) => ({
-        'input[type="text"]': textInput,
-        'input[type="number"]': numberInput,
-      }[selector] ?? null)),
+      querySelector: jest.fn(
+        (el, selector) =>
+          ({
+            'input[type="text"]': textInput,
+            'input[type="number"]': numberInput,
+          })[selector] ?? null
+      ),
       createElement: jest.fn(() => ({})),
       setClassName: jest.fn(),
       getNextSibling: jest.fn(() => null),

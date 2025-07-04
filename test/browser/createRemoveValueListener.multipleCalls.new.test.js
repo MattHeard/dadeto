@@ -31,7 +31,17 @@ describe('createRemoveValueListener repeated calls', () => {
     dispose();
 
     expect(dom.removeEventListener).toHaveBeenCalledTimes(2);
-    expect(dom.removeEventListener).toHaveBeenNthCalledWith(1, el, 'input', handler);
-    expect(dom.removeEventListener).toHaveBeenNthCalledWith(2, el, 'input', handler);
+    expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+      1,
+      el,
+      'input',
+      handler
+    );
+    expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+      2,
+      el,
+      'input',
+      handler
+    );
   });
 });

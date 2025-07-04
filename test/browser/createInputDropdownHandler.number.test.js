@@ -49,6 +49,9 @@ describe('createInputDropdownHandler number type', () => {
 
     expect(() => handler(event)).not.toThrow();
     expect(dom.removeChild).toHaveBeenCalledWith(container, kvContainer);
-    expect(container.insertBefore).toHaveBeenCalledWith(expect.anything(), null);
+    expect(container.insertBefore).toHaveBeenCalledWith(
+      expect.anything(),
+      null
+    );
   });
 });

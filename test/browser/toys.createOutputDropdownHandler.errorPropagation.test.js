@@ -9,7 +9,11 @@ describe('createOutputDropdownHandler error propagation', () => {
     });
     const getData = jest.fn();
     const dom = {};
-    const handler = createOutputDropdownHandler(handleDropdownChange, getData, dom);
+    const handler = createOutputDropdownHandler(
+      handleDropdownChange,
+      getData,
+      dom
+    );
     const evt = { currentTarget: {} };
     expect(() => handler(evt)).toThrow(error);
   });

@@ -18,6 +18,8 @@ describe('footer script tag', () => {
 
   test('generateBlogOuter closes the container before the script tag', () => {
     const html = generateBlogOuter({ posts: [] });
-    expect(html).toContain('</div></div><script type="module" src="browser/main.js" defer></script>');
+    expect(html).toContain(
+      '</div></div><script type="module" src="browser/main.js" defer></script>'
+    );
   });
 });

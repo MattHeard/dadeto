@@ -13,9 +13,17 @@ describe('createHandleSubmit string representation', () => {
     };
     const env = {
       dom,
-      createEnv: jest.fn(() => new Map([['getData', jest.fn()], ['setData', jest.fn()]])),
+      createEnv: jest.fn(
+        () =>
+          new Map([
+            ['getData', jest.fn()],
+            ['setData', jest.fn()],
+          ])
+      ),
       errorFn: jest.fn(),
-      fetchFn: jest.fn(() => Promise.resolve({ text: jest.fn(() => Promise.resolve('') ) })),
+      fetchFn: jest.fn(() =>
+        Promise.resolve({ text: jest.fn(() => Promise.resolve('')) })
+      ),
     };
     const elements = {
       inputElement: { value: '' },
@@ -24,7 +32,11 @@ describe('createHandleSubmit string representation', () => {
       article: { id: 'a1' },
     };
 
-    const handler = createHandleSubmit(elements, jest.fn(() => ''), env);
+    const handler = createHandleSubmit(
+      elements,
+      jest.fn(() => ''),
+      env
+    );
     expect(typeof handler).toBe('function');
     expect(handler.length).toBe(1);
     expect(handler.toString()).toContain('stopDefault');

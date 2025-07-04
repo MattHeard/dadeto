@@ -13,7 +13,17 @@ describe('createAddDropdownListener repeated calls', () => {
     addListener(dropdown);
 
     expect(dom.addEventListener).toHaveBeenCalledTimes(2);
-    expect(dom.addEventListener).toHaveBeenNthCalledWith(1, dropdown, 'change', onChange);
-    expect(dom.addEventListener).toHaveBeenNthCalledWith(2, dropdown, 'change', onChange);
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      1,
+      dropdown,
+      'change',
+      onChange
+    );
+    expect(dom.addEventListener).toHaveBeenNthCalledWith(
+      2,
+      dropdown,
+      'change',
+      onChange
+    );
   });
 });

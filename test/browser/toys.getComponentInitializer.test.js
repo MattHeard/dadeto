@@ -9,7 +9,7 @@ describe('getComponentInitializer', () => {
       dataset: {},
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
-      style: {}
+      style: {},
     }));
 
     const mockLogWarning = jest.fn();
@@ -17,10 +17,12 @@ describe('getComponentInitializer', () => {
     const mockObserver = {
       observe: jest.fn(),
       unobserve: jest.fn(),
-      disconnect: jest.fn()
+      disconnect: jest.fn(),
     };
 
-    const mockCreateIntersectionObserver = jest.fn().mockReturnValue(mockObserver);
+    const mockCreateIntersectionObserver = jest
+      .fn()
+      .mockReturnValue(mockObserver);
 
     // Create the initializer function
     const initializeComponent = getComponentInitializer(
@@ -33,7 +35,7 @@ describe('getComponentInitializer', () => {
     const testComponent = {
       id: 'test-component',
       modulePath: '/path/to/module.js',
-      functionName: 'initFunction'
+      functionName: 'initFunction',
     };
 
     // Call the initializer
@@ -67,7 +69,7 @@ describe('getComponentInitializer', () => {
     const testComponent = {
       id: 'non-existent-component',
       modulePath: '/path/to/module.js',
-      functionName: 'initFunction'
+      functionName: 'initFunction',
     };
 
     // Call the initializer
@@ -92,7 +94,7 @@ describe('getComponentInitializer', () => {
       dataset: {},
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
-      style: {}
+      style: {},
     };
 
     const mockGetElement = jest.fn().mockReturnValue(mockArticle);
@@ -100,7 +102,7 @@ describe('getComponentInitializer', () => {
     const mockCreateIntersectionObserver = jest.fn().mockReturnValue({
       observe: jest.fn(),
       unobserve: jest.fn(),
-      disconnect: jest.fn()
+      disconnect: jest.fn(),
     });
 
     // Create the initializer function
@@ -114,7 +116,7 @@ describe('getComponentInitializer', () => {
     const testComponent = {
       id: 'test-article',
       modulePath: '/path/to/specific/module.js',
-      functionName: 'specificInitFunction'
+      functionName: 'specificInitFunction',
     };
 
     // Call the initializer

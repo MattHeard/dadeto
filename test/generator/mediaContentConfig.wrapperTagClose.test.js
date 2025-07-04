@@ -13,9 +13,9 @@ describe('MEDIA_CONTENT_CONFIG wrapper tag', () => {
           key: 'ILLW1',
           title: 'With Illustration',
           publicationDate: '2024-01-01',
-          illustration: { fileType: 'png', altText: 'alt' }
-        }
-      ]
+          illustration: { fileType: 'png', altText: 'alt' },
+        },
+      ],
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     const match = html.match(/<div class="value"><img[^]*?<\/div>/);

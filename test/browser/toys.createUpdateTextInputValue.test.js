@@ -180,5 +180,4 @@ describe('createUpdateTextInputValue', () => {
     handler(mockEvent);
     expect(mockDom.setValue).toHaveBeenCalledWith(textInput, symbolValue);
   });
-
 });

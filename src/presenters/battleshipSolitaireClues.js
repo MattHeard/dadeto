@@ -25,18 +25,34 @@
 
 import { isObject } from '../browser/common.js';
 
+/**
+ *
+ * @param obj
+ */
 function hasValidClueArrays(obj) {
   return Array.isArray(obj.rowClues) && Array.isArray(obj.colClues);
 }
 
+/**
+ *
+ * @param arr
+ */
 function hasNonNumberValues(arr) {
   return arr.some(n => typeof n !== 'number');
 }
 
+/**
+ *
+ * @param arr
+ */
 function isEmpty(arr) {
   return arr.length === 0;
 }
 
+/**
+ *
+ * @param obj
+ */
 function getClueArrays(obj) {
   return [obj.rowClues, obj.colClues];
 }
@@ -54,6 +70,10 @@ const VALIDATION_CHECKS = [
   ],
 ];
 
+/**
+ *
+ * @param obj
+ */
 function findValidationError(obj) {
   const found = VALIDATION_CHECKS.find(([predicate]) => predicate(obj));
   if (found) {
@@ -62,6 +82,11 @@ function findValidationError(obj) {
   return '';
 }
 
+/**
+ *
+ * @param numStr
+ * @param width
+ */
 function padLeft(numStr, width) {
   return numStr.padStart(width, ' ');
 }
@@ -71,6 +96,10 @@ const DEFAULT_CLUES = {
   colClues: Array(10).fill(0),
 };
 
+/**
+ *
+ * @param str
+ */
 function safeJsonParse(str) {
   try {
     return JSON.parse(str);
@@ -84,6 +113,10 @@ const INVALID_CLUE_CHECKS = [
   obj => Boolean(findValidationError(obj)),
 ];
 
+/**
+ *
+ * @param colClues
+ */
 function buildColumnDigitMatrix(colClues) {
   const maxDigits = Math.max(...colClues).toString().length;
   // top lines array of length maxDigits
@@ -110,6 +143,11 @@ function parseCluesOrDefault(inputString) {
   return obj;
 }
 
+/**
+ *
+ * @param inputString
+ * @param dom
+ */
 export function createBattleshipCluesBoardElement(inputString, dom) {
   const clues = parseCluesOrDefault(inputString);
 
@@ -122,7 +160,7 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
   const colLines = buildColumnDigitMatrix(colClues); // [maxDigits][width]
   const topClueLines = colLines.map(
     lineArr =>
-      padLeft('', rowPad) + ' ' + lineArr.join(' ') + ' ' + padLeft('', rowPad)
+      `${padLeft('', rowPad)} ${lineArr.join(' ')} ${padLeft('', rowPad)}`
   );
 
   /* ---------- GRID WITH ROW CLUES ---------- */

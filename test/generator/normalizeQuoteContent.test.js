@@ -13,11 +13,9 @@ describe('normalizeContentItem with quote object', () => {
           key: 'QUO',
           title: 'Quote Post',
           publicationDate: '2024-06-01',
-          content: [
-            { type: 'quote', content: 'Hello world' }
-          ]
-        }
-      ]
+          content: [{ type: 'quote', content: 'Hello world' }],
+        },
+      ],
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<blockquote class="value">');

@@ -11,7 +11,6 @@ function isNonNullNonArray(val) {
 
 /**
  * Determine if a value is an object that is not null or an array.
- *
  * @param {*} val - Value to test.
  * @returns {boolean} True when `val` is an object.
  */

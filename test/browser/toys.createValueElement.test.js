@@ -21,7 +21,7 @@ describe('createValueElement', () => {
       removeEventListener: jest.fn(),
       getTargetValue: jest.fn(event => event.target.value),
       getDataAttribute: jest.fn(() => 'testKey'),
-      setDataAttribute: jest.fn()
+      setDataAttribute: jest.fn(),
     };
 
     // Set up test data
@@ -145,7 +145,11 @@ describe('createValueElement', () => {
     disposer();
 
     // Ensure removeEventListener was called with the same handler
-    expect(mockDom.removeEventListener).toHaveBeenCalledWith(el, eventName, handler);
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      el,
+      eventName,
+      handler
+    );
   });
 
   it('cleanup can be called multiple times', () => {

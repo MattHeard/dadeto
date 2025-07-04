@@ -14,7 +14,10 @@ describe('TOY_UI_SECTIONS full HTML', () => {
           title: 'Toy Section',
           publicationDate: '2024-01-01',
           content: ['x'],
-          toy: { modulePath: './toys/2024-01-01/example.js', functionName: 'example' },
+          toy: {
+            modulePath: './toys/2024-01-01/example.js',
+            functionName: 'example',
+          },
         },
       ],
     };

@@ -15,7 +15,15 @@ describe('createAddDropdownListener mutation guard', () => {
     expect(handlerA).not.toBe(handlerB);
     handlerA(dropdownA);
     handlerB(dropdownB);
-    expect(domA.addEventListener).toHaveBeenCalledWith(dropdownA, 'change', onChange);
-    expect(domB.addEventListener).toHaveBeenCalledWith(dropdownB, 'change', onChange);
+    expect(domA.addEventListener).toHaveBeenCalledWith(
+      dropdownA,
+      'change',
+      onChange
+    );
+    expect(domB.addEventListener).toHaveBeenCalledWith(
+      dropdownB,
+      'change',
+      onChange
+    );
   });
 });

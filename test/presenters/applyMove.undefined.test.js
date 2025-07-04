@@ -13,7 +13,9 @@ beforeAll(async () => {
     return `from '${absolute.href}'`;
   });
   src += '\nexport { applyMove };';
-  ({ applyMove } = await import(`data:text/javascript,${encodeURIComponent(src)}`));
+  ({ applyMove } = await import(
+    `data:text/javascript,${encodeURIComponent(src)}`
+  ));
 });
 
 describe('applyMove', () => {
@@ -23,7 +25,7 @@ describe('applyMove', () => {
     expect(board).toEqual([
       [' ', ' ', ' '],
       [' ', ' ', ' '],
-      [' ', ' ', ' ']
+      [' ', ' ', ' '],
     ]);
   });
 });

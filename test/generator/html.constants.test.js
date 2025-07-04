@@ -35,5 +35,4 @@ describe('html constants', () => {
     ];
     expect(htmlEscapeReplacements()).toEqual(expected);
   });
-
 });

@@ -14,7 +14,9 @@ beforeAll(async () => {
   });
   src += '\nexport { formatBaseLink };';
   src += `\n//# sourceURL=${generatorPath}`;
-  ({ formatBaseLink } = await import(`data:text/javascript,${encodeURIComponent(src)}`));
+  ({ formatBaseLink } = await import(
+    `data:text/javascript,${encodeURIComponent(src)}`
+  ));
 });
 
 describe('formatBaseLink default attributes', () => {

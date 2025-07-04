@@ -43,7 +43,11 @@ describe('handleKVType integration with createRemoveValueListener', () => {
     handleKVType(dom, container, textInput);
 
     const handler = dom.addEventListener.mock.calls[0][2];
-    expect(dom.removeEventListener).toHaveBeenCalledWith(numberInput, 'input', handler);
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      numberInput,
+      'input',
+      handler
+    );
     expect(dom.removeChild).toHaveBeenCalledWith(container, numberInput);
   });
 });

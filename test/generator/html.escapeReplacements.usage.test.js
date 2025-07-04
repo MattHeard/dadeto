@@ -1,5 +1,8 @@
 import { describe, test, expect } from '@jest/globals';
-import { htmlEscapeReplacements, escapeHtml } from '../../src/generator/html.js';
+import {
+  htmlEscapeReplacements,
+  escapeHtml,
+} from '../../src/generator/html.js';
 
 describe('HTML_ESCAPE_REPLACEMENTS usage', () => {
   test('escapeHtml replaces all characters using replacements', () => {

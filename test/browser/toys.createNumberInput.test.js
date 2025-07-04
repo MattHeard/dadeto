@@ -20,7 +20,7 @@ describe('createNumberInput', () => {
         element.value = value;
       }),
       addEventListener: jest.fn(),
-      removeEventListener: jest.fn()
+      removeEventListener: jest.fn(),
     };
 
     // Mock the onChange handler

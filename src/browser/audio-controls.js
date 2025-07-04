@@ -28,13 +28,12 @@ export const createUpdateTimeDisplay = (audio, timeDisplay) => {
     const seconds = Math.floor(audio.currentTime % 60)
       .toString()
       .padStart(2, '0');
-    setTextContent(timeDisplay, minutes + ':' + seconds);
+    setTextContent(timeDisplay, `${minutes}:${seconds}`);
   };
 };
 
 /**
  * Set up custom audio controls.
- *
  * @param {object} dom - DOM utilities for creating and modifying elements.
  */
 export function setupAudio(dom) {
@@ -42,12 +41,12 @@ export function setupAudio(dom) {
   audioElements.forEach(function (audio, index) {
     dom.removeControlsAttribute(audio);
     if (!audio.id) {
-      audio.id = 'audio-' + index;
+      audio.id = `audio-${index}`;
     }
 
     const controlsContainer = dom.createElement('div');
     controlsContainer.className = 'audio-controls';
-    controlsContainer.id = 'controls-' + audio.id;
+    controlsContainer.id = `controls-${audio.id}`;
 
     const timeDisplay = dom.createElement('span');
     timeDisplay.className = 'audio-time';

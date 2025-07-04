@@ -10,11 +10,18 @@ describe('fullWidthElement placement', () => {
   test('article output includes fullWidthElement at start', () => {
     const blog = {
       posts: [
-        { key: 'FWX', title: 'Test', publicationDate: '2024-01-01', content: ['x'] },
+        {
+          key: 'FWX',
+          title: 'Test',
+          publicationDate: '2024-01-01',
+          content: ['x'],
+        },
       ],
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
-    expect(html).toContain(`<article class="entry" id="FWX">${fullWidthElement()}`);
+    expect(html).toContain(
+      `<article class="entry" id="FWX">${fullWidthElement()}`
+    );
   });
 
   test('fullWidthElement constant length is unchanged', () => {

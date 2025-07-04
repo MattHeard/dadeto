@@ -6,6 +6,10 @@
  * Returns a JSON string of an array, or []
  */
 
+/**
+ *
+ * @param input
+ */
 function stringToJsonArrayToy(input) {
   if (typeof input !== 'string') {
     return JSON.stringify([]);

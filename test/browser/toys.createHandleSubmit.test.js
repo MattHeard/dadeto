@@ -70,7 +70,7 @@ describe('createHandleSubmit', () => {
     expect(appendChild).toHaveBeenCalled();
     expect(setTextContent).toHaveBeenCalledWith(
       expect.anything(),
-      'Error: ' + processingError.message
+      `Error: ${processingError.message}`
     );
   });
 

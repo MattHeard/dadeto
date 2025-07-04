@@ -16,7 +16,10 @@ describe('applyHtmlEscapeReplacement', () => {
       { from: /</g, to: '&lt;' },
       { from: />/g, to: '&gt;' },
     ];
-    const escaped = reps.reduce((acc, r) => applyHtmlEscapeReplacement(acc, r), text);
+    const escaped = reps.reduce(
+      (acc, r) => applyHtmlEscapeReplacement(acc, r),
+      text
+    );
     expect(escaped).toBe('&quot;A&quot; & &lt;B&gt;');
   });
 });

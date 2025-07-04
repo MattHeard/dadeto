@@ -19,7 +19,7 @@ describe('createRemoveRemoveListener triple calls', () => {
         button: btn,
         rows,
         render,
-        key: 'k' + idx,
+        key: `k${idx}`,
         disposers,
       });
       const disposer = disposers[idx];

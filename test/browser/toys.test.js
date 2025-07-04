@@ -611,7 +611,7 @@ describe('toys', () => {
       // --- THEN ---
       expect(env.loggers.logError).toHaveBeenCalledWith(
         `[${undefined}]`, // article.id is undefined in this test context
-        'Error loading module ' + modulePath + ':',
+        `Error loading module ${modulePath}:`,
         error
       );
     });

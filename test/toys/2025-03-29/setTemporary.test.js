@@ -17,7 +17,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     mockSetData = jest.fn(); // Mock for setData
     env = new Map([
       ['getData', mockGetData],
-      ['setData', mockSetData] // Add setData mock to env
+      ['setData', mockSetData], // Add setData mock to env
     ]);
   });
 
@@ -25,14 +25,17 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     // Modify initialData for this test case before freezing (or create a new one)
     initialData = Object.freeze({
       existing: 'value',
-      temporary: { initial: 'data' }
+      temporary: { initial: 'data' },
     });
     mockGetData.mockReturnValue(initialData);
 
-    const inputJson = JSON.stringify({ newKey: 'newValue', initial: 'overwritten' });
+    const inputJson = JSON.stringify({
+      newKey: 'newValue',
+      initial: 'overwritten',
+    });
     const expectedFinalData = {
       existing: 'value',
-      temporary: { initial: 'overwritten', newKey: 'newValue' }
+      temporary: { initial: 'overwritten', newKey: 'newValue' },
     };
 
     const result = setTemporary(inputJson, env);
@@ -41,12 +44,16 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(mockGetData).toHaveBeenCalledTimes(1);
     expect(mockSetData).toHaveBeenCalledTimes(1);
     // Use expect.objectContaining or toEqual for deep comparison
-    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expectedFinalData));
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining(expectedFinalData)
+    );
     // Ensure the object passed to setData is not the same ref as initialData
     expect(mockSetData.mock.calls[0][0]).not.toBe(initialData);
     // Ensure the temporary object within is also a new reference
-    if(initialData.temporary) {
-      expect(mockSetData.mock.calls[0][0].temporary).not.toBe(initialData.temporary);
+    if (initialData.temporary) {
+      expect(mockSetData.mock.calls[0][0].temporary).not.toBe(
+        initialData.temporary
+      );
     }
   });
 
@@ -55,7 +62,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     const inputJson = JSON.stringify({ firstKey: 123 });
     const expectedFinalData = {
       existing: 'value',
-      temporary: { firstKey: 123 }
+      temporary: { firstKey: 123 },
     };
 
     const result = setTemporary(inputJson, env);
@@ -63,7 +70,9 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(result).toBe('Success: Temporary data deep merged.'); // Updated message
     expect(mockGetData).toHaveBeenCalledTimes(1);
     expect(mockSetData).toHaveBeenCalledTimes(1);
-    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expectedFinalData));
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining(expectedFinalData)
+    );
     expect(mockSetData.mock.calls[0][0]).not.toBe(initialData);
   });
 
@@ -75,27 +84,36 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
 
     const result = setTemporary(inputJson, env);
     expect(result).toBe('Success: Temporary data deep merged.'); // Updated message
-    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expectedFinalData));
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining(expectedFinalData)
+    );
     expect(mockSetData.mock.calls[0][0]).not.toBe(initialData);
 
     // Try with null
     initialData = Object.freeze({ existing: 'value', temporary: null });
     mockGetData.mockReturnValue(initialData);
     const inputJson2 = JSON.stringify({ another: true });
-    const expectedFinalData2 = { existing: 'value', temporary: { another: true } };
+    const expectedFinalData2 = {
+      existing: 'value',
+      temporary: { another: true },
+    };
     const result2 = setTemporary(inputJson2, env);
     expect(result2).toBe('Success: Temporary data deep merged.'); // Updated message
-    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expectedFinalData2));
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining(expectedFinalData2)
+    );
     expect(mockSetData.mock.calls[1][0]).not.toBe(initialData);
 
     // Try with array
-    initialData = Object.freeze({ existing: 'value', temporary: [1,2] });
+    initialData = Object.freeze({ existing: 'value', temporary: [1, 2] });
     mockGetData.mockReturnValue(initialData);
     const inputJson3 = JSON.stringify({ third: 3 });
     const expectedFinalData3 = { existing: 'value', temporary: { third: 3 } };
     const result3 = setTemporary(inputJson3, env);
     expect(result3).toBe('Success: Temporary data deep merged.'); // Updated message
-    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expectedFinalData3));
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining(expectedFinalData3)
+    );
     expect(mockSetData.mock.calls[2][0]).not.toBe(initialData);
 
     expect(mockGetData).toHaveBeenCalledTimes(3);
@@ -112,26 +130,33 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
 
   test('should return error if input JSON is not a plain object and not call setData', () => {
     const input = JSON.stringify([1, 2, 3]); // Array
-    expect(setTemporary(input, env)).toBe("Error: Input JSON must be a plain object.");
+    expect(setTemporary(input, env)).toBe(
+      'Error: Input JSON must be a plain object.'
+    );
     expect(mockGetData).not.toHaveBeenCalled();
     expect(mockSetData).not.toHaveBeenCalled();
   });
 
-
-
-
   test('should return error if getData throws an error and not call setData', () => {
     const errorMessage = 'Failed to retrieve data';
-    mockGetData.mockImplementation(() => { throw new Error(errorMessage); });
-    expect(setTemporary('{ "a": 1 }', env)).toBe(`Error updating temporary data: ${errorMessage}`);
+    mockGetData.mockImplementation(() => {
+      throw new Error(errorMessage);
+    });
+    expect(setTemporary('{ "a": 1 }', env)).toBe(
+      `Error updating temporary data: ${errorMessage}`
+    );
     expect(mockSetData).not.toHaveBeenCalled();
   });
 
   test('should return error if setData throws an error', () => {
     const errorMessage = 'Failed to save data';
-    mockSetData.mockImplementation(() => { throw new Error(errorMessage); });
+    mockSetData.mockImplementation(() => {
+      throw new Error(errorMessage);
+    });
     const inputJson = JSON.stringify({ key: 'value' });
-    expect(setTemporary(inputJson, env)).toBe(`Error updating temporary data: ${errorMessage}`);
+    expect(setTemporary(inputJson, env)).toBe(
+      `Error updating temporary data: ${errorMessage}`
+    );
     expect(mockGetData).toHaveBeenCalledTimes(1); // getData was called
     expect(mockSetData).toHaveBeenCalledTimes(1); // setData was called (and threw)
   });
@@ -142,19 +167,19 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
       temporary: {
         level1: {
           a: 1,
-          b: { c: 2 }
+          b: { c: 2 },
         },
-        other: 'abc'
-      }
+        other: 'abc',
+      },
     });
     mockGetData.mockReturnValue(initialData);
 
     const inputJson = JSON.stringify({
       level1: {
         b: { d: 3 }, // This should merge with existing level1.b, not replace it
-        e: 4 // This should be added to level1
+        e: 4, // This should be added to level1
       },
-      newProp: true // Add a new top-level prop to temporary
+      newProp: true, // Add a new top-level prop to temporary
     });
 
     const expectedFinalData = {
@@ -163,11 +188,11 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
         level1: {
           a: 1, // Preserved from initial
           b: { c: 2, d: 3 }, // Merged
-          e: 4 // Added
+          e: 4, // Added
         },
         other: 'abc', // Preserved from initial
-        newProp: true // Added
-      }
+        newProp: true, // Added
+      },
     };
 
     const result = setTemporary(inputJson, env);
@@ -176,35 +201,47 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(mockGetData).toHaveBeenCalledTimes(1);
     expect(mockSetData).toHaveBeenCalledTimes(1);
     // Use toEqual for deep comparison of the final object structure
-    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expectedFinalData)); // Check overall structure
-    expect(mockSetData.mock.calls[0][0].temporary).toEqual(expectedFinalData.temporary); // Deep check temporary specifically
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining(expectedFinalData)
+    ); // Check overall structure
+    expect(mockSetData.mock.calls[0][0].temporary).toEqual(
+      expectedFinalData.temporary
+    ); // Deep check temporary specifically
     // Check that references were changed (deep clone + merge creates new objects)
     expect(mockSetData.mock.calls[0][0]).not.toBe(initialData);
-    expect(mockSetData.mock.calls[0][0].temporary).not.toBe(initialData.temporary);
-    expect(mockSetData.mock.calls[0][0].temporary.level1).not.toBe(initialData.temporary.level1);
-    expect(mockSetData.mock.calls[0][0].temporary.level1.b).not.toBe(initialData.temporary.level1.b);
+    expect(mockSetData.mock.calls[0][0].temporary).not.toBe(
+      initialData.temporary
+    );
+    expect(mockSetData.mock.calls[0][0].temporary.level1).not.toBe(
+      initialData.temporary.level1
+    );
+    expect(mockSetData.mock.calls[0][0].temporary.level1.b).not.toBe(
+      initialData.temporary.level1.b
+    );
   });
 
   test('should overwrite non-object properties during deep merge', () => {
     initialData = Object.freeze({
-      temporary: { a: 1, b: 'string', c: [1, 2] }
+      temporary: { a: 1, b: 'string', c: [1, 2] },
     });
     mockGetData.mockReturnValue(initialData);
 
     const inputJson = JSON.stringify({
       a: { nested: true }, // Overwrite number with object
       b: 2, // Overwrite string with number
-      c: { d: 3 } // Overwrite array with object
+      c: { d: 3 }, // Overwrite array with object
     });
 
     const expectedTemporary = {
       a: { nested: true },
       b: 2,
-      c: { d: 3 }
+      c: { d: 3 },
     };
 
     setTemporary(inputJson, env);
-    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining({ temporary: expectedTemporary }));
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining({ temporary: expectedTemporary })
+    );
   });
 
   test('should handle merging onto an empty initial temporary object', () => {
@@ -214,7 +251,9 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     const expectedTemporary = { level1: { a: 1 } };
 
     setTemporary(inputJson, env);
-    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining({ temporary: expectedTemporary }));
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining({ temporary: expectedTemporary })
+    );
   });
 
   test('should handle merging onto a non-existent initial temporary object', () => {
@@ -224,17 +263,22 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     const expectedTemporary = { level1: { a: 1 } };
 
     setTemporary(inputJson, env);
-    expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining({ temporary: expectedTemporary }));
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining({ temporary: expectedTemporary })
+    );
   });
 
   test('should preserve existing temporary data if source is not object', () => {
-    initialData = Object.freeze({ existing: 'value', temporary: { key: 'val' } });
+    initialData = Object.freeze({
+      existing: 'value',
+      temporary: { key: 'val' },
+    });
     mockGetData.mockReturnValue(initialData);
 
     const inputJson = JSON.stringify(null); // Valid JSON but not an object
 
     const result = setTemporary(inputJson, env);
-    expect(result).toBe("Error: Input JSON must be a plain object.");
+    expect(result).toBe('Error: Input JSON must be a plain object.');
     expect(mockSetData).not.toHaveBeenCalled();
   });
 
@@ -245,7 +289,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
 
     const expected = { existing: 'value', temporary: { newKey: 'newVal' } };
     const result = setTemporary(inputJson, env);
-    expect(result).toBe("Success: Temporary data deep merged.");
+    expect(result).toBe('Success: Temporary data deep merged.');
     expect(mockSetData).toHaveBeenCalledWith(expect.objectContaining(expected));
   });
 });

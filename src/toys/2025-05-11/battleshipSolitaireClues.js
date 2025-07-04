@@ -8,6 +8,10 @@
 
 import { safeParseJson } from '../../utils/jsonUtils.js';
 
+/**
+ *
+ * @param input
+ */
 function generateClues(input) {
   const fleet = parseFleet(input);
   if (fleet.error) {
@@ -24,6 +28,10 @@ function generateClues(input) {
   return JSON.stringify({ rowClues: clues.row, colClues: clues.col });
 }
 
+/**
+ *
+ * @param ship
+ */
 function getShipCells(ship) {
   if (ship.direction === 'H') {
     return getHorizontalCells(ship);
@@ -31,6 +39,10 @@ function getShipCells(ship) {
   return getVerticalCells(ship);
 }
 
+/**
+ *
+ * @param ship
+ */
 function getHorizontalCells(ship) {
   const cells = [];
   for (let i = 0; i < ship.length; i++) {
@@ -39,6 +51,10 @@ function getHorizontalCells(ship) {
   return cells;
 }
 
+/**
+ *
+ * @param ship
+ */
 function getVerticalCells(ship) {
   const cells = [];
   for (let i = 0; i < ship.length; i++) {
@@ -47,6 +63,12 @@ function getVerticalCells(ship) {
   return cells;
 }
 
+/**
+ *
+ * @param position
+ * @param board
+ * @param clues
+ */
 function incrementClues(position, board, clues) {
   if (isValidCell(position, board)) {
     clues.row[position.y] += 1;
@@ -54,18 +76,39 @@ function incrementClues(position, board, clues) {
   }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.x
+ * @param root0.y
+ * @param board
+ */
 function isValidCell({ x, y }, board) {
   return isValidX(x, board) && isValidY(y, board);
 }
 
+/**
+ *
+ * @param x
+ * @param board
+ */
 function isValidX(x, board) {
   return x >= 0 && x < board.width;
 }
 
+/**
+ *
+ * @param y
+ * @param board
+ */
 function isValidY(y, board) {
   return y >= 0 && y < board.height;
 }
 
+/**
+ *
+ * @param input
+ */
 function parseFleet(input) {
   const fleet = safeParseJson(input);
   const error = computeFleetError(fleet);
@@ -80,6 +123,10 @@ const fleetChecks = [
   [fleet => !isValidFleet(fleet), 'Invalid fleet structure'],
 ];
 
+/**
+ *
+ * @param fleet
+ */
 function computeFleetError(fleet) {
   const found = fleetChecks.find(([predicate]) => predicate(fleet));
   if (found) {
@@ -88,10 +135,18 @@ function computeFleetError(fleet) {
   return '';
 }
 
+/**
+ *
+ * @param value
+ */
 function isNumber(value) {
   return typeof value === 'number';
 }
 
+/**
+ *
+ * @param fleet
+ */
 function isValidFleet(fleet) {
   const { width, height, ships } = Object(fleet);
   return [width, height].every(isNumber) && Array.isArray(ships);

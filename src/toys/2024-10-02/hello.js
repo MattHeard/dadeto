@@ -3,5 +3,5 @@
  * @returns {string} A greeting message
  */
 export function hello() {
-  return "Hello world";
+  return 'Hello world';
 }

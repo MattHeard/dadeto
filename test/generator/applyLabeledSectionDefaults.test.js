@@ -14,7 +14,9 @@ beforeAll(async () => {
   });
   src += '\nexport { applyLabeledSectionDefaults };';
   src += `\n//# sourceURL=${generatorPath}`;
-  ({ applyLabeledSectionDefaults } = await import(`data:text/javascript,${encodeURIComponent(src)}`));
+  ({ applyLabeledSectionDefaults } = await import(
+    `data:text/javascript,${encodeURIComponent(src)}`
+  ));
 });
 
 describe('applyLabeledSectionDefaults', () => {
