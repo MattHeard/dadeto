@@ -417,10 +417,14 @@ export function makeModuleConfig(env, dom) {
 }
 
 /**
- *
- * @param moduleInfo
- * @param env
- * @param dom
+ * Create a callback for an IntersectionObserver that handles entries
+ * for a specific module.
+ * @param {{article: HTMLElement, modulePath: string, functionName: string}} moduleInfo
+ *   Information about the module being observed.
+ * @param {object} env - Environment containing loggers and other helpers.
+ * @param {object} dom - DOM utilities used to create observers.
+ * @returns {(entries: IntersectionObserverEntry[], observer: IntersectionObserver) => void}
+ *   Observer callback processing each entry.
  */
 export function makeObserverCallback(moduleInfo, env, dom) {
   const moduleConfig = makeModuleConfig(env, dom);
@@ -1036,11 +1040,7 @@ export const createHandleSubmit =
   };
 
 /**
- * Initializes the interactive elements (input, button, output) within a toy's article element.
- * Sets up event listeners and initial state.
- * @param {HTMLElement} article - The article element containing the toy.
- * @param {Function} processingFunction - The toy's core logic function.
- * Disable input and submit elements during initialization.
+ * Disable the input field and submit button for an interactive component.
  * @param {HTMLInputElement} inputElement - Input field to disable.
  * @param {HTMLButtonElement} submitButton - Submit button to disable.
  * @returns {void}
@@ -1200,11 +1200,9 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
 }
 
 /**
- * Syncs the hidden text input field with the current state of the key-value rows.
- * Only includes non-empty key-value pairs in the output.
- * @param {HTMLInputElement} textInput - The hidden input element to update (assumed to be truthy)
- * @param {object} rows - The key-value pairs to sync
- * @param {object} dom - The DOM utilities object
+ * Remove entries where both key and value are empty strings.
+ * @param {object} rows - Key-value pairs to filter.
+ * @returns {object} Object containing only non-empty entries.
  */
 const filterNonEmptyEntries = rows =>
   Object.fromEntries(Object.entries(rows).filter(([k, v]) => k || v));
@@ -1312,7 +1310,8 @@ export const createDropdownInitializer = (
 };
 
 /**
- * Helper function needed by getData
- * @param globalState
+ * Create a deep cloned copy of the provided global state.
+ * @param {object} globalState - State object to clone.
+ * @returns {object} A deep copy of {@code globalState}.
  */
 export const getDeepStateCopy = globalState => deepClone(globalState);
