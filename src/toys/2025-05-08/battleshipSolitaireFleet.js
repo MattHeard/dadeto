@@ -9,14 +9,16 @@
  * Notes:
  *   • Assumes input is trusted – minimal sanity checks only.
  *   • No diagonal placement; honours optional noTouching flag.
+ * @returns {*} - description
  */
 
 // ────────────────────── Helper utilities ────────────────────── //
 
 /**
  * Fisher‑Yates shuffle (in‑place) using env RNG
- * @param arr
- * @param env
+ * @param {*} arr - description
+ * @param {*} env - description
+ * @returns {*} - description
  */
 function shuffle(arr, env) {
   const getRandomNumber = env.get('getRandomNumber');
@@ -30,7 +32,8 @@ const key = (x, y) => `${x},${y}`;
 
 /**
  *
- * @param coord
+ * @param {*} coord - description
+ * @returns {*} - description
  */
 function isCoordNonNegative(coord) {
   return coord.x >= 0 && coord.y >= 0;
@@ -38,8 +41,9 @@ function isCoordNonNegative(coord) {
 
 /**
  *
- * @param coord
- * @param cfg
+ * @param {*} coord - description
+ * @param {*} cfg - description
+ * @returns {*} - description
  */
 function isCoordWithinBoard(coord, cfg) {
   return coord.x < cfg.width && coord.y < cfg.height;
@@ -47,8 +51,9 @@ function isCoordWithinBoard(coord, cfg) {
 
 /**
  *
- * @param coord
- * @param cfg
+ * @param {*} coord - description
+ * @param {*} cfg - description
+ * @returns {*} - description
  */
 function inBounds(coord, cfg) {
   return isCoordNonNegative(coord) && isCoordWithinBoard(coord, cfg);
@@ -56,8 +61,9 @@ function inBounds(coord, cfg) {
 
 /**
  * 8‑neighbour coordinates
- * @param dx
- * @param dy
+ * @param {*} dx - description
+ * @param {*} dy - description
+ * @returns {*} - description
  */
 function isOrigin(dx, dy) {
   return dx === 0 && dy === 0;
@@ -65,8 +71,9 @@ function isOrigin(dx, dy) {
 
 /**
  *
- * @param coord
- * @param dy
+ * @param {*} coord - description
+ * @param {*} dy - description
+ * @returns {*} - description
  */
 function dxReducerForNeighbour(coord, dy) {
   return (row, dx) => {
@@ -81,7 +88,8 @@ function dxReducerForNeighbour(coord, dy) {
 
 /**
  *
- * @param coord
+ * @param {*} coord - description
+ * @returns {*} - description
  */
 function neighbours(coord) {
   return [-1, 0, 1].reduce((acc, dy) => {
@@ -91,9 +99,10 @@ function neighbours(coord) {
 
 /**
  *
- * @param n
- * @param cfg
- * @param occupied
+ * @param {*} n - description
+ * @param {*} cfg - description
+ * @param {*} occupied - description
+ * @returns {*} - description
  */
 function isNeighbourOccupied(n, cfg, occupied) {
   return inBounds(n, cfg) && occupied.has(key(n.x, n.y));
@@ -104,9 +113,10 @@ const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg =>
 
 /**
  *
- * @param dir
- * @param x
- * @param i
+ * @param {*} dir - description
+ * @param {*} x - description
+ * @param {*} i - description
+ * @returns {*} - description
  */
 function getSx(dir, x, i) {
   if (dir === 'H') {
@@ -118,9 +128,10 @@ function getSx(dir, x, i) {
 
 /**
  *
- * @param dir
- * @param y
- * @param i
+ * @param {*} dir - description
+ * @param {*} y - description
+ * @param {*} i - description
+ * @returns {*} - description
  */
 function getSy(dir, y, i) {
   if (dir === 'V') {
@@ -132,9 +143,10 @@ function getSy(dir, y, i) {
 
 /**
  *
- * @param dir
- * @param x
- * @param len
+ * @param {*} dir - description
+ * @param {*} x - description
+ * @param {*} len - description
+ * @returns {*} - description
  */
 function getEndX(dir, x, len) {
   if (dir === 'H') {
@@ -146,9 +158,10 @@ function getEndX(dir, x, len) {
 
 /**
  *
- * @param dir
- * @param y
- * @param len
+ * @param {*} dir - description
+ * @param {*} y - description
+ * @param {*} len - description
+ * @returns {*} - description
  */
 function getEndY(dir, y, len) {
   if (dir === 'V') {
@@ -160,9 +173,10 @@ function getEndY(dir, y, len) {
 
 /**
  *
- * @param dir
- * @param start
- * @param len
+ * @param {*} dir - description
+ * @param {*} start - description
+ * @param {*} len - description
+ * @returns {*} - description
  */
 function getEndCoord(dir, start, len) {
   return { x: getEndX(dir, start.x, len), y: getEndY(dir, start.y, len) };
@@ -172,9 +186,10 @@ function getEndCoord(dir, start, len) {
 
 /**
  *
- * @param dir
- * @param start
- * @param occupied
+ * @param {*} dir - description
+ * @param {*} start - description
+ * @param {*} occupied - description
+ * @returns {*} - description
  */
 function makeSegReducer(dir, start, occupied) {
   return (acc, _, i) =>
@@ -182,9 +197,10 @@ function makeSegReducer(dir, start, occupied) {
 
   /**
    *
-   * @param segment
-   * @param occupied
-   * @param i
+   * @param {*} segment - description
+   * @param {*} occupied - description
+   * @param {*} i - description
+   * @returns {*} - description
    */
   function handleSegment(segment, occupied, i) {
     const { acc, placement } = segment;
@@ -199,8 +215,9 @@ function makeSegReducer(dir, start, occupied) {
 
   /**
    *
-   * @param segment
-   * @param occupied
+   * @param {*} segment - description
+   * @param {*} occupied - description
+   * @returns {*} - description
    */
   function getNextAccumulator(segment, occupied) {
     const { acc, sx, sy } = segment;
@@ -212,9 +229,10 @@ function makeSegReducer(dir, start, occupied) {
 
   /**
    *
-   * @param occupied
-   * @param sx
-   * @param sy
+   * @param {*} occupied - description
+   * @param {*} sx - description
+   * @param {*} sy - description
+   * @returns {*} - description
    */
   function isSegmentOccupied(occupied, sx, sy) {
     const k = key(sx, sy);
@@ -223,9 +241,10 @@ function makeSegReducer(dir, start, occupied) {
 
   /**
    *
-   * @param acc
-   * @param sx
-   * @param sy
+   * @param {*} acc - description
+   * @param {*} sx - description
+   * @param {*} sy - description
+   * @returns {*} - description
    */
   function addSegmentToAccumulator(acc, sx, sy) {
     return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
@@ -242,9 +261,10 @@ const allSegsHaveNoOccupiedNeighbour = (cfg, occupied, segs) => {
 
 /**
  *
- * @param cfg
- * @param occupied
- * @param segs
+ * @param {*} cfg - description
+ * @param {*} occupied - description
+ * @param {*} segs - description
+ * @returns {*} - description
  */
 function isForbiddenTouch(cfg, occupied, segs) {
   return (
@@ -255,9 +275,10 @@ function isForbiddenTouch(cfg, occupied, segs) {
 
 /**
  *
- * @param boardState
- * @param segs
- * @param valid
+ * @param {*} boardState - description
+ * @param {*} segs - description
+ * @param {*} valid - description
+ * @returns {*} - description
  */
 function isValidCandidate(boardState, segs, valid) {
   if (!valid) {
@@ -273,11 +294,12 @@ function isValidCandidate(boardState, segs, valid) {
 
 /**
  *
- * @param root0
- * @param root0.start
- * @param root0.length
- * @param root0.cfg
- * @param root0.occupied
+ * @param {*} root0 - description
+ * @param {*} root0.start - description
+ * @param {*} root0.length - description
+ * @param {*} root0.cfg - description
+ * @param {*} root0.occupied - description
+ * @returns {*} - description
  */
 function collectCandidatesForStart({ start, length, cfg, occupied }) {
   const directions = ['H', 'V'];
@@ -297,13 +319,14 @@ function collectCandidatesForStart({ start, length, cfg, occupied }) {
 
 /**
  *
- * @param root0
- * @param root0.direction
- * @param root0.start
- * @param root0.length
- * @param root0.cfg
- * @param root0.occupied
- * @param root0.candidates
+ * @param {*} root0 - description
+ * @param {*} root0.direction - description
+ * @param {*} root0.start - description
+ * @param {*} root0.length - description
+ * @param {*} root0.cfg - description
+ * @param {*} root0.occupied - description
+ * @param {*} root0.candidates - description
+ * @returns {*} - description
  */
 function collectCandidatesForDirection({
   direction,
@@ -327,12 +350,13 @@ function collectCandidatesForDirection({
 
 /**
  *
- * @param root0
- * @param root0.direction
- * @param root0.start
- * @param root0.length
- * @param root0.cfg
- * @param root0.occupied
+ * @param {*} root0 - description
+ * @param {*} root0.direction - description
+ * @param {*} root0.start - description
+ * @param {*} root0.length - description
+ * @param {*} root0.cfg - description
+ * @param {*} root0.occupied - description
+ * @returns {*} - description
  */
 function getCandidateIfInBounds({ direction, start, length, cfg, occupied }) {
   const endCoord = getEndCoord(direction, start, length);
@@ -344,12 +368,13 @@ function getCandidateIfInBounds({ direction, start, length, cfg, occupied }) {
 
 /**
  *
- * @param root0
- * @param root0.direction
- * @param root0.start
- * @param root0.length
- * @param root0.cfg
- * @param root0.occupied
+ * @param {*} root0 - description
+ * @param {*} root0.direction - description
+ * @param {*} root0.start - description
+ * @param {*} root0.length - description
+ * @param {*} root0.cfg - description
+ * @param {*} root0.occupied - description
+ * @returns {*} - description
  */
 function getValidCandidate({ direction, start, length, cfg, occupied }) {
   const segReducer = makeSegReducer(direction, start, occupied);
@@ -365,9 +390,10 @@ function getValidCandidate({ direction, start, length, cfg, occupied }) {
 
 /**
  *
- * @param length
- * @param cfg
- * @param occupied
+ * @param {*} length - description
+ * @param {*} cfg - description
+ * @param {*} occupied - description
+ * @returns {*} - description
  */
 function collectAllCandidates(length, cfg, occupied) {
   const candidates = [];
@@ -379,12 +405,13 @@ function collectAllCandidates(length, cfg, occupied) {
 
 /**
  *
- * @param root0
- * @param root0.y
- * @param root0.length
- * @param root0.cfg
- * @param root0.occupied
- * @param root0.candidates
+ * @param {*} root0 - description
+ * @param {*} root0.y - description
+ * @param {*} root0.length - description
+ * @param {*} root0.cfg - description
+ * @param {*} root0.occupied - description
+ * @param {*} root0.candidates - description
+ * @returns {*} - description
  */
 function collectCandidatesForRow({ y, length, cfg, occupied, candidates }) {
   for (let x = 0; x < cfg.width; x++) {
@@ -401,9 +428,10 @@ function collectCandidatesForRow({ y, length, cfg, occupied, candidates }) {
 
 /**
  *
- * @param chosen
- * @param occupied
- * @param length
+ * @param {*} chosen - description
+ * @param {*} occupied - description
+ * @param {*} length - description
+ * @returns {*} - description
  */
 function markOccupiedSquares(chosen, occupied, length) {
   for (let i = 0; i < length; i++) {
@@ -415,11 +443,12 @@ function markOccupiedSquares(chosen, occupied, length) {
 
 /**
  *
- * @param root0
- * @param root0.candidates
- * @param root0.length
- * @param env
- * @param occupied
+ * @param {*} root0 - description
+ * @param {*} root0.candidates - description
+ * @param {*} root0.length - description
+ * @param {*} env - description
+ * @param {*} occupied - description
+ * @returns {*} - description
  */
 function chooseAndMarkCandidate({ candidates, length }, env, occupied) {
   if (candidates.length === 0) {
@@ -434,9 +463,10 @@ function chooseAndMarkCandidate({ candidates, length }, env, occupied) {
 
 /**
  *
- * @param length
- * @param boardState
- * @param env
+ * @param {*} length - description
+ * @param {*} boardState - description
+ * @param {*} env - description
+ * @returns {*} - description
  */
 function placeShip(length, boardState, env) {
   const { cfg, occupied } = boardState;
@@ -446,8 +476,9 @@ function placeShip(length, boardState, env) {
 
 /**
  *
- * @param cfg
- * @param env
+ * @param {*} cfg - description
+ * @param {*} env - description
+ * @returns {*} - description
  */
 function makePlaceShip(cfg, env) {
   const occupied = new Set();
@@ -456,9 +487,10 @@ function makePlaceShip(cfg, env) {
 
 /**
  *
- * @param acc
- * @param placeShipWithArgs
- * @param len
+ * @param {*} acc - description
+ * @param {*} placeShipWithArgs - description
+ * @param {*} len - description
+ * @returns {*} - description
  */
 function shouldAbortPlaceShip(acc, placeShipWithArgs, len) {
   return !acc || !placeShipWithArgs(len);
@@ -466,7 +498,8 @@ function shouldAbortPlaceShip(acc, placeShipWithArgs, len) {
 
 /**
  *
- * @param placeShipWithArgs
+ * @param {*} placeShipWithArgs - description
+ * @returns {*} - description
  */
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
@@ -481,8 +514,9 @@ function makePlaceShipReducer(placeShipWithArgs) {
 
 /**
  *
- * @param cfg
- * @param env
+ * @param {*} cfg - description
+ * @param {*} env - description
+ * @returns {*} - description
  */
 function placeAllShips(cfg, env) {
   const lengths = cfg.ships.slice();
@@ -498,8 +532,9 @@ function placeAllShips(cfg, env) {
 
 /**
  *
- * @param cfg
- * @param env
+ * @param {*} cfg - description
+ * @param {*} env - description
+ * @returns {*} - description
  */
 function attemptPlacement(cfg, env) {
   const ships = placeAllShips(cfg, env);
@@ -511,7 +546,8 @@ function attemptPlacement(cfg, env) {
 
 /**
  *
- * @param cfg
+ * @param {*} cfg - description
+ * @returns {*} - description
  */
 function exceedsBoardArea(cfg) {
   const totalSegments = cfg.ships.reduce((s, l) => s + l, 0);
@@ -520,7 +556,8 @@ function exceedsBoardArea(cfg) {
 
 /**
  *
- * @param cfg
+ * @param {*} cfg - description
+ * @returns {*} - description
  */
 function ensureShipsArray(cfg) {
   if (!Array.isArray(cfg.ships)) {
@@ -532,7 +569,8 @@ function ensureShipsArray(cfg) {
 
 /**
  *
- * @param input
+ * @param {*} input - description
+ * @returns {*} - description
  */
 function safeJsonParse(input) {
   try {
@@ -544,7 +582,8 @@ function safeJsonParse(input) {
 
 /**
  *
- * @param cfg
+ * @param {*} cfg - description
+ * @returns {*} - description
  */
 function convertShipsToArray(cfg) {
   if (typeof cfg.ships === 'string') {
@@ -557,7 +596,8 @@ function convertShipsToArray(cfg) {
 
 /**
  *
- * @param value
+ * @param {*} value - description
+ * @returns {*} - description
  */
 function parseDimension(value) {
   if (typeof value === 'string') {
@@ -568,7 +608,8 @@ function parseDimension(value) {
 
 /**
  *
- * @param cfg
+ * @param {*} cfg - description
+ * @returns {*} - description
  */
 function parseDimensions(cfg) {
   cfg.width = parseDimension(cfg.width);
@@ -577,7 +618,8 @@ function parseDimensions(cfg) {
 
 /**
  *
- * @param input
+ * @param {*} input - description
+ * @returns {*} - description
  */
 function parseConfig(input) {
   const cfg = safeJsonParse(input);
@@ -589,6 +631,7 @@ function parseConfig(input) {
 
 /**
  *
+ * @returns {*} - description
  */
 function fleetAreaError() {
   return JSON.stringify({ error: 'Ship segments exceed board area' });
@@ -596,6 +639,7 @@ function fleetAreaError() {
 
 /**
  *
+ * @returns {*} - description
  */
 function fleetRetryError() {
   return JSON.stringify({
@@ -605,7 +649,8 @@ function fleetRetryError() {
 
 /**
  *
- * @param fleet
+ * @param {*} fleet - description
+ * @returns {*} - description
  */
 function maybeReturnFleet(fleet) {
   if (fleet !== null) {
@@ -616,9 +661,10 @@ function maybeReturnFleet(fleet) {
 
 /**
  *
- * @param i
- * @param cfg
- * @param env
+ * @param {*} i - description
+ * @param {*} cfg - description
+ * @param {*} env - description
+ * @returns {*} - description
  */
 function processFleetLoopIteration(i, cfg, env) {
   const fleet = attemptPlacement(cfg, env);
@@ -628,8 +674,9 @@ function processFleetLoopIteration(i, cfg, env) {
 
 /**
  *
- * @param maxTries
- * @param cb
+ * @param {*} maxTries - description
+ * @param {*} cb - description
+ * @returns {*} - description
  */
 function fleetLoopFor(maxTries, cb) {
   return (
@@ -641,9 +688,10 @@ function fleetLoopFor(maxTries, cb) {
 
 /**
  *
- * @param cfg
- * @param env
- * @param maxTries
+ * @param {*} cfg - description
+ * @param {*} env - description
+ * @param {*} maxTries - description
+ * @returns {*} - description
  */
 function runFleetLoop(cfg, env, maxTries) {
   return fleetLoopFor(maxTries, i => processFleetLoopIteration(i, cfg, env));
@@ -651,9 +699,10 @@ function runFleetLoop(cfg, env, maxTries) {
 
 /**
  *
- * @param cfg
- * @param env
- * @param maxTries
+ * @param {*} cfg - description
+ * @param {*} env - description
+ * @param {*} maxTries - description
+ * @returns {*} - description
  */
 function findValidFleet(cfg, env, maxTries) {
   return runFleetLoop(cfg, env, maxTries);
@@ -661,9 +710,10 @@ function findValidFleet(cfg, env, maxTries) {
 
 /**
  *
- * @param cfg
- * @param env
- * @param maxTries
+ * @param {*} cfg - description
+ * @param {*} env - description
+ * @param {*} maxTries - description
+ * @returns {*} - description
  */
 function tryGenerateFleet(cfg, env, maxTries) {
   const fleet = findValidFleet(cfg, env, maxTries);
@@ -675,8 +725,9 @@ function tryGenerateFleet(cfg, env, maxTries) {
 
 /**
  *
- * @param input
- * @param env
+ * @param {*} input - description
+ * @param {*} env - description
+ * @returns {*} - description
  */
 function generateFleet(input, env) {
   const cfg = parseConfig(input);
@@ -690,7 +741,8 @@ function generateFleet(input, env) {
 
 /**
  *
- * @param cfg
+ * @param {*} cfg - description
+ * @returns {*} - description
  */
 function shouldReturnAreaError(cfg) {
   return exceedsBoardArea(cfg);
@@ -698,7 +750,8 @@ function shouldReturnAreaError(cfg) {
 
 /**
  *
- * @param fleetResult
+ * @param {*} fleetResult - description
+ * @returns {*} - description
  */
 function getFleetResultOrError(fleetResult) {
   if (fleetResult !== null) {

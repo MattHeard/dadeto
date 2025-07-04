@@ -4,13 +4,15 @@
  * Toy signature:  generateClues(input: string): string
  *   input : JSON string of a { width, height, ships } object
  * Returns a JSON string of { rowClues: number[], colClues: number[] }  or { error }
+ * @returns {*} - description
  */
 
 import { safeParseJson } from '../../utils/jsonUtils.js';
 
 /**
  *
- * @param input
+ * @param {*} input - description
+ * @returns {*} - description
  */
 function generateClues(input) {
   const fleet = parseFleet(input);
@@ -30,7 +32,8 @@ function generateClues(input) {
 
 /**
  *
- * @param ship
+ * @param {*} ship - description
+ * @returns {*} - description
  */
 function getShipCells(ship) {
   if (ship.direction === 'H') {
@@ -41,7 +44,8 @@ function getShipCells(ship) {
 
 /**
  *
- * @param ship
+ * @param {*} ship - description
+ * @returns {*} - description
  */
 function getHorizontalCells(ship) {
   const cells = [];
@@ -53,7 +57,8 @@ function getHorizontalCells(ship) {
 
 /**
  *
- * @param ship
+ * @param {*} ship - description
+ * @returns {*} - description
  */
 function getVerticalCells(ship) {
   const cells = [];
@@ -65,9 +70,10 @@ function getVerticalCells(ship) {
 
 /**
  *
- * @param position
- * @param board
- * @param clues
+ * @param {*} position - description
+ * @param {*} board - description
+ * @param {*} clues - description
+ * @returns {*} - description
  */
 function incrementClues(position, board, clues) {
   if (isValidCell(position, board)) {
@@ -78,10 +84,11 @@ function incrementClues(position, board, clues) {
 
 /**
  *
- * @param root0
- * @param root0.x
- * @param root0.y
- * @param board
+ * @param {*} root0 - description
+ * @param {*} root0.x - description
+ * @param {*} root0.y - description
+ * @param {*} board - description
+ * @returns {*} - description
  */
 function isValidCell({ x, y }, board) {
   return isValidX(x, board) && isValidY(y, board);
@@ -89,8 +96,9 @@ function isValidCell({ x, y }, board) {
 
 /**
  *
- * @param x
- * @param board
+ * @param {*} x - description
+ * @param {*} board - description
+ * @returns {*} - description
  */
 function isValidX(x, board) {
   return x >= 0 && x < board.width;
@@ -98,8 +106,9 @@ function isValidX(x, board) {
 
 /**
  *
- * @param y
- * @param board
+ * @param {*} y - description
+ * @param {*} board - description
+ * @returns {*} - description
  */
 function isValidY(y, board) {
   return y >= 0 && y < board.height;
@@ -107,7 +116,8 @@ function isValidY(y, board) {
 
 /**
  *
- * @param input
+ * @param {*} input - description
+ * @returns {*} - description
  */
 function parseFleet(input) {
   const fleet = safeParseJson(input);
@@ -125,7 +135,8 @@ const fleetChecks = [
 
 /**
  *
- * @param fleet
+ * @param {*} fleet - description
+ * @returns {*} - description
  */
 function computeFleetError(fleet) {
   const found = fleetChecks.find(([predicate]) => predicate(fleet));
@@ -137,7 +148,8 @@ function computeFleetError(fleet) {
 
 /**
  *
- * @param value
+ * @param {*} value - description
+ * @returns {*} - description
  */
 function isNumber(value) {
   return typeof value === 'number';
@@ -145,7 +157,8 @@ function isNumber(value) {
 
 /**
  *
- * @param fleet
+ * @param {*} fleet - description
+ * @returns {*} - description
  */
 function isValidFleet(fleet) {
   const { width, height, ships } = Object(fleet);

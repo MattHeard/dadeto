@@ -1,6 +1,7 @@
 /**
  *
- * @param player
+ * @param {*} player - description
+ * @returns {*} - description
  */
 function getOpponent(player) {
   if (player === 'X') {
@@ -12,7 +13,8 @@ function getOpponent(player) {
 
 /**
  *
- * @param input
+ * @param {*} input - description
+ * @returns {*} - description
  */
 function tryParseJSON(input) {
   try {
@@ -24,10 +26,11 @@ function tryParseJSON(input) {
 
 /**
  *
- * @param root0
- * @param root0.move
- * @param root0.index
- * @param root0.moves
+ * @param {*} root0 - description
+ * @param {*} root0.move - description
+ * @param {*} root0.index - description
+ * @param {*} root0.moves - description
+ * @returns {*} - description
  */
 function respectsTurnOrder({ move, index, moves }) {
   return index === 0 || move.player !== moves[index - 1].player;
@@ -35,7 +38,8 @@ function respectsTurnOrder({ move, index, moves }) {
 
 /**
  *
- * @param val
+ * @param {*} val - description
+ * @returns {*} - description
  */
 function isObject(val) {
   return typeof val === 'object' && val !== null;
@@ -43,7 +47,8 @@ function isObject(val) {
 
 /**
  *
- * @param parsed
+ * @param {*} parsed - description
+ * @returns {*} - description
  */
 function getValidParsedMoves(parsed) {
   const isValid = isValidParsedMoves(parsed);
@@ -56,7 +61,8 @@ function getValidParsedMoves(parsed) {
 
 /**
  *
- * @param parsed
+ * @param {*} parsed - description
+ * @returns {*} - description
  */
 function makeValidatorReducer(parsed) {
   return (acc, fn) => {
@@ -69,7 +75,8 @@ function makeValidatorReducer(parsed) {
 
 /**
  *
- * @param parsed
+ * @param {*} parsed - description
+ * @returns {*} - description
  */
 function isValidParsedMoves(parsed) {
   const validators = [isObject, hasMovesArray];
@@ -78,7 +85,8 @@ function isValidParsedMoves(parsed) {
 
 /**
  *
- * @param val
+ * @param {*} val - description
+ * @returns {*} - description
  */
 function hasMovesArray(val) {
   return isObject(val) && Array.isArray(val.moves);
@@ -86,7 +94,8 @@ function hasMovesArray(val) {
 
 /**
  *
- * @param input
+ * @param {*} input - description
+ * @returns {*} - description
  */
 function parseInputSafely(input) {
   const parsed = tryParseJSON(input);
@@ -95,8 +104,9 @@ function parseInputSafely(input) {
 
 /**
  *
- * @param earlyWin
- * @param moves
+ * @param {*} earlyWin - description
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function shouldSkipMove(earlyWin, moves) {
   return earlyWin || moves.length >= 9;
@@ -104,8 +114,9 @@ function shouldSkipMove(earlyWin, moves) {
 
 /**
  *
- * @param moves
- * @param newMove
+ * @param {*} moves - description
+ * @param {*} newMove - description
+ * @returns {*} - description
  */
 function buildMoveResponseWithNewMove(moves, newMove) {
   const updatedMoves = [...moves, newMove];
@@ -115,7 +126,8 @@ function buildMoveResponseWithNewMove(moves, newMove) {
 
 /**
  *
- * @param moves
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function buildMoveResponseWithoutNewMove(moves) {
   const response = { moves };
@@ -124,7 +136,8 @@ function buildMoveResponseWithoutNewMove(moves) {
 
 /**
  *
- * @param input
+ * @param {*} input - description
+ * @returns {*} - description
  */
 export function ticTacToeMove(input) {
   const moves = parseInputSafely(input);
@@ -138,7 +151,8 @@ export function ticTacToeMove(input) {
 
 /**
  *
- * @param moves
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function handleValidMoves(moves) {
   const { board, seen } = initializeBoardAndSeen();
@@ -151,9 +165,10 @@ function handleValidMoves(moves) {
 
 /**
  *
- * @param moves
- * @param board
- * @param result
+ * @param {*} moves - description
+ * @param {*} board - description
+ * @param {*} result - description
+ * @returns {*} - description
  */
 function handleValidAppliedMoves(moves, board, result) {
   const earlyWin = result.earlyWin;
@@ -170,6 +185,7 @@ function handleValidAppliedMoves(moves, board, result) {
 
 /**
  *
+ * @returns {*} - description
  */
 function initializeBoardAndSeen() {
   const board = Array.from({ length: 3 }, () => Array(3).fill(null));
@@ -179,7 +195,8 @@ function initializeBoardAndSeen() {
 
 /**
  *
- * @param moves
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function isTruthyMoves(moves) {
   return Boolean(moves);
@@ -187,7 +204,8 @@ function isTruthyMoves(moves) {
 
 /**
  *
- * @param moves
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function isArrayMoves(moves) {
   return Array.isArray(moves);
@@ -195,7 +213,8 @@ function isArrayMoves(moves) {
 
 /**
  *
- * @param moves
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function isShortEnoughMoves(moves) {
   return !moves || moves.length <= 9;
@@ -203,7 +222,8 @@ function isShortEnoughMoves(moves) {
 
 /**
  *
- * @param moves
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function isInvalidMoves(moves) {
   const validators = [isTruthyMoves, isArrayMoves, isShortEnoughMoves];
@@ -212,9 +232,10 @@ function isInvalidMoves(moves) {
 
 /**
  *
- * @param i
- * @param moves
- * @param apply
+ * @param {*} i - description
+ * @param {*} moves - description
+ * @param {*} apply - description
+ * @returns {*} - description
  */
 function isMoveApplicationValid(i, moves, apply) {
   const move = moves[i];
@@ -225,8 +246,9 @@ function isMoveApplicationValid(i, moves, apply) {
 
 /**
  *
- * @param valid
- * @param earlyWin
+ * @param {*} valid - description
+ * @param {*} earlyWin - description
+ * @returns {*} - description
  */
 function shouldStop(valid, earlyWin) {
   return !valid || earlyWin;
@@ -234,9 +256,10 @@ function shouldStop(valid, earlyWin) {
 
 /**
  *
- * @param moves
- * @param board
- * @param seen
+ * @param {*} moves - description
+ * @param {*} board - description
+ * @param {*} seen - description
+ * @returns {*} - description
  */
 function applyMoveReducer(moves, board, seen) {
   return function (acc, _, i) {
@@ -255,9 +278,10 @@ function applyMoveReducer(moves, board, seen) {
 
 /**
  *
- * @param moves
- * @param board
- * @param seen
+ * @param {*} moves - description
+ * @param {*} board - description
+ * @param {*} seen - description
+ * @returns {*} - description
  */
 function applyMovesSequentially(moves, board, seen) {
   const initial = { valid: true, earlyWin: false, stop: false };
@@ -268,7 +292,8 @@ function applyMovesSequentially(moves, board, seen) {
 
 /**
  *
- * @param board
+ * @param {*} board - description
+ * @returns {*} - description
  */
 function copyBoard(board) {
   return board.map(row => row.slice());
@@ -276,9 +301,10 @@ function copyBoard(board) {
 
 /**
  *
- * @param board
- * @param coordinates
- * @param value
+ * @param {*} board - description
+ * @param {*} coordinates - description
+ * @param {*} value - description
+ * @returns {*} - description
  */
 function setBoardCell(board, coordinates, value) {
   const { r, c } = coordinates;
@@ -289,9 +315,10 @@ function setBoardCell(board, coordinates, value) {
 
 /**
  *
- * @param player
- * @param moves
- * @param setCell
+ * @param {*} player - description
+ * @param {*} moves - description
+ * @param {*} setCell - description
+ * @returns {*} - description
  */
 function scoreMove(player, moves, setCell) {
   const board = setCell(player);
@@ -302,9 +329,10 @@ function scoreMove(player, moves, setCell) {
 
 /**
  *
- * @param board
- * @param nextPlayer
- * @param moves
+ * @param {*} board - description
+ * @param {*} nextPlayer - description
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function makeScoreReducer(board, nextPlayer, moves) {
   return (acc, { r, c }) => {
@@ -319,9 +347,10 @@ function makeScoreReducer(board, nextPlayer, moves) {
 
 /**
  *
- * @param board
- * @param nextPlayer
- * @param moves
+ * @param {*} board - description
+ * @param {*} nextPlayer - description
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function getScoredMoves(board, nextPlayer, moves) {
   const scoreReducer = makeScoreReducer(board, nextPlayer, moves);
@@ -330,7 +359,8 @@ function getScoredMoves(board, nextPlayer, moves) {
 
 /**
  *
- * @param scoredMoves
+ * @param {*} scoredMoves - description
+ * @returns {*} - description
  */
 function getBestScoredMove(scoredMoves) {
   return scoredMoves.reduce(
@@ -347,9 +377,10 @@ function getBestScoredMove(scoredMoves) {
 
 /**
  *
- * @param board
- * @param r
- * @param c
+ * @param {*} board - description
+ * @param {*} r - description
+ * @param {*} c - description
+ * @returns {*} - description
  */
 function setter(board, r, c) {
   return value => setBoardCell(board, { r, c }, value);
@@ -357,9 +388,10 @@ function setter(board, r, c) {
 
 /**
  *
- * @param board
- * @param nextPlayer
- * @param moves
+ * @param {*} board - description
+ * @param {*} nextPlayer - description
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function findBestMove(board, nextPlayer, moves) {
   const scoredMoves = getScoredMoves(board, nextPlayer, moves);
@@ -369,7 +401,8 @@ function findBestMove(board, nextPlayer, moves) {
 
 /**
  *
- * @param board
+ * @param {*} board - description
+ * @returns {*} - description
  */
 function getEmptyCells(board) {
   return board.reduce(
@@ -386,7 +419,8 @@ function getEmptyCells(board) {
 
 /**
  *
- * @param moves
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function determineNextPlayer(moves) {
   if (moves.length === 0) {
@@ -397,8 +431,9 @@ function determineNextPlayer(moves) {
 
 /**
  *
- * @param row
- * @param player
+ * @param {*} row - description
+ * @param {*} player - description
+ * @returns {*} - description
  */
 function isRowWin(row, player) {
   return row.every(cell => cell === player);
@@ -406,8 +441,9 @@ function isRowWin(row, player) {
 
 /**
  *
- * @param board
- * @param player
+ * @param {*} board - description
+ * @param {*} player - description
+ * @returns {*} - description
  */
 function checkRows(board, player) {
   return board.some(row => isRowWin(row, player));
@@ -415,9 +451,10 @@ function checkRows(board, player) {
 
 /**
  *
- * @param board
- * @param col
- * @param player
+ * @param {*} board - description
+ * @param {*} col - description
+ * @param {*} player - description
+ * @returns {*} - description
  */
 function isColumnWin(board, col, player) {
   return board.every(row => row[col] === player);
@@ -425,8 +462,9 @@ function isColumnWin(board, col, player) {
 
 /**
  *
- * @param board
- * @param player
+ * @param {*} board - description
+ * @param {*} player - description
+ * @returns {*} - description
  */
 function checkColumns(board, player) {
   return [0, 1, 2].some(col => isColumnWin(board, col, player));
@@ -434,8 +472,9 @@ function checkColumns(board, player) {
 
 /**
  *
- * @param board
- * @param player
+ * @param {*} board - description
+ * @param {*} player - description
+ * @returns {*} - description
  */
 function checkDiagonals(board, player) {
   const leftToRight = [0, 1, 2].every(i => board[i][i] === player);
@@ -445,7 +484,8 @@ function checkDiagonals(board, player) {
 
 /**
  *
- * @param board
+ * @param {*} board - description
+ * @returns {*} - description
  */
 function checkEarlyWin(board) {
   return isWin(board, 'X') || isWin(board, 'O');
@@ -453,9 +493,10 @@ function checkEarlyWin(board) {
 
 /**
  *
- * @param board
- * @param move
- * @param seen
+ * @param {*} board - description
+ * @param {*} move - description
+ * @param {*} seen - description
+ * @returns {*} - description
  */
 function applyMoveToBoard(board, move, seen) {
   const { player, position } = move;
@@ -473,8 +514,9 @@ function applyMoveToBoard(board, move, seen) {
 
 /**
  *
- * @param isWinPlayer
- * @param depth
+ * @param {*} isWinPlayer - description
+ * @param {*} depth - description
+ * @returns {*} - description
  */
 function getTerminalScore(isWinPlayer, depth) {
   if (isWinPlayer()) {
@@ -485,8 +527,9 @@ function getTerminalScore(isWinPlayer, depth) {
 
 /**
  *
- * @param isWinPlayer
- * @param isWinOpponent
+ * @param {*} isWinPlayer - description
+ * @param {*} isWinOpponent - description
+ * @returns {*} - description
  */
 function shouldEvaluateTerminal(isWinPlayer, isWinOpponent) {
   return isWinPlayer() || isWinOpponent();
@@ -494,9 +537,10 @@ function shouldEvaluateTerminal(isWinPlayer, isWinOpponent) {
 
 /**
  *
- * @param isWinPlayer
- * @param isWinOpponent
- * @param depth
+ * @param {*} isWinPlayer - description
+ * @param {*} isWinOpponent - description
+ * @param {*} depth - description
+ * @returns {*} - description
  */
 function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
   if (shouldEvaluateTerminal(isWinPlayer, isWinOpponent)) {
@@ -507,7 +551,8 @@ function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
 
 /**
  *
- * @param board
+ * @param {*} board - description
+ * @returns {*} - description
  */
 function getAvailableMoves(board) {
   return board.reduce(
@@ -524,8 +569,9 @@ function getAvailableMoves(board) {
 
 /**
  *
- * @param board
- * @param accumulateScores
+ * @param {*} board - description
+ * @param {*} accumulateScores - description
+ * @returns {*} - description
  */
 function simulateMoves(board, accumulateScores) {
   return getAvailableMoves(board).reduce(accumulateScores, []);
@@ -533,9 +579,10 @@ function simulateMoves(board, accumulateScores) {
 
 /**
  *
- * @param depth
- * @param isMax
- * @param params
+ * @param {*} depth - description
+ * @param {*} isMax - description
+ * @param {*} params - description
+ * @returns {*} - description
  */
 function minimax(depth, isMax, params) {
   const opponent = getOpponent(params.player);
@@ -556,8 +603,9 @@ function minimax(depth, isMax, params) {
 
 /**
  *
- * @param scores
- * @param isMax
+ * @param {*} scores - description
+ * @param {*} isMax - description
+ * @returns {*} - description
  */
 function selectScore(scores, isMax) {
   if (isMax) {
@@ -569,9 +617,10 @@ function selectScore(scores, isMax) {
 
 /**
  *
- * @param params
- * @param depth
- * @param isMax
+ * @param {*} params - description
+ * @param {*} depth - description
+ * @param {*} isMax - description
+ * @returns {*} - description
  */
 function makeAccumulateScores(params, depth, isMax) {
   let value;
@@ -597,8 +646,9 @@ function makeAccumulateScores(params, depth, isMax) {
 
 /**
  *
- * @param root0
- * @param root0.move
+ * @param {*} root0 - description
+ * @param {*} root0.move - description
+ * @returns {*} - description
  */
 function hasValidPlayer({ move }) {
   return ['X', 'O'].includes(move.player);
@@ -606,8 +656,9 @@ function hasValidPlayer({ move }) {
 
 /**
  *
- * @param root0
- * @param root0.move
+ * @param {*} root0 - description
+ * @param {*} root0.move - description
+ * @returns {*} - description
  */
 function hasValidPosition({ move }) {
   const position = move.position;
@@ -620,8 +671,9 @@ function hasValidPosition({ move }) {
 
 /**
  *
- * @param row
- * @param column
+ * @param {*} row - description
+ * @param {*} column - description
+ * @returns {*} - description
  */
 function isValidRowAndColumn(row, column) {
   return [0, 1, 2].includes(row) && [0, 1, 2].includes(column);
@@ -629,9 +681,10 @@ function isValidRowAndColumn(row, column) {
 
 /**
  *
- * @param move
- * @param index
- * @param moves
+ * @param {*} move - description
+ * @param {*} index - description
+ * @param {*} moves - description
+ * @returns {*} - description
  */
 function canMoveBeApplied(move, index, moves) {
   if (!isObject(move)) {
@@ -642,7 +695,8 @@ function canMoveBeApplied(move, index, moves) {
 
 /**
  *
- * @param params
+ * @param {*} params - description
+ * @returns {*} - description
  */
 function isMoveDetailsValid(params) {
   const validators = [hasValidPlayer, hasValidPosition, respectsTurnOrder];
@@ -651,8 +705,9 @@ function isMoveDetailsValid(params) {
 
 /**
  *
- * @param board
- * @param player
+ * @param {*} board - description
+ * @param {*} player - description
+ * @returns {*} - description
  */
 function isWin(board, player) {
   const checks = [checkRows, checkColumns, checkDiagonals];
@@ -661,6 +716,7 @@ function isWin(board, player) {
 
 /**
  *
+ * @returns {*} - description
  */
 function returnInitialOptimalMove() {
   // In an empty board, the optimal first move is the center
