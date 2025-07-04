@@ -7,8 +7,8 @@
       "content": ["Transforms a Dendrite story submission into arrays."],
       "illustration": {
         "fileType": "png",
-        "fileName": "2025-07-04-0",
-        "altText": "abstract network of branching lines"
+        "fileName": "2025-07-04",
+        "altText": "a traditional ink-style black and white illustration of a tree diagram branching from a central box labeled “the first split” and “narrative atomization” with empty squares beneath and fractal limbs extending above."
       },
       "toy": {
         "modulePath": "/2025-07-04/transformDendriteStory.js",
