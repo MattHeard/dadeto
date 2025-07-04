@@ -6,8 +6,9 @@ import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
 import { hideAndDisable } from './inputState.js';
 
 /**
- *
- * @param node
+ * Call a node's _dispose method when available.
+ * @param {{_dispose?: Function}} node - Node to clean up.
+ * @returns {void}
  */
 function disposeIfPossible(node) {
   if (typeof node._dispose === 'function') {
@@ -16,9 +17,10 @@ function disposeIfPossible(node) {
 }
 
 /**
- *
- * @param container
- * @param dom
+ * Remove any previously rendered dendrite form from the container.
+ * @param {HTMLElement} container - Wrapper element.
+ * @param {object} dom - DOM helpers.
+ * @returns {void}
  */
 function removeExistingForm(container, dom) {
   const existing = dom.querySelector(container, DENDRITE_FORM_SELECTOR);
@@ -29,9 +31,10 @@ function removeExistingForm(container, dom) {
 }
 
 /**
- *
- * @param dom
- * @param textInput
+ * Parse JSON data stored in the hidden text input.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLInputElement} textInput - Hidden input element.
+ * @returns {object} Parsed dendrite data.
  */
 function parseDendriteData(dom, textInput) {
   const value = dom.getValue(textInput) || '{}';
@@ -39,9 +42,10 @@ function parseDendriteData(dom, textInput) {
 }
 
 /**
- *
- * @param dom
- * @param key
+ * Create an input element for a given field key.
+ * @param {object} dom - DOM utilities.
+ * @param {string} key - Field name.
+ * @returns {HTMLElement} The created element.
  */
 function createInputElement(dom, key) {
   if (key === 'content') {
@@ -53,15 +57,11 @@ function createInputElement(dom, key) {
 }
 
 /**
- *
- * @param dom
- * @param form
- * @param root0
- * @param root0.key
- * @param root0.placeholder
- * @param root0.data
- * @param root0.textInput
- * @param root0.disposers
+ * Add a labeled input field to the dendrite form.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLElement} form - Form container.
+ * @param {{key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field options.
+ * @returns {void}
  */
 function createField(
   dom,
@@ -89,13 +89,10 @@ function createField(
 }
 
 /**
- *
- * @param dom
- * @param root0
- * @param root0.container
- * @param root0.textInput
- * @param root0.data
- * @param root0.disposers
+ * Build the interactive dendrite form and insert it after the text input.
+ * @param {object} dom - DOM utilities.
+ * @param {{container: HTMLElement, textInput: HTMLInputElement, data: object, disposers: Function[]}} param1 - Configuration options.
+ * @returns {HTMLElement} The created form element.
  */
 function buildForm(dom, { container, textInput, data, disposers }) {
   const form = dom.createElement('div');
@@ -123,18 +120,20 @@ function buildForm(dom, { container, textInput, data, disposers }) {
 }
 
 /**
- *
- * @param dom
- * @param textInput
+ * Hide and disable the hidden JSON input element.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLInputElement} textInput - Input to hide.
+ * @returns {void}
  */
 function prepareTextInput(dom, textInput) {
   hideAndDisable(textInput, dom);
 }
 
 /**
- *
- * @param dom
- * @param container
+ * Remove existing inputs and forms from the container.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} container - Container element.
+ * @returns {void}
  */
 function cleanContainer(dom, container) {
   maybeRemoveNumber(container, dom);
@@ -143,10 +142,11 @@ function cleanContainer(dom, container) {
 }
 
 /**
- *
- * @param dom
- * @param container
- * @param textInput
+ * Create and insert a dendrite form for editing data.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} container - Container to insert into.
+ * @param {HTMLInputElement} textInput - Hidden JSON input.
+ * @returns {HTMLElement} Newly created form.
  */
 function createDendriteForm(dom, container, textInput) {
   const disposers = [];
@@ -155,10 +155,11 @@ function createDendriteForm(dom, container, textInput) {
 }
 
 /**
- *
- * @param dom
- * @param container
- * @param textInput
+ * Initialize the dendrite story editor inside a container.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} container - Element that will host the form.
+ * @param {HTMLInputElement} textInput - Hidden JSON input element.
+ * @returns {HTMLElement} The created form element.
  */
 export function dendriteStoryHandler(dom, container, textInput) {
   prepareTextInput(dom, textInput);
