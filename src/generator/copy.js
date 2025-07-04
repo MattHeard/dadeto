@@ -39,16 +39,18 @@ console.log('Copied: src/blog.json -> public/blog.json');
 
 // Predicate to check if an entry is a JS file (excluding .test.js)
 /**
- *
- * @param entry
+ * Determine if an entry has a valid JavaScript file name.
+ * @param {fs.Dirent} entry - Directory entry to check.
+ * @returns {boolean} `true` for non-test `.js` files.
  */
 function isCorrectJsFileEnding(entry) {
   return entry.name.endsWith('.js') && !entry.name.endsWith('.test.js');
 }
 
 /**
- *
- * @param entry
+ * Check if a directory entry is a JavaScript file.
+ * @param {fs.Dirent} entry - Entry to evaluate.
+ * @returns {boolean} Whether the entry is a JS file.
  */
 function isJsFile(entry) {
   return entry.isFile() && isCorrectJsFileEnding(entry);
@@ -56,17 +58,19 @@ function isJsFile(entry) {
 
 // Function to recursively find JS files in a directory (excluding .test.js)
 /**
- *
- * @param dir
+ * Read directory entries with type information.
+ * @param {string} dir - Directory path.
+ * @returns {fs.Dirent[]} Array of directory entries.
  */
 function getDirEntries(dir) {
   return fs.readdirSync(dir, { withFileTypes: true });
 }
 
 /**
- *
- * @param entry
- * @param fullPath
+ * Resolve the files represented by a directory entry.
+ * @param {fs.Dirent} entry - Directory entry.
+ * @param {string} fullPath - Full path to the entry.
+ * @returns {string[]} New file paths discovered.
  */
 function getActualNewFiles(entry, fullPath) {
   if (entry.isDirectory()) {
@@ -76,17 +80,19 @@ function getActualNewFiles(entry, fullPath) {
 }
 
 /**
- *
- * @param entry
+ * Determine if a directory entry should be inspected.
+ * @param {fs.Dirent} entry - Entry to inspect.
+ * @returns {boolean} `true` if the entry may contain JS files.
  */
 function shouldCheckEntry(entry) {
   return entry.isDirectory() || isJsFile(entry);
 }
 
 /**
- *
- * @param entry
- * @param fullPath
+ * Get potential JavaScript files from an entry.
+ * @param {fs.Dirent} entry - Directory entry.
+ * @param {string} fullPath - Full path to the entry.
+ * @returns {string[]} File paths to include.
  */
 function getPossibleNewFiles(entry, fullPath) {
   if (shouldCheckEntry(entry)) {
@@ -96,10 +102,11 @@ function getPossibleNewFiles(entry, fullPath) {
 }
 
 /**
- *
- * @param jsFiles
- * @param entry
- * @param dir
+ * Accumulate JavaScript file paths from a directory entry.
+ * @param {string[]} jsFiles - Array of discovered files.
+ * @param {fs.Dirent} entry - Current directory entry.
+ * @param {string} dir - Directory being scanned.
+ * @returns {string[]} Updated array of file paths.
  */
 function accumulateJsFiles(jsFiles, entry, dir) {
   const fullPath = path.join(dir, entry.name);
@@ -108,8 +115,9 @@ function accumulateJsFiles(jsFiles, entry, dir) {
 }
 
 /**
- *
- * @param dir
+ * Recursively find JavaScript files in a directory.
+ * @param {string} dir - Directory to search.
+ * @returns {string[]} All JS file paths.
  */
 function findJsFiles(dir) {
   const entries = getDirEntries(dir);
@@ -193,10 +201,11 @@ if (fs.existsSync(srcConstantsDir)) {
 // --- Copy src/browser to public/browser ---
 
 /**
- *
- * @param entry
- * @param src
- * @param dest
+ * Copy a directory entry to the destination path.
+ * @param {fs.Dirent} entry - Entry to copy.
+ * @param {string} src - Source directory path.
+ * @param {string} dest - Destination directory path.
+ * @returns {void}
  */
 function handleDirectoryEntry(entry, src, dest) {
   const srcPath = path.join(src, entry.name);
@@ -210,10 +219,11 @@ function handleDirectoryEntry(entry, src, dest) {
 }
 
 /**
- *
- * @param entries
- * @param src
- * @param dest
+ * Process and copy an array of directory entries.
+ * @param {fs.Dirent[]} entries - Directory entries.
+ * @param {string} src - Source directory path.
+ * @param {string} dest - Destination directory path.
+ * @returns {void}
  */
 function processDirectoryEntries(entries, src, dest) {
   for (const entry of entries) {
@@ -222,9 +232,10 @@ function processDirectoryEntries(entries, src, dest) {
 }
 
 /**
- *
- * @param src
- * @param dest
+ * Recursively copy a directory to a destination.
+ * @param {string} src - Source directory.
+ * @param {string} dest - Destination directory.
+ * @returns {void}
  */
 function copyDirRecursive(src, dest) {
   if (!fs.existsSync(dest)) {

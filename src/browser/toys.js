@@ -536,16 +536,18 @@ import { isObject } from './common.js';
  */
 
 /**
- *
- * @param val
+ * Check whether a value contains a `request` field.
+ * @param {object} val - Value to inspect.
+ * @returns {boolean} `true` if `val.request` exists.
  */
 function hasRequestField(val) {
   return Object.hasOwn(val, 'request');
 }
 
 /**
- *
- * @param val
+ * Check whether a value contains a request with a string URL.
+ * @param {object} val - Value to inspect.
+ * @returns {boolean} `true` if `val.request.url` is a string.
  */
 function hasStringUrl(val) {
   return val.request && typeof val.request.url === 'string';
@@ -565,20 +567,13 @@ function isUniqueNonEmpty(key, rows) {
 }
 
 /**
- *
- * @param root0
- * @param root0.prevKey
- * @param root0.newKey
- * @param root0.rows
- * Migrate an entry to a new key if the new key is unique and not blank.
+ * Migrate an entry to a new key if the key is unique and non-empty.
  * @param {object} params - Options object.
  * @param {string} params.prevKey - Current key.
  * @param {string} params.newKey - Proposed new key.
  * @param {object} params.rows - Map of row values by key.
  * @param {HTMLElement} params.keyEl - Key input element.
  * @param {object} params.dom - DOM utilities.
- * @param root0.keyEl
- * @param root0.dom
  * @returns {void}
  */
 function migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom }) {
@@ -1214,6 +1209,13 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
 const filterNonEmptyEntries = rows =>
   Object.fromEntries(Object.entries(rows).filter(([k, v]) => k || v));
 
+/**
+ * Synchronize the hidden field with the filtered rows.
+ * @param {HTMLInputElement} textInput - Hidden input element to update.
+ * @param {object} rows - Key-value pairs to serialise.
+ * @param {object} dom - DOM helper utilities.
+ * @returns {void}
+ */
 export const syncHiddenField = (textInput, rows, dom) => {
   const filtered = filterNonEmptyEntries(rows);
   dom.setValue(textInput, JSON.stringify(filtered));
