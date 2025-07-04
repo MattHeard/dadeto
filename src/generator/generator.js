@@ -942,6 +942,7 @@ function wrapIfPresent(prefix, value, suffix) {
   if (value) {
     return prefix + value + suffix;
   }
+  return undefined;
 }
 
 /**
