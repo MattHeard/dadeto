@@ -75,8 +75,9 @@ const VALIDATION_CHECKS = [
 ];
 
 /**
- *
- * @param obj
+ * Return a validation error message for the clue object if any rule fails.
+ * @param {object} obj - Parsed clue object.
+ * @returns {string} Error message or empty string.
  */
 function findValidationError(obj) {
   const found = VALIDATION_CHECKS.find(([predicate]) => predicate(obj));
@@ -87,9 +88,10 @@ function findValidationError(obj) {
 }
 
 /**
- *
- * @param numStr
- * @param width
+ * Pad a string of digits on the left to a fixed width.
+ * @param {string} numStr - String of digits.
+ * @param {number} width - Desired width.
+ * @returns {string} Padded string.
  */
 function padLeft(numStr, width) {
   return numStr.padStart(width, ' ');
@@ -138,8 +140,8 @@ function buildColumnDigitMatrix(colClues) {
 
 /**
  * Parse JSON input and return clue object or default 10×10 grid clues.
- * @param {string} inputString
- * @returns {{rowClues: number[], colClues: number[]}}
+ * @param {string} inputString - JSON configuration string.
+ * @returns {{rowClues: number[], colClues: number[]}} Parsed clues object.
  */
 function parseCluesOrDefault(inputString) {
   const obj = safeJsonParse(inputString);
