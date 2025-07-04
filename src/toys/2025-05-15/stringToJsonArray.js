@@ -7,8 +7,9 @@
  */
 
 /**
- *
- * @param input
+ * Converts a comma-delimited string to a JSON array string.
+ * @param {string} input - Delimited input string.
+ * @returns {string} JSON array representation.
  */
 function stringToJsonArrayToy(input) {
   if (typeof input !== 'string') {

@@ -10,8 +10,9 @@ export const BLOG_STATUS = {
 };
 
 /**
- *
- * @param globalState
+ * Extracts blog-related state from the global store.
+ * @param {object} globalState - The application state object.
+ * @returns {object} Blog-specific state fields.
  */
 function getBlogState(globalState) {
   return {
@@ -23,8 +24,9 @@ function getBlogState(globalState) {
 }
 
 /**
- *
- * @param globalState
+ * Checks whether a blog fetch is currently running.
+ * @param {object} globalState - The application state.
+ * @returns {boolean} True if a fetch promise is active.
  */
 function isFetchInProgress(globalState) {
   const { status, fetchPromise } = getBlogState(globalState);
@@ -68,6 +70,7 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  * @param {object} loggers - The logging functions object.
  * @param {Function} loggers.logInfo - The logging function to use.
  * @param {Function} loggers.logError - The error logging function to use.
+ * @returns {Promise<unknown>} Promise resolving when fetch completes.
  */
 export function fetchAndCacheBlogData(state, fetch, loggers) {
   const { logInfo, logError } = loggers;
@@ -114,33 +117,30 @@ export function fetchAndCacheBlogData(state, fetch, loggers) {
 export const getDeepStateCopy = globalState => deepClone(globalState);
 
 /**
- * Deeply merges two objects. Creates a new object with merged properties.
- * Properties in source will overwrite properties in target, unless both
- * properties are plain objects, in which case they are recursively merged.
- * Arrays and other types are overwritten, not merged.
- * @param {object} target - The target object.
- * @param {object} source - The source object.
- * @param a
- * @param b
- * @returns {object} A new object representing the merged result.
+ * Checks whether two values are not arrays.
+ * @param {*} a - First value for type comparison.
+ * @param {*} b - Second value for type comparison.
+ * @returns {boolean} True when neither value is an array.
  */
 function bothAreNotArrays(a, b) {
   return !Array.isArray(a) && !Array.isArray(b);
 }
 
 /**
- *
- * @param a
- * @param b
+ * Determines if both values are non-null objects.
+ * @param {*} a - First value to check.
+ * @param {*} b - Second value to check.
+ * @returns {boolean} True when both are non-null objects.
  */
 function bothAreNonNullObjects(a, b) {
   return isNonNullObject(a) && isNonNullObject(b);
 }
 
 /**
- *
- * @param targetValue
- * @param sourceValue
+ * Checks whether two values should be deeply merged.
+ * @param {*} targetValue - The target value.
+ * @param {*} sourceValue - The source value.
+ * @returns {boolean} True when values are mergeable objects.
  */
 function shouldDeepMerge(targetValue, sourceValue) {
   return (
@@ -150,9 +150,10 @@ function shouldDeepMerge(targetValue, sourceValue) {
 }
 
 /**
- *
- * @param target
- * @param source
+ * Deeply merges two objects, producing a new object.
+ * @param {object} target - Destination object.
+ * @param {object} source - Source object to merge.
+ * @returns {object} The merged object.
  */
 export function deepMerge(target, source) {
   const output = { ...target };
@@ -170,8 +171,8 @@ export function deepMerge(target, source) {
 }
 
 /**
- *
- * @param stateCopy
+ * Removes internal bookkeeping fields from a state copy.
+ * @param {object} stateCopy - State object to sanitize.
  */
 function stripInternalFields(stateCopy) {
   for (const key of INTERNAL_STATE_KEYS) {
@@ -180,9 +181,9 @@ function stripInternalFields(stateCopy) {
 }
 
 /**
- *
- * @param globalState
- * @param blogState
+ * Restores blog-related properties on the global state object.
+ * @param {object} globalState - The global application state.
+ * @param {object} blogState - Previously saved blog data.
  */
 function restoreBlogState(globalState, blogState) {
   globalState.blogStatus = blogState.status;
@@ -202,8 +203,8 @@ export function shouldCopyStateForFetch(status) {
 
 /**
  * Determine if an object includes its own `temporary` property.
- * @param {object} obj
- * @returns {boolean}
+ * @param {object} obj - Object to inspect.
+ * @returns {boolean} True when the property exists.
  */
 function hasTemporaryProperty(obj) {
   return Object.hasOwn(obj, 'temporary');
@@ -228,9 +229,10 @@ function isInvalidState(value) {
 }
 
 /**
- *
- * @param incomingState
- * @param errorFn
+ * Validates incoming state before applying it to the global state.
+ * @param {object} incomingState - Candidate state object.
+ * @param {Function} errorFn - Error logger.
+ * @returns {void}
  */
 function validateIncomingState(incomingState, errorFn) {
   if (isInvalidState(incomingState)) {
@@ -242,17 +244,18 @@ function validateIncomingState(incomingState, errorFn) {
 }
 
 /**
- *
- * @param state
+ * Checks whether the blog status is idle.
+ * @param {object} state - The global state object.
+ * @returns {boolean} True when status is IDLE.
  */
 function isIdleStatus(state) {
   return getBlogState(state).status === BLOG_STATUS.IDLE;
 }
 
 /**
- *
- * @param state
- * @param fetch
+ * Triggers the provided fetch when the blog status is idle.
+ * @param {object} state - Global state.
+ * @param {Function} fetch - Blog fetch function.
  */
 function tryFetchingBlog(state, fetch) {
   if (isIdleStatus(state)) {
@@ -261,9 +264,9 @@ function tryFetchingBlog(state, fetch) {
 }
 
 /**
- *
- * @param state
- * @param logWarning
+ * Logs any stored fetch error when present.
+ * @param {object} state - Global state object.
+ * @param {Function} logWarning - Warning logger.
  */
 function maybeLogFetchError(state, logWarning) {
   const blogState = getBlogState(state);
@@ -273,10 +276,10 @@ function maybeLogFetchError(state, logWarning) {
 }
 
 /**
- *
- * @param state
- * @param fetch
- * @param loggers
+ * Handles fetch-related state transitions and logging.
+ * @param {object} state - Global state to update.
+ * @param {Function} fetch - Fetch function.
+ * @param {object} loggers - Logger functions.
  */
 function handleBlogFetchState(state, fetch, loggers) {
   const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
@@ -287,9 +290,8 @@ function handleBlogFetchState(state, fetch, loggers) {
 
 /**
  * Returns a deep copy of state if needed for fetch, otherwise returns state itself.
- * @param {object} state
- * @param status
- * @returns {object}
+ * @param {string} status - Current blog status.
+ * @returns {object} Either the original state or a clone.
  */
 function shouldDeepCopyForFetch(status) {
   return status === 'idle' || status === 'error';
@@ -311,7 +313,6 @@ function getRelevantStateCopy(state) {
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
- * @query
  * @param {object} state - The main application state.
  * @param {Function} fetch - The fetch function.
  * @param {object} loggers - An object with logInfo, logError, and logWarning functions.

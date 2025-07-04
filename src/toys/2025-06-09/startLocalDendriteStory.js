@@ -2,9 +2,10 @@ import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 import { deepClone } from '../../utils/objectUtils.js';
 
 /**
- *
- * @param data
- * @param getUuid
+ * Converts option fields in the data object into an array of objects.
+ * @param {object} data - Parsed story data.
+ * @param {Function} getUuid - UUID generator.
+ * @returns {object[]} Normalized options list.
  */
 function createOptions(data, getUuid) {
   const keys = DENDRITE_OPTION_KEYS;
@@ -14,16 +15,18 @@ function createOptions(data, getUuid) {
 }
 
 /**
- *
- * @param obj
+ * Determines whether the provided object has a valid temporary structure.
+ * @param {object} obj - Object to inspect.
+ * @returns {boolean} True when `obj.temporary.DEND1` is an array.
  */
 function hasValidTemporary(obj) {
   return Array.isArray(obj.temporary?.DEND1);
 }
 
 /**
- *
- * @param obj
+ * Ensures that the object contains the expected temporary data structure.
+ * @param {object} obj - Object to mutate if needed.
+ * @returns {void}
  */
 function ensureTemporaryData(obj) {
   if (!hasValidTemporary(obj)) {
@@ -32,9 +35,10 @@ function ensureTemporaryData(obj) {
 }
 
 /**
- *
- * @param input
- * @param env
+ * Adds a new dendrite story entry to the application's data store.
+ * @param {string} input - JSON string containing story data.
+ * @param {Map<string, Function>} env - Environment with data accessors.
+ * @returns {string} The serialized newly added story or empty object on error.
  */
 export function startLocalDendriteStory(input, env) {
   try {

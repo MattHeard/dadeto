@@ -2,8 +2,8 @@
 
 /**
  * Checks if a value is a non-null object (but not an array).
- * @param {*} val
- * @returns {boolean}
+ * @param {*} val - The value to examine.
+ * @returns {boolean} True when `val` is a non-null object and not an array.
  */
 function isNonNullNonArray(val) {
   return val !== null && !Array.isArray(val);

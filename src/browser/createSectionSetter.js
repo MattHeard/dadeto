@@ -39,10 +39,11 @@ function parseJsonObject(input) {
 }
 
 /**
- *
- * @param section
- * @param inputJson
- * @param env
+ * Deep merges parsed JSON into a section of the global data.
+ * @param {string} section - Target section name.
+ * @param {object} inputJson - Parsed JSON data to merge.
+ * @param {Map<string, Function>} env - Accessor environment with get/set.
+ * @returns {string} Status message describing the result.
  */
 function mergeSection(section, inputJson, env) {
   const getData = env.get('getData');

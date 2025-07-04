@@ -5,7 +5,7 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
 export default [
-  { ignores: ['public/', '.stryker-tmp/'] },
+  { ignores: ['public/', '.stryker-tmp/', 'reports/'] },
   jsdoc.configs['flat/recommended'],
   {
     // Apply recommended rules and configure general JS settings

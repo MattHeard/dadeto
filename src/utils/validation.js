@@ -43,8 +43,9 @@ export function isBooleanString(value) {
 const booleanValidators = [isBooleanType, isBooleanString];
 
 /**
- *
- * @param value
+ * Determines if a value passes any of the boolean validators.
+ * @param {*} value - Value to validate.
+ * @returns {boolean} True when value is boolean-like.
  */
 export function isValidBoolean(value) {
   return booleanValidators.some(predicate => predicate(value));

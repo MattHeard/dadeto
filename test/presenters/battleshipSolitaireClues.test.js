@@ -17,7 +17,8 @@ import { createBattleshipCluesBoardElement } from '../../src/presenters/battlesh
 
 /* ---------- simple DOM stub ---------- */
 /**
- *
+ * Creates a minimal DOM API used for testing.
+ * @returns {object} Stub DOM implementation.
  */
 function makeDom() {
   return {
@@ -35,8 +36,9 @@ function makeDom() {
 
 describe('createBattleshipCluesBoardElement – error handling', () => {
   /**
-   *
-   * @param el
+   * Asserts that a grid element represents an empty 10x10 board.
+   * @param {object} el - DOM element created by the presenter.
+   * @returns {void}
    */
   function expectEmpty10x10Board(el) {
     expect(el.tag).toBe('pre');

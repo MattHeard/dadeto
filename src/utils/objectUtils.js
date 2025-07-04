@@ -17,9 +17,8 @@ export function pick(obj, keys) {
 
 /**
  * Creates a new object with the same keys but with values transformed by a function
- * @param {object} obj - The source object
- * @param source
- * @param {Function} fn - The transformation function
+ * @param {object} source - The source object
+ * @param {Function} fn - Transformation applied to each value
  * @returns {object} A new object with transformed values
  */
 function transformEntries(source, fn) {
@@ -29,9 +28,10 @@ function transformEntries(source, fn) {
 }
 
 /**
- *
- * @param obj
- * @param fn
+ * Maps over the values of an object and returns the new object.
+ * @param {object} obj - Source object.
+ * @param {Function} fn - Mapping function `(value, key)`.
+ * @returns {object} Object with mapped values.
  */
 export function mapValues(obj, fn) {
   if (Object(obj) !== obj) {
