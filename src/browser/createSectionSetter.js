@@ -23,19 +23,39 @@ export function createSectionSetter(section) {
  * @returns {{ok: boolean, message?: string, data?: object}} Result object.
  */
 function parseJsonObject(input) {
-  let json;
+  const parsed = safeJsonParse(input);
+  if (!parsed.ok) {
+    return parsed;
+  }
+  return ensurePlainObject(parsed.data);
+}
+
+/**
+ * Safely parse a JSON string.
+ * @param {string} input - JSON string to parse.
+ * @returns {{ok: boolean, message?: string, data?: object}} Parsed result.
+ */
+function safeJsonParse(input) {
   try {
-    json = JSON.parse(input);
+    return { ok: true, data: JSON.parse(input) };
   } catch (parseError) {
     return {
       ok: false,
       message: `Error: Invalid JSON input. ${parseError.message}`,
     };
   }
-  if (!isObject(json)) {
+}
+
+/**
+ * Ensure a value is a plain object.
+ * @param {*} value - Parsed JSON value.
+ * @returns {{ok: boolean, message?: string, data?: object}} Validation result.
+ */
+function ensurePlainObject(value) {
+  if (!isObject(value)) {
     return { ok: false, message: 'Error: Input JSON must be a plain object.' };
   }
-  return { ok: true, data: json };
+  return { ok: true, data: value };
 }
 
 /**
