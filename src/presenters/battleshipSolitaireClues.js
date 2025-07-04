@@ -24,6 +24,7 @@
  */
 
 import { isObject } from '../browser/common.js';
+import { safeParseJson } from '../utils/jsonUtils.js';
 
 /**
  * Check that the given object has rowClues and colClues arrays.
@@ -102,21 +103,8 @@ const DEFAULT_CLUES = {
   colClues: Array(10).fill(0),
 };
 
-/**
- * Safely parse a JSON string.
- * @param {string} str - JSON to parse.
- * @returns {object|null} Parsed object or null on error.
- */
-function safeJsonParse(str) {
-  try {
-    return JSON.parse(str);
-  } catch {
-    return null;
-  }
-}
-
 const INVALID_CLUE_CHECKS = [
-  obj => obj === null,
+  obj => obj === null || obj === undefined,
   obj => Boolean(findValidationError(obj)),
 ];
 
@@ -144,7 +132,7 @@ function buildColumnDigitMatrix(colClues) {
  * @returns {{rowClues: number[], colClues: number[]}} Parsed clues object.
  */
 function parseCluesOrDefault(inputString) {
-  const obj = safeJsonParse(inputString);
+  const obj = safeParseJson(inputString);
   if (INVALID_CLUE_CHECKS.some(fn => fn(obj))) {
     return DEFAULT_CLUES;
   }
