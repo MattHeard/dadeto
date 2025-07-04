@@ -53,11 +53,9 @@ function isBlank(value) {
 }
 
 /**
- * Returns the JSON string to parse for rows
- * @param {object} dom - DOM utilities
- * @param {HTMLElement} inputElement - The input element
- * @param value
- * @returns {string} The JSON to parse
+ * Returns the JSON string to parse for rows.
+ * @param {string} value - Raw value from the input element.
+ * @returns {string} The JSON to parse.
  */
 function getDefaultRowsJson(value) {
   if (isBlank(value)) {
@@ -554,16 +552,10 @@ function hasStringUrl(val) {
 }
 
 /**
- * Creates a key input event handler for a key-value row
- * @param {object} options - Function options
- * @param {object} options.dom - The DOM utilities object
- * @param {HTMLElement} options.keyEl - The key input element
- * @param {HTMLElement} options.textInput - The hidden text input element
- * @param {object} options.rows - The rows object containing key-value pairs
- * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
- * @param key
- * @param rows
- * @returns {Function} The event handler function
+ * Checks if a key is unique and non-empty.
+ * @param {string} key - Key to validate.
+ * @param {object} rows - Current rows map.
+ * @returns {boolean} True if the key is unique and not blank.
  */
 function isUniqueNonEmpty(key, rows) {
   if (key === '') {
@@ -578,8 +570,16 @@ function isUniqueNonEmpty(key, rows) {
  * @param root0.prevKey
  * @param root0.newKey
  * @param root0.rows
+ * Migrate an entry to a new key if the new key is unique and not blank.
+ * @param {object} params - Options object.
+ * @param {string} params.prevKey - Current key.
+ * @param {string} params.newKey - Proposed new key.
+ * @param {object} params.rows - Map of row values by key.
+ * @param {HTMLElement} params.keyEl - Key input element.
+ * @param {object} params.dom - DOM utilities.
  * @param root0.keyEl
  * @param root0.dom
+ * @returns {void}
  */
 function migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom }) {
   if (isUniqueNonEmpty(newKey, rows)) {
@@ -590,8 +590,14 @@ function migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom }) {
 }
 
 /**
- *
- * @param options
+ * Creates an input handler for key changes.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {HTMLElement} options.keyEl - Input for the key.
+ * @param {HTMLInputElement} options.textInput - Hidden JSON field.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.syncHiddenField - Syncs the hidden field.
+ * @returns {Function} Event handler for key input.
  */
 export function createKeyInputHandler(options) {
   const { dom, keyEl, textInput, rows, syncHiddenField } = options;
@@ -611,14 +617,14 @@ export function createKeyInputHandler(options) {
 }
 
 /**
- * Creates a value input event handler for a key-value row
- * @param {object} dom - The DOM utilities object
- * @param {HTMLElement} keyEl - The key input element
- * @param {HTMLElement} textInput - The hidden text input element
- * @param {object} rows - The rows object containing key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field with current state
- * @param options
- * @returns {Function} The event handler function
+ * Creates a value input event handler for a key-value row.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {HTMLElement} options.keyEl - Key input element.
+ * @param {HTMLInputElement} options.textInput - Hidden JSON input.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.syncHiddenField - Updates the hidden field.
+ * @returns {Function} The event handler.
  */
 export function createValueInputHandler(options) {
   const { dom, keyEl, textInput, rows, syncHiddenField } = options;
@@ -740,17 +746,14 @@ export const createOnRemove = (rows, render, key) => e => {
 };
 
 /**
- * Sets up an add button with a click handler that adds a new row
- * @param dom.dom
- * @param {object} dom - The DOM utilities object
- * @param {HTMLElement} button - The button element to set up
- * @param {object} rows - The rows object to add a new row to
- * @param {Function} render - The render function to update the UI
- * @param {Array} disposers - Array to store cleanup functions
- * @param dom.button
- * @param dom.rows
- * @param dom.render
- * @param dom.disposers
+ * Sets up an add button with a click handler that adds a new row.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {HTMLElement} options.button - Button to set up.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.render - Re-render function.
+ * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
+ * @returns {void}
  */
 export const setupAddButton = ({ dom, button, rows, render, disposers }) => {
   dom.setTextContent(button, '+');
@@ -761,19 +764,15 @@ export const setupAddButton = ({ dom, button, rows, render, disposers }) => {
 };
 
 /**
- * Sets up a remove button with a click handler that removes the corresponding row
- * @param dom.dom
- * @param {object} dom - The DOM utilities object
- * @param {HTMLElement} button - The button element to set up
- * @param {object} rows - The rows object containing the row to remove
- * @param {Function} render - The render function to update the UI
- * @param {string} key - The key of the row to remove
- * @param {Array} disposers - Array to store cleanup functions
- * @param dom.button
- * @param dom.rows
- * @param dom.render
- * @param dom.key
- * @param dom.disposers
+ * Sets up a remove button with a click handler that removes the corresponding row.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {HTMLElement} options.button - Button to set up.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.render - Re-render function.
+ * @param {string} options.key - Key of the row to remove.
+ * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
+ * @returns {void}
  */
 export const setupRemoveButton = ({
   dom,
@@ -806,24 +805,17 @@ export const setupRemoveButton = ({
  * @returns {HTMLElement} The created and configured button element
  */
 /**
- * Creates a function that creates and appends a key-value row to the container
- * @param dom.dom
- * @param {object} dom - The DOM utilities object
- * @param {Array} entries - The array of all key-value entries
- * @param {HTMLInputElement} textInput - The hidden input element
- * @param {object} rows - The rows object containing all key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field
- * @param {Array} disposers - Array to store cleanup functions
- * @param {Function} render - The render function to update the UI
- * @param {HTMLElement} container - The container to append the row to
- * @param dom.entries
- * @param dom.textInput
- * @param dom.rows
- * @param dom.syncHiddenField
- * @param dom.disposers
- * @param dom.render
- * @param dom.container
- * @returns {Function} A function that takes [key, value] and index and creates a row
+ * Creates a function that appends a key-value row to the container.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {Array} options.entries - All [key, value] pairs.
+ * @param {HTMLInputElement} options.textInput - Hidden JSON input.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.syncHiddenField - Updates the hidden field.
+ * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
+ * @param {Function} options.render - Re-render function.
+ * @param {HTMLElement} options.container - Container to append to.
+ * @returns {(entry: [string, string], idx: number) => void} Row builder.
  */
 export const createKeyValueRow =
   ({
