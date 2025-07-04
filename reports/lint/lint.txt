@@ -1,5 +1,5 @@
 
-/workspace/dadeto/src/toys/2025-07-04/transformDendriteStory.js
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-04/transformDendriteStory.js
    8:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2             complexity
   30:1  warning  Function 'isValidInput' has a complexity of 3. Maximum allowed is 2            complexity
   36:1  warning  Missing JSDoc @returns declaration                                             jsdoc/require-returns

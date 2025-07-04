@@ -29,12 +29,15 @@ function ensureDend2(data) {
  */
 function isValidInput(obj) {
   return (
-    obj &&
-    typeof obj.title === 'string' &&
-    typeof obj.content === 'string'
+    obj && typeof obj.title === 'string' && typeof obj.content === 'string'
   );
 }
 
+/**
+ *
+ * @param data
+ * @param getUuid
+ */
 function createOptions(data, getUuid) {
   return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => ({
     id: getUuid(),
