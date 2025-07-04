@@ -3,35 +3,6 @@
   25:1  warning  Function 'parseJsonObject' has a complexity of 3. Maximum allowed is 2  complexity
   48:1  warning  Function 'mergeSection' has a complexity of 3. Maximum allowed is 2     complexity
 
-/Users/matthew.heard/Code/Matt/dadeto/src/browser/document.js
-   42:1  warning  Missing JSDoc @returns declaration                              jsdoc/require-returns
-  248:1  warning  @param "options" does not match an existing function parameter  jsdoc/check-param-names
-  249:1  warning  Missing JSDoc @returns description                              jsdoc/require-returns-description
-
-/Users/matthew.heard/Code/Matt/dadeto/src/browser/main.js
-  47:1  warning  Invalid JSDoc tag name "query"      jsdoc/check-tag-names
-  53:1  warning  Missing JSDoc @returns declaration  jsdoc/require-returns
-
-/Users/matthew.heard/Code/Matt/dadeto/src/browser/tags.js
-   1:1  warning  Missing JSDoc @returns declaration                                  jsdoc/require-returns
-   3:1  warning  Missing JSDoc @param "str" description                              jsdoc/require-param-description
-   3:1  warning  Missing JSDoc @param "str" type                                     jsdoc/require-param-type
-   4:1  warning  Missing JSDoc @param "prefix" description                           jsdoc/require-param-description
-   4:1  warning  Missing JSDoc @param "prefix" type                                  jsdoc/require-param-type
-  12:1  warning  Missing JSDoc @param "article" description                          jsdoc/require-param-description
-  12:1  warning  Missing JSDoc @param "article" type                                 jsdoc/require-param-type
-  13:1  warning  Missing JSDoc @param "className" description                        jsdoc/require-param-description
-  13:1  warning  Missing JSDoc @param "className" type                               jsdoc/require-param-type
-  14:1  warning  Missing JSDoc @param "dom" description                              jsdoc/require-param-description
-  14:1  warning  Missing JSDoc @param "dom" type                                     jsdoc/require-param-type
-  60:1  warning  Missing JSDoc @returns declaration                                  jsdoc/require-returns
-  62:1  warning  Expected @param names to be "dom, className". Got "className, dom"  jsdoc/check-param-names
-  75:1  warning  Missing JSDoc @returns description                                  jsdoc/require-returns-description
-  97:1  warning  Missing JSDoc @param "className" description                        jsdoc/require-param-description
-  97:1  warning  Missing JSDoc @param "className" type                               jsdoc/require-param-type
-  98:1  warning  Missing JSDoc @param "dom" description                              jsdoc/require-param-description
-  98:1  warning  Missing JSDoc @param "dom" type                                     jsdoc/require-param-type
-
 /Users/matthew.heard/Code/Matt/dadeto/src/browser/toys.js
     14:1  warning  Expected @param names to be "pair". Got "array, pair"                                                                                                                   jsdoc/check-param-names
     15:1  warning  Missing JSDoc @param "pair" description                                                                                                                                 jsdoc/require-param-description
@@ -1920,7 +1891,4 @@
   148:1  warning  Missing JSDoc @param "fleet" description     jsdoc/require-param-description
   148:1  warning  Missing JSDoc @param "fleet" type            jsdoc/require-param-type
 
-/Users/matthew.heard/Code/Matt/dadeto/src/utils/jsonUtils.js
-  4:1  warning  @param "fallback" does not match an existing function parameter  jsdoc/check-param-names
-
-✖ 1852 problems (0 errors, 1852 warnings)
+✖ 1828 problems (0 errors, 1828 warnings)
