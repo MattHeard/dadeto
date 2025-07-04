@@ -131,14 +131,9 @@ function assembleProcessedText(beforeText, boldText, afterText) {
 }
 
 /**
- * Process text recursively to handle all formatting cases, preserving bold segments.
- * This function identifies bold markdown segments and leaves them unmodified,
- * while processing the text before and after for italic formatting.
- * @example
- * // Returns: '**bold** <em>*italic*</em>'
- * processTextPreservingBold('**bold** *italic*');
- * @param {string} text - The text to process
- * @returns {string} - Processed text with HTML tags added around italics while preserving bold
+ * Determine if we should skip bold-aware processing for a given text.
+ * @param {string} text - Text to check for bold segments.
+ * @returns {boolean} True when text is empty or contains no bold segments.
  * @private
  */
 function shouldBypassBold(text) {
@@ -146,8 +141,15 @@ function shouldBypassBold(text) {
 }
 
 /**
- *
- * @param text
+ * Process text recursively to handle all formatting cases, preserving bold segments.
+ * This function identifies bold markdown segments and leaves them unmodified,
+ * while processing the text before and after for italic formatting.
+ * @example
+ * // Returns: '**bold** <em>*italic*</em>'
+ * processTextPreservingBold('**bold** *italic*');
+ * @param {string} text - The text to process
+ * @returns {string} Processed text with HTML tags added around italics while
+ *   preserving bold
  */
 function processTextPreservingBold(text) {
   if (shouldBypassBold(text)) {
@@ -163,8 +165,9 @@ function processTextPreservingBold(text) {
 }
 
 /**
- *
- * @param beforeText
+ * Apply italic processing to the text before a bold segment.
+ * @param {string} beforeText - Text appearing before the bold segment.
+ * @returns {string} Formatted prefix text.
  */
 function processItalicBefore(beforeText) {
   if (beforeText) {
@@ -175,8 +178,9 @@ function processItalicBefore(beforeText) {
 }
 
 /**
- *
- * @param afterText
+ * Process the text after a bold segment, preserving nested formatting.
+ * @param {string} afterText - Text appearing after the bold segment.
+ * @returns {string} Formatted suffix text.
  */
 function processBoldAfter(afterText) {
   if (afterText) {
@@ -188,8 +192,9 @@ function processBoldAfter(afterText) {
 
 // Helper function to check if text is invalid
 /**
- *
- * @param text
+ * Validate that the input is a non-empty string.
+ * @param {unknown} text - Value to validate.
+ * @returns {boolean} True if the value is not a string or empty.
  */
 function isInvalidText(text) {
   return !text || typeof text !== 'string';
