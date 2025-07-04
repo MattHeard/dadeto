@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "DEND2",
+      "title": "Transform Dendrite Story",
+      "publicationDate": "2025-07-04",
+      "content": ["Transforms a Dendrite story submission into arrays."],
+      "illustration": {
+        "fileType": "png",
+        "fileName": "2025-07-04-0",
+        "altText": "abstract network of branching lines"
+      },
+      "toy": {
+        "modulePath": "/2025-07-04/transformDendriteStory.js",
+        "functionName": "transformDendriteStory",
+        "defaultInputMethod": "dendrite-story"
+      },
+      "tags": ["toy", "story", "dendrite"],
+      "release": "beta"
+    },
+    {
       "key": "JACK1",
       "title": "Jackson Embraces Physicalism",
       "publicationDate": "2025-06-30",
