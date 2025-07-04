@@ -3,6 +3,8 @@ import { describe, test, expect, jest } from '@jest/globals';
 
 describe('transformDendriteStory', () => {
   test('transforms and stores story data', () => {
+    const uuids = ['story', 'a', 'b'];
+    let idx = 0;
     const env = new Map([
       [
         'getData',
@@ -11,33 +13,31 @@ describe('transformDendriteStory', () => {
         }),
       ],
       ['setData', jest.fn()],
+      ['getUuid', () => uuids[idx++]],
     ]);
     const input = JSON.stringify({
-      id: 's1',
       title: 'Title',
       content: 'Body',
-      options: [
-        { id: 'o1', content: 'A' },
-        { id: 'o2', content: 'B' },
-      ],
+      firstOption: 'A',
+      secondOption: 'B',
     });
-    const result = transformDendriteStory(input, env);
-    expect(JSON.parse(result)).toEqual({
-      stories: [{ id: 's1', title: 'Title' }],
-      pages: [{ id: 's1', storyId: 's1', content: 'Body' }],
+    const result = JSON.parse(transformDendriteStory(input, env));
+    expect(result).toEqual({
+      stories: [{ id: 'story', title: 'Title' }],
+      pages: [{ id: 'story', storyId: 'story', content: 'Body' }],
       options: [
-        { id: 'o1', pageId: 's1', content: 'A' },
-        { id: 'o2', pageId: 's1', content: 'B' },
+        { id: 'a', pageId: 'story', content: 'A' },
+        { id: 'b', pageId: 'story', content: 'B' },
       ],
     });
     expect(env.get('setData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
-          stories: [{ id: 's1', title: 'Title' }],
-          pages: [{ id: 's1', storyId: 's1', content: 'Body' }],
+          stories: [{ id: 'story', title: 'Title' }],
+          pages: [{ id: 'story', storyId: 'story', content: 'Body' }],
           options: [
-            { id: 'o1', pageId: 's1', content: 'A' },
-            { id: 'o2', pageId: 's1', content: 'B' },
+            { id: 'a', pageId: 'story', content: 'A' },
+            { id: 'b', pageId: 'story', content: 'B' },
           ],
         },
       },
@@ -48,20 +48,16 @@ describe('transformDendriteStory', () => {
     const env = new Map([
       ['getData', () => ({})],
       ['setData', jest.fn()],
+      ['getUuid', () => 'id'],
     ]);
-    const input = JSON.stringify({
-      id: 'a',
-      title: 't',
-      content: 'c',
-      options: [],
-    });
-    const result = transformDendriteStory(input, env);
-    expect(JSON.parse(result).stories[0]).toEqual({ id: 'a', title: 't' });
+    const input = JSON.stringify({ title: 't', content: 'c' });
+    const result = JSON.parse(transformDendriteStory(input, env));
+    expect(result.stories[0]).toEqual({ id: 'id', title: 't' });
     expect(env.get('setData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
-          stories: [{ id: 'a', title: 't' }],
-          pages: [{ id: 'a', storyId: 'a', content: 'c' }],
+          stories: [{ id: 'id', title: 't' }],
+          pages: [{ id: 'id', storyId: 'id', content: 'c' }],
           options: [],
         },
       },
@@ -78,6 +74,7 @@ describe('transformDendriteStory', () => {
     expect(env.get('setData')).not.toHaveBeenCalled();
   });
   test('repairs invalid DEND2 structure', () => {
+    const uuids = ['id'];
     const env = new Map([
       [
         'getData',
@@ -86,19 +83,15 @@ describe('transformDendriteStory', () => {
         }),
       ],
       ['setData', jest.fn()],
+      ['getUuid', () => uuids.shift()],
     ]);
-    const input = JSON.stringify({
-      id: 'b',
-      title: 'title',
-      content: 'body',
-      options: [],
-    });
+    const input = JSON.stringify({ title: 'title', content: 'body' });
     transformDendriteStory(input, env);
     expect(env.get('setData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
-          stories: [{ id: 'b', title: 'title' }],
-          pages: [{ id: 'b', storyId: 'b', content: 'body' }],
+          stories: [{ id: 'id', title: 'title' }],
+          pages: [{ id: 'id', storyId: 'id', content: 'body' }],
           options: [],
         },
       },
@@ -109,8 +102,9 @@ describe('transformDendriteStory', () => {
     const env = new Map([
       ['getData', () => ({})],
       ['setData', jest.fn()],
+      ['getUuid', () => 'id'],
     ]);
-    const bad = JSON.stringify({ id: 'c', title: 't' });
+    const bad = JSON.stringify({ title: 1 });
     const result = transformDendriteStory(bad, env);
     expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
     expect(env.get('setData')).not.toHaveBeenCalled();
