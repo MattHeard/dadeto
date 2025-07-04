@@ -295,7 +295,19 @@
 <a name='L230'></a><a href='#L230'>230</a>
 <a name='L231'></a><a href='#L231'>231</a>
 <a name='L232'></a><a href='#L232'>232</a>
-<a name='L233'></a><a href='#L233'>233</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -310,7 +322,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">47x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -328,7 +342,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1317x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -365,7 +381,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2289x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -377,7 +395,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1142x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -389,7 +409,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1317x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -531,7 +553,8 @@
 &nbsp;
 // Constants for HTML structure
 /**
- *
+ * Provide the HTML doctype declaration.
+ * @returns {string} The doctype string.
  */
 export function doctype() {
   return '&lt;!DOCTYPE html&gt;';
@@ -539,7 +562,8 @@ export function doctype() {
 &nbsp;
 // Language settings
 /**
- *
+ * Supported language codes.
+ * @returns {{EN: string}} Mapping of language constants.
  */
 export function language() {
   return {
@@ -549,7 +573,8 @@ export function language() {
 &nbsp;
 // HTML tag names
 /**
- *
+ * Name of the root HTML tag.
+ * @returns {string} The tag name.
  */
 export function htmlTagName() {
   return 'html';
@@ -557,7 +582,8 @@ export function htmlTagName() {
 &nbsp;
 // HTML attribute names
 /**
- *
+ * Attribute names commonly used in generated markup.
+ * @returns {{LANG: string, CLASS: string, ID: string}} Attribute name constants.
  */
 export function attrName() {
   return {
@@ -569,7 +595,8 @@ export function attrName() {
 &nbsp;
 // HTML escape replacements
 /**
- *
+ * Mapping of characters to their HTML escape sequences.
+ * @returns {Array&lt;{from: RegExp, to: string}&gt;} Replacement definitions.
  */
 export function htmlEscapeReplacements() {
   return [
@@ -594,37 +621,43 @@ export function join(parts) {
 &nbsp;
 // HTML tag and attribute symbols
 /**
- *
+ * Character used to start an HTML tag.
+ * @returns {string} The opening tag character.
  */
 export function tagOpen() {
   return '&lt;';
 }
 /**
- *
+ * Character used to end an HTML tag.
+ * @returns {string} The closing tag character.
  */
 export function tagClose() {
   return '&gt;';
 }
 /**
- *
+ * Whitespace character used when building tags.
+ * @returns {string} A single space.
  */
 export function space() {
   return ' ';
 }
 /**
- *
+ * Slash character for self-closing tags.
+ * @returns {string} The slash character.
  */
 export function slash() {
   return '/';
 }
 /**
- *
+ * Equals sign used in attribute pairs.
+ * @returns {string} The equals character.
  */
 export function equals() {
   return '=';
 }
 /**
- *
+ * Quote character used around attribute values.
+ * @returns {string} The double quote character.
  */
 export function quote() {
   return '"';
@@ -766,7 +799,7 @@ export function wrapHtml(content) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-04T07:23:58.190Z
+                at 2025-07-04T12:53:03.976Z
             </div>
         <script src="../prettify.js"></script>
         <script>

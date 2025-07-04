@@ -377,12 +377,20 @@
 <a name='L312'></a><a href='#L312'>312</a>
 <a name='L313'></a><a href='#L313'>313</a>
 <a name='L314'></a><a href='#L314'>314</a>
-<a name='L315'></a><a href='#L315'>315</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L315'></a><a href='#L315'>315</a>
+<a name='L316'></a><a href='#L316'>316</a>
+<a name='L317'></a><a href='#L317'>317</a>
+<a name='L318'></a><a href='#L318'>318</a>
+<a name='L319'></a><a href='#L319'>319</a>
+<a name='L320'></a><a href='#L320'>320</a>
+<a name='L321'></a><a href='#L321'>321</a>
+<a name='L322'></a><a href='#L322'>322</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -390,6 +398,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -514,12 +523,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -544,6 +555,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">17x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -556,10 +568,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">17x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -699,16 +713,18 @@ const UNDERSCORE_MARKER = '_';
 const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
 &nbsp;
 /**
- *
- * @param text
+ * Determine whether a string is empty or whitespace only.
+ * @param {string} text - Text to evaluate.
+ * @returns {boolean} True if text has no visible characters.
  */
 function isEmptyText(text) {
   return !text?.trim();
 }
 &nbsp;
 /**
- *
- * @param text
+ * Check that the provided text contains no bold Markdown segments.
+ * @param {string} text - Text to inspect.
+ * @returns {boolean} True if there are no bold segments.
  */
 function hasNoBoldSegments(text) {
   return !findBoldSegments(text);
@@ -822,14 +838,9 @@ function assembleProcessedText(beforeText, boldText, afterText) {
 }
 &nbsp;
 /**
- * Process text recursively to handle all formatting cases, preserving bold segments.
- * This function identifies bold markdown segments and leaves them unmodified,
- * while processing the text before and after for italic formatting.
- * @example
- * // Returns: '**bold** &lt;em&gt;*italic*&lt;/em&gt;'
- * processTextPreservingBold('**bold** *italic*');
- * @param {string} text - The text to process
- * @returns {string} - Processed text with HTML tags added around italics while preserving bold
+ * Determine if we should skip bold-aware processing for a given text.
+ * @param {string} text - Text to check for bold segments.
+ * @returns {boolean} True when text is empty or contains no bold segments.
  * @private
  */
 function shouldBypassBold(text) {
@@ -837,8 +848,15 @@ function shouldBypassBold(text) {
 }
 &nbsp;
 /**
- *
- * @param text
+ * Process text recursively to handle all formatting cases, preserving bold segments.
+ * This function identifies bold markdown segments and leaves them unmodified,
+ * while processing the text before and after for italic formatting.
+ * @example
+ * // Returns: '**bold** &lt;em&gt;*italic*&lt;/em&gt;'
+ * processTextPreservingBold('**bold** *italic*');
+ * @param {string} text - The text to process
+ * @returns {string} Processed text with HTML tags added around italics while
+ *   preserving bold
  */
 function processTextPreservingBold(text) {
   if (shouldBypassBold(text)) {
@@ -854,8 +872,9 @@ function processTextPreservingBold(text) {
 }
 &nbsp;
 /**
- *
- * @param beforeText
+ * Apply italic processing to the text before a bold segment.
+ * @param {string} beforeText - Text appearing before the bold segment.
+ * @returns {string} Formatted prefix text.
  */
 function processItalicBefore(beforeText) {
   if (beforeText) {
@@ -866,8 +885,9 @@ function processItalicBefore(beforeText) {
 }
 &nbsp;
 /**
- *
- * @param afterText
+ * Process the text after a bold segment, preserving nested formatting.
+ * @param {string} afterText - Text appearing after the bold segment.
+ * @returns {string} Formatted suffix text.
  */
 function processBoldAfter(afterText) {
   if (afterText) {
@@ -879,8 +899,9 @@ function processBoldAfter(afterText) {
 &nbsp;
 // Helper function to check if text is invalid
 /**
- *
- * @param text
+ * Validate that the input is a non-empty string.
+ * @param {unknown} text - Value to validate.
+ * @returns {boolean} True if the value is not a string or empty.
  */
 function isInvalidText(text) {
   return !text || typeof text !== 'string';
@@ -1012,7 +1033,7 @@ function createItalicReplacementString(content, marker) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-04T07:23:58.190Z
+                at 2025-07-04T12:53:03.976Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

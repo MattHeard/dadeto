@@ -230,7 +230,9 @@
 <a name='L165'></a><a href='#L165'>165</a>
 <a name='L166'></a><a href='#L166'>166</a>
 <a name='L167'></a><a href='#L167'>167</a>
-<a name='L168'></a><a href='#L168'>168</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -253,6 +255,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -266,8 +269,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -296,10 +301,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">72x</span>
 <span class="cline-any cline-yes">72x</span>
 <span class="cline-any cline-yes">72x</span>
@@ -327,9 +328,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
@@ -360,17 +358,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -384,6 +372,20 @@
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -405,8 +407,9 @@ import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
 import { hideAndDisable } from './inputState.js';
 &nbsp;
 /**
- *
- * @param node
+ * Call a node's _dispose method when available.
+ * @param {{_dispose?: Function}} node - Node to clean up.
+ * @returns {void}
  */
 function disposeIfPossible(node) {
   if (typeof node._dispose === 'function') {
@@ -415,9 +418,10 @@ function disposeIfPossible(node) {
 }
 &nbsp;
 /**
- *
- * @param container
- * @param dom
+ * Remove any previously rendered dendrite form from the container.
+ * @param {HTMLElement} container - Wrapper element.
+ * @param {object} dom - DOM helpers.
+ * @returns {void}
  */
 function removeExistingForm(container, dom) {
   const existing = dom.querySelector(container, DENDRITE_FORM_SELECTOR);
@@ -428,9 +432,10 @@ function removeExistingForm(container, dom) {
 }
 &nbsp;
 /**
- *
- * @param dom
- * @param textInput
+ * Parse JSON data stored in the hidden text input.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLInputElement} textInput - Hidden input element.
+ * @returns {object} Parsed dendrite data.
  */
 function parseDendriteData(dom, textInput) {
   const value = dom.getValue(textInput) || '{}';
@@ -438,9 +443,10 @@ function parseDendriteData(dom, textInput) {
 }
 &nbsp;
 /**
- *
- * @param dom
- * @param key
+ * Create an input element for a given field key.
+ * @param {object} dom - DOM utilities.
+ * @param {string} key - Field name.
+ * @returns {HTMLElement} The created element.
  */
 function createInputElement(dom, key) {
   if (key === 'content') {
@@ -452,15 +458,11 @@ function createInputElement(dom, key) {
 }
 &nbsp;
 /**
- *
- * @param dom
- * @param form
- * @param root0
- * @param root0.key
- * @param root0.placeholder
- * @param root0.data
- * @param root0.textInput
- * @param root0.disposers
+ * Add a labeled input field to the dendrite form.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLElement} form - Form container.
+ * @param {{key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field options.
+ * @returns {void}
  */
 function createField(
   dom,
@@ -488,13 +490,10 @@ function createField(
 }
 &nbsp;
 /**
- *
- * @param dom
- * @param root0
- * @param root0.container
- * @param root0.textInput
- * @param root0.data
- * @param root0.disposers
+ * Build the interactive dendrite form and insert it after the text input.
+ * @param {object} dom - DOM utilities.
+ * @param {{container: HTMLElement, textInput: HTMLInputElement, data: object, disposers: Function[]}} param1 - Configuration options.
+ * @returns {HTMLElement} The created form element.
  */
 function buildForm(dom, { container, textInput, data, disposers }) {
   const form = dom.createElement('div');
@@ -522,18 +521,20 @@ function buildForm(dom, { container, textInput, data, disposers }) {
 }
 &nbsp;
 /**
- *
- * @param dom
- * @param textInput
+ * Hide and disable the hidden JSON input element.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLInputElement} textInput - Input to hide.
+ * @returns {void}
  */
 function prepareTextInput(dom, textInput) {
   hideAndDisable(textInput, dom);
 }
 &nbsp;
 /**
- *
- * @param dom
- * @param container
+ * Remove existing inputs and forms from the container.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} container - Container element.
+ * @returns {void}
  */
 function cleanContainer(dom, container) {
   maybeRemoveNumber(container, dom);
@@ -542,10 +543,11 @@ function cleanContainer(dom, container) {
 }
 &nbsp;
 /**
- *
- * @param dom
- * @param container
- * @param textInput
+ * Create and insert a dendrite form for editing data.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} container - Container to insert into.
+ * @param {HTMLInputElement} textInput - Hidden JSON input.
+ * @returns {HTMLElement} Newly created form.
  */
 function createDendriteForm(dom, container, textInput) {
   const disposers = [];
@@ -554,10 +556,11 @@ function createDendriteForm(dom, container, textInput) {
 }
 &nbsp;
 /**
- *
- * @param dom
- * @param container
- * @param textInput
+ * Initialize the dendrite story editor inside a container.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} container - Element that will host the form.
+ * @param {HTMLInputElement} textInput - Hidden JSON input element.
+ * @returns {HTMLElement} The created form element.
  */
 export function dendriteStoryHandler(dom, container, textInput) {
   prepareTextInput(dom, textInput);
@@ -571,7 +574,7 @@ export function dendriteStoryHandler(dom, container, textInput) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-04T07:23:58.190Z
+                at 2025-07-04T12:53:03.976Z
             </div>
         <script src="../prettify.js"></script>
         <script>
