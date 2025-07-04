@@ -1,5 +1,4 @@
 import { DENDRITE_FIELDS } from '../constants/dendrite.js';
-import { maybeRemoveElement } from './disposeHelpers.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 import { maybeRemoveNumber, maybeRemoveKV } from './removeElements.js';
 import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
