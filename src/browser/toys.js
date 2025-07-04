@@ -4,21 +4,19 @@ import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 import { deepClone } from '../utils/objectUtils.js';
 
 /**
- * Parses the existing rows from the text input
- * @param {object} dom - The DOM utilities object
- * @param {HTMLInputElement} inputElement - The input element containing the JSON string
- * @returns {object} The parsed rows object
- */
-/**
- * Converts an array of {key, value} objects to a key-value object
- * @param {Array<{key: string, value: any}>} array - The array to convert
- * @param pair
- * @returns {object} An object with keys and values from the array
+ * Determines whether a value is a key/value pair object.
+ * @param {object} pair - Value to check.
+ * @returns {boolean} True if pair has a {@code key} property.
  */
 function isKeyValuePair(pair) {
   return 'key' in Object(pair);
 }
 
+/**
+ * Converts an array of {@code {key, value}} objects to a plain object.
+ * @param {Array<{key: string, value: any}>} array - Array to convert.
+ * @returns {object} Object with keys mapped to values.
+ */
 export const convertArrayToKeyValueObject = array => {
   if (!Array.isArray(array)) {
     return {};
@@ -29,8 +27,9 @@ export const convertArrayToKeyValueObject = array => {
 };
 
 /**
- *
- * @param existing
+ * Normalizes previously stored rows into an object.
+ * @param {unknown} existing - Existing rows value.
+ * @returns {object} Normalized rows object.
  */
 function normalizeExisting(existing) {
   const converters = [
@@ -45,8 +44,9 @@ function normalizeExisting(existing) {
 }
 
 /**
- *
- * @param value
+ * Checks if a value is empty or {@code undefined}.
+ * @param {*} value - Value to check.
+ * @returns {boolean} True if value is blank.
  */
 function isBlank(value) {
   return value === '' || value === undefined;
@@ -67,15 +67,22 @@ function getDefaultRowsJson(value) {
 }
 
 /**
- *
- * @param dom
- * @param inputElement
+ * Retrieves the JSON string from the input element.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} inputElement - Text input element.
+ * @returns {string} JSON string to parse.
  */
 function getRowsJson(dom, inputElement) {
   const value = dom.getValue?.(inputElement);
   return getDefaultRowsJson(value);
 }
 
+/**
+ * Parses the existing rows stored in a hidden input field.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLInputElement} inputElement - Hidden input containing JSON.
+ * @returns {object} Normalized rows object.
+ */
 export const parseExistingRows = (dom, inputElement) => {
   const jsonToParse = getRowsJson(dom, inputElement);
   const existing = parseJsonOrDefault(jsonToParse, {});
@@ -83,12 +90,8 @@ export const parseExistingRows = (dom, inputElement) => {
 };
 
 /**
- * Clears all disposer functions and empties the array
- * @param {Array<Function>} disposersArray - The array of disposer functions to clear
- */
-/**
- * Clears all disposer functions and empties the array
- * @param {Array<Function>} disposersArray - The array of disposer functions to clear
+ * Clears all disposer functions and empties the array.
+ * @param {Array<Function>} disposersArray - Array of disposer functions.
  * @returns {void}
  */
 export const clearDisposers = disposersArray => {
@@ -97,13 +100,13 @@ export const clearDisposers = disposersArray => {
 };
 
 /**
- * Factory function for creating a dispose function
- * @param {Array<Function>} disposers - Array of disposer functions to clear
- * @param {object} dom - The DOM utilities object
- * @param {HTMLElement} container - The container element to clear
- * @param {Array} rows - The rows array to clear
- * @param config
- * @returns {Function} A function that cleans up resources
+ * Factory for creating a dispose function.
+ * @param {object} config - Configuration object.
+ * @param {Array<Function>} config.disposers - Disposer callbacks.
+ * @param {object} config.dom - DOM utilities object.
+ * @param {HTMLElement} config.container - Container element to clear.
+ * @param {Array} config.rows - Rows array to reset.
+ * @returns {Function} Cleanup function.
  */
 export const createDispose = config => {
   const { disposers, dom, container, rows } = config;
@@ -186,19 +189,18 @@ export function getComponentInitializer(
 }
 
 /**
- * Handles dropdown changes for toy output selection.
- * Logs the selected value and article ID.
- * @param {Event} event - The change event from the dropdown.
- * @param {Function} logInfo - Logging function to use for output. Must be provided.
- * @param dropdown
+ * Finds the article element containing a dropdown.
+ * @param {HTMLElement} dropdown - Dropdown element.
+ * @returns {HTMLElement} Article element hosting the dropdown.
  */
 function getDropdownArticle(dropdown) {
   return dropdown.closest('article.entry');
 }
 
 /**
- *
- * @param dropdown
+ * Gets the post id for a dropdown element.
+ * @param {HTMLElement} dropdown - Dropdown element.
+ * @returns {string} The post id.
  */
 function getDropdownPostId(dropdown) {
   const article = getDropdownArticle(dropdown);
@@ -206,10 +208,10 @@ function getDropdownPostId(dropdown) {
 }
 
 /**
- *
- * @param dropdown
- * @param getData
- * @param dom
+ * Updates output based on dropdown selection.
+ * @param {HTMLSelectElement} dropdown - Dropdown element.
+ * @param {Function} getData - Function returning application data.
+ * @param {object} dom - DOM utilities.
  */
 export function handleDropdownChange(dropdown, getData, dom) {
   const postId = getDropdownPostId(dropdown);
@@ -226,18 +228,20 @@ export function handleDropdownChange(dropdown, getData, dom) {
 }
 
 /**
- *
- * @param output
- * @param postId
+ * Checks if there is output for a given post id.
+ * @param {object} output - Output mapping.
+ * @param {string} postId - Post id to check.
+ * @returns {boolean} True if output exists.
  */
 function hasOutputForPostId(output, postId) {
   return Boolean(output?.[postId]);
 }
 
 /**
- *
- * @param output
- * @param postId
+ * Retrieves output string for a post id.
+ * @param {object} output - Output mapping.
+ * @param {string} postId - Post id.
+ * @returns {string} Output string or empty string.
  */
 function outputForPostId(output, postId) {
   if (hasOutputForPostId(output, postId)) {
@@ -267,10 +271,11 @@ const presentersMap = {
 };
 
 /**
- *
- * @param output
- * @param dom
- * @param parent
+ * Renders output content using the appropriate presenter.
+ * @param {{presenterKey: string, content: string}} output - Output data.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} parent - Element to contain the rendered content.
+ * @returns {HTMLElement} The rendered child element.
  */
 function setTextContent(output, dom, parent) {
   dom.removeAllChildren(parent);
@@ -279,14 +284,6 @@ function setTextContent(output, dom, parent) {
   dom.appendChild(parent, child);
   return child;
 }
-
-/**
- * @query
- * Creates an error handler for module loading errors
- * @param {string} modulePath - Path to the module that failed to load
- * @param {Function} errorFn - Error logging function
- * @returns {Function} Error handler function
- */
 /**
  * Creates an error handler for module loading errors.
  * @param {string} modulePath - Path to the module that failed to load.
@@ -303,14 +300,6 @@ export function handleModuleError(modulePath, logError) {
  * Creates a module initializer function to be called when a dynamic import completes.
  * @param {HTMLElement} article - The article element containing the toy.
  * @param {string} functionName - The name of the exported function to use from the module.
- * @param {object} env - Environment object containing globalState, createEnv, getUuid, error, and fetch.
- * @param {object} dom - Object containing DOM helper functions.
- * @returns {Function} A function that takes a module and initializes the interactive component.
- */
-/**
- * Creates a module initializer function to be called when a dynamic import completes.
- * @param {HTMLElement} article - The article element containing the toy.
- * @param {string} functionName - The name of the exported function to use from the module.
  * @param {object} config - Environment and DOM helpers for initialization.
  * @returns {Function} Function that takes a module and initializes the interactive component.
  */
@@ -321,8 +310,9 @@ export function getModuleInitializer(article, functionName, config) {
 }
 
 /**
- *
- * @param functionName
+ * Creates a function that extracts a named export from a module.
+ * @param {string} functionName - Name of the export.
+ * @returns {Function} Function that gets the export from a module.
  */
 function makeProcessingFunction(functionName) {
   return function (module) {
@@ -331,9 +321,10 @@ function makeProcessingFunction(functionName) {
 }
 
 /**
- *
- * @param article
- * @param config
+ * Generates a function that initializes a component with a processing function.
+ * @param {HTMLElement} article - Article element hosting the component.
+ * @param {object} config - Module configuration.
+ * @returns {Function} Initializer function.
  */
 function makeInteractiveInitializer(article, config) {
   return function (processingFunction) {
@@ -342,10 +333,10 @@ function makeInteractiveInitializer(article, config) {
 }
 
 /**
- *
- * @param module
- * @param getProcessing
- * @param initialize
+ * Runs the initializer using the processing function from the module.
+ * @param {object} module - Loaded module object.
+ * @param {Function} getProcessing - Function to get processing function.
+ * @param {Function} initialize - Initializer callback.
  */
 function runModuleInitializer(module, getProcessing, initialize) {
   const processingFunction = getProcessing(module);
@@ -353,9 +344,9 @@ function runModuleInitializer(module, getProcessing, initialize) {
 }
 
 /**
- *
- * @param moduleInfo
- * @param moduleConfig
+ * Dynamically imports a module for an intersection event.
+ * @param {object} moduleInfo - Module information including path and article.
+ * @param {object} moduleConfig - Configuration for module import.
  */
 function importModuleForIntersection(moduleInfo, moduleConfig) {
   const { dom, loggers } = moduleConfig;
@@ -372,17 +363,6 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
 }
 
 /**
- * @command
- * Handles a single intersection event, triggering module import and observer disconnect if intersecting
- * @param {object} entry - The intersection entry
- * @param {object} observer - The observer instance
- * @param {string} modulePath - Path to module
- * @param {HTMLElement} article - The article element
- * @param {string} functionName - Exported function name
- * @param {object} config - Object containing env and dom
- */
-/**
- * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
  * @param observer
  * @param moduleInfo
  * @param moduleConfig
@@ -454,7 +434,6 @@ export function makeObserverCallback(moduleInfo, env, dom) {
 }
 
 /**
- * @query
  * Returns a function that creates an IntersectionObserver for an article
  * @param {object} dom - DOM helpers
  * @param {object} env - Environment
