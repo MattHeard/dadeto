@@ -59,6 +59,17 @@ function ensurePlainObject(value) {
 }
 
 /**
+ * Ensure the given object has a plain object at the specified section.
+ * @param {object} data - The data object to modify.
+ * @param {string} section - The key to check on the data object.
+ */
+function ensureSectionObject(data, section) {
+  if (!isObject(data[section])) {
+    data[section] = {};
+  }
+}
+
+/**
  * Deep merges parsed JSON into a section of the global data.
  * @param {string} section - Target section name.
  * @param {object} inputJson - Parsed JSON data to merge.
@@ -71,9 +82,7 @@ function mergeSection(section, inputJson, env) {
   try {
     const currentData = getData();
     const newData = deepClone(currentData);
-    if (!isObject(newData[section])) {
-      newData[section] = {};
-    }
+    ensureSectionObject(newData, section);
     newData[section] = deepMerge(newData[section], inputJson);
     setData(newData);
     const sectionName = section.charAt(0).toUpperCase() + section.slice(1);
