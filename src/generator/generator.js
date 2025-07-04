@@ -894,6 +894,7 @@ function prefixIfPresent(prefix, value) {
   if (value) {
     return `${prefix}${value}`;
   }
+  return undefined;
 }
 
 /**
