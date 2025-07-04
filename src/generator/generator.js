@@ -577,8 +577,9 @@ function renderValueDiv(normalizedContent) {
 }
 
 /**
- *
- * @param content
+ * Wrap plain text in a paragraph element.
+ * @param {string} content - The text content to wrap.
+ * @returns {string} HTML paragraph string.
  */
 function renderAsParagraph(content) {
   return `<p class="${CLASS.VALUE}">${content}</p>`;
@@ -602,8 +603,9 @@ function createContentSectionItem(content, isFirst) {
 }
 
 /**
- * Generate the text content sections for a blog post
- * @param post
+ * Generate the HTML sections for all content items in a post.
+ * @param {object} post - The blog post.
+ * @returns {string} HTML for the content sections.
  */
 function generateContentSections(post) {
   const contentArray = getContentArray(post);
@@ -612,8 +614,9 @@ function generateContentSections(post) {
 }
 
 /**
- * Generate header section for a blog post
- * @param post
+ * Build the header section for a blog post.
+ * @param {object} post - The blog post.
+ * @returns {string} HTML for the header section.
  */
 function generateHeaderSection(post) {
   const titleSection = generateTitleSection(post);
@@ -623,8 +626,9 @@ function generateHeaderSection(post) {
 }
 
 /**
- * Create the title value for a blog post
- * @param post
+ * Create the HTML value element for the post title.
+ * @param {object} post - Blog post with `key` and `title`.
+ * @returns {string} HTML for the title value.
  */
 function createTitleValue(post) {
   const titleLink = `<a href="#${post.key}">${post.title}</a>`;
@@ -633,8 +637,9 @@ function createTitleValue(post) {
 }
 
 /**
- * Generate the title section for a blog post
- * @param post
+ * Generate the title section for a blog post.
+ * @param {object} post - The blog post.
+ * @returns {string} HTML for the title section.
  */
 function generateTitleSection(post) {
   const titleClasses = joinClasses([CLASS.KEY, CLASS.ARTICLE_TITLE]);
@@ -700,9 +705,10 @@ const MEDIA_DISPLAY_RULES = {
 };
 
 /**
- *
- * @param post
- * @param type
+ * Determine if media of a given type should be rendered for a post.
+ * @param {object} post - The blog post.
+ * @param {string} type - The media type.
+ * @returns {boolean} Whether the media should be shown.
  */
 function shouldDisplayMedia(post, type) {
   const rule = MEDIA_DISPLAY_RULES[type];
@@ -710,8 +716,9 @@ function shouldDisplayMedia(post, type) {
 }
 
 /**
- *
- * @param value
+ * Check if the provided value is a non-empty array.
+ * @param {*} value - Value to test.
+ * @returns {boolean} True if value is an array with elements.
  */
 function isNonEmptyArray(value) {
   return Array.isArray(value) && value.length > 0;
@@ -733,9 +740,10 @@ function hasRelatedLinks(post) {
  */
 
 /**
- * Generate media content based on media type
- * @param post
- * @param mediaType
+ * Generate the HTML fragment for the given media type.
+ * @param {object} post - The blog post.
+ * @param {string} mediaType - Media type key.
+ * @returns {string} HTML for the media fragment.
  */
 function generateMediaContent(post, mediaType) {
   return buildMediaContent(post, mediaType);
@@ -743,8 +751,9 @@ function generateMediaContent(post, mediaType) {
 
 /**
 /**
- * Create illustration image element
- * @param post
+Create an illustration `<img>` element for a post.
+ * @param {object} post - The blog post.
+ * @returns {string} HTML image element.
  */
 function createIllustrationImage(post) {
   // Use fileName if provided, otherwise fall back to publicationDate
@@ -755,8 +764,9 @@ function createIllustrationImage(post) {
 }
 
 /**
- * Create audio source element
- * @param post
+ * Create an audio `<source>` element for a post.
+ * @param {object} post - The blog post.
+ * @returns {string} HTML source element.
  */
 function createAudioSource(post) {
   const audioSrc = `${post.publicationDate}.${post.audio.fileType}`;
@@ -764,8 +774,9 @@ function createAudioSource(post) {
 }
 
 /**
- * Create YouTube iframe with proper attributes
- * @param post
+ * Create a YouTube `<iframe>` element for a post.
+ * @param {object} post - The blog post.
+ * @returns {string} HTML iframe element.
  */
 function createYouTubeIframe(post) {
   const youtubeId = post.youtube.id;
@@ -794,9 +805,10 @@ const MEDIA_CONTENT_CONFIG = {
 
 // Generic builder for media content
 /**
- *
- * @param post
- * @param type
+ * Build the wrapper element for media content.
+ * @param {object} post - The blog post.
+ * @param {string} type - Media type key.
+ * @returns {string} HTML for the wrapped media content.
  */
 function buildMediaContent(post, type) {
   const { wrapperTag, fragment, controls } = MEDIA_CONTENT_CONFIG[type];
@@ -810,10 +822,11 @@ function buildMediaContent(post, type) {
 
 // Generic media section builder
 /**
- *
- * @param post
- * @param type
- * @param label
+ * Build a complete media section.
+ * @param {object} post - The blog post.
+ * @param {string} type - Media type key.
+ * @param {string} label - Label for the section.
+ * @returns {string} HTML for the section or empty string if hidden.
  */
 function buildMediaSection(post, type, label) {
   if (!shouldDisplayMedia(post, type)) {
@@ -835,7 +848,8 @@ const MEDIA_SECTIONS = Object.fromEntries(
 );
 /**
  * Generate all media sections for a blog post by iterating over the MEDIA_SECTIONS mapping.
- * @param post
+ * @param {object} post - The blog post.
+ * @returns {string} HTML for all media sections.
  */
 function generateMediaSections(post) {
   const sections = Object.values(MEDIA_SECTIONS).map(generator =>
@@ -851,8 +865,9 @@ function generateMediaSections(post) {
  */
 const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
 /**
- *
- * @param link
+ * Escape user provided link fields.
+ * @param {object} link - Raw link information.
+ * @returns {object} Link object with escaped fields.
  */
 function escapeRelatedLinkFields(link) {
   const fields = ['url', 'title', 'author', 'source', 'quote'];
@@ -870,9 +885,10 @@ function escapeRelatedLinkFields(link) {
 }
 
 /**
- *
- * @param prefix
- * @param value
+ * Prepend a prefix if the value exists.
+ * @param {string} prefix - Prefix text.
+ * @param {string} value - Value text.
+ * @returns {string|undefined} Prefixed string or undefined.
  */
 function prefixIfPresent(prefix, value) {
   if (value) {
@@ -881,9 +897,10 @@ function prefixIfPresent(prefix, value) {
 }
 
 /**
- *
- * @param type
- * @param title
+ * Format a link title depending on its type.
+ * @param {string} type - Link type identifier.
+ * @param {string} title - Link title.
+ * @returns {string} Formatted title string.
  */
 function formatTitleByType(type, title) {
   const formatters = {
@@ -902,10 +919,11 @@ function formatTitleByType(type, title) {
 }
 
 /**
- *
- * @param type
- * @param url
- * @param title
+ * Format the basic `<a>` element for a related link.
+ * @param {string} type - Link type.
+ * @param {string} url - URL for the link.
+ * @param {string} title - Link title.
+ * @returns {string} HTML anchor element.
  */
 function formatBaseLink(type, url, title) {
   const formattedTitle = formatTitleByType(type, title);
@@ -913,10 +931,11 @@ function formatBaseLink(type, url, title) {
 }
 
 /**
- *
- * @param prefix
- * @param value
- * @param suffix
+ * Wrap a value with prefix and suffix when present.
+ * @param {string} prefix - Prefix text.
+ * @param {string} value - Value text.
+ * @param {string} suffix - Suffix text.
+ * @returns {string|undefined} Wrapped string or undefined.
  */
 function wrapIfPresent(prefix, value, suffix) {
   if (value) {
@@ -925,12 +944,10 @@ function wrapIfPresent(prefix, value, suffix) {
 }
 
 /**
- *
- * @param baseLink
- * @param root0
- * @param root0.author
- * @param root0.source
- * @param root0.quote
+ * Build all parts of a related link list item.
+ * @param {string} baseLink - Base anchor element.
+ * @param {{author?:string, source?:string, quote?:string}} root0 - Link metadata.
+ * @returns {Array<string|undefined>} Array of link parts.
  */
 function createLinkParts(baseLink, { author, source, quote }) {
   return [
@@ -942,9 +959,10 @@ function createLinkParts(baseLink, { author, source, quote }) {
 }
 
 /**
- *
- * @param baseLink
- * @param meta
+ * Combine link parts into an HTML list item.
+ * @param {string} baseLink - Base anchor element.
+ * @param {object} meta - Link metadata.
+ * @returns {string} HTML list item string.
  */
 function composeLinkParts(baseLink, meta) {
   const parts = createLinkParts(baseLink, meta);
@@ -952,8 +970,9 @@ function composeLinkParts(baseLink, meta) {
 }
 
 /**
- *
- * @param link
+ * Format a related link object into an HTML list item.
+ * @param {object} link - The related link data.
+ * @returns {string} HTML list item string.
  */
 function formatRelatedLink(link) {
   const { url, title, author, source, quote, type } =
@@ -980,19 +999,19 @@ function generateRelatedLinksSection(post) {
 }
 
 /**
- * Check if post has a toy component
- * @param {object} post - The blog post
- * @param obj
- * @param fns
- * @returns {boolean} - True if post has a toy component
+ * Return true if every predicate returns truthy for the provided object.
+ * @param {object} obj - Value to test.
+ * @param {Function[]} fns - Predicate functions.
+ * @returns {boolean} Whether all predicates returned truthy.
  */
 function allTruthy(obj, fns) {
   return fns.every(fn => Boolean(fn(obj)));
 }
 
 /**
- *
- * @param post
+ * Check whether a post has a configured toy component.
+ * @param {object} post - The blog post.
+ * @returns {boolean} True if a toy is configured.
  */
 function hasToy(post) {
   return allTruthy(post, [
@@ -1023,9 +1042,10 @@ const TOY_OUTPUT_TYPES = [
 
 // Generic select builder for dropdowns
 /**
- *
- * @param selectClass
- * @param entries
+ * Build a `<select>` element from entries.
+ * @param {string} selectClass - CSS class for the select element.
+ * @param {Array<[string,string]>} entries - Value/label pairs.
+ * @returns {string} HTML select element.
  */
 function buildSelect(selectClass, entries) {
   const options = entries
@@ -1035,15 +1055,16 @@ function buildSelect(selectClass, entries) {
 }
 
 /**
- * Generate the output section for a toy component
- * @returns {string} - HTML for the output section
+ * Build the toy output selection dropdown.
+ * @returns {string} HTML select element.
  */
 function getToyOutputSelectDropdown() {
   return buildSelect('output', TOY_OUTPUT_TYPES);
 }
 
 /**
- *
+ * Build the default toy output container markup.
+ * @returns {string} HTML for the output container.
  */
 function getToyOutputValueContent() {
   const selectDropdown = getToyOutputSelectDropdown();
@@ -1078,9 +1099,10 @@ export function getSelectedMethod(defaultMethod) {
 }
 
 /**
- *
- * @param method
- * @param selectedMethod
+ * Build an `<option>` element.
+ * @param {string} method - Input method value.
+ * @param {string|undefined} selectedMethod - Currently selected method.
+ * @returns {string} HTML option element.
  */
 function buildOption(method, selectedMethod) {
   let selected = '';
@@ -1091,8 +1113,9 @@ function buildOption(method, selectedMethod) {
 }
 
 /**
- *
- * @param defaultMethod
+ * Build the input dropdown for a toy.
+ * @param {string} defaultMethod - Default input method.
+ * @returns {string} HTML select + input element.
  */
 function buildToyInputDropdown(defaultMethod) {
   const selectedMethod = getSelectedMethod(defaultMethod);
@@ -1103,8 +1126,9 @@ function buildToyInputDropdown(defaultMethod) {
 }
 
 /**
- *
- * @param defaultMethod
+ * Get the UI section builders for a toy component.
+ * @param {string} defaultMethod - Default input method.
+ * @returns {Array<[string,Function]>} Array of sections.
  */
 function getToyUISections(defaultMethod) {
   return [
@@ -1124,16 +1148,18 @@ function toToySection([label, buildHTML]) {
 }
 
 /**
- *
- * @param post
+ * Determine if a toy section should be skipped.
+ * @param {object} post - The blog post.
+ * @returns {boolean} True if the post has no toy.
  */
 function shouldSkipToy(post) {
   return !hasToy(post);
 }
 
 /**
- *
- * @param post
+ * Retrieve the configured default input method for a post.
+ * @param {object} post - The blog post.
+ * @returns {string} Method name.
  */
 export function getDefaultInputMethod(post) {
   const toy = post.toy ?? { defaultInputMethod: 'text' };
@@ -1141,17 +1167,18 @@ export function getDefaultInputMethod(post) {
 }
 
 /**
- *
- * @param defaultMethod
+ * Build all toy UI sections for the given default method.
+ * @param {string} defaultMethod - Default input method.
+ * @returns {string[]} Array of section HTML strings.
  */
 function buildToySections(defaultMethod) {
   return getToyUISections(defaultMethod).map(toToySection);
 }
 
 /**
- * Generate the toy UI components for a blog post
- * @param {object} post - The blog post
- * @returns {string} - HTML for the toy UI components
+ * Generate the toy UI components for a blog post.
+ * @param {object} post - The blog post.
+ * @returns {string} HTML for the toy UI components.
  */
 function generateToyUISection(post) {
   if (shouldSkipToy(post)) {
@@ -1163,9 +1190,9 @@ function generateToyUISection(post) {
 }
 
 /**
- * Generate the toy script section for a blog post
- * @param {object} post - The blog post
- * @returns {string} - HTML for the toy script section
+ * Generate the script element to load a toy component.
+ * @param {object} post - The blog post.
+ * @returns {string} HTML script tag or empty string.
  */
 function generateToyScriptSection(post) {
   if (!hasToy(post)) {
@@ -1197,8 +1224,9 @@ function getArticleSections(post) {
 }
 
 /**
- * Generate the content of a blog post article
- * @param post
+ * Generate the HTML content for a single blog post.
+ * @param {object} post - The blog post.
+ * @returns {string} HTML for the article.
  */
 function generateArticleContent(post) {
   return join(getArticleSections(post));
@@ -1240,9 +1268,10 @@ function assembleBlogHTML(header, blog, footer) {
 }
 
 /**
- *
- * @param parts
- * @param wrapHtml
+ * Generate the complete blog HTML.
+ * @param {{blog: object, header: string, footer: string}} parts - Blog pieces.
+ * @param {Function} wrapHtml - Wrapper function for the final HTML.
+ * @returns {string} Full blog HTML.
  */
 export function generateBlog(parts, wrapHtml) {
   const { blog, header, footer } = parts;
@@ -1266,6 +1295,11 @@ export function getBlogGenerationArgs() {
   return { header, footer, wrapFunc };
 }
 
+/**
+ * Convenience wrapper to generate a blog from a blog object.
+ * @param {object} blog - Blog data object.
+ * @returns {string} Complete blog HTML.
+ */
 export const generateBlogOuter = blog => {
   const { header, footer, wrapFunc } = getBlogGenerationArgs();
   return generateBlog({ blog, header, footer }, wrapFunc);
