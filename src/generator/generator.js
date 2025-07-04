@@ -11,8 +11,9 @@ import {
 } from './html.js';
 
 /**
- *
- * @param content
+ * Wrap a string or array of strings in paragraph tags.
+ * @param {string|string[]} content - Text or an array of text paragraphs.
+ * @returns {string} HTML string containing one or more <p> elements.
  */
 function createParagraphs(content) {
   if (Array.isArray(content)) {
@@ -23,8 +24,9 @@ function createParagraphs(content) {
 }
 
 /**
- *
- * @param content
+ * Create a blockquote element containing the provided text content.
+ * @param {string|string[]} content - Text or paragraphs for the blockquote.
+ * @returns {string} HTML blockquote element.
  */
 function createBlockquote(content) {
   return `<blockquote class="${CLASS.VALUE}">${BLOCKQUOTE_CORNERS}${createParagraphs(content)}</blockquote>`;
@@ -64,12 +66,9 @@ function createDiv(classes, content) {
 }
 
 /**
- * Build a key-value section.
- * @param {string} label – text for the key div
- * @param {string} valueHTML – full HTML for the value element
- * @param {boolean} [wrapValueDiv] – whether to wrap valueHTML in a value div
- * @param keyExtraClasses
- * @returns {string} formatted section HTML
+ * Return the CSS class for a key element.
+ * @param {string} [keyExtraClasses] - Optional extra CSS classes.
+ * @returns {string} Computed class string.
  */
 function getKeyClass(keyExtraClasses) {
   if (keyExtraClasses) {
@@ -79,10 +78,11 @@ function getKeyClass(keyExtraClasses) {
 }
 
 /**
- *
- * @param keyDiv
- * @param valueHTML
- * @param wrapValueDiv
+ * Combine a key div and value HTML into a labeled section pair.
+ * @param {string} keyDiv - HTML for the key element.
+ * @param {string} valueHTML - HTML for the value element.
+ * @param {boolean} wrapValueDiv - Whether to wrap the value in a div.
+ * @returns {string} Combined HTML pair.
  */
 function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
   const valuePart = labeledSectionValuePart(valueHTML, wrapValueDiv);
@@ -90,8 +90,10 @@ function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
 }
 
 /**
- *
- * @param args
+ * Ensure that `wrapValueDiv` is defined on the args object.
+ * @param {object} args - Options for creating a labeled section.
+ * @param {boolean} [args.wrapValueDiv] - Whether to wrap value HTML in a div.
+ * @returns {object} Args object with wrapValueDiv defaulted to true if undefined.
  */
 function defaultWrapValueDiv(args) {
   if (args.wrapValueDiv === undefined) {
@@ -101,8 +103,10 @@ function defaultWrapValueDiv(args) {
 }
 
 /**
- *
- * @param args
+ * Ensure that `keyExtraClasses` exists on the args object.
+ * @param {object} args - Options for creating a labeled section.
+ * @param {string} [args.keyExtraClasses] - Additional CSS classes for the key div.
+ * @returns {object} Args object with keyExtraClasses defaulted to empty string.
  */
 export function defaultKeyExtraClasses(args) {
   if (args.keyExtraClasses === undefined) {
@@ -112,16 +116,19 @@ export function defaultKeyExtraClasses(args) {
 }
 
 /**
- *
- * @param args
+ * Apply default values for labeled section options.
+ * @param {object} args - Options for creating a labeled section.
+ * @returns {object} Args object with defaults applied.
  */
 function applyLabeledSectionDefaults(args) {
   return defaultKeyExtraClasses(defaultWrapValueDiv(args));
 }
 
 /**
- *
- * @param args
+ * Convert labeled section options into explicit arguments.
+ * @param {object} args - Options object for labeled section creation.
+ * @returns {{keyDiv: string, valueHTML: string, wrapValueDiv: boolean}}
+ *   Prepared arguments for section creation.
  */
 function prepareLabeledSectionArgs(args) {
   const { label, valueHTML, wrapValueDiv, keyExtraClasses } =
@@ -132,8 +139,13 @@ function prepareLabeledSectionArgs(args) {
 }
 
 /**
- *
- * @param args
+ * Build a labeled section from the provided options.
+ * @param {object} args - Section creation options.
+ * @param {string} args.label - Text label for the key.
+ * @param {string} args.valueHTML - HTML for the value element.
+ * @param {boolean} [args.wrapValueDiv] - Whether to wrap the value in a div.
+ * @param {string} [args.keyExtraClasses] - Extra classes for the key div.
+ * @returns {string} Labeled section HTML.
  */
 function createLabeledSection(args) {
   const { keyDiv, valueHTML, wrapValueDiv } = prepareLabeledSectionArgs(args);
@@ -141,9 +153,10 @@ function createLabeledSection(args) {
 }
 
 /**
- *
- * @param valueHTML
- * @param wrapValueDiv
+ * Optionally wrap value HTML in a value div.
+ * @param {string} valueHTML - Value HTML to wrap.
+ * @param {boolean} wrapValueDiv - Whether to wrap in a div.
+ * @returns {string} Wrapped or raw value HTML.
  */
 function labeledSectionValuePart(valueHTML, wrapValueDiv) {
   if (wrapValueDiv) {
@@ -216,11 +229,8 @@ function formatDate(dateString) {
 const METADATA_TEXT = `Software developer and philosopher in Berlin`;
 
 /**
- * Create an empty div with the key class
- * @returns {string} - HTML div element with key class and no content
- */
-/**
- * Create the content for the header section
+ * Build the HTML for the page header section.
+ * @returns {string} HTML representing the header section.
  */
 function createHeaderContent() {
   const valueDivs = [
@@ -284,8 +294,8 @@ function createFooterSection() {
 
 // Page structure
 /**
- * Create the opening tag for the container div
- * @returns {string} - Opening div tag with container ID
+ * Create the opening tag for the container div.
+ * @returns {string} Opening div tag with container ID.
  */
 function createContainerDivOpen() {
   const idAttr = createAttrPair(attrName().ID, CONTAINER_ID);
@@ -293,8 +303,9 @@ function createContainerDivOpen() {
 }
 
 /**
- * Create the header content array
- * @param headerElement
+ * Compose the array of HTML fragments for the page header.
+ * @param {string} headerElement - The already generated header section.
+ * @returns {string[]} Array of HTML fragments.
  */
 function createHeaderContentArray(headerElement) {
   return [
@@ -307,7 +318,8 @@ function createHeaderContentArray(headerElement) {
 }
 
 /**
- * Create the page header with head element, body opening tag and header section
+ * Generate the HTML for the beginning of the page including the header.
+ * @returns {string} Combined HTML for the head, opening body tag and header.
  */
 function createPageHeader() {
   const headerElement = createHeaderSection();
@@ -316,22 +328,25 @@ function createPageHeader() {
 }
 
 /**
- * Create the closing container div
+ * Create the closing container div.
+ * @returns {string} Closing div tag.
  */
 function createContainerDivClose() {
   return '</div>';
 }
 
 /**
- * Create the body closing tag
+ * Return the closing body tag.
+ * @returns {string} </body> tag
  */
 function createBodyClose() {
   return '</body>';
 }
 
 /**
- * Create the footer content array
- * @param footerElement
+ * Compose HTML fragments for the page footer section.
+ * @param {string} footerElement - The generated footer section.
+ * @returns {string[]} Array of HTML fragments for the footer.
  */
 function createFooterContentArray(footerElement) {
   return [
@@ -344,7 +359,8 @@ function createFooterContentArray(footerElement) {
 }
 
 /**
- * Create the page footer with footer section, container div closing, and body closing tag
+ * Create the HTML that closes the page with footer and scripts.
+ * @returns {string} HTML string for the page footer.
  */
 function createPageFooter() {
   const footerElement = createFooterSection();
@@ -353,48 +369,54 @@ function createPageFooter() {
 }
 
 /**
- * Convert a post to article HTML
- * @param post
+ * Convert a blog post object to an article HTML string.
+ * @param {object} post - Blog post data.
+ * @returns {string} HTML article.
  */
 function convertPostToArticleHTML(post) {
   return generateArticle(post);
 }
 
 /**
- * Format article HTML with indentation
- * @param articleHTML
+ * Optionally format article HTML. Currently a passthrough.
+ * @param {string} articleHTML - Raw article HTML.
+ * @returns {string} Formatted article HTML.
  */
 function formatArticleHTML(articleHTML) {
   return articleHTML;
 }
 
 /**
- * Process posts and join article HTML
- * @param posts
+ * Convert an array of posts to concatenated article HTML.
+ * @param {object[]} posts - Array of post objects.
+ * @returns {string} Combined HTML for all posts.
  */
 function processPostsToHTML(posts) {
   return posts.map(convertPostToArticleHTML).map(formatArticleHTML).join('');
 }
 
 /**
- * Generate HTML for all articles in the blog
- * @param posts
+ * Generate HTML for all articles in the blog.
+ * @param {object[]} posts - Array of post objects.
+ * @returns {string} Combined article HTML.
  */
 function generateArticles(posts) {
   return processPostsToHTML(posts);
 }
 
 /**
- * Create attributes for an article element
- * @param post
+ * Create an id attribute if the post has a key.
+ * @param {object} post - Blog post data.
+ * @returns {string} id attribute string including leading space.
  */
 export function createIdAttributeIfNeeded(post) {
   return ` ${createAttrPair(attrName().ID, post.key)}`;
 }
 
 /**
- *
- * @param post
+ * Derive tag class names for a post.
+ * @param {object} post - Blog post data.
+ * @returns {string[]} Array of tag class names.
  */
 function getTagClassList(post) {
   if (hasTags(post)) {
@@ -405,8 +427,9 @@ function getTagClassList(post) {
 }
 
 /**
- *
- * @param post
+ * Build the class attribute for an article element.
+ * @param {object} post - Blog post data.
+ * @returns {string} class attribute pair.
  */
 function createArticleClassAttr(post) {
   const classes = [CLASS.ENTRY, ...getTagClassList(post)];
@@ -418,8 +441,9 @@ function createArticleClassAttr(post) {
 }
 
 /**
- *
- * @param post
+ * Compose the attributes string for an article element.
+ * @param {object} post - Blog post data.
+ * @returns {string} Combined class and id attributes.
  */
 function createArticleAttributes(post) {
   const classAttr = createArticleClassAttr(post);
@@ -428,16 +452,18 @@ function createArticleAttributes(post) {
 }
 
 /**
- * Format article content with full width element
- * @param content
+ * Prefix article content with a full-width layout element.
+ * @param {string} content - Article content HTML.
+ * @returns {string} Formatted content HTML.
  */
 function formatArticleContent(content) {
   return `${fullWidthElement()}${content}`;
 }
 
 /**
- * Create an article from a blog post
- * @param post
+ * Create an <article> element string from a blog post object.
+ * @param {object} post - Blog post data.
+ * @returns {string} Article HTML.
  */
 function generateArticle(post) {
   const content = generateArticleContent(post);
@@ -447,25 +473,28 @@ function generateArticle(post) {
 }
 
 /**
- * Get content array from post, defaulting to empty array if not present
- * @param post
+ * Get the content array from a post, defaulting to an empty array.
+ * @param {object} post - Blog post.
+ * @returns {Array} Content array.
  */
 function getContentArray(post) {
   return post.content || [];
 }
 
 /**
- * Determine if an item is the first in the content array
- * @param index
+ * Determine if a content index corresponds to the first item.
+ * @param {number} index - Index within the content array.
+ * @returns {boolean} True if first item.
  */
 function isFirstContentItem(index) {
   return index === 0;
 }
 
 /**
- * Create a content item with index awareness
- * @param text
- * @param index
+ * Create a content section item with index awareness.
+ * @param {string|object} text - Content item.
+ * @param {number} index - Index in the content array.
+ * @returns {string} Section HTML for the content item.
  */
 function createContentItemWithIndex(text, index) {
   const isFirst = isFirstContentItem(index);

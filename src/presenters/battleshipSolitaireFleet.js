@@ -17,6 +17,11 @@
  *   ]
  * }
  */
+/**
+ * Validate that a fleet object has the required properties.
+ * @param {object} fleet - Parsed fleet object.
+ * @returns {string} Empty string if valid, otherwise an error message.
+ */
 function validateFleetObject(fleet) {
   const validators = [
     [f => typeof f.width !== 'number', 'Missing or invalid property: width'],
@@ -29,9 +34,9 @@ function validateFleetObject(fleet) {
 }
 
 /**
- *
- * @param boardInfo
- * @param ships
+ * Place multiple ships onto the board.
+ * @param {object} boardInfo - Contains board array and dimensions.
+ * @param {object[]} ships - Array of ship objects.
  */
 function placeShipsOnBoard(boardInfo, ships) {
   const placeShip = ship => placeSingleShipOnBoard(boardInfo, ship);
@@ -39,9 +44,9 @@ function placeShipsOnBoard(boardInfo, ships) {
 }
 
 /**
- *
- * @param boardInfo
- * @param ship
+ * Place a single ship on the board if it is well formed.
+ * @param {object} boardInfo - Board data.
+ * @param {object} ship - Ship specification.
  */
 function placeSingleShipOnBoard(boardInfo, ship) {
   if (isMalformedShip(ship)) {
@@ -51,9 +56,9 @@ function placeSingleShipOnBoard(boardInfo, ship) {
 }
 
 /**
- *
- * @param boardInfo
- * @param ship
+ * Fill each cell for a ship on the board.
+ * @param {object} boardInfo - Board data.
+ * @param {object} ship - Ship specification.
  */
 function fillShipOnBoard(boardInfo, ship) {
   Array.from({ length: ship.length }).forEach((_, i) => {
@@ -62,10 +67,10 @@ function fillShipOnBoard(boardInfo, ship) {
 }
 
 /**
- *
- * @param boardInfo
- * @param ship
- * @param i
+ * Mark an individual ship cell on the board.
+ * @param {object} boardInfo - Board data.
+ * @param {object} ship - Ship specification.
+ * @param {number} i - Index within the ship.
  */
 function fillShipCell(boardInfo, ship, i) {
   const x = getShipCellX(ship, i);
@@ -75,9 +80,10 @@ function fillShipCell(boardInfo, ship, i) {
 }
 
 /**
- *
- * @param ship
- * @param i
+ * Calculate the y coordinate for the i-th cell of a ship.
+ * @param {object} ship - Ship specification.
+ * @param {number} i - Index within the ship.
+ * @returns {number} y coordinate on the board.
  */
 function getShipCellY(ship, i) {
   if (ship.direction === 'V') {
@@ -87,9 +93,10 @@ function getShipCellY(ship, i) {
 }
 
 /**
- *
- * @param ship
- * @param i
+ * Calculate the x coordinate for the i-th cell of a ship.
+ * @param {object} ship - Ship specification.
+ * @param {number} i - Index within the ship.
+ * @returns {number} x coordinate on the board.
  */
 function getShipCellX(ship, i) {
   if (ship.direction === 'H') {
@@ -99,9 +106,9 @@ function getShipCellX(ship, i) {
 }
 
 /**
- *
- * @param boardInfo
- * @param coord
+ * Mark a board coordinate as containing a ship cell.
+ * @param {object} boardInfo - Board data.
+ * @param {{x:number, y:number}} coord - Coordinate to mark.
  */
 function markShipCellOnBoard(boardInfo, coord) {
   const { board, dimensions } = boardInfo;
@@ -113,8 +120,9 @@ function markShipCellOnBoard(boardInfo, coord) {
 }
 
 /**
- *
- * @param ship
+ * Determine whether a ship object is missing required fields.
+ * @param {object} ship - Ship specification.
+ * @returns {boolean} True if ship is malformed.
  */
 function isMalformedShip(ship) {
   const validators = [
@@ -127,41 +135,46 @@ function isMalformedShip(ship) {
 }
 
 /**
- *
- * @param ship
+ * Check if a ship lacks a starting coordinate.
+ * @param {object} ship - Ship specification.
+ * @returns {boolean} True if start is missing.
  */
 function isMissingStart(ship) {
   return !ship.start;
 }
 
 /**
- *
- * @param ship
+ * Validate the start coordinates of a ship.
+ * @param {object} ship - Ship specification.
+ * @returns {boolean} True if coordinates are invalid.
  */
 function isInvalidStartCoordinates(ship) {
   return typeof ship.start.x !== 'number' || typeof ship.start.y !== 'number';
 }
 
 /**
- *
- * @param ship
+ * Check if a ship has a numeric length.
+ * @param {object} ship - Ship specification.
+ * @returns {boolean} True if length is invalid.
  */
 function isInvalidLength(ship) {
   return typeof ship.length !== 'number';
 }
 
 /**
- *
- * @param ship
+ * Validate a ship's direction property.
+ * @param {object} ship - Ship specification.
+ * @returns {boolean} True if direction is not 'H' or 'V'.
  */
 function isInvalidDirection(ship) {
   return ship.direction !== 'H' && ship.direction !== 'V';
 }
 
 /**
- *
- * @param coord
- * @param dimensions
+ * Determine if a coordinate falls outside the board dimensions.
+ * @param {{x:number,y:number}} coord - Board coordinate.
+ * @param {{width:number,height:number}} dimensions - Board dimensions.
+ * @returns {boolean} True if out of bounds.
  */
 function isOutOfBounds(coord, dimensions) {
   return (
@@ -171,8 +184,9 @@ function isOutOfBounds(coord, dimensions) {
 }
 
 /**
- *
- * @param coord
+ * Check for negative coordinate values.
+ * @param {{x:number,y:number}} coord - Coordinate to check.
+ * @returns {boolean} True if either x or y is negative.
  */
 function isNegativeCoordinate(coord) {
   const { x, y } = coord;
@@ -180,9 +194,10 @@ function isNegativeCoordinate(coord) {
 }
 
 /**
- *
- * @param coord
- * @param dimensions
+ * Check if a coordinate exceeds the board dimensions.
+ * @param {{x:number,y:number}} coord - Coordinate to check.
+ * @param {{width:number,height:number}} dimensions - Board dimensions.
+ * @returns {boolean} True if coordinate is outside bounds.
  */
 function isCoordinateExceedsDimensions(coord, dimensions) {
   const { x, y } = coord;
@@ -194,6 +209,12 @@ function isCoordinateExceedsDimensions(coord, dimensions) {
  *
  * @param inputString
  * @param dom
+ */
+/**
+ * Render a fleet board from a JSON string description.
+ * @param {string} inputString - JSON encoded fleet description.
+ * @param {object} dom - DOM abstraction with createElement and setTextContent.
+ * @returns {HTMLElement} <pre> element representing the board or a <p> error element.
  */
 export function createBattleshipFleetBoardElement(inputString, dom) {
   let fleet;
@@ -208,9 +229,10 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
 }
 
 /**
- *
- * @param fleet
- * @param dom
+ * Validate a parsed fleet and render it or an error element.
+ * @param {object} fleet - Parsed fleet object.
+ * @param {object} dom - DOM abstraction.
+ * @returns {HTMLElement} Rendered fleet board or error message element.
  */
 function handleParsedFleet(fleet, dom) {
   const errorMsg = validateFleetObject(fleet);
@@ -223,9 +245,10 @@ function handleParsedFleet(fleet, dom) {
 }
 
 /**
- *
- * @param fleet
- * @param dom
+ * Render a fleet board assuming the fleet is valid.
+ * @param {object} fleet - Fleet data.
+ * @param {object} dom - DOM abstraction.
+ * @returns {HTMLElement} Preformatted board element.
  */
 function renderFleetBoard(fleet, dom) {
   const { width, height } = fleet;
