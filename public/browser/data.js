@@ -1,3 +1,5 @@
+import { deepClone } from '../utils/objectUtils.js';
+
 const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
 
 export const BLOG_STATUS = {
@@ -7,6 +9,11 @@ export const BLOG_STATUS = {
   ERROR: 'error',
 };
 
+/**
+ * Extracts blog-related state from the global store.
+ * @param {object} globalState - The application state object.
+ * @returns {object} Blog-specific state fields.
+ */
 function getBlogState(globalState) {
   return {
     status: globalState.blogStatus,
@@ -16,6 +23,11 @@ function getBlogState(globalState) {
   };
 }
 
+/**
+ * Checks whether a blog fetch is currently running.
+ * @param {object} globalState - The application state.
+ * @returns {boolean} True if a fetch promise is active.
+ */
 function isFetchInProgress(globalState) {
   const { status, fetchPromise } = getBlogState(globalState);
   return status === BLOG_STATUS.LOADING && fetchPromise;
@@ -24,7 +36,7 @@ function isFetchInProgress(globalState) {
 /**
  * Checks if a blog fetch is already in progress.
  * @param {object} globalState - The application state.
- * @param {function} logFn - Logging function used when fetch is active.
+ * @param {Function} logFn - Logging function used when fetch is active.
  * @returns {boolean} True if a fetch is already running.
  */
 export function shouldUseExistingFetch(globalState, logFn) {
@@ -39,9 +51,9 @@ export function shouldUseExistingFetch(globalState, logFn) {
  * Returns a Base64 encoding function using the provided btoa and
  * encodeURIComponent. This avoids the deprecated unescape by manually
  * converting percent-encoded bytes back to a binary string.
- * @param {function} btoa - The btoa function
- * @param {function} encodeURIComponentFn - The encodeURIComponent function
- * @returns {function} encodeBase64 - Function that encodes a string to Base64
+ * @param {Function} btoa - The btoa function
+ * @param {Function} encodeURIComponentFn - The encodeURIComponent function
+ * @returns {Function} encodeBase64 - Function that encodes a string to Base64
  */
 export function getEncodeBase64(btoa, encodeURIComponentFn) {
   const toBinary = str =>
@@ -54,10 +66,11 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
 /**
  * Wrapper for fetchAndCacheBlogData with explicit arguments.
  * @param {object} state - The global state object.
- * @param {function} fetch - The fetch function to use.
+ * @param {Function} fetch - The fetch function to use.
  * @param {object} loggers - The logging functions object.
- * @param {function} loggers.logInfo - The logging function to use.
- * @param {function} loggers.logError - The error logging function to use.
+ * @param {Function} loggers.logInfo - The logging function to use.
+ * @param {Function} loggers.logError - The error logging function to use.
+ * @returns {Promise<unknown>} Promise resolving when fetch completes.
  */
 export function fetchAndCacheBlogData(state, fetch, loggers) {
   const { logInfo, logError } = loggers;
@@ -101,26 +114,34 @@ export function fetchAndCacheBlogData(state, fetch, loggers) {
  * @param {object} globalState - The state to copy.
  * @returns {object} A cloned version of the state.
  */
-export const getDeepStateCopy = globalState =>
-  JSON.parse(JSON.stringify(globalState));
+export const getDeepStateCopy = globalState => deepClone(globalState);
 
 /**
- * Deeply merges two objects. Creates a new object with merged properties.
- * Properties in source will overwrite properties in target, unless both
- * properties are plain objects, in which case they are recursively merged.
- * Arrays and other types are overwritten, not merged.
- * @param {object} target - The target object.
- * @param {object} source - The source object.
- * @returns {object} A new object representing the merged result.
+ * Checks whether two values are not arrays.
+ * @param {*} a - First value for type comparison.
+ * @param {*} b - Second value for type comparison.
+ * @returns {boolean} True when neither value is an array.
  */
 function bothAreNotArrays(a, b) {
   return !Array.isArray(a) && !Array.isArray(b);
 }
 
+/**
+ * Determines if both values are non-null objects.
+ * @param {*} a - First value to check.
+ * @param {*} b - Second value to check.
+ * @returns {boolean} True when both are non-null objects.
+ */
 function bothAreNonNullObjects(a, b) {
   return isNonNullObject(a) && isNonNullObject(b);
 }
 
+/**
+ * Checks whether two values should be deeply merged.
+ * @param {*} targetValue - The target value.
+ * @param {*} sourceValue - The source value.
+ * @returns {boolean} True when values are mergeable objects.
+ */
 function shouldDeepMerge(targetValue, sourceValue) {
   return (
     bothAreNonNullObjects(targetValue, sourceValue) &&
@@ -128,6 +149,12 @@ function shouldDeepMerge(targetValue, sourceValue) {
   );
 }
 
+/**
+ * Deeply merges two objects, producing a new object.
+ * @param {object} target - Destination object.
+ * @param {object} source - Source object to merge.
+ * @returns {object} The merged object.
+ */
 export function deepMerge(target, source) {
   const output = { ...target };
   const mergeKey = key => {
@@ -143,12 +170,21 @@ export function deepMerge(target, source) {
   return output;
 }
 
+/**
+ * Removes internal bookkeeping fields from a state copy.
+ * @param {object} stateCopy - State object to sanitize.
+ */
 function stripInternalFields(stateCopy) {
   for (const key of INTERNAL_STATE_KEYS) {
     delete stateCopy[key];
   }
 }
 
+/**
+ * Restores blog-related properties on the global state object.
+ * @param {object} globalState - The global application state.
+ * @param {object} blogState - Previously saved blog data.
+ */
 function restoreBlogState(globalState, blogState) {
   globalState.blogStatus = blogState.status;
   globalState.blogError = blogState.error;
@@ -167,21 +203,37 @@ export function shouldCopyStateForFetch(status) {
 
 /**
  * Determine if an object includes its own `temporary` property.
- * @param {object} obj
- * @returns {boolean}
+ * @param {object} obj - Object to inspect.
+ * @returns {boolean} True when the property exists.
  */
 function hasTemporaryProperty(obj) {
   return Object.hasOwn(obj, 'temporary');
 }
 
+/**
+ * Check if a value is an object and not null.
+ * @param {object} value - Value to test.
+ * @returns {boolean} True when the value is a non-null object.
+ */
 function isNonNullObject(value) {
   return Boolean(value) && typeof value === 'object';
 }
 
+/**
+ * Determine whether a state object has required properties.
+ * @param {object} value - Candidate state object.
+ * @returns {boolean} True if the state is missing required fields.
+ */
 function isInvalidState(value) {
   return !isNonNullObject(value) || !hasTemporaryProperty(value);
 }
 
+/**
+ * Validates incoming state before applying it to the global state.
+ * @param {object} incomingState - Candidate state object.
+ * @param {Function} errorFn - Error logger.
+ * @returns {void}
+ */
 function validateIncomingState(incomingState, errorFn) {
   if (isInvalidState(incomingState)) {
     errorFn('setData received invalid data structure:', incomingState);
@@ -191,16 +243,31 @@ function validateIncomingState(incomingState, errorFn) {
   }
 }
 
+/**
+ * Checks whether the blog status is idle.
+ * @param {object} state - The global state object.
+ * @returns {boolean} True when status is IDLE.
+ */
 function isIdleStatus(state) {
   return getBlogState(state).status === BLOG_STATUS.IDLE;
 }
 
+/**
+ * Triggers the provided fetch when the blog status is idle.
+ * @param {object} state - Global state.
+ * @param {Function} fetch - Blog fetch function.
+ */
 function tryFetchingBlog(state, fetch) {
   if (isIdleStatus(state)) {
     fetch();
   }
 }
 
+/**
+ * Logs any stored fetch error when present.
+ * @param {object} state - Global state object.
+ * @param {Function} logWarning - Warning logger.
+ */
 function maybeLogFetchError(state, logWarning) {
   const blogState = getBlogState(state);
   if (blogState.status === BLOG_STATUS.ERROR) {
@@ -208,6 +275,12 @@ function maybeLogFetchError(state, logWarning) {
   }
 }
 
+/**
+ * Handles fetch-related state transitions and logging.
+ * @param {object} state - Global state to update.
+ * @param {Function} fetch - Fetch function.
+ * @param {object} loggers - Logger functions.
+ */
 function handleBlogFetchState(state, fetch, loggers) {
   const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
   tryFetchingBlog(state, doFetch);
@@ -217,8 +290,8 @@ function handleBlogFetchState(state, fetch, loggers) {
 
 /**
  * Returns a deep copy of state if needed for fetch, otherwise returns state itself.
- * @param {object} state
- * @returns {object}
+ * @param {string} status - Current blog status.
+ * @returns {object} Either the original state or a clone.
  */
 function shouldDeepCopyForFetch(status) {
   return status === 'idle' || status === 'error';
@@ -232,7 +305,7 @@ function shouldDeepCopyForFetch(status) {
 function getRelevantStateCopy(state) {
   const status = state.blogStatus;
   if (shouldDeepCopyForFetch(status)) {
-    return JSON.parse(JSON.stringify(state));
+    return deepClone(state);
   }
   return state;
 }
@@ -240,9 +313,8 @@ function getRelevantStateCopy(state) {
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
- * @query
  * @param {object} state - The main application state.
- * @param {function} fetch - The fetch function.
+ * @param {Function} fetch - The fetch function.
  * @param {object} loggers - An object with logInfo, logError, and logWarning functions.
  * @returns {object} A deep copy of the relevant state for the toy.
  */
@@ -259,8 +331,8 @@ export const getData = (state, fetch, loggers) => {
  * @param {object} state.desired - The new state object (must have 'temporary').
  * @param {object} state.current - The global state to be modified.
  * @param {object} loggers - Logging functions.
- * @param {function} loggers.logInfo - Information logger.
- * @param {function} loggers.logError - Error logger.
+ * @param {Function} loggers.logInfo - Information logger.
+ * @param {Function} loggers.logError - Error logger.
  */
 export const setData = (state, loggers) => {
   const { desired, current } = state;

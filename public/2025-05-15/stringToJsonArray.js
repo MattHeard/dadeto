@@ -6,6 +6,11 @@
  * Returns a JSON string of an array, or []
  */
 
+/**
+ * Converts a comma-delimited string to a JSON array string.
+ * @param {string} input - Delimited input string.
+ * @returns {string} JSON array representation.
+ */
 function stringToJsonArrayToy(input) {
   if (typeof input !== 'string') {
     return JSON.stringify([]);

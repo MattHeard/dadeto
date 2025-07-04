@@ -40,8 +40,9 @@ export const insertBefore = (parentNode, newChild, refChild) =>
 export const removeChild = (parentNode, child) => parentNode.removeChild(child);
 
 /**
- * Removes all children from the given DOM element.
+ * Removes the first child from the given DOM element.
  * @param {HTMLElement} element - The parent element to clear.
+ * @returns {void} Indicates completion.
  */
 const removeChildNode = element => element.removeChild(element.firstChild);
 
@@ -243,10 +244,9 @@ export const setTextContent = (element, content) => {
 };
 
 /**
- * Wrapper for IntersectionObserver constructor
- * @param {Function} callback - IntersectionObserver callback
- * @param {Object} options - IntersectionObserver options
- * @returns {IntersectionObserver}
+ * Wrapper for the `IntersectionObserver` constructor.
+ * @param {Function} callback - IntersectionObserver callback.
+ * @returns {IntersectionObserver} New observer instance.
  */
 export const makeIntersectionObserver = callback =>
   new IntersectionObserver(callback, { root: null, threshold: 0.1 });

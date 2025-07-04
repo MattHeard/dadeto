@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1751641472879" clover="3.2.0">
-  <project timestamp="1751641472879" name="All files">
-    <metrics statements="1914" coveredstatements="1914" conditionals="512" coveredconditionals="512" methods="783" coveredmethods="783" elements="3209" coveredelements="3209" complexity="0" loc="1914" ncloc="1914" packages="21" files="54" classes="54"/>
+<coverage generated="1751653791300" clover="3.2.0">
+  <project timestamp="1751653791300" name="All files">
+    <metrics statements="1940" coveredstatements="1940" conditionals="534" coveredconditionals="534" methods="788" coveredmethods="788" elements="3262" coveredelements="3262" complexity="0" loc="1940" ncloc="1940" packages="22" files="55" classes="55"/>
     <package name="browser">
       <metrics statements="529" coveredstatements="529" conditionals="104" coveredconditionals="104" methods="180" coveredmethods="180"/>
       <file name="audio-controls.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/browser/audio-controls.js">
@@ -2080,6 +2080,38 @@
         <line num="11" count="1" type="stmt"/>
       </file>
     </package>
+    <package name="toys.2025-07-04">
+      <metrics statements="26" coveredstatements="26" conditionals="22" coveredconditionals="22" methods="5" coveredmethods="5"/>
+      <file name="transformDendriteStory.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-04/transformDendriteStory.js">
+        <metrics statements="26" coveredstatements="26" conditionals="22" coveredconditionals="22" methods="5" coveredmethods="5"/>
+        <line num="8" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="30" count="4" type="stmt"/>
+        <line num="37" count="2" type="cond" truecount="3" falsecount="0"/>
+        <line num="49" count="5" type="stmt"/>
+        <line num="50" count="5" type="stmt"/>
+        <line num="51" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="54" count="3" type="stmt"/>
+        <line num="55" count="3" type="stmt"/>
+        <line num="56" count="3" type="stmt"/>
+        <line num="62" count="3" type="stmt"/>
+        <line num="63" count="3" type="stmt"/>
+        <line num="64" count="3" type="stmt"/>
+        <line num="65" count="3" type="stmt"/>
+        <line num="66" count="3" type="stmt"/>
+        <line num="67" count="3" type="stmt"/>
+        <line num="68" count="3" type="stmt"/>
+        <line num="69" count="3" type="stmt"/>
+        <line num="70" count="3" type="stmt"/>
+        <line num="72" count="3" type="stmt"/>
+        <line num="74" count="2" type="stmt"/>
+      </file>
+    </package>
     <package name="utils">
       <metrics statements="43" coveredstatements="43" conditionals="20" coveredconditionals="20" methods="24" coveredmethods="24"/>
       <file name="jsonUtils.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/utils/jsonUtils.js">
@@ -2104,7 +2136,7 @@
         <line num="37" count="8" type="cond" truecount="2" falsecount="0"/>
         <line num="38" count="4" type="stmt"/>
         <line num="40" count="4" type="stmt"/>
-        <line num="49" count="53" type="stmt"/>
+        <line num="49" count="56" type="stmt"/>
       </file>
       <file name="regexUtils.js" path="/Users/matthew.heard/Code/Matt/dadeto/src/utils/regexUtils.js">
         <metrics statements="14" coveredstatements="14" conditionals="5" coveredconditionals="5" methods="5" coveredmethods="5"/>

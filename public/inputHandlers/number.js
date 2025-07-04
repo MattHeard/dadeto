@@ -1,4 +1,6 @@
-import { maybeRemoveElement } from './disposeHelpers.js';
+import { maybeRemoveKV, maybeRemoveDendrite } from './removeElements.js';
+import { NUMBER_INPUT_SELECTOR } from '../constants/selectors.js';
+import { hideAndDisable } from './inputState.js';
 
 const createRemoveValueListener = (dom, el, handler) => () =>
   dom.removeEventListener(el, 'input', handler);
@@ -34,7 +36,7 @@ const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
 };
 
 export const ensureNumberInput = (container, textInput, dom) => {
-  let numberInput = dom.querySelector(container, 'input[type="number"]');
+  let numberInput = dom.querySelector(container, NUMBER_INPUT_SELECTOR);
 
   if (!numberInput) {
     numberInput = createNumberInput(
@@ -53,19 +55,15 @@ export const ensureNumberInput = (container, textInput, dom) => {
   return numberInput;
 };
 
-function maybeRemoveKV(container, dom) {
-  const kvContainer = dom.querySelector(container, '.kv-container');
-  maybeRemoveElement(kvContainer, container, dom);
-}
-
-function maybeRemoveDendrite(container, dom) {
-  const dendriteForm = dom.querySelector(container, '.dendrite-form');
-  maybeRemoveElement(dendriteForm, container, dom);
-}
-
+/**
+ * Switch the UI to use a numeric input field.
+ * @param {object} dom - DOM helper utilities.
+ * @param {HTMLElement} container - Container element housing the input.
+ * @param {HTMLInputElement} textInput - The text input element.
+ * @returns {void}
+ */
 export function numberHandler(dom, container, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
+  hideAndDisable(textInput, dom);
   maybeRemoveKV(container, dom);
   maybeRemoveDendrite(container, dom);
   ensureNumberInput(container, textInput, dom);

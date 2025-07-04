@@ -44,12 +44,15 @@ const globalState = {
  */
 
 /**
- * @query
- * Creates and returns a new environment map for dependency injection
- * @returns {Map<string, Function>} Map of environment functions
+ * Creates and returns a new environment map for dependency injection.
+ * @returns {Map<string, Function>} Map of environment functions.
  */
 const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
 
+/**
+ * Generates a fresh environment map.
+ * @returns {Map<string, Function>} Dependency map.
+ */
 function createEnv() {
   return new Map([
     ['getRandomNumber', getRandomNumber],

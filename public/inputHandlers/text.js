@@ -1,9 +1,20 @@
-import { dispose } from './default.js';
+import {
+  maybeRemoveNumber,
+  maybeRemoveKV,
+  maybeRemoveDendrite,
+} from './removeElements.js';
+import { revealAndEnable } from './inputState.js';
 
+/**
+ * Handle a plain text input field.
+ * @param {object} dom - DOM helper utilities.
+ * @param {HTMLElement} container - Container element for the input.
+ * @param {HTMLInputElement} textInput - The text input element.
+ * @returns {void}
+ */
 export function textHandler(dom, container, textInput) {
-  dom.reveal(textInput);
-  dom.enable(textInput);
-  dispose(dom.querySelector(container, 'input[type="number"]'), dom, container);
-  dispose(dom.querySelector(container, '.kv-container'), dom, container);
-  dispose(dom.querySelector(container, '.dendrite-form'), dom, container);
+  revealAndEnable(textInput, dom);
+  maybeRemoveNumber(container, dom);
+  maybeRemoveKV(container, dom);
+  maybeRemoveDendrite(container, dom);
 }

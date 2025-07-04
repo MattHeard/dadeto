@@ -23,22 +23,41 @@
  *    (ones) is closest to the grid
  */
 
-function isObject(value) {
-  return value && typeof value === 'object';
-}
+import { isObject } from '../browser/common.js';
+import { safeParseJson } from '../utils/jsonUtils.js';
 
+/**
+ * Check that the given object has rowClues and colClues arrays.
+ * @param {object} obj - Parsed JSON object.
+ * @returns {boolean} True when both arrays are present.
+ */
 function hasValidClueArrays(obj) {
   return Array.isArray(obj.rowClues) && Array.isArray(obj.colClues);
 }
 
+/**
+ * Determine if an array contains non-number values.
+ * @param {Array} arr - Array to inspect.
+ * @returns {boolean} True if any value is not a number.
+ */
 function hasNonNumberValues(arr) {
   return arr.some(n => typeof n !== 'number');
 }
 
+/**
+ * Check whether an array is empty.
+ * @param {Array} arr - Array to check.
+ * @returns {boolean} True if the array has no items.
+ */
 function isEmpty(arr) {
   return arr.length === 0;
 }
 
+/**
+ * Extract row and column clue arrays from the object.
+ * @param {object} obj - Parsed clue object.
+ * @returns {Array[]} A pair [rowClues, colClues].
+ */
 function getClueArrays(obj) {
   return [obj.rowClues, obj.colClues];
 }
@@ -56,6 +75,11 @@ const VALIDATION_CHECKS = [
   ],
 ];
 
+/**
+ * Return a validation error message for the clue object if any rule fails.
+ * @param {object} obj - Parsed clue object.
+ * @returns {string} Error message or empty string.
+ */
 function findValidationError(obj) {
   const found = VALIDATION_CHECKS.find(([predicate]) => predicate(obj));
   if (found) {
@@ -64,6 +88,12 @@ function findValidationError(obj) {
   return '';
 }
 
+/**
+ * Pad a string of digits on the left to a fixed width.
+ * @param {string} numStr - String of digits.
+ * @param {number} width - Desired width.
+ * @returns {string} Padded string.
+ */
 function padLeft(numStr, width) {
   return numStr.padStart(width, ' ');
 }
@@ -73,19 +103,16 @@ const DEFAULT_CLUES = {
   colClues: Array(10).fill(0),
 };
 
-function safeJsonParse(str) {
-  try {
-    return JSON.parse(str);
-  } catch {
-    return null;
-  }
-}
-
 const INVALID_CLUE_CHECKS = [
-  obj => obj === null,
+  obj => obj === null || obj === undefined,
   obj => Boolean(findValidationError(obj)),
 ];
 
+/**
+ * Build a matrix of digit strings for the column clues.
+ * @param {number[]} colClues - Column clue values.
+ * @returns {string[][]} Matrix of digits by line.
+ */
 function buildColumnDigitMatrix(colClues) {
   const maxDigits = Math.max(...colClues).toString().length;
   // top lines array of length maxDigits
@@ -101,17 +128,23 @@ function buildColumnDigitMatrix(colClues) {
 
 /**
  * Parse JSON input and return clue object or default 10×10 grid clues.
- * @param {string} inputString
- * @returns {{rowClues: number[], colClues: number[]}}
+ * @param {string} inputString - JSON configuration string.
+ * @returns {{rowClues: number[], colClues: number[]}} Parsed clues object.
  */
 function parseCluesOrDefault(inputString) {
-  const obj = safeJsonParse(inputString);
+  const obj = safeParseJson(inputString);
   if (INVALID_CLUE_CHECKS.some(fn => fn(obj))) {
     return DEFAULT_CLUES;
   }
   return obj;
 }
 
+/**
+ * Build a preformatted Battleship-Solitaire clue board.
+ * @param {string} inputString - JSON clue configuration.
+ * @param {object} dom - DOM utilities.
+ * @returns {HTMLElement} The generated <pre> element.
+ */
 export function createBattleshipCluesBoardElement(inputString, dom) {
   const clues = parseCluesOrDefault(inputString);
 
@@ -124,7 +157,7 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
   const colLines = buildColumnDigitMatrix(colClues); // [maxDigits][width]
   const topClueLines = colLines.map(
     lineArr =>
-      padLeft('', rowPad) + ' ' + lineArr.join(' ') + ' ' + padLeft('', rowPad)
+      `${padLeft('', rowPad)} ${lineArr.join(' ')} ${padLeft('', rowPad)}`
   );
 
   /* ---------- GRID WITH ROW CLUES ---------- */

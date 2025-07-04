@@ -1,8 +1,8 @@
 /**
  * Creates a shallow copy of an object with only the specified keys
- * @param {Object} obj - The source object
+ * @param {object} obj - The source object
  * @param {string[]} keys - The keys to include in the new object
- * @returns {Object} A new object with only the specified keys
+ * @returns {object} A new object with only the specified keys
  */
 export function pick(obj, keys) {
   let source = {};
@@ -17,9 +17,9 @@ export function pick(obj, keys) {
 
 /**
  * Creates a new object with the same keys but with values transformed by a function
- * @param {Object} obj - The source object
- * @param {Function} fn - The transformation function
- * @returns {Object} A new object with transformed values
+ * @param {object} source - The source object
+ * @param {Function} fn - Transformation applied to each value
+ * @returns {object} A new object with transformed values
  */
 function transformEntries(source, fn) {
   return Object.fromEntries(
@@ -27,9 +27,24 @@ function transformEntries(source, fn) {
   );
 }
 
+/**
+ * Maps over the values of an object and returns the new object.
+ * @param {object} obj - Source object.
+ * @param {Function} fn - Mapping function `(value, key)`.
+ * @returns {object} Object with mapped values.
+ */
 export function mapValues(obj, fn) {
   if (Object(obj) !== obj) {
     return {};
   }
   return transformEntries(obj, fn);
+}
+
+/**
+ * Creates a deep clone of the provided value using JSON serialization.
+ * @param {*} value - The value to clone
+ * @returns {*} The cloned value
+ */
+export function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
 }

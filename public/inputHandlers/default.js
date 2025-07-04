@@ -1,16 +1,20 @@
-import { maybeRemoveElement } from './disposeHelpers.js';
+import {
+  maybeRemoveNumber,
+  maybeRemoveKV,
+  maybeRemoveDendrite,
+} from './removeElements.js';
+import { hideAndDisable } from './inputState.js';
 
-export function dispose(element, dom, container) {
-  maybeRemoveElement(element, container, dom);
-}
-
+/**
+ * Handle a field with no special input type.
+ * @param {object} dom - DOM helper utilities.
+ * @param {HTMLElement} container - Container element housing the input.
+ * @param {HTMLInputElement} textInput - The text input element.
+ * @returns {void}
+ */
 export function defaultHandler(dom, container, textInput) {
-  dom.hide(textInput);
-  dom.disable(textInput);
-  const numberInput = dom.querySelector(container, 'input[type="number"]');
-  dispose(numberInput, dom, container);
-  const kvContainer = dom.querySelector(container, '.kv-container');
-  dispose(kvContainer, dom, container);
-  const dendriteForm = dom.querySelector(container, '.dendrite-form');
-  dispose(dendriteForm, dom, container);
+  hideAndDisable(textInput, dom);
+  maybeRemoveNumber(container, dom);
+  maybeRemoveKV(container, dom);
+  maybeRemoveDendrite(container, dom);
 }

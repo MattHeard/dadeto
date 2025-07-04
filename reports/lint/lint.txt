@@ -1,0 +1,8 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-04/transformDendriteStory.js
+   7:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2             complexity
+  29:1  warning  Function 'isValidStory' has a complexity of 6. Maximum allowed is 2            complexity
+  37:7  warning  Arrow function has a complexity of 3. Maximum allowed is 2                     complexity
+  48:8  warning  Function 'transformDendriteStory' has a complexity of 3. Maximum allowed is 2  complexity
+
+✖ 4 problems (0 errors, 4 warnings)

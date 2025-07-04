@@ -1,22 +1,22 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPrefixedLoggers } from './document.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
+import { deepClone } from '../utils/objectUtils.js';
 
 /**
- * Parses the existing rows from the text input
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLInputElement} inputElement - The input element containing the JSON string
- * @returns {Object} The parsed rows object
- */
-/**
- * Converts an array of {key, value} objects to a key-value object
- * @param {Array<{key: string, value: any}>} array - The array to convert
- * @returns {Object} An object with keys and values from the array
+ * Determines whether a value is a key/value pair object.
+ * @param {object} pair - Value to check.
+ * @returns {boolean} True if pair has a {@code key} property.
  */
 function isKeyValuePair(pair) {
   return 'key' in Object(pair);
 }
 
+/**
+ * Converts an array of {@code {key, value}} objects to a plain object.
+ * @param {Array<{key: string, value: any}>} array - Array to convert.
+ * @returns {object} Object with keys mapped to values.
+ */
 export const convertArrayToKeyValueObject = array => {
   if (!Array.isArray(array)) {
     return {};
@@ -26,6 +26,11 @@ export const convertArrayToKeyValueObject = array => {
   );
 };
 
+/**
+ * Normalizes previously stored rows into an object.
+ * @param {unknown} existing - Existing rows value.
+ * @returns {object} Normalized rows object.
+ */
 function normalizeExisting(existing) {
   const converters = [
     [Array.isArray, convertArrayToKeyValueObject],
@@ -38,15 +43,19 @@ function normalizeExisting(existing) {
   return {};
 }
 
+/**
+ * Checks if a value is empty or {@code undefined}.
+ * @param {*} value - Value to check.
+ * @returns {boolean} True if value is blank.
+ */
 function isBlank(value) {
   return value === '' || value === undefined;
 }
 
 /**
- * Returns the JSON string to parse for rows
- * @param {Object} dom - DOM utilities
- * @param {HTMLElement} inputElement - The input element
- * @returns {string} The JSON to parse
+ * Returns the JSON string to parse for rows.
+ * @param {string} value - Raw value from the input element.
+ * @returns {string} The JSON to parse.
  */
 function getDefaultRowsJson(value) {
   if (isBlank(value)) {
@@ -55,11 +64,23 @@ function getDefaultRowsJson(value) {
   return value;
 }
 
+/**
+ * Retrieves the JSON string from the input element.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} inputElement - Text input element.
+ * @returns {string} JSON string to parse.
+ */
 function getRowsJson(dom, inputElement) {
   const value = dom.getValue?.(inputElement);
   return getDefaultRowsJson(value);
 }
 
+/**
+ * Parses the existing rows stored in a hidden input field.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLInputElement} inputElement - Hidden input containing JSON.
+ * @returns {object} Normalized rows object.
+ */
 export const parseExistingRows = (dom, inputElement) => {
   const jsonToParse = getRowsJson(dom, inputElement);
   const existing = parseJsonOrDefault(jsonToParse, {});
@@ -67,12 +88,8 @@ export const parseExistingRows = (dom, inputElement) => {
 };
 
 /**
- * Clears all disposer functions and empties the array
- * @param {Array<Function>} disposersArray - The array of disposer functions to clear
- */
-/**
- * Clears all disposer functions and empties the array
- * @param {Array<Function>} disposersArray - The array of disposer functions to clear
+ * Clears all disposer functions and empties the array.
+ * @param {Array<Function>} disposersArray - Array of disposer functions.
  * @returns {void}
  */
 export const clearDisposers = disposersArray => {
@@ -81,12 +98,13 @@ export const clearDisposers = disposersArray => {
 };
 
 /**
- * Factory function for creating a dispose function
- * @param {Array<Function>} disposers - Array of disposer functions to clear
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLElement} container - The container element to clear
- * @param {Array} rows - The rows array to clear
- * @returns {Function} A function that cleans up resources
+ * Factory for creating a dispose function.
+ * @param {object} config - Configuration object.
+ * @param {Array<Function>} config.disposers - Disposer callbacks.
+ * @param {object} config.dom - DOM utilities object.
+ * @param {HTMLElement} config.container - Container element to clear.
+ * @param {Array} config.rows - Rows array to reset.
+ * @returns {Function} Cleanup function.
  */
 export const createDispose = config => {
   const { disposers, dom, container, rows } = config;
@@ -102,11 +120,10 @@ import { createTicTacToeBoardElement } from '../presenters/ticTacToeBoard.js';
 import { createBattleshipFleetBoardElement } from '../presenters/battleshipSolitaireFleet.js';
 import { createBattleshipCluesBoardElement } from '../presenters/battleshipSolitaireClues.js';
 
-
 /**
  * Creates a handler for input dropdown changes
  * @param {Function} onChange - The change handler function
- * @param {Object} dom - The DOM utilities object
+ * @param {object} dom - The DOM utilities object
  * @returns {Function} The event handler function for input dropdown changes
  */
 export const createAddDropdownListener = (onChange, dom) => dropdown => {
@@ -140,7 +157,6 @@ export const createInputDropdownHandler = dom => {
   };
 };
 
-
 /**
  * Creates a component initializer function for setting up intersection observers.
  * @param {Function} getElement - Function to get an element by ID
@@ -171,20 +187,30 @@ export function getComponentInitializer(
 }
 
 /**
- * Handles dropdown changes for toy output selection.
- * Logs the selected value and article ID.
- * @param {Event} event - The change event from the dropdown.
- * @param {Function} logInfo - Logging function to use for output. Must be provided.
+ * Finds the article element containing a dropdown.
+ * @param {HTMLElement} dropdown - Dropdown element.
+ * @returns {HTMLElement} Article element hosting the dropdown.
  */
 function getDropdownArticle(dropdown) {
   return dropdown.closest('article.entry');
 }
 
+/**
+ * Gets the post id for a dropdown element.
+ * @param {HTMLElement} dropdown - Dropdown element.
+ * @returns {string} The post id.
+ */
 function getDropdownPostId(dropdown) {
   const article = getDropdownArticle(dropdown);
   return article.id;
 }
 
+/**
+ * Updates output based on dropdown selection.
+ * @param {HTMLSelectElement} dropdown - Dropdown element.
+ * @param {Function} getData - Function returning application data.
+ * @param {object} dom - DOM utilities.
+ */
 export function handleDropdownChange(dropdown, getData, dom) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
@@ -199,10 +225,22 @@ export function handleDropdownChange(dropdown, getData, dom) {
   );
 }
 
+/**
+ * Checks if there is output for a given post id.
+ * @param {object} output - Output mapping.
+ * @param {string} postId - Post id to check.
+ * @returns {boolean} True if output exists.
+ */
 function hasOutputForPostId(output, postId) {
   return Boolean(output?.[postId]);
 }
 
+/**
+ * Retrieves output string for a post id.
+ * @param {object} output - Output mapping.
+ * @param {string} postId - Post id.
+ * @returns {string} Output string or empty string.
+ */
 function outputForPostId(output, postId) {
   if (hasOutputForPostId(output, postId)) {
     return output[postId];
@@ -214,7 +252,7 @@ function outputForPostId(output, postId) {
  * Creates a handler function for output dropdown changes.
  * @param {Function} handleDropdownChange - The function to handle dropdown changes
  * @param {Function} getData - Function to retrieve data
- * @param {Object} dom - The DOM utilities object
+ * @param {object} dom - The DOM utilities object
  * @returns {Function} An event handler function for dropdown changes
  */
 export const createOutputDropdownHandler =
@@ -230,6 +268,13 @@ const presentersMap = {
   'battleship-solitaire-clues-presenter': createBattleshipCluesBoardElement,
 };
 
+/**
+ * Renders output content using the appropriate presenter.
+ * @param {{presenterKey: string, content: string}} output - Output data.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} parent - Element to contain the rendered content.
+ * @returns {HTMLElement} The rendered child element.
+ */
 function setTextContent(output, dom, parent) {
   dom.removeAllChildren(parent);
   const presenter = presentersMap[output.presenterKey];
@@ -237,14 +282,6 @@ function setTextContent(output, dom, parent) {
   dom.appendChild(parent, child);
   return child;
 }
-
-/**
- * @query
- * Creates an error handler for module loading errors
- * @param {string} modulePath - Path to the module that failed to load
- * @param {Function} errorFn - Error logging function
- * @returns {Function} Error handler function
- */
 /**
  * Creates an error handler for module loading errors.
  * @param {string} modulePath - Path to the module that failed to load.
@@ -253,19 +290,10 @@ function setTextContent(output, dom, parent) {
  */
 export function handleModuleError(modulePath, logError) {
   return e => {
-    logError('Error loading module ' + modulePath + ':', e);
+    logError(`Error loading module ${modulePath}:`, e);
   };
 }
 
-/**
- * Creates a module initializer function to be called when a dynamic import completes.
- *
- * @param {HTMLElement} article - The article element containing the toy.
- * @param {string} functionName - The name of the exported function to use from the module.
- * @param {object} env - Environment object containing globalState, createEnv, getUuid, error, and fetch.
- * @param {object} dom - Object containing DOM helper functions.
- * @returns {Function} A function that takes a module and initializes the interactive component.
- */
 /**
  * Creates a module initializer function to be called when a dynamic import completes.
  * @param {HTMLElement} article - The article element containing the toy.
@@ -279,23 +307,45 @@ export function getModuleInitializer(article, functionName, config) {
   return module => runModuleInitializer(module, getProcessing, initialize);
 }
 
+/**
+ * Creates a function that extracts a named export from a module.
+ * @param {string} functionName - Name of the export.
+ * @returns {Function} Function that gets the export from a module.
+ */
 function makeProcessingFunction(functionName) {
   return function (module) {
     return module[functionName];
   };
 }
 
+/**
+ * Generates a function that initializes a component with a processing function.
+ * @param {HTMLElement} article - Article element hosting the component.
+ * @param {object} config - Module configuration.
+ * @returns {Function} Initializer function.
+ */
 function makeInteractiveInitializer(article, config) {
   return function (processingFunction) {
     initializeInteractiveComponent(article, processingFunction, config);
   };
 }
 
+/**
+ * Runs the initializer using the processing function from the module.
+ * @param {object} module - Loaded module object.
+ * @param {Function} getProcessing - Function to get processing function.
+ * @param {Function} initialize - Initializer callback.
+ */
 function runModuleInitializer(module, getProcessing, initialize) {
   const processingFunction = getProcessing(module);
   initialize(processingFunction);
 }
 
+/**
+ * Dynamically imports a module for an intersection event.
+ * @param {object} moduleInfo - Module information including path and article.
+ * @param {object} moduleConfig - Configuration for module import.
+ */
 function importModuleForIntersection(moduleInfo, moduleConfig) {
   const { dom, loggers } = moduleConfig;
   const logError = loggers.logError;
@@ -311,17 +361,13 @@ function importModuleForIntersection(moduleInfo, moduleConfig) {
 }
 
 /**
- * @command
- * Handles a single intersection event, triggering module import and observer disconnect if intersecting
- * @param {object} entry - The intersection entry
- * @param {object} observer - The observer instance
- * @param {string} modulePath - Path to module
- * @param {HTMLElement} article - The article element
- * @param {string} functionName - Exported function name
- * @param {object} config - Object containing env and dom
- */
-/**
- * Calls handleIntersectionEntries with the same arguments (for migration/compatibility)
+ * Handles an intersection event by importing the module and disconnecting the
+ * observer.
+ * @param {IntersectionObserver} observer - The observer reporting the entry.
+ * @param {{article: HTMLElement, modulePath: string, functionName: string}} moduleInfo -
+ *   Information about the module to import.
+ * @param {object} moduleConfig - Configuration with DOM helpers and loggers.
+ * @returns {void}
  */
 function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
   const { dom, loggers } = moduleConfig;
@@ -336,6 +382,13 @@ function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
   dom.disconnectObserver(observer);
 }
 
+/**
+ * Creates a handler for IntersectionObserver entries.
+ * @param {{article: HTMLElement, modulePath: string, functionName: string}} moduleInfo -
+ *   Module information.
+ * @param {object} moduleConfig - Configuration with DOM helpers and loggers.
+ * @returns {Function} Entry handler factory.
+ */
 function getEntryHandler(moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
   return observer => entry => {
@@ -363,6 +416,16 @@ export function makeModuleConfig(env, dom) {
   };
 }
 
+/**
+ * Create a callback for an IntersectionObserver that handles entries
+ * for a specific module.
+ * @param {{article: HTMLElement, modulePath: string, functionName: string}} moduleInfo
+ *   Information about the module being observed.
+ * @param {object} env - Environment containing loggers and other helpers.
+ * @param {object} dom - DOM utilities used to create observers.
+ * @returns {(entries: IntersectionObserverEntry[], observer: IntersectionObserver) => void}
+ *   Observer callback processing each entry.
+ */
 export function makeObserverCallback(moduleInfo, env, dom) {
   const moduleConfig = makeModuleConfig(env, dom);
   moduleConfig.loggers = createPrefixedLoggers(
@@ -379,7 +442,6 @@ export function makeObserverCallback(moduleInfo, env, dom) {
 }
 
 /**
- * @query
  * Returns a function that creates an IntersectionObserver for an article
  * @param {object} dom - DOM helpers
  * @param {object} env - Environment
@@ -394,18 +456,12 @@ export function makeCreateIntersectionObserver(dom, env) {
 }
 
 /**
- * Enable controls and update status message for an interactive component
- * @param {HTMLInputElement} inputElement
- * @param {HTMLButtonElement} submitButton
- * @param {HTMLElement} outputElement
- */
-/**
- * Enable controls and update status message for an interactive component
- * @param {HTMLInputElement} inputElement
- * @param {HTMLButtonElement} submitButton
- * @param {object} dom - DOM helper object
- * @param {HTMLElement} parent
- * @param {string} presenterKey - The presenter key to use (e.g., 'text', 'pre').
+ * Enable controls and update the status message for an interactive component.
+ * @param {{inputElement: HTMLInputElement, submitButton: HTMLButtonElement, parent: HTMLElement}} elements -
+ *   Elements that make up the interactive component.
+ * @param {object} dom - DOM helper object.
+ * @param {string} presenterKey - Presenter key to use when rendering output.
+ * @returns {void}
  */
 export function enableInteractiveControls(elements, dom, presenterKey) {
   const { inputElement, submitButton, parent } = elements;
@@ -416,22 +472,41 @@ export function enableInteractiveControls(elements, dom, presenterKey) {
   dom.removeWarning(parent);
 }
 
+/**
+ * Extracts the response body text.
+ * @param {Response} response - The fetch response object.
+ * @returns {Promise<string>} Resolves with the response text.
+ */
 export function getText(response) {
   return response.text();
 }
 
+/**
+ * Creates a function that displays fetched body text using a presenter.
+ * @param {object} dom - DOM helper object.
+ * @param {HTMLElement} parent - Parent element to render into.
+ * @param {string} presenterKey - Presenter key for rendering output.
+ * @returns {Function} Display callback accepting body text.
+ */
 export function makeDisplayBody(dom, parent, presenterKey) {
   return body => {
     setTextContent({ content: body, presenterKey }, dom, parent);
   };
 }
 
+/**
+ * Creates a fetch error handler that logs and displays an error message.
+ * @param {object} env - Environment object with dom and errorFn.
+ * @param {HTMLElement} parent - Element to display the error in.
+ * @param {string} presenterKey - Presenter key for rendering output.
+ * @returns {Function} Error handler callback.
+ */
 export function getFetchErrorHandler(env, parent, presenterKey) {
   const { dom, errorFn } = env;
   return error => {
     errorFn('Error fetching request URL:', error);
     setTextContent(
-      { content: 'Error fetching URL: ' + error.message, presenterKey },
+      { content: `Error fetching URL: ${error.message}`, presenterKey },
       dom,
       parent
     );
@@ -439,6 +514,13 @@ export function getFetchErrorHandler(env, parent, presenterKey) {
   };
 }
 
+/**
+ * Fetches a URL and displays the response body.
+ * @param {string} url - The request URL.
+ * @param {object} env - Environment containing fetchFn and dom helpers.
+ * @param {{parent: HTMLElement, presenterKey: string}} options - Display options.
+ * @returns {void}
+ */
 export function handleRequestResponse(url, env, options) {
   const { parent, presenterKey } = options;
   const { fetchFn, dom } = env;
@@ -453,27 +535,33 @@ import { isObject } from './common.js';
  * Creates a number input element with the specified value and change handler
  * @param {string} value - The initial value for the input
  * @param {Function} onChange - The callback to execute when the input value changes
- * @param {Object} dom - The DOM utilities object
+ * @param {object} dom - The DOM utilities object
  * @returns {HTMLInputElement} The created number input element
  */
 
+/**
+ * Check whether a value contains a `request` field.
+ * @param {object} val - Value to inspect.
+ * @returns {boolean} `true` if `val.request` exists.
+ */
 function hasRequestField(val) {
   return Object.hasOwn(val, 'request');
 }
 
+/**
+ * Check whether a value contains a request with a string URL.
+ * @param {object} val - Value to inspect.
+ * @returns {boolean} `true` if `val.request.url` is a string.
+ */
 function hasStringUrl(val) {
   return val.request && typeof val.request.url === 'string';
 }
 
 /**
- * Creates a key input event handler for a key-value row
- * @param {Object} options - Function options
- * @param {Object} options.dom - The DOM utilities object
- * @param {HTMLElement} options.keyEl - The key input element
- * @param {HTMLElement} options.textInput - The hidden text input element
- * @param {Object} options.rows - The rows object containing key-value pairs
- * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
- * @returns {Function} The event handler function
+ * Checks if a key is unique and non-empty.
+ * @param {string} key - Key to validate.
+ * @param {object} rows - Current rows map.
+ * @returns {boolean} True if the key is unique and not blank.
  */
 function isUniqueNonEmpty(key, rows) {
   if (key === '') {
@@ -482,6 +570,16 @@ function isUniqueNonEmpty(key, rows) {
   return !(key in rows);
 }
 
+/**
+ * Migrate an entry to a new key if the key is unique and non-empty.
+ * @param {object} params - Options object.
+ * @param {string} params.prevKey - Current key.
+ * @param {string} params.newKey - Proposed new key.
+ * @param {object} params.rows - Map of row values by key.
+ * @param {HTMLElement} params.keyEl - Key input element.
+ * @param {object} params.dom - DOM utilities.
+ * @returns {void}
+ */
 function migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom }) {
   if (isUniqueNonEmpty(newKey, rows)) {
     rows[newKey] = rows[prevKey];
@@ -490,6 +588,16 @@ function migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom }) {
   }
 }
 
+/**
+ * Creates an input handler for key changes.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {HTMLElement} options.keyEl - Input for the key.
+ * @param {HTMLInputElement} options.textInput - Hidden JSON field.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.syncHiddenField - Syncs the hidden field.
+ * @returns {Function} Event handler for key input.
+ */
 export function createKeyInputHandler(options) {
   const { dom, keyEl, textInput, rows, syncHiddenField } = options;
   return e => {
@@ -508,13 +616,14 @@ export function createKeyInputHandler(options) {
 }
 
 /**
- * Creates a value input event handler for a key-value row
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLElement} keyEl - The key input element
- * @param {HTMLElement} textInput - The hidden text input element
- * @param {Object} rows - The rows object containing key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field with current state
- * @returns {Function} The event handler function
+ * Creates a value input event handler for a key-value row.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {HTMLElement} options.keyEl - Key input element.
+ * @param {HTMLInputElement} options.textInput - Hidden JSON input.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.syncHiddenField - Updates the hidden field.
+ * @returns {Function} The event handler.
  */
 export function createValueInputHandler(options) {
   const { dom, keyEl, textInput, rows, syncHiddenField } = options;
@@ -527,11 +636,11 @@ export function createValueInputHandler(options) {
 
 /**
  * Creates a key input element with event listeners
- * @param {Object} options - Function options
- * @param {Object} options.dom - The DOM utilities object
+ * @param {object} options - Function options
+ * @param {object} options.dom - The DOM utilities object
  * @param {string} options.key - The initial key value
  * @param {HTMLElement} options.textInput - The hidden text input element
- * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {object} options.rows - The rows object containing key-value pairs
  * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
  * @param {Array<Function>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created key input element
@@ -568,12 +677,12 @@ export const createKeyElement = ({
 
 /**
  * Creates a value input element with event listeners
- * @param {Object} options - Function options
- * @param {Object} options.dom - The DOM utilities object
+ * @param {object} options - Function options
+ * @param {object} options.dom - The DOM utilities object
  * @param {string} options.value - The initial value
  * @param {HTMLElement} options.keyEl - The corresponding key input element
  * @param {HTMLElement} options.textInput - The hidden text input element
- * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {object} options.rows - The rows object containing key-value pairs
  * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
  * @param {Array<Function>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created value input element
@@ -608,7 +717,7 @@ export const createValueElement = ({
 
 /**
  * Creates an add button click handler for key-value rows
- * @param {Object} rows - The rows object containing key-value pairs
+ * @param {object} rows - The rows object containing key-value pairs
  * @param {Function} render - Function to re-render the key-value editor
  * @returns {Function} The click event handler function
  */
@@ -624,7 +733,7 @@ export const createOnAddHandler = (rows, render) => {
 
 /**
  * Creates an event handler for removing a key-value row
- * @param {Object} rows - The rows object containing key-value pairs
+ * @param {object} rows - The rows object containing key-value pairs
  * @param {Function} render - The render function to update the UI
  * @param {string} key - The key to remove
  * @returns {Function} The event handler function
@@ -636,12 +745,14 @@ export const createOnRemove = (rows, render, key) => e => {
 };
 
 /**
- * Sets up an add button with a click handler that adds a new row
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLElement} button - The button element to set up
- * @param {Object} rows - The rows object to add a new row to
- * @param {Function} render - The render function to update the UI
- * @param {Array} disposers - Array to store cleanup functions
+ * Sets up an add button with a click handler that adds a new row.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {HTMLElement} options.button - Button to set up.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.render - Re-render function.
+ * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
+ * @returns {void}
  */
 export const setupAddButton = ({ dom, button, rows, render, disposers }) => {
   dom.setTextContent(button, '+');
@@ -652,13 +763,15 @@ export const setupAddButton = ({ dom, button, rows, render, disposers }) => {
 };
 
 /**
- * Sets up a remove button with a click handler that removes the corresponding row
- * @param {Object} dom - The DOM utilities object
- * @param {HTMLElement} button - The button element to set up
- * @param {Object} rows - The rows object containing the row to remove
- * @param {Function} render - The render function to update the UI
- * @param {string} key - The key of the row to remove
- * @param {Array} disposers - Array to store cleanup functions
+ * Sets up a remove button with a click handler that removes the corresponding row.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {HTMLElement} options.button - Button to set up.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.render - Re-render function.
+ * @param {string} options.key - Key of the row to remove.
+ * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
+ * @returns {void}
  */
 export const setupRemoveButton = ({
   dom,
@@ -681,26 +794,27 @@ export const setupRemoveButton = ({
 
 /**
  * Creates and sets up a button element as either an add or remove button
- * @param {Object} opts - Options for button creation
- * @param {Object} opts.dom - The DOM utilities object
+ * @param {object} opts - Options for button creation
+ * @param {object} opts.dom - The DOM utilities object
  * @param {boolean} opts.isAddButton - Whether to create an add button
- * @param {Object} opts.rows - The rows object for the key-value editor
+ * @param {object} opts.rows - The rows object for the key-value editor
  * @param {Function} opts.render - The render function to update the UI
  * @param {string} opts.key - The key of the row (for remove button)
  * @param {Array} opts.disposers - Array to store cleanup functions
  * @returns {HTMLElement} The created and configured button element
  */
 /**
- * Creates a function that creates and appends a key-value row to the container
- * @param {Object} dom - The DOM utilities object
- * @param {Array} entries - The array of all key-value entries
- * @param {HTMLInputElement} textInput - The hidden input element
- * @param {Object} rows - The rows object containing all key-value pairs
- * @param {Function} syncHiddenField - Function to sync the hidden field
- * @param {Array} disposers - Array to store cleanup functions
- * @param {Function} render - The render function to update the UI
- * @param {HTMLElement} container - The container to append the row to
- * @returns {Function} A function that takes [key, value] and index and creates a row
+ * Creates a function that appends a key-value row to the container.
+ * @param {object} options - Configuration.
+ * @param {object} options.dom - DOM utilities.
+ * @param {Array} options.entries - All [key, value] pairs.
+ * @param {HTMLInputElement} options.textInput - Hidden JSON input.
+ * @param {object} options.rows - Map of row values by key.
+ * @param {Function} options.syncHiddenField - Updates the hidden field.
+ * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
+ * @param {Function} options.render - Re-render function.
+ * @param {HTMLElement} options.container - Container to append to.
+ * @returns {(entry: [string, string], idx: number) => void} Row builder.
  */
 export const createKeyValueRow =
   ({
@@ -713,44 +827,44 @@ export const createKeyValueRow =
     render,
     container,
   }) =>
-    ([key, value], idx) => {
-      const rowEl = dom.createElement('div');
-      dom.setClassName(rowEl, 'kv-row');
+  ([key, value], idx) => {
+    const rowEl = dom.createElement('div');
+    dom.setClassName(rowEl, 'kv-row');
 
-      // Create key and value elements
-      const keyEl = createKeyElement({
-        dom,
-        key,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers,
-      });
-      const valueEl = createValueElement({
-        dom,
-        value,
-        keyEl,
-        textInput,
-        rows,
-        syncHiddenField,
-        disposers,
-      });
+    // Create key and value elements
+    const keyEl = createKeyElement({
+      dom,
+      key,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
+    const valueEl = createValueElement({
+      dom,
+      value,
+      keyEl,
+      textInput,
+      rows,
+      syncHiddenField,
+      disposers,
+    });
 
-      // Create and set up the appropriate button type
-      const btnEl = createButton({
-        dom,
-        isAddButton: idx === entries.length - 1,
-        rows,
-        render,
-        key,
-        disposers,
-      });
+    // Create and set up the appropriate button type
+    const btnEl = createButton({
+      dom,
+      isAddButton: idx === entries.length - 1,
+      rows,
+      render,
+      key,
+      disposers,
+    });
 
-      dom.appendChild(rowEl, keyEl);
-      dom.appendChild(rowEl, valueEl);
-      dom.appendChild(rowEl, btnEl);
-      dom.appendChild(container, rowEl);
-    };
+    dom.appendChild(rowEl, keyEl);
+    dom.appendChild(rowEl, valueEl);
+    dom.appendChild(rowEl, btnEl);
+    dom.appendChild(container, rowEl);
+  };
 
 const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
   const button = dom.createElement('button');
@@ -767,7 +881,7 @@ const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
 
 /**
  * Creates a function that removes a click event listener from a button
- * @param {Object} dom - The DOM utilities object
+ * @param {object} dom - The DOM utilities object
  * @param {HTMLElement} btnEl - The button element to remove the listener from
  * @param {Function} onRemove - The click event handler to remove
  * @returns {Function} A function that removes the click event listener
@@ -777,7 +891,7 @@ const createRemoveRemoveListener = (dom, btnEl, onRemove) => () =>
 
 /**
  * Creates a function that removes an event listener for value input
- * @param {Object} dom - The DOM utilities object
+ * @param {object} dom - The DOM utilities object
  * @param {HTMLElement} el - The element to remove the listener from
  * @param {Function} handler - The event handler function to remove
  * @returns {Function} A function that removes the event listener
@@ -787,7 +901,7 @@ const createRemoveValueListener = (dom, el, handler) => () =>
 
 /**
  * Creates a function that removes an event listener for add button clicks
- * @param {Object} dom - The DOM utilities object
+ * @param {object} dom - The DOM utilities object
  * @param {HTMLElement} btnEl - The button element to remove the listener from
  * @param {Function} handler - The click event handler function to remove
  * @returns {Function} A function that removes the click event listener
@@ -797,10 +911,22 @@ const createRemoveAddListener = (dom, btnEl, handler) => () =>
 
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
+/**
+ * Determines if a parsed request object has the expected shape.
+ * @param {object} parsed - Parsed JSON result.
+ * @returns {boolean} True when the object contains a request with a URL.
+ */
 export function isValidParsedRequest(parsed) {
   return parsedRequestPredicates.every(fn => fn(parsed));
 }
 
+/**
+ * Handles a parsed request object if it is valid.
+ * @param {object} parsed - Parsed JSON result.
+ * @param {object} env - Environment with fetchFn and dom helpers.
+ * @param {{parent: HTMLElement, presenterKey: string}} options - Display options.
+ * @returns {boolean} True if the parsed object was valid.
+ */
 export function handleParsedResult(parsed, env, options) {
   const isValid = isValidParsedRequest(parsed);
   if (isValid) {
@@ -825,7 +951,6 @@ export function parseJSONResult(result) {
 /**
  * Creates a submit handler function for an interactive toy.
  * @param {HTMLInputElement} inputElement - The input field.
-
  * @param {HTMLElement} outputParent - The parent element of the output element.
  * @param {object} globalState - The shared application state.
  * @param {Function} processingFunction - The toy's core logic function.
@@ -842,6 +967,12 @@ export function parseJSONResult(result) {
 import { setOutput } from './setOutput.js';
 
 // New wrapper function
+/**
+ * Creates an error handler for input processing failures.
+ * @param {object} env - Environment containing dom and errorFn.
+ * @param {HTMLElement} parent - Element to display the error in.
+ * @returns {Function} Error handler callback.
+ */
 function createHandleInputError(env, parent) {
   const logError = env.errorFn;
   const dom = env.dom;
@@ -849,7 +980,7 @@ function createHandleInputError(env, parent) {
   return e => {
     logError('Error processing input:', e);
     setTextContent(
-      { content: 'Error: ' + e.message, presenterKey: 'text' },
+      { content: `Error: ${e.message}`, presenterKey: 'text' },
       dom,
       parent
     );
@@ -857,6 +988,13 @@ function createHandleInputError(env, parent) {
   };
 }
 
+/**
+ * Processes the input value and updates the output element.
+ * @param {object} elements - DOM elements used by the toy.
+ * @param {Function} processingFunction - Function to process the input.
+ * @param {object} env - Environment providing DOM helpers and state.
+ * @returns {void}
+ */
 export function processInputAndSetOutput(elements, processingFunction, env) {
   const {
     inputElement,
@@ -877,6 +1015,13 @@ export function processInputAndSetOutput(elements, processingFunction, env) {
   }
 }
 
+/**
+ * Wraps processing with error handling.
+ * @param {object} elements - DOM elements used by the toy.
+ * @param {Function} processingFunction - Function to process the input.
+ * @param {object} env - Environment providing DOM helpers and state.
+ * @returns {void}
+ */
 function handleInputProcessing(elements, processingFunction, env) {
   const { outputParentElement } = elements;
   const handleInputError = createHandleInputError(env, outputParentElement);
@@ -895,25 +1040,33 @@ export const createHandleSubmit =
   };
 
 /**
- * Initializes the interactive elements (input, button, output) within a toy's article element.
- * Sets up event listeners and initial state.
- * @param {HTMLElement} article - The article element containing the toy.
- * @param {Function} processingFunction - The toy's core logic function.
- * @param {object} globalState - The shared application state.
- * @param {Function} createEnvFn - Function to create the environment map for the toy.
- * @param {Function} error - Function for logging errors.
- * @param {Function} fetchFn - Function for making HTTP requests.
- * @param {object} dom - Object containing DOM functions.
+ * Disable the input field and submit button for an interactive component.
+ * @param {HTMLInputElement} inputElement - Input field to disable.
+ * @param {HTMLButtonElement} submitButton - Submit button to disable.
+ * @returns {void}
  */
 function disableInputAndButton(inputElement, submitButton) {
   inputElement.disabled = true;
   submitButton.disabled = true;
 }
 
+/**
+ * Checks for any falsy elements in the list.
+ * @param {Array<HTMLElement>} elements - Elements to verify.
+ * @returns {boolean} True if any element is missing.
+ */
 function hasMissingElement(elements) {
   return elements.some(el => !el);
 }
 
+/**
+ * Retrieves the input and submit elements for a toy article.
+ * @param {object} dom - DOM helper object.
+ * @param {HTMLElement} article - Article containing the toy.
+ * @param {Function} logWarning - Logger for missing elements.
+ * @returns {{inputElement: HTMLInputElement, submitButton: HTMLButtonElement}|null}
+ *   Object with elements or null if missing.
+ */
 function getInteractiveElements(dom, article, logWarning) {
   const inputElement = dom.querySelector(article, 'input[type="text"]');
   const submitButton = dom.querySelector(article, 'button[type="submit"]');
@@ -1047,15 +1200,20 @@ export function initializeVisibleComponents(env, createIntersectionObserver) {
 }
 
 /**
- * Syncs the hidden text input field with the current state of the key-value rows.
- * Only includes non-empty key-value pairs in the output.
- * @param {HTMLInputElement} textInput - The hidden input element to update (assumed to be truthy)
- * @param {Object} rows - The key-value pairs to sync
- * @param {Object} dom - The DOM utilities object
+ * Remove entries where both key and value are empty strings.
+ * @param {object} rows - Key-value pairs to filter.
+ * @returns {object} Object containing only non-empty entries.
  */
 const filterNonEmptyEntries = rows =>
   Object.fromEntries(Object.entries(rows).filter(([k, v]) => k || v));
 
+/**
+ * Synchronize the hidden field with the filtered rows.
+ * @param {HTMLInputElement} textInput - Hidden input element to update.
+ * @param {object} rows - Key-value pairs to serialise.
+ * @param {object} dom - DOM helper utilities.
+ * @returns {void}
+ */
 export const syncHiddenField = (textInput, rows, dom) => {
   const filtered = filterNonEmptyEntries(rows);
   dom.setValue(textInput, JSON.stringify(filtered));
@@ -1065,16 +1223,16 @@ export const syncHiddenField = (textInput, rows, dom) => {
  * Ensures a dynamic key/value editor exists just after the given hidden text input.
  * @param {HTMLElement} container - The container element to render the editor into
  * @param {HTMLInputElement} textInput - The hidden input element that stores the JSON string
- * @param {Object} dom - The DOM utilities object
+ * @param {object} dom - The DOM utilities object
  * @returns {HTMLElement} The container element for the key-value editor
  */
 /**
  * Creates a render function with access to the given disposers array and rows
- * @param {Object} options - Configuration options
- * @param {Object} options.dom - The DOM utilities object
+ * @param {object} options - Configuration options
+ * @param {object} options.dom - The DOM utilities object
  * @param {Array} options.disposersArray - Array to store cleanup functions
  * @param {HTMLElement} options.container - The container element for the key-value pairs
- * @param {Object} options.rows - The rows object containing key-value pairs
+ * @param {object} options.rows - The rows object containing key-value pairs
  * @param {HTMLInputElement} options.textInput - The hidden input element
  * @param {Function} options.syncHiddenField - Function to sync the hidden field
  * @returns {Function} The render function
@@ -1114,7 +1272,6 @@ export const createRenderer = options => {
   return render;
 };
 
-
 /**
  * New version: accepts a config object and delegates to the original.
  * @param {object} config - An object containing win, doc, logFn, warnFn, getElementByIdFn, and createIntersectionObserverFn.
@@ -1124,7 +1281,7 @@ export const createRenderer = options => {
  * Creates a function that initializes dropdown event listeners
  * @param {Function} onOutputChange - Handler for output dropdown changes
  * @param {Function} onInputChange - Handler for input dropdown changes
- * @param {Object} dom - The DOM utilities object
+ * @param {object} dom - The DOM utilities object
  * @returns {Function} A function that initializes dropdown event listeners
  */
 export const createDropdownInitializer = (
@@ -1153,8 +1310,8 @@ export const createDropdownInitializer = (
 };
 
 /**
- * Helper function needed by getData
+ * Create a deep cloned copy of the provided global state.
+ * @param {object} globalState - State object to clone.
+ * @returns {object} A deep copy of {@code globalState}.
  */
-export const getDeepStateCopy = globalState =>
-  JSON.parse(JSON.stringify(globalState));
-
+export const getDeepStateCopy = globalState => deepClone(globalState);

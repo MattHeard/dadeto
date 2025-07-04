@@ -5,10 +5,20 @@ const UNDERSCORE_MARKER = '_';
 // Pattern to match special regex characters that need escaping
 const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
 
+/**
+ * Determine whether a string is empty or whitespace only.
+ * @param {string} text - Text to evaluate.
+ * @returns {boolean} True if text has no visible characters.
+ */
 function isEmptyText(text) {
   return !text?.trim();
 }
 
+/**
+ * Check that the provided text contains no bold Markdown segments.
+ * @param {string} text - Text to inspect.
+ * @returns {boolean} True if there are no bold segments.
+ */
 function hasNoBoldSegments(text) {
   return !findBoldSegments(text);
 }
@@ -55,7 +65,7 @@ function createBoldPatternPart(marker) {
     doubledMarker, // Opening doubled marker
     '.*?', // Lazy match of content
     doubledMarker, // Closing doubled marker
-    ')' // Closing group
+    ')', // Closing group
   ];
 
   return patternParts.join('');
@@ -104,7 +114,6 @@ function getItalicMarkers() {
 
 /**
  * Assembles the processed segments (before, bold, after) into a single string.
- *
  * @param {string} beforeText - The text before the bold segment
  * @param {string} boldText - The bold segment text
  * @param {string} afterText - The text after the bold segment
@@ -115,36 +124,51 @@ function assembleProcessedText(beforeText, boldText, afterText) {
   return [
     processItalicBefore(beforeText),
     boldText,
-    processBoldAfter(afterText)
-  ].filter(Boolean).join('');
+    processBoldAfter(afterText),
+  ]
+    .filter(Boolean)
+    .join('');
 }
 
 /**
- * Process text recursively to handle all formatting cases, preserving bold segments.
- * This function identifies bold markdown segments and leaves them unmodified,
- * while processing the text before and after for italic formatting.
- *
- * @example
- * // Returns: '**bold** <em>*italic*</em>'
- * processTextPreservingBold('**bold** *italic*');
- *
- * @param {string} text - The text to process
- * @returns {string} - Processed text with HTML tags added around italics while preserving bold
+ * Determine if we should skip bold-aware processing for a given text.
+ * @param {string} text - Text to check for bold segments.
+ * @returns {boolean} True when text is empty or contains no bold segments.
  * @private
  */
 function shouldBypassBold(text) {
   return isEmptyText(text) || hasNoBoldSegments(text);
 }
 
+/**
+ * Process text recursively to handle all formatting cases, preserving bold segments.
+ * This function identifies bold markdown segments and leaves them unmodified,
+ * while processing the text before and after for italic formatting.
+ * @example
+ * // Returns: '**bold** <em>*italic*</em>'
+ * processTextPreservingBold('**bold** *italic*');
+ * @param {string} text - The text to process
+ * @returns {string} Processed text with HTML tags added around italics while
+ *   preserving bold
+ */
 function processTextPreservingBold(text) {
   if (shouldBypassBold(text)) {
     return processAllItalicStyles(text);
   }
 
   const segment = findBoldSegments(text);
-  return assembleProcessedText(segment.beforeText, segment.boldText, segment.afterText);
+  return assembleProcessedText(
+    segment.beforeText,
+    segment.boldText,
+    segment.afterText
+  );
 }
 
+/**
+ * Apply italic processing to the text before a bold segment.
+ * @param {string} beforeText - Text appearing before the bold segment.
+ * @returns {string} Formatted prefix text.
+ */
 function processItalicBefore(beforeText) {
   if (beforeText) {
     return processAllItalicStyles(beforeText);
@@ -153,6 +177,11 @@ function processItalicBefore(beforeText) {
   }
 }
 
+/**
+ * Process the text after a bold segment, preserving nested formatting.
+ * @param {string} afterText - Text appearing after the bold segment.
+ * @returns {string} Formatted suffix text.
+ */
 function processBoldAfter(afterText) {
   if (afterText) {
     return processTextPreservingBold(afterText);
@@ -162,6 +191,11 @@ function processBoldAfter(afterText) {
 }
 
 // Helper function to check if text is invalid
+/**
+ * Validate that the input is a non-empty string.
+ * @param {unknown} text - Value to validate.
+ * @returns {boolean} True if the value is not a string or empty.
+ */
 function isInvalidText(text) {
   return !text || typeof text !== 'string';
 }
@@ -174,19 +208,15 @@ function isInvalidText(text) {
  *
  * Handles both *single asterisk* and _underscore_ style Markdown italics.
  * Does NOT add <em> tags around bold markdown syntax (** or __).
- *
  * @example
  * // Returns: '<em>*italic*</em> text'
  * italics('*italic* text');
- *
  * @example
  * // Returns: '<em>_italic_</em> text'
  * italics('_italic_ text');
- *
  * @example
  * // Returns: '**bold** and <em>*italic*</em>'
  * italics('**bold** and *italic*');
- *
  * @param {string} text - The input text that may contain Markdown italics syntax
  * @returns {string} Text with HTML <em> tags added around Markdown-formatted italics
  */
@@ -202,9 +232,8 @@ export function italics(text) {
 
 /**
  * Find bold segments in text and split into bold text and surrounding text
- *
  * @param {string} text - The text to process
- * @returns {Object|null} - Object with boldText, beforeText, and afterText properties, or null if no bold found
+ * @returns {object | null} - Object with boldText, beforeText, and afterText properties, or null if no bold found
  * @private
  */
 function findBoldSegments(text) {
@@ -222,7 +251,7 @@ function findBoldSegments(text) {
   return {
     boldText,
     beforeText: text.substring(0, boldStartIndex),
-    afterText: text.substring(boldEndIndex)
+    afterText: text.substring(boldEndIndex),
   };
 }
 
@@ -242,15 +271,12 @@ function applyItalicFormatting(text, marker) {
 
 /**
  * Process text through all italic style types (asterisk and underscore)
- *
  * @example
  * // Returns: '<em>*text*</em>'
  * processAllItalicStyles('*text*');
- *
  * @example
  * // Returns: '<em>_text_</em>'
  * processAllItalicStyles('_text_');
- *
  * @param {string} text - The text to process
  * @returns {string} - Text with all italic styles formatted
  * @private
