@@ -1,17 +1,19 @@
 /**
- *
- * @param str
- * @param prefix
+ * Determines whether a string begins with the given prefix.
+ * @param {string} str - String to inspect.
+ * @param {string} prefix - Prefix to match.
+ * @returns {boolean} True when `str` starts with `prefix`.
  */
 export function startsWith(str, prefix) {
   return str.indexOf(prefix) === 0;
 }
 
 /**
- *
- * @param article
- * @param className
- * @param dom
+ * Hides an article if it has the specified class.
+ * @param {HTMLElement} article - The article element.
+ * @param {string} className - Class name to test.
+ * @param {object} dom - DOM helper utilities.
+ * @returns {void}
  */
 function hideIfHasClass(article, className, dom) {
   if (dom.hasClass(article, className)) {
@@ -58,9 +60,10 @@ export const handleTagLinks = dom => {
 };
 
 /**
- * Hides articles that contain a specific CSS class
- * @param {string} className - The CSS class to filter by
+ * Hides articles that contain a specific CSS class.
  * @param {object} dom - Object containing DOM helper functions: getElementsByTagName, hasClass, hide
+ * @param {string} className - The CSS class to filter by
+ * @returns {Function} Event handler that hides matching articles.
  */
 export function makeHandleHideClick(dom, className) {
   return function (event) {
@@ -70,9 +73,9 @@ export function makeHandleHideClick(dom, className) {
 }
 
 /**
- * Factory to create a function that adds a hide-span to a tag link
- * @param {object} dom - DOM helpers
- * @returns {Function}
+ * Factory to create a function that adds a hide-span to a tag link.
+ * @param {object} dom - DOM helpers.
+ * @returns {Function} Function that inserts a hide link span.
  */
 export function makeHandleHideSpan(dom) {
   return function createHideSpan(link, className) {
@@ -93,9 +96,10 @@ export function makeHandleHideSpan(dom) {
 }
 
 /**
- *
- * @param className
- * @param dom
+ * Hide all articles that contain the given class.
+ * @param {string} className - Class used to filter articles.
+ * @param {object} dom - DOM helper utilities.
+ * @returns {void}
  */
 export function hideArticlesByClass(className, dom) {
   const articles = dom.getElementsByTagName('article');
