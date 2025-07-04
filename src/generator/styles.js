@@ -1,5 +1,6 @@
 /**
- *
+ * Return the CSS styles used across generated pages.
+ * @returns {string} Inline CSS rules.
  */
 export function styles() {
   return `

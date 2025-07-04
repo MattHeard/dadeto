@@ -1,7 +1,9 @@
 import { styles } from './styles.js';
 
 /**
- *
+ * Create the <head> section for the generated page.
+ * Includes fonts, icons, styles and a component registry script.
+ * @returns {string} HTML for the head element.
  */
 export function headElement() {
   return `<head>

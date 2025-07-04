@@ -43,10 +43,11 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 };
 
 /**
- *
- * @param dom
- * @param container
- * @param textInput
+ * Ensure a key/value input UI is displayed.
+ * @param {object} dom - DOM helper utilities.
+ * @param {HTMLElement} container - Container element for the inputs.
+ * @param {HTMLInputElement} textInput - The text input element.
+ * @returns {void}
  */
 export function handleKVType(dom, container, textInput) {
   maybeRemoveNumber(container, dom);
@@ -55,10 +56,11 @@ export function handleKVType(dom, container, textInput) {
 }
 
 /**
- *
- * @param dom
- * @param container
- * @param textInput
+ * Main handler for key/value input fields.
+ * @param {object} dom - DOM helper utilities.
+ * @param {HTMLElement} container - Container element for the inputs.
+ * @param {HTMLInputElement} textInput - The text input element.
+ * @returns {void}
  */
 export function kvHandler(dom, container, textInput) {
   hideAndDisable(textInput, dom);
