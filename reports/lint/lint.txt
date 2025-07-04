@@ -1,6 +1,0 @@
-
-/Users/matthew.heard/Code/Matt/dadeto/src/browser/createSectionSetter.js
-  25:1  warning  Function 'parseJsonObject' has a complexity of 3. Maximum allowed is 2  complexity
-  48:1  warning  Function 'mergeSection' has a complexity of 3. Maximum allowed is 2     complexity
-
-✖ 2 problems (0 errors, 2 warnings)
