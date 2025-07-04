@@ -13,9 +13,10 @@ export function safeParseJson(json) {
 }
 
 /**
- *
- * @param value
- * @param fallback
+ * Returns `value` unless it is `undefined`, otherwise returns `fallback`.
+ * @param {*} value - Value to check.
+ * @param {*} fallback - Value to return when `value` is undefined.
+ * @returns {*} Either `value` or `fallback`.
  */
 export function valueOr(value, fallback) {
   if (value === undefined) {
@@ -25,9 +26,10 @@ export function valueOr(value, fallback) {
 }
 
 /**
- *
- * @param json
- * @param fallback
+ * Parses JSON or returns a provided default when parsing fails.
+ * @param {string} json - JSON string to parse.
+ * @param {object} [fallback] - Default value when parsing fails.
+ * @returns {object} Parsed object or fallback.
  */
 export function parseJsonOrDefault(json, fallback = {}) {
   return valueOr(safeParseJson(json), fallback);

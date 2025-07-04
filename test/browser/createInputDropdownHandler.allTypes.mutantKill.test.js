@@ -12,7 +12,8 @@ describe('createInputDropdownHandler all types', () => {
     let numberQueryCount = 0;
 
     /**
-     *
+     * Returns the number input element on subsequent calls.
+     * @returns {object|null} Number input element after first invocation.
      */
     function handleNumberQuery() {
       numberQueryCount += 1;
