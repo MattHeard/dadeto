@@ -3,11 +3,4 @@
   25:1  warning  Function 'parseJsonObject' has a complexity of 3. Maximum allowed is 2  complexity
   48:1  warning  Function 'mergeSection' has a complexity of 3. Maximum allowed is 2     complexity
 
-/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  893:10  warning  Expected to return a value at the end of function 'prefixIfPresent'  consistent-return
-  940:10  warning  Expected to return a value at the end of function 'wrapIfPresent'    consistent-return
-
-/Users/matthew.heard/Code/Matt/dadeto/src/inputHandlers/dendriteStory.js
-  2:10  warning  'maybeRemoveElement' is defined but never used  no-unused-vars
-
-✖ 5 problems (0 errors, 5 warnings)
+✖ 2 problems (0 errors, 2 warnings)
