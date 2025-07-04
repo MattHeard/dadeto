@@ -1,8 +1,9 @@
 import { isType } from '../../utils/validation.js';
 
 /**
- *
- * @param input
+ * Attempt to coerce a value to boolean.
+ * @param {unknown} input - Value that may represent a boolean.
+ * @returns {boolean|undefined} The coerced boolean or undefined.
  */
 function tryBooleanCoercion(input) {
   if (isType(input, 'boolean')) {
@@ -12,11 +13,12 @@ function tryBooleanCoercion(input) {
 }
 
 /**
- * Coerces input to a boolean value if possible.
- * Returns a string representation of an object with a 'value' property if coercion is successful,
- * or a string representation of an empty object if coercion fails.
- * @param {any} input - The value to coerce to boolean
- * @returns {string} - String representation of object with 'value' property if coercion successful, '{}' if not
+ * Coerce input to a boolean value if possible.
+ *
+ * Returns `"{ value: true }"` or `"{ value: false }"` when coercion succeeds.
+ * Otherwise returns `'{}'`.
+ * @param {unknown} input - Value to coerce.
+ * @returns {string} JSON string describing the result.
  */
 export function coerceToBoolean(input) {
   const value = tryBooleanCoercion(input);
@@ -28,8 +30,9 @@ export function coerceToBoolean(input) {
 }
 
 /**
- *
- * @param input
+ * Normalize a string that may represent a boolean.
+ * @param {unknown} input - Value to normalize.
+ * @returns {string|undefined} Lowercased string or undefined if not a string.
  */
 function normalizeBooleanString(input) {
   if (!isType(input, 'string')) {
@@ -39,8 +42,9 @@ function normalizeBooleanString(input) {
 }
 
 /**
- *
- * @param str
+ * Parse 'true' or 'false' strings into booleans.
+ * @param {string} str - String value to parse.
+ * @returns {boolean|undefined} Parsed boolean or undefined.
  */
 function parseBooleanString(str) {
   return { true: true, false: false }[str];

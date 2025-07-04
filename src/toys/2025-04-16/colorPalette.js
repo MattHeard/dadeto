@@ -1,7 +1,8 @@
 /**
- *
- * @param input
- * @param env
+ * Generate a palette of grayscale colors.
+ * @param {string|number} input - Desired number of colors.
+ * @param {{get: Function}} env - Environment with a `getRandomNumber` function.
+ * @returns {string} JSON string with a `palette` array.
  */
 export function generatePalette(input, env) {
   const getRand = env.get('getRandomNumber');

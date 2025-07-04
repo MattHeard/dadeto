@@ -6,16 +6,18 @@ const UNDERSCORE_MARKER = '_';
 const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
 
 /**
- *
- * @param text
+ * Determine whether a string is empty or whitespace only.
+ * @param {string} text - Text to evaluate.
+ * @returns {boolean} True if text has no visible characters.
  */
 function isEmptyText(text) {
   return !text?.trim();
 }
 
 /**
- *
- * @param text
+ * Check that the provided text contains no bold Markdown segments.
+ * @param {string} text - Text to inspect.
+ * @returns {boolean} True if there are no bold segments.
  */
 function hasNoBoldSegments(text) {
   return !findBoldSegments(text);

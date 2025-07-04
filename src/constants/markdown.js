@@ -1,5 +1,6 @@
 /**
- * Markdown formatting markers
+ * Markdown formatting markers.
+ * @returns {Readonly<Record<string, string>>} Object of marker characters.
  */
 export function markdownMarkers() {
   return Object.freeze({
@@ -23,7 +24,8 @@ export function markdownMarkers() {
 }
 
 /**
- * HTML tags for markdown elements
+ * HTML tag names for supported markdown elements.
+ * @returns {Readonly<Record<string, string>>} Map of element keys to tag names.
  */
 export function htmlTags() {
   return Object.freeze({
@@ -46,7 +48,8 @@ export function htmlTags() {
 }
 
 /**
- * Common CSS class names
+ * Common CSS class names used when rendering markdown.
+ * @returns {Readonly<Record<string, string>>} Object of class names.
  */
 export function cssClasses() {
   return Object.freeze({
@@ -65,7 +68,8 @@ export function cssClasses() {
 }
 
 /**
- * Default options for markdown parsing
+ * Default options for markdown parsing.
+ * @returns {Readonly<Record<string, unknown>>} Default configuration values.
  */
 export function defaultOptions() {
   return Object.freeze({
