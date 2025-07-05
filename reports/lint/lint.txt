@@ -1,12 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-04/transformDendriteStory.js
-   8:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2             complexity
-  30:1  warning  Function 'isValidInput' has a complexity of 3. Maximum allowed is 2            complexity
-  36:1  warning  Missing JSDoc @returns declaration                                             jsdoc/require-returns
-  38:1  warning  Missing JSDoc @param "data" description                                        jsdoc/require-param-description
-  38:1  warning  Missing JSDoc @param "data" type                                               jsdoc/require-param-type
-  39:1  warning  Missing JSDoc @param "getUuid" description                                     jsdoc/require-param-description
-  39:1  warning  Missing JSDoc @param "getUuid" type                                            jsdoc/require-param-type
-  54:8  warning  Function 'transformDendriteStory' has a complexity of 3. Maximum allowed is 2  complexity
+   9:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2             complexity
+  60:8  warning  Function 'transformDendriteStory' has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 8 problems (0 errors, 8 warnings)
+✖ 2 problems (0 errors, 2 warnings)
