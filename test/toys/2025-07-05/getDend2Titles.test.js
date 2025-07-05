@@ -38,4 +38,9 @@ describe('getDend2Titles', () => {
     ]);
     expect(getDend2Titles('x', env)).toBe(JSON.stringify([]));
   });
+
+  test('returns empty array when getData is missing', () => {
+    const env = new Map();
+    expect(getDend2Titles('x', env)).toBe(JSON.stringify([]));
+  });
 });
