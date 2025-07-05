@@ -8,8 +8,9 @@ agents should interact with this code base.
 ## Testing
 
 Always attempt to run `npm test` and `npm run lint` after making changes.
-If either command fails due to missing dependencies or other issues, note the
-failure in the PR message's Testing section.
+If these commands fail because dependencies are missing or the scripts cannot
+be found, first run `npm install` and try again. If they still fail or other
+issues occur, note the failure in the PR message's Testing section.
 Before opening a pull request, ensure that branch coverage remains at 100%.
 
 ## Jest Restrictions
