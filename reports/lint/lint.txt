@@ -1,6 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
-  708:14  warning  Method 'content' has a complexity of 3. Maximum allowed is 2  complexity
+  687:14  warning  Method 'content' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-04/transformDendriteStory.js
    9:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2             complexity

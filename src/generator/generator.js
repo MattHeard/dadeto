@@ -613,80 +613,59 @@ function generateContentSections(post) {
   return join(contentItems);
 }
 
+const HEADER_SECTIONS_CONFIG = [
+  {
+    condition: () => true,
+    generator: post => {
+      const titleClasses = joinClasses([CLASS.KEY, CLASS.ARTICLE_TITLE]);
+      const titleKey = createDiv(titleClasses, post.key);
+      const titleLink = `<a href="#${post.key}">${post.title}</a>`;
+      const titleHeader = `<h2>${titleLink}</h2>`;
+      const titleValue = `<div class="${CLASS.VALUE}">${titleHeader}</div>`;
+      return createPair(titleKey, titleValue);
+    },
+  },
+  {
+    condition: post => post.publicationDate,
+    generator: post => {
+      const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(
+        post.publicationDate
+      )}</p>`;
+      return createLabeledSection({
+        label: 'pubAt',
+        valueHTML,
+        wrapValueDiv: false,
+      });
+    },
+  },
+  {
+    condition: post => hasTags(post),
+    generator: post => {
+      const tagLinks = post.tags
+        .map(tag => {
+          const escapedTag = escapeHtml(tag);
+          return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
+        })
+        .join(', ');
+      const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagLinks}</p>`;
+      return createLabeledSection({
+        label: 'tags',
+        valueHTML,
+        wrapValueDiv: false,
+      });
+    },
+  },
+];
+
 /**
  * Build the header section for a blog post.
  * @param {object} post - The blog post.
  * @returns {string} HTML for the header section.
  */
 function generateHeaderSection(post) {
-  const titleSection = generateTitleSection(post);
-  const remainingSections = generateHeaderSectionsFromConfig(post);
-  const headerParts = [titleSection, ...remainingSections];
-  return join(headerParts);
-}
-
-/**
- * Create the HTML value element for the post title.
- * @param {object} post - Blog post with `key` and `title`.
- * @returns {string} HTML for the title value.
- */
-function createTitleValue(post) {
-  const titleLink = `<a href="#${post.key}">${post.title}</a>`;
-  const titleHeader = `<h2>${titleLink}</h2>`;
-  return `<div class="${CLASS.VALUE}">${titleHeader}</div>`;
-}
-
-/**
- * Generate the title section for a blog post.
- * @param {object} post - The blog post.
- * @returns {string} HTML for the title section.
- */
-function generateTitleSection(post) {
-  const titleClasses = joinClasses([CLASS.KEY, CLASS.ARTICLE_TITLE]);
-  const titleKey = createDiv(titleClasses, post.key);
-  const titleValue = createTitleValue(post);
-  return createPair(titleKey, titleValue);
-}
-
-const HEADER_SECTIONS_CONFIG = [
-  {
-    label: 'pubAt',
-    condition: post => post.publicationDate,
-    content: post => formatDate(post.publicationDate),
-  },
-  {
-    label: 'tags',
-    condition: post => hasTags(post),
-    content: post =>
-      post.tags
-        .map(tag => {
-          const escapedTag = escapeHtml(tag);
-          return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
-        })
-        .join(', '),
-  },
-];
-
-/**
- * Generate the header sections for a blog post based on the predefined
- * configuration.
- * @param {object} post - The blog post data.
- * @returns {string[]} Array of HTML strings representing header sections.
- */
-function generateHeaderSectionsFromConfig(post) {
-  return HEADER_SECTIONS_CONFIG.map(section => {
-    if (section.condition(post)) {
-      const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${section.content(
-        post
-      )}</p>`;
-      return createLabeledSection({
-        label: section.label,
-        valueHTML,
-        wrapValueDiv: false,
-      });
-    }
-    return '';
-  }).filter(Boolean);
+  return HEADER_SECTIONS_CONFIG.filter(section => section.condition(post))
+    .map(section => section.generator(post))
+    .join('');
 }
 
 /**
