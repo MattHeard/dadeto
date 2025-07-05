@@ -247,6 +247,42 @@ function validateIncomingState(incomingState, errorFn) {
 }
 
 /**
+ * Determine if an object includes its own `permanent` property.
+ * @param {object} obj - Object to inspect.
+ * @returns {boolean} True when the property exists.
+ */
+function hasPermanentProperty(obj) {
+  return Object.hasOwn(obj, 'permanent');
+}
+
+/**
+ * Determine whether a permanent state object has required properties.
+ * @param {object} value - Candidate state object.
+ * @returns {boolean} True if the state is missing required fields.
+ */
+function isInvalidPermanentState(value) {
+  return !isNonNullObject(value) || !hasPermanentProperty(value);
+}
+
+/**
+ * Validates incoming permanent state before applying it.
+ * @param {object} incomingState - Candidate state object.
+ * @param {Function} errorFn - Error logger.
+ * @returns {void}
+ */
+function validateIncomingPermanentState(incomingState, errorFn) {
+  if (isInvalidPermanentState(incomingState)) {
+    errorFn(
+      'setLocalPermanentData received invalid data structure:',
+      incomingState
+    );
+    throw new Error(
+      "setLocalPermanentData requires an object with at least a 'permanent' property."
+    );
+  }
+}
+
+/**
  * Checks whether the blog status is idle.
  * @param {object} state - The global state object.
  * @returns {boolean} True when status is IDLE.
@@ -345,4 +381,39 @@ export const setLocalTemporaryData = (state, loggers) => {
   const oldBlogState = getBlogState(current);
   Object.assign(current, desired);
   restoreBlogState(current, oldBlogState);
+};
+
+/**
+ * Updates persistent data stored in localStorage.
+ * Reads existing data, merges with the incoming object and persists the result.
+ * @param {object} desired - The new state object (must have 'permanent').
+ * @param {object} loggers - Logging functions.
+ * @param {Function} loggers.logError - Error logger.
+ * @returns {object} The merged permanent state.
+ */
+export const setLocalPermanentData = (desired, loggers, storage) => {
+  const { logError } = loggers;
+  validateIncomingPermanentState(desired, logError);
+
+  let storedData = {};
+  try {
+    if (storage) {
+      const raw = storage.getItem('permanentData');
+      storedData = raw ? JSON.parse(raw) : {};
+    }
+  } catch (readError) {
+    logError('Failed to read permanent data:', readError);
+  }
+
+  const updated = { ...storedData, ...desired.permanent };
+
+  try {
+    if (storage) {
+      storage.setItem('permanentData', JSON.stringify(updated));
+    }
+  } catch (storageError) {
+    logError('Failed to persist permanent data:', storageError);
+  }
+
+  return updated;
 };

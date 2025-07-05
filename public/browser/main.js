@@ -4,6 +4,7 @@ import {
   fetchAndCacheBlogData,
   getData,
   setLocalTemporaryData,
+  setLocalPermanentData,
   getEncodeBase64,
 } from './data.js';
 import {
@@ -66,6 +67,10 @@ function createEnv() {
           { desired: newData, current: globalState },
           loggers
         ),
+    ],
+    [
+      'setLocalPermanentData',
+      newData => setLocalPermanentData(newData, loggers, localStorage),
     ],
     ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
   ]);
