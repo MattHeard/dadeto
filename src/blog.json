@@ -1,6 +1,18 @@
 {
   "posts": [
     {
+      "key": "DEND4",
+      "title": "Add Dendrite Page",
+      "publicationDate": "2025-07-05",
+      "content": ["Adds a page and its options to DEND2 temporary storage."],
+      "toy": {
+        "modulePath": "/2025-07-05/addDendritePage.js",
+        "functionName": "addDendritePage"
+      },
+      "tags": ["toy", "story", "dendrite"],
+      "release": "beta"
+    },
+    {
       "key": "DEND3",
       "title": "Get Dendrite Story Titles",
       "publicationDate": "2025-07-05",
