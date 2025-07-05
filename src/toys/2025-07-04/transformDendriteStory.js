@@ -30,7 +30,6 @@ function ensureDend2(data) {
  * @param {string} obj.content - Story content.
  * @returns {boolean} True when valid.
  */
-// eslint-disable-next-line complexity
 function isValidInput(obj) {
   if (!obj) {
     return false;

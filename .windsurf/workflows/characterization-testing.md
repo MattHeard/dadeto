@@ -66,7 +66,7 @@ npm test -- path/to/file.test.js
 
 ## Linting
 
-* Temporarily disable unrelated warnings (`// eslint-disable-next-line`)
+* Avoid disabling ESLint warnings
 * Address and document remaining issues later
 
 ## Organization

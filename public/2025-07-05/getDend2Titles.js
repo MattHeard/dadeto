@@ -7,7 +7,6 @@
  * @param {Map<string, Function>} env - Environment with a `getData` accessor.
  * @returns {string} JSON array string of story titles.
  */
-// eslint-disable-next-line complexity
 export function getDend2Titles(input, env) {
   const getData = env.get('getData');
   if (typeof getData !== 'function') {
