@@ -5,24 +5,32 @@
       "title": "Set Permanent Data",
       "publicationDate": "2025-07-05",
       "content": ["Stores input into permanent storage."],
+      "illustration": {
+        "fileType": "png",
+        "fileName": "2025-07-05-1",
+        "altText": "a digital illustration features a glowing neon wireframe crystal hovering above a magenta folder icon, all set against a dark grid background"
+      },
       "toy": {
         "modulePath": "/2025-07-05/setPermanentData.js",
         "functionName": "setPermanentData"
       },
-      "tags": ["toy", "storage", "json"],
-      "release": "beta"
+      "tags": ["toy", "storage", "json"]
     },
     {
       "key": "DEND4",
       "title": "Add Dendrite Page",
       "publicationDate": "2025-07-05",
       "content": ["Adds a page and its options to DEND2 temporary storage."],
+      "illustration": {
+        "fileType": "png",
+        "fileName": "2025-07-05-0",
+        "altText": "a flat digital illustration features a plant being pruned with shears while a paper page grows from its stem like a grafted leaf, all set against a yellow speckled background."
+      },
       "toy": {
         "modulePath": "/2025-07-05/addDendritePage.js",
         "functionName": "addDendritePage"
       },
-      "tags": ["toy", "story", "dendrite"],
-    "release": "beta"
+      "tags": ["toy", "story", "dendrite"]
     },
     {
       "key": "DEND3",
