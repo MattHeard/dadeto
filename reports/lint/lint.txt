@@ -1,6 +1,11 @@
 
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
+  670:1  warning  Missing JSDoc @returns declaration       jsdoc/require-returns
+  672:1  warning  Missing JSDoc @param "post" description  jsdoc/require-param-description
+  672:1  warning  Missing JSDoc @param "post" type         jsdoc/require-param-type
+
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-04/transformDendriteStory.js
    9:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2             complexity
   60:8  warning  Function 'transformDendriteStory' has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 2 problems (0 errors, 2 warnings)
+✖ 5 problems (0 errors, 5 warnings)

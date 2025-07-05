@@ -620,9 +620,9 @@ function generateContentSections(post) {
  */
 function generateHeaderSection(post) {
   const titleSection = generateTitleSection(post);
-  const dateSection = generateDateSection(post);
-  const tagsSection = generateTagsSection(post);
-  return join([titleSection, dateSection, tagsSection]);
+  const remainingSections = generateHeaderSectionsFromConfig(post);
+  const headerParts = [titleSection, ...remainingSections];
+  return join(headerParts);
 }
 
 /**
@@ -648,18 +648,43 @@ function generateTitleSection(post) {
   return createPair(titleKey, titleValue);
 }
 
-/**
- * Generate the date section for a blog post
- * @param {object} post - The blog post
- * @returns {string} - HTML for the date section
- */
-function generateDateSection(post) {
-  const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${formatDate(post.publicationDate)}</p>`;
-  return createLabeledSection({
+const HEADER_SECTIONS_CONFIG = [
+  {
     label: 'pubAt',
-    valueHTML,
-    wrapValueDiv: false,
-  });
+    condition: post => post.publicationDate,
+    content: post => formatDate(post.publicationDate),
+  },
+  {
+    label: 'tags',
+    condition: post => hasTags(post),
+    content: post =>
+      post.tags
+        .map(tag => {
+          const escapedTag = escapeHtml(tag);
+          return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
+        })
+        .join(', '),
+  },
+];
+
+/**
+ *
+ * @param post
+ */
+function generateHeaderSectionsFromConfig(post) {
+  return HEADER_SECTIONS_CONFIG.map(section => {
+    if (section.condition(post)) {
+      const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${section.content(
+        post
+      )}</p>`;
+      return createLabeledSection({
+        label: section.label,
+        valueHTML,
+        wrapValueDiv: false,
+      });
+    }
+    return '';
+  }).filter(Boolean);
 }
 
 /**
@@ -669,29 +694,6 @@ function generateDateSection(post) {
  */
 function hasTags(post) {
   return Array.isArray(post.tags) && post.tags.length > 0;
-}
-
-/**
- * Generate the tags section for a blog post
- * @param {object} post - The blog post
- * @returns {string} - HTML for the tags section
- */
-function generateTagsSection(post) {
-  if (!hasTags(post)) {
-    return '';
-  }
-  const tagsContent = post.tags
-    .map(tag => {
-      const escapedTag = escapeHtml(tag);
-      return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
-    })
-    .join(', ');
-  const tagsValue = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagsContent}</p>`;
-  return createLabeledSection({
-    label: 'tags',
-    valueHTML: tagsValue,
-    wrapValueDiv: false,
-  });
 }
 
 /**
