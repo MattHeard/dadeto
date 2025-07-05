@@ -5,11 +5,15 @@
       "title": "Get Dendrite Story Titles",
       "publicationDate": "2025-07-05",
       "content": ["Returns DEND2 story titles from temporary storage."],
+      "illustration": {
+        "fileType": "png",
+        "fileName": "2025-07-05",
+        "altText": "a flat, minimalist digital vector illustration depicting a floating wooden shelf holding books shaped like flower buds. the scene is set against a pale blue sky with soft clouds and a sun. the flower-books are in red, pink, and purple tones, with green leaves and stems. one closed book lies flat between the blooming ones."
+      },
       "toy": {
         "modulePath": "/2025-07-05/getDend2Titles.js",
         "functionName": "getDend2Titles"
       },
-      "release": "beta",
       "tags": ["toy", "story", "dendrite"]
     },
     {
