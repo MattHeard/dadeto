@@ -982,7 +982,13 @@ function generateToyScript(post) {
 }
 
 // Unified toy UI section abstraction
-const INPUT_METHODS = ['text', 'number', 'kv', 'dendrite-story'];
+const INPUT_METHODS = [
+  'text',
+  'number',
+  'kv',
+  'dendrite-story',
+  'dendrite-page',
+];
 
 /**
  * Build the input dropdown for a toy
