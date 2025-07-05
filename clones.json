@@ -1,5 +1,254 @@
-[{"id":"fbd595f5c21798db669e194ece8155e57cfd4f22","instances":[{"path":"./src/constants/markdown.js","lines":[4,16],"code":"export function markdownMarkers() {\n  return Object.freeze({\n    ASTERISK: '*',\n    UNDERSCORE: '_',\n    BACKTICK: '`',\n    TILDE: '~',\n    DASH: '-',\n    EQUAL: '=',\n    HASH: '#',\n    GREATER_THAN: '>',\n    PIPE: '|',\n    BACKSLASH: '\\\\',\n    SLASH: '/',"},{"path":"./src/constants/markdown.js","lines":[28,40],"code":"export function htmlTags() {\n  return Object.freeze({\n    EMPHASIS: 'em',\n    STRONG: 'strong',\n    CODE: 'code',\n    PARAGRAPH: 'p',\n    BLOCKQUOTE: 'blockquote',\n    LIST: 'ul',\n    LIST_ITEM: 'li',\n    ORDERED_LIST: 'ol',\n    HORIZONTAL_RULE: 'hr',\n    LINE_BREAK: 'br',\n    LINK: 'a',"},{"path":"./src/constants/markdown.js","lines":[51,65],"code":"export function cssClasses() {\n  return Object.freeze({\n    CONTAINER: 'markdown-container',\n    HEADING: 'markdown-heading',\n    PARAGRAPH: 'markdown-paragraph',\n    LIST: 'markdown-list',\n    LIST_ITEM: 'markdown-list-item',\n    BLOCKQUOTE: 'markdown-blockquote',\n    CODE: 'markdown-code',\n    INLINE_CODE: 'markdown-inline-code',\n    LINK: 'markdown-link',\n    IMAGE: 'markdown-image',\n    HORIZONTAL_RULE: 'markdown-hr',\n  });\n}"}]},
-{"id":"f3362671184ebd4988bf0cf70b6c955050e26b46","instances":[{"path":"./src/browser/data.js","lines":[131,146],"code":"export function deepMerge(target, source) {\n  const output = { ...target };\n  const mergeKey = key => {\n    const targetValue = target[key];\n    const sourceValue = source[key];\n    if (shouldDeepMerge(targetValue, sourceValue)) {\n      output[key] = deepMerge(targetValue, sourceValue);\n    } else {\n      output[key] = sourceValue;\n    }\n  };\n  Object.keys(source).forEach(mergeKey);\n  return output;\n}\n\nfunction stripInternalFields(stateCopy) {"},{"path":"./src/toys/2025-03-29/setTemporary.js","lines":[23,40],"code":"function deepMerge(target, source) {\n  const output = { ...target };\n  const mergeKey = key => {\n    const targetValue = target[key];\n    const sourceValue = source[key];\n    if (shouldDeepMerge(targetValue, sourceValue)) {\n      output[key] = deepMerge(targetValue, sourceValue);\n    } else {\n      output[key] = sourceValue;\n    }\n  };\n  Object.keys(source).forEach(mergeKey);\n  return output;\n}\n\nfunction shouldDeepMerge(targetValue, sourceValue) {\n  return isObject(targetValue) && isObject(sourceValue);\n}"}]},
-{"id":"be28df861cd56bd76b617bb6fd06bf17a0fab5f0","instances":[{"path":"./src/browser/setOutput.js","lines":[4,41],"code":"export function setOutput(input, env) {\n  let inputJson;\n  try {\n    inputJson = JSON.parse(input);\n  } catch (parseError) {\n    return `Error: Invalid JSON input. ${parseError.message}`;\n  }\n  return processSetOutput(inputJson, env);\n}\n\nfunction processSetOutput(inputJson, env) {\n  if (!isObject(inputJson)) {\n    return \"Error: Input JSON must be a plain object.\";\n  }\n  return handleValidOutputInput(inputJson, env);\n}\n\nfunction handleValidOutputInput(inputJson, env) {\n  // Assume env.get is always a function\n  const getData = env.get('getData');\n  const setData = env.get('setData');\n  try {\n    return mergeOutputData(getData, setData, inputJson);\n  } catch (error) {\n    return `Error updating output data: ${error.message}`;\n  }\n}\n\nfunction mergeOutputData(getData, setData, inputJson) {\n  const currentData = getData();\n  const newData = JSON.parse(JSON.stringify(currentData));\n  if (!isObject(newData.output)) {\n    newData.output = {};\n  }\n  newData.output = deepMerge(newData.output, inputJson);\n  setData(newData);\n  return `Success: Output data deep merged.`;\n}"},{"path":"./src/toys/2025-03-29/setTemporary.js","lines":[50,87],"code":"export function setTemporary(input, env) {\n  let inputJson;\n  try {\n    inputJson = JSON.parse(input);\n  } catch (parseError) {\n    return `Error: Invalid JSON input. ${parseError.message}`;\n  }\n  return processSetTemporary(inputJson, env);\n}\n\nfunction processSetTemporary(inputJson, env) {\n  if (!isObject(inputJson)) {\n    return \"Error: Input JSON must be a plain object.\";\n  }\n  return handleValidTemporaryInput(inputJson, env);\n}\n\nfunction handleValidTemporaryInput(inputJson, env) {\n  const getData = env.get('getData');\n  const setData = env.get('setData');\n  try {\n    return mergeTemporaryData(getData, setData, inputJson);\n  } catch (error) {\n    return `Error updating temporary data: ${error.message}`;\n  }\n}\n\nfunction mergeTemporaryData(getData, setData, inputJson) {\n  const currentData = getData();\n  const newData = JSON.parse(JSON.stringify(currentData));\n  if (!isObject(newData.temporary)) {\n    newData.temporary = {};\n  }\n  newData.temporary = deepMerge(newData.temporary, inputJson);\n  setData(newData);\n  return `Success: Temporary data deep merged.`;\n\n}"}]},
-{"id":"2793046a4d91a08ac069566ed109477f9c389e5c","instances":[{"path":"./src/inputHandlers/kv.js","lines":[9,12],"code":"export const ensureKeyValueInput = (container, textInput, dom) => {\n  let kvContainer = dom.querySelector(container, '.kv-container');\n  if (!kvContainer) {\n    kvContainer = dom.createElement('div');"},{"path":"./src/inputHandlers/number.js","lines":[36,40],"code":"export const ensureNumberInput = (container, textInput, dom) => {\n  let numberInput = dom.querySelector(container, 'input[type=\"number\"]');\n\n  if (!numberInput) {\n    numberInput = createNumberInput("}]},
-{"id":"909ed16176caa90490a3c7b67e58e8841ffa5350","instances":[{"path":"./src/toys/2025-05-11/battleshipSolitaireClues.js","lines":[31,37],"code":"  return getVerticalCells(ship);\n}\n\nfunction getHorizontalCells(ship) {\n  const cells = [];\n  for (let i = 0; i < ship.length; i++) {\n    cells.push([ship.start.x + i, ship.start.y]);"},{"path":"./src/toys/2025-05-11/battleshipSolitaireClues.js","lines":[39,45],"code":"  return cells;\n}\n\nfunction getVerticalCells(ship) {\n  const cells = [];\n  for (let i = 0; i < ship.length; i++) {\n    cells.push([ship.start.x, ship.start.y + i]);"}]}]
+[
+  {
+    "format": "javascript",
+    "lines": 25,
+    "fragment": "\nfunction ensureDend2(data) {\n  if (typeof data.temporary !== 'object' || data.temporary === null) {\n    data.temporary = { DEND2: { stories: [], pages: [], options: [] } };\n    return;\n  }\n  const t = data.temporary;\n  if (\n    typeof t.DEND2 !== 'object' ||\n    t.DEND2 === null ||\n    !Array.isArray(t.DEND2.stories) ||\n    !Array.isArray(t.DEND2.pages) ||\n    !Array.isArray(t.DEND2.options)\n  ) {\n    t.DEND2 = { stories: [], pages: [], options: [] };\n  }\n}\n\n/**\n * Validate the parsed story input.\n * @param {object} [obj] - Parsed object.\n * @param {string} obj.title - Story title.\n * @param {string} obj.content - Story content.\n * @returns {boolean} True when valid.\n */",
+    "tokens": 0,
+    "firstFile": {
+      "name": "src/toys/2025-07-04/transformDendriteStory.js",
+      "start": 8,
+      "end": 32,
+      "startLoc": {
+        "line": 8,
+        "column": 4,
+        "position": 41
+      },
+      "endLoc": {
+        "line": 32,
+        "column": 4,
+        "position": 251
+      }
+    },
+    "secondFile": {
+      "name": "src/toys/2025-07-05/addDendritePage.js",
+      "start": 9,
+      "end": 33,
+      "startLoc": {
+        "line": 9,
+        "column": 39,
+        "position": 43
+      },
+      "endLoc": {
+        "line": 33,
+        "column": 4,
+        "position": 253
+      }
+    }
+  },
+  {
+    "format": "javascript",
+    "lines": 11,
+    "fragment": "(input, env) {\n  try {\n    const parsed = JSON.parse(input);\n    if (!isValidInput(parsed)) {\n      throw new Error('invalid');\n    }\n\n    const getUuid = env.get('getUuid');\n    const getData = env.get('getData');\n    const setLocalTemporaryData = env.get('setLocalTemporaryData');\n    const storyId",
+    "tokens": 0,
+    "firstFile": {
+      "name": "src/toys/2025-07-04/transformDendriteStory.js",
+      "start": 56,
+      "end": 66,
+      "startLoc": {
+        "line": 56,
+        "column": 23,
+        "position": 367
+      },
+      "endLoc": {
+        "line": 66,
+        "column": 8,
+        "position": 472
+      }
+    },
+    "secondFile": {
+      "name": "src/toys/2025-07-05/addDendritePage.js",
+      "start": 64,
+      "end": 74,
+      "startLoc": {
+        "line": 64,
+        "column": 16,
+        "position": 392
+      },
+      "endLoc": {
+        "line": 74,
+        "column": 7,
+        "position": 497
+      }
+    }
+  },
+  {
+    "format": "javascript",
+    "lines": 6,
+    "fragment": ");\n    newData.temporary.DEND2.pages.push(page);\n    newData.temporary.DEND2.options.push(...opts);\n    setLocalTemporaryData(newData);\n\n    return JSON.stringify({ stories",
+    "tokens": 0,
+    "firstFile": {
+      "name": "src/toys/2025-07-04/transformDendriteStory.js",
+      "start": 78,
+      "end": 83,
+      "startLoc": {
+        "line": 78,
+        "column": 6,
+        "position": 630
+      },
+      "endLoc": {
+        "line": 83,
+        "column": 8,
+        "position": 681
+      }
+    },
+    "secondFile": {
+      "name": "src/toys/2025-07-05/addDendritePage.js",
+      "start": 84,
+      "end": 89,
+      "startLoc": {
+        "line": 84,
+        "column": 8,
+        "position": 593
+      },
+      "endLoc": {
+        "line": 89,
+        "column": 6,
+        "position": 644
+      }
+    }
+  },
+  {
+    "format": "javascript",
+    "lines": 9,
+    "fragment": "(marker) {\n  // Escape marker if it's a special regex character\n  let escapedMarker;\n  if (REGEX_SPECIAL_CHARS.test(marker)) {\n    escapedMarker = `\\\\${marker}`;\n  } else {\n    escapedMarker = marker;\n  }\n  return",
+    "tokens": 0,
+    "firstFile": {
+      "name": "src/toys/2025-03-21/italics.js",
+      "start": 95,
+      "end": 103,
+      "startLoc": {
+        "line": 95,
+        "column": 21,
+        "position": 352
+      },
+      "endLoc": {
+        "line": 103,
+        "column": 7,
+        "position": 412
+      }
+    },
+    "secondFile": {
+      "name": "src/toys/2025-03-21/italics.js",
+      "start": 52,
+      "end": 60,
+      "startLoc": {
+        "line": 52,
+        "column": 22,
+        "position": 136
+      },
+      "endLoc": {
+        "line": 60,
+        "column": 6,
+        "position": 196
+      }
+    }
+  },
+  {
+    "format": "javascript",
+    "lines": 102,
+    "fragment": " } from '../constants/dendrite.js';\nimport { parseJsonOrDefault } from '../utils/jsonUtils.js';\nimport { maybeRemoveNumber, maybeRemoveKV } from './removeElements.js';\nimport { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';\nimport { hideAndDisable } from './inputState.js';\n\n/**\n * Call a node's _dispose method when available.\n * @param {{_dispose?: Function}} node - Node to clean up.\n * @returns {void}\n */\nfunction disposeIfPossible(node) {\n  if (typeof node._dispose === 'function') {\n    node._dispose();\n  }\n}\n\n/**\n * Remove any previously rendered dendrite form from the container.\n * @param {HTMLElement} container - Wrapper element.\n * @param {object} dom - DOM helpers.\n * @returns {void}\n */\nfunction removeExistingForm(container, dom) {\n  const existing = dom.querySelector(container, DENDRITE_FORM_SELECTOR);\n  if (existing) {\n    disposeIfPossible(existing);\n    dom.removeChild(container, existing);\n  }\n}\n\n/**\n * Parse JSON data stored in the hidden text input.\n * @param {object} dom - DOM utilities.\n * @param {HTMLInputElement} textInput - Hidden input element.\n * @returns {object} Parsed dendrite data.\n */\nfunction parseDendriteData(dom, textInput) {\n  const value = dom.getValue(textInput) || '{}';\n  return parseJsonOrDefault(value, {});\n}\n\n/**\n * Create an input element for a given field key.\n * @param {object} dom - DOM utilities.\n * @param {string} key - Field name.\n * @returns {HTMLElement} The created element.\n */\nfunction createInputElement(dom, key) {\n  if (key === 'content') {\n    return dom.createElement('textarea');\n  }\n  const element = dom.createElement('input');\n  dom.setType(element, 'text');\n  return element;\n}\n\n/**\n * Add a labeled input field to the dendrite form.\n * @param {object} dom - DOM helpers.\n * @param {HTMLElement} form - Form container.\n * @param {{key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field options.\n * @returns {void}\n */\nfunction createField(\n  dom,\n  form,\n  { key, placeholder, data, textInput, disposers }\n) {\n  const wrapper = dom.createElement('div');\n  const label = dom.createElement('label');\n  dom.setTextContent(label, placeholder);\n\n  const input = createInputElement(dom, key);\n  dom.setPlaceholder(input, placeholder);\n  if (Object.hasOwn(data, key)) {\n    dom.setValue(input, data[key]);\n  }\n  const onInput = () => {\n    data[key] = dom.getValue(input);\n    dom.setValue(textInput, JSON.stringify(data));\n  };\n  dom.addEventListener(input, 'input', onInput);\n  disposers.push(() => dom.removeEventListener(input, 'input', onInput));\n  dom.appendChild(wrapper, label);\n  dom.appendChild(wrapper, input);\n  dom.appendChild(form, wrapper);\n}\n\n/**\n * Build the interactive dendrite form and insert it after the text input.\n * @param {object} dom - DOM utilities.\n * @param {{container: HTMLElement, textInput: HTMLInputElement, data: object, disposers: Function[]}} param1 - Configuration options.\n * @returns {HTMLElement} The created form element.\n */\nfunction buildForm(dom, { container, textInput, data, disposers }) {\n  const form = dom.createElement('div');\n  dom.setClassName(form, DENDRITE_FORM_SELECTOR.slice(1));\n  const nextSibling = dom.getNextSibling(textInput);\n  dom.insertBefore(container, form, nextSibling);\n\n  DENDRITE_PAGE_FIELDS",
+    "tokens": 0,
+    "firstFile": {
+      "name": "src/inputHandlers/dendritePage.js",
+      "start": 1,
+      "end": 102,
+      "startLoc": {
+        "line": 1,
+        "column": 21,
+        "position": 5
+      },
+      "endLoc": {
+        "line": 102,
+        "column": 21,
+        "position": 668
+      }
+    },
+    "secondFile": {
+      "name": "src/inputHandlers/dendriteStory.js",
+      "start": 1,
+      "end": 102,
+      "startLoc": {
+        "line": 1,
+        "column": 16,
+        "position": 5
+      },
+      "endLoc": {
+        "line": 102,
+        "column": 16,
+        "position": 668
+      }
+    }
+  },
+  {
+    "format": "javascript",
+    "lines": 61,
+    "fragment": ".forEach(([key, placeholder]) =>\n    createField(dom, form, {\n      key,\n      placeholder,\n      data,\n      textInput,\n      disposers,\n    })\n  );\n\n  dom.setValue(textInput, JSON.stringify(data));\n\n  form._dispose = () => {\n    disposers.forEach(fn => fn());\n  };\n\n  return form;\n}\n\n/**\n * Hide and disable the hidden JSON input element.\n * @param {object} dom - DOM helpers.\n * @param {HTMLInputElement} textInput - Input to hide.\n * @returns {void}\n */\nfunction prepareTextInput(dom, textInput) {\n  hideAndDisable(textInput, dom);\n}\n\n/**\n * Remove existing inputs and forms from the container.\n * @param {object} dom - DOM utilities.\n * @param {HTMLElement} container - Container element.\n * @returns {void}\n */\nfunction cleanContainer(dom, container) {\n  maybeRemoveNumber(container, dom);\n  maybeRemoveKV(container, dom);\n  removeExistingForm(container, dom);\n}\n\n/**\n * Create and insert a dendrite form for editing data.\n * @param {object} dom - DOM utilities.\n * @param {HTMLElement} container - Container to insert into.\n * @param {HTMLInputElement} textInput - Hidden JSON input.\n * @returns {HTMLElement} Newly created form.\n */\nfunction createDendriteForm(dom, container, textInput) {\n  const disposers = [];\n  const data = parseDendriteData(dom, textInput);\n  return buildForm(dom, { container, textInput, data, disposers });\n}\n\n/**\n * Initialize the dendrite page editor inside a container.\n * @param {object} dom - DOM utilities.\n * @param {HTMLElement} container - Element that will host the form.\n * @param {HTMLInputElement} textInput - Hidden JSON input element.\n * @returns {HTMLElement} The created form element.\n */",
+    "tokens": 0,
+    "firstFile": {
+      "name": "src/inputHandlers/dendritePage.js",
+      "start": 102,
+      "end": 162,
+      "startLoc": {
+        "line": 102,
+        "column": 21,
+        "position": 669
+      },
+      "endLoc": {
+        "line": 162,
+        "column": 4,
+        "position": 930
+      }
+    },
+    "secondFile": {
+      "name": "src/inputHandlers/dendriteStory.js",
+      "start": 102,
+      "end": 162,
+      "startLoc": {
+        "line": 102,
+        "column": 16,
+        "position": 669
+      },
+      "endLoc": {
+        "line": 162,
+        "column": 4,
+        "position": 930
+      }
+    }
+  },
+  {
+    "format": "javascript",
+    "lines": 9,
+    "fragment": "],\n  ['content', 'Content'],\n  ['firstOption', 'First option'],\n  ['secondOption', 'Second option'],\n  ['thirdOption', 'Third option'],\n  ['fourthOption', 'Fourth option'],\n];\n\nexport const DENDRITE_OPTION_KEYS",
+    "tokens": 0,
+    "firstFile": {
+      "name": "src/constants/dendrite.js",
+      "start": 11,
+      "end": 19,
+      "startLoc": {
+        "line": 11,
+        "column": 12,
+        "position": 84
+      },
+      "endLoc": {
+        "line": 19,
+        "column": 21,
+        "position": 140
+      }
+    },
+    "secondFile": {
+      "name": "src/constants/dendrite.js",
+      "start": 2,
+      "end": 10,
+      "startLoc": {
+        "line": 2,
+        "column": 8,
+        "position": 16
+      },
+      "endLoc": {
+        "line": 10,
+        "column": 21,
+        "position": 72
+      }
+    }
+  }
+]
