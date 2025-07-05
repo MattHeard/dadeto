@@ -41,6 +41,5 @@ jobs:
             echo "No changes in public/, skipping commit."
           else
             git commit -m "chore: update public output from build"
-            git push
+            git push https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }} HEAD:main
           fi
-
