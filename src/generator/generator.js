@@ -699,22 +699,59 @@ function hasTags(post) {
 /**
  * Check if post has the specified media type
  */
-// Declarative rules for whether media of a given type should display
-const MEDIA_DISPLAY_RULES = {
-  illustration: post => Boolean(post.illustration),
-  audio: post => Boolean(post.audio),
-  youtube: post => Boolean(post.youtube),
-};
+const MEDIA_SECTIONS_CONFIG = [
+  {
+    label: 'illus',
+    condition: post => post.illustration,
+    content: post => {
+      const { fileName, fileType, altText } = post.illustration;
+      const src = `${fileName || post.publicationDate}.${fileType}`;
+      return `<img loading="lazy" src="${src}" alt="${escapeHtml(altText || '')}"/>`;
+    },
+    keyExtraClasses: CLASS.MEDIA,
+  },
+  {
+    label: 'audio',
+    condition: post => post.audio,
+    content: post => {
+      const audioSrc = `${post.publicationDate}.${post.audio.fileType}`;
+      return `<audio class="${CLASS.VALUE}" controls><source src="${audioSrc}"></audio>`;
+    },
+    wrapValueDiv: false, // The <audio> tag itself serves as the value container
+    keyExtraClasses: CLASS.MEDIA,
+  },
+  {
+    label: 'video',
+    condition: post => post.youtube,
+    content: post => {
+      const { id, timestamp, title } = post.youtube;
+      return `<p class="${
+        CLASS.VALUE
+      }"><iframe height="300px" width="100%" src="https://www.youtube.com/embed/${id}?start=${timestamp}" title="${escapeHtml(
+        title || ''
+      )}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe></p>`;
+    },
+    wrapValueDiv: false, // The <p> tag is already included in the content
+    keyExtraClasses: CLASS.MEDIA,
+  },
+];
 
 /**
- * Determine if media of a given type should be rendered for a post.
- * @param {object} post - The blog post.
- * @param {string} type - The media type.
- * @returns {boolean} Whether the media should be shown.
+ *
+ * @param post
  */
-function shouldDisplayMedia(post, type) {
-  const rule = MEDIA_DISPLAY_RULES[type];
-  return rule(post);
+function generateMediaSections(post) {
+  return MEDIA_SECTIONS_CONFIG.map(section => {
+    if (section.condition(post)) {
+      return createLabeledSection({
+        label: section.label,
+        valueHTML: section.content(post),
+        wrapValueDiv: section.wrapValueDiv !== false,
+        keyExtraClasses: section.keyExtraClasses,
+      });
+    }
+    return '';
+  }).join('');
 }
 
 /**
@@ -733,131 +770,6 @@ function isNonEmptyArray(value) {
  */
 function hasRelatedLinks(post) {
   return post.relatedLinks !== undefined && isNonEmptyArray(post.relatedLinks);
-}
-
-/**
- * Check if post has tags
- * @param {object} post - The blog post
- * @returns {boolean} - True if post has tags
- */
-
-/**
- * Generate the HTML fragment for the given media type.
- * @param {object} post - The blog post.
- * @param {string} mediaType - Media type key.
- * @returns {string} HTML for the media fragment.
- */
-function generateMediaContent(post, mediaType) {
-  return buildMediaContent(post, mediaType);
-}
-
-/**
-/**
-Create an illustration `<img>` element for a post.
- * @param {object} post - The blog post.
- * @returns {string} HTML image element.
- */
-function createIllustrationImage(post) {
-  // Use fileName if provided, otherwise fall back to publicationDate
-  const fileName = post.illustration.fileName || post.publicationDate;
-  const src = `${fileName}.${post.illustration.fileType}`;
-  const altText = post.illustration.altText;
-  return `<img loading="lazy" src="${src}" alt="${altText}"/>`;
-}
-
-/**
- * Create an audio `<source>` element for a post.
- * @param {object} post - The blog post.
- * @returns {string} HTML source element.
- */
-function createAudioSource(post) {
-  const audioSrc = `${post.publicationDate}.${post.audio.fileType}`;
-  return `<source src="${audioSrc}">`;
-}
-
-/**
- * Create a YouTube `<iframe>` element for a post.
- * @param {object} post - The blog post.
- * @returns {string} HTML iframe element.
- */
-function createYouTubeIframe(post) {
-  const youtubeId = post.youtube.id;
-  const timestamp = post.youtube.timestamp;
-  const title = escapeHtml(post.youtube.title);
-  return `<iframe height="300px" width="100%" src="https://www.youtube.com/embed/${youtubeId}?start=${timestamp}" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>`;
-}
-
-/**
- * Mapping for media sections.
- * Each key maps to a function that generates the corresponding media section.
- */
-// Media config: [type, label]
-const MEDIA_CONFIG = [
-  ['illustration', 'illus'],
-  ['audio', 'audio'],
-  ['youtube', 'video'],
-];
-
-// Declarative mapping for media content rendering
-const MEDIA_CONTENT_CONFIG = {
-  illustration: { wrapperTag: 'div', fragment: createIllustrationImage },
-  audio: { wrapperTag: 'audio', fragment: createAudioSource, controls: true },
-  youtube: { wrapperTag: 'p', fragment: createYouTubeIframe },
-};
-
-// Generic builder for media content
-/**
- * Build the wrapper element for media content.
- * @param {object} post - The blog post.
- * @param {string} type - Media type key.
- * @returns {string} HTML for the wrapped media content.
- */
-function buildMediaContent(post, type) {
-  const { wrapperTag, fragment, controls } = MEDIA_CONTENT_CONFIG[type];
-  const innerHTML = fragment(post);
-  let controlsAttr = '';
-  if (controls) {
-    controlsAttr = ' controls';
-  }
-  return `<${wrapperTag} class="${CLASS.VALUE}"${controlsAttr}>${innerHTML}</${wrapperTag}>`;
-}
-
-// Generic media section builder
-/**
- * Build a complete media section.
- * @param {object} post - The blog post.
- * @param {string} type - Media type key.
- * @param {string} label - Label for the section.
- * @returns {string} HTML for the section or empty string if hidden.
- */
-function buildMediaSection(post, type, label) {
-  if (!shouldDisplayMedia(post, type)) {
-    return '';
-  }
-  return createLabeledSection({
-    label,
-    valueHTML: generateMediaContent(post, type),
-    wrapValueDiv: false,
-    keyExtraClasses: CLASS.MEDIA,
-  });
-}
-
-const MEDIA_SECTIONS = Object.fromEntries(
-  MEDIA_CONFIG.map(([type, label]) => [
-    type,
-    post => buildMediaSection(post, type, label),
-  ])
-);
-/**
- * Generate all media sections for a blog post by iterating over the MEDIA_SECTIONS mapping.
- * @param {object} post - The blog post.
- * @returns {string} HTML for all media sections.
- */
-function generateMediaSections(post) {
-  const sections = Object.values(MEDIA_SECTIONS).map(generator =>
-    generator(post)
-  );
-  return join(sections);
 }
 
 /**
