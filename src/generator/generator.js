@@ -668,8 +668,10 @@ const HEADER_SECTIONS_CONFIG = [
 ];
 
 /**
- *
- * @param post
+ * Generate the header sections for a blog post based on the predefined
+ * configuration.
+ * @param {object} post - The blog post data.
+ * @returns {string[]} Array of HTML strings representing header sections.
  */
 function generateHeaderSectionsFromConfig(post) {
   return HEADER_SECTIONS_CONFIG.map(section => {
