@@ -33,6 +33,7 @@ The following Jest features cause issues with Stryker mutation testing and must 
 
 - Follow the guidelines in `CLAUDE.md` for naming and formatting.
 - Use Prettier with the configuration in `.prettierrc`.
+- Never use `eslint-disable` comments. Fix the offending code or allow the warning.
 
 ## Commit Messages
 

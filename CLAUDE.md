@@ -18,3 +18,4 @@
 - **Security**: Always use escapeHtml for user-provided content
 - **Formatting**: Use consistent indentation (2 spaces)
 - **File Structure**: Modular components in separate files
+- **Linting**: Never use `eslint-disable` comments. Resolve warnings instead of suppressing them.
