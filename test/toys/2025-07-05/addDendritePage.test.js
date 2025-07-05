@@ -16,14 +16,14 @@ describe('addDendritePage', () => {
       ['getUuid', () => uuids[idx++]],
     ]);
     const input = JSON.stringify({
-      storyId: 'story',
+      optionId: 'choice',
       content: 'Body',
       firstOption: 'A',
       secondOption: 'B',
     });
     const result = JSON.parse(addDendritePage(input, env));
     expect(result).toEqual({
-      pages: [{ id: 'page', storyId: 'story', content: 'Body' }],
+      pages: [{ id: 'page', optionId: 'choice', content: 'Body' }],
       options: [
         { id: 'a', pageId: 'page', content: 'A' },
         { id: 'b', pageId: 'page', content: 'B' },
@@ -33,7 +33,7 @@ describe('addDendritePage', () => {
       temporary: {
         DEND2: {
           stories: [],
-          pages: [{ id: 'page', storyId: 'story', content: 'Body' }],
+          pages: [{ id: 'page', optionId: 'choice', content: 'Body' }],
           options: [
             { id: 'a', pageId: 'page', content: 'A' },
             { id: 'b', pageId: 'page', content: 'B' },
@@ -51,14 +51,14 @@ describe('addDendritePage', () => {
       ['setData', jest.fn()],
       ['getUuid', () => uuids[i++]],
     ]);
-    const input = JSON.stringify({ storyId: 's', content: 'c' });
+    const input = JSON.stringify({ optionId: 'o', content: 'c' });
     const result = JSON.parse(addDendritePage(input, env));
-    expect(result.pages[0]).toEqual({ id: 'p', storyId: 's', content: 'c' });
+    expect(result.pages[0]).toEqual({ id: 'p', optionId: 'o', content: 'c' });
     expect(env.get('setData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
           stories: [],
-          pages: [{ id: 'p', storyId: 's', content: 'c' }],
+          pages: [{ id: 'p', optionId: 'o', content: 'c' }],
           options: [],
         },
       },
@@ -77,13 +77,13 @@ describe('addDendritePage', () => {
       ['setData', jest.fn()],
       ['getUuid', () => uuids.shift()],
     ]);
-    const input = JSON.stringify({ storyId: 's', content: 'c' });
+    const input = JSON.stringify({ optionId: 'o', content: 'c' });
     addDendritePage(input, env);
     expect(env.get('setData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
           stories: [],
-          pages: [{ id: 'p', storyId: 's', content: 'c' }],
+          pages: [{ id: 'p', optionId: 'o', content: 'c' }],
           options: [],
         },
       },
@@ -106,7 +106,7 @@ describe('addDendritePage', () => {
       ['setData', jest.fn()],
       ['getUuid', () => 'id'],
     ]);
-    const bad = JSON.stringify({ storyId: 1 });
+    const bad = JSON.stringify({ optionId: 1 });
     const result = addDendritePage(bad, env);
     expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
     expect(env.get('setData')).not.toHaveBeenCalled();
@@ -128,7 +128,7 @@ describe('addDendritePage', () => {
       ['setData', jest.fn()],
       ['getUuid', () => 'id'],
     ]);
-    const bad = JSON.stringify({ storyId: 's', content: 1 });
+    const bad = JSON.stringify({ optionId: 'o', content: 1 });
     const result = addDendritePage(bad, env);
     expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
     expect(env.get('setData')).not.toHaveBeenCalled();
