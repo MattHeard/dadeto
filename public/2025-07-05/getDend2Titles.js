@@ -7,14 +7,14 @@
  * @param {Map<string, Function>} env - Environment with a `getData` accessor.
  * @returns {string} JSON array string of story titles.
  */
+// eslint-disable-next-line complexity
 export function getDend2Titles(input, env) {
+  const getData = env.get('getData');
+  if (typeof getData !== 'function') {
+    return JSON.stringify([]);
+  }
   try {
-    const getData = env.get('getData');
-    const data = getData();
-    const stories = data?.temporary?.DEND2?.stories;
-    if (!Array.isArray(stories)) {
-      return JSON.stringify([]);
-    }
+    const stories = getData()?.temporary?.DEND2?.stories || [];
     const titles = stories
       .map(story => story?.title)
       .filter(title => typeof title === 'string');
