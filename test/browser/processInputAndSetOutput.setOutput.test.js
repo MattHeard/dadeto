@@ -16,7 +16,7 @@ describe('processInputAndSetOutput integration', () => {
     };
     toyEnv = new Map([
       ['getData', () => ({ output: {} })],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     env = {
       createEnv: jest.fn(() => toyEnv),
@@ -41,7 +41,7 @@ describe('processInputAndSetOutput integration', () => {
 
   it('stores result with article id key via setOutput', () => {
     processInputAndSetOutput(elements, processingFunction, env);
-    const callArg = toyEnv.get('setData').mock.calls[0][0];
+    const callArg = toyEnv.get('setLocalTemporaryData').mock.calls[0][0];
     expect(callArg.output).toEqual({ [elements.article.id]: 'result' });
   });
 });

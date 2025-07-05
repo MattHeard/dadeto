@@ -86,7 +86,7 @@ describe('createHandleSubmit', () => {
     };
     const toyEnv = new Map([
       ['getData', () => ({ output: {} })],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const env = {
       dom,
@@ -132,7 +132,7 @@ describe('createHandleSubmit', () => {
         () =>
           new Map([
             ['getData', jest.fn()],
-            ['setData', jest.fn()],
+            ['setLocalTemporaryData', jest.fn()],
           ])
       ),
       errorFn: jest.fn(),

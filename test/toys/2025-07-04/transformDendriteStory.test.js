@@ -12,7 +12,7 @@ describe('transformDendriteStory', () => {
           temporary: { DEND2: { stories: [], pages: [], options: [] } },
         }),
       ],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => uuids[idx++]],
     ]);
     const input = JSON.stringify({
@@ -30,7 +30,7 @@ describe('transformDendriteStory', () => {
         { id: 'b', pageId: 'page', content: 'B' },
       ],
     });
-    expect(env.get('setData')).toHaveBeenCalledWith({
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
           stories: [{ id: 'story', title: 'Title' }],
@@ -49,13 +49,13 @@ describe('transformDendriteStory', () => {
     let i = 0;
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => uuids[i++]],
     ]);
     const input = JSON.stringify({ title: 't', content: 'c' });
     const result = JSON.parse(transformDendriteStory(input, env));
     expect(result.stories[0]).toEqual({ id: 's', title: 't' });
-    expect(env.get('setData')).toHaveBeenCalledWith({
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
           stories: [{ id: 's', title: 't' }],
@@ -69,11 +69,11 @@ describe('transformDendriteStory', () => {
   test('returns empty arrays on parse error', () => {
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const result = transformDendriteStory('not json', env);
     expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
-    expect(env.get('setData')).not.toHaveBeenCalled();
+    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
   });
   test('repairs invalid DEND2 structure', () => {
     const uuids = ['s', 'p'];
@@ -84,12 +84,12 @@ describe('transformDendriteStory', () => {
           temporary: { DEND2: { stories: {}, pages: null, options: 1 } },
         }),
       ],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => uuids.shift()],
     ]);
     const input = JSON.stringify({ title: 'title', content: 'body' });
     transformDendriteStory(input, env);
-    expect(env.get('setData')).toHaveBeenCalledWith({
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
           stories: [{ id: 's', title: 'title' }],
@@ -103,34 +103,34 @@ describe('transformDendriteStory', () => {
   test('returns empty arrays for invalid fields', () => {
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => 'id'],
     ]);
     const bad = JSON.stringify({ title: 1 });
     const result = transformDendriteStory(bad, env);
     expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
-    expect(env.get('setData')).not.toHaveBeenCalled();
+    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
   });
 
   test('returns empty arrays for null input', () => {
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const result = transformDendriteStory('null', env);
     expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
-    expect(env.get('setData')).not.toHaveBeenCalled();
+    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
   });
 
   test('returns empty arrays for invalid content', () => {
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => 'id'],
     ]);
     const bad = JSON.stringify({ title: 'ok', content: 1 });
     const result = transformDendriteStory(bad, env);
     expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
-    expect(env.get('setData')).not.toHaveBeenCalled();
+    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
   });
 });

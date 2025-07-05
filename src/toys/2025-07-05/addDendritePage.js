@@ -70,7 +70,7 @@ export function addDendritePage(input, env) {
 
     const getUuid = env.get('getUuid');
     const getData = env.get('getData');
-    const setData = env.get('setData');
+    const setLocalTemporaryData = env.get('setLocalTemporaryData');
     const pageId = getUuid();
     const opts = createOptions(parsed, pageId, getUuid);
     const page = {
@@ -84,7 +84,7 @@ export function addDendritePage(input, env) {
     ensureDend2(newData);
     newData.temporary.DEND2.pages.push(page);
     newData.temporary.DEND2.options.push(...opts);
-    setData(newData);
+    setLocalTemporaryData(newData);
 
     return JSON.stringify({ pages: [page], options: opts });
   } catch {

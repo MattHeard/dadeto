@@ -45,7 +45,7 @@ export function startLocalDendriteStory(input, env) {
     const data = JSON.parse(input);
     const getUuid = env.get('getUuid');
     const getData = env.get('getData');
-    const setData = env.get('setData');
+    const setLocalTemporaryData = env.get('setLocalTemporaryData');
 
     const result = {
       id: getUuid(),
@@ -58,7 +58,7 @@ export function startLocalDendriteStory(input, env) {
     const newData = deepClone(currentData);
     ensureTemporaryData(newData);
     newData.temporary.DEND1.push(result);
-    setData(newData);
+    setLocalTemporaryData(newData);
 
     return JSON.stringify(result);
   } catch {

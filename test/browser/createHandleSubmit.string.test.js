@@ -17,7 +17,7 @@ describe('createHandleSubmit string representation', () => {
         () =>
           new Map([
             ['getData', jest.fn()],
-            ['setData', jest.fn()],
+            ['setLocalTemporaryData', jest.fn()],
           ])
       ),
       errorFn: jest.fn(),

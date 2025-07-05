@@ -6,7 +6,7 @@ describe('startLocalDendriteStory missing temporary', () => {
     const env = new Map([
       ['getUuid', () => 'id-1'],
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const inputObj = { title: 't', content: 'c' };
     const output = JSON.parse(
@@ -14,7 +14,7 @@ describe('startLocalDendriteStory missing temporary', () => {
     );
     const expected = { id: 'id-1', title: 't', content: 'c', options: [] };
     expect(output).toEqual(expected);
-    expect(env.get('setData')).toHaveBeenCalledWith({
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: { DEND1: [expected] },
     });
   });
@@ -23,14 +23,14 @@ describe('startLocalDendriteStory missing temporary', () => {
     const env = new Map([
       ['getUuid', () => 'id-2'],
       ['getData', () => ({ temporary: 42 })],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const output = JSON.parse(
       startLocalDendriteStory('{"title":"x","content":"y"}', env)
     );
     const expected = { id: 'id-2', title: 'x', content: 'y', options: [] };
     expect(output).toEqual(expected);
-    expect(env.get('setData')).toHaveBeenCalledWith({
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: { DEND1: [expected] },
     });
   });

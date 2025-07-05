@@ -21,7 +21,7 @@ describe('setOutput', () => {
           throw new Error('fail');
         },
       ],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const result = setOutput('{"foo": "bar"}', env);
     expect(result).toMatch(/Error updating output data/);
@@ -32,7 +32,7 @@ describe('setOutput', () => {
     const setData = jest.fn();
     const env = new Map([
       ['getData', () => initial],
-      ['setData', setData],
+      ['setLocalTemporaryData', setData],
     ]);
     const input = '{"b":2}';
     const result = setOutput(input, env);
@@ -47,7 +47,7 @@ describe('setOutput', () => {
     const setData = jest.fn();
     const env = new Map([
       ['getData', () => initial],
-      ['setData', setData],
+      ['setLocalTemporaryData', setData],
     ]);
     const input = '{"b":2}';
     const result = setOutput(input, env);
@@ -57,12 +57,12 @@ describe('setOutput', () => {
     expect(callArg.output).toMatchObject({ b: 2 });
   });
 
-  it('merges output data and calls setData', () => {
+  it('merges output data and calls setLocalTemporaryData', () => {
     const initial = { output: { a: 1 } };
     const setData = jest.fn();
     const env = new Map([
       ['getData', () => initial],
-      ['setData', setData],
+      ['setLocalTemporaryData', setData],
     ]);
     const input = '{"b":2}';
     const result = setOutput(input, env);

@@ -236,9 +236,12 @@ function isInvalidState(value) {
  */
 function validateIncomingState(incomingState, errorFn) {
   if (isInvalidState(incomingState)) {
-    errorFn('setData received invalid data structure:', incomingState);
+    errorFn(
+      'setLocalTemporaryData received invalid data structure:',
+      incomingState
+    );
     throw new Error(
-      "setData requires an object with at least a 'temporary' property."
+      "setLocalTemporaryData requires an object with at least a 'temporary' property."
     );
   }
 }
@@ -334,7 +337,7 @@ export const getData = (state, fetch, loggers) => {
  * @param {Function} loggers.logInfo - Information logger.
  * @param {Function} loggers.logError - Error logger.
  */
-export const setData = (state, loggers) => {
+export const setLocalTemporaryData = (state, loggers) => {
   const { desired, current } = state;
   const { logError } = loggers;
   // Validate incoming state

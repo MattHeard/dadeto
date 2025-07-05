@@ -22,7 +22,7 @@ beforeEach(() => {
   };
   toyEnv = new Map([
     ['getData', () => ({ output: {} })],
-    ['setData', jest.fn()],
+    ['setLocalTemporaryData', jest.fn()],
   ]);
   env = {
     createEnv: jest.fn(() => toyEnv),
@@ -96,7 +96,7 @@ describe('processInputAndSetOutput', () => {
 
     processInputAndSetOutput(elements, processingFunction, env);
 
-    const setData = toyEnv.get('setData');
+    const setData = toyEnv.get('setLocalTemporaryData');
     const callArg = setData.mock.calls[0][0];
     expect(callArg.output).toEqual({ [elements.article.id]: result });
   });

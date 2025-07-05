@@ -9,7 +9,7 @@ describe('cyberpunkAdventure input trimming', () => {
       ['getCurrentTime', () => '00:00'],
       ['getData', () => ({ temporary: { CYBE1: tempData } })],
       [
-        'setData',
+        'setLocalTemporaryData',
         data => {
           tempData = { ...tempData, ...data.temporary?.CYBE1 };
         },

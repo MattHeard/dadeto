@@ -17,11 +17,11 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     mockSetData = jest.fn(); // Mock for setData
     env = new Map([
       ['getData', mockGetData],
-      ['setData', mockSetData], // Add setData mock to env
+      ['setLocalTemporaryData', mockSetData], // Add setData mock to env
     ]);
   });
 
-  test('should call setData with merged JSON when temporary exists', () => {
+  test('should call setLocalTemporaryData with merged JSON when temporary exists', () => {
     // Modify initialData for this test case before freezing (or create a new one)
     initialData = Object.freeze({
       existing: 'value',
@@ -57,7 +57,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     }
   });
 
-  test('should call setData creating temporary if it does not exist', () => {
+  test('should call setLocalTemporaryData creating temporary if it does not exist', () => {
     // initialData already lacks temporary from beforeEach
     const inputJson = JSON.stringify({ firstKey: 123 });
     const expectedFinalData = {
@@ -76,7 +76,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(mockSetData.mock.calls[0][0]).not.toBe(initialData);
   });
 
-  test('should call setData creating temporary if it exists but is not a valid object', () => {
+  test('should call setLocalTemporaryData creating temporary if it exists but is not a valid object', () => {
     initialData = Object.freeze({ existing: 'value', temporary: 'a string' });
     mockGetData.mockReturnValue(initialData);
     const inputJson = JSON.stringify({ key: 'val' });
@@ -120,7 +120,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(mockSetData).toHaveBeenCalledTimes(3);
   });
 
-  test('should return error for invalid JSON input and not call setData', () => {
+  test('should return error for invalid JSON input and not call setLocalTemporaryData', () => {
     const input = 'not json';
     const result = setTemporary(input, env);
     expect(result).toMatch(/^Error: Invalid JSON input./);
@@ -128,7 +128,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(mockSetData).not.toHaveBeenCalled(); // Verify setData not called
   });
 
-  test('should return error if input JSON is not a plain object and not call setData', () => {
+  test('should return error if input JSON is not a plain object and not call setLocalTemporaryData', () => {
     const input = JSON.stringify([1, 2, 3]); // Array
     expect(setTemporary(input, env)).toBe(
       'Error: Input JSON must be a plain object.'
@@ -137,7 +137,7 @@ describe('setTemporary function (getData -> merge -> setData)', () => {
     expect(mockSetData).not.toHaveBeenCalled();
   });
 
-  test('should return error if getData throws an error and not call setData', () => {
+  test('should return error if getData throws an error and not call setLocalTemporaryData', () => {
     const errorMessage = 'Failed to retrieve data';
     mockGetData.mockImplementation(() => {
       throw new Error(errorMessage);

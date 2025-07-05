@@ -12,7 +12,7 @@ describe('processInputAndSetOutput invalid JSON handling', () => {
 
     const toyEnv = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
 
     const dom = {

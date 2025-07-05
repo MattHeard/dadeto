@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
   fetchAndCacheBlogData,
   getData,
-  setData,
+  setLocalTemporaryData as setData,
   getDeepStateCopy,
   shouldUseExistingFetch,
   deepMerge,
@@ -380,10 +380,10 @@ describe('getData, setData, and getDeepStateCopy', () => {
         { logInfo: logFn, logError: errorFn }
       )
     ).toThrow(
-      "setData requires an object with at least a 'temporary' property."
+      "setLocalTemporaryData requires an object with at least a 'temporary' property."
     );
     expect(errorFn).toHaveBeenCalledWith(
-      'setData received invalid data structure:',
+      'setLocalTemporaryData received invalid data structure:',
       {}
     );
   });
@@ -395,7 +395,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
         { logInfo: logFn, logError: errorFn }
       )
     ).toThrow(
-      "setData requires an object with at least a 'temporary' property."
+      "setLocalTemporaryData requires an object with at least a 'temporary' property."
     );
   });
 
@@ -411,7 +411,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
       )
     ).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
-      'setData received invalid data structure:',
+      'setLocalTemporaryData received invalid data structure:',
       invalidState
     );
   });
@@ -427,7 +427,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
         { logInfo: logFn, logError: errorFn }
       )
     ).toThrow(
-      "setData requires an object with at least a 'temporary' property."
+      "setLocalTemporaryData requires an object with at least a 'temporary' property."
     );
   });
 
@@ -442,7 +442,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
       )
     ).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
-      'setData received invalid data structure:',
+      'setLocalTemporaryData received invalid data structure:',
       null
     );
   });
@@ -458,7 +458,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
       )
     ).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
-      'setData received invalid data structure:',
+      'setLocalTemporaryData received invalid data structure:',
       undefined
     );
   });
@@ -475,7 +475,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
       )
     ).toThrow();
     expect(errorFn).toHaveBeenCalledWith(
-      'setData received invalid data structure:',
+      'setLocalTemporaryData received invalid data structure:',
       invalidState
     );
   });
