@@ -1,6 +1,18 @@
 {
   "posts": [
     {
+      "key": "SETP1",
+      "title": "Set Permanent Data",
+      "publicationDate": "2025-07-05",
+      "content": ["Stores input into permanent storage."],
+      "toy": {
+        "modulePath": "/2025-07-05/setPermanentData.js",
+        "functionName": "setPermanentData"
+      },
+      "tags": ["toy", "storage", "json"],
+      "release": "beta"
+    },
+    {
       "key": "DEND4",
       "title": "Add Dendrite Page",
       "publicationDate": "2025-07-05",
