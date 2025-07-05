@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-07-05T15:59:04.677Z",
+    "detectionDate": "2025-07-05T17:10:47.408Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -464,11 +464,23 @@
             "lines": 167,
             "tokens": 985,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 161,
+            "duplicatedTokens": 924,
+            "percentage": 96.41,
+            "percentageTokens": 93.81,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/inputHandlers/dendritePage.js": {
+            "lines": 167,
+            "tokens": 985,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 161,
+            "duplicatedTokens": 924,
+            "percentage": 96.41,
+            "percentageTokens": 93.81,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -581,14 +593,14 @@
             "newClones": 0
           },
           "src/constants/dendrite.js": {
-            "lines": 12,
-            "tokens": 108,
+            "lines": 21,
+            "tokens": 176,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 16,
+            "duplicatedTokens": 112,
+            "percentage": 76.19,
+            "percentageTokens": 63.64,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -629,8 +641,8 @@
             "newClones": 0
           },
           "src/browser/data.js": {
-            "lines": 420,
-            "tokens": 2030,
+            "lines": 409,
+            "tokens": 1988,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -690,14 +702,14 @@
           }
         },
         "total": {
-          "lines": 7229,
-          "tokens": 36100,
-          "sources": 57,
-          "clones": 4,
-          "duplicatedLines": 47,
-          "duplicatedTokens": 426,
-          "percentage": 0.65,
-          "percentageTokens": 1.18,
+          "lines": 7394,
+          "tokens": 37111,
+          "sources": 58,
+          "clones": 7,
+          "duplicatedLines": 216,
+          "duplicatedTokens": 1406,
+          "percentage": 2.92,
+          "percentageTokens": 3.79,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -784,14 +796,14 @@
       }
     },
     "total": {
-      "lines": 7452,
-      "tokens": 37105,
-      "sources": 61,
-      "clones": 4,
-      "duplicatedLines": 47,
-      "duplicatedTokens": 426,
-      "percentage": 0.63,
-      "percentageTokens": 1.15,
+      "lines": 7617,
+      "tokens": 38116,
+      "sources": 62,
+      "clones": 7,
+      "duplicatedLines": 216,
+      "duplicatedTokens": 1406,
+      "percentage": 2.84,
+      "percentageTokens": 3.69,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -938,6 +950,114 @@
           "line": 60,
           "column": 6,
           "position": 196
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 102,
+      "fragment": " } from '../constants/dendrite.js';\nimport { parseJsonOrDefault } from '../utils/jsonUtils.js';\nimport { maybeRemoveNumber, maybeRemoveKV } from './removeElements.js';\nimport { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';\nimport { hideAndDisable } from './inputState.js';\n\n/**\n * Call a node's _dispose method when available.\n * @param {{_dispose?: Function}} node - Node to clean up.\n * @returns {void}\n */\nfunction disposeIfPossible(node) {\n  if (typeof node._dispose === 'function') {\n    node._dispose();\n  }\n}\n\n/**\n * Remove any previously rendered dendrite form from the container.\n * @param {HTMLElement} container - Wrapper element.\n * @param {object} dom - DOM helpers.\n * @returns {void}\n */\nfunction removeExistingForm(container, dom) {\n  const existing = dom.querySelector(container, DENDRITE_FORM_SELECTOR);\n  if (existing) {\n    disposeIfPossible(existing);\n    dom.removeChild(container, existing);\n  }\n}\n\n/**\n * Parse JSON data stored in the hidden text input.\n * @param {object} dom - DOM utilities.\n * @param {HTMLInputElement} textInput - Hidden input element.\n * @returns {object} Parsed dendrite data.\n */\nfunction parseDendriteData(dom, textInput) {\n  const value = dom.getValue(textInput) || '{}';\n  return parseJsonOrDefault(value, {});\n}\n\n/**\n * Create an input element for a given field key.\n * @param {object} dom - DOM utilities.\n * @param {string} key - Field name.\n * @returns {HTMLElement} The created element.\n */\nfunction createInputElement(dom, key) {\n  if (key === 'content') {\n    return dom.createElement('textarea');\n  }\n  const element = dom.createElement('input');\n  dom.setType(element, 'text');\n  return element;\n}\n\n/**\n * Add a labeled input field to the dendrite form.\n * @param {object} dom - DOM helpers.\n * @param {HTMLElement} form - Form container.\n * @param {{key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field options.\n * @returns {void}\n */\nfunction createField(\n  dom,\n  form,\n  { key, placeholder, data, textInput, disposers }\n) {\n  const wrapper = dom.createElement('div');\n  const label = dom.createElement('label');\n  dom.setTextContent(label, placeholder);\n\n  const input = createInputElement(dom, key);\n  dom.setPlaceholder(input, placeholder);\n  if (Object.hasOwn(data, key)) {\n    dom.setValue(input, data[key]);\n  }\n  const onInput = () => {\n    data[key] = dom.getValue(input);\n    dom.setValue(textInput, JSON.stringify(data));\n  };\n  dom.addEventListener(input, 'input', onInput);\n  disposers.push(() => dom.removeEventListener(input, 'input', onInput));\n  dom.appendChild(wrapper, label);\n  dom.appendChild(wrapper, input);\n  dom.appendChild(form, wrapper);\n}\n\n/**\n * Build the interactive dendrite form and insert it after the text input.\n * @param {object} dom - DOM utilities.\n * @param {{container: HTMLElement, textInput: HTMLInputElement, data: object, disposers: Function[]}} param1 - Configuration options.\n * @returns {HTMLElement} The created form element.\n */\nfunction buildForm(dom, { container, textInput, data, disposers }) {\n  const form = dom.createElement('div');\n  dom.setClassName(form, DENDRITE_FORM_SELECTOR.slice(1));\n  const nextSibling = dom.getNextSibling(textInput);\n  dom.insertBefore(container, form, nextSibling);\n\n  DENDRITE_PAGE_FIELDS",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/inputHandlers/dendritePage.js",
+        "start": 1,
+        "end": 102,
+        "startLoc": {
+          "line": 1,
+          "column": 21,
+          "position": 5
+        },
+        "endLoc": {
+          "line": 102,
+          "column": 21,
+          "position": 668
+        }
+      },
+      "secondFile": {
+        "name": "src/inputHandlers/dendriteStory.js",
+        "start": 1,
+        "end": 102,
+        "startLoc": {
+          "line": 1,
+          "column": 16,
+          "position": 5
+        },
+        "endLoc": {
+          "line": 102,
+          "column": 16,
+          "position": 668
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 61,
+      "fragment": ".forEach(([key, placeholder]) =>\n    createField(dom, form, {\n      key,\n      placeholder,\n      data,\n      textInput,\n      disposers,\n    })\n  );\n\n  dom.setValue(textInput, JSON.stringify(data));\n\n  form._dispose = () => {\n    disposers.forEach(fn => fn());\n  };\n\n  return form;\n}\n\n/**\n * Hide and disable the hidden JSON input element.\n * @param {object} dom - DOM helpers.\n * @param {HTMLInputElement} textInput - Input to hide.\n * @returns {void}\n */\nfunction prepareTextInput(dom, textInput) {\n  hideAndDisable(textInput, dom);\n}\n\n/**\n * Remove existing inputs and forms from the container.\n * @param {object} dom - DOM utilities.\n * @param {HTMLElement} container - Container element.\n * @returns {void}\n */\nfunction cleanContainer(dom, container) {\n  maybeRemoveNumber(container, dom);\n  maybeRemoveKV(container, dom);\n  removeExistingForm(container, dom);\n}\n\n/**\n * Create and insert a dendrite form for editing data.\n * @param {object} dom - DOM utilities.\n * @param {HTMLElement} container - Container to insert into.\n * @param {HTMLInputElement} textInput - Hidden JSON input.\n * @returns {HTMLElement} Newly created form.\n */\nfunction createDendriteForm(dom, container, textInput) {\n  const disposers = [];\n  const data = parseDendriteData(dom, textInput);\n  return buildForm(dom, { container, textInput, data, disposers });\n}\n\n/**\n * Initialize the dendrite page editor inside a container.\n * @param {object} dom - DOM utilities.\n * @param {HTMLElement} container - Element that will host the form.\n * @param {HTMLInputElement} textInput - Hidden JSON input element.\n * @returns {HTMLElement} The created form element.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/inputHandlers/dendritePage.js",
+        "start": 102,
+        "end": 162,
+        "startLoc": {
+          "line": 102,
+          "column": 21,
+          "position": 669
+        },
+        "endLoc": {
+          "line": 162,
+          "column": 4,
+          "position": 930
+        }
+      },
+      "secondFile": {
+        "name": "src/inputHandlers/dendriteStory.js",
+        "start": 102,
+        "end": 162,
+        "startLoc": {
+          "line": 102,
+          "column": 16,
+          "position": 669
+        },
+        "endLoc": {
+          "line": 162,
+          "column": 4,
+          "position": 930
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 9,
+      "fragment": "],\n  ['content', 'Content'],\n  ['firstOption', 'First option'],\n  ['secondOption', 'Second option'],\n  ['thirdOption', 'Third option'],\n  ['fourthOption', 'Fourth option'],\n];\n\nexport const DENDRITE_OPTION_KEYS",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/constants/dendrite.js",
+        "start": 11,
+        "end": 19,
+        "startLoc": {
+          "line": 11,
+          "column": 12,
+          "position": 84
+        },
+        "endLoc": {
+          "line": 19,
+          "column": 21,
+          "position": 140
+        }
+      },
+      "secondFile": {
+        "name": "src/constants/dendrite.js",
+        "start": 2,
+        "end": 10,
+        "startLoc": {
+          "line": 2,
+          "column": 8,
+          "position": 16
+        },
+        "endLoc": {
+          "line": 10,
+          "column": 21,
+          "position": 72
         }
       }
     }
