@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -156,19 +156,23 @@
 <a name='L91'></a><a href='#L91'>91</a>
 <a name='L92'></a><a href='#L92'>92</a>
 <a name='L93'></a><a href='#L93'>93</a>
-<a name='L94'></a><a href='#L94'>94</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -186,12 +190,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -210,10 +214,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -230,8 +234,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -250,98 +254,100 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
+ * Create a factory function returning a frozen object.
+ * @param {object} obj - Object to freeze.
+ * @returns {() =&gt; Readonly&lt;object&gt;} Function returning the frozen object.
+ */
+function createConstantFactory(obj) {
+  const frozen = Object.freeze(obj);
+  return () =&gt; frozen;
+}
+&nbsp;
+/**
  * Markdown formatting markers.
  * @returns {Readonly&lt;Record&lt;string, string&gt;&gt;} Object of marker characters.
  */
-export function markdownMarkers() {
-  return Object.freeze({
-    ASTERISK: '*',
-    UNDERSCORE: '_',
-    BACKTICK: '`',
-    TILDE: '~',
-    DASH: '-',
-    EQUAL: '=',
-    HASH: '#',
-    GREATER_THAN: '&gt;',
-    PIPE: '|',
-    BACKSLASH: '\\',
-    SLASH: '/',
-    EXCLAMATION: '!',
-    BRACKET_OPEN: '[',
-    BRACKET_CLOSE: ']',
-    PAREN_OPEN: '(',
-    PAREN_CLOSE: ')',
-  });
-}
+export const markdownMarkers = createConstantFactory({
+  ASTERISK: '*',
+  UNDERSCORE: '_',
+  BACKTICK: '`',
+  TILDE: '~',
+  DASH: '-',
+  EQUAL: '=',
+  HASH: '#',
+  GREATER_THAN: '&gt;',
+  PIPE: '|',
+  BACKSLASH: '\\',
+  SLASH: '/',
+  EXCLAMATION: '!',
+  BRACKET_OPEN: '[',
+  BRACKET_CLOSE: ']',
+  PAREN_OPEN: '(',
+  PAREN_CLOSE: ')',
+});
 &nbsp;
 /**
  * HTML tag names for supported markdown elements.
  * @returns {Readonly&lt;Record&lt;string, string&gt;&gt;} Map of element keys to tag names.
  */
-export function htmlTags() {
-  return Object.freeze({
-    EMPHASIS: 'em',
-    STRONG: 'strong',
-    CODE: 'code',
-    PARAGRAPH: 'p',
-    BLOCKQUOTE: 'blockquote',
-    LIST: 'ul',
-    LIST_ITEM: 'li',
-    ORDERED_LIST: 'ol',
-    HORIZONTAL_RULE: 'hr',
-    LINE_BREAK: 'br',
-    LINK: 'a',
-    IMAGE: 'img',
-    DIV: 'div',
-    SPAN: 'span',
-    PRE: 'pre',
-  });
-}
+export const htmlTags = createConstantFactory({
+  EMPHASIS: 'em',
+  STRONG: 'strong',
+  CODE: 'code',
+  PARAGRAPH: 'p',
+  BLOCKQUOTE: 'blockquote',
+  LIST: 'ul',
+  LIST_ITEM: 'li',
+  ORDERED_LIST: 'ol',
+  HORIZONTAL_RULE: 'hr',
+  LINE_BREAK: 'br',
+  LINK: 'a',
+  IMAGE: 'img',
+  DIV: 'div',
+  SPAN: 'span',
+  PRE: 'pre',
+});
 &nbsp;
 /**
  * Common CSS class names used when rendering markdown.
  * @returns {Readonly&lt;Record&lt;string, string&gt;&gt;} Object of class names.
  */
-export function cssClasses() {
-  return Object.freeze({
-    CONTAINER: 'markdown-container',
-    HEADING: 'markdown-heading',
-    PARAGRAPH: 'markdown-paragraph',
-    LIST: 'markdown-list',
-    LIST_ITEM: 'markdown-list-item',
-    BLOCKQUOTE: 'markdown-blockquote',
-    CODE: 'markdown-code',
-    INLINE_CODE: 'markdown-inline-code',
-    LINK: 'markdown-link',
-    IMAGE: 'markdown-image',
-    HORIZONTAL_RULE: 'markdown-hr',
-  });
-}
+export const cssClasses = createConstantFactory({
+  CONTAINER: 'markdown-container',
+  HEADING: 'markdown-heading',
+  PARAGRAPH: 'markdown-paragraph',
+  LIST: 'markdown-list',
+  LIST_ITEM: 'markdown-list-item',
+  BLOCKQUOTE: 'markdown-blockquote',
+  CODE: 'markdown-code',
+  INLINE_CODE: 'markdown-inline-code',
+  LINK: 'markdown-link',
+  IMAGE: 'markdown-image',
+  HORIZONTAL_RULE: 'markdown-hr',
+});
 &nbsp;
 /**
  * Default options for markdown parsing.
  * @returns {Readonly&lt;Record&lt;string, unknown&gt;&gt;} Default configuration values.
  */
-export function defaultOptions() {
-  return Object.freeze({
-    gfm: true,
-    tables: true,
-    breaks: false,
-    pedantic: false,
-    sanitize: false,
-    smartLists: true,
-    smartypants: false,
-    xhtml: false,
-    highlight: null,
-    langPrefix: 'language-',
-    headerIds: true,
-    headerPrefix: '',
-    mangle: true,
-    baseUrl: null,
-    linkTarget: null,
-    renderer: null,
-  });
-}
+export const defaultOptions = createConstantFactory({
+  gfm: true,
+  tables: true,
+  breaks: false,
+  pedantic: false,
+  sanitize: false,
+  smartLists: true,
+  smartypants: false,
+  xhtml: false,
+  highlight: null,
+  langPrefix: 'language-',
+  headerIds: true,
+  headerPrefix: '',
+  mangle: true,
+  baseUrl: null,
+  linkTarget: null,
+  renderer: null,
+});
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -349,7 +355,7 @@ export function defaultOptions() {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-05T14:44:08.735Z
+                at 2025-07-05T15:28:36.918Z
             </div>
         <script src="../prettify.js"></script>
         <script>
