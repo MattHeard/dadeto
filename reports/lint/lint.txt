@@ -1,9 +1,6 @@
 
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
   708:14  warning  Method 'content' has a complexity of 3. Maximum allowed is 2  complexity
-  741:1   warning  Missing JSDoc @returns declaration                            jsdoc/require-returns
-  743:1   warning  Missing JSDoc @param "post" description                       jsdoc/require-param-description
-  743:1   warning  Missing JSDoc @param "post" type                              jsdoc/require-param-type
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-04/transformDendriteStory.js
    9:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2             complexity
@@ -13,4 +10,4 @@
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-05/getDend2Titles.js
   10:8  warning  Function 'getDend2Titles' has a complexity of 7. Maximum allowed is 2  complexity
 
-✖ 8 problems (0 errors, 8 warnings)
+✖ 5 problems (0 errors, 5 warnings)

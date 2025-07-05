@@ -1044,27 +1044,20 @@ function buildToyInputDropdown(defaultMethod) {
   return `<select class="input">${options}</select><input type="text" disabled>`;
 }
 
-/**
- * Get the UI section builders for a toy component.
- * @param {string} defaultMethod - Default input method.
- * @returns {Array<[string,Function]>} Array of sections.
- */
-function getToyUISections(defaultMethod) {
-  return [
-    ['in', () => buildToyInputDropdown(defaultMethod)],
-    ['', () => '<button type="submit" disabled>Submit</button>'],
-    ['out', getToyOutputValueContent],
-  ];
-}
-
-/**
- * Convert tuple [label, buildHTML] to toy section HTML
- * @param {[string, Function]} section - Tuple with label and section builder
- * @returns {string} - HTML for labeled section
- */
-function toToySection([label, buildHTML]) {
-  return createLabeledSection({ label, valueHTML: buildHTML() });
-}
+const TOY_UI_SECTIONS_CONFIG = [
+  {
+    label: 'in',
+    content: defaultMethod => buildToyInputDropdown(defaultMethod),
+  },
+  {
+    label: '',
+    content: () => '<button type="submit" disabled>Submit</button>',
+  },
+  {
+    label: 'out',
+    content: () => getToyOutputValueContent(),
+  },
+];
 
 /**
  * Determine if a toy section should be skipped.
@@ -1086,15 +1079,6 @@ export function getDefaultInputMethod(post) {
 }
 
 /**
- * Build all toy UI sections for the given default method.
- * @param {string} defaultMethod - Default input method.
- * @returns {string[]} Array of section HTML strings.
- */
-function buildToySections(defaultMethod) {
-  return getToyUISections(defaultMethod).map(toToySection);
-}
-
-/**
  * Generate the toy UI components for a blog post.
  * @param {object} post - The blog post.
  * @returns {string} HTML for the toy UI components.
@@ -1104,7 +1088,10 @@ function generateToyUISection(post) {
     return '';
   }
   const defaultMethod = getDefaultInputMethod(post);
-  const sections = buildToySections(defaultMethod);
+  const sections = TOY_UI_SECTIONS_CONFIG.map(section => {
+    const valueHTML = section.content(defaultMethod);
+    return createLabeledSection({ label: section.label, valueHTML });
+  });
   return join(sections);
 }
 
