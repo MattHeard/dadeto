@@ -1,5 +1,6 @@
 import { deepClone } from '../../utils/objectUtils.js';
 import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
+import { isValidString } from '../../utils/validation.js';
 
 /**
  * Ensure the data object has a valid temporary.DEND2 structure.
@@ -24,13 +25,17 @@ function ensureDend2(data) {
 
 /**
  * Validate the parsed story input.
- * @param {object} obj - Parsed object.
+ * @param {object} [obj] - Parsed object.
+ * @param {string} obj.title - Story title.
+ * @param {string} obj.content - Story content.
  * @returns {boolean} True when valid.
  */
+// eslint-disable-next-line complexity
 function isValidInput(obj) {
-  return (
-    obj && typeof obj.title === 'string' && typeof obj.content === 'string'
-  );
+  if (!obj) {
+    return false;
+  }
+  return isValidString(obj.title) && isValidString(obj.content);
 }
 
 /**

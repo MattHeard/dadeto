@@ -111,4 +111,26 @@ describe('transformDendriteStory', () => {
     expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
     expect(env.get('setData')).not.toHaveBeenCalled();
   });
+
+  test('returns empty arrays for null input', () => {
+    const env = new Map([
+      ['getData', () => ({})],
+      ['setData', jest.fn()],
+    ]);
+    const result = transformDendriteStory('null', env);
+    expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
+    expect(env.get('setData')).not.toHaveBeenCalled();
+  });
+
+  test('returns empty arrays for invalid content', () => {
+    const env = new Map([
+      ['getData', () => ({})],
+      ['setData', jest.fn()],
+      ['getUuid', () => 'id'],
+    ]);
+    const bad = JSON.stringify({ title: 'ok', content: 1 });
+    const result = transformDendriteStory(bad, env);
+    expect(JSON.parse(result)).toEqual({ stories: [], pages: [], options: [] });
+    expect(env.get('setData')).not.toHaveBeenCalled();
+  });
 });
