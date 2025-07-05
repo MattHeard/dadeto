@@ -1,7 +1,7 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { setData } from '../../src/browser/data.js';
+import { setLocalTemporaryData as setData } from '../../src/browser/data.js';
 
-describe('restoreBlogState via setData', () => {
+describe('restoreBlogState via setLocalTemporaryData', () => {
   it('restores blog fetch fields when incoming state provides them', () => {
     const oldError = new Error('old');
     const oldPromise = Promise.resolve('old');

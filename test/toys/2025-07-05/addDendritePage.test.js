@@ -12,7 +12,7 @@ describe('addDendritePage', () => {
           temporary: { DEND2: { stories: [], pages: [], options: [] } },
         }),
       ],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => uuids[idx++]],
     ]);
     const input = JSON.stringify({
@@ -29,7 +29,7 @@ describe('addDendritePage', () => {
         { id: 'b', pageId: 'page', content: 'B' },
       ],
     });
-    expect(env.get('setData')).toHaveBeenCalledWith({
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
           stories: [],
@@ -48,13 +48,13 @@ describe('addDendritePage', () => {
     let i = 0;
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => uuids[i++]],
     ]);
     const input = JSON.stringify({ optionId: 'o', content: 'c' });
     const result = JSON.parse(addDendritePage(input, env));
     expect(result.pages[0]).toEqual({ id: 'p', optionId: 'o', content: 'c' });
-    expect(env.get('setData')).toHaveBeenCalledWith({
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
           stories: [],
@@ -74,12 +74,12 @@ describe('addDendritePage', () => {
           temporary: { DEND2: { stories: {}, pages: null, options: 1 } },
         }),
       ],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => uuids.shift()],
     ]);
     const input = JSON.stringify({ optionId: 'o', content: 'c' });
     addDendritePage(input, env);
-    expect(env.get('setData')).toHaveBeenCalledWith({
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: {
         DEND2: {
           stories: [],
@@ -93,44 +93,44 @@ describe('addDendritePage', () => {
   test('returns empty arrays on parse error', () => {
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const result = addDendritePage('not json', env);
     expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
-    expect(env.get('setData')).not.toHaveBeenCalled();
+    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
   });
 
   test('returns empty arrays for invalid fields', () => {
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => 'id'],
     ]);
     const bad = JSON.stringify({ optionId: 1 });
     const result = addDendritePage(bad, env);
     expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
-    expect(env.get('setData')).not.toHaveBeenCalled();
+    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
   });
 
   test('returns empty arrays for null input', () => {
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const result = addDendritePage('null', env);
     expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
-    expect(env.get('setData')).not.toHaveBeenCalled();
+    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
   });
 
   test('returns empty arrays for invalid content', () => {
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
       ['getUuid', () => 'id'],
     ]);
     const bad = JSON.stringify({ optionId: 'o', content: 1 });
     const result = addDendritePage(bad, env);
     expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
-    expect(env.get('setData')).not.toHaveBeenCalled();
+    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
   });
 });

@@ -10,7 +10,7 @@ describe('startLocalDendriteStory', () => {
     const env = new Map([
       ['getUuid', () => uuids[idx++]],
       ['getData', mockGetData],
-      ['setData', mockSetData],
+      ['setLocalTemporaryData', mockSetData],
     ]);
     const inputObj = {
       title: 'Question',
@@ -44,7 +44,7 @@ describe('startLocalDendriteStory', () => {
     const env = new Map([
       ['getUuid', () => uuids[idx++]],
       ['getData', () => ({ temporary: { DEND1: [] } })],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const inputObj = {
       title: 'Prompt',
@@ -69,7 +69,7 @@ describe('startLocalDendriteStory', () => {
     const env = new Map([
       ['getUuid', () => uuids[idx++]],
       ['getData', () => ({ temporary: { DEND1: [] } })],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
     const inputObj = {
       title: 'Prompt2',
@@ -93,7 +93,7 @@ describe('startLocalDendriteStory', () => {
     const env = new Map([
       ['getUuid', () => uuids[idx++]],
       ['getData', () => ({ temporary: { DEND1: [existing] } })],
-      ['setData', jest.fn()],
+      ['setLocalTemporaryData', jest.fn()],
     ]);
 
     const inputObj = {
@@ -106,7 +106,7 @@ describe('startLocalDendriteStory', () => {
       startLocalDendriteStory(JSON.stringify(inputObj), env)
     );
 
-    expect(env.get('setData')).toHaveBeenCalledWith({
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: { DEND1: [existing, output] },
     });
   });
@@ -115,7 +115,7 @@ describe('startLocalDendriteStory', () => {
     const mockSetData = jest.fn();
     const env = new Map([
       ['getData', () => ({})],
-      ['setData', mockSetData],
+      ['setLocalTemporaryData', mockSetData],
     ]);
     const result = startLocalDendriteStory('not-json', env);
     expect(result).toBe(JSON.stringify({}));

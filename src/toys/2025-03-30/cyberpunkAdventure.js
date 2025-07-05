@@ -327,7 +327,7 @@ function runAdventure(input, env) {
   const getRandomNumber = env.get('getRandomNumber');
   const getCurrentTime = env.get('getCurrentTime');
   const getData = env.get('getData');
-  const setTemporaryData = env.get('setData');
+  const setTemporaryData = env.get('setLocalTemporaryData');
   const scoped = getScopedState(getData());
 
   const name = getPlayerName(scoped, input);

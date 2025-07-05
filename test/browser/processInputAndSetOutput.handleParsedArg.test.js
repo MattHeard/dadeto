@@ -11,7 +11,7 @@ describe('processInputAndSetOutput parsed arg', () => {
     };
     const toyEnv = new Map([
       ['getData', () => ({ output: {} })],
-      ['setData', () => {}],
+      ['setLocalTemporaryData', () => {}],
     ]);
     const env = {
       createEnv: () => toyEnv,

@@ -12,7 +12,7 @@ describe('Cyberpunk Text Game', () => {
       ['getCurrentTime', () => '23:59'],
       ['getData', () => ({ temporary: { CYBE1: tempData } })],
       [
-        'setData',
+        'setLocalTemporaryData',
         data => {
           tempData = { ...tempData, ...data.temporary?.CYBE1 };
         },

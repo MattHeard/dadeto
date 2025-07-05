@@ -3,7 +3,7 @@ import { handleTagLinks } from './tags.js';
 import {
   fetchAndCacheBlogData,
   getData,
-  setData,
+  setLocalTemporaryData,
   getEncodeBase64,
 } from './data.js';
 import {
@@ -60,8 +60,9 @@ function createEnv() {
     ['getUuid', getUuid],
     ['getData', () => getData(globalState, fetch, loggers)],
     [
-      'setData',
-      newData => setData({ desired: newData, current: globalState }, loggers),
+      'setLocalTemporaryData',
+      newData =>
+        setLocalTemporaryData({ desired: newData, current: globalState }, loggers),
     ],
     ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
   ]);
