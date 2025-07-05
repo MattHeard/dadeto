@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>332/332</span>
+                <span class='fraction'>329/329</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>110/110</span>
+                <span class='fraction'>108/108</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>316/316</span>
+                <span class='fraction'>314/314</span>
             </div>
         
             
@@ -1375,12 +1375,7 @@
 <a name='L1310'></a><a href='#L1310'>1310</a>
 <a name='L1311'></a><a href='#L1311'>1311</a>
 <a name='L1312'></a><a href='#L1312'>1312</a>
-<a name='L1313'></a><a href='#L1313'>1313</a>
-<a name='L1314'></a><a href='#L1314'>1314</a>
-<a name='L1315'></a><a href='#L1315'>1315</a>
-<a name='L1316'></a><a href='#L1316'>1316</a>
-<a name='L1317'></a><a href='#L1317'>1317</a>
-<a name='L1318'></a><a href='#L1318'>1318</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1313'></a><a href='#L1313'>1313</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2092,6 +2087,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">37x</span>
 <span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">37x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">37x</span>
@@ -2270,16 +2270,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">129x</span>
 <span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">129x</span>
-<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2698,7 +2688,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">129x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { createParagraphElement } from '../presenters/paragraph.js';
-import { createPrefixedLoggers } from './document.js';
+import { createPrefixedLoggers, createRemoveListener } from './document.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 import { deepClone } from '../utils/objectUtils.js';
 &nbsp;
@@ -3408,7 +3398,12 @@ export const createValueElement = ({
     syncHiddenField,
   });
   dom.addEventListener(valueEl, 'input', onValue);
-  const removeValueListener = createRemoveValueListener(dom, valueEl, onValue);
+  const removeValueListener = createRemoveListener({
+    dom,
+    el: valueEl,
+    event: 'input',
+    handler: onValue,
+  });
   disposers.push(removeValueListener);
 &nbsp;
   return valueEl;
@@ -3587,16 +3582,6 @@ const createButton = ({ dom, isAddButton, rows, render, key, disposers }) =&gt; 
  */
 const createRemoveRemoveListener = (dom, btnEl, onRemove) =&gt; () =&gt;
   dom.removeEventListener(btnEl, 'click', onRemove);
-&nbsp;
-/**
- * Creates a function that removes an event listener for value input
- * @param {object} dom - The DOM utilities object
- * @param {HTMLElement} el - The element to remove the listener from
- * @param {Function} handler - The event handler function to remove
- * @returns {Function} A function that removes the event listener
- */
-const createRemoveValueListener = (dom, el, handler) =&gt; () =&gt;
-  dom.removeEventListener(el, 'input', handler);
 &nbsp;
 /**
  * Creates a function that removes an event listener for add button clicks
@@ -4021,7 +4006,7 @@ export const getDeepStateCopy = globalState =&gt; deepClone(globalState);
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-05T13:07:48.939Z
+                at 2025-07-05T13:59:44.537Z
             </div>
         <script src="../prettify.js"></script>
         <script>

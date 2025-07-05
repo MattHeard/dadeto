@@ -389,6 +389,7 @@ export const setLocalTemporaryData = (state, loggers) => {
  * @param {object} desired - The new state object (must have 'permanent').
  * @param {object} loggers - Logging functions.
  * @param {Function} loggers.logError - Error logger.
+ * @param storage
  * @returns {object} The merged permanent state.
  */
 export const setLocalPermanentData = (desired, loggers, storage) => {

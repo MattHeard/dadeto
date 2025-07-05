@@ -1,13 +1,18 @@
 
+/Users/matthew.heard/Code/Matt/dadeto/src/browser/data.js
+  392:1   warning  Missing JSDoc @param "storage" description                  jsdoc/require-param-description
+  392:1   warning  Missing JSDoc @param "storage" type                         jsdoc/require-param-type
+  395:38  warning  Arrow function has a complexity of 6. Maximum allowed is 2  complexity
+  403:20  warning  Ternary operator used                                       no-ternary
+
 /Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
   687:14  warning  Method 'content' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-04/transformDendriteStory.js
    9:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2             complexity
-  33:1  warning  Function 'isValidInput' has a complexity of 3. Maximum allowed is 2            complexity
-  59:8  warning  Function 'transformDendriteStory' has a complexity of 3. Maximum allowed is 2  complexity
+  56:8  warning  Function 'transformDendriteStory' has a complexity of 3. Maximum allowed is 2  complexity
 
 /Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-05/getDend2Titles.js
   10:8  warning  Function 'getDend2Titles' has a complexity of 7. Maximum allowed is 2  complexity
 
-✖ 5 problems (0 errors, 5 warnings)
+✖ 8 problems (0 errors, 8 warnings)
