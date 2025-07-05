@@ -1,5 +1,5 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
-import { createPrefixedLoggers } from './document.js';
+import { createPrefixedLoggers, createRemoveListener } from './document.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 import { deepClone } from '../utils/objectUtils.js';
 
@@ -709,7 +709,12 @@ export const createValueElement = ({
     syncHiddenField,
   });
   dom.addEventListener(valueEl, 'input', onValue);
-  const removeValueListener = createRemoveValueListener(dom, valueEl, onValue);
+  const removeValueListener = createRemoveListener({
+    dom,
+    el: valueEl,
+    event: 'input',
+    handler: onValue,
+  });
   disposers.push(removeValueListener);
 
   return valueEl;
@@ -888,16 +893,6 @@ const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
  */
 const createRemoveRemoveListener = (dom, btnEl, onRemove) => () =>
   dom.removeEventListener(btnEl, 'click', onRemove);
-
-/**
- * Creates a function that removes an event listener for value input
- * @param {object} dom - The DOM utilities object
- * @param {HTMLElement} el - The element to remove the listener from
- * @param {Function} handler - The event handler function to remove
- * @returns {Function} A function that removes the event listener
- */
-const createRemoveValueListener = (dom, el, handler) => () =>
-  dom.removeEventListener(el, 'input', handler);
 
 /**
  * Creates a function that removes an event listener for add button clicks
