@@ -1,6 +1,18 @@
 {
   "posts": [
     {
+      "key": "DEND3",
+      "title": "Get Dendrite Story Titles",
+      "publicationDate": "2025-07-05",
+      "content": ["Returns DEND2 story titles from temporary storage."],
+      "toy": {
+        "modulePath": "/2025-07-05/getDend2Titles.js",
+        "functionName": "getDend2Titles"
+      },
+      "release": "beta",
+      "tags": ["toy", "story", "dendrite"]
+    },
+    {
       "key": "DEND2",
       "title": "Transform Dendrite Story",
       "publicationDate": "2025-07-04",
@@ -128,7 +140,14 @@
         "fileType": "png",
         "altText": "abstract color-field painting with a soft gradient gray area on the left blending into an intense solid red block on the right, the two hues meeting in a hazy vertical transition"
       },
-      "tags": ["philosophy", "colour", "experience", "consciousness", "qualia", "physicalism"],
+      "tags": [
+        "philosophy",
+        "colour",
+        "experience",
+        "consciousness",
+        "qualia",
+        "physicalism"
+      ],
       "relatedLinks": [
         {
           "url": "#SYMP1",
