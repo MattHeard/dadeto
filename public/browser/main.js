@@ -62,7 +62,10 @@ function createEnv() {
     [
       'setLocalTemporaryData',
       newData =>
-        setLocalTemporaryData({ desired: newData, current: globalState }, loggers),
+        setLocalTemporaryData(
+          { desired: newData, current: globalState },
+          loggers
+        ),
     ],
     ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
   ]);

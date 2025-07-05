@@ -236,7 +236,10 @@ function isInvalidState(value) {
  */
 function validateIncomingState(incomingState, errorFn) {
   if (isInvalidState(incomingState)) {
-    errorFn('setLocalTemporaryData received invalid data structure:', incomingState);
+    errorFn(
+      'setLocalTemporaryData received invalid data structure:',
+      incomingState
+    );
     throw new Error(
       "setLocalTemporaryData requires an object with at least a 'temporary' property."
     );
