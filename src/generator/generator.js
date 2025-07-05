@@ -739,8 +739,9 @@ const MEDIA_SECTIONS_CONFIG = [
 ];
 
 /**
- *
- * @param post
+ * Generate HTML for any available media sections of the given post.
+ * @param {object} post - The blog post data.
+ * @returns {string} The HTML markup for media sections.
  */
 function generateMediaSections(post) {
   return MEDIA_SECTIONS_CONFIG.map(section => {
