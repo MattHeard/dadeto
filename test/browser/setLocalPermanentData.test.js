@@ -6,7 +6,7 @@ describe('setLocalPermanentData', () => {
     const storage = { getItem: jest.fn(), setItem: jest.fn() };
     storage.getItem.mockReturnValueOnce(JSON.stringify({ existing: true }));
     const logError = jest.fn();
-    const incoming = { permanent: { foo: 'bar' } };
+    const incoming = { foo: 'bar' };
     const result = setLocalPermanentData(incoming, { logError }, storage);
     expect(result).toEqual({ existing: true, foo: 'bar' });
     expect(storage.setItem).toHaveBeenCalledWith(
@@ -18,12 +18,12 @@ describe('setLocalPermanentData', () => {
   it('throws and logs when state is invalid', () => {
     const storage = { getItem: jest.fn(), setItem: jest.fn() };
     const logError = jest.fn();
-    expect(() => setLocalPermanentData({}, { logError }, storage)).toThrow(
-      "setLocalPermanentData requires an object with at least a 'permanent' property."
+    expect(() => setLocalPermanentData(null, { logError }, storage)).toThrow(
+      'setLocalPermanentData requires an object.'
     );
     expect(logError).toHaveBeenCalledWith(
       'setLocalPermanentData received invalid data structure:',
-      {}
+      null
     );
     expect(storage.setItem).not.toHaveBeenCalled();
   });
