@@ -34,9 +34,10 @@ function isValidInput(obj) {
 }
 
 /**
- *
- * @param data
- * @param getUuid
+ * Create option objects for values present in the input data.
+ * @param {object} data - Source data that may contain option values.
+ * @param {Function} getUuid - Function that generates unique IDs.
+ * @returns {Array<{id: string, content: string}>} Array of option objects.
  */
 function createOptions(data, getUuid) {
   return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => ({
