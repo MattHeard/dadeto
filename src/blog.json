@@ -10,6 +10,18 @@
         "functionName": "addDendritePage"
       },
       "tags": ["toy", "story", "dendrite"],
+    "release": "beta"
+  },
+    {
+      "key": "PERM2",
+      "title": "Set Permanent Data",
+      "publicationDate": "2025-07-05",
+      "content": ["Stores input into permanent storage."],
+      "toy": {
+        "modulePath": "/2025-07-05/setPermanentData.js",
+        "functionName": "setPermanentData"
+      },
+      "tags": ["toy"],
       "release": "beta"
     },
     {
