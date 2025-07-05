@@ -86,7 +86,13 @@ describe('TOY_UI_SECTIONS integration', () => {
     const match = html.match(/<select class="input">([\s\S]*?)<\/select>/);
     expect(match).not.toBeNull();
     const dropdown = match[1];
-    const expectedOptions = ['text', 'number', 'kv', 'dendrite-story'];
+    const expectedOptions = [
+      'text',
+      'number',
+      'kv',
+      'dendrite-story',
+      'dendrite-page',
+    ];
     for (const value of expectedOptions) {
       expect(dropdown).toContain(`<option value="${value}">${value}</option>`);
     }
