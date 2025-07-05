@@ -1,15 +1,16 @@
 
-/workspace/dadeto/src/generator/generator.js
-  670:1   warning  Missing JSDoc @returns declaration                            jsdoc/require-returns
-  672:1   warning  Missing JSDoc @param "post" description                       jsdoc/require-param-description
-  672:1   warning  Missing JSDoc @param "post" type                              jsdoc/require-param-type
-  706:14  warning  Method 'content' has a complexity of 3. Maximum allowed is 2  complexity
-  739:1   warning  Missing JSDoc @returns declaration                            jsdoc/require-returns
-  741:1   warning  Missing JSDoc @param "post" description                       jsdoc/require-param-description
-  741:1   warning  Missing JSDoc @param "post" type                              jsdoc/require-param-type
+/Users/matthew.heard/Code/Matt/dadeto/src/generator/generator.js
+  708:14  warning  Method 'content' has a complexity of 3. Maximum allowed is 2  complexity
+  741:1   warning  Missing JSDoc @returns declaration                            jsdoc/require-returns
+  743:1   warning  Missing JSDoc @param "post" description                       jsdoc/require-param-description
+  743:1   warning  Missing JSDoc @param "post" type                              jsdoc/require-param-type
 
-/workspace/dadeto/src/toys/2025-07-04/transformDendriteStory.js
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-04/transformDendriteStory.js
    9:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2             complexity
-  60:8  warning  Function 'transformDendriteStory' has a complexity of 3. Maximum allowed is 2  complexity
+  33:1  warning  Function 'isValidInput' has a complexity of 3. Maximum allowed is 2            complexity
+  59:8  warning  Function 'transformDendriteStory' has a complexity of 3. Maximum allowed is 2  complexity
 
-✖ 9 problems (0 errors, 9 warnings)
+/Users/matthew.heard/Code/Matt/dadeto/src/toys/2025-07-05/getDend2Titles.js
+  10:8  warning  Function 'getDend2Titles' has a complexity of 7. Maximum allowed is 2  complexity
+
+✖ 8 problems (0 errors, 8 warnings)
