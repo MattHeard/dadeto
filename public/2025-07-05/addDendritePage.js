@@ -27,7 +27,7 @@ function ensureDend2(data) {
 /**
  * Validate the parsed page input.
  * @param {object} [obj] - Parsed object.
- * @param {string} obj.storyId - Story identifier.
+ * @param {string} obj.optionId - Option identifier.
  * @param {string} obj.content - Page content.
  * @returns {boolean} True when valid.
  */
@@ -36,7 +36,7 @@ function isValidInput(obj) {
   if (!obj) {
     return false;
   }
-  return isValidString(obj.storyId) && isValidString(obj.content);
+  return isValidString(obj.optionId) && isValidString(obj.content);
 }
 
 /**
@@ -75,7 +75,7 @@ export function addDendritePage(input, env) {
     const opts = createOptions(parsed, pageId, getUuid);
     const page = {
       id: pageId,
-      storyId: parsed.storyId,
+      optionId: parsed.optionId,
       content: parsed.content,
     };
 
