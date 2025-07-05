@@ -1,9 +1,7 @@
 import { maybeRemoveKV, maybeRemoveDendrite } from './removeElements.js';
 import { NUMBER_INPUT_SELECTOR } from '../constants/selectors.js';
 import { hideAndDisable } from './inputState.js';
-
-const createRemoveValueListener = (dom, el, handler) => () =>
-  dom.removeEventListener(el, 'input', handler);
+import { createRemoveListener } from '../browser/document.js';
 
 const createBaseNumberInput = dom => {
   const input = dom.createElement('input');
@@ -13,7 +11,12 @@ const createBaseNumberInput = dom => {
 
 const setupInputEvents = (input, onChange, dom) => {
   dom.addEventListener(input, 'input', onChange);
-  input._dispose = createRemoveValueListener(dom, input, onChange);
+  input._dispose = createRemoveListener({
+    dom,
+    el: input,
+    event: 'input',
+    handler: onChange,
+  });
 };
 
 export const createNumberInput = (value, onChange, dom) => {
