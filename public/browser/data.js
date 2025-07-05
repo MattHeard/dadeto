@@ -247,21 +247,12 @@ function validateIncomingState(incomingState, errorFn) {
 }
 
 /**
- * Determine if an object includes its own `permanent` property.
- * @param {object} obj - Object to inspect.
- * @returns {boolean} True when the property exists.
- */
-function hasPermanentProperty(obj) {
-  return Object.hasOwn(obj, 'permanent');
-}
-
-/**
- * Determine whether a permanent state object has required properties.
+ * Determine whether a permanent state object is invalid.
  * @param {object} value - Candidate state object.
- * @returns {boolean} True if the state is missing required fields.
+ * @returns {boolean} True when the value is not a non-null object.
  */
 function isInvalidPermanentState(value) {
-  return !isNonNullObject(value) || !hasPermanentProperty(value);
+  return !isNonNullObject(value);
 }
 
 /**
@@ -276,9 +267,7 @@ function validateIncomingPermanentState(incomingState, errorFn) {
       'setLocalPermanentData received invalid data structure:',
       incomingState
     );
-    throw new Error(
-      "setLocalPermanentData requires an object with at least a 'permanent' property."
-    );
+    throw new Error('setLocalPermanentData requires an object.');
   }
 }
 
@@ -386,10 +375,10 @@ export const setLocalTemporaryData = (state, loggers) => {
 /**
  * Updates persistent data stored in localStorage.
  * Reads existing data, merges with the incoming object and persists the result.
- * @param {object} desired - The new state object (must have 'permanent').
+ * @param {object} desired - The new state object.
  * @param {object} loggers - Logging functions.
  * @param {Function} loggers.logError - Error logger.
- * @param storage
+ * @param {Storage} [storage] - Storage used to persist data.
  * @returns {object} The merged permanent state.
  */
 export const setLocalPermanentData = (desired, loggers, storage) => {
@@ -406,7 +395,7 @@ export const setLocalPermanentData = (desired, loggers, storage) => {
     logError('Failed to read permanent data:', readError);
   }
 
-  const updated = { ...storedData, ...desired.permanent };
+  const updated = { ...storedData, ...desired };
 
   try {
     if (storage) {
