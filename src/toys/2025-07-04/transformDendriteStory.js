@@ -31,10 +31,7 @@ function ensureDend2(data) {
  * @returns {boolean} True when valid.
  */
 function isValidInput(obj) {
-  if (!obj) {
-    return false;
-  }
-  return isValidString(obj.title) && isValidString(obj.content);
+  return Boolean(obj) && [obj.title, obj.content].every(isValidString);
 }
 
 /**
