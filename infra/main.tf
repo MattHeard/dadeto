@@ -34,3 +34,22 @@ resource "google_storage_bucket_iam_member" "public_read_access" {
   role   = "roles/storage.objectViewer"
   member = "allUsers"
 }
+
+resource "google_project_service" "firestore" {
+  project = var.project_id
+  service = "firestore.googleapis.com"
+}
+
+resource "google_firestore_database" "default" {
+  project     = var.project_id
+  name        = "(default)"
+  location_id = "europe-west1"
+  type        = "NATIVE"
+  depends_on  = [google_project_service.firestore]
+}
+
+resource "google_project_iam_member" "firestore_access" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
