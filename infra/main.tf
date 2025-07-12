@@ -28,3 +28,9 @@ resource "google_storage_bucket_object" "hello_world" {
   bucket = google_storage_bucket.irien_bucket.name
   source = "${path.module}/hello-world.txt"
 }
+
+resource "google_storage_bucket_iam_member" "public_read_access" {
+  bucket = google_storage_bucket.irien_bucket.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}
