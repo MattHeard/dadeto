@@ -37,6 +37,21 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Import all resources from import_targets.json
+        working-directory: infra
+        run: |
+          set -e
+
+          echo "Running terraform imports for all targets..."
+
+          jq -c '.[]' import_targets.json | while read row; do
+            RESOURCE=$(echo "$row" | jq -r .resource)
+            ID=$(echo "$row" | jq -r .id)
+
+            echo "\U1F30D Importing $RESOURCE → $ID"
+            terraform import "$RESOURCE" "$ID" || echo "\u26A0\uFE0F Failed to import $RESOURCE"
+          done
+
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 

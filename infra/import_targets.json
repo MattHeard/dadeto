@@ -1,0 +1,10 @@
+[
+  {
+    "resource": "google_storage_bucket.irien_bucket",
+    "id": "irien-hello-world-irien-465710"
+  },
+  {
+    "resource": "google_storage_bucket_object.hello_world",
+    "id": "irien-hello-world-irien-465710/hello-world.txt"
+  }
+]
