@@ -17,6 +17,10 @@
   },
   {
     "resource": "google_cloudfunctions_function_iam_member.invoker",
-    "id": "projects/irien-465710/locations/europe-west1/functions/get-api-key-credit/roles/cloudfunctions.invoker/allUsers"
+    "parts": {
+      "resource": "projects/irien-465710/locations/europe-west1/functions/get-api-key-credit",
+      "role": "roles/cloudfunctions.invoker",
+      "member": "allUsers"
+    }
   }
 ]

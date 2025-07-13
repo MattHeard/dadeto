@@ -47,10 +47,16 @@ jobs:
 
           jq -c '.[]' import_targets.json | while read row; do
             RESOURCE=$(echo "$row" | jq -r .resource)
-            ID=$(echo "$row" | jq -r .id)
 
-            echo "\U1F30D Importing $RESOURCE → $ID"
-            terraform import "$RESOURCE" "$ID" || echo "\u26A0\uFE0F Failed to import $RESOURCE"
+            if echo "$row" | jq -e 'has("parts")' > /dev/null; then
+              PARTS=$(echo "$row" | jq -r '.parts | [.resource, .role, .member] | @sh' | tr -d "'")
+              echo "\U1F30D Importing $RESOURCE with parts: $PARTS"
+              terraform import "$RESOURCE" $PARTS || echo "\u26A0\uFE0F Failed to import $RESOURCE"
+            else
+              ID=$(echo "$row" | jq -r .id)
+              echo "\U1F30D Importing $RESOURCE → $ID"
+              terraform import "$RESOURCE" "$ID" || echo "\u26A0\uFE0F Failed to import $RESOURCE"
+            fi
           done
 
       - name: Zip Cloud Functions
