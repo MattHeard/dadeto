@@ -2,26 +2,30 @@
 // (input, env) -> string
 
 /**
+ * Safely invoke a getter function to retrieve data.
+ * @param {Function} getData - Retrieves state data.
+ * @returns {object|undefined} Retrieved data or undefined on failure.
+ */
+function safeGetData(getData) {
+  if (typeof getData === 'function') {
+    try {
+      return getData();
+    } catch {
+      // ignore
+    }
+  }
+  return undefined;
+}
+
+/**
  * Safely access the DEND2 stories list.
- * @param {Function} getData - Function that retrieves state data.
+ * @param {Function} getData - Retrieves state data.
  * @returns {object[]} Array of DEND2 story objects.
  */
 function getStories(getData) {
-  if (typeof getData !== 'function') {
-    return [];
-  }
-  let data;
-  try {
-    data = getData();
-  } catch {
-    return [];
-  }
-  const dend2 = data && data.temporary && data.temporary.DEND2;
-  const stories = dend2 && dend2.stories;
-  if (Array.isArray(stories)) {
-    return stories;
-  }
-  return [];
+  const data = safeGetData(getData);
+  const stories = data?.temporary?.DEND2?.stories;
+  return Array.isArray(stories) ? stories : [];
 }
 
 /**
