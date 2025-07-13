@@ -80,6 +80,12 @@ resource "google_project_iam_member" "cloudfunctions_access" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "terraform_cloudfunctions_viewer" {
+  project = var.project_id
+  role    = "roles/cloudfunctions.viewer"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 resource "google_project_iam_member" "terraform_create_sa" {
   project = var.project_id
   role    = "roles/iam.serviceAccountAdmin"
@@ -138,4 +144,8 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
   cloud_function = google_cloudfunctions_function.get_api_key_credit.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
+  depends_on = [
+    google_cloudfunctions_function.get_api_key_credit,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
