@@ -3,24 +3,49 @@ export { ensureDend2, createOptions };
 import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 
 /**
+ * Check whether a value is a non-null object.
+ * @param {*} value - Value to check.
+ * @returns {boolean} True if `value` is an object.
+ */
+function isObject(value) {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Create a blank DEND2 structure.
+ * @returns {object} Empty DEND2 object.
+ */
+function createEmptyDend2() {
+  return { stories: [], pages: [], options: [] };
+}
+
+/**
+ * Validate that an object is a proper DEND2 structure.
+ * @param {object} obj - Object to validate.
+ * @returns {boolean} True if `obj` is valid.
+ */
+function isValidDend2(obj) {
+  return (
+    isObject(obj) &&
+    Array.isArray(obj.stories) &&
+    Array.isArray(obj.pages) &&
+    Array.isArray(obj.options)
+  );
+}
+
+/**
  * Ensure the data object has a valid temporary.DEND2 structure.
  * @param {object} data - Data object to check.
  * @returns {void}
  */
 function ensureDend2(data) {
-  if (typeof data.temporary !== 'object' || data.temporary === null) {
-    data.temporary = { DEND2: { stories: [], pages: [], options: [] } };
+  if (!isObject(data.temporary)) {
+    data.temporary = { DEND2: createEmptyDend2() };
     return;
   }
   const t = data.temporary;
-  if (
-    typeof t.DEND2 !== 'object' ||
-    t.DEND2 === null ||
-    !Array.isArray(t.DEND2.stories) ||
-    !Array.isArray(t.DEND2.pages) ||
-    !Array.isArray(t.DEND2.options)
-  ) {
-    t.DEND2 = { stories: [], pages: [], options: [] };
+  if (!isValidDend2(t.DEND2)) {
+    t.DEND2 = createEmptyDend2();
   }
 }
 
