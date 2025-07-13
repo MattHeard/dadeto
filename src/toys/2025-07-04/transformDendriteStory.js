@@ -3,23 +3,41 @@ import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 import { isValidString } from '../../utils/validation.js';
 
 /**
+ * Determine if a value is a non-null object.
+ * @param {unknown} value - Value to test.
+ * @returns {boolean} True when the value is an object.
+ */
+const isObject = value => typeof value === 'object' && value !== null;
+
+/**
+ * Check that the temporary.DEND2 structure exists and has the required arrays.
+ * @param {object} temp - Temporary data object.
+ * @returns {boolean} True when DEND2 is valid.
+ */
+const hasValidDend2 = temp => {
+  const d = temp.DEND2;
+  if (!isObject(d)) {
+    return false;
+  }
+  return ['stories', 'pages', 'options'].every(key => Array.isArray(d[key]));
+};
+
+/**
+ * Validate the temporary object.
+ * @param {object} temp - Temporary data object.
+ * @returns {boolean} True when temporary data is valid.
+ */
+const isValidTemporary = temp => isObject(temp) && hasValidDend2(temp);
+
+/**
  * Ensure the data object has a valid temporary.DEND2 structure.
  * @param {object} data - Data object to check.
  */
 function ensureDend2(data) {
-  if (typeof data.temporary !== 'object' || data.temporary === null) {
-    data.temporary = { DEND2: { stories: [], pages: [], options: [] } };
-    return;
-  }
-  const t = data.temporary;
-  if (
-    typeof t.DEND2 !== 'object' ||
-    t.DEND2 === null ||
-    !Array.isArray(t.DEND2.stories) ||
-    !Array.isArray(t.DEND2.pages) ||
-    !Array.isArray(t.DEND2.options)
-  ) {
-    t.DEND2 = { stories: [], pages: [], options: [] };
+  const empty = { stories: [], pages: [], options: [] };
+
+  if (!isValidTemporary(data.temporary)) {
+    data.temporary = { DEND2: empty };
   }
 }
 
