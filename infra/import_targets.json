@@ -10,5 +10,13 @@
   {
     "resource": "google_service_account.cloud_function_runtime",
     "id": "projects/irien-465710/serviceAccounts/cloud-function-runtime@irien-465710.iam.gserviceaccount.com"
+  },
+  {
+    "resource": "google_cloudfunctions_function.get_api_key_credit",
+    "id": "projects/irien-465710/locations/europe-west1/functions/get-api-key-credit"
+  },
+  {
+    "resource": "google_cloudfunctions_function_iam_member.invoker",
+    "id": "projects/irien-465710/locations/europe-west1/functions/get-api-key-credit/roles/cloudfunctions.invoker/allUsers"
   }
 ]
