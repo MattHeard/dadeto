@@ -53,3 +53,7 @@ resource "google_project_iam_member" "firestore_access" {
   role    = "roles/datastore.user"
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
+
+module "get_api_key_credit" {
+  source = "${path.module}/cloud-functions/get-api-key-credit"
+}
