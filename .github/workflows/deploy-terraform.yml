@@ -49,9 +49,12 @@ jobs:
             RESOURCE=$(echo "$row" | jq -r .resource)
 
             if echo "$row" | jq -e 'has("parts")' > /dev/null; then
-              PARTS=$(echo "$row" | jq -r '.parts | [.resource, .role, .member] | @sh' | tr -d "'")
-              echo "\U1F30D Importing $RESOURCE with parts: $PARTS"
-              terraform import "$RESOURCE" $PARTS || echo "\u26A0\uFE0F Failed to import $RESOURCE"
+              echo "\U1F30D Importing $RESOURCE with structured parts:"
+              echo "$row" | jq '.parts'
+
+              echo "$row" | jq -r '[.parts.resource, .parts.role, .parts.member] | @tsv' \
+                | xargs -I {} terraform import "$RESOURCE" {} \
+                || echo "\u26A0\uFE0F Failed to import $RESOURCE"
             else
               ID=$(echo "$row" | jq -r .id)
               echo "\U1F30D Importing $RESOURCE → $ID"
