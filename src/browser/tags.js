@@ -5,7 +5,7 @@
  * @returns {boolean} True when `str` starts with `prefix`.
  */
 export function startsWith(str, prefix) {
-  return str.indexOf(prefix) === 0;
+  return str.startsWith(prefix);
 }
 
 /**
