@@ -23,13 +23,6 @@ const hasValidDend2 = temp => {
 };
 
 /**
- * Validate the temporary object.
- * @param {object} temp - Temporary data object.
- * @returns {boolean} True when temporary data is valid.
- */
-const isValidTemporary = temp => isObject(temp) && hasValidDend2(temp);
-
-/**
  * Validate the parsed story input.
  * @param {object} [obj] - Parsed object.
  * @param {string} obj.title - Story title.
