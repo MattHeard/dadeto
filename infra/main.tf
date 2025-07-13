@@ -9,13 +9,18 @@ terraform {
 
 provider "google" {
   project = var.project_id
-  region  = "europe-west1"
+  region  = var.region
 }
 
 variable "project_id" {
   description = "The GCP project ID"
   type        = string
   default     = "irien-465710"
+}
+
+variable "region" {
+  type    = string
+  default = "europe-west1"
 }
 
 resource "google_storage_bucket" "irien_bucket" {
@@ -54,6 +59,35 @@ resource "google_project_iam_member" "firestore_access" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
-module "get_api_key_credit" {
-  source = "./cloud-functions/get-api-key-credit"
+resource "google_storage_bucket_object" "get_api_key_credit" {
+  name   = "get-api-key-credit.zip"
+  bucket = google_storage_bucket.irien_bucket.name
+  source = "${path.module}/cloud-functions/get-api-key-credit/get-api-key-credit.zip"
+}
+
+resource "google_cloudfunctions2_function" "get_api_key_credit" {
+  name     = "get-api-key-credit"
+  location = var.region
+
+  build_config {
+    runtime     = "nodejs18"
+    entry_point = "handler"
+    source {
+      storage_source {
+        bucket = google_storage_bucket.irien_bucket.name
+        object = google_storage_bucket_object.get_api_key_credit.name
+      }
+    }
+  }
+
+  service_config {
+    available_memory   = "128Mi"
+    timeout_seconds    = 60
+    min_instance_count = 0
+  }
+
+  event_trigger {
+    event_type     = "google.cloud.functions.v2.eventTypes.http.request"
+    trigger_region = var.region
+  }
 }
