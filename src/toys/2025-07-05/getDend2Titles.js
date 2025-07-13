@@ -52,13 +52,19 @@ function collectTitles(stories) {
  */
 export function getDend2Titles(input, env) {
   try {
-    const getData = env.get('getData');
-    if (typeof getData !== 'function') {
-      return JSON.stringify([]);
-    }
-    const stories = getStories(getData());
-    return JSON.stringify(collectTitles(stories));
+    return JSON.stringify(gatherTitles(env));
   } catch {
     return JSON.stringify([]);
   }
+}
+
+/**
+ * Retrieve story titles from the environment.
+ * @param {Map<string, Function>} env - Environment with a `getData` accessor.
+ * @returns {string[]} List of story titles.
+ */
+function gatherTitles(env) {
+  const getData = env.get('getData');
+  const stories = getStories(getData());
+  return collectTitles(stories);
 }
