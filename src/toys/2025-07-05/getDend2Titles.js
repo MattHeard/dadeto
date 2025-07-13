@@ -2,14 +2,35 @@
 // (input, env) -> string
 
 /**
+ * Determine if the provided value is an array of stories.
+ * @param {*} value - Potential stories array.
+ * @returns {boolean} True when value is an array.
+ */
+function isStoryArray(value) {
+  return Array.isArray(value);
+}
+
+/**
+ * Safely retrieve nested DEND2 stories.
+ * @param {*} data - Application state data.
+ * @returns {*[]} Possibly undefined stories array.
+ */
+function extractDend2Stories(data) {
+  try {
+    return data.temporary.DEND2.stories;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Extract valid stories from the provided data object.
  * @param {*} data - Application state data.
  * @returns {object[]} Array of story objects.
  */
 function getStories(data) {
-  return Array.isArray(data?.temporary?.DEND2?.stories)
-    ? data.temporary.DEND2.stories
-    : [];
+  const stories = extractDend2Stories(data);
+  return isStoryArray(stories) ? stories : [];
 }
 
 /**
