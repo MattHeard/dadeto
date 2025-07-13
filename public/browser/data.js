@@ -392,13 +392,31 @@ function loadPermanentData(storage, logError) {
   if (!storage) {
     return {};
   }
+  return loadDataFromStorage(storage, logError);
+}
+
+/**
+ * Read and parse permanent data from storage.
+ * @param {Storage} storage - Storage used to persist data.
+ * @param {Function} logError - Error logger.
+ * @returns {object} Stored data object.
+ */
+function loadDataFromStorage(storage, logError) {
   try {
-    const raw = storage.getItem('permanentData');
-    return raw ? JSON.parse(raw) : {};
+    return JSON.parse(getPermanentRaw(storage));
   } catch (readError) {
     logError('Failed to read permanent data:', readError);
     return {};
   }
+}
+
+/**
+ * Retrieve the raw permanent data string from storage.
+ * @param {Storage} storage - Storage used to persist data.
+ * @returns {string} Stored data string or '{}'.
+ */
+function getPermanentRaw(storage) {
+  return storage.getItem('permanentData') || '{}';
 }
 
 /**
