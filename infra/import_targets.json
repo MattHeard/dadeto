@@ -6,5 +6,9 @@
   {
     "resource": "google_storage_bucket_object.hello_world",
     "id": "irien-hello-world-irien-465710/hello-world.txt"
+  },
+  {
+    "resource": "google_firestore_database.default",
+    "id": "projects/irien-465710/databases/(default)"
   }
 ]
