@@ -20,4 +20,6 @@ resources for this function are defined directly in `main.tf`.
 
 The `import_targets.json` file lists any existing resources that should be
 imported into the Terraform state. Each entry specifies the Terraform resource
-address and the corresponding ID of the resource to import.
+address and either an `id` string or a `parts` object. The `parts` variant is
+used for resources that require multiple ID components, providing `resource`,
+`role`, and `member` values separately.
