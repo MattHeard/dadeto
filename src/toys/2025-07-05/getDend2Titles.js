@@ -2,6 +2,22 @@
 // (input, env) -> string
 
 /**
+ * Safely gather DEND2 story titles using the provided data getter.
+ * @param {Function} getData - Function that retrieves state data.
+ * @returns {string[]} Array of story titles.
+ */
+function gatherTitles(getData) {
+  try {
+    const stories = getData()?.temporary?.DEND2?.stories || [];
+    return stories
+      .map(story => story?.title)
+      .filter(title => typeof title === 'string');
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Gather all DEND2 story titles from temporary storage.
  * @param {*} input - Unused value.
  * @param {Map<string, Function>} env - Environment with a `getData` accessor.
@@ -12,13 +28,6 @@ export function getDend2Titles(input, env) {
   if (typeof getData !== 'function') {
     return JSON.stringify([]);
   }
-  try {
-    const stories = getData()?.temporary?.DEND2?.stories || [];
-    const titles = stories
-      .map(story => story?.title)
-      .filter(title => typeof title === 'string');
-    return JSON.stringify(titles);
-  } catch {
-    return JSON.stringify([]);
-  }
+  const titles = gatherTitles(getData);
+  return JSON.stringify(titles);
 }
