@@ -1,6 +1,6 @@
 
 /workspace/dadeto/src/toys/2025-07-04/transformDendriteStory.js
-  30:7  warning  'isValidTemporary' is assigned a value but never used  no-unused-vars
+  17:7  warning  'hasValidDend2' is assigned a value but never used  no-unused-vars
 
 /workspace/dadeto/src/toys/utils/dendriteHelpers.js
   74:9  warning  Ternary operator used  no-ternary
