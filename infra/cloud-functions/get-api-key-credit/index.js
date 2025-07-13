@@ -72,7 +72,10 @@ async function safeFetchCredit(uuid) {
  * @returns {Promise<void>} Response with credit value or error code.
  */
 export async function handler(req, res) {
-  const { uuid } = req.params;
+  const { uuid: paramUuid } = req.params || {};
+  const { uuid: queryUuid } = req.query || {};
+  const uuid = paramUuid || queryUuid;
+
   if (!uuid) {
     sendBadRequest(res, 'Missing UUID');
     return;
