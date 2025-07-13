@@ -9,7 +9,8 @@ Firestore database. The Terraform service account is granted the
 Functions. The `cloud-functions/get-api-key-credit` directory contains the code
 for a Google Cloud Function that returns the credit associated with a given API
 key. The
-Cloud Functions API is enabled via a `google_project_service` resource and the
+Cloud Functions API is enabled via a `google_project_service` resource, and the
+Cloud Build API is also enabled so that functions can be built from source. The
 resources for this function are defined directly in `main.tf`.
 
 ## Import Targets
