@@ -219,7 +219,11 @@ export function applyAllHtmlEscapeReplacements(text, replacements) {
  * @returns {string} - HTML-escaped text
  */
 export function escapeHtml(text) {
-  return applyAllHtmlEscapeReplacements(text, htmlEscapeReplacements());
+  const safeText = text ?? '';
+  return applyAllHtmlEscapeReplacements(
+    String(safeText),
+    htmlEscapeReplacements()
+  );
 }
 
 /**
