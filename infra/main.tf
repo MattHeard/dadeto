@@ -12,6 +12,10 @@ provider "google" {
   region  = var.region
 }
 
+data "google_project" "project" {
+  project_id = var.project_id
+}
+
 variable "project_id" {
   description = "The GCP project ID"
   type        = string
@@ -92,6 +96,12 @@ resource "google_service_account_iam_member" "terraform_can_impersonate_runtime"
   member             = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_service_account_iam_member" "terraform_can_impersonate_default_compute" {
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 
 resource "google_storage_bucket_object" "get_api_key_credit" {
   name   = "get-api-key-credit.zip"
@@ -130,6 +140,7 @@ resource "google_cloudfunctions2_function" "get_api_key_credit" {
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
     google_project_iam_member.cloudfunctions_access,
-    google_service_account_iam_member.terraform_can_impersonate_runtime
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
 }
