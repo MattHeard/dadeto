@@ -389,7 +389,11 @@ export const setLocalPermanentData = (desired, loggers, storage) => {
   try {
     if (storage) {
       const raw = storage.getItem('permanentData');
-      storedData = raw ? JSON.parse(raw) : {};
+      if (raw) {
+        storedData = JSON.parse(raw);
+      } else {
+        storedData = {};
+      }
     }
   } catch (readError) {
     logError('Failed to read permanent data:', readError);
