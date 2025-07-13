@@ -20,17 +20,22 @@ function createEmptyDend2() {
 }
 
 /**
+ * Check that the given properties on an object are arrays.
+ * @param {object} obj - Object to inspect.
+ * @param {string[]} keys - Property names to verify as arrays.
+ * @returns {boolean} True when every property is an array.
+ */
+function hasArrayProps(obj, keys) {
+  return keys.every(key => Array.isArray(obj[key]));
+}
+
+/**
  * Validate that an object is a proper DEND2 structure.
  * @param {object} obj - Object to validate.
  * @returns {boolean} True if `obj` is valid.
  */
 function isValidDend2(obj) {
-  return (
-    isObject(obj) &&
-    Array.isArray(obj.stories) &&
-    Array.isArray(obj.pages) &&
-    Array.isArray(obj.options)
-  );
+  return isObject(obj) && hasArrayProps(obj, ['stories', 'pages', 'options']);
 }
 
 /**
