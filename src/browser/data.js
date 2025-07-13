@@ -381,33 +381,50 @@ export const setLocalTemporaryData = (state, loggers) => {
  * @param {Storage} [storage] - Storage used to persist data.
  * @returns {object} The merged permanent state.
  */
+
+/**
+ * Load existing permanent data from storage.
+ * @param {Storage} storage - Storage used to persist data.
+ * @param {Function} logError - Error logger.
+ * @returns {object} Stored data object.
+ */
+function loadPermanentData(storage, logError) {
+  if (!storage) {
+    return {};
+  }
+  try {
+    const raw = storage.getItem('permanentData');
+    return raw ? JSON.parse(raw) : {};
+  } catch (readError) {
+    logError('Failed to read permanent data:', readError);
+    return {};
+  }
+}
+
+/**
+ * Persist permanent data to storage.
+ * @param {Storage} storage - Storage used to persist data.
+ * @param {object} data - Data to save.
+ * @param {Function} logError - Error logger.
+ */
+function savePermanentData(storage, data, logError) {
+  if (!storage) {
+    return;
+  }
+  try {
+    storage.setItem('permanentData', JSON.stringify(data));
+  } catch (storageError) {
+    logError('Failed to persist permanent data:', storageError);
+  }
+}
+
 export const setLocalPermanentData = (desired, loggers, storage) => {
   const { logError } = loggers;
   validateIncomingPermanentState(desired, logError);
 
-  let storedData = {};
-  try {
-    if (storage) {
-      const raw = storage.getItem('permanentData');
-      if (raw) {
-        storedData = JSON.parse(raw);
-      } else {
-        storedData = {};
-      }
-    }
-  } catch (readError) {
-    logError('Failed to read permanent data:', readError);
-  }
-
+  const storedData = loadPermanentData(storage, logError);
   const updated = { ...storedData, ...desired };
-
-  try {
-    if (storage) {
-      storage.setItem('permanentData', JSON.stringify(updated));
-    }
-  } catch (storageError) {
-    logError('Failed to persist permanent data:', storageError);
-  }
+  savePermanentData(storage, updated, logError);
 
   return updated;
 };
