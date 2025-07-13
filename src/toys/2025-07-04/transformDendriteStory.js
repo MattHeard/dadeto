@@ -1,6 +1,6 @@
 import { deepClone } from '../../utils/objectUtils.js';
-import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 import { isValidString } from '../../utils/validation.js';
+import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
 
 /**
  * Determine if a value is a non-null object.
@@ -30,18 +30,6 @@ const hasValidDend2 = temp => {
 const isValidTemporary = temp => isObject(temp) && hasValidDend2(temp);
 
 /**
- * Ensure the data object has a valid temporary.DEND2 structure.
- * @param {object} data - Data object to check.
- */
-function ensureDend2(data) {
-  const empty = { stories: [], pages: [], options: [] };
-
-  if (!isValidTemporary(data.temporary)) {
-    data.temporary = { DEND2: empty };
-  }
-}
-
-/**
  * Validate the parsed story input.
  * @param {object} [obj] - Parsed object.
  * @param {string} obj.title - Story title.
@@ -50,19 +38,6 @@ function ensureDend2(data) {
  */
 function isValidInput(obj) {
   return Boolean(obj) && [obj.title, obj.content].every(isValidString);
-}
-
-/**
- * Create option objects for values present in the input data.
- * @param {object} data - Source data that may contain option values.
- * @param {Function} getUuid - Function that generates unique IDs.
- * @returns {Array<{id: string, content: string}>} Array of option objects.
- */
-function createOptions(data, getUuid) {
-  return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => ({
-    id: getUuid(),
-    content: data[key],
-  }));
 }
 
 /**
