@@ -420,7 +420,21 @@ function getPermanentRaw(storage) {
 }
 
 /**
- * Persist permanent data to storage.
+ * Write the permanent data object to storage.
+ * @param {Storage} storage - Storage used to persist data.
+ * @param {object} data - Data to save.
+ * @param {Function} logError - Error logger.
+ */
+function writePermanentData(storage, data, logError) {
+  try {
+    storage.setItem('permanentData', JSON.stringify(data));
+  } catch (storageError) {
+    logError('Failed to persist permanent data:', storageError);
+  }
+}
+
+/**
+ * Persist permanent data when storage is available.
  * @param {Storage} storage - Storage used to persist data.
  * @param {object} data - Data to save.
  * @param {Function} logError - Error logger.
@@ -429,11 +443,7 @@ function savePermanentData(storage, data, logError) {
   if (!storage) {
     return;
   }
-  try {
-    storage.setItem('permanentData', JSON.stringify(data));
-  } catch (storageError) {
-    logError('Failed to persist permanent data:', storageError);
-  }
+  writePermanentData(storage, data, logError);
 }
 
 export const setLocalPermanentData = (desired, loggers, storage) => {
