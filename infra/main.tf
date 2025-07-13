@@ -59,6 +59,11 @@ resource "google_project_service" "cloudbuild" {
   service = "cloudbuild.googleapis.com"
 }
 
+resource "google_project_service" "eventarc" {
+  project = var.project_id
+  service = "eventarc.googleapis.com"
+}
+
 resource "google_firestore_database" "default" {
   project     = var.project_id
   name        = "(default)"
@@ -139,6 +144,7 @@ resource "google_cloudfunctions2_function" "get_api_key_credit" {
   depends_on = [
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
+    google_project_service.eventarc,
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
