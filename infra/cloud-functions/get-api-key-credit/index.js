@@ -8,7 +8,7 @@ const firestore = new Firestore();
  * @param {object} res - Express response object.
  * @returns {Promise<void>} Response with credit value or error code.
  */
-export async function getApiKeyCredit(req, res) {
+export async function handler(req, res) {
   const { uuid } = req.params;
 
   if (!uuid) {
