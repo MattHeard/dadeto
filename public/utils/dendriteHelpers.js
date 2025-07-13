@@ -39,18 +39,25 @@ function isValidDend2(obj) {
 }
 
 /**
- * Ensure the data object has a valid temporary.DEND2 structure.
- * @param {object} data - Data object to check.
+ * Determine whether the provided data has a valid temporary.DEND2 structure.
+ * @param {object} data - Data object to inspect.
+ * @returns {boolean} True when valid.
+ */
+function isTemporaryValid(data) {
+  if (!isObject(data.temporary)) {
+    return false;
+  }
+  return isValidDend2(data.temporary.DEND2);
+}
+
+/**
+ * Ensure the data object includes a well-formed temporary.DEND2 property.
+ * @param {object} data - Data object to update.
  * @returns {void}
  */
 function ensureDend2(data) {
-  if (!isObject(data.temporary)) {
+  if (!isTemporaryValid(data)) {
     data.temporary = { DEND2: createEmptyDend2() };
-    return;
-  }
-  const t = data.temporary;
-  if (!isValidDend2(t.DEND2)) {
-    t.DEND2 = createEmptyDend2();
   }
 }
 
