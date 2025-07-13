@@ -44,3 +44,8 @@ Write clear commit messages that summarize the change.
 
 Include a Summary and Testing section in the PR body describing the changes and
 any test results or failures.
+
+## File Restrictions
+
+- Do not commit zip archives (`*.zip`). These files are ignored via `.gitignore`
+  and should not be added to pull requests.
