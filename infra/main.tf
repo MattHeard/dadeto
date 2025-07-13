@@ -125,7 +125,7 @@ resource "google_storage_bucket_object" "get_api_key_credit" {
 resource "google_cloudfunctions_function" "get_api_key_credit" {
   name        = "get-api-key-credit"
   description = "Returns credit for an API key"
-  runtime     = "nodejs18"
+  runtime     = "nodejs20"
   available_memory_mb   = 128
   source_archive_bucket = google_storage_bucket.irien_bucket.name
   source_archive_object = google_storage_bucket_object.get_api_key_credit.name
