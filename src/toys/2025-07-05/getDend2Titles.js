@@ -30,7 +30,10 @@ function extractDend2Stories(data) {
  */
 function getStories(data) {
   const stories = extractDend2Stories(data);
-  return isStoryArray(stories) ? stories : [];
+  if (isStoryArray(stories)) {
+    return stories;
+  }
+  return [];
 }
 
 /**
