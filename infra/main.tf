@@ -55,5 +55,5 @@ resource "google_project_iam_member" "firestore_access" {
 }
 
 module "get_api_key_credit" {
-  source = "${path.module}/cloud-functions/get-api-key-credit"
+  source = "./cloud-functions/get-api-key-credit"
 }
