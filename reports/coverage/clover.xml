@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1752400314045" clover="3.2.0">
-  <project timestamp="1752400314045" name="All files">
-    <metrics statements="2037" coveredstatements="2034" conditionals="566" coveredconditionals="561" methods="810" coveredmethods="810" elements="3413" coveredelements="3405" complexity="0" loc="2037" ncloc="2037" packages="23" files="59" classes="59"/>
+<coverage generated="1752420940648" clover="3.2.0">
+  <project timestamp="1752420940648" name="All files">
+    <metrics statements="2010" coveredstatements="2000" conditionals="552" coveredconditionals="541" methods="813" coveredmethods="809" elements="3375" coveredelements="3350" complexity="0" loc="2010" ncloc="2010" packages="24" files="61" classes="61"/>
     <package name="browser">
-      <metrics statements="548" coveredstatements="545" conditionals="112" coveredconditionals="109" methods="181" coveredmethods="181"/>
+      <metrics statements="552" coveredstatements="547" conditionals="112" coveredconditionals="109" methods="186" coveredmethods="186"/>
       <file name="audio-controls.js" path="/workspace/dadeto/src/browser/audio-controls.js">
         <metrics statements="54" coveredstatements="54" conditionals="2" coveredconditionals="2" methods="10" coveredmethods="10"/>
         <line num="1" count="1" type="stmt"/>
@@ -106,7 +106,7 @@
         <line num="91" count="13" type="stmt"/>
       </file>
       <file name="data.js" path="/workspace/dadeto/src/browser/data.js">
-        <metrics statements="106" coveredstatements="103" conditionals="40" coveredconditionals="37" methods="37" coveredmethods="37"/>
+        <metrics statements="110" coveredstatements="105" conditionals="40" coveredconditionals="37" methods="42" coveredmethods="42"/>
         <line num="3" count="144" type="stmt"/>
         <line num="5" count="144" type="stmt"/>
         <line num="18" count="47" type="stmt"/>
@@ -196,23 +196,27 @@
         <line num="370" count="5" type="stmt"/>
         <line num="371" count="5" type="stmt"/>
         <line num="372" count="5" type="stmt"/>
-        <line num="384" count="144" type="stmt"/>
-        <line num="385" count="2" type="stmt"/>
-        <line num="386" count="2" type="stmt"/>
-        <line num="388" count="1" type="stmt"/>
-        <line num="389" count="1" type="stmt"/>
-        <line num="390" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="391" count="1" type="stmt"/>
         <line num="392" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="393" count="1" type="stmt"/>
-        <line num="395" count="0" type="stmt"/>
-        <line num="399" count="0" type="stmt"/>
-        <line num="402" count="1" type="stmt"/>
-        <line num="404" count="1" type="stmt"/>
-        <line num="405" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="393" count="0" type="stmt"/>
+        <line num="395" count="1" type="stmt"/>
+        <line num="405" count="1" type="stmt"/>
         <line num="406" count="1" type="stmt"/>
+        <line num="408" count="0" type="stmt"/>
         <line num="409" count="0" type="stmt"/>
-        <line num="412" count="1" type="stmt"/>
+        <line num="419" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="429" count="1" type="stmt"/>
+        <line num="430" count="1" type="stmt"/>
+        <line num="432" count="0" type="stmt"/>
+        <line num="443" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="444" count="0" type="stmt"/>
+        <line num="446" count="1" type="stmt"/>
+        <line num="449" count="144" type="stmt"/>
+        <line num="450" count="2" type="stmt"/>
+        <line num="451" count="2" type="stmt"/>
+        <line num="453" count="1" type="stmt"/>
+        <line num="454" count="1" type="stmt"/>
+        <line num="455" count="1" type="stmt"/>
+        <line num="457" count="1" type="stmt"/>
       </file>
       <file name="setOutput.js" path="/workspace/dadeto/src/browser/setOutput.js">
         <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
@@ -603,13 +607,13 @@
       </file>
     </package>
     <package name="generator">
-      <metrics statements="298" coveredstatements="298" conditionals="58" coveredconditionals="56" methods="155" coveredmethods="155"/>
+      <metrics statements="299" coveredstatements="299" conditionals="58" coveredconditionals="57" methods="155" coveredmethods="155"/>
       <file name="full-width.js" path="/workspace/dadeto/src/generator/full-width.js">
         <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="6" count="130" type="stmt"/>
       </file>
       <file name="generator.js" path="/workspace/dadeto/src/generator/generator.js">
-        <metrics statements="259" coveredstatements="259" conditionals="55" coveredconditionals="53" methods="127" coveredmethods="127"/>
+        <metrics statements="259" coveredstatements="259" conditionals="53" coveredconditionals="52" methods="127" coveredmethods="127"/>
         <line num="19" count="16" type="cond" truecount="2" falsecount="0"/>
         <line num="20" count="2" type="stmt"/>
         <line num="22" count="15" type="stmt"/>
@@ -751,7 +755,7 @@
         <line num="686" count="125" type="stmt"/>
         <line num="688" count="13" type="stmt"/>
         <line num="689" count="13" type="cond" truecount="2" falsecount="0"/>
-        <line num="690" count="13" type="cond" truecount="1" falsecount="1"/>
+        <line num="690" count="13" type="stmt"/>
         <line num="696" count="125" type="stmt"/>
         <line num="698" count="20" type="stmt"/>
         <line num="699" count="20" type="stmt"/>
@@ -875,12 +879,12 @@
         <line num="9" count="57" type="stmt"/>
       </file>
       <file name="html.js" path="/workspace/dadeto/src/generator/html.js">
-        <metrics statements="35" coveredstatements="35" conditionals="3" coveredconditionals="3" methods="24" coveredmethods="24"/>
+        <metrics statements="36" coveredstatements="36" conditionals="5" coveredconditionals="5" methods="24" coveredmethods="24"/>
         <line num="9" count="47" type="stmt"/>
         <line num="18" count="47" type="stmt"/>
         <line num="29" count="46" type="stmt"/>
         <line num="38" count="1330" type="stmt"/>
-        <line num="51" count="118" type="stmt"/>
+        <line num="51" count="119" type="stmt"/>
         <line num="68" count="5932" type="stmt"/>
         <line num="77" count="2315" type="stmt"/>
         <line num="84" count="2314" type="stmt"/>
@@ -903,14 +907,15 @@
         <line num="179" count="1329" type="stmt"/>
         <line num="189" count="1329" type="stmt"/>
         <line num="190" count="1329" type="stmt"/>
-        <line num="202" count="569" type="stmt"/>
-        <line num="203" count="569" type="stmt"/>
-        <line num="213" count="113" type="stmt"/>
-        <line num="222" count="112" type="stmt"/>
-        <line num="231" count="45" type="stmt"/>
-        <line num="232" count="45" type="stmt"/>
-        <line num="241" count="44" type="stmt"/>
-        <line num="242" count="44" type="stmt"/>
+        <line num="202" count="574" type="stmt"/>
+        <line num="203" count="574" type="stmt"/>
+        <line num="213" count="114" type="stmt"/>
+        <line num="222" count="113" type="cond" truecount="2" falsecount="0"/>
+        <line num="223" count="113" type="stmt"/>
+        <line num="235" count="45" type="stmt"/>
+        <line num="236" count="45" type="stmt"/>
+        <line num="245" count="44" type="stmt"/>
+        <line num="246" count="44" type="stmt"/>
       </file>
       <file name="styles.js" path="/workspace/dadeto/src/generator/styles.js">
         <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
@@ -922,7 +927,59 @@
       </file>
     </package>
     <package name="inputHandlers">
-      <metrics statements="167" coveredstatements="167" conditionals="30" coveredconditionals="30" methods="51" coveredmethods="51"/>
+      <metrics statements="122" coveredstatements="122" conditionals="20" coveredconditionals="20" methods="37" coveredmethods="37"/>
+      <file name="createDendriteHandler.js" path="/workspace/dadeto/src/inputHandlers/createDendriteHandler.js">
+        <metrics statements="49" coveredstatements="49" conditionals="10" coveredconditionals="10" methods="16" coveredmethods="16"/>
+        <line num="18" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="30" count="22" type="stmt"/>
+        <line num="31" count="22" type="cond" truecount="2" falsecount="0"/>
+        <line num="32" count="4" type="stmt"/>
+        <line num="33" count="4" type="stmt"/>
+        <line num="44" count="22" type="cond" truecount="2" falsecount="0"/>
+        <line num="45" count="22" type="stmt"/>
+        <line num="55" count="132" type="cond" truecount="2" falsecount="0"/>
+        <line num="56" count="22" type="stmt"/>
+        <line num="58" count="110" type="stmt"/>
+        <line num="59" count="110" type="stmt"/>
+        <line num="60" count="110" type="stmt"/>
+        <line num="75" count="132" type="stmt"/>
+        <line num="76" count="132" type="stmt"/>
+        <line num="77" count="132" type="stmt"/>
+        <line num="79" count="132" type="stmt"/>
+        <line num="80" count="132" type="stmt"/>
+        <line num="81" count="132" type="cond" truecount="2" falsecount="0"/>
+        <line num="82" count="2" type="stmt"/>
+        <line num="84" count="132" type="stmt"/>
+        <line num="85" count="2" type="stmt"/>
+        <line num="86" count="2" type="stmt"/>
+        <line num="88" count="132" type="stmt"/>
+        <line num="89" count="132" type="stmt"/>
+        <line num="90" count="132" type="stmt"/>
+        <line num="91" count="132" type="stmt"/>
+        <line num="92" count="132" type="stmt"/>
+        <line num="102" count="22" type="stmt"/>
+        <line num="103" count="22" type="stmt"/>
+        <line num="104" count="22" type="stmt"/>
+        <line num="105" count="22" type="stmt"/>
+        <line num="107" count="22" type="stmt"/>
+        <line num="108" count="132" type="stmt"/>
+        <line num="117" count="22" type="stmt"/>
+        <line num="119" count="22" type="stmt"/>
+        <line num="120" count="24" type="stmt"/>
+        <line num="123" count="22" type="stmt"/>
+        <line num="133" count="22" type="stmt"/>
+        <line num="143" count="22" type="stmt"/>
+        <line num="144" count="22" type="stmt"/>
+        <line num="145" count="22" type="stmt"/>
+        <line num="156" count="22" type="stmt"/>
+        <line num="157" count="22" type="stmt"/>
+        <line num="158" count="22" type="stmt"/>
+        <line num="168" count="258" type="stmt"/>
+        <line num="169" count="22" type="stmt"/>
+        <line num="170" count="22" type="stmt"/>
+        <line num="171" count="22" type="stmt"/>
+      </file>
       <file name="default.js" path="/workspace/dadeto/src/inputHandlers/default.js">
         <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="16" count="12" type="stmt"/>
@@ -931,106 +988,12 @@
         <line num="19" count="12" type="stmt"/>
       </file>
       <file name="dendritePage.js" path="/workspace/dadeto/src/inputHandlers/dendritePage.js">
-        <metrics statements="48" coveredstatements="48" conditionals="10" coveredconditionals="10" methods="15" coveredmethods="15"/>
-        <line num="13" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="14" count="1" type="stmt"/>
-        <line num="25" count="10" type="stmt"/>
-        <line num="26" count="10" type="cond" truecount="2" falsecount="0"/>
-        <line num="27" count="2" type="stmt"/>
-        <line num="28" count="2" type="stmt"/>
-        <line num="39" count="10" type="cond" truecount="2" falsecount="0"/>
-        <line num="40" count="10" type="stmt"/>
-        <line num="50" count="60" type="cond" truecount="2" falsecount="0"/>
-        <line num="51" count="10" type="stmt"/>
-        <line num="53" count="50" type="stmt"/>
-        <line num="54" count="50" type="stmt"/>
-        <line num="55" count="50" type="stmt"/>
-        <line num="70" count="60" type="stmt"/>
-        <line num="71" count="60" type="stmt"/>
-        <line num="72" count="60" type="stmt"/>
-        <line num="74" count="60" type="stmt"/>
-        <line num="75" count="60" type="stmt"/>
-        <line num="76" count="60" type="cond" truecount="2" falsecount="0"/>
-        <line num="77" count="1" type="stmt"/>
-        <line num="79" count="60" type="stmt"/>
-        <line num="80" count="1" type="stmt"/>
-        <line num="81" count="1" type="stmt"/>
-        <line num="83" count="60" type="stmt"/>
-        <line num="84" count="60" type="stmt"/>
-        <line num="85" count="60" type="stmt"/>
-        <line num="86" count="60" type="stmt"/>
-        <line num="87" count="60" type="stmt"/>
-        <line num="97" count="10" type="stmt"/>
-        <line num="98" count="10" type="stmt"/>
-        <line num="99" count="10" type="stmt"/>
-        <line num="100" count="10" type="stmt"/>
-        <line num="102" count="10" type="stmt"/>
-        <line num="103" count="60" type="stmt"/>
-        <line num="112" count="10" type="stmt"/>
-        <line num="114" count="10" type="stmt"/>
-        <line num="115" count="12" type="stmt"/>
-        <line num="118" count="10" type="stmt"/>
-        <line num="128" count="10" type="stmt"/>
-        <line num="138" count="10" type="stmt"/>
-        <line num="139" count="10" type="stmt"/>
-        <line num="140" count="10" type="stmt"/>
-        <line num="151" count="10" type="stmt"/>
-        <line num="152" count="10" type="stmt"/>
-        <line num="153" count="10" type="stmt"/>
-        <line num="164" count="10" type="stmt"/>
-        <line num="165" count="10" type="stmt"/>
-        <line num="166" count="10" type="stmt"/>
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="4" count="129" type="stmt"/>
       </file>
       <file name="dendriteStory.js" path="/workspace/dadeto/src/inputHandlers/dendriteStory.js">
-        <metrics statements="48" coveredstatements="48" conditionals="10" coveredconditionals="10" methods="15" coveredmethods="15"/>
-        <line num="13" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="14" count="1" type="stmt"/>
-        <line num="25" count="12" type="stmt"/>
-        <line num="26" count="12" type="cond" truecount="2" falsecount="0"/>
-        <line num="27" count="2" type="stmt"/>
-        <line num="28" count="2" type="stmt"/>
-        <line num="39" count="12" type="cond" truecount="2" falsecount="0"/>
-        <line num="40" count="12" type="stmt"/>
-        <line num="50" count="72" type="cond" truecount="2" falsecount="0"/>
-        <line num="51" count="12" type="stmt"/>
-        <line num="53" count="60" type="stmt"/>
-        <line num="54" count="60" type="stmt"/>
-        <line num="55" count="60" type="stmt"/>
-        <line num="70" count="72" type="stmt"/>
-        <line num="71" count="72" type="stmt"/>
-        <line num="72" count="72" type="stmt"/>
-        <line num="74" count="72" type="stmt"/>
-        <line num="75" count="72" type="stmt"/>
-        <line num="76" count="72" type="cond" truecount="2" falsecount="0"/>
-        <line num="77" count="1" type="stmt"/>
-        <line num="79" count="72" type="stmt"/>
-        <line num="80" count="1" type="stmt"/>
-        <line num="81" count="1" type="stmt"/>
-        <line num="83" count="72" type="stmt"/>
-        <line num="84" count="72" type="stmt"/>
-        <line num="85" count="72" type="stmt"/>
-        <line num="86" count="72" type="stmt"/>
-        <line num="87" count="72" type="stmt"/>
-        <line num="97" count="12" type="stmt"/>
-        <line num="98" count="12" type="stmt"/>
-        <line num="99" count="12" type="stmt"/>
-        <line num="100" count="12" type="stmt"/>
-        <line num="102" count="12" type="stmt"/>
-        <line num="103" count="72" type="stmt"/>
-        <line num="112" count="12" type="stmt"/>
-        <line num="114" count="12" type="stmt"/>
-        <line num="115" count="12" type="stmt"/>
-        <line num="118" count="12" type="stmt"/>
-        <line num="128" count="12" type="stmt"/>
-        <line num="138" count="12" type="stmt"/>
-        <line num="139" count="12" type="stmt"/>
-        <line num="140" count="12" type="stmt"/>
-        <line num="151" count="12" type="stmt"/>
-        <line num="152" count="12" type="stmt"/>
-        <line num="153" count="12" type="stmt"/>
-        <line num="164" count="12" type="stmt"/>
-        <line num="165" count="12" type="stmt"/>
-        <line num="166" count="12" type="stmt"/>
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="4" count="129" type="stmt"/>
       </file>
       <file name="disposeHelpers.js" path="/workspace/dadeto/src/inputHandlers/disposeHelpers.js">
         <metrics statements="5" coveredstatements="5" conditionals="4" coveredconditionals="4" methods="3" coveredmethods="3"/>
@@ -2133,86 +2096,89 @@
       </file>
     </package>
     <package name="toys.2025-07-04">
-      <metrics statements="30" coveredstatements="30" conditionals="15" coveredconditionals="15" methods="8" coveredmethods="8"/>
+      <metrics statements="30" coveredstatements="26" conditionals="10" coveredconditionals="4" methods="8" coveredmethods="4"/>
       <file name="transformDendriteStory.js" path="/workspace/dadeto/src/toys/2025-07-04/transformDendriteStory.js">
-        <metrics statements="30" coveredstatements="30" conditionals="15" coveredconditionals="15" methods="8" coveredmethods="8"/>
-        <line num="10" count="3" type="cond" truecount="4" falsecount="0"/>
-        <line num="11" count="1" type="stmt"/>
-        <line num="12" count="1" type="stmt"/>
-        <line num="14" count="2" type="stmt"/>
-        <line num="15" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="22" count="1" type="stmt"/>
-        <line num="34" count="7" type="cond" truecount="2" falsecount="0"/>
-        <line num="44" count="12" type="stmt"/>
-        <line num="56" count="7" type="stmt"/>
-        <line num="57" count="7" type="stmt"/>
-        <line num="59" count="1" type="stmt"/>
-        <line num="70" count="7" type="stmt"/>
-        <line num="71" count="7" type="cond" truecount="2" falsecount="0"/>
-        <line num="72" count="4" type="stmt"/>
-        <line num="75" count="3" type="stmt"/>
-        <line num="76" count="3" type="stmt"/>
-        <line num="77" count="3" type="stmt"/>
-        <line num="78" count="3" type="stmt"/>
-        <line num="79" count="3" type="stmt"/>
-        <line num="80" count="3" type="stmt"/>
-        <line num="84" count="3" type="stmt"/>
-        <line num="85" count="3" type="stmt"/>
-        <line num="87" count="3" type="stmt"/>
-        <line num="88" count="3" type="stmt"/>
-        <line num="89" count="3" type="stmt"/>
-        <line num="90" count="3" type="stmt"/>
-        <line num="91" count="3" type="stmt"/>
-        <line num="92" count="3" type="stmt"/>
-        <line num="93" count="3" type="stmt"/>
-        <line num="95" count="3" type="stmt"/>
-      </file>
-    </package>
-    <package name="toys.2025-07-05">
-      <metrics statements="44" coveredstatements="44" conditionals="21" coveredconditionals="21" methods="10" coveredmethods="10"/>
-      <file name="addDendritePage.js" path="/workspace/dadeto/src/toys/2025-07-05/addDendritePage.js">
-        <metrics statements="28" coveredstatements="28" conditionals="17" coveredconditionals="17" methods="6" coveredmethods="6"/>
-        <line num="11" count="3" type="cond" truecount="4" falsecount="0"/>
-        <line num="12" count="1" type="stmt"/>
-        <line num="13" count="1" type="stmt"/>
-        <line num="15" count="2" type="stmt"/>
-        <line num="16" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="23" count="1" type="stmt"/>
-        <line num="36" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="37" count="1" type="stmt"/>
-        <line num="39" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="50" count="12" type="stmt"/>
-        <line num="65" count="7" type="stmt"/>
-        <line num="66" count="7" type="stmt"/>
-        <line num="67" count="6" type="cond" truecount="2" falsecount="0"/>
+        <metrics statements="30" coveredstatements="26" conditionals="10" coveredconditionals="4" methods="8" coveredmethods="4"/>
+        <line num="10" count="1" type="cond" truecount="0" falsecount="2"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="19" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="30" count="1" type="cond" truecount="0" falsecount="2"/>
+        <line num="40" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="49" count="7" type="stmt"/>
+        <line num="50" count="7" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="63" count="7" type="stmt"/>
+        <line num="64" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="65" count="4" type="stmt"/>
         <line num="68" count="3" type="stmt"/>
+        <line num="69" count="3" type="stmt"/>
+        <line num="70" count="3" type="stmt"/>
         <line num="71" count="3" type="stmt"/>
         <line num="72" count="3" type="stmt"/>
         <line num="73" count="3" type="stmt"/>
-        <line num="74" count="3" type="stmt"/>
-        <line num="75" count="3" type="stmt"/>
-        <line num="76" count="3" type="stmt"/>
+        <line num="77" count="3" type="stmt"/>
+        <line num="78" count="3" type="stmt"/>
+        <line num="80" count="3" type="stmt"/>
+        <line num="81" count="3" type="stmt"/>
         <line num="82" count="3" type="stmt"/>
         <line num="83" count="3" type="stmt"/>
         <line num="84" count="3" type="stmt"/>
         <line num="85" count="3" type="stmt"/>
         <line num="86" count="3" type="stmt"/>
-        <line num="87" count="3" type="stmt"/>
-        <line num="89" count="3" type="stmt"/>
-        <line num="91" count="4" type="stmt"/>
+        <line num="88" count="3" type="stmt"/>
+      </file>
+    </package>
+    <package name="toys.2025-07-05">
+      <metrics statements="47" coveredstatements="46" conditionals="12" coveredconditionals="11" methods="12" coveredmethods="12"/>
+      <file name="addDendritePage.js" path="/workspace/dadeto/src/toys/2025-07-05/addDendritePage.js">
+        <metrics statements="21" coveredstatements="21" conditionals="6" coveredconditionals="6" methods="2" coveredmethods="2"/>
+        <line num="14" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="17" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="28" count="7" type="stmt"/>
+        <line num="29" count="7" type="stmt"/>
+        <line num="30" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="31" count="3" type="stmt"/>
+        <line num="34" count="3" type="stmt"/>
+        <line num="35" count="3" type="stmt"/>
+        <line num="36" count="3" type="stmt"/>
+        <line num="37" count="3" type="stmt"/>
+        <line num="38" count="3" type="stmt"/>
+        <line num="39" count="3" type="stmt"/>
+        <line num="45" count="3" type="stmt"/>
+        <line num="46" count="3" type="stmt"/>
+        <line num="47" count="3" type="stmt"/>
+        <line num="48" count="3" type="stmt"/>
+        <line num="49" count="3" type="stmt"/>
+        <line num="50" count="3" type="stmt"/>
+        <line num="52" count="3" type="stmt"/>
+        <line num="54" count="4" type="stmt"/>
       </file>
       <file name="getDend2Titles.js" path="/workspace/dadeto/src/toys/2025-07-05/getDend2Titles.js">
-        <metrics statements="10" coveredstatements="10" conditionals="4" coveredconditionals="4" methods="3" coveredmethods="3"/>
-        <line num="11" count="4" type="stmt"/>
-        <line num="12" count="4" type="cond" truecount="2" falsecount="0"/>
+        <metrics statements="20" coveredstatements="19" conditionals="6" coveredconditionals="5" methods="9" coveredmethods="9"/>
+        <line num="10" count="3" type="stmt"/>
+        <line num="11" count="3" type="stmt"/>
         <line num="13" count="1" type="stmt"/>
-        <line num="15" count="3" type="stmt"/>
-        <line num="16" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="17" count="2" type="stmt"/>
-        <line num="18" count="2" type="stmt"/>
-        <line num="19" count="2" type="stmt"/>
-        <line num="20" count="2" type="stmt"/>
-        <line num="22" count="1" type="stmt"/>
+        <line num="23" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="35" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="44" count="3" type="stmt"/>
+        <line num="45" count="3" type="stmt"/>
+        <line num="46" count="3" type="stmt"/>
+        <line num="55" count="3" type="stmt"/>
+        <line num="56" count="2" type="stmt"/>
+        <line num="57" count="2" type="stmt"/>
+        <line num="66" count="3" type="stmt"/>
+        <line num="67" count="3" type="stmt"/>
+        <line num="77" count="4" type="stmt"/>
+        <line num="78" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="79" count="1" type="stmt"/>
+        <line num="81" count="3" type="stmt"/>
+        <line num="82" count="3" type="stmt"/>
       </file>
       <file name="setPermanentData.js" path="/workspace/dadeto/src/toys/2025-07-05/setPermanentData.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
@@ -2222,6 +2188,22 @@
         <line num="14" count="1" type="stmt"/>
         <line num="15" count="1" type="stmt"/>
         <line num="17" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="toys.utils">
+      <metrics statements="10" coveredstatements="10" conditionals="10" coveredconditionals="10" methods="10" coveredmethods="10"/>
+      <file name="dendriteHelpers.js" path="/workspace/dadeto/src/toys/utils/dendriteHelpers.js">
+        <metrics statements="10" coveredstatements="10" conditionals="10" coveredconditionals="10" methods="10" coveredmethods="10"/>
+        <line num="11" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="19" count="4" type="stmt"/>
+        <line num="29" count="8" type="stmt"/>
+        <line num="38" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="47" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="48" count="2" type="stmt"/>
+        <line num="50" count="4" type="stmt"/>
+        <line num="59" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="60" count="4" type="stmt"/>
+        <line num="72" count="24" type="stmt"/>
       </file>
     </package>
     <package name="utils">
