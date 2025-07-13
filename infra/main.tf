@@ -75,6 +75,23 @@ resource "google_project_iam_member" "cloudfunctions_access" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "terraform_create_sa" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountAdmin"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_service_account" "cloud_function_runtime" {
+  account_id   = "cloud-function-runtime"
+  display_name = "Cloud Function Runtime Service Account"
+}
+
+resource "google_service_account_iam_member" "terraform_can_impersonate_runtime" {
+  service_account_id = google_service_account.cloud_function_runtime.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 
 resource "google_storage_bucket_object" "get_api_key_credit" {
   name   = "get-api-key-credit.zip"
@@ -101,6 +118,7 @@ resource "google_cloudfunctions2_function" "get_api_key_credit" {
     available_memory   = "128Mi"
     timeout_seconds    = 60
     min_instance_count = 0
+    service_account_email = google_service_account.cloud_function_runtime.email
   }
 
   event_trigger {
@@ -111,6 +129,7 @@ resource "google_cloudfunctions2_function" "get_api_key_credit" {
   depends_on = [
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
-    google_project_iam_member.cloudfunctions_access
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime
   ]
 }
