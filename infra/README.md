@@ -6,7 +6,9 @@ The configuration provisions a Google Cloud Storage bucket and creates a
 Firestore database. The Terraform service account is granted the
 `roles/datastore.user` role so it can manage Firestore resources, and the
 `roles/cloudfunctions.developer` role so it can create and manage Cloud
-Functions. The `cloud-functions/get-api-key-credit` directory contains the code
+Functions. A separate compute service account is created for running
+Cloud Functions, and the Terraform service account is allowed to
+impersonate this runtime account. The `cloud-functions/get-api-key-credit` directory contains the code
 for a Google Cloud Function that returns the credit associated with a given API
 key. The
 Cloud Functions API is enabled via a `google_project_service` resource, and the
