@@ -45,6 +45,11 @@ resource "google_project_service" "firestore" {
   service = "firestore.googleapis.com"
 }
 
+resource "google_project_service" "cloudfunctions" {
+  project = var.project_id
+  service = "cloudfunctions.googleapis.com"
+}
+
 resource "google_firestore_database" "default" {
   project     = var.project_id
   name        = "(default)"
@@ -90,4 +95,6 @@ resource "google_cloudfunctions2_function" "get_api_key_credit" {
     event_type     = "google.cloud.functions.v2.eventTypes.http.request"
     trigger_region = var.region
   }
+
+  depends_on = [google_project_service.cloudfunctions]
 }

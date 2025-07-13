@@ -2,12 +2,13 @@
 
 This directory houses Terraform configurations and related resources for deploying cloud infrastructure.
 
-The configuration provisions a Google Cloud Storage bucket and now also creates
-a Firestore database. The Terraform service account is granted the
-`roles/datastore.user` role so it can manage Firestore resources. Additionally,
-the `cloud-functions/get-api-key-credit` directory contains the code for a
-Google Cloud Function that returns the credit associated with a given API key.
-The resources for this function are defined directly in `main.tf`.
+The configuration provisions a Google Cloud Storage bucket and creates a
+Firestore database. The Terraform service account is granted the
+`roles/datastore.user` role so it can manage Firestore resources. The
+`cloud-functions/get-api-key-credit` directory contains the code for a Google
+Cloud Function that returns the credit associated with a given API key. The
+Cloud Functions API is enabled via a `google_project_service` resource and the
+resources for this function are defined directly in `main.tf`.
 
 ## Import Targets
 
