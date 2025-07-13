@@ -52,6 +52,15 @@ jobs:
             terraform import "$RESOURCE" "$ID" || echo "\u26A0\uFE0F Failed to import $RESOURCE"
           done
 
+      - name: Zip Cloud Functions
+        run: |
+          set -e
+
+          echo "Zipping get-api-key-credit function..."
+          cd cloud-functions/get-api-key-credit
+          zip -r get-api-key-credit.zip . -x '*.zip'
+          cd -
+
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
