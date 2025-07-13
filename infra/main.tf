@@ -75,14 +75,8 @@ resource "google_project_iam_member" "cloudfunctions_access" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
-resource "google_service_account" "default_runtime" {
-  account_id   = "${var.project_id}-compute"
-  project      = var.project_id
-  display_name = "Default Compute Service Account"
-}
-
 resource "google_service_account_iam_member" "allow_terraform_to_impersonate_runtime" {
-  service_account_id = google_service_account.default_runtime.name
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.project_id}-compute@developer.gserviceaccount.com"
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
@@ -112,7 +106,6 @@ resource "google_cloudfunctions2_function" "get_api_key_credit" {
     available_memory   = "128Mi"
     timeout_seconds    = 60
     min_instance_count = 0
-    service_account_email = google_service_account.default_runtime.email
   }
 
   event_trigger {
