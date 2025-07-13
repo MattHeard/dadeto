@@ -18,14 +18,23 @@ function safeGetData(getData) {
 }
 
 /**
+ * Normalize a potential stories array.
+ * @param {*} stories - Value that may be an array of stories.
+ * @returns {object[]} Valid stories array or empty array.
+ */
+function normalizeStories(stories) {
+  return Array.isArray(stories) ? stories : [];
+}
+
+/**
  * Safely access the DEND2 stories list.
  * @param {Function} getData - Retrieves state data.
  * @returns {object[]} Array of DEND2 story objects.
  */
 function getStories(getData) {
   const data = safeGetData(getData);
-  const stories = data?.temporary?.DEND2?.stories;
-  return Array.isArray(stories) ? stories : [];
+  const dend2 = data?.temporary?.DEND2;
+  return normalizeStories(dend2?.stories);
 }
 
 /**
