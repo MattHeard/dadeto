@@ -39,6 +39,7 @@ tmp/
 # Miscellaneous
 debug/
 *.lock
+*.zip
 
 # stryker temp files
 .stryker-tmp
