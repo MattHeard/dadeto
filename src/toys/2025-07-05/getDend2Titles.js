@@ -6,13 +6,22 @@
  * @param {Function} getData - Retrieves state data.
  * @returns {object|undefined} Retrieved data or undefined on failure.
  */
+function invokeGetter(getData) {
+  try {
+    return getData();
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Safely invoke the provided getter when it is a function.
+ * @param {Function} getData - Retrieves state data.
+ * @returns {object|undefined} Retrieved data or undefined on failure.
+ */
 function safeGetData(getData) {
   if (typeof getData === 'function') {
-    try {
-      return getData();
-    } catch {
-      // ignore
-    }
+    return invokeGetter(getData);
   }
   return undefined;
 }
