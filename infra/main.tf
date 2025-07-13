@@ -64,6 +64,12 @@ resource "google_project_iam_member" "firestore_access" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "cloudfunctions_access" {
+  project = var.project_id
+  role    = "roles/cloudfunctions.developer"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 resource "google_storage_bucket_object" "get_api_key_credit" {
   name   = "get-api-key-credit.zip"
   bucket = google_storage_bucket.irien_bucket.name
