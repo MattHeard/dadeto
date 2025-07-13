@@ -86,6 +86,12 @@ resource "google_project_iam_member" "terraform_cloudfunctions_viewer" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "terraform_set_iam_policy" {
+  project = var.project_id
+  role    = "roles/cloudfunctions.admin"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 resource "google_project_iam_member" "terraform_create_sa" {
   project = var.project_id
   role    = "roles/iam.serviceAccountAdmin"
