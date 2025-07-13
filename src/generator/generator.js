@@ -687,7 +687,7 @@ const MEDIA_SECTIONS_CONFIG = [
     content: post => {
       const { fileName, fileType, altText } = post.illustration;
       const src = `${fileName || post.publicationDate}.${fileType}`;
-      return `<img loading="lazy" src="${src}" alt="${escapeHtml(altText || '')}"/>`;
+      return `<img loading="lazy" src="${src}" alt="${escapeHtml(altText)}"/>`;
     },
     keyExtraClasses: CLASS.MEDIA,
   },
