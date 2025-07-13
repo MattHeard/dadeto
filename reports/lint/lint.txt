@@ -1,17 +1,12 @@
 
-/workspace/dadeto/infra/cloud-functions/get-api-key-credit/index.js
-  11:8  warning  Async function 'getApiKeyCredit' has a complexity of 4. Maximum allowed is 2  complexity
-
-/workspace/dadeto/src/browser/data.js
-  384:38  warning  Arrow function has a complexity of 6. Maximum allowed is 2  complexity
-
-/workspace/dadeto/src/generator/generator.js
-  687:14  warning  Method 'content' has a complexity of 3. Maximum allowed is 2  complexity
-
 /workspace/dadeto/src/toys/2025-07-04/transformDendriteStory.js
-  9:1  warning  Function 'ensureDend2' has a complexity of 8. Maximum allowed is 2  complexity
+  30:7  warning  'isValidTemporary' is assigned a value but never used  no-unused-vars
 
 /workspace/dadeto/src/toys/2025-07-05/getDend2Titles.js
-  10:8  warning  Function 'getDend2Titles' has a complexity of 7. Maximum allowed is 2  complexity
+  35:10  warning  Ternary operator used                                              no-ternary
+  43:1   warning  Function 'getStories' has a complexity of 4. Maximum allowed is 2  complexity
 
-✖ 5 problems (0 errors, 5 warnings)
+/workspace/dadeto/src/toys/utils/dendriteHelpers.js
+  74:9  warning  Ternary operator used  no-ternary
+
+✖ 4 problems (0 errors, 4 warnings)

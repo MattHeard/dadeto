@@ -59,10 +59,6 @@ resource "google_project_service" "cloudbuild" {
   service = "cloudbuild.googleapis.com"
 }
 
-resource "google_project_service" "eventarc" {
-  project = var.project_id
-  service = "eventarc.googleapis.com"
-}
 
 resource "google_firestore_database" "default" {
   project     = var.project_id
@@ -114,39 +110,32 @@ resource "google_storage_bucket_object" "get_api_key_credit" {
   source = "${path.module}/cloud-functions/get-api-key-credit/get-api-key-credit.zip"
 }
 
-resource "google_cloudfunctions2_function" "get_api_key_credit" {
-  name     = "get-api-key-credit"
-  location = var.region
-
-  build_config {
-    runtime     = "nodejs18"
-    entry_point = "handler"
-    source {
-      storage_source {
-        bucket = google_storage_bucket.irien_bucket.name
-        object = google_storage_bucket_object.get_api_key_credit.name
-      }
-    }
-  }
-
-  service_config {
-    available_memory   = "128Mi"
-    timeout_seconds    = 60
-    min_instance_count = 0
-    service_account_email = google_service_account.cloud_function_runtime.email
-  }
-
-  event_trigger {
-    event_type     = "google.cloud.functions.v2.eventTypes.http.request"
-    trigger_region = var.region
-  }
+resource "google_cloudfunctions_function" "get_api_key_credit" {
+  name        = "get-api-key-credit"
+  description = "Returns credit for an API key"
+  runtime     = "nodejs18"
+  available_memory_mb   = 128
+  source_archive_bucket = google_storage_bucket.irien_bucket.name
+  source_archive_object = google_storage_bucket_object.get_api_key_credit.name
+  entry_point = "handler"
+  trigger_http = true
+  https_trigger_security_level = "SECURE_ALWAYS"
+  service_account_email = google_service_account.cloud_function_runtime.email
+  region = var.region
 
   depends_on = [
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
-    google_project_service.eventarc,
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
+}
+
+resource "google_cloudfunctions_function_iam_member" "invoker" {
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.get_api_key_credit.name
+  role           = "roles/cloudfunctions.invoker"
+  member         = "allUsers"
 }
