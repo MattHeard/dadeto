@@ -1,28 +1,6 @@
 import { deepClone } from '../../utils/objectUtils.js';
-import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 import { isValidString } from '../../utils/validation.js';
-
-/**
- * Ensure the data object has a valid temporary.DEND2 structure.
- * @param {object} data - Data object to check.
- */
-// eslint-disable-next-line complexity
-function ensureDend2(data) {
-  if (typeof data.temporary !== 'object' || data.temporary === null) {
-    data.temporary = { DEND2: { stories: [], pages: [], options: [] } };
-    return;
-  }
-  const t = data.temporary;
-  if (
-    typeof t.DEND2 !== 'object' ||
-    t.DEND2 === null ||
-    !Array.isArray(t.DEND2.stories) ||
-    !Array.isArray(t.DEND2.pages) ||
-    !Array.isArray(t.DEND2.options)
-  ) {
-    t.DEND2 = { stories: [], pages: [], options: [] };
-  }
-}
+import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
 
 /**
  * Validate the parsed page input.
@@ -37,21 +15,6 @@ function isValidInput(obj) {
     return false;
   }
   return isValidString(obj.optionId) && isValidString(obj.content);
-}
-
-/**
- * Create option objects for values present in the input data.
- * @param {object} data - Source data that may contain option values.
- * @param {string} pageId - Identifier for the new page.
- * @param {Function} getUuid - Function that generates unique IDs.
- * @returns {Array<{id: string, pageId: string, content: string}>} Option list.
- */
-function createOptions(data, pageId, getUuid) {
-  return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => ({
-    id: getUuid(),
-    pageId,
-    content: data[key],
-  }));
 }
 
 /**
@@ -72,7 +35,7 @@ export function addDendritePage(input, env) {
     const getData = env.get('getData');
     const setLocalTemporaryData = env.get('setLocalTemporaryData');
     const pageId = getUuid();
-    const opts = createOptions(parsed, pageId, getUuid);
+    const opts = createOptions(parsed, getUuid, pageId);
     const page = {
       id: pageId,
       optionId: parsed.optionId,
