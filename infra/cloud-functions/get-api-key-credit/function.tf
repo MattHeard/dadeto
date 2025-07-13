@@ -1,17 +1,32 @@
-resource "google_cloudfunctions_function" "get_api_key_credit" {
-  name        = "get-api-key-credit"
-  description = "Returns credit associated with API key"
-  runtime     = "nodejs18"
-  region      = "europe-west1"
-  entry_point = "getApiKeyCredit"
-  source_directory = path.module
+resource "google_cloudfunctions2_function" "get_api_key_credit" {
+  name     = "get-api-key-credit"
+  location = var.region
 
-  trigger_http = true
-
-  available_memory_mb   = 128
-  timeout               = 60
-
-  environment_variables = {
-    NODE_ENV = "production"
+  build_config {
+    runtime     = "nodejs18"
+    entry_point = "handler"
+    source {
+      storage_source {
+        bucket = google_storage_bucket.irien_bucket.name
+        object = google_storage_bucket_object.get_api_key_credit.name
+      }
+    }
   }
+
+  service_config {
+    available_memory   = "128Mi"
+    timeout_seconds    = 60
+    min_instance_count = 0
+  }
+
+  event_trigger {
+    event_type     = "google.cloud.functions.v2.eventTypes.http.request"
+    trigger_region = var.region
+  }
+}
+
+resource "google_storage_bucket_object" "get_api_key_credit" {
+  name   = "get-api-key-credit.zip"
+  bucket = google_storage_bucket.irien_bucket.name
+  source = "${path.module}/get-api-key-credit.zip"
 }
