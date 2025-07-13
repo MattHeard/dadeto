@@ -102,5 +102,8 @@ resource "google_cloudfunctions2_function" "get_api_key_credit" {
     trigger_region = var.region
   }
 
-  depends_on = [google_project_service.cloudfunctions]
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_iam_member.cloudfunctions_access
+  ]
 }
