@@ -37,7 +37,7 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Import all resources from import_targets.json
+      - name: Import resources
         working-directory: infra
         run: |
           set -e
