@@ -66,15 +66,22 @@ async function safeFetchCredit(uuid) {
 }
 
 /**
+ * Extract the UUID from the request parameters or query string.
+ * @param {object} req - Express request object.
+ * @returns {string|undefined} The UUID when present.
+ */
+function getUuid(req) {
+  return req.params.uuid || req.query.uuid;
+}
+
+/**
  * HTTP Cloud Function to retrieve credit data associated with an API key.
  * @param {object} req - Express request object.
  * @param {object} res - Express response object.
  * @returns {Promise<void>} Response with credit value or error code.
  */
 export async function handler(req, res) {
-  const { uuid: paramUuid } = req.params || {};
-  const { uuid: queryUuid } = req.query || {};
-  const uuid = paramUuid || queryUuid;
+  const uuid = getUuid(req);
 
   if (!uuid) {
     sendBadRequest(res, 'Missing UUID');
