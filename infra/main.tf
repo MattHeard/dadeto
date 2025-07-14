@@ -44,6 +44,23 @@ resource "google_storage_bucket_iam_member" "public_read_access" {
   member = "allUsers"
 }
 
+resource "google_storage_bucket" "dendrite_static" {
+  name     = "dendrite-static"
+  location = var.region
+}
+
+resource "google_storage_bucket_object" "dendrite_index" {
+  name   = "index.html"
+  bucket = google_storage_bucket.dendrite_static.name
+  source = "${path.module}/index.html"
+}
+
+resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
+  bucket = google_storage_bucket.dendrite_static.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}
+
 resource "google_storage_bucket" "gcf_source_bucket" {
   name     = "gcf-source-${var.project_id}-${var.region}"
   location = var.region
