@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    /*──────────────────────────────
+      PUBLIC LEADERBOARD STATS
+      • Written exclusively by back-end code (Admin SDK bypasses rules)
+      • Everyone may read
+    ──────────────────────────────*/
+    match /storyStats/{storyId} {
+      allow read:   if true;
+      allow write:  if false;   // locked to clients
+      allow delete: if false;
+    }
+
+    /*──────────────────────────────
+      USER PROFILES
+      • Anyone can read
+      • A signed-in user may create their own doc once
+      • Immutable thereafter
+    ──────────────────────────────*/
+    match /users/{userId} {
+      allow read:   if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if false;
+    }
+
+    /*──────────────────────────────
+      STORY → PAGE → VARIANT GRAPH
+    ──────────────────────────────*/
+    match /stories/{storyId} {
+      /*  STORIES  */
+      allow read, create:  if true;  // open platform
+      allow update, delete: if false; // stories are immutable
+
+      match /pages/{pageId} {
+        /*  PAGES  */
+        allow read, create: if true;
+
+        /*  Exactly-once update: set incomingOptionId
+            - incomingOptionId must currently be null
+            - it’s the ONLY field that may change
+            - new value must be a string
+        */
+        allow update: if
+          resource.data.incomingOptionId == null &&
+          request.resource.data.diff(resource.data).changedKeys()
+                .hasOnly(['incomingOptionId']) &&
+          request.resource.data.incomingOptionId is string;
+
+        allow delete: if false;
+
+        match /variants/{variantId} {
+          /*  VARIANTS  */
+          allow read, create: if true;      // anyone can branch
+          allow update, delete: if false;   // immutable snapshots
+
+          match /options/{optionId} {
+            /*  OPTIONS  */
+            allow read, create: if true;
+
+            /*  Exactly-once update: stitch option to a target page
+                - targetPageId must currently be null
+                - it’s the ONLY field that may change
+                - new value must be a string
+            */
+            allow update: if
+              resource.data.targetPageId == null &&
+              request.resource.data.diff(resource.data).changedKeys()
+                    .hasOnly(['targetPageId']) &&
+              request.resource.data.targetPageId is string;
+
+            allow delete: if false;
+          }
+
+          match /moderationRatings/{moderatorId} {
+            /*  MODERATION  */
+            allow read: if true;
+
+            /*  Create blank rating (rating == null) — must be signed-in user */
+            allow create: if
+              request.auth != null &&
+              request.auth.uid == moderatorId &&
+              request.resource.data.rating == null;
+
+            /*  Exactly-once update: write final rating  */
+            allow update: if
+              request.auth != null &&
+              request.auth.uid == moderatorId &&
+              resource.data.rating == null &&
+              request.resource.data.diff(resource.data).changedKeys()
+                    .hasOnly(['rating']) &&
+              request.resource.data.rating in ['approved', 'rejected'];
+
+            allow delete: if false;
+          }
+        }
+      }
+    }
+  }
+}
