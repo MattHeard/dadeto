@@ -2,7 +2,8 @@
 
 This directory houses Terraform configurations and related resources for deploying cloud infrastructure.
 
-The configuration provisions a Google Cloud Storage bucket and creates a
+The configuration provisions two Google Cloud Storage buckets, one for static
+files and another for Cloud Functions source archives, and creates a
 Firestore database. The Terraform service account is granted the
 `roles/datastore.user` role so it can manage Firestore resources, the
 `roles/cloudfunctions.developer` role so it can create and manage Cloud
