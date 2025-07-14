@@ -3,26 +3,6 @@ import { isValidString } from '../../utils/validation.js';
 import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
 
 /**
- * Determine if a value is a non-null object.
- * @param {unknown} value - Value to test.
- * @returns {boolean} True when the value is an object.
- */
-const isObject = value => typeof value === 'object' && value !== null;
-
-/**
- * Check that the temporary.DEND2 structure exists and has the required arrays.
- * @param {object} temp - Temporary data object.
- * @returns {boolean} True when DEND2 is valid.
- */
-const hasValidDend2 = temp => {
-  const d = temp.DEND2;
-  if (!isObject(d)) {
-    return false;
-  }
-  return ['stories', 'pages', 'options'].every(key => Array.isArray(d[key]));
-};
-
-/**
  * Validate the parsed story input.
  * @param {object} [obj] - Parsed object.
  * @param {string} obj.title - Story title.
