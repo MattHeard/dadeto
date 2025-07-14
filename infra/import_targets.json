@@ -42,5 +42,13 @@
   {
     "resource": "google_project_service.firebaserules",
     "id": "projects/irien-465710/services/firebaserules.googleapis.com"
+  },
+  {
+    "resource": "google_firestore_index.variants_author_created",
+    "id": "projects/irien-465710/databases/(default)/collectionGroups/variants/indexes/CICAgJiUpoMK"
+  },
+  {
+    "resource": "google_firestore_index.ratings_by_variant",
+    "id": "projects/irien-465710/databases/(default)/collectionGroups/moderationRatings/indexes/CICAgOjXh4EK"
   }
 ]
