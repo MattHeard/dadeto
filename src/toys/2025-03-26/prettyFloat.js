@@ -54,7 +54,9 @@ function getIEEEDecomposition(num) {
  * @returns {string} Formatted output string.
  */
 function formatFloatDecomposition(decimal, { B, C }) {
-  return `${decimal} (${B.toString()} × 2^${C.toString()})`;
+  const significand = String(B);
+  const exponent = String(C);
+  return `${decimal} (${significand} × 2^${exponent})`;
 }
 
 /**
