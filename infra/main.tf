@@ -44,6 +44,14 @@ resource "google_storage_bucket_iam_member" "public_read_access" {
   member = "allUsers"
 }
 
+resource "google_storage_bucket" "gcf_source_bucket" {
+  name     = "gcf-source-${var.project_id}-${var.region}"
+  location = var.region
+
+  uniform_bucket_level_access = true
+  force_destroy               = true
+}
+
 resource "google_project_service" "firestore" {
   project = var.project_id
   service = "firestore.googleapis.com"
@@ -118,7 +126,7 @@ resource "google_service_account_iam_member" "terraform_can_impersonate_default_
 
 resource "google_storage_bucket_object" "get_api_key_credit" {
   name   = "get-api-key-credit.zip"
-  bucket = google_storage_bucket.irien_bucket.name
+  bucket = google_storage_bucket.gcf_source_bucket.name
   source = "${path.module}/cloud-functions/get-api-key-credit/get-api-key-credit.zip"
 }
 
@@ -127,7 +135,7 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
   description = "Returns credit for an API key"
   runtime     = "nodejs20"
   available_memory_mb   = 128
-  source_archive_bucket = google_storage_bucket.irien_bucket.name
+  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.get_api_key_credit.name
   entry_point = "handler"
   trigger_http = true
