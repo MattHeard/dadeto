@@ -4,9 +4,9 @@
  * @returns {string} Human readable decomposition.
  */
 function buildDecomposedResult(num) {
-  const A = formatDecimal(num);
+  const decimal = formatDecimal(num);
   const decomposition = getIEEEDecomposition(num);
-  return formatFloatDecomposition(A, decomposition);
+  return formatFloatDecomposition(decimal, decomposition);
 }
 
 /**
@@ -53,9 +53,9 @@ function getIEEEDecomposition(num) {
  * @param {{B: bigint, C: bigint}} param1 - Components from IEEE decomposition.
  * @returns {string} Formatted output string.
  */
-function formatFloatDecomposition(decimal, { B, C }) {
-  const significand = B.toString();
-  const exponent = C.toString();
+function formatFloatDecomposition(decimal, { B: b, C: c }) {
+  const significand = b.toString();
+  const exponent = c.toString();
   return `${decimal} (${significand} × 2^${exponent})`;
 }
 
@@ -179,11 +179,11 @@ function isZeroVariant(num) {
  * @returns {string} Formatted decimal string.
  */
 export function formatDecimal(num) {
-  const A = num.toPrecision(17);
-  if (A.includes('.')) {
-    return A.replace(/\.?0+$/, '');
+  const result = num.toPrecision(17);
+  if (result.includes('.')) {
+    return result.replace(/\.?0+$/, '');
   } else {
-    return A;
+    return result;
   }
 }
 
