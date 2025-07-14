@@ -1,8 +1,5 @@
 
-/workspace/dadeto/src/toys/2025-07-04/transformDendriteStory.js
-  17:7  warning  'hasValidDend2' is assigned a value but never used  no-unused-vars
+/workspace/dadeto/infra/cloud-functions/get-api-key-credit/index.js
+  74:8  warning  Async function 'handler' has a complexity of 5. Maximum allowed is 2  complexity
 
-/workspace/dadeto/src/toys/utils/dendriteHelpers.js
-  74:9  warning  Ternary operator used  no-ternary
-
-✖ 2 problems (0 errors, 2 warnings)
+✖ 1 problem (0 errors, 1 warning)

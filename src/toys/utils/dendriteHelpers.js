@@ -69,9 +69,11 @@ function ensureDend2(data) {
  * @returns {Array<object>} Option list.
  */
 function createOptions(data, getUuid, pageId) {
-  return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => ({
-    id: getUuid(),
-    ...(pageId ? { pageId } : {}),
-    content: data[key],
-  }));
+  return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => {
+    const option = { id: getUuid(), content: data[key] };
+    if (pageId) {
+      option.pageId = pageId;
+    }
+    return option;
+  });
 }
