@@ -15,9 +15,9 @@ resource "google_firebaserules_ruleset" "firestore" {
 }
 
 resource "google_firebaserules_release" "firestore" {
-  name    = "firestore.rules"
-  project = var.project_id
-  ruleset = google_firebaserules_ruleset.firestore.id
+  project      = var.project_id
+  name         = "firestore.rules"
+  ruleset_name = google_firebaserules_ruleset.firestore.name
 }
 
 resource "google_firestore_index" "variants_author_created" {
@@ -35,16 +35,6 @@ resource "google_firestore_index" "variants_author_created" {
   }
 }
 
-resource "google_firestore_index" "options_by_source" {
-  project     = var.project_id
-  collection  = "options"
-  query_scope = "COLLECTION"
-
-  fields {
-    field_path = "sourceVariantId"
-    order      = "ASCENDING"
-  }
-}
 
 resource "google_firestore_index" "ratings_by_variant" {
   project     = var.project_id
@@ -61,13 +51,3 @@ resource "google_firestore_index" "ratings_by_variant" {
   }
 }
 
-resource "google_firestore_index" "story_stats_variantcount" {
-  project     = var.project_id
-  collection  = "storyStats"
-  query_scope = "COLLECTION"
-
-  fields {
-    field_path = "variantCount"
-    order      = "DESCENDING"
-  }
-}
