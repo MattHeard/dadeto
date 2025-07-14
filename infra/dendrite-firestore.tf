@@ -22,6 +22,10 @@ resource "google_firebaserules_release" "firestore" {
   project      = var.project_id
   name         = "firestore.rules"
   ruleset_name = google_firebaserules_ruleset.firestore.name
+
+  depends_on = [
+    google_project_iam_member.ci_firebaserules_admin   # ensure role is live
+  ]
 }
 
 resource "google_firestore_index" "variants_author_created" {

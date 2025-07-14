@@ -34,7 +34,7 @@
   {
     "resource": "google_storage_bucket_iam_member.dendrite_public_read_access",
     "parts": {
-      "bucket": "dendrite-static",
+      "resource": "dendrite-static",
       "role": "roles/storage.objectViewer",
       "member": "allUsers"
     }
