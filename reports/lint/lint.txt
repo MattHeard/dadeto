@@ -1,5 +1,0 @@
-
-/workspace/dadeto/infra/cloud-functions/get-api-key-credit/index.js
-  74:8  warning  Async function 'handler' has a complexity of 5. Maximum allowed is 2  complexity
-
-✖ 1 problem (0 errors, 1 warning)

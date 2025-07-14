@@ -1,14 +1,4 @@
 /**
- * Determines whether a string begins with the given prefix.
- * @param {string} str - String to inspect.
- * @param {string} prefix - Prefix to match.
- * @returns {boolean} True when `str` starts with `prefix`.
- */
-export function startsWith(str, prefix) {
-  return str.startsWith(prefix);
-}
-
-/**
  * Hides an article if it has the specified class.
  * @param {HTMLElement} article - The article element.
  * @param {string} className - Class name to test.
@@ -32,7 +22,7 @@ function hideIfHasClass(article, className, dom) {
  * @returns {Function} Handler for className
  */
 export const makeHandleClassName = (dom, link) => className => {
-  if (startsWith(className, 'tag-')) {
+  if (className.startsWith('tag-')) {
     const createHideSpan = makeHandleHideSpan(dom);
     const clickDeps = { ...dom, createHideSpan };
     const handleClick = createHandleClick(clickDeps, link, className);
