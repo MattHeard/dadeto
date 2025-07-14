@@ -4,6 +4,10 @@
     "id": "irien-hello-world-irien-465710"
   },
   {
+    "resource": "google_storage_bucket.gcf_source_bucket",
+    "id": "gcf-source-irien-465710-europe-west1"
+  },
+  {
     "resource": "google_firestore_database.default",
     "id": "projects/irien-465710/databases/(default)"
   },
