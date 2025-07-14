@@ -26,5 +26,21 @@
       "role": "roles/cloudfunctions.invoker",
       "member": "allUsers"
     }
+  },
+  {
+    "resource": "google_storage_bucket.dendrite_static",
+    "id": "dendrite-static"
+  },
+  {
+    "resource": "google_storage_bucket_iam_member.dendrite_public_read_access",
+    "parts": {
+      "bucket": "dendrite-static",
+      "role": "roles/storage.objectViewer",
+      "member": "allUsers"
+    }
+  },
+  {
+    "resource": "google_project_service.firebaserules",
+    "id": "projects/irien-465710/services/firebaserules.googleapis.com"
   }
 ]

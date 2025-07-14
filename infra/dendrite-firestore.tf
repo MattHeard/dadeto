@@ -12,6 +12,7 @@ resource "google_firebaserules_ruleset" "firestore" {
       content = data.local_file.firestore_rules.content
     }
   }
+  depends_on = [google_project_service.firebaserules]
 }
 
 resource "google_firebaserules_release" "firestore" {
