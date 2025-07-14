@@ -123,6 +123,17 @@ resource "google_service_account_iam_member" "terraform_can_impersonate_default_
   member             = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "runtime_firestore_access" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
+
+  depends_on = [
+    google_service_account.cloud_function_runtime,
+    google_project_service.firestore
+  ]
+}
+
 
 resource "google_storage_bucket_object" "get_api_key_credit" {
   name   = "get-api-key-credit.zip"
