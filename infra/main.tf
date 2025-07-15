@@ -377,3 +377,48 @@ resource "google_cloudfunctions_function" "render_variant" {
     google_project_iam_member.cloudfunctions_access
   ]
 }
+
+data "archive_file" "render_contents_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/render-contents"
+  output_path = "${path.module}/build/render-contents.zip"
+}
+
+resource "google_storage_bucket_object" "render_contents" {
+  name   = "render-contents-${data.archive_file.render_contents_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.render_contents_src.output_path
+}
+
+resource "google_cloudfunctions_function" "render_contents" {
+  name        = "render-contents"
+  runtime     = "nodejs20"
+  region      = var.region
+  entry_point = "renderContents"
+
+  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object = google_storage_bucket_object.render_contents.name
+
+  service_account_email = google_service_account.cloud_function_runtime.email
+
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  event_trigger {
+    event_type = "providers/cloud.firestore/eventTypes/document.create"
+    resource   = "projects/${var.project_id}/databases/(default)/documents/stories/{storyId}"
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access
+  ]
+}
