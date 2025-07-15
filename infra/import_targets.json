@@ -53,7 +53,7 @@
   },
   {
     "resource": "google_project_service.firebaserules",
-    "id": "projects/irien-465710/services/firebaserules.googleapis.com"
+    "id": "irien-465710/firebaserules.googleapis.com"
   },
   {
     "resource": "google_firebaserules_release.firestore",
