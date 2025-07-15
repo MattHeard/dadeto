@@ -218,7 +218,7 @@ resource "google_cloudfunctions_function" "submit_new_story" {
   trigger_http                 = true
   https_trigger_security_level = "SECURE_ALWAYS"
   service_account_email = google_service_account.cloud_function_runtime.email
-  region = var.region
+  region = "europe-west3"
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -231,7 +231,7 @@ resource "google_cloudfunctions_function" "submit_new_story" {
 
 resource "google_cloudfunctions_function_iam_member" "submit_new_story_invoker" {
   project        = var.project_id
-  region         = var.region
+  region         = "europe-west3"
   cloud_function = google_cloudfunctions_function.submit_new_story.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
