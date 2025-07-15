@@ -52,7 +52,6 @@ async function handleSubmit(req, res) {
     content,
     author,
     options,
-    processed: false,
     createdAt: FieldValue.serverTimestamp(),
   });
 
