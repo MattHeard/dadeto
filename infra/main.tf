@@ -70,6 +70,12 @@ resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
   member = "allUsers"
 }
 
+resource "google_storage_bucket_iam_member" "dendrite_runtime_writer" {
+  bucket = google_storage_bucket.dendrite_static.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
+}
+
 resource "google_storage_bucket" "gcf_source_bucket" {
   name     = "gcf-source-${var.project_id}-${var.region}"
   location = var.region
@@ -318,6 +324,51 @@ resource "google_cloudfunctions_function" "process_new_story" {
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
     resource   = "projects/${var.project_id}/databases/(default)/documents/storyFormSubmissions/{subId}"
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access
+  ]
+}
+
+data "archive_file" "render_variant_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/render-variant"
+  output_path = "${path.module}/build/render-variant.zip"
+}
+
+resource "google_storage_bucket_object" "render_variant" {
+  name   = "render-variant-${data.archive_file.render_variant_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.render_variant_src.output_path
+}
+
+resource "google_cloudfunctions_function" "render_variant" {
+  name        = "render-variant"
+  runtime     = "nodejs20"
+  region      = var.region
+  entry_point = "renderVariant"
+
+  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object = google_storage_bucket_object.render_variant.name
+
+  service_account_email = google_service_account.cloud_function_runtime.email
+
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  event_trigger {
+    event_type = "providers/cloud.firestore/eventTypes/document.create"
+    resource   = "projects/${var.project_id}/databases/(default)/documents/stories/{storyId}/pages/{pageId}/variants/{variantId}"
   }
 
   depends_on = [
