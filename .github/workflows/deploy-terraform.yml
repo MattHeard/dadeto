@@ -38,29 +38,6 @@ jobs:
       - name: Terraform Init
         run: terraform init -reconfigure
 
-      - name: Import resources
-        working-directory: infra
-        run: |
-          set -e
-
-          echo "Running terraform imports for all targets..."
-
-          jq -c '.[]' import_targets.json | while read row; do
-            RESOURCE=$(echo "$row" | jq -r .resource)
-
-            if echo "$row" | jq -e 'has("parts")' > /dev/null; then
-              echo "\U1F30D Importing $RESOURCE with structured parts:"
-              echo "$row" | jq '.parts'
-
-              echo "$row" | jq -r '[.parts.resource, .parts.role, .parts.member] | @tsv' \
-                | xargs -I {} terraform import "$RESOURCE" {} \
-                || echo "\u26A0\uFE0F Failed to import $RESOURCE"
-            else
-              ID=$(echo "$row" | jq -r .id)
-              echo "\U1F30D Importing $RESOURCE → $ID"
-              terraform import "$RESOURCE" "$ID" || echo "\u26A0\uFE0F Failed to import $RESOURCE"
-            fi
-          done
 
       - name: Zip Cloud Functions
         run: |

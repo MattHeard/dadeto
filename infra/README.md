@@ -22,14 +22,6 @@ defined in `dendrite-firestore.tf`. The rules file lives in `rules/firestore.rul
 and is released through Terraform to ensure consistent access control across
 environments.
 
-## Import Targets
-
-The `import_targets.json` file lists any existing resources that should be
-imported into the Terraform state. Each entry specifies the Terraform resource
-address and either an `id` string or a `parts` object. The `parts` variant is
-used for resources that require multiple ID components, providing `resource`,
-`role`, and `member` values separately.
-
 ## Remote State
 
 Terraform stores its state in a Google Cloud Storage bucket. The backend is
