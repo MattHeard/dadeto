@@ -29,3 +29,10 @@ imported into the Terraform state. Each entry specifies the Terraform resource
 address and either an `id` string or a `parts` object. The `parts` variant is
 used for resources that require multiple ID components, providing `resource`,
 `role`, and `member` values separately.
+
+## Remote State
+
+Terraform stores its state in a Google Cloud Storage bucket. The backend is
+defined in `backend.tf` and expects a bucket named `tfstate-irien-465710` with a
+`terraform/state` prefix. Ensure this bucket exists before running
+`terraform init` so that the remote state can be initialized.
