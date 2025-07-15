@@ -30,7 +30,7 @@ function buildHtml(items) {
   const list = items
     .map(
       item =>
-        `<li><a href="/p/${item.pageNumber}a.html">${escapeHtml(
+        `<li><a href="./p/${item.pageNumber}a.html">${escapeHtml(
           item.title
         )}</a></li>`
     )
