@@ -1,0 +1,63 @@
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+import crypto from 'crypto';
+import express from 'express';
+import cors from 'cors';
+
+admin.initializeApp();
+const db = admin.firestore();
+const app = express();
+
+const allowed = ['https://mattheard.net', 'https://dendritestories.co.nz'];
+app.use(
+  cors({
+    origin: (origin, cb) =>
+      !origin || allowed.includes(origin)
+        ? cb(null, true)
+        : cb(new Error('CORS')),
+    methods: ['POST'],
+  })
+);
+
+app.use(express.urlencoded({ extended: false, limit: '20kb' }));
+
+/**
+ * Handle new story submissions.
+ * @param {import('express').Request} req HTTP request object.
+ * @param {import('express').Response} res HTTP response object.
+ * @returns {Promise<void>} Promise resolving when response is sent.
+ */
+async function handleSubmit(req, res) {
+  let { title = 'Untitled', content = '' } = req.body;
+  title = title.toString().trim().slice(0, 120);
+  content = content.toString().trim().slice(0, 10_000);
+
+  const options = [];
+  for (let i = 0; i < 4; i += 1) {
+    const raw = req.body[`option${i}`];
+    if (raw == null) {
+      continue;
+    }
+    const val = raw.toString().trim().slice(0, 120);
+    if (val) {
+      options.push(val);
+    }
+  }
+
+  const id = crypto.randomUUID();
+  await db.collection('storyFormSubmissions').doc(id).set({
+    title,
+    content,
+    options,
+    processed: false,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  res.status(201).json({ id, title, content, options });
+}
+
+app.post('/', handleSubmit);
+
+export const submitNewStory = functions
+  .region('europe-west3')
+  .https.onRequest(app);
