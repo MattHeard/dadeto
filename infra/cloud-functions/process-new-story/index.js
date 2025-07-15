@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
+import crypto from 'crypto';
 
 initializeApp();
 const db = getFirestore();
@@ -15,8 +16,8 @@ export const processNewStory = functions
     }
 
     const storyId = ctx.params.subId;
-    const pageId = 'p1';
-    const variantId = 'vA';
+    const pageId = crypto.randomUUID();
+    const variantId = crypto.randomUUID();
 
     let i = 0;
     let candidate = 1;
