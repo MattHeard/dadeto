@@ -38,26 +38,6 @@ jobs:
       - name: Terraform Init
         run: terraform init -reconfigure
 
-
-      - name: Zip Cloud Functions
-        run: |
-          set -e
-
-          echo "Zipping get-api-key-credit function..."
-          cd cloud-functions/get-api-key-credit
-          zip -r get-api-key-credit.zip . -x '*.zip'
-          cd -
-
-          echo "Zipping submit-new-story function..."
-          cd cloud-functions/submit-new-story
-          zip -r submit-new-story.zip . -x '*.zip'
-          cd -
-
-          echo "Zipping process-new-story function..."
-          cd cloud-functions/process-new-story
-          zip -r process-new-story.zip . -x '*.zip'
-          cd -
-
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
