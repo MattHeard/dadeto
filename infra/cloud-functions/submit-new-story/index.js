@@ -29,9 +29,10 @@ app.use(express.urlencoded({ extended: false, limit: '20kb' }));
  * @returns {Promise<void>} Promise resolving when response is sent.
  */
 async function handleSubmit(req, res) {
-  let { title = 'Untitled', content = '' } = req.body;
+  let { title = 'Untitled', content = '', author = '???' } = req.body;
   title = title.toString().trim().slice(0, 120);
   content = content.toString().trim().slice(0, 10_000);
+  author = author.toString().trim().slice(0, 120);
 
   const options = [];
   for (let i = 0; i < 4; i += 1) {
@@ -49,12 +50,13 @@ async function handleSubmit(req, res) {
   await db.collection('storyFormSubmissions').doc(id).set({
     title,
     content,
+    author,
     options,
     processed: false,
     createdAt: FieldValue.serverTimestamp(),
   });
 
-  res.status(201).json({ id, title, content, options });
+  res.status(201).json({ id, title, content, author, options });
 }
 
 app.post('/', handleSubmit);
