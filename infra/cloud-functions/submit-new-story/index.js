@@ -62,5 +62,5 @@ async function handleSubmit(req, res) {
 app.post('/', handleSubmit);
 
 export const submitNewStory = functions
-  .region('europe-west3')
+  .region('europe-west1')
   .https.onRequest(app);

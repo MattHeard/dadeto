@@ -6,7 +6,7 @@ initializeApp();
 const db = getFirestore();
 
 export const processNewStory = functions
-  .region('europe-west3')
+  .region('europe-west1')
   .firestore.document('storyFormSubmissions/{subId}')
   .onCreate(async (snap, ctx) => {
     const sub = snap.data();

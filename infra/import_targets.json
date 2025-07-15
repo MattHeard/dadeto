@@ -29,12 +29,12 @@
   },
   {
     "resource": "google_cloudfunctions_function.submit_new_story",
-    "id": "projects/irien-465710/locations/europe-west3/functions/submit-new-story"
+    "id": "projects/irien-465710/locations/europe-west1/functions/submit-new-story"
   },
   {
     "resource": "google_cloudfunctions_function_iam_member.submit_new_story_invoker",
     "parts": {
-      "resource": "projects/irien-465710/locations/europe-west3/functions/submit-new-story",
+      "resource": "projects/irien-465710/locations/europe-west1/functions/submit-new-story",
       "role": "roles/cloudfunctions.invoker",
       "member": "allUsers"
     }
