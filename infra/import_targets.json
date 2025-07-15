@@ -56,6 +56,10 @@
     "id": "projects/irien-465710/services/firebaserules.googleapis.com"
   },
   {
+    "resource": "google_firebaserules_release.firestore",
+    "id": "projects/irien-465710/releases/firestore.rules"
+  },
+  {
     "resource": "google_firestore_index.variants_author_created",
     "id": "projects/irien-465710/databases/(default)/collectionGroups/variants/indexes/CICAgJiUpoMK"
   },
