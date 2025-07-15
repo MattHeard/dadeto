@@ -202,3 +202,41 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
     google_project_iam_member.terraform_cloudfunctions_viewer,
   ]
 }
+
+resource "google_storage_bucket_object" "submit_new_story" {
+  name   = "submit-new-story.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = "${path.module}/cloud-functions/submit-new-story/submit-new-story.zip"
+}
+
+resource "google_cloudfunctions_function" "submit_new_story" {
+  name        = "submit-new-story"
+  runtime     = "nodejs20"
+  entry_point = "submitNewStory"
+  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object = google_storage_bucket_object.submit_new_story.name
+  trigger_http                 = true
+  https_trigger_security_level = "SECURE_ALWAYS"
+  service_account_email = google_service_account.cloud_function_runtime.email
+  region = var.region
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
+}
+
+resource "google_cloudfunctions_function_iam_member" "submit_new_story_invoker" {
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.submit_new_story.name
+  role           = "roles/cloudfunctions.invoker"
+  member         = "allUsers"
+  depends_on = [
+    google_cloudfunctions_function.submit_new_story,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
+}
