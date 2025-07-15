@@ -63,14 +63,18 @@ resource "google_firestore_index" "ratings_by_variant" {
   }
 }
 
-resource "google_firestore_index" "pages_number_global" {
-  project     = var.project_id
-  collection  = "pages"
-  query_scope = "COLLECTION_GROUP"
+resource "google_firestore_field" "pages_number_global" {
+  provider   = google-beta
+  project    = var.project_id
+  database   = "(default)"
+  collection = "pages"
+  field      = "number"
 
-  fields {
-    field_path = "number"
-    order      = "ASCENDING"
+  index_config {
+    indexes {
+      order       = "ASCENDING"
+      query_scope = "COLLECTION_GROUP"
+    }
   }
 }
 
