@@ -18,6 +18,22 @@ export const processNewStory = functions
     const pageId = 'p1';
     const variantId = 'vA';
 
+    let i = 0;
+    let candidate = 1;
+    while (true) {
+      const max = 2 ** i;
+      candidate = Math.floor(Math.random() * max) + 1;
+      const snapshot = await db
+        .collectionGroup('pages')
+        .where('number', '==', candidate)
+        .limit(1)
+        .get();
+      if (snapshot.empty) {
+        break;
+      }
+      i += 1;
+    }
+
     const storyRef = db.doc(`stories/${storyId}`);
     const pageRef = storyRef.collection('pages').doc(pageId);
     const variantRef = pageRef.collection('variants').doc(variantId);
@@ -30,7 +46,7 @@ export const processNewStory = functions
     });
 
     batch.set(pageRef, {
-      number: 1,
+      number: candidate,
       incomingOptionId: null,
       createdAt: FieldValue.serverTimestamp(),
     });
