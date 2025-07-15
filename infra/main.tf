@@ -188,6 +188,12 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
   service_account_email = google_service_account.cloud_function_runtime.email
   region = var.region
 
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
   lifecycle {
     create_before_destroy = true
   }
@@ -236,6 +242,12 @@ resource "google_cloudfunctions_function" "submit_new_story" {
   service_account_email = google_service_account.cloud_function_runtime.email
   region = var.region
 
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
   lifecycle {
     create_before_destroy = true
   }
@@ -283,6 +295,12 @@ resource "google_cloudfunctions_function" "process_new_story" {
   source_archive_object = google_storage_bucket_object.process_new_story.name
 
   service_account_email = google_service_account.cloud_function_runtime.email
+
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
 
   lifecycle {
     create_before_destroy = true
