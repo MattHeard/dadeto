@@ -60,8 +60,10 @@ export const processNewStory = functions
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    sub.options.forEach((text, i) => {
-      const optionRef = variantRef.collection('options').doc(`o${i + 1}`);
+    sub.options.forEach(text => {
+      const optionRef = variantRef
+        .collection('options')
+        .doc(crypto.randomUUID());
       batch.set(optionRef, {
         content: text,
         targetPageId: null,
