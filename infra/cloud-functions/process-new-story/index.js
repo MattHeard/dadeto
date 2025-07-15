@@ -30,13 +30,13 @@ export const processNewStory = functions
     });
 
     batch.set(pageRef, {
-      pageNumber: 1,
+      number: 1,
       incomingOptionId: null,
       createdAt: FieldValue.serverTimestamp(),
     });
 
     batch.set(variantRef, {
-      pageLetter: 'A',
+      name: 'a',
       content: sub.content,
       authorId: null,
       incomingOptionId: null,
