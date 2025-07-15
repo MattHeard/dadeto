@@ -240,3 +240,32 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_story_invoker" 
     google_project_iam_member.terraform_cloudfunctions_viewer,
   ]
 }
+
+resource "google_storage_bucket_object" "process_new_story" {
+  name   = "process-new-story.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = "${path.module}/cloud-functions/process-new-story/process-new-story.zip"
+}
+
+resource "google_cloudfunctions_function" "process_new_story" {
+  name        = "process-new-story"
+  runtime     = "nodejs20"
+  region      = var.region
+  entry_point = "processNewStory"
+
+  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object = google_storage_bucket_object.process_new_story.name
+
+  service_account_email = google_service_account.cloud_function_runtime.email
+
+  event_trigger {
+    event_type = "providers/cloud.firestore/eventTypes/document.create"
+    resource   = "projects/${var.project_id}/databases/(default)/documents/storyFormSubmissions/{subId}"
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access
+  ]
+}
