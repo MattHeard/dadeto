@@ -10,7 +10,7 @@ Firestore database. The Terraform service account is granted the
 Functions, and the `roles/cloudfunctions.admin` role so it can set Cloud
 Functions IAM policy. A separate compute service account is created for running
 Cloud Functions, and the Terraform service account is allowed to
-impersonate this runtime account. The `cloud-functions/get-api-key-credit` directory contains the code
+impersonate this runtime account. The `infra/cloud-functions/get-api-key-credit` directory contains the code
 for a Google Cloud Function that returns the credit associated with a given API
 key. The
 Cloud Functions API is enabled via a `google_project_service` resource, and the
