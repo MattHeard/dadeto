@@ -27,4 +27,4 @@ environments.
 Terraform stores its state in a Google Cloud Storage bucket. The backend is
 defined in `backend.tf` and expects a bucket named `terraform-state-irien-465710` with a
 `terraform/state` prefix. Ensure this bucket exists before running
-`terraform init -reconfigure` so that the remote state can be initialized.
+`terraform init` so that the remote state can be initialized.
