@@ -36,7 +36,7 @@ async function handleSubmit(req, res) {
   const options = [];
   for (let i = 0; i < 4; i += 1) {
     const raw = req.body[`option${i}`];
-    if (raw == null) {
+    if (raw === undefined || raw === null) {
       continue;
     }
     const val = raw.toString().trim().slice(0, 120);
