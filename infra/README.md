@@ -33,6 +33,6 @@ used for resources that require multiple ID components, providing `resource`,
 ## Remote State
 
 Terraform stores its state in a Google Cloud Storage bucket. The backend is
-defined in `backend.tf` and expects a bucket named `tfstate-irien-465710` with a
+defined in `backend.tf` and expects a bucket named `terraform-state-irien-465710` with a
 `terraform/state` prefix. Ensure this bucket exists before running
-`terraform init` so that the remote state can be initialized.
+`terraform init -reconfigure` so that the remote state can be initialized.
