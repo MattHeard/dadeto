@@ -1,11 +1,12 @@
 import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import crypto from 'crypto';
 import express from 'express';
 import cors from 'cors';
 
-admin.initializeApp();
-const db = admin.firestore();
+initializeApp();
+const db = getFirestore();
 const app = express();
 
 const allowed = ['https://mattheard.net', 'https://dendritestories.co.nz'];
@@ -50,7 +51,7 @@ async function handleSubmit(req, res) {
     content,
     options,
     processed: false,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
   });
 
   res.status(201).json({ id, title, content, options });
