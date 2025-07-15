@@ -163,10 +163,16 @@ resource "google_project_iam_member" "runtime_firestore_access" {
 }
 
 
+data "archive_file" "get_api_key_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/get-api-key-credit"
+  output_path = "${path.module}/build/get-api-key-credit.zip"
+}
+
 resource "google_storage_bucket_object" "get_api_key_credit" {
-  name   = "get-api-key-credit.zip"
+  name   = "get-api-key-credit-${data.archive_file.get_api_key_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
-  source = "${path.module}/cloud-functions/get-api-key-credit/get-api-key-credit.zip"
+  source = data.archive_file.get_api_key_src.output_path
 }
 
 resource "google_cloudfunctions_function" "get_api_key_credit" {
@@ -181,6 +187,10 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
   https_trigger_security_level = "SECURE_ALWAYS"
   service_account_email = google_service_account.cloud_function_runtime.email
   region = var.region
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -203,10 +213,16 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
   ]
 }
 
+data "archive_file" "submit_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/submit-new-story"
+  output_path = "${path.module}/build/submit-new-story.zip"
+}
+
 resource "google_storage_bucket_object" "submit_new_story" {
-  name   = "submit-new-story.zip"
+  name   = "submit-new-story-${data.archive_file.submit_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
-  source = "${path.module}/cloud-functions/submit-new-story/submit-new-story.zip"
+  source = data.archive_file.submit_src.output_path
 }
 
 resource "google_cloudfunctions_function" "submit_new_story" {
@@ -219,6 +235,10 @@ resource "google_cloudfunctions_function" "submit_new_story" {
   https_trigger_security_level = "SECURE_ALWAYS"
   service_account_email = google_service_account.cloud_function_runtime.email
   region = var.region
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -241,10 +261,16 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_story_invoker" 
   ]
 }
 
+data "archive_file" "process_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/process-new-story"
+  output_path = "${path.module}/build/process-new-story.zip"
+}
+
 resource "google_storage_bucket_object" "process_new_story" {
-  name   = "process-new-story.zip"
+  name   = "process-new-story-${data.archive_file.process_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
-  source = "${path.module}/cloud-functions/process-new-story/process-new-story.zip"
+  source = data.archive_file.process_src.output_path
 }
 
 resource "google_cloudfunctions_function" "process_new_story" {
@@ -257,6 +283,10 @@ resource "google_cloudfunctions_function" "process_new_story" {
   source_archive_object = google_storage_bucket_object.process_new_story.name
 
   service_account_email = google_service_account.cloud_function_runtime.email
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
