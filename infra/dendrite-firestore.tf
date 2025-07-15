@@ -63,3 +63,14 @@ resource "google_firestore_index" "ratings_by_variant" {
   }
 }
 
+resource "google_firestore_index" "pages_number_global" {
+  project     = var.project_id
+  collection  = "pages"
+  query_scope = "COLLECTION_GROUP"
+
+  fields {
+    field_path = "number"
+    order      = "ASCENDING"
+  }
+}
+
