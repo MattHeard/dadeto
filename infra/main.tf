@@ -56,7 +56,10 @@ resource "google_storage_bucket_iam_member" "public_read_access" {
 resource "google_storage_bucket" "dendrite_static" {
   name     = "www.dendritestories.co.nz"
   location = var.region
-  force_destroy = true
+
+  lifecycle {
+    prevent_destroy = true     # prod safety belt
+  }
 }
 
 resource "google_storage_bucket_object" "dendrite_index" {
