@@ -91,7 +91,7 @@ export const renderContents = functions
     }
     const html = buildHtml(items);
     await storage
-      .bucket('dendrite-static')
+      .bucket('www.dendritestories.co.nz')
       .file('index.html')
       .save(html, { contentType: 'text/html' });
     return null;
