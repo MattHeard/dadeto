@@ -12,10 +12,13 @@ const app = express();
 const allowed = ['https://mattheard.net', 'https://dendritestories.co.nz'];
 app.use(
   cors({
-    origin: (origin, cb) =>
-      !origin || allowed.includes(origin)
-        ? cb(null, true)
-        : cb(new Error('CORS')),
+    origin: (origin, cb) => {
+      if (!origin || allowed.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error('CORS'));
+      }
+    },
     methods: ['POST'],
   })
 );
