@@ -54,7 +54,7 @@ resource "google_storage_bucket_iam_member" "public_read_access" {
 }
 
 resource "google_storage_bucket" "dendrite_static" {
-  name     = "dendrite-static"
+  name     = "www.dendritestories.co.nz"
   location = var.region
 }
 
