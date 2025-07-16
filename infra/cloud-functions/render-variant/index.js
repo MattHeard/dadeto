@@ -54,7 +54,7 @@ export const renderVariant = functions
     const filePath = `p/${page.number}${variant.name}.html`;
 
     await storage
-      .bucket('www.dendritestories.co.nz')
+      .bucket('dendrite-static')
       .file(filePath)
       .save(html, { contentType: 'text/html' });
 
