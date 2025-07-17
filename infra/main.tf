@@ -57,6 +57,11 @@ resource "google_storage_bucket" "dendrite_static" {
   name     = "www.dendritestories.co.nz"
   location = var.region
 
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
+  }
+
   lifecycle {
     prevent_destroy = true     # prod safety belt
   }
@@ -66,6 +71,13 @@ resource "google_storage_bucket_object" "dendrite_index" {
   name   = "index.html"
   bucket = google_storage_bucket.dendrite_static.name
   source = "${path.module}/index.html"
+}
+
+resource "google_storage_bucket_object" "dendrite_404" {
+  name         = "404.html"
+  bucket       = google_storage_bucket.dendrite_static.name
+  source       = "${path.module}/404.html"
+  content_type = "text/html"
 }
 
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
