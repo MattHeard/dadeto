@@ -75,11 +75,7 @@ resource "google_storage_bucket_object" "dendrite_index" {
 
   lifecycle {
     ignore_changes = [
-      content,
-      md5hash,
-      crc32c,
-      generation,
-      metageneration,
+      content
     ]
   }
 }
