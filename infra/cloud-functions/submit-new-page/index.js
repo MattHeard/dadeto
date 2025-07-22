@@ -34,12 +34,16 @@ app.use(express.urlencoded({ extended: false, limit: '20kb' }));
  * @returns {Promise<void>} Promise resolving when response is sent.
  */
 async function handleSubmit(req, res) {
-  let {
-    incoming_option: incomingOption,
-    content = '',
-    author = '???',
-  } = req.body;
-  incomingOption = incomingOption?.toString().trim().slice(0, 120) || '';
+  const { incoming_option: rawIncomingOption } = req.body;
+  let { content = '', author = '???' } = req.body;
+
+  if (rawIncomingOption === null) {
+    res.status(400).json({ error: 'incoming option null' });
+    return;
+  }
+
+  const incomingOption =
+    rawIncomingOption?.toString().trim().slice(0, 120) || '';
   content = content.toString().trim().slice(0, 10_000);
   author = author.toString().trim().slice(0, 120);
 
