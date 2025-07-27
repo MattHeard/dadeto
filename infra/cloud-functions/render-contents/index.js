@@ -35,7 +35,7 @@ function buildHtml(items) {
         )}</a></li>`
     )
     .join('');
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><title>Dendrite</title></head><body><h1><a href="/">Dendrite</a></h1><h2>Contents</h2><ol>${list}</ol></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite</title></head><body><h1><a href="/">Dendrite</a></h1><h2>Contents</h2><ol>${list}</ol></body></html>`;
 }
 
 /**
