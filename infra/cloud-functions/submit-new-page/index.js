@@ -47,20 +47,19 @@ async function handleSubmit(req, res) {
   content = content.toString().trim().slice(0, 10_000);
   author = author.toString().trim().slice(0, 120);
 
+  const parsed = parseIncomingOption(incomingOption);
+
   let incomingOptionId = null;
-  if (incomingOption) {
-    const parsed = parseIncomingOption(incomingOption);
-    if (!parsed) {
-      res.status(400).json({ error: 'invalid incoming option' });
-      return;
-    }
-    const found = await findExistingOption(db, parsed);
-    if (!found) {
-      res.status(400).json({ error: 'incoming option not found' });
-      return;
-    }
-    incomingOptionId = found;
+  if (!parsed) {
+    res.status(400).json({ error: 'invalid incoming option' });
+    return;
   }
+  const found = await findExistingOption(db, parsed);
+  if (!found) {
+    res.status(400).json({ error: 'incoming option not found' });
+    return;
+  }
+  incomingOptionId = found;
 
   const options = [];
   for (let i = 0; i < 4; i += 1) {
