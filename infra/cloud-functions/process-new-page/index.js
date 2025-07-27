@@ -72,7 +72,7 @@ export const processNewPage = functions
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    (sub.options || []).forEach(text => {
+    (sub.options || []).forEach((text, position) => {
       const optRef = newVariantRef
         .collection('options')
         .doc(crypto.randomUUID());
@@ -80,6 +80,7 @@ export const processNewPage = functions
         content: text,
         targetPageId: null,
         createdAt: FieldValue.serverTimestamp(),
+        position,
       });
     });
 

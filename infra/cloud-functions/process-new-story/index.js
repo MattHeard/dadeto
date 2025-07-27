@@ -60,7 +60,7 @@ export const processNewStory = functions
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    sub.options.forEach(text => {
+    sub.options.forEach((text, position) => {
       const optionRef = variantRef
         .collection('options')
         .doc(crypto.randomUUID());
@@ -68,6 +68,7 @@ export const processNewStory = functions
         content: text,
         targetPageId: null,
         createdAt: FieldValue.serverTimestamp(),
+        position,
       });
     });
 
