@@ -33,6 +33,27 @@ function buildHtml(content, options) {
 }
 
 /**
+ * Build HTML page listing all variants of a page.
+ * @param {number} pageNumber Page number.
+ * @param {Array<{name: string, content: string}>} variants Variant info.
+ * @returns {string} HTML page.
+ */
+function buildAltsHtml(pageNumber, variants) {
+  const items = variants
+    .map(v => {
+      const words = String(v.content || '')
+        .split(/\s+/)
+        .slice(0, 5)
+        .join(' ');
+      return `<li><a href="./p/${pageNumber}${v.name}.html">${escapeHtml(
+        words
+      )}</a></li>`;
+    })
+    .join('');
+  return `<!doctype html><html lang="en"><body><h1><a href="/">Dendrite</a></h1><ol>${items}</ol></body></html>`;
+}
+
+/**
  * Cloud Function triggered when a new variant is created.
  */
 export const renderVariant = functions
@@ -57,6 +78,19 @@ export const renderVariant = functions
       .bucket('www.dendritestories.co.nz')
       .file(filePath)
       .save(html, { contentType: 'text/html' });
+
+    const variantsSnap = await snap.ref.parent.get();
+    const variants = variantsSnap.docs.map(doc => ({
+      name: doc.data().name || '',
+      content: doc.data().content || '',
+    }));
+    const altsHtml = buildAltsHtml(page.number, variants);
+    const altsPath = `p/${page.number}-alts.html`;
+
+    await storage
+      .bucket('www.dendritestories.co.nz')
+      .file(altsPath)
+      .save(altsHtml, { contentType: 'text/html' });
 
     return null;
   });
