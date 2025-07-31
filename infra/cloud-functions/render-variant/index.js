@@ -21,15 +21,16 @@ function escapeHtml(text) {
 
 /**
  * Build HTML page for the variant.
+ * @param {number} pageNumber Page number.
  * @param {string} content Variant content.
  * @param {Array<string>} options Option texts.
  * @returns {string} HTML page.
  */
-function buildHtml(content, options) {
+function buildHtml(pageNumber, content, options) {
   const items = options.map(opt => `<li>${escapeHtml(opt)}</li>`).join('');
   return `<!doctype html><html lang="en"><body><h1>Dendrite</h1><p>${escapeHtml(
     content
-  )}</p><ol>${items}</ol></body></html>`;
+  )}</p><ol>${items}</ol><p><a href="./${pageNumber}-alts.html">More options</a></p></body></html>`;
 }
 
 /**
@@ -71,7 +72,7 @@ export const renderVariant = functions
     const optionsSnap = await snap.ref.collection('options').get();
     const options = optionsSnap.docs.map(doc => doc.data().content || '');
 
-    const html = buildHtml(variant.content, options);
+    const html = buildHtml(page.number, variant.content, options);
     const filePath = `p/${page.number}${variant.name}.html`;
 
     await storage
