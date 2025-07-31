@@ -57,7 +57,8 @@ jobs:
                  --format='value(name)' >/dev/null 2>&1; then
 
               # 2. Is it already tracked in Terraform state?
-              if ! terraform state list | grep -q "$TF_ADDR"; then
+              terraform state list -no-color > /tmp/state.txt
+              if ! grep -q "$TF_ADDR" /tmp/state.txt; then
                 echo "\ud83d\ude9a Importing ${ENVIRONMENT}-${fn} into state as ${TF_ADDR}"
                 terraform import "$TF_ADDR" "$GCF_PATH"
               else
