@@ -32,3 +32,9 @@ variable "https_security_level" {
   type        = string
   default     = "SECURE_ALWAYS"
 }
+
+variable "environment" {
+  description = "Deployment environment identifier, e.g. prod, e2e"
+  type        = string
+  default     = "prod"         # keeps prod plans = zero-diff
+}
