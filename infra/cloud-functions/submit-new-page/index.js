@@ -10,7 +10,11 @@ initializeApp();
 const db = getFirestore();
 const app = express();
 
-const allowed = ['https://mattheard.net', 'https://dendritestories.co.nz'];
+const allowed = [
+  'https://mattheard.net',
+  'https://dendritestories.co.nz',
+  'http://www.dendritestories.co.nz',
+];
 app.use(
   cors({
     origin: (origin, cb) => {
