@@ -59,7 +59,7 @@ function buildAltsHtml(pageNumber, variants) {
 export const renderVariant = functions
   .region('europe-west1')
   .firestore.document('stories/{storyId}/pages/{pageId}/variants/{variantId}')
-  .onCreate(async snap => {
+  .onCreate(async (snap, ctx) => {
     const variant = snap.data();
 
     const pageSnap = await snap.ref.parent.parent.get();
@@ -91,6 +91,14 @@ export const renderVariant = functions
       .bucket('www.dendritestories.co.nz')
       .file(altsPath)
       .save(altsHtml, { contentType: 'text/html' });
+
+    const pendingPath = `pending/${ctx.params.storyId}.json`;
+    await storage
+      .bucket('www.dendritestories.co.nz')
+      .file(pendingPath)
+      .save(JSON.stringify({ path: filePath }), {
+        contentType: 'application/json',
+      });
 
     return null;
   });
