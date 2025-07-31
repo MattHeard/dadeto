@@ -210,7 +210,7 @@ resource "google_storage_bucket_object" "get_api_key_credit" {
 }
 
 resource "google_cloudfunctions_function" "get_api_key_credit" {
-  name        = "get-api-key-credit"
+  name        = "${var.environment}-get-api-key-credit"
   description = "Returns credit for an API key"
   runtime     = var.cloud_functions_runtime
   available_memory_mb   = 128
