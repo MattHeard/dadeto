@@ -27,7 +27,7 @@ function escapeHtml(text) {
  */
 function buildHtml(content, options) {
   const items = options.map(opt => `<li>${escapeHtml(opt)}</li>`).join('');
-  return `<!doctype html><html lang="en"><body><h1>Dendrite</h1><p>${escapeHtml(
+  return `<!doctype html><html lang="en"><body><h1><a href="/">Dendrite</a></h1><p>${escapeHtml(
     content
   )}</p><ol>${items}</ol></body></html>`;
 }
