@@ -56,6 +56,7 @@ export const processNewStory = functions
       name: 'a',
       content: sub.content,
       authorId: null,
+      authorName: sub.author,
       incomingOptionId: null,
       createdAt: FieldValue.serverTimestamp(),
     });
