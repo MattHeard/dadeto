@@ -25,20 +25,9 @@ data "google_project" "project" {
   project_id = var.project_id
 }
 
-variable "project_id" {
-  description = "The GCP project ID"
-  type        = string
-  default     = "irien-465710"
-}
-
-variable "region" {
-  type    = string
-  default = "europe-west1"
-}
-
 resource "google_storage_bucket" "irien_bucket" {
   name     = "irien-hello-world-${var.project_id}"
-  location = "EU"
+  location = var.irien_bucket_location
 }
 
 resource "google_storage_bucket_object" "hello_world" {
@@ -54,7 +43,7 @@ resource "google_storage_bucket_iam_member" "public_read_access" {
 }
 
 resource "google_storage_bucket" "dendrite_static" {
-  name     = "www.dendritestories.co.nz"
+  name     = var.static_site_bucket_name
   location = var.region
 
   website {
@@ -223,13 +212,13 @@ resource "google_storage_bucket_object" "get_api_key_credit" {
 resource "google_cloudfunctions_function" "get_api_key_credit" {
   name        = "get-api-key-credit"
   description = "Returns credit for an API key"
-  runtime     = "nodejs20"
+  runtime     = var.cloud_functions_runtime
   available_memory_mb   = 128
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.get_api_key_credit.name
   entry_point = "handler"
   trigger_http = true
-  https_trigger_security_level = "SECURE_ALWAYS"
+  https_trigger_security_level = var.https_security_level
   service_account_email = google_service_account.cloud_function_runtime.email
   region = var.region
 
@@ -290,12 +279,12 @@ resource "google_storage_bucket_object" "submit_new_page" {
 
 resource "google_cloudfunctions_function" "submit_new_story" {
   name        = "submit-new-story"
-  runtime     = "nodejs20"
+  runtime     = var.cloud_functions_runtime
   entry_point = "submitNewStory"
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.submit_new_story.name
   trigger_http                 = true
-  https_trigger_security_level = "SECURE_ALWAYS"
+  https_trigger_security_level = var.https_security_level
   service_account_email = google_service_account.cloud_function_runtime.email
   region = var.region
 
@@ -320,12 +309,12 @@ resource "google_cloudfunctions_function" "submit_new_story" {
 
 resource "google_cloudfunctions_function" "submit_new_page" {
   name        = "submit-new-page"
-  runtime     = "nodejs20"
+  runtime     = var.cloud_functions_runtime
   entry_point = "submitNewPage"
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.submit_new_page.name
   trigger_http                 = true
-  https_trigger_security_level = "SECURE_ALWAYS"
+  https_trigger_security_level = var.https_security_level
   service_account_email = google_service_account.cloud_function_runtime.email
   region = var.region
 
@@ -386,7 +375,7 @@ resource "google_storage_bucket_object" "process_new_story" {
 
 resource "google_cloudfunctions_function" "process_new_story" {
   name        = "process-new-story"
-  runtime     = "nodejs20"
+  runtime     = var.cloud_functions_runtime
   region      = var.region
   entry_point = "processNewStory"
 
@@ -431,7 +420,7 @@ resource "google_storage_bucket_object" "process_new_page" {
 
 resource "google_cloudfunctions_function" "process_new_page" {
   name        = "process-new-page"
-  runtime     = "nodejs20"
+  runtime     = var.cloud_functions_runtime
   region      = var.region
   entry_point = "processNewPage"
 
@@ -476,7 +465,7 @@ resource "google_storage_bucket_object" "render_variant" {
 
 resource "google_cloudfunctions_function" "render_variant" {
   name        = "render-variant"
-  runtime     = "nodejs20"
+  runtime     = var.cloud_functions_runtime
   region      = var.region
   entry_point = "renderVariant"
 
@@ -521,7 +510,7 @@ resource "google_storage_bucket_object" "render_contents" {
 
 resource "google_cloudfunctions_function" "render_contents" {
   name        = "render-contents"
-  runtime     = "nodejs20"
+  runtime     = var.cloud_functions_runtime
   region      = var.region
   entry_point = "renderContents"
 
