@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
+import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
 
 initializeApp();
 const db = getFirestore();
@@ -28,14 +29,9 @@ function escapeHtml(text) {
  */
 function buildHtml(items) {
   const list = items
-    .map(
-      item =>
-        `<li><a href="./p/${item.pageNumber}a.html">${escapeHtml(
-          item.title
-        )}</a></li>`
-    )
+    .map(item => LIST_ITEM_HTML(item.pageNumber, escapeHtml(item.title)))
     .join('');
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite</title></head><body><h1><a href="/">Dendrite</a></h1><h2>Contents</h2><ol>${list}</ol></body></html>`;
+  return PAGE_HTML(list);
 }
 
 /**
