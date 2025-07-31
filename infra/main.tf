@@ -83,6 +83,13 @@ resource "google_storage_bucket_object" "dendrite_new_story" {
   content_type = "text/html"
 }
 
+resource "google_storage_bucket_object" "dendrite_mod" {
+  name         = "mod.html"
+  bucket       = google_storage_bucket.dendrite_static.name
+  source       = "${path.module}/mod.html"
+  content_type = "text/html"
+}
+
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
   bucket = google_storage_bucket.dendrite_static.name
   role   = "roles/storage.objectViewer"
