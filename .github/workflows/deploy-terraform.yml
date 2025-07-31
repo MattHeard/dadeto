@@ -41,34 +41,6 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Import orphaned Cloud Functions into state
-        shell: bash
-        run: |
-          # Short names exactly as used in main.tf resource blocks (minus env prefix)
-          FUNCS="get-api-key-credit submit-new-story submit-new-page \
-                 process-new-story process-new-page render-variant render-contents"
-
-          for fn in $FUNCS; do
-            TF_ADDR="google_cloudfunctions_function.${fn//-/_}"
-            GCF_PATH="projects/${{ secrets.GOOGLE_PROJECT }}/locations/${REGION}/functions/${ENVIRONMENT}-${fn}"
-
-            # 1. Does the prod-prefixed function exist in Cloud Functions?
-            if gcloud functions describe "${ENVIRONMENT}-${fn}" --region "${REGION}" \
-                 --format='value(name)' >/dev/null 2>&1; then
-
-              # 2. Is it already tracked in Terraform state?
-              terraform state list -no-color > /tmp/state.txt
-              if ! grep -q "$TF_ADDR" /tmp/state.txt; then
-                echo "\ud83d\ude9a Importing ${ENVIRONMENT}-${fn} into state as ${TF_ADDR}"
-                terraform import "$TF_ADDR" "$GCF_PATH"
-              else
-                echo "\u2705 ${ENVIRONMENT}-${fn} already present in state"
-              fi
-            else
-              echo "\u26a0\ufe0f  ${ENVIRONMENT}-${fn} not found in GCP, skipping import"
-            fi
-          done
-
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
