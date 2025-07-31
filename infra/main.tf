@@ -169,7 +169,7 @@ resource "google_project_iam_member" "ci_firebaserules_admin" {
 }
 
 resource "google_service_account" "cloud_function_runtime" {
-  account_id   = "cloud-function-runtime"
+  account_id   = "${var.environment}-cloud-function-runtime"
   display_name = "Cloud Function Runtime Service Account"
 }
 
@@ -204,7 +204,7 @@ data "archive_file" "get_api_key_src" {
 }
 
 resource "google_storage_bucket_object" "get_api_key_credit" {
-  name   = "get-api-key-credit-${data.archive_file.get_api_key_src.output_sha256}.zip"
+  name   = "${var.environment}-get-api-key-credit-${data.archive_file.get_api_key_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
   source = data.archive_file.get_api_key_src.output_path
 }
@@ -266,13 +266,13 @@ data "archive_file" "submit_page_src" {
 }
 
 resource "google_storage_bucket_object" "submit_new_story" {
-  name   = "submit-new-story-${data.archive_file.submit_src.output_sha256}.zip"
+  name   = "${var.environment}-submit-new-story-${data.archive_file.submit_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
   source = data.archive_file.submit_src.output_path
 }
 
 resource "google_storage_bucket_object" "submit_new_page" {
-  name   = "submit-new-page-${data.archive_file.submit_page_src.output_sha256}.zip"
+  name   = "${var.environment}-submit-new-page-${data.archive_file.submit_page_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
   source = data.archive_file.submit_page_src.output_path
 }
@@ -368,7 +368,7 @@ data "archive_file" "process_src" {
 }
 
 resource "google_storage_bucket_object" "process_new_story" {
-  name   = "process-new-story-${data.archive_file.process_src.output_sha256}.zip"
+  name   = "${var.environment}-process-new-story-${data.archive_file.process_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
   source = data.archive_file.process_src.output_path
 }
@@ -413,7 +413,7 @@ data "archive_file" "process_page_src" {
 }
 
 resource "google_storage_bucket_object" "process_new_page" {
-  name   = "process-new-page-${data.archive_file.process_page_src.output_sha256}.zip"
+  name   = "${var.environment}-process-new-page-${data.archive_file.process_page_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
   source = data.archive_file.process_page_src.output_path
 }
@@ -458,7 +458,7 @@ data "archive_file" "render_variant_src" {
 }
 
 resource "google_storage_bucket_object" "render_variant" {
-  name   = "render-variant-${data.archive_file.render_variant_src.output_sha256}.zip"
+  name   = "${var.environment}-render-variant-${data.archive_file.render_variant_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
   source = data.archive_file.render_variant_src.output_path
 }
@@ -503,7 +503,7 @@ data "archive_file" "render_contents_src" {
 }
 
 resource "google_storage_bucket_object" "render_contents" {
-  name   = "render-contents-${data.archive_file.render_contents_src.output_sha256}.zip"
+  name   = "${var.environment}-render-contents-${data.archive_file.render_contents_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
   source = data.archive_file.render_contents_src.output_path
 }
