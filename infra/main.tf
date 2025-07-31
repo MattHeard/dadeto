@@ -235,9 +235,6 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -301,9 +298,6 @@ resource "google_cloudfunctions_function" "submit_new_story" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -331,9 +325,6 @@ resource "google_cloudfunctions_function" "submit_new_page" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -397,9 +388,6 @@ resource "google_cloudfunctions_function" "process_new_story" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
 
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
@@ -442,9 +430,6 @@ resource "google_cloudfunctions_function" "process_new_page" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
 
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
@@ -487,9 +472,6 @@ resource "google_cloudfunctions_function" "render_variant" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
 
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
@@ -532,9 +514,6 @@ resource "google_cloudfunctions_function" "render_contents" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
 
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
