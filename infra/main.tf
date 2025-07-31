@@ -278,7 +278,7 @@ resource "google_storage_bucket_object" "submit_new_page" {
 }
 
 resource "google_cloudfunctions_function" "submit_new_story" {
-  name        = "submit-new-story"
+  name        = "${var.environment}-submit-new-story"
   runtime     = var.cloud_functions_runtime
   entry_point = "submitNewStory"
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
@@ -308,7 +308,7 @@ resource "google_cloudfunctions_function" "submit_new_story" {
 }
 
 resource "google_cloudfunctions_function" "submit_new_page" {
-  name        = "submit-new-page"
+  name        = "${var.environment}-submit-new-page"
   runtime     = var.cloud_functions_runtime
   entry_point = "submitNewPage"
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
@@ -374,7 +374,7 @@ resource "google_storage_bucket_object" "process_new_story" {
 }
 
 resource "google_cloudfunctions_function" "process_new_story" {
-  name        = "process-new-story"
+  name        = "${var.environment}-process-new-story"
   runtime     = var.cloud_functions_runtime
   region      = var.region
   entry_point = "processNewStory"
@@ -419,7 +419,7 @@ resource "google_storage_bucket_object" "process_new_page" {
 }
 
 resource "google_cloudfunctions_function" "process_new_page" {
-  name        = "process-new-page"
+  name        = "${var.environment}-process-new-page"
   runtime     = var.cloud_functions_runtime
   region      = var.region
   entry_point = "processNewPage"
@@ -464,7 +464,7 @@ resource "google_storage_bucket_object" "render_variant" {
 }
 
 resource "google_cloudfunctions_function" "render_variant" {
-  name        = "render-variant"
+  name        = "${var.environment}-render-variant"
   runtime     = var.cloud_functions_runtime
   region      = var.region
   entry_point = "renderVariant"
@@ -509,7 +509,7 @@ resource "google_storage_bucket_object" "render_contents" {
 }
 
 resource "google_cloudfunctions_function" "render_contents" {
-  name        = "render-contents"
+  name        = "${var.environment}-render-contents"
   runtime     = var.cloud_functions_runtime
   region      = var.region
   entry_point = "renderContents"
