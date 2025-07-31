@@ -14,8 +14,9 @@ impersonate this runtime account. The `infra/cloud-functions/get-api-key-credit`
 for a Google Cloud Function that returns the credit associated with a given API
 key. The
 Cloud Functions API is enabled via a `google_project_service` resource, and the
-Cloud Build API is also enabled so that functions can be built from source. The
-resources for this function are defined directly in `main.tf`.
+Cloud Build API is also enabled so that functions can be built from source.
+Resources for this function live in `main.tf` and all input variables are
+declared in `variables.tf`.
 
 Firestore security rules and composite indexes for the Dendrite collections are
 defined in `dendrite-firestore.tf`. The rules file lives in `rules/firestore.rules`
