@@ -194,6 +194,12 @@ resource "google_project_iam_member" "terraform_loadbalancer_admin" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "terraform_security_admin" {
+  project = var.project_id
+  role    = "roles/compute.securityAdmin"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 resource "google_service_account" "cloud_function_runtime" {
   account_id   = "${var.environment}-cloud-function-runtime"
   display_name = "Cloud Function Runtime Service Account"
