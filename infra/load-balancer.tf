@@ -61,7 +61,7 @@ resource "google_compute_url_map" "dendrite" {
     default_service = google_compute_backend_bucket.dendrite_static.id
 
     route_rules {
-      priority = 0
+      priority = 1
 
       match_rules {
         full_path_match = "/"
