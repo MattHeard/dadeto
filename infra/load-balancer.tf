@@ -67,8 +67,10 @@ resource "google_compute_url_map" "dendrite" {
         full_path_match = "/"
       }
 
-      url_rewrite {
-        path_prefix_rewrite = "/index.html"
+      route_action {
+        url_rewrite {
+          path_prefix_rewrite = "/index.html"
+        }
       }
 
       service = google_compute_backend_bucket.dendrite_static.id
