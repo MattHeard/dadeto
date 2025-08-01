@@ -47,7 +47,8 @@ resource "google_compute_managed_ssl_certificate" "dendrite" {
 }
 
 resource "google_compute_url_map" "dendrite" {
-  name            = "${var.environment}-dendrite-url-map"
+  provider       = google-beta
+  name           = "${var.environment}-dendrite-url-map"
   default_service = google_compute_backend_bucket.dendrite_static.id
 
   route_rules {
