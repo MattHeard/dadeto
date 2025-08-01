@@ -21,10 +21,7 @@ resource "google_compute_backend_bucket" "dendrite_static" {
   bucket_name = google_storage_bucket.dendrite_static.name
   enable_cdn  = true
 
-  # Add custom response header for Google Sign-In compatibility
-  custom_response_headers = [
-    "Cross-Origin-Opener-Policy: same-origin-allow-popups"
-  ]
+  # No COOP header → default 'unsafe-none'
 
   depends_on = [
     google_project_service.compute,
