@@ -56,18 +56,6 @@ resource "google_storage_bucket" "dendrite_static" {
   }
 }
 
-resource "google_storage_bucket_object" "dendrite_index" {
-  name         = "index.html"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/index.html"
-  content_type = "text/html"
-
-  lifecycle {
-    ignore_changes = [
-      content
-    ]
-  }
-}
 
 resource "google_storage_bucket_object" "dendrite_404" {
   name         = "404.html"
