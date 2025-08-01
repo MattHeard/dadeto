@@ -97,6 +97,20 @@ resource "google_storage_bucket_object" "dendrite_mod" {
   content_type = "text/html"
 }
 
+resource "google_storage_bucket_object" "dendrite_google_auth_js" {
+  name         = "googleAuth.js"
+  bucket       = google_storage_bucket.dendrite_static.name
+  source       = "${path.module}/googleAuth.js"
+  content_type = "application/javascript"
+}
+
+resource "google_storage_bucket_object" "dendrite_moderate_js" {
+  name         = "moderate.js"
+  bucket       = google_storage_bucket.dendrite_static.name
+  source       = "${path.module}/moderate.js"
+  content_type = "application/javascript"
+}
+
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
   bucket = google_storage_bucket.dendrite_static.name
   role   = "roles/storage.objectViewer"
