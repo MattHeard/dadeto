@@ -13,7 +13,6 @@ const app = express();
 const allowed = [
   'https://mattheard.net',
   'https://dendritestories.co.nz',
-  'http://www.dendritestories.co.nz',
 ];
 app.use(
   cors({
