@@ -21,6 +21,11 @@ resource "google_compute_backend_bucket" "dendrite_static" {
   bucket_name = google_storage_bucket.dendrite_static.name
   enable_cdn  = true
 
+  # Add custom response header for Google Sign-In compatibility
+  custom_response_headers = [
+    "Cross-Origin-Opener-Policy: same-origin-allow-popups"
+  ]
+
   depends_on = [
     google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
