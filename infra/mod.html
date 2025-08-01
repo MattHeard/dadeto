@@ -1,23 +1,29 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dendrite - Moderate a story page</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
+    />
+  </head>
+  <body>
     <h1><a href="/">Dendrite</a></h1>
     <h2>Moderate a story page</h2>
-    <p>Please contribute to keeping Dendrite an excellent place to read and write.</p>
+    <p>
+      Please contribute to keeping Dendrite an excellent place to read and
+      write.
+    </p>
     <p>Click the "Next page" button to be shown a page to approve or reject.</p>
     <div id="signinButton"></div>
     <button disabled>Next page</button>
 
     <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" defer></script>
 
     <!-- Moderate tools -->
     <script type="module" src="./moderate.js"></script>
-</body>
+  </body>
 </html>
