@@ -13,7 +13,6 @@ const allowed = [
   'https://mattheard.net',
   'https://dendritestories.co.nz',
   'https://www.dendritestories.co.nz', // new: static-site domain
-  'http://www.dendritestories.co.nz',
 ];
 app.use(
   cors({
