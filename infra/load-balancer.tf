@@ -50,6 +50,20 @@ resource "google_compute_url_map" "dendrite" {
   name            = "${var.environment}-dendrite-url-map"
   default_service = google_compute_backend_bucket.dendrite_static.id
 
+  route_rules {
+    priority = 0
+
+    match_rules {
+      full_path_match = "/"
+    }
+
+    url_rewrite {
+      path_prefix_rewrite = "/index.html"
+    }
+
+    service = google_compute_backend_bucket.dendrite_static.id
+  }
+
   depends_on = [
     google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
