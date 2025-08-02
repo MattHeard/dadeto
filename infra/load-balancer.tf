@@ -62,12 +62,12 @@ resource "google_compute_url_map" "dendrite" {
     # url_redirect runs even though a default_service is required syntactically
     default_service = google_compute_backend_bucket.dendrite_static.id
 
-    route_rules {
-      priority = 0
+      route_rules {
+        priority = 2
 
-      match_rules {
-        prefix_match = "/"
-      }
+        match_rules {
+          prefix_match = "/"
+        }
 
       url_redirect {
         host_redirect  = "www.dendritestories.co.nz"
