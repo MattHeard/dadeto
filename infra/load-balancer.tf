@@ -47,6 +47,9 @@ resource "google_compute_url_map" "dendrite" {
   provider = google-beta
   name     = "${var.environment}-dendrite-url-map"
 
+  # mandatory fallback for any request that dodges all matchers
+  default_service = google_compute_backend_bucket.dendrite_static.id
+
   # --- 1️⃣  Apex host goes through its own matcher -------------
   host_rule {
     hosts        = ["dendritestories.co.nz"]
