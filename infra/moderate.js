@@ -1,4 +1,4 @@
-import { initGoogleSignIn, getIdToken } from './googleAuth.js';
+import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 
 initGoogleSignIn({
   onSignIn: () => {
@@ -7,6 +7,19 @@ initGoogleSignIn({
     if (button) {
       button.disabled = false;
     }
+    const signin = document.getElementById('signinButton');
+    const wrap = document.getElementById('signoutWrap');
+    signin.style.display = 'none';
+    wrap.style.display = '';
+    wrap.querySelector('#signoutBtn').onclick = () => {
+      signOut();
+      wrap.style.display = 'none';
+      signin.style.display = '';
+      if (button) {
+        button.disabled = true;
+      }
+      document.body.classList.remove('authed');
+    };
   },
 });
 
@@ -42,3 +55,13 @@ export const authedFetch = async (url, opts = {}) => {
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   return resp.json();
 };
+
+if (getIdToken()) {
+  document.body.classList.add('authed');
+  document.getElementById('signinButton').style.display = 'none';
+  document.getElementById('signoutWrap').style.display = '';
+  const button = document.querySelector('form button[type="submit"]');
+  if (button) {
+    button.disabled = false;
+  }
+}
