@@ -48,6 +48,7 @@ describe('googleAuth', () => {
     const credential = 'tok';
     initGoogleSignIn({ onSignIn: jest.fn() });
     const args = initialize.mock.calls[0][0];
+    expect(args.ux_mode).toBe('popup');
     args.callback({ credential });
     expect(sessionStorage.getItem('id_token')).toBe(credential);
     expect(getIdToken()).toBe(credential);
