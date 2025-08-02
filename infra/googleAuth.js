@@ -11,7 +11,7 @@ export const initGoogleSignIn = ({ onSignIn } = {}) => {
       sessionStorage.setItem('id_token', credential);
       onSignIn?.(credential);
     },
-    ux_mode: 'redirect',
+    ux_mode: 'popup',
   });
 
   google.accounts.id.renderButton(document.getElementById('signinButton'), {
