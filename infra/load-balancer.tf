@@ -21,7 +21,10 @@ resource "google_compute_backend_bucket" "dendrite_static" {
   bucket_name = google_storage_bucket.dendrite_static.name
   enable_cdn  = true
 
-  # No COOP header → default 'unsafe-none'
+  # Set COOP header to isolate browsing context group
+  custom_response_headers = [
+    "Cross-Origin-Opener-Policy: restrict-properties",
+  ]
 
   depends_on = [
     google_project_service.compute,
