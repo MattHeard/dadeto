@@ -18,7 +18,14 @@
     </p>
     <p>Click the "Next page" button to be shown a page to approve or reject.</p>
     <div id="signinButton"></div>
-    <button disabled>Next page</button>
+    <form
+      id="nextPageForm"
+      action="https://europe-west1-irien-465710.cloudfunctions.net/prod-next-page"
+      method="post"
+    >
+      <input type="hidden" name="id_token" id="idTokenField" />
+      <button type="submit" disabled>Next page</button>
+    </form>
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" defer></script>
