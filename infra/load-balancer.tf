@@ -44,10 +44,37 @@ resource "google_compute_managed_ssl_certificate" "dendrite" {
 }
 
 resource "google_compute_url_map" "dendrite" {
-  provider        = google-beta
-  name            = "${var.environment}-dendrite-url-map"
-  default_service = google_compute_backend_bucket.dendrite_static.id
+  provider = google-beta
+  name     = "${var.environment}-dendrite-url-map"
 
+  # --- 1️⃣  Apex host goes through its own matcher -------------
+  host_rule {
+    hosts        = ["dendritestories.co.nz"]
+    path_matcher = "apex-redirect"
+  }
+
+  path_matcher {
+    name = "apex-redirect"
+
+    # url_redirect runs even though a default_service is required syntactically
+    default_service = google_compute_backend_bucket.dendrite_static.id
+
+    route_rules {
+      priority = 0
+
+      match_rules {
+        prefix_match = "/"
+      }
+
+      url_redirect {
+        host_redirect  = "www.dendritestories.co.nz"
+        https_redirect = true
+        strip_query    = false
+      }
+    }
+  }
+
+  # --- 2️⃣  Existing wildcard matcher for www & any future subs ----
   host_rule {
     hosts        = ["*"]
     path_matcher = "allpaths"
