@@ -54,6 +54,9 @@ resource "google_identity_platform_default_supported_idp_config" "google" {
   client_id     = var.google_oauth_client_id
   client_secret = var.google_oauth_client_secret
   enabled       = true
+
+  # ensure API has finished provisioning before this runs
+  depends_on = [google_identity_platform_config.auth]
 }
 
 resource "google_identity_platform_oauth_idp_config" "gis_allowlist" {
