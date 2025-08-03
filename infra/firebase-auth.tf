@@ -45,7 +45,7 @@ resource "google_identity_platform_config" "auth" {
 
 resource "google_identity_platform_default_supported_idp_config" "google" {
   project      = var.project_id
-  provider     = "google.com"
+  provider     = "google"
   client_id     = var.google_oauth_client_id
   client_secret = var.google_oauth_client_secret
   enabled       = true
@@ -54,7 +54,7 @@ resource "google_identity_platform_default_supported_idp_config" "google" {
 resource "google_identity_platform_oauth_idp_config" "gis_allowlist" {
   count       = var.gis_one_tap_client_id == "" ? 0 : 1
   project      = var.project_id
-  provider     = "google.com"
+  provider     = "google"
   display_name = "GIS One-Tap"
   client_id    = var.gis_one_tap_client_id
   enabled      = true
