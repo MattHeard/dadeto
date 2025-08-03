@@ -28,7 +28,7 @@ resource "google_firebase_web_app" "frontend" {
 }
 
 # Expose the JS SDK config
-resource "google_firebase_web_app_config" "frontend" {
+data "google_firebase_web_app_config" "frontend" {
   provider = google-beta
   project  = var.project_id
   app_id   = google_firebase_web_app.frontend.app_id
@@ -50,15 +50,18 @@ resource "google_identity_platform_config" "auth" {
 resource "google_identity_platform_default_supported_idp_config" "google" {
   provider      = google-beta
   project       = var.project_id
+  idp_id        = "google.com"
   client_id     = var.google_oauth_client_id
   client_secret = var.google_oauth_client_secret
   enabled       = true
 }
 
 resource "google_identity_platform_oauth_idp_config" "gis_allowlist" {
-  provider = google-beta
-  count       = var.gis_one_tap_client_id == "" ? 0 : 1
+  provider     = google-beta
+  count        = var.gis_one_tap_client_id == "" ? 0 : 1
   project      = var.project_id
+  name         = "projects/${var.project_id}/oauthIdpConfigs/google.com"
+  issuer       = "https://accounts.google.com"
   display_name = "GIS One-Tap"
   client_id    = var.gis_one_tap_client_id
   enabled      = true
