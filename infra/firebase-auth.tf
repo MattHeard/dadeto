@@ -29,9 +29,9 @@ resource "google_firebase_web_app" "frontend" {
 
 # Expose the JS SDK config
 data "google_firebase_web_app_config" "frontend" {
-  provider = google-beta
-  project  = var.project_id
-  app_id   = google_firebase_web_app.frontend.app_id
+  provider   = google-beta
+  project    = var.project_id
+  web_app_id = google_firebase_web_app.frontend.app_id
 }
 
 resource "google_identity_platform_config" "auth" {
