@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>New Story</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
+    />
   </head>
   <body>
     <h1><a href="/">Dendrite</a></h1>
@@ -37,23 +40,23 @@
       <div>
         <button type="submit">Submit</button>
       </div>
-      <p id="saving" style="display: none;">Saving...</p>
+      <p id="saving" style="display: none">Saving...</p>
     </form>
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const form = document.querySelector("form");
+      document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form');
         const button = form.querySelector("button[type='submit']");
-        const saving = document.getElementById("saving");
+        const saving = document.getElementById('saving');
 
-        form.addEventListener("submit", async event => {
+        form.addEventListener('submit', async event => {
           event.preventDefault();
           button.disabled = true;
-          saving.style.display = "block";
+          saving.style.display = 'block';
           let dots = 1;
-          saving.textContent = "Saving.";
+          saving.textContent = 'Saving.';
           const intervalId = setInterval(() => {
             dots = (dots % 3) + 1;
-            saving.textContent = `Saving${".".repeat(dots)}`;
+            saving.textContent = `Saving${'.'.repeat(dots)}`;
           }, 500);
 
           try {
@@ -63,13 +66,14 @@
               body: formData,
             });
             if (!response.ok) {
-              throw new Error("Submission failed");
+              throw new Error('Submission failed');
             }
             const { id } = await response.json();
             let delay = 500;
             while (true) {
               await new Promise(resolve => setTimeout(resolve, delay));
-              const pendingRes = await fetch(`/pending/${id}.json`);
+              const ts = Date.now();
+              const pendingRes = await fetch(`/pending/${id}.json?ts=${ts}`);
               if (pendingRes.ok) {
                 const data = await pendingRes.json();
                 clearInterval(intervalId);
@@ -80,7 +84,7 @@
             }
           } catch (err) {
             clearInterval(intervalId);
-            saving.textContent = "Failed to save.";
+            saving.textContent = 'Failed to save.';
             button.disabled = false;
           }
         });
