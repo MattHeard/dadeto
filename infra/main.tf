@@ -62,6 +62,7 @@ resource "google_storage_bucket_object" "dendrite_404" {
   bucket       = google_storage_bucket.dendrite_static.name
   source       = "${path.module}/404.html"
   content_type = "text/html"
+  cache_control = "no-store"
 }
 
 resource "google_storage_bucket_object" "dendrite_new_story" {
