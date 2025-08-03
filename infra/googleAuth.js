@@ -1,3 +1,18 @@
+import {
+  initializeApp,
+  getAuth,
+  GoogleAuthProvider,
+  signInWithCredential,
+} from './firebaseDeps.js';
+
+initializeApp({
+  apiKey: '<API_KEY>',
+  authDomain: 'irien-465710.firebaseapp.com',
+  projectId: 'irien-465710',
+});
+
+const auth = getAuth();
+
 export const initGoogleSignIn = ({ onSignIn } = {}) => {
   if (!window.google || !google.accounts?.id) {
     console.error('Google Identity script missing');
@@ -7,9 +22,12 @@ export const initGoogleSignIn = ({ onSignIn } = {}) => {
   google.accounts.id.initialize({
     client_id:
       '848377461162-7je7r4pg7mnaj85gq558cf4gt0mk8j9b.apps.googleusercontent.com',
-    callback: ({ credential }) => {
-      sessionStorage.setItem('id_token', credential);
-      onSignIn?.(credential);
+    callback: async ({ credential }) => {
+      const cred = GoogleAuthProvider.credential(credential);
+      await signInWithCredential(auth, cred);
+      const idToken = await auth.currentUser.getIdToken();
+      sessionStorage.setItem('id_token', idToken);
+      onSignIn?.(idToken);
     },
     ux_mode: 'popup',
   });
@@ -23,7 +41,8 @@ export const initGoogleSignIn = ({ onSignIn } = {}) => {
 
 export const getIdToken = () => sessionStorage.getItem('id_token');
 
-export const signOut = () => {
+export const signOut = async () => {
+  await auth.signOut();
   sessionStorage.removeItem('id_token');
   google.accounts.id.disableAutoSelect();
 };

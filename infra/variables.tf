@@ -38,3 +38,19 @@ variable "environment" {
   type        = string
   default     = "prod"         # keeps prod plans = zero-diff
 }
+
+variable "google_oauth_client_id" {
+  description = "OAuth client ID for Google sign-in"
+  type        = string
+}
+
+variable "google_oauth_client_secret" {
+  description = "OAuth client secret for Google sign-in"
+  type        = string
+}
+
+variable "gis_one_tap_client_id" {
+  description = "Optional GIS One-Tap client ID"
+  type        = string
+  default     = ""
+}
