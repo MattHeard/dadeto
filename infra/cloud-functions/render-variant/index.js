@@ -65,6 +65,7 @@ export const renderVariant = functions
       .file(pendingPath)
       .save(JSON.stringify({ path: filePath }), {
         contentType: 'application/json',
+        metadata: { cacheControl: 'no-store' }, // 🔑 stop both positive *and* negative caching
       });
 
     return null;
