@@ -13,6 +13,7 @@ resource "google_project_service" "firebase_api" {
 }
 
 resource "google_firebase_project" "core" {
+  provider   = google-beta
   project    = var.project_id
   depends_on = [
     google_project_service.firebase_api,
@@ -21,18 +22,21 @@ resource "google_firebase_project" "core" {
 }
 
 resource "google_firebase_web_app" "frontend" {
+  provider     = google-beta
   project      = var.project_id
   display_name = "Dadeto Frontend"
 }
 
 # Expose the JS SDK config
 resource "google_firebase_web_app_config" "frontend" {
-  project = var.project_id
-  app_id  = google_firebase_web_app.frontend.app_id
+  provider = google-beta
+  project  = var.project_id
+  app_id   = google_firebase_web_app.frontend.app_id
 }
 
 resource "google_identity_platform_config" "auth" {
-  project                   = var.project_id
+  provider                 = google-beta
+  project                  = var.project_id
   autodelete_anonymous_users = true
 
   authorized_domains = [
@@ -44,17 +48,17 @@ resource "google_identity_platform_config" "auth" {
 }
 
 resource "google_identity_platform_default_supported_idp_config" "google" {
-  project      = var.project_id
-  provider     = "google"
+  provider      = google-beta
+  project       = var.project_id
   client_id     = var.google_oauth_client_id
   client_secret = var.google_oauth_client_secret
   enabled       = true
 }
 
 resource "google_identity_platform_oauth_idp_config" "gis_allowlist" {
+  provider = google-beta
   count       = var.gis_one_tap_client_id == "" ? 0 : 1
   project      = var.project_id
-  provider     = "google"
   display_name = "GIS One-Tap"
   client_id    = var.gis_one_tap_client_id
   enabled      = true

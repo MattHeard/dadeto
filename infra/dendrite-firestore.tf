@@ -5,7 +5,8 @@ data "local_file" "firestore_rules" {
 }
 
 resource "google_firebaserules_ruleset" "firestore" {
-  project = var.project_id
+  provider = google-beta
+  project  = var.project_id
   source {
     files {
       name    = "firestore.rules"
@@ -19,6 +20,7 @@ resource "google_firebaserules_ruleset" "firestore" {
 }
 
 resource "google_firebaserules_release" "firestore" {
+  provider     = google-beta
   project      = var.project_id
   name         = "firestore.rules"
   ruleset_name = google_firebaserules_ruleset.firestore.name
