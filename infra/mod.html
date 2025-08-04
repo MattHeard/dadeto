@@ -17,18 +17,21 @@
       write.
     </p>
     <p>Click the "Next page" button to be shown a page to approve or reject.</p>
+    <div id="pageContent"></div>
     <div id="signinButton"></div>
     <div id="signoutWrap" style="display: none">
       <button id="signoutBtn" type="button">Sign out</button>
     </div>
-    <form
-      id="nextPageForm"
-      action="https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job"
-      method="post"
-    >
-      <input type="hidden" name="id_token" id="idTokenField" />
-      <button type="submit" disabled>Next page</button>
-    </form>
+    <div id="actions">
+      <form
+        id="nextPageForm"
+        action="https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job"
+        method="post"
+      >
+        <input type="hidden" name="id_token" id="idTokenField" />
+        <button type="submit" disabled>Next page</button>
+      </form>
+    </div>
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" defer></script>

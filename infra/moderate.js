@@ -1,5 +1,55 @@
 import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 
+const GET_VARIANT_URL =
+  'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant';
+
+/**
+ * Load the current moderation variant and render it.
+ * @returns {Promise<void>} Promise resolving when rendering is complete.
+ */
+async function loadVariant() {
+  try {
+    const data = await authedFetch(GET_VARIANT_URL);
+    const container = document.getElementById('pageContent');
+    container.innerHTML = '';
+    const title = document.createElement('h3');
+    title.textContent = data.title || '';
+    const author = document.createElement('p');
+    author.textContent = data.author ? `By ${data.author}` : '';
+    const content = document.createElement('p');
+    content.textContent = data.content || '';
+    container.appendChild(title);
+    container.appendChild(author);
+    container.appendChild(content);
+    if (Array.isArray(data.options) && data.options.length) {
+      const list = document.createElement('ol');
+      data.options.forEach(opt => {
+        const li = document.createElement('li');
+        li.textContent =
+          opt.targetPageNumber !== undefined
+            ? `${opt.content} (${opt.targetPageNumber})`
+            : opt.content;
+        list.appendChild(li);
+      });
+      container.appendChild(list);
+    }
+    const actions = document.getElementById('actions');
+    actions.innerHTML = '';
+    const approve = document.createElement('button');
+    approve.type = 'button';
+    approve.textContent = 'Approve';
+    approve.disabled = true;
+    const reject = document.createElement('button');
+    reject.type = 'button';
+    reject.textContent = 'Reject';
+    reject.disabled = true;
+    actions.appendChild(approve);
+    actions.appendChild(reject);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 initGoogleSignIn({
   onSignIn: () => {
     document.body.classList.add('authed');
@@ -20,6 +70,7 @@ initGoogleSignIn({
       }
       document.body.classList.remove('authed');
     };
+    loadVariant();
   },
 });
 
@@ -64,4 +115,5 @@ if (getIdToken()) {
   if (button) {
     button.disabled = false;
   }
+  loadVariant();
 }
