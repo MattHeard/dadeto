@@ -72,13 +72,13 @@ async function handleAssignModerationJob(req, res) {
 
   const variantDoc = variantSnap.docs[0];
 
-  const ratingsRef = await db.collection('moderationRatings').add({
-    createdAt: FieldValue.serverTimestamp(),
-    firebaseUid: db.doc(`users/${userRecord.uid}`),
+  const moderatorRef = db.collection('moderators').doc(userRecord.uid);
+  await moderatorRef.set({
     variant: variantDoc.ref,
+    createdAt: FieldValue.serverTimestamp(),
   });
 
-  res.status(201).json({ moderationId: ratingsRef.id });
+  res.status(201).json({});
 }
 
 export const assignModerationJob = functions
