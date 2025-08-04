@@ -82,7 +82,9 @@ resource "google_storage_bucket_object" "dendrite_new_page" {
 resource "google_storage_bucket_object" "dendrite_mod" {
   name         = "mod.html"
   bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/mod.html"
+  content      = templatefile("${path.module}/mod.html", {
+    firebase_web_app_config = jsonencode(local.firebase_web_app_config)
+  })
   content_type = "text/html"
 }
 
