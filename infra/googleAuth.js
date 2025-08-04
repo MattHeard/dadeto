@@ -1,9 +1,9 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 import {
-  initializeApp,
   getAuth,
   GoogleAuthProvider,
   signInWithCredential,
-} from './firebaseDeps.js';
+} from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
 initializeApp({
   apiKey: '<API_KEY>',

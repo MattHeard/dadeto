@@ -4,6 +4,8 @@ const config = {
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^https://www\\.gstatic\\.com/firebasejs/12\\.0\\.0/(.*)$':
+      '<rootDir>/test/mocks/$1',
   },
   // Use node environment by default, but allow override for browser testing
   testEnvironment: 'node',
