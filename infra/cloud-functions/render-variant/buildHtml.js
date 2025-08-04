@@ -1,0 +1,15 @@
+import { escapeHtml } from './buildAltsHtml.js';
+
+/**
+ * Build HTML page for the variant.
+ * @param {number} pageNumber Page number.
+ * @param {string} content Variant content.
+ * @param {Array<string>} options Option texts.
+ * @param {string} [storyTitle] Story title.
+ * @returns {string} HTML page.
+ */
+export function buildHtml(pageNumber, content, options, storyTitle = '') {
+  const items = options.map(opt => `<li>${escapeHtml(opt)}</li>`).join('');
+  const title = storyTitle ? `<h1>${escapeHtml(storyTitle)}</h1>` : '';
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css" /></head><body><h1><a href="/">Dendrite</a></h1>${title}<p>${escapeHtml(content)}</p><ol>${items}</ol><p><a href="./${pageNumber}-alts.html">More options</a></p></body></html>`;
+}
