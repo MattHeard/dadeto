@@ -39,5 +39,10 @@ resource "google_apikeys_key" "firebase_web" {
     }
   }
 
+  lifecycle {
+    # 🔑 make Terraform destroy the old key first – and only then create the replacement
+    create_before_destroy = false
+  }
+
   depends_on = [google_project_service.apikeys_api]
 }
