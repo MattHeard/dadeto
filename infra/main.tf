@@ -52,16 +52,16 @@ resource "google_storage_bucket" "dendrite_static" {
   }
 
   lifecycle {
-    prevent_destroy = true     # prod safety belt
+    prevent_destroy = true # prod safety belt
   }
 }
 
 
 resource "google_storage_bucket_object" "dendrite_404" {
-  name         = "404.html"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/404.html"
-  content_type = "text/html"
+  name          = "404.html"
+  bucket        = google_storage_bucket.dendrite_static.name
+  source        = "${path.module}/404.html"
+  content_type  = "text/html"
   cache_control = "no-store"
 }
 
@@ -80,9 +80,9 @@ resource "google_storage_bucket_object" "dendrite_new_page" {
 }
 
 resource "google_storage_bucket_object" "dendrite_mod" {
-  name         = "mod.html"
-  bucket       = google_storage_bucket.dendrite_static.name
-  content      = templatefile("${path.module}/mod.html", {
+  name   = "mod.html"
+  bucket = google_storage_bucket.dendrite_static.name
+  content = templatefile("${path.module}/mod.html", {
     firebase_web_app_config = jsonencode(local.firebase_web_app_config)
   })
   content_type = "text/html"
@@ -247,17 +247,17 @@ resource "google_storage_bucket_object" "get_api_key_credit" {
 }
 
 resource "google_cloudfunctions_function" "get_api_key_credit" {
-  name        = "${var.environment}-get-api-key-credit"
-  description = "Returns credit for an API key"
-  runtime     = var.cloud_functions_runtime
-  available_memory_mb   = 128
-  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
-  source_archive_object = google_storage_bucket_object.get_api_key_credit.name
-  entry_point = "handler"
-  trigger_http = true
+  name                         = "${var.environment}-get-api-key-credit"
+  description                  = "Returns credit for an API key"
+  runtime                      = var.cloud_functions_runtime
+  available_memory_mb          = 128
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.get_api_key_credit.name
+  entry_point                  = "handler"
+  trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email = google_service_account.cloud_function_runtime.email
-  region = var.region
+  service_account_email        = google_service_account.cloud_function_runtime.email
+  region                       = var.region
 
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
@@ -312,15 +312,15 @@ resource "google_storage_bucket_object" "submit_new_page" {
 }
 
 resource "google_cloudfunctions_function" "submit_new_story" {
-  name        = "${var.environment}-submit-new-story"
-  runtime     = var.cloud_functions_runtime
-  entry_point = "submitNewStory"
-  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
-  source_archive_object = google_storage_bucket_object.submit_new_story.name
+  name                         = "${var.environment}-submit-new-story"
+  runtime                      = var.cloud_functions_runtime
+  entry_point                  = "submitNewStory"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.submit_new_story.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email = google_service_account.cloud_function_runtime.email
-  region = var.region
+  service_account_email        = google_service_account.cloud_function_runtime.email
+  region                       = var.region
 
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
@@ -339,15 +339,15 @@ resource "google_cloudfunctions_function" "submit_new_story" {
 }
 
 resource "google_cloudfunctions_function" "submit_new_page" {
-  name        = "${var.environment}-submit-new-page"
-  runtime     = var.cloud_functions_runtime
-  entry_point = "submitNewPage"
-  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
-  source_archive_object = google_storage_bucket_object.submit_new_page.name
+  name                         = "${var.environment}-submit-new-page"
+  runtime                      = var.cloud_functions_runtime
+  entry_point                  = "submitNewPage"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.submit_new_page.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email = google_service_account.cloud_function_runtime.email
-  region = var.region
+  service_account_email        = google_service_account.cloud_function_runtime.email
+  region                       = var.region
 
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
@@ -402,11 +402,11 @@ resource "google_storage_bucket_object" "assign_moderation_job" {
 }
 
 resource "google_cloudfunctions_function" "assign_moderation_job" {
-  name        = "${var.environment}-assign-moderation-job"
-  runtime     = var.cloud_functions_runtime
-  entry_point = "assignModerationJob"
-  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
-  source_archive_object = google_storage_bucket_object.assign_moderation_job.name
+  name                         = "${var.environment}-assign-moderation-job"
+  runtime                      = var.cloud_functions_runtime
+  entry_point                  = "assignModerationJob"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.assign_moderation_job.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
   service_account_email        = google_service_account.cloud_function_runtime.email
@@ -435,6 +435,57 @@ resource "google_cloudfunctions_function_iam_member" "assign_moderation_job_invo
   member         = "allUsers"
   depends_on = [
     google_cloudfunctions_function.assign_moderation_job,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
+}
+
+data "archive_file" "get_moderation_variant_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/get-moderation-variant"
+  output_path = "${path.module}/build/get-moderation-variant.zip"
+}
+
+resource "google_storage_bucket_object" "get_moderation_variant" {
+  name   = "${var.environment}-get-moderation-variant-${data.archive_file.get_moderation_variant_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.get_moderation_variant_src.output_path
+}
+
+resource "google_cloudfunctions_function" "get_moderation_variant" {
+  name                         = "${var.environment}-get-moderation-variant"
+  runtime                      = var.cloud_functions_runtime
+  entry_point                  = "getModerationVariant"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.get_moderation_variant.name
+  trigger_http                 = true
+  https_trigger_security_level = var.https_security_level
+  service_account_email        = google_service_account.cloud_function_runtime.email
+  region                       = var.region
+
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
+}
+
+resource "google_cloudfunctions_function_iam_member" "get_moderation_variant_invoker" {
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.get_moderation_variant.name
+  role           = "roles/cloudfunctions.invoker"
+  member         = "allUsers"
+
+  depends_on = [
+    google_cloudfunctions_function.get_moderation_variant,
     google_project_iam_member.terraform_cloudfunctions_viewer,
   ]
 }
