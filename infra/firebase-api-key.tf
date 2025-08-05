@@ -4,6 +4,13 @@
 #  Restrict the public Firebase Web API key                           (browser)
 ###############################################################################
 
+# Allow Terraform to create / update / delete API keys
+resource "google_project_iam_member" "terraform_apikeys_admin" {
+  project = var.project_id
+  role    = "roles/serviceusage.apiKeysAdmin"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 # Existing Firebase Web API key
 resource "google_project_service" "apikeys_api" {
   project = var.project_id
