@@ -23,13 +23,9 @@
       <button id="signoutBtn" type="button">Sign out</button>
     </div>
     <div id="actions">
-      <form
-        id="nextPageForm"
-        action="https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job"
-        method="post"
-      >
-        <input type="hidden" name="id_token" id="idTokenField" />
-        <button type="submit" disabled>Next page</button>
+      <form id="nextPageForm">
+        <input type="hidden" id="idTokenField" />
+        <button id="nextPageBtn" type="submit" disabled>Next page</button>
       </form>
     </div>
 
