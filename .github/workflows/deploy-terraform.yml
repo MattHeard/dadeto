@@ -43,6 +43,13 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Import existing Firebase API key
+        run: |
+          terraform import \
+            google_apikeys_key.firebase_web \
+            projects/$(gcloud config get-value project)/locations/global/keys/e1d641f2-a5f5-4ab1-8fac-3bab75f15cb9 \
+            || true
+
       - name: Terraform Plan
         run: terraform plan -input=false -out=tfplan
 
