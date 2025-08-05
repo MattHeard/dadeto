@@ -7,8 +7,10 @@
 # Allow Terraform to create / update / delete API keys
 resource "google_project_iam_member" "terraform_apikeys_admin" {
   project = var.project_id
-  role    = "roles/apikeys.admin"
+  role    = "roles/serviceusage.apiKeysAdmin"
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+
+  depends_on = [google_project_service.apikeys_api]
 }
 
 # Existing Firebase Web API key
@@ -44,5 +46,8 @@ resource "google_apikeys_key" "firebase_web" {
     create_before_destroy = false
   }
 
-  depends_on = [google_project_service.apikeys_api]
+  depends_on = [
+    google_project_iam_member.terraform_apikeys_admin,  # wait for the role
+    google_project_service.apikeys_api                  # and the API itself
+  ]
 }
