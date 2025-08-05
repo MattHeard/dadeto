@@ -2,6 +2,26 @@ import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 
 const GET_VARIANT_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant';
+const ASSIGN_JOB_URL =
+  'https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job';
+
+/**
+ * Ask the back-end for a new moderation job.
+ * Resolves when the function returns 201 Created.
+ */
+async function assignJob() {
+  const token = getIdToken();
+  if (!token) throw new Error('not signed in');
+
+  const body = new URLSearchParams({ id_token: token });
+
+  const resp = await fetch(ASSIGN_JOB_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  if (!resp.ok) throw new Error(`assign job: HTTP ${resp.status}`);
+}
 
 /**
  * Load the current moderation variant and render it.
@@ -78,15 +98,21 @@ initGoogleSignIn({
 if (typeof document !== 'undefined' && document.addEventListener) {
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('nextPageForm');
-    const field = document.getElementById('idTokenField');
+    const button = form.querySelector('#nextPageBtn');
 
-    form.addEventListener('submit', () => {
-      const token = getIdToken();
-      if (!token) {
-        alert('Please sign in first');
-        throw new Error('id_token missing');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      button.disabled = true;
+
+      try {
+        await assignJob();
+        await loadVariant();
+      } catch (err) {
+        console.error(err);
+        alert("Sorry, that didn't work. See console for details.");
+      } finally {
+        button.disabled = false;
       }
-      field.value = token; // 🔑 travels in the POST body
     });
   });
 }
