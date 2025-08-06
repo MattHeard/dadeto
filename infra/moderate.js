@@ -27,9 +27,10 @@ async function assignJob() {
 
 /**
  * Load the current moderation variant and render it.
+ * @param {boolean} [retried] Whether a retry has already been attempted.
  * @returns {Promise<void>} Promise resolving when rendering is complete.
  */
-async function loadVariant() {
+async function loadVariant(retried = false) {
   try {
     const data = await authedFetch(GET_VARIANT_URL);
     const container = document.getElementById('pageContent');
@@ -64,7 +65,16 @@ async function loadVariant() {
       reject.onclick = () => submitRating(false);
     }
   } catch (err) {
-    console.error(err);
+    if (err.message.includes('HTTP 404') && !retried) {
+      try {
+        await assignJob();
+        await loadVariant(true);
+      } catch (innerErr) {
+        console.error(innerErr);
+      }
+    } else {
+      console.error(err);
+    }
   }
 }
 
@@ -82,19 +92,19 @@ async function submitRating(isApproved) {
       method: 'POST',
       body: JSON.stringify({ isApproved }),
     });
+    await assignJob();
+    await loadVariant();
   } catch (err) {
     console.error(err);
     alert("Sorry, that didn't work. See console for details.");
+    if (approve) approve.disabled = false;
+    if (reject) reject.disabled = false;
   }
 }
 
 initGoogleSignIn({
   onSignIn: () => {
     document.body.classList.add('authed');
-    const button = document.querySelector('form button[type="submit"]');
-    if (button) {
-      button.disabled = false;
-    }
     const signin = document.getElementById('signinButton');
     const wrap = document.getElementById('signoutWrap');
     signin.style.display = 'none';
@@ -103,9 +113,6 @@ initGoogleSignIn({
       signOut();
       wrap.style.display = 'none';
       signin.style.display = '';
-      if (button) {
-        button.disabled = true;
-      }
       const approve = document.getElementById('approveBtn');
       const reject = document.getElementById('rejectBtn');
       if (approve) approve.disabled = true;
@@ -115,29 +122,6 @@ initGoogleSignIn({
     loadVariant();
   },
 });
-
-// attach once DOM is parsed
-if (typeof document !== 'undefined' && document.addEventListener) {
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('nextPageForm');
-    const button = form.querySelector('#nextPageBtn');
-
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      button.disabled = true;
-
-      try {
-        await assignJob();
-        await loadVariant();
-      } catch (err) {
-        console.error(err);
-        alert("Sorry, that didn't work. See console for details.");
-      } finally {
-        button.disabled = false;
-      }
-    });
-  });
-}
 
 export const authedFetch = async (url, opts = {}) => {
   const token = getIdToken();
@@ -159,9 +143,5 @@ if (getIdToken()) {
   document.body.classList.add('authed');
   document.getElementById('signinButton').style.display = 'none';
   document.getElementById('signoutWrap').style.display = '';
-  const button = document.querySelector('form button[type="submit"]');
-  if (button) {
-    button.disabled = false;
-  }
   loadVariant();
 }

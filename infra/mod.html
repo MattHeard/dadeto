@@ -16,7 +16,10 @@
       Please contribute to keeping Dendrite an excellent place to read and
       write.
     </p>
-    <p>Click the "Next page" button to be shown a page to approve or reject.</p>
+    <p>
+      When you're signed in, a page will be shown to approve or reject. After
+      submitting a rating, the next page will load automatically.
+    </p>
     <div id="pageContent"></div>
     <div id="signinButton"></div>
     <div id="signoutWrap" style="display: none">
@@ -25,10 +28,6 @@
     <div id="actions">
       <button id="approveBtn" type="button" disabled>Approve</button>
       <button id="rejectBtn" type="button" disabled>Reject</button>
-      <form id="nextPageForm">
-        <input type="hidden" id="idTokenField" />
-        <button id="nextPageBtn" type="submit" disabled>Next page</button>
-      </form>
     </div>
 
     <!-- Google Identity Services -->
