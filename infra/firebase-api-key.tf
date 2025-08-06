@@ -20,7 +20,7 @@ resource "google_project_service" "apikeys_api" {
 }
 
 resource "google_apikeys_key" "public_web" {
-  name         = "projects/${var.project_id}/locations/global/keys/1f8c7e90-36fe-4c50-a176-477b7631bb3d"
+  name         = "projects/${var.project_id}/locations/global/keys/f4a33f0d-4099-4dec-83eb-3205eadc5ea2"
   display_name = "Dadeto Public Web key (browser)"
 
   restrictions {
