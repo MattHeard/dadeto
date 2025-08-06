@@ -20,7 +20,6 @@ resource "google_project_service" "apikeys_api" {
 }
 
 resource "google_apikeys_key" "firebase_web" {
-  name         = "projects/${var.project_id}/locations/global/keys/e1d641f2-a5f5-4ab1-8fac-3bab75f15cb9"
   display_name = "Firebase Web key (browser) v2"
 
   restrictions {
