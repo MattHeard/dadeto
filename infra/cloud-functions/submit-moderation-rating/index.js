@@ -4,6 +4,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
+import { randomUUID } from 'crypto';
 
 initializeApp();
 const db = getFirestore();
@@ -90,7 +91,8 @@ async function handleSubmitModerationRating(req, res) {
   const variantRef = moderatorData.variant;
   const variantId = variantRef.id;
 
-  await db.collection('moderationRatings').add({
+  const ratingId = randomUUID();
+  await db.collection('moderationRatings').doc(ratingId).set({
     moderatorId: uid,
     variantId,
     isApproved,
