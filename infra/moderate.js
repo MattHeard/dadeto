@@ -4,6 +4,8 @@ const GET_VARIANT_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant';
 const ASSIGN_JOB_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job';
+const SUBMIT_RATING_URL =
+  'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-moderation-rating';
 
 /**
  * Ask the back-end for a new moderation job.
@@ -53,20 +55,36 @@ async function loadVariant() {
       });
       container.appendChild(list);
     }
-    const actions = document.getElementById('actions');
-    actions.innerHTML = '';
-    const approve = document.createElement('button');
-    approve.type = 'button';
-    approve.textContent = 'Approve';
-    approve.disabled = true;
-    const reject = document.createElement('button');
-    reject.type = 'button';
-    reject.textContent = 'Reject';
-    reject.disabled = true;
-    actions.appendChild(approve);
-    actions.appendChild(reject);
+    const approve = document.getElementById('approveBtn');
+    const reject = document.getElementById('rejectBtn');
+    if (approve && reject) {
+      approve.disabled = false;
+      reject.disabled = false;
+      approve.onclick = () => submitRating(true);
+      reject.onclick = () => submitRating(false);
+    }
   } catch (err) {
     console.error(err);
+  }
+}
+
+/**
+ *
+ * @param isApproved
+ */
+async function submitRating(isApproved) {
+  const approve = document.getElementById('approveBtn');
+  const reject = document.getElementById('rejectBtn');
+  if (approve) approve.disabled = true;
+  if (reject) reject.disabled = true;
+  try {
+    await authedFetch(SUBMIT_RATING_URL, {
+      method: 'POST',
+      body: JSON.stringify({ isApproved }),
+    });
+  } catch (err) {
+    console.error(err);
+    alert("Sorry, that didn't work. See console for details.");
   }
 }
 
@@ -88,6 +106,10 @@ initGoogleSignIn({
       if (button) {
         button.disabled = true;
       }
+      const approve = document.getElementById('approveBtn');
+      const reject = document.getElementById('rejectBtn');
+      if (approve) approve.disabled = true;
+      if (reject) reject.disabled = true;
       document.body.classList.remove('authed');
     };
     loadVariant();
