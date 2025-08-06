@@ -6,7 +6,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
 initializeApp({
-  apiKey: 'AIzaSyAf2v2vV31_0KRqgIt8ddXvGt-XgjOgsaE',
+  apiKey: 'AIzaSyDRc1CakoDi6airj7t7DgY4KDSlxNwKIIQ',
   authDomain: 'irien-465710.firebaseapp.com',
   projectId: 'irien-465710',
 });
