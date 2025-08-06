@@ -489,6 +489,56 @@ resource "google_cloudfunctions_function_iam_member" "get_moderation_variant_inv
     google_project_iam_member.terraform_cloudfunctions_viewer,
   ]
 }
+data "archive_file" "submit_moderation_rating_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/submit-moderation-rating"
+  output_path = "${path.module}/build/submit-moderation-rating.zip"
+}
+
+resource "google_storage_bucket_object" "submit_moderation_rating" {
+  name   = "${var.environment}-submit-moderation-rating-${data.archive_file.submit_moderation_rating_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.submit_moderation_rating_src.output_path
+}
+
+resource "google_cloudfunctions_function" "submit_moderation_rating" {
+  name                         = "${var.environment}-submit-moderation-rating"
+  runtime                      = var.cloud_functions_runtime
+  entry_point                  = "submitModerationRating"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.submit_moderation_rating.name
+  trigger_http                 = true
+  https_trigger_security_level = var.https_security_level
+  service_account_email        = google_service_account.cloud_function_runtime.email
+  region                       = var.region
+
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
+}
+
+resource "google_cloudfunctions_function_iam_member" "submit_moderation_rating_invoker" {
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.submit_moderation_rating.name
+  role           = "roles/cloudfunctions.invoker"
+  member         = "allUsers"
+  depends_on = [
+    google_cloudfunctions_function.submit_moderation_rating,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
+}
+
 
 data "archive_file" "process_src" {
   type        = "zip"
