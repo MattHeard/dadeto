@@ -89,7 +89,7 @@ async function handleSubmitModerationRating(req, res) {
   }
 
   const variantRef = moderatorData.variant;
-  const variantId = variantRef.id;
+  const variantId = `/${variantRef.path}`;
 
   const ratingId = randomUUID();
   await db.collection('moderationRatings').doc(ratingId).set({

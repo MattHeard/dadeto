@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase-admin/app';
-import { getFirestore, FieldPath } from 'firebase-admin/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 
 initializeApp();
@@ -19,17 +19,14 @@ export const prodUpdateVariantVisibility = functions
 
     const newRating = isApproved ? 1.0 : 0.0;
 
-    const variantSnap = await db
-      .collectionGroup('variants')
-      .where(FieldPath.documentId(), '==', variantId)
-      .limit(1)
-      .get();
-    if (variantSnap.empty) {
+    const variantPath = variantId.replace(/^\//, '');
+    const variantRef = db.doc(variantPath);
+    const variantSnap = await variantRef.get();
+    if (!variantSnap.exists) {
       return null;
     }
 
-    const variantDoc = variantSnap.docs[0];
-    const variantData = variantDoc.data();
+    const variantData = variantSnap.data();
     const visibility =
       typeof variantData.visibility === 'number' ? variantData.visibility : 0;
     const moderationRatingCount =
@@ -45,7 +42,7 @@ export const prodUpdateVariantVisibility = functions
     const denominator = moderationRatingCount + 1;
     const newVisibility = numerator / denominator;
 
-    await variantDoc.ref.update({
+    await variantRef.update({
       visibility: newVisibility,
       moderatorRatingCount: moderationRatingCount + 1,
       moderatorReputationSum: moderatorReputationSum + 1,
