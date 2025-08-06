@@ -13,14 +13,15 @@ resource "google_project_iam_member" "terraform_apikeys_admin" {
   depends_on = [google_project_service.apikeys_api]
 }
 
-# Existing Firebase Web API key
+# Public Firebase Web API key
 resource "google_project_service" "apikeys_api" {
   project = var.project_id
   service = "apikeys.googleapis.com"
 }
 
-resource "google_apikeys_key" "firebase_web" {
-  display_name = "Firebase Web key (browser) v2"
+resource "google_apikeys_key" "public_web" {
+  name         = "projects/${var.project_id}/locations/global/keys/e1d641f2-a5f5-4ab1-8fac-3bab75f15cb9"
+  display_name = "Dadeto Public Web key (browser)"
 
   restrictions {
     api_targets {
