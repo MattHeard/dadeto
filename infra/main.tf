@@ -582,6 +582,47 @@ resource "google_cloudfunctions_function" "process_new_story" {
   ]
 }
 
+data "archive_file" "prod_update_variant_visibility_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/prod-update-variant-visibility"
+  output_path = "${path.module}/build/prod-update-variant-visibility.zip"
+}
+
+resource "google_storage_bucket_object" "prod_update_variant_visibility" {
+  name   = "${var.environment}-prod-update-variant-visibility-${data.archive_file.prod_update_variant_visibility_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.prod_update_variant_visibility_src.output_path
+}
+
+resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
+  name        = "${var.environment}-prod-update-variant-visibility"
+  runtime     = var.cloud_functions_runtime
+  region      = var.region
+  entry_point = "prodUpdateVariantVisibility"
+
+  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object = google_storage_bucket_object.prod_update_variant_visibility.name
+
+  service_account_email = google_service_account.cloud_function_runtime.email
+
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
+  event_trigger {
+    event_type = "providers/cloud.firestore/eventTypes/document.create"
+    resource   = "projects/${var.project_id}/databases/(default)/documents/moderationRatings/{ratingId}"
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access
+  ]
+}
+
 data "archive_file" "process_page_src" {
   type        = "zip"
   source_dir  = "${path.module}/cloud-functions/process-new-page"
