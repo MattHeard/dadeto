@@ -2,10 +2,33 @@ import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
+import express from 'express';
+import cors from 'cors';
 
 initializeApp();
 const db = getFirestore();
 const auth = getAuth();
+const app = express();
+
+const allowed = [
+  'https://mattheard.net',
+  'https://dendritestories.co.nz',
+  'https://www.dendritestories.co.nz',
+];
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || allowed.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error('CORS'));
+      }
+    },
+    methods: ['POST'],
+  })
+);
+
+app.use(express.urlencoded({ extended: false }));
 
 /**
  * Assign a random moderation job to the requesting user.
@@ -81,6 +104,10 @@ async function handleAssignModerationJob(req, res) {
   res.status(201).json({});
 }
 
+app.post('/', handleAssignModerationJob);
+
 export const assignModerationJob = functions
   .region('europe-west1')
-  .https.onRequest(handleAssignModerationJob);
+  .https.onRequest(app);
+
+export { handleAssignModerationJob };
