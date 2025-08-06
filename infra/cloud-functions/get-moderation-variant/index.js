@@ -2,10 +2,31 @@ import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
+import express from 'express';
+import cors from 'cors';
 
 initializeApp();
 const db = getFirestore();
 const auth = getAuth();
+const app = express();
+
+const allowed = [
+  'https://mattheard.net',
+  'https://dendritestories.co.nz',
+  'https://www.dendritestories.co.nz', // static-site domain
+];
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || allowed.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error('CORS'));
+      }
+    },
+    methods: ['GET'],
+  })
+);
 
 /**
  * Fetch the variant assigned to the authenticated moderator.
@@ -15,11 +36,6 @@ const auth = getAuth();
  */
 async function handleGetModerationVariant(req, res) {
   console.log('[getModerationVariant] method=%s ip=%s', req.method, req.ip);
-  if (req.method !== 'GET') {
-    console.warn('[getModerationVariant] non-GET rejected');
-    res.status(405).send('GET only');
-    return;
-  }
 
   const authHeader = req.get('Authorization') || '';
   const match = authHeader.match(/^Bearer (.+)$/);
@@ -84,8 +100,10 @@ async function handleGetModerationVariant(req, res) {
   });
 }
 
+app.get('/', handleGetModerationVariant);
+
 export const getModerationVariant = functions
   .region('europe-west1')
-  .https.onRequest(handleGetModerationVariant);
+  .https.onRequest(app);
 
 export { handleGetModerationVariant };
