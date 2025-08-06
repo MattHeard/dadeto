@@ -1,7 +1,7 @@
 ###############################################################################
 #  firebase-api-key.tf
 #
-#  Restrict the public Firebase Web API key                           (browser)
+#  Manage Firebase Web API key service configuration
 ###############################################################################
 
 # Allow Terraform to create / update / delete API keys
@@ -12,42 +12,8 @@ resource "google_project_iam_member" "terraform_apikeys_admin" {
 
   depends_on = [google_project_service.apikeys_api]
 }
-
-# Public Firebase Web API key
 resource "google_project_service" "apikeys_api" {
   project = var.project_id
   service = "apikeys.googleapis.com"
 }
 
-resource "google_apikeys_key" "public_web" {
-  name         = "projects/${var.project_id}/locations/global/keys/f4a33f0d-4099-4dec-83eb-3205eadc5ea2"
-  display_name = "Dadeto Public Web key (browser)"
-
-  restrictions {
-    api_targets {
-      service = "identitytoolkit.googleapis.com"
-    }
-    api_targets {
-      service = "securetoken.googleapis.com"
-    }
-
-    browser_key_restrictions {
-      allowed_referrers = [
-        "https://www.dendritestories.co.nz/*",
-        "https://dendritestories.co.nz/*",
-        "http://localhost:5173/*",
-        "http://localhost:3000/*",
-      ]
-    }
-  }
-
-  lifecycle {
-    # 🔑 make Terraform destroy the old key first – and only then create the replacement
-    create_before_destroy = false
-  }
-
-  depends_on = [
-    google_project_iam_member.terraform_apikeys_admin,  # wait for the role
-    google_project_service.apikeys_api                  # and the API itself
-  ]
-}
