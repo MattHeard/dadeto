@@ -589,13 +589,13 @@ data "archive_file" "prod_update_variant_visibility_src" {
 }
 
 resource "google_storage_bucket_object" "prod_update_variant_visibility" {
-  name   = "${var.environment}-prod-update-variant-visibility-${data.archive_file.prod_update_variant_visibility_src.output_sha256}.zip"
+  name   = "${var.environment}-update-variant-visibility-${data.archive_file.prod_update_variant_visibility_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
   source = data.archive_file.prod_update_variant_visibility_src.output_path
 }
 
 resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
-  name        = "${var.environment}-prod-update-variant-visibility"
+  name        = "${var.environment}-update-variant-visibility"
   runtime     = var.cloud_functions_runtime
   region      = var.region
   entry_point = "prodUpdateVariantVisibility"
