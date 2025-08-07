@@ -1,12 +1,14 @@
 import * as functions from 'firebase-functions';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import crypto from 'crypto';
 import express from 'express';
 import cors from 'cors';
 
 initializeApp();
 const db = getFirestore();
+const auth = getAuth();
 const app = express();
 
 const allowed = [
@@ -42,6 +44,18 @@ async function handleSubmit(req, res) {
   content = content.toString().trim().slice(0, 10_000);
   author = author.toString().trim().slice(0, 120);
 
+  let authorId = null;
+  const authHeader = req.get('Authorization') || '';
+  const match = authHeader.match(/^Bearer (.+)$/);
+  if (match) {
+    try {
+      const decoded = await auth.verifyIdToken(match[1]);
+      authorId = decoded.uid;
+    } catch {
+      // ignore invalid token
+    }
+  }
+
   const options = [];
   for (let i = 0; i < 4; i += 1) {
     const raw = req.body[`option${i}`];
@@ -59,6 +73,7 @@ async function handleSubmit(req, res) {
     title,
     content,
     author,
+    authorId,
     options,
     createdAt: FieldValue.serverTimestamp(),
   });

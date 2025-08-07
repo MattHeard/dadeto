@@ -55,7 +55,7 @@ export const processNewStory = functions
     batch.set(variantRef, {
       name: 'a',
       content: sub.content,
-      authorId: null,
+      authorId: sub.authorId || null,
       authorName: sub.author,
       createdAt: FieldValue.serverTimestamp(),
     });
