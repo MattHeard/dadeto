@@ -4,10 +4,10 @@ import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
 import { buildAltsHtml } from './buildAltsHtml.js';
 import { buildHtml } from './buildHtml.js';
+import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';
 
 initializeApp();
 const storage = new Storage();
-const VISIBILITY_THRESHOLD = 0.5;
 
 /**
  * Render a variant when it is created, marked dirty, or its visibility
@@ -74,10 +74,7 @@ async function render(snap, ctx) {
     .save(html, { contentType: 'text/html' });
 
   const variantsSnap = await snap.ref.parent.get();
-  const variants = variantsSnap.docs.map(doc => ({
-    name: doc.data().name || '',
-    content: doc.data().content || '',
-  }));
+  const variants = getVisibleVariants(variantsSnap.docs);
   const altsHtml = buildAltsHtml(page.number, variants);
   const altsPath = `p/${page.number}-alts.html`;
 
