@@ -8,6 +8,34 @@ const SUBMIT_RATING_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-moderation-rating';
 
 /**
+ * Enable or disable moderation action buttons.
+ * @param {boolean} disabled Whether buttons should be disabled.
+ */
+function toggleApproveReject(disabled) {
+  ['approveBtn', 'rejectBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = disabled;
+  });
+}
+
+/**
+ * Register the click handler for the sign-out button.
+ */
+function wireSignOut() {
+  const signoutBtn = document.getElementById('signoutBtn');
+  if (!signoutBtn) return;
+  signoutBtn.onclick = async () => {
+    await signOut();
+    const wrap = document.getElementById('signoutWrap');
+    const signin = document.getElementById('signinButton');
+    if (wrap) wrap.style.display = 'none';
+    if (signin) signin.style.display = '';
+    toggleApproveReject(true);
+    document.body.classList.remove('authed');
+  };
+}
+
+/**
  * Ask the back-end for a new moderation job.
  * Resolves when the function returns 201 Created.
  */
@@ -79,8 +107,8 @@ async function loadVariant(retried = false) {
 }
 
 /**
- *
- * @param isApproved
+ * Submit a moderation rating.
+ * @param {boolean} isApproved Whether the page was approved.
  */
 async function submitRating(isApproved) {
   const approve = document.getElementById('approveBtn');
@@ -109,16 +137,7 @@ initGoogleSignIn({
     const wrap = document.getElementById('signoutWrap');
     signin.style.display = 'none';
     wrap.style.display = '';
-    wrap.querySelector('#signoutBtn').onclick = () => {
-      signOut();
-      wrap.style.display = 'none';
-      signin.style.display = '';
-      const approve = document.getElementById('approveBtn');
-      const reject = document.getElementById('rejectBtn');
-      if (approve) approve.disabled = true;
-      if (reject) reject.disabled = true;
-      document.body.classList.remove('authed');
-    };
+    wireSignOut();
     loadVariant();
   },
 });
@@ -143,5 +162,6 @@ if (getIdToken()) {
   document.body.classList.add('authed');
   document.getElementById('signinButton').style.display = 'none';
   document.getElementById('signoutWrap').style.display = '';
+  wireSignOut();
   loadVariant();
 }
