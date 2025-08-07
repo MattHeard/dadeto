@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>New Page</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
+    />
   </head>
   <body>
     <h1><a href="/">Dendrite</a></h1>
@@ -14,7 +17,9 @@
       enctype="multipart/form-data"
     >
       <div>
-        <label>Incoming option <input type="text" name="incoming_option" /></label>
+        <label
+          >Incoming option <input type="text" name="incoming_option"
+        /></label>
       </div>
       <div>
         <label>Content <textarea name="content"></textarea></label>
@@ -39,14 +44,16 @@
       </div>
     </form>
     <script>
-      const params = new URLSearchParams(window.location.search);
-      const incoming = params.get('option');
-      if (incoming) {
-        const input = document.querySelector('input[name="incoming_option"]');
-        if (input) {
-          input.value = incoming;
+      document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const incoming = params.get('option');
+        if (incoming) {
+          const input = document.querySelector('input[name="incoming_option"]');
+          if (input) {
+            input.value = incoming;
+          }
         }
-      }
+      });
     </script>
   </body>
 </html>
