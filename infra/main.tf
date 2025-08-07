@@ -696,7 +696,48 @@ resource "google_cloudfunctions_function" "render_variant" {
 
 
   event_trigger {
-    event_type = "providers/cloud.firestore/eventTypes/document.create"
+    event_type = "providers/cloud.firestore/eventTypes/document.write"
+    resource   = "projects/${var.project_id}/databases/(default)/documents/stories/{storyId}/pages/{pageId}/variants/{variantId}"
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access
+  ]
+}
+
+data "archive_file" "hide_variant_html_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/hide-variant-html"
+  output_path = "${path.module}/build/hide-variant-html.zip"
+}
+
+resource "google_storage_bucket_object" "hide_variant_html" {
+  name   = "${var.environment}-hide-variant-html-${data.archive_file.hide_variant_html_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.hide_variant_html_src.output_path
+}
+
+resource "google_cloudfunctions_function" "hide_variant_html" {
+  name        = "${var.environment}-hide-variant-html"
+  runtime     = var.cloud_functions_runtime
+  region      = var.region
+  entry_point = "hideVariantHtml"
+
+  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object = google_storage_bucket_object.hide_variant_html.name
+
+  service_account_email = google_service_account.cloud_function_runtime.email
+
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
+  event_trigger {
+    event_type = "providers/cloud.firestore/eventTypes/document.write"
     resource   = "projects/${var.project_id}/databases/(default)/documents/stories/{storyId}/pages/{pageId}/variants/{variantId}"
   }
 
