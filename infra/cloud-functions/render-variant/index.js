@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase-admin/app';
+import { FieldValue } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
 import { buildAltsHtml } from './buildAltsHtml.js';
@@ -9,18 +10,30 @@ const storage = new Storage();
 const VISIBILITY_THRESHOLD = 0.5;
 
 /**
- * Render a variant when it is created or its visibility crosses upwards past the threshold.
+ * Render a variant when it is created, marked dirty, or its visibility
+ * crosses upwards past the threshold.
  */
 export const renderVariant = functions
   .region('europe-west1')
   .firestore.document('stories/{storyId}/pages/{pageId}/variants/{variantId}')
   .onWrite(async (change, ctx) => {
+    if (!change.after.exists) {
+      return null;
+    }
+
+    const data = change.after.data() || {};
+    if (Object.prototype.hasOwnProperty.call(data, 'dirty')) {
+      await render(change.after, ctx);
+      await change.after.ref.update({ dirty: FieldValue.delete() });
+      return null;
+    }
+
     if (!change.before.exists) {
       return render(change.after, ctx);
     }
 
     const beforeVis = change.before.data().visibility ?? 0;
-    const afterVis = change.after.data().visibility ?? 0;
+    const afterVis = data.visibility ?? 0;
     if (beforeVis < VISIBILITY_THRESHOLD && afterVis >= VISIBILITY_THRESHOLD) {
       return render(change.after, ctx);
     }
