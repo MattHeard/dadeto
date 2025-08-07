@@ -62,7 +62,10 @@ async function render(snap, ctx) {
   const options = optionsSnap.docs
     .map(doc => doc.data())
     .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-    .map(data => data.content || '');
+    .map(data => ({
+      content: data.content || '',
+      position: data.position ?? 0,
+    }));
   let storyTitle = '';
   if (!page.incomingOptionId) {
     const storySnap = await pageSnap.ref.parent.parent.get();
@@ -71,7 +74,13 @@ async function render(snap, ctx) {
     }
   }
 
-  const html = buildHtml(page.number, variant.content, options, storyTitle);
+  const html = buildHtml(
+    page.number,
+    variant.name,
+    variant.content,
+    options,
+    storyTitle
+  );
   const filePath = `p/${page.number}${variant.name}.html`;
 
   await storage
