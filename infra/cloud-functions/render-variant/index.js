@@ -59,7 +59,10 @@ async function render(snap, ctx) {
   console.log('[renderVariant] html rendered for %s', docName);
 
   const optionsSnap = await snap.ref.collection('options').get();
-  const options = optionsSnap.docs.map(doc => doc.data().content || '');
+  const options = optionsSnap.docs
+    .map(doc => doc.data())
+    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+    .map(data => data.content || '');
   let storyTitle = '';
   if (!page.incomingOptionId) {
     const storySnap = await pageSnap.ref.parent.parent.get();
