@@ -53,7 +53,7 @@ async function handleSubmit(req, res) {
 
   const parsed = parseIncomingOption(incomingOption);
 
-  let incomingOptionId = null;
+  let incomingOptionFullName = null;
   if (!parsed) {
     res.status(400).json({ error: 'invalid incoming option' });
     return;
@@ -63,7 +63,7 @@ async function handleSubmit(req, res) {
     res.status(400).json({ error: 'incoming option not found' });
     return;
   }
-  incomingOptionId = found;
+  incomingOptionFullName = found;
 
   const options = [];
   for (let i = 0; i < 4; i += 1) {
@@ -79,7 +79,7 @@ async function handleSubmit(req, res) {
 
   const id = crypto.randomUUID();
   await db.collection('pageFormSubmissions').doc(id).set({
-    incomingOptionId,
+    incomingOptionFullName,
     content,
     author,
     options,
@@ -88,7 +88,7 @@ async function handleSubmit(req, res) {
 
   res.status(201).json({
     id,
-    incomingOptionId,
+    incomingOptionFullName,
     content,
     author,
     options,

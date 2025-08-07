@@ -47,7 +47,7 @@ export function parseIncomingOption(str) {
  * @param {object} db Firestore database instance.
  * @param {{pageNumber: number, variantName: string, optionNumber: number}} info
  *   Location details.
- * @returns {Promise<string|null>} Option identifier or null when not found.
+ * @returns {Promise<string|null>} Option document path or null when not found.
  */
 export async function findExistingOption(db, info) {
   if (!db || !info) {
@@ -79,5 +79,5 @@ export async function findExistingOption(db, info) {
   if (optionsSnap.size <= info.optionNumber) {
     return null;
   }
-  return optionsSnap.docs[info.optionNumber].id;
+  return optionsSnap.docs[info.optionNumber].ref.path;
 }

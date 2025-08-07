@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase-admin/app';
-import { getFirestore, FieldValue, FieldPath } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import crypto from 'crypto';
 
@@ -15,23 +15,18 @@ export const processNewPage = functions
       return null;
     }
 
-    const incomingOptionId = sub.incomingOptionId;
-    if (!incomingOptionId) {
+    const incomingOptionFullName = sub.incomingOptionFullName;
+    if (!incomingOptionFullName) {
       await snap.ref.update({ processed: true });
       return null;
     }
 
-    const optionSnap = await db
-      .collectionGroup('options')
-      .where(FieldPath.documentId(), '==', incomingOptionId)
-      .limit(1)
-      .get();
-    if (optionSnap.empty) {
+    const optionRef = db.doc(incomingOptionFullName);
+    const optionSnap = await optionRef.get();
+    if (!optionSnap.exists) {
       await snap.ref.update({ processed: true });
       return null;
     }
-
-    const optionRef = optionSnap.docs[0].ref;
     const variantRef = optionRef.parent.parent;
     const pageRef = variantRef.parent.parent;
     const storyRef = pageRef.parent.parent;
@@ -60,7 +55,7 @@ export const processNewPage = functions
     const batch = db.batch();
     batch.set(newPageRef, {
       number: candidate,
-      incomingOptionId,
+      incomingOptionFullName,
       createdAt: FieldValue.serverTimestamp(),
     });
 
@@ -68,7 +63,7 @@ export const processNewPage = functions
       name: 'a',
       content: sub.content,
       authorId: null,
-      incomingOptionId,
+      incomingOptionFullName,
       createdAt: FieldValue.serverTimestamp(),
     });
 
