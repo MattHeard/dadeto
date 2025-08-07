@@ -30,6 +30,11 @@ function wireSignOut() {
     const signin = document.getElementById('signinButton');
     if (wrap) wrap.style.display = 'none';
     if (signin) signin.style.display = '';
+    const content = document.getElementById('pageContent');
+    if (content) {
+      content.innerHTML = '';
+      content.style.display = 'none';
+    }
     toggleApproveReject(true);
     document.body.classList.remove('authed');
   };
@@ -62,6 +67,7 @@ async function loadVariant(retried = false) {
   try {
     const data = await authedFetch(GET_VARIANT_URL);
     const container = document.getElementById('pageContent');
+    container.style.display = '';
     container.innerHTML = '';
     const title = document.createElement('h3');
     title.textContent = data.title || '';
