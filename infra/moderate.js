@@ -19,6 +19,28 @@ function toggleApproveReject(disabled) {
 }
 
 /**
+ * Display an animated status message.
+ * @param {string} id Element ID to display.
+ * @param {string} text Base text for the message.
+ * @returns {() => void} Function to stop the animation.
+ */
+function startAnimation(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return () => {};
+  let dots = 1;
+  el.textContent = `${text}.`;
+  el.style.display = 'block';
+  const intervalId = setInterval(() => {
+    dots = (dots % 3) + 1;
+    el.textContent = `${text}${'.'.repeat(dots)}`;
+  }, 500);
+  return () => {
+    clearInterval(intervalId);
+    el.style.display = 'none';
+  };
+}
+
+/**
  * Register the click handler for the sign-out button.
  */
 function wireSignOut() {
@@ -59,6 +81,7 @@ async function assignJob() {
  * @returns {Promise<void>} Promise resolving when rendering is complete.
  */
 async function loadVariant(retried = false) {
+  const stopFetching = startAnimation('fetching', 'Fetching');
   try {
     const data = await authedFetch(GET_VARIANT_URL);
     const container = document.getElementById('pageContent');
@@ -103,6 +126,8 @@ async function loadVariant(retried = false) {
     } else {
       console.error(err);
     }
+  } finally {
+    stopFetching();
   }
 }
 
@@ -115,14 +140,17 @@ async function submitRating(isApproved) {
   const reject = document.getElementById('rejectBtn');
   if (approve) approve.disabled = true;
   if (reject) reject.disabled = true;
+  const stopSaving = startAnimation('saving', 'Saving');
   try {
     await authedFetch(SUBMIT_RATING_URL, {
       method: 'POST',
       body: JSON.stringify({ isApproved }),
     });
     await assignJob();
+    stopSaving();
     await loadVariant();
   } catch (err) {
+    stopSaving();
     console.error(err);
     alert("Sorry, that didn't work. See console for details.");
     if (approve) approve.disabled = false;
