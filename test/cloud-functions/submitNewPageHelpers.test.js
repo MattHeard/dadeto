@@ -20,13 +20,16 @@ describe('parseIncomingOption', () => {
 });
 
 describe('findExistingOption', () => {
-  test('returns option id when found', async () => {
-    const optionId = 'opt1';
+  test('returns option path when found', async () => {
+    const optionPath = 'stories/s1/pages/p1/variants/v1/options/opt1';
     const variantRef = {
       collection: jest.fn(() => ({
         orderBy: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
-        get: jest.fn().mockResolvedValue({ size: 1, docs: [{ id: optionId }] }),
+        get: jest.fn().mockResolvedValue({
+          size: 1,
+          docs: [{ ref: { path: optionPath } }],
+        }),
       })),
     };
     const pageRef = {
@@ -52,7 +55,7 @@ describe('findExistingOption', () => {
       variantName: 'a',
       optionNumber: 0,
     });
-    expect(result).toBe(optionId);
+    expect(result).toBe(optionPath);
   });
 
   test('returns null when option missing', async () => {

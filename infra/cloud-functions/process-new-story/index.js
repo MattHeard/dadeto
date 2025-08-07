@@ -48,7 +48,7 @@ export const processNewStory = functions
 
     batch.set(pageRef, {
       number: candidate,
-      incomingOptionId: null,
+      incomingOptionFullName: null,
       createdAt: FieldValue.serverTimestamp(),
     });
 

@@ -37,16 +37,16 @@ service cloud.firestore {
         /*  PAGES  */
         allow read, create: if true;
 
-        /*  Exactly-once update: set incomingOptionId
-            - incomingOptionId must currently be null
+        /*  Exactly-once update: set incomingOptionFullName
+            - incomingOptionFullName must currently be null
             - it’s the ONLY field that may change
             - new value must be a string
         */
         allow update: if
-          resource.data.incomingOptionId == null &&
+          resource.data.incomingOptionFullName == null &&
           request.resource.data.diff(resource.data).changedKeys()
-                .hasOnly(['incomingOptionId']) &&
-          request.resource.data.incomingOptionId is string;
+                .hasOnly(['incomingOptionFullName']) &&
+          request.resource.data.incomingOptionFullName is string;
 
         allow delete: if false;
 
