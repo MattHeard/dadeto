@@ -42,5 +42,6 @@ async function removeFile(snap) {
   const path = `p/${page.number}${variant.name}.html`;
 
   await storage.bucket(BUCKET).file(path).delete({ ignoreNotFound: true });
+  functions.logger.info(`Deleted HTML for variant ${snap.ref.path}`);
   return null;
 }
