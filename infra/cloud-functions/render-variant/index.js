@@ -55,6 +55,9 @@ async function render(snap, ctx) {
   }
   const page = pageSnap.data();
 
+  const docName = `/${snap.ref.path}`;
+  console.log('[renderVariant] html rendered for %s', docName);
+
   const optionsSnap = await snap.ref.collection('options').get();
   const options = optionsSnap.docs.map(doc => doc.data().content || '');
   let storyTitle = '';
