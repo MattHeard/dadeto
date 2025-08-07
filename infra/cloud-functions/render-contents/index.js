@@ -42,7 +42,7 @@ async function fetchTopStoryIds() {
   const snapshot = await db
     .collection('storyStats')
     .orderBy('variantCount', 'desc')
-    .limit(10)
+    .limit(1000)
     .get();
   return snapshot.docs.map(doc => doc.id);
 }
