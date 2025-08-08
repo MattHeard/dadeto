@@ -98,7 +98,10 @@ async function render(snap, ctx) {
     .file(altsPath)
     .save(altsHtml, { contentType: 'text/html' });
 
-  const pendingPath = `pending/${ctx.params.storyId}.json`;
+  const pendingName = variant.incomingOption
+    ? ctx.params.variantId
+    : ctx.params.storyId;
+  const pendingPath = `pending/${pendingName}.json`;
   await storage
     .bucket('www.dendritestories.co.nz')
     .file(pendingPath)
