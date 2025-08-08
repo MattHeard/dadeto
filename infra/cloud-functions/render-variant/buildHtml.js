@@ -5,7 +5,11 @@ import { escapeHtml } from './buildAltsHtml.js';
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
  * @param {string} content Variant content.
- * @param {Array<{content: string, position: number}>} options Option info.
+ * @param {Array<{
+ *   content: string,
+ *   position: number,
+ *   targetPageNumber?: number,
+ * }>} options Option info.
  * @param {string} [storyTitle] Story title.
  * @returns {string} HTML page.
  */
@@ -19,7 +23,11 @@ export function buildHtml(
   const items = options
     .map(opt => {
       const slug = `${pageNumber}-${variantName}-${opt.position}`;
-      return `<li><a href="../new-page.html?option=${slug}">${escapeHtml(opt.content)}</a></li>`;
+      const href =
+        opt.targetPageNumber !== undefined
+          ? `/p/${opt.targetPageNumber}a.html`
+          : `../new-page.html?option=${slug}`;
+      return `<li><a href="${href}">${escapeHtml(opt.content)}</a></li>`;
     })
     .join('');
   const title = storyTitle ? `<h1>${escapeHtml(storyTitle)}</h1>` : '';
