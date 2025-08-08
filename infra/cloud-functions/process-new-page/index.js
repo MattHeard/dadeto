@@ -48,7 +48,7 @@ export const processNewPage = functions
     }
 
     const newPageId = crypto.randomUUID();
-    const variantId = crypto.randomUUID();
+    const variantId = snap.id;
     const newPageRef = storyRef.collection('pages').doc(newPageId);
     const newVariantRef = newPageRef.collection('variants').doc(variantId);
 
