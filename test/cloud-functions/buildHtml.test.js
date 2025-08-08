@@ -30,4 +30,11 @@ describe('buildHtml', () => {
     ]);
     expect(html).toContain('<li><a href="/p/42a.html">Go right</a></li>');
   });
+
+  test('includes author below options when provided', () => {
+    const html = buildHtml(3, 'a', 'content', [], '', 'Jane Doe');
+    const optionsIndex = html.indexOf('</ol>');
+    const authorIndex = html.indexOf('<p>By Jane Doe</p>');
+    expect(authorIndex).toBeGreaterThan(optionsIndex);
+  });
 });
