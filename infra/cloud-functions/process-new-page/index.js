@@ -55,7 +55,7 @@ export const processNewPage = functions
     const batch = db.batch();
     batch.set(newPageRef, {
       number: candidate,
-      incomingOptionFullName,
+      incomingOption: incomingOptionFullName,
       createdAt: FieldValue.serverTimestamp(),
     });
 
@@ -63,7 +63,7 @@ export const processNewPage = functions
       name: 'a',
       content: sub.content,
       authorId: null,
-      incomingOptionFullName,
+      incomingOption: incomingOptionFullName,
       createdAt: FieldValue.serverTimestamp(),
     });
 

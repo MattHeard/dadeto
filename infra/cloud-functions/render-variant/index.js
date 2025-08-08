@@ -67,7 +67,7 @@ async function render(snap, ctx) {
       position: data.position ?? 0,
     }));
   let storyTitle = '';
-  if (!page.incomingOptionFullName) {
+  if (!page.incomingOption) {
     const storySnap = await pageSnap.ref.parent.parent.get();
     if (storySnap.exists) {
       storyTitle = storySnap.data().title || '';
