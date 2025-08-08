@@ -66,7 +66,6 @@ export const processNewStory = functions
         .doc(crypto.randomUUID());
       batch.set(optionRef, {
         content: text,
-        targetPageId: null,
         createdAt: FieldValue.serverTimestamp(),
         position,
       });

@@ -73,13 +73,12 @@ export const processNewPage = functions
         .doc(crypto.randomUUID());
       batch.set(optRef, {
         content: text,
-        targetPageId: null,
         createdAt: FieldValue.serverTimestamp(),
         position,
       });
     });
 
-    batch.update(optionRef, { targetPageId: newPageId });
+    batch.update(optionRef, { targetPage: newPageRef });
     batch.update(snap.ref, { processed: true });
 
     await batch.commit();
