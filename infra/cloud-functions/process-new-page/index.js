@@ -79,6 +79,7 @@ export const processNewPage = functions
     });
 
     batch.update(optionRef, { targetPage: newPageRef });
+    batch.update(variantRef, { dirty: null });
     batch.update(snap.ref, { processed: true });
 
     await batch.commit();
