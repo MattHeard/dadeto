@@ -60,15 +60,15 @@ service cloud.firestore {
             allow read, create: if true;
 
             /*  Exactly-once update: stitch option to a target page
-                - targetPageId must currently be null
+                - targetPage must currently be null
                 - it’s the ONLY field that may change
-                - new value must be a string
+                - new value must be a reference
             */
             allow update: if
-              resource.data.targetPageId == null &&
+              resource.data.targetPage == null &&
               request.resource.data.diff(resource.data).changedKeys()
-                    .hasOnly(['targetPageId']) &&
-              request.resource.data.targetPageId is string;
+                    .hasOnly(['targetPage']) &&
+              request.resource.data.targetPage is path;
 
             allow delete: if false;
           }
