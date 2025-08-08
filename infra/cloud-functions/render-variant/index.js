@@ -59,13 +59,27 @@ async function render(snap, ctx) {
   console.log('[renderVariant] html rendered for %s', docName);
 
   const optionsSnap = await snap.ref.collection('options').get();
-  const options = optionsSnap.docs
+  const optionsData = optionsSnap.docs
     .map(doc => doc.data())
-    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-    .map(data => ({
-      content: data.content || '',
-      position: data.position ?? 0,
-    }));
+    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  const options = await Promise.all(
+    optionsData.map(async data => {
+      let targetPageNumber;
+      if (data.targetPageNumber !== undefined) {
+        targetPageNumber = data.targetPageNumber;
+      } else if (data.targetPage) {
+        const targetSnap = await data.targetPage.get();
+        if (targetSnap.exists) {
+          targetPageNumber = targetSnap.data().number;
+        }
+      }
+      return {
+        content: data.content || '',
+        position: data.position ?? 0,
+        ...(targetPageNumber !== undefined && { targetPageNumber }),
+      };
+    })
+  );
   let storyTitle = '';
   if (!page.incomingOption) {
     const storySnap = await pageSnap.ref.parent.parent.get();

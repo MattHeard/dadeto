@@ -15,12 +15,19 @@ describe('buildHtml', () => {
     expect(titleIndex).toBeLessThan(contentIndex);
   });
 
-  test('links options using slug', () => {
+  test('links option without target page using slug', () => {
     const html = buildHtml(12, 'a', 'content', [
       { content: 'Go left', position: 0 },
     ]);
     expect(html).toContain(
       '<li><a href="../new-page.html?option=12-a-0">Go left</a></li>'
     );
+  });
+
+  test('links option with target page to existing page', () => {
+    const html = buildHtml(5, 'a', 'content', [
+      { content: 'Go right', position: 1, targetPageNumber: 42 },
+    ]);
+    expect(html).toContain('<li><a href="/p/42a.html">Go right</a></li>');
   });
 });
