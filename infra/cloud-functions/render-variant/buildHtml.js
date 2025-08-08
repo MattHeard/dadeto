@@ -11,6 +11,7 @@ import { escapeHtml } from './buildAltsHtml.js';
  *   targetPageNumber?: number,
  * }>} options Option info.
  * @param {string} [storyTitle] Story title.
+ * @param {string} [author] Author name.
  * @returns {string} HTML page.
  */
 export function buildHtml(
@@ -18,7 +19,8 @@ export function buildHtml(
   variantName,
   content,
   options,
-  storyTitle = ''
+  storyTitle = '',
+  author = ''
 ) {
   const items = options
     .map(opt => {
@@ -31,5 +33,6 @@ export function buildHtml(
     })
     .join('');
   const title = storyTitle ? `<h1>${escapeHtml(storyTitle)}</h1>` : '';
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css" /></head><body><h1><img src="../img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em;" /><a href="/">Dendrite</a></h1>${title}<p>${escapeHtml(content)}</p><ol>${items}</ol><p><a href="./${pageNumber}-alts.html">More options</a></p></body></html>`;
+  const authorHtml = author ? `<p>By ${escapeHtml(author)}</p>` : '';
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css" /></head><body><h1><img src="../img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em;" /><a href="/">Dendrite</a></h1>${title}<p>${escapeHtml(content)}</p><ol>${items}</ol>${authorHtml}<p><a href="./${pageNumber}-alts.html">More options</a></p></body></html>`;
 }

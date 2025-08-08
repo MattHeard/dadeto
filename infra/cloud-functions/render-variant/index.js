@@ -88,12 +88,15 @@ async function render(snap, ctx) {
     }
   }
 
+  const authorName = variant.authorName || variant.author || '';
+
   const html = buildHtml(
     page.number,
     variant.name,
     variant.content,
     options,
-    storyTitle
+    storyTitle,
+    authorName
   );
   const filePath = `p/${page.number}${variant.name}.html`;
 
