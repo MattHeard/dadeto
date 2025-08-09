@@ -37,4 +37,9 @@ describe('buildHtml', () => {
     const authorIndex = html.indexOf('<p>By Jane Doe</p>');
     expect(authorIndex).toBeGreaterThan(optionsIndex);
   });
+
+  test('links to other variants page', () => {
+    const html = buildHtml(1, 'a', 'content', []);
+    expect(html).toContain('<a href="./1-alts.html">Other variants</a>');
+  });
 });
