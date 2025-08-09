@@ -65,6 +65,7 @@ export const processNewPage = functions
       authorId: null,
       incomingOption: incomingOptionFullName,
       moderatorReputationSum: 0,
+      rand: Math.random(),
       createdAt: FieldValue.serverTimestamp(),
     });
 
