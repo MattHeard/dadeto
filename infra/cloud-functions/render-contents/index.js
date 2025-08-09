@@ -85,10 +85,19 @@ export const renderContents = functions
         items.push(info);
       }
     }
-    const html = buildHtml(items);
-    await storage
-      .bucket('www.dendritestories.co.nz')
-      .file('index.html')
-      .save(html, { contentType: 'text/html' });
+    const pageSize = 30;
+    const bucket = storage.bucket('www.dendritestories.co.nz');
+    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    for (let page = 1; page <= totalPages; page++) {
+      const start = (page - 1) * pageSize;
+      const pageItems = items.slice(start, start + pageSize);
+      const html = buildHtml(pageItems);
+      const filePath = page === 1 ? 'index.html' : `contents/${page}.html`;
+      const options = { contentType: 'text/html' };
+      if (page === totalPages) {
+        options.metadata = { cacheControl: 'no-cache' };
+      }
+      await bucket.file(filePath).save(html, options);
+    }
     return null;
   });
