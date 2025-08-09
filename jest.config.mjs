@@ -6,6 +6,11 @@ const config = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^https://www\\.gstatic\\.com/firebasejs/12\\.0\\.0/(.*)$':
       '<rootDir>/test/mocks/$1',
+    '^firebase-admin/app$': '<rootDir>/test/mocks/firebase-admin-app.js',
+    '^firebase-admin/firestore$':
+      '<rootDir>/test/mocks/firebase-admin-firestore.js',
+    '^firebase-functions$': '<rootDir>/test/mocks/firebase-functions.js',
+    '^@google-cloud/storage$': '<rootDir>/test/mocks/google-cloud-storage.js',
   },
   // Use node environment by default, but allow override for browser testing
   testEnvironment: 'node',
