@@ -57,6 +57,7 @@ export const processNewStory = functions
       content: sub.content,
       authorId: sub.authorId || null,
       authorName: sub.author,
+      moderatorReputationSum: 0,
       createdAt: FieldValue.serverTimestamp(),
     });
 

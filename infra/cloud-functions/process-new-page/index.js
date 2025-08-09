@@ -64,6 +64,7 @@ export const processNewPage = functions
       content: sub.content,
       authorId: null,
       incomingOption: incomingOptionFullName,
+      moderatorReputationSum: 0,
       createdAt: FieldValue.serverTimestamp(),
     });
 
