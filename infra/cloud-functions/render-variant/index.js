@@ -99,11 +99,15 @@ async function render(snap, ctx) {
     authorName
   );
   const filePath = `p/${page.number}${variant.name}.html`;
+  const openVariant = options.some(opt => opt.targetPageNumber === undefined);
 
   await storage
     .bucket('www.dendritestories.co.nz')
     .file(filePath)
-    .save(html, { contentType: 'text/html' });
+    .save(html, {
+      contentType: 'text/html',
+      ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
+    });
 
   const variantsSnap = await snap.ref.parent.get();
   const variants = getVisibleVariants(variantsSnap.docs);
@@ -130,4 +134,4 @@ async function render(snap, ctx) {
   return null;
 }
 
-export { buildAltsHtml, buildHtml };
+export { buildAltsHtml, buildHtml, render };
