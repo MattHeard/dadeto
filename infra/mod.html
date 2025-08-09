@@ -8,41 +8,44 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
     />
+    <link rel="stylesheet" href="/dendrite.css" />
   </head>
   <body>
-    <h1>
-      <img
-        src="/img/logo.png"
-        alt="Dendrite logo"
-        style="height: 1em; vertical-align: middle; margin-right: 0.5em"
-      />
-      <a href="/">Dendrite</a>
-    </h1>
-    <h2>Moderate a story page</h2>
-    <p>
-      Please contribute to keeping Dendrite an excellent place to read and
-      write.
-    </p>
-    <p>
-      When you're signed in, a page will be shown to approve or reject. After
-      submitting a rating, the next page will load automatically.
-    </p>
-    <div id="pageContent"></div>
-    <div id="signinButton"></div>
-    <div id="signoutWrap" style="display: none">
-      <button id="signoutBtn" type="button">Sign out</button>
-    </div>
-    <div id="actions">
-      <button id="approveBtn" type="button" disabled>Approve</button>
-      <button id="rejectBtn" type="button" disabled>Reject</button>
-    </div>
-    <p id="fetching" style="display: none">Fetching...</p>
-    <p id="saving" style="display: none">Saving...</p>
+    <div class="page">
+      <h1>
+        <img
+          src="/img/logo.png"
+          alt="Dendrite logo"
+          style="height: 1em; vertical-align: middle; margin-right: 0.5em"
+        />
+        <a href="/">Dendrite</a>
+      </h1>
+      <h2>Moderate a story page</h2>
+      <p>
+        Please contribute to keeping Dendrite an excellent place to read and
+        write.
+      </p>
+      <p>
+        When you're signed in, a page will be shown to approve or reject. After
+        submitting a rating, the next page will load automatically.
+      </p>
+      <div id="pageContent"></div>
+      <div id="signinButton"></div>
+      <div id="signoutWrap" style="display: none">
+        <button id="signoutBtn" type="button">Sign out</button>
+      </div>
+      <div id="actions">
+        <button id="approveBtn" type="button" disabled>Approve</button>
+        <button id="rejectBtn" type="button" disabled>Reject</button>
+      </div>
+      <p id="fetching" style="display: none">Fetching...</p>
+      <p id="saving" style="display: none">Saving...</p>
 
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" defer></script>
+      <!-- Google Identity Services -->
+      <script src="https://accounts.google.com/gsi/client" defer></script>
 
-    <!-- Moderate tools -->
-    <script type="module" src="./moderate.js"></script>
+      <!-- Moderate tools -->
+      <script type="module" src="./moderate.js"></script>
+    </div>
   </body>
 </html>
