@@ -8,133 +8,136 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
     />
+    <link rel="stylesheet" href="/dendrite.css" />
   </head>
   <body>
-    <h1>
-      <img
-        src="/img/logo.png"
-        alt="Dendrite logo"
-        style="height: 1em; vertical-align: middle; margin-right: 0.5em"
-      />
-      <a href="/">Dendrite</a>
-    </h1>
-    <h2>New story</h2>
-    <div id="signinButton"></div>
-    <div id="signoutWrap" style="display: none">
-      <button id="signoutBtn" type="button">Sign out</button>
-    </div>
-    <form
-      action="https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-new-story"
-      method="post"
-      enctype="application/x-www-form-urlencoded"
-    >
-      <div>
-        <label>Title <input type="text" name="title" /></label>
+    <div class="page">
+      <h1>
+        <img
+          src="/img/logo.png"
+          alt="Dendrite logo"
+          style="height: 1em; vertical-align: middle; margin-right: 0.5em"
+        />
+        <a href="/">Dendrite</a>
+      </h1>
+      <h2>New story</h2>
+      <div id="signinButton"></div>
+      <div id="signoutWrap" style="display: none">
+        <button id="signoutBtn" type="button">Sign out</button>
       </div>
-      <div>
-        <label>Content <textarea name="content"></textarea></label>
-      </div>
-      <div>
-        <label>Author <input type="text" name="author" /></label>
-      </div>
-      <div>
-        <label>Option 1 <input type="text" name="option0" /></label>
-      </div>
-      <div>
-        <label>Option 2 <input type="text" name="option1" /></label>
-      </div>
-      <div>
-        <label>Option 3 <input type="text" name="option2" /></label>
-      </div>
-      <div>
-        <label>Option 4 <input type="text" name="option3" /></label>
-      </div>
-      <div>
-        <button type="submit">Submit</button>
-      </div>
-      <p id="saving" style="display: none">Saving...</p>
-    </form>
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module">
-      import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
+      <form
+        action="https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-new-story"
+        method="post"
+        enctype="application/x-www-form-urlencoded"
+      >
+        <div>
+          <label>Title <input type="text" name="title" /></label>
+        </div>
+        <div>
+          <label>Content <textarea name="content"></textarea></label>
+        </div>
+        <div>
+          <label>Author <input type="text" name="author" /></label>
+        </div>
+        <div>
+          <label>Option 1 <input type="text" name="option0" /></label>
+        </div>
+        <div>
+          <label>Option 2 <input type="text" name="option1" /></label>
+        </div>
+        <div>
+          <label>Option 3 <input type="text" name="option2" /></label>
+        </div>
+        <div>
+          <label>Option 4 <input type="text" name="option3" /></label>
+        </div>
+        <div>
+          <button type="submit">Submit</button>
+        </div>
+        <p id="saving" style="display: none">Saving...</p>
+      </form>
+      <!-- Google Identity Services -->
+      <script src="https://accounts.google.com/gsi/client" defer></script>
+      <script type="module">
+        import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 
-      document.addEventListener('DOMContentLoaded', () => {
-        const form = document.querySelector('form');
-        const button = form.querySelector("button[type='submit']");
-        const saving = document.getElementById('saving');
-        const signin = document.getElementById('signinButton');
-        const signoutWrap = document.getElementById('signoutWrap');
-        const signoutBtn = document.getElementById('signoutBtn');
+        document.addEventListener('DOMContentLoaded', () => {
+          const form = document.querySelector('form');
+          const button = form.querySelector("button[type='submit']");
+          const saving = document.getElementById('saving');
+          const signin = document.getElementById('signinButton');
+          const signoutWrap = document.getElementById('signoutWrap');
+          const signoutBtn = document.getElementById('signoutBtn');
 
-        initGoogleSignIn({
-          onSignIn: () => {
+          initGoogleSignIn({
+            onSignIn: () => {
+              document.body.classList.add('authed');
+              signin.style.display = 'none';
+              signoutWrap.style.display = '';
+            },
+          });
+
+          signoutBtn.addEventListener('click', async () => {
+            await signOut();
+            document.body.classList.remove('authed');
+            signoutWrap.style.display = 'none';
+            signin.style.display = '';
+          });
+
+          if (getIdToken()) {
             document.body.classList.add('authed');
             signin.style.display = 'none';
             signoutWrap.style.display = '';
-          },
-        });
-
-        signoutBtn.addEventListener('click', async () => {
-          await signOut();
-          document.body.classList.remove('authed');
-          signoutWrap.style.display = 'none';
-          signin.style.display = '';
-        });
-
-        if (getIdToken()) {
-          document.body.classList.add('authed');
-          signin.style.display = 'none';
-          signoutWrap.style.display = '';
-        }
-
-        form.addEventListener('submit', async event => {
-          event.preventDefault();
-          button.disabled = true;
-          saving.style.display = 'block';
-          let dots = 1;
-          saving.textContent = 'Saving.';
-          const intervalId = setInterval(() => {
-            dots = (dots % 3) + 1;
-            saving.textContent = `Saving${'.'.repeat(dots)}`;
-          }, 500);
-
-          try {
-            const formData = new URLSearchParams(new FormData(form));
-            const headers = {};
-            const token = getIdToken();
-            if (token) {
-              headers.Authorization = `Bearer ${token}`;
-            }
-            const response = await fetch(form.action, {
-              method: form.method,
-              body: formData,
-              headers,
-            });
-            if (!response.ok) {
-              throw new Error('Submission failed');
-            }
-            const { id } = await response.json();
-            let delay = 500;
-            while (true) {
-              await new Promise(resolve => setTimeout(resolve, delay));
-              const ts = Date.now();
-              const pendingRes = await fetch(`/pending/${id}.json?ts=${ts}`);
-              if (pendingRes.ok) {
-                const data = await pendingRes.json();
-                clearInterval(intervalId);
-                window.location.href = data.path;
-                return;
-              }
-              delay = Math.min(delay * 2, 8000);
-            }
-          } catch (err) {
-            clearInterval(intervalId);
-            saving.textContent = 'Failed to save.';
-            button.disabled = false;
           }
+
+          form.addEventListener('submit', async event => {
+            event.preventDefault();
+            button.disabled = true;
+            saving.style.display = 'block';
+            let dots = 1;
+            saving.textContent = 'Saving.';
+            const intervalId = setInterval(() => {
+              dots = (dots % 3) + 1;
+              saving.textContent = `Saving${'.'.repeat(dots)}`;
+            }, 500);
+
+            try {
+              const formData = new URLSearchParams(new FormData(form));
+              const headers = {};
+              const token = getIdToken();
+              if (token) {
+                headers.Authorization = `Bearer ${token}`;
+              }
+              const response = await fetch(form.action, {
+                method: form.method,
+                body: formData,
+                headers,
+              });
+              if (!response.ok) {
+                throw new Error('Submission failed');
+              }
+              const { id } = await response.json();
+              let delay = 500;
+              while (true) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+                const ts = Date.now();
+                const pendingRes = await fetch(`/pending/${id}.json?ts=${ts}`);
+                if (pendingRes.ok) {
+                  const data = await pendingRes.json();
+                  clearInterval(intervalId);
+                  window.location.href = data.path;
+                  return;
+                }
+                delay = Math.min(delay * 2, 8000);
+              }
+            } catch (err) {
+              clearInterval(intervalId);
+              saving.textContent = 'Failed to save.';
+              button.disabled = false;
+            }
+          });
         });
-      });
-    </script>
+      </script>
+    </div>
   </body>
 </html>
