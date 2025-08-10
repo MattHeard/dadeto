@@ -7,7 +7,7 @@ export const VISIBILITY_THRESHOLD = 0.5;
  */
 export function getVisibleVariants(docs) {
   return docs
-    .filter(doc => (doc.data().visibility ?? 0) >= VISIBILITY_THRESHOLD)
+    .filter(doc => (doc.data().visibility ?? 1) >= VISIBILITY_THRESHOLD)
     .map(doc => ({
       name: doc.data().name || '',
       content: doc.data().content || '',
