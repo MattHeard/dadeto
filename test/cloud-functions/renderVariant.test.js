@@ -1,5 +1,6 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 import { mockSave, mockFile, mockBucket } from '@google-cloud/storage';
+import { mockDoc } from 'firebase-admin/firestore';
 import { render } from '../../infra/cloud-functions/render-variant/index.js';
 
 /**
@@ -37,6 +38,14 @@ describe('render', () => {
     mockSave.mockClear();
     mockFile.mockClear();
     mockBucket.mockClear();
+    mockDoc.mockReset();
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true });
   });
 
   test('sets cache control when variant open', async () => {
@@ -54,5 +63,36 @@ describe('render', () => {
     ]);
     await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
     expect(mockSave.mock.calls[0][1]).toEqual({ contentType: 'text/html' });
+  });
+
+  test('invalidates parent variant when incoming option', async () => {
+    const snap = createSnap([{ content: 'Go', position: 0 }]);
+    snap.data = () => ({
+      name: 'a',
+      content: 'content',
+      incomingOption: 'stories/s1/pages/p1/variants/pv/options/o1',
+    });
+
+    const parentPageRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 2 }),
+      }),
+    };
+    const parentVariantRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ name: 'b' }),
+      }),
+      parent: { parent: parentPageRef },
+    };
+    mockDoc.mockReturnValue({ parent: { parent: parentVariantRef } });
+
+    await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
+
+    const pathCalls = fetch.mock.calls
+      .slice(1)
+      .map(([, opts]) => JSON.parse(opts.body).path);
+    expect(pathCalls).toContain('/p/2b.html');
   });
 });

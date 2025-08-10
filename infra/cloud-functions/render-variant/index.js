@@ -1,5 +1,6 @@
+import crypto from 'crypto';
 import { initializeApp } from 'firebase-admin/app';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
 import { buildAltsHtml } from './buildAltsHtml.js';
@@ -8,6 +9,53 @@ import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';
 
 initializeApp();
 const storage = new Storage();
+const db = getFirestore();
+
+// keep defaults so you don't need infra changes today
+const PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
+const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
+const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
+
+/**
+ *
+ */
+async function getAccessTokenFromMetadata() {
+  const r = await fetch(
+    'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+    { headers: { 'Metadata-Flavor': 'Google' } }
+  );
+  if (!r.ok) throw new Error(`metadata token: HTTP ${r.status}`);
+  const { access_token } = await r.json();
+  return access_token;
+}
+
+/**
+ *
+ * @param paths
+ */
+async function invalidatePaths(paths) {
+  const token = await getAccessTokenFromMetadata();
+  await Promise.all(
+    paths.map(async path => {
+      const res = await fetch(
+        `https://compute.googleapis.com/compute/v1/projects/${PROJECT}/global/urlMaps/${URL_MAP}/invalidateCache`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            host: CDN_HOST,
+            path,
+            requestId: crypto.randomUUID(),
+          }),
+        }
+      );
+      if (!res.ok) throw new Error(`invalidate ${path} failed: ${res.status}`);
+    })
+  );
+}
 
 /**
  * Render a variant when it is created, marked dirty, or its visibility
@@ -130,6 +178,31 @@ async function render(snap, ctx) {
       metadata: { cacheControl: 'no-store' }, // 🔑 stop both positive *and* negative caching
     });
 
+  const paths = [`/${altsPath}`, `/${filePath}`];
+
+  if (variant.incomingOption) {
+    try {
+      const optionRef = db.doc(variant.incomingOption);
+      const parentVariantRef = optionRef.parent.parent;
+      const parentPageRef = parentVariantRef.parent.parent;
+
+      const [parentVariantSnap, parentPageSnap] = await Promise.all([
+        parentVariantRef.get(),
+        parentPageRef.get(),
+      ]);
+
+      if (parentVariantSnap.exists && parentPageSnap.exists) {
+        const parentName = parentVariantSnap.data().name || 'a';
+        const parentNumber = parentPageSnap.data().number;
+        paths.push(`/p/${parentNumber}${parentName}.html`);
+      }
+    } catch (e) {
+      // non-fatal; skip parent invalidation if lookup fails
+      console.error('parent lookup failed', e?.message || e);
+    }
+  }
+
+  await invalidatePaths(paths);
   return null;
 }
 
