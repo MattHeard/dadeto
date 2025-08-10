@@ -54,7 +54,6 @@
         <div>
           <button type="submit">Submit</button>
         </div>
-        <p id="saving" style="display: none">Saving...</p>
       </form>
       <!-- Google Identity Services -->
       <script src="https://accounts.google.com/gsi/client" defer></script>
@@ -64,7 +63,7 @@
         document.addEventListener('DOMContentLoaded', () => {
           const form = document.querySelector('form');
           const button = form.querySelector("button[type='submit']");
-          const saving = document.getElementById('saving');
+          const originalText = button.textContent;
           const signin = document.getElementById('signinButton');
           const signoutWrap = document.getElementById('signoutWrap');
           const signoutBtn = document.getElementById('signoutBtn');
@@ -93,12 +92,11 @@
           form.addEventListener('submit', async event => {
             event.preventDefault();
             button.disabled = true;
-            saving.style.display = 'block';
             let dots = 1;
-            saving.textContent = 'Saving.';
+            button.textContent = 'Saving.';
             const intervalId = setInterval(() => {
               dots = (dots % 3) + 1;
-              saving.textContent = `Saving${'.'.repeat(dots)}`;
+              button.textContent = `Saving${'.'.repeat(dots)}`;
             }, 500);
 
             try {
@@ -132,8 +130,11 @@
               }
             } catch (err) {
               clearInterval(intervalId);
-              saving.textContent = 'Failed to save.';
+              button.textContent = 'Failed to save.';
               button.disabled = false;
+              setTimeout(() => {
+                button.textContent = originalText;
+              }, 2000);
             }
           });
         });
