@@ -58,60 +58,45 @@ async function handleAssignModerationJob(req, res) {
     return;
   }
 
-  let zeroRepCount;
-  try {
-    const snap = await db
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', 0)
-      .count()
-      .get();
-
-    zeroRepCount = snap.data().count;
-  } catch (err) {
-    console.error('aggregate failed', {
-      code: err.code,
-      message: err.message,
-      details: err.details,
-    });
-    res.status(500).json({ error: 'aggregate_failed', code: err.code });
-    return;
-  }
-
   const n = Math.random();
-  let query;
 
-  if (zeroRepCount > 1) {
-    query = db
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', 0)
-      .where('rand', '>=', n)
-      .limit(1);
-  } else if (zeroRepCount === 0) {
-    query = db.collectionGroup('variants').where('rand', '>=', n).limit(1);
-  } else {
-    query = db
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', 0)
-      .limit(1);
-  }
+  // 1) zero-rated first
+  let q = db
+    .collectionGroup('variants')
+    .where('moderatorReputationSum', '==', 0)
+    .orderBy('rand', 'asc')
+    .where('rand', '>=', n)
+    .limit(1);
 
-  let variantSnap = await query.get();
+  let variantSnap = await q.get();
 
   if (variantSnap.empty) {
-    if (zeroRepCount > 1) {
-      variantSnap = await db
+    q = db
+      .collectionGroup('variants')
+      .where('moderatorReputationSum', '==', 0)
+      .orderBy('rand', 'asc')
+      .where('rand', '<', n)
+      .limit(1);
+    variantSnap = await q.get();
+  }
+
+  // 2) fallback to any variant
+  if (variantSnap.empty) {
+    let q2 = db
+      .collectionGroup('variants')
+      .orderBy('rand', 'asc')
+      .where('rand', '>=', n)
+      .limit(1);
+    let s2 = await q2.get();
+    if (s2.empty) {
+      q2 = db
         .collectionGroup('variants')
-        .where('moderatorReputationSum', '==', 0)
-        .where('rand', '>=', 0)
-        .limit(1)
-        .get();
-    } else if (zeroRepCount === 0) {
-      variantSnap = await db
-        .collectionGroup('variants')
-        .where('rand', '>=', 0)
-        .limit(1)
-        .get();
+        .orderBy('rand', 'asc')
+        .where('rand', '<', n)
+        .limit(1);
+      s2 = await q2.get();
     }
+    variantSnap = s2;
   }
 
   if (variantSnap.empty) {
