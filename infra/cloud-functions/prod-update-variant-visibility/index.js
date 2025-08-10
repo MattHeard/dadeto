@@ -42,12 +42,6 @@ export const prodUpdateVariantVisibility = functions
     const denominator = moderationRatingCount + 1;
     const newVisibility = numerator / denominator;
 
-    console.log(
-      '[prodUpdateVariantVisibility] variant=%s visibility=%d',
-      variantRef.path,
-      newVisibility
-    );
-
     await variantRef.update({
       visibility: newVisibility,
       moderatorRatingCount: moderationRatingCount + 1,

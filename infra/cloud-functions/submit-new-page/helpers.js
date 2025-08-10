@@ -5,40 +5,25 @@
  *   Parsed info or null when invalid.
  */
 export function parseIncomingOption(str) {
-  console.log('[parseIncomingOption] str=%s', str);
   if (!str) {
-    console.log('[parseIncomingOption] missing str');
     return null;
   }
   const parts = String(str)
     .split(/[^0-9a-zA-Z]+/)
     .filter(Boolean);
   if (parts.length !== 3) {
-    console.log('[parseIncomingOption] invalid parts length=%d', parts.length);
     return null;
   }
   const [pageStr, variantName, optionStr] = parts;
   const pageNumber = Number.parseInt(pageStr, 10);
   const optionNumber = Number.parseInt(optionStr, 10);
   if (!Number.isInteger(pageNumber) || !Number.isInteger(optionNumber)) {
-    console.log(
-      '[parseIncomingOption] non-integer page or option pageStr=%s optionStr=%s',
-      pageStr,
-      optionStr
-    );
     return null;
   }
   if (!variantName) {
-    console.log('[parseIncomingOption] missing variantName');
     return null;
   }
   const parsed = { pageNumber, variantName, optionNumber };
-  console.log(
-    '[parseIncomingOption] parsed pageNumber=%d variantName=%s optionNumber=%d',
-    pageNumber,
-    variantName,
-    optionNumber
-  );
   return parsed;
 }
 

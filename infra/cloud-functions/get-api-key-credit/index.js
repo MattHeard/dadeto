@@ -60,7 +60,6 @@ async function safeFetchCredit(uuid) {
   try {
     return await fetchCredit(uuid);
   } catch (error) {
-    console.error(error);
     return undefined;
   }
 }

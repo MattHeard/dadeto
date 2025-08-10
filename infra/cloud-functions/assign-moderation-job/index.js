@@ -37,39 +37,23 @@ app.use(express.urlencoded({ extended: false }));
  * @returns {Promise<void>} Promise resolving when the response is sent.
  */
 async function handleAssignModerationJob(req, res) {
-  console.log('[assignModeration] method=%s ip=%s', req.method, req.ip);
   if (req.method !== 'POST') {
-    console.warn('[assignModeration] non-POST rejected');
     res.status(405).send('POST only');
     return;
   }
 
   const { id_token: idToken } = req.body ?? {};
   if (!idToken) {
-    console.warn('[assignModeration] id_token missing in body', req.body);
     res.status(400).send('Missing id_token');
     return;
   }
 
   let userRecord;
   try {
-    console.log('[assignModeration] verifying token …');
     const decoded = await auth.verifyIdToken(idToken);
-    console.log(
-      '[assignModeration] token ok uid=%s exp=%s',
-      decoded.uid,
-      new Date(decoded.exp * 1000).toISOString()
-    );
 
     userRecord = await auth.getUser(decoded.uid);
-    console.log('[assignModeration] user ok email=%s', userRecord.email);
   } catch (err) {
-    console.error(
-      '[assignModeration] verifyIdToken failed',
-      err.code,
-      err.message,
-      err.stack
-    );
     res.status(401).send(err.message || 'Invalid or expired token');
     return;
   }
