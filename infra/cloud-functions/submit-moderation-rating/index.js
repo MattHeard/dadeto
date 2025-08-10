@@ -38,16 +38,13 @@ app.use(express.json());
  * @returns {Promise<void>} Promise resolving when the response is sent.
  */
 async function handleSubmitModerationRating(req, res) {
-  console.log('[submitModerationRating] method=%s ip=%s', req.method, req.ip);
   if (req.method !== 'POST') {
-    console.warn('[submitModerationRating] non-POST rejected');
     res.status(405).send('POST only');
     return;
   }
 
   const { isApproved } = req.body || {};
   if (typeof isApproved !== 'boolean') {
-    console.warn('[submitModerationRating] isApproved missing or invalid');
     res.status(400).send('Missing or invalid isApproved');
     return;
   }
@@ -55,7 +52,6 @@ async function handleSubmitModerationRating(req, res) {
   const authHeader = req.get('Authorization') || '';
   const match = authHeader.match(/^Bearer (.+)$/);
   if (!match) {
-    console.warn('[submitModerationRating] missing bearer token');
     res.status(401).send('Missing or invalid Authorization header');
     return;
   }
@@ -64,14 +60,7 @@ async function handleSubmitModerationRating(req, res) {
   try {
     const decoded = await auth.verifyIdToken(match[1]);
     uid = decoded.uid;
-    console.log('[submitModerationRating] token ok uid=%s', uid);
   } catch (err) {
-    console.error(
-      '[submitModerationRating] verifyIdToken failed',
-      err.code,
-      err.message,
-      err.stack
-    );
     res.status(401).send(err.message || 'Invalid or expired token');
     return;
   }

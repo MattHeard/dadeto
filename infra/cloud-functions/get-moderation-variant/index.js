@@ -35,12 +35,9 @@ app.use(
  * @returns {Promise<void>} Promise resolving when the response is sent.
  */
 async function handleGetModerationVariant(req, res) {
-  console.log('[getModerationVariant] method=%s ip=%s', req.method, req.ip);
-
   const authHeader = req.get('Authorization') || '';
   const match = authHeader.match(/^Bearer (.+)$/);
   if (!match) {
-    console.warn('[getModerationVariant] missing bearer token');
     res.status(401).send('Missing or invalid Authorization header');
     return;
   }
@@ -49,14 +46,7 @@ async function handleGetModerationVariant(req, res) {
   try {
     const decoded = await auth.verifyIdToken(match[1]);
     uid = decoded.uid;
-    console.log('[getModerationVariant] token ok uid=%s', uid);
   } catch (err) {
-    console.error(
-      '[getModerationVariant] verifyIdToken failed',
-      err.code,
-      err.message,
-      err.stack
-    );
     res.status(401).send(err.message || 'Invalid or expired token');
     return;
   }
