@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
@@ -7,6 +8,9 @@ import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
 initializeApp();
 const db = getFirestore();
 const storage = new Storage();
+const PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
+const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
+const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
 
 /**
  * Escape HTML special characters.
@@ -32,6 +36,54 @@ function buildHtml(items) {
     .map(item => LIST_ITEM_HTML(item.pageNumber, escapeHtml(item.title)))
     .join('');
   return PAGE_HTML(list);
+}
+
+/**
+ * Retrieve an access token from the metadata server.
+ * @returns {Promise<string>} Access token.
+ */
+async function getAccessTokenFromMetadata() {
+  const r = await fetch(
+    'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+    { headers: { 'Metadata-Flavor': 'Google' } }
+  );
+  if (!r.ok) throw new Error(`metadata token: HTTP ${r.status}`);
+  const { access_token } = await r.json();
+  return access_token;
+}
+
+/**
+ * Invalidate CDN caches for the specified paths.
+ * @param {string[]} paths Paths to invalidate.
+ */
+async function invalidatePaths(paths) {
+  const token = await getAccessTokenFromMetadata();
+  await Promise.all(
+    paths.map(async path => {
+      try {
+        const res = await fetch(
+          `https://compute.googleapis.com/compute/v1/projects/${PROJECT}/global/urlMaps/${URL_MAP}/invalidateCache`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              host: CDN_HOST,
+              path,
+              requestId: crypto.randomUUID(),
+            }),
+          }
+        );
+        if (!res.ok) {
+          console.error(`invalidate ${path} failed: ${res.status}`);
+        }
+      } catch (e) {
+        console.error(`invalidate ${path} error`, e?.message || e);
+      }
+    })
+  );
 }
 
 /**
@@ -71,33 +123,48 @@ async function fetchStoryInfo(storyId) {
 }
 
 /**
+ * Generate contents pages and invalidate caches.
+ * @param {{fetchTopStoryIds?: () => Promise<Array<string>>, fetchStoryInfo?: (id: string) => Promise<{title: string, pageNumber: number}|null>}} deps Optional dependencies for testing.
+ */
+async function render(deps = {}) {
+  const {
+    fetchTopStoryIds: fetchIds = fetchTopStoryIds,
+    fetchStoryInfo: fetchInfo = fetchStoryInfo,
+  } = deps;
+  const ids = await fetchIds();
+  const items = [];
+  for (const id of ids) {
+    const info = await fetchInfo(id);
+    if (info) {
+      items.push(info);
+    }
+  }
+  const pageSize = 30;
+  const bucket = storage.bucket('www.dendritestories.co.nz');
+  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+  const paths = [];
+  for (let page = 1; page <= totalPages; page++) {
+    const start = (page - 1) * pageSize;
+    const pageItems = items.slice(start, start + pageSize);
+    const html = buildHtml(pageItems);
+    const filePath = page === 1 ? 'index.html' : `contents/${page}.html`;
+    const options = { contentType: 'text/html' };
+    if (page === totalPages) {
+      options.metadata = { cacheControl: 'no-cache' };
+    }
+    await bucket.file(filePath).save(html, options);
+    paths.push(`/${filePath}`);
+  }
+  await invalidatePaths(paths);
+  return null;
+}
+
+/**
  * Cloud Function triggered when a new story is created.
  */
 export const renderContents = functions
   .region('europe-west1')
   .firestore.document('stories/{storyId}')
-  .onCreate(async () => {
-    const ids = await fetchTopStoryIds();
-    const items = [];
-    for (const id of ids) {
-      const info = await fetchStoryInfo(id);
-      if (info) {
-        items.push(info);
-      }
-    }
-    const pageSize = 30;
-    const bucket = storage.bucket('www.dendritestories.co.nz');
-    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
-    for (let page = 1; page <= totalPages; page++) {
-      const start = (page - 1) * pageSize;
-      const pageItems = items.slice(start, start + pageSize);
-      const html = buildHtml(pageItems);
-      const filePath = page === 1 ? 'index.html' : `contents/${page}.html`;
-      const options = { contentType: 'text/html' };
-      if (page === totalPages) {
-        options.metadata = { cacheControl: 'no-cache' };
-      }
-      await bucket.file(filePath).save(html, options);
-    }
-    return null;
-  });
+  .onCreate(render);
+
+export { buildHtml, fetchTopStoryIds, fetchStoryInfo, render };
