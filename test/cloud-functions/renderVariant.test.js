@@ -12,11 +12,20 @@ function createSnap(optionData) {
   const optionsCollection = {
     get: jest.fn().mockResolvedValue({ docs: optionsDocs }),
   };
+  const rootVariantCollection = {
+    orderBy: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    get: jest.fn().mockResolvedValue({
+      empty: false,
+      docs: [{ data: () => ({ name: 'a' }) }],
+    }),
+  };
   const rootPageRef = {
     get: jest.fn().mockResolvedValue({
       exists: true,
       data: () => ({ number: 1 }),
     }),
+    collection: jest.fn(() => rootVariantCollection),
   };
   const storyRef = {
     get: jest.fn().mockResolvedValue({

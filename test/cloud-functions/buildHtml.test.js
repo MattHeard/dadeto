@@ -26,9 +26,14 @@ describe('buildHtml', () => {
 
   test('links option with target page to existing page', () => {
     const html = buildHtml(5, 'a', 'content', [
-      { content: 'Go right', position: 1, targetPageNumber: 42 },
+      {
+        content: 'Go right',
+        position: 1,
+        targetPageNumber: 42,
+        targetVariantName: 'b',
+      },
     ]);
-    expect(html).toContain('<li><a href="/p/42a.html">Go right</a></li>');
+    expect(html).toContain('<li><a href="/p/42b.html">Go right</a></li>');
   });
 
   test('includes author below options when provided', () => {
