@@ -12,6 +12,8 @@ import { escapeHtml } from './buildAltsHtml.js';
  * }>} options Option info.
  * @param {string} [storyTitle] Story title.
  * @param {string} [author] Author name.
+ * @param parentUrl
+ * @param firstPageUrl
  * @returns {string} HTML page.
  */
 export function buildHtml(
@@ -20,7 +22,9 @@ export function buildHtml(
   content,
   options,
   storyTitle = '',
-  author = ''
+  author = '',
+  parentUrl = '',
+  firstPageUrl = ''
 ) {
   const items = options
     .map(opt => {
@@ -34,6 +38,10 @@ export function buildHtml(
     .join('');
   const title = storyTitle ? `<h1>${escapeHtml(storyTitle)}</h1>` : '';
   const authorHtml = author ? `<p>By ${escapeHtml(author)}</p>` : '';
+  const parentHtml = parentUrl ? `<p><a href="${parentUrl}">Back</a></p>` : '';
+  const firstHtml = firstPageUrl
+    ? `<p><a href="${firstPageUrl}">First page</a></p>`
+    : '';
   const variantSlug = `${pageNumber}${variantName}`;
   const reportHtml =
     '<p><button id="reportBtn" type="button">Report</button></p>' +
@@ -48,10 +56,6 @@ export function buildHtml(
     `</head><body><div class="page">` +
     `<h1><img src="../img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em;" />` +
     `<a href="/">Dendrite</a></h1>${title}<p>${escapeHtml(content)}</p>` +
-    `<ol>${items}</ol>${
-      authorHtml
-    }<p><a href="./${pageNumber}-alts.html">Other variants</a></p>${
-      reportHtml
-    }</div></body></html>`
+    `<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p><a href="./${pageNumber}-alts.html">Other variants</a></p>${reportHtml}</div></body></html>`
   );
 }

@@ -51,4 +51,19 @@ describe('buildHtml', () => {
     expect(html).toContain("JSON.stringify({variant:'1a'})");
     expect(html).toContain('prod-report-for-moderation');
   });
+
+  test('includes parent and first page links when provided', () => {
+    const html = buildHtml(
+      2,
+      'b',
+      'content',
+      [],
+      '',
+      '',
+      '/p/1a.html',
+      '/p/9a.html'
+    );
+    expect(html).toContain('<a href="/p/1a.html">Back</a>');
+    expect(html).toContain('<a href="/p/9a.html">First page</a>');
+  });
 });
