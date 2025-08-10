@@ -58,13 +58,6 @@ async function handleAssignModerationJob(req, res) {
     return;
   }
 
-  const total = (await db.collectionGroup('variants').count().get()).data()
-    .count;
-  if (!total) {
-    res.status(404).send('No variants to moderate');
-    return;
-  }
-
   const zeroRepCount = (
     await db
       .collectionGroup('variants')
