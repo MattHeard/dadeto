@@ -10,4 +10,13 @@ describe('getVisibleVariants', () => {
     const variants = getVisibleVariants(docs);
     expect(variants).toEqual([{ name: 'a', content: 'A' }]);
   });
+
+  test('defaults missing visibility to 1.0', () => {
+    const docs = [
+      { data: () => ({ name: 'a', content: 'A' }) },
+      { data: () => ({ name: 'b', content: 'B', visibility: 0.4 }) },
+    ];
+    const variants = getVisibleVariants(docs);
+    expect(variants).toEqual([{ name: 'a', content: 'A' }]);
+  });
 });
