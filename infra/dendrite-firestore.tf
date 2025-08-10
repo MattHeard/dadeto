@@ -49,6 +49,22 @@ resource "google_firestore_index" "variants_author_created" {
   }
 }
 
+# Supports: variants where moderatorReputationSum == 0 and rand >= n
+resource "google_firestore_index" "variants_moderation_rand" {
+  project     = var.project_id
+  collection  = "variants"
+  query_scope = "COLLECTION_GROUP"
+
+  fields {
+    field_path = "moderatorReputationSum"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "rand"
+    order      = "ASCENDING"
+  }
+}
+
 
 resource "google_firestore_index" "ratings_by_variant" {
   project     = var.project_id
