@@ -58,13 +58,24 @@ async function handleAssignModerationJob(req, res) {
     return;
   }
 
-  const zeroRepCount = (
-    await db
+  let zeroRepCount;
+  try {
+    const snap = await db
       .collectionGroup('variants')
       .where('moderatorReputationSum', '==', 0)
       .count()
-      .get()
-  ).data().count;
+      .get();
+
+    zeroRepCount = snap.data().count;
+  } catch (err) {
+    console.error('aggregate failed', {
+      code: err.code,
+      message: err.message,
+      details: err.details,
+    });
+    res.status(500).json({ error: 'aggregate_failed', code: err.code });
+    return;
+  }
 
   const n = Math.random();
   let query;
