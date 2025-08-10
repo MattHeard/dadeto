@@ -42,4 +42,13 @@ describe('buildHtml', () => {
     const html = buildHtml(1, 'a', 'content', []);
     expect(html).toContain('<a href="./1-alts.html">Other variants</a>');
   });
+
+  test('includes report button and script', () => {
+    const html = buildHtml(1, 'a', 'content', []);
+    expect(html).toContain(
+      '<button id="reportBtn" type="button">Report</button>'
+    );
+    expect(html).toContain("JSON.stringify({variant:'1a'})");
+    expect(html).toContain('prod-report-for-moderation');
+  });
 });
