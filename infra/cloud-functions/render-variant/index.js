@@ -118,18 +118,32 @@ async function render(snap, ctx) {
   const options = await Promise.all(
     optionsData.map(async data => {
       let targetPageNumber;
-      if (data.targetPageNumber !== undefined) {
-        targetPageNumber = data.targetPageNumber;
-      } else if (data.targetPage) {
-        const targetSnap = await data.targetPage.get();
-        if (targetSnap.exists) {
-          targetPageNumber = targetSnap.data().number;
+      let targetVariantName;
+      if (data.targetPage) {
+        try {
+          const targetSnap = await data.targetPage.get();
+          if (targetSnap.exists) {
+            targetPageNumber = targetSnap.data().number;
+            const variantSnap = await data.targetPage
+              .collection('variants')
+              .orderBy('name')
+              .limit(1)
+              .get();
+            if (!variantSnap.empty) {
+              targetVariantName = variantSnap.docs[0].data().name;
+            }
+          }
+        } catch (e) {
+          console.error('target page lookup failed', e?.message || e);
         }
+      } else if (data.targetPageNumber !== undefined) {
+        targetPageNumber = data.targetPageNumber;
       }
       return {
         content: data.content || '',
         position: data.position ?? 0,
         ...(targetPageNumber !== undefined && { targetPageNumber }),
+        ...(targetVariantName && { targetVariantName }),
       };
     })
   );
@@ -145,7 +159,14 @@ async function render(snap, ctx) {
       try {
         const rootPageSnap = await storyData.rootPage.get();
         if (rootPageSnap.exists) {
-          firstPageUrl = `/p/${rootPageSnap.data().number}a.html`;
+          const rootVariantSnap = await storyData.rootPage
+            .collection('variants')
+            .orderBy('name')
+            .limit(1)
+            .get();
+          if (!rootVariantSnap.empty) {
+            firstPageUrl = `/p/${rootPageSnap.data().number}${rootVariantSnap.docs[0].data().name}.html`;
+          }
         }
       } catch (e) {
         console.error('root page lookup failed', e?.message || e);
@@ -167,9 +188,11 @@ async function render(snap, ctx) {
       ]);
 
       if (parentVariantSnap.exists && parentPageSnap.exists) {
-        const parentName = parentVariantSnap.data().name || 'a';
-        const parentNumber = parentPageSnap.data().number;
-        parentUrl = `/p/${parentNumber}${parentName}.html`;
+        const parentName = parentVariantSnap.data().name;
+        if (parentName) {
+          const parentNumber = parentPageSnap.data().number;
+          parentUrl = `/p/${parentNumber}${parentName}.html`;
+        }
       }
     } catch (e) {
       console.error('parent lookup failed', e?.message || e);
