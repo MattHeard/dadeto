@@ -81,12 +81,50 @@ async function handleAssignModerationJob(req, res) {
     return;
   }
 
-  const randomOffset = Math.floor(Math.random() * total);
-  const variantSnap = await db
-    .collectionGroup('variants')
-    .limit(1)
-    .offset(randomOffset)
-    .get();
+  const zeroRepCount = (
+    await db
+      .collectionGroup('variants')
+      .where('moderatorReputationSum', '==', 0)
+      .count()
+      .get()
+  ).data().count;
+
+  const n = Math.random();
+  let query;
+
+  if (zeroRepCount > 1) {
+    query = db
+      .collectionGroup('variants')
+      .where('moderatorReputationSum', '==', 0)
+      .where('rand', '>=', n)
+      .limit(1);
+  } else if (zeroRepCount === 0) {
+    query = db.collectionGroup('variants').where('rand', '>=', n).limit(1);
+  } else {
+    query = db
+      .collectionGroup('variants')
+      .where('moderatorReputationSum', '==', 0)
+      .limit(1);
+  }
+
+  let variantSnap = await query.get();
+
+  if (variantSnap.empty) {
+    if (zeroRepCount > 1) {
+      variantSnap = await db
+        .collectionGroup('variants')
+        .where('moderatorReputationSum', '==', 0)
+        .where('rand', '>=', 0)
+        .limit(1)
+        .get();
+    } else if (zeroRepCount === 0) {
+      variantSnap = await db
+        .collectionGroup('variants')
+        .where('rand', '>=', 0)
+        .limit(1)
+        .get();
+    }
+  }
 
   if (variantSnap.empty) {
     res.status(500).send('Variant fetch failed 🤷');
