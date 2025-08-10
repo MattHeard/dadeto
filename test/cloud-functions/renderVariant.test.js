@@ -65,6 +65,25 @@ describe('render', () => {
     expect(mockSave.mock.calls[0][1]).toEqual({ contentType: 'text/html' });
   });
 
+  test('logs error when cache invalidation fails', async () => {
+    const snap = createSnap([{ content: 'Go', position: 0 }]);
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValue({ ok: false, status: 500 });
+
+    await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
+    expect(consoleError).toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
   test('invalidates parent variant when incoming option', async () => {
     const snap = createSnap([{ content: 'Go', position: 0 }]);
     snap.data = () => ({

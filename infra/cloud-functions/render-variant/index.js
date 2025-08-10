@@ -37,22 +37,28 @@ async function invalidatePaths(paths) {
   const token = await getAccessTokenFromMetadata();
   await Promise.all(
     paths.map(async path => {
-      const res = await fetch(
-        `https://compute.googleapis.com/compute/v1/projects/${PROJECT}/global/urlMaps/${URL_MAP}/invalidateCache`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            host: CDN_HOST,
-            path,
-            requestId: crypto.randomUUID(),
-          }),
+      try {
+        const res = await fetch(
+          `https://compute.googleapis.com/compute/v1/projects/${PROJECT}/global/urlMaps/${URL_MAP}/invalidateCache`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              host: CDN_HOST,
+              path,
+              requestId: crypto.randomUUID(),
+            }),
+          }
+        );
+        if (!res.ok) {
+          console.error(`invalidate ${path} failed: ${res.status}`);
         }
-      );
-      if (!res.ok) throw new Error(`invalidate ${path} failed: ${res.status}`);
+      } catch (e) {
+        console.error(`invalidate ${path} error`, e?.message || e);
+      }
     })
   );
 }
