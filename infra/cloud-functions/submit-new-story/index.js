@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: false, limit: '20kb' }));
 async function handleSubmit(req, res) {
   let { title = 'Untitled', content = '', author = '???' } = req.body;
   title = title.toString().trim().slice(0, 120);
-  content = content.toString().trim().slice(0, 10_000);
+  content = content.toString().replace(/\r\n?/g, '\n').slice(0, 10_000);
   author = author.toString().trim().slice(0, 120);
 
   let authorId = null;
