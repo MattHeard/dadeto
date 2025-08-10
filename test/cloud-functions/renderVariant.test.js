@@ -12,10 +12,23 @@ function createSnap(optionData) {
   const optionsCollection = {
     get: jest.fn().mockResolvedValue({ docs: optionsDocs }),
   };
-  const pageRef = {};
+  const rootPageRef = {
+    get: jest.fn().mockResolvedValue({
+      exists: true,
+      data: () => ({ number: 1 }),
+    }),
+  };
+  const storyRef = {
+    get: jest.fn().mockResolvedValue({
+      exists: true,
+      data: () => ({ rootPage: rootPageRef, title: 'Story' }),
+    }),
+  };
+  const pagesCollection = { parent: storyRef };
+  const pageRef = { parent: pagesCollection };
   const pageSnap = {
     exists: true,
-    data: () => ({ number: 1, incomingOption: true }),
+    data: () => ({ number: 5, incomingOption: true }),
     ref: pageRef,
   };
   pageRef.get = jest.fn().mockResolvedValue(pageSnap);
@@ -26,7 +39,7 @@ function createSnap(optionData) {
   return {
     data: () => ({ name: 'a', content: 'content', incomingOption: false }),
     ref: {
-      path: 'stories/s1/pages/p1/variants/v1',
+      path: 'stories/s1/pages/p5/variants/v1',
       parent: variantsCollection,
       collection: jest.fn(() => optionsCollection),
     },
@@ -113,5 +126,34 @@ describe('render', () => {
       .slice(1)
       .map(([, opts]) => JSON.parse(opts.body).path);
     expect(pathCalls).toContain('/p/2b.html');
+  });
+
+  test('adds navigation links for non-root variant', async () => {
+    const snap = createSnap([{ content: 'Go', position: 0 }]);
+    snap.data = () => ({
+      name: 'a',
+      content: 'content',
+      incomingOption: 'stories/s1/pages/p1/variants/pv/options/o1',
+    });
+
+    const parentPageRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 7 }),
+      }),
+    };
+    const parentVariantRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ name: 'b' }),
+      }),
+      parent: { parent: parentPageRef },
+    };
+    mockDoc.mockReturnValue({ parent: { parent: parentVariantRef } });
+
+    await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
+    const html = mockSave.mock.calls[0][0];
+    expect(html).toContain('<a href="/p/7b.html">Back</a>');
+    expect(html).toContain('<a href="/p/1a.html">First page</a>');
   });
 });

@@ -133,15 +133,48 @@ async function render(snap, ctx) {
       };
     })
   );
+  const storyRef = pageSnap.ref.parent.parent;
+  const storySnap = await storyRef.get();
   let storyTitle = '';
-  if (!page.incomingOption) {
-    const storySnap = await pageSnap.ref.parent.parent.get();
-    if (storySnap.exists) {
-      storyTitle = storySnap.data().title || '';
+  let firstPageUrl;
+  if (storySnap.exists) {
+    const storyData = storySnap.data();
+    if (!page.incomingOption) {
+      storyTitle = storyData.title || '';
+    } else if (storyData.rootPage) {
+      try {
+        const rootPageSnap = await storyData.rootPage.get();
+        if (rootPageSnap.exists) {
+          firstPageUrl = `/p/${rootPageSnap.data().number}a.html`;
+        }
+      } catch (e) {
+        console.error('root page lookup failed', e?.message || e);
+      }
     }
   }
 
   const authorName = variant.authorName || variant.author || '';
+  let parentUrl;
+  if (variant.incomingOption) {
+    try {
+      const optionRef = db.doc(variant.incomingOption);
+      const parentVariantRef = optionRef.parent.parent;
+      const parentPageRef = parentVariantRef.parent.parent;
+
+      const [parentVariantSnap, parentPageSnap] = await Promise.all([
+        parentVariantRef.get(),
+        parentPageRef.get(),
+      ]);
+
+      if (parentVariantSnap.exists && parentPageSnap.exists) {
+        const parentName = parentVariantSnap.data().name || 'a';
+        const parentNumber = parentPageSnap.data().number;
+        parentUrl = `/p/${parentNumber}${parentName}.html`;
+      }
+    } catch (e) {
+      console.error('parent lookup failed', e?.message || e);
+    }
+  }
 
   const html = buildHtml(
     page.number,
@@ -149,7 +182,9 @@ async function render(snap, ctx) {
     variant.content,
     options,
     storyTitle,
-    authorName
+    authorName,
+    parentUrl,
+    firstPageUrl
   );
   const filePath = `p/${page.number}${variant.name}.html`;
   const openVariant = options.some(opt => opt.targetPageNumber === undefined);
@@ -186,26 +221,8 @@ async function render(snap, ctx) {
 
   const paths = [`/${altsPath}`, `/${filePath}`];
 
-  if (variant.incomingOption) {
-    try {
-      const optionRef = db.doc(variant.incomingOption);
-      const parentVariantRef = optionRef.parent.parent;
-      const parentPageRef = parentVariantRef.parent.parent;
-
-      const [parentVariantSnap, parentPageSnap] = await Promise.all([
-        parentVariantRef.get(),
-        parentPageRef.get(),
-      ]);
-
-      if (parentVariantSnap.exists && parentPageSnap.exists) {
-        const parentName = parentVariantSnap.data().name || 'a';
-        const parentNumber = parentPageSnap.data().number;
-        paths.push(`/p/${parentNumber}${parentName}.html`);
-      }
-    } catch (e) {
-      // non-fatal; skip parent invalidation if lookup fails
-      console.error('parent lookup failed', e?.message || e);
-    }
+  if (parentUrl) {
+    paths.push(parentUrl);
   }
 
   await invalidatePaths(paths);
