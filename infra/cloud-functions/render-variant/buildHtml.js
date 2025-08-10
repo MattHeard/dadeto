@@ -46,6 +46,16 @@ export function buildHtml(
   const reportHtml =
     '<p><button id="reportBtn" type="button">Report</button></p>' +
     `<script>document.getElementById('reportBtn').onclick=async()=>{try{await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant:'${variantSlug}'})});alert('Thanks for your report.');}catch(e){alert('Sorry, something went wrong.');}};</script>`;
+  const paragraphs = String(content ?? '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map(line => {
+      let html = escapeHtml(line);
+      html = html.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
+      html = html.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+      return `<p>${html}</p>`;
+    })
+    .join('');
   return (
     `<!doctype html>` +
     `<html lang="en"><head><meta charset="UTF-8" />` +
@@ -55,7 +65,7 @@ export function buildHtml(
     `<link rel="stylesheet" href="/dendrite.css" />` +
     `</head><body><div class="page">` +
     `<h1><img src="../img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em;" />` +
-    `<a href="/">Dendrite</a></h1>${title}<p>${escapeHtml(content)}</p>` +
+    `<a href="/">Dendrite</a></h1>${title}${paragraphs}` +
     `<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p><a href="./${pageNumber}-alts.html">Other variants</a></p>${reportHtml}</div></body></html>`
   );
 }

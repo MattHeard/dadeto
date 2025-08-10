@@ -52,6 +52,16 @@ describe('buildHtml', () => {
     expect(html).toContain('prod-report-for-moderation');
   });
 
+  test('renders each line in separate paragraph', () => {
+    const html = buildHtml(1, 'a', 'one\ntwo', []);
+    expect(html).toContain('<p>one</p><p>two</p>');
+  });
+
+  test('renders markdown bold and italics', () => {
+    const html = buildHtml(1, 'a', 'a *b* and **c**', []);
+    expect(html).toContain('<p>a <em>b</em> and <strong>c</strong></p>');
+  });
+
   test('includes parent and first page links when provided', () => {
     const html = buildHtml(
       2,

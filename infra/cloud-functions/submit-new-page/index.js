@@ -48,7 +48,7 @@ async function handleSubmit(req, res) {
 
   const incomingOption =
     rawIncomingOption?.toString().trim().slice(0, 120) || '';
-  content = content.toString().trim().slice(0, 10_000);
+  content = content.toString().replace(/\r\n?/g, '\n').slice(0, 10_000);
   author = author.toString().trim().slice(0, 120);
 
   const parsed = parseIncomingOption(incomingOption);
