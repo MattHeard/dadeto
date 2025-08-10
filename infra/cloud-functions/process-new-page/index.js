@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import crypto from 'crypto';
-import { incrementVariantName } from '../../../src/utils/variantName.js';
+import { incrementVariantName } from './variantName.js';
 
 initializeApp();
 const db = getFirestore();

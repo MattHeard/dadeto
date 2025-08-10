@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { incrementVariantName } from '../../src/utils/variantName.js';
+import { incrementVariantName } from '../../infra/cloud-functions/process-new-page/variantName.js';
 
 describe('incrementVariantName', () => {
   test('increments single letter', () => {
