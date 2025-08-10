@@ -31,7 +31,7 @@ export function buildHtml(
       const slug = `${pageNumber}-${variantName}-${opt.position}`;
       const href =
         opt.targetPageNumber !== undefined
-          ? `/p/${opt.targetPageNumber}a.html`
+          ? `/p/${opt.targetPageNumber}${opt.targetVariantName || ''}.html`
           : `../new-page.html?option=${slug}`;
       return `<li><a href="${href}">${escapeHtml(opt.content)}</a></li>`;
     })
