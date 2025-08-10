@@ -206,6 +206,13 @@ resource "google_project_iam_member" "terraform_loadbalancer_admin" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "runtime_loadbalancer_admin" {
+  project = var.project_id
+  role    = "roles/compute.loadBalancerAdmin"
+  member  = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
+  depends_on = [google_service_account.cloud_function_runtime]
+}
+
 resource "google_project_iam_member" "terraform_security_admin" {
   project = var.project_id
   role    = "roles/compute.securityAdmin"
