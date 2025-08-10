@@ -102,6 +102,13 @@ resource "google_storage_bucket_object" "dendrite_moderate_js" {
   content_type = "application/javascript"
 }
 
+resource "google_storage_bucket_object" "dendrite_css" {
+  name         = "dendrite.css"
+  bucket       = google_storage_bucket.dendrite_static.name
+  source       = "${path.module}/dendrite.css"
+  content_type = "text/css"
+}
+
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
   bucket = google_storage_bucket.dendrite_static.name
   role   = "roles/storage.objectViewer"
