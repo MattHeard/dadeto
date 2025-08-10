@@ -1,3 +1,3 @@
 export const region = () => ({
-  firestore: { document: () => ({ onWrite: () => {} }) },
+  firestore: { document: () => ({ onWrite: () => {}, onCreate: () => {} }) },
 });
