@@ -1,6 +1,18 @@
 import { escapeHtml } from './buildAltsHtml.js';
 
 /**
+ * Render inline markdown for bold and italics.
+ * @param {string} text Text to render.
+ * @returns {string} HTML string.
+ */
+function renderInlineMarkdown(text) {
+  let html = escapeHtml(String(text ?? ''));
+  html = html.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
+  html = html.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+  return html;
+}
+
+/**
  * Build HTML page for the variant.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
@@ -33,7 +45,8 @@ export function buildHtml(
         opt.targetPageNumber !== undefined
           ? `/p/${opt.targetPageNumber}${opt.targetVariantName || ''}.html`
           : `../new-page.html?option=${slug}`;
-      return `<li><a href="${href}">${escapeHtml(opt.content)}</a></li>`;
+      const optionHtml = renderInlineMarkdown(opt.content);
+      return `<li><a href="${href}">${optionHtml}</a></li>`;
     })
     .join('');
   const title = storyTitle ? `<h1>${escapeHtml(storyTitle)}</h1>` : '';
@@ -49,12 +62,7 @@ export function buildHtml(
   const paragraphs = String(content ?? '')
     .replace(/\r\n?/g, '\n')
     .split('\n')
-    .map(line => {
-      let html = escapeHtml(line);
-      html = html.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
-      html = html.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
-      return `<p>${html}</p>`;
-    })
+    .map(line => `<p>${renderInlineMarkdown(line)}</p>`)
     .join('');
   return (
     `<!doctype html>` +

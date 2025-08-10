@@ -67,6 +67,15 @@ describe('buildHtml', () => {
     expect(html).toContain('<p>a <em>b</em> and <strong>c</strong></p>');
   });
 
+  test('renders markdown in option content', () => {
+    const html = buildHtml(1, 'a', 'content', [
+      { content: 'Go *left* and **bold**', position: 0 },
+    ]);
+    expect(html).toContain(
+      '<li><a href="../new-page.html?option=1-a-0">Go <em>left</em> and <strong>bold</strong></a></li>'
+    );
+  });
+
   test('includes parent and first page links when provided', () => {
     const html = buildHtml(
       2,
