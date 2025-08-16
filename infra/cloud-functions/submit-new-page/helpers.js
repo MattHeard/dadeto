@@ -58,11 +58,11 @@ export async function findExistingOption(db, info) {
   const variantRef = variantSnap.docs[0].ref;
   const optionsSnap = await variantRef
     .collection('options')
-    .orderBy('createdAt')
-    .limit(info.optionNumber + 1)
+    .where('position', '==', info.optionNumber)
+    .limit(1)
     .get();
-  if (optionsSnap.size <= info.optionNumber) {
+  if (optionsSnap.empty) {
     return null;
   }
-  return optionsSnap.docs[info.optionNumber].ref.path;
+  return optionsSnap.docs[0].ref.path;
 }
