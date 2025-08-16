@@ -24,10 +24,10 @@ describe('findExistingOption', () => {
     const optionPath = 'stories/s1/pages/p1/variants/v1/options/opt1';
     const variantRef = {
       collection: jest.fn(() => ({
-        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         get: jest.fn().mockResolvedValue({
-          size: 1,
+          empty: false,
           docs: [{ ref: { path: optionPath } }],
         }),
       })),
@@ -59,11 +59,29 @@ describe('findExistingOption', () => {
   });
 
   test('returns null when option missing', async () => {
+    const variantRef = {
+      collection: jest.fn(() => ({
+        where: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        get: jest.fn().mockResolvedValue({ empty: true }),
+      })),
+    };
+    const pageRef = {
+      collection: jest.fn(() => ({
+        where: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        get: jest
+          .fn()
+          .mockResolvedValue({ empty: false, docs: [{ ref: variantRef }] }),
+      })),
+    };
     const db = {
       collectionGroup: jest.fn(() => ({
         where: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
-        get: jest.fn().mockResolvedValue({ empty: true }),
+        get: jest
+          .fn()
+          .mockResolvedValue({ empty: false, docs: [{ ref: pageRef }] }),
       })),
     };
     const result = await findExistingOption(db, {
