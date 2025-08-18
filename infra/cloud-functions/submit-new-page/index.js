@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import crypto from 'crypto';
 import express from 'express';
 import cors from 'cors';
@@ -8,6 +9,7 @@ import { parseIncomingOption, findExistingOption } from './helpers.js';
 
 initializeApp();
 const db = getFirestore();
+const auth = getAuth();
 const app = express();
 
 const allowed = [
@@ -40,6 +42,7 @@ app.use(express.urlencoded({ extended: false, limit: '20kb' }));
 async function handleSubmit(req, res) {
   const { incoming_option: rawIncomingOption } = req.body;
   let { content = '', author = '???' } = req.body;
+  let authorId = null;
 
   if (rawIncomingOption === null) {
     res.status(400).json({ error: 'incoming option null' });
@@ -65,6 +68,17 @@ async function handleSubmit(req, res) {
   }
   incomingOptionFullName = found;
 
+  const authHeader = req.get('Authorization') || '';
+  const match = authHeader.match(/^Bearer (.+)$/);
+  if (match) {
+    try {
+      const decoded = await auth.verifyIdToken(match[1]);
+      authorId = decoded.uid;
+    } catch {
+      // ignore invalid token
+    }
+  }
+
   const options = [];
   for (let i = 0; i < 4; i += 1) {
     const raw = req.body[`option${i}`];
@@ -82,6 +96,7 @@ async function handleSubmit(req, res) {
     incomingOptionFullName,
     content,
     author,
+    authorId,
     options,
     createdAt: FieldValue.serverTimestamp(),
   });
