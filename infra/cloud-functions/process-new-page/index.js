@@ -110,6 +110,12 @@ export const processNewPage = functions
       });
     });
 
+    batch.set(
+      db.doc(`storyStats/${storyRef.id}`),
+      { variantCount: FieldValue.increment(1) },
+      { merge: true }
+    );
+
     batch.update(variantRef, { dirty: null });
     batch.update(snap.ref, { processed: true });
 
