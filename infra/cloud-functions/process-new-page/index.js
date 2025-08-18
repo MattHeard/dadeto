@@ -91,7 +91,8 @@ export const processNewPage = functions
     batch.set(newVariantRef, {
       name: nextName,
       content: sub.content,
-      authorId: null,
+      authorId: sub.authorId || null,
+      authorName: sub.author,
       incomingOption: incomingOptionFullName,
       moderatorReputationSum: 0,
       rand: Math.random(),

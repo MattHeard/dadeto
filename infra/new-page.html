@@ -21,6 +21,10 @@
         <a href="/">Dendrite</a>
       </h1>
       <h2>New page</h2>
+      <div id="signinButton"></div>
+      <div id="signoutWrap" style="display: none">
+        <button id="signoutBtn" type="button">Sign out</button>
+      </div>
       <form
         action="https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-new-page"
         method="post"
@@ -50,7 +54,11 @@
         </div>
         <p id="saving" style="display: none">Saving...</p>
       </form>
-      <script>
+      <!-- Google Identity Services -->
+      <script src="https://accounts.google.com/gsi/client" defer></script>
+      <script type="module">
+        import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
+
         document.addEventListener('DOMContentLoaded', () => {
           const params = new URLSearchParams(window.location.search);
           const incoming = params.get('option');
@@ -66,6 +74,30 @@
           const form = document.querySelector('form');
           const button = form.querySelector("button[type='submit']");
           const saving = document.getElementById('saving');
+          const signin = document.getElementById('signinButton');
+          const signoutWrap = document.getElementById('signoutWrap');
+          const signoutBtn = document.getElementById('signoutBtn');
+
+          initGoogleSignIn({
+            onSignIn: () => {
+              document.body.classList.add('authed');
+              signin.style.display = 'none';
+              signoutWrap.style.display = '';
+            },
+          });
+
+          signoutBtn.addEventListener('click', async () => {
+            await signOut();
+            document.body.classList.remove('authed');
+            signoutWrap.style.display = 'none';
+            signin.style.display = '';
+          });
+
+          if (getIdToken()) {
+            document.body.classList.add('authed');
+            signin.style.display = 'none';
+            signoutWrap.style.display = '';
+          }
 
           form.addEventListener('submit', async event => {
             event.preventDefault();
@@ -80,9 +112,15 @@
 
             try {
               const formData = new URLSearchParams(new FormData(form));
+              const headers = {};
+              const token = getIdToken();
+              if (token) {
+                headers.Authorization = `Bearer ${token}`;
+              }
               const response = await fetch(form.action, {
                 method: form.method,
                 body: formData,
+                headers,
               });
               if (!response.ok) {
                 throw new Error('Submission failed');
