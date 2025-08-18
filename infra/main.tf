@@ -102,6 +102,20 @@ resource "google_storage_bucket_object" "dendrite_moderate_js" {
   content_type = "application/javascript"
 }
 
+resource "google_storage_bucket_object" "dendrite_admin_html" {
+  name         = "admin.html"
+  bucket       = google_storage_bucket.dendrite_static.name
+  source       = "${path.module}/admin.html"
+  content_type = "text/html"
+}
+
+resource "google_storage_bucket_object" "dendrite_admin_js" {
+  name         = "admin.js"
+  bucket       = google_storage_bucket.dendrite_static.name
+  source       = "${path.module}/admin.js"
+  content_type = "application/javascript"
+}
+
 resource "google_storage_bucket_object" "dendrite_css" {
   name         = "dendrite.css"
   bucket       = google_storage_bucket.dendrite_static.name
