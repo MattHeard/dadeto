@@ -4,8 +4,8 @@ import { PAGE_HTML } from '../../infra/cloud-functions/render-contents/htmlSnipp
 describe('PAGE_HTML', () => {
   test('places navigation links above the contents heading', () => {
     const html = PAGE_HTML('<li>Example</li>');
-    const navIndex = html.indexOf('<nav>');
-    const headingIndex = html.indexOf('<h2>');
+    const navIndex = html.indexOf('<nav');
+    const headingIndex = html.indexOf('<h1>');
     const modIndex = html.indexOf('<a href="mod.html">');
     const newIndex = html.indexOf('<a href="new-story.html">');
     expect(navIndex).toBeGreaterThan(-1);
