@@ -11,16 +11,27 @@
     <link rel="stylesheet" href="/dendrite.css" />
   </head>
   <body>
-    <div class="page">
-      <h1>
-        <img
-          src="/img/logo.png"
-          alt="Dendrite logo"
-          style="height: 1em; vertical-align: middle; margin-right: 0.5em"
-        />
-        <a href="/">Dendrite</a>
-      </h1>
-      <h2>Moderate a story page</h2>
+    <header class="header">
+      <nav class="nav">
+        <a href="/">
+          <img
+            src="/img/logo.png"
+            alt="Dendrite logo"
+            style="height: 1em; vertical-align: middle; margin-right: 0.5em"
+          />
+          Dendrite
+        </a>
+        <a href="new-story.html">New story</a>
+        <a href="mod.html">Moderate</a>
+        <a href="stats.html">Stats</a>
+        <div id="signinButton"></div>
+        <div id="signoutWrap" style="display: none">
+          <button id="signoutBtn" type="button">Sign out</button>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <h1>Moderate a story page</h1>
       <p>
         Please contribute to keeping Dendrite an excellent place to read and
         write.
@@ -30,22 +41,18 @@
         submitting a rating, the next page will load automatically.
       </p>
       <div id="pageContent"></div>
-      <div id="signinButton"></div>
-      <div id="signoutWrap" style="display: none">
-        <button id="signoutBtn" type="button">Sign out</button>
-      </div>
       <div id="actions">
         <button id="approveBtn" type="button" disabled>Approve</button>
         <button id="rejectBtn" type="button" disabled>Reject</button>
       </div>
       <p id="fetching" style="display: none">Fetching...</p>
       <p id="saving" style="display: none">Saving...</p>
+    </main>
 
-      <!-- Google Identity Services -->
-      <script src="https://accounts.google.com/gsi/client" defer></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" defer></script>
 
-      <!-- Moderate tools -->
-      <script type="module" src="./moderate.js"></script>
-    </div>
+    <!-- Moderate tools -->
+    <script type="module" src="./moderate.js"></script>
   </body>
 </html>
