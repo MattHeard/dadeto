@@ -43,7 +43,7 @@ app.use(
  * @returns {string} HTML page.
  */
 function buildHtml(count) {
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite stats</title><link rel="stylesheet" href="/dendrite.css" /></head><body><header class="header"><nav class="nav"><a href="/"><img src="/img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em" />Dendrite</a><a href="new-story.html">New story</a><a href="mod.html">Moderate</a><a href="stats.html">Stats</a><div id="signinButton"></div></nav></header><main><h1>Stats</h1><p>Number of stories: ${count}</p></main><script src="https://accounts.google.com/gsi/client" defer></script><script type="module">import { initGoogleSignIn } from './googleAuth.js'; initGoogleSignIn();</script></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite stats</title><link rel="stylesheet" href="/dendrite.css" /></head><body><header class="header"><nav class="nav"><a href="/"><img src="/img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em" />Dendrite</a><a href="/new-story.html">New story</a><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><div id="signinButton"></div></nav></header><main><h1>Stats</h1><p>Number of stories: ${count}</p></main><script src="https://accounts.google.com/gsi/client" defer></script><script type="module">import { initGoogleSignIn } from './googleAuth.js'; initGoogleSignIn();</script></body></html>`;
 }
 
 /**

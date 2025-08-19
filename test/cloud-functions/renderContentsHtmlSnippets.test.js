@@ -6,8 +6,8 @@ describe('PAGE_HTML', () => {
     const html = PAGE_HTML('<li>Example</li>');
     const navIndex = html.indexOf('<nav');
     const headingIndex = html.indexOf('<h1>');
-    const modIndex = html.indexOf('<a href="mod.html">');
-    const newIndex = html.indexOf('<a href="new-story.html">');
+    const modIndex = html.indexOf('<a href="/mod.html">');
+    const newIndex = html.indexOf('<a href="/new-story.html">');
     expect(navIndex).toBeGreaterThan(-1);
     expect(navIndex).toBeLessThan(headingIndex);
     expect(modIndex).toBeGreaterThan(navIndex);
