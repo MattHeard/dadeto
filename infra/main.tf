@@ -158,6 +158,11 @@ resource "google_project_service" "cloudbuild" {
   service = "cloudbuild.googleapis.com"
 }
 
+resource "google_project_service" "cloudscheduler" {
+  project = var.project_id
+  service = "cloudscheduler.googleapis.com"
+}
+
 resource "google_project_service" "firebaserules" {
   project = var.project_id
   service = "firebaserules.googleapis.com"
@@ -874,6 +879,73 @@ resource "google_cloudfunctions_function_iam_member" "mark_variant_dirty_invoker
   depends_on = [
     google_cloudfunctions_function.mark_variant_dirty,
     google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
+}
+
+data "archive_file" "generate_stats_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/generate-stats"
+  output_path = "${path.module}/build/generate-stats.zip"
+}
+
+resource "google_storage_bucket_object" "generate_stats" {
+  name   = "${var.environment}-generate-stats-${data.archive_file.generate_stats_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.generate_stats_src.output_path
+}
+
+resource "google_cloudfunctions_function" "generate_stats" {
+  name                         = "${var.environment}-generate-stats"
+  runtime                      = var.cloud_functions_runtime
+  entry_point                  = "generateStats"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.generate_stats.name
+  trigger_http                 = true
+  https_trigger_security_level = var.https_security_level
+  service_account_email        = google_service_account.cloud_function_runtime.email
+  region                       = var.region
+
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
+}
+
+resource "google_cloudfunctions_function_iam_member" "generate_stats_invoker" {
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.generate_stats.name
+  role           = "roles/cloudfunctions.invoker"
+  member         = "allUsers"
+  depends_on = [
+    google_cloudfunctions_function.generate_stats,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
+}
+
+resource "google_cloud_scheduler_job" "generate_stats_daily" {
+  name      = "${var.environment}-generate-stats-daily"
+  schedule  = "0 0 * * *"
+  time_zone = "UTC"
+  http_target {
+    http_method = "POST"
+    uri         = google_cloudfunctions_function.generate_stats.https_trigger_url
+    headers = {
+      "X-Appengine-Cron" = "true"
+    }
+  }
+  depends_on = [
+    google_project_service.cloudscheduler,
+    google_cloudfunctions_function.generate_stats,
   ]
 }
 

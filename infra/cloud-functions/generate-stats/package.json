@@ -1,0 +1,13 @@
+{
+  "name": "generate-stats",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "@google-cloud/storage": "^7.16.0",
+    "firebase-admin": "^11.10.1",
+    "firebase-functions": "^4.4.1",
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}
