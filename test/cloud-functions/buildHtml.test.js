@@ -65,11 +65,9 @@ describe('buildHtml', () => {
     );
   });
 
-  test('includes report button and script', () => {
+  test('includes report link and script', () => {
     const html = buildHtml(1, 'a', 'content', []);
-    expect(html).toContain(
-      '<button id="reportBtn" type="button">Report</button>'
-    );
+    expect(html).toContain('<a id="reportLink" href="#">⚑ Report</a>');
     expect(html).toContain("JSON.stringify({variant:'1a'})");
     expect(html).toContain('prod-report-for-moderation');
   });

@@ -60,8 +60,8 @@ export function buildHtml(
     : '';
   const variantSlug = `${pageNumber}${variantName}`;
   const reportHtml =
-    '<p><button id="reportBtn" type="button">Report</button></p>' +
-    `<script>document.getElementById('reportBtn').onclick=async()=>{try{await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant:'${variantSlug}'})});alert('Thanks for your report.');}catch(e){alert('Sorry, something went wrong.');}};</script>`;
+    '<p><a id="reportLink" href="#">⚑ Report</a></p>' +
+    `<script>document.getElementById('reportLink').onclick=async e=>{e.preventDefault();try{await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant:'${variantSlug}'})});alert('Thanks for your report.');}catch(e){alert('Sorry, something went wrong.');}};</script>`;
   const pageNumberHtml =
     `<p style="text-align:center">` +
     `<a style="text-decoration:none" href="/p/${pageNumber - 1}a.html">◀</a> ` +
