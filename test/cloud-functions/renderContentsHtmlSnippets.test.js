@@ -6,14 +6,17 @@ describe('PAGE_HTML', () => {
     const html = PAGE_HTML('<li>Example</li>');
     const navIndex = html.indexOf('<nav');
     const headingIndex = html.indexOf('<h1>');
-    const modIndex = html.indexOf('<a href="mod.html">');
-    const newIndex = html.indexOf('<a href="new-story.html">');
+    const modIndex = html.indexOf('<a href="/mod.html">');
+    const newIndex = html.indexOf('<a href="/new-story.html">');
+    const statsIndex = html.indexOf('<a href="/stats.html">');
     expect(navIndex).toBeGreaterThan(-1);
     expect(navIndex).toBeLessThan(headingIndex);
     expect(modIndex).toBeGreaterThan(navIndex);
     expect(modIndex).toBeLessThan(headingIndex);
     expect(newIndex).toBeGreaterThan(navIndex);
     expect(newIndex).toBeLessThan(headingIndex);
+    expect(statsIndex).toBeGreaterThan(navIndex);
+    expect(statsIndex).toBeLessThan(headingIndex);
   });
 
   test('includes Google sign-in and sign-out buttons and script', () => {
