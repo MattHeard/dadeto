@@ -207,6 +207,12 @@ resource "google_project_iam_member" "terraform_create_sa" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "terraform_cloudscheduler_admin" {
+  project = var.project_id
+  role    = "roles/cloudscheduler.admin"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 resource "google_project_iam_member" "ci_firebaserules_admin" {
   project = var.project_id
   role    = "roles/firebaserules.admin"
@@ -946,6 +952,7 @@ resource "google_cloud_scheduler_job" "generate_stats_daily" {
   depends_on = [
     google_project_service.cloudscheduler,
     google_cloudfunctions_function.generate_stats,
+    google_project_iam_member.terraform_cloudscheduler_admin,
   ]
 }
 
