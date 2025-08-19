@@ -41,4 +41,33 @@ describe('googleAuth', () => {
     expect(sessionStorage.getItem('id_token')).toBeNull();
     expect(disableAutoSelect).toHaveBeenCalled();
   });
+
+  it('renders the correct theme and updates on scheme change', () => {
+    const renderButton = jest.fn();
+    const listeners = {};
+    const mql = {
+      matches: false,
+      addEventListener: (ev, cb) => {
+        listeners[ev] = cb;
+      },
+    };
+    global.document.getElementById.mockReturnValue({ innerHTML: '' });
+    global.window = {
+      google: { accounts: { id: { initialize: jest.fn(), renderButton } } },
+      matchMedia: jest.fn().mockReturnValue(mql),
+    };
+    global.google = global.window.google;
+    initGoogleSignIn();
+    expect(renderButton).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ theme: 'filled_blue' })
+    );
+    renderButton.mockClear();
+    mql.matches = true;
+    listeners.change();
+    expect(renderButton).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ theme: 'filled_black' })
+    );
+  });
 });

@@ -29,6 +29,10 @@ describe('authedFetch', () => {
           },
         },
       },
+      matchMedia: jest.fn().mockReturnValue({
+        matches: false,
+        addEventListener: jest.fn(),
+      }),
     };
     global.google = global.window.google;
     global.document = { getElementById: jest.fn() };
