@@ -15,4 +15,13 @@ describe('PAGE_HTML', () => {
     expect(newIndex).toBeGreaterThan(navIndex);
     expect(newIndex).toBeLessThan(headingIndex);
   });
+
+  test('includes Google sign-in button and script', () => {
+    const html = PAGE_HTML('');
+    expect(html).toContain('<div id="signinButton"></div>');
+    expect(html).toContain('https://accounts.google.com/gsi/client');
+    expect(html).toContain(
+      "import { initGoogleSignIn } from './googleAuth.js';"
+    );
+  });
 });
