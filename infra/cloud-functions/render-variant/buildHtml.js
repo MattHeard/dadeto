@@ -62,7 +62,12 @@ export function buildHtml(
   const reportHtml =
     '<p><button id="reportBtn" type="button">Report</button></p>' +
     `<script>document.getElementById('reportBtn').onclick=async()=>{try{await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant:'${variantSlug}'})});alert('Thanks for your report.');}catch(e){alert('Sorry, something went wrong.');}};</script>`;
-  const pageNumberHtml = `<p style="text-align:center"><a href="/p/${pageNumber - 1}a.html">◀</a> ${pageNumber} <a href="/p/${pageNumber + 1}a.html">▶</a></p>`;
+  const pageNumberHtml =
+    `<p style="text-align:center">` +
+    `<a style="text-decoration:none" href="/p/${pageNumber - 1}a.html">◀</a> ` +
+    `${pageNumber} ` +
+    `<a style="text-decoration:none" href="/p/${pageNumber + 1}a.html">▶</a>` +
+    `</p>`;
   const paragraphs = String(content ?? '')
     .replace(/\r\n?/g, '\n')
     .split('\n')
