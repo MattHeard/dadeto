@@ -14,7 +14,7 @@ describe('generate stats helpers', () => {
 
   test('getPageCount returns page count', async () => {
     const mockDb = {
-      collection: () => ({
+      collectionGroup: () => ({
         count: () => ({
           get: () => Promise.resolve({ data: () => ({ count: 5 }) }),
         }),
@@ -25,7 +25,7 @@ describe('generate stats helpers', () => {
 
   test('getUnmoderatedPageCount sums zero and null counts', async () => {
     const mockDb = {
-      collection: () => ({
+      collectionGroup: () => ({
         where: (_field, _op, value) => ({
           count: () => ({
             get: () =>
