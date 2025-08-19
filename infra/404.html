@@ -2,17 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Page Not Found</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
-    />
     <link rel="stylesheet" href="/dendrite.css" />
   </head>
   <body>
-    <div class="page">
+    <header class="header">
+      <nav class="nav">
+        <a href="/">
+          <img
+            src="/img/logo.png"
+            alt="Dendrite logo"
+            style="height: 1em; vertical-align: middle; margin-right: 0.5em"
+          />
+          Dendrite
+        </a>
+        <a href="new-story.html">New story</a>
+        <a href="mod.html">Moderate</a>
+        <div id="signinButton"></div>
+        <div id="signoutWrap" style="display: none">
+          <button id="signoutBtn" type="button">Sign out</button>
+        </div>
+      </nav>
+    </header>
+    <main>
       <h1>404 - Page Not Found</h1>
       <p>The requested content could not be found.</p>
-    </div>
+    </main>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" defer></script>
+    <script type="module">
+      import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const signin = document.getElementById('signinButton');
+        const signoutWrap = document.getElementById('signoutWrap');
+        const signoutBtn = document.getElementById('signoutBtn');
+
+        initGoogleSignIn({
+          onSignIn: () => {
+            document.body.classList.add('authed');
+            signin.style.display = 'none';
+            signoutWrap.style.display = '';
+          },
+        });
+
+        signoutBtn.addEventListener('click', async () => {
+          await signOut();
+          document.body.classList.remove('authed');
+          signoutWrap.style.display = 'none';
+          signin.style.display = '';
+        });
+
+        if (getIdToken()) {
+          document.body.classList.add('authed');
+          signin.style.display = 'none';
+          signoutWrap.style.display = '';
+        }
+      });
+    </script>
   </body>
 </html>
