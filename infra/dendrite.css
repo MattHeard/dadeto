@@ -75,7 +75,7 @@ body {
   width: 100%;
 }
 
-.header a {
+.header a:first-of-type {
   font-weight: 600;
 }
 
