@@ -149,6 +149,39 @@ a {
   padding: 0 1rem;
 }
 
+/* Form styles */
+form {
+  display: grid;
+  gap: var(--s3);
+  max-width: 40ch;
+}
+
+form > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+
+form input[type='text'],
+form textarea {
+  width: 100%;
+  padding: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--s1);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+form textarea {
+  resize: vertical;
+  min-height: 8em;
+}
+
+form button {
+  padding: var(--s2) var(--s3);
+  width: fit-content;
+}
+
 /* Neutralize background for Google sign-in button */
 .g_id_signin,
 .abcRioButton {
