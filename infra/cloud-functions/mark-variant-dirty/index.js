@@ -1,0 +1,124 @@
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
+import * as functions from 'firebase-functions';
+import express from 'express';
+import cors from 'cors';
+
+initializeApp();
+const db = getFirestore();
+const auth = getAuth();
+const app = express();
+
+const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
+const allowed = [
+  'https://mattheard.net',
+  'https://dendritestories.co.nz',
+  'https://www.dendritestories.co.nz',
+];
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || allowed.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error('CORS'));
+      }
+    },
+    methods: ['POST'],
+  })
+);
+
+app.use(express.json());
+
+/**
+ * Mark a variant document as dirty so the render-variant function re-renders it.
+ * @param {number} pageNumber Page number.
+ * @param {string} variantName Variant name.
+ * @param {{db?: import('firebase-admin/firestore').Firestore}} [deps] Optional dependencies.
+ * @returns {Promise<boolean>} True if variant updated.
+ */
+async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
+  const database = deps.db || db;
+  const pagesSnap = await database
+    .collectionGroup('pages')
+    .where('number', '==', pageNumber)
+    .limit(1)
+    .get();
+  if (pagesSnap.empty) {
+    return false;
+  }
+  const pageRef = pagesSnap.docs[0].ref;
+  const variantsSnap = await pageRef
+    .collection('variants')
+    .where('name', '==', variantName)
+    .limit(1)
+    .get();
+  if (variantsSnap.empty) {
+    return false;
+  }
+  await variantsSnap.docs[0].ref.update({ dirty: null });
+  return true;
+}
+
+/**
+ * Handle HTTP requests to mark a variant as dirty.
+ * @param {import('express').Request} req HTTP request.
+ * @param {import('express').Response} res HTTP response.
+ * @param {{markFn?: typeof markVariantDirtyImpl}} [deps] Optional dependencies.
+ * @returns {Promise<void>} Promise resolving when response is sent.
+ */
+async function handleRequest(req, res, deps = {}) {
+  if (req.method !== 'POST') {
+    res.status(405).send('POST only');
+    return;
+  }
+
+  const authHeader = req.get('Authorization') || '';
+  const match = authHeader.match(/^Bearer (.+)$/);
+  if (!match) {
+    res.status(401).send('Missing token');
+    return;
+  }
+
+  let decoded;
+  try {
+    decoded = await auth.verifyIdToken(match[1]);
+  } catch (e) {
+    res.status(401).send(e?.message || 'Invalid token');
+    return;
+  }
+  if (decoded.uid !== ADMIN_UID) {
+    res.status(403).send('Forbidden');
+    return;
+  }
+
+  const { page, variant } = req.body || {};
+  const pageNumber = Number(page);
+  const variantName = typeof variant === 'string' ? variant : '';
+  if (!Number.isInteger(pageNumber) || !variantName) {
+    res.status(400).json({ error: 'Invalid input' });
+    return;
+  }
+
+  const markFn = deps.markFn || markVariantDirtyImpl;
+  try {
+    const ok = await markFn(pageNumber, variantName);
+    if (!ok) {
+      res.status(404).json({ error: 'Variant not found' });
+      return;
+    }
+    res.status(200).json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || 'update failed' });
+  }
+}
+
+app.post('/', handleRequest);
+
+export const markVariantDirty = functions
+  .region('europe-west1')
+  .https.onRequest(app);
+
+export { handleRequest, markVariantDirtyImpl };
