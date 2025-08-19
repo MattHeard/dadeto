@@ -90,4 +90,13 @@ describe('buildHtml', () => {
     expect(html).toContain('<a href="/p/1a.html">Back</a>');
     expect(html).toContain('<a href="/p/9a.html">First page</a>');
   });
+
+  test('includes navigation header and sign-in script', () => {
+    const html = buildHtml(1, 'a', 'content', []);
+    expect(html).toContain('<nav class="nav">');
+    expect(html).toContain('id="signinButton"');
+    expect(html).toContain(
+      "import { initGoogleSignIn } from '../googleAuth.js'"
+    );
+  });
 });

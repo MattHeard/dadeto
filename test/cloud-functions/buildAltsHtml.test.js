@@ -6,4 +6,10 @@ describe('buildAltsHtml', () => {
     const html = buildAltsHtml(1, [{ name: 'a', content: 'hello world' }]);
     expect(html).toContain('<a href="/p/1a.html">');
   });
+
+  test('includes navigation header', () => {
+    const html = buildAltsHtml(1, []);
+    expect(html).toContain('<nav class="nav">');
+    expect(html).toContain('id="signinButton"');
+  });
 });
