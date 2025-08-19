@@ -33,6 +33,8 @@
     "jest-environment-jsdom": "^29.7.0",
     "jscpd": "^4.0.5",
     "prettier": "^3.5.3",
-    "typhonjs-escomplex": "^0.1.0"
+    "typhonjs-escomplex": "^0.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
   }
 }

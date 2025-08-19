@@ -4,6 +4,8 @@ import { getAuth } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 const RENDER_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents';
+const REGENERATE_URL =
+  'https://europe-west1-irien-465710.cloudfunctions.net/prod-mark-variant-dirty';
 
 /**
  * Redirects unauthorized users and reveals admin content for the correct UID.
@@ -39,7 +41,45 @@ async function triggerRender() {
   }
 }
 
+/**
+ * Submit page/variant to trigger regeneration.
+ * @param {Event} e Submit event.
+ */
+async function regenerateVariant(e) {
+  e.preventDefault();
+  const token = getIdToken();
+  if (!token) {
+    return;
+  }
+  const input = document.getElementById('regenInput');
+  const value = input?.value.trim();
+  const match = value.match(/^(\d+)([a-zA-Z]+)$/);
+  if (!match) {
+    alert('Invalid format');
+    return;
+  }
+  const page = Number(match[1]);
+  const variant = match[2];
+  try {
+    const res = await fetch(REGENERATE_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ page, variant }),
+    });
+    if (!res.ok) throw new Error('fail');
+    alert('Regeneration triggered');
+  } catch {
+    alert('Regeneration failed');
+  }
+}
+
 document.getElementById('renderBtn')?.addEventListener('click', triggerRender);
+document
+  .getElementById('regenForm')
+  ?.addEventListener('submit', regenerateVariant);
 
 initGoogleSignIn({ onSignIn: checkAccess });
 
