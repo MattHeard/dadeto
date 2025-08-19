@@ -62,6 +62,7 @@ export function buildHtml(
   const reportHtml =
     '<p><button id="reportBtn" type="button">Report</button></p>' +
     `<script>document.getElementById('reportBtn').onclick=async()=>{try{await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant:'${variantSlug}'})});alert('Thanks for your report.');}catch(e){alert('Sorry, something went wrong.');}};</script>`;
+  const pageNumberHtml = `<p style="text-align:center"><a href="/p/${pageNumber - 1}a.html">◀</a> ${pageNumber} <a href="/p/${pageNumber + 1}a.html">▶</a></p>`;
   const paragraphs = String(content ?? '')
     .replace(/\r\n?/g, '\n')
     .split('\n')
@@ -76,7 +77,7 @@ export function buildHtml(
     `<link rel="stylesheet" href="/dendrite.css" />` +
     `</head><body>` +
     `<header class="header"><nav class="nav"><a href="/"><img src="/img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em;" />Dendrite</a><a href="../new-story.html">New story</a><a href="../mod.html">Moderate</a><div id="signinButton"></div></nav></header>` +
-    `<main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p><a href="./${pageNumber}-alts.html">Other variants</a></p>${reportHtml}</main>` +
+    `<main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p><a href="./${pageNumber}-alts.html">Other variants</a></p>${pageNumberHtml}${reportHtml}</main>` +
     `<script src="https://accounts.google.com/gsi/client" defer></script><script type="module">import { initGoogleSignIn } from '../googleAuth.js'; initGoogleSignIn();</script>` +
     `</body></html>`
   );
