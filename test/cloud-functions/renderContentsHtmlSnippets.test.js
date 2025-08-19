@@ -16,12 +16,14 @@ describe('PAGE_HTML', () => {
     expect(newIndex).toBeLessThan(headingIndex);
   });
 
-  test('includes Google sign-in button and script', () => {
+  test('includes Google sign-in and sign-out buttons and script', () => {
     const html = PAGE_HTML('');
     expect(html).toContain('<div id="signinButton"></div>');
+    expect(html).toContain('<div id="signoutWrap"');
+    expect(html).toContain('id="signoutBtn"');
     expect(html).toContain('https://accounts.google.com/gsi/client');
     expect(html).toContain(
-      "import { initGoogleSignIn } from './googleAuth.js';"
+      "import { initGoogleSignIn, signOut, getIdToken } from './googleAuth.js';"
     );
   });
 });
