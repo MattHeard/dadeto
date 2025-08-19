@@ -6,6 +6,8 @@ const RENDER_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents';
 const REGENERATE_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-mark-variant-dirty';
+const STATS_URL =
+  'https://europe-west1-irien-465710.cloudfunctions.net/prod-generate-stats';
 
 /**
  * Redirects unauthorized users and reveals admin content for the correct UID.
@@ -38,6 +40,25 @@ async function triggerRender() {
     alert('Render triggered');
   } catch {
     alert('Render failed');
+  }
+}
+
+/**
+ * Trigger stats generation.
+ */
+async function triggerStats() {
+  const token = getIdToken();
+  if (!token) {
+    return;
+  }
+  try {
+    await fetch(STATS_URL, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    alert('Stats generated');
+  } catch {
+    alert('Stats generation failed');
   }
 }
 
@@ -77,6 +98,7 @@ async function regenerateVariant(e) {
 }
 
 document.getElementById('renderBtn')?.addEventListener('click', triggerRender);
+document.getElementById('statsBtn')?.addEventListener('click', triggerStats);
 document
   .getElementById('regenForm')
   ?.addEventListener('submit', regenerateVariant);
