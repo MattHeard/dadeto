@@ -71,9 +71,10 @@ export function buildHtml(
     `<title>Dendrite</title>` +
     `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css" />` +
     `<link rel="stylesheet" href="/dendrite.css" />` +
-    `</head><body><div class="page">` +
-    `<h1><img src="../img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em;" />` +
-    `<a href="/">Dendrite</a></h1>${title}${paragraphs}` +
-    `<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p><a href="./${pageNumber}-alts.html">Other variants</a></p>${reportHtml}</div></body></html>`
+    `</head><body>` +
+    `<header class="header"><nav class="nav"><a href="/"><img src="/img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em;" />Dendrite</a><a href="../new-story.html">New story</a><a href="../mod.html">Moderate</a><div id="signinButton"></div></nav></header>` +
+    `<main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p><a href="./${pageNumber}-alts.html">Other variants</a></p>${reportHtml}</main>` +
+    `<script src="https://accounts.google.com/gsi/client" defer></script><script type="module">import { initGoogleSignIn } from '../googleAuth.js'; initGoogleSignIn();</script>` +
+    `</body></html>`
   );
 }
