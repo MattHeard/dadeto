@@ -58,6 +58,13 @@ describe('buildHtml', () => {
     expect(html).toContain('<a href="./1-alts.html">Other variants</a>');
   });
 
+  test('shows page number with navigation links', () => {
+    const html = buildHtml(5, 'b', 'content', []);
+    expect(html).toContain(
+      '<p style="text-align:center"><a href="/p/4a.html">◀</a> 5 <a href="/p/6a.html">▶</a></p>'
+    );
+  });
+
   test('includes report button and script', () => {
     const html = buildHtml(1, 'a', 'content', []);
     expect(html).toContain(
