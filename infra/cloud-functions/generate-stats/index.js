@@ -63,7 +63,7 @@ async function getStoryCount() {
  * @returns {Promise<number>} Page count.
  */
 async function getPageCount(dbRef = db) {
-  const snap = await dbRef.collection('pages').count().get();
+  const snap = await dbRef.collectionGroup('pages').count().get();
   return snap.data().count || 0;
 }
 
@@ -74,12 +74,12 @@ async function getPageCount(dbRef = db) {
  */
 async function getUnmoderatedPageCount(dbRef = db) {
   const zeroSnap = await dbRef
-    .collection('pages')
+    .collectionGroup('variants')
     .where('moderatorReputationSum', '==', 0)
     .count()
     .get();
   const nullSnap = await dbRef
-    .collection('pages')
+    .collectionGroup('variants')
     .where('moderatorReputationSum', '==', null)
     .count()
     .get();
