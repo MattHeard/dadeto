@@ -61,7 +61,7 @@ describe('buildHtml', () => {
   test('shows page number with navigation links', () => {
     const html = buildHtml(5, 'b', 'content', []);
     expect(html).toContain(
-      '<p style="text-align:center"><a href="/p/4a.html">◀</a> 5 <a href="/p/6a.html">▶</a></p>'
+      '<p style="text-align:center"><a style="text-decoration:none" href="/p/4a.html">◀</a> 5 <a style="text-decoration:none" href="/p/6a.html">▶</a></p>'
     );
   });
 
