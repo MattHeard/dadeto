@@ -127,7 +127,12 @@ describe('render', () => {
       }),
       parent: { parent: parentPageRef },
     };
-    mockDoc.mockReturnValue({ parent: { parent: parentVariantRef } });
+    mockDoc.mockReturnValue({
+      parent: { parent: parentVariantRef },
+      get: jest
+        .fn()
+        .mockResolvedValue({ exists: true, data: () => ({ position: 4 }) }),
+    });
 
     await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
 
@@ -158,11 +163,51 @@ describe('render', () => {
       }),
       parent: { parent: parentPageRef },
     };
-    mockDoc.mockReturnValue({ parent: { parent: parentVariantRef } });
+    mockDoc.mockReturnValue({
+      parent: { parent: parentVariantRef },
+      get: jest
+        .fn()
+        .mockResolvedValue({ exists: true, data: () => ({ position: 2 }) }),
+    });
 
     await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
     const html = mockSave.mock.calls[0][0];
     expect(html).toContain('<a href="/p/7b.html">Back</a>');
     expect(html).toContain('<a href="/p/1a.html">First page</a>');
+  });
+
+  test('includes rewrite link when incoming option provided', async () => {
+    const snap = createSnap([{ content: 'Go', position: 0 }]);
+    snap.data = () => ({
+      name: 'a',
+      content: 'content',
+      incomingOption: 'stories/s1/pages/p1/variants/pv/options/o1',
+    });
+
+    const parentPageRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 7 }),
+      }),
+    };
+    const parentVariantRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ name: 'b' }),
+      }),
+      parent: { parent: parentPageRef },
+    };
+    mockDoc.mockReturnValue({
+      parent: { parent: parentVariantRef },
+      get: jest
+        .fn()
+        .mockResolvedValue({ exists: true, data: () => ({ position: 3 }) }),
+    });
+
+    await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
+    const html = mockSave.mock.calls[0][0];
+    expect(html).toContain(
+      '<a href="../new-page.html?option=7-b-3">Rewrite</a> <a href="./5-alts.html">Other variants</a>'
+    );
   });
 });
