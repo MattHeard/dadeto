@@ -4,27 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>New Page</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
-    />
     <link rel="stylesheet" href="/dendrite.css" />
   </head>
   <body>
-    <div class="page">
-      <h1>
-        <img
-          src="/img/logo.png"
-          alt="Dendrite logo"
-          style="height: 1em; vertical-align: middle; margin-right: 0.5em"
-        />
-        <a href="/">Dendrite</a>
-      </h1>
-      <h2>New page</h2>
-      <div id="signinButton"></div>
-      <div id="signoutWrap" style="display: none">
-        <button id="signoutBtn" type="button">Sign out</button>
-      </div>
+    <header class="header">
+      <nav class="nav">
+        <a href="/">
+          <img
+            src="/img/logo.png"
+            alt="Dendrite logo"
+            style="height: 1em; vertical-align: middle; margin-right: 0.5em"
+          />
+          Dendrite
+        </a>
+        <a href="new-story.html">New story</a>
+        <a href="mod.html">Moderate</a>
+        <div id="signinButton"></div>
+        <div id="signoutWrap" style="display: none">
+          <button id="signoutBtn" type="button">Sign out</button>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <h1>New page</h1>
       <form
         action="https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-new-page"
         method="post"
@@ -54,99 +56,97 @@
         </div>
         <p id="saving" style="display: none">Saving...</p>
       </form>
-      <!-- Google Identity Services -->
-      <script src="https://accounts.google.com/gsi/client" defer></script>
-      <script type="module">
-        import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
+    </main>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" defer></script>
+    <script type="module">
+      import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 
-        document.addEventListener('DOMContentLoaded', () => {
-          const params = new URLSearchParams(window.location.search);
-          const incoming = params.get('option');
-          if (incoming) {
-            const input = document.querySelector(
-              'input[name="incoming_option"]'
-            );
-            if (input) {
-              input.value = incoming;
-            }
+      document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const incoming = params.get('option');
+        if (incoming) {
+          const input = document.querySelector('input[name="incoming_option"]');
+          if (input) {
+            input.value = incoming;
           }
+        }
 
-          const form = document.querySelector('form');
-          const button = form.querySelector("button[type='submit']");
-          const saving = document.getElementById('saving');
-          const signin = document.getElementById('signinButton');
-          const signoutWrap = document.getElementById('signoutWrap');
-          const signoutBtn = document.getElementById('signoutBtn');
+        const form = document.querySelector('form');
+        const button = form.querySelector("button[type='submit']");
+        const saving = document.getElementById('saving');
+        const signin = document.getElementById('signinButton');
+        const signoutWrap = document.getElementById('signoutWrap');
+        const signoutBtn = document.getElementById('signoutBtn');
 
-          initGoogleSignIn({
-            onSignIn: () => {
-              document.body.classList.add('authed');
-              signin.style.display = 'none';
-              signoutWrap.style.display = '';
-            },
-          });
-
-          signoutBtn.addEventListener('click', async () => {
-            await signOut();
-            document.body.classList.remove('authed');
-            signoutWrap.style.display = 'none';
-            signin.style.display = '';
-          });
-
-          if (getIdToken()) {
+        initGoogleSignIn({
+          onSignIn: () => {
             document.body.classList.add('authed');
             signin.style.display = 'none';
             signoutWrap.style.display = '';
-          }
-
-          form.addEventListener('submit', async event => {
-            event.preventDefault();
-            button.disabled = true;
-            saving.style.display = 'block';
-            let dots = 1;
-            saving.textContent = 'Saving.';
-            const intervalId = setInterval(() => {
-              dots = (dots % 3) + 1;
-              saving.textContent = `Saving${'.'.repeat(dots)}`;
-            }, 500);
-
-            try {
-              const formData = new URLSearchParams(new FormData(form));
-              const headers = {};
-              const token = getIdToken();
-              if (token) {
-                headers.Authorization = `Bearer ${token}`;
-              }
-              const response = await fetch(form.action, {
-                method: form.method,
-                body: formData,
-                headers,
-              });
-              if (!response.ok) {
-                throw new Error('Submission failed');
-              }
-              const { id } = await response.json();
-              let delay = 500;
-              while (true) {
-                await new Promise(resolve => setTimeout(resolve, delay));
-                const ts = Date.now();
-                const pendingRes = await fetch(`/pending/${id}.json?ts=${ts}`);
-                if (pendingRes.ok) {
-                  const data = await pendingRes.json();
-                  clearInterval(intervalId);
-                  window.location.href = data.path;
-                  return;
-                }
-                delay = Math.min(delay * 2, 8000);
-              }
-            } catch {
-              clearInterval(intervalId);
-              saving.textContent = 'Failed to save.';
-              button.disabled = false;
-            }
-          });
+          },
         });
-      </script>
-    </div>
+
+        signoutBtn.addEventListener('click', async () => {
+          await signOut();
+          document.body.classList.remove('authed');
+          signoutWrap.style.display = 'none';
+          signin.style.display = '';
+        });
+
+        if (getIdToken()) {
+          document.body.classList.add('authed');
+          signin.style.display = 'none';
+          signoutWrap.style.display = '';
+        }
+
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          button.disabled = true;
+          saving.style.display = 'block';
+          let dots = 1;
+          saving.textContent = 'Saving.';
+          const intervalId = setInterval(() => {
+            dots = (dots % 3) + 1;
+            saving.textContent = `Saving${'.'.repeat(dots)}`;
+          }, 500);
+
+          try {
+            const formData = new URLSearchParams(new FormData(form));
+            const headers = {};
+            const token = getIdToken();
+            if (token) {
+              headers.Authorization = `Bearer ${token}`;
+            }
+            const response = await fetch(form.action, {
+              method: form.method,
+              body: formData,
+              headers,
+            });
+            if (!response.ok) {
+              throw new Error('Submission failed');
+            }
+            const { id } = await response.json();
+            let delay = 500;
+            while (true) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              const ts = Date.now();
+              const pendingRes = await fetch(`/pending/${id}.json?ts=${ts}`);
+              if (pendingRes.ok) {
+                const data = await pendingRes.json();
+                clearInterval(intervalId);
+                window.location.href = data.path;
+                return;
+              }
+              delay = Math.min(delay * 2, 8000);
+            }
+          } catch {
+            clearInterval(intervalId);
+            saving.textContent = 'Failed to save.';
+            button.disabled = false;
+          }
+        });
+      });
+    </script>
   </body>
 </html>
