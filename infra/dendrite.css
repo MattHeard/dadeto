@@ -1,11 +1,12 @@
 /* Dendrite styles */
+/* Default: light theme */
 :root {
-  --bg: #0c0f13;
-  --text: #e7e7e7;
-  --muted: #9aa3ad;
-  --link: #68c3ff;
-  --link-hover: #a8dcff;
-  --border: #1a222b;
+  --bg: #ffffff;
+  --text: #0b0f14;
+  --muted: #66707a;
+  --link: #0b63ce;
+  --link-hover: #2a7fe6;
+  --border: #e5e7eb;
   --s1: 4px;
   --s2: 8px;
   --s3: 12px;
@@ -13,9 +14,27 @@
   --s6: 24px;
 }
 
+/* Respect system dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c0f13;
+    --text: #e7e7e7;
+    --muted: #9aa3ad;
+    --link: #68c3ff;
+    --link-hover: #a8dcff;
+    --border: #1a222b;
+  }
+}
+
+/* Let the UA expose both palettes; switch via media rule above */
 html {
-  color-scheme: dark;
+  color-scheme: light;
   font-size: clamp(16px, 2.4vw, 18px);
+}
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
 }
 
 body {
@@ -39,16 +58,21 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  padding: var(--s3) var(--s4);
+  padding: var(--s3) 0; /* vertical only */
   border-bottom: 1px solid var(--border);
   background: var(--bg);
 }
 
+/* Constrain header content to match main's width */
 .header .nav {
   display: flex;
   gap: var(--s3);
   align-items: center;
   flex-wrap: wrap;
+  max-width: 72ch;
+  margin: 0 auto;
+  padding: 0 var(--s4); /* same horizontal padding as main */
+  width: 100%;
 }
 
 .header a {
