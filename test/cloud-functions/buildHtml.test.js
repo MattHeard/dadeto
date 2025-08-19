@@ -2,6 +2,11 @@ import { describe, test, expect } from '@jest/globals';
 import { buildHtml } from '../../infra/cloud-functions/render-variant/buildHtml.js';
 
 describe('buildHtml', () => {
+  test('sets default head title when story title missing', () => {
+    const html = buildHtml(1, 'a', 'hello', []);
+    expect(html).toContain('<title>Dendrite</title>');
+  });
+
   test('omits story title when not provided', () => {
     const html = buildHtml(1, 'a', 'hello', []);
     expect(html).not.toContain('<h1>My Story</h1>');
@@ -13,6 +18,11 @@ describe('buildHtml', () => {
     const contentIndex = html.indexOf('<p>hello</p>');
     expect(titleIndex).toBeGreaterThan(-1);
     expect(titleIndex).toBeLessThan(contentIndex);
+  });
+
+  test('includes story title in head title when provided', () => {
+    const html = buildHtml(1, 'a', 'hello', [], 'My Story');
+    expect(html).toContain('<title>Dendrite - My Story</title>');
   });
 
   test('links option without target page using slug', () => {
