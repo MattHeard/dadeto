@@ -26,4 +26,15 @@ describe('PAGE_HTML', () => {
       "import { initGoogleSignIn, signOut, getIdToken } from './googleAuth.js';"
     );
   });
+
+  test('references Pico CSS before the local stylesheet', () => {
+    const html = PAGE_HTML('');
+    const picoIndex = html.indexOf(
+      '@picocss/pico@2/css/pico.fluid.classless.min.css'
+    );
+    const localIndex = html.indexOf('/dendrite.css');
+    expect(picoIndex).toBeGreaterThan(-1);
+    expect(localIndex).toBeGreaterThan(-1);
+    expect(picoIndex).toBeLessThan(localIndex);
+  });
 });
