@@ -9,6 +9,7 @@ const config = {
     '^firebase-admin/app$': '<rootDir>/test/mocks/firebase-admin-app.js',
     '^firebase-admin/firestore$':
       '<rootDir>/test/mocks/firebase-admin-firestore.js',
+    '^firebase-admin/auth$': '<rootDir>/test/mocks/firebase-admin-auth.js',
     '^firebase-functions$': '<rootDir>/test/mocks/firebase-functions.js',
     '^@google-cloud/storage$': '<rootDir>/test/mocks/google-cloud-storage.js',
   },

@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
 import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
@@ -8,6 +9,13 @@ import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
 initializeApp();
 const db = getFirestore();
 const storage = new Storage();
+const auth = getAuth();
+const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
+const allowed = [
+  'https://mattheard.net',
+  'https://dendritestories.co.nz',
+  'https://www.dendritestories.co.nz',
+];
 const PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
 const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
 const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
@@ -160,11 +168,72 @@ async function render(deps = {}) {
 }
 
 /**
+ *
+ * @param req
+ * @param res
+ * @param deps
+ */
+async function handleRenderRequest(req, res, deps = {}) {
+  const origin = req.get('Origin');
+  if (!origin || allowed.includes(origin)) {
+    if (origin) {
+      res.set('Access-Control-Allow-Origin', origin);
+    }
+  } else {
+    res.status(403).send('CORS');
+    return;
+  }
+  if (req.method === 'OPTIONS') {
+    res.set('Access-Control-Allow-Methods', 'POST');
+    res.set('Access-Control-Allow-Headers', 'Authorization');
+    res.status(204).send('');
+    return;
+  }
+  if (req.method !== 'POST') {
+    res.status(405).send('POST only');
+    return;
+  }
+  const authHeader = req.get('Authorization') || '';
+  const match = authHeader.match(/^Bearer (.+)$/);
+  if (!match) {
+    res.status(401).send('Missing token');
+    return;
+  }
+  let decoded;
+  try {
+    decoded = await auth.verifyIdToken(match[1]);
+  } catch (e) {
+    res.status(401).send(e?.message || 'Invalid token');
+    return;
+  }
+  if (decoded.uid !== ADMIN_UID) {
+    res.status(403).send('Forbidden');
+    return;
+  }
+  const renderFn = deps.renderFn || render;
+  try {
+    await renderFn();
+    res.status(200).json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || 'render failed' });
+  }
+}
+
+/**
  * Cloud Function triggered when a new story is created.
  */
 export const renderContents = functions
   .region('europe-west1')
   .firestore.document('stories/{storyId}')
   .onCreate(render);
+export const triggerRenderContents = functions
+  .region('europe-west1')
+  .https.onRequest(handleRenderRequest);
 
-export { buildHtml, fetchTopStoryIds, fetchStoryInfo, render };
+export {
+  buildHtml,
+  fetchTopStoryIds,
+  fetchStoryInfo,
+  render,
+  handleRenderRequest,
+};
