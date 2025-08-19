@@ -26,6 +26,7 @@ function renderInlineMarkdown(text) {
  * @param {string} [author] Author name.
  * @param parentUrl
  * @param firstPageUrl
+ * @param incomingOptionSlug
  * @returns {string} HTML page.
  */
 export function buildHtml(
@@ -36,7 +37,8 @@ export function buildHtml(
   storyTitle = '',
   author = '',
   parentUrl = '',
-  firstPageUrl = ''
+  firstPageUrl = '',
+  incomingOptionSlug = ''
 ) {
   const items = options
     .map(opt => {
@@ -57,6 +59,9 @@ export function buildHtml(
   const parentHtml = parentUrl ? `<p><a href="${parentUrl}">Back</a></p>` : '';
   const firstHtml = firstPageUrl
     ? `<p><a href="${firstPageUrl}">First page</a></p>`
+    : '';
+  const rewriteLink = incomingOptionSlug
+    ? `<a href="../new-page.html?option=${incomingOptionSlug}">Rewrite</a> `
     : '';
   const variantSlug = `${pageNumber}${variantName}`;
   const reportHtml =
@@ -82,7 +87,7 @@ export function buildHtml(
     `<link rel="stylesheet" href="/dendrite.css" />` +
     `</head><body>` +
     `<header class="header"><nav class="nav"><a href="/"><img src="/img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em;" />Dendrite</a><a href="/new-story.html">New story</a><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><div id="signinButton"></div></nav></header>` +
-    `<main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p><a href="./${pageNumber}-alts.html">Other variants</a></p>${pageNumberHtml}${reportHtml}</main>` +
+    `<main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p>${rewriteLink}<a href="./${pageNumber}-alts.html">Other variants</a></p>${pageNumberHtml}${reportHtml}</main>` +
     `<script src="https://accounts.google.com/gsi/client" defer></script><script type="module">import { initGoogleSignIn } from '../googleAuth.js'; initGoogleSignIn();</script>` +
     `</body></html>`
   );
