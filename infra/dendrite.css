@@ -148,3 +148,12 @@ a {
   margin: 0 auto;
   padding: 0 1rem;
 }
+
+/* Neutralize background for Google sign-in button */
+.g_id_signin,
+.abcRioButton {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
