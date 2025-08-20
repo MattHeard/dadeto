@@ -71,7 +71,6 @@ body {
   max-width: 72ch;
   margin: 0 auto;
   padding: 0 var(--s4); /* same horizontal padding as main */
-  width: 100%;
 }
 
 .nav-links {
