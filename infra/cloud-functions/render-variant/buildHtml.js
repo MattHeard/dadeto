@@ -78,17 +78,59 @@ export function buildHtml(
     .split('\n')
     .map(line => `<p>${renderInlineMarkdown(line)}</p>`)
     .join('');
-  return (
-    `<!doctype html>` +
-    `<html lang="en"><head><meta charset="UTF-8" />` +
-    `<meta name="viewport" content="width=device-width, initial-scale=1" />` +
-    `<title>${headTitle}</title>` +
-    `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css" />` +
-    `<link rel="stylesheet" href="/dendrite.css" />` +
-    `</head><body>` +
-    `<header class="header"><nav class="nav"><a href="/"><img src="/img/logo.png" alt="Dendrite logo" style="height:1em;vertical-align:middle;margin-right:0.5em;" />Dendrite</a><a href="/new-story.html">New story</a><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><div id="signinButton"></div></nav></header>` +
-    `<main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p>${rewriteLink}<a href="./${pageNumber}-alts.html">Other variants</a></p>${pageNumberHtml}${reportHtml}</main>` +
-    `<script src="https://accounts.google.com/gsi/client" defer></script><script type="module">import { initGoogleSignIn } from '../googleAuth.js'; initGoogleSignIn();</script>` +
-    `</body></html>`
-  );
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${headTitle}</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
+    />
+    <link rel="stylesheet" href="/dendrite.css" />
+  </head>
+  <body>
+    <header class="header">
+      <nav class="nav">
+        <a href="/">
+          <img
+            src="/img/logo.png"
+            alt="Dendrite logo"
+            style="height:1em;vertical-align:middle;margin-right:0.5em;"
+          />
+          Dendrite
+        </a>
+        <div class="nav-links">
+          <a href="/new-story.html">New story</a>
+          <a href="/mod.html">Moderate</a>
+          <a href="/stats.html">Stats</a>
+          <div id="signinButton"></div>
+        </div>
+        <button
+          id="menuButton"
+          class="menu-toggle"
+          type="button"
+          aria-label="Menu"
+          aria-expanded="false"
+        >
+          &#9776;
+        </button>
+      </nav>
+    </header>
+    <main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p>${rewriteLink}<a href="./${pageNumber}-alts.html">Other variants</a></p>${pageNumberHtml}${reportHtml}</main>
+    <script src="https://accounts.google.com/gsi/client" defer></script>
+    <script type="module">
+      import { initGoogleSignIn } from '../googleAuth.js';
+      const nav = document.querySelector('.nav');
+      const menuButton = document.getElementById('menuButton');
+      menuButton.addEventListener('click', () => {
+        const expanded = menuButton.getAttribute('aria-expanded') === 'true';
+        menuButton.setAttribute('aria-expanded', String(!expanded));
+        nav.classList.toggle('open');
+      });
+      initGoogleSignIn();
+    </script>
+  </body>
+</html>`;
 }

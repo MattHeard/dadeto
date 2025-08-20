@@ -78,23 +78,28 @@ body {
   display: flex;
   gap: var(--s3);
   align-items: center;
-  margin-left: auto;
 }
 
 .menu-toggle {
-  display: none;
+  display: block;
+  margin-left: auto;
   background: none;
   border: none;
   font: inherit;
   cursor: pointer;
 }
 
-@media (max-width: 600px) {
-  .menu-toggle {
-    display: block;
-    margin-left: auto;
-  }
+#signinButton,
+#signoutWrap {
+  display: none;
+}
 
+.nav.open #signinButton,
+.nav.open #signoutWrap {
+  display: block;
+}
+
+@media (max-width: 600px) {
   .nav-links {
     display: none;
     flex-direction: column;
