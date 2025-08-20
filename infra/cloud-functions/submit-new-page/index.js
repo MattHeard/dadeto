@@ -5,7 +5,11 @@ import { getAuth } from 'firebase-admin/auth';
 import crypto from 'crypto';
 import express from 'express';
 import cors from 'cors';
-import { parseIncomingOption, findExistingOption } from './helpers.js';
+import {
+  parseIncomingOption,
+  findExistingOption,
+  findExistingPage,
+} from './helpers.js';
 
 initializeApp();
 const db = getFirestore();
@@ -40,33 +44,53 @@ app.use(express.urlencoded({ extended: false, limit: '20kb' }));
  * @returns {Promise<void>} Promise resolving when response is sent.
  */
 async function handleSubmit(req, res) {
-  const { incoming_option: rawIncomingOption } = req.body;
+  const { incoming_option: rawIncomingOption, page: rawPage } = req.body;
   let { content = '', author = '???' } = req.body;
   let authorId = null;
 
-  if (rawIncomingOption === null) {
-    res.status(400).json({ error: 'incoming option null' });
+  const incomingOption =
+    rawIncomingOption?.toString().trim().slice(0, 120) || '';
+  const pageStr = rawPage?.toString().trim().slice(0, 120) || '';
+  const hasIncoming = incomingOption !== '';
+  const hasPage = pageStr !== '';
+  if ((hasIncoming ? 1 : 0) + (hasPage ? 1 : 0) !== 1) {
+    res
+      .status(400)
+      .json({ error: 'must provide exactly one of incoming option or page' });
     return;
   }
 
-  const incomingOption =
-    rawIncomingOption?.toString().trim().slice(0, 120) || '';
   content = content.toString().replace(/\r\n?/g, '\n').slice(0, 10_000);
   author = author.toString().trim().slice(0, 120);
 
-  const parsed = parseIncomingOption(incomingOption);
-
   let incomingOptionFullName = null;
-  if (!parsed) {
-    res.status(400).json({ error: 'invalid incoming option' });
-    return;
+  let pageNumber = null;
+
+  if (hasIncoming) {
+    const parsed = parseIncomingOption(incomingOption);
+    if (!parsed) {
+      res.status(400).json({ error: 'invalid incoming option' });
+      return;
+    }
+    const found = await findExistingOption(db, parsed);
+    if (!found) {
+      res.status(400).json({ error: 'incoming option not found' });
+      return;
+    }
+    incomingOptionFullName = found;
+  } else {
+    const parsedPage = Number.parseInt(pageStr, 10);
+    if (!Number.isInteger(parsedPage)) {
+      res.status(400).json({ error: 'invalid page' });
+      return;
+    }
+    const pagePath = await findExistingPage(db, parsedPage);
+    if (!pagePath) {
+      res.status(400).json({ error: 'page not found' });
+      return;
+    }
+    pageNumber = parsedPage;
   }
-  const found = await findExistingOption(db, parsed);
-  if (!found) {
-    res.status(400).json({ error: 'incoming option not found' });
-    return;
-  }
-  incomingOptionFullName = found;
 
   const authHeader = req.get('Authorization') || '';
   const match = authHeader.match(/^Bearer (.+)$/);
@@ -94,6 +118,7 @@ async function handleSubmit(req, res) {
   const id = crypto.randomUUID();
   await db.collection('pageFormSubmissions').doc(id).set({
     incomingOptionFullName,
+    pageNumber,
     content,
     author,
     authorId,
@@ -104,6 +129,7 @@ async function handleSubmit(req, res) {
   res.status(201).json({
     id,
     incomingOptionFullName,
+    pageNumber,
     content,
     author,
     options,
