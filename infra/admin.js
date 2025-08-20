@@ -1,15 +1,6 @@
 import { initGoogleSignIn, getIdToken } from './googleAuth.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
-const nav = document.querySelector('.nav');
-const menuButton = document.getElementById('menuButton');
-
-menuButton?.addEventListener('click', () => {
-  const expanded = menuButton.getAttribute('aria-expanded') === 'true';
-  menuButton.setAttribute('aria-expanded', String(!expanded));
-  nav?.classList.toggle('open');
-});
-
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 const RENDER_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents';

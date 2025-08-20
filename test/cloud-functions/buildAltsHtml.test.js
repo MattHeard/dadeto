@@ -9,7 +9,7 @@ describe('buildAltsHtml', () => {
 
   test('includes navigation header', () => {
     const html = buildAltsHtml(1, []);
-    expect(html).toContain('<nav class="nav">');
+    expect(html).toContain('<nav class="nav-inline"');
     expect(html).toContain('id="signinButton"');
   });
 });
