@@ -17,6 +17,7 @@ const REGENERATE_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-mark-variant-dirty';
 const STATS_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-generate-stats';
+const renderStatus = document.getElementById('renderStatus');
 
 /**
  * Redirects unauthorized users and reveals admin content for the correct UID.
@@ -39,16 +40,30 @@ function checkAccess() {
 async function triggerRender() {
   const token = getIdToken();
   if (!token) {
+    if (renderStatus)
+      renderStatus.textContent = 'Render failed: missing ID token';
     return;
   }
   try {
-    await fetch(RENDER_URL, {
+    const res = await fetch(RENDER_URL, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
+    if (!res.ok) {
+      const body = await res.text();
+      if (renderStatus)
+        renderStatus.textContent = `Render failed: ${res.status} ${res.statusText}${
+          body ? ` - ${body}` : ''
+        }`;
+      return;
+    }
     alert('Render triggered');
-  } catch {
-    alert('Render failed');
+    if (renderStatus) renderStatus.textContent = 'Render triggered';
+  } catch (e) {
+    if (renderStatus)
+      renderStatus.textContent = `Render failed: ${
+        e instanceof Error ? e.message : String(e)
+      }`;
   }
 }
 
