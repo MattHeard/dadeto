@@ -66,3 +66,29 @@ export async function findExistingOption(db, info) {
   }
   return optionsSnap.docs[0].ref.path;
 }
+
+/**
+ * Resolve a page document that already has at least one variant.
+ * @param {object} db Firestore database instance.
+ * @param {number} pageNumber Page number to look up.
+ * @returns {Promise<string|null>} Page document path or null when not found.
+ */
+export async function findExistingPage(db, pageNumber) {
+  if (!db || !Number.isInteger(pageNumber)) {
+    return null;
+  }
+  const pageSnap = await db
+    .collectionGroup('pages')
+    .where('number', '==', pageNumber)
+    .limit(1)
+    .get();
+  if (pageSnap.empty) {
+    return null;
+  }
+  const pageRef = pageSnap.docs[0].ref;
+  const variantsSnap = await pageRef.collection('variants').limit(1).get();
+  if (variantsSnap.empty) {
+    return null;
+  }
+  return pageRef.path;
+}

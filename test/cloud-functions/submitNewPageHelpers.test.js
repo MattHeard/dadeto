@@ -2,6 +2,7 @@ import { describe, test, expect, jest } from '@jest/globals';
 import {
   parseIncomingOption,
   findExistingOption,
+  findExistingPage,
 } from '../../infra/cloud-functions/submit-new-page/helpers.js';
 
 describe('parseIncomingOption', () => {
@@ -16,6 +17,50 @@ describe('parseIncomingOption', () => {
 
   test('returns null for invalid', () => {
     expect(parseIncomingOption('bad')).toBeNull();
+  });
+});
+
+describe('findExistingPage', () => {
+  test('returns page path when variant exists', async () => {
+    const pagePath = 'stories/s1/pages/p1';
+    const pageRef = {
+      path: pagePath,
+      collection: jest.fn(() => ({
+        limit: jest.fn().mockReturnThis(),
+        get: jest.fn().mockResolvedValue({ empty: false }),
+      })),
+    };
+    const db = {
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        get: jest
+          .fn()
+          .mockResolvedValue({ empty: false, docs: [{ ref: pageRef }] }),
+      })),
+    };
+    const result = await findExistingPage(db, 1);
+    expect(result).toBe(pagePath);
+  });
+
+  test('returns null when no variant exists', async () => {
+    const pageRef = {
+      collection: jest.fn(() => ({
+        limit: jest.fn().mockReturnThis(),
+        get: jest.fn().mockResolvedValue({ empty: true }),
+      })),
+    };
+    const db = {
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        get: jest
+          .fn()
+          .mockResolvedValue({ empty: false, docs: [{ ref: pageRef }] }),
+      })),
+    };
+    const result = await findExistingPage(db, 1);
+    expect(result).toBeNull();
   });
 });
 

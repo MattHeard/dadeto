@@ -45,6 +45,7 @@
         enctype="application/x-www-form-urlencoded"
       >
         <input type="hidden" name="incoming_option" />
+        <input type="hidden" name="page" />
         <div>
           <label>Content <textarea name="content"></textarea></label>
         </div>
@@ -92,9 +93,21 @@
             input.value = incoming;
           }
         }
+        const page = params.get('page');
+        if (page) {
+          const input = document.querySelector('input[name="page"]');
+          if (input) {
+            input.value = page;
+          }
+        }
 
         const form = document.querySelector('form');
         const button = form.querySelector("button[type='submit']");
+        if ((incoming && page) || (!incoming && !page)) {
+          button.disabled = true;
+        } else {
+          button.disabled = false;
+        }
         const saving = document.getElementById('saving');
         const signin = document.getElementById('signinButton');
         const signoutWrap = document.getElementById('signoutWrap');
