@@ -232,9 +232,9 @@ resource "google_project_iam_member" "terraform_loadbalancer_admin" {
 }
 
 resource "google_project_iam_member" "runtime_loadbalancer_admin" {
-  project = var.project_id
-  role    = "roles/compute.loadBalancerAdmin"
-  member  = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
+  project    = var.project_id
+  role       = "roles/compute.loadBalancerAdmin"
+  member     = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
   depends_on = [google_service_account.cloud_function_runtime]
 }
 
@@ -995,5 +995,43 @@ resource "google_cloudfunctions_function" "render_contents" {
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
     google_project_iam_member.cloudfunctions_access
+  ]
+}
+
+resource "google_cloudfunctions_function" "trigger_render_contents" {
+  name                         = "${var.environment}-trigger-render-contents"
+  runtime                      = var.cloud_functions_runtime
+  entry_point                  = "triggerRenderContents"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.render_contents.name
+  trigger_http                 = true
+  https_trigger_security_level = var.https_security_level
+  service_account_email        = google_service_account.cloud_function_runtime.email
+  region                       = var.region
+
+  environment_variables = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
+}
+
+resource "google_cloudfunctions_function_iam_member" "trigger_render_contents_invoker" {
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.trigger_render_contents.name
+  role           = "roles/cloudfunctions.invoker"
+  member         = "allUsers"
+  depends_on = [
+    google_cloudfunctions_function.trigger_render_contents,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
   ]
 }
