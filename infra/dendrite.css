@@ -66,13 +66,46 @@ body {
 /* Constrain header content to match main's width */
 .header .nav {
   display: flex;
-  gap: var(--s3);
   align-items: center;
-  flex-wrap: wrap;
+  gap: var(--s3);
   max-width: 72ch;
   margin: 0 auto;
   padding: 0 var(--s4); /* same horizontal padding as main */
   width: 100%;
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--s3);
+  align-items: center;
+  margin-left: auto;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .menu-toggle {
+    display: block;
+    margin-left: auto;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    gap: var(--s3);
+    width: 100%;
+    margin: var(--s2) 0 0 0;
+  }
+
+  .nav.open .nav-links {
+    display: flex;
+  }
 }
 
 .header a:first-of-type {
