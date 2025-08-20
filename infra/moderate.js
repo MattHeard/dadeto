@@ -1,5 +1,20 @@
 import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 
+if (
+  typeof document !== 'undefined' &&
+  typeof document.querySelector === 'function' &&
+  typeof document.getElementById === 'function'
+) {
+  const nav = document.querySelector('.nav');
+  const menuButton = document.getElementById('menuButton');
+
+  menuButton?.addEventListener('click', () => {
+    const expanded = menuButton.getAttribute('aria-expanded') === 'true';
+    menuButton.setAttribute('aria-expanded', String(!expanded));
+    nav?.classList.toggle('open');
+  });
+}
+
 const GET_VARIANT_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant';
 const ASSIGN_JOB_URL =
