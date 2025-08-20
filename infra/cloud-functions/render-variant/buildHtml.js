@@ -93,13 +93,8 @@ export function buildHtml(
   <body>
     <header class="header">
       <nav class="nav">
-        <a href="/">
-          <img
-            src="/img/logo.png"
-            alt="Dendrite logo"
-            style="height:1em;vertical-align:middle;margin-right:0.5em;"
-          />
-          Dendrite
+        <a href="/" class="site-title">
+          <img src="/img/logo.png" alt="Dendrite logo" /><span>Dendrite</span>
         </a>
         <div class="nav-links">
           <a href="/new-story.html">New story</a>

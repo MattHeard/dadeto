@@ -112,8 +112,20 @@ body {
   }
 }
 
-.header a:first-of-type {
+.site-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
   font-weight: 600;
+  text-decoration: none;
+}
+
+.site-title span {
+  text-decoration: underline;
+}
+
+.site-title img {
+  height: 1em;
 }
 
 /* Main container */

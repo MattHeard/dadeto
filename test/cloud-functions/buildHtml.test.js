@@ -121,4 +121,13 @@ describe('buildHtml', () => {
       "import { initGoogleSignIn } from '../googleAuth.js'"
     );
   });
+
+  test('renders site title without leading whitespace', () => {
+    const html = buildHtml(1, 'a', 'content', []);
+    expect(html).toContain('<a href="/" class="site-title">');
+    expect(html).toContain(
+      '<img src="/img/logo.png" alt="Dendrite logo" /><span>Dendrite</span>'
+    );
+    expect(html).not.toContain('alt="Dendrite logo" /> Dendrite');
+  });
 });
