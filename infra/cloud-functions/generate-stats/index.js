@@ -56,7 +56,7 @@ function buildHtml(storyCount, pageCount, unmoderatedCount) {
   <body>
     <header class="site-header">
       <a class="brand" href="/">
-        <img src="/favicon-32x32.png" alt="" />
+        <img src="/img/logo.png" alt="Dendrite logo" />
         Dendrite
       </a>
 
