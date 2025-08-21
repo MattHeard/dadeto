@@ -126,5 +126,19 @@
         });
       })();
     </script>
+    <script>
+      (function () {
+        const match = window.location.pathname.match(/^\/p\/(\d+)a\.html$/);
+        if (!match) return;
+        const pageNumber = Number(match[1]);
+        const nav = document.createElement('p');
+        nav.style.textAlign = 'center';
+        nav.innerHTML =
+          `<a style="text-decoration:none" href="/p/${pageNumber - 1}a.html">◀</a> ` +
+          `${pageNumber} ` +
+          `<a style="text-decoration:none" href="/p/${pageNumber + 1}a.html">▶</a>`;
+        document.querySelector('main').append(nav);
+      })();
+    </script>
   </body>
 </html>
