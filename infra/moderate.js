@@ -44,9 +44,10 @@ function startAnimation(id, text) {
  * Register the click handler for the sign-out button.
  */
 function wireSignOut() {
-  const signoutBtn = document.getElementById('signoutBtn');
-  if (!signoutBtn) return;
-  signoutBtn.onclick = async () => {
+  const signoutLink = document.getElementById('signoutLink');
+  if (!signoutLink) return;
+  signoutLink.addEventListener('click', async e => {
+    e.preventDefault();
     await signOut();
     const wrap = document.getElementById('signoutWrap');
     const signin = document.getElementById('signinButton');
@@ -59,7 +60,7 @@ function wireSignOut() {
     }
     toggleApproveReject(true);
     document.body.classList.remove('authed');
-  };
+  });
 }
 
 /**
