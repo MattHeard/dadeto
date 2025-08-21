@@ -130,6 +130,7 @@ body {
   padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
   max-height: 85vh;
   overflow: auto;
+  line-height: 1.5;
   transform: translateY(6%);
   opacity: 0;
   transition:
