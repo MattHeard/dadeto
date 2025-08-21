@@ -9,13 +9,14 @@ const { handleRenderRequest } = mod;
  */
 /**
  * Create a mock response object.
- * @returns {{status: jest.Mock, send: jest.Mock, json: jest.Mock}} Response
+ * @returns {{status: jest.Mock, send: jest.Mock, json: jest.Mock, set: jest.Mock}} Response
  */
 function createRes() {
   return {
     status: jest.fn().mockReturnThis(),
     send: jest.fn(),
     json: jest.fn(),
+    set: jest.fn(),
   };
 }
 
@@ -29,6 +30,21 @@ describe('handleRenderRequest', () => {
     const res = createRes();
     await handleRenderRequest(req, res);
     expect(res.status).toHaveBeenCalledWith(405);
+  });
+
+  test('handles OPTIONS preflight', async () => {
+    const req = { method: 'OPTIONS', get: () => '' };
+    const res = createRes();
+    await handleRenderRequest(req, res);
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.set).toHaveBeenCalledWith(
+      'Access-Control-Allow-Methods',
+      'POST'
+    );
+    expect(res.set).toHaveBeenCalledWith(
+      'Access-Control-Allow-Headers',
+      'Authorization'
+    );
   });
 
   test('rejects disallowed origin', async () => {
