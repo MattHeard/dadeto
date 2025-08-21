@@ -117,9 +117,11 @@ describe('buildHtml', () => {
     const html = buildHtml(1, 'a', 'content', []);
     expect(html).toContain('<nav class="nav-inline"');
     expect(html).toContain('id="signinButton"');
-    expect(html).toContain(
-      "import { initGoogleSignIn } from '../googleAuth.js'"
-    );
+    expect(html).toContain('import {');
+    expect(html).toContain('initGoogleSignIn');
+    expect(html).toContain('getIdToken');
+    expect(html).toContain('isAdmin');
+    expect(html).toContain("from '../googleAuth.js'");
   });
 
   test('includes favicon link', () => {

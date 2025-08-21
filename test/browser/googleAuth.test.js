@@ -1,8 +1,18 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
-import { initGoogleSignIn, signOut } from '../../infra/googleAuth.js';
+
+let initGoogleSignIn;
+let signOut;
+let isAdmin;
+
+const encode = obj =>
+  Buffer.from(JSON.stringify(obj))
+    .toString('base64')
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
 
 describe('googleAuth', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     global.sessionStorage = {
       store: {},
       getItem(key) {
@@ -22,6 +32,10 @@ describe('googleAuth', () => {
     global.window = { google: undefined };
     global.google = undefined;
     global.document = { getElementById: jest.fn() };
+    global.atob = str => Buffer.from(str, 'base64').toString('binary');
+    ({ initGoogleSignIn, signOut, isAdmin } = await import(
+      '../../infra/googleAuth.js'
+    ));
   });
 
   it('logs an error when google object is missing', () => {
@@ -69,5 +83,16 @@ describe('googleAuth', () => {
       expect.any(Object),
       expect.objectContaining({ theme: 'filled_black' })
     );
+  });
+
+  it('isAdmin checks token payload', () => {
+    const makeToken = uid => `h.${encode({ sub: uid })}.s`;
+    sessionStorage.setItem(
+      'id_token',
+      makeToken('qcYSrXTaj1MZUoFsAloBwT86GNM2')
+    );
+    expect(isAdmin()).toBe(true);
+    sessionStorage.setItem('id_token', makeToken('other'));
+    expect(isAdmin()).toBe(false);
   });
 });

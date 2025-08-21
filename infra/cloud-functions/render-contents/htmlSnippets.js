@@ -45,6 +45,7 @@ export const PAGE_HTML = list => `<!doctype html>
             <h3>Moderation</h3>
             <a href="/mod.html">Moderate</a>
             <a href="/stats.html">Stats</a>
+            <a id="adminLink" href="/admin.html" style="display:none">Admin</a>
           </div>
 
           <div class="menu-group">
@@ -63,14 +64,21 @@ export const PAGE_HTML = list => `<!doctype html>
     </main>
     <script src="https://accounts.google.com/gsi/client" defer></script>
     <script type="module">
-      import { initGoogleSignIn, signOut, getIdToken } from './googleAuth.js';
+      import {
+        initGoogleSignIn,
+        signOut,
+        getIdToken,
+        isAdmin,
+      } from './googleAuth.js';
         const sb = document.getElementById('signinButton');
         const sw = document.getElementById('signoutWrap');
         const so = document.getElementById('signoutLink');
+        const al = document.getElementById('adminLink');
       initGoogleSignIn({
         onSignIn: () => {
           sb.style.display = 'none';
           sw.style.display = '';
+          if (isAdmin()) al.style.display = '';
         },
       });
         so.addEventListener('click', async e => {
@@ -78,10 +86,12 @@ export const PAGE_HTML = list => `<!doctype html>
           await signOut();
           sb.style.display = '';
           sw.style.display = 'none';
+          if (al) al.style.display = 'none';
         });
       if (getIdToken()) {
         sb.style.display = 'none';
         sw.style.display = '';
+        if (isAdmin()) al.style.display = '';
       }
     </script>
     <script>

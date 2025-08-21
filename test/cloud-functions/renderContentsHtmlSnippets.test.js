@@ -25,9 +25,12 @@ describe('PAGE_HTML', () => {
     expect(html).toContain('<div id="signoutWrap"');
     expect(html).toContain('id="signoutLink"');
     expect(html).toContain('https://accounts.google.com/gsi/client');
-    expect(html).toContain(
-      "import { initGoogleSignIn, signOut, getIdToken } from './googleAuth.js';"
-    );
+    expect(html).toContain('import {');
+    expect(html).toContain('initGoogleSignIn');
+    expect(html).toContain('signOut');
+    expect(html).toContain('getIdToken');
+    expect(html).toContain('isAdmin');
+    expect(html).toContain("from './googleAuth.js'");
   });
 
   test('references Pico CSS before the local stylesheet', () => {
