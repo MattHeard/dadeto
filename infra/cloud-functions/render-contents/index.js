@@ -168,12 +168,12 @@ async function render(deps = {}) {
 }
 
 /**
- *
- * @param req
- * @param res
- * @param deps
+ * Validate request origin and method.
+ * @param {import('express').Request} req HTTP request
+ * @param {import('express').Response} res HTTP response
+ * @returns {boolean} True if request is valid
  */
-async function handleRenderRequest(req, res, deps = {}) {
+function validateRequest(req, res) {
   const origin = req.get('Origin');
   if (!origin || allowed.includes(origin)) {
     if (origin) {
@@ -181,16 +181,29 @@ async function handleRenderRequest(req, res, deps = {}) {
     }
   } else {
     res.status(403).send('CORS');
-    return;
+    return false;
   }
   if (req.method === 'OPTIONS') {
     res.set('Access-Control-Allow-Methods', 'POST');
     res.set('Access-Control-Allow-Headers', 'Authorization');
     res.status(204).send('');
-    return;
+    return false;
   }
   if (req.method !== 'POST') {
     res.status(405).send('POST only');
+    return false;
+  }
+  return true;
+}
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param deps
+ */
+async function handleRenderRequest(req, res, deps = {}) {
+  if (!validateRequest(req, res)) {
     return;
   }
   const authHeader = req.get('Authorization') || '';
