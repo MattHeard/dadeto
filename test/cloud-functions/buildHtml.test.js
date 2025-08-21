@@ -124,6 +124,8 @@ describe('buildHtml', () => {
 
   test('renders brand without leading whitespace', () => {
     const html = buildHtml(1, 'a', 'content', []);
-    expect(html).toContain('<a class="brand" href="/">Dendrite</a>');
+    expect(html).toMatch(
+      /<a class="brand" href="\/">\s*<img src="\/favicon-32x32.png" alt="" \/>\s*Dendrite\s*<\/a>/
+    );
   });
 });
