@@ -176,28 +176,22 @@ async function render(snap, ctx) {
 
   const authorName = variant.authorName || variant.author || '';
   let parentUrl;
-  let incomingOptionSlug;
   if (variant.incomingOption) {
     try {
       const optionRef = db.doc(variant.incomingOption);
       const parentVariantRef = optionRef.parent.parent;
       const parentPageRef = parentVariantRef.parent.parent;
 
-      const [optionSnap, parentVariantSnap, parentPageSnap] = await Promise.all(
-        [optionRef.get(), parentVariantRef.get(), parentPageRef.get()]
-      );
+      const [parentVariantSnap, parentPageSnap] = await Promise.all([
+        parentVariantRef.get(),
+        parentPageRef.get(),
+      ]);
 
       if (parentVariantSnap.exists && parentPageSnap.exists) {
         const parentName = parentVariantSnap.data().name;
         if (parentName) {
           const parentNumber = parentPageSnap.data().number;
           parentUrl = `/p/${parentNumber}${parentName}.html`;
-          if (optionSnap.exists) {
-            const position = optionSnap.data().position;
-            if (position !== undefined) {
-              incomingOptionSlug = `${parentNumber}-${parentName}-${position}`;
-            }
-          }
         }
       }
     } catch (e) {
@@ -213,8 +207,7 @@ async function render(snap, ctx) {
     storyTitle,
     authorName,
     parentUrl,
-    firstPageUrl,
-    incomingOptionSlug
+    firstPageUrl
   );
   const filePath = `p/${page.number}${variant.name}.html`;
   const openVariant = options.some(opt => opt.targetPageNumber === undefined);

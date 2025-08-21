@@ -26,7 +26,6 @@ function renderInlineMarkdown(text) {
  * @param {string} [author] Author name.
  * @param parentUrl
  * @param firstPageUrl
- * @param incomingOptionSlug
  * @returns {string} HTML page.
  */
 export function buildHtml(
@@ -37,8 +36,7 @@ export function buildHtml(
   storyTitle = '',
   author = '',
   parentUrl = '',
-  firstPageUrl = '',
-  incomingOptionSlug = ''
+  firstPageUrl = ''
 ) {
   const items = options
     .map(opt => {
@@ -60,9 +58,7 @@ export function buildHtml(
   const firstHtml = firstPageUrl
     ? `<p><a href="${firstPageUrl}">First page</a></p>`
     : '';
-  const rewriteLink = incomingOptionSlug
-    ? `<a href="../new-page.html?option=${incomingOptionSlug}">Rewrite</a> `
-    : '';
+  const rewriteLink = `<a href="../new-page.html?page=${pageNumber}">Rewrite</a> `;
   const variantSlug = `${pageNumber}${variantName}`;
   const reportHtml =
     '<p><a id="reportLink" href="#">⚑ Report</a></p>' +
