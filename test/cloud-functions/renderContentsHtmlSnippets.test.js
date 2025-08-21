@@ -40,4 +40,9 @@ describe('PAGE_HTML', () => {
     expect(localIndex).toBeGreaterThan(-1);
     expect(picoIndex).toBeLessThan(localIndex);
   });
+
+  test('includes favicon link', () => {
+    const html = PAGE_HTML('');
+    expect(html).toContain('<link rel="icon" href="/favicon.ico" />');
+  });
 });

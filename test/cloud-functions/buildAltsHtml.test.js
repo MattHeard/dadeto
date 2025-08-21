@@ -12,4 +12,9 @@ describe('buildAltsHtml', () => {
     expect(html).toContain('<nav class="nav-inline"');
     expect(html).toContain('id="signinButton"');
   });
+
+  test('includes favicon link', () => {
+    const html = buildAltsHtml(1, []);
+    expect(html).toContain('<link rel="icon" href="/favicon.ico" />');
+  });
 });

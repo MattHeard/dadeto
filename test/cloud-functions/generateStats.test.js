@@ -12,6 +12,11 @@ describe('generate stats helpers', () => {
     expect(html).toContain('<p>Number of unmoderated pages: 3</p>');
   });
 
+  test('buildHtml includes favicon link', () => {
+    const html = buildHtml(0, 0, 0);
+    expect(html).toContain('<link rel="icon" href="/favicon.ico" />');
+  });
+
   test('getPageCount returns page count', async () => {
     const mockDb = {
       collectionGroup: () => ({
