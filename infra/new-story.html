@@ -45,6 +45,7 @@
             <h3>Moderation</h3>
             <a href="/mod.html">Moderate</a>
             <a href="/stats.html">Stats</a>
+            <a id="adminLink" href="/admin.html" style="display: none">Admin</a>
           </div>
 
           <div class="menu-group">
@@ -100,7 +101,13 @@
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" defer></script>
     <script type="module">
-      import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
+      import {
+        initGoogleSignIn,
+        getIdToken,
+        signOut,
+      } from './googleAuth.js';
+      import { getAuth } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+      const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 
       document.addEventListener('DOMContentLoaded', () => {
         const form = document.querySelector('form');
@@ -109,12 +116,16 @@
         const signin = document.getElementById('signinButton');
         const signoutWrap = document.getElementById('signoutWrap');
         const signoutBtn = document.getElementById('signoutBtn');
+        const adminLink = document.getElementById('adminLink');
 
         initGoogleSignIn({
           onSignIn: () => {
             document.body.classList.add('authed');
             signin.style.display = 'none';
             signoutWrap.style.display = '';
+            if (getAuth().currentUser?.uid === ADMIN_UID && adminLink) {
+              adminLink.style.display = '';
+            }
           },
         });
 
@@ -123,12 +134,16 @@
           document.body.classList.remove('authed');
           signoutWrap.style.display = 'none';
           signin.style.display = '';
+          if (adminLink) adminLink.style.display = 'none';
         });
 
         if (getIdToken()) {
           document.body.classList.add('authed');
           signin.style.display = 'none';
           signoutWrap.style.display = '';
+          if (getAuth().currentUser?.uid === ADMIN_UID && adminLink) {
+            adminLink.style.display = '';
+          }
         }
 
         form.addEventListener('submit', async event => {

@@ -72,6 +72,7 @@ export function buildAltsHtml(pageNumber, variants) {
             <h3>Moderation</h3>
             <a href="/mod.html">Moderate</a>
             <a href="/stats.html">Stats</a>
+            <a id="adminLink" href="/admin.html" style="display:none">Admin</a>
           </div>
 
           <div class="menu-group">
@@ -84,8 +85,20 @@ export function buildAltsHtml(pageNumber, variants) {
     <main><ol>${items}</ol></main>
     <script src="https://accounts.google.com/gsi/client" defer></script>
     <script type="module">
-      import { initGoogleSignIn } from '../googleAuth.js';
-      initGoogleSignIn();
+      import { initGoogleSignIn, getIdToken } from '../googleAuth.js';
+      import { getAuth } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+      const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
+      const al = document.getElementById('adminLink');
+      initGoogleSignIn({
+        onSignIn: () => {
+          if (getAuth().currentUser?.uid === ADMIN_UID && al) {
+            al.style.display = '';
+          }
+        },
+      });
+      if (getIdToken() && getAuth().currentUser?.uid === ADMIN_UID && al) {
+        al.style.display = '';
+      }
     </script>
     <script>
       (function () {

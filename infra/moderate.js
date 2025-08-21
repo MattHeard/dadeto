@@ -1,4 +1,7 @@
 import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+
+const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 
 const GET_VARIANT_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant';
@@ -46,12 +49,14 @@ function startAnimation(id, text) {
 function wireSignOut() {
   const signoutBtn = document.getElementById('signoutBtn');
   if (!signoutBtn) return;
+  const adminLink = document.getElementById('adminLink');
   signoutBtn.onclick = async () => {
     await signOut();
     const wrap = document.getElementById('signoutWrap');
     const signin = document.getElementById('signinButton');
     if (wrap) wrap.style.display = 'none';
     if (signin) signin.style.display = '';
+    if (adminLink) adminLink.style.display = 'none';
     const content = document.getElementById('pageContent');
     if (content) {
       content.innerHTML = '';
@@ -169,8 +174,12 @@ initGoogleSignIn({
     document.body.classList.add('authed');
     const signin = document.getElementById('signinButton');
     const wrap = document.getElementById('signoutWrap');
+    const adminLink = document.getElementById('adminLink');
     signin.style.display = 'none';
     wrap.style.display = '';
+    if (getAuth().currentUser?.uid === ADMIN_UID && adminLink) {
+      adminLink.style.display = '';
+    }
     wireSignOut();
     loadVariant();
   },
@@ -195,7 +204,12 @@ export const authedFetch = async (url, opts = {}) => {
 if (getIdToken()) {
   document.body.classList.add('authed');
   document.getElementById('signinButton').style.display = 'none';
-  document.getElementById('signoutWrap').style.display = '';
+  const wrap = document.getElementById('signoutWrap');
+  wrap.style.display = '';
+  const adminLink = document.getElementById('adminLink');
+  if (getAuth().currentUser?.uid === ADMIN_UID && adminLink) {
+    adminLink.style.display = '';
+  }
   wireSignOut();
   loadVariant();
 }

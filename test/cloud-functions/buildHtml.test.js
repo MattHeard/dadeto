@@ -118,7 +118,7 @@ describe('buildHtml', () => {
     expect(html).toContain('<nav class="nav-inline"');
     expect(html).toContain('id="signinButton"');
     expect(html).toContain(
-      "import { initGoogleSignIn } from '../googleAuth.js'"
+      "import { initGoogleSignIn, getIdToken } from '../googleAuth.js'"
     );
   });
 

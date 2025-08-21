@@ -24,6 +24,7 @@ describe('PAGE_HTML', () => {
     expect(html).toContain('<div id="signinButton"></div>');
     expect(html).toContain('<div id="signoutWrap"');
     expect(html).toContain('id="signoutBtn"');
+    expect(html).toContain('id="adminLink"');
     expect(html).toContain('https://accounts.google.com/gsi/client');
     expect(html).toContain(
       "import { initGoogleSignIn, signOut, getIdToken } from './googleAuth.js';"
