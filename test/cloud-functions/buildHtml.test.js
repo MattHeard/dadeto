@@ -58,10 +58,10 @@ describe('buildHtml', () => {
     expect(html).toContain('<a href="./1-alts.html">Other variants</a>');
   });
 
-  test('includes rewrite link when incoming option slug provided', () => {
-    const html = buildHtml(2, 'b', 'content', [], '', '', '', '', '1-a-0');
+  test('includes rewrite link with page parameter', () => {
+    const html = buildHtml(2, 'b', 'content', []);
     expect(html).toContain(
-      '<a href="../new-page.html?option=1-a-0">Rewrite</a> <a href="./2-alts.html">Other variants</a>'
+      '<a href="../new-page.html?page=2">Rewrite</a> <a href="./2-alts.html">Other variants</a>'
     );
   });
 
