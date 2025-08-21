@@ -31,7 +31,11 @@ describe('googleAuth', () => {
     sessionStorage.clear();
     global.window = { google: undefined };
     global.google = undefined;
-    global.document = { getElementById: jest.fn() };
+    const el = { innerHTML: '' };
+    global.document = {
+      getElementById: jest.fn().mockReturnValue(el),
+      querySelectorAll: jest.fn().mockReturnValue([el]),
+    };
     global.atob = str => Buffer.from(str, 'base64').toString('binary');
     ({ initGoogleSignIn, signOut, isAdmin } = await import(
       '../../infra/googleAuth.js'
@@ -65,7 +69,9 @@ describe('googleAuth', () => {
         listeners[ev] = cb;
       },
     };
-    global.document.getElementById.mockReturnValue({ innerHTML: '' });
+    const el = { innerHTML: '' };
+    global.document.getElementById.mockReturnValue(el);
+    global.document.querySelectorAll.mockReturnValue([el]);
     global.window = {
       google: { accounts: { id: { initialize: jest.fn(), renderButton } } },
       matchMedia: jest.fn().mockReturnValue(mql),

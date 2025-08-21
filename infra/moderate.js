@@ -49,24 +49,26 @@ function startAnimation(id, text) {
  * Register the click handler for the sign-out button.
  */
 function wireSignOut() {
-  const signoutLink = document.getElementById('signoutLink');
-  if (!signoutLink) return;
-  signoutLink.addEventListener('click', async e => {
-    e.preventDefault();
-    await signOut();
-    const wrap = document.getElementById('signoutWrap');
-    const signin = document.getElementById('signinButton');
-    if (wrap) wrap.style.display = 'none';
-    if (signin) signin.style.display = '';
-    const adminLink = document.getElementById('adminLink');
-    if (adminLink) adminLink.style.display = 'none';
-    const content = document.getElementById('pageContent');
-    if (content) {
-      content.innerHTML = '';
-      content.style.display = 'none';
-    }
-    toggleApproveReject(true);
-    document.body.classList.remove('authed');
+  document.querySelectorAll('#signoutLink').forEach(link => {
+    link.addEventListener('click', async e => {
+      e.preventDefault();
+      await signOut();
+      document
+        .querySelectorAll('#signoutWrap')
+        .forEach(el => (el.style.display = 'none'));
+      document
+        .querySelectorAll('#signinButton')
+        .forEach(el => (el.style.display = ''));
+      const adminLink = document.getElementById('adminLink');
+      if (adminLink) adminLink.style.display = 'none';
+      const content = document.getElementById('pageContent');
+      if (content) {
+        content.innerHTML = '';
+        content.style.display = 'none';
+      }
+      toggleApproveReject(true);
+      document.body.classList.remove('authed');
+    });
   });
 }
 
@@ -175,10 +177,12 @@ async function submitRating(isApproved) {
 initGoogleSignIn({
   onSignIn: () => {
     document.body.classList.add('authed');
-    const signin = document.getElementById('signinButton');
-    const wrap = document.getElementById('signoutWrap');
-    signin.style.display = 'none';
-    wrap.style.display = '';
+    document
+      .querySelectorAll('#signinButton')
+      .forEach(el => (el.style.display = 'none'));
+    document
+      .querySelectorAll('#signoutWrap')
+      .forEach(el => (el.style.display = ''));
     const adminLink = document.getElementById('adminLink');
     if (isAdmin()) adminLink.style.display = '';
     wireSignOut();
@@ -204,8 +208,12 @@ export const authedFetch = async (url, opts = {}) => {
 
 if (getIdToken()) {
   document.body.classList.add('authed');
-  document.getElementById('signinButton').style.display = 'none';
-  document.getElementById('signoutWrap').style.display = '';
+  document
+    .querySelectorAll('#signinButton')
+    .forEach(el => (el.style.display = 'none'));
+  document
+    .querySelectorAll('#signoutWrap')
+    .forEach(el => (el.style.display = ''));
   if (isAdmin()) {
     const adminLink = document.getElementById('adminLink');
     if (adminLink) adminLink.style.display = '';

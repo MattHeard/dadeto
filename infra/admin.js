@@ -1,4 +1,4 @@
-import { initGoogleSignIn, getIdToken } from './googleAuth.js';
+import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
@@ -20,9 +20,11 @@ function checkAccess() {
     return;
   }
   const content = document.getElementById('adminContent');
-  const signin = document.getElementById('signinButton');
+  const signins = document.querySelectorAll('#signinButton');
+  const signouts = document.querySelectorAll('#signoutWrap');
   if (content) content.style.display = '';
-  if (signin) signin.style.display = 'none';
+  signins.forEach(el => (el.style.display = 'none'));
+  signouts.forEach(el => (el.style.display = ''));
 }
 
 /**
@@ -118,8 +120,32 @@ document
   .getElementById('regenForm')
   ?.addEventListener('submit', regenerateVariant);
 
-initGoogleSignIn({ onSignIn: checkAccess });
+/**
+ *
+ */
+function wireSignOut() {
+  document.querySelectorAll('#signoutLink').forEach(link => {
+    link.addEventListener('click', async e => {
+      e.preventDefault();
+      await signOut();
+      document
+        .querySelectorAll('#signoutWrap')
+        .forEach(el => (el.style.display = 'none'));
+      document
+        .querySelectorAll('#signinButton')
+        .forEach(el => (el.style.display = ''));
+    });
+  });
+}
+
+initGoogleSignIn({
+  onSignIn: () => {
+    checkAccess();
+    wireSignOut();
+  },
+});
 
 if (getIdToken()) {
   checkAccess();
+  wireSignOut();
 }

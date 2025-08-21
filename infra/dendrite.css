@@ -88,6 +88,7 @@ body {
 .nav-inline {
   display: none;
   gap: 16px;
+  align-items: center;
 }
 
 .menu-toggle {

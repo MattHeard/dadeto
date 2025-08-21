@@ -18,6 +18,10 @@
         <a href="/new-story.html">New story</a>
         <a href="/mod.html">Moderate</a>
         <a href="/stats.html">Stats</a>
+        <div id="signinButton"></div>
+        <div id="signoutWrap" style="display: none">
+          <a id="signoutLink" href="#">Sign out</a>
+        </div>
       </nav>
 
       <button
@@ -112,34 +116,37 @@
         const form = document.querySelector('form');
         const button = form.querySelector("button[type='submit']");
         const originalText = button.textContent;
-        const signin = document.getElementById('signinButton');
-        const signoutWrap = document.getElementById('signoutWrap');
-        const signoutLink = document.getElementById('signoutLink');
+        const signins = document.querySelectorAll('#signinButton');
+        const signoutWraps = document.querySelectorAll('#signoutWrap');
+        const signoutLinks = document.querySelectorAll('#signoutLink');
         const adminLink = document.getElementById('adminLink');
 
-        initGoogleSignIn({
-          onSignIn: () => {
-            document.body.classList.add('authed');
-            signin.style.display = 'none';
-            signoutWrap.style.display = '';
-            if (isAdmin()) adminLink.style.display = '';
-          },
-        });
+        function showSignedIn() {
+          document.body.classList.add('authed');
+          signins.forEach(el => (el.style.display = 'none'));
+          signoutWraps.forEach(el => (el.style.display = ''));
+          if (isAdmin()) adminLink.style.display = '';
+        }
 
-        signoutLink.addEventListener('click', async e => {
-          e.preventDefault();
-          await signOut();
+        function showSignedOut() {
           document.body.classList.remove('authed');
-          signoutWrap.style.display = 'none';
-          signin.style.display = '';
+          signoutWraps.forEach(el => (el.style.display = 'none'));
+          signins.forEach(el => (el.style.display = ''));
           if (adminLink) adminLink.style.display = 'none';
+        }
+
+        initGoogleSignIn({ onSignIn: showSignedIn });
+
+        signoutLinks.forEach(link => {
+          link.addEventListener('click', async e => {
+            e.preventDefault();
+            await signOut();
+            showSignedOut();
+          });
         });
 
         if (getIdToken()) {
-          document.body.classList.add('authed');
-          signin.style.display = 'none';
-          signoutWrap.style.display = '';
-          if (isAdmin()) adminLink.style.display = '';
+          showSignedIn();
         }
 
         form.addEventListener('submit', async event => {
