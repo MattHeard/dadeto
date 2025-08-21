@@ -13,6 +13,8 @@ initializeApp({
 
 const auth = getAuth();
 
+const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
+
 export const initGoogleSignIn = ({ onSignIn } = {}) => {
   if (!window.google || !google.accounts?.id) {
     console.error('Google Identity script missing');
@@ -52,6 +54,20 @@ export const initGoogleSignIn = ({ onSignIn } = {}) => {
 };
 
 export const getIdToken = () => sessionStorage.getItem('id_token');
+
+export const isAdmin = () => {
+  const token = getIdToken();
+  if (!token) return false;
+  try {
+    const payload = token.split('.')[1];
+    const json = JSON.parse(
+      atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+    );
+    return json.sub === ADMIN_UID;
+  } catch {
+    return false;
+  }
+};
 
 export const signOut = async () => {
   await auth.signOut();

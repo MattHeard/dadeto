@@ -85,6 +85,7 @@ function buildHtml(storyCount, pageCount, unmoderatedCount) {
             <h3>Moderation</h3>
             <a href="/mod.html">Moderate</a>
             <a href="/stats.html">Stats</a>
+            <a id="adminLink" href="/admin.html" style="display:none">Admin</a>
           </div>
 
           <div class="menu-group">
@@ -102,8 +103,18 @@ function buildHtml(storyCount, pageCount, unmoderatedCount) {
     </main>
     <script src="https://accounts.google.com/gsi/client" defer></script>
     <script type="module">
-      import { initGoogleSignIn } from './googleAuth.js';
-      initGoogleSignIn();
+      import {
+        initGoogleSignIn,
+        getIdToken,
+        isAdmin,
+      } from './googleAuth.js';
+      const al = document.getElementById('adminLink');
+      initGoogleSignIn({
+        onSignIn: () => {
+          if (isAdmin()) al.style.display = '';
+        },
+      });
+      if (getIdToken() && isAdmin()) al.style.display = '';
     </script>
     <script>
       (function () {

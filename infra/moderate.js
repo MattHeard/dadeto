@@ -1,4 +1,9 @@
-import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
+import {
+  initGoogleSignIn,
+  getIdToken,
+  signOut,
+  isAdmin,
+} from './googleAuth.js';
 
 const GET_VARIANT_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant';
@@ -53,6 +58,8 @@ function wireSignOut() {
     const signin = document.getElementById('signinButton');
     if (wrap) wrap.style.display = 'none';
     if (signin) signin.style.display = '';
+    const adminLink = document.getElementById('adminLink');
+    if (adminLink) adminLink.style.display = 'none';
     const content = document.getElementById('pageContent');
     if (content) {
       content.innerHTML = '';
@@ -172,6 +179,8 @@ initGoogleSignIn({
     const wrap = document.getElementById('signoutWrap');
     signin.style.display = 'none';
     wrap.style.display = '';
+    const adminLink = document.getElementById('adminLink');
+    if (isAdmin()) adminLink.style.display = '';
     wireSignOut();
     loadVariant();
   },
@@ -197,6 +206,10 @@ if (getIdToken()) {
   document.body.classList.add('authed');
   document.getElementById('signinButton').style.display = 'none';
   document.getElementById('signoutWrap').style.display = '';
+  if (isAdmin()) {
+    const adminLink = document.getElementById('adminLink');
+    if (adminLink) adminLink.style.display = '';
+  }
   wireSignOut();
   loadVariant();
 }
