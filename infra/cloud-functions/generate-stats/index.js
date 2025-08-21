@@ -51,6 +51,7 @@ function buildHtml(storyCount, pageCount, unmoderatedCount) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dendrite stats</title>
+    <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="/dendrite.css" />
   </head>
   <body>

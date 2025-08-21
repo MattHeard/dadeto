@@ -122,6 +122,11 @@ describe('buildHtml', () => {
     );
   });
 
+  test('includes favicon link', () => {
+    const html = buildHtml(1, 'a', 'content', []);
+    expect(html).toContain('<link rel="icon" href="/favicon.ico" />');
+  });
+
   test('renders brand without leading whitespace', () => {
     const html = buildHtml(1, 'a', 'content', []);
     expect(html).toMatch(
