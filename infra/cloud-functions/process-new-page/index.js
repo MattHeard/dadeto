@@ -3,6 +3,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import crypto from 'crypto';
 import { incrementVariantName } from './variantName.js';
+import { findAvailablePageNumber } from './findAvailablePageNumber.js';
 
 initializeApp();
 const db = getFirestore();
@@ -51,22 +52,7 @@ export const processNewPage = functions
     }
 
     if (!pageDocRef) {
-      let i = 0;
-      let candidate = 1;
-      while (true) {
-        const max = 2 ** i;
-        candidate = Math.floor(Math.random() * max) + 1;
-        const existing = await db
-          .collectionGroup('pages')
-          .where('number', '==', candidate)
-          .limit(1)
-          .get();
-        if (existing.empty) {
-          break;
-        }
-        i += 1;
-      }
-      pageNumber = candidate;
+      pageNumber = await findAvailablePageNumber(db);
       const newPageId = crypto.randomUUID();
       pageDocRef = storyRef.collection('pages').doc(newPageId);
       batch.set(pageDocRef, {
