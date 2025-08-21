@@ -52,6 +52,10 @@ export function buildAltsHtml(pageNumber, variants) {
         <a href="/new-story.html">New story</a>
         <a href="/mod.html">Moderate</a>
         <a href="/stats.html">Stats</a>
+        <div id="signinButton"></div>
+        <div id="signoutWrap" style="display:none">
+          <a id="signoutLink" href="#">Sign out</a>
+        </div>
       </nav>
 
       <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">☰</button>
@@ -78,6 +82,9 @@ export function buildAltsHtml(pageNumber, variants) {
           <div class="menu-group">
             <h3>Account</h3>
             <div id="signinButton"></div>
+            <div id="signoutWrap" style="display:none">
+              <a id="signoutLink" href="#">Sign out</a>
+            </div>
           </div>
         </nav>
       </div>
@@ -89,14 +96,33 @@ export function buildAltsHtml(pageNumber, variants) {
         initGoogleSignIn,
         getIdToken,
         isAdmin,
+        signOut,
       } from '../googleAuth.js';
       const al = document.getElementById('adminLink');
-      initGoogleSignIn({
-        onSignIn: () => {
-          if (isAdmin()) al.style.display = '';
-        },
+      const sbs = document.querySelectorAll('#signinButton');
+      const sws = document.querySelectorAll('#signoutWrap');
+      const sos = document.querySelectorAll('#signoutLink');
+      function showSignedIn() {
+        sbs.forEach(el => (el.style.display = 'none'));
+        sws.forEach(el => (el.style.display = ''));
+        if (isAdmin()) al.style.display = '';
+      }
+      function showSignedOut() {
+        sbs.forEach(el => (el.style.display = ''));
+        sws.forEach(el => (el.style.display = 'none'));
+        if (al) al.style.display = 'none';
+      }
+      initGoogleSignIn({ onSignIn: showSignedIn });
+      sos.forEach(link => {
+        link.addEventListener('click', async e => {
+          e.preventDefault();
+          await signOut();
+          showSignedOut();
+        });
       });
-      if (getIdToken() && isAdmin()) al.style.display = '';
+      if (getIdToken()) {
+        showSignedIn();
+      }
     </script>
     <script>
       (function () {

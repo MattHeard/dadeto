@@ -37,15 +37,13 @@ export const initGoogleSignIn = ({ onSignIn } = {}) => {
   const mql = window.matchMedia('(prefers-color-scheme: dark)');
 
   const renderButton = () => {
-    const el = document.getElementById('signinButton');
-    if (!el) {
-      return;
-    }
-    el.innerHTML = '';
-    google.accounts.id.renderButton(el, {
-      theme: mql.matches ? 'filled_black' : 'filled_blue',
-      size: 'large',
-      text: 'signin_with',
+    document.querySelectorAll('#signinButton').forEach(el => {
+      el.innerHTML = '';
+      google.accounts.id.renderButton(el, {
+        theme: mql.matches ? 'filled_black' : 'filled_blue',
+        size: 'large',
+        text: 'signin_with',
+      });
     });
   };
 

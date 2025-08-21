@@ -19,6 +19,7 @@ describe('authedFetch', () => {
       },
     };
     sessionStorage.clear();
+    const el = { innerHTML: '', style: {} };
     global.window = {
       google: {
         accounts: {
@@ -35,7 +36,10 @@ describe('authedFetch', () => {
       }),
     };
     global.google = global.window.google;
-    global.document = { getElementById: jest.fn() };
+    global.document = {
+      getElementById: jest.fn(),
+      querySelectorAll: jest.fn().mockReturnValue([el]),
+    };
     global.fetch = jest.fn();
     ({ authedFetch } = await import('../../infra/moderate.js'));
   });
