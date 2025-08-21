@@ -146,8 +146,9 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface-700);
+  color: var(--text);
+  border: none;
+  background: none;
 }
 
 .menu-groups {
@@ -167,8 +168,8 @@ body {
   display: block;
   padding: 12px 8px;
   border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--surface-800);
+  border: none;
+  background: none;
   color: inherit;
   width: 100%;
   text-align: left;
