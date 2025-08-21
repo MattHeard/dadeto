@@ -92,7 +92,10 @@ export function buildHtml(
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="/">Dendrite</a>
+      <a class="brand" href="/">
+        <img src="/favicon-32x32.png" alt="" />
+        Dendrite
+      </a>
 
       <nav class="nav-inline" aria-label="Primary">
         <a href="/new-story.html">New story</a>

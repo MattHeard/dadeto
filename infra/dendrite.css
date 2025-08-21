@@ -17,7 +17,7 @@
 }
 
 /* Respect system dark mode */
-  @media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   :root {
     --bg: #0c0f13;
     --text: #e7e7e7;
@@ -93,9 +93,8 @@ body {
 .menu-toggle {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface-700);
+  border: none;
+  background: transparent;
   color: var(--text);
 }
 
@@ -132,7 +131,9 @@ body {
   overflow: auto;
   transform: translateY(6%);
   opacity: 0;
-  transition: transform 0.18s ease, opacity 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
 }
 
 .menu-overlay[aria-hidden='false'] .menu-sheet {
