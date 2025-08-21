@@ -51,7 +51,7 @@ export const PAGE_HTML = list => `<!doctype html>
             <h3>Account</h3>
             <div id="signinButton"></div>
             <div id="signoutWrap" style="display:none">
-              <button id="signoutBtn" type="button">Sign out</button>
+                <a id="signoutLink" href="#">Sign out</a>
             </div>
           </div>
         </nav>
@@ -64,20 +64,21 @@ export const PAGE_HTML = list => `<!doctype html>
     <script src="https://accounts.google.com/gsi/client" defer></script>
     <script type="module">
       import { initGoogleSignIn, signOut, getIdToken } from './googleAuth.js';
-      const sb = document.getElementById('signinButton');
-      const sw = document.getElementById('signoutWrap');
-      const so = document.getElementById('signoutBtn');
+        const sb = document.getElementById('signinButton');
+        const sw = document.getElementById('signoutWrap');
+        const so = document.getElementById('signoutLink');
       initGoogleSignIn({
         onSignIn: () => {
           sb.style.display = 'none';
           sw.style.display = '';
         },
       });
-      so.onclick = async () => {
-        await signOut();
-        sb.style.display = '';
-        sw.style.display = 'none';
-      };
+        so.addEventListener('click', async e => {
+          e.preventDefault();
+          await signOut();
+          sb.style.display = '';
+          sw.style.display = 'none';
+        });
       if (getIdToken()) {
         sb.style.display = 'none';
         sw.style.display = '';

@@ -51,7 +51,7 @@
             <h3>Account</h3>
             <div id="signinButton"></div>
             <div id="signoutWrap" style="display: none">
-              <button id="signoutBtn" type="button">Sign out</button>
+              <a id="signoutLink" href="#">Sign out</a>
             </div>
           </div>
         </nav>
@@ -108,7 +108,7 @@
         const originalText = button.textContent;
         const signin = document.getElementById('signinButton');
         const signoutWrap = document.getElementById('signoutWrap');
-        const signoutBtn = document.getElementById('signoutBtn');
+        const signoutLink = document.getElementById('signoutLink');
 
         initGoogleSignIn({
           onSignIn: () => {
@@ -118,7 +118,8 @@
           },
         });
 
-        signoutBtn.addEventListener('click', async () => {
+        signoutLink.addEventListener('click', async e => {
+          e.preventDefault();
           await signOut();
           document.body.classList.remove('authed');
           signoutWrap.style.display = 'none';

@@ -4,8 +4,8 @@
   --bg: #ffffff;
   --text: #0b0f14;
   --muted: #66707a;
-  --link: #0b63ce;
-  --link-hover: #2a7fe6;
+  --link: #228b22;
+  --link-hover: #196619;
   --border: #e5e7eb;
   --s1: 4px;
   --s2: 8px;
@@ -22,8 +22,8 @@
     --bg: #0c0f13;
     --text: #e7e7e7;
     --muted: #9aa3ad;
-    --link: #68c3ff;
-    --link-hover: #a8dcff;
+    --link: #228b22;
+    --link-hover: #196619;
     --border: #1a222b;
     --surface-700: #1a1f24;
     --surface-800: #14181d;
@@ -235,16 +235,10 @@ ol.contents li::marker {
 ol.contents a {
   display: block;
   padding-block: 6px;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  text-decoration-thickness: 0.06em;
-  text-decoration-skip-ink: auto;
-  color: var(--link);
 }
 
 ol.contents a:hover,
 ol.contents a:focus-visible {
-  color: var(--link-hover);
   outline: none;
 }
 
@@ -252,9 +246,19 @@ ol.contents li:nth-child(10n + 1) {
   margin-top: var(--s2);
 }
 
-/* Global link tone */
+/* Global link style */
 a {
   color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 0.06em;
+  text-decoration-skip-ink: auto;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--link-hover);
+  outline: none;
 }
 
 /* Compact mode */
