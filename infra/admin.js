@@ -11,17 +11,25 @@ const STATS_URL =
 const renderStatus = document.getElementById('renderStatus');
 
 /**
- * Redirects unauthorized users and reveals admin content for the correct UID.
+ * Reveals admin content for the correct UID and hides it otherwise without
+ * redirecting.
  */
 function checkAccess() {
   const user = getAuth().currentUser;
-  if (!user || user.uid !== ADMIN_UID) {
-    window.location.href = '/index.html';
-    return;
-  }
   const content = document.getElementById('adminContent');
   const signins = document.querySelectorAll('#signinButton');
   const signouts = document.querySelectorAll('#signoutWrap');
+  if (!user || user.uid !== ADMIN_UID) {
+    if (content) content.style.display = 'none';
+    if (user) {
+      signins.forEach(el => (el.style.display = 'none'));
+      signouts.forEach(el => (el.style.display = ''));
+    } else {
+      signins.forEach(el => (el.style.display = ''));
+      signouts.forEach(el => (el.style.display = 'none'));
+    }
+    return;
+  }
   if (content) content.style.display = '';
   signins.forEach(el => (el.style.display = 'none'));
   signouts.forEach(el => (el.style.display = ''));
