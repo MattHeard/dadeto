@@ -151,7 +151,7 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
       (function () {
         const data = ${JSON.stringify(topStories)};
         if (data.length) {
-          const nodes = [{ name: 'Stories' }].concat(
+          const nodes = [{ name: "Stories" }].concat(
             data.map(d => ({ name: d.title }))
           );
           const links = data.map((d, i) => ({
@@ -159,50 +159,52 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
             target: i + 1,
             value: d.variantCount,
           }));
+          const width = 200;
+          const height = 600;
           const sankey = d3
             .sankey()
             .nodeWidth(15)
             .nodePadding(10)
             .extent([
               [1, 1],
-              [600, 200],
+              [width, height],
             ]);
           const graph = sankey({
             nodes: nodes.map(d => Object.assign({}, d)),
             links: links.map(d => Object.assign({}, d)),
           });
           const svg = d3
-            .create('svg')
-            .attr('viewBox', '0 0 600 200');
+            .create("svg")
+            .attr("viewBox", \`0 0 \${width} \${height}\`);
           svg
-            .append('g')
-            .selectAll('path')
+            .append("g")
+            .selectAll("path")
             .data(graph.links)
-            .join('path')
-            .attr('d', d3.sankeyLinkHorizontal())
-            .attr('stroke', '#aaa')
-            .attr('stroke-width', d => d.width)
-            .attr('fill', 'none');
+            .join("path")
+            .attr("d", d3.sankeyLinkVertical())
+            .attr("stroke", "var(--muted)")
+            .attr("stroke-width", d => d.width)
+            .attr("fill", "none");
           const node = svg
-            .append('g')
-            .selectAll('g')
+            .append("g")
+            .selectAll("g")
             .data(graph.nodes)
-            .join('g');
+            .join("g");
           node
-            .append('rect')
-            .attr('x', d => d.x0)
-            .attr('y', d => d.y0)
-            .attr('height', d => d.y1 - d.y0)
-            .attr('width', d => d.x1 - d.x0)
-            .attr('fill', '#0074D9');
+            .append("rect")
+            .attr("x", d => d.y0)
+            .attr("y", d => d.x0)
+            .attr("height", d => d.x1 - d.x0)
+            .attr("width", d => d.y1 - d.y0)
+            .attr("fill", "var(--link)");
           node
-            .append('text')
-            .attr('x', d => (d.x0 < 300 ? d.x1 + 6 : d.x0 - 6))
-            .attr('y', d => (d.y0 + d.y1) / 2)
-            .attr('dy', '0.35em')
-            .attr('text-anchor', d => (d.x0 < 300 ? 'start' : 'end'))
+            .append("text")
+            .attr("x", d => (d.y0 < width / 2 ? d.y1 + 6 : d.y0 - 6))
+            .attr("y", d => (d.x0 + d.x1) / 2)
+            .attr("dy", "0.35em")
+            .attr("text-anchor", d => (d.y0 < width / 2 ? "start" : "end"))
             .text(d => d.name);
-          document.getElementById('topStories').appendChild(svg.node());
+          document.getElementById("topStories").appendChild(svg.node());
         }
       })();
     </script>
