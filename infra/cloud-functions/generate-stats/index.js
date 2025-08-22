@@ -42,9 +42,11 @@ app.use(
  * @param {number} storyCount Story count.
  * @param {number} pageCount Page count.
  * @param {number} unmoderatedCount Unmoderated page count.
+ * @param {Array<{title: string, variantCount: number}>} [topStories]
+ *   Top stories by variant count.
  * @returns {string} HTML page.
  */
-function buildHtml(storyCount, pageCount, unmoderatedCount) {
+function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -107,8 +109,11 @@ function buildHtml(storyCount, pageCount, unmoderatedCount) {
       <p>Number of stories: ${storyCount}</p>
       <p>Number of pages: ${pageCount}</p>
       <p>Number of unmoderated pages: ${unmoderatedCount}</p>
+      <div id="topStories"></div>
     </main>
     <script src="https://accounts.google.com/gsi/client" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12/dist/d3-sankey.min.js"></script>
     <script type="module">
       import {
         initGoogleSignIn,
@@ -141,6 +146,65 @@ function buildHtml(storyCount, pageCount, unmoderatedCount) {
       if (getIdToken()) {
         showSignedIn();
       }
+    </script>
+    <script>
+      (function () {
+        const data = ${JSON.stringify(topStories)};
+        if (data.length) {
+          const nodes = [{ name: 'Stories' }].concat(
+            data.map(d => ({ name: d.title }))
+          );
+          const links = data.map((d, i) => ({
+            source: 0,
+            target: i + 1,
+            value: d.variantCount,
+          }));
+          const sankey = d3
+            .sankey()
+            .nodeWidth(15)
+            .nodePadding(10)
+            .extent([
+              [1, 1],
+              [600, 200],
+            ]);
+          const graph = sankey({
+            nodes: nodes.map(d => Object.assign({}, d)),
+            links: links.map(d => Object.assign({}, d)),
+          });
+          const svg = d3
+            .create('svg')
+            .attr('viewBox', '0 0 600 200');
+          svg
+            .append('g')
+            .selectAll('path')
+            .data(graph.links)
+            .join('path')
+            .attr('d', d3.sankeyLinkHorizontal())
+            .attr('stroke', '#aaa')
+            .attr('stroke-width', d => d.width)
+            .attr('fill', 'none');
+          const node = svg
+            .append('g')
+            .selectAll('g')
+            .data(graph.nodes)
+            .join('g');
+          node
+            .append('rect')
+            .attr('x', d => d.x0)
+            .attr('y', d => d.y0)
+            .attr('height', d => d.y1 - d.y0)
+            .attr('width', d => d.x1 - d.x0)
+            .attr('fill', '#0074D9');
+          node
+            .append('text')
+            .attr('x', d => (d.x0 < 300 ? d.x1 + 6 : d.x0 - 6))
+            .attr('y', d => (d.y0 + d.y1) / 2)
+            .attr('dy', '0.35em')
+            .attr('text-anchor', d => (d.x0 < 300 ? 'start' : 'end'))
+            .text(d => d.name);
+          document.getElementById('topStories').appendChild(svg.node());
+        }
+      })();
     </script>
     <script>
       (function () {
@@ -219,6 +283,30 @@ async function getUnmoderatedPageCount(dbRef = db) {
 }
 
 /**
+ * Get top stories by variant count.
+ * @param {import('firebase-admin/firestore').Firestore} [dbRef] Firestore instance.
+ * @param {number} [limit] Max number of stories.
+ * @returns {Promise<Array<{title: string, variantCount: number}>>} Top stories.
+ */
+async function getTopStories(dbRef = db, limit = 5) {
+  const statsSnap = await dbRef
+    .collection('storyStats')
+    .orderBy('variantCount', 'desc')
+    .limit(limit)
+    .get();
+  const stories = await Promise.all(
+    statsSnap.docs.map(async doc => {
+      const storyDoc = await dbRef.collection('stories').doc(doc.id).get();
+      return {
+        title: storyDoc.data()?.title || doc.id,
+        variantCount: doc.data().variantCount || 0,
+      };
+    })
+  );
+  return stories;
+}
+
+/**
  * Retrieve access token from metadata server.
  * @returns {Promise<string>} Access token.
  */
@@ -280,12 +368,15 @@ async function generate(deps = {}) {
   const pageCountFn = deps.pageCountFn || getPageCount;
   const unmoderatedPageCountFn =
     deps.unmoderatedPageCountFn || getUnmoderatedPageCount;
-  const [storyCount, pageCount, unmoderatedCount] = await Promise.all([
-    storyCountFn(),
-    pageCountFn(),
-    unmoderatedPageCountFn(),
-  ]);
-  const html = buildHtml(storyCount, pageCount, unmoderatedCount);
+  const topStoriesFn = deps.topStoriesFn || getTopStories;
+  const [storyCount, pageCount, unmoderatedCount, topStories] =
+    await Promise.all([
+      storyCountFn(),
+      pageCountFn(),
+      unmoderatedPageCountFn(),
+      topStoriesFn(),
+    ]);
+  const html = buildHtml(storyCount, pageCount, unmoderatedCount, topStories);
   const bucket = (deps.storageInstance || storage).bucket(BUCKET);
   await bucket.file('stats.html').save(html, {
     contentType: 'text/html',
@@ -347,6 +438,7 @@ export {
   getStoryCount,
   getPageCount,
   getUnmoderatedPageCount,
+  getTopStories,
   generate,
   handleRequest,
 };
