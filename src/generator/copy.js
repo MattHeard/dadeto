@@ -23,6 +23,8 @@ const srcInputHandlersDir = path.resolve(srcDir, 'inputHandlers');
 const publicInputHandlersDir = path.join(publicDir, 'inputHandlers');
 const srcConstantsDir = path.resolve(srcDir, 'constants');
 const publicConstantsDir = path.join(publicDir, 'constants');
+const srcAssetsDir = path.resolve(srcDir, 'assets');
+const publicAssetsDir = publicDir;
 
 // Ensure public directory exists
 if (!fs.existsSync(publicDir)) {
@@ -196,6 +198,14 @@ if (fs.existsSync(srcConstantsDir)) {
   console.log('Constants files copied successfully!');
 } else {
   console.warn(`Warning: constants directory not found at ${srcConstantsDir}`);
+}
+
+// --- Copy src/assets to public/ ---
+if (fs.existsSync(srcAssetsDir)) {
+  copyDirRecursive(srcAssetsDir, publicAssetsDir);
+  console.log('Asset files copied successfully!');
+} else {
+  console.warn(`Warning: assets directory not found at ${srcAssetsDir}`);
 }
 
 // --- Copy src/browser to public/browser ---
