@@ -2,6 +2,7 @@ import {
   buildHtml,
   getPageCount,
   getUnmoderatedPageCount,
+  getTopStories,
 } from '../../infra/cloud-functions/generate-stats/index.js';
 
 describe('generate stats helpers', () => {
@@ -15,6 +16,15 @@ describe('generate stats helpers', () => {
   test('buildHtml includes favicon link', () => {
     const html = buildHtml(0, 0, 0);
     expect(html).toContain('<link rel="icon" href="/favicon.ico" />');
+  });
+
+  test('buildHtml embeds top stories', () => {
+    const html = buildHtml(0, 0, 0, [
+      { title: 'Story A', variantCount: 2 },
+      { title: 'Story B', variantCount: 1 },
+    ]);
+    expect(html).toContain('d3-sankey');
+    expect(html).toContain('Story A');
   });
 
   test('getPageCount returns page count', async () => {
@@ -42,5 +52,37 @@ describe('generate stats helpers', () => {
       }),
     };
     await expect(getUnmoderatedPageCount(mockDb)).resolves.toBe(5);
+  });
+
+  test('getTopStories returns sorted stories', async () => {
+    const statsDocs = [
+      { id: 's1', data: () => ({ variantCount: 3 }) },
+      { id: 's2', data: () => ({ variantCount: 2 }) },
+    ];
+    const mockDb = {
+      collection: name => {
+        if (name === 'storyStats') {
+          return {
+            orderBy: () => ({
+              limit: () => ({
+                get: () => Promise.resolve({ docs: statsDocs }),
+              }),
+            }),
+          };
+        }
+        return {
+          doc: id => ({
+            get: () =>
+              Promise.resolve({
+                data: () => ({ title: `Title ${id}` }),
+              }),
+          }),
+        };
+      },
+    };
+    await expect(getTopStories(mockDb)).resolves.toEqual([
+      { title: 'Title s1', variantCount: 3 },
+      { title: 'Title s2', variantCount: 2 },
+    ]);
   });
 });
