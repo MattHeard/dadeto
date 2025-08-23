@@ -63,6 +63,34 @@ async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
 }
 
 /**
+ * Verify that the request is authorised by an admin user.
+ * @param {import('express').Request} req HTTP request.
+ * @param {import('express').Response} res HTTP response.
+ * @returns {Promise<boolean>} True if request is authorised.
+ */
+async function verifyAdmin(req, res) {
+  const authHeader = req.get('Authorization') || '';
+  const match = authHeader.match(/^Bearer (.+)$/);
+  if (!match) {
+    res.status(401).send('Missing token');
+    return false;
+  }
+
+  try {
+    const decoded = await auth.verifyIdToken(match[1]);
+    if (decoded.uid !== ADMIN_UID) {
+      res.status(403).send('Forbidden');
+      return false;
+    }
+  } catch (e) {
+    res.status(401).send(e?.message || 'Invalid token');
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Handle HTTP requests to mark a variant as dirty.
  * @param {import('express').Request} req HTTP request.
  * @param {import('express').Response} res HTTP response.
@@ -75,22 +103,8 @@ async function handleRequest(req, res, deps = {}) {
     return;
   }
 
-  const authHeader = req.get('Authorization') || '';
-  const match = authHeader.match(/^Bearer (.+)$/);
-  if (!match) {
-    res.status(401).send('Missing token');
-    return;
-  }
-
-  let decoded;
-  try {
-    decoded = await auth.verifyIdToken(match[1]);
-  } catch (e) {
-    res.status(401).send(e?.message || 'Invalid token');
-    return;
-  }
-  if (decoded.uid !== ADMIN_UID) {
-    res.status(403).send('Forbidden');
+  const authorised = await verifyAdmin(req, res);
+  if (!authorised) {
     return;
   }
 
