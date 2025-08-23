@@ -1,5 +1,8 @@
 import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+import {
+  getAuth,
+  onAuthStateChanged,
+} from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 const RENDER_URL =
@@ -142,24 +145,10 @@ function wireSignOut() {
     link.addEventListener('click', async e => {
       e.preventDefault();
       await signOut();
-      document
-        .querySelectorAll('#signoutWrap')
-        .forEach(el => (el.style.display = 'none'));
-      document
-        .querySelectorAll('#signinButton')
-        .forEach(el => (el.style.display = ''));
     });
   });
 }
 
-initGoogleSignIn({
-  onSignIn: () => {
-    checkAccess();
-    wireSignOut();
-  },
-});
-
-if (getIdToken()) {
-  checkAccess();
-  wireSignOut();
-}
+wireSignOut();
+onAuthStateChanged(getAuth(), checkAccess);
+initGoogleSignIn();
