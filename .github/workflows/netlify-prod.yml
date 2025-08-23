@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'public/**'
+      - 'src/**'
 
   workflow_dispatch:
 
@@ -15,12 +16,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4     # pick the node version your build needs
+      - uses: actions/setup-node@v4 # pick the node version your build needs
         with:
           node-version: 18
           cache: 'npm'
 
-      - run: npm install -g netlify-cli@17     # pin CLI version
+      - run: npm ci
+
+      - run: npm run build:browser
+
+      - run: npm install -g netlify-cli@17 # pin CLI version
 
       - name: Deploy to Netlify production
         run: |
