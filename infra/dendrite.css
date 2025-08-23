@@ -307,8 +307,22 @@ form textarea {
   min-height: 8em;
 }
 
-form button {
+button {
   padding: var(--s2) var(--s3);
+  border: 1px solid var(--link);
+  border-radius: var(--s1);
+  background: var(--link);
+  color: var(--bg);
+  cursor: pointer;
+}
+
+button:hover,
+button:focus-visible {
+  background: var(--link-hover);
+  outline: none;
+}
+
+form button {
   width: fit-content;
 }
 
