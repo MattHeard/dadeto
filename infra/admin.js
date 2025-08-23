@@ -8,7 +8,17 @@ const REGENERATE_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-mark-variant-dirty';
 const STATS_URL =
   'https://europe-west1-irien-465710.cloudfunctions.net/prod-generate-stats';
-const renderStatus = document.getElementById('renderStatus');
+const statusParagraph = document.getElementById('renderStatus');
+
+/**
+ * Display a status message on the admin page.
+ * @param {string} text - Message to show.
+ */
+function showMessage(text) {
+  if (statusParagraph) {
+    statusParagraph.innerHTML = `<strong>${text}</strong>`;
+  }
+}
 
 /**
  * Reveals admin content for the correct UID and hides it otherwise without
@@ -41,8 +51,7 @@ function checkAccess() {
 async function triggerRender() {
   const token = getIdToken();
   if (!token) {
-    if (renderStatus)
-      renderStatus.textContent = 'Render failed: missing ID token';
+    showMessage('Render failed: missing ID token');
     return;
   }
   try {
@@ -52,19 +61,16 @@ async function triggerRender() {
     });
     if (!res.ok) {
       const body = await res.text();
-      if (renderStatus)
-        renderStatus.textContent = `Render failed: ${res.status} ${res.statusText}${
+      showMessage(
+        `Render failed: ${res.status} ${res.statusText}${
           body ? ` - ${body}` : ''
-        }`;
+        }`
+      );
       return;
     }
-    alert('Render triggered');
-    if (renderStatus) renderStatus.textContent = 'Render triggered';
+    showMessage('Render triggered');
   } catch (e) {
-    if (renderStatus)
-      renderStatus.textContent = `Render failed: ${
-        e instanceof Error ? e.message : String(e)
-      }`;
+    showMessage(`Render failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
@@ -81,9 +87,9 @@ async function triggerStats() {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
-    alert('Stats generated');
+    showMessage('Stats generated');
   } catch {
-    alert('Stats generation failed');
+    showMessage('Stats generation failed');
   }
 }
 
@@ -101,7 +107,7 @@ async function regenerateVariant(e) {
   const value = input?.value.trim();
   const match = value.match(/^(\d+)([a-zA-Z]+)$/);
   if (!match) {
-    alert('Invalid format');
+    showMessage('Invalid format');
     return;
   }
   const page = Number(match[1]);
@@ -116,9 +122,9 @@ async function regenerateVariant(e) {
       body: JSON.stringify({ page, variant }),
     });
     if (!res.ok) throw new Error('fail');
-    alert('Regeneration triggered');
+    showMessage('Regeneration triggered');
   } catch {
-    alert('Regeneration failed');
+    showMessage('Regeneration failed');
   }
 }
 
