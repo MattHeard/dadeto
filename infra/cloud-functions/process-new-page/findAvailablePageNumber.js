@@ -1,7 +1,7 @@
 /**
  * Choose a random page number that is not already taken.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @param {number} [i=0] Recursion depth used to widen the search range.
+ * @param {number} [i] Recursion depth used to widen the search range.
  * @returns {Promise<number>} A unique page number.
  */
 export async function findAvailablePageNumber(db, i = 0) {
