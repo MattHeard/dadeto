@@ -30,7 +30,7 @@ describe('buildHtml', () => {
       { content: 'Go left', position: 0 },
     ]);
     expect(html).toContain(
-      '<li><a href="../new-page.html?option=12-a-0">Go left</a></li>'
+      '<li><a class="variant-link" data-link-id="12-a-0" href="../new-page.html?option=12-a-0">Go left</a></li>'
     );
   });
 
@@ -43,7 +43,28 @@ describe('buildHtml', () => {
         targetVariantName: 'b',
       },
     ]);
-    expect(html).toContain('<li><a href="/p/42b.html">Go right</a></li>');
+    expect(html).toContain(
+      '<li><a class="variant-link" data-link-id="5-a-1" href="/p/42b.html">Go right</a></li>'
+    );
+  });
+
+  test('includes data-variants when multiple target variants provided', () => {
+    const html = buildHtml(5, 'a', 'content', [
+      {
+        content: 'Go elsewhere',
+        position: 0,
+        targetPageNumber: 10,
+        targetVariantName: 'a',
+        targetVariants: [
+          { name: 'a', weight: 1 },
+          { name: 'b', weight: 2 },
+        ],
+      },
+    ]);
+    expect(html).toContain(
+      '<li><a class="variant-link" data-link-id="5-a-0" href="/p/10a.html" data-variants="10a:1,10b:2">Go elsewhere</a></li>'
+    );
+    expect(html).toContain('a.variant-link[data-variants]');
   });
 
   test('includes author below options when provided', () => {
@@ -94,7 +115,7 @@ describe('buildHtml', () => {
       { content: 'Go *left* and **bold**', position: 0 },
     ]);
     expect(html).toContain(
-      '<li><a href="../new-page.html?option=1-a-0">Go <em>left</em> and <strong>bold</strong></a></li>'
+      '<li><a class="variant-link" data-link-id="1-a-0" href="../new-page.html?option=1-a-0">Go <em>left</em> and <strong>bold</strong></a></li>'
     );
   });
 

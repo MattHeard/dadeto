@@ -87,6 +87,34 @@ describe('render', () => {
     expect(mockSave.mock.calls[0][1]).toEqual({ contentType: 'text/html' });
   });
 
+  test('includes data-variants for options linking to multi-variant page', async () => {
+    const variantCollection = {
+      orderBy: jest.fn().mockReturnThis(),
+      get: jest.fn().mockResolvedValue({
+        empty: false,
+        docs: [
+          { data: () => ({ name: 'a', visibility: 1 }) },
+          { data: () => ({ name: 'b', visibility: 1 }) },
+        ],
+      }),
+    };
+    const targetPageRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 10 }),
+      }),
+      collection: jest.fn(() => variantCollection),
+    };
+    const snap = createSnap([
+      { content: 'Go', position: 0, targetPage: targetPageRef },
+    ]);
+    await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
+    const html = mockSave.mock.calls[0][0];
+    expect(html).toContain(
+      '<li><a class="variant-link" data-link-id="5-a-0" href="/p/10a.html" data-variants="10a:1,10b:1">Go</a></li>'
+    );
+  });
+
   test('logs error when cache invalidation fails', async () => {
     const snap = createSnap([{ content: 'Go', position: 0 }]);
     const consoleError = jest
