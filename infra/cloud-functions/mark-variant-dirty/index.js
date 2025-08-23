@@ -33,6 +33,31 @@ app.use(
 app.use(express.json());
 
 /**
+ * Find a reference to the variant document.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
+ * @param {number} pageNumber Page number.
+ * @param {string} variantName Variant name.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant doc ref.
+ */
+async function findVariantRef(database, pageNumber, variantName) {
+  const pagesSnap = await database
+    .collectionGroup('pages')
+    .where('number', '==', pageNumber)
+    .limit(1)
+    .get();
+  const pageRef = pagesSnap.docs?.[0]?.ref;
+  if (!pageRef) {
+    return null;
+  }
+  const variantsSnap = await pageRef
+    .collection('variants')
+    .where('name', '==', variantName)
+    .limit(1)
+    .get();
+  return variantsSnap.docs?.[0]?.ref || null;
+}
+
+/**
  * Mark a variant document as dirty so the render-variant function re-renders it.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
@@ -41,24 +66,11 @@ app.use(express.json());
  */
 async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
   const database = deps.db || db;
-  const pagesSnap = await database
-    .collectionGroup('pages')
-    .where('number', '==', pageNumber)
-    .limit(1)
-    .get();
-  if (pagesSnap.empty) {
+  const variantRef = await findVariantRef(database, pageNumber, variantName);
+  if (!variantRef) {
     return false;
   }
-  const pageRef = pagesSnap.docs[0].ref;
-  const variantsSnap = await pageRef
-    .collection('variants')
-    .where('name', '==', variantName)
-    .limit(1)
-    .get();
-  if (variantsSnap.empty) {
-    return false;
-  }
-  await variantsSnap.docs[0].ref.update({ dirty: null });
+  await variantRef.update({ dirty: null });
   return true;
 }
 
