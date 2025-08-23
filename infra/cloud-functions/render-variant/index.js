@@ -119,6 +119,7 @@ async function render(snap, ctx) {
     optionsData.map(async data => {
       let targetPageNumber;
       let targetVariantName;
+      let targetVariants;
       if (data.targetPage) {
         try {
           const targetSnap = await data.targetPage.get();
@@ -127,10 +128,16 @@ async function render(snap, ctx) {
             const variantSnap = await data.targetPage
               .collection('variants')
               .orderBy('name')
-              .limit(1)
               .get();
-            if (!variantSnap.empty) {
-              targetVariantName = variantSnap.docs[0].data().name;
+            const visible = variantSnap.docs.filter(
+              doc => (doc.data().visibility ?? 1) >= VISIBILITY_THRESHOLD
+            );
+            if (visible.length) {
+              targetVariantName = visible[0].data().name;
+              targetVariants = visible.map(doc => ({
+                name: doc.data().name,
+                weight: doc.data().visibility ?? 1,
+              }));
             }
           }
         } catch (e) {
@@ -144,6 +151,7 @@ async function render(snap, ctx) {
         position: data.position ?? 0,
         ...(targetPageNumber !== undefined && { targetPageNumber }),
         ...(targetVariantName && { targetVariantName }),
+        ...(targetVariants && { targetVariants }),
       };
     })
   );
