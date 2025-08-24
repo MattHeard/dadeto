@@ -153,6 +153,15 @@
           showSignedIn();
         }
 
+        form.addEventListener('keydown', event => {
+          if (
+            event.key === 'Enter' &&
+            event.target.matches('input[type="text"]')
+          ) {
+            event.preventDefault();
+          }
+        });
+
         form.addEventListener('submit', async event => {
           event.preventDefault();
           button.disabled = true;
