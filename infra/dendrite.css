@@ -326,6 +326,21 @@ form button {
   width: fit-content;
 }
 
+button.dendrite-button {
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--link);
+  border-radius: var(--s1);
+  background: var(--link);
+  color: var(--bg);
+  cursor: pointer;
+}
+
+button.dendrite-button:hover,
+button.dendrite-button:focus-visible {
+  background: var(--link-hover);
+  outline: none;
+}
+
 /* Neutralize background for Google sign-in button */
 .g_id_signin,
 .abcRioButton {
