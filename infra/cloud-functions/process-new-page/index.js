@@ -18,49 +18,68 @@ export const processNewPage = functions
     }
 
     const incomingOptionFullName = sub.incomingOptionFullName;
-    if (!incomingOptionFullName) {
+    const directPageNumber = sub.pageNumber;
+    if (!incomingOptionFullName && !Number.isInteger(directPageNumber)) {
       await snap.ref.update({ processed: true });
       return null;
     }
 
-    const optionRef = db.doc(incomingOptionFullName);
-    const optionSnap = await optionRef.get();
-    if (!optionSnap.exists) {
-      await snap.ref.update({ processed: true });
-      return null;
-    }
-    const variantRef = optionRef.parent.parent;
-    const pageRef = variantRef.parent.parent;
-    const storyRef = pageRef.parent.parent;
-
-    const optionData = optionSnap.data();
-    let pageDocRef = optionData.targetPage;
+    let variantRef = null;
+    let pageDocRef = null;
+    let storyRef = null;
     let pageNumber;
     const batch = db.batch();
 
-    if (pageDocRef) {
-      try {
-        const existingPageSnap = await pageDocRef.get();
-        if (existingPageSnap.exists) {
-          pageNumber = existingPageSnap.data().number;
-        } else {
+    if (incomingOptionFullName) {
+      const optionRef = db.doc(incomingOptionFullName);
+      const optionSnap = await optionRef.get();
+      if (!optionSnap.exists) {
+        await snap.ref.update({ processed: true });
+        return null;
+      }
+      variantRef = optionRef.parent.parent;
+      const pageRef = variantRef.parent.parent;
+      storyRef = pageRef.parent.parent;
+
+      const optionData = optionSnap.data();
+      pageDocRef = optionData.targetPage;
+      if (pageDocRef) {
+        try {
+          const existingPageSnap = await pageDocRef.get();
+          if (existingPageSnap.exists) {
+            pageNumber = existingPageSnap.data().number;
+          } else {
+            pageDocRef = null;
+          }
+        } catch {
           pageDocRef = null;
         }
-      } catch {
-        pageDocRef = null;
       }
-    }
 
-    if (!pageDocRef) {
-      pageNumber = await findAvailablePageNumber(db);
-      const newPageId = crypto.randomUUID();
-      pageDocRef = storyRef.collection('pages').doc(newPageId);
-      batch.set(pageDocRef, {
-        number: pageNumber,
-        incomingOption: incomingOptionFullName,
-        createdAt: FieldValue.serverTimestamp(),
-      });
-      batch.update(optionRef, { targetPage: pageDocRef });
+      if (!pageDocRef) {
+        pageNumber = await findAvailablePageNumber(db);
+        const newPageId = crypto.randomUUID();
+        pageDocRef = storyRef.collection('pages').doc(newPageId);
+        batch.set(pageDocRef, {
+          number: pageNumber,
+          incomingOption: incomingOptionFullName,
+          createdAt: FieldValue.serverTimestamp(),
+        });
+        batch.update(optionRef, { targetPage: pageDocRef });
+      }
+    } else {
+      pageNumber = directPageNumber;
+      const pageSnap = await db
+        .collectionGroup('pages')
+        .where('number', '==', pageNumber)
+        .limit(1)
+        .get();
+      if (pageSnap.empty) {
+        await snap.ref.update({ processed: true });
+        return null;
+      }
+      pageDocRef = pageSnap.docs[0].ref;
+      storyRef = pageDocRef.parent.parent;
     }
 
     const variantsSnap = await pageDocRef
@@ -79,7 +98,7 @@ export const processNewPage = functions
       content: sub.content,
       authorId: sub.authorId || null,
       authorName: sub.author,
-      incomingOption: incomingOptionFullName,
+      incomingOption: incomingOptionFullName || null,
       moderatorReputationSum: 0,
       rand: Math.random(),
       createdAt: FieldValue.serverTimestamp(),
@@ -102,7 +121,9 @@ export const processNewPage = functions
       { merge: true }
     );
 
-    batch.update(variantRef, { dirty: null });
+    if (variantRef) {
+      batch.update(variantRef, { dirty: null });
+    }
     batch.update(snap.ref, { processed: true });
 
     await batch.commit();
