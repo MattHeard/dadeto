@@ -33,17 +33,27 @@ app.use(
 app.use(express.json());
 
 /**
+ * Find pages snapshot for a page number.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
+ * @param {number} pageNumber Page number.
+ * @returns {Promise<import('firebase-admin/firestore').QuerySnapshot>} Pages snapshot.
+ */
+function findPagesSnap(database, pageNumber) {
+  return database
+    .collectionGroup('pages')
+    .where('number', '==', pageNumber)
+    .limit(1)
+    .get();
+}
+
+/**
  * Find a reference to the page document.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @param {number} pageNumber Page number.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Page doc ref.
  */
 async function findPageRef(database, pageNumber) {
-  const pagesSnap = await database
-    .collectionGroup('pages')
-    .where('number', '==', pageNumber)
-    .limit(1)
-    .get();
+  const pagesSnap = await findPagesSnap(database, pageNumber);
   return pagesSnap.docs?.[0]?.ref || null;
 }
 
