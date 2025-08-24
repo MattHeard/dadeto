@@ -47,12 +47,12 @@ function findPagesSnap(database, pageNumber) {
 }
 
 /**
- * Extract a page reference from a pages snapshot.
- * @param {import('firebase-admin/firestore').QuerySnapshot} pagesSnap Pages snapshot.
- * @returns {import('firebase-admin/firestore').DocumentReference | null} Page doc ref.
+ * Extract a document reference from a query snapshot.
+ * @param {import('firebase-admin/firestore').QuerySnapshot} snap Query snapshot.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Document ref.
  */
-function pageRefFromSnap(pagesSnap) {
-  return pagesSnap.docs?.[0]?.ref || null;
+function refFromSnap(snap) {
+  return snap.docs?.[0]?.ref || null;
 }
 
 /**
@@ -63,7 +63,7 @@ function pageRefFromSnap(pagesSnap) {
  */
 async function findPageRef(database, pageNumber) {
   const pagesSnap = await findPagesSnap(database, pageNumber);
-  return pageRefFromSnap(pagesSnap);
+  return refFromSnap(pagesSnap);
 }
 
 /**
@@ -83,7 +83,7 @@ async function findVariantRef(database, pageNumber, variantName) {
     .where('name', '==', variantName)
     .limit(1)
     .get();
-  return variantsSnap.docs?.[0]?.ref || null;
+  return refFromSnap(variantsSnap);
 }
 
 /**
