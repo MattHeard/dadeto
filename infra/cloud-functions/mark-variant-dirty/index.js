@@ -67,6 +67,20 @@ async function findPageRef(database, pageNumber) {
 }
 
 /**
+ * Find variants snapshot for a variant name.
+ * @param {import('firebase-admin/firestore').DocumentReference} pageRef Page doc ref.
+ * @param {string} variantName Variant name.
+ * @returns {Promise<import('firebase-admin/firestore').QuerySnapshot>} Variants snapshot.
+ */
+function findVariantsSnap(pageRef, variantName) {
+  return pageRef
+    .collection('variants')
+    .where('name', '==', variantName)
+    .limit(1)
+    .get();
+}
+
+/**
  * Find a reference to the variant document.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @param {number} pageNumber Page number.
@@ -78,12 +92,17 @@ async function findVariantRef(database, pageNumber, variantName) {
   if (!pageRef) {
     return null;
   }
-  const variantsSnap = await pageRef
-    .collection('variants')
-    .where('name', '==', variantName)
-    .limit(1)
-    .get();
+  const variantsSnap = await findVariantsSnap(pageRef, variantName);
   return refFromSnap(variantsSnap);
+}
+
+/**
+ * Update a variant document with a dirty flag.
+ * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant doc ref.
+ * @returns {Promise<void>} Promise resolving when update completes.
+ */
+function updateVariantDirty(variantRef) {
+  return variantRef.update({ dirty: null });
 }
 
 /**
@@ -99,8 +118,63 @@ async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
   if (!variantRef) {
     return false;
   }
-  await variantRef.update({ dirty: null });
+  await updateVariantDirty(variantRef);
   return true;
+}
+
+/**
+ * Extract the Authorization header from a request.
+ * @param {import('express').Request} req HTTP request.
+ * @returns {string} Authorization header or empty string.
+ */
+function getAuthHeader(req) {
+  return req.get('Authorization') || '';
+}
+
+/**
+ * Match a bearer token from an Authorization header.
+ * @param {string} authHeader Authorization header.
+ * @returns {RegExpMatchArray | null} Match result.
+ */
+function matchAuthHeader(authHeader) {
+  return authHeader.match(/^Bearer (.+)$/);
+}
+
+/**
+ * Send a 401 response with a message.
+ * @param {import('express').Response} res HTTP response.
+ * @param {string} message Message to send.
+ * @returns {void}
+ */
+function sendUnauthorized(res, message) {
+  res.status(401).send(message);
+}
+
+/**
+ * Decode an auth token.
+ * @param {string} token ID token.
+ * @returns {Promise<import('firebase-admin/auth').DecodedIdToken>} Decoded token.
+ */
+function decodeAuth(token) {
+  return auth.verifyIdToken(token);
+}
+
+/**
+ * Determine if a decoded token does not belong to the admin user.
+ * @param {import('firebase-admin/auth').DecodedIdToken} decoded Decoded token.
+ * @returns {boolean} True if not admin.
+ */
+function isNotAdmin(decoded) {
+  return decoded.uid !== ADMIN_UID;
+}
+
+/**
+ * Send a 403 Forbidden response.
+ * @param {import('express').Response} res HTTP response.
+ * @returns {void}
+ */
+function sendForbidden(res) {
+  res.status(403).send('Forbidden');
 }
 
 /**
@@ -110,21 +184,21 @@ async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
  * @returns {Promise<boolean>} True if request is authorised.
  */
 async function verifyAdmin(req, res) {
-  const authHeader = req.get('Authorization') || '';
-  const match = authHeader.match(/^Bearer (.+)$/);
+  const authHeader = getAuthHeader(req);
+  const match = matchAuthHeader(authHeader);
   if (!match) {
-    res.status(401).send('Missing token');
+    sendUnauthorized(res, 'Missing token');
     return false;
   }
 
   try {
-    const decoded = await auth.verifyIdToken(match[1]);
-    if (decoded.uid !== ADMIN_UID) {
-      res.status(403).send('Forbidden');
+    const decoded = await decodeAuth(match[1]);
+    if (isNotAdmin(decoded)) {
+      sendForbidden(res);
       return false;
     }
   } catch (e) {
-    res.status(401).send(e?.message || 'Invalid token');
+    sendUnauthorized(res, e?.message || 'Invalid token');
     return false;
   }
 
