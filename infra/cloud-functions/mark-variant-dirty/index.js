@@ -47,6 +47,15 @@ function findPagesSnap(database, pageNumber) {
 }
 
 /**
+ * Extract a page reference from a pages snapshot.
+ * @param {import('firebase-admin/firestore').QuerySnapshot} pagesSnap Pages snapshot.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Page doc ref.
+ */
+function pageRefFromSnap(pagesSnap) {
+  return pagesSnap.docs?.[0]?.ref || null;
+}
+
+/**
  * Find a reference to the page document.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @param {number} pageNumber Page number.
@@ -54,7 +63,7 @@ function findPagesSnap(database, pageNumber) {
  */
 async function findPageRef(database, pageNumber) {
   const pagesSnap = await findPagesSnap(database, pageNumber);
-  return pagesSnap.docs?.[0]?.ref || null;
+  return pageRefFromSnap(pagesSnap);
 }
 
 /**
