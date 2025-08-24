@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Build site
-        run: npm run build
+        run: npm run build:browser
 
       - name: Commit public changes (if any)
         run: |
