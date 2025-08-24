@@ -1,4 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
+import { JSDOM } from 'jsdom';
 import { buildHtml } from '../../infra/cloud-functions/render-variant/buildHtml.js';
 
 describe('buildHtml', () => {
@@ -155,5 +156,30 @@ describe('buildHtml', () => {
     expect(html).toMatch(
       /<a class="brand" href="\/">\s*<img src="\/img\/logo.png" alt="Dendrite logo" \/>\s*Dendrite\s*<\/a>/
     );
+  });
+
+  test('rewrite link omits tracking query parameters', async () => {
+    const html = buildHtml(5, 'a', 'content', [
+      {
+        content: 'Go elsewhere',
+        position: 0,
+        targetPageNumber: 10,
+        targetVariantName: 'a',
+        targetVariants: [
+          { name: 'a', weight: 1 },
+          { name: 'b', weight: 1 },
+        ],
+      },
+    ]);
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously',
+      url: 'https://example.com',
+    });
+    await new Promise(resolve => {
+      dom.window.document.addEventListener('DOMContentLoaded', resolve);
+    });
+    const link = dom.window.document.querySelector('a.variant-link');
+    expect(link.href).toMatch(/^https:\/\/example\.com\/p\/10[ab]\.html$/);
+    expect(link.search).toBe('');
   });
 });

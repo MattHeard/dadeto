@@ -269,11 +269,6 @@ export function buildHtml(
             const parts = chosenUrl.pathname.split('/');
             parts[parts.length - 1] = chosen + '.html';
             chosenUrl.pathname = parts.join('/');
-            const linkId = a.getAttribute('data-link-id');
-            if (linkId && !chosenUrl.searchParams.has('from')) {
-              chosenUrl.searchParams.set('from', linkId);
-              chosenUrl.searchParams.set('to', chosen);
-            }
             a.setAttribute('href', chosenUrl.toString());
             a.setAttribute('data-chosen-variant', chosen);
           } catch {}
