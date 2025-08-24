@@ -128,7 +128,7 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
       function showSignedIn() {
         sbs.forEach(el => (el.style.display = 'none'));
         sws.forEach(el => (el.style.display = ''));
-        if (isAdmin()) al.style.display = '';
+        if (al && isAdmin()) al.style.display = '';
       }
       function showSignedOut() {
         sbs.forEach(el => (el.style.display = ''));
@@ -188,68 +188,77 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
     <script>
       (function () {
         const data = ${JSON.stringify(topStories)};
-        if (data.length) {
-          const nodes = [{ name: "Stories" }].concat(
-            data.map(d => ({ name: d.title }))
-          );
-          const links = data.map((d, i) => ({
-            source: 0,
-            target: i + 1,
-            value: d.variantCount,
-          }));
-          const width = 200;
-          const height = 600;
-          const sankey = d3
-            .sankey()
-            .nodeWidth(15)
-            .nodePadding(10)
-            .extent([
-              [1, 1],
-              [width, height],
-            ]);
-          const graph = sankey({
-            nodes: nodes.map(d => Object.assign({}, d)),
-            links: links.map(d => Object.assign({}, d)),
-          });
-          const svg = d3
-            .create("svg")
-            .attr("viewBox", \`0 0 \${height} \${width}\`);
-          svg
-            .append("g")
-            .selectAll("path")
-            .data(graph.links)
-            .join("path")
-            .attr("d", sankeyLinkVertical())
-            .attr("stroke", "var(--muted)")
-            .attr("stroke-width", d => d.width)
-            .attr("fill", "none");
-          const node = svg
-            .append("g")
-            .selectAll("g")
-            .data(graph.nodes)
-            .join("g");
-          node
-            .append("rect")
-            .attr("x", d => d.y0)
-            .attr("y", d => d.x0)
-            .attr("height", d => d.x1 - d.x0)
-            .attr("width", d => d.y1 - d.y0)
-            .attr("fill", "var(--link)");
-          node
-            .append("text")
-            .attr("x", d => (d.y0 < height / 2 ? d.y1 + 6 : d.y0 - 6))
-            .attr("y", d => (d.x0 + d.x1) / 2)
-            .attr("dy", "0.35em")
-            .attr("text-anchor", d => (d.y0 < height / 2 ? "start" : "end"))
-            .text(d => d.name);
-          document.getElementById("topStories").appendChild(svg.node());
+        const root = document.getElementById("topStories");
+        if (
+          !root ||
+          !Array.isArray(data) ||
+          !data.length ||
+          typeof d3 === "undefined" ||
+          !d3.sankey
+        ) {
+          return;
         }
+        const nodes = [{ name: "Stories" }].concat(
+          data.map(d => ({ name: d.title }))
+        );
+        const links = data.map((d, i) => ({
+          source: 0,
+          target: i + 1,
+          value: d.variantCount,
+        }));
+        const width = 200;
+        const height = 600;
+        const sankey = d3
+          .sankey()
+          .nodeWidth(15)
+          .nodePadding(10)
+          .extent([
+            [1, 1],
+            [width, height],
+          ]);
+        const graph = sankey({
+          nodes: nodes.map(d => Object.assign({}, d)),
+          links: links.map(d => Object.assign({}, d)),
+        });
+        const svg = d3
+          .create("svg")
+          .attr("viewBox", \`0 0 \${height} \${width}\`);
+        svg
+          .append("g")
+          .selectAll("path")
+          .data(graph.links)
+          .join("path")
+          .attr("d", sankeyLinkVertical())
+          .attr("stroke", "var(--muted)")
+          .attr("stroke-width", d => d.width)
+          .attr("fill", "none");
+        const node = svg
+          .append("g")
+          .selectAll("g")
+          .data(graph.nodes)
+          .join("g");
+        node
+          .append("rect")
+          .attr("x", d => d.y0)
+          .attr("y", d => d.x0)
+          .attr("height", d => d.x1 - d.x0)
+          .attr("width", d => d.y1 - d.y0)
+          .attr("fill", "var(--link)");
+        node
+          .append("text")
+          .attr("x", d => (d.y0 < height / 2 ? d.y1 + 6 : d.y0 - 6))
+          .attr("y", d => (d.x0 + d.x1) / 2)
+          .attr("dy", "0.35em")
+          .attr("text-anchor", d => (d.y0 < height / 2 ? "start" : "end"))
+          .text(d => d.name);
+        root.appendChild(svg.node());
       })();
     </script>
     <script>
       (function () {
         const toggle = document.querySelector('.menu-toggle');
         const overlay = document.getElementById('mobile-menu');
+        if (!toggle || !overlay) return;
         const sheet = overlay.querySelector('.menu-sheet');
         const closeBtn = overlay.querySelector('.menu-close');
 
