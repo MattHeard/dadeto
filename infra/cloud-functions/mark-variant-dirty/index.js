@@ -33,6 +33,21 @@ app.use(
 app.use(express.json());
 
 /**
+ * Find a reference to the page document.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
+ * @param {number} pageNumber Page number.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Page doc ref.
+ */
+async function findPageRef(database, pageNumber) {
+  const pagesSnap = await database
+    .collectionGroup('pages')
+    .where('number', '==', pageNumber)
+    .limit(1)
+    .get();
+  return pagesSnap.docs?.[0]?.ref || null;
+}
+
+/**
  * Find a reference to the variant document.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @param {number} pageNumber Page number.
@@ -40,12 +55,7 @@ app.use(express.json());
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant doc ref.
  */
 async function findVariantRef(database, pageNumber, variantName) {
-  const pagesSnap = await database
-    .collectionGroup('pages')
-    .where('number', '==', pageNumber)
-    .limit(1)
-    .get();
-  const pageRef = pagesSnap.docs?.[0]?.ref;
+  const pageRef = await findPageRef(database, pageNumber);
   if (!pageRef) {
     return null;
   }
