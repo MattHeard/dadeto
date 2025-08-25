@@ -126,6 +126,14 @@ export const processNewPage = functions
     }
     batch.update(snap.ref, { processed: true });
 
+    if (sub.authorId) {
+      const authorRef = db.doc(`authors/${sub.authorId}`);
+      const authorSnap = await authorRef.get();
+      if (!authorSnap.exists) {
+        batch.set(authorRef, { uuid: crypto.randomUUID() });
+      }
+    }
+
     await batch.commit();
     return null;
   });
