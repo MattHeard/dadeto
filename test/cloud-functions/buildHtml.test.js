@@ -26,6 +26,12 @@ describe('buildHtml', () => {
     expect(html).toContain('<title>Dendrite - My Story</title>');
   });
 
+  test('omits heading when showTitleHeading is false', () => {
+    const html = buildHtml(1, 'a', 'hello', [], 'My Story', '', '', '', false);
+    expect(html).toContain('<title>Dendrite - My Story</title>');
+    expect(html).not.toContain('<h1>My Story</h1>');
+  });
+
   test('links option without target page using slug', () => {
     const html = buildHtml(12, 'a', 'content', [
       { content: 'Go left', position: 0 },

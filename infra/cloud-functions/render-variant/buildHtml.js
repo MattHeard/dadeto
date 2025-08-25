@@ -26,6 +26,8 @@ function renderInlineMarkdown(text) {
  * @param {string} [author] Author name.
  * @param parentUrl
  * @param firstPageUrl
+ * @param {boolean} [showTitleHeading] Whether to include the story title as a
+ *   page heading.
  * @returns {string} HTML page.
  */
 export function buildHtml(
@@ -36,7 +38,8 @@ export function buildHtml(
   storyTitle = '',
   author = '',
   parentUrl = '',
-  firstPageUrl = ''
+  firstPageUrl = '',
+  showTitleHeading = true
 ) {
   const items = options
     .map(opt => {
@@ -60,7 +63,8 @@ export function buildHtml(
       return `<li><a ${attrs.join(' ')}>${optionHtml}</a></li>`;
     })
     .join('');
-  const title = storyTitle ? `<h1>${escapeHtml(storyTitle)}</h1>` : '';
+  const title =
+    storyTitle && showTitleHeading ? `<h1>${escapeHtml(storyTitle)}</h1>` : '';
   const headTitle = storyTitle
     ? `Dendrite - ${escapeHtml(storyTitle)}`
     : 'Dendrite';

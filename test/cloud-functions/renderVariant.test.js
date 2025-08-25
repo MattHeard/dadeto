@@ -204,6 +204,40 @@ describe('render', () => {
     expect(html).toContain('<a href="/p/1a.html">First page</a>');
   });
 
+  test('includes story title in head title for non-root pages', async () => {
+    const snap = createSnap([{ content: 'Go', position: 0 }]);
+    snap.data = () => ({
+      name: 'a',
+      content: 'content',
+      incomingOption: 'stories/s1/pages/p1/variants/pv/options/o1',
+    });
+
+    const parentPageRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 7 }),
+      }),
+    };
+    const parentVariantRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ name: 'b' }),
+      }),
+      parent: { parent: parentPageRef },
+    };
+    mockDoc.mockReturnValue({
+      parent: { parent: parentVariantRef },
+      get: jest
+        .fn()
+        .mockResolvedValue({ exists: true, data: () => ({ position: 2 }) }),
+    });
+
+    await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
+    const html = mockSave.mock.calls[0][0];
+    expect(html).toContain('<title>Dendrite - Story</title>');
+    expect(html).not.toContain('<h1>Story</h1>');
+  });
+
   test('includes rewrite link with page parameter', async () => {
     const snap = createSnap([{ content: 'Go', position: 0 }]);
     await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
