@@ -161,9 +161,8 @@ async function render(snap, ctx) {
   let firstPageUrl;
   if (storySnap.exists) {
     const storyData = storySnap.data();
-    if (!page.incomingOption) {
-      storyTitle = storyData.title || '';
-    } else if (storyData.rootPage) {
+    storyTitle = storyData.title || '';
+    if (page.incomingOption && storyData.rootPage) {
       try {
         const rootPageSnap = await storyData.rootPage.get();
         if (rootPageSnap.exists) {
@@ -215,7 +214,8 @@ async function render(snap, ctx) {
     storyTitle,
     authorName,
     parentUrl,
-    firstPageUrl
+    firstPageUrl,
+    !page.incomingOption
   );
   const filePath = `p/${page.number}${variant.name}.html`;
   const openVariant = options.some(opt => opt.targetPageNumber === undefined);
