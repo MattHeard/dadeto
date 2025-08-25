@@ -244,7 +244,7 @@ ol.contents a:focus-visible {
   outline: none;
 }
 
-ol.contents li:nth-child(10n + 1) {
+ol.contents li:first-child {
   margin-top: var(--s2);
 }
 
