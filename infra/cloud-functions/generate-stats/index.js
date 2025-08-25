@@ -161,13 +161,13 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
           return;
         }
 
-        // Build a simple one-to-many graph
+        // Build a simple one-to-many graph (top stories flowing downward)
         const nodes = [{ name: "Stories" }].concat(
           data.map(d => ({ name: d.title }))
         );
         const links = data.map((d, i) => ({
-          source: 0,
-          target: i + 1,
+          source: i + 1,
+          target: 0,
           value: d.variantCount,
         }));
 
@@ -190,7 +190,7 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
           links: links.map(d => ({ ...d })),
         });
 
-        // Normal viewBox (W x H), rotate content -90°
+        // Normal viewBox (W x H), rotate content 90° and flip horizontally
         const svg = d3
           .create("svg")
           .attr("viewBox", '0 0 ' + W + ' ' + H)
@@ -199,7 +199,7 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
 
         const g = svg
           .append("g")
-          .attr("transform", 'translate(0,' + H + ') rotate(-90)');
+          .attr("transform", 'rotate(90) scale(-1,1)');
 
         // Links using standard horizontal generator before rotation
         g.append("g")
@@ -229,8 +229,9 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
           .attr("rx", 2)
           .attr("fill", "var(--link)");
 
-        // Labels on the right side post-rotation
+        // Labels on the right side post-rotation (skip root node)
         node
+          .filter(d => d.index !== 0)
           .append("text")
           .attr("x", d => d.x1 + 6)
           .attr("y", d => (d.y0 + d.y1) / 2)
