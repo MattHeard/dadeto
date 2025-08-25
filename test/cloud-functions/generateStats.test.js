@@ -24,7 +24,8 @@ describe('generate stats helpers', () => {
       { title: 'Story B', variantCount: 1 },
     ]);
     expect(html).toContain('d3-sankey');
-    expect(html).toContain('sankeyLinkVertical');
+    expect(html).toContain('sankeyLinkHorizontal');
+    expect(html).toContain('rotate(-90)');
     expect(html).toContain('var(--link)');
     expect(html).toContain('Story A');
   });

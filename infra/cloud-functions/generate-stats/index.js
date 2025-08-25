@@ -148,44 +148,6 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
       }
     </script>
     <script>
-      // Generate vertical Sankey links by swapping x/y coordinates from
-      // d3.sankeyLinkHorizontal's output.
-      function sankeyLinkVertical() {
-        let curvature = 0.5;
-        function link(d) {
-          const y0 = d.source.x1;
-          const y1 = d.target.x0;
-          const yi = d3.interpolateNumber(y0, y1);
-          const y2 = yi(curvature);
-          const y3 = yi(1 - curvature);
-          const x0 = d.source.y1;
-          const x1 = d.target.y0;
-          return (
-            'M' +
-            x0 +
-            ',' +
-            y0 +
-            'C' +
-            x0 +
-            ',' +
-            y2 +
-            ' ' +
-            x1 +
-            ',' +
-            y3 +
-            ' ' +
-            x1 +
-            ',' +
-            y1
-          );
-        }
-        link.curvature = function (_) {
-          return arguments.length ? ((curvature = +_), link) : curvature;
-        };
-        return link;
-      }
-    </script>
-    <script>
       (function () {
         const data = ${JSON.stringify(topStories)};
         const root = document.getElementById("topStories");
@@ -198,6 +160,8 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
         ) {
           return;
         }
+
+        // Build a simple one-to-many graph
         const nodes = [{ name: "Stories" }].concat(
           data.map(d => ({ name: d.title }))
         );
@@ -206,51 +170,75 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
           target: i + 1,
           value: d.variantCount,
         }));
-        const width = 200;
-        const height = 600;
+
+        // Final SVG size after rotation
+        const W = 720;
+        const H = 240;
+
+        // Run sankey in native orientation sized as (height, width)
         const sankey = d3
           .sankey()
           .nodeWidth(15)
           .nodePadding(10)
           .extent([
             [1, 1],
-            [width, height],
+            [H - 1, W - 1],
           ]);
+
         const graph = sankey({
-          nodes: nodes.map(d => Object.assign({}, d)),
-          links: links.map(d => Object.assign({}, d)),
+          nodes: nodes.map(d => ({ ...d })),
+          links: links.map(d => ({ ...d })),
         });
+
+        // Normal viewBox (W x H), rotate content -90°
         const svg = d3
           .create("svg")
-          .attr("viewBox", \`0 0 \${height} \${width}\`);
-        svg
+          .attr("viewBox", '0 0 ' + W + ' ' + H)
+          .attr("width", W)
+          .attr("height", H);
+
+        const g = svg
           .append("g")
+          .attr("transform", 'translate(0,' + H + ') rotate(-90)');
+
+        // Links using standard horizontal generator before rotation
+        g.append("g")
+          .attr("fill", "none")
           .selectAll("path")
           .data(graph.links)
           .join("path")
-          .attr("d", sankeyLinkVertical())
+          .attr("d", d3.sankeyLinkHorizontal())
           .attr("stroke", "var(--muted)")
-          .attr("stroke-width", d => d.width)
-          .attr("fill", "none");
-        const node = svg
+          .attr("stroke-width", d => Math.max(1, d.width))
+          .attr("stroke-linecap", "round")
+          .attr("stroke-opacity", 0.6);
+
+        // Nodes
+        const node = g
           .append("g")
           .selectAll("g")
           .data(graph.nodes)
           .join("g");
+
         node
           .append("rect")
-          .attr("x", d => d.y0)
-          .attr("y", d => d.x0)
-          .attr("height", d => d.x1 - d.x0)
-          .attr("width", d => d.y1 - d.y0)
+          .attr("x", d => d.x0)
+          .attr("y", d => d.y0)
+          .attr("width", d => d.x1 - d.x0)
+          .attr("height", d => d.y1 - d.y0)
+          .attr("rx", 2)
           .attr("fill", "var(--link)");
+
+        // Labels on the right side post-rotation
         node
           .append("text")
-          .attr("x", d => (d.y0 < height / 2 ? d.y1 + 6 : d.y0 - 6))
-          .attr("y", d => (d.x0 + d.x1) / 2)
+          .attr("x", d => d.x1 + 6)
+          .attr("y", d => (d.y0 + d.y1) / 2)
           .attr("dy", "0.35em")
-          .attr("text-anchor", d => (d.y0 < height / 2 ? "start" : "end"))
+          .attr("font-size", 12)
+          .attr("text-anchor", "start")
           .text(d => d.name);
+
         root.appendChild(svg.node());
       })();
     </script>
