@@ -44,7 +44,7 @@ jobs:
         run: terraform init
 
       - name: Terraform Plan
-        run: terraform plan -lock-timeout=5m -input=false -out=tfplan
+        run: terraform plan -lock-timeout=5m -input=false -out=tfplan -var-file=environments/${ENVIRONMENT}/${ENVIRONMENT}.auto.tfvars
 
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
