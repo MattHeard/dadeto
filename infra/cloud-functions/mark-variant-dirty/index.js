@@ -59,11 +59,17 @@ function refFromSnap(snap) {
  * Find a reference to the page document.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @param {number} pageNumber Page number.
+ * @param {{findPagesSnap: typeof findPagesSnap, refFromSnap: typeof refFromSnap}} [firebase]
+ * Optional Firebase helpers.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Page doc ref.
  */
-async function findPageRef(database, pageNumber) {
-  const pagesSnap = await findPagesSnap(database, pageNumber);
-  return refFromSnap(pagesSnap);
+async function findPageRef(
+  database,
+  pageNumber,
+  firebase = { findPagesSnap, refFromSnap }
+) {
+  const pagesSnap = await firebase.findPagesSnap(database, pageNumber);
+  return firebase.refFromSnap(pagesSnap);
 }
 
 /**
@@ -85,10 +91,12 @@ function findVariantsSnap(pageRef, variantName) {
  * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
+ * @param {{findPagesSnap: typeof findPagesSnap, refFromSnap: typeof refFromSnap}} [firebase]
+ * Optional Firebase helpers.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant doc ref.
  */
-async function findVariantRef(database, pageNumber, variantName) {
-  const pageRef = await findPageRef(database, pageNumber);
+async function findVariantRef(database, pageNumber, variantName, firebase) {
+  const pageRef = await findPageRef(database, pageNumber, firebase);
   if (!pageRef) {
     return null;
   }
@@ -109,12 +117,23 @@ function updateVariantDirty(variantRef) {
  * Mark a variant document as dirty so the render-variant function re-renders it.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
- * @param {{db?: import('firebase-admin/firestore').Firestore}} [deps] Optional dependencies.
+ * @param {{
+ *   db?: import('firebase-admin/firestore').Firestore,
+ *   firebase?: {
+ *     findPagesSnap: typeof findPagesSnap,
+ *     refFromSnap: typeof refFromSnap,
+ *   },
+ * }} [deps] Optional dependencies.
  * @returns {Promise<boolean>} True if variant updated.
  */
 async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
   const database = deps.db || db;
-  const variantRef = await findVariantRef(database, pageNumber, variantName);
+  const variantRef = await findVariantRef(
+    database,
+    pageNumber,
+    variantName,
+    deps.firebase
+  );
   if (!variantRef) {
     return false;
   }
