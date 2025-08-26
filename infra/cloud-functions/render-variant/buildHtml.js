@@ -113,6 +113,7 @@ export function buildHtml(
         <a href="/new-story.html">New story</a>
         <a href="/mod.html">Moderate</a>
         <a href="/stats.html">Stats</a>
+        <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
         <div id="signinButton"></div>
         <div id="signoutWrap" style="display:none">
           <a id="signoutLink" href="#">Sign out</a>
@@ -137,7 +138,7 @@ export function buildHtml(
             <h3>Moderation</h3>
             <a href="/mod.html">Moderate</a>
             <a href="/stats.html">Stats</a>
-            <a id="adminLink" href="/admin.html" style="display:none">Admin</a>
+            <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
           </div>
 
           <div class="menu-group">
@@ -159,19 +160,19 @@ export function buildHtml(
         isAdmin,
         signOut,
       } from '../googleAuth.js';
-      const al = document.getElementById('adminLink');
+      const als = document.querySelectorAll('.admin-link');
       const sbs = document.querySelectorAll('#signinButton');
       const sws = document.querySelectorAll('#signoutWrap');
       const sos = document.querySelectorAll('#signoutLink');
       function showSignedIn() {
         sbs.forEach(el => (el.style.display = 'none'));
         sws.forEach(el => (el.style.display = ''));
-        if (isAdmin()) al.style.display = '';
+        if (isAdmin()) als.forEach(el => (el.style.display = ''));
       }
       function showSignedOut() {
         sbs.forEach(el => (el.style.display = ''));
         sws.forEach(el => (el.style.display = 'none'));
-        if (al) al.style.display = 'none';
+        als.forEach(el => (el.style.display = 'none'));
       }
       initGoogleSignIn({ onSignIn: showSignedIn });
       sos.forEach(link => {

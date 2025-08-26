@@ -22,6 +22,7 @@
         <a href="/new-story.html">New story</a>
         <a href="/mod.html">Moderate</a>
         <a href="/stats.html">Stats</a>
+        <a class="admin-link" href="/admin.html" style="display: none">Admin</a>
         <div id="signinButton"></div>
         <div id="signoutWrap" style="display: none">
           <a id="signoutLink" href="#">Sign out</a>
@@ -53,7 +54,9 @@
             <h3>Moderation</h3>
             <a href="/mod.html">Moderate</a>
             <a href="/stats.html">Stats</a>
-            <a id="adminLink" href="/admin.html" style="display: none">Admin</a>
+            <a class="admin-link" href="/admin.html" style="display: none"
+              >Admin</a
+            >
           </div>
 
           <div class="menu-group">
@@ -84,20 +87,20 @@
         const signins = document.querySelectorAll('#signinButton');
         const signoutWraps = document.querySelectorAll('#signoutWrap');
         const signoutLinks = document.querySelectorAll('#signoutLink');
-        const adminLink = document.getElementById('adminLink');
+        const adminLinks = document.querySelectorAll('.admin-link');
 
         function showSignedIn() {
           document.body.classList.add('authed');
           signins.forEach(el => (el.style.display = 'none'));
           signoutWraps.forEach(el => (el.style.display = ''));
-          if (isAdmin()) adminLink.style.display = '';
+          if (isAdmin()) adminLinks.forEach(el => (el.style.display = ''));
         }
 
         function showSignedOut() {
           document.body.classList.remove('authed');
           signoutWraps.forEach(el => (el.style.display = 'none'));
           signins.forEach(el => (el.style.display = ''));
-          if (adminLink) adminLink.style.display = 'none';
+          adminLinks.forEach(el => (el.style.display = 'none'));
         }
 
         initGoogleSignIn({ onSignIn: showSignedIn });

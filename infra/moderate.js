@@ -59,8 +59,9 @@ function wireSignOut() {
       document
         .querySelectorAll('#signinButton')
         .forEach(el => (el.style.display = ''));
-      const adminLink = document.getElementById('adminLink');
-      if (adminLink) adminLink.style.display = 'none';
+      document
+        .querySelectorAll('.admin-link')
+        .forEach(link => (link.style.display = 'none'));
       const content = document.getElementById('pageContent');
       if (content) {
         content.innerHTML = '';
@@ -183,8 +184,11 @@ initGoogleSignIn({
     document
       .querySelectorAll('#signoutWrap')
       .forEach(el => (el.style.display = ''));
-    const adminLink = document.getElementById('adminLink');
-    if (isAdmin()) adminLink.style.display = '';
+    if (isAdmin()) {
+      document
+        .querySelectorAll('.admin-link')
+        .forEach(link => (link.style.display = ''));
+    }
     wireSignOut();
     loadVariant();
   },
@@ -215,8 +219,9 @@ if (getIdToken()) {
     .querySelectorAll('#signoutWrap')
     .forEach(el => (el.style.display = ''));
   if (isAdmin()) {
-    const adminLink = document.getElementById('adminLink');
-    if (adminLink) adminLink.style.display = '';
+    document
+      .querySelectorAll('.admin-link')
+      .forEach(link => (link.style.display = ''));
   }
   wireSignOut();
   loadVariant();
