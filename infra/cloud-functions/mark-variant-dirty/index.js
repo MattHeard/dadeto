@@ -91,17 +91,25 @@ function findVariantsSnap(pageRef, variantName) {
  * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
- * @param {{findPagesSnap: typeof findPagesSnap, refFromSnap: typeof refFromSnap}} [firebase]
- * Optional Firebase helpers.
+ * @param {{
+ *   findPagesSnap: typeof findPagesSnap,
+ *   findVariantsSnap: typeof findVariantsSnap,
+ *   refFromSnap: typeof refFromSnap,
+ * }} [firebase] Optional Firebase helpers.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant doc ref.
  */
-async function findVariantRef(database, pageNumber, variantName, firebase) {
+async function findVariantRef(
+  database,
+  pageNumber,
+  variantName,
+  firebase = { findPagesSnap, findVariantsSnap, refFromSnap }
+) {
   const pageRef = await findPageRef(database, pageNumber, firebase);
   if (!pageRef) {
     return null;
   }
-  const variantsSnap = await findVariantsSnap(pageRef, variantName);
-  return refFromSnap(variantsSnap);
+  const variantsSnap = await firebase.findVariantsSnap(pageRef, variantName);
+  return firebase.refFromSnap(variantsSnap);
 }
 
 /**
@@ -121,6 +129,7 @@ function updateVariantDirty(variantRef) {
  *   db?: import('firebase-admin/firestore').Firestore,
  *   firebase?: {
  *     findPagesSnap: typeof findPagesSnap,
+ *     findVariantsSnap: typeof findVariantsSnap,
  *     refFromSnap: typeof refFromSnap,
  *   },
  * }} [deps] Optional dependencies.
