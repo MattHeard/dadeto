@@ -36,6 +36,12 @@ resource "google_cloudfunctions2_function" "get_api_key_credit_v2" {
       FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
     }
   }
+
+  depends_on = [
+    google_project_service.run,
+    google_project_service.artifactregistry,
+    # google_project_service.eventarc, # if you added it
+  ]
 }
 
 resource "google_cloud_run_service_iam_member" "get_api_key_credit_v2_public" {
@@ -43,4 +49,6 @@ resource "google_cloud_run_service_iam_member" "get_api_key_credit_v2_public" {
   service  = google_cloudfunctions2_function.get_api_key_credit_v2.name
   role     = "roles/run.invoker"
   member   = "allUsers"
+
+  depends_on = [google_cloudfunctions2_function.get_api_key_credit_v2]
 }
