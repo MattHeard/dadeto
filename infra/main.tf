@@ -86,6 +86,13 @@ resource "google_storage_bucket_object" "dendrite_about" {
   content_type = "text/html"
 }
 
+resource "google_storage_bucket_object" "dendrite_manual" {
+  name         = "manual.html"
+  bucket       = google_storage_bucket.dendrite_static.name
+  source       = "${path.module}/manual.html"
+  content_type = "text/html"
+}
+
 resource "google_storage_bucket_object" "dendrite_mod" {
   name   = "mod.html"
   bucket = google_storage_bucket.dendrite_static.name
