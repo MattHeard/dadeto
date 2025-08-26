@@ -38,9 +38,9 @@ resource "google_cloudfunctions2_function" "get_api_key_credit_v2" {
   }
 
   depends_on = [
-    google_project_service.run,
-    google_project_service.artifactregistry,
-    # google_project_service.eventarc, # if you added it
+    google_project_service.enabled["run.googleapis.com"],
+    google_project_service.enabled["artifactregistry.googleapis.com"],
+    # google_project_service.enabled["eventarc.googleapis.com"], # if you added it
   ]
 }
 

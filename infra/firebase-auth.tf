@@ -1,23 +1,13 @@
 # Firebase Authentication setup
 
 # identity-toolkit = Firebase Auth backend
-resource "google_project_service" "identitytoolkit" {
-  project = var.project_id
-  service = "identitytoolkit.googleapis.com"
-}
-
-# firebase.googleapis.com upgrades the project to Firebase
-resource "google_project_service" "firebase_api" {
-  project = var.project_id
-  service = "firebase.googleapis.com"
-}
 
 resource "google_firebase_project" "core" {
   provider   = google-beta
   project    = var.project_id
   depends_on = [
-    google_project_service.firebase_api,
-    google_project_service.identitytoolkit,
+    google_project_service.enabled["firebase.googleapis.com"],
+    google_project_service.enabled["identitytoolkit.googleapis.com"],
   ]
 }
 

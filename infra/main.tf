@@ -56,7 +56,6 @@ resource "google_storage_bucket" "dendrite_static" {
   }
 }
 
-
 resource "google_storage_bucket_object" "dendrite_404" {
   name          = "404.html"
   bucket        = google_storage_bucket.dendrite_static.name
@@ -150,56 +149,12 @@ resource "google_storage_bucket" "gcf_source_bucket" {
   force_destroy               = true
 }
 
-resource "google_project_service" "firestore" {
-  project = var.project_id
-  service = "firestore.googleapis.com"
-}
-
-resource "google_project_service" "cloudfunctions" {
-  project = var.project_id
-  service = "cloudfunctions.googleapis.com"
-}
-
-resource "google_project_service" "cloudbuild" {
-  project = var.project_id
-  service = "cloudbuild.googleapis.com"
-}
-
-resource "google_project_service" "cloudscheduler" {
-  project = var.project_id
-  service = "cloudscheduler.googleapis.com"
-}
-
-resource "google_project_service" "firebaserules" {
-  project = var.project_id
-  service = "firebaserules.googleapis.com"
-}
-
-# Needed for Gen2 (backed by Cloud Run)
-resource "google_project_service" "run" {
-  project = var.project_id
-  service = "run.googleapis.com"
-}
-
-# Container images for Gen2 builds live here
-resource "google_project_service" "artifactregistry" {
-  project = var.project_id
-  service = "artifactregistry.googleapis.com"
-}
-
-# Optional now, useful later for non-HTTP triggers
-resource "google_project_service" "eventarc" {
-  project = var.project_id
-  service = "eventarc.googleapis.com"
-}
-
-
 resource "google_firestore_database" "default" {
   project     = var.project_id
   name        = "(default)"
   location_id = var.region
   type        = "FIRESTORE_NATIVE"
-  depends_on  = [google_project_service.firestore]
+  depends_on  = [google_project_service.enabled["firestore.googleapis.com"]]
 }
 
 resource "google_project_iam_member" "firestore_access" {
@@ -293,10 +248,9 @@ resource "google_project_iam_member" "runtime_firestore_access" {
 
   depends_on = [
     google_service_account.cloud_function_runtime,
-    google_project_service.firestore
+    google_project_service.enabled["firestore.googleapis.com"]
   ]
 }
-
 
 data "archive_file" "get_api_key_src" {
   type        = "zip"
@@ -329,10 +283,9 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -392,10 +345,9 @@ resource "google_cloudfunctions_function" "submit_new_story" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -419,10 +371,9 @@ resource "google_cloudfunctions_function" "submit_new_page" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -483,8 +434,8 @@ resource "google_cloudfunctions_function" "assign_moderation_job" {
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -533,8 +484,8 @@ resource "google_cloudfunctions_function" "get_moderation_variant" {
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -583,8 +534,8 @@ resource "google_cloudfunctions_function" "submit_moderation_rating" {
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -602,7 +553,6 @@ resource "google_cloudfunctions_function_iam_member" "submit_moderation_rating_i
     google_project_iam_member.terraform_cloudfunctions_viewer,
   ]
 }
-
 
 data "archive_file" "report_for_moderation_src" {
   type        = "zip"
@@ -634,8 +584,8 @@ resource "google_cloudfunctions_function" "report_for_moderation" {
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -653,7 +603,6 @@ resource "google_cloudfunctions_function_iam_member" "report_for_moderation_invo
     google_project_iam_member.terraform_cloudfunctions_viewer,
   ]
 }
-
 
 data "archive_file" "process_src" {
   type        = "zip"
@@ -684,15 +633,14 @@ resource "google_cloudfunctions_function" "process_new_story" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
     resource   = "projects/${var.project_id}/databases/(default)/documents/storyFormSubmissions/{subId}"
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access
   ]
 }
@@ -732,8 +680,8 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access
   ]
 }
@@ -767,15 +715,14 @@ resource "google_cloudfunctions_function" "process_new_page" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
     resource   = "projects/${var.project_id}/databases/(default)/documents/pageFormSubmissions/{subId}"
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access
   ]
 }
@@ -809,15 +756,14 @@ resource "google_cloudfunctions_function" "render_variant" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.write"
     resource   = "projects/${var.project_id}/databases/(default)/documents/stories/{storyId}/pages/{pageId}/variants/{variantId}"
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access
   ]
 }
@@ -857,8 +803,8 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access
   ]
 }
@@ -893,8 +839,8 @@ resource "google_cloudfunctions_function" "mark_variant_dirty" {
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -943,8 +889,8 @@ resource "google_cloudfunctions_function" "generate_stats" {
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -975,7 +921,7 @@ resource "google_cloud_scheduler_job" "generate_stats_daily" {
     }
   }
   depends_on = [
-    google_project_service.cloudscheduler,
+    google_project_service.enabled["cloudscheduler.googleapis.com"],
     google_cloudfunctions_function.generate_stats,
     google_project_iam_member.terraform_cloudscheduler_admin,
   ]
@@ -1010,15 +956,14 @@ resource "google_cloudfunctions_function" "render_contents" {
     FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
   }
 
-
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
     resource   = "projects/${var.project_id}/databases/(default)/documents/stories/{storyId}"
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access
   ]
 }
@@ -1041,8 +986,8 @@ resource "google_cloudfunctions_function" "trigger_render_contents" {
   }
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.enabled["cloudfunctions.googleapis.com"],
+    google_project_service.enabled["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
