@@ -29,3 +29,16 @@ Terraform stores its state in a Google Cloud Storage bucket. The backend is
 defined in `backend.tf` and expects a bucket named `terraform-state-irien-465710` with a
 `terraform/state` prefix. Ensure this bucket exists before running
 `terraform init` so that the remote state can be initialized.
+
+## Environments
+
+Environment-specific variables live under `environments/<name>`. Run Terraform from the `infra` directory and pass the appropriate variable file for the target environment.
+
+```bash
+cd infra
+terraform init
+terraform plan -var-file=environments/prod/prod.auto.tfvars
+terraform apply -var-file=environments/prod/prod.auto.tfvars
+```
+
+Replace `prod` with `staging` or any other environment directory to target a different environment.
