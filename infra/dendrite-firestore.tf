@@ -14,8 +14,7 @@ resource "google_firebaserules_ruleset" "firestore" {
     }
   }
   depends_on = [
-    google_project_service.firebaserules,
-    google_project_iam_member.ci_firebaserules_admin,
+    module.firestore,
   ]
 }
 
@@ -26,11 +25,11 @@ resource "google_firebaserules_release" "firestore" {
   ruleset_name = google_firebaserules_ruleset.firestore.name
 
   lifecycle {
-    ignore_changes = [ ruleset_name ]
+    ignore_changes = [ruleset_name]
   }
 
   depends_on = [
-    google_project_iam_member.ci_firebaserules_admin   # ensure role is live
+    module.firestore
   ]
 }
 

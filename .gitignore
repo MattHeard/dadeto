@@ -44,3 +44,7 @@ debug/
 
 # stryker temp files
 .stryker-tmp
+
+# Terraform artifacts
+.terraform.lock.hcl
+.terraform/
