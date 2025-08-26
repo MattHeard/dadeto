@@ -173,21 +173,24 @@ describe('markVariantDirtyImpl', () => {
     expect(ok).toBe(false);
   });
 
-  test('injects firebase helpers into findPageRef', async () => {
-    const variantsQuery = {
-      where: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockReturnThis(),
-      get: jest.fn().mockResolvedValue({ empty: true }),
-    };
-    const pageRef = { collection: () => variantsQuery };
-    const findPagesSnap = jest.fn().mockResolvedValue('snap');
-    const refFromSnap = jest.fn().mockReturnValue(pageRef);
+  test('injects firebase helpers into findVariantRef', async () => {
+    const variantRef = { update: jest.fn() };
+    const pageRef = {};
+    const findPagesSnap = jest.fn().mockResolvedValue('psnap');
+    const findVariantsSnap = jest.fn().mockResolvedValue('vsnap');
+    const refFromSnap = jest
+      .fn()
+      .mockReturnValueOnce(pageRef)
+      .mockReturnValueOnce(variantRef);
     const db = {};
     await markVariantDirtyImpl(5, 'a', {
       db,
-      firebase: { findPagesSnap, refFromSnap },
+      firebase: { findPagesSnap, findVariantsSnap, refFromSnap },
     });
     expect(findPagesSnap).toHaveBeenCalledWith(db, 5);
-    expect(refFromSnap).toHaveBeenCalledWith('snap');
+    expect(refFromSnap).toHaveBeenNthCalledWith(1, 'psnap');
+    expect(findVariantsSnap).toHaveBeenCalledWith(pageRef, 'a');
+    expect(refFromSnap).toHaveBeenNthCalledWith(2, 'vsnap');
+    expect(variantRef.update).toHaveBeenCalledWith({ dirty: null });
   });
 });
