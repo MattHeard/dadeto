@@ -1,54 +1,33 @@
-data "archive_file" "get_api_key_credit_v2_src" {
-  type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/get-api-key-credit-v2"
-  output_path = "${path.module}/build/get-api-key-credit-v2.zip"
-}
-
-resource "google_storage_bucket_object" "get_api_key_credit_v2_zip" {
-  name   = "${var.environment}-get-api-key-credit-v2-${data.archive_file.get_api_key_credit_v2_src.output_sha256}.zip"
-  bucket = google_storage_bucket.gcf_source_bucket.name
-  source = data.archive_file.get_api_key_credit_v2_src.output_path
-}
-
-resource "google_cloudfunctions2_function" "get_api_key_credit_v2" {
-  name     = "${var.environment}-get-api-key-credit-v2"
-  location = var.region
-
-  build_config {
-    runtime     = "nodejs22"
-    entry_point = "getApiKeyCreditV2"
-    source {
-      storage_source {
-        bucket = google_storage_bucket.gcf_source_bucket.name
-        object = google_storage_bucket_object.get_api_key_credit_v2_zip.name
-      }
+locals {
+  functions_v2 = {
+    get_api_key_credit_v2 = {
+      entry_point = "getApiKeyCreditV2"
+      source_dir  = "${path.module}/cloud-functions/get-api-key-credit-v2"
+      trigger     = { http = true }
+      iam_members = [{ role = "roles/run.invoker", member = "allUsers" }]
     }
   }
+}
 
-  service_config {
-    available_memory   = "256M"
-    timeout_seconds    = 10
-    max_instance_count = 20
-    service_account_email = google_service_account.cloud_function_runtime.email
-    environment_variables = {
-      GCLOUD_PROJECT       = var.project_id
-      GOOGLE_CLOUD_PROJECT = var.project_id
-      FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
-    }
-  }
+module "cloud_functions_v2" {
+  for_each = local.functions_v2
+
+  source = "./modules/cloud-function-v2"
+
+  name        = "${var.environment}-${each.key}"
+  entry_point = each.value.entry_point
+  source_dir  = each.value.source_dir
+  trigger     = each.value.trigger
+  env_vars    = merge(local.default_env_vars, lookup(each.value, "env_vars", {}))
+  project_id  = var.project_id
+  region      = var.region
+  runtime     = "nodejs22"
+  source_bucket = google_storage_bucket.gcf_source_bucket.name
+  service_account_email = google_service_account.cloud_function_runtime.email
+  iam_members = lookup(each.value, "iam_members", [])
 
   depends_on = [
     google_project_service.run,
     google_project_service.artifactregistry,
-    # google_project_service.eventarc, # if you added it
   ]
-}
-
-resource "google_cloud_run_service_iam_member" "get_api_key_credit_v2_public" {
-  location = google_cloudfunctions2_function.get_api_key_credit_v2.location
-  service  = google_cloudfunctions2_function.get_api_key_credit_v2.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
-
-  depends_on = [google_cloudfunctions2_function.get_api_key_credit_v2]
 }
