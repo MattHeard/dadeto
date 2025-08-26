@@ -27,7 +27,7 @@ module "cloud_functions_v2" {
   iam_members = lookup(each.value, "iam_members", [])
 
   depends_on = [
-    google_project_service.run,
-    google_project_service.artifactregistry,
+    google_project_service.apis["run.googleapis.com"],
+    google_project_service.apis["artifactregistry.googleapis.com"],
   ]
 }

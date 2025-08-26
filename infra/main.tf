@@ -157,56 +157,12 @@ resource "google_storage_bucket" "gcf_source_bucket" {
   force_destroy               = true
 }
 
-resource "google_project_service" "firestore" {
-  project = var.project_id
-  service = "firestore.googleapis.com"
-}
-
-resource "google_project_service" "cloudfunctions" {
-  project = var.project_id
-  service = "cloudfunctions.googleapis.com"
-}
-
-resource "google_project_service" "cloudbuild" {
-  project = var.project_id
-  service = "cloudbuild.googleapis.com"
-}
-
-resource "google_project_service" "cloudscheduler" {
-  project = var.project_id
-  service = "cloudscheduler.googleapis.com"
-}
-
-resource "google_project_service" "firebaserules" {
-  project = var.project_id
-  service = "firebaserules.googleapis.com"
-}
-
-# Needed for Gen2 (backed by Cloud Run)
-resource "google_project_service" "run" {
-  project = var.project_id
-  service = "run.googleapis.com"
-}
-
-# Container images for Gen2 builds live here
-resource "google_project_service" "artifactregistry" {
-  project = var.project_id
-  service = "artifactregistry.googleapis.com"
-}
-
-# Optional now, useful later for non-HTTP triggers
-resource "google_project_service" "eventarc" {
-  project = var.project_id
-  service = "eventarc.googleapis.com"
-}
-
-
 resource "google_firestore_database" "default" {
   project     = var.project_id
   name        = "(default)"
   location_id = var.region
   type        = "FIRESTORE_NATIVE"
-  depends_on  = [google_project_service.firestore]
+  depends_on  = [google_project_service.apis["firestore.googleapis.com"]]
 }
 
 resource "google_project_iam_member" "firestore_access" {
@@ -300,7 +256,7 @@ resource "google_project_iam_member" "runtime_firestore_access" {
 
   depends_on = [
     google_service_account.cloud_function_runtime,
-    google_project_service.firestore
+    google_project_service.apis["firestore.googleapis.com"]
   ]
 }
 
@@ -436,8 +392,8 @@ module "cloud_functions" {
   iam_members = lookup(each.value, "iam_members", [])
 
   depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
+    google_project_service.apis["cloudfunctions.googleapis.com"],
+    google_project_service.apis["cloudbuild.googleapis.com"],
     google_project_iam_member.cloudfunctions_access,
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
@@ -456,7 +412,7 @@ resource "google_cloud_scheduler_job" "generate_stats_daily" {
     }
   }
   depends_on = [
-    google_project_service.cloudscheduler,
+    google_project_service.apis["cloudscheduler.googleapis.com"],
     module.cloud_functions["generate_stats"],
     google_project_iam_member.terraform_cloudscheduler_admin,
   ]
