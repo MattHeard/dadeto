@@ -1,6 +1,12 @@
 variable "project_id" {
   description = "The GCP project ID"
   type        = string
+  default     = env("GOOGLE_CLOUD_PROJECT")
+
+  validation {
+    condition     = length(var.project_id) > 0
+    error_message = "project_id must be set or the GOOGLE_CLOUD_PROJECT environment variable must be defined."
+  }
 }
 
 variable "region" {
