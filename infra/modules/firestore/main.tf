@@ -1,7 +1,54 @@
-# Firestore security rules and indexes for Dendrite
+variable "project_id" {
+  type = string
+}
+
+variable "region" {
+  type = string
+}
+
+variable "runtime_service_account_email" {
+  type = string
+}
+
+resource "google_project_service" "firestore" {
+  project = var.project_id
+  service = "firestore.googleapis.com"
+}
+
+resource "google_project_service" "firebaserules" {
+  project = var.project_id
+  service = "firebaserules.googleapis.com"
+}
+
+resource "google_firestore_database" "default" {
+  project     = var.project_id
+  name        = "(default)"
+  location_id = var.region
+  type        = "FIRESTORE_NATIVE"
+  depends_on  = [google_project_service.firestore]
+}
+
+resource "google_project_iam_member" "firestore_access" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+resource "google_project_iam_member" "ci_firebaserules_admin" {
+  project = var.project_id
+  role    = "roles/firebaserules.admin"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
+
+resource "google_project_iam_member" "runtime_firestore_access" {
+  project    = var.project_id
+  role       = "roles/datastore.user"
+  member     = "serviceAccount:${var.runtime_service_account_email}"
+  depends_on = [google_project_service.firestore]
+}
 
 data "local_file" "firestore_rules" {
-  filename = "${path.module}/rules/firestore.rules"
+  filename = "${path.root}/rules/firestore.rules"
 }
 
 resource "google_firebaserules_ruleset" "firestore" {
@@ -19,6 +66,8 @@ resource "google_firebaserules_ruleset" "firestore" {
   ]
 }
 
+
+
 resource "google_firebaserules_release" "firestore" {
   provider     = google-beta
   project      = var.project_id
@@ -26,13 +75,14 @@ resource "google_firebaserules_release" "firestore" {
   ruleset_name = google_firebaserules_ruleset.firestore.name
 
   lifecycle {
-    ignore_changes = [ ruleset_name ]
+    ignore_changes = [ruleset_name]
   }
 
   depends_on = [
-    google_project_iam_member.ci_firebaserules_admin   # ensure role is live
+    google_project_iam_member.ci_firebaserules_admin,
   ]
 }
+
 
 resource "google_firestore_index" "variants_author_created" {
   project     = var.project_id
@@ -125,4 +175,3 @@ resource "google_firestore_field" "pages_number_global" {
     }
   }
 }
-

@@ -1,13 +1,29 @@
-# Global HTTPS Load Balancer configuration
-# Terminates TLS with Google-managed certificate and caches via Cloud CDN
+variable "project_id" {
+  type = string
+}
+
+variable "environment" {
+  type = string
+}
+
+variable "static_bucket_name" {
+  type = string
+}
+
+variable "runtime_service_account_email" {
+  type = string
+}
 
 variable "lb_cert_domains" {
-  description = "Domain names for the TLS certificate"
-  type        = list(string)
-  default     = [
+  type = list(string)
+  default = [
     "dendritestories.co.nz",
     "www.dendritestories.co.nz",
   ]
+}
+
+data "google_project" "project" {
+  project_id = var.project_id
 }
 
 resource "google_project_service" "compute" {
@@ -16,12 +32,35 @@ resource "google_project_service" "compute" {
   disable_on_destroy = false
 }
 
+resource "google_project_iam_member" "build_loadbalancer_admin" {
+  project = var.project_id
+  role    = "roles/compute.loadBalancerAdmin"
+  member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "terraform_loadbalancer_admin" {
+  project = var.project_id
+  role    = "roles/compute.loadBalancerAdmin"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "runtime_loadbalancer_admin" {
+  project = var.project_id
+  role    = "roles/compute.loadBalancerAdmin"
+  member  = "serviceAccount:${var.runtime_service_account_email}"
+}
+
+resource "google_project_iam_member" "terraform_security_admin" {
+  project = var.project_id
+  role    = "roles/compute.securityAdmin"
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 resource "google_compute_backend_bucket" "dendrite_static" {
   name        = "${var.environment}-dendrite-static"
-  bucket_name = google_storage_bucket.dendrite_static.name
+  bucket_name = var.static_bucket_name
   enable_cdn  = true
 
-  # Set COOP header to isolate browsing context group
   custom_response_headers = [
     "Cross-Origin-Opener-Policy: restrict-properties",
   ]
@@ -50,10 +89,8 @@ resource "google_compute_url_map" "dendrite" {
   provider = google-beta
   name     = "${var.environment}-dendrite-url-map"
 
-  # mandatory fallback for any request that dodges all matchers
   default_service = google_compute_backend_bucket.dendrite_static.id
 
-  # --- 1️⃣  Apex host goes through its own matcher -------------
   host_rule {
     hosts        = ["dendritestories.co.nz"]
     path_matcher = "apex-redirect"
@@ -62,15 +99,14 @@ resource "google_compute_url_map" "dendrite" {
   path_matcher {
     name = "apex-redirect"
 
-    # url_redirect runs even though a default_service is required syntactically
     default_service = google_compute_backend_bucket.dendrite_static.id
 
-      route_rules {
-        priority = 2
+    route_rules {
+      priority = 2
 
-        match_rules {
-          prefix_match = "/"
-        }
+      match_rules {
+        prefix_match = "/"
+      }
 
       url_redirect {
         host_redirect  = "www.dendritestories.co.nz"
@@ -80,7 +116,6 @@ resource "google_compute_url_map" "dendrite" {
     }
   }
 
-  # --- 2️⃣  Existing wildcard matcher for www & any future subs ----
   host_rule {
     hosts        = ["*"]
     path_matcher = "allpaths"
@@ -180,4 +215,8 @@ resource "google_compute_global_forwarding_rule" "dendrite_http" {
     google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
   ]
+}
+
+output "ip_address" {
+  value = google_compute_global_address.dendrite.address
 }
