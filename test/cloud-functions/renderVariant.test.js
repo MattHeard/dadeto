@@ -1,5 +1,10 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
-import { mockSave, mockFile, mockBucket } from '@google-cloud/storage';
+import {
+  mockSave,
+  mockFile,
+  mockBucket,
+  mockExists,
+} from '@google-cloud/storage';
 import { mockDoc } from 'firebase-admin/firestore';
 import { render } from '../../infra/cloud-functions/render-variant/index.js';
 
@@ -60,6 +65,7 @@ describe('render', () => {
     mockSave.mockClear();
     mockFile.mockClear();
     mockBucket.mockClear();
+    mockExists.mockClear();
     mockDoc.mockReset();
     global.fetch = jest
       .fn()
@@ -245,5 +251,30 @@ describe('render', () => {
     expect(html).toContain(
       '<a href="../new-page.html?page=5">Rewrite</a> <a href="./5-alts.html">Other variants</a>'
     );
+  });
+
+  test('creates author page and links to it', async () => {
+    const snap = createSnap([{ content: 'Go', position: 0 }]);
+    snap.data = () => ({
+      name: 'a',
+      content: 'content',
+      incomingOption: false,
+      authorId: 'auth1',
+      authorName: 'Alice',
+    });
+    mockDoc.mockReturnValue({
+      get: jest
+        .fn()
+        .mockResolvedValue({ exists: true, data: () => ({ uuid: 'u123' }) }),
+    });
+    await render(snap, { params: { storyId: 's1', variantId: 'v1' } });
+    const files = mockFile.mock.calls.map(([p]) => p);
+    expect(files).toContain('a/u123.html');
+    const variantIndex = files.indexOf('p/5a.html');
+    expect(mockSave.mock.calls[variantIndex][0]).toContain(
+      '<a href="/a/u123.html">Alice</a>'
+    );
+    const authorIndex = files.indexOf('a/u123.html');
+    expect(mockSave.mock.calls[authorIndex][0]).toContain('<h1>Alice</h1>');
   });
 });

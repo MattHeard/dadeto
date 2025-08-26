@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
-import { buildAltsHtml } from './buildAltsHtml.js';
+import { buildAltsHtml, escapeHtml } from './buildAltsHtml.js';
 import { buildHtml } from './buildHtml.js';
 import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';
 
@@ -182,6 +182,30 @@ async function render(snap, ctx) {
   }
 
   const authorName = variant.authorName || variant.author || '';
+  let authorUrl;
+  if (variant.authorId && authorName) {
+    try {
+      const authorRef = db.doc(`authors/${variant.authorId}`);
+      const authorSnap = await authorRef.get();
+      if (authorSnap.exists) {
+        const { uuid } = authorSnap.data() || {};
+        if (uuid) {
+          const authorPath = `a/${uuid}.html`;
+          const authorFile = storage
+            .bucket('www.dendritestories.co.nz')
+            .file(authorPath);
+          const [exists] = await authorFile.exists();
+          if (!exists) {
+            const authorHtml = `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite - ${escapeHtml(authorName)}</title><link rel="icon" href="/favicon.ico" /><link rel="stylesheet" href="/dendrite.css" /></head><body><main><h1>${escapeHtml(authorName)}</h1></main></body></html>`;
+            await authorFile.save(authorHtml, { contentType: 'text/html' });
+          }
+          authorUrl = `/${authorPath}`;
+        }
+      }
+    } catch (e) {
+      console.error('author lookup failed', e?.message || e);
+    }
+  }
   let parentUrl;
   if (variant.incomingOption) {
     try {
@@ -213,6 +237,7 @@ async function render(snap, ctx) {
     options,
     storyTitle,
     authorName,
+    authorUrl,
     parentUrl,
     firstPageUrl,
     !page.incomingOption

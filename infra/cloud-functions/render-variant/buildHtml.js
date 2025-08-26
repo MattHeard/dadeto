@@ -24,6 +24,7 @@ function renderInlineMarkdown(text) {
  * }>} options Option info.
  * @param {string} [storyTitle] Story title.
  * @param {string} [author] Author name.
+ * @param {string} [authorUrl] Author link.
  * @param parentUrl
  * @param firstPageUrl
  * @param {boolean} [showTitleHeading] Whether to include the story title as a
@@ -37,6 +38,7 @@ export function buildHtml(
   options,
   storyTitle = '',
   author = '',
+  authorUrl = '',
   parentUrl = '',
   firstPageUrl = '',
   showTitleHeading = true
@@ -68,7 +70,11 @@ export function buildHtml(
   const headTitle = storyTitle
     ? `Dendrite - ${escapeHtml(storyTitle)}`
     : 'Dendrite';
-  const authorHtml = author ? `<p>By ${escapeHtml(author)}</p>` : '';
+  const authorHtml = author
+    ? authorUrl
+      ? `<p>By <a href="${authorUrl}">${escapeHtml(author)}</a></p>`
+      : `<p>By ${escapeHtml(author)}</p>`
+    : '';
   const parentHtml = parentUrl ? `<p><a href="${parentUrl}">Back</a></p>` : '';
   const firstHtml = firstPageUrl
     ? `<p><a href="${firstPageUrl}">First page</a></p>`
