@@ -166,8 +166,8 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
           data.map(d => ({ name: d.title }))
         );
         const links = data.map((d, i) => ({
-          source: i + 1,
-          target: 0,
+          source: 0,
+          target: i + 1,
           value: d.variantCount,
         }));
 
