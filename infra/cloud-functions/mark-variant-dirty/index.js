@@ -4,6 +4,7 @@ import { getAuth } from 'firebase-admin/auth';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
+import { findPageRef } from './findPageRef.js';
 
 initializeApp();
 const db = getFirestore();
@@ -56,23 +57,6 @@ function refFromSnap(snap) {
 }
 
 /**
- * Find a reference to the page document.
- * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
- * @param {number} pageNumber Page number.
- * @param {{findPagesSnap: typeof findPagesSnap, refFromSnap: typeof refFromSnap}} [firebase]
- * Optional Firebase helpers.
- * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Page doc ref.
- */
-async function findPageRef(
-  database,
-  pageNumber,
-  firebase = { findPagesSnap, refFromSnap }
-) {
-  const pagesSnap = await firebase.findPagesSnap(database, pageNumber);
-  return firebase.refFromSnap(pagesSnap);
-}
-
-/**
  * Find variants snapshot for a variant name.
  * @param {import('firebase-admin/firestore').DocumentReference} pageRef Page doc ref.
  * @param {string} variantName Variant name.
@@ -96,7 +80,8 @@ function findVariantsSnap(pageRef, variantName) {
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant doc ref.
  */
 async function findVariantRef(database, pageNumber, variantName, firebase) {
-  const pageRef = await findPageRef(database, pageNumber, firebase);
+  const fb = firebase || { findPagesSnap, refFromSnap };
+  const pageRef = await findPageRef(database, pageNumber, fb);
   if (!pageRef) {
     return null;
   }
