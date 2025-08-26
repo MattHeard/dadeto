@@ -13,9 +13,9 @@ Cloud Functions, and the Terraform service account is allowed to
 impersonate this runtime account. Static website assets live under `infra/static`,
 while Cloud Function code resides in `infra/cloud-functions/`. The
 `infra/cloud-functions/get-api-key-credit` directory contains the code
-for a Google Cloud Function that returns the credit associated with a given API key. The
-Cloud Functions API is enabled via a `google_project_service` resource, and the
-Cloud Build API is also enabled so that functions can be built from source.
+for a Google Cloud Function that returns the credit associated with a given API key. Required
+Google APIs, including Cloud Functions and Cloud Build, are enabled via a
+centralized `google_project_service` resource defined in `services.tf`.
 Resources for this function live in `main.tf` and all input variables are
 declared in `variables.tf`.
 
