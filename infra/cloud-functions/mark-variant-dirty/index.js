@@ -84,25 +84,27 @@ function updateVariantDirty(variantRef) {
 
 /**
  * Mark a variant document as dirty so the render-variant function re-renders it.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
  * @param {{
- *   db?: import('firebase-admin/firestore').Firestore,
- *   firebase?: {
- *     findPagesSnap: typeof findPagesSnap,
- *     findVariantsSnap: typeof findVariantsSnap,
- *     refFromSnap: typeof refFromSnap,
- *   },
- * }} [deps] Optional dependencies.
+ *   findPagesSnap?: typeof findPagesSnap,
+ *   findVariantsSnap?: typeof findVariantsSnap,
+ *   refFromSnap?: typeof refFromSnap,
+ * }} [firebase] Optional Firebase helpers.
  * @returns {Promise<boolean>} True if variant updated.
  */
-async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
-  const database = deps.db || db;
+async function markVariantDirtyImpl(
+  database,
+  pageNumber,
+  variantName,
+  firebase = { findPagesSnap, findVariantsSnap, refFromSnap }
+) {
   const variantRef = await findVariantRef(
     database,
     pageNumber,
     variantName,
-    deps.firebase
+    firebase
   );
   if (!variantRef) {
     return false;
@@ -198,7 +200,10 @@ async function verifyAdmin(req, res) {
  * Handle HTTP requests to mark a variant as dirty.
  * @param {import('express').Request} req HTTP request.
  * @param {import('express').Response} res HTTP response.
- * @param {{markFn?: typeof markVariantDirtyImpl}} [deps] Optional dependencies.
+ * @param {{
+ *   markFn?: typeof markVariantDirtyImpl,
+ *   db?: import('firebase-admin/firestore').Firestore,
+ * }} [deps] Optional dependencies.
  * @returns {Promise<void>} Promise resolving when response is sent.
  */
 async function handleRequest(req, res, deps = {}) {
@@ -221,8 +226,9 @@ async function handleRequest(req, res, deps = {}) {
   }
 
   const markFn = deps.markFn || markVariantDirtyImpl;
+  const database = deps.db || db;
   try {
-    const ok = await markFn(pageNumber, variantName);
+    const ok = await markFn(database, pageNumber, variantName);
     if (!ok) {
       res.status(404).json({ error: 'Variant not found' });
       return;

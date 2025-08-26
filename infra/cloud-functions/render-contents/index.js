@@ -96,10 +96,11 @@ async function invalidatePaths(paths) {
 
 /**
  * Get the top story statistics by variant count.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
  * @returns {Promise<Array<string>>} Story IDs ordered by variant count.
  */
-async function fetchTopStoryIds() {
-  const snapshot = await db
+async function fetchTopStoryIds(dbRef) {
+  const snapshot = await dbRef
     .collection('storyStats')
     .orderBy('variantCount', 'desc')
     .limit(1000)
@@ -109,11 +110,12 @@ async function fetchTopStoryIds() {
 
 /**
  * Fetch title and page number for a story.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
  * @param {string} storyId Story identifier.
  * @returns {Promise<{title: string, pageNumber: number}|null>} Story info or null.
  */
-async function fetchStoryInfo(storyId) {
-  const storySnap = await db.collection('stories').doc(storyId).get();
+async function fetchStoryInfo(dbRef, storyId) {
+  const storySnap = await dbRef.collection('stories').doc(storyId).get();
   if (!storySnap.exists) {
     return null;
   }
@@ -132,17 +134,23 @@ async function fetchStoryInfo(storyId) {
 
 /**
  * Generate contents pages and invalidate caches.
- * @param {{fetchTopStoryIds?: () => Promise<Array<string>>, fetchStoryInfo?: (id: string) => Promise<{title: string, pageNumber: number}|null>}} deps Optional dependencies for testing.
+ * @param {{
+ *   fetchTopStoryIds?: (db: import('firebase-admin/firestore').Firestore) => Promise<Array<string>>,
+ *   fetchStoryInfo?: (
+ *     db: import('firebase-admin/firestore').Firestore,
+ *     id: string
+ *   ) => Promise<{ title: string, pageNumber: number } | null>,
+ *   db?: import('firebase-admin/firestore').Firestore,
+ * }} deps Optional dependencies for testing.
  */
 async function render(deps = {}) {
-  const {
-    fetchTopStoryIds: fetchIds = fetchTopStoryIds,
-    fetchStoryInfo: fetchInfo = fetchStoryInfo,
-  } = deps;
-  const ids = await fetchIds();
+  const dbRef = deps.db || db;
+  const fetchIds = deps.fetchTopStoryIds || fetchTopStoryIds;
+  const fetchInfo = deps.fetchStoryInfo || fetchStoryInfo;
+  const ids = await fetchIds(dbRef);
   const items = [];
   for (const id of ids) {
-    const info = await fetchInfo(id);
+    const info = await fetchInfo(dbRef, id);
     if (info) {
       items.push(info);
     }
@@ -197,10 +205,13 @@ function validateRequest(req, res) {
 }
 
 /**
- *
- * @param req
- * @param res
- * @param deps
+ * Handle HTTP requests to trigger contents rendering.
+ * @param {import('express').Request} req HTTP request.
+ * @param {import('express').Response} res HTTP response.
+ * @param {{
+ *   renderFn?: typeof render,
+ *   db?: import('firebase-admin/firestore').Firestore,
+ * }} [deps] Optional dependencies.
  */
 async function handleRenderRequest(req, res, deps = {}) {
   if (!validateRequest(req, res)) {
@@ -224,8 +235,9 @@ async function handleRenderRequest(req, res, deps = {}) {
     return;
   }
   const renderFn = deps.renderFn || render;
+  const database = deps.db || db;
   try {
-    await renderFn();
+    await renderFn({ db: database });
     res.status(200).json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e?.message || 'render failed' });
@@ -238,7 +250,7 @@ async function handleRenderRequest(req, res, deps = {}) {
 export const renderContents = functions
   .region('europe-west1')
   .firestore.document('stories/{storyId}')
-  .onCreate(render);
+  .onCreate(() => render({ db }));
 export const triggerRenderContents = functions
   .region('europe-west1')
   .https.onRequest(handleRenderRequest);
