@@ -175,6 +175,24 @@ resource "google_project_service" "firebaserules" {
   service = "firebaserules.googleapis.com"
 }
 
+# Needed for Gen2 (backed by Cloud Run)
+resource "google_project_service" "run" {
+  project = var.project_id
+  service = "run.googleapis.com"
+}
+
+# Container images for Gen2 builds live here
+resource "google_project_service" "artifactregistry" {
+  project = var.project_id
+  service = "artifactregistry.googleapis.com"
+}
+
+# Optional now, useful later for non-HTTP triggers
+resource "google_project_service" "eventarc" {
+  project = var.project_id
+  service = "eventarc.googleapis.com"
+}
+
 
 resource "google_firestore_database" "default" {
   project     = var.project_id
