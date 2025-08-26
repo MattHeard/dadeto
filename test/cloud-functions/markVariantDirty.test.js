@@ -172,4 +172,22 @@ describe('markVariantDirtyImpl', () => {
     const ok = await markVariantDirtyImpl(5, 'a', { db });
     expect(ok).toBe(false);
   });
+
+  test('injects firebase helpers into findPageRef', async () => {
+    const variantsQuery = {
+      where: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      get: jest.fn().mockResolvedValue({ empty: true }),
+    };
+    const pageRef = { collection: () => variantsQuery };
+    const findPagesSnap = jest.fn().mockResolvedValue('snap');
+    const refFromSnap = jest.fn().mockReturnValue(pageRef);
+    const db = {};
+    await markVariantDirtyImpl(5, 'a', {
+      db,
+      firebase: { findPagesSnap, refFromSnap },
+    });
+    expect(findPagesSnap).toHaveBeenCalledWith(db, 5);
+    expect(refFromSnap).toHaveBeenCalledWith('snap');
+  });
 });
