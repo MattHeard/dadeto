@@ -1,5 +1,10 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
-import { mockSave, mockFile, mockBucket } from '@google-cloud/storage';
+import {
+  mockSave,
+  mockFile,
+  mockBucket,
+  mockExists,
+} from '@google-cloud/storage';
 import { render } from '../../infra/cloud-functions/render-contents/index.js';
 
 describe('render contents', () => {
@@ -7,6 +12,7 @@ describe('render contents', () => {
     mockSave.mockClear();
     mockFile.mockClear();
     mockBucket.mockClear();
+    mockExists.mockClear();
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce({

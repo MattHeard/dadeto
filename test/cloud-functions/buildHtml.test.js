@@ -27,7 +27,18 @@ describe('buildHtml', () => {
   });
 
   test('omits heading when showTitleHeading is false', () => {
-    const html = buildHtml(1, 'a', 'hello', [], 'My Story', '', '', '', false);
+    const html = buildHtml(
+      1,
+      'a',
+      'hello',
+      [],
+      'My Story',
+      '',
+      '',
+      '',
+      '',
+      false
+    );
     expect(html).toContain('<title>Dendrite - My Story</title>');
     expect(html).not.toContain('<h1>My Story</h1>');
   });
@@ -81,6 +92,11 @@ describe('buildHtml', () => {
     expect(authorIndex).toBeGreaterThan(optionsIndex);
   });
 
+  test('links author name when author URL provided', () => {
+    const html = buildHtml(3, 'a', 'content', [], '', 'Jane Doe', '/a/u1.html');
+    expect(html).toContain('<p>By <a href="/a/u1.html">Jane Doe</a></p>');
+  });
+
   test('links to other variants page', () => {
     const html = buildHtml(1, 'a', 'content', []);
     expect(html).toContain('<a href="./1-alts.html">Other variants</a>');
@@ -132,6 +148,7 @@ describe('buildHtml', () => {
       'b',
       'content',
       [],
+      '',
       '',
       '',
       '/p/1a.html',
