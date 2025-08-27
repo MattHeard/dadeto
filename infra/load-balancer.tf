@@ -10,6 +10,12 @@ variable "lb_cert_domains" {
   ]
 }
 
+resource "google_project_service" "compute" {
+  project            = var.project_id
+  service            = "compute.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_compute_backend_bucket" "dendrite_static" {
   name        = "${var.environment}-dendrite-static"
   bucket_name = google_storage_bucket.dendrite_static.name
@@ -21,7 +27,7 @@ resource "google_compute_backend_bucket" "dendrite_static" {
   ]
 
   depends_on = [
-    google_project_service.apis["compute.googleapis.com"],
+    google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
     google_project_iam_member.terraform_security_admin,
   ]
@@ -35,7 +41,7 @@ resource "google_compute_managed_ssl_certificate" "dendrite" {
   }
 
   depends_on = [
-    google_project_service.apis["compute.googleapis.com"],
+    google_project_service.compute,
     google_project_iam_member.terraform_security_admin,
   ]
 }
@@ -102,7 +108,7 @@ resource "google_compute_url_map" "dendrite" {
   }
 
   depends_on = [
-    google_project_service.apis["compute.googleapis.com"],
+    google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
   ]
 }
@@ -113,7 +119,7 @@ resource "google_compute_target_https_proxy" "dendrite" {
   ssl_certificates = [google_compute_managed_ssl_certificate.dendrite.id]
 
   depends_on = [
-    google_project_service.apis["compute.googleapis.com"],
+    google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
     google_project_iam_member.terraform_security_admin,
   ]
@@ -123,7 +129,7 @@ resource "google_compute_global_address" "dendrite" {
   name = "${var.environment}-dendrite-ip"
 
   depends_on = [
-    google_project_service.apis["compute.googleapis.com"],
+    google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
   ]
 }
@@ -135,7 +141,7 @@ resource "google_compute_global_forwarding_rule" "dendrite_https" {
   ip_address = google_compute_global_address.dendrite.address
 
   depends_on = [
-    google_project_service.apis["compute.googleapis.com"],
+    google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
     google_project_iam_member.terraform_security_admin,
   ]
@@ -149,7 +155,7 @@ resource "google_compute_url_map" "redirect" {
   }
 
   depends_on = [
-    google_project_service.apis["compute.googleapis.com"],
+    google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
   ]
 }
@@ -159,7 +165,7 @@ resource "google_compute_target_http_proxy" "redirect" {
   url_map = google_compute_url_map.redirect.id
 
   depends_on = [
-    google_project_service.apis["compute.googleapis.com"],
+    google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
   ]
 }
@@ -171,7 +177,7 @@ resource "google_compute_global_forwarding_rule" "dendrite_http" {
   ip_address = google_compute_global_address.dendrite.address
 
   depends_on = [
-    google_project_service.apis["compute.googleapis.com"],
+    google_project_service.compute,
     google_project_iam_member.terraform_loadbalancer_admin,
   ]
 }

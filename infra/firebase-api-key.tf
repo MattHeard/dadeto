@@ -10,6 +10,10 @@ resource "google_project_iam_member" "terraform_apikeys_admin" {
   role    = "roles/serviceusage.apiKeysAdmin"
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 
-  depends_on = [google_project_service.apis["apikeys.googleapis.com"]]
+  depends_on = [google_project_service.apikeys_api]
+}
+resource "google_project_service" "apikeys_api" {
+  project = var.project_id
+  service = "apikeys.googleapis.com"
 }
 

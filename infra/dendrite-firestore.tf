@@ -14,7 +14,7 @@ resource "google_firebaserules_ruleset" "firestore" {
     }
   }
   depends_on = [
-    google_project_service.apis["firebaserules.googleapis.com"],
+    google_project_service.firebaserules,
     google_project_iam_member.ci_firebaserules_admin,
   ]
 }

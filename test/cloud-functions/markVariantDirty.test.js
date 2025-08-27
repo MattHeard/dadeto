@@ -77,15 +77,13 @@ describe('handleRequest', () => {
       uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
     });
     const markFn = jest.fn().mockResolvedValue(false);
-    const fakeDb = {};
     const req = {
       method: 'POST',
       get: h => (h === 'Authorization' ? 'Bearer t' : ''),
       body: { page: 5, variant: 'a' },
     };
     const res = createRes();
-    await handleRequest(req, res, { markFn, db: fakeDb });
-    expect(markFn).toHaveBeenCalledWith(fakeDb, 5, 'a');
+    await handleRequest(req, res, { markFn });
     expect(res.status).toHaveBeenCalledWith(404);
   });
 
@@ -94,15 +92,14 @@ describe('handleRequest', () => {
       uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
     });
     const markFn = jest.fn().mockResolvedValue(true);
-    const fakeDb = {};
     const req = {
       method: 'POST',
       get: h => (h === 'Authorization' ? 'Bearer t' : ''),
       body: { page: 5, variant: 'a' },
     };
     const res = createRes();
-    await handleRequest(req, res, { markFn, db: fakeDb });
-    expect(markFn).toHaveBeenCalledWith(fakeDb, 5, 'a');
+    await handleRequest(req, res, { markFn });
+    expect(markFn).toHaveBeenCalledWith(5, 'a');
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
@@ -111,15 +108,13 @@ describe('handleRequest', () => {
       uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
     });
     const markFn = jest.fn().mockRejectedValue(new Error('fail'));
-    const fakeDb = {};
     const req = {
       method: 'POST',
       get: h => (h === 'Authorization' ? 'Bearer t' : ''),
       body: { page: 5, variant: 'a' },
     };
     const res = createRes();
-    await handleRequest(req, res, { markFn, db: fakeDb });
-    expect(markFn).toHaveBeenCalledWith(fakeDb, 5, 'a');
+    await handleRequest(req, res, { markFn });
     expect(res.status).toHaveBeenCalledWith(500);
   });
 });
@@ -143,7 +138,7 @@ describe('markVariantDirtyImpl', () => {
       }),
     };
     const db = { collectionGroup: () => pagesQuery };
-    const ok = await markVariantDirtyImpl(db, 5, 'a');
+    const ok = await markVariantDirtyImpl(5, 'a', { db });
     expect(ok).toBe(true);
     expect(update).toHaveBeenCalledWith({ dirty: null });
   });
@@ -155,7 +150,7 @@ describe('markVariantDirtyImpl', () => {
       get: jest.fn().mockResolvedValue({ empty: true }),
     };
     const db = { collectionGroup: () => pagesQuery };
-    const ok = await markVariantDirtyImpl(db, 5, 'a');
+    const ok = await markVariantDirtyImpl(5, 'a', { db });
     expect(ok).toBe(false);
   });
 
@@ -174,7 +169,7 @@ describe('markVariantDirtyImpl', () => {
       }),
     };
     const db = { collectionGroup: () => pagesQuery };
-    const ok = await markVariantDirtyImpl(db, 5, 'a');
+    const ok = await markVariantDirtyImpl(5, 'a', { db });
     expect(ok).toBe(false);
   });
 
@@ -188,10 +183,9 @@ describe('markVariantDirtyImpl', () => {
       .mockReturnValueOnce(pageRef)
       .mockReturnValueOnce(variantRef);
     const db = {};
-    await markVariantDirtyImpl(db, 5, 'a', {
-      findPagesSnap,
-      findVariantsSnap,
-      refFromSnap,
+    await markVariantDirtyImpl(5, 'a', {
+      db,
+      firebase: { findPagesSnap, findVariantsSnap, refFromSnap },
     });
     expect(findPagesSnap).toHaveBeenCalledWith(db, 5);
     expect(refFromSnap).toHaveBeenNthCalledWith(1, 'psnap');

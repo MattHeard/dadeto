@@ -1,0 +1,351 @@
+/* Dendrite styles */
+/* Default: light theme */
+:root {
+  --bg: #ffffff;
+  --text: #0b0f14;
+  --muted: #66707a;
+  --link: #228b22;
+  --link-hover: #196619;
+  --border: #e5e7eb;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s6: 24px;
+  --surface-700: #f3f4f6;
+  --surface-800: #eef0f2;
+}
+
+/* Respect system dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c0f13;
+    --text: #e7e7e7;
+    --muted: #9aa3ad;
+    --link: #228b22;
+    --link-hover: #196619;
+    --border: #1a222b;
+    --surface-700: #1a1f24;
+    --surface-800: #14181d;
+  }
+}
+
+/* Let the UA expose both palettes; switch via media rule above */
+html {
+  color-scheme: light;
+  font-size: clamp(16px, 2.4vw, 18px);
+}
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Ubuntu,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  line-height: 1.35;
+}
+
+/* Header */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 72ch;
+  margin-inline: auto;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand img {
+  height: 1em;
+}
+
+.nav-inline {
+  display: none;
+  gap: 16px;
+  align-items: center;
+}
+
+.menu-toggle {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+}
+
+/* Desktop: show inline nav, hide burger */
+@media (min-width: 768px) {
+  .nav-inline {
+    display: flex;
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+}
+
+/* Overlay + bottom sheet */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.menu-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg);
+  color: var(--text);
+  border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  max-height: 85vh;
+  overflow: auto;
+  line-height: 1.5;
+  transform: translateY(6%);
+  opacity: 0;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.menu-overlay[aria-hidden='false'] .menu-sheet {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.menu-close {
+  float: right;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: var(--text);
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.menu-groups {
+  display: grid;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.menu-group h3 {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0 0 6px;
+}
+
+.menu-group a,
+.menu-group button {
+  display: block;
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+}
+
+.menu-group a:active,
+.menu-group button:active {
+  transform: translateY(1px);
+}
+
+/* Touch target guarantee */
+.menu-group a,
+.menu-group button,
+.menu-close,
+.menu-toggle {
+  min-height: 44px;
+}
+
+/* Reduce motion respect */
+@media (prefers-reduced-motion: reduce) {
+  .menu-sheet {
+    transition: none;
+  }
+}
+
+#signinButton > div {
+  background: transparent !important;
+}
+
+/* Main container */
+main {
+  padding: var(--s4);
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+/* Headings */
+h1 {
+  margin: var(--s3) 0 var(--s2);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+/* Contents list */
+ol.contents {
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+ol.contents li {
+  margin: 0;
+}
+
+ol.contents li::marker {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+ol.contents a {
+  display: block;
+  padding-block: 6px;
+}
+
+ol.contents a:hover,
+ol.contents a:focus-visible {
+  outline: none;
+}
+
+ol.contents li:first-child {
+  margin-top: var(--s2);
+}
+
+/* Global link style */
+a {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 0.06em;
+  text-decoration-skip-ink: auto;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--link-hover);
+  outline: none;
+}
+
+/* Compact mode */
+[data-density='compact'] ol.contents a {
+  padding-block: 4px;
+}
+
+[data-density='compact'] body {
+  line-height: 1.3;
+}
+
+/* Legacy page wrapper */
+.page {
+  max-width: 70ch;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Form styles */
+form {
+  display: grid;
+  gap: var(--s3);
+  max-width: 40ch;
+}
+
+form > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+
+form input[type='text'],
+form textarea {
+  width: 100%;
+  padding: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--s1);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+form textarea {
+  resize: vertical;
+  min-height: 8em;
+}
+
+button {
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--link);
+  border-radius: var(--s1);
+  background: var(--link);
+  color: var(--bg);
+  cursor: pointer;
+}
+
+button:hover,
+button:focus-visible {
+  background: var(--link-hover);
+  outline: none;
+}
+
+form button {
+  width: fit-content;
+}
+
+button.dendrite-button {
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--link);
+  border-radius: var(--s1);
+  background: var(--link);
+  color: var(--bg);
+  cursor: pointer;
+}
+
+button.dendrite-button:hover,
+button.dendrite-button:focus-visible {
+  background: var(--link-hover);
+  outline: none;
+}
+
+/* Neutralize background for Google sign-in button */
+.g_id_signin,
+.abcRioButton {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}

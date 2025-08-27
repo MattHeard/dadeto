@@ -1,21 +1,12 @@
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import crypto from 'crypto';
 import { incrementVariantName } from './variantName.js';
-import {
-  findAvailablePageNumber,
-  createPage,
-  findPageByNumber,
-} from '../services/pages.js';
-import {
-  createVariant,
-  createOption,
-  getLastVariantName,
-  optionRefFromPath,
-  updateOption,
-} from '../services/variants.js';
-import { createBatch } from '../services/firebase.js';
-import { incrementVariantCount } from '../services/stories.js';
-import { ensureAuthor } from '../services/authors.js';
+import { findAvailablePageNumber } from './findAvailablePageNumber.js';
+
+initializeApp();
+const db = getFirestore();
 
 export const processNewPage = functions
   .region('europe-west1')
@@ -35,20 +26,20 @@ export const processNewPage = functions
 
     let variantRef = null;
     let pageDocRef = null;
-    let storyRefDoc = null;
+    let storyRef = null;
     let pageNumber;
-    const batch = createBatch();
+    const batch = db.batch();
 
     if (incomingOptionFullName) {
-      const optionRef = optionRefFromPath(incomingOptionFullName);
+      const optionRef = db.doc(incomingOptionFullName);
       const optionSnap = await optionRef.get();
       if (!optionSnap.exists) {
         await snap.ref.update({ processed: true });
         return null;
       }
       variantRef = optionRef.parent.parent;
-      const pageRefDoc = variantRef.parent.parent;
-      storyRefDoc = pageRefDoc.parent.parent;
+      const pageRef = variantRef.parent.parent;
+      storyRef = pageRef.parent.parent;
 
       const optionData = optionSnap.data();
       pageDocRef = optionData.targetPage;
@@ -66,31 +57,43 @@ export const processNewPage = functions
       }
 
       if (!pageDocRef) {
-        pageNumber = await findAvailablePageNumber();
+        pageNumber = await findAvailablePageNumber(db);
         const newPageId = crypto.randomUUID();
-        pageDocRef = createPage(batch, storyRefDoc.id, newPageId, {
+        pageDocRef = storyRef.collection('pages').doc(newPageId);
+        batch.set(pageDocRef, {
           number: pageNumber,
           incomingOption: incomingOptionFullName,
+          createdAt: FieldValue.serverTimestamp(),
         });
-        updateOption(batch, optionRef, { targetPage: pageDocRef });
+        batch.update(optionRef, { targetPage: pageDocRef });
       }
     } else {
       pageNumber = directPageNumber;
-      const pageSnap = await findPageByNumber(pageNumber);
+      const pageSnap = await db
+        .collectionGroup('pages')
+        .where('number', '==', pageNumber)
+        .limit(1)
+        .get();
       if (pageSnap.empty) {
         await snap.ref.update({ processed: true });
         return null;
       }
       pageDocRef = pageSnap.docs[0].ref;
-      storyRefDoc = pageDocRef.parent.parent;
+      storyRef = pageDocRef.parent.parent;
     }
 
-    const variantsSnap = await getLastVariantName(pageDocRef);
+    const variantsSnap = await pageDocRef
+      .collection('variants')
+      .orderBy('name', 'desc')
+      .limit(1)
+      .get();
     const nextName = variantsSnap.empty
       ? 'a'
       : incrementVariantName(variantsSnap.docs[0].data().name);
     const variantId = snap.id;
-    const newVariantRef = createVariant(batch, pageDocRef, variantId, {
+    const newVariantRef = pageDocRef.collection('variants').doc(variantId);
+
+    batch.set(newVariantRef, {
       name: nextName,
       content: sub.content,
       authorId: sub.authorId || null,
@@ -98,16 +101,25 @@ export const processNewPage = functions
       incomingOption: incomingOptionFullName || null,
       moderatorReputationSum: 0,
       rand: Math.random(),
+      createdAt: FieldValue.serverTimestamp(),
     });
 
     (sub.options || []).forEach((text, position) => {
-      createOption(batch, newVariantRef, crypto.randomUUID(), {
+      const optRef = newVariantRef
+        .collection('options')
+        .doc(crypto.randomUUID());
+      batch.set(optRef, {
         content: text,
+        createdAt: FieldValue.serverTimestamp(),
         position,
       });
     });
 
-    incrementVariantCount(batch, storyRefDoc.id);
+    batch.set(
+      db.doc(`storyStats/${storyRef.id}`),
+      { variantCount: FieldValue.increment(1) },
+      { merge: true }
+    );
 
     if (variantRef) {
       batch.update(variantRef, { dirty: null });
@@ -115,7 +127,11 @@ export const processNewPage = functions
     batch.update(snap.ref, { processed: true });
 
     if (sub.authorId) {
-      await ensureAuthor(batch, sub.authorId);
+      const authorRef = db.doc(`authors/${sub.authorId}`);
+      const authorSnap = await authorRef.get();
+      if (!authorSnap.exists) {
+        batch.set(authorRef, { uuid: crypto.randomUUID() });
+      }
     }
 
     await batch.commit();
