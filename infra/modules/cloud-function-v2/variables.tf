@@ -18,6 +18,7 @@ variable "trigger" {
       filters    = map(string)
     }))
   })
+  default = { http = false }
 }
 
 variable "env_vars" {

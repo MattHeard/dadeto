@@ -18,6 +18,7 @@ variable "trigger" {
       resource   = string
     }))
   })
+  default = { http = false }
 }
 
 variable "env_vars" {
