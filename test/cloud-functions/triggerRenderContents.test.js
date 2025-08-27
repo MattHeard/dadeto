@@ -106,7 +106,6 @@ describe('handleRenderRequest', () => {
       uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
     });
     const renderFn = jest.fn().mockResolvedValue(null);
-    const fakeDb = {};
     const req = {
       method: 'POST',
       get: h => {
@@ -117,8 +116,8 @@ describe('handleRenderRequest', () => {
       },
     };
     const res = createRes();
-    await handleRenderRequest(req, res, { renderFn, db: fakeDb });
-    expect(renderFn).toHaveBeenCalledWith({ db: fakeDb });
+    await handleRenderRequest(req, res, { renderFn });
+    expect(renderFn).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
@@ -127,7 +126,6 @@ describe('handleRenderRequest', () => {
       uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
     });
     const renderFn = jest.fn().mockRejectedValue(new Error('fail'));
-    const fakeDb = {};
     const req = {
       method: 'POST',
       get: h => {
@@ -138,8 +136,7 @@ describe('handleRenderRequest', () => {
       },
     };
     const res = createRes();
-    await handleRenderRequest(req, res, { renderFn, db: fakeDb });
-    expect(renderFn).toHaveBeenCalledWith({ db: fakeDb });
+    await handleRenderRequest(req, res, { renderFn });
     expect(res.status).toHaveBeenCalledWith(500);
   });
 });

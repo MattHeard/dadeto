@@ -20,7 +20,7 @@ resource "google_project_iam_member" "runtime_identityplatform_viewer" {
 
   # optional, but makes the dependency explicit
   depends_on = [
-    google_project_service.apis["identitytoolkit.googleapis.com"]       # turned on in services.tf
+    google_project_service.identitytoolkit       # turned on in firebase-auth.tf
   ]
 }
 

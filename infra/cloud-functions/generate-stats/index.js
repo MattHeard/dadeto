@@ -285,30 +285,29 @@ function buildHtml(storyCount, pageCount, unmoderatedCount, topStories = []) {
 
 /**
  * Count stories in Firestore.
- * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
  * @returns {Promise<number>} Story count.
  */
-async function getStoryCount(dbRef) {
-  const snap = await dbRef.collection('stories').count().get();
+async function getStoryCount() {
+  const snap = await db.collection('stories').count().get();
   return snap.data().count || 0;
 }
 
 /**
  * Count pages in Firestore.
- * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+ * @param {import('firebase-admin/firestore').Firestore} [dbRef] Firestore instance.
  * @returns {Promise<number>} Page count.
  */
-async function getPageCount(dbRef) {
+async function getPageCount(dbRef = db) {
   const snap = await dbRef.collectionGroup('pages').count().get();
   return snap.data().count || 0;
 }
 
 /**
  * Count pages without moderator reputation.
- * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+ * @param {import('firebase-admin/firestore').Firestore} [dbRef] Firestore instance.
  * @returns {Promise<number>} Unmoderated page count.
  */
-async function getUnmoderatedPageCount(dbRef) {
+async function getUnmoderatedPageCount(dbRef = db) {
   const zeroSnap = await dbRef
     .collectionGroup('variants')
     .where('moderatorReputationSum', '==', 0)
@@ -324,11 +323,11 @@ async function getUnmoderatedPageCount(dbRef) {
 
 /**
  * Get top stories by variant count.
- * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+ * @param {import('firebase-admin/firestore').Firestore} [dbRef] Firestore instance.
  * @param {number} [limit] Max number of stories.
  * @returns {Promise<Array<{title: string, variantCount: number}>>} Top stories.
  */
-async function getTopStories(dbRef, limit = 5) {
+async function getTopStories(dbRef = db, limit = 5) {
   const statsSnap = await dbRef
     .collection('storyStats')
     .orderBy('variantCount', 'desc')
@@ -397,16 +396,13 @@ async function invalidatePaths(paths) {
 /**
  * Generate stats page and upload to storage.
  * @param {{
- *   storyCountFn?: (db: import('firebase-admin/firestore').Firestore) => Promise<number>,
- *   pageCountFn?: (db: import('firebase-admin/firestore').Firestore) => Promise<number>,
- *   unmoderatedPageCountFn?: (db: import('firebase-admin/firestore').Firestore) => Promise<number>,
- *   topStoriesFn?: (db: import('firebase-admin/firestore').Firestore) => Promise<Array<{title: string, variantCount: number}>>,
+ *   storyCountFn?: () => Promise<number>,
+ *   pageCountFn?: () => Promise<number>,
+ *   unmoderatedPageCountFn?: () => Promise<number>,
  *   storageInstance?: Storage,
- *   db?: import('firebase-admin/firestore').Firestore,
  * }} [deps] Optional dependencies.
  */
 async function generate(deps = {}) {
-  const database = deps.db || db;
   const storyCountFn = deps.storyCountFn || getStoryCount;
   const pageCountFn = deps.pageCountFn || getPageCount;
   const unmoderatedPageCountFn =
@@ -414,10 +410,10 @@ async function generate(deps = {}) {
   const topStoriesFn = deps.topStoriesFn || getTopStories;
   const [storyCount, pageCount, unmoderatedCount, topStories] =
     await Promise.all([
-      storyCountFn(database),
-      pageCountFn(database),
-      unmoderatedPageCountFn(database),
-      topStoriesFn(database),
+      storyCountFn(),
+      pageCountFn(),
+      unmoderatedPageCountFn(),
+      topStoriesFn(),
     ]);
   const html = buildHtml(storyCount, pageCount, unmoderatedCount, topStories);
   const bucket = (deps.storageInstance || storage).bucket(BUCKET);
@@ -433,10 +429,7 @@ async function generate(deps = {}) {
  * Handle HTTP requests to generate stats.
  * @param {import('express').Request} req HTTP request.
  * @param {import('express').Response} res HTTP response.
- * @param {{
- *   genFn?: typeof generate,
- *   db?: import('firebase-admin/firestore').Firestore,
- * }} [deps] Optional dependencies.
+ * @param {{genFn?: typeof generate}} [deps] Optional dependencies.
  * @returns {Promise<void>} Promise resolving when response is sent.
  */
 async function handleRequest(req, res, deps = {}) {
@@ -465,9 +458,8 @@ async function handleRequest(req, res, deps = {}) {
     }
   }
   const genFn = deps.genFn || generate;
-  const database = deps.db || db;
   try {
-    await genFn({ db: database });
+    await genFn();
     res.status(200).json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e?.message || 'generate failed' });

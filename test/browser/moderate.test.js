@@ -41,7 +41,7 @@ describe('authedFetch', () => {
       querySelectorAll: jest.fn().mockReturnValue([el]),
     };
     global.fetch = jest.fn();
-    ({ authedFetch } = await import('../../infra/static/moderate.js'));
+    ({ authedFetch } = await import('../../infra/moderate.js'));
   });
 
   it('throws when not signed in', async () => {

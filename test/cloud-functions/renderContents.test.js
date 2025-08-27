@@ -25,9 +25,8 @@ describe('render contents', () => {
   test('invalidates cache for generated pages', async () => {
     const ids = Array.from({ length: 31 }, (_, i) => `s${i + 1}`);
     await render({
-      db: {},
       fetchTopStoryIds: async () => ids,
-      fetchStoryInfo: async (_db, id) => ({
+      fetchStoryInfo: async id => ({
         title: id,
         pageNumber: Number(id.slice(1)),
       }),
@@ -54,7 +53,6 @@ describe('render contents', () => {
       .mockResolvedValue({ ok: false, status: 500 });
 
     await render({
-      db: {},
       fetchTopStoryIds: async () => ids,
       fetchStoryInfo: async () => ({ title: 't', pageNumber: 1 }),
     });

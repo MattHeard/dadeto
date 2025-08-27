@@ -1,6 +1,5 @@
 import {
   buildHtml,
-  getStoryCount,
   getPageCount,
   getUnmoderatedPageCount,
   getTopStories,
@@ -29,17 +28,6 @@ describe('generate stats helpers', () => {
     expect(html).toContain('rotate(90) scale(-1,1)');
     expect(html).toContain('var(--link)');
     expect(html).toContain('Story A');
-  });
-
-  test('getStoryCount returns story count', async () => {
-    const mockDb = {
-      collection: () => ({
-        count: () => ({
-          get: () => Promise.resolve({ data: () => ({ count: 7 }) }),
-        }),
-      }),
-    };
-    await expect(getStoryCount(mockDb)).resolves.toBe(7);
   });
 
   test('getPageCount returns page count', async () => {

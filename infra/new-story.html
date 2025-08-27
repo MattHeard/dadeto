@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>New Story</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
+    />
+    <link rel="stylesheet" href="/dendrite.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">
+        <img src="/img/logo.png" alt="Dendrite logo" />
+        Dendrite
+      </a>
+
+      <nav class="nav-inline" aria-label="Primary">
+        <a href="/new-story.html">New story</a>
+        <a href="/mod.html">Moderate</a>
+        <a href="/stats.html">Stats</a>
+        <a class="admin-link" href="/admin.html" style="display: none">Admin</a>
+        <div id="signinButton"></div>
+        <div id="signoutWrap" style="display: none">
+          <a id="signoutLink" href="#">Sign out</a>
+        </div>
+      </nav>
+
+      <button
+        class="menu-toggle"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Open menu"
+      >
+        ☰
+      </button>
+    </header>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="menu-overlay" hidden aria-hidden="true">
+      <div class="menu-sheet" role="dialog" aria-modal="true">
+        <button class="menu-close" aria-label="Close menu">✕</button>
+
+        <nav class="menu-groups">
+          <div class="menu-group">
+            <h3>Write</h3>
+            <a href="/new-story.html">New story</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>Moderation</h3>
+            <a href="/mod.html">Moderate</a>
+            <a href="/stats.html">Stats</a>
+            <a class="admin-link" href="/admin.html" style="display: none"
+              >Admin</a
+            >
+          </div>
+
+          <div class="menu-group">
+            <h3>Account</h3>
+            <div id="signinButton"></div>
+            <div id="signoutWrap" style="display: none">
+              <a id="signoutLink" href="#">Sign out</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <main>
+      <h1>New story</h1>
+      <form
+        action="https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-new-story"
+        method="post"
+        enctype="application/x-www-form-urlencoded"
+      >
+        <div>
+          <label for="title">Title</label>
+          <input id="title" type="text" name="title" />
+        </div>
+        <div>
+          <label for="content">Content</label>
+          <textarea id="content" name="content"></textarea>
+        </div>
+        <div>
+          <label for="author">Author</label>
+          <input id="author" type="text" name="author" />
+        </div>
+        <div>
+          <label for="option0">Option 1</label>
+          <input id="option0" type="text" name="option0" />
+        </div>
+        <div>
+          <label for="option1">Option 2</label>
+          <input id="option1" type="text" name="option1" />
+        </div>
+        <div>
+          <label for="option2">Option 3</label>
+          <input id="option2" type="text" name="option2" />
+        </div>
+        <div>
+          <label for="option3">Option 4</label>
+          <input id="option3" type="text" name="option3" />
+        </div>
+        <div>
+          <button class="dendrite-button" type="submit">Submit</button>
+        </div>
+      </form>
+    </main>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" defer></script>
+    <script type="module">
+      import {
+        initGoogleSignIn,
+        getIdToken,
+        signOut,
+        isAdmin,
+      } from './googleAuth.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form');
+        const button = form.querySelector("button[type='submit']");
+        const originalText = button.textContent;
+        const signins = document.querySelectorAll('#signinButton');
+        const signoutWraps = document.querySelectorAll('#signoutWrap');
+        const signoutLinks = document.querySelectorAll('#signoutLink');
+        const adminLinks = document.querySelectorAll('.admin-link');
+
+        function showSignedIn() {
+          document.body.classList.add('authed');
+          signins.forEach(el => (el.style.display = 'none'));
+          signoutWraps.forEach(el => (el.style.display = ''));
+          if (isAdmin()) adminLinks.forEach(el => (el.style.display = ''));
+        }
+
+        function showSignedOut() {
+          document.body.classList.remove('authed');
+          signoutWraps.forEach(el => (el.style.display = 'none'));
+          signins.forEach(el => (el.style.display = ''));
+          adminLinks.forEach(el => (el.style.display = 'none'));
+        }
+
+        initGoogleSignIn({ onSignIn: showSignedIn });
+
+        signoutLinks.forEach(link => {
+          link.addEventListener('click', async e => {
+            e.preventDefault();
+            await signOut();
+            showSignedOut();
+          });
+        });
+
+        if (getIdToken()) {
+          showSignedIn();
+        }
+
+        form.addEventListener('keydown', event => {
+          if (
+            event.key === 'Enter' &&
+            event.target.matches('input[type="text"]')
+          ) {
+            event.preventDefault();
+          }
+        });
+
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          button.disabled = true;
+          let dots = 1;
+          button.textContent = 'Saving.';
+          const intervalId = setInterval(() => {
+            dots = (dots % 3) + 1;
+            button.textContent = `Saving${'.'.repeat(dots)}`;
+          }, 500);
+
+          try {
+            const formData = new URLSearchParams(new FormData(form));
+            const headers = {};
+            const token = getIdToken();
+            if (token) {
+              headers.Authorization = `Bearer ${token}`;
+            }
+            const response = await fetch(form.action, {
+              method: form.method,
+              body: formData,
+              headers,
+            });
+            if (!response.ok) {
+              throw new Error('Submission failed');
+            }
+            const { id } = await response.json();
+            let delay = 500;
+            while (true) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              const ts = Date.now();
+              const pendingRes = await fetch(`/pending/${id}.json?ts=${ts}`);
+              if (pendingRes.ok) {
+                const data = await pendingRes.json();
+                clearInterval(intervalId);
+                window.location.href = data.path;
+                return;
+              }
+              delay = Math.min(delay * 2, 8000);
+            }
+          } catch (err) {
+            clearInterval(intervalId);
+            button.textContent = 'Failed to save.';
+            button.disabled = false;
+            setTimeout(() => {
+              button.textContent = originalText;
+            }, 2000);
+          }
+        });
+      });
+    </script>
+    <script>
+      (function () {
+        const toggle = document.querySelector('.menu-toggle');
+        const overlay = document.getElementById('mobile-menu');
+        const sheet = overlay.querySelector('.menu-sheet');
+        const closeBtn = overlay.querySelector('.menu-close');
+
+        function openMenu() {
+          overlay.hidden = false;
+          overlay.setAttribute('aria-hidden', 'false');
+          toggle.setAttribute('aria-expanded', 'true');
+          document.body.style.overflow = 'hidden';
+          const first = sheet.querySelector('a,button,[tabindex="0"]');
+          if (first) first.focus();
+        }
+        function closeMenu() {
+          overlay.setAttribute('aria-hidden', 'true');
+          toggle.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+          setTimeout(() => (overlay.hidden = true), 180);
+          toggle.focus();
+        }
+        toggle.addEventListener('click', () =>
+          overlay.hidden ? openMenu() : closeMenu()
+        );
+        closeBtn.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', e => {
+          if (e.target === overlay) closeMenu();
+        });
+        addEventListener('keydown', e => {
+          if (e.key === 'Escape' && !overlay.hidden) closeMenu();
+        });
+      })();
+    </script>
+  </body>
+</html>

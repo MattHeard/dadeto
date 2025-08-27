@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase-admin/app';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
-import { decideRemovalPath } from './logic.js';
 
 initializeApp();
 const storage = new Storage();
@@ -15,19 +14,33 @@ export const hideVariantHtml = functions
   .region('europe-west1')
   .firestore.document('stories/{storyId}/pages/{pageId}/variants/{variantId}')
   .onWrite(async change => {
-    const pageRef = change.after.ref.parent.parent;
-    const pageSnap = await pageRef.get();
-    if (!pageSnap.exists) {
-      return null;
+    if (!change.after.exists) {
+      return removeFile(change.before);
     }
-    const path = decideRemovalPath(
-      change.before.exists ? change.before.data() : null,
-      change.after.exists ? change.after.data() : null,
-      pageSnap.data(),
-      VISIBILITY_THRESHOLD
-    );
-    if (path) {
-      await storage.bucket(BUCKET).file(path).delete({ ignoreNotFound: true });
+
+    const beforeVis = change.before.data()?.visibility ?? 0;
+    const afterVis = change.after.data().visibility ?? 0;
+    if (beforeVis >= VISIBILITY_THRESHOLD && afterVis < VISIBILITY_THRESHOLD) {
+      return removeFile(change.after);
     }
+
     return null;
   });
+
+/**
+ *
+ * @param snap
+ */
+async function removeFile(snap) {
+  const variant = snap.data();
+  const pageSnap = await snap.ref.parent.parent.get();
+  if (!pageSnap.exists) {
+    return null;
+  }
+
+  const page = pageSnap.data();
+  const path = `p/${page.number}${variant.name}.html`;
+
+  await storage.bucket(BUCKET).file(path).delete({ ignoreNotFound: true });
+  return null;
+}
