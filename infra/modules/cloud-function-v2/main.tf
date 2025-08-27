@@ -33,18 +33,25 @@ resource "google_cloudfunctions2_function" "function" {
   dynamic "event_trigger" {
     for_each = try(var.trigger.event, null) == null ? [] : [var.trigger.event]
     content {
-      event_type = event_trigger.value.event_type
+      event_type     = event_trigger.value.event_type
       trigger_region = var.region
-      resource   = event_trigger.value.resource
+
+      dynamic "event_filters" {
+        for_each = event_trigger.value.filters
+        content {
+          attribute = event_filters.key
+          value     = event_filters.value
+        }
+      }
     }
   }
 }
 
 resource "google_cloud_run_service_iam_member" "members" {
-  for_each = { for idx, m in var.iam_members : idx => m }
-  location = var.region
-  service  = google_cloudfunctions2_function.function.name
-  role     = each.value.role
-  member   = each.value.member
+  for_each   = { for idx, m in var.iam_members : idx => m }
+  location   = var.region
+  service    = google_cloudfunctions2_function.function.name
+  role       = each.value.role
+  member     = each.value.member
   depends_on = [google_cloudfunctions2_function.function]
 }
