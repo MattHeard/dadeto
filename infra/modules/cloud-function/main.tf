@@ -19,8 +19,8 @@ resource "google_cloudfunctions_function" "function" {
   region                = var.region
   service_account_email = var.service_account_email
   environment_variables = var.env_vars
-  trigger_http          = try(var.trigger.http, false)
-  https_trigger_security_level = try(var.trigger.http, false) ? var.https_security_level : null
+  trigger_http          = coalesce(var.trigger.http, false)
+  https_trigger_security_level = coalesce(var.trigger.http, false) ? var.https_security_level : null
 
   dynamic "event_trigger" {
     for_each = try(var.trigger.event, null) == null ? [] : [var.trigger.event]
