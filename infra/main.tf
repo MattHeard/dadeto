@@ -158,46 +158,54 @@ resource "google_storage_bucket" "gcf_source_bucket" {
 }
 
 resource "google_project_service" "firestore" {
-  project = var.project_id
-  service = "firestore.googleapis.com"
+  project            = var.project_id
+  service            = "firestore.googleapis.com"
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "cloudfunctions" {
-  project = var.project_id
-  service = "cloudfunctions.googleapis.com"
+  project            = var.project_id
+  service            = "cloudfunctions.googleapis.com"
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "cloudbuild" {
-  project = var.project_id
-  service = "cloudbuild.googleapis.com"
+  project            = var.project_id
+  service            = "cloudbuild.googleapis.com"
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "cloudscheduler" {
-  project = var.project_id
-  service = "cloudscheduler.googleapis.com"
+  project            = var.project_id
+  service            = "cloudscheduler.googleapis.com"
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "firebaserules" {
-  project = var.project_id
-  service = "firebaserules.googleapis.com"
+  project            = var.project_id
+  service            = "firebaserules.googleapis.com"
+  disable_on_destroy = false
 }
 
 # Needed for Gen2 (backed by Cloud Run)
 resource "google_project_service" "run" {
-  project = var.project_id
-  service = "run.googleapis.com"
+  project            = var.project_id
+  service            = "run.googleapis.com"
+  disable_on_destroy = false
 }
 
 # Container images for Gen2 builds live here
 resource "google_project_service" "artifactregistry" {
-  project = var.project_id
-  service = "artifactregistry.googleapis.com"
+  project            = var.project_id
+  service            = "artifactregistry.googleapis.com"
+  disable_on_destroy = false
 }
 
 # Optional now, useful later for non-HTTP triggers
 resource "google_project_service" "eventarc" {
-  project = var.project_id
-  service = "eventarc.googleapis.com"
+  project            = var.project_id
+  service            = "eventarc.googleapis.com"
+  disable_on_destroy = false
 }
 
 

@@ -13,7 +13,8 @@ resource "google_project_iam_member" "terraform_apikeys_admin" {
   depends_on = [google_project_service.apikeys_api]
 }
 resource "google_project_service" "apikeys_api" {
-  project = var.project_id
-  service = "apikeys.googleapis.com"
+  project            = var.project_id
+  service            = "apikeys.googleapis.com"
+  disable_on_destroy = false
 }
 
