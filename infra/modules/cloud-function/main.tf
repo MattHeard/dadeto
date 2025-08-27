@@ -32,7 +32,12 @@ resource "google_cloudfunctions_function" "function" {
     content {
       event_type = event_trigger.value.event_type
       resource   = event_trigger.value.resource
-      retry      = try(event_trigger.value.retry, null)
+      dynamic "failure_policy" {
+        for_each = try(event_trigger.value.retry, false) ? [1] : []
+        content {
+          retry = true
+        }
+      }
     }
   }
 }
