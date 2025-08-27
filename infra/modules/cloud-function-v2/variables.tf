@@ -12,10 +12,10 @@ variable "source_dir" {
 
 variable "trigger" {
   type = object({
-    http  = optional(bool)
+    http = optional(bool)
     event = optional(object({
       event_type = string
-      resource   = string
+      filters    = map(string)
     }))
   })
 }
