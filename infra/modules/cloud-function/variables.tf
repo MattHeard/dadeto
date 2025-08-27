@@ -16,9 +16,14 @@ variable "trigger" {
     event = optional(object({
       event_type = string
       resource   = string
+      retry      = optional(bool)
     }))
   })
   default = { http = false }
+  validation {
+    condition     = !(coalesce(var.trigger.http, false) && var.trigger.event != null)
+    error_message = "Provide either trigger.http OR trigger.event, not both."
+  }
 }
 
 variable "env_vars" {
