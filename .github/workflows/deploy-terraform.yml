@@ -43,6 +43,18 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Enable core GCP APIs
+        run: |
+          terraform apply -auto-approve \
+            -target=google_project_service.firestore \
+            -target=google_project_service.identitytoolkit \
+            -target=google_project_service.cloudfunctions \
+            -target=google_project_service.compute \
+            -target=google_project_service.run \
+            -target=google_project_service.artifactregistry \
+            -target=google_project_service.cloudscheduler \
+            -target=google_project_service.firebaserules
+
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -out=tfplan
 
