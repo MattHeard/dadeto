@@ -10,6 +10,11 @@ resource "google_storage_bucket_object" "source" {
   source = data.archive_file.src.output_path
 }
 
+locals {
+  trigger_http = coalesce(var.trigger.http, false)
+  use_event    = !local.trigger_http && var.trigger.event != null
+}
+
 resource "google_cloudfunctions_function" "function" {
   name                  = var.name
   runtime               = var.runtime
@@ -18,15 +23,16 @@ resource "google_cloudfunctions_function" "function" {
   source_archive_object = google_storage_bucket_object.source.name
   region                = var.region
   service_account_email = var.service_account_email
-  environment_variables = var.env_vars
-  trigger_http          = coalesce(var.trigger.http, false)
-  https_trigger_security_level = coalesce(var.trigger.http, false) ? var.https_security_level : null
+  environment_variables       = var.env_vars
+  trigger_http                = local.trigger_http ? true : null
+  https_trigger_security_level = local.trigger_http ? var.https_security_level : null
 
   dynamic "event_trigger" {
-    for_each = try(var.trigger.event, null) == null ? [] : [var.trigger.event]
+    for_each = local.use_event ? [var.trigger.event] : []
     content {
       event_type = event_trigger.value.event_type
       resource   = event_trigger.value.resource
+      retry      = try(event_trigger.value.retry, null)
     }
   }
 }
