@@ -2,14 +2,16 @@
 
 # identity-toolkit = Firebase Auth backend
 resource "google_project_service" "identitytoolkit" {
-  project = var.project_id
-  service = "identitytoolkit.googleapis.com"
+  project            = var.project_id
+  service            = "identitytoolkit.googleapis.com"
+  disable_on_destroy = false
 }
 
 # firebase.googleapis.com upgrades the project to Firebase
 resource "google_project_service" "firebase_api" {
-  project = var.project_id
-  service = "firebase.googleapis.com"
+  project            = var.project_id
+  service            = "firebase.googleapis.com"
+  disable_on_destroy = false
 }
 
 resource "google_firebase_project" "core" {
