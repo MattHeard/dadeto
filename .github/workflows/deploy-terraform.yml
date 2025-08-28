@@ -41,18 +41,7 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform Init
-        run: terraform init
-
-      - name: Migrate Firebase service state
-        run: |
-          if terraform state list | grep -Fq 'google_project_service.apis["firebase.googleapis.com"]' \
-            && ! terraform state list | grep -Fq 'google_project_service.firebase_api'; then
-            terraform state mv 'google_project_service.apis["firebase.googleapis.com"]' google_project_service.firebase_api
-          fi
-          if terraform state list | grep -Fq 'google_project_service.apis["firebaserules.googleapis.com"]' \
-            && ! terraform state list | grep -Fq 'google_project_service.firebaserules'; then
-            terraform state mv 'google_project_service.apis["firebaserules.googleapis.com"]' google_project_service.firebaserules
-          fi
+        run: terraform init -migrate-state
 
       - name: Enable core GCP APIs
         run: |
