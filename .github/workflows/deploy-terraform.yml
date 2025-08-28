@@ -45,6 +45,7 @@ jobs:
 
       - name: Cleanup firebaserules state
         run: |
+          set -euo pipefail
           extra=$(terraform state list | grep firebaserules | grep -v '^google_project_service.firebaserules$' || true)
           if [ -n "$extra" ]; then
             echo "Removing duplicate firebaserules entries:"
