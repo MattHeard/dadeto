@@ -43,6 +43,14 @@ jobs:
       - name: Terraform Init
         run: terraform init -migrate-state
 
+      - name: Verify firebaserules state move
+        run: |
+          count=$(terraform state list | grep firebaserules | wc -l)
+          if [ "$count" -ne 1 ]; then
+            echo "Expected exactly one firebaserules service resource, found $count"
+            exit 1
+          fi
+
       - name: Enable core GCP APIs
         run: |
           terraform apply -auto-approve \
@@ -57,6 +65,13 @@ jobs:
 
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -out=tfplan
+
+      - name: Ensure firebaserules not destroyed
+        run: |
+          if terraform show -no-color tfplan | grep -q '# google_project_service.firebaserules will be destroyed'; then
+            echo 'firebaserules.googleapis.com service would be destroyed'
+            exit 1
+          fi
 
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
