@@ -216,14 +216,6 @@ resource "google_project_service" "eventarc" {
   disable_on_destroy = false
 }
 
-# Explicitly disable Firebase Hosting and any dependent services
-resource "google_project_service" "firebasehosting" {
-  project                    = var.project_id
-  service                    = "firebasehosting.googleapis.com"
-  disable_dependent_services = true
-}
-
-
 resource "google_firestore_database" "default" {
   project     = var.project_id
   name        = "(default)"
