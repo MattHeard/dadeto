@@ -73,6 +73,13 @@ npm install
 - **Formatting**: Consistent indentation (2 spaces)
 - **File Structure**: Modular components in separate files
 
+## Terraform Workflows
+
+Infrastructure is managed with Terraform via GitHub Actions. The **Deploy Terraform**
+workflow applies changes automatically when commits modify the `infra/` directory.
+After confirming that newly provisioned resources function as expected, run the
+manual **Cleanup Terraform Services** workflow to disable any deprecated services.
+
 ## Refactoring Principles
 
 - **Don't Repeat Yourself:** Eliminate duplication in content and structure.
@@ -93,11 +100,7 @@ Blog posts are defined in the `src/blog.json` file with the following structure:
       "key": "UNIQUE_KEY",
       "title": "Post Title",
       "publicationDate": "YYYY-MM-DD",
-      "content": [
-        "Paragraph 1",
-        "Paragraph 2",
-        "..."
-      ],
+      "content": ["Paragraph 1", "Paragraph 2", "..."],
       "illustration": {
         "fileType": "png|webp",
         "altText": "Description of the image"
