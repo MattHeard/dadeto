@@ -13,6 +13,13 @@ be found, first run `npm install` and try again. If they still fail or other
 issues occur, note the failure in the PR message's Testing section.
 Before opening a pull request, ensure that branch coverage remains at 100%.
 
+## Terraform
+
+- Do not run Terraform commands directly.
+- When Terraform actions are required, update the Terraform GitHub Actions
+  workflow (e.g., `.github/workflows/deploy-terraform.yml`) to perform them
+  instead.
+
 ## Jest Restrictions
 
 The following Jest features cause issues with Stryker mutation testing and must never be used:
