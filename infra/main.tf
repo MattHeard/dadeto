@@ -184,7 +184,8 @@ resource "google_project_service" "cloudscheduler" {
 resource "google_project_service" "firebaserules" {
   project            = var.project_id
   service            = "firebaserules.googleapis.com"
-  disable_on_destroy = false
+  disable_on_destroy        = false
+  disable_dependent_services = true
 }
 
 # Needed for Gen2 (backed by Cloud Run)

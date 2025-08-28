@@ -11,7 +11,8 @@ resource "google_project_service" "identitytoolkit" {
 resource "google_project_service" "firebase_api" {
   project            = var.project_id
   service            = "firebase.googleapis.com"
-  disable_on_destroy = false
+  disable_on_destroy        = false
+  disable_dependent_services = true
 }
 
 resource "google_firebase_project" "core" {
