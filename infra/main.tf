@@ -161,6 +161,10 @@ resource "google_project_service" "firestore" {
   project            = var.project_id
   service            = "firestore.googleapis.com"
   disable_on_destroy = false
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "google_project_service" "cloudfunctions" {
@@ -184,8 +188,11 @@ resource "google_project_service" "cloudscheduler" {
 resource "google_project_service" "firebaserules" {
   project            = var.project_id
   service            = "firebaserules.googleapis.com"
-  disable_on_destroy        = false
-  disable_dependent_services = true
+  disable_on_destroy = false
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Needed for Gen2 (backed by Cloud Run)
