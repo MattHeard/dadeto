@@ -43,6 +43,14 @@ jobs:
       - name: Terraform Init
         run: terraform init -migrate-state
 
+      - name: Cleanup firebaserules state
+        run: |
+          extra=$(terraform state list | grep firebaserules | grep -v '^google_project_service.firebaserules$' || true)
+          if [ -n "$extra" ]; then
+            echo "Removing duplicate firebaserules entries:"
+            echo "$extra" | xargs -n1 terraform state rm
+          fi
+
       - name: Verify firebaserules state move
         run: |
           count=$(terraform state list | grep firebaserules | wc -l)
