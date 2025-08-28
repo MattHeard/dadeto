@@ -43,25 +43,6 @@ jobs:
       - name: Terraform Init
         run: terraform init -migrate-state
 
-      - name: Cleanup firebaserules state
-        run: |
-          set -euo pipefail
-          extra=$(terraform state list | grep firebaserules | grep -v '^google_project_service.firebaserules$' || true)
-          if [ -n "$extra" ]; then
-            echo "Removing duplicate firebaserules entries:"
-            while IFS= read -r rule; do
-              terraform state rm "$rule"
-            done <<< "$extra"
-          fi
-
-      - name: Verify firebaserules state move
-        run: |
-          count=$(terraform state list | grep -c firebaserules)
-          if [ "$count" -ne 1 ]; then
-            echo "Expected exactly one firebaserules service resource, found $count"
-            exit 1
-          fi
-
       - name: Enable core GCP APIs
         run: |
           terraform apply -auto-approve \
