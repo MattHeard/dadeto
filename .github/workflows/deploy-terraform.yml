@@ -49,7 +49,9 @@ jobs:
           extra=$(terraform state list | grep firebaserules | grep -v '^google_project_service.firebaserules$' || true)
           if [ -n "$extra" ]; then
             echo "Removing duplicate firebaserules entries:"
-            echo "$extra" | xargs -n1 terraform state rm
+            while IFS= read -r rule; do
+              terraform state rm "$rule"
+            done <<< "$extra"
           fi
 
       - name: Verify firebaserules state move
