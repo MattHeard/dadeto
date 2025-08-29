@@ -43,6 +43,9 @@ jobs:
       - name: Terraform Init
         run: terraform init -migrate-state
 
+      - name: Enable Firebase management API
+        run: terraform apply -auto-approve -target=google_project_service.firebase_api
+
       - name: Enable core GCP APIs
         run: |
           terraform apply -auto-approve \
