@@ -126,3 +126,8 @@ resource "google_firestore_field" "pages_number_global" {
   }
 }
 
+import {
+  to = google_firebaserules_release.firestore
+  id = "projects/${var.project_id}/releases/cloud.firestore"
+}
+
