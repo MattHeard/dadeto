@@ -44,3 +44,6 @@ debug/
 
 # stryker temp files
 .stryker-tmp
+
+# Terraform
+.terraform/
