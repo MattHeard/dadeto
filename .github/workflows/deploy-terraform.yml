@@ -33,7 +33,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GOOGLE_PROJECT }}
-          install_components: gcloud
+          install_components: 'alpha,firebaserules'
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
@@ -54,6 +54,19 @@ jobs:
             -target=google_project_service.artifactregistry \
             -target=google_project_service.cloudscheduler \
             -target=google_project_service.firebaserules
+
+      - name: Import existing Firestore rules release
+        run: |
+          if ! terraform state list | grep -q google_firebaserules_release.firestore; then
+            RELEASE_NAME=$(gcloud alpha firebaserules releases list --project ${{ secrets.GOOGLE_PROJECT }} --format='value(name)' --filter='name:firestore.rules' | head -n 1)
+            if [ -n "$RELEASE_NAME" ]; then
+              terraform import google_firebaserules_release.firestore "$RELEASE_NAME"
+            else
+              echo 'No existing Firestore rules release found'
+            fi
+          else
+            echo 'Firestore rules release already imported'
+          fi
 
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -out=tfplan
