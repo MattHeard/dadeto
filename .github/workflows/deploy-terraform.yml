@@ -42,20 +42,6 @@ jobs:
 
       - name: Terraform Init
         run: terraform init -migrate-state
-
-      - name: Import existing Firestore rules release
-        run: |
-          if ! terraform state list | grep -q google_firebaserules_release.firestore; then
-            RELEASE_NAME=$(gcloud alpha firebaserules releases list --project ${{ secrets.GOOGLE_PROJECT }} --format='value(name)' --filter='name:firestore.rules' | head -n 1)
-            if [ -n "$RELEASE_NAME" ]; then
-              terraform import google_firebaserules_release.firestore "$RELEASE_NAME"
-            else
-              echo 'No existing Firestore rules release found'
-            fi
-          else
-            echo 'Firestore rules release already imported'
-          fi
-
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -out=tfplan
 
