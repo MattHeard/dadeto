@@ -19,21 +19,6 @@ resource "google_firebaserules_ruleset" "firestore" {
   ]
 }
 
-resource "google_firebaserules_release" "firestore" {
-  provider     = google-beta
-  project      = var.project_id
-  name         = "firestore.rules"
-  ruleset_name = google_firebaserules_ruleset.firestore.name
-
-  lifecycle {
-    ignore_changes = [ ruleset_name ]
-  }
-
-  depends_on = [
-    google_project_iam_member.ci_firebaserules_admin   # ensure role is live
-  ]
-}
-
 resource "google_firestore_index" "variants_author_created" {
   project     = var.project_id
   collection  = "variants"
@@ -124,10 +109,5 @@ resource "google_firestore_field" "pages_number_global" {
       query_scope = "COLLECTION_GROUP"
     }
   }
-}
-
-import {
-  to = google_firebaserules_release.firestore
-  id = "projects/${var.project_id}/releases/cloud.firestore"
 }
 
