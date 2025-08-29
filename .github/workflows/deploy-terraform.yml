@@ -33,7 +33,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GOOGLE_PROJECT }}
-          install_components: 'alpha,firebaserules'
+          install_components: alpha
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
