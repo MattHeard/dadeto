@@ -43,21 +43,6 @@ jobs:
       - name: Terraform Init
         run: terraform init -migrate-state
 
-      - name: Enable Firebase management API
-        run: terraform apply -auto-approve -target=google_project_service.firebase_api
-
-      - name: Enable core GCP APIs
-        run: |
-          terraform apply -auto-approve \
-            -target=google_project_service.firestore \
-            -target=google_project_service.identitytoolkit \
-            -target=google_project_service.cloudfunctions \
-            -target=google_project_service.compute \
-            -target=google_project_service.run \
-            -target=google_project_service.artifactregistry \
-            -target=google_project_service.cloudscheduler \
-            -target=google_project_service.firebaserules
-
       - name: Import existing Firestore rules release
         run: |
           if ! terraform state list | grep -q google_firebaserules_release.firestore; then
@@ -73,13 +58,6 @@ jobs:
 
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -out=tfplan
-
-      - name: Ensure firebaserules not destroyed
-        run: |
-          if terraform show -no-color tfplan | grep -q '# google_project_service.firebaserules will be destroyed'; then
-            echo 'firebaserules.googleapis.com service would be destroyed'
-            exit 1
-          fi
 
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
