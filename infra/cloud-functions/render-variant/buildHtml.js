@@ -119,6 +119,7 @@ export function buildHtml(
         <a href="/new-story.html">New story</a>
         <a href="/mod.html">Moderate</a>
         <a href="/stats.html">Stats</a>
+        <a href="/about.html">About</a>
         <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
         <div id="signinButton"></div>
         <div id="signoutWrap" style="display:none">
@@ -145,6 +146,11 @@ export function buildHtml(
             <a href="/mod.html">Moderate</a>
             <a href="/stats.html">Stats</a>
             <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>About</h3>
+            <a href="/about.html">About</a>
           </div>
 
           <div class="menu-group">
