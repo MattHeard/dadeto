@@ -212,6 +212,46 @@ main {
   margin: 0 auto;
 }
 
+.moderation-card {
+  margin: var(--s4) 0;
+  padding: var(--s4);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-800);
+  box-shadow: 0 12px 30px rgba(11, 15, 20, 0.12);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.moderation-card:hover,
+.moderation-card:focus-within {
+  box-shadow: 0 16px 40px rgba(11, 15, 20, 0.18);
+  transform: translateY(-2px);
+}
+
+.moderation-card h3 {
+  margin-top: 0;
+  margin-bottom: var(--s2);
+}
+
+.moderation-card p {
+  margin-top: 0;
+  margin-bottom: var(--s3);
+}
+
+.moderation-card ol {
+  margin-top: var(--s3);
+  padding-left: 1.25rem;
+}
+
+#actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-top: var(--s4);
+}
+
 /* Headings */
 h1 {
   margin: var(--s3) 0 var(--s2);
