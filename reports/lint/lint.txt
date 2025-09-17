@@ -1,66 +1,94 @@
 
-/workspace/dadeto/infra/admin.js
-   27:1   warning  Function 'checkAccess' has a complexity of 6. Maximum allowed is 2              complexity
-   51:1   warning  Async function 'triggerRender' has a complexity of 6. Maximum allowed is 2      complexity
-   66:11  warning  Ternary operator used                                                           no-ternary
-   73:35  warning  Ternary operator used                                                           no-ternary
-   80:1   warning  Async function 'triggerStats' has a complexity of 3. Maximum allowed is 2       complexity
-  100:1   warning  Async function 'regenerateVariant' has a complexity of 6. Maximum allowed is 2  complexity
+/Users/matthew.heard/Code/Matt/dadeto/infra/admin.js
+   30:1   warning  Function 'checkAccess' has a complexity of 6. Maximum allowed is 2              complexity
+   54:1   warning  Async function 'triggerRender' has a complexity of 6. Maximum allowed is 2      complexity
+   69:11  warning  Ternary operator used                                                           no-ternary
+   76:35  warning  Ternary operator used                                                           no-ternary
+   83:1   warning  Async function 'triggerStats' has a complexity of 3. Maximum allowed is 2       complexity
+  103:1   warning  Async function 'regenerateVariant' has a complexity of 6. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/cloud-functions/assign-moderation-job/index.js
-  20:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                              complexity
-  39:1   warning  Async function 'handleAssignModerationJob' has a complexity of 10. Maximum allowed is 2  complexity
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/assign-moderation-job/index.js
+   21:15  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                             complexity
+   40:1   warning  Function 'getIdTokenFromRequest' has a complexity of 3. Maximum allowed is 2            complexity
+   51:1   warning  Async function 'handleAssignModerationJob' has a complexity of 3. Maximum allowed is 2  complexity
+   87:1   warning  Function 'deriveGuardErrorResponse' has a complexity of 3. Maximum allowed is 2         complexity
+   96:1   warning  Missing JSDoc @returns declaration                                                      jsdoc/require-returns
+   98:1   warning  Missing JSDoc @param "randomValue" description                                          jsdoc/require-param-description
+   98:1   warning  Missing JSDoc @param "randomValue" type                                                 jsdoc/require-param-type
+  100:1   warning  Async function 'getVariantSnapshot' has a complexity of 4. Maximum allowed is 2         complexity
+  181:10  warning  Async function 'runChain' has a complexity of 6. Maximum allowed is 2                   complexity
+  214:28  warning  Async arrow function has a complexity of 3. Maximum allowed is 2                        complexity
+  228:26  warning  Async arrow function has a complexity of 3. Maximum allowed is 2                        complexity
 
-/workspace/dadeto/infra/cloud-functions/generate-stats/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/generate-stats/index.js
    29:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                           complexity
    49:1   warning  Function 'buildHtml' has too many parameters (4). Maximum allowed is 3                max-params
-  301:1   warning  Async function 'getPageCount' has a complexity of 3. Maximum allowed is 2             complexity
-  311:1   warning  Async function 'getUnmoderatedPageCount' has a complexity of 4. Maximum allowed is 2  complexity
-  331:1   warning  Async function 'getTopStories' has a complexity of 3. Maximum allowed is 2            complexity
-  338:24  warning  Async arrow function has a complexity of 4. Maximum allowed is 2                      complexity
-  359:11  warning  Identifier 'access_token' is not in camel case                                        camelcase
-  360:10  warning  Identifier 'access_token' is not in camel case                                        camelcase
-  370:15  warning  Async arrow function has a complexity of 5. Maximum allowed is 2                      complexity
-  397:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
-  406:1   warning  Async function 'generate' has a complexity of 7. Maximum allowed is 2                 complexity
-  436:1   warning  Async function 'handleRequest' has a complexity of 14. Maximum allowed is 2           complexity
+  306:1   warning  Async function 'getPageCount' has a complexity of 3. Maximum allowed is 2             complexity
+  316:1   warning  Async function 'getUnmoderatedPageCount' has a complexity of 4. Maximum allowed is 2  complexity
+  336:1   warning  Async function 'getTopStories' has a complexity of 3. Maximum allowed is 2            complexity
+  343:24  warning  Async arrow function has a complexity of 4. Maximum allowed is 2                      complexity
+  364:11  warning  Identifier 'access_token' is not in camel case                                        camelcase
+  365:10  warning  Identifier 'access_token' is not in camel case                                        camelcase
+  375:15  warning  Async arrow function has a complexity of 5. Maximum allowed is 2                      complexity
+  402:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  411:1   warning  Async function 'generate' has a complexity of 7. Maximum allowed is 2                 complexity
+  441:1   warning  Async function 'handleRequest' has a complexity of 14. Maximum allowed is 2           complexity
 
-/workspace/dadeto/infra/cloud-functions/get-api-key-credit/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/get-api-key-credit-v2/index.js
+   8:1   warning  Missing JSDoc @returns declaration                                        jsdoc/require-returns
+  10:1   warning  Missing JSDoc @param "req" description                                    jsdoc/require-param-description
+  10:1   warning  Missing JSDoc @param "req" type                                           jsdoc/require-param-type
+  12:1   warning  Function 'extractUuid' has a complexity of 7. Maximum allowed is 2        complexity
+  22:1   warning  Missing JSDoc @returns declaration                                        jsdoc/require-returns
+  24:1   warning  Missing JSDoc @param "uuid" description                                   jsdoc/require-param-description
+  24:1   warning  Missing JSDoc @param "uuid" type                                          jsdoc/require-param-type
+  26:1   warning  Async function 'fetchCredit' has a complexity of 3. Maximum allowed is 2  complexity
+  28:10  warning  Ternary operator used                                                     no-ternary
+  31:44  warning  Async arrow function has a complexity of 5. Maximum allowed is 2          complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/get-api-key-credit/index.js
   62:12  warning  'error' is defined but never used  no-unused-vars
 
-/workspace/dadeto/infra/cloud-functions/get-moderation-variant/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/get-moderation-variant/index.js
   20:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                               complexity
   37:1   warning  Async function 'handleGetModerationVariant' has a complexity of 12. Maximum allowed is 2  complexity
   75:22  warning  Ternary operator used                                                                     no-ternary
   78:40  warning  Arrow function has a complexity of 3. Maximum allowed is 2                                complexity
   80:12  warning  Ternary operator used                                                                     no-ternary
 
-/workspace/dadeto/infra/cloud-functions/hide-variant-html/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/hide-variant-html/index.js
   16:12  warning  Async arrow function has a complexity of 7. Maximum allowed is 2  complexity
   30:1   warning  Missing JSDoc @returns declaration                                jsdoc/require-returns
   32:1   warning  Missing JSDoc @param "snap" description                           jsdoc/require-param-description
   32:1   warning  Missing JSDoc @param "snap" type                                  jsdoc/require-param-type
 
-/workspace/dadeto/infra/cloud-functions/mark-variant-dirty/index.js
-  22:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                        complexity
-  42:1   warning  Async function 'markVariantDirtyImpl' has a complexity of 5. Maximum allowed is 2  complexity
-  72:1   warning  Async function 'handleRequest' has a complexity of 18. Maximum allowed is 2        complexity
-  99:23  warning  Ternary operator used                                                              no-ternary
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/mark-variant-dirty/findPageRef.js
+  20:8  warning  Function 'refFromSnap' has a complexity of 4. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/cloud-functions/process-new-page/findAvailablePageNumber.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/mark-variant-dirty/index.js
+   23:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                        complexity
+   62:1   warning  Async function 'findVariantRef' has too many parameters (4). Maximum allowed is 3  max-params
+   62:1   warning  Async function 'findVariantRef' has a complexity of 3. Maximum allowed is 2        complexity
+   99:1   warning  Async function 'markVariantDirtyImpl' has a complexity of 4. Maximum allowed is 2  complexity
+  126:1   warning  The type 'RegExpMatchArray' is undefined                                           jsdoc/no-undefined-types
+  175:1   warning  Async function 'verifyAdmin' has a complexity of 6. Maximum allowed is 2           complexity
+  204:1   warning  Async function 'handleRequest' has a complexity of 13. Maximum allowed is 2        complexity
+  217:23  warning  Ternary operator used                                                              no-ternary
+
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/process-new-page/findAvailablePageNumber.js
   7:8  warning  Async function 'findAvailablePageNumber' has a complexity of 3. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/cloud-functions/process-new-page/index.js
-  14:13  warning  Async arrow function has a complexity of 11. Maximum allowed is 2  complexity
-  71:22  warning  Ternary operator used                                              no-ternary
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/process-new-page/index.js
+  14:13  warning  Async arrow function has a complexity of 18. Maximum allowed is 2  complexity
+  90:22  warning  Ternary operator used                                              no-ternary
 
-/workspace/dadeto/infra/cloud-functions/process-new-page/variantName.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/process-new-page/variantName.js
   6:8  warning  Function 'incrementVariantName' has a complexity of 4. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/cloud-functions/process-new-story/index.js
-  12:13  warning  Async arrow function has a complexity of 5. Maximum allowed is 2  complexity
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/process-new-story/index.js
+  12:13  warning  Async arrow function has a complexity of 7. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/cloud-functions/prod-update-variant-visibility/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/prod-update-variant-visibility/index.js
   14:13  warning  Async arrow function has a complexity of 8. Maximum allowed is 2           complexity
   20:23  warning  Ternary operator used                                                      no-ternary
   31:7   warning  Ternary operator used                                                      no-ternary
@@ -68,7 +96,7 @@
   37:7   warning  Ternary operator used                                                      no-ternary
   41:61  warning  Unexpected implicit coercion encountered. Use `Number(newRating)` instead  no-implicit-coercion
 
-/workspace/dadeto/infra/cloud-functions/render-contents/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/render-contents/index.js
    59:11  warning  Identifier 'access_token' is not in camel case                                     camelcase
    60:10  warning  Identifier 'access_token' is not in camel case                                     camelcase
    70:15  warning  Async arrow function has a complexity of 5. Maximum allowed is 2                   complexity
@@ -85,22 +113,23 @@
   203:1   warning  Missing JSDoc @param "deps" type                                                   jsdoc/require-param-type
   205:1   warning  Async function 'handleRenderRequest' has a complexity of 13. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/cloud-functions/render-variant/buildHtml.js
-  27:1   warning  Missing JSDoc @param "parentUrl" description                            jsdoc/require-param-description
-  27:1   warning  Missing JSDoc @param "parentUrl" type                                   jsdoc/require-param-type
-  28:1   warning  Missing JSDoc @param "firstPageUrl" description                         jsdoc/require-param-description
-  28:1   warning  Missing JSDoc @param "firstPageUrl" type                                jsdoc/require-param-type
-  31:8   warning  Function 'buildHtml' has too many parameters (8). Maximum allowed is 3  max-params
-  31:8   warning  Function 'buildHtml' has a complexity of 11. Maximum allowed is 2       complexity
-  42:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2              complexity
-  45:9   warning  Ternary operator used                                                   no-ternary
-  52:17  warning  Ternary operator used                                                   no-ternary
-  53:21  warning  Ternary operator used                                                   no-ternary
-  56:22  warning  Ternary operator used                                                   no-ternary
-  57:22  warning  Ternary operator used                                                   no-ternary
-  58:21  warning  Ternary operator used                                                   no-ternary
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/render-variant/buildHtml.js
+  28:1   warning  Missing JSDoc @param "parentUrl" description                             jsdoc/require-param-description
+  28:1   warning  Missing JSDoc @param "parentUrl" type                                    jsdoc/require-param-type
+  29:1   warning  Missing JSDoc @param "firstPageUrl" description                          jsdoc/require-param-description
+  29:1   warning  Missing JSDoc @param "firstPageUrl" type                                 jsdoc/require-param-type
+  34:8   warning  Function 'buildHtml' has too many parameters (10). Maximum allowed is 3  max-params
+  34:8   warning  Function 'buildHtml' has a complexity of 15. Maximum allowed is 2        complexity
+  47:10  warning  Arrow function has a complexity of 4. Maximum allowed is 2               complexity
+  50:9   warning  Ternary operator used                                                    no-ternary
+  69:5   warning  Ternary operator used                                                    no-ternary
+  70:21  warning  Ternary operator used                                                    no-ternary
+  73:22  warning  Ternary operator used                                                    no-ternary
+  74:7   warning  Ternary operator used                                                    no-ternary
+  78:22  warning  Ternary operator used                                                    no-ternary
+  79:21  warning  Ternary operator used                                                    no-ternary
 
-/workspace/dadeto/infra/cloud-functions/render-variant/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/render-variant/index.js
    19:1   warning  Missing JSDoc @returns declaration                                    jsdoc/require-returns
    28:11  warning  Identifier 'access_token' is not in camel case                        camelcase
    29:10  warning  Identifier 'access_token' is not in camel case                        camelcase
@@ -113,60 +142,60 @@
   100:1   warning  Missing JSDoc @param "snap" type                                      jsdoc/require-param-type
   101:1   warning  Missing JSDoc @param "ctx" description                                jsdoc/require-param-description
   101:1   warning  Missing JSDoc @param "ctx" type                                       jsdoc/require-param-type
-  103:1   warning  Async function 'render' has a complexity of 23. Maximum allowed is 2  complexity
+  103:1   warning  Async function 'render' has a complexity of 32. Maximum allowed is 2  complexity
   112:9   warning  'docName' is assigned a value but never used                          no-unused-vars
   117:11  warning  Arrow function has a complexity of 3. Maximum allowed is 2            complexity
-  119:21  warning  Async arrow function has a complexity of 12. Maximum allowed is 2     complexity
-  167:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                max-depth
-  233:23  warning  Ternary operator used                                                 no-ternary
+  119:21  warning  Async arrow function has a complexity of 13. Maximum allowed is 2     complexity
+  174:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                max-depth
+  198:11  warning  Blocks are nested too deeply (5). Maximum allowed is 4                max-depth
+  266:23  warning  Ternary operator used                                                 no-ternary
 
-/workspace/dadeto/infra/cloud-functions/render-variant/visibility.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/render-variant/visibility.js
   11:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/cloud-functions/report-for-moderation/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/report-for-moderation/index.js
   18:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                             complexity
   37:1   warning  Async function 'handleReportForModeration' has a complexity of 5. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/cloud-functions/submit-moderation-rating/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/submit-moderation-rating/index.js
   21:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                                 complexity
   40:1   warning  Async function 'handleSubmitModerationRating' has a complexity of 10. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/cloud-functions/submit-new-page/helpers.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/submit-new-page/helpers.js
    7:8  warning  Function 'parseIncomingOption' has a complexity of 6. Maximum allowed is 2       complexity
   37:8  warning  Async function 'findExistingOption' has a complexity of 6. Maximum allowed is 2  complexity
   76:8  warning  Async function 'findExistingPage' has a complexity of 5. Maximum allowed is 2    complexity
 
-/workspace/dadeto/infra/cloud-functions/submit-new-page/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/submit-new-page/index.js
   26:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                 complexity
   46:1   warning  Async function 'handleSubmit' has a complexity of 22. Maximum allowed is 2  complexity
   56:8   warning  Ternary operator used                                                       no-ternary
   56:32  warning  Ternary operator used                                                       no-ternary
 
-/workspace/dadeto/infra/cloud-functions/submit-new-story/index.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/cloud-functions/submit-new-story/index.js
   21:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                 complexity
   41:1   warning  Async function 'handleSubmit' has a complexity of 11. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/googleAuth.js
+/Users/matthew.heard/Code/Matt/dadeto/infra/googleAuth.js
   18:33  warning  Arrow function has a complexity of 5. Maximum allowed is 2  complexity
   25:5   warning  Identifier 'client_id' is not in camel case                 camelcase
   34:5   warning  Identifier 'ux_mode' is not in camel case                   camelcase
   43:16  warning  Ternary operator used                                       no-ternary
   56:24  warning  Arrow function has a complexity of 3. Maximum allowed is 2  complexity
 
-/workspace/dadeto/infra/moderate.js
-   53:36  warning  Async arrow function has a complexity of 3. Maximum allowed is 2           complexity
-   79:1   warning  Async function 'assignJob' has a complexity of 3. Maximum allowed is 2     complexity
-   83:38  warning  Identifier 'id_token' is not in camel case                                 camelcase
-   98:1   warning  Async function 'loadVariant' has a complexity of 13. Maximum allowed is 2  complexity
-  108:26  warning  Ternary operator used                                                      no-ternary
-  119:11  warning  Ternary operator used                                                      no-ternary
-  154:1   warning  Async function 'submitRating' has a complexity of 6. Maximum allowed is 2  complexity
-  193:28  warning  Async arrow function has a complexity of 5. Maximum allowed is 2           complexity
+/Users/matthew.heard/Code/Matt/dadeto/infra/moderate.js
+   80:1   warning  Async function 'assignJob' has a complexity of 3. Maximum allowed is 2     complexity
+   84:38  warning  Identifier 'id_token' is not in camel case                                 camelcase
+   99:1   warning  Async function 'loadVariant' has a complexity of 13. Maximum allowed is 2  complexity
+  109:26  warning  Ternary operator used                                                      no-ternary
+  120:11  warning  Ternary operator used                                                      no-ternary
+  155:1   warning  Async function 'submitRating' has a complexity of 6. Maximum allowed is 2  complexity
+  197:28  warning  Async arrow function has a complexity of 5. Maximum allowed is 2           complexity
 
-/workspace/dadeto/test/cloud-functions/generateStats.test.js
-  50:39  warning  Ternary operator used  no-ternary
+/Users/matthew.heard/Code/Matt/dadeto/test/cloud-functions/generateStats.test.js
+  51:39  warning  Ternary operator used  no-ternary
 
-/workspace/dadeto/test/cloud-functions/markVariantDirty.test.js
+/Users/matthew.heard/Code/Matt/dadeto/test/cloud-functions/markVariantDirty.test.js
    10:1   warning  Missing JSDoc @returns description  jsdoc/require-returns-description
    43:18  warning  Ternary operator used               no-ternary
    54:18  warning  Ternary operator used               no-ternary
@@ -175,18 +204,18 @@
    97:18  warning  Ternary operator used               no-ternary
   113:18  warning  Ternary operator used               no-ternary
 
-/workspace/dadeto/test/cloud-functions/renderContents.test.js
-  14:30  warning  Identifier 'access_token' is not in camel case  camelcase
-  44:30  warning  Identifier 'access_token' is not in camel case  camelcase
+/Users/matthew.heard/Code/Matt/dadeto/test/cloud-functions/renderContents.test.js
+  20:30  warning  Identifier 'access_token' is not in camel case  camelcase
+  50:30  warning  Identifier 'access_token' is not in camel case  camelcase
 
-/workspace/dadeto/test/cloud-functions/renderVariant.test.js
-   6:1   warning  Missing JSDoc @returns declaration              jsdoc/require-returns
-   8:1   warning  Missing JSDoc @param "optionData" description   jsdoc/require-param-description
-   8:1   warning  Missing JSDoc @param "optionData" type          jsdoc/require-param-type
-  68:30  warning  Identifier 'access_token' is not in camel case  camelcase
-  99:30  warning  Identifier 'access_token' is not in camel case  camelcase
+/Users/matthew.heard/Code/Matt/dadeto/test/cloud-functions/renderVariant.test.js
+   11:1   warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+   13:1   warning  Missing JSDoc @param "optionData" description   jsdoc/require-param-description
+   13:1   warning  Missing JSDoc @param "optionData" type          jsdoc/require-param-type
+   74:30  warning  Identifier 'access_token' is not in camel case  camelcase
+  133:30  warning  Identifier 'access_token' is not in camel case  camelcase
 
-/workspace/dadeto/test/mocks/firebase-admin-firestore.js
+/Users/matthew.heard/Code/Matt/dadeto/test/mocks/firebase-admin-firestore.js
   7:1  warning  Missing JSDoc @returns declaration  jsdoc/require-returns
 
-✖ 134 problems (0 errors, 134 warnings)
+✖ 159 problems (0 errors, 159 warnings)

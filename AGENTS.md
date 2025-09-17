@@ -1,58 +1,38 @@
-# AGENTS Instructions for dadeto
+# Repository Guidelines
 
-## Scope
+## Project Structure & Module Organization
+- `src/` holds the blog generator, including `generator.js`, HTML helpers, and the `blog.json` content source; keep new modules focused on a single responsibility.
+- `public/` contains generated assets. Do not edit files here directly—run the generator instead.
+- `test/` stores Jest suites mirroring the `src/` layout. Place fixtures alongside the tests that consume them.
+- `infra/` houses Terraform definitions that are applied via GitHub Actions; update workflows rather than running Terraform locally.
+- Support directories such as `reports/` and `docker/` store tooling output and scripts; avoid checking in derived artifacts outside these folders.
 
-These instructions apply to the entire repository. They describe how ChatGPT
-agents should interact with this code base.
+## Build, Test, and Development Commands
+- `npm install` installs dependencies; rerun when scripts complain about missing packages.
+- `npm run generate` builds the blog into `public/index.html`; pair with `npm run copy` when static assets change.
+- `npm run build` (alias for `build:browser`) performs the full copy-and-generate pipeline.
+- `npm test` executes Jest with coverage; expect 100% branch coverage before submitting.
+- `npm run lint` formats and lints using ESLint and Prettier, writing the report to `reports/lint/lint.txt`.
+- `npm run start` serves the generated site for manual review.
+- `./tcr.sh "message"` runs the TCR workflow; use it when practicing test-driven iterations.
 
-## Testing
+## Coding Style & Naming Conventions
+- Follow `CLAUDE.md`: two-space indentation, ES modules, camelCase functions, UPPER_SNAKE_CASE constants, and double quotes for strings/HTML attributes.
+- Keep generator utilities composable, documented with JSDoc, and defensive (null checks, `escapeHtml` for user content).
+- Run Prettier through the configured ESLint integration; never add `eslint-disable` comments.
 
-Always attempt to run `npm test` and `npm run lint` after making changes.
-If these commands fail because dependencies are missing or the scripts cannot
-be found, first run `npm install` and try again. If they still fail or other
-issues occur, note the failure in the PR message's Testing section.
-Before opening a pull request, ensure that branch coverage remains at 100%.
+## Testing Guidelines
+- Tests run under Jest + jsdom. Name files `*.test.js` and colocate them with the modules they exercise.
+- Avoid `jest.resetModules`, `jest.unstable_mockModule`, and `import.meta.url`; they break mutation testing.
+- Always run `npm test` and `npm run lint` before pushing. If they fail, document the failure and corrective steps in your PR.
+- Use exported entry points instead of loading internals via `eval` or dynamic imports; export helpers when deeper testing is required.
 
-## Terraform
+## Commit & Pull Request Guidelines
+- Write concise commit messages that summarize the change and its intent.
+- Pull requests must include a "Summary" of code changes and a "Testing" section listing executed commands (e.g., `npm test`, `npm run lint`).
+- Link relevant issues and include screenshots or artifacts when UI behavior changes.
+- Ensure generated outputs or reports are up to date, but avoid committing transient build products outside approved directories.
 
-- Do not run Terraform commands directly.
-- When Terraform actions are required, update the Terraform GitHub Actions
-  workflow (e.g., `.github/workflows/deploy-terraform.yml`) to perform them
-  instead.
-
-## Jest Restrictions
-
-The following Jest features cause issues with Stryker mutation testing and must never be used:
-
-- `jest.resetModules`
-- `jest.unstable_mockModule`
-- `import.meta.url`
-
-## Testing Internal Functions
-
-- Do not load unexported functions by reading their source and using `eval`.
-- Prefer testing internal logic through an exported function that calls the function under test.
-- If direct testing is necessary, export the function instead of using the parse-eval method.
-- Do not use dynamic `import()` to load source modules. Use static imports instead.
-- Avoid using `vm.SourceTextModule` or other dynamic module evaluation to load modules as Stryker cannot instrument them.
-- Do not read source files with `fs.readFileSync` and regex to assert code contents; Stryker cannot handle this approach.
-
-## Code Style
-
-- Follow the guidelines in `CLAUDE.md` for naming and formatting.
-- Use Prettier with the configuration in `.prettierrc`.
-- Never use `eslint-disable` comments. Fix the offending code or allow the warning.
-
-## Commit Messages
-
-Write clear commit messages that summarize the change.
-
-## Pull Request Summary
-
-Include a Summary and Testing section in the PR body describing the changes and
-any test results or failures.
-
-## File Restrictions
-
-- Do not commit zip archives (`*.zip`). These files are ignored via `.gitignore`
-  and should not be added to pull requests.
+## Automation & Deployment Notes
+- Terraform changes are applied by `.github/workflows/deploy-terraform.yml`; modify the workflow to adjust behavior instead of running Terraform manually.
+- Mutation analysis and quality gates rely on Stryker and Sonar scripts—run `npm run stryker` or `npm run sonar-issues` only when coordinated with maintainers, and capture their reports under `reports/` if shared.
