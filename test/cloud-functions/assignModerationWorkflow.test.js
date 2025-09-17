@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { createAssignModerationWorkflow } from '../../infra/cloud-functions/assign-moderation-job/workflow.js';
+import { createAssignModerationWorkflow } from '../../src/cloud/assign-moderation-job/workflow.js';
 
 describe('createAssignModerationWorkflow', () => {
   const request = { method: 'POST' };

@@ -40,7 +40,7 @@ export function createAssignModerationWorkflow({
     const { userRecord } = guardResult.context ?? {};
 
     if (!userRecord?.uid) {
-      return { status: 500, body: "Moderator lookup failed" };
+      return { status: 500, body: 'Moderator lookup failed' };
     }
 
     const randomValue = random();
@@ -56,6 +56,6 @@ export function createAssignModerationWorkflow({
     const assignment = buildAssignment(variantDoc.ref, createdAt);
     await moderatorRef.set(assignment);
 
-    return { status: 201, body: "" };
+    return { status: 201, body: '' };
   };
 }
