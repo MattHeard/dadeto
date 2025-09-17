@@ -90,18 +90,45 @@
         <div>
           <label>Author <input type="text" name="author" /></label>
         </div>
-        <div>
-          <label>Option 1 <input type="text" name="option0" /></label>
-        </div>
-        <div>
-          <label>Option 2 <input type="text" name="option1" /></label>
-        </div>
-        <div>
-          <label>Option 3 <input type="text" name="option2" /></label>
-        </div>
-        <div>
-          <label>Option 4 <input type="text" name="option3" /></label>
-        </div>
+        <fieldset>
+          <legend>Options</legend>
+          <div>
+            <input
+              id="option0"
+              type="text"
+              name="option0"
+              aria-label="Option 1"
+              placeholder="Option 1"
+            />
+          </div>
+          <div>
+            <input
+              id="option1"
+              type="text"
+              name="option1"
+              aria-label="Option 2"
+              placeholder="Option 2"
+            />
+          </div>
+          <div>
+            <input
+              id="option2"
+              type="text"
+              name="option2"
+              aria-label="Option 3"
+              placeholder="Option 3"
+            />
+          </div>
+          <div>
+            <input
+              id="option3"
+              type="text"
+              name="option3"
+              aria-label="Option 4"
+              placeholder="Option 4"
+            />
+          </div>
+        </fieldset>
         <div>
           <button class="dendrite-button" type="submit">Submit</button>
         </div>
