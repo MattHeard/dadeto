@@ -49,34 +49,14 @@ function getIdTokenFromRequest(req) {
  * @returns {Promise<void>} Promise resolving when the response is sent.
  */
 async function handleAssignModerationJob(req, res) {
-  if (req.method !== 'POST') {
-    res.status(405).send('POST only');
+  const guardResult = await runGuards({ req });
+
+  if (guardResult.error) {
+    res.status(guardResult.error.status).send(guardResult.error.body);
     return;
   }
 
-  const idToken = getIdTokenFromRequest(req);
-  if (!idToken) {
-    res.status(400).send('Missing id_token');
-    return;
-  }
-
-  let decoded = null;
-  try {
-    decoded = await auth.verifyIdToken(idToken);
-  } catch (err) {
-    decoded = null;
-    res.status(401).send(err.message || 'Invalid or expired token');
-    return;
-  }
-
-  let userRecord = null;
-  try {
-    userRecord = await auth.getUser(decoded.uid);
-  } catch (err) {
-    userRecord = null;
-    res.status(401).send(err.message || 'Invalid or expired token');
-    return;
-  }
+  const { userRecord } = guardResult.context;
 
   const n = Math.random();
 
@@ -134,6 +114,110 @@ async function handleAssignModerationJob(req, res) {
 
   res.status(201).json({});
 }
+
+/**
+ * @typedef {object} GuardError
+ * @property {number} status HTTP status code to return.
+ * @property {string} body Body payload describing the error.
+ */
+
+/**
+ * @typedef {object} GuardSuccess
+ * @property {object} [context] Additional context to merge into the chain state.
+ */
+
+/**
+ * @typedef {{ error: GuardError } | GuardSuccess | void} GuardResult
+ */
+
+/**
+ * @typedef {object} GuardContext
+ * @property {import('express').Request} req Incoming HTTP request.
+ * @property {string} [idToken] Extracted Firebase ID token.
+ * @property {import('firebase-admin/auth').DecodedIdToken} [decoded] Verified Firebase token payload.
+ * @property {import('firebase-admin/auth').UserRecord} [userRecord] Authenticated moderator record.
+ */
+
+/**
+ * @callback GuardFunction
+ * @param {GuardContext} context Current guard context.
+ * @returns {Promise<GuardResult> | GuardResult} Guard evaluation outcome.
+ */
+
+/**
+ * Compose a sequence of guard functions that short-circuit on failure.
+ * @param {GuardFunction[]} guards Guard functions to execute in order.
+ * @returns {(initialContext: GuardContext) => Promise<{ error?: GuardError, context?: GuardContext }>}
+ * Guard chain executor that resolves with either the accumulated context or the failure details.
+ */
+function createGuardChain(guards) {
+  return async function runChain(initialContext) {
+    let context = initialContext;
+    for (const guard of guards) {
+      const result = await guard(context);
+      if (result?.error) {
+        return { error: result.error };
+      }
+      context = { ...context, ...(result?.context ?? {}) };
+    }
+
+    return { context };
+  };
+}
+
+const ensurePostMethod = ({ req }) => {
+  if (req.method === 'POST') {
+    return {};
+  }
+
+  return {
+    error: { status: 405, body: 'POST only' },
+  };
+};
+
+const ensureIdTokenPresent = ({ req }) => {
+  const idToken = getIdTokenFromRequest(req);
+  if (idToken) {
+    return { context: { idToken } };
+  }
+
+  return { error: { status: 400, body: 'Missing id_token' } };
+};
+
+const ensureValidIdToken = async ({ idToken }) => {
+  try {
+    const decoded = await auth.verifyIdToken(idToken);
+    return { context: { decoded } };
+  } catch (err) {
+    return {
+      error: {
+        status: 401,
+        body: err.message || 'Invalid or expired token',
+      },
+    };
+  }
+};
+
+const ensureUserRecord = async ({ decoded }) => {
+  try {
+    const userRecord = await auth.getUser(decoded.uid);
+    return { context: { userRecord } };
+  } catch (err) {
+    return {
+      error: {
+        status: 401,
+        body: err.message || 'Invalid or expired token',
+      },
+    };
+  }
+};
+
+const runGuards = createGuardChain([
+  ensurePostMethod,
+  ensureIdTokenPresent,
+  ensureValidIdToken,
+  ensureUserRecord,
+]);
 
 app.post('/', handleAssignModerationJob);
 
