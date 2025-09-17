@@ -1,4 +1,4 @@
-import { readdir, copyFile, mkdir } from "node:fs/promises";
+import { readdir, copyFile, mkdir, unlink } from "node:fs/promises";
 import { join } from "node:path";
 
 const sourceDir = join(process.cwd(), "src/cloud/assign-moderation-job");
@@ -9,9 +9,21 @@ const targetDir = join(
 
 async function copyAssignModerationJob() {
   await mkdir(targetDir, { recursive: true });
-  const entries = await readdir(sourceDir, { withFileTypes: true });
-  const files = entries.filter(
+  const [sourceEntries, targetEntries] = await Promise.all([
+    readdir(sourceDir, { withFileTypes: true }),
+    readdir(targetDir, { withFileTypes: true }),
+  ]);
+
+  const files = sourceEntries.filter(
     (entry) => entry.isFile() && entry.name.endsWith(".js")
+  );
+
+  const existingTargets = targetEntries.filter(
+    (entry) => entry.isFile() && entry.name.endsWith(".js")
+  );
+
+  await Promise.all(
+    existingTargets.map((file) => unlink(join(targetDir, file.name)))
   );
 
   await Promise.all(
