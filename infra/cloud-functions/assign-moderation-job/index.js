@@ -69,12 +69,27 @@ async function handleAssignModerationJob(req, res) {
   }
 
   const moderatorRef = db.collection('moderators').doc(userRecord.uid);
-  await moderatorRef.set({
-    variant: variantDoc.ref,
-    createdAt: FieldValue.serverTimestamp(),
-  });
+  const createdAt = FieldValue.serverTimestamp();
+  const moderatorAssignment = buildModeratorAssignment(
+    variantDoc.ref,
+    createdAt
+  );
+  await moderatorRef.set(moderatorAssignment);
 
   res.status(201).json({});
+}
+
+/**
+ * Build the payload persisted alongside a moderator assignment.
+ * @param {unknown} variantRef Variant document reference selected for moderation.
+ * @param {unknown} createdAt Firestore timestamp recorded for the assignment.
+ * @returns {{ variant: unknown, createdAt: unknown }} Moderator assignment payload.
+ */
+function buildModeratorAssignment(variantRef, createdAt) {
+  return {
+    variant: variantRef,
+    createdAt,
+  };
 }
 
 /**
@@ -264,4 +279,8 @@ export const assignModerationJob = functions
   .region('europe-west1')
   .https.onRequest(app);
 
-export { handleAssignModerationJob, getIdTokenFromRequest };
+export {
+  handleAssignModerationJob,
+  getIdTokenFromRequest,
+  buildModeratorAssignment,
+};
