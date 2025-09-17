@@ -235,7 +235,7 @@ ol.contents li::marker {
 }
 
 ol.contents a {
-  display: block;
+  display: inline-block;
   padding-block: 6px;
 }
 
