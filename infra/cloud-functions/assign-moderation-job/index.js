@@ -4,6 +4,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
+import { createAssignModerationWorkflow } from "./workflow.js";
 
 initializeApp();
 const db = getFirestore();
@@ -49,34 +50,14 @@ function getIdTokenFromRequest(req) {
  * @returns {Promise<void>} Promise resolving when the response is sent.
  */
 async function handleAssignModerationJob(req, res) {
-  const guardResult = await runGuards({ req });
+  const { status, body } = await assignModerationWorkflow({ req });
 
-  const derivedGuardError = deriveGuardErrorResponse(guardResult);
-  if (derivedGuardError) {
-    res.status(derivedGuardError.status).send(derivedGuardError.body);
+  if (typeof body === "object") {
+    res.status(status).json(body);
     return;
   }
 
-  const { userRecord } = guardResult.context;
-
-  const n = Math.random();
-
-  const variantSnap = await getVariantSnapshot(n);
-  const { errorMessage, variantDoc } = selectVariantDoc(variantSnap);
-  if (errorMessage) {
-    res.status(500).send(errorMessage);
-    return;
-  }
-
-  const moderatorRef = db.collection('moderators').doc(userRecord.uid);
-  const createdAt = FieldValue.serverTimestamp();
-  const moderatorAssignment = buildModeratorAssignment(
-    variantDoc.ref,
-    createdAt
-  );
-  await moderatorRef.set(moderatorAssignment);
-
-  res.status(201).json({});
+  res.status(status).send(body);
 }
 
 /**
@@ -90,20 +71,6 @@ function buildModeratorAssignment(variantRef, createdAt) {
     variant: variantRef,
     createdAt,
   };
-}
-
-/**
- * Convert a guard result into an HTTP response description if it failed.
- * @param {GuardResult} guardResult Outcome from the guard chain.
- * @returns {{ status: number, body: string } | undefined} Response metadata or undefined when successful.
- */
-function deriveGuardErrorResponse(guardResult) {
-  const error = guardResult?.error;
-  if (!error) {
-    return undefined;
-  }
-
-  return { status: error.status, body: error.body };
 }
 
 /**
@@ -273,7 +240,17 @@ const runGuards = createGuardChain([
   ensureUserRecord,
 ]);
 
-app.post('/', handleAssignModerationJob);
+const assignModerationWorkflow = createAssignModerationWorkflow({
+  runGuards,
+  fetchVariantSnapshot: getVariantSnapshot,
+  selectVariantDoc,
+  buildAssignment: buildModeratorAssignment,
+  createModeratorRef: (uid) => db.collection("moderators").doc(uid),
+  now: () => FieldValue.serverTimestamp(),
+  random: () => Math.random(),
+});
+
+app.post("/", handleAssignModerationJob);
 
 export const assignModerationJob = functions
   .region('europe-west1')
