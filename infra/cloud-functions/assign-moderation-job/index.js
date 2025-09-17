@@ -4,7 +4,8 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
-import { createAssignModerationWorkflow } from "./workflow.js";
+import { createAssignModerationWorkflow } from './workflow.js';
+import { createVariantSnapshotFetcher } from './variant-selection.js';
 
 initializeApp();
 const db = getFirestore();
@@ -52,7 +53,7 @@ function getIdTokenFromRequest(req) {
 async function handleAssignModerationJob(req, res) {
   const { status, body } = await assignModerationWorkflow({ req });
 
-  if (typeof body === "object") {
+  if (typeof body === 'object') {
     res.status(status).json(body);
     return;
   }
@@ -87,54 +88,24 @@ function selectVariantDoc(snapshot) {
   return { variantDoc };
 }
 
-/**
- *
- * @param randomValue
- */
-async function getVariantSnapshot(randomValue) {
-  const zeroRatedForwardQuery = db
-    .collectionGroup('variants')
-    .where('moderatorReputationSum', '==', 0)
-    .orderBy('rand', 'asc')
-    .where('rand', '>=', randomValue)
-    .limit(1);
+const runVariantQuery = ({ reputation, comparator, randomValue }) => {
+  let query = db.collectionGroup('variants');
 
-  const zeroRatedForwardSnap = await zeroRatedForwardQuery.get();
-  if (!zeroRatedForwardSnap.empty) {
-    return zeroRatedForwardSnap;
+  if (reputation === 'zeroRated') {
+    query = query.where('moderatorReputationSum', '==', 0);
   }
 
-  const zeroRatedWraparoundQuery = db
-    .collectionGroup('variants')
-    .where('moderatorReputationSum', '==', 0)
+  query = query
     .orderBy('rand', 'asc')
-    .where('rand', '<', randomValue)
+    .where('rand', comparator, randomValue)
     .limit(1);
 
-  const zeroRatedWraparoundSnap = await zeroRatedWraparoundQuery.get();
-  if (!zeroRatedWraparoundSnap.empty) {
-    return zeroRatedWraparoundSnap;
-  }
+  return query.get();
+};
 
-  const fallbackForwardQuery = db
-    .collectionGroup('variants')
-    .orderBy('rand', 'asc')
-    .where('rand', '>=', randomValue)
-    .limit(1);
-
-  const fallbackForwardSnap = await fallbackForwardQuery.get();
-  if (!fallbackForwardSnap.empty) {
-    return fallbackForwardSnap;
-  }
-
-  const fallbackWraparoundQuery = db
-    .collectionGroup('variants')
-    .orderBy('rand', 'asc')
-    .where('rand', '<', randomValue)
-    .limit(1);
-
-  return fallbackWraparoundQuery.get();
-}
+const getVariantSnapshot = createVariantSnapshotFetcher({
+  runQuery: runVariantQuery,
+});
 
 /**
  * @typedef {object} GuardError
@@ -245,12 +216,12 @@ const assignModerationWorkflow = createAssignModerationWorkflow({
   fetchVariantSnapshot: getVariantSnapshot,
   selectVariantDoc,
   buildAssignment: buildModeratorAssignment,
-  createModeratorRef: (uid) => db.collection("moderators").doc(uid),
+  createModeratorRef: uid => db.collection('moderators').doc(uid),
   now: () => FieldValue.serverTimestamp(),
   random: () => Math.random(),
 });
 
-app.post("/", handleAssignModerationJob);
+app.post('/', handleAssignModerationJob);
 
 export const assignModerationJob = functions
   .region('europe-west1')
