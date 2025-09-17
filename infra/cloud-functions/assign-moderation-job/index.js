@@ -60,12 +60,20 @@ async function handleAssignModerationJob(req, res) {
     return;
   }
 
-  let userRecord;
+  let decoded = null;
   try {
-    const decoded = await auth.verifyIdToken(idToken);
+    decoded = await auth.verifyIdToken(idToken);
+  } catch (err) {
+    decoded = null;
+    res.status(401).send(err.message || 'Invalid or expired token');
+    return;
+  }
 
+  let userRecord = null;
+  try {
     userRecord = await auth.getUser(decoded.uid);
   } catch (err) {
+    userRecord = null;
     res.status(401).send(err.message || 'Invalid or expired token');
     return;
   }
