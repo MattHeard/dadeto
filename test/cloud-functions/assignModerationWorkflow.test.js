@@ -138,6 +138,6 @@ describe('createAssignModerationWorkflow', () => {
     expect(now).toHaveBeenCalledTimes(1);
     expect(buildAssignment).toHaveBeenCalledWith(variantDoc.ref, 'timestamp');
     expect(set).toHaveBeenCalledWith(assignment);
-    expect(response).toEqual({ status: 201, body: {} });
+    expect(response).toEqual({ status: 201, body: '' });
   });
 });
