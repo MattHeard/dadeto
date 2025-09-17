@@ -16,7 +16,7 @@
 /**
  * Create the moderation assignment workflow.
  * @param {AssignModerationWorkflowDeps} deps Dependencies required by the workflow.
- * @returns {(input: AssignModerationWorkflowInput) => Promise<{ status: number, body: unknown }>}
+ * @returns {(input: AssignModerationWorkflowInput) => Promise<{ status: number, body?: string }>}
  */
 export function createAssignModerationWorkflow({
   runGuards,
@@ -56,6 +56,6 @@ export function createAssignModerationWorkflow({
     const assignment = buildAssignment(variantDoc.ref, createdAt);
     await moderatorRef.set(assignment);
 
-    return { status: 201, body: {} };
+    return { status: 201, body: "" };
   };
 }

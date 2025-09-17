@@ -53,12 +53,7 @@ function getIdTokenFromRequest(req) {
 async function handleAssignModerationJob(req, res) {
   const { status, body } = await assignModerationWorkflow({ req });
 
-  if (typeof body === 'object') {
-    res.status(status).json(body);
-    return;
-  }
-
-  res.status(status).send(body);
+  res.status(status).send(body ?? '');
 }
 
 /**
