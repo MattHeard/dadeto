@@ -12,7 +12,7 @@
     "sonar-issues": "src/scripts/get-sonar-issues.sh",
     "lint": "npx eslint . --fix --no-color --format=stylish -o reports/lint/lint.txt; cat reports/lint/lint.txt",
     "copy": "node src/generator/copy.js",
-    "build:cloud": "node src/cloud/copy-assign-moderation-job.js",
+    "build:cloud": "node src/cloud/copy-assign-moderation-job.js && node src/cloud/copy-generate-stats.js",
     "build:browser": "npm run copy && npm run generate",
     "build": "npm run build:browser",
     "duplication": "jscpd src --mode strict --min-tokens 50 --reporters html,json --output reports/duplication --ignore \\\"**/.stryker-tmp/**\\\"",
