@@ -60,44 +60,7 @@ async function handleAssignModerationJob(req, res) {
 
   const n = Math.random();
 
-  // 1) zero-rated first
-  let q = db
-    .collectionGroup('variants')
-    .where('moderatorReputationSum', '==', 0)
-    .orderBy('rand', 'asc')
-    .where('rand', '>=', n)
-    .limit(1);
-
-  let variantSnap = await q.get();
-
-  if (variantSnap.empty) {
-    q = db
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', 0)
-      .orderBy('rand', 'asc')
-      .where('rand', '<', n)
-      .limit(1);
-    variantSnap = await q.get();
-  }
-
-  // 2) fallback to any variant
-  if (variantSnap.empty) {
-    let q2 = db
-      .collectionGroup('variants')
-      .orderBy('rand', 'asc')
-      .where('rand', '>=', n)
-      .limit(1);
-    let s2 = await q2.get();
-    if (s2.empty) {
-      q2 = db
-        .collectionGroup('variants')
-        .orderBy('rand', 'asc')
-        .where('rand', '<', n)
-        .limit(1);
-      s2 = await q2.get();
-    }
-    variantSnap = s2;
-  }
+  const variantSnap = await getVariantSnapshot(n);
 
   if (variantSnap.empty) {
     res.status(500).send('Variant fetch failed 🤷');
@@ -113,6 +76,55 @@ async function handleAssignModerationJob(req, res) {
   });
 
   res.status(201).json({});
+}
+
+/**
+ *
+ * @param randomValue
+ */
+async function getVariantSnapshot(randomValue) {
+  const zeroRatedForwardQuery = db
+    .collectionGroup('variants')
+    .where('moderatorReputationSum', '==', 0)
+    .orderBy('rand', 'asc')
+    .where('rand', '>=', randomValue)
+    .limit(1);
+
+  const zeroRatedForwardSnap = await zeroRatedForwardQuery.get();
+  if (!zeroRatedForwardSnap.empty) {
+    return zeroRatedForwardSnap;
+  }
+
+  const zeroRatedWraparoundQuery = db
+    .collectionGroup('variants')
+    .where('moderatorReputationSum', '==', 0)
+    .orderBy('rand', 'asc')
+    .where('rand', '<', randomValue)
+    .limit(1);
+
+  const zeroRatedWraparoundSnap = await zeroRatedWraparoundQuery.get();
+  if (!zeroRatedWraparoundSnap.empty) {
+    return zeroRatedWraparoundSnap;
+  }
+
+  const fallbackForwardQuery = db
+    .collectionGroup('variants')
+    .orderBy('rand', 'asc')
+    .where('rand', '>=', randomValue)
+    .limit(1);
+
+  const fallbackForwardSnap = await fallbackForwardQuery.get();
+  if (!fallbackForwardSnap.empty) {
+    return fallbackForwardSnap;
+  }
+
+  const fallbackWraparoundQuery = db
+    .collectionGroup('variants')
+    .orderBy('rand', 'asc')
+    .where('rand', '<', randomValue)
+    .limit(1);
+
+  return fallbackWraparoundQuery.get();
 }
 
 /**
