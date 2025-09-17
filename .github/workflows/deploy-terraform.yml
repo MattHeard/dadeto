@@ -24,6 +24,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build cloud function sources
+        working-directory: ./
+        run: npm run build:cloud
+
       - name: Set up Google Cloud auth
         uses: google-github-actions/auth@v2
         with:
