@@ -3,7 +3,7 @@ import {
   getPageCount,
   getUnmoderatedPageCount,
   getTopStories,
-} from '../../infra/cloud-functions/generate-stats/index.js';
+} from '../../src/cloud/generate-stats/index.js';
 
 describe('generate stats helpers', () => {
   test('buildHtml outputs counts', () => {
