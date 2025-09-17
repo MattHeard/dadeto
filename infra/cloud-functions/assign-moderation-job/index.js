@@ -33,6 +33,16 @@ const allowed = [
 app.use(express.urlencoded({ extended: false }));
 
 /**
+ * Extract the ID token from a request body.
+ * @param {import('express').Request} req HTTP request object.
+ * @returns {string|undefined} The ID token if present.
+ */
+function getIdTokenFromRequest(req) {
+  const { id_token: idToken } = req?.body ?? {};
+  return idToken;
+}
+
+/**
  * Assign a random moderation job to the requesting user.
  * @param {import('express').Request} req HTTP request object.
  * @param {import('express').Response} res HTTP response object.
@@ -44,7 +54,7 @@ async function handleAssignModerationJob(req, res) {
     return;
   }
 
-  const { id_token: idToken } = req.body ?? {};
+  const idToken = getIdTokenFromRequest(req);
   if (!idToken) {
     res.status(400).send('Missing id_token');
     return;
@@ -123,4 +133,4 @@ export const assignModerationJob = functions
   .region('europe-west1')
   .https.onRequest(app);
 
-export { handleAssignModerationJob };
+export { handleAssignModerationJob, getIdTokenFromRequest };
