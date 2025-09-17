@@ -381,8 +381,7 @@ button.dendrite-button:focus-visible {
   outline: none;
 }
 
-/* Neutralize background for Google sign-in button */
-.g_id_signin,
+/* Neutralize background for legacy Google sign-in iframe button */
 .abcRioButton {
   background: transparent !important;
   border: none !important;
