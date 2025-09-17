@@ -41,7 +41,6 @@ debug/
 *.lock
 *.zip
 /infra/build/
-infra/cloud-functions/assign-moderation-job/*.js
 
 # stryker temp files
 .stryker-tmp
