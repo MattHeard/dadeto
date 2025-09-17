@@ -6,7 +6,6 @@ const targetDir = join(
   process.cwd(),
   "infra/cloud-functions/assign-moderation-job"
 );
-
 async function copyAssignModerationJob() {
   await mkdir(targetDir, { recursive: true });
   const [sourceEntries, targetEntries] = await Promise.all([
@@ -31,6 +30,7 @@ async function copyAssignModerationJob() {
       const sourcePath = join(sourceDir, file.name);
       const destinationPath = join(targetDir, file.name);
       await copyFile(sourcePath, destinationPath);
+      console.log(`Copied: ${sourcePath} -> ${destinationPath}`);
     })
   );
 }
