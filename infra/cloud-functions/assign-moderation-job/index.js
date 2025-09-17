@@ -15,18 +15,20 @@ const allowed = [
   'https://dendritestories.co.nz',
   'https://www.dendritestories.co.nz',
 ];
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin || allowed.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error('CORS'));
-      }
-    },
-    methods: ['POST'],
-  })
-);
+(function setupCors(appInstance, allowedOrigins) {
+  appInstance.use(
+    cors({
+      origin: (origin, cb) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          cb(null, true);
+        } else {
+          cb(new Error('CORS'));
+        }
+      },
+      methods: ['POST'],
+    })
+  );
+})(app, allowed);
 
 app.use(express.urlencoded({ extended: false }));
 
