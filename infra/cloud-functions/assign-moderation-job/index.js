@@ -62,13 +62,11 @@ async function handleAssignModerationJob(req, res) {
   const n = Math.random();
 
   const variantSnap = await getVariantSnapshot(n);
-
-  if (variantSnap.empty) {
-    res.status(500).send('Variant fetch failed 🤷');
+  const { errorMessage, variantDoc } = selectVariantDoc(variantSnap);
+  if (errorMessage) {
+    res.status(500).send(errorMessage);
     return;
   }
-
-  const variantDoc = variantSnap.docs[0];
 
   const moderatorRef = db.collection('moderators').doc(userRecord.uid);
   await moderatorRef.set({
@@ -91,6 +89,20 @@ function deriveGuardErrorResponse(guardResult) {
   }
 
   return { status: error.status, body: error.body };
+}
+
+/**
+ * Select the first document from a snapshot when available.
+ * @param {{ empty: boolean, docs?: unknown[] }} snapshot Query snapshot containing candidate documents.
+ * @returns {{ variantDoc?: unknown, errorMessage?: string }} Selected document or an error message.
+ */
+function selectVariantDoc(snapshot) {
+  const [variantDoc] = snapshot?.docs ?? [];
+  if (!variantDoc || snapshot?.empty) {
+    return { errorMessage: 'Variant fetch failed 🤷' };
+  }
+
+  return { variantDoc };
 }
 
 /**
