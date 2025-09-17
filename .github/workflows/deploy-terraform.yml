@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'infra/**'
+      - 'src/cloud/assign-moderation-job/**'
     branches:
       - main
 
