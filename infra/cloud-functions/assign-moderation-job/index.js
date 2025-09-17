@@ -51,8 +51,9 @@ function getIdTokenFromRequest(req) {
 async function handleAssignModerationJob(req, res) {
   const guardResult = await runGuards({ req });
 
-  if (guardResult.error) {
-    res.status(guardResult.error.status).send(guardResult.error.body);
+  const derivedGuardError = deriveGuardErrorResponse(guardResult);
+  if (derivedGuardError) {
+    res.status(derivedGuardError.status).send(derivedGuardError.body);
     return;
   }
 
@@ -76,6 +77,20 @@ async function handleAssignModerationJob(req, res) {
   });
 
   res.status(201).json({});
+}
+
+/**
+ * Convert a guard result into an HTTP response description if it failed.
+ * @param {GuardResult} guardResult Outcome from the guard chain.
+ * @returns {{ status: number, body: string } | undefined} Response metadata or undefined when successful.
+ */
+function deriveGuardErrorResponse(guardResult) {
+  const error = guardResult?.error;
+  if (!error) {
+    return undefined;
+  }
+
+  return { status: error.status, body: error.body };
 }
 
 /**
