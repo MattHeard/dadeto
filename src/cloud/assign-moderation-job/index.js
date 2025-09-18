@@ -58,15 +58,21 @@ const allowed = [
   'https://www.dendritestories.co.nz',
 ];
 
+/**
+ * Register body parsing middleware for moderation requests.
+ * @param {import('express').Express} appInstance Express application instance.
+ * @returns {void}
+ */
+function configureUrlencodedBodyParser(appInstance) {
+  appInstance.use(express.urlencoded({ extended: false }));
+}
+
 const firebaseResources = createAssignModerationApp(
   initializeFirebaseAppResources,
   setupCors,
-  allowed
+  allowed,
+  configureUrlencodedBodyParser
 );
-
-(() => {
-  firebaseResources.app.use(express.urlencoded({ extended: false }));
-})();
 
 const { db, auth, app } = firebaseResources;
 
