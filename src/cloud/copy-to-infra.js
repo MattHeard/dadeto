@@ -1,5 +1,5 @@
 import { readdir, copyFile, mkdir, unlink } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 const JS_EXTENSION = '.js';
 
@@ -30,8 +30,15 @@ const directoryCopies = functionDirectories.map(name => ({
 const fileCopies = {
   sourceDir: join(process.cwd(), 'src/cloud'),
   targetDir: join(process.cwd(), 'infra'),
-  files: ['admin.js', 'googleAuth.js', 'moderate.js'],
+  files: ['googleAuth.js', 'moderate.js'],
 };
+
+const individualFileCopies = [
+  {
+    source: join(process.cwd(), 'src/browser', 'admin.js'),
+    target: join(process.cwd(), 'infra', 'admin.js'),
+  },
+];
 
 /**
  * Read directory entries, returning an empty array when the directory is missing.
@@ -153,6 +160,22 @@ async function copyDeclaredFiles(copyPlan) {
 }
 
 /**
+ * Copy files defined by explicit source and target paths.
+ * @param {{source: string, target: string}[]} copies - Absolute file copy plans.
+ * @returns {Promise<void>} Promise resolving when all files have been copied.
+ */
+async function copyIndividualFiles(copies) {
+  await Promise.all(
+    copies.map(async ({ source, target }) => {
+      await mkdir(dirname(target), { recursive: true });
+      await deleteIfPresent(target);
+      await copyFile(source, target);
+      console.log(`Copied: ${source} -> ${target}`);
+    })
+  );
+}
+
+/**
  * Copy all Cloud Function assets into the infra directory.
  * @returns {Promise<void>} Promise resolving when all assets are copied.
  */
@@ -162,6 +185,7 @@ async function copyToInfra() {
   }
 
   await copyDeclaredFiles(fileCopies);
+  await copyIndividualFiles(individualFileCopies);
 }
 
 await copyToInfra();
