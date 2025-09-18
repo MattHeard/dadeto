@@ -1,0 +1,158 @@
+import { readdir, copyFile, mkdir, unlink } from 'node:fs/promises';
+import { join } from 'node:path';
+
+const JS_EXTENSION = '.js';
+
+const directoryCopies = [
+  {
+    source: join(process.cwd(), 'src/cloud/assign-moderation-job'),
+    target: join(process.cwd(), 'infra/cloud-functions/assign-moderation-job'),
+  },
+  {
+    source: join(process.cwd(), 'src/cloud/generate-stats'),
+    target: join(process.cwd(), 'infra/cloud-functions/generate-stats'),
+  },
+  {
+    source: join(process.cwd(), 'src/cloud/get-api-key-credit-v2'),
+    target: join(process.cwd(), 'infra/cloud-functions/get-api-key-credit-v2'),
+  },
+];
+
+const fileCopies = {
+  sourceDir: join(process.cwd(), 'src/cloud'),
+  targetDir: join(process.cwd(), 'infra'),
+  files: ['admin.js', 'googleAuth.js', 'moderate.js'],
+};
+
+/**
+ * Read directory entries, returning an empty array when the directory is missing.
+ * @param {string} directory - Absolute path of the directory to read.
+ * @returns {Promise<import("node:fs").Dirent[]>} Array of directory entries.
+ */
+async function readEntries(directory) {
+  return readdir(directory, { withFileTypes: true }).catch(
+    handleMissingDirectory
+  );
+}
+
+/**
+ * Translate a missing directory error into an empty entry list.
+ * @param {Error & { code?: string }} error - Error thrown while reading the directory.
+ * @returns {import('node:fs').Dirent[]} Empty array when the directory is missing.
+ */
+function handleMissingDirectory(error) {
+  if (error.code === 'ENOENT') {
+    return [];
+  }
+  throw error;
+}
+
+/**
+ * Determine whether the provided entry references a JavaScript file.
+ * @param {import("node:fs").Dirent} entry - Directory entry to inspect.
+ * @returns {boolean} True when the entry points to a JavaScript file.
+ */
+function isJavaScriptFile(entry) {
+  return entry.isFile() && entry.name.endsWith(JS_EXTENSION);
+}
+
+/**
+ * Remove a file when it exists.
+ * @param {string} path - Absolute file path to delete if present.
+ * @returns {Promise<void>} Promise resolving when the file is removed or absent.
+ */
+async function deleteIfPresent(path) {
+  await unlink(path).catch(ignoreMissingFile);
+}
+
+/**
+ * Ignore missing file errors while rethrowing unexpected failures.
+ * @param {Error & { code?: string }} error - Error thrown by unlink.
+ */
+function ignoreMissingFile(error) {
+  if (error.code === 'ENOENT') {
+    return;
+  }
+  throw error;
+}
+
+/**
+ * Remove a collection of directory entries.
+ * @param {string} directory - Directory containing the entries.
+ * @param {import("node:fs").Dirent[]} entries - Entries slated for deletion.
+ * @returns {Promise<void>} Promise resolving when all entries have been removed.
+ */
+async function removeEntries(directory, entries) {
+  await Promise.all(
+    entries.map(entry => deleteIfPresent(join(directory, entry.name)))
+  );
+}
+
+/**
+ * Copy a single file from source to target.
+ * @param {string} sourceDir - Directory containing the file.
+ * @param {string} targetDir - Destination directory for the file.
+ * @param {string} name - File name to copy.
+ * @returns {Promise<void>} Promise resolving once the file is copied.
+ */
+async function copyFileToTarget(sourceDir, targetDir, name) {
+  const sourcePath = join(sourceDir, name);
+  const destinationPath = join(targetDir, name);
+  await copyFile(sourcePath, destinationPath);
+  console.log(`Copied: ${sourcePath} -> ${destinationPath}`);
+}
+
+/**
+ * Copy a directory of JavaScript files into the infra tree.
+ * @param {{source: string, target: string}} copyPlan - Source and target paths.
+ * @returns {Promise<void>} Promise resolving when the directory has been copied.
+ */
+async function copyDirectory(copyPlan) {
+  const { source, target } = copyPlan;
+  await mkdir(target, { recursive: true });
+
+  const [sourceEntries, targetEntries] = await Promise.all([
+    readEntries(source),
+    readEntries(target),
+  ]);
+
+  const sourceFiles = sourceEntries.filter(isJavaScriptFile);
+  const targetFiles = targetEntries.filter(isJavaScriptFile);
+
+  await removeEntries(target, targetFiles);
+  await Promise.all(
+    sourceFiles.map(entry => copyFileToTarget(source, target, entry.name))
+  );
+}
+
+/**
+ * Copy an explicit list of files into the infra directory.
+ * @param {{sourceDir: string, targetDir: string, files: string[]}} copyPlan - File copy definition.
+ * @returns {Promise<void>} Promise resolving when the files are copied.
+ */
+async function copyDeclaredFiles(copyPlan) {
+  const { sourceDir, targetDir, files } = copyPlan;
+  await mkdir(targetDir, { recursive: true });
+
+  await Promise.all(
+    files.map(async file => {
+      const destinationPath = join(targetDir, file);
+      await deleteIfPresent(destinationPath);
+      await copyFileToTarget(sourceDir, targetDir, file);
+    })
+  );
+}
+
+/**
+ * Copy all Cloud Function assets into the infra directory.
+ * @returns {Promise<void>} Promise resolving when all assets are copied.
+ */
+async function copyToInfra() {
+  for (const directory of directoryCopies) {
+    await copyDirectory(directory);
+  }
+
+  await copyDeclaredFiles(fileCopies);
+}
+
+await copyToInfra();
