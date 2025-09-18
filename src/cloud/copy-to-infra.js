@@ -1,4 +1,4 @@
-import { readdir, copyFile, mkdir, unlink } from 'node:fs/promises';
+import { readdir, copyFile, mkdir } from 'node:fs/promises';
 import { dirname, extname, join } from 'node:path';
 
 const COPYABLE_EXTENSIONS = new Set(['.js', '.json']);
@@ -77,33 +77,6 @@ function isCopyableFile(entry) {
  * @param {string} path - Absolute file path to delete if present.
  * @returns {Promise<void>} Promise resolving when the file is removed or absent.
  */
-async function deleteIfPresent(path) {
-  await unlink(path).catch(ignoreMissingFile);
-}
-
-/**
- * Ignore missing file errors while rethrowing unexpected failures.
- * @param {Error & { code?: string }} error - Error thrown by unlink.
- */
-function ignoreMissingFile(error) {
-  if (error.code === 'ENOENT') {
-    return;
-  }
-  throw error;
-}
-
-/**
- * Remove a collection of directory entries.
- * @param {string} directory - Directory containing the entries.
- * @param {import("node:fs").Dirent[]} entries - Entries slated for deletion.
- * @returns {Promise<void>} Promise resolving when all entries have been removed.
- */
-async function removeEntries(directory, entries) {
-  await Promise.all(
-    entries.map(entry => deleteIfPresent(join(directory, entry.name)))
-  );
-}
-
 /**
  * Copy a single file from source to target.
  * @param {string} sourceDir - Directory containing the file.
@@ -127,15 +100,8 @@ async function copyDirectory(copyPlan) {
   const { source, target } = copyPlan;
   await mkdir(target, { recursive: true });
 
-  const [sourceEntries, targetEntries] = await Promise.all([
-    readEntries(source),
-    readEntries(target),
-  ]);
-
+  const sourceEntries = await readEntries(source);
   const sourceFiles = sourceEntries.filter(isCopyableFile);
-  const targetFiles = targetEntries.filter(isCopyableFile);
-
-  await removeEntries(target, targetFiles);
   await Promise.all(
     sourceFiles.map(entry => copyFileToTarget(source, target, entry.name))
   );
@@ -152,8 +118,6 @@ async function copyDeclaredFiles(copyPlan) {
 
   await Promise.all(
     files.map(async file => {
-      const destinationPath = join(targetDir, file);
-      await deleteIfPresent(destinationPath);
       await copyFileToTarget(sourceDir, targetDir, file);
     })
   );
@@ -168,7 +132,6 @@ async function copyIndividualFiles(copies) {
   await Promise.all(
     copies.map(async ({ source, target }) => {
       await mkdir(dirname(target), { recursive: true });
-      await deleteIfPresent(target);
       await copyFile(source, target);
       console.log(`Copied: ${source} -> ${target}`);
     })
