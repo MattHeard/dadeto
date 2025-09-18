@@ -3,7 +3,7 @@ import {
   parseIncomingOption,
   findExistingOption,
   findExistingPage,
-} from '../../infra/cloud-functions/submit-new-page/helpers.js';
+} from '../../src/cloud/submit-new-page/helpers.js';
 
 describe('parseIncomingOption', () => {
   test('parses valid string', () => {

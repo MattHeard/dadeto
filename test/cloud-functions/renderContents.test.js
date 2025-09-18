@@ -5,7 +5,7 @@ import {
   mockBucket,
   mockExists,
 } from '@google-cloud/storage';
-import { render } from '../../infra/cloud-functions/render-contents/index.js';
+import { render } from '../../src/cloud/render-contents/index.js';
 
 describe('render contents', () => {
   beforeEach(() => {

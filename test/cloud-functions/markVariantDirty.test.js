@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import {
   handleRequest,
   markVariantDirtyImpl,
-} from '../../infra/cloud-functions/mark-variant-dirty/index.js';
+} from '../../src/cloud/mark-variant-dirty/index.js';
 import { mockVerifyIdToken } from '../mocks/firebase-admin-auth.js';
 
 /**

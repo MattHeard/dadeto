@@ -6,7 +6,7 @@ import {
   mockExists,
 } from '@google-cloud/storage';
 import { mockDoc } from 'firebase-admin/firestore';
-import { render } from '../../infra/cloud-functions/render-variant/index.js';
+import { render } from '../../src/cloud/render-variant/index.js';
 
 /**
  *

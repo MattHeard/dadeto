@@ -3,20 +3,29 @@ import { join } from 'node:path';
 
 const JS_EXTENSION = '.js';
 
-const directoryCopies = [
-  {
-    source: join(process.cwd(), 'src/cloud/assign-moderation-job'),
-    target: join(process.cwd(), 'infra/cloud-functions/assign-moderation-job'),
-  },
-  {
-    source: join(process.cwd(), 'src/cloud/generate-stats'),
-    target: join(process.cwd(), 'infra/cloud-functions/generate-stats'),
-  },
-  {
-    source: join(process.cwd(), 'src/cloud/get-api-key-credit-v2'),
-    target: join(process.cwd(), 'infra/cloud-functions/get-api-key-credit-v2'),
-  },
+const functionDirectories = [
+  'assign-moderation-job',
+  'generate-stats',
+  'get-api-key-credit',
+  'get-api-key-credit-v2',
+  'get-moderation-variant',
+  'hide-variant-html',
+  'mark-variant-dirty',
+  'process-new-page',
+  'process-new-story',
+  'prod-update-variant-visibility',
+  'render-contents',
+  'render-variant',
+  'report-for-moderation',
+  'submit-moderation-rating',
+  'submit-new-page',
+  'submit-new-story',
 ];
+
+const directoryCopies = functionDirectories.map(name => ({
+  source: join(process.cwd(), 'src/cloud', name),
+  target: join(process.cwd(), 'infra/cloud-functions', name),
+}));
 
 const fileCopies = {
   sourceDir: join(process.cwd(), 'src/cloud'),
