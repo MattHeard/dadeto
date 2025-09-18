@@ -58,13 +58,17 @@ const allowed = [
   'https://www.dendritestories.co.nz',
 ];
 
-const { db, auth, app } = createAssignModerationApp(
+const firebaseResources = createAssignModerationApp(
   initializeFirebaseAppResources,
   setupCors,
   allowed
 );
 
-app.use(express.urlencoded({ extended: false }));
+(() => {
+  firebaseResources.app.use(express.urlencoded({ extended: false }));
+})();
+
+const { db, auth, app } = firebaseResources;
 
 /**
  * Extract the ID token from a request body.
