@@ -7,7 +7,13 @@ import cors from 'cors';
 import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
 
-const initFirebaseApp = (() => {
+/**
+ * Initialize Firebase Admin and supporting services.
+ * @returns {{ db: import('firebase-admin/firestore').Firestore,
+ *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }}
+ * Firebase resources required by the moderation workflow.
+ */
+function initializeFirebaseAppResources() {
   initializeApp();
 
   return {
@@ -15,29 +21,77 @@ const initFirebaseApp = (() => {
     auth: getAuth(),
     app: express(),
   };
-})();
+}
 
-const { db, auth, app } = initFirebaseApp;
+/**
+ * Configure CORS middleware for the moderation Express app.
+ * @param {import('express').Express} appInstance Express application instance.
+ * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
+ * @returns {void}
+ */
+function setupCors(appInstance, allowedOrigins) {
+  appInstance.use(
+    cors({
+      origin: (origin, cb) => {
+        if (isAllowedOrigin(origin, allowedOrigins)) {
+          cb(null, true);
+          return;
+        }
+
+        cb(new Error('CORS'));
+      },
+      methods: ['POST'],
+    })
+  );
+}
+
+/**
+ * Determine whether a request origin is allowed.
+ * @param {string | undefined} origin Request origin header.
+ * @param {string[]} allowedOrigins Whitelisted origins.
+ * @returns {boolean} True when the origin should be allowed.
+ */
+function isAllowedOrigin(origin, allowedOrigins) {
+  if (!origin) {
+    return true;
+  }
+
+  return allowedOrigins.includes(origin);
+}
+
+/**
+ * Initialize Firebase resources, configure CORS, and expose dependencies.
+ * @param {() => { db: import('firebase-admin/firestore').Firestore,
+ *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} initializeFirebaseApp
+ * Function that initializes Firebase and returns dependencies.
+ * @param {(appInstance: import('express').Express, allowedOrigins: string[]) => void} configureCors
+ * Function that configures CORS for the Express app.
+ * @param {string[]} allowedOrigins Origins permitted to access the endpoint.
+ * @returns {{ db: import('firebase-admin/firestore').Firestore,
+ *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} Initialized dependencies.
+ */
+function createAssignModerationApp(
+  initializeFirebaseApp,
+  configureCors,
+  allowedOrigins
+) {
+  const { db, auth, app } = initializeFirebaseApp();
+  configureCors(app, allowedOrigins);
+
+  return { db, auth, app };
+}
 
 const allowed = [
   'https://mattheard.net',
   'https://dendritestories.co.nz',
   'https://www.dendritestories.co.nz',
 ];
-(function setupCors(appInstance, allowedOrigins) {
-  appInstance.use(
-    cors({
-      origin: (origin, cb) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-          cb(null, true);
-        } else {
-          cb(new Error('CORS'));
-        }
-      },
-      methods: ['POST'],
-    })
-  );
-})(app, allowed);
+
+const { db, auth, app } = createAssignModerationApp(
+  initializeFirebaseAppResources,
+  setupCors,
+  allowed
+);
 
 app.use(express.urlencoded({ extended: false }));
 
