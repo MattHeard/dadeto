@@ -1,7 +1,7 @@
 import { readdir, copyFile, mkdir, unlink } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, extname, join } from 'node:path';
 
-const JS_EXTENSION = '.js';
+const COPYABLE_EXTENSIONS = new Set(['.js', '.json']);
 
 const functionDirectories = [
   'assign-moderation-job',
@@ -64,12 +64,12 @@ function handleMissingDirectory(error) {
 }
 
 /**
- * Determine whether the provided entry references a JavaScript file.
+ * Determine whether the provided entry references a copyable file type.
  * @param {import("node:fs").Dirent} entry - Directory entry to inspect.
- * @returns {boolean} True when the entry points to a JavaScript file.
+ * @returns {boolean} True when the entry points to a supported file type.
  */
-function isJavaScriptFile(entry) {
-  return entry.isFile() && entry.name.endsWith(JS_EXTENSION);
+function isCopyableFile(entry) {
+  return entry.isFile() && COPYABLE_EXTENSIONS.has(extname(entry.name));
 }
 
 /**
@@ -132,8 +132,8 @@ async function copyDirectory(copyPlan) {
     readEntries(target),
   ]);
 
-  const sourceFiles = sourceEntries.filter(isJavaScriptFile);
-  const targetFiles = targetEntries.filter(isJavaScriptFile);
+  const sourceFiles = sourceEntries.filter(isCopyableFile);
+  const targetFiles = targetEntries.filter(isCopyableFile);
 
   await removeEntries(target, targetFiles);
   await Promise.all(
