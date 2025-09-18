@@ -7,7 +7,7 @@ import cors from 'cors';
 import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
 
-const { db, auth, app } = (() => {
+const initFirebaseApp = (() => {
   initializeApp();
 
   return {
@@ -16,6 +16,8 @@ const { db, auth, app } = (() => {
     app: express(),
   };
 })();
+
+const { db, auth, app } = initFirebaseApp;
 
 const allowed = [
   'https://mattheard.net',
