@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { getVisibleVariants } from '../../infra/cloud-functions/render-variant/visibility.js';
+import { getVisibleVariants } from '../../src/cloud/render-variant/visibility.js';
 
 describe('getVisibleVariants', () => {
   test('excludes variants below visibility threshold', () => {

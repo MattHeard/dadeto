@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import * as mod from '../../infra/cloud-functions/render-contents/index.js';
+import * as mod from '../../src/cloud/render-contents/index.js';
 import { mockVerifyIdToken } from '../mocks/firebase-admin-auth.js';
 
 const { handleRenderRequest } = mod;
