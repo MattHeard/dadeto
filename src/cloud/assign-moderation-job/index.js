@@ -1,28 +1,11 @@
-import { initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
 import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
 import { createAssignModerationApp, isAllowedOrigin } from './core.js';
-
-/**
- * Initialize Firebase Admin and supporting services.
- * @returns {{ db: import('firebase-admin/firestore').Firestore,
- *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }}
- * Firebase resources required by the moderation workflow.
- */
-function initializeFirebaseAppResources() {
-  initializeApp();
-
-  return {
-    db: getFirestore(),
-    auth: getAuth(),
-    app: express(),
-  };
-}
+import { initializeFirebaseAppResources } from './gcf.js';
 
 /**
  * Configure CORS middleware for the moderation Express app.
