@@ -16,6 +16,7 @@ const infraDir = resolve(projectRoot, 'infra');
 const srcCloudDir = resolve(srcDir, 'cloud');
 const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
 const browserDir = resolve(srcDir, 'browser');
+const srcCoreCloudDir = resolve(srcDir, 'core', 'cloud');
 
 const functionDirectories = [
   'assign-moderation-job',
@@ -51,6 +52,10 @@ const individualFileCopies = [
   {
     source: join(browserDir, 'admin.js'),
     target: join(infraDir, 'admin.js'),
+  },
+  {
+    source: join(srcCoreCloudDir, 'assign-moderation-job', 'core.js'),
+    target: join(infraFunctionsDir, 'assign-moderation-job', 'core.js'),
   },
 ];
 

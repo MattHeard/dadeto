@@ -4,7 +4,10 @@ import express from 'express';
 import cors from 'cors';
 import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
-import { createAssignModerationApp, isAllowedOrigin } from './core.js';
+import {
+  createAssignModerationApp,
+  isAllowedOrigin,
+} from './core.js';
 import { initializeFirebaseAppResources } from './gcf.js';
 
 /**
