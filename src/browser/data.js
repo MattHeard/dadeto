@@ -1,4 +1,8 @@
 import { deepClone } from '../utils/objectUtils.js';
+import { isNonNullObject } from '../core/state.js';
+
+export { deepMerge } from '../core/state.js';
+export { getEncodeBase64 } from '../core/encoding.js';
 
 const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
 
@@ -45,22 +49,6 @@ export function shouldUseExistingFetch(globalState, logFn) {
     return true;
   }
   return false;
-}
-
-/**
- * Returns a Base64 encoding function using the provided btoa and
- * encodeURIComponent. This avoids the deprecated unescape by manually
- * converting percent-encoded bytes back to a binary string.
- * @param {Function} btoa - The btoa function
- * @param {Function} encodeURIComponentFn - The encodeURIComponent function
- * @returns {Function} encodeBase64 - Function that encodes a string to Base64
- */
-export function getEncodeBase64(btoa, encodeURIComponentFn) {
-  const toBinary = str =>
-    encodeURIComponentFn(str).replace(/%([0-9A-F]{2})/g, (_, hex) =>
-      String.fromCharCode(parseInt(hex, 16))
-    );
-  return str => btoa(toBinary(str));
 }
 
 /**
@@ -117,60 +105,6 @@ export function fetchAndCacheBlogData(state, fetch, loggers) {
 export const getDeepStateCopy = globalState => deepClone(globalState);
 
 /**
- * Checks whether two values are not arrays.
- * @param {*} a - First value for type comparison.
- * @param {*} b - Second value for type comparison.
- * @returns {boolean} True when neither value is an array.
- */
-function bothAreNotArrays(a, b) {
-  return !Array.isArray(a) && !Array.isArray(b);
-}
-
-/**
- * Determines if both values are non-null objects.
- * @param {*} a - First value to check.
- * @param {*} b - Second value to check.
- * @returns {boolean} True when both are non-null objects.
- */
-function bothAreNonNullObjects(a, b) {
-  return isNonNullObject(a) && isNonNullObject(b);
-}
-
-/**
- * Checks whether two values should be deeply merged.
- * @param {*} targetValue - The target value.
- * @param {*} sourceValue - The source value.
- * @returns {boolean} True when values are mergeable objects.
- */
-function shouldDeepMerge(targetValue, sourceValue) {
-  return (
-    bothAreNonNullObjects(targetValue, sourceValue) &&
-    bothAreNotArrays(targetValue, sourceValue)
-  );
-}
-
-/**
- * Deeply merges two objects, producing a new object.
- * @param {object} target - Destination object.
- * @param {object} source - Source object to merge.
- * @returns {object} The merged object.
- */
-export function deepMerge(target, source) {
-  const output = { ...target };
-  const mergeKey = key => {
-    const targetValue = target[key];
-    const sourceValue = source[key];
-    if (shouldDeepMerge(targetValue, sourceValue)) {
-      output[key] = deepMerge(targetValue, sourceValue);
-    } else {
-      output[key] = sourceValue;
-    }
-  };
-  Object.keys(source).forEach(mergeKey);
-  return output;
-}
-
-/**
  * Removes internal bookkeeping fields from a state copy.
  * @param {object} stateCopy - State object to sanitize.
  */
@@ -208,15 +142,6 @@ export function shouldCopyStateForFetch(status) {
  */
 function hasTemporaryProperty(obj) {
   return Object.hasOwn(obj, 'temporary');
-}
-
-/**
- * Check if a value is an object and not null.
- * @param {object} value - Value to test.
- * @returns {boolean} True when the value is a non-null object.
- */
-function isNonNullObject(value) {
-  return Boolean(value) && typeof value === 'object';
 }
 
 /**

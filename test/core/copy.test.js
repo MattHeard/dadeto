@@ -21,6 +21,8 @@ const createDirectories = () => {
     publicInputHandlersDir: posix.join(publicDir, 'inputHandlers'),
     srcConstantsDir: posix.join(srcDir, 'constants'),
     publicConstantsDir: posix.join(publicDir, 'constants'),
+    srcCoreDir: posix.join(srcDir, 'core'),
+    publicCoreDir: posix.join(publicDir, 'core'),
     srcAssetsDir: posix.join(srcDir, 'assets'),
     publicAssetsDir: publicDir,
     srcPresentersDir: posix.join(srcDir, 'presenters'),
@@ -548,6 +550,9 @@ describe('createCopyCore', () => {
       );
       expect(logger.warn).toHaveBeenCalledWith(
         'Warning: constants directory not found at src/constants'
+      );
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Warning: core directory not found at src/core'
       );
       expect(logger.warn).toHaveBeenCalledWith(
         'Warning: assets directory not found at src/assets'

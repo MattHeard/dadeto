@@ -5,6 +5,7 @@ export const sharedDirectoryPairs = [
   { key: 'InputHandlers', relativePath: 'inputHandlers' },
   { key: 'Constants', relativePath: 'constants' },
   { key: 'Presenters', relativePath: 'presenters' },
+  { key: 'Core', relativePath: 'core' },
 ];
 
 export function createSharedDirectoryEntries({
@@ -227,6 +228,14 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
         successMessage: 'Constants files copied successfully!',
         missingMessage: `Warning: constants directory not found at ${formatPathForLog(
           dirs.srcConstantsDir
+        )}`,
+      },
+      {
+        src: dirs.srcCoreDir,
+        dest: dirs.publicCoreDir,
+        successMessage: 'Core files copied successfully!',
+        missingMessage: `Warning: core directory not found at ${formatPathForLog(
+          dirs.srcCoreDir
         )}`,
       },
       {
