@@ -1,27 +1,22 @@
 #!/usr/bin/env node
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import {
   createCopyCore,
   createSharedDirectoryEntries,
 } from '../core/copy.js';
+import {
+  createCopyDirectories,
+  createPathAdapters,
+  getCurrentDirectory,
+  resolveProjectDirectories,
+} from '../node/path.js';
+import { createFsAdapters } from '../node/fs.js';
 
-// Get __dirname equivalent in ES module scope
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Determine base directories using Node-specific helpers
+const __dirname = getCurrentDirectory(import.meta.url);
+const { projectRoot, srcDir, publicDir } = resolveProjectDirectories(__dirname);
 
-// Define base directories
-const projectRoot = path.resolve(__dirname, '../..'); // Adjust based on script location
-const srcDir = path.resolve(projectRoot, 'src');
-const publicDir = path.resolve(projectRoot, 'public');
-
-const pathAdapters = {
-  join: path.join,
-  dirname: path.dirname,
-  relative: path.relative,
-};
+const pathAdapters = createPathAdapters();
 
 const sharedDirectoryEntries = createSharedDirectoryEntries({
   path: { join: pathAdapters.join },
@@ -29,23 +24,12 @@ const sharedDirectoryEntries = createSharedDirectoryEntries({
   publicDir,
 });
 
-const directories = {
-  projectRoot,
-  srcDir,
-  publicDir,
-  ...Object.fromEntries(sharedDirectoryEntries),
-  srcAssetsDir: path.resolve(srcDir, 'assets'),
-  publicAssetsDir: publicDir,
-  srcBlogJson: path.join(srcDir, 'blog.json'),
-  publicBlogJson: path.join(publicDir, 'blog.json'),
-};
+const directories = createCopyDirectories(
+  { projectRoot, srcDir, publicDir },
+  sharedDirectoryEntries,
+);
 
-const thirdParty = {
-  directoryExists: target => fs.existsSync(target),
-  createDirectory: target => fs.mkdirSync(target, { recursive: true }),
-  copyFile: (source, destination) => fs.copyFileSync(source, destination),
-  readDirEntries: dir => fs.readdirSync(dir, { withFileTypes: true }),
-};
+const thirdParty = createFsAdapters();
 
 const logger = {
   info: message => console.log(message),
