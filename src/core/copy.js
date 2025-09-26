@@ -1,3 +1,31 @@
+export const sharedDirectoryPairs = [
+  { key: 'Toys', relativePath: 'toys' },
+  { key: 'Browser', relativePath: 'browser' },
+  { key: 'Utils', relativePath: 'utils' },
+  { key: 'InputHandlers', relativePath: 'inputHandlers' },
+  { key: 'Constants', relativePath: 'constants' },
+  { key: 'Presenters', relativePath: 'presenters' },
+];
+
+export function createSharedDirectoryEntries({
+  path: pathDeps,
+  srcDir,
+  publicDir,
+  pairs = sharedDirectoryPairs,
+}) {
+  const { join } = pathDeps;
+  return pairs.flatMap(({ key, relativePath }) => {
+    const srcKey = `src${key}Dir`;
+    const destKey = `public${key}Dir`;
+    const srcPath = join(srcDir, relativePath);
+    const destPath = join(publicDir, relativePath);
+    return [
+      [srcKey, srcPath],
+      [destKey, destPath],
+    ];
+  });
+}
+
 export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   const { join, dirname, relative } = pathDeps;
 
