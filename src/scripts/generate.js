@@ -3,7 +3,7 @@
 // This CLI script demonstrates how to call the generateBlogOuter function from the command line.
 // Make sure your package.json has "type": "module" if you're using ES modules.
 
-import { generateBlogOuter } from './src/generator/generator.js';
+import { generateBlogOuter } from '../generator/generator.js';
 import { createRequire } from 'module';
 import fs from 'fs';
 import prettier from 'prettier';
@@ -11,7 +11,7 @@ import prettier from 'prettier';
 const require = createRequire(import.meta.url);
 
 // Construct a sample blog object
-const blog = require('./src/blog.json');
+const blog = require('../blog.json');
 
 // Generate the HTML using generateBlogOuter
 const outputHTML = generateBlogOuter(blog);
