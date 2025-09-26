@@ -2,7 +2,7 @@
 
 ## Current State Overview
 - The `src/generator` tree mixes pure string-building utilities (`html.js`, `head.js`, `full-width.js`, etc.) with orchestration logic in `generator.js`; these operate on plain data and return markup without touching the filesystem or browser APIs.
-- Environment-facing behaviors live in sibling folders: browser bootstrapping and DOM helpers (`src/browser`), UI input handlers/presenters (`src/inputHandlers`, `src/presenters`), Firebase Cloud Functions (`src/cloud`), and Node-based build scripts (`generate.js`, `src/generator/copy.js`, `src/cloud/copy-to-infra.js`).
+- Environment-facing behaviors live in sibling folders: browser bootstrapping and DOM helpers (`src/browser`), UI input handlers/presenters (`src/inputHandlers`, `src/presenters`), Firebase Cloud Functions (`src/cloud`), and Node-based build scripts (`src/scripts/generate.js`, `src/generator/copy.js`, `src/cloud/copy-to-infra.js`).
 - Shared utilities (`src/utils`) and constants (`src/constants`) are pure helpers already, while tests mirror the current layout and import modules by their existing paths.
 - Build automation assumes today’s folder names: Netlify publishes `public/`, `npm run build:browser` copies assets from `src` before generating HTML, and `npm run build:cloud` mirrors Cloud Function sources into `infra` for Google Cloud deployments.
 
@@ -33,7 +33,7 @@ This split makes `core` explicitly dependency-free, while adapters handle DOM, N
 
 ## Adapter Boundaries
 - Consolidate DOM-oriented modules (`src/browser`, `src/inputHandlers`, `src/presenters`) under `src/adapters/browser`. They manipulate the document, window, and localStorage, which are browser-specific concerns unsuitable for the core layer.
-- Keep Node scripts such as `generate.js` and `src/generator/copy.js` inside `src/adapters/scripts`. They interact with the filesystem, Prettier, and process APIs to prepare Netlify artifacts, so they naturally belong to the build adapter layer.
+- Keep Node scripts such as `src/scripts/generate.js` and `src/generator/copy.js` grouped with the adapter-focused build tools (e.g., under `src/adapters/scripts`). They interact with the filesystem, Prettier, and process APIs to prepare Netlify artifacts, so they naturally belong to the build adapter layer.
 - Relocate Firebase/Express handlers under `src/adapters/cloud` and introduce thin entry files that import pure business rules from `src/core`. That allows you to isolate logic for validation, rate limiting, or moderation state changes in the core while leaving the HTTP and Firestore wiring inside the adapter.
 - Move `src/browser/admin.js` into `src/adapters/browser/admin` (or similar) to highlight its external dependencies on hosted Firebase scripts and Cloud Function endpoints.
 

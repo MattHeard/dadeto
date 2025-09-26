@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage",
-    "generate": "node generate.js",
+    "generate": "node src/scripts/generate.js",
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
     "tcr": "./tcr.sh",
     "build-and-tcr": "npm run build:browser && npm run tcr",
