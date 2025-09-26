@@ -1,20 +1,21 @@
-import { readdir, copyFile, mkdir } from 'node:fs/promises';
-import { dirname, extname, join, relative } from 'node:path';
+import { createCopyToInfraCore } from '../core/cloud/copy.js';
+import { createAsyncFsAdapters } from '../node/fs.js';
+import {
+  createPathAdapters,
+  getCurrentDirectory,
+  resolveProjectDirectories,
+} from '../node/path.js';
 
-const PROJECT_ROOT = process.cwd();
+const __dirname = getCurrentDirectory(import.meta.url);
+const { projectRoot, srcDir } = resolveProjectDirectories(__dirname);
 
-function formatPathForLog(targetPath) {
-  const relativePath = relative(PROJECT_ROOT, targetPath);
-  if (!relativePath) {
-    return '.';
-  }
-  if (relativePath.startsWith('..')) {
-    return targetPath;
-  }
-  return relativePath;
-}
+const pathAdapters = createPathAdapters();
+const { join, resolve } = pathAdapters;
 
-const COPYABLE_EXTENSIONS = new Set(['.js', '.json']);
+const infraDir = resolve(projectRoot, 'infra');
+const srcCloudDir = resolve(srcDir, 'cloud');
+const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
+const browserDir = resolve(srcDir, 'browser');
 
 const functionDirectories = [
   'assign-moderation-job',
@@ -36,138 +37,38 @@ const functionDirectories = [
 ];
 
 const directoryCopies = functionDirectories.map(name => ({
-  source: join(process.cwd(), 'src/cloud', name),
-  target: join(process.cwd(), 'infra/cloud-functions', name),
+  source: join(srcCloudDir, name),
+  target: join(infraFunctionsDir, name),
 }));
 
 const fileCopies = {
-  sourceDir: join(process.cwd(), 'src/cloud'),
-  targetDir: join(process.cwd(), 'infra'),
+  sourceDir: srcCloudDir,
+  targetDir: infraDir,
   files: ['googleAuth.js', 'moderate.js'],
 };
 
 const individualFileCopies = [
   {
-    source: join(process.cwd(), 'src/browser', 'admin.js'),
-    target: join(process.cwd(), 'infra', 'admin.js'),
+    source: join(browserDir, 'admin.js'),
+    target: join(infraDir, 'admin.js'),
   },
 ];
 
-/**
- * Read directory entries, returning an empty array when the directory is missing.
- * @param {string} directory - Absolute path of the directory to read.
- * @returns {Promise<import("node:fs").Dirent[]>} Array of directory entries.
- */
-async function readEntries(directory) {
-  return readdir(directory, { withFileTypes: true }).catch(
-    handleMissingDirectory
-  );
-}
+const io = createAsyncFsAdapters();
 
-/**
- * Translate a missing directory error into an empty entry list.
- * @param {Error & { code?: string }} error - Error thrown while reading the directory.
- * @returns {import('node:fs').Dirent[]} Empty array when the directory is missing.
- */
-function handleMissingDirectory(error) {
-  if (error.code === 'ENOENT') {
-    return [];
-  }
-  throw error;
-}
+const logger = {
+  info: message => console.log(message),
+};
 
-/**
- * Determine whether the provided entry references a copyable file type.
- * @param {import("node:fs").Dirent} entry - Directory entry to inspect.
- * @returns {boolean} True when the entry points to a supported file type.
- */
-function isCopyableFile(entry) {
-  return entry.isFile() && COPYABLE_EXTENSIONS.has(extname(entry.name));
-}
+const { runCopyToInfra } = createCopyToInfraCore({
+  projectRoot,
+  path: pathAdapters,
+});
 
-/**
- * Remove a file when it exists.
- * @param {string} path - Absolute file path to delete if present.
- * @returns {Promise<void>} Promise resolving when the file is removed or absent.
- */
-/**
- * Copy a single file from source to target.
- * @param {string} sourceDir - Directory containing the file.
- * @param {string} targetDir - Destination directory for the file.
- * @param {string} name - File name to copy.
- * @returns {Promise<void>} Promise resolving once the file is copied.
- */
-async function copyFileToTarget(sourceDir, targetDir, name) {
-  const sourcePath = join(sourceDir, name);
-  const destinationPath = join(targetDir, name);
-  await copyFile(sourcePath, destinationPath);
-  console.log(
-    `Copied: ${formatPathForLog(sourcePath)} -> ${formatPathForLog(
-      destinationPath
-    )}`
-  );
-}
-
-/**
- * Copy a directory of JavaScript files into the infra tree.
- * @param {{source: string, target: string}} copyPlan - Source and target paths.
- * @returns {Promise<void>} Promise resolving when the directory has been copied.
- */
-async function copyDirectory(copyPlan) {
-  const { source, target } = copyPlan;
-  await mkdir(target, { recursive: true });
-
-  const sourceEntries = await readEntries(source);
-  const sourceFiles = sourceEntries.filter(isCopyableFile);
-  await Promise.all(
-    sourceFiles.map(entry => copyFileToTarget(source, target, entry.name))
-  );
-}
-
-/**
- * Copy an explicit list of files into the infra directory.
- * @param {{sourceDir: string, targetDir: string, files: string[]}} copyPlan - File copy definition.
- * @returns {Promise<void>} Promise resolving when the files are copied.
- */
-async function copyDeclaredFiles(copyPlan) {
-  const { sourceDir, targetDir, files } = copyPlan;
-  await mkdir(targetDir, { recursive: true });
-
-  await Promise.all(
-    files.map(async file => {
-      await copyFileToTarget(sourceDir, targetDir, file);
-    })
-  );
-}
-
-/**
- * Copy files defined by explicit source and target paths.
- * @param {{source: string, target: string}[]} copies - Absolute file copy plans.
- * @returns {Promise<void>} Promise resolving when all files have been copied.
- */
-async function copyIndividualFiles(copies) {
-  await Promise.all(
-    copies.map(async ({ source, target }) => {
-      await mkdir(dirname(target), { recursive: true });
-      await copyFile(source, target);
-      console.log(
-        `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(target)}`
-      );
-    })
-  );
-}
-
-/**
- * Copy all Cloud Function assets into the infra directory.
- * @returns {Promise<void>} Promise resolving when all assets are copied.
- */
-async function copyToInfra() {
-  for (const directory of directoryCopies) {
-    await copyDirectory(directory);
-  }
-
-  await copyDeclaredFiles(fileCopies);
-  await copyIndividualFiles(individualFileCopies);
-}
-
-await copyToInfra();
+await runCopyToInfra({
+  directoryCopies,
+  fileCopies,
+  individualFileCopies,
+  io,
+  messageLogger: logger,
+});

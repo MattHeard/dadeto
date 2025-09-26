@@ -24,14 +24,22 @@ export function resolveProjectDirectories(moduleDirectory) {
 }
 
 /**
- * Provide the subset of Node's path module used by the copy generator.
- * @returns {{ join: typeof path.join, dirname: typeof path.dirname, relative: typeof path.relative }}
+ * Provide the subset of Node's path module used by copy utilities.
+ * @returns {{
+ *   join: typeof path.join,
+ *   dirname: typeof path.dirname,
+ *   relative: typeof path.relative,
+ *   resolve: typeof path.resolve,
+ *   extname: typeof path.extname,
+ * }}
  */
 export function createPathAdapters() {
   return {
     join: path.join,
     dirname: path.dirname,
     relative: path.relative,
+    resolve: path.resolve,
+    extname: path.extname,
   };
 }
 
