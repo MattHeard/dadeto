@@ -1,5 +1,18 @@
 import { readdir, copyFile, mkdir } from 'node:fs/promises';
-import { dirname, extname, join } from 'node:path';
+import { dirname, extname, join, relative } from 'node:path';
+
+const PROJECT_ROOT = process.cwd();
+
+function formatPathForLog(targetPath) {
+  const relativePath = relative(PROJECT_ROOT, targetPath);
+  if (!relativePath) {
+    return '.';
+  }
+  if (relativePath.startsWith('..')) {
+    return targetPath;
+  }
+  return relativePath;
+}
 
 const COPYABLE_EXTENSIONS = new Set(['.js', '.json']);
 
@@ -88,7 +101,11 @@ async function copyFileToTarget(sourceDir, targetDir, name) {
   const sourcePath = join(sourceDir, name);
   const destinationPath = join(targetDir, name);
   await copyFile(sourcePath, destinationPath);
-  console.log(`Copied: ${sourcePath} -> ${destinationPath}`);
+  console.log(
+    `Copied: ${formatPathForLog(sourcePath)} -> ${formatPathForLog(
+      destinationPath
+    )}`
+  );
 }
 
 /**
@@ -133,7 +150,9 @@ async function copyIndividualFiles(copies) {
     copies.map(async ({ source, target }) => {
       await mkdir(dirname(target), { recursive: true });
       await copyFile(source, target);
-      console.log(`Copied: ${source} -> ${target}`);
+      console.log(
+        `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(target)}`
+      );
     })
   );
 }
