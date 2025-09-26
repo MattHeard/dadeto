@@ -5,8 +5,8 @@ import {
   getData,
   setLocalTemporaryData,
   setLocalPermanentData,
-  getEncodeBase64,
 } from './data.js';
+import { getEncodeBase64 } from '../core/encoding.js';
 import {
   createOutputDropdownHandler,
   createInputDropdownHandler,
