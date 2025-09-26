@@ -63,6 +63,22 @@ const logger = {
   warn: message => console.warn(message),
 };
 
+/**
+ * Format an absolute path so log messages display it relative to the project root.
+ * @param {string} targetPath - Absolute path to format for logging.
+ * @returns {string} Relative path when available, otherwise the original path.
+ */
+function formatPathForLog(targetPath) {
+  const relativePath = path.relative(directories.projectRoot, targetPath);
+  if (!relativePath) {
+    return '.';
+  }
+  if (relativePath.startsWith('..')) {
+    return targetPath;
+  }
+  return relativePath;
+}
+
 // --- Core utilities ------------------------------------------------------
 
 /**
@@ -197,7 +213,10 @@ function copyFileWithDirectories(
 ) {
   ensureDirectoryExists(io, path.dirname(destination));
   io.copyFile(source, destination);
-  const logMessage = message ?? `Copied: ${source} -> ${destination}`;
+  const relativeSource = formatPathForLog(source);
+  const relativeDestination = formatPathForLog(destination);
+  const logMessage =
+    message ?? `Copied: ${relativeSource} -> ${relativeDestination}`;
   messageLogger.info(logMessage);
 }
 
@@ -322,7 +341,9 @@ function copyToyFiles(dirs, io, messageLogger) {
 function copyPresenterFiles(dirs, io, messageLogger) {
   if (!io.directoryExists(dirs.srcPresentersDir)) {
     messageLogger.warn(
-      `Warning: presenters directory not found at ${dirs.srcPresentersDir}`
+      `Warning: presenters directory not found at ${formatPathForLog(
+        dirs.srcPresentersDir
+      )}`
     );
     return;
   }
@@ -338,7 +359,9 @@ function copyPresenterFiles(dirs, io, messageLogger) {
       source,
       destination,
       messageLogger,
-      `Copied presenter: ${source} -> ${destination}`
+      `Copied presenter: ${formatPathForLog(source)} -> ${formatPathForLog(
+        destination
+      )}`
     );
   });
   messageLogger.info('Presenter files copied successfully!');
@@ -357,31 +380,41 @@ function copySupportingDirectories(dirs, io, messageLogger) {
       src: dirs.srcUtilsDir,
       dest: dirs.publicUtilsDir,
       successMessage: 'Utils files copied successfully!',
-      missingMessage: `Warning: utils directory not found at ${dirs.srcUtilsDir}`,
+      missingMessage: `Warning: utils directory not found at ${formatPathForLog(
+        dirs.srcUtilsDir
+      )}`,
     },
     {
       src: dirs.srcInputHandlersDir,
       dest: dirs.publicInputHandlersDir,
       successMessage: 'Input handler files copied successfully!',
-      missingMessage: `Warning: inputHandlers directory not found at ${dirs.srcInputHandlersDir}`,
+      missingMessage: `Warning: inputHandlers directory not found at ${formatPathForLog(
+        dirs.srcInputHandlersDir
+      )}`,
     },
     {
       src: dirs.srcConstantsDir,
       dest: dirs.publicConstantsDir,
       successMessage: 'Constants files copied successfully!',
-      missingMessage: `Warning: constants directory not found at ${dirs.srcConstantsDir}`,
+      missingMessage: `Warning: constants directory not found at ${formatPathForLog(
+        dirs.srcConstantsDir
+      )}`,
     },
     {
       src: dirs.srcAssetsDir,
       dest: dirs.publicAssetsDir,
       successMessage: 'Asset files copied successfully!',
-      missingMessage: `Warning: assets directory not found at ${dirs.srcAssetsDir}`,
+      missingMessage: `Warning: assets directory not found at ${formatPathForLog(
+        dirs.srcAssetsDir
+      )}`,
     },
     {
       src: dirs.srcBrowserDir,
       dest: dirs.publicBrowserDir,
       successMessage: 'Browser files copied successfully!',
-      missingMessage: `Warning: browser directory not found at ${dirs.srcBrowserDir}`,
+      missingMessage: `Warning: browser directory not found at ${formatPathForLog(
+        dirs.srcBrowserDir
+      )}`,
     },
   ];
 
