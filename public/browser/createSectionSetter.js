@@ -1,5 +1,5 @@
 import { isObject } from './common.js';
-import { deepMerge } from './data.js';
+import { deepMerge } from '../core/state.js';
 import { deepClone } from '../utils/objectUtils.js';
 
 /**
