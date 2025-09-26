@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createCopyCore } from './copy-core.js';
+import { createCopyCore } from '../core/copy.js';
 
 // Get __dirname equivalent in ES module scope
 const __filename = fileURLToPath(import.meta.url);
