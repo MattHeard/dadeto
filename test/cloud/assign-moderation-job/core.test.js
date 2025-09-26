@@ -2,7 +2,7 @@ import { describe, expect, jest, test } from "@jest/globals";
 import {
   createAssignModerationApp,
   isAllowedOrigin,
-} from "../../../src/cloud/assign-moderation-job/core.js";
+} from "../../../src/core/cloud/assign-moderation-job/core.js";
 
 describe("isAllowedOrigin", () => {
   test("allows missing origin headers", () => {
