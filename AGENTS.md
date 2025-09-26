@@ -17,7 +17,7 @@
 - `./tcr.sh "message"` runs the TCR workflow; use it when practicing test-driven iterations.
 
 ## Coding Style & Naming Conventions
-- Follow `CLAUDE.md`: two-space indentation, ES modules, camelCase functions, UPPER_SNAKE_CASE constants, and double quotes for strings/HTML attributes.
+- Follow `CLAUDE.md`: two-space indentation, ES modules, camelCase functions, and UPPER_SNAKE_CASE constants.
 - Keep generator utilities composable, documented with JSDoc, and defensive (null checks, `escapeHtml` for user content).
 - Run Prettier through the configured ESLint integration; never add `eslint-disable` comments.
 
