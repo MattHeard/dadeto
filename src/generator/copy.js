@@ -3,7 +3,10 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createCopyCore } from '../core/copy.js';
+import {
+  createCopyCore,
+  createSharedDirectoryEntries,
+} from '../core/copy.js';
 
 // Get __dirname equivalent in ES module scope
 const __filename = fileURLToPath(import.meta.url);
@@ -13,49 +16,28 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '../..'); // Adjust based on script location
 const srcDir = path.resolve(projectRoot, 'src');
 const publicDir = path.resolve(projectRoot, 'public');
-const srcToysDir = path.resolve(srcDir, 'toys');
-const srcBrowserDir = path.resolve(srcDir, 'browser');
-const publicBrowserDir = path.join(publicDir, 'browser');
-const srcUtilsDir = path.resolve(srcDir, 'utils');
-const publicUtilsDir = path.join(publicDir, 'utils');
-
-// New directory with handlers used by interactive components
-const srcInputHandlersDir = path.resolve(srcDir, 'inputHandlers');
-const publicInputHandlersDir = path.join(publicDir, 'inputHandlers');
-const srcConstantsDir = path.resolve(srcDir, 'constants');
-const publicConstantsDir = path.join(publicDir, 'constants');
-const srcAssetsDir = path.resolve(srcDir, 'assets');
-const publicAssetsDir = publicDir;
-const srcPresentersDir = path.resolve(srcDir, 'presenters');
-const publicPresentersDir = path.join(publicDir, 'presenters');
-const srcBlogJson = path.join(srcDir, 'blog.json');
-const publicBlogJson = path.join(publicDir, 'blog.json');
-
-const directories = {
-  projectRoot,
-  srcDir,
-  publicDir,
-  srcToysDir,
-  srcBrowserDir,
-  publicBrowserDir,
-  srcUtilsDir,
-  publicUtilsDir,
-  srcInputHandlersDir,
-  publicInputHandlersDir,
-  srcConstantsDir,
-  publicConstantsDir,
-  srcAssetsDir,
-  publicAssetsDir,
-  srcPresentersDir,
-  publicPresentersDir,
-  srcBlogJson,
-  publicBlogJson,
-};
 
 const pathAdapters = {
   join: path.join,
   dirname: path.dirname,
   relative: path.relative,
+};
+
+const sharedDirectoryEntries = createSharedDirectoryEntries({
+  path: { join: pathAdapters.join },
+  srcDir,
+  publicDir,
+});
+
+const directories = {
+  projectRoot,
+  srcDir,
+  publicDir,
+  ...Object.fromEntries(sharedDirectoryEntries),
+  srcAssetsDir: path.resolve(srcDir, 'assets'),
+  publicAssetsDir: publicDir,
+  srcBlogJson: path.join(srcDir, 'blog.json'),
+  publicBlogJson: path.join(publicDir, 'blog.json'),
 };
 
 const thirdParty = {
