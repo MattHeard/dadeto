@@ -252,6 +252,14 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     });
   }
 
+  function runCopyWorkflow({ directories: dirs, io, messageLogger }) {
+    ensureDirectoryExists(io, dirs.publicDir);
+    copyBlogJson(dirs, io, messageLogger);
+    copyToyFiles(dirs, io, messageLogger);
+    copyPresenterFiles(dirs, io, messageLogger);
+    copySupportingDirectories(dirs, io, messageLogger);
+  }
+
   return {
     formatPathForLog,
     isCorrectJsFileEnding,
@@ -273,6 +281,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyToyFiles,
     copyPresenterFiles,
     copySupportingDirectories,
+    runCopyWorkflow,
   };
 }
 
