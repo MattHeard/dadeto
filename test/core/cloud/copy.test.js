@@ -1,269 +1,242 @@
-import path from 'path';
 import { jest } from '@jest/globals';
+import path from 'path';
 import { createCopyToInfraCore } from '../../../src/core/cloud/copy.js';
 
-const pathDeps = {
-  join: path.posix.join,
-  dirname: path.posix.dirname,
-  relative: path.posix.relative,
-  extname: path.posix.extname,
-};
+const posix = path.posix;
 
-const projectRoot = '/virtual/project';
-
-/**
- * Create a minimal Dirent-like stub for testing.
- * @param {string} name - Entry name to expose from the stub.
- * @param {boolean} isFile - Whether the entry should behave like a file.
- * @returns {{ name: string, isFile: () => boolean }} A Dirent-compatible stub.
- */
-function makeDirent(name, isFile) {
-  return {
-    name,
-    isFile: () => isFile,
-  };
-}
+const createDirent = (name, { file = true } = {}) => ({
+  name,
+  isFile: () => file,
+  isDirectory: () => !file,
+});
 
 describe('createCopyToInfraCore', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  const projectRoot = '/project';
+  const core = createCopyToInfraCore({ projectRoot, path: posix });
 
-  /**
-   * Build the copy helpers with shared dependencies for the tests.
-   * @param {{ copyableExtensions?: string[] }} [overrides] - Factory override options.
-   * @returns {object} Helpers returned by the factory under test.
-   */
-  function createCore(overrides = {}) {
-    return createCopyToInfraCore({
-      projectRoot,
-      path: pathDeps,
-      ...overrides,
-    });
-  }
-
-  it('uses default copyable extensions when none are provided', () => {
-    const { isCopyableFile } = createCore();
-
-    expect(isCopyableFile(makeDirent('handler.js', true))).toBe(true);
-    expect(isCopyableFile(makeDirent('config.json', true))).toBe(true);
-  });
-
-  it('allows overriding the list of copyable extensions', () => {
-    const { isCopyableFile } = createCore({ copyableExtensions: ['.txt'] });
-
-    expect(isCopyableFile(makeDirent('notes.txt', true))).toBe(true);
-    expect(isCopyableFile(makeDirent('handler.js', true))).toBe(false);
-  });
-
-  it('ignores entries that are not regular files', () => {
-    const { isCopyableFile } = createCore();
-
-    expect(isCopyableFile(makeDirent('functions', false))).toBe(false);
-  });
-
-  it('formats paths relative to the project root for logging', () => {
-    const { formatPathForLog } = createCore();
-    const relativeTarget = `${projectRoot}/functions/index.js`;
-    const outsideTarget = '/outside/project/file.js';
-
-    expect(formatPathForLog(projectRoot)).toBe('.');
-    expect(formatPathForLog(relativeTarget)).toBe('functions/index.js');
-    expect(formatPathForLog(outsideTarget)).toBe(outsideTarget);
-  });
-
-  it('copies an individual file and logs the operation', async () => {
-    const { copyFileToTarget } = createCore();
-    const io = {
-      copyFile: jest.fn().mockResolvedValue(undefined),
-    };
-    const messageLogger = { info: jest.fn() };
-
-    await copyFileToTarget(
-      io,
-      `${projectRoot}/functions`,
-      `${projectRoot}/infra`,
-      'index.js',
-      messageLogger
-    );
-
-    expect(io.copyFile).toHaveBeenCalledWith(
-      `${projectRoot}/functions/index.js`,
-      `${projectRoot}/infra/index.js`
-    );
-    expect(messageLogger.info).toHaveBeenCalledWith(
-      'Copied: functions/index.js -> infra/index.js'
-    );
-  });
-
-  it('copies only supported files from a directory', async () => {
-    const { copyDirectory } = createCore();
-    const io = {
-      ensureDirectory: jest.fn().mockResolvedValue(undefined),
-      readDirEntries: jest
-        .fn()
-        .mockResolvedValue([
-          makeDirent('index.js', true),
-          makeDirent('config.json', true),
-          makeDirent('README.md', true),
-          makeDirent('subdir', false),
-        ]),
-      copyFile: jest.fn().mockResolvedValue(undefined),
-    };
-    const messageLogger = { info: jest.fn() };
-
-    await copyDirectory(
-      { source: `${projectRoot}/functions`, target: `${projectRoot}/infra` },
-      io,
-      messageLogger
-    );
-
-    expect(io.ensureDirectory).toHaveBeenCalledWith(`${projectRoot}/infra`);
-    expect(io.copyFile).toHaveBeenCalledTimes(2);
-    expect(io.copyFile).toHaveBeenCalledWith(
-      `${projectRoot}/functions/index.js`,
-      `${projectRoot}/infra/index.js`
-    );
-    expect(io.copyFile).toHaveBeenCalledWith(
-      `${projectRoot}/functions/config.json`,
-      `${projectRoot}/infra/config.json`
-    );
-    expect(messageLogger.info).toHaveBeenCalledTimes(2);
-  });
-
-  it('copies declared files into a directory', async () => {
-    const { copyDeclaredFiles } = createCore();
-    const io = {
-      ensureDirectory: jest.fn().mockResolvedValue(undefined),
-      copyFile: jest.fn().mockResolvedValue(undefined),
-    };
-    const messageLogger = { info: jest.fn() };
-
-    await copyDeclaredFiles(
-      {
-        sourceDir: `${projectRoot}/functions`,
-        targetDir: `${projectRoot}/infra/configs`,
-        files: ['config.json', 'schema.js'],
-      },
-      io,
-      messageLogger
-    );
-
-    expect(io.ensureDirectory).toHaveBeenCalledWith(
-      `${projectRoot}/infra/configs`
-    );
-    expect(io.copyFile).toHaveBeenCalledTimes(2);
-    expect(io.copyFile).toHaveBeenCalledWith(
-      `${projectRoot}/functions/config.json`,
-      `${projectRoot}/infra/configs/config.json`
-    );
-    expect(io.copyFile).toHaveBeenCalledWith(
-      `${projectRoot}/functions/schema.js`,
-      `${projectRoot}/infra/configs/schema.js`
-    );
-    expect(messageLogger.info).toHaveBeenCalledTimes(2);
-  });
-
-  it('copies individual files and prepares their destination directories', async () => {
-    const { copyIndividualFiles } = createCore();
-    const io = {
-      ensureDirectory: jest.fn().mockResolvedValue(undefined),
-      copyFile: jest.fn().mockResolvedValue(undefined),
-    };
-    const messageLogger = { info: jest.fn() };
-    const copies = [
-      {
-        source: `${projectRoot}/functions/index.js`,
-        target: `${projectRoot}/infra/index.js`,
-      },
-      {
-        source: `${projectRoot}/functions/utils/helper.json`,
-        target: `${projectRoot}/infra/utils/helper.json`,
-      },
-    ];
-
-    await copyIndividualFiles(copies, io, messageLogger);
-
-    expect(io.ensureDirectory).toHaveBeenCalledWith(`${projectRoot}/infra`);
-    expect(io.ensureDirectory).toHaveBeenCalledWith(
-      `${projectRoot}/infra/utils`
-    );
-    expect(io.copyFile).toHaveBeenCalledWith(
-      `${projectRoot}/functions/index.js`,
-      `${projectRoot}/infra/index.js`
-    );
-    expect(io.copyFile).toHaveBeenCalledWith(
-      `${projectRoot}/functions/utils/helper.json`,
-      `${projectRoot}/infra/utils/helper.json`
-    );
-    expect(messageLogger.info).toHaveBeenCalledTimes(2);
-  });
-
-  it('runs the copy workflow without optional sections', async () => {
-    const { runCopyToInfra } = createCore();
-    const io = {
-      ensureDirectory: jest.fn().mockResolvedValue(undefined),
-      readDirEntries: jest.fn().mockResolvedValue([]),
-      copyFile: jest.fn().mockResolvedValue(undefined),
-    };
-    const messageLogger = { info: jest.fn() };
-
-    await runCopyToInfra({
-      directoryCopies: [
-        { source: `${projectRoot}/functions`, target: `${projectRoot}/infra` },
-      ],
-      io,
-      messageLogger,
+  describe('formatPathForLog', () => {
+    it("returns '.' for the project root", () => {
+      expect(core.formatPathForLog(projectRoot)).toBe('.');
     });
 
-    expect(io.ensureDirectory).toHaveBeenCalledWith(`${projectRoot}/infra`);
-    expect(io.readDirEntries).toHaveBeenCalledWith(`${projectRoot}/functions`);
-    expect(io.copyFile).not.toHaveBeenCalled();
-    expect(messageLogger.info).not.toHaveBeenCalled();
-  });
-
-  it('runs the copy workflow with declared and individual file copies', async () => {
-    const { runCopyToInfra } = createCore();
-    const io = {
-      ensureDirectory: jest.fn().mockResolvedValue(undefined),
-      readDirEntries: jest.fn(),
-      copyFile: jest.fn().mockResolvedValue(undefined),
-    };
-    const messageLogger = { info: jest.fn() };
-    const fileCopies = {
-      sourceDir: `${projectRoot}/functions`,
-      targetDir: `${projectRoot}/infra/configs`,
-      files: ['config.json'],
-    };
-    const individualFileCopies = [
-      {
-        source: `${projectRoot}/functions/direct.js`,
-        target: `${projectRoot}/infra/direct.js`,
-      },
-    ];
-
-    await runCopyToInfra({
-      directoryCopies: [],
-      fileCopies,
-      individualFileCopies,
-      io,
-      messageLogger,
+    it('returns a relative path for files within the project', () => {
+      const filePath = posix.join(projectRoot, 'functions/index.js');
+      expect(core.formatPathForLog(filePath)).toBe('functions/index.js');
     });
 
-    expect(io.ensureDirectory).toHaveBeenCalledWith(
-      `${projectRoot}/infra/configs`
-    );
-    expect(io.ensureDirectory).toHaveBeenCalledWith(`${projectRoot}/infra`);
-    expect(io.copyFile).toHaveBeenCalledWith(
-      `${projectRoot}/functions/config.json`,
-      `${projectRoot}/infra/configs/config.json`
-    );
-    expect(io.copyFile).toHaveBeenCalledWith(
-      `${projectRoot}/functions/direct.js`,
-      `${projectRoot}/infra/direct.js`
-    );
-    expect(messageLogger.info).toHaveBeenCalledWith(
-      'Copied: functions/direct.js -> infra/direct.js'
-    );
+    it('returns the original path when outside of the project', () => {
+      expect(core.formatPathForLog('/elsewhere/file.js')).toBe(
+        '/elsewhere/file.js',
+      );
+    });
+  });
+
+  describe('isCopyableFile', () => {
+    it('accepts configured extensions and rejects others', () => {
+      expect(core.isCopyableFile(createDirent('index.js'))).toBe(true);
+      expect(core.isCopyableFile(createDirent('config.json'))).toBe(true);
+      expect(core.isCopyableFile(createDirent('notes.txt'))).toBe(false);
+      expect(core.isCopyableFile(createDirent('nested', { file: false }))).toBe(
+        false,
+      );
+    });
+  });
+
+  describe('copy helpers', () => {
+    it('copies a single file and logs the action', async () => {
+      const io = { copyFile: jest.fn().mockResolvedValue(undefined) };
+      const logger = { info: jest.fn() };
+
+      await core.copyFileToTarget(
+        io,
+        posix.join(projectRoot, 'src'),
+        posix.join(projectRoot, 'infra'),
+        'index.js',
+        logger,
+      );
+
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(projectRoot, 'src/index.js'),
+        posix.join(projectRoot, 'infra/index.js'),
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: src/index.js -> infra/index.js',
+      );
+    });
+
+    it('copies allowed files from a directory', async () => {
+      const entries = [
+        createDirent('index.js'),
+        createDirent('config.json'),
+        createDirent('notes.txt'),
+        createDirent('nested', { file: false }),
+      ];
+      const io = {
+        ensureDirectory: jest.fn().mockResolvedValue(undefined),
+        readDirEntries: jest.fn().mockResolvedValue(entries),
+        copyFile: jest.fn().mockResolvedValue(undefined),
+      };
+      const logger = { info: jest.fn() };
+
+      await core.copyDirectory(
+        {
+          source: posix.join(projectRoot, 'functions'),
+          target: posix.join(projectRoot, 'infra/functions'),
+        },
+        io,
+        logger,
+      );
+
+      expect(io.ensureDirectory).toHaveBeenCalledWith(
+        posix.join(projectRoot, 'infra/functions'),
+      );
+      expect(io.readDirEntries).toHaveBeenCalledWith(
+        posix.join(projectRoot, 'functions'),
+      );
+      expect(io.copyFile).toHaveBeenCalledTimes(2);
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: functions/index.js -> infra/functions/index.js',
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: functions/config.json -> infra/functions/config.json',
+      );
+    });
+
+    it('copies a declared set of files into the target directory', async () => {
+      const io = {
+        ensureDirectory: jest.fn().mockResolvedValue(undefined),
+        copyFile: jest.fn().mockResolvedValue(undefined),
+      };
+      const logger = { info: jest.fn() };
+
+      await core.copyDeclaredFiles(
+        {
+          sourceDir: posix.join(projectRoot, 'src'),
+          targetDir: posix.join(projectRoot, 'infra'),
+          files: ['package.json', 'config.json'],
+        },
+        io,
+        logger,
+      );
+
+      expect(io.ensureDirectory).toHaveBeenCalledWith(
+        posix.join(projectRoot, 'infra'),
+      );
+      expect(io.copyFile).toHaveBeenNthCalledWith(
+        1,
+        posix.join(projectRoot, 'src/package.json'),
+        posix.join(projectRoot, 'infra/package.json'),
+      );
+      expect(io.copyFile).toHaveBeenNthCalledWith(
+        2,
+        posix.join(projectRoot, 'src/config.json'),
+        posix.join(projectRoot, 'infra/config.json'),
+      );
+    });
+
+    it('copies explicit file pairs and ensures targets exist', async () => {
+      const io = {
+        ensureDirectory: jest.fn().mockResolvedValue(undefined),
+        copyFile: jest.fn().mockResolvedValue(undefined),
+      };
+      const logger = { info: jest.fn() };
+
+      await core.copyIndividualFiles(
+        [
+          {
+            source: posix.join(projectRoot, 'src/index.js'),
+            target: posix.join(projectRoot, 'infra/index.js'),
+          },
+          {
+            source: posix.join(projectRoot, 'src/util.js'),
+            target: posix.join(projectRoot, 'infra/nested/util.js'),
+          },
+        ],
+        io,
+        logger,
+      );
+
+      expect(io.ensureDirectory).toHaveBeenNthCalledWith(
+        1,
+        posix.join(projectRoot, 'infra'),
+      );
+      expect(io.ensureDirectory).toHaveBeenNthCalledWith(
+        2,
+        posix.join(projectRoot, 'infra/nested'),
+      );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(projectRoot, 'src/util.js'),
+        posix.join(projectRoot, 'infra/nested/util.js'),
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: src/index.js -> infra/index.js',
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: src/util.js -> infra/nested/util.js',
+      );
+    });
+  });
+
+  describe('runCopyToInfra', () => {
+    it('executes all configured copy operations', async () => {
+      const io = {
+        ensureDirectory: jest.fn().mockResolvedValue(undefined),
+        readDirEntries: jest
+          .fn()
+          .mockResolvedValue([createDirent('index.js'), createDirent('README.md')]),
+        copyFile: jest.fn().mockResolvedValue(undefined),
+      };
+      const logger = { info: jest.fn() };
+
+      await core.runCopyToInfra({
+        directoryCopies: [
+          {
+            source: posix.join(projectRoot, 'functions'),
+            target: posix.join(projectRoot, 'infra/functions'),
+          },
+        ],
+        fileCopies: {
+          sourceDir: posix.join(projectRoot, 'src'),
+          targetDir: posix.join(projectRoot, 'infra/src'),
+          files: ['package.json'],
+        },
+        individualFileCopies: [
+          {
+            source: posix.join(projectRoot, 'src/env.json'),
+            target: posix.join(projectRoot, 'infra/env.json'),
+          },
+        ],
+        io,
+        messageLogger: logger,
+      });
+
+      expect(io.ensureDirectory).toHaveBeenCalled();
+      expect(io.copyFile).toHaveBeenCalledTimes(3);
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: functions/index.js -> infra/functions/index.js',
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: src/env.json -> infra/env.json',
+      );
+    });
+
+    it('skips optional sections when not provided', async () => {
+      const io = {
+        ensureDirectory: jest.fn(),
+        readDirEntries: jest.fn(),
+        copyFile: jest.fn(),
+      };
+      const logger = { info: jest.fn() };
+
+      await core.runCopyToInfra({
+        directoryCopies: [],
+        io,
+        messageLogger: logger,
+      });
+
+      expect(io.ensureDirectory).not.toHaveBeenCalled();
+      expect(io.copyFile).not.toHaveBeenCalled();
+      expect(logger.info).not.toHaveBeenCalled();
+    });
   });
 });

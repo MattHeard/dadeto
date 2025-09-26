@@ -1,6 +1,9 @@
 import { jest } from '@jest/globals';
 import path from 'path';
-import { createCopyCore } from '../../src/core/copy.js';
+import {
+  createCopyCore,
+  createSharedDirectoryEntries,
+} from '../../src/core/copy.js';
 
 const posix = path.posix;
 
@@ -42,6 +45,48 @@ const createDirectoryEntry = name => ({
   name,
   isFile: () => false,
   isDirectory: () => true,
+});
+
+describe('createSharedDirectoryEntries', () => {
+  it('creates paired entries for shared directories', () => {
+    const projectRoot = '/project';
+    const srcDir = posix.join(projectRoot, 'src');
+    const publicDir = posix.join(projectRoot, 'public');
+
+    const entries = createSharedDirectoryEntries({
+      path: posix,
+      srcDir,
+      publicDir,
+    });
+
+    expect(entries).toContainEqual([
+      'srcToysDir',
+      posix.join(srcDir, 'toys'),
+    ]);
+    expect(entries).toContainEqual([
+      'publicBrowserDir',
+      posix.join(publicDir, 'browser'),
+    ]);
+  });
+
+  it('allows custom directory pairs to be provided', () => {
+    const projectRoot = '/project';
+    const srcDir = posix.join(projectRoot, 'src');
+    const publicDir = posix.join(projectRoot, 'public');
+    const pairs = [{ key: 'Docs', relativePath: 'docs' }];
+
+    const entries = createSharedDirectoryEntries({
+      path: posix,
+      srcDir,
+      publicDir,
+      pairs,
+    });
+
+    expect(entries).toEqual([
+      ['srcDocsDir', posix.join(srcDir, 'docs')],
+      ['publicDocsDir', posix.join(publicDir, 'docs')],
+    ]);
+  });
 });
 
 describe('createCopyCore', () => {
