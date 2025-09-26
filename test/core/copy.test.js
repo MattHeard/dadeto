@@ -274,6 +274,29 @@ describe('createCopyCore', () => {
     });
   });
 
+  describe('runCopyWorkflow', () => {
+    it('executes the copy pipeline with injected directories', () => {
+      const io = {
+        directoryExists: jest.fn().mockReturnValue(true),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn().mockReturnValue([]),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.runCopyWorkflow({ directories, io, messageLogger: logger });
+
+      expect(io.directoryExists).toHaveBeenCalledWith(directories.publicDir);
+      expect(io.copyFile).toHaveBeenCalledWith(
+        directories.srcBlogJson,
+        directories.publicBlogJson
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: src/blog.json -> public/blog.json'
+      );
+    });
+  });
+
   describe('directory handling', () => {
     it('handles directory and file entries', () => {
       const io = {

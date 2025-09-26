@@ -36,26 +36,13 @@ const logger = {
   warn: message => console.warn(message),
 };
 
-const {
-  ensureDirectoryExists,
-  copyBlogJson,
-  copyToyFiles,
-  copyPresenterFiles,
-  copySupportingDirectories,
-} = createCopyCore({ directories, path: pathAdapters });
+const { runCopyWorkflow } = createCopyCore({
+  directories,
+  path: pathAdapters,
+});
 
-/**
- * Execute the copy workflow.
- * @param {typeof thirdParty} io - File system helpers.
- * @param {typeof logger} messageLogger - Logger for status updates.
- * @returns {void}
- */
-function main(io, messageLogger) {
-  ensureDirectoryExists(io, directories.publicDir);
-  copyBlogJson(directories, io, messageLogger);
-  copyToyFiles(directories, io, messageLogger);
-  copyPresenterFiles(directories, io, messageLogger);
-  copySupportingDirectories(directories, io, messageLogger);
-}
-
-main(thirdParty, logger);
+runCopyWorkflow({
+  directories,
+  io: thirdParty,
+  messageLogger: logger,
+});
