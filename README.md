@@ -75,7 +75,7 @@ npm install
 
 ## Terraform Workflows
 
-Infrastructure is managed with Terraform via GitHub Actions. The **Deploy Terraform**
+Infrastructure is managed with Terraform via GitHub Actions. The **gcp-prod**
 workflow applies changes automatically when commits modify the `infra/` directory.
 After confirming that newly provisioned resources function as expected, run the
 manual **Cleanup Terraform Services** workflow to disable any deprecated services.

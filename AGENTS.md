@@ -34,5 +34,5 @@
 - Ensure generated outputs or reports are up to date, but avoid committing transient build products outside approved directories.
 
 ## Automation & Deployment Notes
-- Terraform changes are applied by `.github/workflows/deploy-terraform.yml`; modify the workflow to adjust behavior instead of running Terraform manually.
+- Terraform changes are applied by `.github/workflows/gcp-prod.yml`; modify the workflow to adjust behavior instead of running Terraform manually.
 - Mutation analysis and quality gates rely on Stryker and Sonar scripts—run `npm run stryker` or `npm run sonar-issues` only when coordinated with maintainers, and capture their reports under `reports/` if shared.
