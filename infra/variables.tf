@@ -39,6 +39,18 @@ variable "environment" {
   default     = "prod"         # keeps prod plans = zero-diff
 }
 
+variable "project_level_environment" {
+  description = "Environment that manages project-level singleton resources"
+  type        = string
+  default     = "prod"
+}
+
+variable "database_id" {
+  description = "Firestore database identifier to target (\"(default)\" or a named database)"
+  type        = string
+  default     = "(default)"
+}
+
 variable "google_oauth_client_id" {
   description = "OAuth client ID for Google sign-in"
   type        = string

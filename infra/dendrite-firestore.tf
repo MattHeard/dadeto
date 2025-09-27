@@ -13,14 +13,15 @@ resource "google_firebaserules_ruleset" "firestore" {
       content = data.local_file.firestore_rules.content
     }
   }
-  depends_on = [
-    google_project_service.firebaserules,
-    google_project_iam_member.ci_firebaserules_admin,
-  ]
+  depends_on = concat(
+    local.firebaserules_service_dependency,
+    local.firebaserules_admin_dependency,
+  )
 }
 
 resource "google_firestore_index" "variants_author_created" {
   project     = var.project_id
+  database    = var.database_id
   collection  = "variants"
   query_scope = "COLLECTION"
 
@@ -37,6 +38,7 @@ resource "google_firestore_index" "variants_author_created" {
 # Supports: variants where moderatorReputationSum == 0 and rand >= n
 resource "google_firestore_index" "variants_moderation_rand" {
   project     = var.project_id
+  database    = var.database_id
   collection  = "variants"
   query_scope = "COLLECTION_GROUP"
 
@@ -53,7 +55,7 @@ resource "google_firestore_index" "variants_moderation_rand" {
 resource "google_firestore_field" "pages_all" {
   provider   = google-beta
   project    = var.project_id
-  database   = "(default)"
+  database   = var.database_id
   collection = "pages"
   field      = "__name__"
 
@@ -69,7 +71,7 @@ resource "google_firestore_field" "pages_all" {
 resource "google_firestore_field" "variants_moderation" {
   provider   = google-beta
   project    = var.project_id
-  database   = "(default)"
+  database   = var.database_id
   collection = "variants"
   field      = "moderatorReputationSum"
 
@@ -83,6 +85,7 @@ resource "google_firestore_field" "variants_moderation" {
 
 resource "google_firestore_index" "ratings_by_variant" {
   project     = var.project_id
+  database    = var.database_id
   collection  = "moderationRatings"
   query_scope = "COLLECTION"
 
@@ -99,7 +102,7 @@ resource "google_firestore_index" "ratings_by_variant" {
 resource "google_firestore_field" "pages_number_global" {
   provider   = google-beta
   project    = var.project_id
-  database   = "(default)"
+  database   = var.database_id
   collection = "pages"
   field      = "number"
 
