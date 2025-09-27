@@ -1,0 +1,66 @@
+name: gcp-test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    env:
+      REGION: europe-west1
+      TF_VAR_google_oauth_client_id: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+      TF_VAR_google_oauth_client_secret: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Generate environment id
+        id: environment
+        run: |
+          ENVIRONMENT="test-$(uuidgen | tr 'A-Z' 'a-z')"
+          echo "ENVIRONMENT=$ENVIRONMENT" >> "$GITHUB_ENV"
+          echo "TF_VAR_environment=$ENVIRONMENT" >> "$GITHUB_ENV"
+          echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build cloud function sources
+        working-directory: ./
+        run: npm run build:cloud
+
+      - name: Set up Google Cloud auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GOOGLE_PROJECT }}
+          install_components: alpha
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        id: terraform_init
+        run: terraform init -migrate-state -backend-config="prefix=terraform/test/${ENVIRONMENT}"
+
+      - name: Terraform Plan
+        run: terraform plan -lock-timeout=5m -input=false -var="environment=${ENVIRONMENT}" -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -lock-timeout=5m -auto-approve tfplan
+
+      - name: Terraform Destroy
+        if: always() && steps.terraform_init.outcome == 'success'
+        run: terraform destroy -lock-timeout=5m -auto-approve -var="environment=${ENVIRONMENT}"
