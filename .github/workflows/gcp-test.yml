@@ -21,7 +21,9 @@ jobs:
       - name: Generate environment id
         id: environment
         run: |
-          ENVIRONMENT="test-$(uuidgen | tr 'A-Z' 'a-z')"
+          UUID="$(uuidgen | tr 'A-Z' 'a-z')"
+          SHORT_ID="$(printf '%s' "$UUID" | md5sum | cut -c1-8)"
+          ENVIRONMENT="t-${SHORT_ID}"
           echo "ENVIRONMENT=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "TF_VAR_environment=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
