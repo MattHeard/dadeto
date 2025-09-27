@@ -25,8 +25,13 @@ data "google_project" "project" {
   project_id = var.project_id
 }
 
+locals {
+  environment_suffix = var.environment == "prod" ? "" : "-${var.environment}"
+  static_site_bucket_name = var.environment == "prod" ? var.static_site_bucket_name : "${var.environment}-${var.static_site_bucket_name}"
+}
+
 resource "google_storage_bucket" "irien_bucket" {
-  name     = "irien-hello-world-${var.project_id}"
+  name     = "irien-hello-world-${var.project_id}${local.environment_suffix}"
   location = var.irien_bucket_location
 }
 
@@ -43,7 +48,7 @@ resource "google_storage_bucket_iam_member" "public_read_access" {
 }
 
 resource "google_storage_bucket" "dendrite_static" {
-  name     = var.static_site_bucket_name
+  name     = local.static_site_bucket_name
   location = var.region
 
   website {
@@ -150,7 +155,7 @@ resource "google_storage_bucket_iam_member" "dendrite_runtime_writer" {
 }
 
 resource "google_storage_bucket" "gcf_source_bucket" {
-  name     = "gcf-source-${var.project_id}-${var.region}"
+  name     = "gcf-source-${var.project_id}-${var.region}${local.environment_suffix}"
   location = var.region
 
   uniform_bucket_level_access = true
