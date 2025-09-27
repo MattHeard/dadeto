@@ -21,7 +21,15 @@ declared in `variables.tf`.
 Firestore security rules and composite indexes for the Dendrite collections are
 defined in `dendrite-firestore.tf`. The rules file lives in `rules/firestore.rules`
 and is released through Terraform to ensure consistent access control across
-environments.
+environments. Supply `database_id` (defaults to `"(default)"`) to point rules,
+indexes, and Cloud Functions triggers at an alternate Firestore database when
+deploying additional environments inside the same GCP project.
+
+Project-scoped services such as API enablement, Identity Platform configuration,
+and shared IAM bindings are guarded by the `project_level_environment` variable.
+Only the environment that matches this value (default `"prod"`) manages those
+singleton resources, letting other environments create their own per-env assets
+without fighting over project-level state.
 
 ## Remote State
 

@@ -2,32 +2,36 @@
 
 # identity-toolkit = Firebase Auth backend
 resource "google_project_service" "identitytoolkit" {
-  project            = var.project_id
-  service            = "identitytoolkit.googleapis.com"
+  count             = local.manage_project_level_resources ? 1 : 0
+  project           = var.project_id
+  service           = "identitytoolkit.googleapis.com"
   disable_on_destroy = false
 }
 
 # firebase.googleapis.com upgrades the project to Firebase
 resource "google_project_service" "firebase_api" {
-  project            = var.project_id
-  service            = "firebase.googleapis.com"
-  disable_on_destroy        = false
-  disable_dependent_services = true
+  count                       = local.manage_project_level_resources ? 1 : 0
+  project                     = var.project_id
+  service                     = "firebase.googleapis.com"
+  disable_on_destroy          = false
+  disable_dependent_services  = true
 }
 
 resource "google_firebase_project" "core" {
+  count      = local.manage_project_level_resources ? 1 : 0
   provider   = google-beta
   project    = var.project_id
-  depends_on = [
-    google_project_service.firebase_api,
-    google_project_service.identitytoolkit,
-  ]
+  depends_on = concat(
+    local.firebase_api_dependency,
+    local.identitytoolkit_service_dependency,
+  )
 }
 
 resource "google_firebase_web_app" "frontend" {
   provider     = google-beta
   project      = var.project_id
-  display_name = "Dadeto Frontend"
+  display_name = var.environment == var.project_level_environment ? "Dadeto Frontend" : "Dadeto Frontend (${var.environment})"
+  depends_on   = local.firebase_project_dependency
 }
 
 # Expose the JS SDK config
@@ -50,6 +54,7 @@ locals {
 }
 
 resource "google_identity_platform_config" "auth" {
+  count                    = local.manage_project_level_resources ? 1 : 0
   provider                 = google-beta
   project                  = var.project_id
   autodelete_anonymous_users = true
@@ -63,6 +68,7 @@ resource "google_identity_platform_config" "auth" {
 }
 
 resource "google_identity_platform_default_supported_idp_config" "google" {
+  count         = local.manage_project_level_resources ? 1 : 0
   provider      = google-beta
   project       = var.project_id
   idp_id        = "google.com"
@@ -71,16 +77,17 @@ resource "google_identity_platform_default_supported_idp_config" "google" {
   enabled       = true
 
   # ensure API has finished provisioning before this runs
-  depends_on = [google_identity_platform_config.auth]
+  depends_on = local.identity_platform_config_dependency
 }
 
 resource "google_identity_platform_oauth_idp_config" "gis_allowlist" {
   provider     = google-beta
-  count        = var.gis_one_tap_client_id == "" ? 0 : 1
+  count        = local.manage_project_level_resources && var.gis_one_tap_client_id != "" ? 1 : 0
   project      = var.project_id
   name         = "projects/${var.project_id}/oauthIdpConfigs/google.com"
   issuer       = "https://accounts.google.com"
   display_name = "GIS One-Tap"
   client_id    = var.gis_one_tap_client_id
   enabled      = true
+  depends_on   = local.identity_platform_config_dependency
 }
