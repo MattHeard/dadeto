@@ -291,8 +291,16 @@ resource "google_project_iam_member" "terraform_security_admin" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+locals {
+  cloud_function_runtime_sa_suffix    = "cfrt"
+  cloud_function_runtime_raw_id       = "sa-${var.environment}-${local.cloud_function_runtime_sa_suffix}"
+  cloud_function_runtime_cleaned      = regexreplace(lower(local.cloud_function_runtime_raw_id), "[^a-z0-9-]", "-")
+  cloud_function_runtime_clipped      = substr(local.cloud_function_runtime_cleaned, 0, 30)
+  cloud_function_runtime_account_id   = trim(local.cloud_function_runtime_clipped, "-")
+}
+
 resource "google_service_account" "cloud_function_runtime" {
-  account_id   = "${var.environment}-cloud-function-runtime"
+  account_id   = local.cloud_function_runtime_account_id
   display_name = "Cloud Function Runtime Service Account"
 }
 
