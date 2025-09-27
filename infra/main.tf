@@ -294,7 +294,11 @@ resource "google_project_iam_member" "terraform_security_admin" {
 locals {
   cloud_function_runtime_sa_suffix    = "cfrt"
   cloud_function_runtime_raw_id       = "sa-${var.environment}-${local.cloud_function_runtime_sa_suffix}"
-  cloud_function_runtime_cleaned      = regexreplace(lower(local.cloud_function_runtime_raw_id), "[^a-z0-9-]", "-")
+  # The generated environment identifier is already limited to lowercase
+  # hexadecimal characters, so simply lower-case the composed id to satisfy the
+  # service account naming rules without relying on regexreplace (which is
+  # unavailable in older Terraform releases).
+  cloud_function_runtime_cleaned      = lower(local.cloud_function_runtime_raw_id)
   cloud_function_runtime_clipped      = substr(local.cloud_function_runtime_cleaned, 0, 30)
   cloud_function_runtime_account_id   = trim(local.cloud_function_runtime_clipped, "-")
 }
