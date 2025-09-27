@@ -326,6 +326,11 @@ form {
   max-width: 40ch;
 }
 
+form.wide-form {
+  max-width: 72ch;
+  width: 100%;
+}
+
 form > div {
   display: flex;
   flex-direction: column;
