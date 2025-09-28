@@ -55,6 +55,9 @@ jobs:
       - name: Terraform Format Check
         run: terraform fmt -check -diff -recursive
 
+      - name: Terraform Init (Validate)
+        run: terraform init -backend=false
+
       - name: Terraform Validate
         run: terraform validate
 
