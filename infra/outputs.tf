@@ -14,3 +14,18 @@ output "effective_environment" {
   description = "Deployment environment that Terraform evaluated"
   value       = var.environment
 }
+
+output "effective_project_level_environment" {
+  description = "Project-level environment value seen during plan"
+  value       = var.project_level_environment
+}
+
+output "manage_project_level_resources" {
+  description = "Whether project-level resources will be managed"
+  value       = local.manage_project_level_resources
+}
+
+output "manage_firestore_services" {
+  description = "Whether Firestore services are managed in this run"
+  value       = local.manage_firestore_services
+}
