@@ -18,7 +18,7 @@ jobs:
     env:
       REGION: europe-west1
       ENVIRONMENT: prod
-      TF_VAR_environment: ${{ env.ENVIRONMENT }}
+      TF_VAR_environment: prod
       TF_VAR_project_level_environment: prod
       TF_VAR_google_oauth_client_id: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
       TF_VAR_google_oauth_client_secret: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
