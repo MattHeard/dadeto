@@ -37,12 +37,16 @@ resource "google_cloudfunctions2_function" "get_api_key_credit_v2" {
     }
   }
 
-  depends_on = concat(
-    local.cloud_function_runtime_dependencies,
-    local.run_service_dependency,
-    local.artifactregistry_service_dependency,
-    local.eventarc_service_dependency,
-  )
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+    google_project_service.run,
+    google_project_service.artifactregistry,
+    google_project_service.eventarc,
+  ]
 }
 
 resource "google_cloud_run_service_iam_member" "get_api_key_credit_v2_public" {
@@ -51,8 +55,8 @@ resource "google_cloud_run_service_iam_member" "get_api_key_credit_v2_public" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 
-  depends_on = concat(
-    [google_cloudfunctions2_function.get_api_key_credit_v2],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions2_function.get_api_key_credit_v2,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }

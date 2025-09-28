@@ -27,11 +27,11 @@ resource "google_compute_backend_bucket" "dendrite_static" {
     "Cross-Origin-Opener-Policy: restrict-properties",
   ]
 
-  depends_on = concat(
-    local.compute_service_dependency,
-    local.loadbalancer_admin_dependency,
-    local.security_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_loadbalancer_admin,
+    google_project_iam_member.terraform_security_admin,
+  ]
 }
 
 resource "google_compute_managed_ssl_certificate" "dendrite" {
@@ -41,10 +41,10 @@ resource "google_compute_managed_ssl_certificate" "dendrite" {
     domains = var.lb_cert_domains
   }
 
-  depends_on = concat(
-    local.compute_service_dependency,
-    local.security_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_security_admin,
+  ]
 }
 
 resource "google_compute_url_map" "dendrite" {
@@ -108,10 +108,10 @@ resource "google_compute_url_map" "dendrite" {
     }
   }
 
-  depends_on = concat(
-    local.compute_service_dependency,
-    local.loadbalancer_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_loadbalancer_admin,
+  ]
 }
 
 resource "google_compute_target_https_proxy" "dendrite" {
@@ -119,20 +119,20 @@ resource "google_compute_target_https_proxy" "dendrite" {
   url_map          = google_compute_url_map.dendrite.id
   ssl_certificates = [google_compute_managed_ssl_certificate.dendrite.id]
 
-  depends_on = concat(
-    local.compute_service_dependency,
-    local.loadbalancer_admin_dependency,
-    local.security_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_loadbalancer_admin,
+    google_project_iam_member.terraform_security_admin,
+  ]
 }
 
 resource "google_compute_global_address" "dendrite" {
   name = "${var.environment}-dendrite-ip"
 
-  depends_on = concat(
-    local.compute_service_dependency,
-    local.loadbalancer_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_loadbalancer_admin,
+  ]
 }
 
 resource "google_compute_global_forwarding_rule" "dendrite_https" {
@@ -141,11 +141,11 @@ resource "google_compute_global_forwarding_rule" "dendrite_https" {
   port_range = "443"
   ip_address = google_compute_global_address.dendrite.address
 
-  depends_on = concat(
-    local.compute_service_dependency,
-    local.loadbalancer_admin_dependency,
-    local.security_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_loadbalancer_admin,
+    google_project_iam_member.terraform_security_admin,
+  ]
 }
 
 resource "google_compute_url_map" "redirect" {
@@ -155,20 +155,20 @@ resource "google_compute_url_map" "redirect" {
     strip_query    = false
   }
 
-  depends_on = concat(
-    local.compute_service_dependency,
-    local.loadbalancer_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_loadbalancer_admin,
+  ]
 }
 
 resource "google_compute_target_http_proxy" "redirect" {
   name    = "${var.environment}-dendrite-http-proxy"
   url_map = google_compute_url_map.redirect.id
 
-  depends_on = concat(
-    local.compute_service_dependency,
-    local.loadbalancer_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_loadbalancer_admin,
+  ]
 }
 
 resource "google_compute_global_forwarding_rule" "dendrite_http" {
@@ -177,8 +177,8 @@ resource "google_compute_global_forwarding_rule" "dendrite_http" {
   port_range = "80"
   ip_address = google_compute_global_address.dendrite.address
 
-  depends_on = concat(
-    local.compute_service_dependency,
-    local.loadbalancer_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_loadbalancer_admin,
+  ]
 }
