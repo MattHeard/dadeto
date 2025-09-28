@@ -238,7 +238,9 @@ resource "google_firestore_database" "database" {
   name        = var.database_id
   location_id = var.region
   type        = "FIRESTORE_NATIVE"
-  depends_on  = local.firestore_service_dependency
+  depends_on = [
+    google_project_service.firestore,
+  ]
 }
 
 resource "google_project_iam_member" "firestore_access" {
@@ -353,9 +355,10 @@ resource "google_project_iam_member" "runtime_firestore_access" {
   role    = "roles/datastore.user"
   member  = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
 
-  depends_on = concat([
+  depends_on = [
     google_service_account.cloud_function_runtime,
-  ], local.firestore_service_dependency)
+    google_project_service.firestore,
+  ]
 }
 
 
@@ -391,7 +394,13 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
   }
 
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "invoker" {
@@ -400,10 +409,10 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
   cloud_function = google_cloudfunctions_function.get_api_key_credit.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
-  depends_on = concat(
-    [google_cloudfunctions_function.get_api_key_credit],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.get_api_key_credit,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 
 data "archive_file" "submit_src" {
@@ -448,7 +457,13 @@ resource "google_cloudfunctions_function" "submit_new_story" {
   }
 
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function" "submit_new_page" {
@@ -469,7 +484,13 @@ resource "google_cloudfunctions_function" "submit_new_page" {
   }
 
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "submit_new_story_invoker" {
@@ -478,10 +499,10 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_story_invoker" 
   cloud_function = google_cloudfunctions_function.submit_new_story.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
-  depends_on = concat(
-    [google_cloudfunctions_function.submit_new_story],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.submit_new_story,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "submit_new_page_invoker" {
@@ -490,10 +511,10 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_page_invoker" {
   cloud_function = google_cloudfunctions_function.submit_new_page.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
-  depends_on = concat(
-    [google_cloudfunctions_function.submit_new_page],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.submit_new_page,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 
 data "archive_file" "assign_moderation_job_src" {
@@ -525,7 +546,13 @@ resource "google_cloudfunctions_function" "assign_moderation_job" {
     FIREBASE_CONFIG      = local.firebase_config_json
   }
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "assign_moderation_job_invoker" {
@@ -534,10 +561,10 @@ resource "google_cloudfunctions_function_iam_member" "assign_moderation_job_invo
   cloud_function = google_cloudfunctions_function.assign_moderation_job.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
-  depends_on = concat(
-    [google_cloudfunctions_function.assign_moderation_job],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.assign_moderation_job,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 
 data "archive_file" "get_moderation_variant_src" {
@@ -569,7 +596,13 @@ resource "google_cloudfunctions_function" "get_moderation_variant" {
     FIREBASE_CONFIG      = local.firebase_config_json
   }
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "get_moderation_variant_invoker" {
@@ -579,10 +612,10 @@ resource "google_cloudfunctions_function_iam_member" "get_moderation_variant_inv
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
 
-  depends_on = concat(
-    [google_cloudfunctions_function.get_moderation_variant],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.get_moderation_variant,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 data "archive_file" "submit_moderation_rating_src" {
   type        = "zip"
@@ -613,7 +646,13 @@ resource "google_cloudfunctions_function" "submit_moderation_rating" {
     FIREBASE_CONFIG      = local.firebase_config_json
   }
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "submit_moderation_rating_invoker" {
@@ -622,10 +661,10 @@ resource "google_cloudfunctions_function_iam_member" "submit_moderation_rating_i
   cloud_function = google_cloudfunctions_function.submit_moderation_rating.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
-  depends_on = concat(
-    [google_cloudfunctions_function.submit_moderation_rating],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.submit_moderation_rating,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 
 
@@ -658,7 +697,13 @@ resource "google_cloudfunctions_function" "report_for_moderation" {
     FIREBASE_CONFIG      = local.firebase_config_json
   }
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "report_for_moderation_invoker" {
@@ -667,10 +712,10 @@ resource "google_cloudfunctions_function_iam_member" "report_for_moderation_invo
   cloud_function = google_cloudfunctions_function.report_for_moderation.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
-  depends_on = concat(
-    [google_cloudfunctions_function.report_for_moderation],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.report_for_moderation,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 
 
@@ -709,7 +754,11 @@ resource "google_cloudfunctions_function" "process_new_story" {
     resource   = "${local.firestore_documents_path}/storyFormSubmissions/{subId}"
   }
 
-  depends_on = local.cloud_function_runtime_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+  ]
 }
 
 data "archive_file" "prod_update_variant_visibility_src" {
@@ -746,7 +795,11 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
     resource   = "${local.firestore_documents_path}/moderationRatings/{ratingId}"
   }
 
-  depends_on = local.cloud_function_runtime_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+  ]
 }
 
 data "archive_file" "process_page_src" {
@@ -784,7 +837,11 @@ resource "google_cloudfunctions_function" "process_new_page" {
     resource   = "${local.firestore_documents_path}/pageFormSubmissions/{subId}"
   }
 
-  depends_on = local.cloud_function_runtime_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+  ]
 }
 
 data "archive_file" "render_variant_src" {
@@ -822,7 +879,11 @@ resource "google_cloudfunctions_function" "render_variant" {
     resource   = "${local.firestore_documents_path}/stories/{storyId}/pages/{pageId}/variants/{variantId}"
   }
 
-  depends_on = local.cloud_function_runtime_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+  ]
 }
 
 data "archive_file" "hide_variant_html_src" {
@@ -859,7 +920,11 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
     resource   = "${local.firestore_documents_path}/stories/{storyId}/pages/{pageId}/variants/{variantId}"
   }
 
-  depends_on = local.cloud_function_runtime_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+  ]
 }
 
 data "archive_file" "mark_variant_dirty_src" {
@@ -891,7 +956,13 @@ resource "google_cloudfunctions_function" "mark_variant_dirty" {
     FIREBASE_CONFIG      = local.firebase_config_json
   }
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "mark_variant_dirty_invoker" {
@@ -900,10 +971,10 @@ resource "google_cloudfunctions_function_iam_member" "mark_variant_dirty_invoker
   cloud_function = google_cloudfunctions_function.mark_variant_dirty.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
-  depends_on = concat(
-    [google_cloudfunctions_function.mark_variant_dirty],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.mark_variant_dirty,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 
 data "archive_file" "generate_stats_src" {
@@ -935,7 +1006,13 @@ resource "google_cloudfunctions_function" "generate_stats" {
     FIREBASE_CONFIG      = local.firebase_config_json
   }
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "generate_stats_invoker" {
@@ -944,10 +1021,10 @@ resource "google_cloudfunctions_function_iam_member" "generate_stats_invoker" {
   cloud_function = google_cloudfunctions_function.generate_stats.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
-  depends_on = concat(
-    [google_cloudfunctions_function.generate_stats],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.generate_stats,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 
 resource "google_cloud_scheduler_job" "generate_stats_daily" {
@@ -961,11 +1038,11 @@ resource "google_cloud_scheduler_job" "generate_stats_daily" {
       "X-Appengine-Cron" = "true"
     }
   }
-  depends_on = concat(
-    local.cloudscheduler_service_dependency,
-    [google_cloudfunctions_function.generate_stats],
-    local.cloudscheduler_admin_dependency,
-  )
+  depends_on = [
+    google_project_service.cloudscheduler,
+    google_cloudfunctions_function.generate_stats,
+    google_project_iam_member.terraform_cloudscheduler_admin,
+  ]
 }
 
 data "archive_file" "render_contents_src" {
@@ -1003,7 +1080,11 @@ resource "google_cloudfunctions_function" "render_contents" {
     resource   = "${local.firestore_documents_path}/stories/{storyId}"
   }
 
-  depends_on = local.cloud_function_runtime_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+  ]
 }
 
 resource "google_cloudfunctions_function" "trigger_render_contents" {
@@ -1023,7 +1104,13 @@ resource "google_cloudfunctions_function" "trigger_render_contents" {
     FIREBASE_CONFIG      = local.firebase_config_json
   }
 
-  depends_on = local.cloud_function_http_dependencies
+  depends_on = [
+    google_project_service.cloudfunctions,
+    google_project_service.cloudbuild,
+    google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
 }
 
 resource "google_cloudfunctions_function_iam_member" "trigger_render_contents_invoker" {
@@ -1032,40 +1119,9 @@ resource "google_cloudfunctions_function_iam_member" "trigger_render_contents_in
   cloud_function = google_cloudfunctions_function.trigger_render_contents.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"
-  depends_on = concat(
-    [google_cloudfunctions_function.trigger_render_contents],
-    local.cloudfunctions_viewer_dependency,
-  )
+  depends_on = [
+    google_cloudfunctions_function.trigger_render_contents,
+    google_project_iam_member.terraform_cloudfunctions_viewer,
+  ]
 }
 
-locals {
-  firestore_service_dependency        = local.manage_project_level_resources ? [google_project_service.firestore[0]] : []
-  cloudfunctions_service_dependency   = local.manage_project_level_resources ? [google_project_service.cloudfunctions[0]] : []
-  cloudbuild_service_dependency       = local.manage_project_level_resources ? [google_project_service.cloudbuild[0]] : []
-  cloudscheduler_service_dependency   = local.manage_project_level_resources ? [google_project_service.cloudscheduler[0]] : []
-  firebaserules_service_dependency    = local.manage_project_level_resources ? [google_project_service.firebaserules[0]] : []
-  identitytoolkit_service_dependency  = local.manage_project_level_resources ? [google_project_service.identitytoolkit[0]] : []
-  firebase_api_dependency             = local.manage_project_level_resources ? [google_project_service.firebase_api[0]] : []
-  apikeys_api_dependency              = local.manage_project_level_resources ? [google_project_service.apikeys_api[0]] : []
-  compute_service_dependency          = local.manage_project_level_resources ? [google_project_service.compute[0]] : []
-  run_service_dependency              = local.manage_project_level_resources ? [google_project_service.run[0]] : []
-  artifactregistry_service_dependency = local.manage_project_level_resources ? [google_project_service.artifactregistry[0]] : []
-  eventarc_service_dependency         = local.manage_project_level_resources ? [google_project_service.eventarc[0]] : []
-  cloudfunctions_access_dependency    = local.manage_project_level_resources ? [google_project_iam_member.cloudfunctions_access[0]] : []
-  cloudfunctions_viewer_dependency    = local.manage_project_level_resources ? [google_project_iam_member.terraform_cloudfunctions_viewer[0]] : []
-  cloudscheduler_admin_dependency     = local.manage_project_level_resources ? [google_project_iam_member.terraform_cloudscheduler_admin[0]] : []
-  firebaserules_admin_dependency      = local.manage_project_level_resources ? [google_project_iam_member.ci_firebaserules_admin[0]] : []
-  loadbalancer_admin_dependency       = local.manage_project_level_resources ? [google_project_iam_member.terraform_loadbalancer_admin[0]] : []
-  security_admin_dependency           = local.manage_project_level_resources ? [google_project_iam_member.terraform_security_admin[0]] : []
-  terraform_can_impersonate_default_compute_dependency = local.manage_project_level_resources ? [google_service_account_iam_member.terraform_can_impersonate_default_compute[0]] : []
-  firebase_project_dependency         = local.manage_project_level_resources ? [google_firebase_project.core[0]] : []
-  identity_platform_config_dependency = local.manage_project_level_resources ? [google_identity_platform_config.auth[0]] : []
-
-  cloud_function_api_dependencies     = concat(local.cloudfunctions_service_dependency, local.cloudbuild_service_dependency)
-  cloud_function_runtime_dependencies = concat(local.cloud_function_api_dependencies, local.cloudfunctions_access_dependency)
-  cloud_function_http_dependencies    = concat(
-    local.cloud_function_runtime_dependencies,
-    [google_service_account_iam_member.terraform_can_impersonate_runtime],
-    local.terraform_can_impersonate_default_compute_dependency,
-  )
-}

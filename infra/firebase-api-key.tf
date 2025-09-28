@@ -11,7 +11,9 @@ resource "google_project_iam_member" "terraform_apikeys_admin" {
   role    = "roles/serviceusage.apiKeysAdmin"
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 
-  depends_on = local.apikeys_api_dependency
+  depends_on = [
+    google_project_service.apikeys_api,
+  ]
 }
 resource "google_project_service" "apikeys_api" {
   count             = local.manage_project_level_resources ? 1 : 0

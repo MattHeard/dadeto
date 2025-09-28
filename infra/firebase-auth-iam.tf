@@ -21,9 +21,9 @@ resource "google_project_iam_member" "runtime_identityplatform_viewer" {
   member  = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
 
   # optional, but makes the dependency explicit
-  depends_on = concat(
-    local.identitytoolkit_service_dependency,
-    [google_service_account.cloud_function_runtime],
-  )
+  depends_on = [
+    google_project_service.identitytoolkit,
+    google_service_account.cloud_function_runtime,
+  ]
 }
 

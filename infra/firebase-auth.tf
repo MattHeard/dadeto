@@ -21,17 +21,19 @@ resource "google_firebase_project" "core" {
   count      = local.manage_project_level_resources ? 1 : 0
   provider   = google-beta
   project    = var.project_id
-  depends_on = concat(
-    local.firebase_api_dependency,
-    local.identitytoolkit_service_dependency,
-  )
+  depends_on = [
+    google_project_service.firebase_api,
+    google_project_service.identitytoolkit,
+  ]
 }
 
 resource "google_firebase_web_app" "frontend" {
   provider     = google-beta
   project      = var.project_id
   display_name = var.environment == var.project_level_environment ? "Dadeto Frontend" : "Dadeto Frontend (${var.environment})"
-  depends_on   = local.firebase_project_dependency
+  depends_on = [
+    google_firebase_project.core,
+  ]
 }
 
 # Expose the JS SDK config
@@ -80,7 +82,9 @@ resource "google_identity_platform_default_supported_idp_config" "google" {
   enabled       = true
 
   # ensure API has finished provisioning before this runs
-  depends_on = local.identity_platform_config_dependency
+  depends_on = [
+    google_identity_platform_config.auth,
+  ]
 }
 
 resource "google_identity_platform_oauth_idp_config" "gis_allowlist" {
@@ -92,7 +96,9 @@ resource "google_identity_platform_oauth_idp_config" "gis_allowlist" {
   display_name = "GIS One-Tap"
   client_id    = var.gis_one_tap_client_id
   enabled      = true
-  depends_on   = local.identity_platform_config_dependency
+  depends_on = [
+    google_identity_platform_config.auth,
+  ]
 }
 
 resource "google_identity_platform_tenant" "environment" {
@@ -103,10 +109,10 @@ resource "google_identity_platform_tenant" "environment" {
   allow_password_signup   = false
   enable_email_link_signin = false
 
-  depends_on = concat(
-    local.identitytoolkit_service_dependency,
-    local.firebase_project_dependency,
-  )
+  depends_on = [
+    google_project_service.identitytoolkit,
+    google_firebase_project.core,
+  ]
 }
 
 resource "google_identity_platform_tenant_default_supported_idp_config" "google" {
