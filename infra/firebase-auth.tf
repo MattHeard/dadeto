@@ -45,7 +45,6 @@ data "google_firebase_web_app_config" "frontend" {
 
 locals {
   identity_platform_authorized_domains = var.identity_platform_authorized_domains
-  identity_platform_tenant_id          = lower("env-${var.environment}")
   identity_platform_tenant_display     = format("Dadeto %s", var.environment)
 
   firebase_web_app_config = {
@@ -57,7 +56,7 @@ locals {
     messagingSenderId = data.google_firebase_web_app_config.frontend.messaging_sender_id
     appId             = google_firebase_web_app.frontend.app_id
     measurementId     = data.google_firebase_web_app_config.frontend.measurement_id
-    tenantId          = google_identity_platform_tenant.environment.tenant_id
+    tenantId          = google_identity_platform_tenant.environment.name
   }
 
   firebase_config_json = jsonencode(local.firebase_web_app_config)
@@ -102,11 +101,10 @@ resource "google_identity_platform_oauth_idp_config" "gis_allowlist" {
 }
 
 resource "google_identity_platform_tenant" "environment" {
-  provider                = google-beta
-  project                 = var.project_id
-  tenant_id               = local.identity_platform_tenant_id
-  display_name            = local.identity_platform_tenant_display
-  allow_password_signup   = false
+  provider                 = google-beta
+  project                  = var.project_id
+  display_name             = local.identity_platform_tenant_display
+  allow_password_signup    = false
   enable_email_link_signin = false
 
   depends_on = [
