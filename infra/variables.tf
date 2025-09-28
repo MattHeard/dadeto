@@ -36,7 +36,7 @@ variable "https_security_level" {
 variable "environment" {
   description = "Deployment environment identifier, e.g. prod, e2e"
   type        = string
-  default     = "prod"         # keeps prod plans = zero-diff
+  default     = "prod" # keeps prod plans = zero-diff
 }
 
 variable "project_level_environment" {
