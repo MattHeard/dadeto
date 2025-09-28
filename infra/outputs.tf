@@ -9,3 +9,8 @@ output "identity_platform_tenant" {
     project_id = var.project_id
   }
 }
+
+output "effective_environment" {
+  description = "Deployment environment that Terraform evaluated"
+  value       = var.environment
+}
