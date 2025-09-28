@@ -19,17 +19,26 @@ Resources for this function live in `main.tf` and all input variables are
 declared in `variables.tf`.
 
 Firestore security rules and composite indexes for the Dendrite collections are
-defined in `dendrite-firestore.tf`. The rules file lives in `rules/firestore.rules`
-and is released through Terraform to ensure consistent access control across
-environments. Supply `database_id` (defaults to `"(default)"`) to point rules,
-indexes, and Cloud Functions triggers at an alternate Firestore database when
-deploying additional environments inside the same GCP project.
+defined in `dendrite-firestore.tf`. The rules file lives in
+`rules/firestore.rules` and is released through Terraform to ensure consistent
+access control across environments. Supply `database_id` (defaults to
+`"(default)"`) to point rules, indexes, and Cloud Functions triggers at an
+alternate Firestore database when deploying additional environments inside the
+same GCP project. The generated `firebase_web_app_config` output now includes the
+selected `databaseId` and the per-environment Identity Platform tenant so that
+client and backend runtimes can connect to the correct datastore without manual
+configuration.
 
-Project-scoped services such as API enablement, Identity Platform configuration,
-and shared IAM bindings are guarded by the `project_level_environment` variable.
-Only the environment that matches this value (default `"prod"`) manages those
-singleton resources, letting other environments create their own per-env assets
-without fighting over project-level state.
+Identity Platform supports multi-environment isolation via tenants. Terraform
+creates one tenant per `environment`, exposes it as the
+`identity_platform_tenant` output, and enables Google Sign-In within that
+tenant. Customize the allowed callback domains with
+`identity_platform_authorized_domains`. Project-scoped services such as API
+enablement, the global Identity Platform configuration, and shared IAM bindings
+are guarded by the `project_level_environment` variable. Only the environment
+that matches this value (default `"prod"`) manages those singleton resources,
+letting other environments create their own per-env assets without fighting over
+project-level state.
 
 ## Remote State
 

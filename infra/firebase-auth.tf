@@ -42,15 +42,23 @@ data "google_firebase_web_app_config" "frontend" {
 }
 
 locals {
+  identity_platform_authorized_domains = var.identity_platform_authorized_domains
+  identity_platform_tenant_id          = lower("env-${var.environment}")
+  identity_platform_tenant_display     = format("Dadeto %s", var.environment)
+
   firebase_web_app_config = {
     apiKey            = data.google_firebase_web_app_config.frontend.api_key
     authDomain        = data.google_firebase_web_app_config.frontend.auth_domain
     projectId         = var.project_id
+    databaseId        = var.database_id
     storageBucket     = data.google_firebase_web_app_config.frontend.storage_bucket
     messagingSenderId = data.google_firebase_web_app_config.frontend.messaging_sender_id
     appId             = google_firebase_web_app.frontend.app_id
     measurementId     = data.google_firebase_web_app_config.frontend.measurement_id
+    tenantId          = google_identity_platform_tenant.environment.tenant_id
   }
+
+  firebase_config_json = jsonencode(local.firebase_web_app_config)
 }
 
 resource "google_identity_platform_config" "auth" {
@@ -59,12 +67,7 @@ resource "google_identity_platform_config" "auth" {
   project                  = var.project_id
   autodelete_anonymous_users = true
 
-  authorized_domains = [
-    "dendritestories.co.nz",
-    "www.dendritestories.co.nz",
-    "mattheard.net",
-    "localhost",
-  ]
+  authorized_domains = local.identity_platform_authorized_domains
 }
 
 resource "google_identity_platform_default_supported_idp_config" "google" {
@@ -90,4 +93,43 @@ resource "google_identity_platform_oauth_idp_config" "gis_allowlist" {
   client_id    = var.gis_one_tap_client_id
   enabled      = true
   depends_on   = local.identity_platform_config_dependency
+}
+
+resource "google_identity_platform_tenant" "environment" {
+  provider                = google-beta
+  project                 = var.project_id
+  tenant_id               = local.identity_platform_tenant_id
+  display_name            = local.identity_platform_tenant_display
+  allow_password_signup   = false
+  enable_email_link_signin = false
+
+  depends_on = concat(
+    local.identitytoolkit_service_dependency,
+    local.firebase_project_dependency,
+  )
+}
+
+resource "google_identity_platform_tenant_default_supported_idp_config" "google" {
+  provider      = google-beta
+  project       = var.project_id
+  tenant        = google_identity_platform_tenant.environment.name
+  idp_id        = "google.com"
+  client_id     = var.google_oauth_client_id
+  client_secret = var.google_oauth_client_secret
+  enabled       = true
+
+  depends_on = [google_identity_platform_tenant.environment]
+}
+
+resource "google_identity_platform_tenant_oauth_idp_config" "gis_allowlist" {
+  provider     = google-beta
+  count        = var.gis_one_tap_client_id != "" ? 1 : 0
+  project      = var.project_id
+  tenant       = google_identity_platform_tenant.environment.name
+  name         = "${google_identity_platform_tenant.environment.name}/oauthIdpConfigs/google.com"
+  issuer       = "https://accounts.google.com"
+  display_name = "GIS One-Tap"
+  client_id    = var.gis_one_tap_client_id
+  enabled      = true
+  depends_on   = [google_identity_platform_tenant.environment]
 }

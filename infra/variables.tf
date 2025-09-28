@@ -66,3 +66,14 @@ variable "gis_one_tap_client_id" {
   type        = string
   default     = ""
 }
+
+variable "identity_platform_authorized_domains" {
+  description = "Allowed domains for project-level Identity Platform configuration"
+  type        = list(string)
+  default = [
+    "dendritestories.co.nz",
+    "www.dendritestories.co.nz",
+    "mattheard.net",
+    "localhost",
+  ]
+}
