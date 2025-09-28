@@ -26,8 +26,8 @@ data "google_project" "project" {
 }
 
 locals {
-  environment_suffix = var.environment == "prod" ? "" : "-${var.environment}"
-  static_site_bucket_name = var.environment == "prod" ? var.static_site_bucket_name : "${var.environment}-${var.static_site_bucket_name}"
+  environment_suffix             = var.environment == "prod" ? "" : "-${var.environment}"
+  static_site_bucket_name        = var.environment == "prod" ? var.static_site_bucket_name : "${var.environment}-${var.static_site_bucket_name}"
   manage_project_level_resources = var.environment == var.project_level_environment
   firestore_database_path        = "projects/${var.project_id}/databases/${var.database_id}"
   firestore_documents_path       = "${local.firestore_database_path}/documents"
@@ -167,9 +167,9 @@ resource "google_storage_bucket" "gcf_source_bucket" {
 }
 
 resource "google_project_service" "firestore" {
-  count             = local.manage_firestore_services ? 1 : 0
-  project           = var.project_id
-  service           = "firestore.googleapis.com"
+  count              = local.manage_firestore_services ? 1 : 0
+  project            = var.project_id
+  service            = "firestore.googleapis.com"
   disable_on_destroy = false
 
   lifecycle {
@@ -178,30 +178,30 @@ resource "google_project_service" "firestore" {
 }
 
 resource "google_project_service" "cloudfunctions" {
-  count             = local.manage_project_level_resources ? 1 : 0
-  project           = var.project_id
-  service           = "cloudfunctions.googleapis.com"
+  count              = local.manage_project_level_resources ? 1 : 0
+  project            = var.project_id
+  service            = "cloudfunctions.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "cloudbuild" {
-  count             = local.manage_project_level_resources ? 1 : 0
-  project           = var.project_id
-  service           = "cloudbuild.googleapis.com"
+  count              = local.manage_project_level_resources ? 1 : 0
+  project            = var.project_id
+  service            = "cloudbuild.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "cloudscheduler" {
-  count             = local.manage_project_level_resources ? 1 : 0
-  project           = var.project_id
-  service           = "cloudscheduler.googleapis.com"
+  count              = local.manage_project_level_resources ? 1 : 0
+  project            = var.project_id
+  service            = "cloudscheduler.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "firebaserules" {
-  count             = local.manage_firestore_services ? 1 : 0
-  project           = var.project_id
-  service           = "firebaserules.googleapis.com"
+  count              = local.manage_firestore_services ? 1 : 0
+  project            = var.project_id
+  service            = "firebaserules.googleapis.com"
   disable_on_destroy = false
 
   lifecycle {
@@ -211,25 +211,25 @@ resource "google_project_service" "firebaserules" {
 
 # Needed for Gen2 (backed by Cloud Run)
 resource "google_project_service" "run" {
-  count             = local.manage_project_level_resources ? 1 : 0
-  project           = var.project_id
-  service           = "run.googleapis.com"
+  count              = local.manage_project_level_resources ? 1 : 0
+  project            = var.project_id
+  service            = "run.googleapis.com"
   disable_on_destroy = false
 }
 
 # Container images for Gen2 builds live here
 resource "google_project_service" "artifactregistry" {
-  count             = local.manage_project_level_resources ? 1 : 0
-  project           = var.project_id
-  service           = "artifactregistry.googleapis.com"
+  count              = local.manage_project_level_resources ? 1 : 0
+  project            = var.project_id
+  service            = "artifactregistry.googleapis.com"
   disable_on_destroy = false
 }
 
 # Optional now, useful later for non-HTTP triggers
 resource "google_project_service" "eventarc" {
-  count             = local.manage_project_level_resources ? 1 : 0
-  project           = var.project_id
-  service           = "eventarc.googleapis.com"
+  count              = local.manage_project_level_resources ? 1 : 0
+  project            = var.project_id
+  service            = "eventarc.googleapis.com"
   disable_on_destroy = false
 }
 
@@ -322,15 +322,15 @@ resource "google_project_iam_member" "terraform_security_admin" {
 }
 
 locals {
-  cloud_function_runtime_sa_suffix    = "cfrt"
-  cloud_function_runtime_raw_id       = "sa-${var.environment}-${local.cloud_function_runtime_sa_suffix}"
+  cloud_function_runtime_sa_suffix = "cfrt"
+  cloud_function_runtime_raw_id    = "sa-${var.environment}-${local.cloud_function_runtime_sa_suffix}"
   # The generated environment identifier is already limited to lowercase
   # hexadecimal characters, so simply lower-case the composed id to satisfy the
   # service account naming rules without relying on regexreplace (which is
   # unavailable in older Terraform releases).
-  cloud_function_runtime_cleaned      = lower(local.cloud_function_runtime_raw_id)
-  cloud_function_runtime_clipped      = substr(local.cloud_function_runtime_cleaned, 0, 30)
-  cloud_function_runtime_account_id   = trim(local.cloud_function_runtime_clipped, "-")
+  cloud_function_runtime_cleaned    = lower(local.cloud_function_runtime_raw_id)
+  cloud_function_runtime_clipped    = substr(local.cloud_function_runtime_cleaned, 0, 30)
+  cloud_function_runtime_account_id = trim(local.cloud_function_runtime_clipped, "-")
 }
 
 resource "google_service_account" "cloud_function_runtime" {

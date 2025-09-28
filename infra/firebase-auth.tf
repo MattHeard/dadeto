@@ -2,25 +2,25 @@
 
 # identity-toolkit = Firebase Auth backend
 resource "google_project_service" "identitytoolkit" {
-  count             = local.manage_project_level_resources ? 1 : 0
-  project           = var.project_id
-  service           = "identitytoolkit.googleapis.com"
+  count              = local.manage_project_level_resources ? 1 : 0
+  project            = var.project_id
+  service            = "identitytoolkit.googleapis.com"
   disable_on_destroy = false
 }
 
 # firebase.googleapis.com upgrades the project to Firebase
 resource "google_project_service" "firebase_api" {
-  count                       = local.manage_project_level_resources ? 1 : 0
-  project                     = var.project_id
-  service                     = "firebase.googleapis.com"
-  disable_on_destroy          = false
-  disable_dependent_services  = true
+  count                      = local.manage_project_level_resources ? 1 : 0
+  project                    = var.project_id
+  service                    = "firebase.googleapis.com"
+  disable_on_destroy         = false
+  disable_dependent_services = true
 }
 
 resource "google_firebase_project" "core" {
-  count      = local.manage_project_level_resources ? 1 : 0
-  provider   = google-beta
-  project    = var.project_id
+  count    = local.manage_project_level_resources ? 1 : 0
+  provider = google-beta
+  project  = var.project_id
   depends_on = [
     google_project_service.firebase_api,
     google_project_service.identitytoolkit,
@@ -63,9 +63,9 @@ locals {
 }
 
 resource "google_identity_platform_config" "auth" {
-  count                    = local.manage_project_level_resources ? 1 : 0
-  provider                 = google-beta
-  project                  = var.project_id
+  count                      = local.manage_project_level_resources ? 1 : 0
+  provider                   = google-beta
+  project                    = var.project_id
   autodelete_anonymous_users = true
 
   authorized_domains = local.identity_platform_authorized_domains
