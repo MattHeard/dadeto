@@ -31,6 +31,7 @@ locals {
   manage_project_level_resources = var.environment == var.project_level_environment
   firestore_database_path        = "projects/${var.project_id}/databases/${var.database_id}"
   firestore_documents_path       = "${local.firestore_database_path}/documents"
+  manage_firestore_services      = var.environment == "prod" || local.manage_project_level_resources
 }
 
 resource "google_storage_bucket" "irien_bucket" {
@@ -166,7 +167,7 @@ resource "google_storage_bucket" "gcf_source_bucket" {
 }
 
 resource "google_project_service" "firestore" {
-  count             = local.manage_project_level_resources ? 1 : 0
+  count             = local.manage_firestore_services ? 1 : 0
   project           = var.project_id
   service           = "firestore.googleapis.com"
   disable_on_destroy = false
@@ -198,7 +199,7 @@ resource "google_project_service" "cloudscheduler" {
 }
 
 resource "google_project_service" "firebaserules" {
-  count             = local.manage_project_level_resources ? 1 : 0
+  count             = local.manage_firestore_services ? 1 : 0
   project           = var.project_id
   service           = "firebaserules.googleapis.com"
   disable_on_destroy = false
