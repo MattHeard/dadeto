@@ -105,7 +105,7 @@ resource "google_storage_bucket_object" "dendrite_mod" {
   name   = "mod.html"
   bucket = google_storage_bucket.dendrite_static.name
   content = templatefile("${path.module}/mod.html", {
-    firebase_web_app_config = jsonencode(local.firebase_web_app_config)
+    firebase_web_app_config = local.firebase_config_json
   })
   content_type = "text/html"
 }
@@ -387,7 +387,7 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
 
@@ -444,7 +444,7 @@ resource "google_cloudfunctions_function" "submit_new_story" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
 
@@ -465,7 +465,7 @@ resource "google_cloudfunctions_function" "submit_new_page" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
 
@@ -522,7 +522,7 @@ resource "google_cloudfunctions_function" "assign_moderation_job" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
   depends_on = local.cloud_function_http_dependencies
@@ -566,7 +566,7 @@ resource "google_cloudfunctions_function" "get_moderation_variant" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
   depends_on = local.cloud_function_http_dependencies
@@ -610,7 +610,7 @@ resource "google_cloudfunctions_function" "submit_moderation_rating" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
   depends_on = local.cloud_function_http_dependencies
@@ -655,7 +655,7 @@ resource "google_cloudfunctions_function" "report_for_moderation" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
   depends_on = local.cloud_function_http_dependencies
@@ -700,7 +700,7 @@ resource "google_cloudfunctions_function" "process_new_story" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
 
@@ -738,7 +738,7 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
   event_trigger {
@@ -775,7 +775,7 @@ resource "google_cloudfunctions_function" "process_new_page" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
 
@@ -813,7 +813,7 @@ resource "google_cloudfunctions_function" "render_variant" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
 
@@ -851,7 +851,7 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
   event_trigger {
@@ -888,7 +888,7 @@ resource "google_cloudfunctions_function" "mark_variant_dirty" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
   depends_on = local.cloud_function_http_dependencies
@@ -932,7 +932,7 @@ resource "google_cloudfunctions_function" "generate_stats" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
   depends_on = local.cloud_function_http_dependencies
@@ -994,7 +994,7 @@ resource "google_cloudfunctions_function" "render_contents" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
 
@@ -1020,7 +1020,7 @@ resource "google_cloudfunctions_function" "trigger_render_contents" {
   environment_variables = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = jsonencode({ projectId = var.project_id })
+    FIREBASE_CONFIG      = local.firebase_config_json
   }
 
   depends_on = local.cloud_function_http_dependencies
