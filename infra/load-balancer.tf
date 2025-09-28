@@ -4,16 +4,16 @@
 variable "lb_cert_domains" {
   description = "Domain names for the TLS certificate"
   type        = list(string)
-  default     = [
+  default = [
     "dendritestories.co.nz",
     "www.dendritestories.co.nz",
   ]
 }
 
 resource "google_project_service" "compute" {
-  count             = local.manage_project_level_resources ? 1 : 0
-  project           = var.project_id
-  service           = "compute.googleapis.com"
+  count              = local.manage_project_level_resources ? 1 : 0
+  project            = var.project_id
+  service            = "compute.googleapis.com"
   disable_on_destroy = false
 }
 
@@ -66,12 +66,12 @@ resource "google_compute_url_map" "dendrite" {
     # url_redirect runs even though a default_service is required syntactically
     default_service = google_compute_backend_bucket.dendrite_static.id
 
-      route_rules {
-        priority = 2
+    route_rules {
+      priority = 2
 
-        match_rules {
-          prefix_match = "/"
-        }
+      match_rules {
+        prefix_match = "/"
+      }
 
       url_redirect {
         host_redirect  = "www.dendritestories.co.nz"

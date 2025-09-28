@@ -26,9 +26,9 @@ resource "google_cloudfunctions2_function" "get_api_key_credit_v2" {
   }
 
   service_config {
-    available_memory   = "256M"
-    timeout_seconds    = 10
-    max_instance_count = 20
+    available_memory      = "256M"
+    timeout_seconds       = 10
+    max_instance_count    = 20
     service_account_email = google_service_account.cloud_function_runtime.email
     environment_variables = {
       GCLOUD_PROJECT       = var.project_id
