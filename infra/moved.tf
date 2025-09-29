@@ -32,11 +32,6 @@ moved {
 }
 
 moved {
-  from = google_project_service.firebaserules
-  to   = google_project_service.firebaserules[0]
-}
-
-moved {
   from = google_project_service.apis["cloudfunctions.googleapis.com"]
   to   = google_project_service.cloudfunctions[0]
 }
@@ -48,11 +43,6 @@ moved {
 
 moved {
   from = google_project_service.apis["firestore.googleapis.com"]
-  to   = google_project_service.firestore[0]
-}
-
-moved {
-  from = google_project_service.firestore
   to   = google_project_service.firestore[0]
 }
 
