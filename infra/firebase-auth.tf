@@ -131,6 +131,7 @@ resource "google_identity_platform_tenant" "environment" {
   depends_on = [
     google_project_service.identitytoolkit,
     google_firebase_project.core,
+    google_identity_platform_config.auth,
   ]
 }
 
