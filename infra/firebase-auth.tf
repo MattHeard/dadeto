@@ -46,7 +46,7 @@ data "google_firebase_web_app_config" "frontend" {
 locals {
   identity_platform_authorized_domains = var.identity_platform_authorized_domains
   identity_platform_environment_sanitized = trim(
-    regexreplace(lower(var.environment), "[^a-z0-9-]+", "-"),
+    replace(lower(var.environment), "[^a-z0-9-]+", "-"),
     "-",
   )
   identity_platform_tenant_slug         = length(local.identity_platform_environment_sanitized) > 0 ? local.identity_platform_environment_sanitized : "env"
@@ -56,7 +56,7 @@ locals {
     0,
     min(length(local.identity_platform_tenant_display_full), 20),
   )
-  identity_platform_tenant_display_normalized = regexreplace(
+  identity_platform_tenant_display_normalized = replace(
     local.identity_platform_tenant_display_truncated,
     "-{2,}",
     "-",
