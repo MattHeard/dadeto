@@ -61,3 +61,8 @@ moved {
   to   = google_project_service.cloudbuild[0]
 }
 
+moved {
+  from = google_firestore_database.default
+  to   = google_firestore_database.database[0]
+}
+
