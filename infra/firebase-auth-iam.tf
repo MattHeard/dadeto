@@ -14,6 +14,13 @@ resource "google_project_iam_member" "terraform_serviceusage_admin" {
   member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "terraform_identityplatform_admin" {
+  count   = local.manage_project_level_resources ? 1 : 0
+  project = var.project_id
+  role    = "roles/identityplatform.admin" # manage tenants & other Identity Platform settings
+  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+}
+
 # Allow the Cloud Function runtime SA to read auth users
 resource "google_project_iam_member" "runtime_identityplatform_viewer" {
   project = var.project_id
