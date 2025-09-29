@@ -49,7 +49,7 @@ locals {
     regexreplace(lower(var.environment), "[^a-z0-9-]+", "-"),
     "-",
   )
-  identity_platform_tenant_slug = length(local.identity_platform_environment_sanitized) > 0 ? local.identity_platform_environment_sanitized : "env"
+  identity_platform_tenant_slug         = length(local.identity_platform_environment_sanitized) > 0 ? local.identity_platform_environment_sanitized : "env"
   identity_platform_tenant_display_full = "Dadeto-${local.identity_platform_tenant_slug}"
   identity_platform_tenant_display_truncated = substr(
     local.identity_platform_tenant_display_full,
@@ -62,7 +62,7 @@ locals {
     "-",
   )
   identity_platform_tenant_display_clean = trim(local.identity_platform_tenant_display_normalized, "-")
-  identity_platform_tenant_display = length(local.identity_platform_tenant_display_clean) >= 4 ? local.identity_platform_tenant_display_clean : "Dadeto"
+  identity_platform_tenant_display       = length(local.identity_platform_tenant_display_clean) >= 4 ? local.identity_platform_tenant_display_clean : "Dadeto"
 
   firebase_web_app_config = {
     apiKey            = data.google_firebase_web_app_config.frontend.api_key
