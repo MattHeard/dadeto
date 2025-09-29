@@ -27,7 +27,7 @@ moved {
 }
 
 moved {
-  from = google_project_service.apis["firebaserules.googleapis.com"]
+  from = google_project_service.firebaserules
   to   = google_project_service.firebaserules[0]
 }
 
@@ -42,7 +42,7 @@ moved {
 }
 
 moved {
-  from = google_project_service.apis["firestore.googleapis.com"]
+  from = google_project_service.firestore
   to   = google_project_service.firestore[0]
 }
 
