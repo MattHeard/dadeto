@@ -51,6 +51,12 @@ variable "database_id" {
   default     = "(default)"
 }
 
+variable "create_default_firestore_database" {
+  description = "Whether Terraform should attempt to create the default Firestore database when managing project-level resources"
+  type        = bool
+  default     = true
+}
+
 variable "google_oauth_client_id" {
   description = "OAuth client ID for Google sign-in"
   type        = string

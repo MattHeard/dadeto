@@ -234,7 +234,7 @@ resource "google_project_service" "eventarc" {
 }
 
 resource "google_firestore_database" "database" {
-  count       = var.database_id == "(default)" ? (local.manage_project_level_resources ? 1 : 0) : 1
+  count       = var.database_id == "(default)" ? (local.manage_project_level_resources && var.create_default_firestore_database ? 1 : 0) : 1
   project     = var.project_id
   name        = var.database_id
   location_id = var.region
