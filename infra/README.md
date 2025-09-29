@@ -24,10 +24,12 @@ defined in `dendrite-firestore.tf`. The rules file lives in
 access control across environments. Supply `database_id` (defaults to
 `"(default)"`) to point rules, indexes, and Cloud Functions triggers at an
 alternate Firestore database when deploying additional environments inside the
-same GCP project. The generated `firebase_web_app_config` output now includes the
-selected `databaseId` and the per-environment Identity Platform tenant so that
-client and backend runtimes can connect to the correct datastore without manual
-configuration.
+same GCP project. If the default database already exists, disable
+`create_default_firestore_database` (defaults to `true`) so Terraform skips the
+singleton creation while continuing to manage rules and indexes. The generated
+`firebase_web_app_config` output now includes the selected `databaseId` and the
+per-environment Identity Platform tenant so that client and backend runtimes can
+connect to the correct datastore without manual configuration.
 
 Identity Platform supports multi-environment isolation via tenants. Terraform
 creates one tenant per `environment`, exposes it as the
