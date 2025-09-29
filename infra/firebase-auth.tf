@@ -85,6 +85,10 @@ resource "google_identity_platform_config" "auth" {
   project                    = var.project_id
   autodelete_anonymous_users = true
 
+  multi_tenant {
+    allow_tenants = true
+  }
+
   authorized_domains = local.identity_platform_authorized_domains
 }
 
