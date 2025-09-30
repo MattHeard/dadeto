@@ -61,6 +61,13 @@ jobs:
 
       - name: Terraform Init
         run: terraform init -migrate-state
+
+      - name: Terraform Targeted Apply (Identity Platform Tenant)
+        run: >-
+          terraform apply -lock-timeout=5m -auto-approve
+          -target=google_identity_platform_tenant.environment
+          -target=google_identity_platform_tenant_default_supported_idp_config.google
+
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -out=tfplan
 
