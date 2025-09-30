@@ -759,6 +759,7 @@ resource "google_cloudfunctions_function" "process_new_story" {
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
     google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
 
@@ -800,6 +801,7 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
     google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
 
@@ -842,6 +844,7 @@ resource "google_cloudfunctions_function" "process_new_page" {
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
     google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
 
@@ -884,6 +887,7 @@ resource "google_cloudfunctions_function" "render_variant" {
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
     google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
 
@@ -925,6 +929,7 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
     google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
 
@@ -1085,6 +1090,7 @@ resource "google_cloudfunctions_function" "render_contents" {
     google_project_service.cloudfunctions,
     google_project_service.cloudbuild,
     google_project_iam_member.cloudfunctions_access,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
 
