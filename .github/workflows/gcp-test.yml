@@ -62,6 +62,7 @@ jobs:
           terraform apply -lock-timeout=5m -auto-approve
           -target=google_identity_platform_tenant.environment
           -target=google_identity_platform_tenant_default_supported_idp_config.google
+          -var="environment=${ENVIRONMENT}"
 
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -var="environment=${ENVIRONMENT}" -out=tfplan
