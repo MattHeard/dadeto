@@ -32,6 +32,11 @@ locals {
   firestore_database_path        = "projects/${var.project_id}/databases/${var.database_id}"
   firestore_documents_path       = "${local.firestore_database_path}/documents"
   manage_firestore_services      = var.environment == "prod" || local.manage_project_level_resources
+  cloud_function_environment = {
+    GCLOUD_PROJECT       = var.project_id
+    GOOGLE_CLOUD_PROJECT = var.project_id
+    FIREBASE_CONFIG      = local.firebase_config_json
+  }
 }
 
 resource "google_storage_bucket" "irien_bucket" {
@@ -388,11 +393,7 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
 
   depends_on = [
@@ -451,11 +452,7 @@ resource "google_cloudfunctions_function" "submit_new_story" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
 
   depends_on = [
@@ -478,11 +475,7 @@ resource "google_cloudfunctions_function" "submit_new_page" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
 
   depends_on = [
@@ -541,11 +534,7 @@ resource "google_cloudfunctions_function" "assign_moderation_job" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -591,11 +580,7 @@ resource "google_cloudfunctions_function" "get_moderation_variant" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -641,11 +626,7 @@ resource "google_cloudfunctions_function" "submit_moderation_rating" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -692,11 +673,7 @@ resource "google_cloudfunctions_function" "report_for_moderation" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -743,11 +720,7 @@ resource "google_cloudfunctions_function" "process_new_story" {
 
   service_account_email = google_service_account.cloud_function_runtime.email
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
 
   event_trigger {
@@ -786,11 +759,7 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
 
   service_account_email = google_service_account.cloud_function_runtime.email
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.create"
@@ -828,11 +797,7 @@ resource "google_cloudfunctions_function" "process_new_page" {
 
   service_account_email = google_service_account.cloud_function_runtime.email
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
 
   event_trigger {
@@ -871,11 +836,7 @@ resource "google_cloudfunctions_function" "render_variant" {
 
   service_account_email = google_service_account.cloud_function_runtime.email
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
 
   event_trigger {
@@ -914,11 +875,7 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
 
   service_account_email = google_service_account.cloud_function_runtime.email
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
   event_trigger {
     event_type = "providers/cloud.firestore/eventTypes/document.write"
@@ -956,11 +913,7 @@ resource "google_cloudfunctions_function" "mark_variant_dirty" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -1006,11 +959,7 @@ resource "google_cloudfunctions_function" "generate_stats" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
   depends_on = [
     google_project_service.cloudfunctions,
@@ -1074,11 +1023,7 @@ resource "google_cloudfunctions_function" "render_contents" {
 
   service_account_email = google_service_account.cloud_function_runtime.email
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
 
   event_trigger {
@@ -1105,11 +1050,7 @@ resource "google_cloudfunctions_function" "trigger_render_contents" {
   service_account_email        = google_service_account.cloud_function_runtime.email
   region                       = var.region
 
-  environment_variables = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  environment_variables = local.cloud_function_environment
 
   depends_on = [
     google_project_service.cloudfunctions,
