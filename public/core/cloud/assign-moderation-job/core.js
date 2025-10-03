@@ -13,6 +13,16 @@ export function isAllowedOrigin(origin, allowedOrigins) {
 }
 
 /**
+ * Extract the ID token from a request body.
+ * @param {import('express').Request} req HTTP request object.
+ * @returns {string | undefined} The ID token if present.
+ */
+export function getIdTokenFromRequest(req) {
+  const { id_token: idToken } = req?.body ?? {};
+  return idToken;
+}
+
+/**
  * Initialize Firebase resources, configure CORS, and expose dependencies.
  * @param {() => { db: import('firebase-admin/firestore').Firestore,
  *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} initializeFirebaseApp
