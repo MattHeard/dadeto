@@ -3,7 +3,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
-import corsConfig from '../cors-config.json' with { type: 'json' };
+import corsConfig from './cors-config.js';
 
 initializeApp();
 const db = getFirestore();

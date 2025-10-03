@@ -5,7 +5,7 @@ import { getAuth } from 'firebase-admin/auth';
 import crypto from 'crypto';
 import express from 'express';
 import cors from 'cors';
-import corsConfig from '../cors-config.json' with { type: 'json' };
+import corsConfig from './cors-config.js';
 import {
   parseIncomingOption,
   findExistingOption,

@@ -48,6 +48,13 @@ const fileCopies = {
   files: ['googleAuth.js', 'moderate.js'],
 };
 
+const corsConfigSource = join(srcCloudDir, 'cors-config.js');
+
+const corsConfigCopies = functionDirectories.map(name => ({
+  source: corsConfigSource,
+  target: join(infraFunctionsDir, name, 'cors-config.js'),
+}));
+
 const individualFileCopies = [
   {
     source: join(browserDir, 'admin.js'),
@@ -57,6 +64,7 @@ const individualFileCopies = [
     source: join(srcCoreCloudDir, 'assign-moderation-job', 'core.js'),
     target: join(infraFunctionsDir, 'assign-moderation-job', 'core.js'),
   },
+  ...corsConfigCopies,
 ];
 
 const io = createAsyncFsAdapters();
