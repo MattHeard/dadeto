@@ -37,6 +37,8 @@ locals {
     GOOGLE_CLOUD_PROJECT = var.project_id
     FIREBASE_CONFIG      = local.firebase_config_json
   }
+  cloud_function_runtime_service_account_email = google_service_account.cloud_function_runtime.email
+  cloud_function_runtime_service_account_member = "serviceAccount:${local.cloud_function_runtime_service_account_email}"
   terraform_service_account_member = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
   static_site_objects = {
     dendrite_new_story = {
@@ -154,7 +156,7 @@ resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
 resource "google_storage_bucket_iam_member" "dendrite_runtime_writer" {
   bucket = google_storage_bucket.dendrite_static.name
   role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
+  member = local.cloud_function_runtime_service_account_member
 }
 
 resource "google_storage_bucket" "gcf_source_bucket" {
@@ -309,7 +311,7 @@ resource "google_project_iam_member" "terraform_loadbalancer_admin" {
 resource "google_project_iam_member" "runtime_loadbalancer_admin" {
   project    = var.project_id
   role       = "roles/compute.loadBalancerAdmin"
-  member     = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
+  member     = local.cloud_function_runtime_service_account_member
   depends_on = [google_service_account.cloud_function_runtime]
 }
 
@@ -353,7 +355,7 @@ resource "google_service_account_iam_member" "terraform_can_impersonate_default_
 resource "google_project_iam_member" "runtime_firestore_access" {
   project = var.project_id
   role    = "roles/datastore.user"
-  member  = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
+  member  = local.cloud_function_runtime_service_account_member
 
   depends_on = [
     google_service_account.cloud_function_runtime,
@@ -384,7 +386,7 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
   entry_point                  = "handler"
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
@@ -443,7 +445,7 @@ resource "google_cloudfunctions_function" "submit_new_story" {
   source_archive_object        = google_storage_bucket_object.submit_new_story.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
@@ -466,7 +468,7 @@ resource "google_cloudfunctions_function" "submit_new_page" {
   source_archive_object        = google_storage_bucket_object.submit_new_page.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
@@ -525,7 +527,7 @@ resource "google_cloudfunctions_function" "assign_moderation_job" {
   source_archive_object        = google_storage_bucket_object.assign_moderation_job.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
@@ -571,7 +573,7 @@ resource "google_cloudfunctions_function" "get_moderation_variant" {
   source_archive_object        = google_storage_bucket_object.get_moderation_variant.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
@@ -617,7 +619,7 @@ resource "google_cloudfunctions_function" "submit_moderation_rating" {
   source_archive_object        = google_storage_bucket_object.submit_moderation_rating.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
@@ -664,7 +666,7 @@ resource "google_cloudfunctions_function" "report_for_moderation" {
   source_archive_object        = google_storage_bucket_object.report_for_moderation.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
@@ -712,7 +714,7 @@ resource "google_cloudfunctions_function" "process_new_story" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.process_new_story.name
 
-  service_account_email = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -751,7 +753,7 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.prod_update_variant_visibility.name
 
-  service_account_email = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -789,7 +791,7 @@ resource "google_cloudfunctions_function" "process_new_page" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.process_new_page.name
 
-  service_account_email = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -828,7 +830,7 @@ resource "google_cloudfunctions_function" "render_variant" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.render_variant.name
 
-  service_account_email = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -867,7 +869,7 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.hide_variant_html.name
 
-  service_account_email = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -904,7 +906,7 @@ resource "google_cloudfunctions_function" "mark_variant_dirty" {
   source_archive_object        = google_storage_bucket_object.mark_variant_dirty.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
@@ -950,7 +952,7 @@ resource "google_cloudfunctions_function" "generate_stats" {
   source_archive_object        = google_storage_bucket_object.generate_stats.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
@@ -1015,7 +1017,7 @@ resource "google_cloudfunctions_function" "render_contents" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.render_contents.name
 
-  service_account_email = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -1041,7 +1043,7 @@ resource "google_cloudfunctions_function" "trigger_render_contents" {
   source_archive_object        = google_storage_bucket_object.render_contents.name
   trigger_http                 = true
   https_trigger_security_level = var.https_security_level
-  service_account_email        = google_service_account.cloud_function_runtime.email
+  service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
   environment_variables = local.cloud_function_environment
