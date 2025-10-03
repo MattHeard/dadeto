@@ -76,9 +76,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          mapfile -t STATE_ADDRESSES < <(terraform state list)
-          DESTROY_ARGS=()
+          if ! terraform state list > /tmp/state.txt; then
+            echo "No state; nothing to destroy"
+            exit 0
+          fi
+          readarray -t STATE_ADDRESSES < /tmp/state.txt
 
+          DESTROY_ARGS=()
           for address in "${STATE_ADDRESSES[@]}"; do
             case "$address" in
               google_storage_bucket.dendrite_static|
@@ -88,7 +92,6 @@ jobs:
                 continue
                 ;;
             esac
-
             DESTROY_ARGS+=("-target=${address}")
           done
 
