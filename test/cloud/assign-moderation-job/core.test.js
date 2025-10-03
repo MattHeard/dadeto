@@ -3,6 +3,7 @@ import {
   createAssignModerationApp,
   isAllowedOrigin,
   configureUrlencodedBodyParser,
+  getIdTokenFromRequest,
 } from "../../../src/core/cloud/assign-moderation-job/core.js";
 
 describe("isAllowedOrigin", () => {
@@ -94,5 +95,19 @@ describe("configureUrlencodedBodyParser", () => {
 
     expect(expressModule.urlencoded).toHaveBeenCalledWith({ extended: false });
     expect(use).toHaveBeenCalledWith(middleware);
+  });
+});
+
+describe("getIdTokenFromRequest", () => {
+  test("returns the id token when present on the request body", () => {
+    const req = { body: { id_token: "token-value" } };
+
+    expect(getIdTokenFromRequest(req)).toBe("token-value");
+  });
+
+  test("returns undefined when the request body is missing", () => {
+    const req = {};
+
+    expect(getIdTokenFromRequest(req)).toBeUndefined();
   });
 });
