@@ -58,3 +58,17 @@ export function configureUrlencodedBodyParser(appInstance, expressModule) {
   const urlencodedMiddleware = expressModule.urlencoded({ extended: false });
   appInstance.use(urlencodedMiddleware);
 }
+
+/**
+ * Select the first document from a snapshot when available.
+ * @param {{ empty: boolean, docs?: unknown[] }} snapshot Query snapshot containing candidate documents.
+ * @returns {{ variantDoc?: unknown, errorMessage?: string }} Selected document or an error message.
+ */
+export function selectVariantDoc(snapshot) {
+  const [variantDoc] = snapshot?.docs ?? [];
+  if (!variantDoc || snapshot?.empty) {
+    return { errorMessage: 'Variant fetch failed 🤷' };
+  }
+
+  return { variantDoc };
+}
