@@ -68,19 +68,6 @@ async function handleAssignModerationJob(req, res) {
 }
 
 /**
- * Build the payload persisted alongside a moderator assignment.
- * @param {unknown} variantRef Variant document reference selected for moderation.
- * @param {unknown} createdAt Firestore timestamp recorded for the assignment.
- * @returns {{ variant: unknown, createdAt: unknown }} Moderator assignment payload.
- */
-function buildModeratorAssignment(variantRef, createdAt) {
-  return {
-    variant: variantRef,
-    createdAt,
-  };
-}
-
-/**
  * Select the first document from a snapshot when available.
  * @param {{ empty: boolean, docs?: unknown[] }} snapshot Query snapshot containing candidate documents.
  * @returns {{ variantDoc?: unknown, errorMessage?: string }} Selected document or an error message.
@@ -221,7 +208,10 @@ const assignModerationWorkflow = createAssignModerationWorkflow({
   runGuards,
   fetchVariantSnapshot: getVariantSnapshot,
   selectVariantDoc,
-  buildAssignment: buildModeratorAssignment,
+  buildAssignment: (variantRef, createdAt) => ({
+    variant: variantRef,
+    createdAt,
+  }),
   createModeratorRef: uid => db.collection('moderators').doc(uid),
   now: () => FieldValue.serverTimestamp(),
   random: () => Math.random(),
@@ -236,5 +226,4 @@ export const assignModerationJob = functions
 export {
   handleAssignModerationJob,
   getIdTokenFromRequest,
-  buildModeratorAssignment,
 };
