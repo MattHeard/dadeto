@@ -2,6 +2,7 @@ import { describe, expect, jest, test } from "@jest/globals";
 import {
   createAssignModerationApp,
   isAllowedOrigin,
+  configureUrlencodedBodyParser,
 } from "../../../src/core/cloud/assign-moderation-job/core.js";
 
 describe("isAllowedOrigin", () => {
@@ -79,5 +80,19 @@ describe("createAssignModerationApp", () => {
       allowedOrigins
     );
     expect(result).toStrictEqual(dependencies);
+  });
+});
+
+describe("configureUrlencodedBodyParser", () => {
+  test("registers the express urlencoded middleware", () => {
+    const middleware = Symbol("middleware");
+    const expressModule = { urlencoded: jest.fn(() => middleware) };
+    const use = jest.fn();
+    const appInstance = { use };
+
+    configureUrlencodedBodyParser(appInstance, expressModule);
+
+    expect(expressModule.urlencoded).toHaveBeenCalledWith({ extended: false });
+    expect(use).toHaveBeenCalledWith(middleware);
   });
 });
