@@ -80,10 +80,10 @@ jobs:
             echo "No state; nothing to destroy"
             exit 0
           fi
-          readarray -t STATE_ADDRESSES < /tmp/state.txt
 
-          DESTROY_ARGS=()
-          for address in "${STATE_ADDRESSES[@]}"; do
+          # Build a list of destroy targets without relying on bash arrays.
+          set --
+          while IFS= read -r address; do
             case "$address" in
               google_storage_bucket.dendrite_static|
               google_storage_bucket_object.dendrite_*|
@@ -92,12 +92,13 @@ jobs:
                 continue
                 ;;
             esac
-            DESTROY_ARGS+=("-target=${address}")
-          done
 
-          if [ "${#DESTROY_ARGS[@]}" -eq 0 ]; then
+            set -- "$@" "-target=$address"
+          done < /tmp/state.txt
+
+          if [ "$#" -eq 0 ]; then
             echo "No resources eligible for destroy"
             exit 0
           fi
 
-          terraform destroy -lock-timeout=5m -auto-approve -var="environment=${ENVIRONMENT}" "${DESTROY_ARGS[@]}"
+          terraform destroy -lock-timeout=5m -auto-approve -var="environment=${ENVIRONMENT}" "$@"
