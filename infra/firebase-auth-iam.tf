@@ -25,7 +25,7 @@ resource "google_project_iam_member" "terraform_identityplatform_admin" {
 resource "google_project_iam_member" "runtime_identityplatform_viewer" {
   project = var.project_id
   role    = "roles/identityplatform.viewer" # just “view” permissions
-  member  = "serviceAccount:${google_service_account.cloud_function_runtime.email}"
+  member  = local.cloud_function_runtime_service_account_member
 
   # optional, but makes the dependency explicit
   depends_on = [
