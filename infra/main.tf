@@ -37,6 +37,7 @@ locals {
     GOOGLE_CLOUD_PROJECT = var.project_id
     FIREBASE_CONFIG      = local.firebase_config_json
   }
+  terraform_service_account_member = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
   static_site_objects = {
     dendrite_new_story = {
       name         = "new-story.html"
@@ -246,49 +247,49 @@ resource "google_project_iam_member" "firestore_access" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/datastore.user"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "cloudfunctions_access" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/cloudfunctions.developer"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "terraform_cloudfunctions_viewer" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/cloudfunctions.viewer"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "terraform_set_iam_policy" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/cloudfunctions.admin"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "terraform_create_sa" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/iam.serviceAccountAdmin"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "terraform_cloudscheduler_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/cloudscheduler.admin"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "ci_firebaserules_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/firebaserules.admin"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "build_loadbalancer_admin" {
@@ -302,7 +303,7 @@ resource "google_project_iam_member" "terraform_loadbalancer_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/compute.loadBalancerAdmin"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "runtime_loadbalancer_admin" {
@@ -316,7 +317,7 @@ resource "google_project_iam_member" "terraform_security_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/compute.securityAdmin"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 locals {
@@ -339,14 +340,14 @@ resource "google_service_account" "cloud_function_runtime" {
 resource "google_service_account_iam_member" "terraform_can_impersonate_runtime" {
   service_account_id = google_service_account.cloud_function_runtime.name
   role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member             = local.terraform_service_account_member
 }
 
 resource "google_service_account_iam_member" "terraform_can_impersonate_default_compute" {
   count              = local.manage_project_level_resources ? 1 : 0
   service_account_id = "projects/${var.project_id}/serviceAccounts/${data.google_project.project.number}-compute@developer.gserviceaccount.com"
   role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member             = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "runtime_firestore_access" {

@@ -4,21 +4,21 @@ resource "google_project_iam_member" "terraform_firebase_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/firebase.admin" # can add Firebase to a project & manage web-apps
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "terraform_serviceusage_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/serviceusage.serviceUsageAdmin" # turns APIs on/off programmatically
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 resource "google_project_iam_member" "terraform_identityplatform_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/identityplatform.admin" # manage tenants & other Identity Platform settings
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 }
 
 # Allow the Cloud Function runtime SA to read auth users
