@@ -37,6 +37,53 @@ locals {
     GOOGLE_CLOUD_PROJECT = var.project_id
     FIREBASE_CONFIG      = local.firebase_config_json
   }
+  static_site_objects = {
+    dendrite_new_story = {
+      name         = "new-story.html"
+      source       = "${path.module}/new-story.html"
+      content_type = "text/html"
+    }
+    dendrite_new_page = {
+      name         = "new-page.html"
+      source       = "${path.module}/new-page.html"
+      content_type = "text/html"
+    }
+    dendrite_about = {
+      name         = "about.html"
+      source       = "${path.module}/about.html"
+      content_type = "text/html"
+    }
+    dendrite_manual = {
+      name         = "manual.html"
+      source       = "${path.module}/manual.html"
+      content_type = "text/html"
+    }
+    dendrite_google_auth_js = {
+      name         = "googleAuth.js"
+      source       = "${path.module}/googleAuth.js"
+      content_type = "application/javascript"
+    }
+    dendrite_moderate_js = {
+      name         = "moderate.js"
+      source       = "${path.module}/moderate.js"
+      content_type = "application/javascript"
+    }
+    dendrite_admin_html = {
+      name         = "admin.html"
+      source       = "${path.module}/admin.html"
+      content_type = "text/html"
+    }
+    dendrite_admin_js = {
+      name         = "admin.js"
+      source       = "${path.module}/admin.js"
+      content_type = "application/javascript"
+    }
+    dendrite_css = {
+      name         = "dendrite.css"
+      source       = "${path.module}/dendrite.css"
+      content_type = "text/css"
+    }
+  }
 }
 
 resource "google_storage_bucket" "irien_bucket" {
@@ -79,32 +126,13 @@ resource "google_storage_bucket_object" "dendrite_404" {
   cache_control = "no-store"
 }
 
-resource "google_storage_bucket_object" "dendrite_new_story" {
-  name         = "new-story.html"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/new-story.html"
-  content_type = "text/html"
-}
+resource "google_storage_bucket_object" "dendrite_static_files" {
+  for_each = local.static_site_objects
 
-resource "google_storage_bucket_object" "dendrite_new_page" {
-  name         = "new-page.html"
+  name         = each.value.name
   bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/new-page.html"
-  content_type = "text/html"
-}
-
-resource "google_storage_bucket_object" "dendrite_about" {
-  name         = "about.html"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/about.html"
-  content_type = "text/html"
-}
-
-resource "google_storage_bucket_object" "dendrite_manual" {
-  name         = "manual.html"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/manual.html"
-  content_type = "text/html"
+  source       = each.value.source
+  content_type = each.value.content_type
 }
 
 resource "google_storage_bucket_object" "dendrite_mod" {
@@ -114,41 +142,6 @@ resource "google_storage_bucket_object" "dendrite_mod" {
     firebase_web_app_config = local.firebase_config_json
   })
   content_type = "text/html"
-}
-
-resource "google_storage_bucket_object" "dendrite_google_auth_js" {
-  name         = "googleAuth.js"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/googleAuth.js"
-  content_type = "application/javascript"
-}
-
-resource "google_storage_bucket_object" "dendrite_moderate_js" {
-  name         = "moderate.js"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/moderate.js"
-  content_type = "application/javascript"
-}
-
-resource "google_storage_bucket_object" "dendrite_admin_html" {
-  name         = "admin.html"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/admin.html"
-  content_type = "text/html"
-}
-
-resource "google_storage_bucket_object" "dendrite_admin_js" {
-  name         = "admin.js"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/admin.js"
-  content_type = "application/javascript"
-}
-
-resource "google_storage_bucket_object" "dendrite_css" {
-  name         = "dendrite.css"
-  bucket       = google_storage_bucket.dendrite_static.name
-  source       = "${path.module}/dendrite.css"
-  content_type = "text/css"
 }
 
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
