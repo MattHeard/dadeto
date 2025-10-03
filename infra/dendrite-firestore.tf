@@ -33,6 +33,8 @@ resource "google_firestore_index" "variants_author_created" {
     field_path = "createdAt"
     order      = "DESCENDING"
   }
+
+  depends_on = [google_firestore_database.database]
 }
 
 # Supports: variants where moderatorReputationSum == 0 and rand >= n
@@ -50,6 +52,8 @@ resource "google_firestore_index" "variants_moderation_rand" {
     field_path = "rand"
     order      = "ASCENDING"
   }
+
+  depends_on = [google_firestore_database.database]
 }
 
 resource "google_firestore_field" "pages_all" {
@@ -65,6 +69,8 @@ resource "google_firestore_field" "pages_all" {
       query_scope = "COLLECTION_GROUP"
     }
   }
+
+  depends_on = [google_firestore_database.database]
 }
 
 # Supports: querying variants by moderatorReputationSum alone
@@ -81,6 +87,8 @@ resource "google_firestore_field" "variants_moderation" {
       query_scope = "COLLECTION_GROUP"
     }
   }
+
+  depends_on = [google_firestore_database.database]
 }
 
 resource "google_firestore_index" "ratings_by_variant" {
@@ -97,6 +105,8 @@ resource "google_firestore_index" "ratings_by_variant" {
     field_path = "ratedAt"
     order      = "DESCENDING"
   }
+
+  depends_on = [google_firestore_database.database]
 }
 
 resource "google_firestore_field" "pages_number_global" {
@@ -112,5 +122,7 @@ resource "google_firestore_field" "pages_number_global" {
       query_scope = "COLLECTION_GROUP"
     }
   }
+
+  depends_on = [google_firestore_database.database]
 }
 
