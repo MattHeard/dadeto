@@ -85,9 +85,7 @@ jobs:
           set --
           while IFS= read -r address; do
             case "$address" in
-              google_storage_bucket.dendrite_static|
-              google_storage_bucket_object.dendrite_*|
-              google_storage_bucket_iam_member.dendrite_*)
+              google_storage_bucket.dendrite_static|google_storage_bucket_object.dendrite_*|google_storage_bucket_iam_member.dendrite_*)
                 echo "Skipping static site resource $address"
                 continue
                 ;;
