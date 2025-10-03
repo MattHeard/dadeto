@@ -37,3 +37,14 @@ export function createAssignModerationApp(
 
   return { db, auth, app };
 }
+
+/**
+ * Register body parsing middleware for moderation requests.
+ * @param {{ use: (middleware: unknown) => void }} appInstance Express application instance.
+ * @param {{ urlencoded: (options: { extended: boolean }) => unknown }} expressModule Express module exposing urlencoded.
+ * @returns {void}
+ */
+export function configureUrlencodedBodyParser(appInstance, expressModule) {
+  const urlencodedMiddleware = expressModule.urlencoded({ extended: false });
+  appInstance.use(urlencodedMiddleware);
+}
