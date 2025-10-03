@@ -26,6 +26,7 @@ jobs:
           ENVIRONMENT="t-${SHORT_ID}"
           echo "ENVIRONMENT=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "TF_VAR_environment=$ENVIRONMENT" >> "$GITHUB_ENV"
+          echo "TF_VAR_database_id=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
