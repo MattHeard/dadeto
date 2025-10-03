@@ -9,7 +9,7 @@ resource "google_project_iam_member" "terraform_apikeys_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
   role    = "roles/serviceusage.apiKeysAdmin"
-  member  = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  member  = local.terraform_service_account_member
 
   depends_on = [
     google_project_service.apikeys_api,
