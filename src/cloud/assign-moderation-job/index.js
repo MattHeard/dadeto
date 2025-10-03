@@ -8,6 +8,7 @@ import {
   createAssignModerationApp,
   isAllowedOrigin,
   configureUrlencodedBodyParser,
+  getIdTokenFromRequest,
 } from './core.js';
 import { initializeFirebaseAppResources } from './gcf.js';
 
@@ -53,16 +54,6 @@ const firebaseResources = createAssignModerationApp(
 );
 
 const { db, auth, app } = firebaseResources;
-
-/**
- * Extract the ID token from a request body.
- * @param {import('express').Request} req HTTP request object.
- * @returns {string|undefined} The ID token if present.
- */
-function getIdTokenFromRequest(req) {
-  const { id_token: idToken } = req?.body ?? {};
-  return idToken;
-}
 
 /**
  * Assign a random moderation job to the requesting user.
