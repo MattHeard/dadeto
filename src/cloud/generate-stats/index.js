@@ -6,6 +6,7 @@ import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
+import corsConfig from './cors-config.js';
 
 initializeApp();
 const db = getFirestore();
@@ -13,11 +14,7 @@ const auth = getAuth();
 const storage = new Storage();
 
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
-const allowed = [
-  'https://mattheard.net',
-  'https://dendritestories.co.nz',
-  'https://www.dendritestories.co.nz',
-];
+const { allowedOrigins } = corsConfig;
 const PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
 const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
 const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
@@ -27,7 +24,7 @@ const app = express();
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin || allowed.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin)) {
         cb(null, true);
       } else {
         cb(new Error('CORS'));

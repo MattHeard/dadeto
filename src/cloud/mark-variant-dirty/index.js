@@ -4,6 +4,7 @@ import { getAuth } from 'firebase-admin/auth';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
+import corsConfig from './cors-config.js';
 import { findPageRef, findPagesSnap, refFromSnap } from './findPageRef.js';
 
 initializeApp();
@@ -12,16 +13,12 @@ const auth = getAuth();
 const app = express();
 
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
-const allowed = [
-  'https://mattheard.net',
-  'https://dendritestories.co.nz',
-  'https://www.dendritestories.co.nz',
-];
+const { allowedOrigins } = corsConfig;
 
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin || allowed.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin)) {
         cb(null, true);
       } else {
         cb(new Error('CORS'));

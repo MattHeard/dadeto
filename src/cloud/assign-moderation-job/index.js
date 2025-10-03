@@ -2,6 +2,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
+import corsConfig from './cors-config.js';
 import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
 import {
@@ -41,16 +42,12 @@ function setupCors(appInstance, allowedOrigins) {
  * @param {string[]} allowedOrigins Whitelisted origins.
  * @returns {boolean} True when the origin should be allowed.
  */
-const allowed = [
-  'https://mattheard.net',
-  'https://dendritestories.co.nz',
-  'https://www.dendritestories.co.nz',
-];
+const { allowedOrigins } = corsConfig;
 
 const firebaseResources = createAssignModerationApp(
   initializeFirebaseAppResources,
   setupCors,
-  allowed,
+  allowedOrigins,
   (appInstance) => configureUrlencodedBodyParser(appInstance, express)
 );
 
