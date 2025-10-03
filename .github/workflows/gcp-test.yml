@@ -73,4 +73,28 @@ jobs:
 
       - name: Terraform Destroy
         if: always() && steps.terraform_init.outcome == 'success'
-        run: terraform destroy -lock-timeout=5m -auto-approve -var="environment=${ENVIRONMENT}"
+        run: |
+          set -euo pipefail
+
+          mapfile -t STATE_ADDRESSES < <(terraform state list)
+          DESTROY_ARGS=()
+
+          for address in "${STATE_ADDRESSES[@]}"; do
+            case "$address" in
+              google_storage_bucket.dendrite_static|
+              google_storage_bucket_object.dendrite_*|
+              google_storage_bucket_iam_member.dendrite_*)
+                echo "Skipping static site resource $address"
+                continue
+                ;;
+            esac
+
+            DESTROY_ARGS+=("-target=${address}")
+          done
+
+          if [ "${#DESTROY_ARGS[@]}" -eq 0 ]; then
+            echo "No resources eligible for destroy"
+            exit 0
+          fi
+
+          terraform destroy -lock-timeout=5m -auto-approve -var="environment=${ENVIRONMENT}" "${DESTROY_ARGS[@]}"
