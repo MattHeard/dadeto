@@ -11,15 +11,17 @@ variable "lb_cert_domains" {
 }
 
 resource "google_project_service" "compute" {
-  count              = local.manage_project_level_resources ? 1 : 0
+  count              = local.enable_lb && local.manage_project_level_resources ? 1 : 0
   project            = var.project_id
   service            = "compute.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_compute_backend_bucket" "dendrite_static" {
+  count = local.enable_lb ? 1 : 0
+
   name        = "${var.environment}-dendrite-static"
-  bucket_name = google_storage_bucket.dendrite_static.name
+  bucket_name = local.dendrite_static_bucket_name
   enable_cdn  = true
 
   # Set COOP header to isolate browsing context group
@@ -35,6 +37,8 @@ resource "google_compute_backend_bucket" "dendrite_static" {
 }
 
 resource "google_compute_managed_ssl_certificate" "dendrite" {
+  count = local.enable_lb ? 1 : 0
+
   name = "${var.environment}-dendrite-cert"
 
   managed {
@@ -49,10 +53,11 @@ resource "google_compute_managed_ssl_certificate" "dendrite" {
 
 resource "google_compute_url_map" "dendrite" {
   provider = google-beta
+  count    = local.enable_lb ? 1 : 0
   name     = "${var.environment}-dendrite-url-map"
 
   # mandatory fallback for any request that dodges all matchers
-  default_service = google_compute_backend_bucket.dendrite_static.id
+  default_service = google_compute_backend_bucket.dendrite_static[count.index].id
 
   # --- 1️⃣  Apex host goes through its own matcher -------------
   host_rule {
@@ -64,7 +69,7 @@ resource "google_compute_url_map" "dendrite" {
     name = "apex-redirect"
 
     # url_redirect runs even though a default_service is required syntactically
-    default_service = google_compute_backend_bucket.dendrite_static.id
+    default_service = google_compute_backend_bucket.dendrite_static[count.index].id
 
     route_rules {
       priority = 2
@@ -89,7 +94,7 @@ resource "google_compute_url_map" "dendrite" {
 
   path_matcher {
     name            = "allpaths"
-    default_service = google_compute_backend_bucket.dendrite_static.id
+    default_service = google_compute_backend_bucket.dendrite_static[count.index].id
 
     route_rules {
       priority = 1
@@ -104,7 +109,7 @@ resource "google_compute_url_map" "dendrite" {
         }
       }
 
-      service = google_compute_backend_bucket.dendrite_static.id
+      service = google_compute_backend_bucket.dendrite_static[count.index].id
     }
   }
 
@@ -115,9 +120,11 @@ resource "google_compute_url_map" "dendrite" {
 }
 
 resource "google_compute_target_https_proxy" "dendrite" {
+  count = local.enable_lb ? 1 : 0
+
   name             = "${var.environment}-dendrite-https-proxy"
-  url_map          = google_compute_url_map.dendrite.id
-  ssl_certificates = [google_compute_managed_ssl_certificate.dendrite.id]
+  url_map          = google_compute_url_map.dendrite[count.index].id
+  ssl_certificates = [google_compute_managed_ssl_certificate.dendrite[count.index].id]
 
   depends_on = [
     google_project_service.compute,
@@ -127,6 +134,8 @@ resource "google_compute_target_https_proxy" "dendrite" {
 }
 
 resource "google_compute_global_address" "dendrite" {
+  count = local.enable_lb ? 1 : 0
+
   name = "${var.environment}-dendrite-ip"
 
   depends_on = [
@@ -136,10 +145,12 @@ resource "google_compute_global_address" "dendrite" {
 }
 
 resource "google_compute_global_forwarding_rule" "dendrite_https" {
+  count = local.enable_lb ? 1 : 0
+
   name       = "${var.environment}-dendrite-https-fr"
-  target     = google_compute_target_https_proxy.dendrite.id
+  target     = google_compute_target_https_proxy.dendrite[count.index].id
   port_range = "443"
-  ip_address = google_compute_global_address.dendrite.address
+  ip_address = google_compute_global_address.dendrite[count.index].address
 
   depends_on = [
     google_project_service.compute,
@@ -149,6 +160,8 @@ resource "google_compute_global_forwarding_rule" "dendrite_https" {
 }
 
 resource "google_compute_url_map" "redirect" {
+  count = local.enable_lb ? 1 : 0
+
   name = "${var.environment}-dendrite-redirect"
   default_url_redirect {
     https_redirect = true
@@ -162,8 +175,10 @@ resource "google_compute_url_map" "redirect" {
 }
 
 resource "google_compute_target_http_proxy" "redirect" {
+  count = local.enable_lb ? 1 : 0
+
   name    = "${var.environment}-dendrite-http-proxy"
-  url_map = google_compute_url_map.redirect.id
+  url_map = google_compute_url_map.redirect[count.index].id
 
   depends_on = [
     google_project_service.compute,
@@ -172,10 +187,12 @@ resource "google_compute_target_http_proxy" "redirect" {
 }
 
 resource "google_compute_global_forwarding_rule" "dendrite_http" {
+  count = local.enable_lb ? 1 : 0
+
   name       = "${var.environment}-dendrite-http-fr"
-  target     = google_compute_target_http_proxy.redirect.id
+  target     = google_compute_target_http_proxy.redirect[count.index].id
   port_range = "80"
-  ip_address = google_compute_global_address.dendrite.address
+  ip_address = google_compute_global_address.dendrite[count.index].address
 
   depends_on = [
     google_project_service.compute,
