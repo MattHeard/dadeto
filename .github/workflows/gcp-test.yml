@@ -6,6 +6,8 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: infra
@@ -17,6 +19,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Generate environment id
         id: environment
@@ -70,6 +74,16 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
+
+      - name: Tag commit on successful apply
+        if: success()
+        env:
+          TAG_NAME: gcp-test-${{ steps.environment.outputs.environment }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
 
       - name: Terraform Destroy
         if: always() && steps.terraform_init.outcome == 'success'
