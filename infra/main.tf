@@ -87,6 +87,13 @@ locals {
       content_type = "text/css"
     }
   }
+  dendrite_static_bucket_name = element(
+    concat(
+      google_storage_bucket.dendrite_static_prod[*].name,
+      google_storage_bucket.dendrite_static_nonprod[*].name,
+    ),
+    0,
+  )
 }
 
 resource "google_storage_bucket" "irien_bucket" {
@@ -106,7 +113,9 @@ resource "google_storage_bucket_iam_member" "public_read_access" {
   member = "allUsers"
 }
 
-resource "google_storage_bucket" "dendrite_static" {
+resource "google_storage_bucket" "dendrite_static_prod" {
+  count = var.environment == "prod" ? 1 : 0
+
   name     = local.static_site_bucket_name
   location = var.region
 
@@ -116,14 +125,26 @@ resource "google_storage_bucket" "dendrite_static" {
   }
 
   lifecycle {
-    prevent_destroy = var.environment == "prod"
+    prevent_destroy = true
+  }
+}
+
+resource "google_storage_bucket" "dendrite_static_nonprod" {
+  count = var.environment != "prod" ? 1 : 0
+
+  name     = local.static_site_bucket_name
+  location = var.region
+
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
   }
 }
 
 
 resource "google_storage_bucket_object" "dendrite_404" {
   name          = "404.html"
-  bucket        = google_storage_bucket.dendrite_static.name
+  bucket        = local.dendrite_static_bucket_name
   source        = "${path.module}/404.html"
   content_type  = "text/html"
   cache_control = "no-store"
@@ -133,14 +154,14 @@ resource "google_storage_bucket_object" "dendrite_static_files" {
   for_each = local.static_site_objects
 
   name         = each.value.name
-  bucket       = google_storage_bucket.dendrite_static.name
+  bucket       = local.dendrite_static_bucket_name
   source       = each.value.source
   content_type = each.value.content_type
 }
 
 resource "google_storage_bucket_object" "dendrite_mod" {
   name   = "mod.html"
-  bucket = google_storage_bucket.dendrite_static.name
+  bucket = local.dendrite_static_bucket_name
   content = templatefile("${path.module}/mod.html", {
     firebase_web_app_config = local.firebase_config_json
   })
@@ -148,13 +169,13 @@ resource "google_storage_bucket_object" "dendrite_mod" {
 }
 
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
-  bucket = google_storage_bucket.dendrite_static.name
+  bucket = local.dendrite_static_bucket_name
   role   = "roles/storage.objectViewer"
   member = "allUsers"
 }
 
 resource "google_storage_bucket_iam_member" "dendrite_runtime_writer" {
-  bucket = google_storage_bucket.dendrite_static.name
+  bucket = local.dendrite_static_bucket_name
   role   = "roles/storage.objectAdmin"
   member = local.cloud_function_runtime_service_account_member
 }
