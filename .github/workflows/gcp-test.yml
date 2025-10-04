@@ -78,14 +78,16 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
 
-      - name: Tag commit on successful apply
+      - name: Tag commit on successful apply (PAT)
         if: success()
         env:
+          PAT: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           TAG_NAME: gcp-test-${{ steps.environment.outputs.environment }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "tag-bot"
+          git config user.email "tag-bot@users.noreply.github.com"
           git tag "$TAG_NAME"
+          git remote set-url origin https://x-access-token:${PAT}@github.com/${{ github.repository }}.git
           git push origin "$TAG_NAME"
 
       - name: Terraform Destroy
