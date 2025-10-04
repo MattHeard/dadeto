@@ -2,11 +2,8 @@ name: gcp-prod
 
 on:
   push:
-    paths:
-      - 'infra/**'
-      - 'src/cloud/assign-moderation-job/**'
-    branches:
-      - main
+    tags:
+      - gcp-test-*
 
   workflow_dispatch:
 jobs:
