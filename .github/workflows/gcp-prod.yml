@@ -45,6 +45,11 @@ jobs:
           project_id: ${{ secrets.GOOGLE_PROJECT }}
           install_components: alpha
 
+      - name: Log Google Cloud authentication details
+        run: |
+          gcloud auth list
+          gcloud config list account
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
