@@ -13,7 +13,7 @@ moved {
 
 moved {
   from = google_project_service.apis["cloudscheduler.googleapis.com"]
-  to   = google_project_service.cloudscheduler[0]
+  to   = google_project_service.project_level["cloudscheduler"]
 }
 
 moved {
@@ -23,7 +23,7 @@ moved {
 
 moved {
   from = google_project_service.apis["eventarc.googleapis.com"]
-  to   = google_project_service.eventarc[0]
+  to   = google_project_service.project_level["eventarc"]
 }
 
 moved {
@@ -33,12 +33,12 @@ moved {
 
 moved {
   from = google_project_service.apis["cloudfunctions.googleapis.com"]
-  to   = google_project_service.cloudfunctions[0]
+  to   = google_project_service.project_level["cloudfunctions"]
 }
 
 moved {
   from = google_project_service.apis["artifactregistry.googleapis.com"]
-  to   = google_project_service.artifactregistry[0]
+  to   = google_project_service.project_level["artifactregistry"]
 }
 
 moved {
@@ -48,7 +48,7 @@ moved {
 
 moved {
   from = google_project_service.apis["run.googleapis.com"]
-  to   = google_project_service.run[0]
+  to   = google_project_service.project_level["run"]
 }
 
 moved {
@@ -58,7 +58,7 @@ moved {
 
 moved {
   from = google_project_service.apis["cloudbuild.googleapis.com"]
-  to   = google_project_service.cloudbuild[0]
+  to   = google_project_service.project_level["cloudbuild"]
 }
 
 moved {

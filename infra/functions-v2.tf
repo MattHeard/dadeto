@@ -33,16 +33,17 @@ resource "google_cloudfunctions2_function" "get_api_key_credit_v2" {
     environment_variables = local.cloud_function_environment
   }
 
-  depends_on = [
-    google_project_service.cloudfunctions,
-    google_project_service.cloudbuild,
-    google_project_iam_member.cloudfunctions_access,
-    google_service_account_iam_member.terraform_can_impersonate_runtime,
-    google_service_account_iam_member.terraform_can_impersonate_default_compute,
-    google_project_service.run,
-    google_project_service.artifactregistry,
-    google_project_service.eventarc,
-  ]
+  depends_on = concat(
+    [
+      for key in local.cloud_function_service_keys : google_project_service.project_level[key]
+      if contains(keys(google_project_service.project_level), key)
+    ],
+    [
+      google_project_iam_member.cloudfunctions_access,
+      google_service_account_iam_member.terraform_can_impersonate_runtime,
+      google_service_account_iam_member.terraform_can_impersonate_default_compute,
+    ],
+  )
 }
 
 resource "google_cloud_run_service_iam_member" "get_api_key_credit_v2_public" {
