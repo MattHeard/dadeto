@@ -116,7 +116,7 @@ resource "google_storage_bucket" "dendrite_static" {
   }
 
   lifecycle {
-    prevent_destroy = true # prod safety belt
+    prevent_destroy = var.environment == "prod"
   }
 }
 
