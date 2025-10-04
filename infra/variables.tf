@@ -39,6 +39,12 @@ variable "environment" {
   default     = "prod" # keeps prod plans = zero-diff
 }
 
+variable "enable_lb" {
+  description = "Whether to provision the global HTTPS load balancer"
+  type        = bool
+  default     = true
+}
+
 variable "project_level_environment" {
   description = "Environment that manages project-level singleton resources"
   type        = string
