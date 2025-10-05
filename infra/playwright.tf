@@ -35,7 +35,7 @@ resource "google_project_iam_member" "tf_run_admin" {
 }
 
 resource "google_cloud_run_v2_job" "playwright" {
-  count               = local.playwright_enabled ? 1 : 0
+  count = local.playwright_enabled ? 1 : 0
 
   name                = local.playwright_job_name
   location            = var.region
