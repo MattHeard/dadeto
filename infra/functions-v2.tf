@@ -29,7 +29,7 @@ resource "google_cloudfunctions2_function" "get_api_key_credit_v2" {
     available_memory      = "256M"
     timeout_seconds       = 10
     max_instance_count    = 20
-    service_account_email        = local.cloud_function_runtime_service_account_email
+    service_account_email = local.cloud_function_runtime_service_account_email
     environment_variables = local.cloud_function_environment
   }
 

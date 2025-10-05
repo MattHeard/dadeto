@@ -38,9 +38,9 @@ locals {
     GOOGLE_CLOUD_PROJECT = var.project_id
     FIREBASE_CONFIG      = local.firebase_config_json
   }
-  cloud_function_runtime_service_account_email = google_service_account.cloud_function_runtime.email
+  cloud_function_runtime_service_account_email  = google_service_account.cloud_function_runtime.email
   cloud_function_runtime_service_account_member = "serviceAccount:${local.cloud_function_runtime_service_account_email}"
-  terraform_service_account_member = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  terraform_service_account_member              = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
   project_level_services = {
     cloudfunctions   = "cloudfunctions.googleapis.com"
     cloudbuild       = "cloudbuild.googleapis.com"
@@ -708,7 +708,7 @@ resource "google_cloudfunctions_function" "process_new_story" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.process_new_story.name
 
-  service_account_email        = local.cloud_function_runtime_service_account_email
+  service_account_email = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -746,7 +746,7 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.prod_update_variant_visibility.name
 
-  service_account_email        = local.cloud_function_runtime_service_account_email
+  service_account_email = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -783,7 +783,7 @@ resource "google_cloudfunctions_function" "process_new_page" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.process_new_page.name
 
-  service_account_email        = local.cloud_function_runtime_service_account_email
+  service_account_email = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -821,7 +821,7 @@ resource "google_cloudfunctions_function" "render_variant" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.render_variant.name
 
-  service_account_email        = local.cloud_function_runtime_service_account_email
+  service_account_email = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -859,7 +859,7 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.hide_variant_html.name
 
-  service_account_email        = local.cloud_function_runtime_service_account_email
+  service_account_email = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 
@@ -1004,7 +1004,7 @@ resource "google_cloudfunctions_function" "render_contents" {
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.render_contents.name
 
-  service_account_email        = local.cloud_function_runtime_service_account_email
+  service_account_email = local.cloud_function_runtime_service_account_email
 
   environment_variables = local.cloud_function_environment
 

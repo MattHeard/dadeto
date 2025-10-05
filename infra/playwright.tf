@@ -1,5 +1,5 @@
 locals {
-  playwright_enabled = startswith(var.environment, "t-")
+  playwright_enabled  = startswith(var.environment, "t-")
   playwright_job_name = "pw-e2e-${var.environment}"
 }
 
