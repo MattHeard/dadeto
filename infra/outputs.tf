@@ -29,3 +29,13 @@ output "manage_firestore_services" {
   description = "Whether Firestore services are managed in this run"
   value       = local.manage_firestore_services
 }
+
+output "playwright_job_name" {
+  description = "Name of the Playwright Cloud Run job"
+  value       = local.playwright_enabled ? google_cloud_run_v2_job.playwright[0].name : null
+}
+
+output "playwright_region" {
+  description = "Region for the Playwright Cloud Run job"
+  value       = local.playwright_enabled ? var.region : null
+}
