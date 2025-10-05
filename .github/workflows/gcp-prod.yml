@@ -1,13 +1,11 @@
 name: gcp-prod
 
 on:
-  push:
-    tags:
-      - gcp-test-*
-
+  create:
   workflow_dispatch:
 jobs:
   terraform:
+    if: github.ref_type == 'tag' && startsWith(github.ref_name, 'gcp-test-')
     runs-on: ubuntu-latest
     defaults:
       run:
