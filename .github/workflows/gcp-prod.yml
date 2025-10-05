@@ -1,21 +1,21 @@
 name: gcp-prod
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'infra/**'
-      - '.github/workflows/gcp-prod.yml'
+  workflow_run:
+    workflows: ["gcp-test"]
+    types: [completed]
   workflow_dispatch:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     defaults:
       run:
         working-directory: infra
     env:
       REGION: europe-west1
+      GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+      CLOUDSDK_CORE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
       ENVIRONMENT: prod
       TF_VAR_environment: prod
       TF_VAR_project_level_environment: prod
@@ -26,15 +26,21 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Build cloud function sources
         working-directory: ./
-        run: npm run build:cloud
+        run: |
+          npm ci
+          npm run build:cloud
 
       - name: Set up Google Cloud auth
         uses: google-github-actions/auth@v2
@@ -44,18 +50,30 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GOOGLE_PROJECT }}
+          project_id: ${{ env.GOOGLE_PROJECT }}
           install_components: alpha
 
       - name: Log Google Cloud authentication details
         run: |
           gcloud auth list
           gcloud config list account
+          gcloud config get-value project
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.3
+
+      - name: Cache Terraform plugin dir
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: tf-plugins-${{ runner.os }}-${{ hashFiles('infra/**/.terraform.lock.hcl') }}
+
+      - name: Terraform environment configuration
+        run: |
+          mkdir -p ~/.terraform.d/plugin-cache
+          echo 'plugin_cache_dir = "~/.terraform.d/plugin-cache"' > ~/.terraformrc
 
       - name: Terraform Init (Validate)
         run: terraform init -backend=false
