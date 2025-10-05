@@ -112,6 +112,11 @@ locals {
   )
 }
 
+moved {
+  from = google_storage_bucket.dendrite_static
+  to   = google_storage_bucket.dendrite_static_prod
+}
+
 resource "google_storage_bucket" "irien_bucket" {
   name     = "irien-hello-world-${var.project_id}${local.environment_suffix}"
   location = var.irien_bucket_location
