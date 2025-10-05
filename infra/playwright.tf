@@ -1,7 +1,7 @@
 locals {
   playwright_enabled  = startswith(var.environment, "t-")
   playwright_job_name = "pw-e2e-${var.environment}"
-  reports_bucket_name = "${var.project_id}-${var.region}${local.environment_suffix}-e2e-reports"
+  reports_bucket_name = "${var.project_id}-${var.region}-e2e-reports"
 }
 
 resource "google_service_account" "playwright" {
@@ -36,11 +36,15 @@ resource "google_project_iam_member" "tf_run_admin" {
 }
 
 resource "google_storage_bucket" "e2e_reports" {
-  count = local.playwright_enabled ? 1 : 0
+  count = local.manage_project_level_resources ? 1 : 0
 
   name                        = local.reports_bucket_name
   location                    = var.region
   uniform_bucket_level_access = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   versioning {
     enabled = false
@@ -60,9 +64,11 @@ resource "google_storage_bucket" "e2e_reports" {
 resource "google_storage_bucket_iam_member" "reports_writer" {
   count = local.playwright_enabled ? 1 : 0
 
-  bucket = google_storage_bucket.e2e_reports[0].name
+  bucket = local.reports_bucket_name
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${google_service_account.playwright[0].email}"
+
+  depends_on = [google_storage_bucket.e2e_reports]
 }
 
 resource "google_cloud_run_v2_job" "playwright" {
@@ -84,7 +90,7 @@ resource "google_cloud_run_v2_job" "playwright" {
 
         env {
           name  = "REPORTS_BUCKET"
-          value = google_storage_bucket.e2e_reports[0].name
+          value = local.reports_bucket_name
         }
 
         env {
@@ -106,5 +112,5 @@ resource "google_cloud_run_v2_job" "playwright" {
 }
 
 output "reports_bucket" {
-  value = local.playwright_enabled ? google_storage_bucket.e2e_reports[0].name : null
+  value = local.playwright_enabled ? local.reports_bucket_name : null
 }
