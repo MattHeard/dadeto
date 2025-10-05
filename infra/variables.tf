@@ -9,6 +9,12 @@ variable "region" {
   default     = "europe-west1"
 }
 
+variable "playwright_image" {
+  description = "Container image used by the Playwright Cloud Run job"
+  type        = string
+  default     = "gcr.io/cloudrun/hello"
+}
+
 variable "irien_bucket_location" {
   description = "Location for the example irien bucket"
   type        = string
