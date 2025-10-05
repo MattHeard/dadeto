@@ -56,8 +56,8 @@ resource "google_cloud_run_v2_job" "playwright" {
     }
   }
 
-  depends_on = local.playwright_enabled ? [
-    google_service_account_iam_member.tf_can_actas_playwright[0],
-    google_project_iam_member.tf_run_admin[0],
-  ] : []
+  depends_on = [
+    google_service_account_iam_member.tf_can_actas_playwright,
+    google_project_iam_member.tf_run_admin,
+  ]
 }
