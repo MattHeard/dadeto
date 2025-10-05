@@ -92,7 +92,7 @@ jobs:
           echo "Current HEAD:"
           git rev-parse HEAD
           echo "Workflows at HEAD:"
-          git ls-tree -r HEAD -- .github/workflows || true
+          git -C "$GITHUB_WORKSPACE" ls-tree -r HEAD -- .github/workflows || true
 
           echo "Setting PAT remote:"
           git remote set-url origin "https://x-access-token:${PAT}@github.com/${{ github.repository }}.git"
@@ -101,7 +101,7 @@ jobs:
 
           echo "Creating annotated tag:"
           COMMIT_SHA="$(git rev-parse HEAD)"
-          WF_LIST="$(git ls-tree -r HEAD --name-only .github/workflows || true)"
+          WF_LIST="$(git -C "$GITHUB_WORKSPACE" ls-tree -r HEAD --name-only .github/workflows || true)"
           {
             echo "env: $TAG_NAME"
             echo "commit: $COMMIT_SHA"
