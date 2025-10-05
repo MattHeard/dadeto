@@ -92,10 +92,45 @@ jobs:
         id: terraform_init
         run: terraform init -reconfigure -backend-config="prefix=terraform/test/${{ github.run_id }}-${ENVIRONMENT}"
 
-      - name: Terraform Format & Validate
+      - name: Terraform Fmt (diff + report)
+        id: tffmt
+        continue-on-error: true
         run: |
-          terraform fmt -check
-          terraform validate
+          set -o pipefail
+          terraform fmt -check -diff -recursive -no-color | tee /tmp/tf-fmt.diff
+          # list only offending files
+          terraform fmt -check -recursive -no-color -list=true 2>/dev/null | tee /tmp/tf-fmt.list
+          # emit GitHub annotations for each file
+          if [ -s /tmp/tf-fmt.list ]; then
+            while IFS= read -r f; do
+              echo "::error file=${f}::terraform fmt mismatch"
+            done < /tmp/tf-fmt.list
+          fi
+
+      - name: Terraform Validate (report)
+        id: tfvalidate
+        continue-on-error: true
+        run: terraform validate -no-color | tee /tmp/tf-validate.txt
+
+      - name: Upload Terraform fmt/validate reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-lint-${{ steps.environment.outputs.environment }}
+          path: |
+            /tmp/tf-fmt.diff
+            /tmp/tf-fmt.list
+            /tmp/tf-validate.txt
+
+      - name: Enforce fmt/validate
+        if: always()
+        run: |
+          FMT_OK='${{ steps.tffmt.outcome }}'
+          VAL_OK='${{ steps.tfvalidate.outcome }}'
+          if [ "$FMT_OK" != "success" ] || [ "$VAL_OK" != "success" ]; then
+            echo "terraform fmt/validate failed; see artifacts tf-lint-… for diffs"
+            exit 3
+          fi
 
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -var="environment=${ENVIRONMENT}" -out=tfplan
