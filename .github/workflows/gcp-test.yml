@@ -76,17 +76,53 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
 
-      - name: Tag commit on successful apply (PAT)
+      - name: Tag commit on successful apply (PAT, debug)
         if: success()
         env:
           PAT: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           TAG_NAME: gcp-test-${{ steps.environment.outputs.environment }}
         run: |
+          set -euo pipefail
+
+          echo "Configuring git user:"
           git config user.name "tag-bot"
           git config user.email "tag-bot@users.noreply.github.com"
-          git tag "$TAG_NAME"
-          git remote set-url origin https://x-access-token:${PAT}@github.com/${{ github.repository }}.git
-          git push origin "$TAG_NAME"
+          git config user.name && git config user.email
+
+          echo "Current HEAD:"
+          git rev-parse HEAD
+          echo "Workflows at HEAD:"
+          git ls-tree -r HEAD -- .github/workflows || true
+
+          echo "Setting PAT remote:"
+          git remote set-url origin "https://x-access-token:${PAT}@github.com/${{ github.repository }}.git"
+          echo "Push remote is:"
+          git remote get-url --push origin
+
+          echo "Creating annotated tag:"
+          COMMIT_SHA="$(git rev-parse HEAD)"
+          WF_LIST="$(git ls-tree -r HEAD --name-only .github/workflows || true)"
+          {
+            echo "env: $TAG_NAME"
+            echo "commit: $COMMIT_SHA"
+            echo "actor: $GITHUB_ACTOR"
+            echo "run_id: $GITHUB_RUN_ID"
+            echo "workflows:"
+            echo "$WF_LIST"
+          } > /tmp/tagmsg.txt
+
+          git tag -fa "$TAG_NAME" -m "$(cat /tmp/tagmsg.txt)"
+
+          echo "Show tag object locally:"
+          git for-each-ref "refs/tags/$TAG_NAME" --format="%(objecttype) %(objectname) %(refname)"
+          echo "--- tag message ---"
+          git tag -n99 -l "$TAG_NAME"
+
+          echo "Pushing tag via PAT:"
+          git push -f origin "$TAG_NAME"
+
+          echo "Verify tag on remote:"
+          git ls-remote --tags origin | grep "refs/tags/$TAG_NAME" || { echo "Tag not found on remote"; exit 1; }
 
       - name: Terraform Destroy
         if: always() && steps.terraform_init.outcome == 'success'
