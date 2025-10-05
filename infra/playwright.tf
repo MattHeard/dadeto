@@ -39,6 +39,7 @@ resource "google_cloud_run_v2_job" "playwright" {
 
   name     = local.playwright_job_name
   location = var.region
+  deletion_protection = false
 
   template {
     task_count  = 1
