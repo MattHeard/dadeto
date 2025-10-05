@@ -10,6 +10,30 @@ resource "google_service_account" "playwright" {
   display_name = "Playwright E2E runner (${var.environment})"
 }
 
+resource "google_service_account_iam_member" "tf_can_actas_playwright" {
+  count = local.playwright_enabled ? 1 : 0
+
+  service_account_id = google_service_account.playwright[0].name
+  role               = "roles/iam.serviceAccountUser"
+  member             = local.terraform_service_account_member
+}
+
+resource "google_project_iam_member" "pw_artifact_pull" {
+  count = local.playwright_enabled ? 1 : 0
+
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.playwright[0].email}"
+}
+
+resource "google_project_iam_member" "tf_run_admin" {
+  count = local.playwright_enabled ? 1 : 0
+
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = local.terraform_service_account_member
+}
+
 resource "google_cloud_run_v2_job" "playwright" {
   count = local.playwright_enabled ? 1 : 0
 
@@ -31,4 +55,9 @@ resource "google_cloud_run_v2_job" "playwright" {
       max_retries = 0
     }
   }
+
+  depends_on = local.playwright_enabled ? [
+    google_service_account_iam_member.tf_can_actas_playwright[0],
+    google_project_iam_member.tf_run_admin[0],
+  ] : []
 }
