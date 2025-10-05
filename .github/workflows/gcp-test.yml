@@ -77,6 +77,7 @@ jobs:
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
 
       - name: Tag commit on successful apply (PAT, debug)
+        id: tag_commit
         if: success()
         env:
           PAT: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -123,6 +124,20 @@ jobs:
 
           echo "Verify tag on remote:"
           git ls-remote --tags origin | grep "refs/tags/$TAG_NAME" || { echo "Tag not found on remote"; exit 1; }
+
+      - name: Trigger gcp-prod workflow
+        if: success() && steps.tag_commit.outcome == 'success'
+        env:
+          PAT: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          echo "Dispatching gcp-prod workflow from gcp-test run"
+          curl -L -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${PAT}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/gcp-prod.yml/dispatches" \
+            -d '{"ref":"main"}'
 
       - name: Terraform Destroy
         if: always() && steps.terraform_init.outcome == 'success'
