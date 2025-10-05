@@ -88,6 +88,23 @@ jobs:
           mkdir -p ~/.terraform.d/plugin-cache
           echo 'plugin_cache_dir = "~/.terraform.d/plugin-cache"' > ~/.terraformrc
 
+      - name: Configure gcloud auth for Docker
+        run: gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+
+      - name: Build and push Playwright image
+        working-directory: .
+        env:
+          AR_REPO: playwright
+          IMAGE: e2e-runner
+        run: |
+          set -euo pipefail
+          gcloud artifacts repositories create "$AR_REPO" \
+            --repository-format=DOCKER --location="${REGION}" || true
+          IMAGE_REF="${REGION}-docker.pkg.dev/${GOOGLE_PROJECT}/${AR_REPO}/${IMAGE}:$GITHUB_SHA"
+          docker build -f docker/playwright/Dockerfile -t "$IMAGE_REF" .
+          docker push "$IMAGE_REF"
+          echo "TF_VAR_playwright_image=$IMAGE_REF" >> "$GITHUB_ENV"
+
       - name: Terraform Init
         id: terraform_init
         run: terraform init -reconfigure -backend-config="prefix=terraform/test/${{ github.run_id }}-${ENVIRONMENT}"
@@ -206,6 +223,18 @@ jobs:
         run: |
           gcloud auth list
           gcloud config get-value project
+
+      - name: Run Playwright job
+        if: success()
+        run: |
+          set -euo pipefail
+          JOB_NAME="$(terraform output -raw playwright_job_name)"
+          REGION_OUT="$(terraform output -raw playwright_region)"
+          if [ "$JOB_NAME" != "null" ]; then
+            gcloud run jobs execute "$JOB_NAME" --region="${REGION_OUT}" --wait
+          else
+            echo "Playwright disabled for this environment"
+          fi
 
       - name: Terraform Destroy
         if: always() && steps.terraform_init.outcome == 'success'
