@@ -6,16 +6,23 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: gcp-test-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     defaults:
       run:
         working-directory: infra
     env:
       REGION: europe-west1
+      GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+      CLOUDSDK_CORE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
       TF_VAR_google_oauth_client_id: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
       TF_VAR_google_oauth_client_secret: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
 
@@ -40,10 +47,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Build cloud function sources
         working-directory: ./
-        run: npm run build:cloud
+        run: |
+          npm ci
+          npm run build:cloud
 
       - name: Set up Google Cloud auth
         uses: google-github-actions/auth@v2
@@ -53,22 +63,39 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GOOGLE_PROJECT }}
+          project_id: ${{ env.GOOGLE_PROJECT }}
           install_components: alpha
 
       - name: Log Google Cloud authentication details
         run: |
           gcloud auth list
           gcloud config list account
+          gcloud config get-value project
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.3
 
+      - name: Cache Terraform plugin dir
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: tf-plugins-${{ runner.os }}-${{ hashFiles('infra/**/.terraform.lock.hcl') }}
+
+      - name: Terraform environment configuration
+        run: |
+          mkdir -p ~/.terraform.d/plugin-cache
+          echo 'plugin_cache_dir = "~/.terraform.d/plugin-cache"' > ~/.terraformrc
+
       - name: Terraform Init
         id: terraform_init
-        run: terraform init -reconfigure -backend-config="prefix=terraform/test/${ENVIRONMENT}"
+        run: terraform init -reconfigure -backend-config="prefix=terraform/test/${{ github.run_id }}-${ENVIRONMENT}"
+
+      - name: Terraform Format & Validate
+        run: |
+          terraform fmt -check
+          terraform validate
 
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -var="environment=${ENVIRONMENT}" -out=tfplan
@@ -78,7 +105,7 @@ jobs:
 
       - name: Tag commit on successful apply (PAT, debug)
         id: tag_commit
-        if: success()
+        if: success() && github.ref == 'refs/heads/main'
         env:
           PAT: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           TAG_NAME: gcp-test-${{ steps.environment.outputs.environment }}
@@ -123,41 +150,32 @@ jobs:
           git push -f origin "$TAG_NAME"
 
           echo "Verify tag on remote:"
-          git ls-remote --tags origin | grep "refs/tags/$TAG_NAME" || { echo "Tag not found on remote"; exit 1; }
+          git ls-remote --tags origin | grep -q "refs/tags/$TAG_NAME" || { echo "Tag not found on remote"; exit 1; }
 
-      - name: Trigger gcp-prod workflow
-        if: success() && steps.tag_commit.outcome == 'success'
-        env:
-          PAT: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Upload tf artifacts
+        if: always() && steps.terraform_init.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-${{ steps.environment.outputs.environment }}
+          path: |
+            infra/tfplan
+            infra/.terraform
+          if-no-files-found: warn
+
+      - name: Print Terraform state addresses
+        if: always()
+        run: terraform state list || true
+
+      - name: Dump gcloud auth and project
+        if: always()
         run: |
-          set -euo pipefail
-
-          echo "Dispatching gcp-prod workflow from gcp-test run"
-          curl -L -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${PAT}" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/gcp-prod.yml/dispatches" \
-            -d '{"ref":"main"}'
+          gcloud auth list
+          gcloud config get-value project
 
       - name: Terraform Destroy
         if: always() && steps.terraform_init.outcome == 'success'
         run: |
           set -euo pipefail
 
-          if ! terraform state list > /tmp/state.txt; then
-            echo "No state; nothing to destroy"
-            exit 0
-          fi
-
-          # Build a list of destroy targets without relying on bash arrays.
-          set --
-          while IFS= read -r address; do
-            set -- "$@" "-target=$address"
-          done < /tmp/state.txt
-
-          if [ "$#" -eq 0 ]; then
-            echo "No resources eligible for destroy"
-            exit 0
-          fi
-
-          terraform destroy -lock-timeout=5m -auto-approve -var="environment=${ENVIRONMENT}" "$@"
+          terraform refresh -lock-timeout=5m -var="environment=${ENVIRONMENT}"
+          terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}"
