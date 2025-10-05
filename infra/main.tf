@@ -114,7 +114,7 @@ locals {
 
 moved {
   from = google_storage_bucket.dendrite_static
-  to   = google_storage_bucket.dendrite_static_prod
+  to   = google_storage_bucket.dendrite_static_prod[0]
 }
 
 resource "google_storage_bucket" "irien_bucket" {
