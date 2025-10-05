@@ -1,6 +1,7 @@
 locals {
   playwright_enabled  = startswith(var.environment, "t-")
   playwright_job_name = "pw-e2e-${var.environment}"
+  reports_bucket_name = "${var.project_id}-${var.region}${local.environment_suffix}-e2e-reports"
 }
 
 resource "google_service_account" "playwright" {
@@ -34,6 +35,36 @@ resource "google_project_iam_member" "tf_run_admin" {
   member  = local.terraform_service_account_member
 }
 
+resource "google_storage_bucket" "e2e_reports" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name                        = local.reports_bucket_name
+  location                    = var.region
+  uniform_bucket_level_access = true
+
+  versioning {
+    enabled = false
+  }
+
+  lifecycle_rule {
+    action {
+      type = "Delete"
+    }
+
+    condition {
+      age = 14
+    }
+  }
+}
+
+resource "google_storage_bucket_iam_member" "reports_writer" {
+  count = local.playwright_enabled ? 1 : 0
+
+  bucket = google_storage_bucket.e2e_reports[0].name
+  role   = "roles/storage.objectCreator"
+  member = "serviceAccount:${google_service_account.playwright[0].email}"
+}
+
 resource "google_cloud_run_v2_job" "playwright" {
   count = local.playwright_enabled ? 1 : 0
 
@@ -50,6 +81,16 @@ resource "google_cloud_run_v2_job" "playwright" {
 
       containers {
         image = var.playwright_image
+
+        env {
+          name  = "REPORTS_BUCKET"
+          value = google_storage_bucket.e2e_reports[0].name
+        }
+
+        env {
+          name  = "REPORT_PREFIX"
+          value = var.environment
+        }
       }
 
       timeout     = "600s"
@@ -60,5 +101,10 @@ resource "google_cloud_run_v2_job" "playwright" {
   depends_on = [
     google_service_account_iam_member.tf_can_actas_playwright,
     google_project_iam_member.tf_run_admin,
+    google_storage_bucket_iam_member.reports_writer,
   ]
+}
+
+output "reports_bucket" {
+  value = local.playwright_enabled ? google_storage_bucket.e2e_reports[0].name : null
 }
