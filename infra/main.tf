@@ -112,23 +112,6 @@ locals {
   )
 }
 
-resource "google_storage_bucket" "irien_bucket" {
-  name     = "irien-hello-world-${var.project_id}${local.environment_suffix}"
-  location = var.irien_bucket_location
-}
-
-resource "google_storage_bucket_object" "hello_world" {
-  name   = "hello-world.txt"
-  bucket = google_storage_bucket.irien_bucket.name
-  source = "${path.module}/hello-world.txt"
-}
-
-resource "google_storage_bucket_iam_member" "public_read_access" {
-  bucket = google_storage_bucket.irien_bucket.name
-  role   = "roles/storage.objectViewer"
-  member = "allUsers"
-}
-
 resource "google_storage_bucket" "dendrite_static_prod" {
   count = var.environment == "prod" ? 1 : 0
 

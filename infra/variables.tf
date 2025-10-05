@@ -15,12 +15,6 @@ variable "playwright_image" {
   default     = "gcr.io/cloudrun/hello"
 }
 
-variable "irien_bucket_location" {
-  description = "Location for the example irien bucket"
-  type        = string
-  default     = "EU"
-}
-
 variable "static_site_bucket_name" {
   description = "Bucket name for the Dendrite static website"
   type        = string
