@@ -97,6 +97,11 @@ locals {
       source       = "${path.module}/admin.js"
       content_type = "application/javascript"
     }
+    dendrite_robots_txt = {
+      name         = "robots.txt"
+      source       = "${path.module}/robots.txt"
+      content_type = "text/plain"
+    }
     dendrite_css = {
       name         = "dendrite.css"
       source       = "${path.module}/dendrite.css"
