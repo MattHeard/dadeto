@@ -156,9 +156,74 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
 
+      - name: Upload tf artifacts
+        if: always() && steps.terraform_init.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-${{ steps.environment.outputs.environment }}
+          path: |
+            infra/tfplan
+            infra/.terraform
+          if-no-files-found: warn
+
+      - name: Print Terraform state addresses
+        if: always()
+        run: terraform state list || true
+
+      - name: Dump gcloud auth and project
+        if: always()
+        run: |
+          gcloud auth list
+          gcloud config get-value project
+
+      - name: Run Playwright job
+        id: run_playwright_job
+        if: success()
+        run: |
+          set -euo pipefail
+          JOB_NAME="$(terraform output -raw playwright_job_name)"
+          REGION_OUT="$(terraform output -raw playwright_region)"
+          if [ "$JOB_NAME" != "null" ]; then
+            gcloud run jobs execute "$JOB_NAME" --region="${REGION_OUT}" --wait
+          else
+            echo "Playwright disabled for this environment"
+          fi
+
+      - name: Verify reports in GCS
+        if: always()
+        run: |
+          set -euo pipefail
+          BUCKET="$(terraform output -raw reports_bucket 2>/dev/null || true)"
+          if [ -z "$BUCKET" ] || [ "$BUCKET" = "null" ]; then
+            echo "No reports bucket configured; skipping verification"
+            exit 0
+          fi
+          gcloud storage ls "gs://${BUCKET}/${TF_VAR_environment}/${GITHUB_RUN_ID}/" || true
+
+      - name: Dump Cloud Run job logs
+        if: always()
+        run: |
+          set -euo pipefail
+          JOB_NAME="$(terraform output -raw playwright_job_name 2>/dev/null || true)"
+          if [ -z "$JOB_NAME" ] || [ "$JOB_NAME" = "null" ]; then
+            echo "Playwright job not provisioned; skipping log export"
+            exit 0
+          fi
+          gcloud logging read \
+            "resource.type=\"cloud_run_job\" AND resource.labels.job_name='${JOB_NAME}'" \
+            --limit=2000 --format=json > /tmp/run-job-logs.json || true
+
+      - name: Upload Cloud Run job logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-job-logs-${{ steps.environment.outputs.environment }}
+          path: /tmp/run-job-logs.json
+          if-no-files-found: ignore
+
       - name: Tag commit on successful apply (PAT, debug)
         id: tag_commit
-        if: success() && github.ref == 'refs/heads/main'
+        if: success() && github.ref == 'refs/heads/main' && steps.run_playwright_job.outcome == 'success'
         env:
           PAT: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           TAG_NAME: gcp-test-${{ steps.environment.outputs.environment }}
@@ -204,70 +269,6 @@ jobs:
 
           echo "Verify tag on remote:"
           git ls-remote --tags origin | grep -q "refs/tags/$TAG_NAME" || { echo "Tag not found on remote"; exit 1; }
-
-      - name: Upload tf artifacts
-        if: always() && steps.terraform_init.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: tf-${{ steps.environment.outputs.environment }}
-          path: |
-            infra/tfplan
-            infra/.terraform
-          if-no-files-found: warn
-
-      - name: Print Terraform state addresses
-        if: always()
-        run: terraform state list || true
-
-      - name: Dump gcloud auth and project
-        if: always()
-        run: |
-          gcloud auth list
-          gcloud config get-value project
-
-      - name: Run Playwright job
-        if: success()
-        run: |
-          set -euo pipefail
-          JOB_NAME="$(terraform output -raw playwright_job_name)"
-          REGION_OUT="$(terraform output -raw playwright_region)"
-          if [ "$JOB_NAME" != "null" ]; then
-            gcloud run jobs execute "$JOB_NAME" --region="${REGION_OUT}" --wait
-          else
-            echo "Playwright disabled for this environment"
-          fi
-
-      - name: Verify reports in GCS
-        if: always()
-        run: |
-          set -euo pipefail
-          BUCKET="$(terraform output -raw reports_bucket 2>/dev/null || true)"
-          if [ -z "$BUCKET" ] || [ "$BUCKET" = "null" ]; then
-            echo "No reports bucket configured; skipping verification"
-            exit 0
-          fi
-          gcloud storage ls "gs://${BUCKET}/${TF_VAR_environment}/${GITHUB_RUN_ID}/" || true
-
-      - name: Dump Cloud Run job logs
-        if: always()
-        run: |
-          set -euo pipefail
-          JOB_NAME="$(terraform output -raw playwright_job_name 2>/dev/null || true)"
-          if [ -z "$JOB_NAME" ] || [ "$JOB_NAME" = "null" ]; then
-            echo "Playwright job not provisioned; skipping log export"
-            exit 0
-          fi
-          gcloud logging read \
-            "resource.type=\"cloud_run_job\" AND resource.labels.job_name='${JOB_NAME}'" \
-            --limit=2000 --format=json > /tmp/run-job-logs.json || true
-
-      - name: Upload Cloud Run job logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-job-logs-${{ steps.environment.outputs.environment }}
-          path: /tmp/run-job-logs.json
-          if-no-files-found: ignore
 
       - name: Terraform Destroy
         if: always() && steps.terraform_init.outcome == 'success'
