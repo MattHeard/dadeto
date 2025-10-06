@@ -17,10 +17,14 @@ resource "google_project_service" "compute" {
   disable_on_destroy = false
 }
 
+locals {
+  lb_resource_prefix = "${var.environment}-dendrite"
+}
+
 resource "google_compute_backend_bucket" "dendrite_static" {
   count = local.enable_lb ? 1 : 0
 
-  name        = "${var.environment}-dendrite-static"
+  name        = "${local.lb_resource_prefix}-static"
   bucket_name = local.dendrite_static_bucket_name
   enable_cdn  = true
 
@@ -39,7 +43,7 @@ resource "google_compute_backend_bucket" "dendrite_static" {
 resource "google_compute_managed_ssl_certificate" "dendrite" {
   count = local.enable_lb ? 1 : 0
 
-  name = "${var.environment}-dendrite-cert"
+  name = "${local.lb_resource_prefix}-cert"
 
   managed {
     domains = var.lb_cert_domains
@@ -54,7 +58,7 @@ resource "google_compute_managed_ssl_certificate" "dendrite" {
 resource "google_compute_url_map" "dendrite" {
   provider = google-beta
   count    = local.enable_lb ? 1 : 0
-  name     = "${var.environment}-dendrite-url-map"
+  name     = "${local.lb_resource_prefix}-url-map"
 
   # mandatory fallback for any request that dodges all matchers
   default_service = google_compute_backend_bucket.dendrite_static[count.index].id
@@ -122,7 +126,7 @@ resource "google_compute_url_map" "dendrite" {
 resource "google_compute_target_https_proxy" "dendrite" {
   count = local.enable_lb ? 1 : 0
 
-  name             = "${var.environment}-dendrite-https-proxy"
+  name             = "${local.lb_resource_prefix}-https-proxy"
   url_map          = google_compute_url_map.dendrite[count.index].id
   ssl_certificates = [google_compute_managed_ssl_certificate.dendrite[count.index].id]
 
@@ -136,7 +140,7 @@ resource "google_compute_target_https_proxy" "dendrite" {
 resource "google_compute_global_address" "dendrite" {
   count = local.enable_lb ? 1 : 0
 
-  name = "${var.environment}-dendrite-ip"
+  name = "${local.lb_resource_prefix}-ip"
 
   depends_on = [
     google_project_service.compute,
@@ -147,7 +151,7 @@ resource "google_compute_global_address" "dendrite" {
 resource "google_compute_global_forwarding_rule" "dendrite_https" {
   count = local.enable_lb ? 1 : 0
 
-  name       = "${var.environment}-dendrite-https-fr"
+  name       = "${local.lb_resource_prefix}-https-fr"
   target     = google_compute_target_https_proxy.dendrite[count.index].id
   port_range = "443"
   ip_address = google_compute_global_address.dendrite[count.index].address
