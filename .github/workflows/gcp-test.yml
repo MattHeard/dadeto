@@ -176,17 +176,41 @@ jobs:
           gcloud auth list
           gcloud config get-value project
 
-      - name: Run Playwright job
+      - name: Run Playwright job (print describe on failure)
         id: run_playwright_job
         if: success()
         run: |
           set -euo pipefail
           JOB_NAME="$(terraform output -raw playwright_job_name)"
           REGION_OUT="$(terraform output -raw playwright_region)"
-          if [ "$JOB_NAME" != "null" ]; then
-            gcloud run jobs execute "$JOB_NAME" --region="${REGION_OUT}" --wait
-          else
+          if [ -z "$JOB_NAME" ] || [ "$JOB_NAME" = "null" ]; then
             echo "Playwright disabled for this environment"
+            exit 0
+          fi
+
+          # run but do not crash the step yet
+          set +e
+          gcloud run jobs execute "$JOB_NAME" --region="$REGION_OUT" --wait
+          STATUS=$?
+          set -e
+
+          # get latest execution id
+          EXEC="$(gcloud run jobs executions list --job "$JOB_NAME" --region="$REGION_OUT" \
+                  --format='value(name)' --limit=1 || true)"
+          echo "EXECUTION=$EXEC" >> "$GITHUB_ENV"
+
+          if [ "$STATUS" -ne 0 ]; then
+            echo "::group::Cloud Run execution describe: $EXEC"
+            gcloud run jobs executions describe "$EXEC" --region "$REGION_OUT" --format=yaml || true
+            echo "::endgroup::"
+
+            echo "::group::Cloud Run job logs"
+            gcloud logging read \
+              "resource.type=\"cloud_run_job\" AND resource.labels.execution_name=\"$EXEC\"" \
+              --region="$REGION_OUT" --limit=5000 --format='value(textPayload)' || true
+            echo "::endgroup::"
+
+            exit "$STATUS"
           fi
 
       - name: Verify reports in GCS
@@ -235,11 +259,11 @@ jobs:
             fi
           done
 
-      - name: Upload Playwright logs and traces
+      - name: Upload e2e artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pw-${{ steps.environment.outputs.environment }}
+          name: e2e-${{ steps.environment.outputs.environment }}
           path: |
             /tmp/playwright.log
             playwright-report
