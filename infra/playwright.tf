@@ -98,6 +98,13 @@ resource "google_cloud_run_v2_job" "playwright" {
           name  = "REPORT_PREFIX"
           value = local.report_prefix
         }
+
+        resources {
+          limits = {
+            cpu    = "2000m"
+            memory = "2Gi"
+          }
+        }
       }
 
       timeout     = "600s"
