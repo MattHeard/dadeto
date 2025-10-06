@@ -13,7 +13,7 @@ RUN apt-get update \
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
-COPY e2e ./e2e
+COPY test/e2e ./test/e2e
 COPY docker/playwright/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 CMD ["/entrypoint.sh"]
