@@ -232,41 +232,6 @@ jobs:
           fi
           gcloud storage ls "gs://${BUCKET}/${TF_VAR_environment}/${GITHUB_RUN_ID}/" || true
 
-      - name: Download Playwright artifacts
-        if: always()
-        run: |
-          set -euo pipefail
-
-          BUCKET="$(terraform output -raw reports_bucket 2>/dev/null || true)"
-          if [ -z "$BUCKET" ] || [ "$BUCKET" = "null" ]; then
-            echo "No reports bucket configured; skipping download"
-            exit 0
-          fi
-
-          PREFIX="${TF_VAR_environment}/${GITHUB_RUN_ID}"
-          BASE="gs://${BUCKET}/${PREFIX}"
-
-          if ! gcloud storage ls "${BASE}" >/dev/null 2>&1; then
-            echo "No Playwright artifacts found at ${BASE}; skipping"
-            exit 0
-          fi
-
-          if gcloud storage ls "${BASE}/playwright.log" >/dev/null 2>&1; then
-            gcloud storage cp "${BASE}/playwright.log" /tmp/playwright.log
-          else
-            echo "No playwright.log found at ${BASE}; skipping log download"
-          fi
-
-          for dir in playwright-report test-results; do
-            SRC="${BASE}/${dir}"
-            if gcloud storage ls "${SRC}" >/dev/null 2>&1; then
-              rm -rf "${dir}"
-              gcloud storage cp -r "${SRC}" "${dir}"
-            else
-              echo "Artifact ${SRC} missing; skipping"
-            fi
-          done
-
       - name: Upload e2e artifacts
         if: always()
         uses: actions/upload-artifact@v4
