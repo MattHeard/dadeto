@@ -9,4 +9,9 @@ test('renders a page with a title', async ({ page }) => {
     </html>
   `);
   await expect(page).toHaveTitle('Hello World');
+  const screenshot = await page.screenshot();
+  await test.info().attach('page-screenshot', {
+    body: screenshot,
+    contentType: 'image/png',
+  });
 });
