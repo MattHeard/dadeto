@@ -41,6 +41,7 @@ jobs:
           echo "ENVIRONMENT=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "TF_VAR_environment=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "TF_VAR_database_id=$ENVIRONMENT" >> "$GITHUB_ENV"
+          echo "TF_VAR_github_run_id=$GITHUB_RUN_ID" >> "$GITHUB_ENV"
           echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
@@ -235,6 +236,38 @@ jobs:
           else
             echo "Playwright disabled for this environment"
           fi
+
+      - name: Verify reports in GCS
+        if: always()
+        run: |
+          set -euo pipefail
+          BUCKET="$(terraform output -raw reports_bucket 2>/dev/null || true)"
+          if [ -z "$BUCKET" ] || [ "$BUCKET" = "null" ]; then
+            echo "No reports bucket configured; skipping verification"
+            exit 0
+          fi
+          gcloud storage ls "gs://${BUCKET}/${TF_VAR_environment}/${GITHUB_RUN_ID}/" || true
+
+      - name: Dump Cloud Run job logs
+        if: always()
+        run: |
+          set -euo pipefail
+          JOB_NAME="$(terraform output -raw playwright_job_name 2>/dev/null || true)"
+          if [ -z "$JOB_NAME" ] || [ "$JOB_NAME" = "null" ]; then
+            echo "Playwright job not provisioned; skipping log export"
+            exit 0
+          fi
+          gcloud logging read \
+            "resource.type=\"cloud_run_job\" AND resource.labels.job_name='${JOB_NAME}'" \
+            --limit=2000 --format=json > /tmp/run-job-logs.json || true
+
+      - name: Upload Cloud Run job logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-job-logs-${{ steps.environment.outputs.environment }}
+          path: /tmp/run-job-logs.json
+          if-no-files-found: ignore
 
       - name: Terraform Destroy
         if: always() && steps.terraform_init.outcome == 'success'

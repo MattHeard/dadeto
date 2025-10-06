@@ -39,6 +39,12 @@ variable "environment" {
   default     = "prod" # keeps prod plans = zero-diff
 }
 
+variable "github_run_id" {
+  description = "GitHub Actions run identifier for tagging ephemeral resources"
+  type        = string
+  default     = ""
+}
+
 variable "enable_lb" {
   description = "Whether to provision the global HTTPS load balancer"
   type        = bool

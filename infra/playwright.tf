@@ -2,6 +2,7 @@ locals {
   playwright_enabled  = startswith(var.environment, "t-")
   playwright_job_name = "pw-e2e-${var.environment}"
   reports_bucket_name = "${var.project_id}-${var.region}-e2e-reports"
+  report_prefix       = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
 }
 
 resource "google_service_account" "playwright" {
@@ -56,7 +57,7 @@ resource "google_storage_bucket" "e2e_reports" {
     }
 
     condition {
-      age = 14
+      age = 7
     }
   }
 }
@@ -89,13 +90,13 @@ resource "google_cloud_run_v2_job" "playwright" {
         image = var.playwright_image
 
         env {
-          name  = "REPORTS_BUCKET"
+          name  = "REPORT_BUCKET"
           value = local.reports_bucket_name
         }
 
         env {
           name  = "REPORT_PREFIX"
-          value = var.environment
+          value = local.report_prefix
         }
       }
 
