@@ -15,7 +15,7 @@ resource "google_firebaserules_ruleset" "firestore" {
   }
   depends_on = [
     google_project_service.firebaserules,
-    google_project_iam_member.ci_firebaserules_admin,
+    google_project_iam_member.terraform_service_account_roles["ci_firebaserules_admin"],
   ]
 }
 
