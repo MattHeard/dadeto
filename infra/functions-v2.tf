@@ -45,7 +45,7 @@ resource "google_cloud_run_service_iam_member" "get_api_key_credit_v2_public" {
   location = google_cloudfunctions2_function.get_api_key_credit_v2.location
   service  = google_cloudfunctions2_function.get_api_key_credit_v2.name
   role     = "roles/run.invoker"
-  member   = "allUsers"
+  member   = local.all_users_member
 
   depends_on = [
     google_cloudfunctions2_function.get_api_key_credit_v2,
