@@ -3,12 +3,12 @@ const { Storage } = require('@google-cloud/storage');
 const fs = require('fs');
 const path = require('path');
 
-const bucketName = process.env.REPORTS_BUCKET;
+const bucketName = process.env.REPORT_BUCKET;
 const prefix = process.env.REPORT_PREFIX || 'run';
 const runId = new Date().toISOString().replace(/[:.]/g, '-');
 const srcDir = path.resolve('playwright-report');
 
-if (!bucketName) throw new Error('REPORTS_BUCKET not set');
+if (!bucketName) throw new Error('REPORT_BUCKET not set');
 
 const storage = new Storage();
 async function uploadDir(dir, destPrefix) {
