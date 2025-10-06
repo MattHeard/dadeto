@@ -206,9 +206,17 @@ jobs:
 
             echo "::group::Cloud Run job logs"
             gcloud logging read \
-              "resource.type=\"cloud_run_job\" AND resource.labels.execution_name=\"$EXEC\"" \
-              --region="$REGION_OUT" --limit=5000 --format='value(textPayload)' || true
+              'resource.type="cloud_run_job" AND resource.labels.execution_name="'$EXEC'"' \
+              --limit=5000 --format='table(timestamp, severity, textPayload)' || true
             echo "::endgroup::"
+
+            gcloud logging read \
+              'resource.type="cloud_run_job" AND resource.labels.execution_name="'$EXEC'"' \
+              --limit=2000 --format='json' > /tmp/pw-logs.json || true
+
+            TASK="$(gcloud run jobs executions tasks list --execution "$EXEC" --region "$REGION_OUT" \
+                    --format='value(name)' --limit=1 || true)"
+            gcloud run jobs executions tasks describe "$TASK" --region "$REGION_OUT" --format=yaml || true
 
             exit "$STATUS"
           fi
@@ -280,7 +288,7 @@ jobs:
             exit 0
           fi
           gcloud logging read \
-            "resource.type=\"cloud_run_job\" AND resource.labels.job_name='${JOB_NAME}'" \
+            'resource.type="cloud_run_job" AND resource.labels.job_name="'$JOB_NAME'"' \
             --limit=2000 --format=json > /tmp/run-job-logs.json || true
 
       - name: Upload Cloud Run job logs
@@ -288,7 +296,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-job-logs-${{ steps.environment.outputs.environment }}
-          path: /tmp/run-job-logs.json
+          path: |
+            /tmp/run-job-logs.json
+            /tmp/pw-logs.json
           if-no-files-found: ignore
 
       - name: Tag commit on successful apply (PAT, debug)
