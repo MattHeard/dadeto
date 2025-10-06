@@ -8,47 +8,36 @@ export DEBUG="pw:api,pw:browser*"
 # export DEBUG="$DEBUG,pw:channel,pw:websocket"
 
 # serialize execution for easier-to-read logs
-ARGS="--reporter=github,list --workers=1"
+ARGS="--reporter=html,github,list --workers=1"
 
 # keep traces for failures and upload later
 npx playwright install --with-deps
+
+# run tests without aborting the script
+set +e
 npx playwright test $ARGS --trace=retain-on-failure | tee /tmp/playwright.log
+PW_STATUS=${PIPESTATUS[0]}   # exit code of playwright, not tee
+set -e
 
 REPORT_BUCKET="${REPORT_BUCKET:-}"
 REPORT_PREFIX="${REPORT_PREFIX:-}"
 
 if [ -z "${REPORT_BUCKET}" ]; then
   echo "REPORT_BUCKET env var must be set" >&2
-  exit 1
+  PW_STATUS=${PW_STATUS:-1}
 fi
 
 DEST="gs://${REPORT_BUCKET}"
-if [ -n "${REPORT_PREFIX}" ]; then
-  DEST="${DEST}/${REPORT_PREFIX}"
-fi
+[ -n "${REPORT_PREFIX}" ] && DEST="${DEST}/${REPORT_PREFIX}"
 
 upload_with_tool() {
-  local tool="$1"
-  local src="$2"
-
-  if [ ! -e "$src" ]; then
-    echo "Path $src not found; skipping"
-    return
-  fi
-
+  local tool="$1" src="$2"
+  [ ! -e "$src" ] && { echo "Path $src not found; skipping"; return; }
   echo "Uploading $src with $tool to ${DEST}/"
   if [ "$tool" = "gsutil" ]; then
-    if [ -d "$src" ]; then
-      gsutil -m cp -r "$src" "${DEST}/"
-    else
-      gsutil -m cp "$src" "${DEST}/"
-    fi
+    [ -d "$src" ] && gsutil -m cp -r "$src" "${DEST}/" || gsutil -m cp "$src" "${DEST}/"
   else
-    if [ -d "$src" ]; then
-      gcloud storage cp -r "$src" "${DEST}/"
-    else
-      gcloud storage cp "$src" "${DEST}/"
-    fi
+    [ -d "$src" ] && gcloud storage cp -r "$src" "${DEST}/" || gcloud storage cp "$src" "${DEST}/"
   fi
 }
 
@@ -62,5 +51,6 @@ elif command -v gcloud >/dev/null 2>&1; then
   upload_with_tool gcloud test-results
 else
   echo "Neither gsutil nor gcloud is available for uploads" >&2
-  exit 1
 fi
+
+exit "${PW_STATUS:-1}"
