@@ -21,12 +21,53 @@ locals {
   lb_resource_prefix = "${var.environment}-dendrite"
 }
 
+resource "google_compute_security_policy" "edge" {
+  count = local.enable_lb ? 1 : 0
+
+  name        = "${local.lb_resource_prefix}-armor"
+  description = "Block WebDAV probes; allow the rest"
+
+  rule {
+    priority = 1000
+    action   = "deny(403)"
+    preview  = false
+
+    match {
+      expr {
+        expression = "request.method == \"PROPFIND\""
+      }
+    }
+
+    description = "Block PROPFIND"
+  }
+
+  rule {
+    priority = 2147483647
+    action   = "allow"
+
+    match {
+      versioned_expr = "SRC_IPS_V1"
+
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+  }
+
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
+  ]
+}
+
 resource "google_compute_backend_bucket" "dendrite_static" {
   count = local.enable_lb ? 1 : 0
 
   name        = "${local.lb_resource_prefix}-static"
   bucket_name = local.dendrite_static_bucket_name
   enable_cdn  = true
+
+  edge_security_policy = google_compute_security_policy.edge[count.index].id
 
   # Set COOP header to isolate browsing context group
   custom_response_headers = [
@@ -37,6 +78,7 @@ resource "google_compute_backend_bucket" "dendrite_static" {
     google_project_service.compute,
     google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
     google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
+    google_compute_security_policy.edge,
   ]
 }
 
