@@ -41,6 +41,8 @@ locals {
   cloud_function_runtime_service_account_email  = google_service_account.cloud_function_runtime.email
   cloud_function_runtime_service_account_member = "serviceAccount:${local.cloud_function_runtime_service_account_email}"
   terraform_service_account_member              = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
+  all_users_member                              = "allUsers"
+  cloud_functions_invoker_role                  = "roles/cloudfunctions.invoker"
   project_level_services = {
     cloudfunctions   = "cloudfunctions.googleapis.com"
     cloudbuild       = "cloudbuild.googleapis.com"
@@ -175,7 +177,7 @@ resource "google_storage_bucket_object" "dendrite_mod" {
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
   bucket = local.dendrite_static_bucket_name
   role   = "roles/storage.objectViewer"
-  member = "allUsers"
+  member = local.all_users_member
 }
 
 resource "google_storage_bucket_iam_member" "dendrite_runtime_writer" {
@@ -393,8 +395,8 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.get_api_key_credit.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.get_api_key_credit,
     google_project_iam_member.terraform_cloudfunctions_viewer,
@@ -473,8 +475,8 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_story_invoker" 
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.submit_new_story.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.submit_new_story,
     google_project_iam_member.terraform_cloudfunctions_viewer,
@@ -485,8 +487,8 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_page_invoker" {
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.submit_new_page.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.submit_new_page,
     google_project_iam_member.terraform_cloudfunctions_viewer,
@@ -530,8 +532,8 @@ resource "google_cloudfunctions_function_iam_member" "assign_moderation_job_invo
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.assign_moderation_job.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.assign_moderation_job,
     google_project_iam_member.terraform_cloudfunctions_viewer,
@@ -575,8 +577,8 @@ resource "google_cloudfunctions_function_iam_member" "get_moderation_variant_inv
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.get_moderation_variant.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
 
   depends_on = [
     google_cloudfunctions_function.get_moderation_variant,
@@ -620,8 +622,8 @@ resource "google_cloudfunctions_function_iam_member" "submit_moderation_rating_i
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.submit_moderation_rating.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.submit_moderation_rating,
     google_project_iam_member.terraform_cloudfunctions_viewer,
@@ -666,8 +668,8 @@ resource "google_cloudfunctions_function_iam_member" "report_for_moderation_invo
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.report_for_moderation.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.report_for_moderation,
     google_project_iam_member.terraform_cloudfunctions_viewer,
@@ -900,8 +902,8 @@ resource "google_cloudfunctions_function_iam_member" "mark_variant_dirty_invoker
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.mark_variant_dirty.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.mark_variant_dirty,
     google_project_iam_member.terraform_cloudfunctions_viewer,
@@ -945,8 +947,8 @@ resource "google_cloudfunctions_function_iam_member" "generate_stats_invoker" {
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.generate_stats.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.generate_stats,
     google_project_iam_member.terraform_cloudfunctions_viewer,
@@ -1034,8 +1036,8 @@ resource "google_cloudfunctions_function_iam_member" "trigger_render_contents_in
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.trigger_render_contents.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.trigger_render_contents,
     google_project_iam_member.terraform_cloudfunctions_viewer,
