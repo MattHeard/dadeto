@@ -51,6 +51,17 @@ locals {
     artifactregistry = "artifactregistry.googleapis.com"
     eventarc         = "eventarc.googleapis.com"
   }
+  terraform_service_account_roles = {
+    firestore_access                = "roles/datastore.user"
+    cloudfunctions_access           = "roles/cloudfunctions.developer"
+    terraform_cloudfunctions_viewer = "roles/cloudfunctions.viewer"
+    terraform_set_iam_policy        = "roles/cloudfunctions.admin"
+    terraform_create_sa             = "roles/iam.serviceAccountAdmin"
+    terraform_cloudscheduler_admin  = "roles/cloudscheduler.admin"
+    ci_firebaserules_admin          = "roles/firebaserules.admin"
+    terraform_loadbalancer_admin    = "roles/compute.loadBalancerAdmin"
+    terraform_security_admin        = "roles/compute.securityAdmin"
+  }
   cloud_function_service_keys = [
     "cloudfunctions",
     "cloudbuild",
@@ -236,52 +247,11 @@ resource "google_firestore_database" "database" {
   ]
 }
 
-resource "google_project_iam_member" "firestore_access" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/datastore.user"
-  member  = local.terraform_service_account_member
-}
+resource "google_project_iam_member" "terraform_service_account_roles" {
+  for_each = local.manage_project_level_resources ? local.terraform_service_account_roles : {}
 
-resource "google_project_iam_member" "cloudfunctions_access" {
-  count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
-  role    = "roles/cloudfunctions.developer"
-  member  = local.terraform_service_account_member
-}
-
-resource "google_project_iam_member" "terraform_cloudfunctions_viewer" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/cloudfunctions.viewer"
-  member  = local.terraform_service_account_member
-}
-
-resource "google_project_iam_member" "terraform_set_iam_policy" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/cloudfunctions.admin"
-  member  = local.terraform_service_account_member
-}
-
-resource "google_project_iam_member" "terraform_create_sa" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/iam.serviceAccountAdmin"
-  member  = local.terraform_service_account_member
-}
-
-resource "google_project_iam_member" "terraform_cloudscheduler_admin" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/cloudscheduler.admin"
-  member  = local.terraform_service_account_member
-}
-
-resource "google_project_iam_member" "ci_firebaserules_admin" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/firebaserules.admin"
+  role    = each.value
   member  = local.terraform_service_account_member
 }
 
@@ -292,25 +262,11 @@ resource "google_project_iam_member" "build_loadbalancer_admin" {
   member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
 }
 
-resource "google_project_iam_member" "terraform_loadbalancer_admin" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/compute.loadBalancerAdmin"
-  member  = local.terraform_service_account_member
-}
-
 resource "google_project_iam_member" "runtime_loadbalancer_admin" {
   project    = var.project_id
   role       = "roles/compute.loadBalancerAdmin"
   member     = local.cloud_function_runtime_service_account_member
   depends_on = [google_service_account.cloud_function_runtime]
-}
-
-resource "google_project_iam_member" "terraform_security_admin" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/compute.securityAdmin"
-  member  = local.terraform_service_account_member
 }
 
 locals {
@@ -385,7 +341,7 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -399,7 +355,7 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.get_api_key_credit,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 
@@ -443,7 +399,7 @@ resource "google_cloudfunctions_function" "submit_new_story" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -465,7 +421,7 @@ resource "google_cloudfunctions_function" "submit_new_page" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -479,7 +435,7 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_story_invoker" 
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.submit_new_story,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 
@@ -491,7 +447,7 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_page_invoker" {
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.submit_new_page,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 
@@ -522,7 +478,7 @@ resource "google_cloudfunctions_function" "assign_moderation_job" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -536,7 +492,7 @@ resource "google_cloudfunctions_function_iam_member" "assign_moderation_job_invo
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.assign_moderation_job,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 
@@ -567,7 +523,7 @@ resource "google_cloudfunctions_function" "get_moderation_variant" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -582,7 +538,7 @@ resource "google_cloudfunctions_function_iam_member" "get_moderation_variant_inv
 
   depends_on = [
     google_cloudfunctions_function.get_moderation_variant,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 data "archive_file" "submit_moderation_rating_src" {
@@ -612,7 +568,7 @@ resource "google_cloudfunctions_function" "submit_moderation_rating" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -626,7 +582,7 @@ resource "google_cloudfunctions_function_iam_member" "submit_moderation_rating_i
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.submit_moderation_rating,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 
@@ -658,7 +614,7 @@ resource "google_cloudfunctions_function" "report_for_moderation" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -672,7 +628,7 @@ resource "google_cloudfunctions_function_iam_member" "report_for_moderation_invo
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.report_for_moderation,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 
@@ -710,7 +666,7 @@ resource "google_cloudfunctions_function" "process_new_story" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
@@ -747,7 +703,7 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
@@ -785,7 +741,7 @@ resource "google_cloudfunctions_function" "process_new_page" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
@@ -823,7 +779,7 @@ resource "google_cloudfunctions_function" "render_variant" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
@@ -860,7 +816,7 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
@@ -892,7 +848,7 @@ resource "google_cloudfunctions_function" "mark_variant_dirty" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -906,7 +862,7 @@ resource "google_cloudfunctions_function_iam_member" "mark_variant_dirty_invoker
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.mark_variant_dirty,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 
@@ -937,7 +893,7 @@ resource "google_cloudfunctions_function" "generate_stats" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -951,7 +907,7 @@ resource "google_cloudfunctions_function_iam_member" "generate_stats_invoker" {
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.generate_stats,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 
@@ -969,7 +925,7 @@ resource "google_cloud_scheduler_job" "generate_stats_daily" {
   depends_on = [
     google_project_service.project_level,
     google_cloudfunctions_function.generate_stats,
-    google_project_iam_member.terraform_cloudscheduler_admin,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudscheduler_admin"],
   ]
 }
 
@@ -1006,7 +962,7 @@ resource "google_cloudfunctions_function" "render_contents" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
   ]
 }
@@ -1026,7 +982,7 @@ resource "google_cloudfunctions_function" "trigger_render_contents" {
 
   depends_on = [
     google_project_service.project_level,
-    google_project_iam_member.cloudfunctions_access,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
   ]
@@ -1040,7 +996,7 @@ resource "google_cloudfunctions_function_iam_member" "trigger_render_contents_in
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.trigger_render_contents,
-    google_project_iam_member.terraform_cloudfunctions_viewer,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
 
