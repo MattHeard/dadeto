@@ -21,5 +21,8 @@ test.describe('dendrite manual static page', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Reading stories' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Creating new content' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Moderation' })).toBeVisible();
+
+    const screenshotPath = test.info().outputPath('dendrite-manual.png');
+    await page.screenshot({ path: screenshotPath, fullPage: true });
   });
 });
