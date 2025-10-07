@@ -1,6 +1,9 @@
+# syntax=docker/dockerfile:1.5
 FROM mcr.microsoft.com/playwright:v1.47.0-jammy
 
-RUN apt-get update \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
     && apt-get install -y --no-install-recommends curl gnupg \
     && mkdir -p /etc/apt/keyrings \
     && curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /etc/apt/keyrings/cloud.google.gpg \
@@ -12,7 +15,7 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
 COPY test/e2e ./test/e2e
 COPY docker/playwright/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
