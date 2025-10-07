@@ -19,4 +19,4 @@ RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
 COPY test/e2e ./test/e2e
 COPY docker/playwright/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-CMD ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
