@@ -28,7 +28,7 @@ data "google_project" "project" {
 locals {
   environment_suffix             = var.environment == "prod" ? "" : "-${var.environment}"
   static_site_bucket_name        = var.environment == "prod" ? var.static_site_bucket_name : "${var.environment}-${var.static_site_bucket_name}"
-  enable_lb                      = var.enable_lb && var.environment == "prod"
+  enable_lb                      = var.enable_lb
   manage_project_level_resources = var.environment == var.project_level_environment
   firestore_database_path        = "projects/${var.project_id}/databases/${var.database_id}"
   firestore_documents_path       = "${local.firestore_database_path}/documents"
