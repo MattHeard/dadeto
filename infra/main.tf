@@ -70,6 +70,12 @@ locals {
     "eventarc",
   ]
   static_site_objects = {
+    dendrite_404 = {
+      name          = "404.html"
+      source        = "${path.module}/404.html"
+      content_type  = "text/html"
+      cache_control = "no-store"
+    }
     dendrite_new_story = {
       name         = "new-story.html"
       source       = "${path.module}/new-story.html"
@@ -159,14 +165,6 @@ resource "google_storage_bucket" "dendrite_static_nonprod" {
 }
 
 
-resource "google_storage_bucket_object" "dendrite_404" {
-  name          = "404.html"
-  bucket        = local.dendrite_static_bucket_name
-  source        = "${path.module}/404.html"
-  content_type  = "text/html"
-  cache_control = "no-store"
-}
-
 resource "google_storage_bucket_object" "dendrite_static_files" {
   for_each = local.static_site_objects
 
@@ -174,6 +172,7 @@ resource "google_storage_bucket_object" "dendrite_static_files" {
   bucket       = local.dendrite_static_bucket_name
   source       = each.value.source
   content_type = each.value.content_type
+  cache_control = try(each.value.cache_control, null)
 }
 
 resource "google_storage_bucket_object" "dendrite_mod" {
