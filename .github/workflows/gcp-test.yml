@@ -99,8 +99,9 @@ jobs:
           IMAGE: e2e-runner
         run: |
           set -euo pipefail
-          gcloud artifacts repositories create "$AR_REPO" \
-            --repository-format=DOCKER --location="${REGION}" || true
+          if ! gcloud artifacts repositories describe "$AR_REPO" --location="${REGION}" >/dev/null 2>&1; then
+            gcloud artifacts repositories create "$AR_REPO" --repository-format=DOCKER --location="${REGION}"
+          fi
           IMAGE_REF="${REGION}-docker.pkg.dev/${GOOGLE_PROJECT}/${AR_REPO}/${IMAGE}:$GITHUB_SHA"
           docker build -f docker/playwright/Dockerfile -t "$IMAGE_REF" .
           docker push "$IMAGE_REF"
