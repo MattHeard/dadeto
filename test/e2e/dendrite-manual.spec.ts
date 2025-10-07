@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-const manualPageUrl = new URL('../infra/manual.html', import.meta.url).href;
+const base = process.env.BASE_URL || 'http://127.0.0.1';
+const manualPageUrl = `${base}/manual.html`;
 
 test.describe('dendrite manual static page', () => {
   test('shows navigation and core manual content', async ({ page }) => {

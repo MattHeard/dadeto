@@ -39,3 +39,8 @@ output "playwright_region" {
   description = "Region for the Playwright Cloud Run job"
   value       = local.playwright_enabled ? var.region : null
 }
+
+output "lb_ip" {
+  description = "Global LB IPv4"
+  value       = local.enable_lb ? google_compute_global_address.dendrite[0].address : null
+}

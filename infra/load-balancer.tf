@@ -83,7 +83,7 @@ resource "google_compute_backend_bucket" "dendrite_static" {
 }
 
 resource "google_compute_managed_ssl_certificate" "dendrite" {
-  count = local.enable_lb ? 1 : 0
+  count = local.enable_lb && var.environment == "prod" ? 1 : 0
 
   name = "${local.lb_resource_prefix}-cert"
 
@@ -99,7 +99,7 @@ resource "google_compute_managed_ssl_certificate" "dendrite" {
 
 resource "google_compute_url_map" "dendrite" {
   provider = google-beta
-  count    = local.enable_lb ? 1 : 0
+  count    = local.enable_lb && var.environment == "prod" ? 1 : 0
   name     = "${local.lb_resource_prefix}-url-map"
 
   # mandatory fallback for any request that dodges all matchers
@@ -165,8 +165,20 @@ resource "google_compute_url_map" "dendrite" {
   ]
 }
 
+resource "google_compute_url_map" "http_service" {
+  count = local.enable_lb && var.environment != "prod" ? 1 : 0
+
+  name            = "${local.lb_resource_prefix}-http-map"
+  default_service = google_compute_backend_bucket.dendrite_static[0].id
+
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
+  ]
+}
+
 resource "google_compute_target_https_proxy" "dendrite" {
-  count = local.enable_lb ? 1 : 0
+  count = local.enable_lb && var.environment == "prod" ? 1 : 0
 
   name             = "${local.lb_resource_prefix}-https-proxy"
   url_map          = google_compute_url_map.dendrite[count.index].id
@@ -191,7 +203,7 @@ resource "google_compute_global_address" "dendrite" {
 }
 
 resource "google_compute_global_forwarding_rule" "dendrite_https" {
-  count = local.enable_lb ? 1 : 0
+  count = local.enable_lb && var.environment == "prod" ? 1 : 0
 
   name       = "${local.lb_resource_prefix}-https-fr"
   target     = google_compute_target_https_proxy.dendrite[count.index].id
@@ -206,7 +218,7 @@ resource "google_compute_global_forwarding_rule" "dendrite_https" {
 }
 
 resource "google_compute_url_map" "redirect" {
-  count = local.enable_lb ? 1 : 0
+  count = local.enable_lb && var.environment == "prod" ? 1 : 0
 
   name = "${var.environment}-dendrite-redirect"
   default_url_redirect {
@@ -220,8 +232,20 @@ resource "google_compute_url_map" "redirect" {
   ]
 }
 
+resource "google_compute_target_http_proxy" "http" {
+  count = local.enable_lb && var.environment != "prod" ? 1 : 0
+
+  name    = "${local.lb_resource_prefix}-http-proxy"
+  url_map = google_compute_url_map.http_service[0].id
+
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
+  ]
+}
+
 resource "google_compute_target_http_proxy" "redirect" {
-  count = local.enable_lb ? 1 : 0
+  count = local.enable_lb && var.environment == "prod" ? 1 : 0
 
   name    = "${var.environment}-dendrite-http-proxy"
   url_map = google_compute_url_map.redirect[count.index].id
@@ -233,12 +257,26 @@ resource "google_compute_target_http_proxy" "redirect" {
 }
 
 resource "google_compute_global_forwarding_rule" "dendrite_http" {
-  count = local.enable_lb ? 1 : 0
+  count = local.enable_lb && var.environment != "prod" ? 1 : 0
 
   name       = "${var.environment}-dendrite-http-fr"
-  target     = google_compute_target_http_proxy.redirect[count.index].id
+  target     = google_compute_target_http_proxy.http[0].id
   port_range = "80"
-  ip_address = google_compute_global_address.dendrite[count.index].address
+  ip_address = google_compute_global_address.dendrite[0].address
+
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
+  ]
+}
+
+resource "google_compute_global_forwarding_rule" "dendrite_http_redirect" {
+  count = local.enable_lb && var.environment == "prod" ? 1 : 0
+
+  name       = "${var.environment}-dendrite-http-fr"
+  target     = google_compute_target_http_proxy.redirect[0].id
+  port_range = "80"
+  ip_address = google_compute_global_address.dendrite[0].address
 
   depends_on = [
     google_project_service.compute,

@@ -89,6 +89,15 @@ resource "google_cloud_run_v2_job" "playwright" {
       containers {
         image = var.playwright_image
 
+        dynamic "env" {
+          for_each = local.enable_lb ? [google_compute_global_address.dendrite[0].address] : []
+
+          content {
+            name  = "BASE_URL"
+            value = "http://${env.value}"
+          }
+        }
+
         env {
           name  = "REPORT_BUCKET"
           value = local.reports_bucket_name
