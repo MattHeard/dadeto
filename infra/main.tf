@@ -168,10 +168,10 @@ resource "google_storage_bucket" "dendrite_static_nonprod" {
 resource "google_storage_bucket_object" "dendrite_static_files" {
   for_each = local.static_site_objects
 
-  name         = each.value.name
-  bucket       = local.dendrite_static_bucket_name
-  source       = each.value.source
-  content_type = each.value.content_type
+  name          = each.value.name
+  bucket        = local.dendrite_static_bucket_name
+  source        = each.value.source
+  content_type  = each.value.content_type
   cache_control = try(each.value.cache_control, null)
 }
 
