@@ -62,7 +62,7 @@ resource "google_compute_security_policy" "edge" {
 
 resource "google_compute_backend_bucket" "dendrite_static" {
   provider = google-beta
-  count = local.enable_lb ? 1 : 0
+  count    = local.enable_lb ? 1 : 0
 
   name        = "${local.lb_resource_prefix}-static"
   bucket_name = local.dendrite_static_bucket_name
