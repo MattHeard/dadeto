@@ -11,7 +11,7 @@ variable "lb_cert_domains" {
 }
 
 resource "google_project_service" "compute" {
-  count              = local.enable_lb && local.manage_project_level_resources ? 1 : 0
+  count              = local.enable_lb ? 1 : 0
   project            = var.project_id
   service            = "compute.googleapis.com"
   disable_on_destroy = false
@@ -22,7 +22,7 @@ locals {
 }
 
 resource "google_compute_security_policy" "edge" {
-  count = local.enable_lb ? 1 : 0
+  count = local.enable_lb && var.environment == "prod" ? 1 : 0
 
   name        = "${local.lb_resource_prefix}-armor"
   description = "Block WebDAV probes; allow the rest"
@@ -54,10 +54,12 @@ resource "google_compute_security_policy" "edge" {
     }
   }
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_security_admin"]]
+      : []
+  )
 }
 
 resource "google_compute_backend_bucket" "dendrite_static" {
@@ -68,19 +70,23 @@ resource "google_compute_backend_bucket" "dendrite_static" {
   bucket_name = local.dendrite_static_bucket_name
   enable_cdn  = true
 
-  edge_security_policy = google_compute_security_policy.edge[count.index].id
+  edge_security_policy = var.environment == "prod" ? google_compute_security_policy.edge[0].id : null
 
   # Set COOP header to isolate browsing context group
   custom_response_headers = [
     "Cross-Origin-Opener-Policy: restrict-properties",
   ]
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-    google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
-    google_compute_security_policy.edge,
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [
+          google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
+          google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
+        ]
+      : [],
+    var.environment == "prod" ? [google_compute_security_policy.edge[0]] : []
+  )
 }
 
 resource "google_compute_managed_ssl_certificate" "dendrite" {
@@ -92,10 +98,12 @@ resource "google_compute_managed_ssl_certificate" "dendrite" {
     domains = var.lb_cert_domains
   }
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_security_admin"]]
+      : []
+  )
 }
 
 resource "google_compute_url_map" "dendrite" {
@@ -160,10 +168,12 @@ resource "google_compute_url_map" "dendrite" {
     }
   }
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"]]
+      : []
+  )
 }
 
 resource "google_compute_url_map" "http_service" {
@@ -172,10 +182,12 @@ resource "google_compute_url_map" "http_service" {
   name            = "${local.lb_resource_prefix}-http-map"
   default_service = google_compute_backend_bucket.dendrite_static[0].id
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"]]
+      : []
+  )
 }
 
 resource "google_compute_target_https_proxy" "dendrite" {
@@ -185,11 +197,15 @@ resource "google_compute_target_https_proxy" "dendrite" {
   url_map          = google_compute_url_map.dendrite[count.index].id
   ssl_certificates = [google_compute_managed_ssl_certificate.dendrite[count.index].id]
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-    google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [
+          google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
+          google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
+        ]
+      : []
+  )
 }
 
 resource "google_compute_global_address" "dendrite" {
@@ -197,10 +213,12 @@ resource "google_compute_global_address" "dendrite" {
 
   name = "${local.lb_resource_prefix}-ip"
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"]]
+      : []
+  )
 }
 
 resource "google_compute_global_forwarding_rule" "dendrite_https" {
@@ -211,11 +229,15 @@ resource "google_compute_global_forwarding_rule" "dendrite_https" {
   port_range = "443"
   ip_address = google_compute_global_address.dendrite[count.index].address
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-    google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [
+          google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
+          google_project_iam_member.terraform_service_account_roles["terraform_security_admin"],
+        ]
+      : []
+  )
 }
 
 resource "google_compute_url_map" "redirect" {
@@ -227,10 +249,12 @@ resource "google_compute_url_map" "redirect" {
     strip_query    = false
   }
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"]]
+      : []
+  )
 }
 
 resource "google_compute_target_http_proxy" "http" {
@@ -239,10 +263,12 @@ resource "google_compute_target_http_proxy" "http" {
   name    = "${local.lb_resource_prefix}-http-proxy"
   url_map = google_compute_url_map.http_service[0].id
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"]]
+      : []
+  )
 }
 
 resource "google_compute_target_http_proxy" "redirect" {
@@ -251,10 +277,12 @@ resource "google_compute_target_http_proxy" "redirect" {
   name    = "${var.environment}-dendrite-http-proxy"
   url_map = google_compute_url_map.redirect[count.index].id
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"]]
+      : []
+  )
 }
 
 resource "google_compute_global_forwarding_rule" "dendrite_http" {
@@ -265,10 +293,12 @@ resource "google_compute_global_forwarding_rule" "dendrite_http" {
   port_range = "80"
   ip_address = google_compute_global_address.dendrite[0].address
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"]]
+      : []
+  )
 }
 
 resource "google_compute_global_forwarding_rule" "dendrite_http_redirect" {
@@ -279,8 +309,10 @@ resource "google_compute_global_forwarding_rule" "dendrite_http_redirect" {
   port_range = "80"
   ip_address = google_compute_global_address.dendrite[0].address
 
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"],
-  ]
+  depends_on = concat(
+    [google_project_service.compute],
+    local.manage_project_level_resources
+      ? [google_project_iam_member.terraform_service_account_roles["terraform_loadbalancer_admin"]]
+      : []
+  )
 }
