@@ -5,25 +5,34 @@ const path = require('path');
 
 const bucketName = process.env.REPORT_BUCKET;
 const prefix = process.env.REPORT_PREFIX || 'run';
+const tlog = (...args) => console.log(new Date().toISOString(), ...args);
 const runId = new Date().toISOString().replace(/[:.]/g, '-');
 const srcDir = path.resolve('playwright-report');
 
 if (!bucketName) throw new Error('REPORT_BUCKET not set');
+tlog('config', { bucketName, prefix, srcDir });
 
 const storage = new Storage();
 async function uploadDir(dir, destPrefix) {
+  tlog('uploadDir:start', { dir, destPrefix });
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const e of entries) {
     const abs = path.join(dir, e.name);
     const rel = path.relative(srcDir, abs);
     const dst = path.posix.join(destPrefix, rel);
-    if (e.isDirectory()) await uploadDir(abs, destPrefix + '/' + e.name);
-    else await storage.bucket(bucketName).upload(abs, { destination: dst });
+    if (e.isDirectory()) {
+      await uploadDir(abs, destPrefix + '/' + e.name);
+    } else {
+      const start = Date.now();
+      tlog('upload:file:start', { abs, dst });
+      await storage.bucket(bucketName).upload(abs, { destination: dst });
+      tlog('upload:file:end', { abs, ms: Date.now() - start });
+    }
   }
 }
 uploadDir(srcDir, `${prefix}/${runId}`)
-  .then(() => console.log(`Uploaded report to gs://${bucketName}/${prefix}/${runId}`))
+  .then(() => tlog('uploadDir:done', { gs: `gs://${bucketName}/${prefix}/${runId}` }))
   .catch((err) => {
-    console.error(err);
+    tlog('uploadDir:error', { message: err?.message, code: err?.code });
     process.exit(1);
   });
