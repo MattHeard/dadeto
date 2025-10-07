@@ -998,4 +998,3 @@ resource "google_cloudfunctions_function_iam_member" "trigger_render_contents_in
     google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
-

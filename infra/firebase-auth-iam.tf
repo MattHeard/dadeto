@@ -33,4 +33,3 @@ resource "google_project_iam_member" "runtime_identityplatform_viewer" {
     google_service_account.cloud_function_runtime,
   ]
 }
-
