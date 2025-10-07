@@ -11,11 +11,22 @@ export DEBUG="pw:api,pw:browser*"
 ARGS="--reporter=html,github,list --workers=1"
 
 # keep traces for failures and upload later
-npx playwright install --with-deps
+# browsers already in the base image
+
+PLAYWRIGHT_BIN="./node_modules/.bin/playwright"
+
+if [ ! -x "${PLAYWRIGHT_BIN}" ]; then
+  echo "Playwright binary not found at ${PLAYWRIGHT_BIN}" >&2
+  exit 1
+fi
+
+"${PLAYWRIGHT_BIN}" --version || true
+node -e "console.log('node', process.version)"
+"${PLAYWRIGHT_BIN}" test --list --reporter=list || exit 2
 
 # run tests without aborting the script
 set +e
-npx playwright test $ARGS --trace=retain-on-failure | tee /tmp/playwright.log
+"${PLAYWRIGHT_BIN}" test $ARGS --trace=retain-on-failure | tee /tmp/playwright.log
 PW_STATUS=${PIPESTATUS[0]}   # exit code of playwright, not tee
 set -e
 
