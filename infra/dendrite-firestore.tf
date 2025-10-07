@@ -125,4 +125,3 @@ resource "google_firestore_field" "pages_number_global" {
 
   depends_on = [google_firestore_database.database]
 }
-

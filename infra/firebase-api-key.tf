@@ -21,4 +21,3 @@ resource "google_project_service" "apikeys_api" {
   service            = "apikeys.googleapis.com"
   disable_on_destroy = false
 }
-
