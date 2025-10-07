@@ -108,6 +108,31 @@ resource "google_cloud_run_v2_job" "playwright" {
           value = local.report_prefix
         }
 
+        env {
+          name  = "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD"
+          value = "1"
+        }
+
+        env {
+          name  = "PLAYWRIGHT_BROWSERS_PATH"
+          value = "/ms-playwright"
+        }
+
+        env {
+          name  = "NPM_CONFIG_FUND"
+          value = "false"
+        }
+
+        env {
+          name  = "NPM_CONFIG_AUDIT"
+          value = "false"
+        }
+
+        env {
+          name  = "NPM_CONFIG_PROGRESS"
+          value = "false"
+        }
+
         resources {
           limits = {
             cpu    = "2000m"

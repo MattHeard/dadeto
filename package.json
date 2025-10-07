@@ -22,7 +22,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.26.9",
     "@eslint/js": "^9.23.0",
-    "@playwright/test": "^1.47.0",
+    "@playwright/test": "1.47.0",
     "@stryker-mutator/core": "^8.7.1",
     "@stryker-mutator/jest-runner": "^8.7.1",
     "complexity-report": "^2.0.0-alpha",
