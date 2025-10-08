@@ -104,9 +104,9 @@ resource "google_cloudfunctions2_function" "gcs_proxy" {
 resource "google_cloud_run_service_iam_member" "gcs_proxy_invoker_pw" {
   count = local.playwright_enabled ? 1 : 0
 
-  location = google_cloudfunctions2_function.gcs_proxy.location
-  service  = google_cloudfunctions2_function.gcs_proxy.name
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.playwright[0].email}"
+  location   = google_cloudfunctions2_function.gcs_proxy.location
+  service    = google_cloudfunctions2_function.gcs_proxy.name
+  role       = "roles/run.invoker"
+  member     = "serviceAccount:${google_service_account.playwright[0].email}"
   depends_on = [google_cloudfunctions2_function.gcs_proxy]
 }
