@@ -7,6 +7,7 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
   ],
   use: {
+    baseURL: process.env.BASE_URL || process.env.E2E_ORIGIN,
     trace: 'retain-on-failure',
     screenshot: 'on',
   },

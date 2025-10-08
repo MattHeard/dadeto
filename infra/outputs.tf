@@ -44,3 +44,8 @@ output "lb_ip" {
   description = "Global LB IPv4"
   value       = local.enable_lb ? google_compute_global_address.dendrite[0].address : null
 }
+
+output "e2e_origin" {
+  description = "Base URL for private static site proxy"
+  value       = try(google_cloudfunctions2_function.gcs_proxy.service_config[0].uri, null)
+}
