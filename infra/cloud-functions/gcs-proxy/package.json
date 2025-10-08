@@ -1,0 +1,10 @@
+{
+  "name": "gcs-proxy",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@google-cloud/storage": "^7.16.0"
+  }
+}

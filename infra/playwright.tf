@@ -89,13 +89,9 @@ resource "google_cloud_run_v2_job" "playwright" {
       containers {
         image = var.playwright_image
 
-        dynamic "env" {
-          for_each = local.enable_lb ? [google_compute_global_address.dendrite[0].address] : []
-
-          content {
-            name  = "BASE_URL"
-            value = "http://${env.value}"
-          }
+        env {
+          name  = "BASE_URL"
+          value = local.enable_lb ? "http://${google_compute_global_address.dendrite[0].address}" : google_cloudfunctions2_function.gcs_proxy.service_config[0].uri
         }
 
         env {
