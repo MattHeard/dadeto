@@ -4,6 +4,7 @@ locals {
   reports_bucket_name         = "${var.project_id}-${var.region}-e2e-reports"
   report_prefix               = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
   playwright_vpc_connector_id = try(google_vpc_access_connector.playwright[0].id, null)
+  gcs_proxy_name              = "${var.environment}-gcs-proxy"
   gcs_proxy_uri               = try(google_cloud_run_v2_service.gcs_proxy[0].uri, null)
 }
 
@@ -36,6 +37,40 @@ resource "google_project_iam_member" "tf_run_admin" {
   project = var.project_id
   role    = "roles/run.admin"
   member  = local.terraform_service_account_member
+}
+
+resource "google_cloud_run_v2_service" "gcs_proxy" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name     = local.gcs_proxy_name
+  location = var.region
+
+  template {
+    service_account = local.cloud_function_runtime_service_account_email
+
+    containers {
+      image = var.gcs_proxy_image
+
+      env {
+        name  = "BUCKET"
+        value = local.dendrite_static_bucket_name
+      }
+    }
+
+    vpc_access {
+      network_interfaces {
+        network    = google_compute_network.playwright[0].id
+        subnetwork = google_compute_subnetwork.playwright[0].id
+      }
+    }
+  }
+
+  traffic {
+    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
+    percent = 100
+  }
+
+  ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 }
 
 resource "google_storage_bucket" "e2e_reports" {
