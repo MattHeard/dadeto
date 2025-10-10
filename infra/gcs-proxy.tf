@@ -17,8 +17,8 @@ resource "google_compute_subnetwork" "playwright" {
 resource "google_vpc_access_connector" "playwright" {
   count = local.playwright_enabled ? 1 : 0
 
-  name    = "${var.environment}-svpc"
-  region  = var.region
+  name   = "${var.environment}-svpc"
+  region = var.region
   subnet {
     name = google_compute_subnetwork.playwright[0].name
   }
