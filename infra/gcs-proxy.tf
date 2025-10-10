@@ -24,7 +24,9 @@ resource "google_vpc_access_connector" "playwright" {
   name          = "${var.environment}-svpc"
   region        = var.region
   network       = google_compute_network.playwright[0].name
-  subnet        = google_compute_subnetwork.playwright[0].name
+  subnet {
+    name = google_compute_subnetwork.playwright[0].name
+  }
   ip_cidr_range = "10.8.0.0/28"
 }
 
@@ -59,7 +61,7 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
     percent = 100
   }
 
-  ingress = "INGRESS_INTERNAL_AND_LB"
+  ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 }
 
 resource "google_project_iam_member" "gcs_proxy_runtime_viewer" {
