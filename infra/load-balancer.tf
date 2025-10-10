@@ -21,42 +21,6 @@ locals {
   lb_resource_prefix = "${var.environment}-dendrite"
 }
 
-resource "google_compute_security_policy" "edge" {
-  count = local.enable_lb && var.environment == "prod" ? 1 : 0
-
-  name        = "${local.lb_resource_prefix}-armor"
-  description = "Block WebDAV probes; allow the rest"
-
-  rule {
-    priority = 1000
-    action   = "deny(403)"
-    preview  = false
-
-    match {
-      expr {
-        expression = "request.method == \"PROPFIND\""
-      }
-    }
-
-    description = "Block PROPFIND"
-  }
-
-  rule {
-    priority = 2147483647
-    action   = "allow"
-
-    match {
-      versioned_expr = "SRC_IPS_V1"
-
-      config {
-        src_ip_ranges = ["*"]
-      }
-    }
-  }
-
-  depends_on = [google_project_service.compute]
-}
-
 resource "google_compute_backend_bucket" "dendrite_static" {
   provider = google-beta
   count    = local.enable_lb ? 1 : 0
@@ -64,8 +28,6 @@ resource "google_compute_backend_bucket" "dendrite_static" {
   name        = "${local.lb_resource_prefix}-static"
   bucket_name = local.dendrite_static_bucket_name
   enable_cdn  = true
-
-  edge_security_policy = var.environment == "prod" ? google_compute_security_policy.edge[0].id : null
 
   # Set COOP header to isolate browsing context group
   custom_response_headers = [
