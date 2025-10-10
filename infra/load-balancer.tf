@@ -11,7 +11,7 @@ variable "lb_cert_domains" {
 }
 
 resource "google_project_service" "compute" {
-  count              = local.enable_lb ? 1 : 0
+  count              = local.enable_lb || local.playwright_enabled ? 1 : 0
   project            = var.project_id
   service            = "compute.googleapis.com"
   disable_on_destroy = false

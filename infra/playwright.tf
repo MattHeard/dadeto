@@ -4,7 +4,41 @@ locals {
   reports_bucket_name         = "${var.project_id}-${var.region}-e2e-reports"
   report_prefix               = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
   gcs_proxy_name              = "${var.environment}-gcs-proxy"
-  gcs_proxy_uri               = try(google_cloud_run_v2_service.gcs_proxy[0].uri, null)
+  gcs_proxy_uri               = local.playwright_enabled ? format("http://%s", google_compute_address.gcs_proxy_ilb_ip[0].address) : null
+  playwright_vpc_connector_id = try(google_vpc_access_connector.playwright[0].id, null)
+}
+
+resource "google_project_service" "playwright_vpc_access" {
+  count              = local.playwright_enabled ? 1 : 0
+
+  project            = var.project_id
+  service            = "vpcaccess.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_compute_network" "playwright" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name                    = "pw-${var.environment}"
+  auto_create_subnetworks = false
+}
+
+resource "google_compute_subnetwork" "playwright" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name          = "pw-${var.environment}"
+  region        = var.region
+  network       = google_compute_network.playwright[0].id
+  ip_cidr_range = "10.8.0.0/24"
+}
+
+resource "google_vpc_access_connector" "playwright" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name          = "pw-${var.environment}"
+  region        = var.region
+  network       = google_compute_network.playwright[0].name
+  ip_cidr_range = "10.8.1.0/28"
 }
 
 resource "google_service_account" "playwright" {
@@ -56,6 +90,12 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
       }
     }
 
+    vpc_access {
+      network_interfaces {
+        network    = google_compute_network.playwright[0].id
+        subnetwork = google_compute_subnetwork.playwright[0].id
+      }
+    }
   }
 
   traffic {
@@ -63,7 +103,81 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
     percent = 100
   }
 
-  ingress = "INGRESS_TRAFFIC_ALL"
+  ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+}
+
+resource "google_cloud_run_v2_service_iam_member" "gcs_proxy_unauth" {
+  count = local.playwright_enabled ? 1 : 0
+
+  location = var.region
+  name     = google_cloud_run_v2_service.gcs_proxy[0].name
+  role     = "roles/run.invoker"
+  member   = local.all_users_member
+}
+
+resource "google_compute_region_network_endpoint_group" "gcs_proxy_neg" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name                  = "${var.environment}-gcs-proxy-neg"
+  region                = var.region
+  network_endpoint_type = "SERVERLESS"
+
+  cloud_run {
+    service = google_cloud_run_v2_service.gcs_proxy[0].name
+  }
+}
+
+resource "google_compute_region_backend_service" "gcs_proxy_be" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name                  = "${var.environment}-gcs-proxy-be"
+  region                = var.region
+  load_balancing_scheme = "INTERNAL_MANAGED"
+  protocol              = "HTTP"
+
+  backend {
+    group = google_compute_region_network_endpoint_group.gcs_proxy_neg[0].id
+  }
+}
+
+resource "google_compute_region_url_map" "gcs_proxy_map" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name           = "${var.environment}-gcs-proxy-map"
+  region         = var.region
+  default_service = google_compute_region_backend_service.gcs_proxy_be[0].id
+}
+
+resource "google_compute_region_target_http_proxy" "gcs_proxy_proxy" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name    = "${var.environment}-gcs-proxy-proxy"
+  region  = var.region
+  url_map = google_compute_region_url_map.gcs_proxy_map[0].id
+}
+
+resource "google_compute_address" "gcs_proxy_ilb_ip" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name         = "${var.environment}-gcs-proxy-ilb"
+  region       = var.region
+  address_type = "INTERNAL"
+  purpose      = "GCE_ENDPOINT"
+  subnetwork   = google_compute_subnetwork.playwright[0].id
+}
+
+resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name                  = "${var.environment}-gcs-proxy-ilb-fw"
+  region                = var.region
+  load_balancing_scheme = "INTERNAL_MANAGED"
+  ip_protocol           = "TCP"
+  port_range            = "80"
+  target                = google_compute_region_target_http_proxy.gcs_proxy_proxy[0].id
+  network               = google_compute_network.playwright[0].id
+  subnetwork            = google_compute_subnetwork.playwright[0].id
+  ip_address            = google_compute_address.gcs_proxy_ilb_ip[0].address
 }
 
 resource "google_storage_bucket" "e2e_reports" {
@@ -165,6 +279,11 @@ resource "google_cloud_run_v2_job" "playwright" {
             memory = "2Gi"
           }
         }
+      }
+
+      vpc_access {
+        connector = local.playwright_vpc_connector_id
+        egress    = "ALL_TRAFFIC"
       }
 
       timeout     = "600s"
