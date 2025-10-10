@@ -18,6 +18,12 @@ variable "playwright_image" {
 variable "gcs_proxy_image" {
   description = "Container image used by the internal Cloud Run GCS proxy"
   type        = string
+  default     = ""
+
+  validation {
+    condition     = var.gcs_proxy_image != "" || !startswith(var.environment, "t-")
+    error_message = "Set gcs_proxy_image when the environment enables Playwright (t- prefixed)."
+  }
 }
 
 variable "static_site_bucket_name" {
