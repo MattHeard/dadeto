@@ -25,7 +25,6 @@ jobs:
       CLOUDSDK_CORE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
       TF_VAR_google_oauth_client_id: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
       TF_VAR_google_oauth_client_secret: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
-      TF_VAR_gcs_proxy_image: ${{ secrets.GCS_PROXY_IMAGE }}
 
     steps:
       - name: Checkout repo
@@ -107,6 +106,22 @@ jobs:
           docker build -f docker/playwright/Dockerfile -t "$IMAGE_REF" .
           docker push "$IMAGE_REF"
           echo "TF_VAR_playwright_image=$IMAGE_REF" >> "$GITHUB_ENV"
+
+      - name: Build and push gcs-proxy image
+        working-directory: .
+        env:
+          AR_REPO: gcs-proxy
+          IMAGE: gcs-proxy
+        run: |
+          set -euo pipefail
+          # ensure repo exists
+          if ! gcloud artifacts repositories describe "$AR_REPO" --location="${REGION}" >/dev/null 2>&1; then
+            gcloud artifacts repositories create "$AR_REPO" --repository-format=DOCKER --location="${REGION}"
+          fi
+          IMAGE_REF="${REGION}-docker.pkg.dev/${GOOGLE_PROJECT}/${AR_REPO}/${IMAGE}:$GITHUB_SHA"
+          docker build -f docker/gcs-proxy/Dockerfile -t "$IMAGE_REF" docker/gcs-proxy
+          docker push "$IMAGE_REF"
+          echo "TF_VAR_gcs_proxy_image=$IMAGE_REF" >> "$GITHUB_ENV"
 
       - name: Terraform Init
         id: terraform_init
