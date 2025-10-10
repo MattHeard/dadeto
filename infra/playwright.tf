@@ -1,8 +1,8 @@
 locals {
-  playwright_enabled  = startswith(var.environment, "t-")
-  playwright_job_name = "pw-e2e-${var.environment}"
-  reports_bucket_name = "${var.project_id}-${var.region}-e2e-reports"
-  report_prefix       = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
+  playwright_enabled          = startswith(var.environment, "t-")
+  playwright_job_name         = "pw-e2e-${var.environment}"
+  reports_bucket_name         = "${var.project_id}-${var.region}-e2e-reports"
+  report_prefix               = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
   playwright_vpc_connector_id = try(google_vpc_access_connector.playwright[0].id, null)
   gcs_proxy_uri               = try(google_cloud_run_v2_service.gcs_proxy[0].uri, null)
 }
