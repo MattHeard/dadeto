@@ -3,7 +3,6 @@ locals {
   playwright_job_name         = "pw-e2e-${var.environment}"
   reports_bucket_name         = "${var.project_id}-${var.region}-e2e-reports"
   report_prefix               = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
-  playwright_vpc_connector_id = try(google_vpc_access_connector.playwright[0].id, null)
   gcs_proxy_name              = "${var.environment}-gcs-proxy"
   gcs_proxy_uri               = try(google_cloud_run_v2_service.gcs_proxy[0].uri, null)
 }
@@ -57,12 +56,6 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
       }
     }
 
-    vpc_access {
-      network_interfaces {
-        network    = google_compute_network.playwright[0].id
-        subnetwork = google_compute_subnetwork.playwright[0].id
-      }
-    }
   }
 
   traffic {
@@ -70,7 +63,7 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
     percent = 100
   }
 
-  ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+  ingress = "INGRESS_TRAFFIC_ALL"
 }
 
 resource "google_storage_bucket" "e2e_reports" {
@@ -122,11 +115,6 @@ resource "google_cloud_run_v2_job" "playwright" {
 
     template {
       service_account = google_service_account.playwright[0].email
-
-      vpc_access {
-        connector = local.playwright_vpc_connector_id
-        egress    = "ALL_TRAFFIC"
-      }
 
       containers {
         image = var.playwright_image
