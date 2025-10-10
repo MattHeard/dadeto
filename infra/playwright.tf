@@ -9,7 +9,7 @@ locals {
 }
 
 resource "google_project_service" "playwright_vpc_access" {
-  count              = local.playwright_enabled ? 1 : 0
+  count = local.playwright_enabled ? 1 : 0
 
   project            = var.project_id
   service            = "vpcaccess.googleapis.com"
@@ -143,8 +143,8 @@ resource "google_compute_region_backend_service" "gcs_proxy_be" {
 resource "google_compute_region_url_map" "gcs_proxy_map" {
   count = local.playwright_enabled ? 1 : 0
 
-  name           = "${var.environment}-gcs-proxy-map"
-  region         = var.region
+  name            = "${var.environment}-gcs-proxy-map"
+  region          = var.region
   default_service = google_compute_region_backend_service.gcs_proxy_be[0].id
 }
 
