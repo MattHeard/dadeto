@@ -185,7 +185,6 @@ resource "google_storage_bucket_object" "dendrite_mod" {
 }
 
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
-  count  = var.environment == "prod" ? 1 : 0
   bucket = local.dendrite_static_bucket_name
   role   = "roles/storage.objectViewer"
   member = local.all_users_member
