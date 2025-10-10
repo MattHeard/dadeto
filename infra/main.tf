@@ -61,6 +61,7 @@ locals {
     ci_firebaserules_admin          = "roles/firebaserules.admin"
     terraform_loadbalancer_admin    = "roles/compute.loadBalancerAdmin"
     terraform_security_admin        = "roles/compute.securityAdmin"
+    terraform_network_admin         = "roles/compute.networkAdmin"
   }
   cloud_function_service_keys = [
     "cloudfunctions",
