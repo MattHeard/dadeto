@@ -15,6 +15,11 @@ variable "playwright_image" {
   default     = "gcr.io/cloudrun/hello"
 }
 
+variable "gcs_proxy_image" {
+  description = "Container image used by the internal Cloud Run GCS proxy"
+  type        = string
+}
+
 variable "static_site_bucket_name" {
   description = "Bucket name for the Dendrite static website"
   type        = string

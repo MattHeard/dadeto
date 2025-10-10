@@ -86,16 +86,17 @@ resource "google_cloud_run_v2_job" "playwright" {
     template {
       service_account = google_service_account.playwright[0].email
 
+      vpc_access {
+        connector = google_vpc_access_connector.playwright[0].id
+        egress    = "ALL_TRAFFIC"
+      }
+
       containers {
         image = var.playwright_image
 
-        dynamic "env" {
-          for_each = local.enable_lb ? [google_compute_global_address.dendrite[0].address] : []
-
-          content {
-            name  = "BASE_URL"
-            value = "http://${env.value}"
-          }
+        env {
+          name  = "BASE_URL"
+          value = google_cloud_run_v2_service.gcs_proxy[0].uri
         }
 
         env {
