@@ -62,6 +62,7 @@ locals {
     terraform_loadbalancer_admin    = "roles/compute.loadBalancerAdmin"
     terraform_security_admin        = "roles/compute.securityAdmin"
     terraform_network_admin         = "roles/compute.networkAdmin"
+    terraform_vpc_access_admin      = "roles/vpcaccess.admin"
   }
   cloud_function_service_keys = [
     "cloudfunctions",
