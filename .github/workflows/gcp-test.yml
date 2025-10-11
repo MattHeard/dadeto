@@ -67,12 +67,6 @@ jobs:
           project_id: ${{ env.GOOGLE_PROJECT }}
           install_components: alpha
 
-      - name: Log Google Cloud authentication details
-        run: |
-          gcloud auth list
-          gcloud config list account
-          gcloud config get-value project
-
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -187,12 +181,6 @@ jobs:
         if: always()
         run: terraform state list || true
 
-      - name: Dump gcloud auth and project
-        if: always()
-        run: |
-          gcloud auth list
-          gcloud config get-value project
-
       - name: Run Playwright job (print describe on failure)
         id: run_playwright_job
         if: success()
@@ -282,55 +270,6 @@ jobs:
             /tmp/run-job-logs.json
             /tmp/pw-logs.json
           if-no-files-found: ignore
-
-      - name: Tag commit on successful apply (PAT, debug)
-        id: tag_commit
-        if: success() && github.ref == 'refs/heads/main' && steps.run_playwright_job.outcome == 'success'
-        env:
-          PAT: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          TAG_NAME: gcp-test-${{ steps.environment.outputs.environment }}
-        run: |
-          set -euo pipefail
-
-          echo "Configuring git user:"
-          git config user.name "tag-bot"
-          git config user.email "tag-bot@users.noreply.github.com"
-          git config user.name && git config user.email
-
-          echo "Current HEAD:"
-          git rev-parse HEAD
-          echo "Workflows at HEAD:"
-          git -C "$GITHUB_WORKSPACE" ls-tree -r HEAD -- .github/workflows || true
-
-          echo "Setting PAT remote:"
-          git remote set-url origin "https://x-access-token:${PAT}@github.com/${{ github.repository }}.git"
-          echo "Push remote is:"
-          git remote get-url --push origin
-
-          echo "Creating annotated tag:"
-          COMMIT_SHA="$(git rev-parse HEAD)"
-          WF_LIST="$(git -C "$GITHUB_WORKSPACE" ls-tree -r HEAD --name-only .github/workflows || true)"
-          {
-            echo "env: $TAG_NAME"
-            echo "commit: $COMMIT_SHA"
-            echo "actor: $GITHUB_ACTOR"
-            echo "run_id: $GITHUB_RUN_ID"
-            echo "workflows:"
-            echo "$WF_LIST"
-          } > /tmp/tagmsg.txt
-
-          git tag -fa "$TAG_NAME" -m "$(cat /tmp/tagmsg.txt)"
-
-          echo "Show tag object locally:"
-          git for-each-ref "refs/tags/$TAG_NAME" --format="%(objecttype) %(objectname) %(refname)"
-          echo "--- tag message ---"
-          git tag -n99 -l "$TAG_NAME"
-
-          echo "Pushing tag via PAT:"
-          git push -f origin "$TAG_NAME"
-
-          echo "Verify tag on remote:"
-          git ls-remote --tags origin | grep -q "refs/tags/$TAG_NAME" || { echo "Tag not found on remote"; exit 1; }
 
       - name: Terraform Destroy
         if: always() && steps.terraform_init.outcome == 'success'
