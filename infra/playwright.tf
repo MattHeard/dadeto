@@ -42,7 +42,7 @@ resource "google_compute_subnetwork" "playwright_proxy_only" {
   name          = "${var.environment}-playwright-proxy"
   region        = var.region
   network       = data.google_compute_network.playwright[0].id
-  ip_cidr_range = "10.129.0.0/23"
+  ip_cidr_range = var.playwright_proxy_subnet_cidr
   purpose       = "REGIONAL_MANAGED_PROXY"
   role          = "ACTIVE"
   depends_on    = [google_project_iam_member.playwright_networking_roles]

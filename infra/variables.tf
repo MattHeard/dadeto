@@ -27,6 +27,12 @@ variable "playwright_subnetwork_name" {
   default     = "default"
 }
 
+variable "playwright_proxy_subnet_cidr" {
+  description = "CIDR range for the Playwright managed proxy subnetwork; must not overlap existing custom subnets"
+  type        = string
+  default     = "10.10.0.0/23"
+}
+
 variable "gcs_proxy_image" {
   description = "Container image used by the internal Cloud Run GCS proxy"
   type        = string

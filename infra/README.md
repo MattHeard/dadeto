@@ -48,3 +48,12 @@ Terraform stores its state in a Google Cloud Storage bucket. The backend is
 defined in `backend.tf` and expects a bucket named `terraform-state-irien-465710` with a
 `terraform/state` prefix. Ensure this bucket exists before running
 `terraform init` so that the remote state can be initialized.
+
+## Playwright managed proxy subnet
+
+Ephemeral `t-` environments provision a regional managed proxy subnet that backs
+the Cloud Run GCS proxy used during Playwright runs. Configure the subnet's CIDR
+range with the `playwright_proxy_subnet_cidr` variable (defaults to
+`10.10.0.0/23`). Select a range that does not overlap existing custom subnets
+and that lives outside the auto-mode `10.128.0.0/9` block so the managed proxy
+does not collide with the default network's allocations.
