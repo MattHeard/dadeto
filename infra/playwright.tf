@@ -31,6 +31,17 @@ data "google_compute_subnetwork" "playwright" {
   project = var.project_id
 }
 
+resource "google_compute_subnetwork" "playwright_proxy_only" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name          = "${var.environment}-playwright-proxy"
+  region        = var.region
+  network       = data.google_compute_network.playwright[0].id
+  ip_cidr_range = "10.129.0.0/23"
+  purpose       = "REGIONAL_MANAGED_PROXY"
+  role          = "ACTIVE"
+}
+
 resource "google_vpc_access_connector" "playwright" {
   count = local.playwright_enabled ? 1 : 0
 
@@ -162,7 +173,7 @@ resource "google_compute_address" "gcs_proxy_ilb_ip" {
   region       = var.region
   address_type = "INTERNAL"
   purpose      = "GCE_ENDPOINT"
-  subnetwork   = data.google_compute_subnetwork.playwright[0].id
+  subnetwork   = google_compute_subnetwork.playwright_proxy_only[0].id
 }
 
 resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
@@ -175,7 +186,7 @@ resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
   port_range            = "80"
   target                = google_compute_region_target_http_proxy.gcs_proxy_proxy[0].id
   network               = data.google_compute_network.playwright[0].id
-  subnetwork            = data.google_compute_subnetwork.playwright[0].id
+  subnetwork            = google_compute_subnetwork.playwright_proxy_only[0].id
   ip_address            = google_compute_address.gcs_proxy_ilb_ip[0].address
 }
 
