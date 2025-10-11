@@ -93,7 +93,7 @@ resource "google_project_iam_member" "tf_run_admin" {
 }
 
 resource "google_project_iam_member" "playwright_networking_roles" {
-  for_each = local.playwright_enabled && !local.manage_project_level_resources ? local.playwright_tf_roles : {}
+  for_each = local.playwright_enabled ? local.playwright_tf_roles : {}
 
   project = var.project_id
   role    = each.value
