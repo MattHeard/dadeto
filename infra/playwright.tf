@@ -45,6 +45,7 @@ resource "google_compute_subnetwork" "playwright_proxy_only" {
   ip_cidr_range = "10.129.0.0/23"
   purpose       = "REGIONAL_MANAGED_PROXY"
   role          = "ACTIVE"
+  depends_on    = [google_project_iam_member.playwright_networking_roles]
 }
 
 resource "google_vpc_access_connector" "playwright" {
@@ -54,6 +55,7 @@ resource "google_vpc_access_connector" "playwright" {
   region        = var.region
   network       = data.google_compute_network.playwright[0].name
   ip_cidr_range = "10.8.1.0/28"
+  depends_on    = [google_project_iam_member.playwright_networking_roles]
 }
 
 resource "google_service_account" "playwright" {
