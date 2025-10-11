@@ -55,7 +55,10 @@ resource "google_vpc_access_connector" "playwright" {
   region        = var.region
   network       = data.google_compute_network.playwright[0].name
   ip_cidr_range = "10.8.1.0/28"
-  depends_on    = [google_project_iam_member.playwright_networking_roles]
+  depends_on = [
+    google_project_service.playwright_vpc_access,
+    google_project_iam_member.playwright_networking_roles,
+  ]
 }
 
 resource "google_service_account" "playwright" {
