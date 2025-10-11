@@ -16,20 +16,19 @@ resource "google_project_service" "playwright_vpc_access" {
   disable_on_destroy = false
 }
 
-resource "google_compute_network" "playwright" {
+data "google_compute_network" "playwright" {
   count = local.playwright_enabled ? 1 : 0
 
-  name                    = "pw-${var.environment}"
-  auto_create_subnetworks = false
+  name    = var.playwright_network_name
+  project = var.project_id
 }
 
-resource "google_compute_subnetwork" "playwright" {
+data "google_compute_subnetwork" "playwright" {
   count = local.playwright_enabled ? 1 : 0
 
-  name          = "pw-${var.environment}"
-  region        = var.region
-  network       = google_compute_network.playwright[0].id
-  ip_cidr_range = "10.8.0.0/24"
+  name    = var.playwright_subnetwork_name
+  region  = var.region
+  project = var.project_id
 }
 
 resource "google_vpc_access_connector" "playwright" {
@@ -37,7 +36,7 @@ resource "google_vpc_access_connector" "playwright" {
 
   name          = "pw-${var.environment}"
   region        = var.region
-  network       = google_compute_network.playwright[0].name
+  network       = data.google_compute_network.playwright[0].name
   ip_cidr_range = "10.8.1.0/28"
 }
 
@@ -92,8 +91,8 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
 
     vpc_access {
       network_interfaces {
-        network    = google_compute_network.playwright[0].id
-        subnetwork = google_compute_subnetwork.playwright[0].id
+        network    = data.google_compute_network.playwright[0].id
+        subnetwork = data.google_compute_subnetwork.playwright[0].id
       }
     }
   }
@@ -163,7 +162,7 @@ resource "google_compute_address" "gcs_proxy_ilb_ip" {
   region       = var.region
   address_type = "INTERNAL"
   purpose      = "GCE_ENDPOINT"
-  subnetwork   = google_compute_subnetwork.playwright[0].id
+  subnetwork   = data.google_compute_subnetwork.playwright[0].id
 }
 
 resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
@@ -175,8 +174,8 @@ resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
   ip_protocol           = "TCP"
   port_range            = "80"
   target                = google_compute_region_target_http_proxy.gcs_proxy_proxy[0].id
-  network               = google_compute_network.playwright[0].id
-  subnetwork            = google_compute_subnetwork.playwright[0].id
+  network               = data.google_compute_network.playwright[0].id
+  subnetwork            = data.google_compute_subnetwork.playwright[0].id
   ip_address            = google_compute_address.gcs_proxy_ilb_ip[0].address
 }
 

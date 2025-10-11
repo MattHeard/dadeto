@@ -15,6 +15,18 @@ variable "playwright_image" {
   default     = "gcr.io/cloudrun/hello"
 }
 
+variable "playwright_network_name" {
+  description = "VPC network name that Playwright resources attach to"
+  type        = string
+  default     = "default"
+}
+
+variable "playwright_subnetwork_name" {
+  description = "Subnetwork name in the selected VPC for Playwright traffic"
+  type        = string
+  default     = "default"
+}
+
 variable "gcs_proxy_image" {
   description = "Container image used by the internal Cloud Run GCS proxy"
   type        = string
