@@ -26,13 +26,14 @@ data "google_project" "project" {
 }
 
 locals {
-  environment_suffix             = var.environment == "prod" ? "" : "-${var.environment}"
-  static_site_bucket_name        = var.environment == "prod" ? var.static_site_bucket_name : "${var.environment}-${var.static_site_bucket_name}"
+  is_prod                        = var.environment == "prod"
+  environment_suffix             = local.is_prod ? "" : "-${var.environment}"
+  static_site_bucket_name        = local.is_prod ? var.static_site_bucket_name : "${var.environment}-${var.static_site_bucket_name}"
   enable_lb                      = var.enable_lb
   manage_project_level_resources = var.environment == var.project_level_environment
   firestore_database_path        = "projects/${var.project_id}/databases/${var.database_id}"
   firestore_documents_path       = "${local.firestore_database_path}/documents"
-  manage_firestore_services      = var.environment == "prod" || local.manage_project_level_resources
+  manage_firestore_services      = local.is_prod || local.manage_project_level_resources
   cloud_function_environment = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
@@ -141,7 +142,7 @@ locals {
 }
 
 resource "google_storage_bucket" "dendrite_static_prod" {
-  count = var.environment == "prod" ? 1 : 0
+  count = local.is_prod ? 1 : 0
 
   name     = local.static_site_bucket_name
   location = var.region
@@ -157,7 +158,7 @@ resource "google_storage_bucket" "dendrite_static_prod" {
 }
 
 resource "google_storage_bucket" "dendrite_static_nonprod" {
-  count = var.environment != "prod" ? 1 : 0
+  count = local.is_prod ? 0 : 1
 
   name     = local.static_site_bucket_name
   location = var.region
@@ -189,7 +190,7 @@ resource "google_storage_bucket_object" "dendrite_mod" {
 }
 
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
-  count  = var.environment == "prod" ? 1 : 0
+  count  = local.is_prod ? 1 : 0
   bucket = local.dendrite_static_bucket_name
   role   = local.storage_object_viewer_role
   member = local.all_users_member
