@@ -44,6 +44,7 @@ locals {
   terraform_service_account_member              = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
   all_users_member                              = "allUsers"
   cloud_functions_invoker_role                  = "roles/cloudfunctions.invoker"
+  cloud_run_invoker_role                        = "roles/run.invoker"
   storage_object_viewer_role                    = "roles/storage.objectViewer"
   project_level_services = {
     cloudfunctions   = "cloudfunctions.googleapis.com"
