@@ -43,6 +43,7 @@ locals {
   terraform_service_account_member              = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
   all_users_member                              = "allUsers"
   cloud_functions_invoker_role                  = "roles/cloudfunctions.invoker"
+  storage_object_viewer_role                    = "roles/storage.objectViewer"
   project_level_services = {
     cloudfunctions   = "cloudfunctions.googleapis.com"
     cloudbuild       = "cloudbuild.googleapis.com"
@@ -190,7 +191,7 @@ resource "google_storage_bucket_object" "dendrite_mod" {
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
   count  = var.environment == "prod" ? 1 : 0
   bucket = local.dendrite_static_bucket_name
-  role   = "roles/storage.objectViewer"
+  role   = local.storage_object_viewer_role
   member = local.all_users_member
 }
 
