@@ -34,6 +34,8 @@ locals {
   firestore_database_path        = "projects/${var.project_id}/databases/${var.database_id}"
   firestore_documents_path       = "${local.firestore_database_path}/documents"
   manage_firestore_services      = local.is_prod || local.manage_project_level_resources
+  cloud_functions_source_dir     = "${path.module}/cloud-functions"
+  cloud_functions_build_dir      = "${path.module}/build"
   cloud_function_environment = {
     GCLOUD_PROJECT       = var.project_id
     GOOGLE_CLOUD_PROJECT = var.project_id
@@ -346,8 +348,8 @@ resource "google_project_iam_member" "runtime_firestore_access" {
 
 data "archive_file" "get_api_key_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/get-api-key-credit"
-  output_path = "${path.module}/build/get-api-key-credit.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/get-api-key-credit"
+  output_path = "${local.cloud_functions_build_dir}/get-api-key-credit.zip"
 }
 
 resource "google_storage_bucket_object" "get_api_key_credit" {
@@ -389,14 +391,14 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
 
 data "archive_file" "submit_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/submit-new-story"
-  output_path = "${path.module}/build/submit-new-story.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/submit-new-story"
+  output_path = "${local.cloud_functions_build_dir}/submit-new-story.zip"
 }
 
 data "archive_file" "submit_page_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/submit-new-page"
-  output_path = "${path.module}/build/submit-new-page.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/submit-new-page"
+  output_path = "${local.cloud_functions_build_dir}/submit-new-page.zip"
 }
 
 resource "google_storage_bucket_object" "submit_new_story" {
@@ -471,8 +473,8 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_page_invoker" {
 
 data "archive_file" "assign_moderation_job_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/assign-moderation-job"
-  output_path = "${path.module}/build/assign-moderation-job.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/assign-moderation-job"
+  output_path = "${local.cloud_functions_build_dir}/assign-moderation-job.zip"
 }
 
 resource "google_storage_bucket_object" "assign_moderation_job" {
@@ -511,8 +513,8 @@ resource "google_cloudfunctions_function_iam_member" "assign_moderation_job_invo
 
 data "archive_file" "get_moderation_variant_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/get-moderation-variant"
-  output_path = "${path.module}/build/get-moderation-variant.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/get-moderation-variant"
+  output_path = "${local.cloud_functions_build_dir}/get-moderation-variant.zip"
 }
 
 resource "google_storage_bucket_object" "get_moderation_variant" {
@@ -551,8 +553,8 @@ resource "google_cloudfunctions_function_iam_member" "get_moderation_variant_inv
 }
 data "archive_file" "submit_moderation_rating_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/submit-moderation-rating"
-  output_path = "${path.module}/build/submit-moderation-rating.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/submit-moderation-rating"
+  output_path = "${local.cloud_functions_build_dir}/submit-moderation-rating.zip"
 }
 
 resource "google_storage_bucket_object" "submit_moderation_rating" {
@@ -592,8 +594,8 @@ resource "google_cloudfunctions_function_iam_member" "submit_moderation_rating_i
 
 data "archive_file" "report_for_moderation_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/report-for-moderation"
-  output_path = "${path.module}/build/report-for-moderation.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/report-for-moderation"
+  output_path = "${local.cloud_functions_build_dir}/report-for-moderation.zip"
 }
 
 resource "google_storage_bucket_object" "report_for_moderation" {
@@ -633,8 +635,8 @@ resource "google_cloudfunctions_function_iam_member" "report_for_moderation_invo
 
 data "archive_file" "process_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/process-new-story"
-  output_path = "${path.module}/build/process-new-story.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/process-new-story"
+  output_path = "${local.cloud_functions_build_dir}/process-new-story.zip"
 }
 
 resource "google_storage_bucket_object" "process_new_story" {
@@ -667,8 +669,8 @@ resource "google_cloudfunctions_function" "process_new_story" {
 
 data "archive_file" "prod_update_variant_visibility_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/prod-update-variant-visibility"
-  output_path = "${path.module}/build/prod-update-variant-visibility.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/prod-update-variant-visibility"
+  output_path = "${local.cloud_functions_build_dir}/prod-update-variant-visibility.zip"
 }
 
 resource "google_storage_bucket_object" "prod_update_variant_visibility" {
@@ -700,8 +702,8 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
 
 data "archive_file" "process_page_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/process-new-page"
-  output_path = "${path.module}/build/process-new-page.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/process-new-page"
+  output_path = "${local.cloud_functions_build_dir}/process-new-page.zip"
 }
 
 resource "google_storage_bucket_object" "process_new_page" {
@@ -734,8 +736,8 @@ resource "google_cloudfunctions_function" "process_new_page" {
 
 data "archive_file" "render_variant_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/render-variant"
-  output_path = "${path.module}/build/render-variant.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/render-variant"
+  output_path = "${local.cloud_functions_build_dir}/render-variant.zip"
 }
 
 resource "google_storage_bucket_object" "render_variant" {
@@ -768,8 +770,8 @@ resource "google_cloudfunctions_function" "render_variant" {
 
 data "archive_file" "hide_variant_html_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/hide-variant-html"
-  output_path = "${path.module}/build/hide-variant-html.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/hide-variant-html"
+  output_path = "${local.cloud_functions_build_dir}/hide-variant-html.zip"
 }
 
 resource "google_storage_bucket_object" "hide_variant_html" {
@@ -801,8 +803,8 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
 
 data "archive_file" "mark_variant_dirty_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/mark-variant-dirty"
-  output_path = "${path.module}/build/mark-variant-dirty.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/mark-variant-dirty"
+  output_path = "${local.cloud_functions_build_dir}/mark-variant-dirty.zip"
 }
 
 resource "google_storage_bucket_object" "mark_variant_dirty" {
@@ -841,8 +843,8 @@ resource "google_cloudfunctions_function_iam_member" "mark_variant_dirty_invoker
 
 data "archive_file" "generate_stats_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/generate-stats"
-  output_path = "${path.module}/build/generate-stats.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/generate-stats"
+  output_path = "${local.cloud_functions_build_dir}/generate-stats.zip"
 }
 
 resource "google_storage_bucket_object" "generate_stats" {
@@ -899,8 +901,8 @@ resource "google_cloud_scheduler_job" "generate_stats_daily" {
 
 data "archive_file" "render_contents_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/render-contents"
-  output_path = "${path.module}/build/render-contents.zip"
+  source_dir  = "${local.cloud_functions_source_dir}/render-contents"
+  output_path = "${local.cloud_functions_build_dir}/render-contents.zip"
 }
 
 resource "google_storage_bucket_object" "render_contents" {
