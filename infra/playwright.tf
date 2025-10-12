@@ -55,7 +55,8 @@ resource "google_vpc_access_connector" "playwright" {
   region         = var.region
   network        = data.google_compute_network.playwright[0].name
   ip_cidr_range  = "10.8.1.0/28"
-  max_throughput = 300
+  min_throughput = 200
+  max_throughput = 400
   depends_on = [
     google_project_service.playwright_vpc_access,
     google_project_iam_member.terraform_service_account_vpcaccess_admin,
