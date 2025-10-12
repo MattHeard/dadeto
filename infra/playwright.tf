@@ -99,6 +99,7 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
 
   name     = local.gcs_proxy_name
   location = var.region
+  deletion_protection = false
 
   template {
     service_account = local.cloud_function_runtime_service_account_email
