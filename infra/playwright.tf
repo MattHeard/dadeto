@@ -132,6 +132,7 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
     google_project_iam_member.terraform_service_account_vpcaccess_admin,
+    google_compute_subnetwork.playwright_proxy_only,
   ]
 }
 
@@ -198,6 +199,7 @@ resource "google_compute_address" "gcs_proxy_ilb_ip" {
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
     google_project_iam_member.terraform_service_account_vpcaccess_admin,
+    google_compute_subnetwork.playwright_proxy_only,
   ]
 }
 
@@ -218,6 +220,7 @@ resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
     google_project_iam_member.terraform_service_account_vpcaccess_admin,
+    google_compute_subnetwork.playwright_proxy_only,
   ]
 }
 
