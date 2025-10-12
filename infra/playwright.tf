@@ -47,10 +47,10 @@ resource "google_compute_subnetwork" "playwright_proxy_only" {
 resource "google_vpc_access_connector" "playwright" {
   count = local.playwright_enabled ? 1 : 0
 
-  name          = "pw-${var.environment}"
-  region        = var.region
-  network       = data.google_compute_network.playwright[0].name
-  ip_cidr_range = "10.8.1.0/28"
+  name           = "pw-${var.environment}"
+  region         = var.region
+  network        = data.google_compute_network.playwright[0].name
+  ip_cidr_range  = "10.8.1.0/28"
   max_throughput = 300
   depends_on = [
     google_project_service.playwright_vpc_access,
