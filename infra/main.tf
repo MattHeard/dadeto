@@ -279,13 +279,13 @@ resource "google_project_iam_member" "terraform_service_account_vpcaccess_admin"
 resource "google_project_iam_member" "build_loadbalancer_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
-  role    = "roles/compute.loadBalancerAdmin"
+  role    = local.terraform_service_account_roles["terraform_loadbalancer_admin"]
   member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
 }
 
 resource "google_project_iam_member" "runtime_loadbalancer_admin" {
   project    = var.project_id
-  role       = "roles/compute.loadBalancerAdmin"
+  role       = local.terraform_service_account_roles["terraform_loadbalancer_admin"]
   member     = local.cloud_function_runtime_service_account_member
   depends_on = [google_service_account.cloud_function_runtime]
 }
