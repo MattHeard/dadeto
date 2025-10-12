@@ -41,7 +41,11 @@ resource "google_compute_subnetwork" "playwright_proxy_only" {
   purpose       = "REGIONAL_MANAGED_PROXY"
   role          = "ACTIVE"
 
-  depends_on = [google_project_iam_member.terraform_service_account_vpcaccess_admin]
+  depends_on = [
+    google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
+    google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
+    google_project_iam_member.terraform_service_account_vpcaccess_admin,
+  ]
 }
 
 resource "google_vpc_access_connector" "playwright" {
@@ -122,7 +126,11 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
 
   ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
-  depends_on = [google_project_iam_member.terraform_service_account_vpcaccess_admin]
+  depends_on = [
+    google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
+    google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
+    google_project_iam_member.terraform_service_account_vpcaccess_admin,
+  ]
 }
 
 resource "google_cloud_run_v2_service_iam_member" "gcs_proxy_unauth" {
@@ -184,7 +192,11 @@ resource "google_compute_address" "gcs_proxy_ilb_ip" {
   purpose      = "GCE_ENDPOINT"
   subnetwork   = data.google_compute_subnetwork.playwright[0].id
 
-  depends_on = [google_project_iam_member.terraform_service_account_vpcaccess_admin]
+  depends_on = [
+    google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
+    google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
+    google_project_iam_member.terraform_service_account_vpcaccess_admin,
+  ]
 }
 
 resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
@@ -200,7 +212,11 @@ resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
   subnetwork            = data.google_compute_subnetwork.playwright[0].id
   ip_address            = google_compute_address.gcs_proxy_ilb_ip[0].address
 
-  depends_on = [google_project_iam_member.terraform_service_account_vpcaccess_admin]
+  depends_on = [
+    google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
+    google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
+    google_project_iam_member.terraform_service_account_vpcaccess_admin,
+  ]
 }
 
 resource "google_storage_bucket" "e2e_reports" {
