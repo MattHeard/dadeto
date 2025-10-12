@@ -6,11 +6,6 @@ locals {
   gcs_proxy_name              = "${var.environment}-gcs-proxy"
   gcs_proxy_uri               = local.playwright_enabled ? format("http://%s", google_compute_address.gcs_proxy_ilb_ip[0].address) : null
   playwright_vpc_connector_id = try(google_vpc_access_connector.playwright[0].id, null)
-  playwright_tf_roles = {
-    network_admin  = "roles/compute.networkAdmin"
-    security_admin = "roles/compute.securityAdmin"
-    vpc_access     = "roles/vpcaccess.admin"
-  }
 }
 
 resource "google_project_service" "playwright_vpc_access" {
@@ -45,7 +40,6 @@ resource "google_compute_subnetwork" "playwright_proxy_only" {
   ip_cidr_range = var.playwright_proxy_subnet_cidr
   purpose       = "REGIONAL_MANAGED_PROXY"
   role          = "ACTIVE"
-  depends_on    = [google_project_iam_member.playwright_networking_roles]
 }
 
 resource "google_vpc_access_connector" "playwright" {
@@ -57,7 +51,6 @@ resource "google_vpc_access_connector" "playwright" {
   ip_cidr_range = "10.8.1.0/28"
   depends_on = [
     google_project_service.playwright_vpc_access,
-    google_project_iam_member.playwright_networking_roles,
   ]
 }
 
@@ -89,14 +82,6 @@ resource "google_project_iam_member" "tf_run_admin" {
 
   project = var.project_id
   role    = "roles/run.admin"
-  member  = local.terraform_service_account_member
-}
-
-resource "google_project_iam_member" "playwright_networking_roles" {
-  for_each = local.playwright_enabled ? local.playwright_tf_roles : {}
-
-  project = var.project_id
-  role    = each.value
   member  = local.terraform_service_account_member
 }
 
