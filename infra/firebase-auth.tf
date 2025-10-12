@@ -63,6 +63,7 @@ locals {
   )
   identity_platform_tenant_display_clean = trim(local.identity_platform_tenant_display_normalized, "-")
   identity_platform_tenant_display       = length(local.identity_platform_tenant_display_clean) >= 4 ? local.identity_platform_tenant_display_clean : "Dadeto"
+  identity_platform_tenant_name          = google_identity_platform_tenant.environment.name
 
   firebase_web_app_config = {
     apiKey            = data.google_firebase_web_app_config.frontend.api_key
@@ -73,7 +74,7 @@ locals {
     messagingSenderId = data.google_firebase_web_app_config.frontend.messaging_sender_id
     appId             = google_firebase_web_app.frontend.app_id
     measurementId     = data.google_firebase_web_app_config.frontend.measurement_id
-    tenantId          = google_identity_platform_tenant.environment.name
+    tenantId          = local.identity_platform_tenant_name
   }
 
   firebase_config_json = jsonencode(local.firebase_web_app_config)
@@ -138,7 +139,7 @@ resource "google_identity_platform_tenant" "environment" {
 resource "google_identity_platform_tenant_default_supported_idp_config" "google" {
   provider      = google-beta
   project       = var.project_id
-  tenant        = google_identity_platform_tenant.environment.name
+  tenant        = local.identity_platform_tenant_name
   idp_id        = "google.com"
   client_id     = var.google_oauth_client_id
   client_secret = var.google_oauth_client_secret
@@ -151,8 +152,8 @@ resource "google_identity_platform_tenant_oauth_idp_config" "gis_allowlist" {
   provider     = google-beta
   count        = var.gis_one_tap_client_id != "" ? 1 : 0
   project      = var.project_id
-  tenant       = google_identity_platform_tenant.environment.name
-  name         = "${google_identity_platform_tenant.environment.name}/oauthIdpConfigs/google.com"
+  tenant       = local.identity_platform_tenant_name
+  name         = "${local.identity_platform_tenant_name}/oauthIdpConfigs/google.com"
   issuer       = "https://accounts.google.com"
   display_name = "GIS One-Tap"
   client_id    = var.gis_one_tap_client_id
