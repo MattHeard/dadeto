@@ -52,9 +52,8 @@ locals {
     eventarc         = "eventarc.googleapis.com"
   }
   terraform_networking_roles = {
-    terraform_security_admin   = "roles/compute.securityAdmin"
-    terraform_network_admin    = "roles/compute.networkAdmin"
-    terraform_vpc_access_admin = "roles/vpcaccess.admin"
+    terraform_security_admin = "roles/compute.securityAdmin"
+    terraform_network_admin  = "roles/compute.networkAdmin"
   }
   terraform_service_account_roles = {
     firestore_access                = "roles/datastore.user"
@@ -264,6 +263,14 @@ resource "google_project_iam_member" "terraform_service_account_network_roles" {
 
   project = var.project_id
   role    = each.value
+  member  = local.terraform_service_account_member
+}
+
+resource "google_project_iam_member" "terraform_service_account_vpcaccess_admin" {
+  count = local.manage_project_level_resources ? 1 : 0
+
+  project = var.project_id
+  role    = "roles/vpcaccess.admin"
   member  = local.terraform_service_account_member
 }
 
