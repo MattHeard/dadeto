@@ -51,19 +51,24 @@ locals {
     artifactregistry = "artifactregistry.googleapis.com"
     eventarc         = "eventarc.googleapis.com"
   }
-  terraform_service_account_roles = {
-    firestore_access                = "roles/datastore.user"
-    cloudfunctions_access           = "roles/cloudfunctions.developer"
-    terraform_cloudfunctions_viewer = "roles/cloudfunctions.viewer"
-    terraform_set_iam_policy        = "roles/cloudfunctions.admin"
-    terraform_create_sa             = "roles/iam.serviceAccountAdmin"
-    terraform_cloudscheduler_admin  = "roles/cloudscheduler.admin"
-    ci_firebaserules_admin          = "roles/firebaserules.admin"
-    terraform_loadbalancer_admin    = "roles/compute.loadBalancerAdmin"
-    terraform_security_admin        = "roles/compute.securityAdmin"
-    terraform_network_admin         = "roles/compute.networkAdmin"
-    terraform_vpc_access_admin      = "roles/vpcaccess.admin"
+  terraform_networking_roles = {
+    terraform_security_admin   = "roles/compute.securityAdmin"
+    terraform_network_admin    = "roles/compute.networkAdmin"
+    terraform_vpc_access_admin = "roles/vpcaccess.admin"
   }
+  terraform_service_account_roles = merge(
+    {
+      firestore_access                = "roles/datastore.user"
+      cloudfunctions_access           = "roles/cloudfunctions.developer"
+      terraform_cloudfunctions_viewer = "roles/cloudfunctions.viewer"
+      terraform_set_iam_policy        = "roles/cloudfunctions.admin"
+      terraform_create_sa             = "roles/iam.serviceAccountAdmin"
+      terraform_cloudscheduler_admin  = "roles/cloudscheduler.admin"
+      ci_firebaserules_admin          = "roles/firebaserules.admin"
+      terraform_loadbalancer_admin    = "roles/compute.loadBalancerAdmin"
+    },
+    local.terraform_networking_roles,
+  )
   cloud_function_service_keys = [
     "cloudfunctions",
     "cloudbuild",
