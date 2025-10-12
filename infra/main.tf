@@ -56,19 +56,16 @@ locals {
     terraform_network_admin    = "roles/compute.networkAdmin"
     terraform_vpc_access_admin = "roles/vpcaccess.admin"
   }
-  terraform_service_account_roles = merge(
-    {
-      firestore_access                = "roles/datastore.user"
-      cloudfunctions_access           = "roles/cloudfunctions.developer"
-      terraform_cloudfunctions_viewer = "roles/cloudfunctions.viewer"
-      terraform_set_iam_policy        = "roles/cloudfunctions.admin"
-      terraform_create_sa             = "roles/iam.serviceAccountAdmin"
-      terraform_cloudscheduler_admin  = "roles/cloudscheduler.admin"
-      ci_firebaserules_admin          = "roles/firebaserules.admin"
-      terraform_loadbalancer_admin    = "roles/compute.loadBalancerAdmin"
-    },
-    local.terraform_networking_roles,
-  )
+  terraform_service_account_roles = {
+    firestore_access                = "roles/datastore.user"
+    cloudfunctions_access           = "roles/cloudfunctions.developer"
+    terraform_cloudfunctions_viewer = "roles/cloudfunctions.viewer"
+    terraform_set_iam_policy        = "roles/cloudfunctions.admin"
+    terraform_create_sa             = "roles/iam.serviceAccountAdmin"
+    terraform_cloudscheduler_admin  = "roles/cloudscheduler.admin"
+    ci_firebaserules_admin          = "roles/firebaserules.admin"
+    terraform_loadbalancer_admin    = "roles/compute.loadBalancerAdmin"
+  }
   cloud_function_service_keys = [
     "cloudfunctions",
     "cloudbuild",
@@ -256,6 +253,14 @@ resource "google_firestore_database" "database" {
 
 resource "google_project_iam_member" "terraform_service_account_roles" {
   for_each = local.manage_project_level_resources ? local.terraform_service_account_roles : {}
+
+  project = var.project_id
+  role    = each.value
+  member  = local.terraform_service_account_member
+}
+
+resource "google_project_iam_member" "terraform_service_account_network_roles" {
+  for_each = local.manage_project_level_resources || local.playwright_enabled ? local.terraform_networking_roles : {}
 
   project = var.project_id
   role    = each.value
