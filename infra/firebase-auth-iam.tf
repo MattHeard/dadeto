@@ -1,23 +1,17 @@
+locals {
+  terraform_identity_roles = {
+    firebase_admin = "roles/firebase.admin"              # can add Firebase to a project & manage web-apps
+    serviceusage_admin = "roles/serviceusage.serviceUsageAdmin" # turns APIs on/off programmatically
+    identityplatform_admin = "roles/identityplatform.admin"     # manage tenants & other Identity Platform settings
+  }
+}
+
 # Firebase Authentication IAM roles for Terraform
+resource "google_project_iam_member" "terraform_identity_roles" {
+  for_each = local.manage_project_level_resources ? local.terraform_identity_roles : {}
 
-resource "google_project_iam_member" "terraform_firebase_admin" {
-  count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
-  role    = "roles/firebase.admin" # can add Firebase to a project & manage web-apps
-  member  = local.terraform_service_account_member
-}
-
-resource "google_project_iam_member" "terraform_serviceusage_admin" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/serviceusage.serviceUsageAdmin" # turns APIs on/off programmatically
-  member  = local.terraform_service_account_member
-}
-
-resource "google_project_iam_member" "terraform_identityplatform_admin" {
-  count   = local.manage_project_level_resources ? 1 : 0
-  project = var.project_id
-  role    = "roles/identityplatform.admin" # manage tenants & other Identity Platform settings
+  role    = each.value
   member  = local.terraform_service_account_member
 }
 
