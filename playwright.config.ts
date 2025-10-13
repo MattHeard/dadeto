@@ -1,4 +1,7 @@
 import { defineConfig } from '@playwright/test';
+import { config as loadEnv } from 'dotenv';
+
+loadEnv();
 
 const baseURL = process.env.BASE_URL;
 
