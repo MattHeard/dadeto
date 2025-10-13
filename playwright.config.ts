@@ -1,5 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
+const baseURL = process.env.BASE_URL;
+
 export default defineConfig({
   testDir: './test/e2e',
   reporter: [
@@ -9,5 +11,6 @@ export default defineConfig({
   use: {
     trace: 'retain-on-failure',
     screenshot: 'on',
+    baseURL,
   },
 });

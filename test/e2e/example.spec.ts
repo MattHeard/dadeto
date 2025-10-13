@@ -1,17 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-test('renders a page with a title', async ({ page }) => {
-  await page.setContent(`
-    <!doctype html>
-    <html>
-      <head><title>Hello World</title></head>
-      <body><h1>It works</h1></body>
-    </html>
-  `);
-  await expect(page).toHaveTitle('Hello World');
-  const screenshot = await page.screenshot();
-  await test.info().attach('page-screenshot', {
-    body: screenshot,
-    contentType: 'image/png',
-  });
+test('serves new-story.html through the proxy', async ({ page }) => {
+  const baseUrl = test.info().project.use.baseURL;
+  if (!baseUrl) {
+    test.skip(true, 'BASE_URL must be configured to reach the proxy service');
+    return;
+  }
+
+  const target = new URL('new-story.html', baseUrl).toString();
+  const response = await page.goto(target, { waitUntil: 'domcontentloaded' });
+
+  expect(response, 'navigation response').not.toBeNull();
+  expect(response!.status()).toBe(200);
+  await expect(page).toHaveTitle('New Story');
+  await expect(page.locator('h1')).toHaveText(/New story/i);
 });
