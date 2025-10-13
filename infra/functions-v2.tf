@@ -1,7 +1,7 @@
 data "archive_file" "get_api_key_credit_v2_src" {
   type        = "zip"
-  source_dir  = "${local.cloud_functions_source_dir}/get-api-key-credit-v2"
-  output_path = "${local.cloud_functions_build_dir}/get-api-key-credit-v2.zip"
+  source_dir  = "${path.module}/cloud-functions/get-api-key-credit-v2"
+  output_path = "${path.module}/build/get-api-key-credit-v2.zip"
 }
 
 resource "google_storage_bucket_object" "get_api_key_credit_v2_zip" {
@@ -44,7 +44,7 @@ resource "google_cloudfunctions2_function" "get_api_key_credit_v2" {
 resource "google_cloud_run_service_iam_member" "get_api_key_credit_v2_public" {
   location = google_cloudfunctions2_function.get_api_key_credit_v2.location
   service  = google_cloudfunctions2_function.get_api_key_credit_v2.name
-  role     = local.cloud_run_invoker_role
+  role     = "roles/run.invoker"
   member   = local.all_users_member
 
   depends_on = [
