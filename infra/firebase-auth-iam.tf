@@ -18,7 +18,7 @@ resource "google_project_iam_member" "terraform_identity_roles" {
 # Allow the Cloud Function runtime SA to read auth users
 resource "google_project_iam_member" "runtime_identityplatform_viewer" {
   project = var.project_id
-  role    = "roles/identityplatform.viewer" # just “view” permissions
+  role    = "roles/identityplatform.viewer" # just "view" permissions
   member  = local.cloud_function_runtime_service_account_member
 
   # optional, but makes the dependency explicit
