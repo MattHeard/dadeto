@@ -327,7 +327,7 @@ resource "google_cloud_run_v2_job" "playwright" {
 
       vpc_access {
         connector = local.playwright_vpc_connector_id
-        egress    = "ALL_TRAFFIC"
+        egress    = "PRIVATE_RANGES_ONLY"
       }
 
       timeout     = "600s"
