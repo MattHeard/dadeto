@@ -1,8 +1,8 @@
 locals {
   terraform_identity_roles = {
-    firebase_admin = "roles/firebase.admin"              # can add Firebase to a project & manage web-apps
-    serviceusage_admin = "roles/serviceusage.serviceUsageAdmin" # turns APIs on/off programmatically
-    identityplatform_admin = "roles/identityplatform.admin"     # manage tenants & other Identity Platform settings
+    firebase_admin         = "roles/firebase.admin"                 # can add Firebase to a project & manage web-apps
+    serviceusage_admin     = "roles/serviceusage.serviceUsageAdmin" # turns APIs on/off programmatically
+    identityplatform_admin = "roles/identityplatform.admin"         # manage tenants & other Identity Platform settings
   }
 }
 
