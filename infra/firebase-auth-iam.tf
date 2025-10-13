@@ -1,24 +1,30 @@
-locals {
-  terraform_identity_roles = {
-    firebase_admin         = "roles/firebase.admin"                 # can add Firebase to a project & manage web-apps
-    serviceusage_admin     = "roles/serviceusage.serviceUsageAdmin" # turns APIs on/off programmatically
-    identityplatform_admin = "roles/identityplatform.admin"         # manage tenants & other Identity Platform settings
-  }
+# Firebase Authentication IAM roles for Terraform
+
+resource "google_project_iam_member" "terraform_firebase_admin" {
+  count   = local.manage_project_level_resources ? 1 : 0
+  project = var.project_id
+  role    = "roles/firebase.admin" # can add Firebase to a project & manage web-apps
+  member  = local.terraform_service_account_member
 }
 
-# Firebase Authentication IAM roles for Terraform
-resource "google_project_iam_member" "terraform_identity_roles" {
-  for_each = local.manage_project_level_resources ? local.terraform_identity_roles : {}
-
+resource "google_project_iam_member" "terraform_serviceusage_admin" {
+  count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id
-  role    = each.value
+  role    = "roles/serviceusage.serviceUsageAdmin" # turns APIs on/off programmatically
+  member  = local.terraform_service_account_member
+}
+
+resource "google_project_iam_member" "terraform_identityplatform_admin" {
+  count   = local.manage_project_level_resources ? 1 : 0
+  project = var.project_id
+  role    = "roles/identityplatform.admin" # manage tenants & other Identity Platform settings
   member  = local.terraform_service_account_member
 }
 
 # Allow the Cloud Function runtime SA to read auth users
 resource "google_project_iam_member" "runtime_identityplatform_viewer" {
   project = var.project_id
-  role    = "roles/identityplatform.viewer" # just "view" permissions
+  role    = "roles/identityplatform.viewer" # just “view” permissions
   member  = local.cloud_function_runtime_service_account_member
 
   # optional, but makes the dependency explicit

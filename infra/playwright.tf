@@ -141,7 +141,7 @@ resource "google_cloud_run_v2_service_iam_member" "gcs_proxy_unauth" {
 
   location = var.region
   name     = google_cloud_run_v2_service.gcs_proxy[0].name
-  role     = local.cloud_run_invoker_role
+  role     = "roles/run.invoker"
   member   = local.all_users_member
 }
 
