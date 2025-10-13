@@ -7,8 +7,9 @@ test('serves new-story.html through the proxy', async ({ page }) => {
     return;
   }
 
-  const target = new URL('new-story.html', baseUrl).toString();
-  const response = await page.goto(target, { waitUntil: 'domcontentloaded' });
+  const response = await page.goto('/new-story.html', {
+    waitUntil: 'domcontentloaded',
+  });
 
   expect(response, 'navigation response').not.toBeNull();
   expect(response!.status()).toBe(200);
