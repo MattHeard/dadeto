@@ -54,7 +54,7 @@ resource "google_vpc_access_connector" "playwright" {
   name           = "pw-${var.environment}"
   region         = var.region
   network        = data.google_compute_network.playwright[0].name
-  ip_cidr_range  = "10.8.1.0/28"
+  ip_cidr_range  = var.playwright_vpc_connector_cidr
   min_throughput = 200
   max_throughput = 400
   depends_on = [

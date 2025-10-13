@@ -57,3 +57,10 @@ range with the `playwright_proxy_subnet_cidr` variable (defaults to
 `10.10.0.0/23`). Select a range that does not overlap existing custom subnets
 and that lives outside the auto-mode `10.128.0.0/9` block so the managed proxy
 does not collide with the default network's allocations.
+
+Serverless VPC Access connectors used by the same Playwright jobs require their
+own dedicated `/28` blocks. Supply the `playwright_vpc_connector_cidr` variable
+per environment and ensure each connector's range is unique and non-overlapping.
+Keep the blocks outside the auto-mode `10.128.0.0/9` space and away from any
+subnets that might be used concurrently in other environments to avoid routing
+conflicts when multiple connectors are active.

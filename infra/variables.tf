@@ -33,6 +33,12 @@ variable "playwright_proxy_subnet_cidr" {
   default     = "10.10.0.0/23"
 }
 
+variable "playwright_vpc_connector_cidr" {
+  description = "CIDR range for the Playwright Serverless VPC Access connector; allocate a unique /28 per environment so concurrent connectors never overlap"
+  type        = string
+  default     = "10.8.1.0/28"
+}
+
 variable "gcs_proxy_image" {
   description = "Container image used by the internal Cloud Run GCS proxy"
   type        = string
