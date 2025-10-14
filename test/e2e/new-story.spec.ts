@@ -117,8 +117,15 @@ test('submits the new story form', async ({ page }) => {
     await page.getByLabel(label).fill(value);
   }
 
-  await Promise.all([
-    page.waitForRequest(submitHref),
+  const [response] = await Promise.all([
+    page.waitForResponse((res) => {
+      if (res.url() !== submitHref) {
+        return false;
+      }
+      return res.request().method() === 'POST';
+    }),
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
+
+  expect(response.ok()).toBe(true);
 });

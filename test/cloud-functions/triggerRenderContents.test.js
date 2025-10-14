@@ -3,6 +3,7 @@ import * as mod from '../../src/cloud/render-contents/index.js';
 import { mockVerifyIdToken } from '../mocks/firebase-admin-auth.js';
 
 const { handleRenderRequest } = mod;
+const allowedOrigin = 'https://mattheard.net';
 
 /**
  *
@@ -20,85 +21,103 @@ function createRes() {
   };
 }
 
+function createReq({ method = 'POST', origin = allowedOrigin, authorization = '' } = {}) {
+  return {
+    method,
+    get: h => {
+      if (h === 'Origin') {
+        return origin ?? '';
+      }
+      if (h === 'Authorization') {
+        return authorization;
+      }
+      return '';
+    },
+  };
+}
+
+function expectCorsHeaders(res, { origin = allowedOrigin, allowed = true } = {}) {
+  expect(res.set).toHaveBeenCalledWith(
+    'Access-Control-Allow-Headers',
+    'Authorization'
+  );
+  expect(res.set).toHaveBeenCalledWith(
+    'Access-Control-Allow-Methods',
+    'POST, OPTIONS'
+  );
+  if (origin === null) {
+    expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', '*');
+    expect(res.set).not.toHaveBeenCalledWith('Vary', 'Origin');
+  } else if (!allowed) {
+    expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', 'null');
+    expect(res.set).toHaveBeenCalledWith('Vary', 'Origin');
+  } else {
+    expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', origin);
+    expect(res.set).toHaveBeenCalledWith('Vary', 'Origin');
+  }
+}
+
 describe('handleRenderRequest', () => {
   beforeEach(() => {
     mockVerifyIdToken.mockReset();
   });
 
   test('rejects non-POST method', async () => {
-    const req = { method: 'GET', get: () => '' };
+    const req = createReq({ method: 'GET' });
     const res = createRes();
     await handleRenderRequest(req, res);
     expect(res.status).toHaveBeenCalledWith(405);
+    expectCorsHeaders(res);
   });
 
   test('handles OPTIONS preflight', async () => {
-    const req = { method: 'OPTIONS', get: () => '' };
+    const req = createReq({ method: 'OPTIONS' });
     const res = createRes();
     await handleRenderRequest(req, res);
     expect(res.status).toHaveBeenCalledWith(204);
     expect(res.set).toHaveBeenCalledWith(
       'Access-Control-Allow-Methods',
-      'POST'
+      'POST, OPTIONS'
     );
     expect(res.set).toHaveBeenCalledWith(
       'Access-Control-Allow-Headers',
       'Authorization'
     );
+    expectCorsHeaders(res);
   });
 
   test('rejects disallowed origin', async () => {
-    const req = {
-      method: 'POST',
-      get: h => {
-        if (h === 'Origin') {
-          return 'https://evil.com';
-        }
-        return '';
-      },
-    };
+    const req = createReq({ origin: 'https://evil.com' });
     const res = createRes();
     await handleRenderRequest(req, res);
     expect(res.status).toHaveBeenCalledWith(403);
+    expectCorsHeaders(res, { origin: 'https://evil.com', allowed: false });
   });
 
   test('rejects missing token', async () => {
-    const req = { method: 'POST', get: () => '' };
+    const req = createReq();
     const res = createRes();
     await handleRenderRequest(req, res);
     expect(res.status).toHaveBeenCalledWith(401);
+    expectCorsHeaders(res);
   });
 
   test('rejects invalid token', async () => {
     mockVerifyIdToken.mockRejectedValue(new Error('bad'));
-    const req = {
-      method: 'POST',
-      get: h => {
-        if (h === 'Authorization') {
-          return 'Bearer x';
-        }
-        return '';
-      },
-    };
+    const req = createReq({ authorization: 'Bearer x' });
     const res = createRes();
     await handleRenderRequest(req, res);
     expect(res.status).toHaveBeenCalledWith(401);
+    expectCorsHeaders(res);
   });
 
   test('rejects non-admin uid', async () => {
     mockVerifyIdToken.mockResolvedValue({ uid: 'other' });
-    const req = {
-      method: 'POST',
-      get: h => {
-        if (h === 'Authorization') {
-          return 'Bearer t';
-        }
-        return '';
-      },
-    };
+    const req = createReq({ authorization: 'Bearer t' });
     const res = createRes();
     await handleRenderRequest(req, res);
     expect(res.status).toHaveBeenCalledWith(403);
+    expectCorsHeaders(res);
   });
 
   test('triggers render for admin user', async () => {
@@ -106,19 +125,12 @@ describe('handleRenderRequest', () => {
       uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
     });
     const renderFn = jest.fn().mockResolvedValue(null);
-    const req = {
-      method: 'POST',
-      get: h => {
-        if (h === 'Authorization') {
-          return 'Bearer t';
-        }
-        return '';
-      },
-    };
+    const req = createReq({ authorization: 'Bearer t' });
     const res = createRes();
     await handleRenderRequest(req, res, { renderFn });
     expect(renderFn).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
+    expectCorsHeaders(res);
   });
 
   test('handles render errors', async () => {
@@ -126,17 +138,10 @@ describe('handleRenderRequest', () => {
       uid: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
     });
     const renderFn = jest.fn().mockRejectedValue(new Error('fail'));
-    const req = {
-      method: 'POST',
-      get: h => {
-        if (h === 'Authorization') {
-          return 'Bearer t';
-        }
-        return '';
-      },
-    };
+    const req = createReq({ authorization: 'Bearer t' });
     const res = createRes();
     await handleRenderRequest(req, res, { renderFn });
     expect(res.status).toHaveBeenCalledWith(500);
+    expectCorsHeaders(res);
   });
 });
