@@ -143,37 +143,57 @@
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" defer></script>
     <script type="module">
-      import {
-        initGoogleSignIn,
-        getIdToken,
-        signOut,
-        isAdmin,
-      } from './googleAuth.js';
+      const fallbackAuth = {
+        initGoogleSignIn: () => {},
+        getIdToken: () => null,
+        signOut: async () => {},
+        isAdmin: () => false,
+      };
 
-      document.addEventListener('DOMContentLoaded', () => {
+      const loadAuthModule = () =>
+        import('./googleAuth.js').catch(error => {
+          console.warn(
+            'Failed to load googleAuth.js; continuing without sign-in UI.',
+            error,
+          );
+          return fallbackAuth;
+        });
+
+      async function initNewStoryPage() {
         const form = document.querySelector('form');
-        if (form) {
-          (async () => {
-            try {
-              const response = await fetch('/config.json', {
-                cache: 'no-store',
-              });
-              if (!response.ok) return;
-              const config = await response.json();
-              if (config?.submitNewStoryUrl) {
-                form.action = config.submitNewStoryUrl;
-              }
-            } catch (error) {
-              console.warn('Failed to load config overrides', error);
-            }
-          })();
+        if (!form) {
+          return;
         }
+
+        const authPromise = loadAuthModule();
+
+        (async () => {
+          try {
+            const response = await fetch('/config.json', {
+              cache: 'no-store',
+            });
+            if (!response.ok) return;
+            const config = await response.json();
+            if (config?.submitNewStoryUrl) {
+              form.action = config.submitNewStoryUrl;
+            }
+          } catch (error) {
+            console.warn('Failed to load config overrides', error);
+          }
+        })();
+
         const button = form.querySelector("button[type='submit']");
-        const originalText = button.textContent;
+        if (!button) {
+          return;
+        }
+        const originalText = button.textContent ?? 'Submit';
         const signins = document.querySelectorAll('#signinButton');
         const signoutWraps = document.querySelectorAll('#signoutWrap');
         const signoutLinks = document.querySelectorAll('#signoutLink');
         const adminLinks = document.querySelectorAll('.admin-link');
+
+        const { initGoogleSignIn, getIdToken, signOut, isAdmin } =
+          await authPromise;
 
         function showSignedIn() {
           document.body.classList.add('authed');
@@ -260,7 +280,15 @@
             }, 2000);
           }
         });
-      });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNewStoryPage, {
+          once: true,
+        });
+      } else {
+        initNewStoryPage();
+      }
     </script>
     <script>
       (function () {
