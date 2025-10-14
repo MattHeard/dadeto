@@ -21,6 +21,7 @@ trap 'warn "SIGINT received"' INT
 
 export FORCE_COLOR=1
 export DEBUG="${DEBUG:-pw:api,pw:browser*}"
+export PW_TEST_HTML_REPORT_OPEN="${PW_TEST_HTML_REPORT_OPEN:-never}"
 
 # optional debug channels for very verbose wire logs
 # export DEBUG="$DEBUG,pw:channel,pw:websocket"

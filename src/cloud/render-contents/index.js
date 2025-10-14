@@ -168,25 +168,44 @@ async function render(deps = {}) {
 }
 
 /**
+ * Apply common CORS headers and check origin access.
+ * @param {import('express').Request} req HTTP request
+ * @param {import('express').Response} res HTTP response
+ * @returns {boolean} True when the origin is allowed
+ */
+function applyCorsHeaders(req, res) {
+  const origin = req.get('Origin');
+  let originAllowed = false;
+  if (!origin) {
+    res.set('Access-Control-Allow-Origin', '*');
+    originAllowed = true;
+  } else if (allowed.includes(origin)) {
+    res.set('Access-Control-Allow-Origin', origin);
+    res.set('Vary', 'Origin');
+    originAllowed = true;
+  } else {
+    res.set('Access-Control-Allow-Origin', 'null');
+    res.set('Vary', 'Origin');
+  }
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Authorization');
+  return originAllowed;
+}
+
+/**
  * Validate request origin and method.
  * @param {import('express').Request} req HTTP request
  * @param {import('express').Response} res HTTP response
  * @returns {boolean} True if request is valid
  */
 function validateRequest(req, res) {
-  const origin = req.get('Origin');
-  if (!origin || allowed.includes(origin)) {
-    if (origin) {
-      res.set('Access-Control-Allow-Origin', origin);
-    }
-  } else {
-    res.status(403).send('CORS');
+  const originAllowed = applyCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') {
+    res.status(originAllowed ? 204 : 403).send('');
     return false;
   }
-  if (req.method === 'OPTIONS') {
-    res.set('Access-Control-Allow-Methods', 'POST');
-    res.set('Access-Control-Allow-Headers', 'Authorization');
-    res.status(204).send('');
+  if (!originAllowed) {
+    res.status(403).send('CORS');
     return false;
   }
   if (req.method !== 'POST') {
