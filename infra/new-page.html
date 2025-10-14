@@ -170,6 +170,22 @@
         }
 
         const form = document.querySelector('form');
+        if (form) {
+          (async () => {
+            try {
+              const response = await fetch('/config.json', {
+                cache: 'no-store',
+              });
+              if (!response.ok) return;
+              const config = await response.json();
+              if (config?.submitNewPageUrl) {
+                form.action = config.submitNewPageUrl;
+              }
+            } catch (error) {
+              console.warn('Failed to load config overrides', error);
+            }
+          })();
+        }
         const button = form.querySelector("button[type='submit']");
         if ((incoming && page) || (!incoming && !page)) {
           button.disabled = true;

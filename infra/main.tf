@@ -120,6 +120,12 @@ locals {
       source       = "${path.module}/admin.js"
       content_type = "application/javascript"
     }
+    dendrite_load_static_config_js = {
+      name          = "loadStaticConfig.js"
+      source        = "${path.module}/loadStaticConfig.js"
+      content_type  = "application/javascript"
+      cache_control = "no-store"
+    }
     dendrite_robots_txt = {
       name         = "robots.txt"
       source       = "${path.module}/robots.txt"
@@ -186,6 +192,18 @@ resource "google_storage_bucket_object" "dendrite_mod" {
     firebase_web_app_config = local.firebase_config_json
   })
   content_type = "text/html"
+}
+
+resource "google_storage_bucket_object" "dendrite_static_config" {
+  name          = "config.json"
+  bucket        = local.dendrite_static_bucket_name
+  content       = templatefile("${path.module}/config.json.tftpl", {
+    environment = var.environment
+    project_id  = var.project_id
+    region      = var.region
+  })
+  content_type  = "application/json"
+  cache_control = "no-store"
 }
 
 resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {

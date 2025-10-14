@@ -1,16 +1,42 @@
 import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
+import { loadStaticConfig } from './loadStaticConfig.js';
 import {
   getAuth,
   onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
-const RENDER_URL =
-  'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents';
-const REGENERATE_URL =
-  'https://europe-west1-irien-465710.cloudfunctions.net/prod-mark-variant-dirty';
-const STATS_URL =
-  'https://europe-west1-irien-465710.cloudfunctions.net/prod-generate-stats';
+const DEFAULT_ENDPOINTS = {
+  triggerRenderContentsUrl:
+    'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents',
+  markVariantDirtyUrl:
+    'https://europe-west1-irien-465710.cloudfunctions.net/prod-mark-variant-dirty',
+  generateStatsUrl:
+    'https://europe-west1-irien-465710.cloudfunctions.net/prod-generate-stats',
+};
+
+let adminEndpointsPromise;
+
+/**
+ * Resolve admin endpoints from the static config with production fallbacks.
+ * @returns {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>}
+ */
+async function getAdminEndpoints() {
+  if (!adminEndpointsPromise) {
+    adminEndpointsPromise = loadStaticConfig()
+      .then(config => ({
+        triggerRenderContentsUrl:
+          config?.triggerRenderContentsUrl ??
+          DEFAULT_ENDPOINTS.triggerRenderContentsUrl,
+        markVariantDirtyUrl:
+          config?.markVariantDirtyUrl ?? DEFAULT_ENDPOINTS.markVariantDirtyUrl,
+        generateStatsUrl:
+          config?.generateStatsUrl ?? DEFAULT_ENDPOINTS.generateStatsUrl,
+      }))
+      .catch(() => ({ ...DEFAULT_ENDPOINTS }));
+  }
+  return adminEndpointsPromise;
+}
 const statusParagraph = document.getElementById('renderStatus');
 
 /**
@@ -58,7 +84,8 @@ async function triggerRender() {
     return;
   }
   try {
-    const res = await fetch(RENDER_URL, {
+    const { triggerRenderContentsUrl } = await getAdminEndpoints();
+    const res = await fetch(triggerRenderContentsUrl, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -86,7 +113,8 @@ async function triggerStats() {
     return;
   }
   try {
-    await fetch(STATS_URL, {
+    const { generateStatsUrl } = await getAdminEndpoints();
+    await fetch(generateStatsUrl, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -116,7 +144,8 @@ async function regenerateVariant(e) {
   const page = Number(match[1]);
   const variant = match[2];
   try {
-    const res = await fetch(REGENERATE_URL, {
+    const { markVariantDirtyUrl } = await getAdminEndpoints();
+    const res = await fetch(markVariantDirtyUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,

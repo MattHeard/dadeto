@@ -45,7 +45,7 @@ const directoryCopies = functionDirectories.map(name => ({
 const fileCopies = {
   sourceDir: srcCloudDir,
   targetDir: infraDir,
-  files: ['googleAuth.js', 'moderate.js'],
+  files: ['googleAuth.js', 'moderate.js', 'loadStaticConfig.js'],
 };
 
 const corsConfigSource = join(srcCloudDir, 'cors-config.js');
