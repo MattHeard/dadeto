@@ -80,3 +80,38 @@ test('serves new-story.html through the proxy', async ({ page }) => {
 
   await expect(page.getByRole('button', { name: 'Submit' })).toBeVisible();
 });
+
+test('submits the new story form', async ({ page }) => {
+  const submitEndpoint =
+    'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-new-story';
+
+  await page.route(submitEndpoint, async (route) => {
+    await route.fulfill({ status: 200, body: 'OK' });
+  });
+
+  await page.goto('/new-story.html', {
+    waitUntil: 'domcontentloaded',
+  });
+
+  await page.getByLabel('Title').fill('Playwright submission title');
+  await page
+    .getByLabel('Content')
+    .fill('This is a test submission triggered by Playwright.');
+  await page.getByLabel('Author').fill('Automated Test');
+
+  const optionEntries: Array<[string, string]> = [
+    ['Option 1', 'First option'],
+    ['Option 2', 'Second option'],
+    ['Option 3', 'Third option'],
+    ['Option 4', 'Fourth option'],
+  ];
+
+  for (const [label, value] of optionEntries) {
+    await page.getByLabel(label).fill(value);
+  }
+
+  await Promise.all([
+    page.waitForRequest(submitEndpoint),
+    page.getByRole('button', { name: 'Submit' }).click(),
+  ]);
+});
