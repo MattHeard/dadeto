@@ -82,15 +82,22 @@ test('serves new-story.html through the proxy', async ({ page }) => {
 });
 
 test('submits the new story form', async ({ page }) => {
-  const submitEndpoint =
-    'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-new-story';
-
-  await page.route(submitEndpoint, async (route) => {
-    await route.fulfill({ status: 200, body: 'OK' });
-  });
-
   await page.goto('/new-story.html', {
     waitUntil: 'domcontentloaded',
+  });
+
+  const submitAction = await page.locator('form').getAttribute('action');
+
+  expect(submitAction, 'form action').not.toBeNull();
+
+  const submitEndpoint = submitAction!;
+  const submitUrl = new URL(submitEndpoint, page.url());
+  expect(submitUrl.pathname).toMatch(/submit-new-story$/);
+
+  const submitHref = submitUrl.href;
+
+  await page.route(submitHref, async (route) => {
+    await route.fulfill({ status: 200, body: 'OK' });
   });
 
   await page.getByLabel('Title').fill('Playwright submission title');
@@ -111,7 +118,7 @@ test('submits the new story form', async ({ page }) => {
   }
 
   await Promise.all([
-    page.waitForRequest(submitEndpoint),
+    page.waitForRequest(submitHref),
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 });
