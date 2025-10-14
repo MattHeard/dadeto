@@ -195,9 +195,9 @@ resource "google_storage_bucket_object" "dendrite_mod" {
 }
 
 resource "google_storage_bucket_object" "dendrite_static_config" {
-  name          = "config.json"
-  bucket        = local.dendrite_static_bucket_name
-  content       = templatefile("${path.module}/config.json.tftpl", {
+  name   = "config.json"
+  bucket = local.dendrite_static_bucket_name
+  content = templatefile("${path.module}/config.json.tftpl", {
     environment = var.environment
     project_id  = var.project_id
     region      = var.region
