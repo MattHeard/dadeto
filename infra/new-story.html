@@ -152,6 +152,22 @@
 
       document.addEventListener('DOMContentLoaded', () => {
         const form = document.querySelector('form');
+        if (form) {
+          (async () => {
+            try {
+              const response = await fetch('/config.json', {
+                cache: 'no-store',
+              });
+              if (!response.ok) return;
+              const config = await response.json();
+              if (config?.submitNewStoryUrl) {
+                form.action = config.submitNewStoryUrl;
+              }
+            } catch (error) {
+              console.warn('Failed to load config overrides', error);
+            }
+          })();
+        }
         const button = form.querySelector("button[type='submit']");
         const originalText = button.textContent;
         const signins = document.querySelectorAll('#signinButton');

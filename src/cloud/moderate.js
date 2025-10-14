@@ -4,13 +4,41 @@ import {
   signOut,
   isAdmin,
 } from './googleAuth.js';
+import { loadStaticConfig } from './loadStaticConfig.js';
 
-const GET_VARIANT_URL =
-  'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant';
-const ASSIGN_JOB_URL =
-  'https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job';
-const SUBMIT_RATING_URL =
-  'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-moderation-rating';
+const DEFAULT_ENDPOINTS = {
+  getModerationVariantUrl:
+    'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant',
+  assignModerationJobUrl:
+    'https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job',
+  submitModerationRatingUrl:
+    'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-moderation-rating',
+};
+
+let endpointsPromise;
+
+/**
+ * Resolve moderation endpoints from the static config with production fallbacks.
+ * @returns {Promise<{getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string}>}
+ */
+async function getModerationEndpoints() {
+  if (!endpointsPromise) {
+    endpointsPromise = loadStaticConfig()
+      .then(config => ({
+        getModerationVariantUrl:
+          config?.getModerationVariantUrl ??
+          DEFAULT_ENDPOINTS.getModerationVariantUrl,
+        assignModerationJobUrl:
+          config?.assignModerationJobUrl ??
+          DEFAULT_ENDPOINTS.assignModerationJobUrl,
+        submitModerationRatingUrl:
+          config?.submitModerationRatingUrl ??
+          DEFAULT_ENDPOINTS.submitModerationRatingUrl,
+      }))
+      .catch(() => ({ ...DEFAULT_ENDPOINTS }));
+  }
+  return endpointsPromise;
+}
 
 /**
  * Enable or disable moderation action buttons.
@@ -83,7 +111,8 @@ async function assignJob() {
 
   const body = new URLSearchParams({ id_token: token });
 
-  const resp = await fetch(ASSIGN_JOB_URL, {
+  const { assignModerationJobUrl } = await getModerationEndpoints();
+  const resp = await fetch(assignModerationJobUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -99,7 +128,8 @@ async function assignJob() {
 async function loadVariant(retried = false) {
   const stopFetching = startAnimation('fetching', 'Fetching');
   try {
-    const data = await authedFetch(GET_VARIANT_URL);
+    const { getModerationVariantUrl } = await getModerationEndpoints();
+    const data = await authedFetch(getModerationVariantUrl);
     const container = document.getElementById('pageContent');
     container.style.display = '';
     container.innerHTML = '';
@@ -159,7 +189,8 @@ async function submitRating(isApproved) {
   if (reject) reject.disabled = true;
   const stopSaving = startAnimation('saving', 'Saving');
   try {
-    await authedFetch(SUBMIT_RATING_URL, {
+    const { submitModerationRatingUrl } = await getModerationEndpoints();
+    await authedFetch(submitModerationRatingUrl, {
       method: 'POST',
       body: JSON.stringify({ isApproved }),
     });
