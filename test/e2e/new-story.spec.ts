@@ -94,7 +94,9 @@ test('submits the new story form', async ({ page }) => {
   const submitUrl = new URL(submitEndpoint, page.url());
   expect(submitUrl.pathname).toMatch(/submit-new-story$/);
 
-  await page.route(submitEndpoint, async (route) => {
+  const submitHref = submitUrl.href;
+
+  await page.route(submitHref, async (route) => {
     await route.fulfill({ status: 200, body: 'OK' });
   });
 
@@ -116,7 +118,7 @@ test('submits the new story form', async ({ page }) => {
   }
 
   await Promise.all([
-    page.waitForRequest(submitEndpoint),
+    page.waitForRequest(submitHref),
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 });
