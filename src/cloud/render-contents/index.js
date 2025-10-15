@@ -147,7 +147,7 @@ async function render(deps = {}) {
       items.push(info);
     }
   }
-  const pageSize = 30;
+  const pageSize = 100;
   const bucket = storage.bucket('www.dendritestories.co.nz');
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const paths = [];

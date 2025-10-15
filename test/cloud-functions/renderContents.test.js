@@ -23,7 +23,7 @@ describe('render contents', () => {
   });
 
   test('invalidates cache for generated pages', async () => {
-    const ids = Array.from({ length: 31 }, (_, i) => `s${i + 1}`);
+    const ids = Array.from({ length: 101 }, (_, i) => `s${i + 1}`);
     await render({
       fetchTopStoryIds: async () => ids,
       fetchStoryInfo: async id => ({
@@ -39,7 +39,7 @@ describe('render contents', () => {
   });
 
   test('logs error when cache invalidation fails', async () => {
-    const ids = Array.from({ length: 31 }, (_, i) => `s${i + 1}`);
+    const ids = Array.from({ length: 101 }, (_, i) => `s${i + 1}`);
     const consoleError = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
