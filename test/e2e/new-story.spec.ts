@@ -120,11 +120,13 @@ test('submits the new story form', async ({ page }) => {
 
   const submitHref = submitUrl.href;
 
-  await page.getByLabel('Title').fill('Playwright submission title');
-  await page
-    .getByLabel('Content')
-    .fill('This is a test submission triggered by Playwright.');
-  await page.getByLabel('Author').fill('Automated Test');
+  const submissionTitle = 'Playwright submission title';
+  const submissionContent = 'This is a test submission triggered by Playwright.';
+  const submissionAuthor = 'Automated Test';
+
+  await page.getByLabel('Title').fill(submissionTitle);
+  await page.getByLabel('Content').fill(submissionContent);
+  await page.getByLabel('Author').fill(submissionAuthor);
 
   const optionEntries: Array<[string, string]> = [
     ['Option 1', 'First option'],
@@ -147,5 +149,24 @@ test('submits the new story form', async ({ page }) => {
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 
-  expect(response.ok()).toBe(true);
+  expect(response.status()).toBe(201);
+
+  const body = (await response.json()) as {
+    id: string;
+    title: string;
+    content: string;
+    author: string;
+    options: string[];
+  };
+
+  expect(body).toMatchObject({
+    title: submissionTitle,
+    content: submissionContent,
+    author: submissionAuthor,
+    options: optionEntries.map(([, value]) => value),
+  });
+
+  expect(body.id).toMatch(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+  );
 });
