@@ -1,10 +1,9 @@
-import { initializeApp } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import crypto from 'crypto';
+import { getFirestoreInstance } from '../firestore.js';
 
-initializeApp();
-const db = getFirestore();
+const db = getFirestoreInstance();
 
 export const processNewStory = functions
   .region('europe-west1')

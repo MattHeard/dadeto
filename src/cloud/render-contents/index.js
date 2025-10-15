@@ -1,14 +1,14 @@
 import crypto from 'crypto';
-import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestoreInstance } from '../firestore.js';
+import { ensureFirebaseApp } from '../firebaseApp.js';
 import { getAuth } from 'firebase-admin/auth';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
 import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
 
-initializeApp();
-const db = getFirestore();
+const db = getFirestoreInstance();
 const storage = new Storage();
+ensureFirebaseApp();
 const auth = getAuth();
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 const allowed = [

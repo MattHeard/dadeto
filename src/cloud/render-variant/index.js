@@ -1,15 +1,14 @@
 import crypto from 'crypto';
-import { initializeApp } from 'firebase-admin/app';
-import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
 import { buildAltsHtml, escapeHtml } from './buildAltsHtml.js';
 import { buildHtml } from './buildHtml.js';
 import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';
+import { getFirestoreInstance } from '../firestore.js';
 
-initializeApp();
 const storage = new Storage();
-const db = getFirestore();
+const db = getFirestoreInstance();
 
 // keep defaults so you don't need infra changes today
 const PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;

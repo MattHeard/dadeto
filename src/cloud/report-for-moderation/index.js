@@ -1,12 +1,11 @@
-import { initializeApp } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';
+import { getFirestoreInstance } from '../firestore.js';
 
-initializeApp();
-const db = getFirestore();
+const db = getFirestoreInstance();
 const app = express();
 
 const { allowedOrigins } = corsConfig;

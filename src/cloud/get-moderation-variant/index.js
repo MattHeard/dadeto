@@ -1,13 +1,13 @@
-import { initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';
+import { getAuth } from 'firebase-admin/auth';
+import { ensureFirebaseApp } from '../firebaseApp.js';
+import { getFirestoreInstance } from '../firestore.js';
 
-initializeApp();
-const db = getFirestore();
+const db = getFirestoreInstance();
+ensureFirebaseApp();
 const auth = getAuth();
 const app = express();
 
