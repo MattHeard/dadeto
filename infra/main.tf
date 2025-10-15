@@ -33,11 +33,15 @@ locals {
   firestore_database_path        = "projects/${var.project_id}/databases/${var.database_id}"
   firestore_documents_path       = "${local.firestore_database_path}/documents"
   manage_firestore_services      = var.environment == "prod" || local.manage_project_level_resources
-  cloud_function_environment = {
-    GCLOUD_PROJECT       = var.project_id
-    GOOGLE_CLOUD_PROJECT = var.project_id
-    FIREBASE_CONFIG      = local.firebase_config_json
-  }
+  cloud_function_environment = merge(
+    {
+      GCLOUD_PROJECT       = var.project_id
+      GOOGLE_CLOUD_PROJECT = var.project_id
+      FIREBASE_CONFIG      = local.firebase_config_json
+      DENDRITE_ENVIRONMENT = var.environment
+    },
+    local.playwright_enabled ? { PLAYWRIGHT_ORIGIN = local.gcs_proxy_uri } : {},
+  )
   cloud_function_runtime_service_account_email  = google_service_account.cloud_function_runtime.email
   cloud_function_runtime_service_account_member = "serviceAccount:${local.cloud_function_runtime_service_account_email}"
   terraform_service_account_member              = "serviceAccount:terraform@${var.project_id}.iam.gserviceaccount.com"
