@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Response } from '@playwright/test';
 import { expectSharedChrome } from './static-pages.helpers';
 
 test('serves new-story.html through the proxy', async ({ page }) => {
@@ -82,16 +82,40 @@ test('serves new-story.html through the proxy', async ({ page }) => {
 });
 
 test('submits the new story form', async ({ page }) => {
+  const configResponsePromise = page.waitForResponse(
+    (response) => response.url().endsWith('/config.json'),
+    { timeout: 2000 },
+  );
+
   await page.goto('/new-story.html', {
     waitUntil: 'domcontentloaded',
   });
 
-  const submitAction = await page.locator('form').getAttribute('action');
+  let configResponse: Response;
+  try {
+    configResponse = await configResponsePromise;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Timeout')) {
+      throw new Error('Expected /config.json to be requested during initialization');
+    }
+    throw error;
+  }
 
-  expect(submitAction, 'form action').not.toBeNull();
+  expect(configResponse.ok(), 'config response ok').toBe(true);
 
-  const submitEndpoint = submitAction!;
-  const submitUrl = new URL(submitEndpoint, page.url());
+  const config = (await configResponse.json()) as {
+    submitNewStoryUrl?: string;
+  };
+  const submitNewStoryUrl = config.submitNewStoryUrl;
+  expect(submitNewStoryUrl, 'submitNewStoryUrl from config').toBeTruthy();
+
+  if (!submitNewStoryUrl) {
+    throw new Error('Expected submitNewStoryUrl in config.json response');
+  }
+
+  await expect(page.locator('form')).toHaveAttribute('action', submitNewStoryUrl);
+
+  const submitUrl = new URL(submitNewStoryUrl, page.url());
   expect(submitUrl.pathname).toMatch(/submit-new-story$/);
 
   const submitHref = submitUrl.href;
