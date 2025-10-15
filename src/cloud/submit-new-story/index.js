@@ -26,6 +26,14 @@ app.use(
   })
 );
 
+app.use((err, req, res, next) => {
+  if (err instanceof Error && err.message === 'CORS') {
+    res.status(403).json({ error: 'Origin not allowed' });
+    return;
+  }
+  next(err);
+});
+
 app.use(express.json({ limit: '20kb' }));
 app.use(express.urlencoded({ extended: false, limit: '20kb' }));
 
@@ -83,3 +91,5 @@ app.post('/', handleSubmit);
 export const submitNewStory = functions
   .region('europe-west1')
   .https.onRequest(app);
+
+export { app };
