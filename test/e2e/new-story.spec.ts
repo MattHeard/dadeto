@@ -120,10 +120,6 @@ test('submits the new story form', async ({ page }) => {
 
   const submitHref = submitUrl.href;
 
-  await page.route(submitHref, async (route) => {
-    await route.fulfill({ status: 200, body: 'OK' });
-  });
-
   await page.getByLabel('Title').fill('Playwright submission title');
   await page
     .getByLabel('Content')
