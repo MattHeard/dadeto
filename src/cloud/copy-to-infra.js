@@ -55,6 +55,16 @@ const corsConfigCopies = functionDirectories.map(name => ({
   target: join(infraFunctionsDir, name, 'cors-config.js'),
 }));
 
+const firebaseAppCopies = functionDirectories.map(name => ({
+  source: join(srcCloudDir, 'firebaseApp.js'),
+  target: join(infraFunctionsDir, name, 'firebaseApp.js'),
+}));
+
+const firestoreCopies = functionDirectories.map(name => ({
+  source: join(srcCloudDir, 'firestore.js'),
+  target: join(infraFunctionsDir, name, 'firestore.js'),
+}));
+
 const individualFileCopies = [
   {
     source: join(browserDir, 'admin.js'),
@@ -64,14 +74,8 @@ const individualFileCopies = [
     source: join(srcCoreCloudDir, 'assign-moderation-job', 'core.js'),
     target: join(infraFunctionsDir, 'assign-moderation-job', 'core.js'),
   },
-  {
-    source: join(srcCloudDir, 'firebaseApp.js'),
-    target: join(infraFunctionsDir, 'firebaseApp.js'),
-  },
-  {
-    source: join(srcCloudDir, 'firestore.js'),
-    target: join(infraFunctionsDir, 'firestore.js'),
-  },
+  ...firebaseAppCopies,
+  ...firestoreCopies,
   ...corsConfigCopies,
 ];
 
