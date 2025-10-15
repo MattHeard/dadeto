@@ -1,7 +1,7 @@
-import { initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
 import express from 'express';
+import { getAuth } from 'firebase-admin/auth';
+import { ensureFirebaseApp } from '../firebaseApp.js';
+import { getFirestoreInstance } from '../firestore.js';
 
 /**
  * Initialize Firebase Admin and supporting services.
@@ -10,10 +10,11 @@ import express from 'express';
  * Firebase resources required by the moderation workflow.
  */
 export function initializeFirebaseAppResources() {
-  initializeApp();
+  const db = getFirestoreInstance();
+  ensureFirebaseApp();
 
   return {
-    db: getFirestore(),
+    db,
     auth: getAuth(),
     app: express(),
   };

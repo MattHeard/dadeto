@@ -64,6 +64,14 @@ const individualFileCopies = [
     source: join(srcCoreCloudDir, 'assign-moderation-job', 'core.js'),
     target: join(infraFunctionsDir, 'assign-moderation-job', 'core.js'),
   },
+  {
+    source: join(srcCloudDir, 'firebaseApp.js'),
+    target: join(infraFunctionsDir, 'firebaseApp.js'),
+  },
+  {
+    source: join(srcCloudDir, 'firestore.js'),
+    target: join(infraFunctionsDir, 'firestore.js'),
+  },
   ...corsConfigCopies,
 ];
 

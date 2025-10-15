@@ -1,9 +1,7 @@
-import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestoreInstance } from '../firestore.js';
 import * as functions from 'firebase-functions';
 
-initializeApp();
-const db = getFirestore();
+const db = getFirestoreInstance();
 
 /**
  * Update variant visibility when a new moderation rating is created.

@@ -1,8 +1,8 @@
-import { initializeApp } from 'firebase-admin/app';
-import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions';
+import { Storage } from '@google-cloud/storage';
+import { ensureFirebaseApp } from '../firebaseApp.js';
 
-initializeApp();
+ensureFirebaseApp();
 const storage = new Storage();
 const BUCKET = 'www.dendritestories.co.nz';
 const VISIBILITY_THRESHOLD = 0.5;
