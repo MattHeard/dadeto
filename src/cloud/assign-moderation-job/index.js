@@ -7,6 +7,7 @@ import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
 import {
   createAssignModerationApp,
+  createCorsOriginHandler,
   createSetupCors,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
@@ -17,25 +18,6 @@ import {
   initializeFirebaseAppResources,
   createRunVariantQuery,
 } from './gcf.js';
-
-/**
- * Create the CORS origin handler for the moderation Express app.
- * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
- * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
- * Express CORS origin handler.
- */
-export function createCorsOriginHandler(allowedOrigins) {
-  return function corsOriginHandler(origin, cb) {
-    const isOriginAllowed = !origin || allowedOrigins.includes(origin);
-
-    if (isOriginAllowed) {
-      cb(null, true);
-      return;
-    }
-
-    cb(new Error('CORS'));
-  };
-}
 
 const setupCors = createSetupCors(createCorsOriginHandler, cors);
 
