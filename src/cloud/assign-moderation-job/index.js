@@ -7,8 +7,8 @@ import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
 import {
   createAssignModerationApp,
+  createCreateCorsOriginHandler,
   createSetupCors,
-  isAllowedOrigin,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
   selectVariantDoc,
@@ -19,31 +19,19 @@ import {
   createRunVariantQuery,
 } from './gcf.js';
 
-/**
- * Configure CORS middleware for the moderation Express app.
- * @param {import('express').Express} appInstance Express application instance.
- * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
- * @returns {void}
- */
-function createCorsOriginHandler(allowedOrigins) {
-  return function corsOriginHandler(origin, cb) {
-    if (isAllowedOrigin(origin, allowedOrigins)) {
-      cb(null, true);
-      return;
+const createAssignModerationCorsOriginHandler = () =>
+  createCreateCorsOriginHandler((origin, allowedOrigins) => {
+    if (!origin) {
+      return true;
     }
 
-    cb(new Error('CORS'));
-  };
-}
+    return allowedOrigins.includes(origin);
+  });
+
+const createCorsOriginHandler = createAssignModerationCorsOriginHandler();
 
 const setupCors = createSetupCors(createCorsOriginHandler, cors);
 
-/**
- * Determine whether a request origin is allowed.
- * @param {string | undefined} origin Request origin header.
- * @param {string[]} allowedOrigins Whitelisted origins.
- * @returns {boolean} True when the origin should be allowed.
- */
 const { allowedOrigins } = corsConfig;
 
 const firebaseResources = createAssignModerationApp(
