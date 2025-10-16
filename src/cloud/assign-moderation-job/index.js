@@ -9,6 +9,7 @@ import {
   createAssignModerationApp,
   createCorsOriginHandler,
   createSetupCors,
+  createConfiguredSetupCors,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
   selectVariantDoc,
@@ -19,10 +20,12 @@ import {
   createRunVariantQuery,
 } from './gcf.js';
 
-const createConfiguredSetupCors = corsFunction =>
-  createSetupCors(createCorsOriginHandler, corsFunction);
+const configuredSetupCors = createConfiguredSetupCors(
+  createSetupCors,
+  createCorsOriginHandler
+);
 
-const setupCors = createConfiguredSetupCors(cors);
+const setupCors = configuredSetupCors(cors);
 
 const { allowedOrigins } = corsConfig;
 
