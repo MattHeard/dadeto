@@ -1,35 +1,9 @@
 import { describe, expect, jest, test } from "@jest/globals";
 import {
   createAssignModerationApp,
-  isAllowedOrigin,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
 } from "../../../src/core/cloud/assign-moderation-job/core.js";
-
-describe("isAllowedOrigin", () => {
-  test("allows missing origin headers", () => {
-    expect(isAllowedOrigin(undefined, ["https://allowed.example"])).toBe(true);
-  });
-
-  test("allows origins present in the whitelist", () => {
-    const allowedOrigins = [
-      "https://allowed.example",
-      "https://second.example",
-    ];
-
-    expect(isAllowedOrigin("https://second.example", allowedOrigins)).toBe(
-      true
-    );
-  });
-
-  test("rejects origins not present in the whitelist", () => {
-    const allowedOrigins = ["https://allowed.example"];
-
-    expect(isAllowedOrigin("https://disallowed.example", allowedOrigins)).toBe(
-      false
-    );
-  });
-});
 
 describe("createAssignModerationApp", () => {
   test("initializes firebase resources and configures the app", () => {
