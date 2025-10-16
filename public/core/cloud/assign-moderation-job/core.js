@@ -9,6 +9,25 @@ export function getIdTokenFromRequest(req) {
 }
 
 /**
+ * Create the CORS origin handler for the moderation Express app.
+ * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
+ * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
+ * Express CORS origin handler.
+ */
+export function createCorsOriginHandler(allowedOrigins) {
+  return function corsOriginHandler(origin, cb) {
+    const isOriginAllowed = !origin || allowedOrigins.includes(origin);
+
+    if (isOriginAllowed) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error('CORS'));
+  };
+}
+
+/**
  * Initialize Firebase resources, configure CORS, and expose dependencies.
  * @param {() => { db: import('firebase-admin/firestore').Firestore,
  *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} initializeFirebaseApp
