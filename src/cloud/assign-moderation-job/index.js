@@ -21,19 +21,19 @@ import { initializeFirebaseAppResources } from './gcf.js';
  * @returns {void}
  */
 function setupCors(appInstance, allowedOrigins) {
-  appInstance.use(
-    cors({
-      origin: (origin, cb) => {
-        if (isAllowedOrigin(origin, allowedOrigins)) {
-          cb(null, true);
-          return;
-        }
+  const corsOptions = {
+    origin: (origin, cb) => {
+      if (isAllowedOrigin(origin, allowedOrigins)) {
+        cb(null, true);
+        return;
+      }
 
-        cb(new Error('CORS'));
-      },
-      methods: ['POST'],
-    })
-  );
+      cb(new Error('CORS'));
+    },
+    methods: ['POST'],
+  };
+
+  appInstance.use(cors(corsOptions));
 }
 
 /**
