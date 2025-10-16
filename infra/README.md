@@ -42,6 +42,10 @@ that matches this value (default `"prod"`) manages those singleton resources,
 letting other environments create their own per-env assets without fighting over
 project-level state.
 
+## Cloud Function sources
+
+Run `npm run build:cloud` before applying Terraform so that the generated Cloud Function directories under `infra/cloud-functions/` and the supporting admin scripts in `infra/*.js` are present. The CI workflows run this command automatically before Terraform steps.
+
 ## Remote State
 
 Terraform stores its state in a Google Cloud Storage bucket. The backend is

@@ -1,9 +1,0 @@
-{
-  "name": "get-api-key-credit",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "index.js",
-  "dependencies": {
-    "@google-cloud/firestore": "^7.6.0"
-  }
-}
