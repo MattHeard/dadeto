@@ -65,6 +65,16 @@ const firestoreCopies = functionDirectories.map(name => ({
   target: join(infraFunctionsDir, name, 'firestore.js'),
 }));
 
+const runtimeDepsDir = join(srcCloudDir, 'runtime-deps');
+const sharedPackageFiles = ['package.json', 'package-lock.json'];
+
+const packageFileCopies = functionDirectories.flatMap(name =>
+  sharedPackageFiles.map(file => ({
+    source: join(runtimeDepsDir, file),
+    target: join(infraFunctionsDir, name, file),
+  })),
+);
+
 const individualFileCopies = [
   {
     source: join(browserDir, 'admin.js'),
@@ -77,6 +87,7 @@ const individualFileCopies = [
   ...firebaseAppCopies,
   ...firestoreCopies,
   ...corsConfigCopies,
+  ...packageFileCopies,
 ];
 
 const io = createAsyncFsAdapters();
