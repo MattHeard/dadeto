@@ -9,4 +9,6 @@ export {
   getIdTokenFromRequest,
   selectVariantDoc,
   createHandleAssignModerationJob,
+  buildVariantQueryPlan,
+  createVariantSnapshotFetcher,
 } from '../../core/cloud/assign-moderation-job/core.js';

@@ -4,13 +4,13 @@ import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';
 import { createAssignModerationWorkflow } from './workflow.js';
-import { createVariantSnapshotFetcher } from './variant-selection.js';
 import {
   createAssignModerationApp,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
   selectVariantDoc,
   createHandleAssignModerationJob,
+  createVariantSnapshotFetcher,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
