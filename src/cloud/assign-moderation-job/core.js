@@ -4,6 +4,7 @@ export {
   createCorsOptions,
   createSetupCors,
   createConfiguredSetupCors,
+  configuredSetupCors,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
   selectVariantDoc,

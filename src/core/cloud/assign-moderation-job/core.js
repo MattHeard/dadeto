@@ -109,6 +109,15 @@ export function createConfiguredSetupCors(
 }
 
 /**
+ * Default setupCors helper wired to the internal CORS origin handler.
+ * @type {(corsFn: unknown) => (appInstance: import('express').Express, allowedOrigins: string[]) => void}
+ */
+export const configuredSetupCors = createConfiguredSetupCors(
+  createSetupCors,
+  createCorsOriginHandler
+);
+
+/**
  * Register body parsing middleware for moderation requests.
  * @param {{ use: (middleware: unknown) => void }} appInstance Express application instance.
  * @param {{ urlencoded: (options: { extended: boolean }) => unknown }} expressModule Express module exposing urlencoded.
