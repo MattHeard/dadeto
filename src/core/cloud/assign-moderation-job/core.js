@@ -64,6 +64,28 @@ export function createCorsOptions(createCorsOriginHandlerFn, allowedOrigins) {
 }
 
 /**
+ * Create a function that wires CORS middleware onto an Express app.
+ * @param {(allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
+ createCorsOriginHandlerFn
+ * Factory that produces the origin callback for the CORS middleware.
+ * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }) => unknown}
+ corsFn
+ * CORS middleware factory function.
+ * @returns {(appInstance: import('express').Express, allowedOrigins: string[]) => void}
+ * Function that applies the configured CORS middleware to the Express app.
+ */
+export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
+  return function setupCors(appInstance, allowedOrigins) {
+    const corsOptions = createCorsOptions(
+      createCorsOriginHandlerFn,
+      allowedOrigins
+    );
+
+    appInstance.use(corsFn(corsOptions));
+  };
+}
+
+/**
  * Register body parsing middleware for moderation requests.
  * @param {{ use: (middleware: unknown) => void }} appInstance Express application instance.
  * @param {{ urlencoded: (options: { extended: boolean }) => unknown }} expressModule Express module exposing urlencoded.
