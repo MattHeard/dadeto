@@ -12,8 +12,12 @@ import {
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
   selectVariantDoc,
+  createHandleAssignModerationJob,
 } from './core.js';
-import { initializeFirebaseAppResources } from './gcf.js';
+import {
+  initializeFirebaseAppResources,
+  createRunVariantQuery,
+} from './gcf.js';
 
 /**
  * Configure CORS middleware for the moderation Express app.
@@ -51,32 +55,7 @@ const firebaseResources = createAssignModerationApp(
 
 const { db, auth, app } = firebaseResources;
 
-/**
- * Assign a random moderation job to the requesting user.
- * @param {import('express').Request} req HTTP request object.
- * @param {import('express').Response} res HTTP response object.
- * @returns {Promise<void>} Promise resolving when the response is sent.
- */
-async function handleAssignModerationJob(req, res) {
-  const { status, body } = await assignModerationWorkflow({ req });
-
-  res.status(status).send(body ?? '');
-}
-
-const runVariantQuery = ({ reputation, comparator, randomValue }) => {
-  let query = db.collectionGroup('variants');
-
-  if (reputation === 'zeroRated') {
-    query = query.where('moderatorReputationSum', '==', 0);
-  }
-
-  query = query
-    .orderBy('rand', 'asc')
-    .where('rand', comparator, randomValue)
-    .limit(1);
-
-  return query.get();
-};
+const runVariantQuery = createRunVariantQuery(db);
 
 const getVariantSnapshot = createVariantSnapshotFetcher({
   runQuery: runVariantQuery,
@@ -198,6 +177,10 @@ const assignModerationWorkflow = createAssignModerationWorkflow({
   now: () => FieldValue.serverTimestamp(),
   random: () => Math.random(),
 });
+
+const handleAssignModerationJob = createHandleAssignModerationJob(
+  assignModerationWorkflow
+);
 
 app.post('/', handleAssignModerationJob);
 
