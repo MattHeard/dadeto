@@ -3,7 +3,7 @@ import { getFirestoreInstance } from './firestore.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getAuth } from 'firebase-admin/auth';
 import { Storage } from '@google-cloud/storage';
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
 
 const db = getFirestoreInstance();

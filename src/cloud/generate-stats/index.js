@@ -3,7 +3,7 @@ import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { getAuth } from 'firebase-admin/auth';
 import { Storage } from '@google-cloud/storage';
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';
