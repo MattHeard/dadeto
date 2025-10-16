@@ -1,21 +1,15 @@
 /**
- * Create a factory that produces CORS origin handlers using the supplied predicate.
- * @param {(origin: string | undefined, allowedOrigins: string[]) => boolean} isAllowedOriginFn
- * Function that determines whether an origin should be permitted.
- * @returns {(allowedOrigins: string[]) => import('cors').CorsOptions['origin']} Factory that
- * returns a CORS origin handler for the provided origins list.
+ * Determine whether a request origin is allowed.
+ * @param {string | undefined} origin Request origin header.
+ * @param {string[]} allowedOrigins Whitelisted origins.
+ * @returns {boolean} True when the origin should be allowed.
  */
-export function createCreateCorsOriginHandler(isAllowedOriginFn) {
-  return function createCorsOriginHandler(allowedOrigins) {
-    return function corsOriginHandler(origin, cb) {
-      if (isAllowedOriginFn(origin, allowedOrigins)) {
-        cb(null, true);
-        return;
-      }
+export function isAllowedOrigin(origin, allowedOrigins) {
+  if (!origin) {
+    return true;
+  }
 
-      cb(new Error('CORS'));
-    };
-  };
+  return allowedOrigins.includes(origin);
 }
 
 /**
@@ -114,19 +108,4 @@ export function selectVariantDoc(snapshot) {
   }
 
   return { variantDoc };
-}
-
-/**
- * Build the HTTP handler that assigns a moderation job to the caller.
- * @param {(context: { req: import('express').Request }) => Promise<{ status: number, body?: unknown }>} assignModerationWorkflow
- * Workflow that coordinates guard execution and variant selection.
- * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>}
- * Express-compatible request handler.
- */
-export function createHandleAssignModerationJob(assignModerationWorkflow) {
-  return async function handleAssignModerationJob(req, res) {
-    const { status, body } = await assignModerationWorkflow({ req });
-
-    res.status(status).send(body ?? '');
-  };
 }
