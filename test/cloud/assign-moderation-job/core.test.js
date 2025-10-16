@@ -1,37 +1,49 @@
 import { describe, expect, jest, test } from "@jest/globals";
-import {
+import * as assignModerationCore from "../../../src/core/cloud/assign-moderation-job/core.js";
+
+const {
   createAssignModerationApp,
   createSetupCors,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
-} from "../../../src/core/cloud/assign-moderation-job/core.js";
+} = assignModerationCore;
 
 describe("createAssignModerationApp", () => {
   test("initializes firebase resources and configures the app", () => {
+    const use = jest.fn();
     const dependencies = {
       db: { name: "db" },
       auth: { name: "auth" },
-      app: { name: "app" },
+      app: { name: "app", use },
     };
     const initializeFirebaseApp = jest.fn(() => dependencies);
-    const configureCors = jest.fn();
+    const middleware = Symbol("cors-middleware");
+    const corsFn = jest.fn(() => middleware);
     const configureBodyParser = jest.fn();
     const expressModule = { name: "express" };
     const allowedOrigins = ["https://allowed.example"];
 
     const result = createAssignModerationApp(
       initializeFirebaseApp,
-      configureCors,
+      corsFn,
       allowedOrigins,
       configureBodyParser,
       expressModule
     );
 
     expect(initializeFirebaseApp).toHaveBeenCalledTimes(1);
-    expect(configureCors).toHaveBeenCalledWith(
-      dependencies.app,
-      allowedOrigins
-    );
+    expect(corsFn).toHaveBeenCalledTimes(1);
+    expect(use).toHaveBeenCalledWith(middleware);
+    const [corsOptions] = corsFn.mock.calls[0];
+    expect(corsOptions).toMatchObject({ methods: ["POST"] });
+    expect(typeof corsOptions.origin).toBe("function");
+    const originHandler = corsOptions.origin;
+    const allowCallback = jest.fn();
+    originHandler(allowedOrigins[0], allowCallback);
+    expect(allowCallback).toHaveBeenCalledWith(null, true);
+    const blockCallback = jest.fn();
+    originHandler("https://disallowed.example", blockCallback);
+    expect(blockCallback.mock.calls[0][0]).toEqual(new Error("CORS"));
     expect(configureBodyParser).toHaveBeenCalledWith(
       dependencies.app,
       expressModule

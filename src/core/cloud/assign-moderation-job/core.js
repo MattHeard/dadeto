@@ -32,8 +32,9 @@ export function createCorsOriginHandler(allowedOrigins) {
  * @param {() => { db: import('firebase-admin/firestore').Firestore,
  *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} initializeFirebaseApp
  * Function that initializes Firebase and returns dependencies.
- * @param {(appInstance: import('express').Express, allowedOrigins: string[]) => void} configureCors
- * Function that configures CORS for the Express app.
+ * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods:
+ *   string[] }) => unknown} corsFn
+ * CORS middleware factory function.
  * @param {string[]} allowedOrigins Origins permitted to access the endpoint.
  * @param {(appInstance: import('express').Express, expressModule: unknown) => void} configureBodyParser
  * Callback invoked with the Express app for registering body parsing middleware.
@@ -44,13 +45,14 @@ export function createCorsOriginHandler(allowedOrigins) {
  */
 export function createAssignModerationApp(
   initializeFirebaseApp,
-  configureCors,
+  corsFn,
   allowedOrigins,
   configureBodyParser,
   expressModule
 ) {
   const { db, auth, app } = initializeFirebaseApp();
-  configureCors(app, allowedOrigins);
+  const setupCors = configuredSetupCors(corsFn);
+  setupCors(app, allowedOrigins);
   configureBodyParser(app, expressModule);
 
   return { db, auth, app };
