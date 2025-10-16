@@ -2,7 +2,6 @@ export {
   createAssignModerationApp,
   createCorsOptions,
   createSetupCors,
-  isAllowedOrigin,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
   selectVariantDoc,

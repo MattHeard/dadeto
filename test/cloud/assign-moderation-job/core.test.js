@@ -1,35 +1,10 @@
 import { describe, expect, jest, test } from "@jest/globals";
 import {
   createAssignModerationApp,
-  isAllowedOrigin,
+  createSetupCors,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
 } from "../../../src/core/cloud/assign-moderation-job/core.js";
-
-describe("isAllowedOrigin", () => {
-  test("allows missing origin headers", () => {
-    expect(isAllowedOrigin(undefined, ["https://allowed.example"])).toBe(true);
-  });
-
-  test("allows origins present in the whitelist", () => {
-    const allowedOrigins = [
-      "https://allowed.example",
-      "https://second.example",
-    ];
-
-    expect(isAllowedOrigin("https://second.example", allowedOrigins)).toBe(
-      true
-    );
-  });
-
-  test("rejects origins not present in the whitelist", () => {
-    const allowedOrigins = ["https://allowed.example"];
-
-    expect(isAllowedOrigin("https://disallowed.example", allowedOrigins)).toBe(
-      false
-    );
-  });
-});
 
 describe("createAssignModerationApp", () => {
   test("initializes firebase resources and configures the app", () => {
@@ -81,6 +56,29 @@ describe("createAssignModerationApp", () => {
       allowedOrigins
     );
     expect(result).toStrictEqual(dependencies);
+  });
+});
+
+describe("createSetupCors", () => {
+  test("registers cors middleware with the generated origin handler", () => {
+    const originHandler = jest.fn();
+    const createCorsOriginHandlerFn = jest.fn(() => originHandler);
+    const middleware = Symbol("cors-middleware");
+    const corsFn = jest.fn(() => middleware);
+    const use = jest.fn();
+    const appInstance = { use };
+    const allowedOrigins = ["https://allowed.example"];
+
+    const setupCors = createSetupCors(createCorsOriginHandlerFn, corsFn);
+
+    setupCors(appInstance, allowedOrigins);
+
+    expect(createCorsOriginHandlerFn).toHaveBeenCalledWith(allowedOrigins);
+    expect(corsFn).toHaveBeenCalledWith({
+      origin: originHandler,
+      methods: ["POST"],
+    });
+    expect(use).toHaveBeenCalledWith(middleware);
   });
 });
 
