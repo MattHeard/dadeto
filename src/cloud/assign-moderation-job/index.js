@@ -20,16 +20,20 @@ import { initializeFirebaseAppResources } from './gcf.js';
  * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
  * @returns {void}
  */
+function createCorsOriginHandler(allowedOrigins) {
+  return function corsOriginHandler(origin, cb) {
+    if (isAllowedOrigin(origin, allowedOrigins)) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error('CORS'));
+  };
+}
+
 function setupCors(appInstance, allowedOrigins) {
   const corsOptions = {
-    origin: (origin, cb) => {
-      if (isAllowedOrigin(origin, allowedOrigins)) {
-        cb(null, true);
-        return;
-      }
-
-      cb(new Error('CORS'));
-    },
+    origin: createCorsOriginHandler(allowedOrigins),
     methods: ['POST'],
   };
 
