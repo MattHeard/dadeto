@@ -277,5 +277,5 @@ jobs:
         run: |
           set -euo pipefail
 
-          terraform refresh -lock-timeout=5m -var="environment=${ENVIRONMENT}"
-          terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}"
+          terraform refresh -lock-timeout=5m -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}"
+          terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}"
