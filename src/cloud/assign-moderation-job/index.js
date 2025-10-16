@@ -7,6 +7,7 @@ import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
 import {
   createAssignModerationApp,
+  createSetupCors,
   isAllowedOrigin,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
@@ -20,21 +21,18 @@ import { initializeFirebaseAppResources } from './gcf.js';
  * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
  * @returns {void}
  */
-function setupCors(appInstance, allowedOrigins) {
-  const corsOptions = {
-    origin: (origin, cb) => {
-      if (isAllowedOrigin(origin, allowedOrigins)) {
-        cb(null, true);
-        return;
-      }
+function createCorsOriginHandler(allowedOrigins) {
+  return function corsOriginHandler(origin, cb) {
+    if (isAllowedOrigin(origin, allowedOrigins)) {
+      cb(null, true);
+      return;
+    }
 
-      cb(new Error('CORS'));
-    },
-    methods: ['POST'],
+    cb(new Error('CORS'));
   };
-
-  appInstance.use(cors(corsOptions));
 }
+
+const setupCors = createSetupCors(createCorsOriginHandler, cors);
 
 /**
  * Determine whether a request origin is allowed.
