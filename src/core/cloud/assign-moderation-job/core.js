@@ -49,6 +49,21 @@ export function createAssignModerationApp(
 }
 
 /**
+ * Build the CORS middleware options for the moderation app.
+ * @param {(allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} createCorsOriginHandlerFn
+ * Factory that produces the origin callback for the CORS middleware.
+ * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
+ * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }}
+ * Configuration object for the CORS middleware.
+ */
+export function createCorsOptions(createCorsOriginHandlerFn, allowedOrigins) {
+  return {
+    origin: createCorsOriginHandlerFn(allowedOrigins),
+    methods: ['POST'],
+  };
+}
+
+/**
  * Register body parsing middleware for moderation requests.
  * @param {{ use: (middleware: unknown) => void }} appInstance Express application instance.
  * @param {{ urlencoded: (options: { extended: boolean }) => unknown }} expressModule Express module exposing urlencoded.

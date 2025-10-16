@@ -7,6 +7,7 @@ import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
 import {
   createAssignModerationApp,
+  createCorsOptions,
   isAllowedOrigin,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
@@ -28,13 +29,6 @@ function createCorsOriginHandler(allowedOrigins) {
     }
 
     cb(new Error('CORS'));
-  };
-}
-
-function createCorsOptions(createCorsOriginHandlerFn, allowedOrigins) {
-  return {
-    origin: createCorsOriginHandlerFn(allowedOrigins),
-    methods: ['POST'],
   };
 }
 
