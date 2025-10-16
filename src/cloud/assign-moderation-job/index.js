@@ -7,7 +7,6 @@ import { createAssignModerationWorkflow } from './workflow.js';
 import { createVariantSnapshotFetcher } from './variant-selection.js';
 import {
   createAssignModerationApp,
-  configuredSetupCors,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
   selectVariantDoc,
@@ -18,13 +17,11 @@ import {
   createRunVariantQuery,
 } from './gcf.js';
 
-const setupCors = configuredSetupCors(cors);
-
 const { allowedOrigins } = corsConfig;
 
 const firebaseResources = createAssignModerationApp(
   initializeFirebaseAppResources,
-  setupCors,
+  cors,
   allowedOrigins,
   configureUrlencodedBodyParser,
   express
