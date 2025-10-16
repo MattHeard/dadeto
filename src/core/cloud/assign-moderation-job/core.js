@@ -1,18 +1,4 @@
 /**
- * Determine whether a request origin is allowed.
- * @param {string | undefined} origin Request origin header.
- * @param {string[]} allowedOrigins Whitelisted origins.
- * @returns {boolean} True when the origin should be allowed.
- */
-export function isAllowedOrigin(origin, allowedOrigins) {
-  if (!origin) {
-    return true;
-  }
-
-  return allowedOrigins.includes(origin);
-}
-
-/**
  * Extract the ID token from a request body.
  * @param {import('express').Request} req HTTP request object.
  * @returns {string | undefined} The ID token if present.
