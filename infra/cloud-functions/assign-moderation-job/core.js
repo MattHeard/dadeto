@@ -72,3 +72,18 @@ export function selectVariantDoc(snapshot) {
 
   return { variantDoc };
 }
+
+/**
+ * Build the HTTP handler that assigns a moderation job to the caller.
+ * @param {(context: { req: import('express').Request }) => Promise<{ status: number, body?: unknown }>} assignModerationWorkflow
+ * Workflow that coordinates guard execution and variant selection.
+ * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>}
+ * Express-compatible request handler.
+ */
+export function createHandleAssignModerationJob(assignModerationWorkflow) {
+  return async function handleAssignModerationJob(req, res) {
+    const { status, body } = await assignModerationWorkflow({ req });
+
+    res.status(status).send(body ?? '');
+  };
+}
