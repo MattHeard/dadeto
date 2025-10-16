@@ -19,7 +19,10 @@ import {
   createRunVariantQuery,
 } from './gcf.js';
 
-const setupCors = createSetupCors(createCorsOriginHandler, cors);
+const createConfiguredSetupCors = corsFunction =>
+  createSetupCors(createCorsOriginHandler, corsFunction);
+
+const setupCors = createConfiguredSetupCors(cors);
 
 const { allowedOrigins } = corsConfig;
 
