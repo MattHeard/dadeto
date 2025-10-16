@@ -32,14 +32,18 @@ function createCorsOriginHandler(allowedOrigins) {
   };
 }
 
-function setupCors(appInstance, allowedOrigins) {
-  const corsOptions = createCorsOptions(
-    createCorsOriginHandler,
-    allowedOrigins
-  );
+function createSetupCors(createCorsOriginHandlerFn, corsFn) {
+  return function setupCors(appInstance, allowedOrigins) {
+    const corsOptions = createCorsOptions(
+      createCorsOriginHandlerFn,
+      allowedOrigins
+    );
 
-  appInstance.use(cors(corsOptions));
+    appInstance.use(corsFn(corsOptions));
+  };
 }
+
+const setupCors = createSetupCors(createCorsOriginHandler, cors);
 
 /**
  * Determine whether a request origin is allowed.
