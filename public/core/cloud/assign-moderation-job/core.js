@@ -1,15 +1,21 @@
 /**
- * Determine whether a request origin is allowed.
- * @param {string | undefined} origin Request origin header.
- * @param {string[]} allowedOrigins Whitelisted origins.
- * @returns {boolean} True when the origin should be allowed.
+ * Create a factory that produces CORS origin handlers using the supplied predicate.
+ * @param {(origin: string | undefined, allowedOrigins: string[]) => boolean} isAllowedOriginFn
+ * Function that determines whether an origin should be permitted.
+ * @returns {(allowedOrigins: string[]) => import('cors').CorsOptions['origin']} Factory that
+ * returns a CORS origin handler for the provided origins list.
  */
-export function isAllowedOrigin(origin, allowedOrigins) {
-  if (!origin) {
-    return true;
-  }
+export function createCreateCorsOriginHandler(isAllowedOriginFn) {
+  return function createCorsOriginHandler(allowedOrigins) {
+    return function corsOriginHandler(origin, cb) {
+      if (isAllowedOriginFn(origin, allowedOrigins)) {
+        cb(null, true);
+        return;
+      }
 
-  return allowedOrigins.includes(origin);
+      cb(new Error('CORS'));
+    };
+  };
 }
 
 /**
