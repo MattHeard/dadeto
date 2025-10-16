@@ -12,6 +12,7 @@ const config = {
       '<rootDir>/test/mocks/firebase-admin-firestore.js',
     '^firebase-admin/auth$': '<rootDir>/test/mocks/firebase-admin-auth.js',
     '^firebase-functions$': '<rootDir>/test/mocks/firebase-functions.js',
+    '^firebase-functions/v1$': '<rootDir>/test/mocks/firebase-functions.js',
     '^@google-cloud/storage$': '<rootDir>/test/mocks/google-cloud-storage.js',
   },
   // Use node environment by default, but allow override for browser testing

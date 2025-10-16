@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { FieldValue } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import { buildAltsHtml, escapeHtml } from './buildAltsHtml.js';
 import { buildHtml } from './buildHtml.js';
 import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';

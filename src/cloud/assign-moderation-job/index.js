@@ -1,5 +1,5 @@
 import { FieldValue } from 'firebase-admin/firestore';
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';
@@ -162,7 +162,4 @@ export const assignModerationJob = functions
   .region('europe-west1')
   .https.onRequest(app);
 
-export {
-  handleAssignModerationJob,
-  getIdTokenFromRequest,
-};
+export { handleAssignModerationJob, getIdTokenFromRequest };

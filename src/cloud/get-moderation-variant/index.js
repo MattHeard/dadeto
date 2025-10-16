@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';

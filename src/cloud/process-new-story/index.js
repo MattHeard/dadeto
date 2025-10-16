@@ -1,5 +1,5 @@
 import { FieldValue } from 'firebase-admin/firestore';
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import crypto from 'crypto';
 import { getFirestoreInstance } from './firestore.js';
 
