@@ -15,14 +15,16 @@ describe("createAssignModerationApp", () => {
     };
     const initializeFirebaseApp = jest.fn(() => dependencies);
     const configureCors = jest.fn();
-    const configureApp = jest.fn();
+    const configureBodyParser = jest.fn();
+    const expressModule = { name: "express" };
     const allowedOrigins = ["https://allowed.example"];
 
     const result = createAssignModerationApp(
       initializeFirebaseApp,
       configureCors,
       allowedOrigins,
-      configureApp
+      configureBodyParser,
+      expressModule
     );
 
     expect(initializeFirebaseApp).toHaveBeenCalledTimes(1);
@@ -30,30 +32,9 @@ describe("createAssignModerationApp", () => {
       dependencies.app,
       allowedOrigins
     );
-    expect(configureApp).toHaveBeenCalledWith(dependencies.app);
-    expect(result).toStrictEqual(dependencies);
-  });
-
-  test("uses the default configureApp when one is not provided", () => {
-    const dependencies = {
-      db: { name: "db" },
-      auth: { name: "auth" },
-      app: { name: "app" },
-    };
-    const initializeFirebaseApp = jest.fn(() => dependencies);
-    const configureCors = jest.fn();
-    const allowedOrigins = ["https://allowed.example"];
-
-    const result = createAssignModerationApp(
-      initializeFirebaseApp,
-      configureCors,
-      allowedOrigins
-    );
-
-    expect(initializeFirebaseApp).toHaveBeenCalledTimes(1);
-    expect(configureCors).toHaveBeenCalledWith(
+    expect(configureBodyParser).toHaveBeenCalledWith(
       dependencies.app,
-      allowedOrigins
+      expressModule
     );
     expect(result).toStrictEqual(dependencies);
   });

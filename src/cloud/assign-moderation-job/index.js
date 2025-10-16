@@ -26,7 +26,8 @@ const firebaseResources = createAssignModerationApp(
   initializeFirebaseAppResources,
   setupCors,
   allowedOrigins,
-  (appInstance) => configureUrlencodedBodyParser(appInstance, express)
+  configureUrlencodedBodyParser,
+  express
 );
 
 const { db, auth, app } = firebaseResources;
