@@ -91,6 +91,24 @@ export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
 }
 
 /**
+ * Preconfigure the setupCors helper with the default origin handler.
+ * @param {(createCorsOriginHandlerFn: typeof createCorsOriginHandler, corsFn: unknown) =>
+ *   (appInstance: import('express').Express, allowedOrigins: string[]) => void} createSetupCorsFn
+ * Function that builds the CORS setup callback.
+ * @param {typeof createCorsOriginHandler} createCorsOriginHandlerFn Function creating the origin handler.
+ * @returns {(corsFn: unknown) => (appInstance: import('express').Express, allowedOrigins: string[]) => void}
+ * Factory that accepts a CORS implementation and returns the configured setup function.
+ */
+export function createConfiguredSetupCors(
+  createSetupCorsFn,
+  createCorsOriginHandlerFn
+) {
+  return function configuredSetupCors(corsFn) {
+    return createSetupCorsFn(createCorsOriginHandlerFn, corsFn);
+  };
+}
+
+/**
  * Register body parsing middleware for moderation requests.
  * @param {{ use: (middleware: unknown) => void }} appInstance Express application instance.
  * @param {{ urlencoded: (options: { extended: boolean }) => unknown }} expressModule Express module exposing urlencoded.
