@@ -31,11 +31,18 @@ function createCorsOriginHandler(allowedOrigins) {
   };
 }
 
-function setupCors(appInstance, allowedOrigins) {
-  const corsOptions = {
-    origin: createCorsOriginHandler(allowedOrigins),
+function createCorsOptions(createCorsOriginHandlerFn, allowedOrigins) {
+  return {
+    origin: createCorsOriginHandlerFn(allowedOrigins),
     methods: ['POST'],
   };
+}
+
+function setupCors(appInstance, allowedOrigins) {
+  const corsOptions = createCorsOptions(
+    createCorsOriginHandler,
+    allowedOrigins
+  );
 
   appInstance.use(cors(corsOptions));
 }
