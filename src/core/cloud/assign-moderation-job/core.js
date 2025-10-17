@@ -4,25 +4,7 @@
  * @returns {string | undefined} The ID token if present.
  */
 export function getIdTokenFromRequest(req) {
-  return extractIdToken(getRequestBody(req));
-}
-
-/**
- * Select the body from a request object when available.
- * @param {import('express').Request} req HTTP request object.
- * @returns {Record<string, unknown>} The request body or an empty object.
- */
-function getRequestBody(req) {
-  return req?.body ?? {};
-}
-
-/**
- * Read the ID token from a request body object.
- * @param {Record<string, unknown>} requestBody Request body payload.
- * @returns {string | undefined} The ID token when present.
- */
-function extractIdToken(requestBody) {
-  return /** @type {string | undefined} */ (requestBody.id_token);
+  return /** @type {string | undefined} */ (req?.body?.id_token);
 }
 
 /**
@@ -31,32 +13,13 @@ function extractIdToken(requestBody) {
  * @returns {GuardResult} Guard result with an error when the method is not POST.
  */
 function ensurePostMethod({ req }) {
-  if (isPostMethod(req)) {
+  if (req?.method === 'POST') {
     return {};
   }
 
   return {
     error: { status: 405, body: 'POST only' },
   };
-}
-
-/**
- * Check whether the request method is POST.
- * @param {import('express').Request | undefined} req HTTP request object.
- * @returns {boolean} True when the request uses the POST method.
- */
-function isPostMethod(req) {
-  return req?.method === 'POST';
-}
-
-/**
- * Extract the ID token and ensure it is present.
- * @param {{ req: import('express').Request }} context Guard context containing the request.
- * @returns {GuardResult} Guard result containing the token or an error when missing.
- */
-function ensureIdTokenPresent({ req }) {
-  const idToken = getIdTokenFromRequest(req);
-  return getIdTokenGuardResult(idToken);
 }
 
 /**
@@ -127,7 +90,7 @@ export function createRunGuards(authInstance) {
 
   return createGuardChain([
     ensurePostMethod,
-    ensureIdTokenPresent,
+    ({ req }) => getIdTokenGuardResult(getIdTokenFromRequest(req)),
     ensureValidIdToken,
     ensureUserRecord,
   ]);
@@ -268,20 +231,12 @@ export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
  * @returns {(corsFn: unknown) => (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
  * Factory that accepts a CORS implementation and returns the configured setup function.
  */
-function createConfiguredSetupCors(createSetupCorsFn, createCorsOriginHandlerFn) {
-  return function configuredSetupCors(corsFn) {
-    return createSetupCorsFn(createCorsOriginHandlerFn, corsFn);
-  };
-}
-
 /**
  * Default setupCors helper wired to the internal CORS origin handler.
  * @type {(corsFn: unknown) => (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
  */
-const configuredSetupCors = createConfiguredSetupCors(
-  createSetupCors,
-  createCorsOriginHandler
-);
+const configuredSetupCors = corsFn =>
+  createSetupCors(createCorsOriginHandler, corsFn);
 
 /**
  * Register body parsing middleware for moderation requests.
@@ -422,17 +377,6 @@ export function createVariantSnapshotFetcher({ runQuery }) {
 }
 
 /**
- * Adapter that produces the fetchVariantSnapshot helper from a runQuery implementation.
- * @param {(descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} runQuery Query executor.
- * @returns {(randomValue: number) => Promise<unknown>} Function resolving with the first snapshot containing results.
- */
-function createFetchVariantSnapshot(runQuery) {
-  return createVariantSnapshotFetcher({
-    runQuery,
-  });
-}
-
-/**
  * Build a factory that produces Firestore-backed variant snapshot fetchers.
  * @param {(database: unknown) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} createRunVariantQueryFn
  * Adapter factory that accepts a database instance and returns a query executor.
@@ -442,7 +386,9 @@ function createFetchVariantSnapshot(runQuery) {
 export function createFetchVariantSnapshotFromDbFactory(createRunVariantQueryFn) {
   return function createFetchVariantSnapshotFromDb(database) {
     const runVariantQuery = createRunVariantQueryFn(database);
-    return createFetchVariantSnapshot(runVariantQuery);
+    return createVariantSnapshotFetcher({
+      runQuery: runVariantQuery,
+    });
   };
 }
 
