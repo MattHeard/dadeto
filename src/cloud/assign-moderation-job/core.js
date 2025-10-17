@@ -49,6 +49,7 @@ export {
   createModeratorRefFactory,
   createFirebaseResources,
   random,
+  createHandleAssignModerationJobWithFirebaseResources,
 };
 
 export function createAssignModerationWorkflowWithCoreDependencies({
@@ -86,4 +87,22 @@ export function createHandleAssignModerationJobWithDependencies({
     });
 
   return createHandleAssignModerationJob(assignModerationWorkflow);
+}
+
+export function createHandleAssignModerationJobWithFirebaseResources({
+  runGuards,
+  fetchVariantSnapshot,
+  db,
+  now,
+  random,
+}) {
+  const createModeratorRef = createModeratorRefFactory(db);
+
+  return createHandleAssignModerationJobWithDependencies({
+    runGuards,
+    fetchVariantSnapshot,
+    createModeratorRef,
+    now,
+    random,
+  });
 }

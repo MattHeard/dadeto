@@ -6,10 +6,9 @@ import {
   getIdTokenFromRequest,
   createFetchVariantSnapshot,
   createRunGuards,
-  createModeratorRefFactory,
   createFirebaseResources,
   random,
-  createHandleAssignModerationJobWithDependencies,
+  createHandleAssignModerationJobWithFirebaseResources,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -32,12 +31,10 @@ const fetchVariantSnapshot = createFetchVariantSnapshot(runVariantQuery);
 
 const runGuards = createRunGuards(auth);
 
-const createModeratorRef = createModeratorRefFactory(db);
-
-const handleAssignModerationJob = createHandleAssignModerationJobWithDependencies({
+const handleAssignModerationJob = createHandleAssignModerationJobWithFirebaseResources({
   runGuards,
   fetchVariantSnapshot,
-  createModeratorRef,
+  db,
   now,
   random,
 });
