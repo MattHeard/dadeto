@@ -87,6 +87,10 @@ const individualFileCopies = [
     target: join(infraDir, 'admin.js'),
   },
   {
+    source: join(browserDir, 'admin-core.js'),
+    target: join(infraDir, 'admin-core.js'),
+  },
+  {
     source: assignModerationCoreSource,
     target: join(
       infraDir,
