@@ -4,13 +4,12 @@ import cors from 'cors';
 import corsConfig from './cors-config.js';
 import {
   getIdTokenFromRequest,
-  createHandleAssignModerationJob,
   createFetchVariantSnapshot,
   createRunGuards,
   createModeratorRefFactory,
   createFirebaseResources,
   random,
-  createAssignModerationWorkflowWithCoreDependencies,
+  createHandleAssignModerationJobWithDependencies,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -35,17 +34,13 @@ const runGuards = createRunGuards(auth);
 
 const createModeratorRef = createModeratorRefFactory(db);
 
-const assignModerationWorkflow = createAssignModerationWorkflowWithCoreDependencies({
+const handleAssignModerationJob = createHandleAssignModerationJobWithDependencies({
   runGuards,
   fetchVariantSnapshot,
   createModeratorRef,
   now,
   random,
 });
-
-const handleAssignModerationJob = createHandleAssignModerationJob(
-  assignModerationWorkflow
-);
 
 app.post('/', handleAssignModerationJob);
 
