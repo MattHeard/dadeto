@@ -8,6 +8,14 @@ export const DEFAULT_ADMIN_ENDPOINTS = {
 };
 
 /**
+ * Provide a fresh copy of the default admin endpoints to avoid shared mutation.
+ * @returns {{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}}
+ */
+export function getDefaultAdminEndpointsCopy() {
+  return { ...DEFAULT_ADMIN_ENDPOINTS };
+}
+
+/**
  * Normalize static config into admin endpoints with production fallbacks.
  * @param {Record<string, string>} config
  * @returns {{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}}
