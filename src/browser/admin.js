@@ -1,8 +1,8 @@
 import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import {
-  DEFAULT_ADMIN_ENDPOINTS,
   mapConfigToAdminEndpoints,
+  getDefaultAdminEndpointsCopy,
 } from './admin-core.js';
 import {
   getAuth,
@@ -20,7 +20,7 @@ async function getAdminEndpoints() {
   if (!adminEndpointsPromise) {
     adminEndpointsPromise = loadStaticConfig()
       .then(mapConfigToAdminEndpoints)
-      .catch(() => ({ ...DEFAULT_ADMIN_ENDPOINTS }));
+      .catch(getDefaultAdminEndpointsCopy);
   }
   return adminEndpointsPromise;
 }
