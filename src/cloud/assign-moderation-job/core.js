@@ -68,3 +68,22 @@ export function createAssignModerationWorkflowWithCoreDependencies({
     random,
   });
 }
+
+export function createHandleAssignModerationJobWithDependencies({
+  runGuards,
+  fetchVariantSnapshot,
+  createModeratorRef,
+  now,
+  random,
+}) {
+  const assignModerationWorkflow =
+    createAssignModerationWorkflowWithCoreDependencies({
+      runGuards,
+      fetchVariantSnapshot,
+      createModeratorRef,
+      now,
+      random,
+    });
+
+  return createHandleAssignModerationJob(assignModerationWorkflow);
+}
