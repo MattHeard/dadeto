@@ -13,7 +13,7 @@ export function getIdTokenFromRequest(req) {
  * @param {{ req: import('express').Request }} context Guard context containing the request.
  * @returns {GuardResult} Guard result with an error when the method is not POST.
  */
-export function ensurePostMethod({ req }) {
+function ensurePostMethod({ req }) {
   if (req?.method === 'POST') {
     return {};
   }
@@ -28,7 +28,7 @@ export function ensurePostMethod({ req }) {
  * @param {{ req: import('express').Request }} context Guard context containing the request.
  * @returns {GuardResult} Guard result containing the token or an error when missing.
  */
-export function ensureIdTokenPresent({ req }) {
+function ensureIdTokenPresent({ req }) {
   const idToken = getIdTokenFromRequest(req);
   if (idToken) {
     return { context: { idToken } };
@@ -42,7 +42,7 @@ export function ensureIdTokenPresent({ req }) {
  * @param {{ verifyIdToken: (token: string) => Promise<unknown> }} authInstance Firebase auth instance.
  * @returns {(context: { idToken: string }) => Promise<GuardResult>} Guard ensuring the token is valid.
  */
-export function createEnsureValidIdToken(authInstance) {
+function createEnsureValidIdToken(authInstance) {
   return async function ensureValidIdToken({ idToken }) {
     try {
       const decoded = await authInstance.verifyIdToken(idToken);
@@ -63,7 +63,7 @@ export function createEnsureValidIdToken(authInstance) {
  * @param {{ getUser: (uid: string) => Promise<import('firebase-admin/auth').UserRecord> }} authInstance Firebase auth instance.
  * @returns {(context: { decoded: { uid: string } }) => Promise<GuardResult>} Guard ensuring the user record can be fetched.
  */
-export function createEnsureUserRecord(authInstance) {
+function createEnsureUserRecord(authInstance) {
   return async function ensureUserRecord({ decoded }) {
     try {
       const userRecord = await authInstance.getUser(decoded.uid);
@@ -112,7 +112,7 @@ export function random() {
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
  * Express CORS origin handler.
  */
-export function createCorsOriginHandler(allowedOrigins) {
+function createCorsOriginHandler(allowedOrigins) {
   return function corsOriginHandler(origin, cb) {
     const isOriginAllowed = !origin || allowedOrigins.includes(origin);
 
@@ -192,7 +192,7 @@ export function createFirebaseResources(
  * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }}
  * Configuration object for the CORS middleware.
  */
-export function createCorsOptions(createCorsOriginHandlerFn, corsConfig) {
+function createCorsOptions(createCorsOriginHandlerFn, corsConfig) {
   const { allowedOrigins } = corsConfig;
 
   return {
@@ -233,10 +233,7 @@ export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
  * @returns {(corsFn: unknown) => (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
  * Factory that accepts a CORS implementation and returns the configured setup function.
  */
-export function createConfiguredSetupCors(
-  createSetupCorsFn,
-  createCorsOriginHandlerFn
-) {
+function createConfiguredSetupCors(createSetupCorsFn, createCorsOriginHandlerFn) {
   return function configuredSetupCors(corsFn) {
     return createSetupCorsFn(createCorsOriginHandlerFn, corsFn);
   };
@@ -246,7 +243,7 @@ export function createConfiguredSetupCors(
  * Default setupCors helper wired to the internal CORS origin handler.
  * @type {(corsFn: unknown) => (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
  */
-export const configuredSetupCors = createConfiguredSetupCors(
+const configuredSetupCors = createConfiguredSetupCors(
   createSetupCors,
   createCorsOriginHandler
 );
@@ -394,7 +391,7 @@ export function createVariantSnapshotFetcher({ runQuery }) {
  * @param {(descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} runQuery Query executor.
  * @returns {(randomValue: number) => Promise<unknown>} Function resolving with the first snapshot containing results.
  */
-export function createFetchVariantSnapshot(runQuery) {
+function createFetchVariantSnapshot(runQuery) {
   return createVariantSnapshotFetcher({
     runQuery,
   });
@@ -449,7 +446,7 @@ export function createFetchVariantSnapshotFromDbFactory(createRunVariantQueryFn)
  * @returns {(initialContext: GuardContext) => Promise<{ error?: GuardError, context?: GuardContext }>}
  * Guard chain executor that resolves with either the accumulated context or the failure details.
  */
-export function createGuardChain(guards) {
+function createGuardChain(guards) {
   return async function runChain(initialContext) {
     let context = initialContext;
     for (const guard of guards) {
