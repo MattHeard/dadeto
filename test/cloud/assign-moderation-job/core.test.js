@@ -2,13 +2,13 @@ import { describe, expect, jest, test } from "@jest/globals";
 import * as assignModerationCore from "../../../src/core/cloud/assign-moderation-job/core.js";
 
 const {
-  createAssignModerationApp,
+  createFirebaseResources,
   createSetupCors,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
 } = assignModerationCore;
 
-describe("createAssignModerationApp", () => {
+describe("createFirebaseResources", () => {
   test("initializes firebase resources and configures the app", () => {
     const use = jest.fn();
     const dependencies = {
@@ -26,7 +26,7 @@ describe("createAssignModerationApp", () => {
     };
     const allowedOrigins = ["https://allowed.example"];
     const corsConfig = { allowedOrigins, credentials: true };
-    const result = createAssignModerationApp(
+    const result = createFirebaseResources(
       initializeFirebaseApp,
       corsFn,
       corsConfig,
