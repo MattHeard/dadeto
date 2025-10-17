@@ -31,7 +31,7 @@ function extractIdToken(requestBody) {
  * @returns {GuardResult} Guard result with an error when the method is not POST.
  */
 function ensurePostMethod({ req }) {
-  if (req?.method === 'POST') {
+  if (isPostMethod(req)) {
     return {};
   }
 
@@ -41,12 +41,30 @@ function ensurePostMethod({ req }) {
 }
 
 /**
+ * Check whether the request method is POST.
+ * @param {import('express').Request | undefined} req HTTP request object.
+ * @returns {boolean} True when the request uses the POST method.
+ */
+function isPostMethod(req) {
+  return req?.method === 'POST';
+}
+
+/**
  * Extract the ID token and ensure it is present.
  * @param {{ req: import('express').Request }} context Guard context containing the request.
  * @returns {GuardResult} Guard result containing the token or an error when missing.
  */
 function ensureIdTokenPresent({ req }) {
   const idToken = getIdTokenFromRequest(req);
+  return getIdTokenGuardResult(idToken);
+}
+
+/**
+ * Build the guard result for an ID token presence check.
+ * @param {string | undefined} idToken ID token extracted from the request.
+ * @returns {GuardResult} Guard result mirroring the ID token validation outcome.
+ */
+function getIdTokenGuardResult(idToken) {
   if (idToken) {
     return { context: { idToken } };
   }
