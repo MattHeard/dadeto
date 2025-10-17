@@ -82,7 +82,13 @@ const individualFileCopies = [
   },
   {
     source: join(srcCoreCloudDir, 'assign-moderation-job', 'core.js'),
-    target: join(infraFunctionsDir, 'assign-moderation-job', 'core.js'),
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'assign-moderation-job',
+      'core.js'
+    ),
   },
   ...firebaseAppCopies,
   ...firestoreCopies,
