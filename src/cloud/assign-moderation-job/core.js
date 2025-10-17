@@ -11,7 +11,7 @@ import {
   ensureIdTokenPresent,
   createEnsureValidIdToken,
   selectVariantDoc,
-  createHandleAssignModerationJob,
+  createHandleAssignModerationJob as createHandleAssignModerationJobCore,
   buildVariantQueryPlan,
   createVariantSnapshotFetcher,
   createFetchVariantSnapshot,
@@ -39,7 +39,7 @@ export {
   ensureIdTokenPresent,
   createEnsureValidIdToken,
   selectVariantDoc,
-  createHandleAssignModerationJob,
+  createHandleAssignModerationJobCore,
   buildVariantQueryPlan,
   createVariantSnapshotFetcher,
   createFetchVariantSnapshot,
@@ -54,6 +54,27 @@ export {
   createHandleAssignModerationJobWithFirebaseResources,
   createHandleAssignModerationJobFromAuth,
 };
+
+export function createHandleAssignModerationJob(
+  createRunVariantQuery,
+  auth,
+  db,
+  now,
+  random
+) {
+  const createFetchVariantSnapshotFromDb =
+    createFetchVariantSnapshotFromDbFactory(createRunVariantQuery);
+
+  const fetchVariantSnapshot = createFetchVariantSnapshotFromDb(db);
+
+  return createHandleAssignModerationJobFromAuth(
+    auth,
+    fetchVariantSnapshot,
+    db,
+    now,
+    random
+  );
+}
 
 export function createAssignModerationWorkflowWithCoreDependencies({
   runGuards,
@@ -89,7 +110,7 @@ export function createHandleAssignModerationJobWithDependencies({
       random,
     });
 
-  return createHandleAssignModerationJob(assignModerationWorkflow);
+  return createHandleAssignModerationJobCore(assignModerationWorkflow);
 }
 
 export function createHandleAssignModerationJobWithFirebaseResources({
