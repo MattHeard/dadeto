@@ -125,7 +125,7 @@ export function createCorsOriginHandler(allowedOrigins) {
  * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods:
  *   string[] }) => unknown} corsFn
  * CORS middleware factory function.
- * @param {string[]} allowedOrigins Origins permitted to access the endpoint.
+ * @param {{ allowedOrigins?: string[] }} corsConfig CORS configuration for the endpoint.
  * @param {(appInstance: import('express').Express, expressModule: unknown) => void} configureBodyParser
  * Callback invoked with the Express app for registering body parsing middleware.
  * @param {unknown} expressModule
@@ -136,13 +136,13 @@ export function createCorsOriginHandler(allowedOrigins) {
 export function createAssignModerationApp(
   initializeFirebaseApp,
   corsFn,
-  allowedOrigins,
+  corsConfig,
   configureBodyParser,
   expressModule
 ) {
   const { db, auth, app } = initializeFirebaseApp();
   const setupCors = configuredSetupCors(corsFn);
-  setupCors(app, allowedOrigins);
+  setupCors(app, corsConfig);
   configureBodyParser(app, expressModule);
 
   return { db, auth, app };
@@ -152,12 +152,15 @@ export function createAssignModerationApp(
  * Build the CORS middleware options for the moderation app.
  * @param {(allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} createCorsOriginHandlerFn
  * Factory that produces the origin callback for the CORS middleware.
- * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
+ * @param {{ allowedOrigins?: string[], methods?: string[] }} corsConfig CORS configuration for the endpoint.
  * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }}
  * Configuration object for the CORS middleware.
  */
-export function createCorsOptions(createCorsOriginHandlerFn, allowedOrigins) {
+export function createCorsOptions(createCorsOriginHandlerFn, corsConfig) {
+  const { allowedOrigins } = corsConfig;
+
   return {
+    ...corsConfig,
     origin: createCorsOriginHandlerFn(allowedOrigins),
     methods: ['POST'],
   };
@@ -171,14 +174,14 @@ export function createCorsOptions(createCorsOriginHandlerFn, allowedOrigins) {
  * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }) => unknown}
  corsFn
  * CORS middleware factory function.
- * @returns {(appInstance: import('express').Express, allowedOrigins: string[]) => void}
+ * @returns {(appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
  * Function that applies the configured CORS middleware to the Express app.
  */
 export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
-  return function setupCors(appInstance, allowedOrigins) {
+  return function setupCors(appInstance, corsConfig) {
     const corsOptions = createCorsOptions(
       createCorsOriginHandlerFn,
-      allowedOrigins
+      corsConfig
     );
 
     appInstance.use(corsFn(corsOptions));
@@ -188,10 +191,10 @@ export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
 /**
  * Preconfigure the setupCors helper with the default origin handler.
  * @param {(createCorsOriginHandlerFn: typeof createCorsOriginHandler, corsFn: unknown) =>
- *   (appInstance: import('express').Express, allowedOrigins: string[]) => void} createSetupCorsFn
+ *   (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void} createSetupCorsFn
  * Function that builds the CORS setup callback.
  * @param {typeof createCorsOriginHandler} createCorsOriginHandlerFn Function creating the origin handler.
- * @returns {(corsFn: unknown) => (appInstance: import('express').Express, allowedOrigins: string[]) => void}
+ * @returns {(corsFn: unknown) => (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
  * Factory that accepts a CORS implementation and returns the configured setup function.
  */
 export function createConfiguredSetupCors(
@@ -205,7 +208,7 @@ export function createConfiguredSetupCors(
 
 /**
  * Default setupCors helper wired to the internal CORS origin handler.
- * @type {(corsFn: unknown) => (appInstance: import('express').Express, allowedOrigins: string[]) => void}
+ * @type {(corsFn: unknown) => (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
  */
 export const configuredSetupCors = createConfiguredSetupCors(
   createSetupCors,
