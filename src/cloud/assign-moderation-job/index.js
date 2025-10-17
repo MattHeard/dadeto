@@ -10,7 +10,7 @@ import {
   getIdTokenFromRequest,
   selectVariantDoc,
   createHandleAssignModerationJob,
-  createVariantSnapshotFetcher,
+  createGetVariantSnapshot,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -31,9 +31,7 @@ const { db, auth, app } = firebaseResources;
 
 const runVariantQuery = createRunVariantQuery(db);
 
-const getVariantSnapshot = createVariantSnapshotFetcher({
-  runQuery: runVariantQuery,
-});
+const getVariantSnapshot = createGetVariantSnapshot(runVariantQuery);
 
 /**
  * @typedef {object} GuardError

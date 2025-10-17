@@ -11,4 +11,5 @@ export {
   createHandleAssignModerationJob,
   buildVariantQueryPlan,
   createVariantSnapshotFetcher,
+  createGetVariantSnapshot,
 } from '../../core/cloud/assign-moderation-job/core.js';
