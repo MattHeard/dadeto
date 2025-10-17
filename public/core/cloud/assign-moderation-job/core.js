@@ -9,6 +9,35 @@ export function getIdTokenFromRequest(req) {
 }
 
 /**
+ * Ensure the request method is POST.
+ * @param {{ req: import('express').Request }} context Guard context containing the request.
+ * @returns {GuardResult} Guard result with an error when the method is not POST.
+ */
+export function ensurePostMethod({ req }) {
+  if (req?.method === 'POST') {
+    return {};
+  }
+
+  return {
+    error: { status: 405, body: 'POST only' },
+  };
+}
+
+/**
+ * Extract the ID token and ensure it is present.
+ * @param {{ req: import('express').Request }} context Guard context containing the request.
+ * @returns {GuardResult} Guard result containing the token or an error when missing.
+ */
+export function ensureIdTokenPresent({ req }) {
+  const idToken = getIdTokenFromRequest(req);
+  if (idToken) {
+    return { context: { idToken } };
+  }
+
+  return { error: { status: 400, body: 'Missing id_token' } };
+}
+
+/**
  * Create the CORS origin handler for the moderation Express app.
  * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
