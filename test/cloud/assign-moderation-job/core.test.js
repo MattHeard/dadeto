@@ -3,8 +3,10 @@ import * as assignModerationCore from "../../../src/core/cloud/assign-moderation
 
 const {
   createFirebaseResources,
+  createRunGuards,
   createSetupCors,
   configureUrlencodedBodyParser,
+  getBodyFromRequest,
   getIdTokenFromRequest,
 } = assignModerationCore;
 
@@ -96,6 +98,20 @@ describe("configureUrlencodedBodyParser", () => {
   });
 });
 
+describe("getBodyFromRequest", () => {
+  test("returns the request body when present", () => {
+    const req = { body: { id_token: "token-value" } };
+
+    expect(getBodyFromRequest(req)).toStrictEqual({ id_token: "token-value" });
+  });
+
+  test("returns undefined when the request body is missing", () => {
+    const req = {};
+
+    expect(getBodyFromRequest(req)).toBeUndefined();
+  });
+});
+
 describe("getIdTokenFromRequest", () => {
   test("returns the id token when present on the request body", () => {
     const req = { body: { id_token: "token-value" } };
@@ -107,5 +123,21 @@ describe("getIdTokenFromRequest", () => {
     const req = {};
 
     expect(getIdTokenFromRequest(req)).toBeUndefined();
+  });
+});
+
+describe("createRunGuards", () => {
+  test("returns a 405 error when the request is not a POST", async () => {
+    const verifyIdToken = jest.fn();
+    const getUser = jest.fn();
+    const runGuards = createRunGuards({ verifyIdToken, getUser });
+
+    const result = await runGuards({ req: { method: "GET" } });
+
+    expect(result).toStrictEqual({
+      error: { status: 405, body: "POST only" },
+    });
+    expect(verifyIdToken).not.toHaveBeenCalled();
+    expect(getUser).not.toHaveBeenCalled();
   });
 });
