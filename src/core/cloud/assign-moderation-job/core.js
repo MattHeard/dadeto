@@ -59,6 +59,27 @@ export function createEnsureValidIdToken(authInstance) {
 }
 
 /**
+ * Build a guard that ensures the authenticated user record exists.
+ * @param {{ getUser: (uid: string) => Promise<import('firebase-admin/auth').UserRecord> }} authInstance Firebase auth instance.
+ * @returns {(context: { decoded: { uid: string } }) => Promise<GuardResult>} Guard ensuring the user record can be fetched.
+ */
+export function createEnsureUserRecord(authInstance) {
+  return async function ensureUserRecord({ decoded }) {
+    try {
+      const userRecord = await authInstance.getUser(decoded.uid);
+      return { context: { userRecord } };
+    } catch (err) {
+      return {
+        error: {
+          status: 401,
+          body: err?.message ?? 'Invalid or expired token',
+        },
+      };
+    }
+  };
+}
+
+/**
  * Create the CORS origin handler for the moderation Express app.
  * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}

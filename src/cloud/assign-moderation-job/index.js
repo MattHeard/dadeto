@@ -15,6 +15,7 @@ import {
   ensurePostMethod,
   ensureIdTokenPresent,
   createEnsureValidIdToken,
+  createEnsureUserRecord,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -39,19 +40,7 @@ const getVariantSnapshot = createGetVariantSnapshot(runVariantQuery);
 
 const ensureValidIdToken = createEnsureValidIdToken(auth);
 
-const ensureUserRecord = async ({ decoded }) => {
-  try {
-    const userRecord = await auth.getUser(decoded.uid);
-    return { context: { userRecord } };
-  } catch (err) {
-    return {
-      error: {
-        status: 401,
-        body: err.message || 'Invalid or expired token',
-      },
-    };
-  }
-};
+const ensureUserRecord = createEnsureUserRecord(auth);
 
 const runGuards = createGuardChain([
   ensurePostMethod,
