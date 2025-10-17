@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import {
   buildVariantQueryPlan,
   createVariantSnapshotFetcher,
-} from '../../src/cloud/assign-moderation-job/core.js';
+} from '../../src/core/cloud/assign-moderation-job/core.js';
 
 describe('buildVariantQueryPlan', () => {
   it('returns descriptors in the expected order', () => {
