@@ -53,6 +53,7 @@ export {
   random,
   createHandleAssignModerationJobWithFirebaseResources,
   createHandleAssignModerationJobFromAuth,
+  registerAssignModerationJobRoute,
 };
 
 export function createHandleAssignModerationJob(
@@ -74,6 +75,27 @@ export function createHandleAssignModerationJob(
     now,
     random
   );
+}
+
+export function registerAssignModerationJobRoute(
+  firebaseResources,
+  createRunVariantQuery,
+  now,
+  random
+) {
+  const { db, auth, app } = firebaseResources;
+
+  const handleAssignModerationJob = createHandleAssignModerationJob(
+    createRunVariantQuery,
+    auth,
+    db,
+    now,
+    random
+  );
+
+  app.post('/', handleAssignModerationJob);
+
+  return handleAssignModerationJob;
 }
 
 export function createAssignModerationWorkflowWithCoreDependencies({
