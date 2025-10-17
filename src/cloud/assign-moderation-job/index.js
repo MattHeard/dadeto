@@ -23,7 +23,7 @@ const firebaseResources = createFirebaseResources(
 
 const { app } = firebaseResources;
 
-const handleAssignModerationJob = registerAssignModerationJobRoute(
+registerAssignModerationJobRoute(
   firebaseResources,
   createRunVariantQuery,
   now,
