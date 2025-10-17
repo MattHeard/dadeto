@@ -13,6 +13,7 @@ import {
   createGetVariantSnapshot,
   buildAssignment,
   createRunGuards,
+  createModeratorRefFactory,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -37,12 +38,14 @@ const getVariantSnapshot = createGetVariantSnapshot(runVariantQuery);
 
 const runGuards = createRunGuards(auth);
 
+const createModeratorRef = createModeratorRefFactory(db);
+
 const assignModerationWorkflow = createAssignModerationWorkflow({
   runGuards,
   fetchVariantSnapshot: getVariantSnapshot,
   selectVariantDoc,
   buildAssignment,
-  createModeratorRef: uid => db.collection('moderators').doc(uid),
+  createModeratorRef,
   now: () => FieldValue.serverTimestamp(),
   random: () => Math.random(),
 });

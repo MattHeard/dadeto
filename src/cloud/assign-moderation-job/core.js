@@ -19,4 +19,5 @@ export {
   createRunGuards,
   createEnsureUserRecord,
   buildAssignment,
+  createModeratorRefFactory,
 } from '../../core/cloud/assign-moderation-job/core.js';
