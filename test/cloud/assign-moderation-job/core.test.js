@@ -19,16 +19,17 @@ describe("createAssignModerationApp", () => {
     const initializeFirebaseApp = jest.fn(() => dependencies);
     const middleware = Symbol("cors-middleware");
     const corsFn = jest.fn(() => middleware);
-    const configureBodyParser = jest.fn();
-    const expressModule = { name: "express" };
+    const urlencodedMiddleware = Symbol("urlencoded-middleware");
+    const expressModule = {
+      name: "express",
+      urlencoded: jest.fn(() => urlencodedMiddleware),
+    };
     const allowedOrigins = ["https://allowed.example"];
     const corsConfig = { allowedOrigins, credentials: true };
-
     const result = createAssignModerationApp(
       initializeFirebaseApp,
       corsFn,
       corsConfig,
-      configureBodyParser,
       expressModule
     );
 
@@ -49,10 +50,8 @@ describe("createAssignModerationApp", () => {
     const blockCallback = jest.fn();
     originHandler("https://disallowed.example", blockCallback);
     expect(blockCallback.mock.calls[0][0]).toEqual(new Error("CORS"));
-    expect(configureBodyParser).toHaveBeenCalledWith(
-      dependencies.app,
-      expressModule
-    );
+    expect(expressModule.urlencoded).toHaveBeenCalledWith({ extended: false });
+    expect(use).toHaveBeenCalledWith(urlencodedMiddleware);
     expect(result).toStrictEqual(dependencies);
   });
 });
