@@ -7,6 +7,8 @@ export {
   configuredSetupCors,
   configureUrlencodedBodyParser,
   getIdTokenFromRequest,
+  ensurePostMethod,
+  ensureIdTokenPresent,
   selectVariantDoc,
   createHandleAssignModerationJob,
   buildVariantQueryPlan,
