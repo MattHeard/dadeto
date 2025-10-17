@@ -219,6 +219,19 @@ export function selectVariantDoc(snapshot) {
 }
 
 /**
+ * Build a moderation assignment referencing the selected variant.
+ * @param {unknown} variantRef Firestore document reference for the variant.
+ * @param {unknown} createdAt Timestamp representing when the assignment was created.
+ * @returns {{ variant: unknown, createdAt: unknown }} Assignment payload persisted to Firestore.
+ */
+export function buildAssignment(variantRef, createdAt) {
+  return {
+    variant: variantRef,
+    createdAt,
+  };
+}
+
+/**
  * @typedef {object} VariantQueryDescriptor
  * @property {"zeroRated"|"any"} reputation Reputation filter applied to the query.
  * @property {">="|"<"} comparator Comparison operator applied to the random value.
