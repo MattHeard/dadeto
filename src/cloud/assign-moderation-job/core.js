@@ -20,4 +20,5 @@ export {
   createEnsureUserRecord,
   buildAssignment,
   createModeratorRefFactory,
+  createFirebaseResources,
 } from '../../core/cloud/assign-moderation-job/core.js';
