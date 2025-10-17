@@ -4,8 +4,26 @@
  * @returns {string | undefined} The ID token if present.
  */
 export function getIdTokenFromRequest(req) {
-  const { id_token: idToken } = req?.body ?? {};
-  return idToken;
+  const requestBody = getRequestBody(req);
+  return extractIdToken(requestBody);
+}
+
+/**
+ * Select the body from a request object when available.
+ * @param {import('express').Request} req HTTP request object.
+ * @returns {Record<string, unknown>} The request body or an empty object.
+ */
+function getRequestBody(req) {
+  return req?.body ?? {};
+}
+
+/**
+ * Read the ID token from a request body object.
+ * @param {Record<string, unknown>} requestBody Request body payload.
+ * @returns {string | undefined} The ID token when present.
+ */
+function extractIdToken(requestBody) {
+  return /** @type {string | undefined} */ (requestBody.id_token);
 }
 
 /**
