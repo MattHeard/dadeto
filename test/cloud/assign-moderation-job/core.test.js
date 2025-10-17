@@ -22,11 +22,12 @@ describe("createAssignModerationApp", () => {
     const configureBodyParser = jest.fn();
     const expressModule = { name: "express" };
     const allowedOrigins = ["https://allowed.example"];
+    const corsConfig = { allowedOrigins, credentials: true };
 
     const result = createAssignModerationApp(
       initializeFirebaseApp,
       corsFn,
-      allowedOrigins,
+      corsConfig,
       configureBodyParser,
       expressModule
     );
@@ -35,7 +36,11 @@ describe("createAssignModerationApp", () => {
     expect(corsFn).toHaveBeenCalledTimes(1);
     expect(use).toHaveBeenCalledWith(middleware);
     const [corsOptions] = corsFn.mock.calls[0];
-    expect(corsOptions).toMatchObject({ methods: ["POST"] });
+    expect(corsOptions).toMatchObject({
+      methods: ["POST"],
+      allowedOrigins,
+      credentials: true,
+    });
     expect(typeof corsOptions.origin).toBe("function");
     const originHandler = corsOptions.origin;
     const allowCallback = jest.fn();
@@ -60,16 +65,19 @@ describe("createSetupCors", () => {
     const corsFn = jest.fn(() => middleware);
     const use = jest.fn();
     const appInstance = { use };
-    const allowedOrigins = ["https://allowed.example"];
+    const corsConfig = { allowedOrigins: ["https://allowed.example"] };
 
     const setupCors = createSetupCors(createCorsOriginHandlerFn, corsFn);
 
-    setupCors(appInstance, allowedOrigins);
+    setupCors(appInstance, corsConfig);
 
-    expect(createCorsOriginHandlerFn).toHaveBeenCalledWith(allowedOrigins);
+    expect(createCorsOriginHandlerFn).toHaveBeenCalledWith(
+      corsConfig.allowedOrigins
+    );
     expect(corsFn).toHaveBeenCalledWith({
       origin: originHandler,
       methods: ["POST"],
+      ...corsConfig,
     });
     expect(use).toHaveBeenCalledWith(middleware);
   });

@@ -20,12 +20,10 @@ import {
   createRunVariantQuery,
 } from './gcf.js';
 
-const { allowedOrigins } = corsConfig;
-
 const firebaseResources = createAssignModerationApp(
   initializeFirebaseAppResources,
   cors,
-  allowedOrigins,
+  corsConfig,
   configureUrlencodedBodyParser,
   express
 );
