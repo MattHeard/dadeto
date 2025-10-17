@@ -50,6 +50,7 @@ export {
   createFirebaseResources,
   random,
   createHandleAssignModerationJobWithFirebaseResources,
+  createHandleAssignModerationJobFromAuth,
 };
 
 export function createAssignModerationWorkflowWithCoreDependencies({
@@ -102,6 +103,24 @@ export function createHandleAssignModerationJobWithFirebaseResources({
     runGuards,
     fetchVariantSnapshot,
     createModeratorRef,
+    now,
+    random,
+  });
+}
+
+export function createHandleAssignModerationJobFromAuth(
+  auth,
+  fetchVariantSnapshot,
+  db,
+  now,
+  random
+) {
+  const runGuards = createRunGuards(auth);
+
+  return createHandleAssignModerationJobWithFirebaseResources({
+    runGuards,
+    fetchVariantSnapshot,
+    db,
     now,
     random,
   });

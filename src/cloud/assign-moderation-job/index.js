@@ -5,10 +5,9 @@ import corsConfig from './cors-config.js';
 import {
   getIdTokenFromRequest,
   createFetchVariantSnapshot,
-  createRunGuards,
   createFirebaseResources,
   random,
-  createHandleAssignModerationJobWithFirebaseResources,
+  createHandleAssignModerationJobFromAuth,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -29,15 +28,13 @@ const runVariantQuery = createRunVariantQuery(db);
 
 const fetchVariantSnapshot = createFetchVariantSnapshot(runVariantQuery);
 
-const runGuards = createRunGuards(auth);
-
-const handleAssignModerationJob = createHandleAssignModerationJobWithFirebaseResources({
-  runGuards,
+const handleAssignModerationJob = createHandleAssignModerationJobFromAuth(
+  auth,
   fetchVariantSnapshot,
   db,
   now,
-  random,
-});
+  random
+);
 
 app.post('/', handleAssignModerationJob);
 
