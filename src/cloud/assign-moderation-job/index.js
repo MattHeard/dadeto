@@ -5,8 +5,6 @@ import cors from 'cors';
 import corsConfig from './cors-config.js';
 import { createAssignModerationWorkflow } from './workflow.js';
 import {
-  createAssignModerationApp,
-  configureUrlencodedBodyParser,
   getIdTokenFromRequest,
   selectVariantDoc,
   createHandleAssignModerationJob,
@@ -14,17 +12,17 @@ import {
   buildAssignment,
   createRunGuards,
   createModeratorRefFactory,
+  createFirebaseResources,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
   createRunVariantQuery,
 } from './gcf.js';
 
-const firebaseResources = createAssignModerationApp(
+const firebaseResources = createFirebaseResources(
   initializeFirebaseAppResources,
   cors,
   corsConfig,
-  configureUrlencodedBodyParser,
   express
 );
 
