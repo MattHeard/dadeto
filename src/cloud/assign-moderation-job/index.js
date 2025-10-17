@@ -6,7 +6,7 @@ import {
   getIdTokenFromRequest,
   createFirebaseResources,
   random,
-  createHandleAssignModerationJob,
+  registerAssignModerationJobRoute,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -29,27 +29,6 @@ const handleAssignModerationJob = registerAssignModerationJobRoute(
   now,
   random
 );
-
-function registerAssignModerationJobRoute(
-  firebaseResources,
-  createRunVariantQuery,
-  now,
-  random
-) {
-  const { db, auth, app } = firebaseResources;
-
-  const handleAssignModerationJob = createHandleAssignModerationJob(
-    createRunVariantQuery,
-    auth,
-    db,
-    now,
-    random
-  );
-
-  app.post('/', handleAssignModerationJob);
-
-  return handleAssignModerationJob;
-}
 
 export const assignModerationJob = functions
   .region('europe-west1')
