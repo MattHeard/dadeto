@@ -12,6 +12,8 @@ import {
   createHandleAssignModerationJob,
   createGetVariantSnapshot,
   createGuardChain,
+  ensurePostMethod,
+  ensureIdTokenPresent,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -33,25 +35,6 @@ const { db, auth, app } = firebaseResources;
 const runVariantQuery = createRunVariantQuery(db);
 
 const getVariantSnapshot = createGetVariantSnapshot(runVariantQuery);
-
-const ensurePostMethod = ({ req }) => {
-  if (req.method === 'POST') {
-    return {};
-  }
-
-  return {
-    error: { status: 405, body: 'POST only' },
-  };
-};
-
-const ensureIdTokenPresent = ({ req }) => {
-  const idToken = getIdTokenFromRequest(req);
-  if (idToken) {
-    return { context: { idToken } };
-  }
-
-  return { error: { status: 400, body: 'Missing id_token' } };
-};
 
 const ensureValidIdToken = async ({ idToken }) => {
   try {
