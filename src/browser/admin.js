@@ -1,20 +1,15 @@
 import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import {
+  DEFAULT_ADMIN_ENDPOINTS,
+  mapConfigToAdminEndpoints,
+} from './admin-core.js';
+import {
   getAuth,
   onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
-const DEFAULT_ENDPOINTS = {
-  triggerRenderContentsUrl:
-    'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents',
-  markVariantDirtyUrl:
-    'https://europe-west1-irien-465710.cloudfunctions.net/prod-mark-variant-dirty',
-  generateStatsUrl:
-    'https://europe-west1-irien-465710.cloudfunctions.net/prod-generate-stats',
-};
-
 let adminEndpointsPromise;
 
 /**
@@ -24,16 +19,8 @@ let adminEndpointsPromise;
 async function getAdminEndpoints() {
   if (!adminEndpointsPromise) {
     adminEndpointsPromise = loadStaticConfig()
-      .then(config => ({
-        triggerRenderContentsUrl:
-          config?.triggerRenderContentsUrl ??
-          DEFAULT_ENDPOINTS.triggerRenderContentsUrl,
-        markVariantDirtyUrl:
-          config?.markVariantDirtyUrl ?? DEFAULT_ENDPOINTS.markVariantDirtyUrl,
-        generateStatsUrl:
-          config?.generateStatsUrl ?? DEFAULT_ENDPOINTS.generateStatsUrl,
-      }))
-      .catch(() => ({ ...DEFAULT_ENDPOINTS }));
+      .then(mapConfigToAdminEndpoints)
+      .catch(() => ({ ...DEFAULT_ADMIN_ENDPOINTS }));
   }
   return adminEndpointsPromise;
 }
