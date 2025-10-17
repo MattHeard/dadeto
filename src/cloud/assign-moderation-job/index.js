@@ -16,6 +16,7 @@ import {
   ensureIdTokenPresent,
   createEnsureValidIdToken,
   createEnsureUserRecord,
+  buildAssignment,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -53,10 +54,7 @@ const assignModerationWorkflow = createAssignModerationWorkflow({
   runGuards,
   fetchVariantSnapshot: getVariantSnapshot,
   selectVariantDoc,
-  buildAssignment: (variantRef, createdAt) => ({
-    variant: variantRef,
-    createdAt,
-  }),
+  buildAssignment,
   createModeratorRef: uid => db.collection('moderators').doc(uid),
   now: () => FieldValue.serverTimestamp(),
   random: () => Math.random(),
