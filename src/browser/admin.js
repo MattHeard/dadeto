@@ -13,14 +13,22 @@ const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 let adminEndpointsPromise;
 
 /**
+ * Build the admin endpoints promise using the static configuration fallback.
+ * @returns {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>}
+ */
+function createAdminEndpointsPromise() {
+  return loadStaticConfig()
+    .then(mapConfigToAdminEndpoints)
+    .catch(getDefaultAdminEndpointsCopy);
+}
+
+/**
  * Resolve admin endpoints from the static config with production fallbacks.
  * @returns {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>}
  */
 async function getAdminEndpoints() {
   if (!adminEndpointsPromise) {
-    adminEndpointsPromise = loadStaticConfig()
-      .then(mapConfigToAdminEndpoints)
-      .catch(getDefaultAdminEndpointsCopy);
+    adminEndpointsPromise = createAdminEndpointsPromise();
   }
   return adminEndpointsPromise;
 }
