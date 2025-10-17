@@ -9,6 +9,7 @@ export {
   getIdTokenFromRequest,
   ensurePostMethod,
   ensureIdTokenPresent,
+  createEnsureValidIdToken,
   selectVariantDoc,
   createHandleAssignModerationJob,
   buildVariantQueryPlan,
