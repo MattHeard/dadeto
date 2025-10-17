@@ -75,13 +75,19 @@ const packageFileCopies = functionDirectories.flatMap(name =>
   })),
 );
 
+const assignModerationCoreSource = join(
+  srcCoreCloudDir,
+  'assign-moderation-job',
+  'core.js',
+);
+
 const individualFileCopies = [
   {
     source: join(browserDir, 'admin.js'),
     target: join(infraDir, 'admin.js'),
   },
   {
-    source: join(srcCoreCloudDir, 'assign-moderation-job', 'core.js'),
+    source: assignModerationCoreSource,
     target: join(
       infraDir,
       'core',
@@ -89,6 +95,10 @@ const individualFileCopies = [
       'assign-moderation-job',
       'core.js'
     ),
+  },
+  {
+    source: assignModerationCoreSource,
+    target: join(infraFunctionsDir, 'assign-moderation-job', 'core.js'),
   },
   ...firebaseAppCopies,
   ...firestoreCopies,
