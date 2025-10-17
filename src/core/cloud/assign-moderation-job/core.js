@@ -251,6 +251,17 @@ export function buildAssignment(variantRef, createdAt) {
 }
 
 /**
+ * Create a helper that resolves moderator document references.
+ * @param {{ collection: (name: string) => { doc: (id: string) => unknown } }} database Firestore database instance.
+ * @returns {(uid: string) => unknown} Function that builds references to moderator documents.
+ */
+export function createModeratorRefFactory(database) {
+  return function createModeratorRef(uid) {
+    return database.collection('moderators').doc(uid);
+  };
+}
+
+/**
  * @typedef {object} VariantQueryDescriptor
  * @property {"zeroRated"|"any"} reputation Reputation filter applied to the query.
  * @property {">="|"<"} comparator Comparison operator applied to the random value.
