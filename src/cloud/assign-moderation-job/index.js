@@ -39,16 +39,7 @@ const runVariantQuery = createRunVariantQuery(db);
 
 const getVariantSnapshot = createGetVariantSnapshot(runVariantQuery);
 
-const ensureValidIdToken = createEnsureValidIdToken(auth);
-
-const ensureUserRecord = createEnsureUserRecord(auth);
-
-const runGuards = createGuardChain([
-  ensurePostMethod,
-  ensureIdTokenPresent,
-  ensureValidIdToken,
-  ensureUserRecord,
-]);
+const runGuards = createRunGuards(auth);
 
 const assignModerationWorkflow = createAssignModerationWorkflow({
   runGuards,
@@ -71,3 +62,15 @@ export const assignModerationJob = functions
   .https.onRequest(app);
 
 export { handleAssignModerationJob, getIdTokenFromRequest };
+
+function createRunGuards(auth) {
+  const ensureValidIdToken = createEnsureValidIdToken(auth);
+  const ensureUserRecord = createEnsureUserRecord(auth);
+
+  return createGuardChain([
+    ensurePostMethod,
+    ensureIdTokenPresent,
+    ensureValidIdToken,
+    ensureUserRecord,
+  ]);
+}
