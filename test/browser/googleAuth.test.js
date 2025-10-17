@@ -38,7 +38,7 @@ describe('googleAuth', () => {
     };
     global.atob = str => Buffer.from(str, 'base64').toString('binary');
     ({ initGoogleSignIn, signOut, isAdmin } = await import(
-      '../../src/cloud/googleAuth.js'
+      '../../src/browser/googleAuth.js'
     ));
   });
 
