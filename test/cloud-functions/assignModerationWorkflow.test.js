@@ -10,7 +10,6 @@ describe('createAssignModerationWorkflow', () => {
     });
     const fetchVariantSnapshot = jest.fn();
     const selectVariantDoc = jest.fn();
-    const buildAssignment = jest.fn();
     const createModeratorRef = jest.fn();
     const now = jest.fn();
     const random = jest.fn();
@@ -19,7 +18,6 @@ describe('createAssignModerationWorkflow', () => {
       runGuards,
       fetchVariantSnapshot,
       selectVariantDoc,
-      buildAssignment,
       createModeratorRef,
       now,
       random,
@@ -30,7 +28,6 @@ describe('createAssignModerationWorkflow', () => {
     expect(response).toEqual({ status: 401, body: 'Nope' });
     expect(fetchVariantSnapshot).not.toHaveBeenCalled();
     expect(selectVariantDoc).not.toHaveBeenCalled();
-    expect(buildAssignment).not.toHaveBeenCalled();
     expect(createModeratorRef).not.toHaveBeenCalled();
     expect(now).not.toHaveBeenCalled();
     expect(random).not.toHaveBeenCalled();
@@ -44,7 +41,6 @@ describe('createAssignModerationWorkflow', () => {
     const selectVariantDoc = jest
       .fn()
       .mockReturnValue({ errorMessage: 'Variant fetch failed' });
-    const buildAssignment = jest.fn();
     const createModeratorRef = jest.fn();
     const now = jest.fn();
     const random = jest.fn().mockReturnValue(0.42);
@@ -53,7 +49,6 @@ describe('createAssignModerationWorkflow', () => {
       runGuards,
       fetchVariantSnapshot,
       selectVariantDoc,
-      buildAssignment,
       createModeratorRef,
       now,
       random,
@@ -65,7 +60,6 @@ describe('createAssignModerationWorkflow', () => {
     expect(fetchVariantSnapshot).toHaveBeenCalledWith(0.42);
     expect(selectVariantDoc).toHaveBeenCalledWith({});
     expect(createModeratorRef).not.toHaveBeenCalled();
-    expect(buildAssignment).not.toHaveBeenCalled();
     expect(now).not.toHaveBeenCalled();
     expect(response).toEqual({ status: 500, body: 'Variant fetch failed' });
   });
@@ -74,7 +68,6 @@ describe('createAssignModerationWorkflow', () => {
     const runGuards = jest.fn().mockResolvedValue({ context: {} });
     const fetchVariantSnapshot = jest.fn();
     const selectVariantDoc = jest.fn();
-    const buildAssignment = jest.fn();
     const createModeratorRef = jest.fn();
     const now = jest.fn();
     const random = jest.fn();
@@ -83,7 +76,6 @@ describe('createAssignModerationWorkflow', () => {
       runGuards,
       fetchVariantSnapshot,
       selectVariantDoc,
-      buildAssignment,
       createModeratorRef,
       now,
       random,
@@ -95,7 +87,6 @@ describe('createAssignModerationWorkflow', () => {
     expect(fetchVariantSnapshot).not.toHaveBeenCalled();
     expect(selectVariantDoc).not.toHaveBeenCalled();
     expect(createModeratorRef).not.toHaveBeenCalled();
-    expect(buildAssignment).not.toHaveBeenCalled();
     expect(now).not.toHaveBeenCalled();
     expect(response).toEqual({
       status: 500,
@@ -112,8 +103,6 @@ describe('createAssignModerationWorkflow', () => {
       .mockResolvedValue({ snapshot: true });
     const variantDoc = { ref: { path: 'variants/123' } };
     const selectVariantDoc = jest.fn().mockReturnValue({ variantDoc });
-    const assignment = { variant: 'variants/123', createdAt: 'timestamp' };
-    const buildAssignment = jest.fn().mockReturnValue(assignment);
     const set = jest.fn().mockResolvedValue(undefined);
     const createModeratorRef = jest.fn().mockReturnValue({ set });
     const now = jest.fn().mockReturnValue('timestamp');
@@ -123,7 +112,6 @@ describe('createAssignModerationWorkflow', () => {
       runGuards,
       fetchVariantSnapshot,
       selectVariantDoc,
-      buildAssignment,
       createModeratorRef,
       now,
       random,
@@ -136,8 +124,10 @@ describe('createAssignModerationWorkflow', () => {
     expect(selectVariantDoc).toHaveBeenCalledWith({ snapshot: true });
     expect(createModeratorRef).toHaveBeenCalledWith('moderator-2');
     expect(now).toHaveBeenCalledTimes(1);
-    expect(buildAssignment).toHaveBeenCalledWith(variantDoc.ref, 'timestamp');
-    expect(set).toHaveBeenCalledWith(assignment);
+    expect(set).toHaveBeenCalledWith({
+      variant: variantDoc.ref,
+      createdAt: 'timestamp',
+    });
     expect(response).toEqual({ status: 201, body: '' });
   });
 });
