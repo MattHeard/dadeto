@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';
 import {
+  createAssignModerationJob,
   createFirebaseResources,
   random,
   registerAssignModerationJobRoute,
@@ -29,7 +30,5 @@ const handleAssignModerationJob = registerAssignModerationJobRoute(
   random
 );
 
-export const assignModerationJob = functions
-  .region('europe-west1')
-  .https.onRequest(app);
+export const assignModerationJob = createAssignModerationJob(functions, app);
 

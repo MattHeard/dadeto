@@ -95,6 +95,10 @@ export function registerAssignModerationJobRoute(
   return handleAssignModerationJob;
 }
 
+export function createAssignModerationJob(functionsModule, appInstance) {
+  return functionsModule.region('europe-west1').https.onRequest(appInstance);
+}
+
 export function createAssignModerationWorkflowWithCoreDependencies({
   runGuards,
   fetchVariantSnapshot,
