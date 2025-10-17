@@ -12,6 +12,7 @@ import {
   createRunGuards,
   createModeratorRefFactory,
   createFirebaseResources,
+  random,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -43,7 +44,7 @@ const assignModerationWorkflow = createAssignModerationWorkflow({
   buildAssignment,
   createModeratorRef,
   now,
-  random: () => Math.random(),
+  random,
 });
 
 const handleAssignModerationJob = createHandleAssignModerationJob(

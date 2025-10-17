@@ -21,4 +21,5 @@ export {
   buildAssignment,
   createModeratorRefFactory,
   createFirebaseResources,
+  random,
 } from '../../core/cloud/assign-moderation-job/core.js';

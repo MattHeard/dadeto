@@ -99,6 +99,14 @@ export function createRunGuards(authInstance) {
 }
 
 /**
+ * Generate a random number between 0 (inclusive) and 1 (exclusive).
+ * @returns {number} Pseudo-random number.
+ */
+export function random() {
+  return Math.random();
+}
+
+/**
  * Create the CORS origin handler for the moderation Express app.
  * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
