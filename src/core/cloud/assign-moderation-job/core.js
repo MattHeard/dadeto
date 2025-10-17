@@ -237,6 +237,17 @@ export function createVariantSnapshotFetcher({ runQuery }) {
 }
 
 /**
+ * Adapter that produces the getVariantSnapshot helper from a runQuery implementation.
+ * @param {(descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} runQuery Query executor.
+ * @returns {(randomValue: number) => Promise<unknown>} Function resolving with the first snapshot containing results.
+ */
+export function createGetVariantSnapshot(runQuery) {
+  return createVariantSnapshotFetcher({
+    runQuery,
+  });
+}
+
+/**
  * Build the HTTP handler that assigns a moderation job to the caller.
  * @param {(context: { req: import('express').Request }) => Promise<{ status: number, body?: unknown }>} assignModerationWorkflow
  * Workflow that coordinates guard execution and variant selection.
