@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';
 import {
-  getIdTokenFromRequest,
   createFirebaseResources,
   random,
   registerAssignModerationJobRoute,
@@ -34,4 +33,3 @@ export const assignModerationJob = functions
   .region('europe-west1')
   .https.onRequest(app);
 
-export { handleAssignModerationJob, getIdTokenFromRequest };

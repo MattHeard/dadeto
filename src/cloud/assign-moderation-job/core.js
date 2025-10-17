@@ -51,9 +51,6 @@ export {
   createModeratorRefFactory,
   createFirebaseResources,
   random,
-  createHandleAssignModerationJobWithFirebaseResources,
-  createHandleAssignModerationJobFromAuth,
-  registerAssignModerationJobRoute,
 };
 
 export function createHandleAssignModerationJob(
