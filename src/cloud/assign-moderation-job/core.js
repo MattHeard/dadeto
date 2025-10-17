@@ -16,6 +16,7 @@ export {
   createVariantSnapshotFetcher,
   createGetVariantSnapshot,
   createGuardChain,
+  createRunGuards,
   createEnsureUserRecord,
   buildAssignment,
 } from '../../core/cloud/assign-moderation-job/core.js';
