@@ -4,8 +4,7 @@
  * @returns {string | undefined} The ID token if present.
  */
 export function getIdTokenFromRequest(req) {
-  const requestBody = getRequestBody(req);
-  return extractIdToken(requestBody);
+  return extractIdToken(getRequestBody(req));
 }
 
 /**
