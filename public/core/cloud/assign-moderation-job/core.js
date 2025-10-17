@@ -38,6 +38,27 @@ export function ensureIdTokenPresent({ req }) {
 }
 
 /**
+ * Build a guard that verifies Firebase ID tokens.
+ * @param {{ verifyIdToken: (token: string) => Promise<unknown> }} authInstance Firebase auth instance.
+ * @returns {(context: { idToken: string }) => Promise<GuardResult>} Guard ensuring the token is valid.
+ */
+export function createEnsureValidIdToken(authInstance) {
+  return async function ensureValidIdToken({ idToken }) {
+    try {
+      const decoded = await authInstance.verifyIdToken(idToken);
+      return { context: { decoded } };
+    } catch (err) {
+      return {
+        error: {
+          status: 401,
+          body: err?.message ?? 'Invalid or expired token',
+        },
+      };
+    }
+  };
+}
+
+/**
  * Create the CORS origin handler for the moderation Express app.
  * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
