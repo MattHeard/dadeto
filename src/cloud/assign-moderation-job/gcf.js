@@ -1,4 +1,5 @@
 import express from 'express';
+import { FieldValue } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
@@ -42,3 +43,5 @@ export function createRunVariantQuery(db) {
     return query.get();
   };
 }
+
+export const now = () => FieldValue.serverTimestamp();

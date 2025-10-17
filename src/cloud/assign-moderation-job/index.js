@@ -1,4 +1,3 @@
-import { FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
@@ -17,6 +16,7 @@ import {
 import {
   initializeFirebaseAppResources,
   createRunVariantQuery,
+  now,
 } from './gcf.js';
 
 const firebaseResources = createFirebaseResources(
@@ -42,7 +42,7 @@ const assignModerationWorkflow = createAssignModerationWorkflow({
   selectVariantDoc,
   buildAssignment,
   createModeratorRef,
-  now: () => FieldValue.serverTimestamp(),
+  now,
   random: () => Math.random(),
 });
 
