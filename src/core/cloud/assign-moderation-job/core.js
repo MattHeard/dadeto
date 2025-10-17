@@ -248,6 +248,56 @@ export function createGetVariantSnapshot(runQuery) {
 }
 
 /**
+ * @typedef {object} GuardError
+ * @property {number} status HTTP status code to return.
+ * @property {string} body Body payload describing the error.
+ */
+
+/**
+ * @typedef {object} GuardSuccess
+ * @property {object} [context] Additional context to merge into the chain state.
+ */
+
+/**
+ * @typedef {{ error: GuardError } | GuardSuccess | void} GuardResult
+ */
+
+/**
+ * @typedef {object} GuardContext
+ * @property {import('express').Request} req Incoming HTTP request.
+ * @property {string} [idToken] Extracted Firebase ID token.
+ * @property {import('firebase-admin/auth').DecodedIdToken} [decoded] Verified Firebase token payload.
+ * @property {import('firebase-admin/auth').UserRecord} [userRecord] Authenticated moderator record.
+ */
+
+/**
+ * @callback GuardFunction
+ * @param {GuardContext} context Current guard context.
+ * @returns {Promise<GuardResult> | GuardResult} Guard evaluation outcome.
+ */
+
+/**
+ * Compose a sequence of guard functions that short-circuit on failure.
+ * @param {GuardFunction[]} guards Guard functions to execute in order.
+ * @returns {(initialContext: GuardContext) => Promise<{ error?: GuardError, context?: GuardContext }>}
+ * Guard chain executor that resolves with either the accumulated context or the failure details.
+ */
+export function createGuardChain(guards) {
+  return async function runChain(initialContext) {
+    let context = initialContext;
+    for (const guard of guards) {
+      const result = await guard(context);
+      if (result?.error) {
+        return { error: result.error };
+      }
+      context = { ...context, ...(result?.context ?? {}) };
+    }
+
+    return { context };
+  };
+}
+
+/**
  * Build the HTTP handler that assigns a moderation job to the caller.
  * @param {(context: { req: import('express').Request }) => Promise<{ status: number, body?: unknown }>} assignModerationWorkflow
  * Workflow that coordinates guard execution and variant selection.
