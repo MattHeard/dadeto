@@ -132,8 +132,6 @@ function createCorsOriginHandler(allowedOrigins) {
  *   string[] }) => unknown} corsFn
  * CORS middleware factory function.
  * @param {{ allowedOrigins?: string[] }} corsConfig CORS configuration for the endpoint.
- * @param {(appInstance: import('express').Express, expressModule: unknown) => void} configureBodyParser
- * Callback invoked with the Express app for registering body parsing middleware.
  * @param {unknown} expressModule
  * Express module exposing the urlencoded middleware factory.
  * @returns {{ db: import('firebase-admin/firestore').Firestore,
@@ -143,13 +141,12 @@ export function createAssignModerationApp(
   initializeFirebaseApp,
   corsFn,
   corsConfig,
-  configureBodyParser,
   expressModule
 ) {
   const { db, auth, app } = initializeFirebaseApp();
   const setupCors = configuredSetupCors(corsFn);
   setupCors(app, corsConfig);
-  configureBodyParser(app, expressModule);
+  configureUrlencodedBodyParser(app, expressModule);
 
   return { db, auth, app };
 }
@@ -177,7 +174,6 @@ export function createFirebaseResources(
     initializeFirebaseApp,
     corsFn,
     corsConfig,
-    configureUrlencodedBodyParser,
     expressModule
   );
 }
