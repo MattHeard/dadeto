@@ -1,3 +1,30 @@
+import {
+  createAssignModerationApp,
+  createCorsOriginHandler,
+  createCorsOptions,
+  createSetupCors,
+  createConfiguredSetupCors,
+  configuredSetupCors,
+  configureUrlencodedBodyParser,
+  getIdTokenFromRequest,
+  ensurePostMethod,
+  ensureIdTokenPresent,
+  createEnsureValidIdToken,
+  selectVariantDoc,
+  createHandleAssignModerationJob,
+  buildVariantQueryPlan,
+  createVariantSnapshotFetcher,
+  createFetchVariantSnapshot,
+  createGuardChain,
+  createRunGuards,
+  createEnsureUserRecord,
+  buildAssignment,
+  createModeratorRefFactory,
+  createFirebaseResources,
+  random,
+} from '../../core/cloud/assign-moderation-job/core.js';
+import { createAssignModerationWorkflow } from './workflow.js';
+
 export {
   createAssignModerationApp,
   createCorsOriginHandler,
@@ -14,7 +41,7 @@ export {
   createHandleAssignModerationJob,
   buildVariantQueryPlan,
   createVariantSnapshotFetcher,
-  createGetVariantSnapshot,
+  createFetchVariantSnapshot,
   createGuardChain,
   createRunGuards,
   createEnsureUserRecord,
@@ -22,4 +49,22 @@ export {
   createModeratorRefFactory,
   createFirebaseResources,
   random,
-} from '../../core/cloud/assign-moderation-job/core.js';
+};
+
+export function createAssignModerationWorkflowWithCoreDependencies({
+  runGuards,
+  fetchVariantSnapshot,
+  createModeratorRef,
+  now,
+  random,
+}) {
+  return createAssignModerationWorkflow({
+    runGuards,
+    fetchVariantSnapshot,
+    selectVariantDoc,
+    buildAssignment,
+    createModeratorRef,
+    now,
+    random,
+  });
+}

@@ -2,17 +2,15 @@ import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';
-import { createAssignModerationWorkflow } from './workflow.js';
 import {
   getIdTokenFromRequest,
-  selectVariantDoc,
   createHandleAssignModerationJob,
-  createGetVariantSnapshot,
-  buildAssignment,
+  createFetchVariantSnapshot,
   createRunGuards,
   createModeratorRefFactory,
   createFirebaseResources,
   random,
+  createAssignModerationWorkflowWithCoreDependencies,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -31,17 +29,15 @@ const { db, auth, app } = firebaseResources;
 
 const runVariantQuery = createRunVariantQuery(db);
 
-const getVariantSnapshot = createGetVariantSnapshot(runVariantQuery);
+const fetchVariantSnapshot = createFetchVariantSnapshot(runVariantQuery);
 
 const runGuards = createRunGuards(auth);
 
 const createModeratorRef = createModeratorRefFactory(db);
 
-const assignModerationWorkflow = createAssignModerationWorkflow({
+const assignModerationWorkflow = createAssignModerationWorkflowWithCoreDependencies({
   runGuards,
-  fetchVariantSnapshot: getVariantSnapshot,
-  selectVariantDoc,
-  buildAssignment,
+  fetchVariantSnapshot,
   createModeratorRef,
   now,
   random,

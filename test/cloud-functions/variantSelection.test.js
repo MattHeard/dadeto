@@ -25,9 +25,9 @@ describe('createVariantSnapshotFetcher', () => {
       { empty: false, id: 'fallbackWrap' },
     ];
     const runQuery = jest.fn().mockImplementation(() => snapshots.shift());
-    const getVariantSnapshot = createVariantSnapshotFetcher({ runQuery });
+    const fetchVariantSnapshot = createVariantSnapshotFetcher({ runQuery });
 
-    const result = await getVariantSnapshot(0.73);
+    const result = await fetchVariantSnapshot(0.73);
 
     const [firstCall, secondCall, thirdCall] = runQuery.mock.calls;
     const plan = buildVariantQueryPlan(0.73);
@@ -47,9 +47,9 @@ describe('createVariantSnapshotFetcher', () => {
       { empty: true, id: 'fourth' },
     ];
     const runQuery = jest.fn().mockImplementation(() => snapshots.shift());
-    const getVariantSnapshot = createVariantSnapshotFetcher({ runQuery });
+    const fetchVariantSnapshot = createVariantSnapshotFetcher({ runQuery });
 
-    const result = await getVariantSnapshot(0.12);
+    const result = await fetchVariantSnapshot(0.12);
 
     expect(runQuery).toHaveBeenCalledTimes(4);
     expect(result).toEqual({ empty: true, id: 'fourth' });

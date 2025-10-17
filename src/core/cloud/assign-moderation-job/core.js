@@ -378,7 +378,7 @@ async function resolvePlanStep({ plan, runQuery, index, lastSnapshot }) {
  * @returns {(randomValue: number) => Promise<unknown>} Function resolving with the first snapshot containing results.
  */
 export function createVariantSnapshotFetcher({ runQuery }) {
-  return async function getVariantSnapshot(randomValue) {
+  return async function fetchVariantSnapshot(randomValue) {
     const plan = buildVariantQueryPlan(randomValue);
     return resolvePlanStep({
       plan,
@@ -390,11 +390,11 @@ export function createVariantSnapshotFetcher({ runQuery }) {
 }
 
 /**
- * Adapter that produces the getVariantSnapshot helper from a runQuery implementation.
+ * Adapter that produces the fetchVariantSnapshot helper from a runQuery implementation.
  * @param {(descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} runQuery Query executor.
  * @returns {(randomValue: number) => Promise<unknown>} Function resolving with the first snapshot containing results.
  */
-export function createGetVariantSnapshot(runQuery) {
+export function createFetchVariantSnapshot(runQuery) {
   return createVariantSnapshotFetcher({
     runQuery,
   });
