@@ -12,4 +12,5 @@ export {
   buildVariantQueryPlan,
   createVariantSnapshotFetcher,
   createGetVariantSnapshot,
+  createGuardChain,
 } from '../../core/cloud/assign-moderation-job/core.js';
