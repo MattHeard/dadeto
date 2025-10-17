@@ -49,6 +49,7 @@ debug/
 .terraform/
 # Generated infra sources
 /infra/cloud-functions/
+/infra/core/
 /infra/admin.js
 /infra/googleAuth.js
 /infra/loadStaticConfig.js
