@@ -11,12 +11,8 @@ import {
   selectVariantDoc,
   createHandleAssignModerationJob,
   createGetVariantSnapshot,
-  createGuardChain,
-  ensurePostMethod,
-  ensureIdTokenPresent,
-  createEnsureValidIdToken,
-  createEnsureUserRecord,
   buildAssignment,
+  createRunGuards,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -39,16 +35,7 @@ const runVariantQuery = createRunVariantQuery(db);
 
 const getVariantSnapshot = createGetVariantSnapshot(runVariantQuery);
 
-const ensureValidIdToken = createEnsureValidIdToken(auth);
-
-const ensureUserRecord = createEnsureUserRecord(auth);
-
-const runGuards = createGuardChain([
-  ensurePostMethod,
-  ensureIdTokenPresent,
-  ensureValidIdToken,
-  ensureUserRecord,
-]);
+const runGuards = createRunGuards(auth);
 
 const assignModerationWorkflow = createAssignModerationWorkflow({
   runGuards,

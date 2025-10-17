@@ -80,6 +80,25 @@ export function createEnsureUserRecord(authInstance) {
 }
 
 /**
+ * Build the guard runner for the assign moderation workflow.
+ * @param {{ verifyIdToken: (token: string) => Promise<unknown>, getUser: (uid: string) => Promise<unknown> }} authInstance
+ * Firebase auth instance providing token verification and user lookup.
+ * @returns {(context: { req: import('express').Request }) => Promise<{ error?: GuardError, context?: GuardContext }>}
+ * Guard chain executor configured with the standard moderation guards.
+ */
+export function createRunGuards(authInstance) {
+  const ensureValidIdToken = createEnsureValidIdToken(authInstance);
+  const ensureUserRecord = createEnsureUserRecord(authInstance);
+
+  return createGuardChain([
+    ensurePostMethod,
+    ensureIdTokenPresent,
+    ensureValidIdToken,
+    ensureUserRecord,
+  ]);
+}
+
+/**
  * Create the CORS origin handler for the moderation Express app.
  * @param {string[]} allowedOrigins Origins permitted to call the endpoint.
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
