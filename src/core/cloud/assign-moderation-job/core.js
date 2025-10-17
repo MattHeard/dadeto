@@ -479,11 +479,10 @@ export function createHandleAssignModerationJob(
   );
 }
 
-export function registerAssignModerationJobRoute(
+export function setupAssignModerationJobRoute(
   firebaseResources,
   createRunVariantQuery,
-  now,
-  random
+  now
 ) {
   const { db, auth, app } = firebaseResources;
 
@@ -498,19 +497,6 @@ export function registerAssignModerationJobRoute(
   app.post('/', handleAssignModerationJob);
 
   return handleAssignModerationJob;
-}
-
-export function setupAssignModerationJobRoute(
-  firebaseResources,
-  createRunVariantQuery,
-  now
-) {
-  return registerAssignModerationJobRoute(
-    firebaseResources,
-    createRunVariantQuery,
-    now,
-    random
-  );
 }
 
 export function createAssignModerationJob(functionsModule, firebaseResources) {
