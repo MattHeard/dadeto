@@ -124,34 +124,6 @@ function createCorsOriginHandler(allowedOrigins) {
 }
 
 /**
- * Initialize Firebase resources, configure CORS, and expose dependencies.
- * @param {() => { db: import('firebase-admin/firestore').Firestore,
- *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} initializeFirebaseApp
- * Function that initializes Firebase and returns dependencies.
- * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods:
- *   string[] }) => unknown} corsFn
- * CORS middleware factory function.
- * @param {{ allowedOrigins?: string[] }} corsConfig CORS configuration for the endpoint.
- * @param {unknown} expressModule
- * Express module exposing the urlencoded middleware factory.
- * @returns {{ db: import('firebase-admin/firestore').Firestore,
- *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} Initialized dependencies.
- */
-export function createAssignModerationApp(
-  initializeFirebaseApp,
-  corsFn,
-  corsConfig,
-  expressModule
-) {
-  const { db, auth, app } = initializeFirebaseApp();
-  const setupCors = configuredSetupCors(corsFn);
-  setupCors(app, corsConfig);
-  configureUrlencodedBodyParser(app, expressModule);
-
-  return { db, auth, app };
-}
-
-/**
  * Build the Firebase resources used by the assign moderation job.
  * @param {() => { db: import('firebase-admin/firestore').Firestore,
  *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} initializeFirebaseApp
@@ -170,12 +142,12 @@ export function createFirebaseResources(
   corsConfig,
   expressModule
 ) {
-  return createAssignModerationApp(
-    initializeFirebaseApp,
-    corsFn,
-    corsConfig,
-    expressModule
-  );
+  const { db, auth, app } = initializeFirebaseApp();
+  const setupCors = createSetupCors(createCorsOriginHandler, corsFn);
+  setupCors(app, corsConfig);
+  configureUrlencodedBodyParser(app, expressModule);
+
+  return { db, auth, app };
 }
 
 /**
@@ -219,22 +191,6 @@ export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
 }
 
 /**
- * Preconfigure the setupCors helper with the default origin handler.
- * @param {(createCorsOriginHandlerFn: typeof createCorsOriginHandler, corsFn: unknown) =>
- *   (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void} createSetupCorsFn
- * Function that builds the CORS setup callback.
- * @param {typeof createCorsOriginHandler} createCorsOriginHandlerFn Function creating the origin handler.
- * @returns {(corsFn: unknown) => (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
- * Factory that accepts a CORS implementation and returns the configured setup function.
- */
-/**
- * Default setupCors helper wired to the internal CORS origin handler.
- * @type {(corsFn: unknown) => (appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
- */
-const configuredSetupCors = corsFn =>
-  createSetupCors(createCorsOriginHandler, corsFn);
-
-/**
  * Register body parsing middleware for moderation requests.
  * @param {{ use: (middleware: unknown) => void }} appInstance Express application instance.
  * @param {{ urlencoded: (options: { extended: boolean }) => unknown }} expressModule Express module exposing urlencoded.
@@ -257,19 +213,6 @@ export function selectVariantDoc(snapshot) {
   }
 
   return { variantDoc };
-}
-
-/**
- * Build a moderation assignment referencing the selected variant.
- * @param {unknown} variantRef Firestore document reference for the variant.
- * @param {unknown} createdAt Timestamp representing when the assignment was created.
- * @returns {{ variant: unknown, createdAt: unknown }} Assignment payload persisted to Firestore.
- */
-export function buildAssignment(variantRef, createdAt) {
-  return {
-    variant: variantRef,
-    createdAt,
-  };
 }
 
 /**
@@ -458,7 +401,6 @@ export function createHandleAssignModerationJobCore(assignModerationWorkflow) {
  * @property {(context: { req: import('express').Request }) => Promise<{ error?: { status: number, body: string }, context?: { userRecord?: import('firebase-admin/auth').UserRecord } }>} runGuards
  * @property {(randomValue: number) => Promise<unknown>} fetchVariantSnapshot
  * @property {(snapshot: unknown) => { variantDoc?: { ref: unknown }, errorMessage?: string }} selectVariantDoc
- * @property {(variantRef: unknown, createdAt: unknown) => { variant: unknown, createdAt: unknown }} buildAssignment
  * @property {(uid: string) => { set: (assignment: unknown) => Promise<unknown> }} createModeratorRef
  * @property {() => unknown} now
  * @property {() => number} random
@@ -477,7 +419,6 @@ export function createAssignModerationWorkflow({
   runGuards,
   fetchVariantSnapshot,
   selectVariantDoc,
-  buildAssignment,
   createModeratorRef,
   now,
   random,
@@ -508,8 +449,10 @@ export function createAssignModerationWorkflow({
 
     const moderatorRef = createModeratorRef(userRecord.uid);
     const createdAt = now();
-    const assignment = buildAssignment(variantDoc.ref, createdAt);
-    await moderatorRef.set(assignment);
+    await moderatorRef.set({
+      variant: variantDoc.ref,
+      createdAt,
+    });
 
     return { status: 201, body: '' };
   };
@@ -526,7 +469,6 @@ export function createAssignModerationWorkflowWithCoreDependencies({
     runGuards,
     fetchVariantSnapshot,
     selectVariantDoc,
-    buildAssignment,
     createModeratorRef,
     now,
     random,
