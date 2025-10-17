@@ -598,6 +598,19 @@ export function registerAssignModerationJobRoute(
   return handleAssignModerationJob;
 }
 
+export function setupAssignModerationJobRoute(
+  firebaseResources,
+  createRunVariantQuery,
+  now
+) {
+  return registerAssignModerationJobRoute(
+    firebaseResources,
+    createRunVariantQuery,
+    now,
+    random
+  );
+}
+
 export function createAssignModerationJob(functionsModule, firebaseResources) {
   const { app } = firebaseResources;
 

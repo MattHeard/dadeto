@@ -5,8 +5,7 @@ import corsConfig from './cors-config.js';
 import {
   createAssignModerationJob,
   createFirebaseResources,
-  random,
-  registerAssignModerationJobRoute,
+  setupAssignModerationJobRoute,
 } from './core.js';
 import {
   initializeFirebaseAppResources,
@@ -21,12 +20,7 @@ const firebaseResources = createFirebaseResources(
   express
 );
 
-registerAssignModerationJobRoute(
-  firebaseResources,
-  createRunVariantQuery,
-  now,
-  random
-);
+setupAssignModerationJobRoute(firebaseResources, createRunVariantQuery, now);
 
 export const assignModerationJob = createAssignModerationJob(
   functions,
