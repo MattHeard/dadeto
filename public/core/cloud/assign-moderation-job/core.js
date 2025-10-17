@@ -1,10 +1,32 @@
 /**
+ * Extract the request body from an Express request.
+ * @param {import('express').Request} req HTTP request object.
+ * @returns {Record<string, unknown> | undefined} Request body when available.
+ */
+export function getBodyFromRequest(req) {
+  return /** @type {Record<string, unknown> | undefined} */ (req?.body);
+}
+
+/**
  * Extract the ID token from a request body.
  * @param {import('express').Request} req HTTP request object.
  * @returns {string | undefined} The ID token if present.
  */
 export function getIdTokenFromRequest(req) {
-  return /** @type {string | undefined} */ (req?.body?.id_token);
+  const body = /** @type {{ id_token?: string } | undefined} */ (
+    getBodyFromRequest(req)
+  );
+
+  return body?.id_token;
+}
+
+/**
+ * Determine whether an Express request uses the POST method.
+ * @param {import('express').Request} req HTTP request object.
+ * @returns {boolean} True when the request method is POST.
+ */
+function isPostRequest(req) {
+  return req?.method === 'POST';
 }
 
 /**
@@ -13,10 +35,18 @@ export function getIdTokenFromRequest(req) {
  * @returns {GuardResult} Guard result with an error when the method is not POST.
  */
 function ensurePostMethod({ req }) {
-  if (req?.method === 'POST') {
+  if (isPostRequest(req)) {
     return {};
   }
 
+  return getPostOnlyMethodErrorResult();
+}
+
+/**
+ * Build the guard result for non-POST requests.
+ * @returns {GuardResult} Guard result indicating the request method must be POST.
+ */
+function getPostOnlyMethodErrorResult() {
   return {
     error: { status: 405, body: 'POST only' },
   };
