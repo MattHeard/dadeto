@@ -598,8 +598,10 @@ export function registerAssignModerationJobRoute(
   return handleAssignModerationJob;
 }
 
-export function createAssignModerationJob(functionsModule, appInstance) {
-  return functionsModule.region('europe-west1').https.onRequest(appInstance);
+export function createAssignModerationJob(functionsModule, firebaseResources) {
+  const { app } = firebaseResources;
+
+  return functionsModule.region('europe-west1').https.onRequest(app);
 }
 
 export function createHandleAssignModerationJobWithDependencies({
