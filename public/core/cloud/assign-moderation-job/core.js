@@ -458,23 +458,6 @@ export function createAssignModerationWorkflow({
   };
 }
 
-export function createAssignModerationWorkflowWithCoreDependencies({
-  runGuards,
-  fetchVariantSnapshot,
-  createModeratorRef,
-  now,
-  random,
-}) {
-  return createAssignModerationWorkflow({
-    runGuards,
-    fetchVariantSnapshot,
-    selectVariantDoc,
-    createModeratorRef,
-    now,
-    random,
-  });
-}
-
 export function createHandleAssignModerationJob(
   createRunVariantQuery,
   auth,
@@ -536,43 +519,6 @@ export function createAssignModerationJob(functionsModule, firebaseResources) {
   return functionsModule.region('europe-west1').https.onRequest(app);
 }
 
-export function createHandleAssignModerationJobWithDependencies({
-  runGuards,
-  fetchVariantSnapshot,
-  createModeratorRef,
-  now,
-  random,
-}) {
-  const assignModerationWorkflow =
-    createAssignModerationWorkflowWithCoreDependencies({
-      runGuards,
-      fetchVariantSnapshot,
-      createModeratorRef,
-      now,
-      random,
-    });
-
-  return createHandleAssignModerationJobCore(assignModerationWorkflow);
-}
-
-export function createHandleAssignModerationJobWithFirebaseResources({
-  runGuards,
-  fetchVariantSnapshot,
-  db,
-  now,
-  random,
-}) {
-  const createModeratorRef = createModeratorRefFactory(db);
-
-  return createHandleAssignModerationJobWithDependencies({
-    runGuards,
-    fetchVariantSnapshot,
-    createModeratorRef,
-    now,
-    random,
-  });
-}
-
 export function createHandleAssignModerationJobFromAuth(
   auth,
   fetchVariantSnapshot,
@@ -581,12 +527,16 @@ export function createHandleAssignModerationJobFromAuth(
   random
 ) {
   const runGuards = createRunGuards(auth);
+  const createModeratorRef = createModeratorRefFactory(db);
 
-  return createHandleAssignModerationJobWithFirebaseResources({
+  const assignModerationWorkflow = createAssignModerationWorkflow({
     runGuards,
     fetchVariantSnapshot,
-    db,
+    selectVariantDoc,
+    createModeratorRef,
     now,
     random,
   });
+
+  return createHandleAssignModerationJobCore(assignModerationWorkflow);
 }
