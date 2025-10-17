@@ -21,12 +21,20 @@ const firebaseResources = createFirebaseResources(
   express
 );
 
-registerAssignModerationJobRoute(
+function setupAssignModerationJobRoute(
   firebaseResources,
   createRunVariantQuery,
-  now,
-  random
-);
+  now
+) {
+  registerAssignModerationJobRoute(
+    firebaseResources,
+    createRunVariantQuery,
+    now,
+    random
+  );
+}
+
+setupAssignModerationJobRoute(firebaseResources, createRunVariantQuery, now);
 
 export const assignModerationJob = createAssignModerationJob(
   functions,
