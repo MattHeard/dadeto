@@ -149,6 +149,34 @@ export function createAssignModerationApp(
 }
 
 /**
+ * Build the Firebase resources used by the assign moderation job.
+ * @param {() => { db: import('firebase-admin/firestore').Firestore,
+ *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} initializeFirebaseApp
+ * Function that initializes Firebase and returns dependencies.
+ * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void,
+ *   methods: string[] }) => unknown} corsFn
+ * CORS middleware factory function.
+ * @param {{ allowedOrigins?: string[] }} corsConfig CORS configuration for the endpoint.
+ * @param {unknown} expressModule Express module exposing the urlencoded middleware factory.
+ * @returns {{ db: import('firebase-admin/firestore').Firestore,
+ *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} Initialized dependencies.
+ */
+export function createFirebaseResources(
+  initializeFirebaseApp,
+  corsFn,
+  corsConfig,
+  expressModule
+) {
+  return createAssignModerationApp(
+    initializeFirebaseApp,
+    corsFn,
+    corsConfig,
+    configureUrlencodedBodyParser,
+    expressModule
+  );
+}
+
+/**
  * Build the CORS middleware options for the moderation app.
  * @param {(allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} createCorsOriginHandlerFn
  * Factory that produces the origin callback for the CORS middleware.
