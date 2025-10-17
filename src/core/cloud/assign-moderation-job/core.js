@@ -401,6 +401,20 @@ export function createFetchVariantSnapshot(runQuery) {
 }
 
 /**
+ * Build a factory that produces Firestore-backed variant snapshot fetchers.
+ * @param {(database: unknown) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} createRunVariantQueryFn
+ * Adapter factory that accepts a database instance and returns a query executor.
+ * @returns {(database: unknown) => (randomValue: number) => Promise<unknown>} Factory producing snapshot fetchers bound to a
+ * Firestore database.
+ */
+export function createFetchVariantSnapshotFromDbFactory(createRunVariantQueryFn) {
+  return function createFetchVariantSnapshotFromDb(database) {
+    const runVariantQuery = createRunVariantQueryFn(database);
+    return createFetchVariantSnapshot(runVariantQuery);
+  };
+}
+
+/**
  * @typedef {object} GuardError
  * @property {number} status HTTP status code to return.
  * @property {string} body Body payload describing the error.

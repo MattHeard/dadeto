@@ -4,9 +4,9 @@ import cors from 'cors';
 import corsConfig from './cors-config.js';
 import {
   getIdTokenFromRequest,
-  createFetchVariantSnapshot,
   createFirebaseResources,
   random,
+  createFetchVariantSnapshotFromDbFactory,
   createHandleAssignModerationJobFromAuth,
 } from './core.js';
 import {
@@ -24,9 +24,11 @@ const firebaseResources = createFirebaseResources(
 
 const { db, auth, app } = firebaseResources;
 
-const runVariantQuery = createRunVariantQuery(db);
+const createFetchVariantSnapshotFromDb = createFetchVariantSnapshotFromDbFactory(
+  createRunVariantQuery
+);
 
-const fetchVariantSnapshot = createFetchVariantSnapshot(runVariantQuery);
+const fetchVariantSnapshot = createFetchVariantSnapshotFromDb(db);
 
 const handleAssignModerationJob = createHandleAssignModerationJobFromAuth(
   auth,
