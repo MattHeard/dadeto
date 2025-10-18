@@ -31,3 +31,71 @@ export function mapConfigToAdminEndpoints(config) {
       config?.generateStatsUrl ?? DEFAULT_ADMIN_ENDPOINTS.generateStatsUrl,
   };
 }
+
+/**
+ * Locate the status paragraph within the provided document.
+ * @param {Document} doc - Document to query for the status element.
+ * @returns {HTMLElement | null} Paragraph element used for status messages.
+ */
+export function getStatusParagraph(doc) {
+  return doc.getElementById('renderStatus');
+}
+
+/**
+ * Locate the main admin content container within the provided document.
+ * @param {Document} doc - Document to query for the content element.
+ * @returns {HTMLElement | null} Element containing admin controls when present.
+ */
+export function getAdminContent(doc) {
+  return doc.getElementById('adminContent');
+}
+
+/**
+ * Locate all sign-in button elements within the provided document.
+ * @param {Document} doc - Document to query for sign-in controls.
+ * @returns {NodeListOf<HTMLElement>} Elements that trigger the sign-in flow.
+ */
+export function getSignInButtons(doc) {
+  return doc.querySelectorAll('#signinButton');
+}
+
+/**
+ * Locate all sign-out container elements within the provided document.
+ * @param {Document} doc - Document to query for sign-out controls.
+ * @returns {NodeListOf<HTMLElement>} Elements that wrap sign-out actions.
+ */
+export function getSignOutSections(doc) {
+  return doc.querySelectorAll('#signoutWrap');
+}
+
+/**
+ * Safely access the current authenticated user.
+ * @param {() => { currentUser: unknown } | null | undefined} getAuthFn - Getter for the auth instance.
+ * @returns {unknown | null} Current user when available.
+ */
+export function getCurrentUser(getAuthFn) {
+  if (typeof getAuthFn !== 'function') {
+    return null;
+  }
+
+  const auth = getAuthFn();
+  return auth?.currentUser ?? null;
+}
+
+/**
+ * Update the display state of sign-in and sign-out controls based on the user.
+ * @param {{ uid?: string } | null | undefined} user - Current authenticated user.
+ * @param {NodeListOf<HTMLElement>} signIns - Elements that trigger sign-in.
+ * @param {NodeListOf<HTMLElement>} signOuts - Elements that trigger sign-out.
+ */
+export function updateAuthControlsDisplay(user, signIns, signOuts) {
+  const isSignedIn = Boolean(user);
+
+  signIns.forEach(element => {
+    element.style.display = isSignedIn ? 'none' : '';
+  });
+
+  signOuts.forEach(element => {
+    element.style.display = isSignedIn ? '' : 'none';
+  });
+}
