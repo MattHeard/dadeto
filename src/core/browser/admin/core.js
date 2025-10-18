@@ -79,6 +79,21 @@ export function createGetAdminEndpoints(createAdminEndpointsPromiseFn) {
 }
 
 /**
+ * Build a memoized admin endpoints getter backed by the static config loader.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for the static config JSON.
+ * @returns {() => Promise<{
+ *   triggerRenderContentsUrl: string,
+ *   markVariantDirtyUrl: string,
+ *   generateStatsUrl: string,
+ * }>} Function returning a memoized admin endpoints promise.
+ */
+export function createGetAdminEndpointsFromStaticConfig(loadStaticConfigFn) {
+  return createGetAdminEndpoints(() =>
+    createAdminEndpointsPromise(loadStaticConfigFn)
+  );
+}
+
+/**
  * Trigger the render contents endpoint using the provided dependencies.
  * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Function resolving admin endpoints.
  * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like function for network calls.
