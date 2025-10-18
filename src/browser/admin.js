@@ -4,6 +4,7 @@ import {
   createAdminEndpointsPromise,
   getStatusParagraph,
   createCheckAccess,
+  postTriggerRenderContents,
 } from './admin-core.js';
 import {
   getAuth,
@@ -46,11 +47,7 @@ async function triggerRender() {
     return;
   }
   try {
-    const { triggerRenderContentsUrl } = await getAdminEndpoints();
-    const res = await fetch(triggerRenderContentsUrl, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await postTriggerRenderContents(getAdminEndpoints, fetch, token);
     if (!res.ok) {
       const body = await res.text();
       showMessage(

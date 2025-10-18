@@ -50,6 +50,32 @@ export function createAdminEndpointsPromise(loadStaticConfigFn) {
 }
 
 /**
+ * Trigger the render contents endpoint using the provided dependencies.
+ * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Function resolving admin endpoints.
+ * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like function for network calls.
+ * @param {string} token - ID token attached to the Authorization header.
+ * @returns {Promise<Response>} Response from the render trigger request.
+ */
+export async function postTriggerRenderContents(
+  getAdminEndpointsFn,
+  fetchFn,
+  token
+) {
+  if (typeof getAdminEndpointsFn !== 'function') {
+    throw new TypeError('getAdminEndpointsFn must be a function');
+  }
+  if (typeof fetchFn !== 'function') {
+    throw new TypeError('fetchFn must be a function');
+  }
+
+  const { triggerRenderContentsUrl } = await getAdminEndpointsFn();
+  return fetchFn(triggerRenderContentsUrl, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+/**
  * Locate the status paragraph within the provided document.
  * @param {Document} doc - Document to query for the status element.
  * @returns {HTMLElement | null} Paragraph element used for status messages.
