@@ -91,6 +91,10 @@ const individualFileCopies = [
     target: join(infraDir, 'admin-core.js'),
   },
   {
+    source: join(browserDir, 'load-static-config-core.js'),
+    target: join(infraDir, 'load-static-config-core.js'),
+  },
+  {
     source: assignModerationCoreSource,
     target: join(
       infraDir,
