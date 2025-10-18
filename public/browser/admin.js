@@ -1,4 +1,4 @@
-import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
+import * as googleAuth from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import {
   createGetAdminEndpointsFromStaticConfig,
@@ -29,7 +29,7 @@ const checkAccess = createCheckAccess(getAuth, document);
  * Trigger render when initiated from the admin UI.
  */
 const triggerRender = createTriggerRender(
-  getIdToken,
+  googleAuth,
   getAdminEndpoints,
   fetch,
   showMessage
@@ -39,14 +39,14 @@ const triggerRender = createTriggerRender(
  * Trigger stats generation when initiated from the admin UI.
  */
 const triggerStats = createTriggerStats(
-  getIdToken,
+  googleAuth,
   getAdminEndpoints,
   fetch,
   showMessage
 );
 
 const regenerateVariant = createRegenerateVariant(
-  getIdToken,
+  googleAuth,
   document,
   showMessage,
   getAdminEndpoints,
@@ -57,6 +57,6 @@ bindTriggerRenderClick(document, triggerRender);
 bindTriggerStatsClick(document, triggerStats);
 bindRegenerateVariantSubmit(document, regenerateVariant);
 
-createWireSignOut(document, signOut)();
+createWireSignOut(document, googleAuth)();
 onAuthStateChanged(getAuth(), checkAccess);
-initGoogleSignIn();
+googleAuth.initGoogleSignIn();
