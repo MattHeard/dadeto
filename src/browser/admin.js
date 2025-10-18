@@ -9,13 +9,13 @@ import {
   getSignInButtons,
   getSignOutSections,
   updateAuthControlsDisplay,
+  ADMIN_UID,
 } from './admin-core.js';
 import {
   getAuth,
   onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
-const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 let adminEndpointsPromise;
 
 /**

@@ -1,3 +1,5 @@
+export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
+
 export const DEFAULT_ADMIN_ENDPOINTS = {
   triggerRenderContentsUrl:
     'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents',
