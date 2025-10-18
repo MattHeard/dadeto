@@ -111,7 +111,7 @@ fetchAndCacheBlogData(globalState, fetch, {
   logError: dom.logError,
 });
 
-setupAudio(dom);
+setupAudio(dom, dom.setTextContent);
 
 // --- Dropdown Initialization ---
 

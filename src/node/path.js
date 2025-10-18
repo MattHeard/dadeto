@@ -62,5 +62,13 @@ export function createCopyDirectories(baseDirectories, sharedDirectoryEntries) {
     publicAssetsDir: publicDir,
     srcBlogJson: path.join(srcDir, 'blog.json'),
     publicBlogJson: path.join(publicDir, 'blog.json'),
+    srcCoreBrowserAudioControlsFile: path.join(
+      srcDir,
+      'core/browser/audio-controls.js'
+    ),
+    publicBrowserAudioControlsFile: path.join(
+      publicDir,
+      'browser/audio-controls.js'
+    ),
   };
 }

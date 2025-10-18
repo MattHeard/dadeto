@@ -11,7 +11,7 @@ import {
   createStopClickHandler,
   createUpdateTimeDisplay,
   setupAudio,
-} from '../../src/browser/audio-controls.js';
+} from '../../src/core/browser/audio-controls.js';
 
 describe('createPlayClickHandler', () => {
   let audio;
@@ -119,15 +119,23 @@ describe('createStopClickHandler', () => {
 
 describe('createUpdateTimeDisplay', () => {
   let display;
+  let setTextContent;
 
   beforeEach(() => {
     display = { textContent: '' };
+    setTextContent = (element, text) => {
+      element.textContent = text;
+    };
   });
 
   it('updates the time display with the current time of the audio', () => {
     // Given
     const audio = { currentTime: 42 };
-    const updateTimeDisplay = createUpdateTimeDisplay(audio, display);
+    const updateTimeDisplay = createUpdateTimeDisplay(
+      audio,
+      display,
+      setTextContent
+    );
 
     // When
     updateTimeDisplay();
@@ -139,7 +147,11 @@ describe('createUpdateTimeDisplay', () => {
   it('handles when audio currentTime is 0', () => {
     // Given
     const audio = { currentTime: 0 };
-    const updateTimeDisplay = createUpdateTimeDisplay(audio, display);
+    const updateTimeDisplay = createUpdateTimeDisplay(
+      audio,
+      display,
+      setTextContent
+    );
 
     // When
     updateTimeDisplay();
@@ -151,7 +163,11 @@ describe('createUpdateTimeDisplay', () => {
   it('displays minutes and seconds when currentTime is 60', () => {
     // Given
     const audio = { currentTime: 60 };
-    const updateTimeDisplay = createUpdateTimeDisplay(audio, display);
+    const updateTimeDisplay = createUpdateTimeDisplay(
+      audio,
+      display,
+      setTextContent
+    );
 
     // When
     updateTimeDisplay();
@@ -168,7 +184,7 @@ describe('setupAudio', () => {
     stopDefault,
     playAudio,
     pauseAudio;
-  let audioElement, audioElements, dom;
+  let audioElement, audioElements, dom, setTextContent;
   beforeEach(() => {
     createdElements = [];
     removeControlsAttribute = () => {};
@@ -200,6 +216,9 @@ describe('setupAudio', () => {
       appendChild: jest.fn(),
       addEventListener: jest.fn(),
     };
+    setTextContent = jest.fn((element, text) => {
+      element.textContent = text;
+    });
   });
 
   it('assigns a default id to an audio element with an empty id', () => {
@@ -233,7 +252,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     expect(audioElement.id).toBe('audio-0');
@@ -269,7 +288,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     expect(audioElement.id).toBe('audio-0');
@@ -306,7 +325,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     expect(element.id).toBe('custom-id');
@@ -343,7 +362,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     expect(createdElements[0].className).toBe('audio-controls');
@@ -380,7 +399,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     expect(createdElements[0].id).toBe(`controls-${audioElements[0].id}`);
@@ -417,7 +436,7 @@ describe('setupAudio', () => {
     };
 
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     const texts = createdElements.map(el => el.textContent);
@@ -426,7 +445,7 @@ describe('setupAudio', () => {
 
   it('adds a time display element with class "audio-time"', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     const timeElements = createdElements.filter(
@@ -438,7 +457,7 @@ describe('setupAudio', () => {
 
   it('uses a span element for the time display', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     const timeElement = createdElements.find(
@@ -449,7 +468,7 @@ describe('setupAudio', () => {
 
   it('attaches a timeupdate listener to the audio element', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     expect(dom.addEventListener).toHaveBeenCalledWith(
@@ -461,7 +480,7 @@ describe('setupAudio', () => {
 
   it('creates a div container for the controls', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     expect(createElement).toHaveBeenCalledWith('div');
@@ -469,7 +488,7 @@ describe('setupAudio', () => {
 
   it('inserts spacing between the control buttons', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     expect(dom.createTextNode).toHaveBeenCalledTimes(3);
@@ -480,7 +499,7 @@ describe('setupAudio', () => {
 
   it('wires up event listeners and button hrefs correctly', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     const playButton = createdElements.find(el => el.textContent === 'PLAY');
@@ -523,7 +542,7 @@ describe('setupAudio', () => {
 
   it('creates play, pause and stop buttons as anchor elements', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     const playButton = createdElements.find(el => el.textContent === 'PLAY');
@@ -537,7 +556,7 @@ describe('setupAudio', () => {
 
   it('calls createElement with "a" for each control button', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     const aCalls = createElement.mock.calls.filter(call => call[0] === 'a');
@@ -546,7 +565,7 @@ describe('setupAudio', () => {
 
   it('creates DOM elements in the correct order', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     expect(createElement).toHaveBeenNthCalledWith(1, 'div');
@@ -558,7 +577,7 @@ describe('setupAudio', () => {
 
   it('inserts spaces between control buttons', () => {
     // When
-    setupAudio(dom);
+    setupAudio(dom, setTextContent);
 
     // Then
     const spaceArgs = dom.createTextNode.mock.calls.map(call => call[0]);
