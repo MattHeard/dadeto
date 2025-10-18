@@ -10,6 +10,7 @@ import {
   bindTriggerRenderClick,
   bindTriggerStatsClick,
   bindRegenerateVariantSubmit,
+  createWireSignOut,
 } from './admin-core.js';
 import {
   getAuth,
@@ -74,17 +75,7 @@ bindTriggerRenderClick(document, triggerRender);
 bindTriggerStatsClick(document, triggerStats);
 bindRegenerateVariantSubmit(document, regenerateVariant);
 
-/**
- *
- */
-function wireSignOut() {
-  document.querySelectorAll('#signoutLink').forEach(link => {
-    link.addEventListener('click', async e => {
-      e.preventDefault();
-      await signOut();
-    });
-  });
-}
+const wireSignOut = createWireSignOut(document, signOut);
 
 wireSignOut();
 onAuthStateChanged(getAuth(), checkAccess);
