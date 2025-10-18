@@ -221,6 +221,32 @@ export function bindRegenerateVariantSubmit(doc, regenerateVariantFn) {
 }
 
 /**
+ * Create a function that wires sign-out links to the provided sign-out handler.
+ * @param {Document} doc - Document used to locate sign-out links.
+ * @param {() => Promise<void> | void} signOutFn - Function invoked to sign the user out.
+ * @returns {() => void} Function that attaches click handlers to sign-out links.
+ */
+export function createWireSignOut(doc, signOutFn) {
+  if (!doc || typeof doc.querySelectorAll !== 'function') {
+    throw new TypeError('doc must be a Document-like object');
+  }
+  if (typeof signOutFn !== 'function') {
+    throw new TypeError('signOutFn must be a function');
+  }
+
+  return function wireSignOut() {
+    doc.querySelectorAll('#signoutLink').forEach(link => {
+      if (link?.addEventListener) {
+        link.addEventListener('click', async event => {
+          event?.preventDefault?.();
+          await signOutFn();
+        });
+      }
+    });
+  };
+}
+
+/**
  * Create a trigger stats handler with the supplied dependencies.
  * @param {() => string | null | undefined} getIdTokenFn - Retrieves the current ID token.
  * @param {() => Promise<{ generateStatsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
