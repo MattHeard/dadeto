@@ -3,6 +3,7 @@ import {
   createAdminEndpointsPromise,
   DEFAULT_ADMIN_ENDPOINTS,
   createGetAdminEndpoints,
+  createGetAdminEndpointsFromStaticConfig,
   createShowMessage,
   createTriggerStats,
   bindTriggerRenderClick,
@@ -34,6 +35,23 @@ describe('createGetAdminEndpoints', () => {
     expect(() => createGetAdminEndpoints(null)).toThrow(
       new TypeError('createAdminEndpointsPromiseFn must be a function')
     );
+  });
+});
+
+describe('createGetAdminEndpointsFromStaticConfig', () => {
+  it('produces a memoized getter that loads the static config once', async () => {
+    const loadStaticConfig = jest.fn().mockResolvedValue(createConfig());
+
+    const getAdminEndpoints = createGetAdminEndpointsFromStaticConfig(
+      loadStaticConfig
+    );
+
+    const promise = getAdminEndpoints();
+    const secondPromise = getAdminEndpoints();
+
+    expect(loadStaticConfig).toHaveBeenCalledTimes(1);
+    expect(secondPromise).toBe(promise);
+    await expect(promise).resolves.toEqual(createConfig());
   });
 });
 

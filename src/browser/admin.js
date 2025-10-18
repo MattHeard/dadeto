@@ -1,8 +1,7 @@
 import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import {
-  createAdminEndpointsPromise,
-  createGetAdminEndpoints,
+  createGetAdminEndpointsFromStaticConfig,
   getStatusParagraph,
   createShowMessage,
   createCheckAccess,
@@ -19,8 +18,8 @@ import {
   onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
-const getAdminEndpoints = createGetAdminEndpoints(() =>
-  createAdminEndpointsPromise(loadStaticConfig)
+const getAdminEndpoints = createGetAdminEndpointsFromStaticConfig(
+  loadStaticConfig
 );
 const showMessage = createShowMessage(getStatusParagraph, document);
 
