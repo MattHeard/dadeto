@@ -155,6 +155,53 @@ export function createTriggerRender(
 }
 
 /**
+ * Create a trigger stats handler with the supplied dependencies.
+ * @param {() => string | null | undefined} getIdTokenFn - Retrieves the current ID token.
+ * @param {() => Promise<{ generateStatsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
+ * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @returns {() => Promise<void>} Function that triggers stats generation when invoked.
+ */
+export function createTriggerStats(
+  getIdTokenFn,
+  getAdminEndpointsFn,
+  fetchFn,
+  showMessage
+) {
+  if (typeof getIdTokenFn !== 'function') {
+    throw new TypeError('getIdTokenFn must be a function');
+  }
+  if (typeof getAdminEndpointsFn !== 'function') {
+    throw new TypeError('getAdminEndpointsFn must be a function');
+  }
+  if (typeof fetchFn !== 'function') {
+    throw new TypeError('fetchFn must be a function');
+  }
+  if (typeof showMessage !== 'function') {
+    throw new TypeError('showMessage must be a function');
+  }
+
+  return async function triggerStats() {
+    const token = getIdTokenFn();
+    if (!token) {
+      showMessage('Stats generation failed');
+      return;
+    }
+
+    try {
+      const { generateStatsUrl } = await getAdminEndpointsFn();
+      await fetchFn(generateStatsUrl, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      showMessage('Stats generated');
+    } catch {
+      showMessage('Stats generation failed');
+    }
+  };
+}
+
+/**
  * Locate the status paragraph within the provided document.
  * @param {Document} doc - Document to query for the status element.
  * @returns {HTMLElement | null} Paragraph element used for status messages.
