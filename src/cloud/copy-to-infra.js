@@ -17,6 +17,7 @@ const srcCloudDir = resolve(srcDir, 'cloud');
 const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
 const browserDir = resolve(srcDir, 'browser');
 const srcCoreCloudDir = resolve(srcDir, 'core', 'cloud');
+const srcCoreBrowserDir = resolve(srcDir, 'core', 'browser');
 
 const functionDirectories = [
   'assign-moderation-job',
@@ -75,6 +76,8 @@ const packageFileCopies = functionDirectories.flatMap(name =>
   })),
 );
 
+const adminCoreSource = join(srcCoreBrowserDir, 'admin', 'core.js');
+
 const assignModerationCoreSource = join(
   srcCoreCloudDir,
   'assign-moderation-job',
@@ -87,7 +90,7 @@ const individualFileCopies = [
     target: join(infraDir, 'admin.js'),
   },
   {
-    source: join(browserDir, 'admin-core.js'),
+    source: adminCoreSource,
     target: join(infraDir, 'admin-core.js'),
   },
   {
