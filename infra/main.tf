@@ -135,6 +135,12 @@ locals {
       content_type  = "application/javascript"
       cache_control = "no-store"
     }
+    dendrite_load_static_config_core_js = {
+      name          = "load-static-config-core.js"
+      source        = "${path.module}/load-static-config-core.js"
+      content_type  = "application/javascript"
+      cache_control = "no-store"
+    }
     dendrite_robots_txt = {
       name         = "robots.txt"
       source       = "${path.module}/robots.txt"
