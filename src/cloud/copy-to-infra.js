@@ -43,11 +43,12 @@ const directoryCopies = functionDirectories.map(name => ({
   target: join(infraFunctionsDir, name),
 }));
 
-const fileCopies = {
-  sourceDir: srcCloudDir,
-  targetDir: infraDir,
-  files: ['googleAuth.js', 'moderate.js', 'loadStaticConfig.js'],
-};
+const sharedBrowserFiles = ['googleAuth.js', 'moderate.js', 'loadStaticConfig.js'];
+
+const browserFileCopies = sharedBrowserFiles.map(name => ({
+  source: join(browserDir, name),
+  target: join(infraDir, name),
+}));
 
 const corsConfigSource = join(srcCloudDir, 'cors-config.js');
 
@@ -111,6 +112,7 @@ const individualFileCopies = [
     source: assignModerationCoreSource,
     target: join(infraFunctionsDir, 'assign-moderation-job', 'core.js'),
   },
+  ...browserFileCopies,
   ...firebaseAppCopies,
   ...firestoreCopies,
   ...corsConfigCopies,
@@ -130,7 +132,6 @@ const { runCopyToInfra } = createCopyToInfraCore({
 
 await runCopyToInfra({
   directoryCopies,
-  fileCopies,
   individualFileCopies,
   io,
   messageLogger: logger,
