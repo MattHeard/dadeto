@@ -3,6 +3,12 @@ import { loadStaticConfig } from './loadStaticConfig.js';
 import {
   mapConfigToAdminEndpoints,
   getDefaultAdminEndpointsCopy,
+  getStatusParagraph,
+  getCurrentUser,
+  getAdminContent,
+  getSignInButtons,
+  getSignOutSections,
+  updateAuthControlsDisplay,
 } from './admin-core.js';
 import {
   getAuth,
@@ -32,7 +38,7 @@ async function getAdminEndpoints() {
   }
   return adminEndpointsPromise;
 }
-const statusParagraph = document.getElementById('renderStatus');
+const statusParagraph = getStatusParagraph(document);
 
 /**
  * Display a status message on the admin page.
@@ -49,24 +55,16 @@ function showMessage(text) {
  * redirecting.
  */
 function checkAccess() {
-  const user = getAuth().currentUser;
-  const content = document.getElementById('adminContent');
-  const signins = document.querySelectorAll('#signinButton');
-  const signouts = document.querySelectorAll('#signoutWrap');
+  const user = getCurrentUser(getAuth);
+  const content = getAdminContent(document);
+  const signins = getSignInButtons(document);
+  const signouts = getSignOutSections(document);
+  updateAuthControlsDisplay(user, signins, signouts);
   if (!user || user.uid !== ADMIN_UID) {
     if (content) content.style.display = 'none';
-    if (user) {
-      signins.forEach(el => (el.style.display = 'none'));
-      signouts.forEach(el => (el.style.display = ''));
-    } else {
-      signins.forEach(el => (el.style.display = ''));
-      signouts.forEach(el => (el.style.display = 'none'));
-    }
     return;
   }
   if (content) content.style.display = '';
-  signins.forEach(el => (el.style.display = 'none'));
-  signouts.forEach(el => (el.style.display = ''));
 }
 
 /**
