@@ -76,6 +76,85 @@ export async function postTriggerRenderContents(
 }
 
 /**
+ * Report the outcome of a trigger render request using the provided messenger.
+ * @param {Response} res - Response returned by the trigger render request.
+ * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @returns {Promise<void>}
+ */
+export async function announceTriggerRenderResult(res, showMessage) {
+  if (!res?.ok) {
+    const status = res?.status ?? 'unknown';
+    const statusText = res?.statusText ?? 'unknown';
+    const body = (await res?.text?.()) ?? '';
+    const bodySuffix = body ? ` - ${body}` : '';
+
+    showMessage(`Render failed: ${status} ${statusText}${bodySuffix}`);
+    return;
+  }
+
+  showMessage('Render triggered');
+}
+
+/**
+ * Execute the trigger render flow and report outcomes.
+ * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
+ * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ * @param {string} token - ID token attached to the Authorization header.
+ * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @returns {Promise<void>}
+ */
+export async function executeTriggerRender(
+  getAdminEndpointsFn,
+  fetchFn,
+  token,
+  showMessage
+) {
+  try {
+    const res = await postTriggerRenderContents(getAdminEndpointsFn, fetchFn, token);
+    await announceTriggerRenderResult(res, showMessage);
+  } catch (e) {
+    showMessage(`Render failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+
+/**
+ * Create a trigger render handler with the supplied dependencies.
+ * @param {() => string | null | undefined} getIdTokenFn - Retrieves the current ID token.
+ * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
+ * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @returns {() => Promise<void>} Function that triggers render when invoked.
+ */
+export function createTriggerRender(
+  getIdTokenFn,
+  getAdminEndpointsFn,
+  fetchFn,
+  showMessage
+) {
+  if (typeof getIdTokenFn !== 'function') {
+    throw new TypeError('getIdTokenFn must be a function');
+  }
+  if (typeof getAdminEndpointsFn !== 'function') {
+    throw new TypeError('getAdminEndpointsFn must be a function');
+  }
+  if (typeof fetchFn !== 'function') {
+    throw new TypeError('fetchFn must be a function');
+  }
+  if (typeof showMessage !== 'function') {
+    throw new TypeError('showMessage must be a function');
+  }
+
+  return async function triggerRender() {
+    const token = getIdTokenFn();
+    if (!token) {
+      showMessage('Render failed: missing ID token');
+    } else {
+      await executeTriggerRender(getAdminEndpointsFn, fetchFn, token, showMessage);
+    }
+  };
+}
+
+/**
  * Locate the status paragraph within the provided document.
  * @param {Document} doc - Document to query for the status element.
  * @returns {HTMLElement | null} Paragraph element used for status messages.

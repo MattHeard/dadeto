@@ -4,7 +4,7 @@ import {
   createAdminEndpointsPromise,
   getStatusParagraph,
   createCheckAccess,
-  postTriggerRenderContents,
+  createTriggerRender,
 } from './admin-core.js';
 import {
   getAuth,
@@ -38,30 +38,14 @@ function showMessage(text) {
 const checkAccess = createCheckAccess(getAuth, document);
 
 /**
- *
+ * Trigger render when initiated from the admin UI.
  */
-async function triggerRender() {
-  const token = getIdToken();
-  if (!token) {
-    showMessage('Render failed: missing ID token');
-    return;
-  }
-  try {
-    const res = await postTriggerRenderContents(getAdminEndpoints, fetch, token);
-    if (!res.ok) {
-      const body = await res.text();
-      showMessage(
-        `Render failed: ${res.status} ${res.statusText}${
-          body ? ` - ${body}` : ''
-        }`
-      );
-      return;
-    }
-    showMessage('Render triggered');
-  } catch (e) {
-    showMessage(`Render failed: ${e instanceof Error ? e.message : String(e)}`);
-  }
-}
+const triggerRender = createTriggerRender(
+  getIdToken,
+  getAdminEndpoints,
+  fetch,
+  showMessage
+);
 
 /**
  * Trigger stats generation.
