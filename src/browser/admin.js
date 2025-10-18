@@ -6,6 +6,7 @@ import {
   createCheckAccess,
   createTriggerRender,
   createTriggerStats,
+  createRegenerateVariant,
 } from './admin-core.js';
 import {
   getAuth,
@@ -58,41 +59,13 @@ const triggerStats = createTriggerStats(
   showMessage
 );
 
-/**
- * Submit page/variant to trigger regeneration.
- * @param {Event} e Submit event.
- */
-async function regenerateVariant(e) {
-  e.preventDefault();
-  const token = getIdToken();
-  if (!token) {
-    return;
-  }
-  const input = document.getElementById('regenInput');
-  const value = input?.value.trim();
-  const match = value.match(/^(\d+)([a-zA-Z]+)$/);
-  if (!match) {
-    showMessage('Invalid format');
-    return;
-  }
-  const page = Number(match[1]);
-  const variant = match[2];
-  try {
-    const { markVariantDirtyUrl } = await getAdminEndpoints();
-    const res = await fetch(markVariantDirtyUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ page, variant }),
-    });
-    if (!res.ok) throw new Error('fail');
-    showMessage('Regeneration triggered');
-  } catch {
-    showMessage('Regeneration failed');
-  }
-}
+const regenerateVariant = createRegenerateVariant(
+  getIdToken,
+  document,
+  showMessage,
+  getAdminEndpoints,
+  fetch
+);
 
 document.getElementById('renderBtn')?.addEventListener('click', triggerRender);
 document.getElementById('statsBtn')?.addEventListener('click', triggerStats);
