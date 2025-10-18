@@ -446,6 +446,87 @@ export function createShowMessage(getStatusParagraphFn, doc) {
 }
 
 /**
+ * Initialize the admin interface by wiring event handlers and auth listeners.
+ * @param {{
+ *   initGoogleSignIn: () => void,
+ *   getIdToken: () => string | null | undefined,
+ *   signOut: () => Promise<void> | void,
+ * }} googleAuthModule - Google auth helper with sign-in utilities.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for the static config JSON.
+ * @param {() => unknown} getAuthFn - Getter for the Firebase auth instance.
+ * @param {(auth: unknown, callback: () => void) => void} onAuthStateChangedFn - Firebase auth listener registrar.
+ * @param {Document} doc - Document used to locate admin UI elements.
+ * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ */
+export function initAdmin(
+  googleAuthModule,
+  loadStaticConfigFn,
+  getAuthFn,
+  onAuthStateChangedFn,
+  doc,
+  fetchFn
+) {
+  if (!googleAuthModule) {
+    throw new TypeError('googleAuthModule must be provided');
+  }
+  if (typeof getAuthFn !== 'function') {
+    throw new TypeError('getAuthFn must be a function');
+  }
+  if (typeof onAuthStateChangedFn !== 'function') {
+    throw new TypeError('onAuthStateChangedFn must be a function');
+  }
+  if (!doc || typeof doc.getElementById !== 'function') {
+    throw new TypeError('doc must be a Document-like object');
+  }
+  if (typeof fetchFn !== 'function') {
+    throw new TypeError('fetchFn must be a function');
+  }
+
+  const getAdminEndpoints = createGetAdminEndpointsFromStaticConfig(
+    loadStaticConfigFn
+  );
+  const showMessage = createShowMessage(getStatusParagraph, doc);
+
+  const checkAccess = createCheckAccess(getAuthFn, doc);
+
+  const triggerRender = createTriggerRender(
+    googleAuthModule,
+    getAdminEndpoints,
+    fetchFn,
+    showMessage
+  );
+
+  const triggerStats = createTriggerStats(
+    googleAuthModule,
+    getAdminEndpoints,
+    fetchFn,
+    showMessage
+  );
+
+  const regenerateVariant = createRegenerateVariant(
+    googleAuthModule,
+    doc,
+    showMessage,
+    getAdminEndpoints,
+    fetchFn
+  );
+
+  bindTriggerRenderClick(doc, triggerRender);
+  bindTriggerStatsClick(doc, triggerStats);
+  bindRegenerateVariantSubmit(doc, regenerateVariant);
+
+  createWireSignOut(doc, googleAuthModule)();
+  onAuthStateChangedFn(getAuthFn(), checkAccess);
+  if (typeof googleAuthModule.initGoogleSignIn === 'function') {
+    googleAuthModule.initGoogleSignIn();
+  } else {
+    throw new TypeError(
+      'googleAuthModule must provide an initGoogleSignIn function'
+    );
+  }
+}
+
+/**
  * Locate the main admin content container within the provided document.
  * @param {Document} doc - Document to query for the content element.
  * @returns {HTMLElement | null} Element containing admin controls when present.
