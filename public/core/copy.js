@@ -204,6 +204,24 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     messageLogger.info('Presenter files copied successfully!');
   }
 
+  function copyBrowserAudioControls(dirs, io, messageLogger) {
+    const source = dirs.srcCoreBrowserAudioControlsFile;
+    if (!io.directoryExists(source)) {
+      messageLogger.warn(
+        `Warning: audio controls file not found at ${formatPathForLog(source)}`
+      );
+      return;
+    }
+
+    copyFileWithDirectories(
+      io,
+      source,
+      dirs.publicBrowserAudioControlsFile,
+      messageLogger,
+      'Copied: src/core/browser/audio-controls.js -> public/browser/audio-controls.js'
+    );
+  }
+
   function copySupportingDirectories(dirs, io, messageLogger) {
     const plans = [
       {
@@ -266,6 +284,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyBlogJson(dirs, io, messageLogger);
     copyToyFiles(dirs, io, messageLogger);
     copyPresenterFiles(dirs, io, messageLogger);
+    copyBrowserAudioControls(dirs, io, messageLogger);
     copySupportingDirectories(dirs, io, messageLogger);
   }
 
@@ -289,6 +308,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyBlogJson,
     copyToyFiles,
     copyPresenterFiles,
+    copyBrowserAudioControls,
     copySupportingDirectories,
     runCopyWorkflow,
   };
