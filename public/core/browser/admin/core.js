@@ -155,6 +155,72 @@ export function createTriggerRender(
 }
 
 /**
+ * Attach the trigger render handler to the render button when present.
+ * @param {Document} doc - Document used to locate the render button.
+ * @param {() => void | Promise<void>} triggerRenderFn - Handler invoked when the button is clicked.
+ * @returns {HTMLElement | null} The render button when found, otherwise null.
+ */
+export function bindTriggerRenderClick(doc, triggerRenderFn) {
+  if (!doc || typeof doc.getElementById !== 'function') {
+    throw new TypeError('doc must be a Document-like object');
+  }
+  if (typeof triggerRenderFn !== 'function') {
+    throw new TypeError('triggerRenderFn must be a function');
+  }
+
+  const button = doc.getElementById('renderBtn');
+  if (button?.addEventListener) {
+    button.addEventListener('click', triggerRenderFn);
+  }
+
+  return button ?? null;
+}
+
+/**
+ * Attach the trigger stats handler to the stats button when present.
+ * @param {Document} doc - Document used to locate the stats button.
+ * @param {() => void | Promise<void>} triggerStatsFn - Handler invoked when the button is clicked.
+ * @returns {HTMLElement | null} The stats button when found, otherwise null.
+ */
+export function bindTriggerStatsClick(doc, triggerStatsFn) {
+  if (!doc || typeof doc.getElementById !== 'function') {
+    throw new TypeError('doc must be a Document-like object');
+  }
+  if (typeof triggerStatsFn !== 'function') {
+    throw new TypeError('triggerStatsFn must be a function');
+  }
+
+  const button = doc.getElementById('statsBtn');
+  if (button?.addEventListener) {
+    button.addEventListener('click', triggerStatsFn);
+  }
+
+  return button ?? null;
+}
+
+/**
+ * Attach the regenerate variant handler to the form when present.
+ * @param {Document} doc - Document used to locate the regenerate variant form.
+ * @param {(event: Event) => void | Promise<void>} regenerateVariantFn - Handler invoked when the form is submitted.
+ * @returns {HTMLElement | null} The regenerate form when found, otherwise null.
+ */
+export function bindRegenerateVariantSubmit(doc, regenerateVariantFn) {
+  if (!doc || typeof doc.getElementById !== 'function') {
+    throw new TypeError('doc must be a Document-like object');
+  }
+  if (typeof regenerateVariantFn !== 'function') {
+    throw new TypeError('regenerateVariantFn must be a function');
+  }
+
+  const form = doc.getElementById('regenForm');
+  if (form?.addEventListener) {
+    form.addEventListener('submit', regenerateVariantFn);
+  }
+
+  return form ?? null;
+}
+
+/**
  * Create a trigger stats handler with the supplied dependencies.
  * @param {() => string | null | undefined} getIdTokenFn - Retrieves the current ID token.
  * @param {() => Promise<{ generateStatsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
