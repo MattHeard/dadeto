@@ -6,6 +6,7 @@ import {
   bindTriggerRenderClick,
   bindTriggerStatsClick,
   bindRegenerateVariantSubmit,
+  createWireSignOut,
 } from '../../../../src/core/browser/admin/core.js';
 
 const createConfig = overrides => ({
@@ -207,6 +208,41 @@ describe('bindRegenerateVariantSubmit', () => {
 
     expect(() => bindRegenerateVariantSubmit(doc, null)).toThrow(
       new TypeError('regenerateVariantFn must be a function')
+    );
+  });
+});
+
+describe('createWireSignOut', () => {
+  it('wires click handlers for sign-out links', async () => {
+    const addEventListener = jest.fn();
+    const link = { addEventListener };
+    const doc = {
+      querySelectorAll: jest.fn().mockReturnValue([link]),
+    };
+    const signOut = jest.fn().mockResolvedValue();
+
+    const wireSignOut = createWireSignOut(doc, signOut);
+
+    wireSignOut();
+
+    expect(doc.querySelectorAll).toHaveBeenCalledWith('#signoutLink');
+    expect(addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+
+    const handler = addEventListener.mock.calls[0][1];
+    const preventDefault = jest.fn();
+
+    await handler({ preventDefault });
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws when provided dependencies are invalid', () => {
+    expect(() => createWireSignOut(null, jest.fn())).toThrow(
+      new TypeError('doc must be a Document-like object')
+    );
+    expect(() => createWireSignOut({ querySelectorAll: jest.fn() }, null)).toThrow(
+      new TypeError('signOutFn must be a function')
     );
   });
 });
