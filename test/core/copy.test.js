@@ -26,6 +26,14 @@ const createDirectories = () => {
     publicConstantsDir: posix.join(publicDir, 'constants'),
     srcCoreDir: posix.join(srcDir, 'core'),
     publicCoreDir: posix.join(publicDir, 'core'),
+    srcCoreBrowserAudioControlsFile: posix.join(
+      srcDir,
+      'core/browser/audio-controls.js'
+    ),
+    publicBrowserAudioControlsFile: posix.join(
+      publicDir,
+      'browser/audio-controls.js'
+    ),
     srcAssetsDir: posix.join(srcDir, 'assets'),
     publicAssetsDir: publicDir,
     srcPresentersDir: posix.join(srcDir, 'presenters'),
@@ -559,6 +567,48 @@ describe('createCopyCore', () => {
       expect(logger.warn).toHaveBeenCalledWith(
         'Warning: presenters directory not found at src/presenters'
       );
+    });
+
+    it('copies audio controls from core into the browser directory', () => {
+      const io = {
+        directoryExists: jest
+          .fn()
+          .mockImplementation(
+            target => target === directories.srcCoreBrowserAudioControlsFile
+          ),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyBrowserAudioControls(directories, io, logger);
+
+      expect(io.createDirectory).toHaveBeenCalledWith(
+        posix.join(directories.publicDir, 'browser')
+      );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        directories.srcCoreBrowserAudioControlsFile,
+        directories.publicBrowserAudioControlsFile
+      );
+      expect(logger.warn).not.toHaveBeenCalled();
+    });
+
+    it('warns when the audio controls file is missing', () => {
+      const io = {
+        directoryExists: jest.fn().mockReturnValue(false),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyBrowserAudioControls(directories, io, logger);
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Warning: audio controls file not found at src/core/browser/audio-controls.js'
+      );
+      expect(io.copyFile).not.toHaveBeenCalled();
     });
 
     it('copies supporting directories and logs missing ones', () => {
