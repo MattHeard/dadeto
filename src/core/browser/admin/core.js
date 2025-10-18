@@ -163,20 +163,20 @@ export async function executeTriggerRender(
 
 /**
  * Create a trigger render handler with the supplied dependencies.
- * @param {() => string | null | undefined} getIdTokenFn - Retrieves the current ID token.
+ * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
  * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
  * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
  * @param {(text: string) => void} showMessage - Callback to surface status messages.
  * @returns {() => Promise<void>} Function that triggers render when invoked.
  */
 export function createTriggerRender(
-  getIdTokenFn,
+  googleAuth,
   getAdminEndpointsFn,
   fetchFn,
   showMessage
 ) {
-  if (typeof getIdTokenFn !== 'function') {
-    throw new TypeError('getIdTokenFn must be a function');
+  if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
+    throw new TypeError('googleAuth must provide a getIdToken function');
   }
   if (typeof getAdminEndpointsFn !== 'function') {
     throw new TypeError('getAdminEndpointsFn must be a function');
@@ -189,7 +189,7 @@ export function createTriggerRender(
   }
 
   return async function triggerRender() {
-    const token = getIdTokenFn();
+    const token = googleAuth.getIdToken();
     if (!token) {
       showMessage('Render failed: missing ID token');
     } else {
@@ -267,15 +267,15 @@ export function bindRegenerateVariantSubmit(doc, regenerateVariantFn) {
 /**
  * Create a function that wires sign-out links to the provided sign-out handler.
  * @param {Document} doc - Document used to locate sign-out links.
- * @param {() => Promise<void> | void} signOutFn - Function invoked to sign the user out.
+ * @param {{ signOut: () => Promise<void> | void }} googleAuth - Google auth helper with a `signOut` method.
  * @returns {() => void} Function that attaches click handlers to sign-out links.
  */
-export function createWireSignOut(doc, signOutFn) {
+export function createWireSignOut(doc, googleAuth) {
   if (!doc || typeof doc.querySelectorAll !== 'function') {
     throw new TypeError('doc must be a Document-like object');
   }
-  if (typeof signOutFn !== 'function') {
-    throw new TypeError('signOutFn must be a function');
+  if (!googleAuth || typeof googleAuth.signOut !== 'function') {
+    throw new TypeError('googleAuth must provide a signOut function');
   }
 
   return function wireSignOut() {
@@ -283,7 +283,7 @@ export function createWireSignOut(doc, signOutFn) {
       if (link?.addEventListener) {
         link.addEventListener('click', async event => {
           event?.preventDefault?.();
-          await signOutFn();
+          await googleAuth.signOut();
         });
       }
     });
@@ -292,20 +292,20 @@ export function createWireSignOut(doc, signOutFn) {
 
 /**
  * Create a trigger stats handler with the supplied dependencies.
- * @param {() => string | null | undefined} getIdTokenFn - Retrieves the current ID token.
+ * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
  * @param {() => Promise<{ generateStatsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
  * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
  * @param {(text: string) => void} showMessage - Callback to surface status messages.
  * @returns {() => Promise<void>} Function that triggers stats generation when invoked.
  */
 export function createTriggerStats(
-  getIdTokenFn,
+  googleAuth,
   getAdminEndpointsFn,
   fetchFn,
   showMessage
 ) {
-  if (typeof getIdTokenFn !== 'function') {
-    throw new TypeError('getIdTokenFn must be a function');
+  if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
+    throw new TypeError('googleAuth must provide a getIdToken function');
   }
   if (typeof getAdminEndpointsFn !== 'function') {
     throw new TypeError('getAdminEndpointsFn must be a function');
@@ -318,7 +318,7 @@ export function createTriggerStats(
   }
 
   return async function triggerStats() {
-    const token = getIdTokenFn();
+    const token = googleAuth.getIdToken();
     if (!token) {
       showMessage('Stats generation failed');
       return;
@@ -339,7 +339,7 @@ export function createTriggerStats(
 
 /**
  * Create a regenerate variant handler with the supplied dependencies.
- * @param {() => string | null | undefined} getIdTokenFn - Retrieves the current ID token.
+ * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
  * @param {Document} doc - Document used to locate form inputs.
  * @param {(text: string) => void} showMessage - Callback to surface status messages.
  * @param {() => Promise<{ markVariantDirtyUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
@@ -347,14 +347,14 @@ export function createTriggerStats(
  * @returns {(event: Event) => Promise<void>} Function that triggers variant regeneration when invoked.
  */
 export function createRegenerateVariant(
-  getIdTokenFn,
+  googleAuth,
   doc,
   showMessage,
   getAdminEndpointsFn,
   fetchFn
 ) {
-  if (typeof getIdTokenFn !== 'function') {
-    throw new TypeError('getIdTokenFn must be a function');
+  if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
+    throw new TypeError('googleAuth must provide a getIdToken function');
   }
   if (!doc || typeof doc.getElementById !== 'function') {
     throw new TypeError('doc must be a Document-like object');
@@ -372,7 +372,7 @@ export function createRegenerateVariant(
   return async function regenerateVariant(event) {
     event?.preventDefault?.();
 
-    const token = getIdTokenFn();
+    const token = googleAuth.getIdToken();
     if (!token) {
       return;
     }

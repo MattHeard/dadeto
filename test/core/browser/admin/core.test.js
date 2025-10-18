@@ -5,7 +5,9 @@ import {
   createGetAdminEndpoints,
   createGetAdminEndpointsFromStaticConfig,
   createShowMessage,
+  createTriggerRender,
   createTriggerStats,
+  createRegenerateVariant,
   bindTriggerRenderClick,
   bindTriggerStatsClick,
   bindRegenerateVariantSubmit,
@@ -93,11 +95,70 @@ describe('createShowMessage', () => {
   });
 });
 
+describe('createTriggerRender', () => {
+  const renderUrl = 'https://example.com/render';
+
+  it('invokes the render endpoint and reports success', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ triggerRenderContentsUrl: renderUrl });
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
+    const showMessage = jest.fn();
+
+    const triggerRender = createTriggerRender(
+      googleAuth,
+      getAdminEndpoints,
+      fetch,
+      showMessage
+    );
+
+    await triggerRender();
+
+    expect(googleAuth.getIdToken).toHaveBeenCalledTimes(1);
+    expect(getAdminEndpoints).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(renderUrl, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer token' },
+    });
+    expect(showMessage).toHaveBeenCalledWith('Render triggered');
+  });
+
+  it('reports failure when no token is available', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue(null) };
+    const getAdminEndpoints = jest.fn();
+    const fetch = jest.fn();
+    const showMessage = jest.fn();
+
+    const triggerRender = createTriggerRender(
+      googleAuth,
+      getAdminEndpoints,
+      fetch,
+      showMessage
+    );
+
+    await triggerRender();
+
+    expect(getAdminEndpoints).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(showMessage).toHaveBeenCalledWith(
+      'Render failed: missing ID token'
+    );
+  });
+
+  it('throws when googleAuth does not expose getIdToken', () => {
+    expect(() =>
+      createTriggerRender({}, jest.fn(), jest.fn(), jest.fn())
+    ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
+  });
+});
+
 describe('createTriggerStats', () => {
   const statsUrl = 'https://example.com/stats';
 
   it('invokes the stats endpoint and reports success', async () => {
     const getIdToken = jest.fn().mockReturnValue('token');
+    const googleAuth = { getIdToken };
     const getAdminEndpoints = jest
       .fn()
       .mockResolvedValue({ generateStatsUrl: statsUrl });
@@ -105,7 +166,7 @@ describe('createTriggerStats', () => {
     const showMessage = jest.fn();
 
     const triggerStats = createTriggerStats(
-      getIdToken,
+      googleAuth,
       getAdminEndpoints,
       fetch,
       showMessage
@@ -124,12 +185,13 @@ describe('createTriggerStats', () => {
 
   it('reports failure when no token is available', async () => {
     const getIdToken = jest.fn().mockReturnValue(null);
+    const googleAuth = { getIdToken };
     const getAdminEndpoints = jest.fn();
     const fetch = jest.fn();
     const showMessage = jest.fn();
 
     const triggerStats = createTriggerStats(
-      getIdToken,
+      googleAuth,
       getAdminEndpoints,
       fetch,
       showMessage
@@ -144,6 +206,7 @@ describe('createTriggerStats', () => {
 
   it('reports failure when the endpoint invocation rejects', async () => {
     const getIdToken = jest.fn().mockReturnValue('token');
+    const googleAuth = { getIdToken };
     const getAdminEndpoints = jest
       .fn()
       .mockResolvedValue({ generateStatsUrl: statsUrl });
@@ -151,7 +214,7 @@ describe('createTriggerStats', () => {
     const showMessage = jest.fn();
 
     const triggerStats = createTriggerStats(
-      getIdToken,
+      googleAuth,
       getAdminEndpoints,
       fetch,
       showMessage
@@ -160,6 +223,72 @@ describe('createTriggerStats', () => {
     await triggerStats();
 
     expect(showMessage).toHaveBeenCalledWith('Stats generation failed');
+  });
+
+  it('throws when googleAuth is missing getIdToken', () => {
+    expect(() =>
+      createTriggerStats(
+        {},
+        jest.fn(),
+        jest.fn(),
+        jest.fn()
+      )
+    ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
+  });
+});
+
+describe('createRegenerateVariant', () => {
+  const markVariantDirtyUrl = 'https://example.com/variant';
+
+  it('invokes the regenerate endpoint and reports success', async () => {
+    const getIdToken = jest.fn().mockReturnValue('token');
+    const googleAuth = { getIdToken };
+    const input = { value: '12Ab ' };
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(input),
+    };
+    const showMessage = jest.fn();
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ markVariantDirtyUrl });
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
+    const preventDefault = jest.fn();
+
+    const regenerateVariant = createRegenerateVariant(
+      googleAuth,
+      doc,
+      showMessage,
+      getAdminEndpoints,
+      fetch
+    );
+
+    await regenerateVariant({ preventDefault });
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(doc.getElementById).toHaveBeenCalledWith('regenInput');
+    expect(getIdToken).toHaveBeenCalledTimes(1);
+    expect(getAdminEndpoints).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(markVariantDirtyUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ page: 12, variant: 'Ab' }),
+    });
+    expect(showMessage).toHaveBeenCalledWith('Regeneration triggered');
+  });
+
+  it('throws when googleAuth is missing getIdToken', () => {
+    expect(() =>
+      createRegenerateVariant(
+        {},
+        { getElementById: jest.fn() },
+        jest.fn(),
+        jest.fn(),
+        jest.fn()
+      )
+    ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
   });
 });
 
@@ -297,8 +426,9 @@ describe('createWireSignOut', () => {
       querySelectorAll: jest.fn().mockReturnValue([link]),
     };
     const signOut = jest.fn().mockResolvedValue();
+    const googleAuth = { signOut };
 
-    const wireSignOut = createWireSignOut(doc, signOut);
+    const wireSignOut = createWireSignOut(doc, googleAuth);
 
     wireSignOut();
 
@@ -315,12 +445,12 @@ describe('createWireSignOut', () => {
   });
 
   it('throws when provided dependencies are invalid', () => {
-    expect(() => createWireSignOut(null, jest.fn())).toThrow(
+    expect(() => createWireSignOut(null, { signOut: jest.fn() })).toThrow(
       new TypeError('doc must be a Document-like object')
     );
-    expect(() => createWireSignOut({ querySelectorAll: jest.fn() }, null)).toThrow(
-      new TypeError('signOutFn must be a function')
-    );
+    expect(() =>
+      createWireSignOut({ querySelectorAll: jest.fn() }, {})
+    ).toThrow(new TypeError('googleAuth must provide a signOut function'));
   });
 });
 
