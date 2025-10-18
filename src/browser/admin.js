@@ -75,8 +75,6 @@ bindTriggerRenderClick(document, triggerRender);
 bindTriggerStatsClick(document, triggerStats);
 bindRegenerateVariantSubmit(document, regenerateVariant);
 
-const wireSignOut = createWireSignOut(document, signOut);
-
-wireSignOut();
+createWireSignOut(document, signOut)();
 onAuthStateChanged(getAuth(), checkAccess);
 initGoogleSignIn();
