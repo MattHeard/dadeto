@@ -35,6 +35,21 @@ export function mapConfigToAdminEndpoints(config) {
 }
 
 /**
+ * Build the admin endpoints promise using a provided static config loader.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for the static config.
+ * @returns {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>}
+ */
+export function createAdminEndpointsPromise(loadStaticConfigFn) {
+  if (typeof loadStaticConfigFn !== 'function') {
+    return Promise.resolve(getDefaultAdminEndpointsCopy());
+  }
+
+  return loadStaticConfigFn()
+    .then(mapConfigToAdminEndpoints)
+    .catch(getDefaultAdminEndpointsCopy);
+}
+
+/**
  * Locate the status paragraph within the provided document.
  * @param {Document} doc - Document to query for the status element.
  * @returns {HTMLElement | null} Paragraph element used for status messages.
