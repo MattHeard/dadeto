@@ -1,8 +1,7 @@
 import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import {
-  mapConfigToAdminEndpoints,
-  getDefaultAdminEndpointsCopy,
+  createAdminEndpointsPromise,
   getStatusParagraph,
   getCurrentUser,
   getAdminContent,
@@ -19,22 +18,12 @@ import {
 let adminEndpointsPromise;
 
 /**
- * Build the admin endpoints promise using the static configuration fallback.
- * @returns {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>}
- */
-function createAdminEndpointsPromise() {
-  return loadStaticConfig()
-    .then(mapConfigToAdminEndpoints)
-    .catch(getDefaultAdminEndpointsCopy);
-}
-
-/**
  * Resolve admin endpoints from the static config with production fallbacks.
  * @returns {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>}
  */
 async function getAdminEndpoints() {
   if (!adminEndpointsPromise) {
-    adminEndpointsPromise = createAdminEndpointsPromise();
+    adminEndpointsPromise = createAdminEndpointsPromise(loadStaticConfig);
   }
   return adminEndpointsPromise;
 }
