@@ -3,12 +3,7 @@ import { loadStaticConfig } from './loadStaticConfig.js';
 import {
   createAdminEndpointsPromise,
   getStatusParagraph,
-  getCurrentUser,
-  getAdminContent,
-  getSignInButtons,
-  getSignOutSections,
-  updateAuthControlsDisplay,
-  ADMIN_UID,
+  createCheckAccess,
 } from './admin-core.js';
 import {
   getAuth,
@@ -39,22 +34,7 @@ function showMessage(text) {
   }
 }
 
-/**
- * Reveals admin content for the correct UID and hides it otherwise without
- * redirecting.
- */
-function checkAccess() {
-  const user = getCurrentUser(getAuth);
-  const content = getAdminContent(document);
-  const signins = getSignInButtons(document);
-  const signouts = getSignOutSections(document);
-  updateAuthControlsDisplay(user, signins, signouts);
-  if (!user || user.uid !== ADMIN_UID) {
-    if (content) content.style.display = 'none';
-    return;
-  }
-  if (content) content.style.display = '';
-}
+const checkAccess = createCheckAccess(getAuth, document);
 
 /**
  *
