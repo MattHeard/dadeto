@@ -116,3 +116,27 @@ export function updateAuthControlsDisplay(user, signIns, signOuts) {
     element.style.display = isSignedIn ? '' : 'none';
   });
 }
+
+/**
+ * Build a check access handler tied to the provided auth getter and document.
+ * @param {() => { currentUser?: { uid?: string } } | null | undefined} getAuthFn - Getter for the auth instance.
+ * @param {Document} doc - Document used to resolve admin controls.
+ * @returns {() => void} Function that evaluates the current access state.
+ */
+export function createCheckAccess(getAuthFn, doc) {
+  return function checkAccess() {
+    const user = getCurrentUser(getAuthFn);
+    const content = getAdminContent(doc);
+    const signins = getSignInButtons(doc);
+    const signouts = getSignOutSections(doc);
+
+    updateAuthControlsDisplay(user, signins, signouts);
+
+    if (!user || user.uid !== ADMIN_UID) {
+      if (content) content.style.display = 'none';
+      return;
+    }
+
+    if (content) content.style.display = '';
+  };
+}
