@@ -5,6 +5,7 @@ import {
   getStatusParagraph,
   createCheckAccess,
   createTriggerRender,
+  createTriggerStats,
 } from './admin-core.js';
 import {
   getAuth,
@@ -48,24 +49,14 @@ const triggerRender = createTriggerRender(
 );
 
 /**
- * Trigger stats generation.
+ * Trigger stats generation when initiated from the admin UI.
  */
-async function triggerStats() {
-  const token = getIdToken();
-  if (!token) {
-    return;
-  }
-  try {
-    const { generateStatsUrl } = await getAdminEndpoints();
-    await fetch(generateStatsUrl, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    showMessage('Stats generated');
-  } catch {
-    showMessage('Stats generation failed');
-  }
-}
+const triggerStats = createTriggerStats(
+  getIdToken,
+  getAdminEndpoints,
+  fetch,
+  showMessage
+);
 
 /**
  * Submit page/variant to trigger regeneration.
