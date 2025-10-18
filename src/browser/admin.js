@@ -2,7 +2,9 @@ import { initGoogleSignIn, getIdToken, signOut } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import {
   createAdminEndpointsPromise,
+  createGetAdminEndpoints,
   getStatusParagraph,
+  createShowMessage,
   createCheckAccess,
   createTriggerRender,
   createTriggerStats,
@@ -17,29 +19,10 @@ import {
   onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
-let adminEndpointsPromise;
-
-/**
- * Resolve admin endpoints from the static config with production fallbacks.
- * @returns {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>}
- */
-async function getAdminEndpoints() {
-  if (!adminEndpointsPromise) {
-    adminEndpointsPromise = createAdminEndpointsPromise(loadStaticConfig);
-  }
-  return adminEndpointsPromise;
-}
-const statusParagraph = getStatusParagraph(document);
-
-/**
- * Display a status message on the admin page.
- * @param {string} text - Message to show.
- */
-function showMessage(text) {
-  if (statusParagraph) {
-    statusParagraph.innerHTML = `<strong>${text}</strong>`;
-  }
-}
+const getAdminEndpoints = createGetAdminEndpoints(() =>
+  createAdminEndpointsPromise(loadStaticConfig)
+);
+const showMessage = createShowMessage(getStatusParagraph, document);
 
 const checkAccess = createCheckAccess(getAuth, document);
 

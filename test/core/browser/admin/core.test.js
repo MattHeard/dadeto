@@ -2,6 +2,8 @@ import { jest } from '@jest/globals';
 import {
   createAdminEndpointsPromise,
   DEFAULT_ADMIN_ENDPOINTS,
+  createGetAdminEndpoints,
+  createShowMessage,
   createTriggerStats,
   bindTriggerRenderClick,
   bindTriggerStatsClick,
@@ -14,6 +16,63 @@ const createConfig = overrides => ({
   markVariantDirtyUrl: 'https://example.com/mark',
   generateStatsUrl: 'https://example.com/stats',
   ...overrides,
+});
+
+describe('createGetAdminEndpoints', () => {
+  it('memoizes the produced admin endpoints promise', () => {
+    const promise = Promise.resolve(createConfig());
+    const factory = jest.fn().mockReturnValue(promise);
+
+    const getAdminEndpoints = createGetAdminEndpoints(factory);
+
+    expect(getAdminEndpoints()).toBe(promise);
+    expect(getAdminEndpoints()).toBe(promise);
+    expect(factory).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws when the provided factory is not a function', () => {
+    expect(() => createGetAdminEndpoints(null)).toThrow(
+      new TypeError('createAdminEndpointsPromiseFn must be a function')
+    );
+  });
+});
+
+describe('createShowMessage', () => {
+  it('returns a messenger that updates the status paragraph when present', () => {
+    const element = { innerHTML: '' };
+    const getStatusParagraph = jest.fn().mockReturnValue(element);
+    const doc = { getElementById: jest.fn() };
+
+    const showMessage = createShowMessage(getStatusParagraph, doc);
+
+    showMessage('Hello');
+
+    expect(getStatusParagraph).toHaveBeenCalledWith(doc);
+    expect(element.innerHTML).toBe('<strong>Hello</strong>');
+  });
+
+  it('does nothing when the status paragraph is not found', () => {
+    const getStatusParagraph = jest.fn().mockReturnValue(null);
+    const doc = { getElementById: jest.fn() };
+
+    const showMessage = createShowMessage(getStatusParagraph, doc);
+
+    expect(() => showMessage('Hello')).not.toThrow();
+  });
+
+  it('throws when the resolver is not a function', () => {
+    const doc = { getElementById: jest.fn() };
+
+    expect(() => createShowMessage(null, doc)).toThrow(
+      new TypeError('getStatusParagraphFn must be a function')
+    );
+  });
+
+  it('throws when the document is invalid', () => {
+    expect(() => createShowMessage(jest.fn(), null)).toThrow(
+      new TypeError('doc must be a Document-like object')
+    );
+  });
 });
 
 describe('createTriggerStats', () => {

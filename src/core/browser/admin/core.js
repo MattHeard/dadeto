@@ -50,6 +50,35 @@ export function createAdminEndpointsPromise(loadStaticConfigFn) {
 }
 
 /**
+ * Create a memoized admin endpoints getter backed by a promise factory.
+ * @param {() => Promise<{
+ *   triggerRenderContentsUrl: string,
+ *   markVariantDirtyUrl: string,
+ *   generateStatsUrl: string,
+ * }>} createAdminEndpointsPromiseFn - Function that produces the admin endpoints promise.
+ * @returns {() => Promise<{
+ *   triggerRenderContentsUrl: string,
+ *   markVariantDirtyUrl: string,
+ *   generateStatsUrl: string,
+ * }>} Function returning a memoized admin endpoints promise.
+ */
+export function createGetAdminEndpoints(createAdminEndpointsPromiseFn) {
+  if (typeof createAdminEndpointsPromiseFn !== 'function') {
+    throw new TypeError('createAdminEndpointsPromiseFn must be a function');
+  }
+
+  let adminEndpointsPromise;
+
+  return function getAdminEndpoints() {
+    if (!adminEndpointsPromise) {
+      adminEndpointsPromise = createAdminEndpointsPromiseFn();
+    }
+
+    return adminEndpointsPromise;
+  };
+}
+
+/**
  * Trigger the render contents endpoint using the provided dependencies.
  * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Function resolving admin endpoints.
  * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like function for network calls.
@@ -374,6 +403,31 @@ export function createRegenerateVariant(
  */
 export function getStatusParagraph(doc) {
   return doc.getElementById('renderStatus');
+}
+
+/**
+ * Create a status message reporter bound to the provided document lookup.
+ * @param {(doc: Document) => HTMLElement | null} getStatusParagraphFn - Resolves the status element.
+ * @param {Document} doc - Document used to locate the status element.
+ * @returns {(text: string) => void} Function that renders status messages.
+ */
+export function createShowMessage(getStatusParagraphFn, doc) {
+  if (typeof getStatusParagraphFn !== 'function') {
+    throw new TypeError('getStatusParagraphFn must be a function');
+  }
+  if (!doc || typeof doc.getElementById !== 'function') {
+    throw new TypeError('doc must be a Document-like object');
+  }
+
+  const statusParagraph = getStatusParagraphFn(doc);
+
+  return function showMessage(text) {
+    if (!statusParagraph) {
+      return;
+    }
+
+    statusParagraph.innerHTML = `<strong>${String(text)}</strong>`;
+  };
 }
 
 /**
