@@ -7,6 +7,9 @@ import {
   createTriggerRender,
   createTriggerStats,
   createRegenerateVariant,
+  bindTriggerRenderClick,
+  bindTriggerStatsClick,
+  bindRegenerateVariantSubmit,
 } from './admin-core.js';
 import {
   getAuth,
@@ -67,11 +70,9 @@ const regenerateVariant = createRegenerateVariant(
   fetch
 );
 
-document.getElementById('renderBtn')?.addEventListener('click', triggerRender);
-document.getElementById('statsBtn')?.addEventListener('click', triggerStats);
-document
-  .getElementById('regenForm')
-  ?.addEventListener('submit', regenerateVariant);
+bindTriggerRenderClick(document, triggerRender);
+bindTriggerStatsClick(document, triggerStats);
+bindRegenerateVariantSubmit(document, regenerateVariant);
 
 /**
  *

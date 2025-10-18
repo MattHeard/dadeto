@@ -3,6 +3,9 @@ import {
   createAdminEndpointsPromise,
   DEFAULT_ADMIN_ENDPOINTS,
   createTriggerStats,
+  bindTriggerRenderClick,
+  bindTriggerStatsClick,
+  bindRegenerateVariantSubmit,
 } from '../../../../src/core/browser/admin/core.js';
 
 const createConfig = overrides => ({
@@ -79,6 +82,132 @@ describe('createTriggerStats', () => {
     await triggerStats();
 
     expect(showMessage).toHaveBeenCalledWith('Stats generation failed');
+  });
+});
+
+describe('bindTriggerRenderClick', () => {
+  it('wires the click handler when the render button exists', () => {
+    const addEventListener = jest.fn();
+    const button = { addEventListener };
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(button),
+    };
+    const triggerRender = jest.fn();
+
+    const result = bindTriggerRenderClick(doc, triggerRender);
+
+    expect(doc.getElementById).toHaveBeenCalledWith('renderBtn');
+    expect(addEventListener).toHaveBeenCalledWith('click', triggerRender);
+    expect(result).toBe(button);
+  });
+
+  it('returns null when the render button is not present', () => {
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(null),
+    };
+
+    const result = bindTriggerRenderClick(doc, jest.fn());
+
+    expect(doc.getElementById).toHaveBeenCalledWith('renderBtn');
+    expect(result).toBeNull();
+  });
+
+  it('throws when provided document is invalid', () => {
+    expect(() => bindTriggerRenderClick(null, jest.fn())).toThrow(
+      new TypeError('doc must be a Document-like object')
+    );
+  });
+
+  it('throws when provided trigger handler is not a function', () => {
+    const doc = { getElementById: jest.fn() };
+
+    expect(() => bindTriggerRenderClick(doc, null)).toThrow(
+      new TypeError('triggerRenderFn must be a function')
+    );
+  });
+});
+
+describe('bindTriggerStatsClick', () => {
+  it('wires the click handler when the stats button exists', () => {
+    const addEventListener = jest.fn();
+    const button = { addEventListener };
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(button),
+    };
+    const triggerStats = jest.fn();
+
+    const result = bindTriggerStatsClick(doc, triggerStats);
+
+    expect(doc.getElementById).toHaveBeenCalledWith('statsBtn');
+    expect(addEventListener).toHaveBeenCalledWith('click', triggerStats);
+    expect(result).toBe(button);
+  });
+
+  it('returns null when the stats button is not present', () => {
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(null),
+    };
+
+    const result = bindTriggerStatsClick(doc, jest.fn());
+
+    expect(doc.getElementById).toHaveBeenCalledWith('statsBtn');
+    expect(result).toBeNull();
+  });
+
+  it('throws when provided document is invalid', () => {
+    expect(() => bindTriggerStatsClick(null, jest.fn())).toThrow(
+      new TypeError('doc must be a Document-like object')
+    );
+  });
+
+  it('throws when provided trigger handler is not a function', () => {
+    const doc = { getElementById: jest.fn() };
+
+    expect(() => bindTriggerStatsClick(doc, null)).toThrow(
+      new TypeError('triggerStatsFn must be a function')
+    );
+  });
+});
+
+describe('bindRegenerateVariantSubmit', () => {
+  it('wires the submit handler when the regenerate form exists', () => {
+    const addEventListener = jest.fn();
+    const form = { addEventListener };
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(form),
+    };
+    const regenerateVariant = jest.fn();
+
+    const result = bindRegenerateVariantSubmit(doc, regenerateVariant);
+
+    expect(doc.getElementById).toHaveBeenCalledWith('regenForm');
+    expect(addEventListener).toHaveBeenCalledWith('submit', regenerateVariant);
+    expect(result).toBe(form);
+  });
+
+  it('returns null when the regenerate form is not present', () => {
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(null),
+    };
+
+    const result = bindRegenerateVariantSubmit(doc, jest.fn());
+
+    expect(doc.getElementById).toHaveBeenCalledWith('regenForm');
+    expect(result).toBeNull();
+  });
+
+  it('throws when provided document is invalid', () => {
+    expect(() => bindRegenerateVariantSubmit(null, jest.fn())).toThrow(
+      new TypeError('doc must be a Document-like object')
+    );
+  });
+
+  it('throws when provided submit handler is not a function', () => {
+    const doc = { getElementById: jest.fn() };
+
+    expect(() => bindRegenerateVariantSubmit(doc, null)).toThrow(
+      new TypeError('regenerateVariantFn must be a function')
+    );
   });
 });
 
