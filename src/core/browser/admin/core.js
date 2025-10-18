@@ -202,6 +202,80 @@ export function createTriggerStats(
 }
 
 /**
+ * Create a regenerate variant handler with the supplied dependencies.
+ * @param {() => string | null | undefined} getIdTokenFn - Retrieves the current ID token.
+ * @param {Document} doc - Document used to locate form inputs.
+ * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @param {() => Promise<{ markVariantDirtyUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
+ * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ * @returns {(event: Event) => Promise<void>} Function that triggers variant regeneration when invoked.
+ */
+export function createRegenerateVariant(
+  getIdTokenFn,
+  doc,
+  showMessage,
+  getAdminEndpointsFn,
+  fetchFn
+) {
+  if (typeof getIdTokenFn !== 'function') {
+    throw new TypeError('getIdTokenFn must be a function');
+  }
+  if (!doc || typeof doc.getElementById !== 'function') {
+    throw new TypeError('doc must be a Document-like object');
+  }
+  if (typeof showMessage !== 'function') {
+    throw new TypeError('showMessage must be a function');
+  }
+  if (typeof getAdminEndpointsFn !== 'function') {
+    throw new TypeError('getAdminEndpointsFn must be a function');
+  }
+  if (typeof fetchFn !== 'function') {
+    throw new TypeError('fetchFn must be a function');
+  }
+
+  return async function regenerateVariant(event) {
+    event?.preventDefault?.();
+
+    const token = getIdTokenFn();
+    if (!token) {
+      return;
+    }
+
+    const input = doc.getElementById('regenInput');
+    const value = input?.value?.trim?.();
+    const match = value?.match?.(/^(\d+)([a-zA-Z]+)$/);
+
+    if (!match) {
+      showMessage('Invalid format');
+      return;
+    }
+
+    const page = Number(match[1]);
+    const variant = match[2];
+
+    try {
+      const { markVariantDirtyUrl } = await getAdminEndpointsFn();
+      const res = await fetchFn(markVariantDirtyUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ page, variant }),
+      });
+
+      if (!res?.ok) {
+        throw new Error('fail');
+      }
+
+      showMessage('Regeneration triggered');
+    } catch {
+      showMessage('Regeneration failed');
+    }
+  };
+}
+
+/**
  * Locate the status paragraph within the provided document.
  * @param {Document} doc - Document to query for the status element.
  * @returns {HTMLElement | null} Paragraph element used for status messages.
