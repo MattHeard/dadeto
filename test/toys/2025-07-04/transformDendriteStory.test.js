@@ -1,4 +1,4 @@
-import { transformDendriteStory } from '../../../src/toys/2025-07-04/transformDendriteStory.js';
+import { transformDendriteStory } from '../../../src/core/toys/2025-07-04/transformDendriteStory.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('transformDendriteStory', () => {

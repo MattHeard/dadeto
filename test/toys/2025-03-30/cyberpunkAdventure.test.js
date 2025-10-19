@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
-import { cyberpunkAdventure } from '../../../src/toys/2025-03-30/cyberpunkAdventure.js';
+import { cyberpunkAdventure } from '../../../src/core/toys/2025-03-30/cyberpunkAdventure.js';
 
 describe('Cyberpunk Text Game', () => {
   let tempData;

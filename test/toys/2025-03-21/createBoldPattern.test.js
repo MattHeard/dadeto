@@ -6,7 +6,10 @@ import { beforeAll, describe, test, expect } from '@jest/globals';
 let createBoldPattern;
 
 beforeAll(async () => {
-  const srcPath = path.join(process.cwd(), 'src/toys/2025-03-21/italics.js');
+  const srcPath = path.join(
+    process.cwd(),
+    'src/core/toys/2025-03-21/italics.js'
+  );
   let src = fs.readFileSync(srcPath, 'utf8');
   src = src.replace(/from '\.\/(.*?)'/g, (_, p) => {
     const abs = pathToFileURL(path.join(path.dirname(srcPath), p));

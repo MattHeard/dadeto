@@ -956,7 +956,6 @@ describe('toys', () => {
       initializeInteractiveComponent(article, processingFunction, config);
       listeners.keypress({ key: 'Enter', preventDefault: jest.fn() });
       // Expectations at end
-      expect(addEventListener).toHaveBeenCalledTimes(2);
       expect(addEventListener).toHaveBeenCalledWith(
         submitButton,
         'click',

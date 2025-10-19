@@ -5,7 +5,10 @@ import { beforeAll, describe, test, expect } from '@jest/globals';
 let isEmptyText;
 
 beforeAll(async () => {
-  const filePath = path.join(process.cwd(), 'src/toys/2025-03-21/italics.js');
+  const filePath = path.join(
+    process.cwd(),
+    'src/core/toys/2025-03-21/italics.js'
+  );
   let src = fs.readFileSync(filePath, 'utf8');
   src += '\nexport { isEmptyText };';
   ({ isEmptyText } = await import(

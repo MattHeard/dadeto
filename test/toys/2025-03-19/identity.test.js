@@ -1,4 +1,4 @@
-import { identity } from '../../../src/toys/2025-03-19/identity.js';
+import { identity } from '../../../src/core/toys/2025-03-19/identity.js';
 
 describe('identity function', () => {
   test('returns primitive values unchanged', () => {

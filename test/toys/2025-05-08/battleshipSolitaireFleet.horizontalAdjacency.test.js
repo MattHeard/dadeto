@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { generateFleet } from '../../../src/toys/2025-05-08/battleshipSolitaireFleet.js';
+import { generateFleet } from '../../../src/core/toys/2025-05-08/battleshipSolitaireFleet.js';
 
 describe('generateFleet noTouching horizontal adjacency', () => {
   test('fails on single row board due to adjacency', () => {

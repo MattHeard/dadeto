@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { stringToJsonArrayToy } from '../../../src/toys/2025-05-15/stringToJsonArray.js';
+import { stringToJsonArrayToy } from '../../../src/core/toys/2025-05-15/stringToJsonArray.js';
 
 describe('stringToJsonArrayToy', () => {
   test('converts comma-delimited string to JSON array', () => {

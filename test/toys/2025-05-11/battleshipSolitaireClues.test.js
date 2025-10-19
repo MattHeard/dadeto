@@ -1,7 +1,7 @@
 // Tests for Battleship Solitaire Clue Generator
 // Created: 2025-05-11
 
-import { generateClues } from '../../../src/toys/2025-05-11/battleshipSolitaireClues.js';
+import { generateClues } from '../../../src/core/toys/2025-05-11/battleshipSolitaireClues.js';
 
 describe('generateClues', () => {
   it('returns an error for invalid JSON', () => {

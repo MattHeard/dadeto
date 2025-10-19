@@ -1,4 +1,4 @@
-import { setPermanentData } from '../../../src/toys/2025-07-05/setPermanentData.js';
+import { setPermanentData } from '../../../src/core/toys/2025-07-05/setPermanentData.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('setPermanentData', () => {
