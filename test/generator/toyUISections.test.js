@@ -88,6 +88,7 @@ describe('TOY_UI_SECTIONS integration', () => {
     const dropdown = match[1];
     const expectedOptions = [
       'text',
+      'textarea',
       'number',
       'kv',
       'dendrite-story',

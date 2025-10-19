@@ -7,11 +7,13 @@ describe('defaultHandler', () => {
     const textInput = {};
     const number = { _dispose: jest.fn() };
     const kv = {};
+    const textarea = { _dispose: jest.fn() };
     const querySelector = jest
       .fn()
       .mockReturnValueOnce(number)
       .mockReturnValueOnce(kv)
-      .mockReturnValueOnce(null);
+      .mockReturnValueOnce(null)
+      .mockReturnValueOnce(textarea);
     const dom = {
       hide: jest.fn(),
       disable: jest.fn(),
@@ -24,8 +26,10 @@ describe('defaultHandler', () => {
     expect(dom.hide).toHaveBeenCalledWith(textInput);
     expect(dom.disable).toHaveBeenCalledWith(textInput);
     expect(number._dispose).toHaveBeenCalled();
+    expect(textarea._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith(container, number);
-    expect(dom.removeChild).toHaveBeenCalledTimes(1);
+    expect(dom.removeChild).toHaveBeenCalledWith(container, textarea);
+    expect(dom.removeChild).toHaveBeenCalledTimes(2);
   });
 
   test('removes an existing dendrite form when present', () => {
@@ -38,7 +42,8 @@ describe('defaultHandler', () => {
       .fn()
       .mockReturnValueOnce(number)
       .mockReturnValueOnce(kv)
-      .mockReturnValueOnce(dendrite);
+      .mockReturnValueOnce(dendrite)
+      .mockReturnValueOnce(null);
     const dom = {
       hide: jest.fn(),
       disable: jest.fn(),
@@ -52,6 +57,11 @@ describe('defaultHandler', () => {
       3,
       container,
       '.dendrite-form'
+    );
+    expect(querySelector).toHaveBeenNthCalledWith(
+      4,
+      container,
+      '.toy-textarea'
     );
     expect(dendrite._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith(container, dendrite);

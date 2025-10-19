@@ -8,9 +8,11 @@ describe('numberHandler', () => {
     const numberInput = {};
     const kvContainer = { _dispose: jest.fn() };
     const dendriteForm = { _dispose: jest.fn() };
+    const textarea = { _dispose: jest.fn() };
     const selectorMap = new Map([
       ['.kv-container', kvContainer],
       ['.dendrite-form', dendriteForm],
+      ['.toy-textarea', textarea],
       ['input[type="number"]', numberInput],
     ]);
     const querySelector = jest.fn((el, selector) => selectorMap.get(selector));
@@ -29,8 +31,10 @@ describe('numberHandler', () => {
     expect(dom.disable).toHaveBeenCalledWith(textInput);
     expect(kvContainer._dispose).toHaveBeenCalled();
     expect(dendriteForm._dispose).toHaveBeenCalled();
+    expect(textarea._dispose).toHaveBeenCalled();
     expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
     expect(removeChild).toHaveBeenCalledWith(container, dendriteForm);
+    expect(removeChild).toHaveBeenCalledWith(container, textarea);
     expect(querySelector).toHaveBeenCalledWith(
       container,
       'input[type="number"]'
@@ -61,9 +65,11 @@ describe('numberHandler', () => {
   test('ignores elements without dispose methods', () => {
     const kvContainer = {};
     const dendriteForm = {};
+    const textarea = {};
     const selectorMap = new Map([
       ['.kv-container', kvContainer],
       ['.dendrite-form', dendriteForm],
+      ['.toy-textarea', textarea],
       ['input[type="number"]', {}],
     ]);
     const querySelector = jest.fn((_, selector) => selectorMap.get(selector));

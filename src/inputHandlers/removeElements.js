@@ -3,6 +3,7 @@ import {
   NUMBER_INPUT_SELECTOR,
   KV_CONTAINER_SELECTOR,
   DENDRITE_FORM_SELECTOR,
+  TEXTAREA_SELECTOR,
 } from '../constants/selectors.js';
 
 /**
@@ -33,4 +34,14 @@ export function maybeRemoveKV(container, dom) {
 export function maybeRemoveDendrite(container, dom) {
   const dendriteForm = dom.querySelector(container, DENDRITE_FORM_SELECTOR);
   maybeRemoveElement(dendriteForm, container, dom);
+}
+
+/**
+ * Removes a textarea input element if present.
+ * @param {*} container - DOM container
+ * @param {object} dom - DOM abstraction
+ */
+export function maybeRemoveTextarea(container, dom) {
+  const textarea = dom.querySelector(container, TEXTAREA_SELECTOR);
+  maybeRemoveElement(textarea, container, dom);
 }

@@ -1,6 +1,10 @@
 import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
-import { maybeRemoveNumber, maybeRemoveKV } from './removeElements.js';
+import {
+  maybeRemoveNumber,
+  maybeRemoveKV,
+  maybeRemoveTextarea,
+} from './removeElements.js';
 import { hideAndDisable } from './inputState.js';
 
 /**
@@ -142,6 +146,7 @@ export function createDendriteHandler(fields) {
   function cleanContainer(dom, container) {
     maybeRemoveNumber(container, dom);
     maybeRemoveKV(container, dom);
+    maybeRemoveTextarea(container, dom);
     removeExistingForm(container, dom);
   }
 
