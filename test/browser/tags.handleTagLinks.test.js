@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { handleTagLinks } from '../../src/browser/tags.js';
+import { handleTagLinks } from '../../src/core/browser/tags.js';
 
 describe('handleTagLinks', () => {
   it('applies makeHandleLink(dom) to each <a> element', () => {

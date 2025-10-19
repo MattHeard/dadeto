@@ -6,7 +6,7 @@ import { describe, it, expect, jest } from '@jest/globals';
 
 describe('getData dynamic import', () => {
   it('omits internal state fields', async () => {
-    const { getData } = await import('../../src/browser/data.js');
+    const { getData } = await import('../../src/core/browser/data.js');
     const state = {
       blogStatus: 'loaded',
       blogError: new Error('e'),

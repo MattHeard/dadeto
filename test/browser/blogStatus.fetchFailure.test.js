@@ -2,7 +2,7 @@ import { describe, it, expect, jest } from '@jest/globals';
 import {
   fetchAndCacheBlogData,
   shouldCopyStateForFetch,
-} from '../../src/browser/data.js';
+} from '../../src/core/browser/data.js';
 
 describe('BLOG_STATUS fetch failure handling', () => {
   it('sets status to error on fetch rejection', async () => {

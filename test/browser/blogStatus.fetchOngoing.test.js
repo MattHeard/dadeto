@@ -2,7 +2,7 @@ import { describe, it, expect, jest } from '@jest/globals';
 import {
   fetchAndCacheBlogData,
   shouldUseExistingFetch,
-} from '../../src/browser/data.js';
+} from '../../src/core/browser/data.js';
 
 describe('BLOG_STATUS ongoing fetch detection', () => {
   it('detects fetch in progress via shouldUseExistingFetch', async () => {

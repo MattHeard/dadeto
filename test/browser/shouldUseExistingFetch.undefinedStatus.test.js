@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { shouldUseExistingFetch } from '../../src/browser/data.js';
+import { shouldUseExistingFetch } from '../../src/core/browser/data.js';
 
 describe('shouldUseExistingFetch with undefined status', () => {
   it('returns false and does not log when status is undefined', () => {

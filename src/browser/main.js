@@ -1,11 +1,11 @@
 import { setupAudio } from './audio-controls.js';
-import { handleTagLinks } from './tags.js';
+import { handleTagLinks } from '../core/browser/tags.js';
 import {
   fetchAndCacheBlogData,
   getData,
   setLocalTemporaryData,
   setLocalPermanentData,
-} from './data.js';
+} from '../core/browser/data.js';
 import { getEncodeBase64 } from '../core/encoding.js';
 import {
   createOutputDropdownHandler,
