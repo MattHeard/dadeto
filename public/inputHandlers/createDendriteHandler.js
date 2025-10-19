@@ -6,7 +6,7 @@ import {
   maybeRemoveTextarea,
 } from './removeElements.js';
 import { hideAndDisable } from './inputState.js';
-import { getInputValue, setInputValue } from '../browser/inputValueStore.js';
+import { getInputValue, setInputValue } from '../core/browser/inputValueStore.js';
 
 /**
  * Create a handler for rendering and managing a dendrite form.

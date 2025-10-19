@@ -107,7 +107,7 @@ toy: {
 
 * The loader then displays the result in the output area. By default, it treats the result as text and injects it into the page (replacing the “Initialising...” message)[[20]](../../browser/toys.js). The Submit handler wraps this process with error handling (any exception is caught and shown as an error message in the output)[[21]](../../browser/toys.js)[[22]](../../browser/toys.js).
 
-* **State Management:** If the toy modified site state via setLocalTemporaryData or setLocalPermanentData, that state is now updated for future toy calls. For example, a **“Get Data”** toy could then retrieve what was stored by a previous **“Set Data”** call. (The “get” toy might simply call the setter with an empty object to fetch current state, since setLocal… returns the merged state.) The environment ensures these calls are consistent – e.g. setLocalPermanentData merges the object into existing localStorage data and returns the new object[[23]](../../browser/data.js). In tests, these toy functions all conform to returning updated state or computed results as strings.
+* **State Management:** If the toy modified site state via setLocalTemporaryData or setLocalPermanentData, that state is now updated for future toy calls. For example, a **“Get Data”** toy could then retrieve what was stored by a previous **“Set Data”** call. (The “get” toy might simply call the setter with an empty object to fetch current state, since setLocal… returns the merged state.) The environment ensures these calls are consistent – e.g. setLocalPermanentData merges the object into existing localStorage data and returns the new object[[23]](../../core/browser/data.js). In tests, these toy functions all conform to returning updated state or computed results as strings.
 
 ## **Input & Output Modes**
 
@@ -209,9 +209,9 @@ In all cases, as long as the toy module exposes the expected function and return
 
 [src/browser/toys.js](../../browser/toys.js)
 
-[[23]](../../browser/data.js)
+[[23]](../../core/browser/data.js)
 
-[src/browser/data.js](../../browser/data.js)
+[src/core/browser/data.js](../../core/browser/data.js)
 
 [[42]](../../generator/generator.js) [[43]](../../generator/generator.js)
 
