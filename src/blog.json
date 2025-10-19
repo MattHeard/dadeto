@@ -1,6 +1,19 @@
 {
   "posts": [
     {
+      "key": "CSVJ1",
+      "title": "CSV to JSON Object",
+      "publicationDate": "2025-10-19",
+      "content": [
+        "Transforms a header/data CSV pair into a JSON object string while skipping empty cells."
+      ],
+      "toy": {
+        "modulePath": "/2025-10-19/csvToJsonObject.js",
+        "functionName": "csvToJsonObjectToy"
+      },
+      "tags": ["toy", "csv", "json"]
+    },
+    {
       "key": "SETP1",
       "title": "Set Permanent Data",
       "publicationDate": "2025-07-05",
