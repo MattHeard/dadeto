@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { cyberpunkAdventure } from '../../../src/toys/2025-03-30/cyberpunkAdventure.js';
+import { cyberpunkAdventure } from '../../../src/core/toys/2025-03-30/cyberpunkAdventure.js';
 
 describe('cyberpunkAdventure input trimming', () => {
   test('trims whitespace around commands', () => {

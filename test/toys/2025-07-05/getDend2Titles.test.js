@@ -1,4 +1,4 @@
-import { getDend2Titles } from '../../../src/toys/2025-07-05/getDend2Titles.js';
+import { getDend2Titles } from '../../../src/core/toys/2025-07-05/getDend2Titles.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('getDend2Titles', () => {

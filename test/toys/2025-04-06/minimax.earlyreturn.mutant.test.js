@@ -7,7 +7,10 @@ import { describe, test, expect } from '@jest/globals';
  * @returns {Promise<Function>} Resolves with the minimax function.
  */
 async function loadMinimax() {
-  const filePath = path.join(process.cwd(), 'src/toys/2025-04-06/ticTacToe.js');
+  const filePath = path.join(
+    process.cwd(),
+    'src/core/toys/2025-04-06/ticTacToe.js'
+  );
   let src = fs.readFileSync(filePath, 'utf8');
   src += '\nexport { minimax };';
   const mod = await import(`data:text/javascript,${encodeURIComponent(src)}`);

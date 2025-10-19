@@ -15,7 +15,7 @@ const createDirectories = () => {
     projectRoot,
     srcDir,
     publicDir,
-    srcToysDir: posix.join(srcDir, 'toys'),
+    srcToysDir: posix.join(srcDir, 'core/toys'),
     srcBrowserDir: posix.join(srcDir, 'browser'),
     publicBrowserDir: posix.join(publicDir, 'browser'),
     srcUtilsDir: posix.join(srcDir, 'utils'),
@@ -69,7 +69,7 @@ describe('createSharedDirectoryEntries', () => {
 
     expect(entries).toContainEqual([
       'srcToysDir',
-      posix.join(srcDir, 'toys'),
+      posix.join(srcDir, 'core/toys'),
     ]);
     expect(entries).toContainEqual([
       'publicBrowserDir',
@@ -114,9 +114,9 @@ describe('createCopyCore', () => {
     it('returns a relative path for files inside the project', () => {
       const filePath = posix.join(
         directories.projectRoot,
-        'src/toys/widget.js'
+        'src/core/toys/widget.js'
       );
-      expect(core.formatPathForLog(filePath)).toBe('src/toys/widget.js');
+      expect(core.formatPathForLog(filePath)).toBe('src/core/toys/widget.js');
     });
 
     it('returns the original path for files outside of the project', () => {
@@ -267,16 +267,19 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
       const source = posix.join(directories.srcToysDir, 'widget.js');
-      const destination = posix.join(directories.publicDir, 'toys/widget.js');
+      const destination = posix.join(
+        directories.publicDir,
+        'core/toys/widget.js'
+      );
 
       core.copyFileWithDirectories(io, source, destination, logger);
 
       expect(io.createDirectory).toHaveBeenCalledWith(
-        posix.join(directories.publicDir, 'toys')
+        posix.join(directories.publicDir, 'core/toys')
       );
       expect(io.copyFile).toHaveBeenCalledWith(source, destination);
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied: src/toys/widget.js -> public/toys/widget.js'
+        'Copied: src/core/toys/widget.js -> public/core/toys/widget.js'
       );
 
       const customMessage = 'Custom copy';
@@ -300,11 +303,11 @@ describe('createCopyCore', () => {
       const pairs = [
         {
           source: posix.join(directories.srcToysDir, 'one.js'),
-          destination: posix.join(directories.publicDir, 'toys/one.js'),
+          destination: posix.join(directories.publicDir, 'core/toys/one.js'),
         },
         {
           source: posix.join(directories.srcToysDir, 'two.js'),
-          destination: posix.join(directories.publicDir, 'toys/two.js'),
+          destination: posix.join(directories.publicDir, 'core/toys/two.js'),
         },
       ];
       const io = {
@@ -372,27 +375,27 @@ describe('createCopyCore', () => {
       core.handleDirectoryEntry(
         directoryEntry,
         directories.srcToysDir,
-        posix.join(directories.publicDir, 'toys'),
+        posix.join(directories.publicDir, 'core/toys'),
         io,
         logger
       );
 
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(directories.srcToysDir, 'nested/deep.js'),
-        posix.join(directories.publicDir, 'toys/nested/deep.js')
+        posix.join(directories.publicDir, 'core/toys/nested/deep.js')
       );
 
       core.handleDirectoryEntry(
         fileEntry,
         directories.srcToysDir,
-        posix.join(directories.publicDir, 'toys'),
+        posix.join(directories.publicDir, 'core/toys'),
         io,
         logger
       );
 
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(directories.srcToysDir, 'keep.js'),
-        posix.join(directories.publicDir, 'toys/keep.js')
+        posix.join(directories.publicDir, 'core/toys/keep.js')
       );
     });
 
@@ -409,7 +412,7 @@ describe('createCopyCore', () => {
       core.processDirectoryEntries(
         entries,
         directories.srcToysDir,
-        posix.join(directories.publicDir, 'toys'),
+        posix.join(directories.publicDir, 'core/toys'),
         io,
         logger
       );

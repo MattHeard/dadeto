@@ -1,4 +1,4 @@
-import { startLocalDendriteStory } from '../../../src/toys/2025-06-09/startLocalDendriteStory.js';
+import { startLocalDendriteStory } from '../../../src/core/toys/2025-06-09/startLocalDendriteStory.js';
 import { test, expect, jest } from '@jest/globals';
 
 test('startLocalDendriteStory replaces non-array DEND1', () => {

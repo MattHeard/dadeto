@@ -1,5 +1,5 @@
 import { test, expect } from '@jest/globals';
-import { generateClues } from '../../../src/toys/2025-05-11/battleshipSolitaireClues.js';
+import { generateClues } from '../../../src/core/toys/2025-05-11/battleshipSolitaireClues.js';
 
 test('generateClues does not iterate over strings when calculating ship cells', () => {
   const fleet = {

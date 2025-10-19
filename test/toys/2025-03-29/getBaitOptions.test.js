@@ -8,7 +8,7 @@ let getBaitOptions;
 beforeAll(async () => {
   const gamePath = path.join(
     process.cwd(),
-    'src/toys/2025-03-29/fishingGame.js'
+    'src/core/toys/2025-03-29/fishingGame.js'
   );
   let src = fs.readFileSync(gamePath, 'utf8');
   src = src.replace(/from '\.\/(.*?)'/g, (_, p) => {

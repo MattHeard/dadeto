@@ -1,5 +1,5 @@
 export const sharedDirectoryPairs = [
-  { key: 'Toys', relativePath: 'toys' },
+  { key: 'Toys', relativePath: 'core/toys' },
   { key: 'Browser', relativePath: 'browser' },
   { key: 'Utils', relativePath: 'utils' },
   { key: 'InputHandlers', relativePath: 'inputHandlers' },

@@ -1,5 +1,5 @@
 // fishingGame.test.js
-import { fishingGame } from '../../../src/toys/2025-03-29/fishingGame';
+import { fishingGame } from '../../../src/core/toys/2025-03-29/fishingGame';
 
 // Helper function to create a fixed environment.
 const createEnv = (randomValue, currentTime) =>

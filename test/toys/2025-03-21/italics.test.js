@@ -1,4 +1,4 @@
-import { italics } from '../../../src/toys/2025-03-21/italics.js';
+import { italics } from '../../../src/core/toys/2025-03-21/italics.js';
 
 describe('italics function', () => {
   test('returns non-string values unchanged', () => {

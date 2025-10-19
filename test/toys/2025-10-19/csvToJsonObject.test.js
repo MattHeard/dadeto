@@ -1,4 +1,4 @@
-import { csvToJsonObjectToy } from '../../../src/toys/2025-10-19/csvToJsonObject.js';
+import { csvToJsonObjectToy } from '../../../src/core/toys/2025-10-19/csvToJsonObject.js';
 
 describe('csvToJsonObjectToy', () => {
   it('converts two-line CSV into a JSON object string', () => {

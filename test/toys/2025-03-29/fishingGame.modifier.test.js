@@ -1,4 +1,4 @@
-import { fishingGame } from '../../../src/toys/2025-03-29/fishingGame.js';
+import { fishingGame } from '../../../src/core/toys/2025-03-29/fishingGame.js';
 import { describe, test, expect } from '@jest/globals';
 
 /**

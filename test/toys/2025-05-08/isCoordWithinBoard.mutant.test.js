@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { isCoordWithinBoard } from '../../../src/toys/2025-05-08/battleshipSolitaireFleet.js';
+import { isCoordWithinBoard } from '../../../src/core/toys/2025-05-08/battleshipSolitaireFleet.js';
 
 describe('isCoordWithinBoard mutant', () => {
   test('returns false when coordinate equals board width or height', () => {

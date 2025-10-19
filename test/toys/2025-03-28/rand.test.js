@@ -1,4 +1,4 @@
-import { rand } from '../../../src/toys/2025-03-28/rand.js';
+import { rand } from '../../../src/core/toys/2025-03-28/rand.js';
 
 describe('rand', () => {
   test('ignores the string input and returns the result of getRandomNumber', () => {
