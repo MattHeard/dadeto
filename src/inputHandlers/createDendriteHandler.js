@@ -6,6 +6,7 @@ import {
   maybeRemoveTextarea,
 } from './removeElements.js';
 import { hideAndDisable } from './inputState.js';
+import { getInputValue, setInputValue } from '../browser/inputValueStore.js';
 
 /**
  * Create a handler for rendering and managing a dendrite form.
@@ -45,7 +46,7 @@ export function createDendriteHandler(fields) {
    * @returns {object} Parsed dendrite data.
    */
   function parseDendriteData(dom, textInput) {
-    const value = dom.getValue(textInput) || '{}';
+    const value = getInputValue(textInput) || '{}';
     return parseJsonOrDefault(value, {});
   }
 
@@ -87,7 +88,9 @@ export function createDendriteHandler(fields) {
     }
     const onInput = () => {
       data[key] = dom.getValue(input);
-      dom.setValue(textInput, JSON.stringify(data));
+      const serialised = JSON.stringify(data);
+      dom.setValue(textInput, serialised);
+      setInputValue(textInput, serialised);
     };
     dom.addEventListener(input, 'input', onInput);
     disposers.push(() => dom.removeEventListener(input, 'input', onInput));
@@ -118,7 +121,9 @@ export function createDendriteHandler(fields) {
       })
     );
 
-    dom.setValue(textInput, JSON.stringify(data));
+    const serialised = JSON.stringify(data);
+    dom.setValue(textInput, serialised);
+    setInputValue(textInput, serialised);
 
     form._dispose = () => {
       disposers.forEach(fn => fn());
