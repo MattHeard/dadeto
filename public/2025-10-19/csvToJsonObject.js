@@ -5,46 +5,7 @@
  * string. Empty values are omitted from the result.
  */
 
-/**
- * Parse a single CSV row into an array of field strings using RFC 4180 rules.
- * Returns `null` when the row contains malformed quotes.
- * @param {string} line
- * @returns {string[] | null}
- */
-function parseCsvLine(line) {
-  const fields = [];
-  let field = '';
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        field += '"';
-        i += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-
-    if (char === ',' && !inQuotes) {
-      fields.push(field);
-      field = '';
-      continue;
-    }
-
-    field += char;
-  }
-
-  if (inQuotes) {
-    return null;
-  }
-
-  fields.push(field);
-  return fields;
-}
+import { parseCsvLine } from '../utils/csv.js';
 
 /**
  * Convert a single-row CSV string into a JSON object string.

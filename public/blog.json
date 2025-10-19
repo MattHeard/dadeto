@@ -1,6 +1,19 @@
 {
   "posts": [
     {
+      "key": "CSVJ2",
+      "title": "CSV to JSON Array",
+      "publicationDate": "2025-10-19",
+      "content": [
+        "Converts multi-row CSV input into a JSON array string of objects, ignoring blank headers and values."
+      ],
+      "toy": {
+        "modulePath": "/2025-10-19/csvToJsonArray.js",
+        "functionName": "csvToJsonArrayToy"
+      },
+      "tags": ["toy", "csv", "json", "array"]
+    },
+    {
       "key": "CSVJ1",
       "title": "CSV to JSON Object",
       "publicationDate": "2025-10-19",
