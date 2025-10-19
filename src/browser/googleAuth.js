@@ -23,7 +23,7 @@ export const initGoogleSignIn = ({ onSignIn } = {}) => {
 
   google.accounts.id.initialize({
     client_id:
-      '848377461162-7je7r4pg7mnaj85gq558cf4gt0mk8j9b.apps.googleusercontent.com',
+      '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
     callback: async ({ credential }) => {
       const cred = GoogleAuthProvider.credential(credential);
       await signInWithCredential(auth, cred);
