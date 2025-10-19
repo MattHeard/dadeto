@@ -2,6 +2,7 @@ import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPrefixedLoggers, createRemoveListener } from './document.js';
 import { parseJsonOrDefault } from '../utils/jsonUtils.js';
 import { deepClone } from '../utils/objectUtils.js';
+import { getInputValue, setInputValue } from './inputValueStore.js';
 
 /**
  * Determines whether a value is a key/value pair object.
@@ -71,7 +72,7 @@ function getDefaultRowsJson(value) {
  * @returns {string} JSON string to parse.
  */
 function getRowsJson(dom, inputElement) {
-  const value = dom.getValue?.(inputElement);
+  const value = getInputValue(inputElement);
   return getDefaultRowsJson(value);
 }
 
@@ -1069,7 +1070,7 @@ export function processInputAndSetOutput(elements, processingFunction, env) {
   } = elements;
   const { createEnv, dom } = env;
   const toyEnv = createEnv();
-  const inputValue = inputElement.value;
+  const inputValue = getInputValue(inputElement);
   const result = processingFunction(inputValue, toyEnv);
   // Assume article and article.id are always truthy, no need to log
   setOutput(JSON.stringify({ [article.id]: result }), toyEnv);
@@ -1166,6 +1167,13 @@ export function initializeInteractiveComponent(
     return;
   }
   const { inputElement, submitButton } = elements;
+  const initialValue = inputElement?.value ?? '';
+  setInputValue(inputElement, initialValue);
+  const handleInputUpdate = () => {
+    const nextValue = dom.getValue?.(inputElement) ?? inputElement.value;
+    setInputValue(inputElement, nextValue);
+  };
+  dom.addEventListener(inputElement, 'input', handleInputUpdate);
   // Temporary debug logging for issue investigation
   logInfo('Found button element:', submitButton);
   const outputParent = dom.querySelector(article, 'div.output'); // Get the parent element
@@ -1281,7 +1289,9 @@ const filterNonEmptyEntries = rows =>
  */
 export const syncHiddenField = (textInput, rows, dom) => {
   const filtered = filterNonEmptyEntries(rows);
-  dom.setValue(textInput, JSON.stringify(filtered));
+  const serialised = JSON.stringify(filtered);
+  dom.setValue(textInput, serialised);
+  setInputValue(textInput, serialised);
 };
 
 /**

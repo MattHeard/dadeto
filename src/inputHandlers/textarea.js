@@ -6,12 +6,14 @@ import {
 import { hideAndDisable, revealAndEnable } from './inputState.js';
 import { TEXTAREA_SELECTOR } from '../constants/selectors.js';
 import { createRemoveListener } from '../browser/document.js';
+import { getInputValue, setInputValue } from '../browser/inputValueStore.js';
 
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
 
 const createSyncTextInputValue = (textInput, dom) => event => {
   const targetValue = dom.getTargetValue(event);
   dom.setValue(textInput, targetValue);
+  setInputValue(textInput, targetValue);
 };
 
 const positionTextarea = ({ container, textInput, textarea, dom }) => {
@@ -36,14 +38,14 @@ export const ensureTextareaInput = (container, textInput, dom) => {
   if (!textarea) {
     textarea = dom.createElement('textarea');
     dom.setClassName(textarea, TEXTAREA_CLASS);
-    const value = dom.getValue(textInput);
+    const value = getInputValue(textInput);
     if (value) {
       dom.setValue(textarea, value);
     }
     positionTextarea({ container, textInput, textarea, dom });
     setupTextarea({ textarea, textInput, dom });
   } else {
-    dom.setValue(textarea, dom.getValue(textInput));
+    dom.setValue(textarea, getInputValue(textInput));
   }
 
   revealAndEnable(textarea, dom);

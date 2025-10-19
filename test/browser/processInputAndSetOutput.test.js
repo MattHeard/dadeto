@@ -7,6 +7,7 @@ import {
   jest,
 } from '@jest/globals';
 import { processInputAndSetOutput } from '../../src/browser/toys.js';
+import { setInputValue } from '../../src/browser/inputValueStore.js';
 
 let elements;
 let env;
@@ -119,5 +120,15 @@ describe('processInputAndSetOutput', () => {
       elements.outputParentElement,
       created
     );
+  });
+
+  it('prioritises the in-memory input value over the element value', () => {
+    setInputValue(elements.inputElement, 'memory-value');
+    elements.inputElement.value = 'stale-dom-value';
+    processingFunction.mockReturnValue('done');
+
+    processInputAndSetOutput(elements, processingFunction, env);
+
+    expect(processingFunction).toHaveBeenCalledWith('memory-value', toyEnv);
   });
 });
