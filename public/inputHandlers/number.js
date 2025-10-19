@@ -6,6 +6,7 @@ import {
 import { NUMBER_INPUT_SELECTOR } from '../constants/selectors.js';
 import { hideAndDisable } from './inputState.js';
 import { createRemoveListener } from '../browser/document.js';
+import { getInputValue, setInputValue } from '../browser/inputValueStore.js';
 
 const createBaseNumberInput = dom => {
   const input = dom.createElement('input');
@@ -35,6 +36,7 @@ export const createNumberInput = (value, onChange, dom) => {
 export const createUpdateTextInputValue = (textInput, dom) => event => {
   const targetValue = dom.getTargetValue(event);
   dom.setValue(textInput, targetValue);
+  setInputValue(textInput, targetValue);
 };
 
 const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
@@ -47,7 +49,7 @@ export const ensureNumberInput = (container, textInput, dom) => {
 
   if (!numberInput) {
     numberInput = createNumberInput(
-      textInput.value,
+      getInputValue(textInput),
       createUpdateTextInputValue(textInput, dom),
       dom
     );
