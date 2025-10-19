@@ -1,5 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { revealBetaArticles } from '../../src/browser/beta.js';
+import { revealBetaArticles } from '../../src/core/browser/beta.js';
 
 describe('revealBetaArticles', () => {
   test('reveals beta articles when query parameter is present', () => {
