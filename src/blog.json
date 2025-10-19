@@ -11,6 +11,10 @@
         "modulePath": "/2025-10-19/csvToJsonObject.js",
         "functionName": "csvToJsonObjectToy"
       },
+      "illustration": {
+        "fileType": "png",
+        "altText": "an abstract beige background illustration showing a black arrow pointing from a csv table with two orange headers on the left to a pair of curly braces on the right, representing a json object. the csv grid has empty beige cells, while the json braces contain two placeholder key slots marked with bold letters"
+      },
       "tags": ["toy", "csv", "json"]
     },
     {
