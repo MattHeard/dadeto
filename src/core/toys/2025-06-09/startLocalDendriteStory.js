@@ -1,5 +1,5 @@
 import { DENDRITE_OPTION_KEYS } from '../../../constants/dendrite.js';
-import { deepClone } from '../../../utils/objectUtils.js';
+import { deepClone } from '../../objectUtils.js';
 
 /**
  * Converts option fields in the data object into an array of objects.

@@ -1,6 +1,6 @@
 import { isObject } from './common.js';
 import { deepMerge } from '../core/state.js';
-import { deepClone } from '../utils/objectUtils.js';
+import { deepClone } from '../core/objectUtils.js';
 
 /**
  * Creates a function that merges JSON input into a section of the data object.

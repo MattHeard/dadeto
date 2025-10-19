@@ -1,7 +1,6 @@
 export const sharedDirectoryPairs = [
   { key: 'Toys', relativePath: 'core/toys' },
   { key: 'Browser', relativePath: 'browser' },
-  { key: 'Utils', relativePath: 'utils' },
   { key: 'InputHandlers', relativePath: 'inputHandlers' },
   { key: 'Constants', relativePath: 'constants' },
   { key: 'Presenters', relativePath: 'presenters' },
@@ -224,14 +223,6 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
 
   function copySupportingDirectories(dirs, io, messageLogger) {
     const plans = [
-      {
-        src: dirs.srcUtilsDir,
-        dest: dirs.publicUtilsDir,
-        successMessage: 'Utils files copied successfully!',
-        missingMessage: `Warning: utils directory not found at ${formatPathForLog(
-          dirs.srcUtilsDir
-        )}`,
-      },
       {
         src: dirs.srcInputHandlersDir,
         dest: dirs.publicInputHandlersDir,

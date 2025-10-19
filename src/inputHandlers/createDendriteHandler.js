@@ -1,5 +1,5 @@
 import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
-import { parseJsonOrDefault } from '../utils/jsonUtils.js';
+import { parseJsonOrDefault } from '../core/jsonUtils.js';
 import {
   maybeRemoveNumber,
   maybeRemoveKV,
