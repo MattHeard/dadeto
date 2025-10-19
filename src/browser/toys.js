@@ -131,6 +131,7 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 };
 
 import { textHandler } from '../inputHandlers/text.js';
+import { textareaHandler } from '../inputHandlers/textarea.js';
 import { numberHandler } from '../inputHandlers/number.js';
 import { defaultHandler } from '../inputHandlers/default.js';
 import { dendriteStoryHandler } from '../inputHandlers/dendriteStory.js';
@@ -138,6 +139,7 @@ import { dendritePageHandler } from '../inputHandlers/dendritePage.js';
 import {
   maybeRemoveNumber,
   maybeRemoveDendrite,
+  maybeRemoveTextarea,
 } from '../inputHandlers/removeElements.js';
 import { KV_CONTAINER_SELECTOR } from '../constants/selectors.js';
 import { hideAndDisable } from '../inputHandlers/inputState.js';
@@ -186,6 +188,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
 export function handleKVType(dom, container, textInput) {
   maybeRemoveNumber(container, dom);
   maybeRemoveDendrite(container, dom);
+  maybeRemoveTextarea(container, dom);
   ensureKeyValueInput(container, textInput, dom);
 }
 
@@ -203,6 +206,7 @@ export function kvHandler(dom, container, textInput) {
 
 const inputHandlersMap = {
   text: textHandler,
+  textarea: textareaHandler,
   number: numberHandler,
   kv: kvHandler,
   'dendrite-story': dendriteStoryHandler,

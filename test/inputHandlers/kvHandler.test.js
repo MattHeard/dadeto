@@ -2,6 +2,7 @@ import { describe, test, expect, jest } from '@jest/globals';
 import {
   maybeRemoveNumber,
   maybeRemoveDendrite,
+  maybeRemoveTextarea,
 } from '../../src/inputHandlers/removeElements.js';
 
 // kvHandler relies on ensureKeyValueInput which is complex to mock in ES modules.
@@ -89,5 +90,29 @@ describe('kv input handlers', () => {
     maybeRemoveDendrite({}, dom);
 
     expect(dom.querySelector).toHaveBeenCalledWith({}, '.dendrite-form');
+  });
+
+  test('maybeRemoveTextarea removes existing textarea', () => {
+    const textarea = { _dispose: jest.fn() };
+    const dom = {
+      querySelector: jest.fn(() => textarea),
+      removeChild: jest.fn(),
+    };
+
+    maybeRemoveTextarea({}, dom);
+
+    expect(textarea._dispose).toHaveBeenCalled();
+    expect(dom.removeChild).toHaveBeenCalledWith({}, textarea);
+  });
+
+  test('maybeRemoveTextarea does nothing when textarea missing', () => {
+    const dom = {
+      querySelector: jest.fn(() => null),
+      removeChild: jest.fn(),
+    };
+
+    maybeRemoveTextarea({}, dom);
+
+    expect(dom.removeChild).not.toHaveBeenCalled();
   });
 });

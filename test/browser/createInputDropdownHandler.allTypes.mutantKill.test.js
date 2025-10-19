@@ -10,6 +10,7 @@ describe('createInputDropdownHandler all types', () => {
     const kvContainer = { _dispose: jest.fn() };
     const event = {};
     let numberQueryCount = 0;
+    let textareaElement;
 
     /**
      * Returns the number input element on subsequent calls.
@@ -27,6 +28,7 @@ describe('createInputDropdownHandler all types', () => {
       'input[type="text"]': () => textInput,
       '.kv-container': () => kvContainer,
       'input[type="number"]': handleNumberQuery,
+      '.toy-textarea': () => textareaElement,
     };
 
     /**
@@ -47,7 +49,13 @@ describe('createInputDropdownHandler all types', () => {
       getCurrentTarget: jest.fn(() => select),
       getParentElement: jest.fn(() => container),
       querySelector: jest.fn(mockQuerySelector),
-      createElement: jest.fn(() => ({})),
+      createElement: jest.fn(tag => {
+        if (tag === 'textarea') {
+          textareaElement = { _dispose: jest.fn() };
+          return textareaElement;
+        }
+        return {};
+      }),
       setClassName: jest.fn(),
       getNextSibling: jest.fn(() => null),
       insertBefore: jest.fn(),
@@ -64,6 +72,7 @@ describe('createInputDropdownHandler all types', () => {
       getValue: jest
         .fn()
         .mockReturnValueOnce('text')
+        .mockReturnValueOnce('textarea')
         .mockReturnValueOnce('number')
         .mockReturnValueOnce('kv')
         .mockReturnValueOnce('unknown'),
@@ -73,6 +82,7 @@ describe('createInputDropdownHandler all types', () => {
       disable: jest.fn(),
       querySelectorAll: jest.fn(),
       createTextNode: jest.fn(),
+      getTargetValue: jest.fn(),
     };
 
     const handler = createInputDropdownHandler(dom);
@@ -82,9 +92,16 @@ describe('createInputDropdownHandler all types', () => {
     expect(dom.reveal).toHaveBeenCalledWith(textInput);
     expect(dom.enable).toHaveBeenCalledWith(textInput);
 
+    // textarea handler
+    expect(() => handler(event)).not.toThrow();
+    expect(dom.createElement).toHaveBeenCalledWith('textarea');
+    expect(dom.hide).toHaveBeenCalledWith(textInput);
+    expect(dom.disable).toHaveBeenCalledWith(textInput);
+
     // number handler
     expect(() => handler(event)).not.toThrow();
     expect(dom.removeChild).toHaveBeenCalledWith(container, kvContainer);
+    expect(dom.removeChild).toHaveBeenCalledWith(container, textareaElement);
 
     // kv handler
     expect(() => handler(event)).not.toThrow();

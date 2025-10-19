@@ -984,6 +984,7 @@ function generateToyScript(post) {
 // Unified toy UI section abstraction
 const INPUT_METHODS = [
   'text',
+  'textarea',
   'number',
   'kv',
   'dendrite-story',

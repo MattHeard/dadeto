@@ -124,9 +124,11 @@ describe('dendritePageHandler', () => {
   test('removes number and kv inputs', () => {
     const numberInput = { _dispose: jest.fn() };
     const kvContainer = { _dispose: jest.fn() };
+    const textarea = { _dispose: jest.fn() };
     const selectorMap = {
       'input[type="number"]': numberInput,
       '.kv-container': kvContainer,
+      '.toy-textarea': textarea,
     };
     const querySelector = jest.fn(
       (_, selector) => selectorMap[selector] ?? null
@@ -155,6 +157,8 @@ describe('dendritePageHandler', () => {
     expect(dom.removeChild).toHaveBeenCalledWith({}, numberInput);
     expect(kvContainer._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith({}, kvContainer);
+    expect(textarea._dispose).toHaveBeenCalled();
+    expect(dom.removeChild).toHaveBeenCalledWith({}, textarea);
   });
 });
 
