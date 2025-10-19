@@ -1,4 +1,4 @@
-import { createTicTacToeBoardElement } from '../../src/presenters/ticTacToeBoard.js';
+import { createTicTacToeBoardElement } from '../../src/core/presenters/ticTacToeBoard.js';
 
 /**
  * Very small stub of the DOM abstraction used in tests

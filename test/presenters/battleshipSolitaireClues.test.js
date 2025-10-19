@@ -13,7 +13,7 @@ describe('battleshipSolitaireClues presenter', () => {
  * Aim: 100 % branch coverage
  */
 
-import { createBattleshipCluesBoardElement } from '../../src/presenters/battleshipSolitaireClues.js';
+import { createBattleshipCluesBoardElement } from '../../src/core/presenters/battleshipSolitaireClues.js';
 
 /* ---------- simple DOM stub ---------- */
 /**

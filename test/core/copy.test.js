@@ -36,8 +36,8 @@ const createDirectories = () => {
     ),
     srcAssetsDir: posix.join(srcDir, 'assets'),
     publicAssetsDir: publicDir,
-    srcPresentersDir: posix.join(srcDir, 'presenters'),
-    publicPresentersDir: posix.join(publicDir, 'presenters'),
+    srcPresentersDir: posix.join(srcDir, 'core/presenters'),
+    publicPresentersDir: posix.join(publicDir, 'core/presenters'),
     srcBlogJson: posix.join(srcDir, 'blog.json'),
     publicBlogJson: posix.join(publicDir, 'blog.json'),
   };
@@ -559,7 +559,7 @@ describe('createCopyCore', () => {
         posix.join(directories.publicPresentersDir, 'deck.js')
       );
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied presenter: src/presenters/deck.js -> public/presenters/deck.js'
+        'Copied presenter: src/core/presenters/deck.js -> public/core/presenters/deck.js'
       );
       expect(logger.info).toHaveBeenLastCalledWith(
         'Presenter files copied successfully!'
@@ -568,7 +568,7 @@ describe('createCopyCore', () => {
       io.directoryExists.mockReturnValue(false);
       core.copyPresenterFiles(directories, io, logger);
       expect(logger.warn).toHaveBeenCalledWith(
-        'Warning: presenters directory not found at src/presenters'
+        'Warning: presenters directory not found at src/core/presenters'
       );
     });
 
