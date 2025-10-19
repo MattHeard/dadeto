@@ -3,7 +3,7 @@ import {
   safeParseJson,
   valueOr,
   parseJsonOrDefault,
-} from '../../src/utils/jsonUtils.js';
+} from '../../src/core/jsonUtils.js';
 
 describe('safeParseJson', () => {
   test('parses valid JSON strings', () => {

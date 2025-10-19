@@ -1,7 +1,7 @@
 import { createParagraphElement } from '../presenters/paragraph.js';
 import { createPrefixedLoggers, createRemoveListener } from './document.js';
-import { parseJsonOrDefault } from '../utils/jsonUtils.js';
-import { deepClone } from '../utils/objectUtils.js';
+import { parseJsonOrDefault } from '../core/jsonUtils.js';
+import { deepClone } from '../core/objectUtils.js';
 import { getInputValue, setInputValue } from './inputValueStore.js';
 
 /**

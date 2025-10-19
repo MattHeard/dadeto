@@ -1,4 +1,4 @@
-import { deepClone } from '../utils/objectUtils.js';
+import { deepClone } from '../core/objectUtils.js';
 import { isNonNullObject } from '../core/state.js';
 
 export { deepMerge } from '../core/state.js';

@@ -3,7 +3,7 @@ import {
   escapeRegex,
   createPattern,
   matchesPattern,
-} from '../../src/utils/regexUtils.js';
+} from '../../src/core/regexUtils.js';
 
 describe('escapeRegex', () => {
   test('escapes special regex characters', () => {

@@ -615,12 +615,8 @@ describe('createCopyCore', () => {
     });
 
     it('copies supporting directories and logs missing ones', () => {
-      const existingSources = new Set([
-        directories.srcUtilsDir,
-        directories.srcBrowserDir,
-      ]);
+      const existingSources = new Set([directories.srcBrowserDir]);
       const entriesMap = new Map();
-      entriesMap.set(directories.srcUtilsDir, [createFileEntry('helper.js')]);
       entriesMap.set(directories.srcBrowserDir, [createFileEntry('widget.js')]);
 
       const io = {
@@ -634,11 +630,8 @@ describe('createCopyCore', () => {
       core.copySupportingDirectories(directories, io, logger);
 
       expect(io.copyFile).toHaveBeenCalledWith(
-        posix.join(directories.srcUtilsDir, 'helper.js'),
-        posix.join(directories.publicUtilsDir, 'helper.js')
-      );
-      expect(logger.info).toHaveBeenCalledWith(
-        'Utils files copied successfully!'
+        posix.join(directories.srcBrowserDir, 'widget.js'),
+        posix.join(directories.publicBrowserDir, 'widget.js')
       );
       expect(logger.info).toHaveBeenCalledWith(
         'Browser files copied successfully!'

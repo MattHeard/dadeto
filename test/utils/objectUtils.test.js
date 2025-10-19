@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { pick, mapValues } from '../../src/utils/objectUtils.js';
+import { pick, mapValues } from '../../src/core/objectUtils.js';
 
 describe.each([
   ['pick', obj => pick(obj, ['a'])],
