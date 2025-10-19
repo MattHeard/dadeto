@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { setLocalPermanentData } from '../../src/browser/data.js';
+import { setLocalPermanentData } from '../../src/core/browser/data.js';
 
 describe('setLocalPermanentData', () => {
   it('merges with stored data and persists', () => {

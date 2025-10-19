@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { createHandleClick } from '../../src/browser/tags.js';
+import { createHandleClick } from '../../src/core/browser/tags.js';
 
 describe('createHandleClick', () => {
   it('calls stopDefault and toggleHideLink with correct arguments', () => {

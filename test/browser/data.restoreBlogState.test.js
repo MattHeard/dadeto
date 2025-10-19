@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { setLocalTemporaryData as setData } from '../../src/browser/data.js';
+import { setLocalTemporaryData as setData } from '../../src/core/browser/data.js';
 
 describe('restoreBlogState via setLocalTemporaryData', () => {
   it('restores blog fetch fields when incoming state provides them', () => {

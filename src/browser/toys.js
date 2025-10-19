@@ -2,7 +2,7 @@ import { createParagraphElement } from '../core/presenters/paragraph.js';
 import { createPrefixedLoggers, createRemoveListener } from './document.js';
 import { parseJsonOrDefault } from '../core/jsonUtils.js';
 import { deepClone } from '../core/objectUtils.js';
-import { getInputValue, setInputValue } from './inputValueStore.js';
+import { getInputValue, setInputValue } from '../core/browser/inputValueStore.js';
 
 /**
  * Determines whether a value is a key/value pair object.
@@ -1037,7 +1037,7 @@ export function parseJSONResult(result) {
  * @returns {Function} An event handler function.
  */
 
-import { setOutput } from './setOutput.js';
+import { setOutput } from '../core/browser/setOutput.js';
 
 // New wrapper function
 /**

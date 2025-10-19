@@ -15,9 +15,9 @@ const { join, resolve } = pathAdapters;
 const infraDir = resolve(projectRoot, 'infra');
 const srcCloudDir = resolve(srcDir, 'cloud');
 const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
-const browserDir = resolve(srcDir, 'browser');
 const srcCoreCloudDir = resolve(srcDir, 'core', 'cloud');
 const srcCoreBrowserDir = resolve(srcDir, 'core', 'browser');
+const browserDir = resolve(srcDir, 'browser');
 
 const functionDirectories = [
   'assign-moderation-job',
@@ -95,7 +95,7 @@ const individualFileCopies = [
     target: join(infraDir, 'admin-core.js'),
   },
   {
-    source: join(browserDir, 'load-static-config-core.js'),
+    source: join(srcCoreBrowserDir, 'load-static-config-core.js'),
     target: join(infraDir, 'load-static-config-core.js'),
   },
   {

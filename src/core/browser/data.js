@@ -1,8 +1,8 @@
-import { deepClone } from '../core/objectUtils.js';
-import { isNonNullObject } from '../core/state.js';
+import { deepClone } from '../objectUtils.js';
+import { isNonNullObject } from '../state.js';
 
-export { deepMerge } from '../core/state.js';
-export { getEncodeBase64 } from '../core/encoding.js';
+export { deepMerge } from '../state.js';
+export { getEncodeBase64 } from '../encoding.js';
 
 const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
 

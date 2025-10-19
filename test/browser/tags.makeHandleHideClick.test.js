@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { makeHandleHideClick } from '../../src/browser/tags.js';
+import { makeHandleHideClick } from '../../src/core/browser/tags.js';
 
 describe('makeHandleHideClick', () => {
   it('calls stopDefault and hides only articles with the given class', () => {

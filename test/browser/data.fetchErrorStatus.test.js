@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { fetchAndCacheBlogData } from '../../src/browser/data.js';
+import { fetchAndCacheBlogData } from '../../src/core/browser/data.js';
 
 describe('fetchAndCacheBlogData error status', () => {
   it('sets blogStatus to "error" when fetch fails', async () => {

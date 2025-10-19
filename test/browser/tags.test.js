@@ -5,7 +5,7 @@ import {
   makeHandleClassName,
   makeHandleLink,
   makeHandleHideSpan,
-} from '../../src/browser/tags.js';
+} from '../../src/core/browser/tags.js';
 
 describe('hideArticlesByClass', () => {
   it('does not throw when given a class and no matching elements', () => {

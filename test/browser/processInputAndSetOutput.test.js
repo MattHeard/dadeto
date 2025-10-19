@@ -7,7 +7,7 @@ import {
   jest,
 } from '@jest/globals';
 import { processInputAndSetOutput } from '../../src/browser/toys.js';
-import { setInputValue } from '../../src/browser/inputValueStore.js';
+import { setInputValue } from '../../src/core/browser/inputValueStore.js';
 
 let elements;
 let env;

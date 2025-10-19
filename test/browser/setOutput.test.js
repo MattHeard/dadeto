@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { setOutput } from '../../src/browser/setOutput.js';
+import { setOutput } from '../../src/core/browser/setOutput.js';
 
 describe('setOutput', () => {
   it('returns an error for invalid JSON', () => {

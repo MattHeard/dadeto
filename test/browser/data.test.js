@@ -8,7 +8,7 @@ import {
   deepMerge,
   shouldCopyStateForFetch,
   getEncodeBase64,
-} from '../../src/browser/data.js';
+} from '../../src/core/browser/data.js';
 
 describe('shouldCopyStateForFetch', () => {
   it('returns true for idle', () => {
