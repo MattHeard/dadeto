@@ -1,6 +1,6 @@
 // paragraph.test.js
 import { describe, test, expect } from '@jest/globals';
-import { createParagraphElement } from '../../src/presenters/paragraph.js';
+import { createParagraphElement } from '../../src/core/presenters/paragraph.js';
 
 /**
  * Creates a minimal DOM mock used for testing.

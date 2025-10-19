@@ -6,7 +6,7 @@ import { beforeAll, describe, test, expect } from '@jest/globals';
 let applyMove;
 
 beforeAll(async () => {
-  const filePath = path.join(process.cwd(), 'src/presenters/ticTacToeBoard.js');
+  const filePath = path.join(process.cwd(), 'src/core/presenters/ticTacToeBoard.js');
   let src = fs.readFileSync(filePath, 'utf8');
   src = src.replace(/from '((?:\.\.?\/)[^']*)'/g, (_, p) => {
     const absolute = pathToFileURL(path.join(path.dirname(filePath), p));
