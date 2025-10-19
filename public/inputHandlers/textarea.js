@@ -1,0 +1,67 @@
+import {
+  maybeRemoveNumber,
+  maybeRemoveKV,
+  maybeRemoveDendrite,
+} from './removeElements.js';
+import { hideAndDisable, revealAndEnable } from './inputState.js';
+import { TEXTAREA_SELECTOR } from '../constants/selectors.js';
+import { createRemoveListener } from '../browser/document.js';
+
+const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
+
+const createSyncTextInputValue = (textInput, dom) => event => {
+  const targetValue = dom.getTargetValue(event);
+  dom.setValue(textInput, targetValue);
+};
+
+const positionTextarea = ({ container, textInput, textarea, dom }) => {
+  const nextSibling = dom.getNextSibling(textInput);
+  dom.insertBefore(container, textarea, nextSibling);
+};
+
+const setupTextarea = ({ textarea, textInput, dom }) => {
+  const handleInput = createSyncTextInputValue(textInput, dom);
+  dom.addEventListener(textarea, 'input', handleInput);
+  textarea._dispose = createRemoveListener({
+    dom,
+    el: textarea,
+    event: 'input',
+    handler: handleInput,
+  });
+};
+
+export const ensureTextareaInput = (container, textInput, dom) => {
+  let textarea = dom.querySelector(container, TEXTAREA_SELECTOR);
+
+  if (!textarea) {
+    textarea = dom.createElement('textarea');
+    dom.setClassName(textarea, TEXTAREA_CLASS);
+    const value = dom.getValue(textInput);
+    if (value) {
+      dom.setValue(textarea, value);
+    }
+    positionTextarea({ container, textInput, textarea, dom });
+    setupTextarea({ textarea, textInput, dom });
+  } else {
+    dom.setValue(textarea, dom.getValue(textInput));
+  }
+
+  revealAndEnable(textarea, dom);
+
+  return textarea;
+};
+
+/**
+ * Switch the UI to use a textarea input field.
+ * @param {object} dom - DOM helper utilities.
+ * @param {HTMLElement} container - Container element housing the input.
+ * @param {HTMLInputElement} textInput - The text input element.
+ * @returns {void}
+ */
+export function textareaHandler(dom, container, textInput) {
+  hideAndDisable(textInput, dom);
+  maybeRemoveNumber(container, dom);
+  maybeRemoveKV(container, dom);
+  maybeRemoveDendrite(container, dom);
+  ensureTextareaInput(container, textInput, dom);
+}

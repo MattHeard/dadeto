@@ -1,4 +1,8 @@
-import { maybeRemoveKV, maybeRemoveDendrite } from './removeElements.js';
+import {
+  maybeRemoveKV,
+  maybeRemoveDendrite,
+  maybeRemoveTextarea,
+} from './removeElements.js';
 import { NUMBER_INPUT_SELECTOR } from '../constants/selectors.js';
 import { hideAndDisable } from './inputState.js';
 import { createRemoveListener } from '../browser/document.js';
@@ -69,5 +73,6 @@ export function numberHandler(dom, container, textInput) {
   hideAndDisable(textInput, dom);
   maybeRemoveKV(container, dom);
   maybeRemoveDendrite(container, dom);
+  maybeRemoveTextarea(container, dom);
   ensureNumberInput(container, textInput, dom);
 }

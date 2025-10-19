@@ -2,6 +2,7 @@ import {
   maybeRemoveNumber,
   maybeRemoveKV,
   maybeRemoveDendrite,
+  maybeRemoveTextarea,
 } from './removeElements.js';
 import { hideAndDisable } from './inputState.js';
 
@@ -17,4 +18,5 @@ export function defaultHandler(dom, container, textInput) {
   maybeRemoveNumber(container, dom);
   maybeRemoveKV(container, dom);
   maybeRemoveDendrite(container, dom);
+  maybeRemoveTextarea(container, dom);
 }
