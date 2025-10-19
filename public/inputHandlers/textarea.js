@@ -10,6 +10,18 @@ import { getInputValue, setInputValue } from '../browser/inputValueStore.js';
 
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
 
+const getTextareaSourceValue = (textInput, dom) => {
+  const value = getInputValue(textInput);
+  if (value) {
+    return value;
+  }
+  if (dom && typeof dom.getValue === 'function') {
+    const domValue = dom.getValue(textInput);
+    return domValue ?? '';
+  }
+  return value;
+};
+
 const createSyncTextInputValue = (textInput, dom) => event => {
   const targetValue = dom.getTargetValue(event);
   dom.setValue(textInput, targetValue);
@@ -38,14 +50,15 @@ export const ensureTextareaInput = (container, textInput, dom) => {
   if (!textarea) {
     textarea = dom.createElement('textarea');
     dom.setClassName(textarea, TEXTAREA_CLASS);
-    const value = getInputValue(textInput);
+    const value = getTextareaSourceValue(textInput, dom);
     if (value) {
       dom.setValue(textarea, value);
     }
     positionTextarea({ container, textInput, textarea, dom });
     setupTextarea({ textarea, textInput, dom });
   } else {
-    dom.setValue(textarea, getInputValue(textInput));
+    const value = getTextareaSourceValue(textInput, dom);
+    dom.setValue(textarea, value);
   }
 
   revealAndEnable(textarea, dom);

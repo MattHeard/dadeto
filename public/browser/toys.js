@@ -72,8 +72,15 @@ function getDefaultRowsJson(value) {
  * @returns {string} JSON string to parse.
  */
 function getRowsJson(dom, inputElement) {
-  const value = getInputValue(inputElement);
-  return getDefaultRowsJson(value);
+  const storedValue = getInputValue(inputElement);
+  if (!isBlank(storedValue)) {
+    return getDefaultRowsJson(storedValue);
+  }
+  if (dom && typeof dom.getValue === 'function') {
+    const domValue = dom.getValue(inputElement);
+    return getDefaultRowsJson(domValue);
+  }
+  return getDefaultRowsJson(storedValue);
 }
 
 /**
