@@ -1,4 +1,4 @@
-import { setupAudio } from './audio-controls.js';
+import { setupAudio } from '../core/browser/audio-controls.js';
 import { handleTagLinks } from '../core/browser/tags.js';
 import {
   fetchAndCacheBlogData,
@@ -29,7 +29,7 @@ import {
   getInteractiveComponentCount,
   getInteractiveComponents,
 } from './document.js';
-import { revealBetaArticles } from './beta.js';
+import { revealBetaArticles } from '../core/browser/beta.js';
 
 const globalState = {
   blog: null, // Holds the fetched blog data

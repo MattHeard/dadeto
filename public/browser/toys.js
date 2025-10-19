@@ -607,7 +607,7 @@ export function handleRequestResponse(url, env, options) {
   fetchFn(url).then(getText).then(displayBody).catch(handleFetchError);
 }
 
-import { isObject } from './common.js';
+import { isObject } from '../core/browser/common.js';
 
 /**
  * Creates a number input element with the specified value and change handler
