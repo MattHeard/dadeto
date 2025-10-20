@@ -171,4 +171,41 @@ describe('createHandleSubmit', () => {
       createdAt: 'ts',
     });
   });
+
+  it('falls back to missing headers when request.get is unavailable', async () => {
+    const deps = baseDeps();
+    deps.findExistingPage.mockResolvedValue('/pages/5');
+    const handler = createHandleSubmit(deps);
+
+    const request = { body: { page: '5', content: 'Hi', author: 'Sam' } };
+
+    const result = await handler(request);
+
+    expect(result.status).toBe(201);
+    expect(deps.verifyIdToken).not.toHaveBeenCalled();
+    expect(deps.saveSubmission).toHaveBeenCalledWith('uuid-1', {
+      incomingOptionFullName: null,
+      pageNumber: 5,
+      content: 'Hi',
+      author: 'Sam',
+      authorId: null,
+      options: [],
+      createdAt: 'ts',
+    });
+  });
+
+  it('returns an error when no identifying fields are provided', async () => {
+    const deps = baseDeps();
+    const handler = createHandleSubmit(deps);
+
+    const result = await handler({});
+
+    expect(result).toEqual({
+      status: 400,
+      body: {
+        error: 'must provide exactly one of incoming option or page',
+      },
+    });
+    expect(deps.saveSubmission).not.toHaveBeenCalled();
+  });
 });

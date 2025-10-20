@@ -583,6 +583,25 @@ describe('announceTriggerRenderResult', () => {
       'Render failed: 500 ERR - details'
     );
   });
+
+  it('handles missing body text when announcing failures', async () => {
+    const showMessage = jest.fn();
+
+    await announceTriggerRenderResult(
+      { ok: false, status: 503, statusText: 'Unavailable' },
+      showMessage
+    );
+
+    expect(showMessage).toHaveBeenCalledWith('Render failed: 503 Unavailable');
+  });
+
+  it('falls back to unknown status details when response fields are missing', async () => {
+    const showMessage = jest.fn();
+
+    await announceTriggerRenderResult({}, showMessage);
+
+    expect(showMessage).toHaveBeenCalledWith('Render failed: unknown unknown');
+  });
 });
 
 describe('executeTriggerRender', () => {
@@ -610,6 +629,16 @@ describe('executeTriggerRender', () => {
     await executeTriggerRender(getAdminEndpoints, fetch, 'token', showMessage);
 
     expect(showMessage).toHaveBeenCalledWith('Render failed: boom');
+  });
+
+  it('reports non-error throw values using their string form', async () => {
+    const getAdminEndpoints = jest.fn().mockResolvedValue({});
+    const fetch = jest.fn().mockRejectedValue('nope');
+    const showMessage = jest.fn();
+
+    await executeTriggerRender(getAdminEndpoints, fetch, 'token', showMessage);
+
+    expect(showMessage).toHaveBeenCalledWith('Render failed: nope');
   });
 });
 
@@ -1071,7 +1100,7 @@ describe('createInitGoogleSignIn', () => {
     expect(renderButton).toHaveBeenCalledTimes(1);
     expect(renderButton).toHaveBeenCalledWith(
       { innerHTML: '' },
-      expect.objectContaining({ text: 'signin_with' })
+      expect.objectContaining({ text: 'signin_with', theme: 'filled_blue' })
     );
   });
 
@@ -1116,6 +1145,27 @@ describe('createInitGoogleSignIn', () => {
 
     expect(error).toHaveBeenCalledWith('Google Identity script missing');
   });
+
+  it('treats missing selector results as an empty collection', () => {
+    const initialize = jest.fn();
+    const renderButton = jest.fn();
+    const matchMedia = jest.fn().mockReturnValue({
+      matches: false,
+      addEventListener: jest.fn(),
+    });
+    const init = createInitGoogleSignIn({
+      googleAccountsId: { initialize, renderButton },
+      credentialFactory: jest.fn(),
+      signInWithCredential: jest.fn(),
+      auth: { currentUser: { getIdToken: jest.fn() } },
+      storage: { setItem: jest.fn() },
+      matchMedia,
+      querySelectorAll: jest.fn().mockReturnValue(undefined),
+    });
+
+    expect(() => init()).not.toThrow();
+    expect(renderButton).not.toHaveBeenCalled();
+  });
 });
 
 describe('getStatusParagraph and related lookups', () => {
@@ -1152,6 +1202,12 @@ describe('getCurrentUser', () => {
     const getAuth = jest.fn(() => ({ currentUser: user }));
 
     expect(getCurrentUser(getAuth)).toBe(user);
+  });
+
+  it('returns null when the auth object has no currentUser', () => {
+    const getAuth = jest.fn(() => ({}));
+
+    expect(getCurrentUser(getAuth)).toBeNull();
   });
 });
 
@@ -1198,6 +1254,29 @@ describe('createCheckAccess', () => {
     checkAccess();
 
     expect(content.style.display).toBe('');
+  });
+
+  it('gracefully handles missing content elements', () => {
+    const doc = {
+      getElementById: jest.fn(() => null),
+      querySelectorAll: jest.fn(() => [{ style: {} }]),
+    };
+    const checkAccess = createCheckAccess(() => ({ currentUser: null }), doc);
+
+    expect(() => checkAccess()).not.toThrow();
+  });
+
+  it('handles missing content elements when the user is an admin', () => {
+    const doc = {
+      getElementById: jest.fn(() => null),
+      querySelectorAll: jest.fn(() => [{ style: {} }]),
+    };
+    const checkAccess = createCheckAccess(
+      () => ({ currentUser: { uid: ADMIN_UID } }),
+      doc
+    );
+
+    expect(() => checkAccess()).not.toThrow();
   });
 });
 
