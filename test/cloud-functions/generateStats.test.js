@@ -1,5 +1,5 @@
+import { buildHtml } from '../../src/core/cloud/generate-stats/core.js';
 import {
-  buildHtml,
   getPageCount,
   getUnmoderatedPageCount,
   getTopStories,
