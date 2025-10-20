@@ -5,12 +5,12 @@ import { getAuth } from 'firebase-admin/auth';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions/v1';
 import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
+import { ADMIN_UID } from './admin-config.js';
 
 const db = getFirestoreInstance();
 const storage = new Storage();
 ensureFirebaseApp();
 const auth = getAuth();
-const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 const allowed = [
   'https://mattheard.net',
   'https://dendritestories.co.nz',

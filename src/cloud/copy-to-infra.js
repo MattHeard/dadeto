@@ -15,8 +15,9 @@ const { join, resolve } = pathAdapters;
 const infraDir = resolve(projectRoot, 'infra');
 const srcCloudDir = resolve(srcDir, 'cloud');
 const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
-const srcCoreCloudDir = resolve(srcDir, 'core', 'cloud');
-const srcCoreBrowserDir = resolve(srcDir, 'core', 'browser');
+const srcCoreDir = resolve(srcDir, 'core');
+const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
+const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
 const browserDir = resolve(srcDir, 'browser');
 
 const functionDirectories = [
@@ -78,6 +79,7 @@ const packageFileCopies = functionDirectories.flatMap(name =>
 );
 
 const adminCoreSource = join(srcCoreBrowserDir, 'admin', 'core.js');
+const adminConfigSource = join(srcCoreDir, 'admin-config.js');
 
 const assignModerationCoreSource = join(
   srcCoreCloudDir,
@@ -91,6 +93,17 @@ const generateStatsCoreSource = join(
   'core.js',
 );
 
+const adminConfigFunctionDirectories = [
+  'generate-stats',
+  'mark-variant-dirty',
+  'render-contents',
+];
+
+const adminConfigFunctionCopies = adminConfigFunctionDirectories.map(name => ({
+  source: adminConfigSource,
+  target: join(infraFunctionsDir, name, 'admin-config.js'),
+}));
+
 const individualFileCopies = [
   {
     source: join(browserDir, 'admin.js'),
@@ -99,6 +112,10 @@ const individualFileCopies = [
   {
     source: adminCoreSource,
     target: join(infraDir, 'admin-core.js'),
+  },
+  {
+    source: adminConfigSource,
+    target: join(infraDir, 'core', 'admin-config.js'),
   },
   {
     source: join(srcCoreBrowserDir, 'load-static-config-core.js'),
@@ -132,6 +149,7 @@ const individualFileCopies = [
     source: generateStatsCoreSource,
     target: join(infraFunctionsDir, 'generate-stats', 'core.js'),
   },
+  ...adminConfigFunctionCopies,
   ...browserFileCopies,
   ...firebaseAppCopies,
   ...firestoreCopies,

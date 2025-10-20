@@ -4,12 +4,12 @@ import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
 import { getAuth } from 'firebase-admin/auth';
+import { ADMIN_UID } from './admin-config.js';
 import corsConfig from './cors-config.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { createFirebaseResources, createGenerateStatsCore } from './core.js';
 
-const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 const PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
 const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
 const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
