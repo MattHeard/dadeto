@@ -64,15 +64,12 @@ function handlePathSegmentIteration(currentValue, segment, currentPath) {
  */
 function traverseSegment(currentValue, segment, currentPath) {
   const nextPath = getNextPath(currentPath, segment);
-  const nonObjectError = getNonObjectSegmentError(
+  const errorResult = createNonObjectErrorResult(
     currentValue,
     segment,
     nextPath
   );
-  if (nonObjectError !== null) {
-    return { error: nonObjectError };
-  }
-  return getSegmentValueOrError(currentValue, segment, nextPath);
+  return errorResult ?? getSegmentValueOrError(currentValue, segment, nextPath);
 }
 
 /**
@@ -130,6 +127,25 @@ function getNonObjectSegmentError(currentValue, segment, currentPath) {
   } else {
     return null;
   }
+}
+
+/**
+ * Create a structured result when a segment access occurs on a non-object.
+ * @param {*} currentValue - Value being accessed.
+ * @param {string} segment - Segment name.
+ * @param {string} currentPath - Full path used for the lookup.
+ * @returns {{error: string}|null} Object describing the error or null when valid.
+ */
+function createNonObjectErrorResult(currentValue, segment, currentPath) {
+  const nonObjectError = getNonObjectSegmentError(
+    currentValue,
+    segment,
+    currentPath
+  );
+  if (nonObjectError === null) {
+    return null;
+  }
+  return { error: nonObjectError };
 }
 
 /**
