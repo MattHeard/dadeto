@@ -93,6 +93,12 @@ const generateStatsCoreSource = join(
   'core.js',
 );
 
+const submitNewPageCoreSource = join(
+  srcCoreCloudDir,
+  'submit-new-page',
+  'core.js',
+);
+
 const adminConfigFunctionDirectories = [
   'generate-stats',
   'mark-variant-dirty',
@@ -148,6 +154,10 @@ const individualFileCopies = [
   {
     source: generateStatsCoreSource,
     target: join(infraFunctionsDir, 'generate-stats', 'core.js'),
+  },
+  {
+    source: submitNewPageCoreSource,
+    target: join(infraFunctionsDir, 'submit-new-page', 'core.js'),
   },
   ...adminConfigFunctionCopies,
   ...browserFileCopies,

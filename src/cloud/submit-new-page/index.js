@@ -12,11 +12,23 @@ import {
 } from './helpers.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
+import { createHandleSubmit } from './core.js';
 
 const db = getFirestoreInstance();
 ensureFirebaseApp();
 const auth = getAuth();
 const app = express();
+
+const handleSubmitCore = createHandleSubmit({
+  verifyIdToken: (token) => auth.verifyIdToken(token),
+  saveSubmission: (id, data) =>
+    db.collection('pageFormSubmissions').doc(id).set(data),
+  randomUUID: () => crypto.randomUUID(),
+  serverTimestamp: () => FieldValue.serverTimestamp(),
+  parseIncomingOption,
+  findExistingOption: (parsed) => findExistingOption(db, parsed),
+  findExistingPage: (pageNumber) => findExistingPage(db, pageNumber),
+});
 
 const { allowedOrigins } = corsConfig; // includes static-site domain
 app.use(
@@ -42,96 +54,8 @@ app.use(express.urlencoded({ extended: false, limit: '20kb' }));
  * @returns {Promise<void>} Promise resolving when response is sent.
  */
 async function handleSubmit(req, res) {
-  const { incoming_option: rawIncomingOption, page: rawPage } = req.body;
-  let { content = '', author = '???' } = req.body;
-  let authorId = null;
-
-  const incomingOption =
-    rawIncomingOption?.toString().trim().slice(0, 120) || '';
-  const pageStr = rawPage?.toString().trim().slice(0, 120) || '';
-  const hasIncoming = incomingOption !== '';
-  const hasPage = pageStr !== '';
-  if ((hasIncoming ? 1 : 0) + (hasPage ? 1 : 0) !== 1) {
-    res
-      .status(400)
-      .json({ error: 'must provide exactly one of incoming option or page' });
-    return;
-  }
-
-  content = content.toString().replace(/\r\n?/g, '\n').slice(0, 10_000);
-  author = author.toString().trim().slice(0, 120);
-
-  let incomingOptionFullName = null;
-  let pageNumber = null;
-
-  if (hasIncoming) {
-    const parsed = parseIncomingOption(incomingOption);
-    if (!parsed) {
-      res.status(400).json({ error: 'invalid incoming option' });
-      return;
-    }
-    const found = await findExistingOption(db, parsed);
-    if (!found) {
-      res.status(400).json({ error: 'incoming option not found' });
-      return;
-    }
-    incomingOptionFullName = found;
-  } else {
-    const parsedPage = Number.parseInt(pageStr, 10);
-    if (!Number.isInteger(parsedPage)) {
-      res.status(400).json({ error: 'invalid page' });
-      return;
-    }
-    const pagePath = await findExistingPage(db, parsedPage);
-    if (!pagePath) {
-      res.status(400).json({ error: 'page not found' });
-      return;
-    }
-    pageNumber = parsedPage;
-  }
-
-  const authHeader = req.get('Authorization') || '';
-  const match = authHeader.match(/^Bearer (.+)$/);
-  if (match) {
-    try {
-      const decoded = await auth.verifyIdToken(match[1]);
-      authorId = decoded.uid;
-    } catch {
-      // ignore invalid token
-    }
-  }
-
-  const options = [];
-  for (let i = 0; i < 4; i += 1) {
-    const raw = req.body[`option${i}`];
-    if (raw === undefined || raw === null) {
-      continue;
-    }
-    const val = raw.toString().trim().slice(0, 120);
-    if (val) {
-      options.push(val);
-    }
-  }
-
-  const id = crypto.randomUUID();
-  await db.collection('pageFormSubmissions').doc(id).set({
-    incomingOptionFullName,
-    pageNumber,
-    content,
-    author,
-    authorId,
-    options,
-    createdAt: FieldValue.serverTimestamp(),
-  });
-
-  res.status(201).json({
-    id,
-    incomingOptionFullName,
-    pageNumber,
-    content,
-    author,
-    options,
-  });
+  const { status, body } = await handleSubmitCore(req);
+  res.status(status).json(body);
 }
 
 app.post('/', handleSubmit);
