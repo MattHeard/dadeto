@@ -45,6 +45,9 @@ debug/
 # Coverage reports
 reports/coverage/
 
+# Lint reports
+reports/lint/
+
 # stryker temp files
 .stryker-tmp
 
