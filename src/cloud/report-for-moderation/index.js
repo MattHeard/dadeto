@@ -4,8 +4,16 @@ import express from 'express';
 import cors from 'cors';
 import corsConfig from './cors-config.js';
 import { getFirestoreInstance } from './firestore.js';
+import { createReportForModerationHandler } from './handler.js';
 
 const db = getFirestoreInstance();
+const moderationReportsCollection = db.collection('moderationReports');
+const reportForModerationHandler = createReportForModerationHandler({
+  addModerationReport: moderationReportsCollection.add.bind(
+    moderationReportsCollection
+  ),
+  getServerTimestamp: FieldValue.serverTimestamp,
+});
 const app = express();
 
 const { allowedOrigins } = corsConfig;
@@ -31,27 +39,25 @@ app.use(express.json());
  * @returns {Promise<void>} Promise resolving when response is sent.
  */
 async function handleReportForModeration(req, res) {
-  if (req.method !== 'POST') {
-    res.status(405).send('POST only');
-    return;
-  }
-
-  const { variant } = req.body || {};
-  if (typeof variant !== 'string' || !variant.trim()) {
-    res.status(400).send('Missing or invalid variant');
-    return;
-  }
-
-  const slug = variant.trim();
-  await db.collection('moderationReports').add({
-    variant: slug,
-    createdAt: FieldValue.serverTimestamp(),
+  const { status, body } = await reportForModerationHandler({
+    method: req.method,
+    body: req.body,
   });
 
-  res.status(201).json({});
+  if (typeof body === 'string') {
+    res.status(status).send(body);
+    return;
+  }
+
+  if (typeof body === 'undefined') {
+    res.sendStatus(status);
+    return;
+  }
+
+  res.status(status).json(body);
 }
 
-app.post('/', handleReportForModeration);
+app.all('/', handleReportForModeration);
 
 export const reportForModeration = functions
   .region('europe-west1')
