@@ -572,6 +572,30 @@ describe('createCopyCore', () => {
       );
     });
 
+    it('falls back to the public directory when a toys directory is absent', () => {
+      const entriesMap = new Map();
+      entriesMap.set(directories.srcToysDir, [createFileEntry('solo.js')]);
+
+      const io = {
+        directoryExists: jest.fn().mockReturnValue(false),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(dir => entriesMap.get(dir) ?? []),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+      const dirs = { ...directories, publicToysDir: undefined };
+
+      core.copyToyFiles(dirs, io, logger);
+
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(dirs.srcToysDir, 'solo.js'),
+        posix.join(dirs.publicDir, 'solo.js')
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Toy files copied successfully!'
+      );
+    });
+
     it('copies presenter files when present', () => {
       const presenterFile = createFileEntry('deck.js');
       const io = {

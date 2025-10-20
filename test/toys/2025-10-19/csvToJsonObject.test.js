@@ -46,4 +46,12 @@ describe('csvToJsonObjectToy', () => {
   it('requires exactly one data row', () => {
     expect(csvToJsonObjectToy('name,age\n')).toBe(JSON.stringify({}));
   });
+
+  it('omits values when the data row has fewer columns than the header', () => {
+    const input = 'name,age,city\nAlice,30';
+
+    expect(csvToJsonObjectToy(input)).toBe(
+      JSON.stringify({ name: 'Alice', age: '30' })
+    );
+  });
 });

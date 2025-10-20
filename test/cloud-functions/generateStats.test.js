@@ -93,6 +93,7 @@ describe('generate stats helpers', () => {
       { title: 'Title s2', variantCount: 2 },
     ]);
   });
+
 });
 
 describe('createFirebaseResources', () => {
@@ -217,6 +218,25 @@ describe('createGenerateStatsCore', () => {
 
     expect(fetchFn).toHaveBeenCalledTimes(3);
     expect(errors).toHaveBeenCalled();
+    errors.mockRestore();
+  });
+
+  test('invalidatePaths logs raw errors without message properties', async () => {
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const fetchFn = jest.fn(url => {
+      if (url.startsWith('http://metadata')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'token' }),
+        });
+      }
+      return Promise.reject('fail');
+    });
+    const { core } = createCore({ fetchFn });
+
+    await core.invalidatePaths(['/stats.html']);
+
+    expect(errors).toHaveBeenCalledWith('invalidate /stats.html error', 'fail');
     errors.mockRestore();
   });
 
@@ -378,6 +398,124 @@ describe('createGenerateStatsCore', () => {
     expect(res.json).toHaveBeenCalledWith({ ok: true });
   });
 
+  test('handleRequest invokes the default generate implementation when no override is provided', async () => {
+    const metadataResponse = {
+      ok: true,
+      json: jest.fn().mockResolvedValue({ access_token: 'token' }),
+    };
+    const fetchFn = jest.fn(url => {
+      if (url.startsWith('http://metadata.google.internal')) {
+        return Promise.resolve(metadataResponse);
+      }
+      return Promise.resolve({ ok: true });
+    });
+    const storyCollection = {
+      count: () => ({
+        get: () => Promise.resolve({ data: () => ({ count: 1 }) }),
+      }),
+      doc: id => ({
+        get: () => Promise.resolve({ data: () => ({ title: `Story ${id}` }) }),
+      }),
+    };
+    const db = {
+      collection: jest.fn(name => {
+        if (name === 'stories') {
+          return storyCollection;
+        }
+        if (name === 'storyStats') {
+          return {
+            orderBy: () => ({
+              limit: () => ({
+                get: () =>
+                  Promise.resolve({
+                    docs: [
+                      { id: 'story-1', data: () => ({ variantCount: 2 }) },
+                    ],
+                  }),
+              }),
+            }),
+          };
+        }
+        return { doc: () => ({ get: () => Promise.resolve({ data: () => ({}) }) }) };
+      }),
+      collectionGroup: jest.fn(name => {
+        if (name === 'pages') {
+          return {
+            count: () => ({
+              get: () => Promise.resolve({ data: () => ({ count: 4 }) }),
+            }),
+          };
+        }
+        if (name === 'variants') {
+          return {
+            where: jest.fn((_, __, value) => ({
+              count: () => ({
+                get: () =>
+                  Promise.resolve({
+                    data: () => ({ count: value === 0 ? 1 : 0 }),
+                  }),
+              }),
+            })),
+          };
+        }
+        return {
+          count: () => ({
+            get: () => Promise.resolve({ data: () => ({ count: 0 }) }),
+          }),
+        };
+      }),
+    };
+    const { core } = createCore({ fetchFn, db });
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: key => (key === 'Authorization' ? 'Bearer token' : ''),
+    };
+
+    await core.handleRequest(req, res, {
+      authInstance: { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }) },
+    });
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
+    expect(fetchFn).toHaveBeenCalled();
+  });
+
+  test('handleRequest falls back to default invalid token message', async () => {
+    const authInstance = {
+      verifyIdToken: jest.fn().mockRejectedValue({}),
+    };
+    const { core } = createCore();
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: key => (key === 'Authorization' ? 'Bearer nope' : ''),
+    };
+
+    await core.handleRequest(req, res, { authInstance });
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('Invalid token');
+  });
+
+  test('handleRequest reports generic errors when message is missing', async () => {
+    const genFn = jest.fn().mockRejectedValue('nope');
+    const authInstance = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }),
+    };
+    const { core } = createCore();
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: key => (key === 'Authorization' ? 'Bearer token' : ''),
+    };
+
+    await core.handleRequest(req, res, { genFn, authInstance });
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 'generate failed' });
+  });
+
   test('throws when no fetch implementation is provided', () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = undefined;
@@ -426,6 +564,21 @@ describe('createGenerateStatsCore', () => {
     const { core } = createCore();
 
     await expect(core.getPageCount(dbRef)).resolves.toBe(0);
+  });
+
+  test('getUnmoderatedPageCount defaults to zero when counts are missing', async () => {
+    const dbRef = {
+      collectionGroup: () => ({
+        where: () => ({
+          count: () => ({
+            get: () => Promise.resolve({ data: () => ({}) }),
+          }),
+        }),
+      }),
+    };
+    const { core } = createCore();
+
+    await expect(core.getUnmoderatedPageCount(dbRef)).resolves.toBe(0);
   });
 
   test('generate uses default helpers when overrides are omitted', async () => {
@@ -526,5 +679,57 @@ describe('createGenerateStatsCore', () => {
       expect.stringContaining('invalidateCache'),
       expect.objectContaining({ method: 'POST' })
     );
+  });
+
+  test('getTopStories falls back to the document id when title is missing', async () => {
+    const statsDocs = [{ id: 'story-1', data: () => ({ variantCount: 1 }) }];
+    const db = {
+      collection: name => {
+        if (name === 'storyStats') {
+          return {
+            orderBy: () => ({
+              limit: () => ({
+                get: () => Promise.resolve({ docs: statsDocs }),
+              }),
+            }),
+          };
+        }
+        return {
+          doc: () => ({ get: () => Promise.resolve({ data: () => undefined }) }),
+        };
+      },
+    };
+    const { core } = createCore({ db });
+
+    await expect(core.getTopStories()).resolves.toEqual([
+      { title: 'story-1', variantCount: 1 },
+    ]);
+  });
+
+  test('getTopStories defaults variant counts when missing', async () => {
+    const statsDocs = [{ id: 'story-2', data: () => ({}) }];
+    const db = {
+      collection: name => {
+        if (name === 'storyStats') {
+          return {
+            orderBy: () => ({
+              limit: () => ({
+                get: () => Promise.resolve({ docs: statsDocs }),
+              }),
+            }),
+          };
+        }
+        return {
+          doc: id => ({
+            get: () => Promise.resolve({ data: () => ({ title: `Story ${id}` }) }),
+          }),
+        };
+      },
+    };
+    const { core } = createCore({ db });
+
+    await expect(core.getTopStories()).resolves.toEqual([
+      { title: 'Story story-2', variantCount: 0 },
+    ]);
   });
 });

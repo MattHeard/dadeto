@@ -51,6 +51,12 @@ describe('csvToJsonArrayToy', () => {
     expect(csvToJsonArrayToy(input)).toBe(JSON.stringify([]));
   });
 
+  it('returns an empty array string when the header row is blank', () => {
+    const input = '\nvalue1,value2';
+
+    expect(csvToJsonArrayToy(input)).toBe(JSON.stringify([]));
+  });
+
   it('fails when the header row cannot be parsed as CSV', () => {
     const input = '"unterminated header\nvalue1,value2';
 
@@ -58,8 +64,16 @@ describe('csvToJsonArrayToy', () => {
   });
 
   it('returns an empty array string when no data rows remain after filtering', () => {
-    const input = 'name,age\n\n\t\n';
+    const input = 'name,age\n  ,  ';
 
     expect(csvToJsonArrayToy(input)).toBe(JSON.stringify([]));
+  });
+
+  it('skips fields when the row provides fewer values than headers', () => {
+    const input = 'name,age,city\nAlice,30';
+
+    expect(csvToJsonArrayToy(input)).toBe(
+      JSON.stringify([{ name: 'Alice', age: '30' }])
+    );
   });
 });

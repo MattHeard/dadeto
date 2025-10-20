@@ -413,6 +413,16 @@ describe("createAssignModerationWorkflow", () => {
     expect(deps.createModeratorRef).not.toHaveBeenCalled();
   });
 
+  test("handles guard responses that omit the context object", async () => {
+    const deps = createDeps();
+    deps.runGuards.mockResolvedValue({});
+    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+
+    await expect(
+      assignModerationWorkflow({ req: { method: "POST" } })
+    ).resolves.toEqual({ status: 500, body: "Moderator lookup failed" });
+  });
+
   test("assigns the variant to the moderator", async () => {
     const deps = createDeps();
     const assignModerationWorkflow = createAssignModerationWorkflow(deps);
@@ -454,6 +464,23 @@ describe("createHandleAssignModerationJobCore", () => {
     });
     expect(status).toHaveBeenCalledWith(201);
     expect(send).toHaveBeenCalledWith("ok");
+  });
+
+  test("sends an empty body when the workflow omits one", async () => {
+    const assignModerationWorkflow = jest
+      .fn()
+      .mockResolvedValue({ status: 204 });
+    const status = jest.fn().mockReturnThis();
+    const send = jest.fn();
+    const res = { status, send };
+    const handle = createHandleAssignModerationJobCore(
+      assignModerationWorkflow
+    );
+
+    await handle({ method: "POST" }, res);
+
+    expect(status).toHaveBeenCalledWith(204);
+    expect(send).toHaveBeenCalledWith("");
   });
 });
 
