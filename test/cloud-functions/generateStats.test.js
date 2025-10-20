@@ -1,4 +1,9 @@
-import { buildHtml } from '../../src/core/cloud/generate-stats/core.js';
+import { describe, expect, jest, test } from '@jest/globals';
+import {
+  buildHtml,
+  createFirebaseResources,
+  createGenerateStatsCore,
+} from '../../src/core/cloud/generate-stats/core.js';
 import {
   getPageCount,
   getUnmoderatedPageCount,
@@ -87,5 +92,439 @@ describe('generate stats helpers', () => {
       { title: 'Title s1', variantCount: 3 },
       { title: 'Title s2', variantCount: 2 },
     ]);
+  });
+});
+
+describe('createFirebaseResources', () => {
+  test('initializes firebase modules and returns dependencies', () => {
+    const ensureFirebaseApp = jest.fn();
+    const db = { name: 'db' };
+    const auth = { name: 'auth' };
+    const storageInstance = { name: 'storage' };
+    const getFirestoreInstance = jest.fn(() => db);
+    const getAuth = jest.fn(() => auth);
+    const StorageCtor = jest.fn(() => storageInstance);
+
+    const resources = createFirebaseResources({
+      ensureFirebaseApp,
+      getFirestoreInstance,
+      getAuth,
+      StorageCtor,
+    });
+
+    expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
+    expect(getFirestoreInstance).toHaveBeenCalledTimes(1);
+    expect(getAuth).toHaveBeenCalledTimes(1);
+    expect(StorageCtor).toHaveBeenCalledTimes(1);
+    expect(resources).toEqual({ db, auth, storage: storageInstance });
+  });
+});
+
+describe('createGenerateStatsCore', () => {
+  const createResponse = () => {
+    const res = {};
+    res.status = jest.fn().mockReturnValue(res);
+    res.send = jest.fn().mockReturnValue(res);
+    res.json = jest.fn().mockReturnValue(res);
+    return res;
+  };
+
+  const createCore = (overrides = {}) => {
+    const file = { save: jest.fn().mockResolvedValue() };
+    const bucketRef = { file: jest.fn(() => file) };
+    const storage = overrides.storage ?? {
+      bucket: jest.fn(() => bucketRef),
+    };
+    const fetchFn = overrides.fetchFn ?? jest.fn();
+    const auth =
+      overrides.auth ??
+      {
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }),
+      };
+    const db = overrides.db ?? {};
+
+    return {
+      core: createGenerateStatsCore({
+        db,
+        auth,
+        storage,
+        fetchFn,
+        project: 'project',
+        urlMap: 'url-map',
+        cdnHost: 'cdn.example',
+        bucket: 'bucket-name',
+        adminUid: 'admin',
+        cryptoModule: overrides.cryptoModule ?? {
+          randomUUID: jest.fn().mockReturnValue('uuid'),
+        },
+      }),
+      storage,
+      bucketRef,
+      file,
+      fetchFn,
+      auth,
+    };
+  };
+
+  test('retrieves metadata access tokens', async () => {
+    const metadataResponse = {
+      ok: true,
+      json: jest.fn().mockResolvedValue({ access_token: 'token' }),
+    };
+    const fetchFn = jest.fn((url) => {
+      if (url.startsWith('http://metadata.google.internal')) {
+        return Promise.resolve(metadataResponse);
+      }
+      return Promise.resolve({ ok: true });
+    });
+    const { core } = createCore({ fetchFn });
+
+    await expect(core.getAccessTokenFromMetadata()).resolves.toBe('token');
+    expect(metadataResponse.json).toHaveBeenCalledTimes(1);
+  });
+
+  test('throws when metadata token fetch fails', async () => {
+    const fetchFn = jest.fn(() =>
+      Promise.resolve({ ok: false, status: 503 })
+    );
+    const { core } = createCore({ fetchFn });
+
+    await expect(core.getAccessTokenFromMetadata()).rejects.toThrow(
+      'metadata token: HTTP 503'
+    );
+  });
+
+  test('invalidates CDN paths and logs failures', async () => {
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+    let callIndex = 0;
+    const fetchFn = jest.fn((url) => {
+      if (url.startsWith('http://metadata')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'token' }),
+        });
+      }
+      callIndex += 1;
+      if (callIndex === 1) {
+        return Promise.resolve({ ok: false, status: 400 });
+      }
+      return Promise.reject(new Error('boom'));
+    });
+    const cryptoModule = { randomUUID: jest.fn().mockReturnValue('uuid') };
+    const { core } = createCore({ fetchFn, cryptoModule });
+
+    await core.invalidatePaths(['paths[0]', 'paths[1]']);
+
+    expect(fetchFn).toHaveBeenCalledTimes(3);
+    expect(errors).toHaveBeenCalled();
+    errors.mockRestore();
+  });
+
+  test('generates the stats page and invalidates cache', async () => {
+    const storyCountFn = jest.fn().mockResolvedValue(1);
+    const pageCountFn = jest.fn().mockResolvedValue(2);
+    const unmoderatedPageCountFn = jest.fn().mockResolvedValue(3);
+    const topStoriesFn = jest.fn().mockResolvedValue([]);
+    const invalidatePathsFn = jest.fn().mockResolvedValue();
+    const { core, storage, bucketRef, file } = createCore();
+
+    await expect(
+      core.generate({
+        storyCountFn,
+        pageCountFn,
+        unmoderatedPageCountFn,
+        topStoriesFn,
+        invalidatePathsFn,
+      })
+    ).resolves.toBeNull();
+
+    expect(storyCountFn).toHaveBeenCalledTimes(1);
+    expect(pageCountFn).toHaveBeenCalledTimes(1);
+    expect(unmoderatedPageCountFn).toHaveBeenCalledTimes(1);
+    expect(topStoriesFn).toHaveBeenCalledTimes(1);
+    expect(storage.bucket).toHaveBeenCalledWith('bucket-name');
+    expect(bucketRef.file).toHaveBeenCalledWith('stats.html');
+    expect(file.save).toHaveBeenCalledWith(expect.stringContaining('<!doctype html>'), {
+      contentType: 'text/html',
+      metadata: { cacheControl: 'no-cache' },
+    });
+    expect(invalidatePathsFn).toHaveBeenCalledWith(['/stats.html']);
+  });
+
+  test('handleRequest rejects non-POST requests', async () => {
+    const { core } = createCore();
+    const res = createResponse();
+
+    await core.handleRequest({ method: 'GET', get: () => '' }, res);
+
+    expect(res.status).toHaveBeenCalledWith(405);
+    expect(res.send).toHaveBeenCalledWith('POST only');
+  });
+
+  test('handleRequest bypasses auth for cron requests', async () => {
+    const genFn = jest.fn().mockResolvedValue();
+    const { core } = createCore();
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: (key) => (key === 'X-Appengine-Cron' ? 'true' : ''),
+    };
+
+    await core.handleRequest(req, res, { genFn });
+
+    expect(genFn).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  test('handleRequest enforces bearer tokens', async () => {
+    const { core } = createCore();
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: (key) => (key === 'Authorization' ? '' : ''),
+    };
+
+    await core.handleRequest(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('Missing token');
+  });
+
+  test('handleRequest rejects invalid bearer headers', async () => {
+    const { core } = createCore();
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: (key) => (key === 'Authorization' ? 'token' : ''),
+    };
+
+    await core.handleRequest(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('Missing token');
+  });
+
+  test('handleRequest rejects invalid tokens from verifyIdToken', async () => {
+    const auth = {
+      verifyIdToken: jest.fn().mockRejectedValue(new Error('bad token')),
+    };
+    const { core } = createCore({ auth });
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: (key) =>
+        key === 'Authorization' ? 'Bearer abc' : '',
+    };
+
+    await core.handleRequest(req, res);
+
+    expect(auth.verifyIdToken).toHaveBeenCalledWith('abc');
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('bad token');
+  });
+
+  test('handleRequest rejects non-admin users', async () => {
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user' }),
+    };
+    const { core } = createCore({ auth });
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: (key) =>
+        key === 'Authorization' ? 'Bearer abc' : '',
+    };
+
+    await core.handleRequest(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.send).toHaveBeenCalledWith('Forbidden');
+  });
+
+  test('handleRequest reports generation errors', async () => {
+    const genFn = jest.fn().mockRejectedValue(new Error('fail'));
+    const { core } = createCore();
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: (key) =>
+        key === 'Authorization' ? 'Bearer token' : '',
+    };
+
+    await core.handleRequest(req, res, { genFn, authInstance: { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }) } });
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 'fail' });
+  });
+
+  test('handleRequest runs generation successfully for admins', async () => {
+    const genFn = jest.fn().mockResolvedValue();
+    const authInstance = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }),
+    };
+    const { core } = createCore();
+    const res = createResponse();
+    const req = {
+      method: 'POST',
+      get: (key) =>
+        key === 'Authorization' ? 'Bearer token' : '',
+    };
+
+    await core.handleRequest(req, res, { genFn, authInstance });
+
+    expect(genFn).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  test('throws when no fetch implementation is provided', () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = undefined;
+
+    try {
+      expect(() =>
+        createGenerateStatsCore({
+          db: {},
+          auth: {},
+          storage: { bucket: jest.fn() },
+          fetchFn: undefined,
+          project: 'project',
+          urlMap: 'map',
+          cdnHost: 'cdn',
+          bucket: 'bucket',
+          adminUid: 'admin',
+          cryptoModule: { randomUUID: jest.fn() },
+        })
+      ).toThrow(new Error('fetch implementation required'));
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test('getStoryCount falls back to zero when count is missing', async () => {
+    const dbRef = {
+      collection: () => ({
+        count: () => ({
+          get: () => Promise.resolve({ data: () => ({}) }),
+        }),
+      }),
+    };
+    const { core } = createCore();
+
+    await expect(core.getStoryCount(dbRef)).resolves.toBe(0);
+  });
+
+  test('getPageCount falls back to zero when count is missing', async () => {
+    const dbRef = {
+      collectionGroup: () => ({
+        count: () => ({
+          get: () => Promise.resolve({ data: () => ({}) }),
+        }),
+      }),
+    };
+    const { core } = createCore();
+
+    await expect(core.getPageCount(dbRef)).resolves.toBe(0);
+  });
+
+  test('generate uses default helpers when overrides are omitted', async () => {
+    const metadataResponse = {
+      ok: true,
+      json: jest.fn().mockResolvedValue({ access_token: 'token' }),
+    };
+    const fetchFn = jest.fn(url => {
+      if (url.startsWith('http://metadata.google.internal')) {
+        return Promise.resolve(metadataResponse);
+      }
+      return Promise.resolve({ ok: true });
+    });
+    const storyCollection = {
+      count: () => ({
+        get: () =>
+          Promise.resolve({
+            data: () => ({ count: 4 }),
+          }),
+      }),
+      doc: id => ({
+        get: () =>
+          Promise.resolve({
+            data: () => ({ title: `Story ${id}` }),
+          }),
+      }),
+    };
+    const db = {
+      collection: jest.fn(name => {
+        if (name === 'stories') {
+          return storyCollection;
+        }
+        if (name === 'storyStats') {
+          return {
+            orderBy: () => ({
+              limit: () => ({
+                get: () =>
+                  Promise.resolve({
+                    docs: [
+                      {
+                        id: 'story-1',
+                        data: () => ({ variantCount: 3 }),
+                      },
+                    ],
+                  }),
+              }),
+            }),
+          };
+        }
+        return {
+          doc: () => ({ get: () => Promise.resolve({ data: () => ({}) }) }),
+        };
+      }),
+      collectionGroup: jest.fn(name => {
+        if (name === 'pages') {
+          return {
+            count: () => ({
+              get: () =>
+                Promise.resolve({
+                  data: () => ({ count: 8 }),
+                }),
+            }),
+          };
+        }
+        if (name === 'variants') {
+          return {
+            where: jest.fn((_, __, value) => ({
+              count: () => ({
+                get: () =>
+                  Promise.resolve({
+                    data: () => ({ count: value === 0 ? 2 : 1 }),
+                  }),
+              }),
+            })),
+          };
+        }
+        return {
+          count: () => ({
+            get: () => Promise.resolve({ data: () => ({ count: 0 }) }),
+          }),
+        };
+      }),
+    };
+    const { core, storage, bucketRef, file } = createCore({ fetchFn, db });
+
+    await expect(core.generate()).resolves.toBeNull();
+
+    expect(storage.bucket).toHaveBeenCalledWith('bucket-name');
+    expect(bucketRef.file).toHaveBeenCalledWith('stats.html');
+    expect(file.save).toHaveBeenCalledWith(
+      expect.stringContaining('Story story-1'),
+      {
+        contentType: 'text/html',
+        metadata: { cacheControl: 'no-cache' },
+      }
+    );
+    expect(fetchFn).toHaveBeenCalledWith(
+      expect.stringContaining('invalidateCache'),
+      expect.objectContaining({ method: 'POST' })
+    );
   });
 });

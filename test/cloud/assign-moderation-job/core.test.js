@@ -8,6 +8,18 @@ const {
   configureUrlencodedBodyParser,
   getBodyFromRequest,
   getIdTokenFromRequest,
+  random,
+  selectVariantDoc,
+  createModeratorRefFactory,
+  buildVariantQueryPlan,
+  createVariantSnapshotFetcher,
+  createFetchVariantSnapshotFromDbFactory,
+  createAssignModerationWorkflow,
+  createHandleAssignModerationJobCore,
+  createHandleAssignModerationJob,
+  setupAssignModerationJobRoute,
+  createAssignModerationJob,
+  createHandleAssignModerationJobFromAuth,
 } = assignModerationCore;
 
 describe("createFirebaseResources", () => {
@@ -139,5 +151,381 @@ describe("createRunGuards", () => {
     });
     expect(verifyIdToken).not.toHaveBeenCalled();
     expect(getUser).not.toHaveBeenCalled();
+  });
+
+  test("returns a 400 error when the id token is missing", async () => {
+    const verifyIdToken = jest.fn();
+    const getUser = jest.fn();
+    const runGuards = createRunGuards({ verifyIdToken, getUser });
+
+    const result = await runGuards({ req: { method: "POST", body: {} } });
+
+    expect(result).toStrictEqual({
+      error: { status: 400, body: "Missing id_token" },
+    });
+  });
+
+  test("returns a 401 error when token verification fails", async () => {
+    const verifyIdToken = jest.fn().mockRejectedValue(new Error("bad"));
+    const getUser = jest.fn();
+    const runGuards = createRunGuards({ verifyIdToken, getUser });
+
+    const result = await runGuards({
+      req: { method: "POST", body: { id_token: "token" } },
+    });
+
+    expect(result).toStrictEqual({
+      error: { status: 401, body: "bad" },
+    });
+    expect(getUser).not.toHaveBeenCalled();
+  });
+
+  test("returns a 401 error when user lookup fails", async () => {
+    const verifyIdToken = jest.fn().mockResolvedValue({ uid: "uid" });
+    const getUser = jest.fn().mockRejectedValue(new Error("missing"));
+    const runGuards = createRunGuards({ verifyIdToken, getUser });
+
+    const result = await runGuards({
+      req: { method: "POST", body: { id_token: "token" } },
+    });
+
+    expect(result).toStrictEqual({
+      error: { status: 401, body: "missing" },
+    });
+  });
+
+  test("uses a fallback message when token verification error lacks details", async () => {
+    const verifyIdToken = jest.fn().mockRejectedValue({});
+    const runGuards = createRunGuards({ verifyIdToken, getUser: jest.fn() });
+
+    const result = await runGuards({
+      req: { method: "POST", body: { id_token: "token" } },
+    });
+
+    expect(result).toStrictEqual({
+      error: { status: 401, body: "Invalid or expired token" },
+    });
+  });
+
+  test("uses a fallback message when user lookup error lacks details", async () => {
+    const verifyIdToken = jest.fn().mockResolvedValue({ uid: "uid" });
+    const getUser = jest.fn().mockRejectedValue({});
+    const runGuards = createRunGuards({ verifyIdToken, getUser });
+
+    const result = await runGuards({
+      req: { method: "POST", body: { id_token: "token" } },
+    });
+
+    expect(result).toStrictEqual({
+      error: { status: 401, body: "Invalid or expired token" },
+    });
+  });
+
+  test("returns context when all guards succeed", async () => {
+    const verifyIdToken = jest.fn().mockResolvedValue({ uid: "uid" });
+    const userRecord = { uid: "uid" };
+    const getUser = jest.fn().mockResolvedValue(userRecord);
+    const runGuards = createRunGuards({ verifyIdToken, getUser });
+
+    const req = { method: "POST", body: { id_token: "token" } };
+    const result = await runGuards({ req });
+
+    expect(result).toMatchObject({
+      context: {
+        idToken: "token",
+        decoded: { uid: "uid" },
+        userRecord,
+      },
+    });
+    expect(result.context.req).toBe(req);
+    expect(verifyIdToken).toHaveBeenCalledWith("token");
+    expect(getUser).toHaveBeenCalledWith("uid");
+  });
+});
+
+describe("random", () => {
+  test("delegates to Math.random", () => {
+    const original = Math.random;
+    Math.random = jest.fn().mockReturnValue(0.5);
+
+    try {
+      expect(random()).toBe(0.5);
+      expect(Math.random).toHaveBeenCalledTimes(1);
+    } finally {
+      Math.random = original;
+    }
+  });
+});
+
+describe("selectVariantDoc", () => {
+  test("returns the first doc when available", () => {
+    const snapshot = { empty: false, docs: [{ id: 1 }] };
+
+    expect(selectVariantDoc(snapshot)).toEqual({ variantDoc: { id: 1 } });
+  });
+
+  test("returns an error when the snapshot is empty", () => {
+    expect(selectVariantDoc({ empty: true, docs: [] })).toEqual({
+      errorMessage: "Variant fetch failed 🤷",
+    });
+  });
+
+  test("returns an error when docs are missing", () => {
+    expect(selectVariantDoc({ empty: false })).toEqual({
+      errorMessage: "Variant fetch failed 🤷",
+    });
+  });
+});
+
+describe("createModeratorRefFactory", () => {
+  test("returns the moderators document reference", () => {
+    const doc = jest.fn();
+    const database = { collection: jest.fn(() => ({ doc })) };
+    const createRef = createModeratorRefFactory(database);
+
+    createRef("uid-1");
+
+    expect(database.collection).toHaveBeenCalledWith("moderators");
+    expect(doc).toHaveBeenCalledWith("uid-1");
+  });
+});
+
+describe("buildVariantQueryPlan", () => {
+  test("creates the expected query descriptors", () => {
+    const plan = buildVariantQueryPlan(0.42);
+
+    expect(plan).toEqual([
+      { reputation: "zeroRated", comparator: ">=", randomValue: 0.42 },
+      { reputation: "zeroRated", comparator: "<", randomValue: 0.42 },
+      { reputation: "any", comparator: ">=", randomValue: 0.42 },
+      { reputation: "any", comparator: "<", randomValue: 0.42 },
+    ]);
+  });
+});
+
+describe("createVariantSnapshotFetcher", () => {
+  test("returns the first snapshot with results", async () => {
+    const snapshots = [
+      { empty: true },
+      { empty: true },
+      { empty: false, docs: [1] },
+    ];
+    const runQuery = jest
+      .fn()
+      .mockImplementation(async () => snapshots.shift());
+    const fetchSnapshot = createVariantSnapshotFetcher({ runQuery });
+
+    const snapshot = await fetchSnapshot(0.1);
+
+    expect(snapshot).toEqual({ empty: false, docs: [1] });
+    expect(runQuery).toHaveBeenCalledTimes(3);
+  });
+
+  test("returns the last snapshot when none contain results", async () => {
+    const runQuery = jest.fn().mockResolvedValue({ empty: true });
+    const fetchSnapshot = createVariantSnapshotFetcher({ runQuery });
+
+    const snapshot = await fetchSnapshot(0.2);
+
+    expect(snapshot).toEqual({ empty: true });
+    expect(runQuery).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe("createFetchVariantSnapshotFromDbFactory", () => {
+  test("binds the database to the query runner", async () => {
+    const descriptors = [];
+    const runQuery = jest.fn().mockImplementation(async descriptor => {
+      descriptors.push(descriptor);
+      return { empty: true };
+    });
+    const createRunVariantQuery = jest.fn(() => runQuery);
+    const createFetcher = createFetchVariantSnapshotFromDbFactory(
+      createRunVariantQuery
+    );
+    const fetchSnapshot = createFetcher("db");
+
+    await fetchSnapshot(0.3);
+
+    expect(createRunVariantQuery).toHaveBeenCalledWith("db");
+    expect(descriptors).toHaveLength(4);
+  });
+});
+
+describe("createAssignModerationWorkflow", () => {
+  const createDeps = () => {
+    const runGuards = jest
+      .fn()
+      .mockResolvedValue({ context: { userRecord: { uid: "mod" } } });
+    const fetchVariantSnapshot = jest.fn().mockResolvedValue("snapshot");
+    const selectVariantDoc = jest
+      .fn()
+      .mockReturnValue({ variantDoc: { ref: "doc-ref" } });
+    const set = jest.fn().mockResolvedValue();
+    const createModeratorRef = jest.fn(() => ({ set }));
+    const now = jest.fn().mockReturnValue("now");
+    const random = jest.fn().mockReturnValue(0.25);
+
+    return {
+      runGuards,
+      fetchVariantSnapshot,
+      selectVariantDoc,
+      createModeratorRef,
+      now,
+      random,
+      set,
+    };
+  };
+
+  test("returns guard errors without executing the workflow", async () => {
+    const deps = createDeps();
+    deps.runGuards.mockResolvedValue({
+      error: { status: 401, body: "nope" },
+    });
+    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+
+    await expect(
+      assignModerationWorkflow({ req: { method: "POST" } })
+    ).resolves.toEqual({ status: 401, body: "nope" });
+    expect(deps.fetchVariantSnapshot).not.toHaveBeenCalled();
+    expect(deps.createModeratorRef).not.toHaveBeenCalled();
+  });
+
+  test("handles missing moderator records", async () => {
+    const deps = createDeps();
+    deps.runGuards.mockResolvedValue({ context: {} });
+    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+
+    await expect(
+      assignModerationWorkflow({ req: { method: "POST" } })
+    ).resolves.toEqual({ status: 500, body: "Moderator lookup failed" });
+    expect(deps.fetchVariantSnapshot).not.toHaveBeenCalled();
+  });
+
+  test("surfaces variant selection errors", async () => {
+    const deps = createDeps();
+    deps.selectVariantDoc.mockReturnValue({ errorMessage: "boom" });
+    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+
+    await expect(
+      assignModerationWorkflow({ req: { method: "POST" } })
+    ).resolves.toEqual({ status: 500, body: "boom" });
+    expect(deps.createModeratorRef).not.toHaveBeenCalled();
+  });
+
+  test("assigns the variant to the moderator", async () => {
+    const deps = createDeps();
+    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+    const req = { method: "POST" };
+
+    await expect(assignModerationWorkflow({ req })).resolves.toEqual({
+      status: 201,
+      body: "",
+    });
+
+    expect(deps.runGuards).toHaveBeenCalledWith({ req });
+    expect(deps.random).toHaveBeenCalledTimes(1);
+    expect(deps.fetchVariantSnapshot).toHaveBeenCalledWith(0.25);
+    expect(deps.selectVariantDoc).toHaveBeenCalledWith("snapshot");
+    expect(deps.createModeratorRef).toHaveBeenCalledWith("mod");
+    expect(deps.set).toHaveBeenCalledWith({
+      variant: "doc-ref",
+      createdAt: "now",
+    });
+  });
+});
+
+describe("createHandleAssignModerationJobCore", () => {
+  test("writes the workflow response to the express response", async () => {
+    const assignModerationWorkflow = jest
+      .fn()
+      .mockResolvedValue({ status: 201, body: "ok" });
+    const status = jest.fn().mockReturnThis();
+    const send = jest.fn();
+    const res = { status, send };
+    const handle = createHandleAssignModerationJobCore(
+      assignModerationWorkflow
+    );
+
+    await handle({ method: "POST" }, res);
+
+    expect(assignModerationWorkflow).toHaveBeenCalledWith({
+      req: { method: "POST" },
+    });
+    expect(status).toHaveBeenCalledWith(201);
+    expect(send).toHaveBeenCalledWith("ok");
+  });
+});
+
+describe("createHandleAssignModerationJob", () => {
+  test("creates the workflow using the provided dependencies", () => {
+    const runQuery = jest.fn().mockResolvedValue({ empty: true });
+    const createRunVariantQuery = jest.fn(() => runQuery);
+    const auth = { auth: true };
+    const db = { db: true };
+    const now = jest.fn();
+    const randomFn = jest.fn();
+
+    const handle = createHandleAssignModerationJob(
+      createRunVariantQuery,
+      auth,
+      db,
+      now,
+      randomFn
+    );
+
+    expect(typeof handle).toBe("function");
+    expect(createRunVariantQuery).toHaveBeenCalledWith(db);
+  });
+});
+
+describe("setupAssignModerationJobRoute", () => {
+  test("registers the POST route", () => {
+    const post = jest.fn();
+    const firebaseResources = { db: {}, auth: {}, app: { post } };
+    const createRunVariantQuery = jest.fn();
+
+    const handler = setupAssignModerationJobRoute(
+      firebaseResources,
+      createRunVariantQuery,
+      jest.fn()
+    );
+
+    expect(post).toHaveBeenCalledWith("/", handler);
+  });
+});
+
+describe("createAssignModerationJob", () => {
+  test("creates a regional HTTPS function", () => {
+    const onRequest = jest.fn(() => "handler");
+    const region = jest.fn(() => ({ https: { onRequest } }));
+    const functionsModule = { region };
+    const firebaseResources = { app: {} };
+
+    const fn = createAssignModerationJob(functionsModule, firebaseResources);
+
+    expect(region).toHaveBeenCalledWith("europe-west1");
+    expect(onRequest).toHaveBeenCalledWith(firebaseResources.app);
+    expect(fn).toBe("handler");
+  });
+});
+
+describe("createHandleAssignModerationJobFromAuth", () => {
+  test("builds the handler with firestore-backed dependencies", () => {
+    const auth = { auth: true };
+    const fetchVariantSnapshot = jest.fn();
+    const db = { collection: jest.fn(() => ({ doc: jest.fn() })) };
+    const now = jest.fn();
+    const randomFn = jest.fn();
+
+    const handle = createHandleAssignModerationJobFromAuth(
+      auth,
+      fetchVariantSnapshot,
+      db,
+      now,
+      randomFn
+    );
+
+    expect(typeof handle).toBe("function");
   });
 });
