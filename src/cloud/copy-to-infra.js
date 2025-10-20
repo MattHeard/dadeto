@@ -18,6 +18,7 @@ const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
 const srcCoreDir = resolve(srcDir, 'core');
 const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
 const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
+const srcCoreAuthDir = resolve(srcCoreDir, 'auth');
 const browserDir = resolve(srcDir, 'browser');
 
 const functionDirectories = [
@@ -122,6 +123,10 @@ const individualFileCopies = [
   {
     source: adminConfigSource,
     target: join(infraDir, 'core', 'admin-config.js'),
+  },
+  {
+    source: join(srcCoreAuthDir, 'googleSignOut.js'),
+    target: join(infraDir, 'core', 'auth', 'googleSignOut.js'),
   },
   {
     source: join(srcCoreBrowserDir, 'load-static-config-core.js'),
