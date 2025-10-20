@@ -72,7 +72,9 @@ export function csvToJsonArrayToy(input, env) {
       }
     });
 
-    rows.push(record);
+    if (Object.keys(record).length > 0) {
+      rows.push(record);
+    }
   }
 
   if (rows.length === 0) {
