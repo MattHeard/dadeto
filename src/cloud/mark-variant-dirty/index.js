@@ -6,13 +6,13 @@ import { findPageRef, findPagesSnap, refFromSnap } from './findPageRef.js';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
+import { ADMIN_UID } from './admin-config.js';
 
 const db = getFirestoreInstance();
 ensureFirebaseApp();
 const auth = getAuth();
 const app = express();
 
-const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 const { allowedOrigins } = corsConfig;
 
 app.use(
