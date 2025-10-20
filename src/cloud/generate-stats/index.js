@@ -7,11 +7,7 @@ import { getAuth } from 'firebase-admin/auth';
 import corsConfig from './cors-config.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
-import {
-  buildHtml,
-  createFirebaseResources,
-  createGenerateStatsCore,
-} from './core.js';
+import { createFirebaseResources, createGenerateStatsCore } from './core.js';
 
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 const PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
@@ -77,7 +73,6 @@ export const generateStats = functions
   .https.onRequest(app);
 
 export {
-  buildHtml,
   getStoryCount,
   getPageCount,
   getUnmoderatedPageCount,
