@@ -5,6 +5,7 @@ import {
   isAdmin,
 } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
+import { createAuthedFetch } from './authedFetch.js';
 
 const DEFAULT_ENDPOINTS = {
   getModerationVariantUrl:
@@ -206,6 +207,23 @@ async function submitRating(isApproved) {
   }
 }
 
+const fetchJson = async (url, init) => {
+  const resp = await fetch(url, init);
+  if (!resp.ok) {
+    const error = new Error(`HTTP ${resp.status}`);
+    error.status = resp.status;
+    throw error;
+  }
+  const data = await resp.json();
+  return {
+    ok: true,
+    status: resp.status,
+    json: () => data,
+  };
+};
+
+export const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+
 initGoogleSignIn({
   onSignIn: () => {
     document.body.classList.add('authed');
@@ -224,22 +242,6 @@ initGoogleSignIn({
     loadVariant();
   },
 });
-
-export const authedFetch = async (url, opts = {}) => {
-  const token = getIdToken();
-  if (!token) throw new Error('not signed in');
-
-  const resp = await fetch(url, {
-    ...opts,
-    headers: {
-      ...(opts.headers || {}),
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  return resp.json();
-};
 
 if (getIdToken()) {
   document.body.classList.add('authed');
