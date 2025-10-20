@@ -4,6 +4,7 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+import { ADMIN_UID } from './admin-config.js';
 
 initializeApp({
   apiKey: 'AIzaSyDRc1CakoDi6airj7t7DgY4KDSlxNwKIIQ',
@@ -12,8 +13,6 @@ initializeApp({
 });
 
 const auth = getAuth();
-
-const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 
 export const initGoogleSignIn = ({ onSignIn } = {}) => {
   if (!window.google || !google.accounts?.id) {

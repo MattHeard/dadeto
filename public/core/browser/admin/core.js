@@ -1,4 +1,6 @@
-export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
+import { ADMIN_UID } from '../../admin-config.js';
+
+export { ADMIN_UID };
 
 export const DEFAULT_ADMIN_ENDPOINTS = {
   triggerRenderContentsUrl:
