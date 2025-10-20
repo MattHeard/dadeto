@@ -1,5 +1,5 @@
 import { Firestore } from '@google-cloud/firestore';
-import { createGetApiKeyCreditHandler } from '../../core/cloud/get-api-key-credit/handler.js';
+import { createGetApiKeyCreditHandler } from './handler.js';
 
 const firestore = new Firestore();
 

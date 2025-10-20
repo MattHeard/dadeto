@@ -106,6 +106,12 @@ const reportForModerationHandlerSource = join(
   'handler.js',
 );
 
+const getApiKeyCreditHandlerSource = join(
+  srcCoreCloudDir,
+  'get-api-key-credit',
+  'handler.js',
+);
+
 const adminConfigFunctionDirectories = [
   'generate-stats',
   'mark-variant-dirty',
@@ -173,6 +179,10 @@ const individualFileCopies = [
   {
     source: reportForModerationHandlerSource,
     target: join(infraFunctionsDir, 'report-for-moderation', 'handler.js'),
+  },
+  {
+    source: getApiKeyCreditHandlerSource,
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'handler.js'),
   },
   ...adminConfigFunctionCopies,
   ...browserFileCopies,
