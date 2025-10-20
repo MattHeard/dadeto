@@ -18,6 +18,7 @@ const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
 const srcCoreDir = resolve(srcDir, 'core');
 const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
 const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
+const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
 const srcCoreAuthDir = resolve(srcCoreDir, 'auth');
 const browserDir = resolve(srcDir, 'browser');
 
@@ -45,7 +46,12 @@ const directoryCopies = functionDirectories.map(name => ({
   target: join(infraFunctionsDir, name),
 }));
 
-const sharedBrowserFiles = ['googleAuth.js', 'moderate.js', 'loadStaticConfig.js'];
+const sharedBrowserFiles = [
+  'authedFetch.js',
+  'googleAuth.js',
+  'moderate.js',
+  'loadStaticConfig.js',
+];
 
 const browserFileCopies = sharedBrowserFiles.map(name => ({
   source: join(browserDir, name),
@@ -76,7 +82,7 @@ const packageFileCopies = functionDirectories.flatMap(name =>
   sharedPackageFiles.map(file => ({
     source: join(runtimeDepsDir, file),
     target: join(infraFunctionsDir, name, file),
-  })),
+  }))
 );
 
 const adminCoreSource = join(srcCoreBrowserDir, 'admin', 'core.js');
@@ -85,25 +91,25 @@ const adminConfigSource = join(srcCoreDir, 'admin-config.js');
 const assignModerationCoreSource = join(
   srcCoreCloudDir,
   'assign-moderation-job',
-  'core.js',
+  'core.js'
 );
 
 const generateStatsCoreSource = join(
   srcCoreCloudDir,
   'generate-stats',
-  'core.js',
+  'core.js'
 );
 
 const submitNewPageCoreSource = join(
   srcCoreCloudDir,
   'submit-new-page',
-  'core.js',
+  'core.js'
 );
 
 const reportForModerationHandlerSource = join(
   srcCoreCloudDir,
   'report-for-moderation',
-  'handler.js',
+  'handler.js'
 );
 
 const adminConfigFunctionDirectories = [
@@ -139,14 +145,12 @@ const individualFileCopies = [
     target: join(infraDir, 'load-static-config-core.js'),
   },
   {
+    source: join(srcCoreBrowserModerationDir, 'authedFetch.js'),
+    target: join(infraDir, 'core', 'browser', 'moderation', 'authedFetch.js'),
+  },
+  {
     source: assignModerationCoreSource,
-    target: join(
-      infraDir,
-      'core',
-      'cloud',
-      'assign-moderation-job',
-      'core.js'
-    ),
+    target: join(infraDir, 'core', 'cloud', 'assign-moderation-job', 'core.js'),
   },
   {
     source: assignModerationCoreSource,
@@ -154,13 +158,7 @@ const individualFileCopies = [
   },
   {
     source: generateStatsCoreSource,
-    target: join(
-      infraDir,
-      'core',
-      'cloud',
-      'generate-stats',
-      'core.js'
-    ),
+    target: join(infraDir, 'core', 'cloud', 'generate-stats', 'core.js'),
   },
   {
     source: generateStatsCoreSource,
