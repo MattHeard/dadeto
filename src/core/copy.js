@@ -1,9 +1,17 @@
 export const sharedDirectoryPairs = [
-  { key: 'Toys', relativePath: 'core/toys' },
+  {
+    key: 'Toys',
+    relativePath: 'core/toys',
+    publicRelativePath: 'toys',
+  },
   { key: 'Browser', relativePath: 'browser' },
   { key: 'InputHandlers', relativePath: 'inputHandlers' },
   { key: 'Constants', relativePath: 'constants' },
-  { key: 'Presenters', relativePath: 'core/presenters' },
+  {
+    key: 'Presenters',
+    relativePath: 'core/presenters',
+    publicRelativePath: 'presenters',
+  },
   { key: 'Core', relativePath: 'core' },
 ];
 
@@ -14,11 +22,12 @@ export function createSharedDirectoryEntries({
   pairs = sharedDirectoryPairs,
 }) {
   const { join } = pathDeps;
-  return pairs.flatMap(({ key, relativePath }) => {
+  return pairs.flatMap(({ key, relativePath, publicRelativePath }) => {
     const srcKey = `src${key}Dir`;
     const destKey = `public${key}Dir`;
     const srcPath = join(srcDir, relativePath);
-    const destPath = join(publicDir, relativePath);
+    const destinationRelativePath = publicRelativePath ?? relativePath;
+    const destPath = join(publicDir, destinationRelativePath);
     return [
       [srcKey, srcPath],
       [destKey, destPath],
@@ -162,10 +171,11 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
 
   function copyToyFiles(dirs, io, messageLogger) {
     const toyFiles = findJsFiles(dirs.srcToysDir, io.readDirEntries);
+    const destinationRoot = dirs.publicToysDir ?? dirs.publicDir;
     const copyPairs = createCopyPairs(
       toyFiles,
       dirs.srcToysDir,
-      dirs.publicDir
+      destinationRoot
     );
     copyFilePairs(copyPairs, io, messageLogger);
     messageLogger.info('Toy files copied successfully!');
