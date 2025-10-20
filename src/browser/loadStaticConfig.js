@@ -1,4 +1,4 @@
-import { parseStaticConfigResponse } from '../core/browser/load-static-config-core.js';
+import { parseStaticConfigResponse } from './load-static-config-core.js';
 
 let configPromise;
 
