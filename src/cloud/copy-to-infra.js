@@ -100,6 +100,12 @@ const submitNewPageCoreSource = join(
   'core.js',
 );
 
+const reportForModerationHandlerSource = join(
+  srcCoreCloudDir,
+  'report-for-moderation',
+  'handler.js',
+);
+
 const adminConfigFunctionDirectories = [
   'generate-stats',
   'mark-variant-dirty',
@@ -163,6 +169,10 @@ const individualFileCopies = [
   {
     source: submitNewPageCoreSource,
     target: join(infraFunctionsDir, 'submit-new-page', 'core.js'),
+  },
+  {
+    source: reportForModerationHandlerSource,
+    target: join(infraFunctionsDir, 'report-for-moderation', 'handler.js'),
   },
   ...adminConfigFunctionCopies,
   ...browserFileCopies,
