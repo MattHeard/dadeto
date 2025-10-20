@@ -292,15 +292,11 @@ function getDropdownPostId(dropdown) {
 export function handleDropdownChange(dropdown, getData, dom) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
-  const data = getData();
-  const output = outputForPostId(data.output, postId);
-
   const parent = dom.querySelector(dropdown.parentNode, 'div.output');
-  setTextContent(
-    { presenterKey: selectedValue, content: output || '' },
-    dom,
-    parent
-  );
+  const { output } = getData();
+  const content = outputForPostId(output, postId);
+
+  setTextContent({ presenterKey: selectedValue, content }, dom, parent);
 }
 
 /**
