@@ -12,6 +12,21 @@ import {
   bindTriggerStatsClick,
   bindRegenerateVariantSubmit,
   createWireSignOut,
+  getDefaultAdminEndpointsCopy,
+  mapConfigToAdminEndpoints,
+  postTriggerRenderContents,
+  announceTriggerRenderResult,
+  executeTriggerRender,
+  createInitGoogleSignIn,
+  getStatusParagraph,
+  getAdminContent,
+  getSignInButtons,
+  getSignOutSections,
+  getCurrentUser,
+  updateAuthControlsDisplay,
+  createCheckAccess,
+  initAdmin,
+  ADMIN_UID,
 } from '../../../../src/core/browser/admin/core.js';
 
 const createConfig = overrides => ({
@@ -482,5 +497,870 @@ describe('createAdminEndpointsPromise', () => {
     await expect(createAdminEndpointsPromise(null)).resolves.toEqual(
       DEFAULT_ADMIN_ENDPOINTS
     );
+  });
+});
+
+describe('getDefaultAdminEndpointsCopy', () => {
+  it('returns a new copy each time', () => {
+    const first = getDefaultAdminEndpointsCopy();
+    const second = getDefaultAdminEndpointsCopy();
+
+    expect(first).toEqual(DEFAULT_ADMIN_ENDPOINTS);
+    expect(second).toEqual(DEFAULT_ADMIN_ENDPOINTS);
+    expect(first).not.toBe(second);
+  });
+});
+
+describe('mapConfigToAdminEndpoints', () => {
+  it('applies defaults when properties are missing', () => {
+    const endpoints = mapConfigToAdminEndpoints({
+      triggerRenderContentsUrl: 'custom',
+      markVariantDirtyUrl: undefined,
+    });
+
+    expect(endpoints).toEqual({
+      triggerRenderContentsUrl: 'custom',
+      markVariantDirtyUrl: DEFAULT_ADMIN_ENDPOINTS.markVariantDirtyUrl,
+      generateStatsUrl: DEFAULT_ADMIN_ENDPOINTS.generateStatsUrl,
+    });
+  });
+
+  it('returns defaults when config is nullish', () => {
+    expect(mapConfigToAdminEndpoints(null)).toEqual(DEFAULT_ADMIN_ENDPOINTS);
+  });
+});
+
+describe('postTriggerRenderContents', () => {
+  it('posts to the trigger render endpoint', async () => {
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ triggerRenderContentsUrl: 'https://example.com' });
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
+
+    await expect(
+      postTriggerRenderContents(getAdminEndpoints, fetch, 'token')
+    ).resolves.toEqual({ ok: true });
+
+    expect(getAdminEndpoints).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith('https://example.com', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer token' },
+    });
+  });
+
+  it('throws when dependencies are invalid', async () => {
+    await expect(
+      postTriggerRenderContents(null, jest.fn(), 'token')
+    ).rejects.toThrow(
+      new TypeError('getAdminEndpointsFn must be a function')
+    );
+    await expect(
+      postTriggerRenderContents(jest.fn(), null, 'token')
+    ).rejects.toThrow(new TypeError('fetchFn must be a function'));
+  });
+});
+
+describe('announceTriggerRenderResult', () => {
+  it('reports success for ok responses', async () => {
+    const showMessage = jest.fn();
+
+    await announceTriggerRenderResult({ ok: true }, showMessage);
+
+    expect(showMessage).toHaveBeenCalledWith('Render triggered');
+  });
+
+  it('reports failure details for non-ok responses', async () => {
+    const showMessage = jest.fn();
+    const text = jest.fn().mockResolvedValue('details');
+
+    await announceTriggerRenderResult(
+      { ok: false, status: 500, statusText: 'ERR', text },
+      showMessage
+    );
+
+    expect(text).toHaveBeenCalledTimes(1);
+    expect(showMessage).toHaveBeenCalledWith(
+      'Render failed: 500 ERR - details'
+    );
+  });
+});
+
+describe('executeTriggerRender', () => {
+  it('invokes post and announce helpers', async () => {
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ triggerRenderContentsUrl: 'https://render' });
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
+    const showMessage = jest.fn();
+
+    await executeTriggerRender(getAdminEndpoints, fetch, 'token', showMessage);
+
+    expect(fetch).toHaveBeenCalledWith('https://render', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer token' },
+    });
+    expect(showMessage).toHaveBeenCalledWith('Render triggered');
+  });
+
+  it('reports errors thrown during execution', async () => {
+    const getAdminEndpoints = jest.fn().mockResolvedValue({});
+    const fetch = jest.fn().mockRejectedValue(new Error('boom'));
+    const showMessage = jest.fn();
+
+    await executeTriggerRender(getAdminEndpoints, fetch, 'token', showMessage);
+
+    expect(showMessage).toHaveBeenCalledWith('Render failed: boom');
+  });
+});
+
+describe('createTriggerRender additional branches', () => {
+  it('reports errors from executeTriggerRender', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const getAdminEndpoints = jest.fn().mockResolvedValue({});
+    const fetch = jest.fn().mockRejectedValue(new Error('explode'));
+    const showMessage = jest.fn();
+
+    const triggerRender = createTriggerRender(
+      googleAuth,
+      getAdminEndpoints,
+      fetch,
+      showMessage
+    );
+
+    await triggerRender();
+
+    expect(showMessage).toHaveBeenCalledWith('Render failed: explode');
+  });
+
+  it('throws when getAdminEndpointsFn is not a function', () => {
+    expect(() =>
+      createTriggerRender(
+        { getIdToken: jest.fn() },
+        null,
+        jest.fn(),
+        jest.fn()
+      )
+    ).toThrow(new TypeError('getAdminEndpointsFn must be a function'));
+  });
+
+  it('throws when fetchFn is not a function', () => {
+    expect(() =>
+      createTriggerRender(
+        { getIdToken: jest.fn() },
+        jest.fn(),
+        null,
+        jest.fn()
+      )
+    ).toThrow(new TypeError('fetchFn must be a function'));
+  });
+
+  it('throws when showMessage is not a function', () => {
+    expect(() =>
+      createTriggerRender(
+        { getIdToken: jest.fn() },
+        jest.fn(),
+        jest.fn(),
+        null
+      )
+    ).toThrow(new TypeError('showMessage must be a function'));
+  });
+});
+
+describe('createTriggerStats additional branches', () => {
+  it('handles fetch failures by reporting an error', async () => {
+    const getIdToken = jest.fn().mockReturnValue('token');
+    const googleAuth = { getIdToken };
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ generateStatsUrl: 'https://stats' });
+    const fetch = jest.fn().mockResolvedValue({ ok: false });
+    const showMessage = jest.fn();
+
+    const triggerStats = createTriggerStats(
+      googleAuth,
+      getAdminEndpoints,
+      fetch,
+      showMessage
+    );
+
+    await triggerStats();
+
+    expect(showMessage).toHaveBeenCalledWith('Stats generated');
+  });
+
+  it('throws when getAdminEndpointsFn is not a function', () => {
+    expect(() =>
+      createTriggerStats(
+        { getIdToken: jest.fn() },
+        null,
+        jest.fn(),
+        jest.fn()
+      )
+    ).toThrow(new TypeError('getAdminEndpointsFn must be a function'));
+  });
+
+  it('throws when fetchFn is not a function', () => {
+    expect(() =>
+      createTriggerStats(
+        { getIdToken: jest.fn() },
+        jest.fn(),
+        null,
+        jest.fn()
+      )
+    ).toThrow(new TypeError('fetchFn must be a function'));
+  });
+
+  it('throws when showMessage is not a function', () => {
+    expect(() =>
+      createTriggerStats(
+        { getIdToken: jest.fn() },
+        jest.fn(),
+        jest.fn(),
+        null
+      )
+    ).toThrow(new TypeError('showMessage must be a function'));
+  });
+});
+
+describe('createRegenerateVariant additional branches', () => {
+  const markVariantDirtyUrl = 'https://example.com/variant';
+
+  it('returns early when no token is available', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue(null) };
+    const doc = { getElementById: jest.fn() };
+    const showMessage = jest.fn();
+    const getAdminEndpoints = jest.fn();
+    const fetch = jest.fn();
+
+    const regenerateVariant = createRegenerateVariant(
+      googleAuth,
+      doc,
+      showMessage,
+      getAdminEndpoints,
+      fetch
+    );
+
+    await regenerateVariant({ preventDefault: jest.fn() });
+
+    expect(getAdminEndpoints).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('reports invalid format when the input does not match', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const input = { value: 'nope' };
+    const doc = { getElementById: jest.fn().mockReturnValue(input) };
+    const showMessage = jest.fn();
+    const getAdminEndpoints = jest.fn();
+    const fetch = jest.fn();
+
+    const regenerateVariant = createRegenerateVariant(
+      googleAuth,
+      doc,
+      showMessage,
+      getAdminEndpoints,
+      fetch
+    );
+
+    await regenerateVariant({ preventDefault: jest.fn() });
+
+    expect(showMessage).toHaveBeenCalledWith('Invalid format');
+    expect(getAdminEndpoints).not.toHaveBeenCalled();
+  });
+
+  it('reports failure when the endpoint rejects', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const input = { value: '1Aa' };
+    const doc = { getElementById: jest.fn().mockReturnValue(input) };
+    const showMessage = jest.fn();
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ markVariantDirtyUrl });
+    const fetch = jest.fn().mockRejectedValue(new Error('nope'));
+
+    const regenerateVariant = createRegenerateVariant(
+      googleAuth,
+      doc,
+      showMessage,
+      getAdminEndpoints,
+      fetch
+    );
+
+    await regenerateVariant({ preventDefault: jest.fn() });
+
+    expect(fetch).toHaveBeenCalledWith(markVariantDirtyUrl, expect.any(Object));
+    expect(showMessage).toHaveBeenCalledWith('Regeneration failed');
+  });
+
+  it('reports failure when the endpoint returns a non-ok response', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const input = { value: '5Zz' };
+    const doc = { getElementById: jest.fn().mockReturnValue(input) };
+    const showMessage = jest.fn();
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ markVariantDirtyUrl });
+    const fetch = jest.fn().mockResolvedValue({ ok: false });
+
+    const regenerateVariant = createRegenerateVariant(
+      googleAuth,
+      doc,
+      showMessage,
+      getAdminEndpoints,
+      fetch
+    );
+
+    await regenerateVariant({ preventDefault: jest.fn() });
+
+    expect(showMessage).toHaveBeenCalledWith('Regeneration failed');
+  });
+
+  it('throws when provided document is invalid', () => {
+    expect(() =>
+      createRegenerateVariant(
+        { getIdToken: jest.fn() },
+        null,
+        jest.fn(),
+        jest.fn(),
+        jest.fn()
+      )
+    ).toThrow(new TypeError('doc must be a Document-like object'));
+  });
+
+  it('throws when showMessage is not a function', () => {
+    expect(() =>
+      createRegenerateVariant(
+        { getIdToken: jest.fn() },
+        { getElementById: jest.fn() },
+        null,
+        jest.fn(),
+        jest.fn()
+      )
+    ).toThrow(new TypeError('showMessage must be a function'));
+  });
+
+  it('throws when getAdminEndpointsFn is not a function', () => {
+    expect(() =>
+      createRegenerateVariant(
+        { getIdToken: jest.fn() },
+        { getElementById: jest.fn() },
+        jest.fn(),
+        null,
+        jest.fn()
+      )
+    ).toThrow(new TypeError('getAdminEndpointsFn must be a function'));
+  });
+
+  it('throws when fetchFn is not a function', () => {
+    expect(() =>
+      createRegenerateVariant(
+        { getIdToken: jest.fn() },
+        { getElementById: jest.fn() },
+        jest.fn(),
+        jest.fn(),
+        null
+      )
+    ).toThrow(new TypeError('fetchFn must be a function'));
+  });
+});
+
+describe('bind helpers handle missing event listeners', () => {
+  it('handles render button without addEventListener', () => {
+    const button = {};
+    const doc = { getElementById: jest.fn().mockReturnValue(button) };
+
+    expect(() => bindTriggerRenderClick(doc, jest.fn())).not.toThrow();
+  });
+
+  it('handles stats button without addEventListener', () => {
+    const button = {};
+    const doc = { getElementById: jest.fn().mockReturnValue(button) };
+
+    expect(() => bindTriggerStatsClick(doc, jest.fn())).not.toThrow();
+  });
+
+  it('handles regenerate form without addEventListener', () => {
+    const form = {};
+    const doc = { getElementById: jest.fn().mockReturnValue(form) };
+
+    expect(() => bindRegenerateVariantSubmit(doc, jest.fn())).not.toThrow();
+  });
+});
+
+describe('createWireSignOut additional branches', () => {
+  it('ignores links without event listeners', () => {
+    const doc = { querySelectorAll: jest.fn().mockReturnValue([{}]) };
+    const signOut = jest.fn();
+    const wireSignOut = createWireSignOut(doc, { signOut });
+
+    expect(() => wireSignOut()).not.toThrow();
+    expect(signOut).not.toHaveBeenCalled();
+  });
+});
+
+describe('createInitGoogleSignIn', () => {
+  it('throws when mandatory dependencies are missing', () => {
+    expect(() => createInitGoogleSignIn()).toThrow(
+      new TypeError('credentialFactory must be a function')
+    );
+    expect(() =>
+      createInitGoogleSignIn({ credentialFactory: jest.fn() })
+    ).toThrow(new TypeError('signInWithCredential must be a function'));
+    expect(() =>
+      createInitGoogleSignIn({
+        credentialFactory: jest.fn(),
+        signInWithCredential: jest.fn(),
+      })
+    ).toThrow(new TypeError('auth must be provided'));
+  });
+
+  it('throws when storage does not expose setItem', () => {
+    expect(() =>
+      createInitGoogleSignIn({
+        credentialFactory: jest.fn(),
+        signInWithCredential: jest.fn(),
+        auth: {},
+        storage: {},
+        matchMedia: jest.fn(),
+        querySelectorAll: jest.fn(),
+      })
+    ).toThrow(new TypeError('storage must provide a setItem function'));
+  });
+
+  it('throws when matchMedia is not a function', () => {
+    expect(() =>
+      createInitGoogleSignIn({
+        credentialFactory: jest.fn(),
+        signInWithCredential: jest.fn(),
+        auth: {},
+        storage: { setItem: jest.fn() },
+        matchMedia: null,
+        querySelectorAll: jest.fn(),
+      })
+    ).toThrow(new TypeError('matchMedia must be a function'));
+  });
+
+  it('throws when querySelectorAll is not a function', () => {
+    expect(() =>
+      createInitGoogleSignIn({
+        credentialFactory: jest.fn(),
+        signInWithCredential: jest.fn(),
+        auth: {},
+        storage: { setItem: jest.fn() },
+        matchMedia: jest.fn(),
+        querySelectorAll: null,
+      })
+    ).toThrow(new TypeError('querySelectorAll must be a function'));
+  });
+
+  it('logs an error when the identity script is missing', () => {
+    const error = jest.fn();
+    const init = createInitGoogleSignIn({
+      credentialFactory: jest.fn(),
+      signInWithCredential: jest.fn(),
+      auth: {},
+      storage: { setItem: jest.fn() },
+      matchMedia: jest.fn().mockReturnValue({}),
+      querySelectorAll: jest.fn().mockReturnValue([]),
+      logger: { error },
+    });
+
+    init();
+
+    expect(error).toHaveBeenCalledWith('Google Identity script missing');
+  });
+
+  it('falls back to console logging when logger is invalid', () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const init = createInitGoogleSignIn({
+      credentialFactory: jest.fn(),
+      signInWithCredential: jest.fn(),
+      auth: {},
+      storage: { setItem: jest.fn() },
+      matchMedia: jest.fn().mockReturnValue({}),
+      querySelectorAll: jest.fn().mockReturnValue([]),
+      logger: {},
+    });
+
+    init();
+
+    expect(error).toHaveBeenCalledWith('Google Identity script missing');
+    error.mockRestore();
+  });
+
+  it('renders buttons and handles sign-in callback', async () => {
+    let savedCallback;
+    const initialize = jest.fn(({ callback }) => {
+      savedCallback = callback;
+    });
+    const renderButton = jest.fn();
+    let mediaHandler;
+    const matchMedia = jest.fn().mockReturnValue({
+      matches: true,
+      addEventListener: jest.fn((_, handler) => {
+        mediaHandler = handler;
+      }),
+    });
+    const elements = [{ innerHTML: 'filled' }];
+    const querySelectorAll = jest.fn().mockReturnValue(elements);
+    const getIdToken = jest.fn().mockResolvedValue('id');
+    const auth = { currentUser: { getIdToken } };
+    const storage = { setItem: jest.fn() };
+    const credentialFactory = jest.fn(cred => ({ cred }));
+    const signInWithCredential = jest.fn().mockResolvedValue();
+    const onSignIn = jest.fn();
+
+    const initGoogleSignIn = createInitGoogleSignIn({
+      googleAccountsId: () => ({ initialize, renderButton }),
+      credentialFactory,
+      signInWithCredential,
+      auth,
+      storage,
+      matchMedia,
+      querySelectorAll,
+    });
+
+    initGoogleSignIn({ onSignIn });
+
+    expect(initialize).toHaveBeenCalledTimes(1);
+    expect(matchMedia).toHaveBeenCalledWith('(prefers-color-scheme: dark)');
+    await savedCallback({ credential: 'raw' });
+
+    expect(credentialFactory).toHaveBeenCalledWith('raw');
+    expect(signInWithCredential).toHaveBeenCalledWith(auth, { cred: 'raw' });
+    expect(getIdToken).toHaveBeenCalledTimes(1);
+    expect(storage.setItem).toHaveBeenCalledWith('id_token', 'id');
+    expect(onSignIn).toHaveBeenCalledWith('id');
+    expect(elements[0].innerHTML).toBe('');
+    expect(renderButton).toHaveBeenCalledWith(elements[0], {
+      theme: 'filled_black',
+      size: 'large',
+      text: 'signin_with',
+    });
+    expect(typeof mediaHandler).toBe('function');
+    mediaHandler();
+    expect(renderButton).toHaveBeenCalledTimes(2);
+  });
+
+  it('skips rendering for falsy button references', () => {
+    const initialize = jest.fn();
+    const renderButton = jest.fn();
+    const matchMedia = jest.fn().mockReturnValue({
+      matches: false,
+      addEventListener: jest.fn(),
+    });
+    const querySelectorAll = jest
+      .fn()
+      .mockReturnValue([null, { innerHTML: 'content' }]);
+
+    const initGoogleSignIn = createInitGoogleSignIn({
+      googleAccountsId: {
+        initialize,
+        renderButton,
+      },
+      credentialFactory: jest.fn(),
+      signInWithCredential: jest.fn(),
+      auth: {},
+      storage: { setItem: jest.fn() },
+      matchMedia,
+      querySelectorAll,
+    });
+
+    initGoogleSignIn();
+
+    expect(renderButton).toHaveBeenCalledTimes(1);
+    expect(renderButton).toHaveBeenCalledWith(
+      { innerHTML: '' },
+      expect.objectContaining({ text: 'signin_with' })
+    );
+  });
+
+  it('throws when auth currentUser lacks getIdToken', async () => {
+    let savedCallback;
+    const initGoogleSignIn = createInitGoogleSignIn({
+      googleAccountsId: {
+        initialize: ({ callback }) => {
+          savedCallback = callback;
+        },
+        renderButton: jest.fn(),
+      },
+      credentialFactory: jest.fn(cred => cred),
+      signInWithCredential: jest.fn(),
+      auth: { currentUser: {} },
+      storage: { setItem: jest.fn() },
+      matchMedia: jest.fn().mockReturnValue({}),
+      querySelectorAll: jest.fn().mockReturnValue([]),
+    });
+
+    initGoogleSignIn();
+
+    await expect(savedCallback({ credential: 'raw' })).rejects.toThrow(
+      new TypeError('auth.currentUser.getIdToken must be a function')
+    );
+  });
+
+  it('logs an error when renderButton is missing', () => {
+    const error = jest.fn();
+    const init = createInitGoogleSignIn({
+      googleAccountsId: { initialize: jest.fn(), renderButton: null },
+      credentialFactory: jest.fn(),
+      signInWithCredential: jest.fn(),
+      auth: {},
+      storage: { setItem: jest.fn() },
+      matchMedia: jest.fn(),
+      querySelectorAll: jest.fn().mockReturnValue([]),
+      logger: { error },
+    });
+
+    init();
+
+    expect(error).toHaveBeenCalledWith('Google Identity script missing');
+  });
+});
+
+describe('getStatusParagraph and related lookups', () => {
+  it('resolves known admin elements', () => {
+    const status = { id: 'renderStatus' };
+    const content = { id: 'adminContent' };
+    const doc = {
+      getElementById: jest.fn(id => {
+        if (id === 'renderStatus') return status;
+        if (id === 'adminContent') return content;
+        return null;
+      }),
+      querySelectorAll: jest.fn(selector => {
+        if (selector === '#signinButton') return ['signin'];
+        if (selector === '#signoutWrap') return ['signout'];
+        return [];
+      }),
+    };
+
+    expect(getStatusParagraph(doc)).toBe(status);
+    expect(getAdminContent(doc)).toBe(content);
+    expect(getSignInButtons(doc)).toEqual(['signin']);
+    expect(getSignOutSections(doc)).toEqual(['signout']);
+  });
+});
+
+describe('getCurrentUser', () => {
+  it('returns null when accessor is invalid', () => {
+    expect(getCurrentUser(null)).toBeNull();
+  });
+
+  it('returns the current user when available', () => {
+    const user = { uid: 'abc' };
+    const getAuth = jest.fn(() => ({ currentUser: user }));
+
+    expect(getCurrentUser(getAuth)).toBe(user);
+  });
+});
+
+describe('updateAuthControlsDisplay', () => {
+  it('toggles controls based on user presence', () => {
+    const signInEl = { style: {} };
+    const signOutEl = { style: {} };
+
+    updateAuthControlsDisplay(null, [signInEl], [signOutEl]);
+    expect(signInEl.style.display).toBe('');
+    expect(signOutEl.style.display).toBe('none');
+
+    updateAuthControlsDisplay({}, [signInEl], [signOutEl]);
+    expect(signInEl.style.display).toBe('none');
+    expect(signOutEl.style.display).toBe('');
+  });
+});
+
+describe('createCheckAccess', () => {
+  it('hides admin content for non-admin users', () => {
+    const content = { style: { display: '' } };
+    const doc = {
+      getElementById: jest.fn(id => (id === 'adminContent' ? content : null)),
+      querySelectorAll: jest.fn(() => [{ style: {} }]),
+    };
+    const getAuth = jest.fn(() => ({ currentUser: { uid: 'user' } }));
+
+    const checkAccess = createCheckAccess(getAuth, doc);
+    checkAccess();
+
+    expect(content.style.display).toBe('none');
+  });
+
+  it('shows admin content for the admin user', () => {
+    const content = { style: { display: 'none' } };
+    const doc = {
+      getElementById: jest.fn(id => (id === 'adminContent' ? content : null)),
+      querySelectorAll: jest.fn(() => [{ style: {} }]),
+    };
+    const checkAccess = createCheckAccess(
+      () => ({ currentUser: { uid: ADMIN_UID } }),
+      doc
+    );
+    checkAccess();
+
+    expect(content.style.display).toBe('');
+  });
+});
+
+describe('initAdmin', () => {
+  const makeDoc = () => {
+    const elements = {
+      renderBtn: { addEventListener: jest.fn() },
+      statsBtn: { addEventListener: jest.fn() },
+      regenForm: { addEventListener: jest.fn() },
+      regenInput: { value: '12Ab' },
+      renderStatus: { innerHTML: '' },
+      adminContent: { style: { display: '' } },
+    };
+    const signOutLink = { addEventListener: jest.fn() };
+    const doc = {
+      getElementById: jest.fn(id => elements[id] ?? null),
+      querySelectorAll: jest.fn(selector => {
+        if (selector === '#signoutLink') return [signOutLink];
+        if (selector === '#signinButton') return [{ style: {} }];
+        if (selector === '#signoutWrap') return [{ style: {} }];
+        return [];
+      }),
+    };
+    return { doc, elements, signOutLink };
+  };
+
+  it('wires handlers and auth listeners', () => {
+    const googleAuthModule = {
+      getIdToken: jest.fn().mockReturnValue('token'),
+      signOut: jest.fn(),
+      initGoogleSignIn: jest.fn(),
+    };
+    const loadStaticConfig = jest.fn().mockResolvedValue({});
+    const getAuthFn = jest
+      .fn()
+      .mockReturnValue({ currentUser: { uid: ADMIN_UID } });
+    const onAuthStateChangedFn = jest.fn((_, cb) => cb());
+    const { doc, elements, signOutLink } = makeDoc();
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
+
+    initAdmin(
+      googleAuthModule,
+      loadStaticConfig,
+      getAuthFn,
+      onAuthStateChangedFn,
+      doc,
+      fetch
+    );
+
+    expect(getAuthFn).toHaveBeenCalledTimes(2);
+    expect(onAuthStateChangedFn).toHaveBeenCalledWith(
+      { currentUser: { uid: ADMIN_UID } },
+      expect.any(Function)
+    );
+    expect(googleAuthModule.initGoogleSignIn).toHaveBeenCalledTimes(1);
+    expect(elements.renderBtn.addEventListener).toHaveBeenCalledWith(
+      'click',
+      expect.any(Function)
+    );
+    expect(elements.statsBtn.addEventListener).toHaveBeenCalledWith(
+      'click',
+      expect.any(Function)
+    );
+    expect(elements.regenForm.addEventListener).toHaveBeenCalledWith(
+      'submit',
+      expect.any(Function)
+    );
+    expect(signOutLink.addEventListener).toHaveBeenCalledWith(
+      'click',
+      expect.any(Function)
+    );
+  });
+
+  it('throws when initGoogleSignIn is missing', () => {
+    const { doc } = makeDoc();
+
+    expect(() =>
+      initAdmin(
+        {
+          getIdToken: jest.fn().mockReturnValue('token'),
+          signOut: jest.fn(),
+        },
+        jest.fn().mockResolvedValue({}),
+        jest.fn().mockReturnValue({ currentUser: { uid: ADMIN_UID } }),
+        jest.fn(),
+        doc,
+        jest.fn().mockResolvedValue({ ok: true })
+      )
+    ).toThrow(
+      new TypeError('googleAuthModule must provide an initGoogleSignIn function')
+    );
+  });
+
+  it('throws when googleAuthModule is missing', () => {
+    const { doc } = makeDoc();
+
+    expect(() =>
+      initAdmin(
+        null,
+        jest.fn().mockResolvedValue({}),
+        jest.fn(),
+        jest.fn(),
+        doc,
+        jest.fn()
+      )
+    ).toThrow(new TypeError('googleAuthModule must be provided'));
+  });
+
+  it('throws when getAuthFn is not a function', () => {
+    const { doc } = makeDoc();
+
+    expect(() =>
+      initAdmin(
+        { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+        jest.fn().mockResolvedValue({}),
+        null,
+        jest.fn(),
+        doc,
+        jest.fn()
+      )
+    ).toThrow(new TypeError('getAuthFn must be a function'));
+  });
+
+  it('throws when onAuthStateChangedFn is not a function', () => {
+    const { doc } = makeDoc();
+
+    expect(() =>
+      initAdmin(
+        { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+        jest.fn().mockResolvedValue({}),
+        jest.fn(),
+        null,
+        doc,
+        jest.fn()
+      )
+    ).toThrow(new TypeError('onAuthStateChangedFn must be a function'));
+  });
+
+  it('throws when document is invalid', () => {
+    expect(() =>
+      initAdmin(
+        { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+        jest.fn().mockResolvedValue({}),
+        jest.fn(),
+        jest.fn(),
+        null,
+        jest.fn()
+      )
+    ).toThrow(new TypeError('doc must be a Document-like object'));
+  });
+
+  it('throws when fetchFn is not a function', () => {
+    const { doc } = makeDoc();
+
+    expect(() =>
+      initAdmin(
+        { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+        jest.fn().mockResolvedValue({}),
+        jest.fn(),
+        jest.fn(),
+        doc,
+        null
+      )
+    ).toThrow(new TypeError('fetchFn must be a function'));
   });
 });
