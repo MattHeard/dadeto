@@ -22,6 +22,24 @@ describe('createReportForModerationHandler', () => {
     expect(response).toEqual({ status: 201, body: {} });
   });
 
+  it('throws when addModerationReport is not a function', () => {
+    expect(() =>
+      createReportForModerationHandler({
+        addModerationReport: null,
+        getServerTimestamp: () => 'timestamp',
+      })
+    ).toThrow(new TypeError('addModerationReport must be a function'));
+  });
+
+  it('throws when getServerTimestamp is not a function', () => {
+    expect(() =>
+      createReportForModerationHandler({
+        addModerationReport: () => {},
+        getServerTimestamp: undefined,
+      })
+    ).toThrow(new TypeError('getServerTimestamp must be a function'));
+  });
+
   it('returns 405 when using a method other than POST', async () => {
     const addModerationReport = jest.fn();
     const getServerTimestamp = jest.fn();
@@ -43,6 +61,12 @@ describe('createReportForModerationHandler', () => {
       addModerationReport,
       getServerTimestamp,
     });
+
+    await expect(
+      handler({
+        method: 'POST',
+      })
+    ).resolves.toEqual({ status: 400, body: 'Missing or invalid variant' });
 
     await expect(
       handler({
