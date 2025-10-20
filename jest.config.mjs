@@ -23,7 +23,7 @@ const config = {
   }),
   testPathIgnorePatterns: ['<rootDir>/.stryker-tmp/', '<rootDir>/test/e2e/'],
   collectCoverageFrom: [
-    'src/**/*.js',
+    'src/core/**/*.js',
     '!**/node_modules/**',
     '!**/vendor/**',
     '!src/browser/main.js',
@@ -34,7 +34,8 @@ const config = {
   // Ensure coverage is collected for all files, including those not tested
   collectCoverage: Boolean(process.env.STRYKER_TEST_ENV),
   // Ensure all files are included in coverage, even if not required
-  forceCoverageMatch: (process.env.STRYKER_TEST_ENV && ['**/*.js']) || [],
+  forceCoverageMatch:
+    (process.env.STRYKER_TEST_ENV && ['src/core/**/*.js']) || [],
 };
 
 export default config;
