@@ -1,4 +1,4 @@
-import { createParagraphElement } from '../core/presenters/paragraph.js';
+import { createParagraphElement } from './presenters/paragraph.js';
 import { createPrefixedLoggers, createRemoveListener } from './document.js';
 import { parseJsonOrDefault } from '../core/jsonUtils.js';
 import { deepClone } from '../core/objectUtils.js';
@@ -123,10 +123,10 @@ export const createDispose = config => {
   };
 };
 
-import { createPreElement } from '../core/presenters/pre.js';
-import { createTicTacToeBoardElement } from '../core/presenters/ticTacToeBoard.js';
-import { createBattleshipFleetBoardElement } from '../core/presenters/battleshipSolitaireFleet.js';
-import { createBattleshipCluesBoardElement } from '../core/presenters/battleshipSolitaireClues.js';
+import { createPreElement } from './presenters/pre.js';
+import { createTicTacToeBoardElement } from './presenters/ticTacToeBoard.js';
+import { createBattleshipFleetBoardElement } from './presenters/battleshipSolitaireFleet.js';
+import { createBattleshipCluesBoardElement } from './presenters/battleshipSolitaireClues.js';
 
 /**
  * Creates a handler for input dropdown changes
