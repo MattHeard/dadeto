@@ -7,14 +7,32 @@ export function isNonNullObject(value) {
   return Boolean(value) && typeof value === 'object';
 }
 
+/**
+ * Checks that two values are both not arrays.
+ * @param {*} a - First value to inspect.
+ * @param {*} b - Second value to inspect.
+ * @returns {boolean} True when neither value is an array.
+ */
 function bothAreNotArrays(a, b) {
   return !Array.isArray(a) && !Array.isArray(b);
 }
 
+/**
+ * Checks that two values are both non-null objects.
+ * @param {*} a - First value to inspect.
+ * @param {*} b - Second value to inspect.
+ * @returns {boolean} True when both values are non-null objects.
+ */
 function bothAreNonNullObjects(a, b) {
   return isNonNullObject(a) && isNonNullObject(b);
 }
 
+/**
+ * Determines whether two values should be merged recursively.
+ * @param {*} targetValue - The destination value.
+ * @param {*} sourceValue - The source value.
+ * @returns {boolean} True when a deep merge should occur.
+ */
 function shouldDeepMerge(targetValue, sourceValue) {
   return (
     bothAreNonNullObjects(targetValue, sourceValue) &&
