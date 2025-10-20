@@ -4,6 +4,7 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+import { createInitGoogleSignIn } from './admin-core.js';
 import { ADMIN_UID } from './admin-config.js';
 
 initializeApp({
@@ -14,41 +15,16 @@ initializeApp({
 
 const auth = getAuth();
 
-export const initGoogleSignIn = ({ onSignIn } = {}) => {
-  if (!window.google || !google.accounts?.id) {
-    console.error('Google Identity script missing');
-    return;
-  }
-
-  google.accounts.id.initialize({
-    client_id:
-      '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
-    callback: async ({ credential }) => {
-      const cred = GoogleAuthProvider.credential(credential);
-      await signInWithCredential(auth, cred);
-      const idToken = await auth.currentUser.getIdToken();
-      sessionStorage.setItem('id_token', idToken);
-      onSignIn?.(idToken);
-    },
-    ux_mode: 'popup',
-  });
-
-  const mql = window.matchMedia('(prefers-color-scheme: dark)');
-
-  const renderButton = () => {
-    document.querySelectorAll('#signinButton').forEach(el => {
-      el.innerHTML = '';
-      google.accounts.id.renderButton(el, {
-        theme: mql.matches ? 'filled_black' : 'filled_blue',
-        size: 'large',
-        text: 'signin_with',
-      });
-    });
-  };
-
-  renderButton();
-  mql.addEventListener('change', renderButton);
-};
+export const initGoogleSignIn = createInitGoogleSignIn({
+  googleAccountsId: () => window.google?.accounts?.id,
+  credentialFactory: GoogleAuthProvider.credential,
+  signInWithCredential,
+  auth,
+  storage: sessionStorage,
+  matchMedia: query => window.matchMedia(query),
+  querySelectorAll: selector => document.querySelectorAll(selector),
+  logger: console,
+});
 
 export const getIdToken = () => sessionStorage.getItem('id_token');
 

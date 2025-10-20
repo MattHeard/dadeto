@@ -30,7 +30,8 @@ export function mapConfigToAdminEndpoints(config) {
       config?.triggerRenderContentsUrl ??
       DEFAULT_ADMIN_ENDPOINTS.triggerRenderContentsUrl,
     markVariantDirtyUrl:
-      config?.markVariantDirtyUrl ?? DEFAULT_ADMIN_ENDPOINTS.markVariantDirtyUrl,
+      config?.markVariantDirtyUrl ??
+      DEFAULT_ADMIN_ENDPOINTS.markVariantDirtyUrl,
     generateStatsUrl:
       config?.generateStatsUrl ?? DEFAULT_ADMIN_ENDPOINTS.generateStatsUrl,
   };
@@ -156,7 +157,11 @@ export async function executeTriggerRender(
   showMessage
 ) {
   try {
-    const res = await postTriggerRenderContents(getAdminEndpointsFn, fetchFn, token);
+    const res = await postTriggerRenderContents(
+      getAdminEndpointsFn,
+      fetchFn,
+      token
+    );
     await announceTriggerRenderResult(res, showMessage);
   } catch (e) {
     showMessage(`Render failed: ${e instanceof Error ? e.message : String(e)}`);
@@ -195,7 +200,12 @@ export function createTriggerRender(
     if (!token) {
       showMessage('Render failed: missing ID token');
     } else {
-      await executeTriggerRender(getAdminEndpointsFn, fetchFn, token, showMessage);
+      await executeTriggerRender(
+        getAdminEndpointsFn,
+        fetchFn,
+        token,
+        showMessage
+      );
     }
   };
 }
@@ -289,6 +299,112 @@ export function createWireSignOut(doc, googleAuth) {
         });
       }
     });
+  };
+}
+
+/**
+ * Create an initializer for the Google sign-in button with injected dependencies.
+ * @param {{
+ *   googleAccountsId?: { initialize: Function, renderButton: Function } | (() => { initialize: Function, renderButton: Function } | undefined),
+ *   credentialFactory: (credential: string) => unknown,
+ *   signInWithCredential: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
+ *   auth: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage: { setItem: (key: string, value: string) => void },
+ *   matchMedia: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
+ *   querySelectorAll: (selector: string) => Iterable<HTMLElement>,
+ *   logger?: { error?: (message: string) => void },
+ * }} deps - Collaborators required to configure the Google sign-in button.
+ * @returns {({ onSignIn }?: { onSignIn?: (token: string) => void }) => Promise<void> | void} Initialized sign-in function.
+ */
+export function createInitGoogleSignIn(deps) {
+  const {
+    googleAccountsId,
+    credentialFactory,
+    signInWithCredential,
+    auth,
+    storage,
+    matchMedia,
+    querySelectorAll,
+    logger = console,
+  } = deps ?? {};
+
+  if (typeof credentialFactory !== 'function') {
+    throw new TypeError('credentialFactory must be a function');
+  }
+  if (typeof signInWithCredential !== 'function') {
+    throw new TypeError('signInWithCredential must be a function');
+  }
+  if (!auth || typeof auth !== 'object') {
+    throw new TypeError('auth must be provided');
+  }
+  if (!storage || typeof storage.setItem !== 'function') {
+    throw new TypeError('storage must provide a setItem function');
+  }
+  if (typeof matchMedia !== 'function') {
+    throw new TypeError('matchMedia must be a function');
+  }
+  if (typeof querySelectorAll !== 'function') {
+    throw new TypeError('querySelectorAll must be a function');
+  }
+
+  const resolveGoogleAccountsId =
+    typeof googleAccountsId === 'function'
+      ? googleAccountsId
+      : () => googleAccountsId;
+
+  const safeLogger =
+    logger && typeof logger.error === 'function' ? logger : console;
+
+  return function initGoogleSignIn({ onSignIn } = {}) {
+    const accountsId = resolveGoogleAccountsId();
+
+    if (!accountsId || typeof accountsId.initialize !== 'function') {
+      safeLogger?.error?.('Google Identity script missing');
+      return;
+    }
+    if (typeof accountsId.renderButton !== 'function') {
+      safeLogger?.error?.('Google Identity script missing');
+      return;
+    }
+
+    accountsId.initialize({
+      client_id:
+        '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
+      callback: async ({ credential }) => {
+        const firebaseCredential = credentialFactory(credential);
+        await signInWithCredential(auth, firebaseCredential);
+
+        const currentUser = auth.currentUser;
+        const getIdToken = currentUser?.getIdToken;
+
+        if (typeof getIdToken !== 'function') {
+          throw new TypeError('auth.currentUser.getIdToken must be a function');
+        }
+
+        const idToken = await getIdToken.call(currentUser);
+        storage.setItem('id_token', idToken);
+        onSignIn?.(idToken);
+      },
+      ux_mode: 'popup',
+    });
+
+    const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
+
+    const renderButton = () => {
+      const elements = Array.from(querySelectorAll('#signinButton') ?? []);
+      elements.forEach(el => {
+        if (!el) return;
+        el.innerHTML = '';
+        accountsId.renderButton(el, {
+          theme: mediaQueryList?.matches ? 'filled_black' : 'filled_blue',
+          size: 'large',
+          text: 'signin_with',
+        });
+      });
+    };
+
+    renderButton();
+    mediaQueryList?.addEventListener?.('change', renderButton);
   };
 }
 
@@ -484,9 +600,8 @@ export function initAdmin(
     throw new TypeError('fetchFn must be a function');
   }
 
-  const getAdminEndpoints = createGetAdminEndpointsFromStaticConfig(
-    loadStaticConfigFn
-  );
+  const getAdminEndpoints =
+    createGetAdminEndpointsFromStaticConfig(loadStaticConfigFn);
   const showMessage = createShowMessage(getStatusParagraph, doc);
 
   const checkAccess = createCheckAccess(getAuthFn, doc);
