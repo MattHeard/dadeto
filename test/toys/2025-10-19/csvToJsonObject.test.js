@@ -38,4 +38,12 @@ describe('csvToJsonObjectToy', () => {
     expect(csvToJsonObjectToy('a\n1\n2')).toBe(JSON.stringify({}));
     expect(csvToJsonObjectToy(42)).toBe(JSON.stringify({}));
   });
+
+  it('requires a header row with at least one column', () => {
+    expect(csvToJsonObjectToy('\nvalue')).toBe(JSON.stringify({}));
+  });
+
+  it('requires exactly one data row', () => {
+    expect(csvToJsonObjectToy('name,age\n')).toBe(JSON.stringify({}));
+  });
 });
