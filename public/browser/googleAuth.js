@@ -4,6 +4,7 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+import { createGoogleSignOut } from './googleSignOut.js';
 import { createInitGoogleSignIn } from './admin-core.js';
 import { ADMIN_UID } from './admin-config.js';
 
@@ -14,6 +15,15 @@ initializeApp({
 });
 
 const auth = getAuth();
+
+const sessionStorageAdapter = {
+  removeItem(key) {
+    const storage = globalThis.sessionStorage;
+    if (storage && typeof storage.removeItem === 'function') {
+      storage.removeItem(key);
+    }
+  },
+};
 
 export const initGoogleSignIn = createInitGoogleSignIn({
   googleAccountsId: () => window.google?.accounts?.id,
@@ -42,8 +52,15 @@ export const isAdmin = () => {
   }
 };
 
-export const signOut = async () => {
-  await auth.signOut();
-  sessionStorage.removeItem('id_token');
-  google.accounts.id.disableAutoSelect();
-};
+// Keep exporting the pre-configured sign-out helper for callers such as
+// `src/browser/moderate.js` that expect it to live on the googleAuth module.
+export const signOut = createGoogleSignOut({
+  authSignOut: auth.signOut.bind(auth),
+  storage: sessionStorageAdapter,
+  disableAutoSelect: () => {
+    const disable = globalThis.google?.accounts?.id?.disableAutoSelect;
+    if (typeof disable === 'function') {
+      disable();
+    }
+  },
+});
