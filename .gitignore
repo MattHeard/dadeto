@@ -42,6 +42,9 @@ debug/
 *.zip
 /infra/build/
 
+# Coverage reports
+reports/coverage/
+
 # stryker temp files
 .stryker-tmp
 
