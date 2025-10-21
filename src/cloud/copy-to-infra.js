@@ -118,6 +118,12 @@ const getApiKeyCreditHandlerSource = join(
   'handler.js',
 );
 
+const hideVariantHtmlSource = join(
+  srcCoreCloudDir,
+  'hide-variant-html',
+  'removeVariantHtml.js',
+);
+
 const adminConfigFunctionDirectories = [
   'generate-stats',
   'mark-variant-dirty',
@@ -181,6 +187,14 @@ const individualFileCopies = [
   {
     source: getApiKeyCreditHandlerSource,
     target: join(infraFunctionsDir, 'get-api-key-credit', 'handler.js'),
+  },
+  {
+    source: hideVariantHtmlSource,
+    target: join(
+      infraFunctionsDir,
+      'hide-variant-html',
+      'removeVariantHtml.js',
+    ),
   },
   ...adminConfigFunctionCopies,
   ...browserFileCopies,
