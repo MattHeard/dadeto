@@ -9,8 +9,9 @@ import { mockDoc } from 'firebase-admin/firestore';
 import { render } from '../../src/cloud/render-variant/index.js';
 
 /**
- *
- * @param optionData
+ * Create a mock Firestore snapshot for the render function tests.
+ * @param {Array<object>} optionData Option documents exposed by the snapshot.
+ * @returns {object} Mock snapshot shaped like a Firestore variant document.
  */
 function createSnap(optionData) {
   const optionsDocs = optionData.map(d => ({ data: () => d }));

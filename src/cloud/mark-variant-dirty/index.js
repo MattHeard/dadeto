@@ -120,7 +120,7 @@ function getAuthHeader(req) {
 /**
  * Match a bearer token from an Authorization header.
  * @param {string} authHeader Authorization header.
- * @returns {RegExpMatchArray | null} Match result.
+ * @returns {string[] | null} Match result capturing the bearer token components.
  */
 function matchAuthHeader(authHeader) {
   return authHeader.match(/^Bearer (.+)$/);

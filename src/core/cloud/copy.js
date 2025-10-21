@@ -1,6 +1,77 @@
 export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
 
 /**
+ * @typedef {{ info: (message: string) => void }} CopyMessageLogger
+ */
+
+/**
+ * @typedef {{
+ *   ensureDirectory: (target: string) => Promise<void>,
+ *   readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
+ *   copyFile: (source: string, destination: string) => Promise<void>,
+ * }} CopyAsyncIo
+ */
+
+/**
+ * @typedef {{ copyFile: (source: string, destination: string) => Promise<void> }} CopyIo
+ */
+
+/**
+ * @typedef {{
+ *   ensureDirectory: (target: string) => Promise<void>,
+ *   copyFile: (source: string, destination: string) => Promise<void>,
+ * }} EnsureAndCopyIo
+ */
+
+/**
+ * @typedef {{ source: string, target: string }} CopyPair
+ */
+
+/**
+ * @typedef {{ sourceDir: string, targetDir: string, files: string[] }} DeclaredCopyPlan
+ */
+
+/**
+ * @typedef {{
+ *   directoryCopies: CopyPair[],
+ *   fileCopies?: DeclaredCopyPlan,
+ *   individualFileCopies?: CopyPair[],
+ *   io: CopyAsyncIo,
+ *   messageLogger: CopyMessageLogger,
+ * }} RunCopyOptions
+ */
+
+/**
+ * @typedef {{
+ *   formatPathForLog: (targetPath: string) => string,
+ *   isCopyableFile: (entry: import('fs').Dirent) => boolean,
+ *   copyFileToTarget: (
+ *     io: CopyIo,
+ *     sourceDir: string,
+ *     targetDir: string,
+ *     name: string,
+ *     messageLogger: CopyMessageLogger,
+ *   ) => Promise<void>,
+ *   copyDirectory: (
+ *     copyPlan: CopyPair,
+ *     io: CopyAsyncIo,
+ *     messageLogger: CopyMessageLogger,
+ *   ) => Promise<void>,
+ *   copyDeclaredFiles: (
+ *     copyPlan: DeclaredCopyPlan,
+ *     io: EnsureAndCopyIo,
+ *     messageLogger: CopyMessageLogger,
+ *   ) => Promise<void>,
+ *   copyIndividualFiles: (
+ *     copies: CopyPair[],
+ *     io: EnsureAndCopyIo,
+ *     messageLogger: CopyMessageLogger,
+ *   ) => Promise<void>,
+ *   runCopyToInfra: (options: RunCopyOptions) => Promise<void>,
+ * }} CopyToInfraHelpers
+ */
+
+/**
  * Create helpers for copying Cloud Function assets into the infra directory.
  * @param {{
  *   projectRoot: string,
@@ -12,54 +83,7 @@ export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
  *   },
  *   copyableExtensions?: string[],
  * }} options - Configuration for the copy workflow.
- * @returns {{
- *   formatPathForLog: (targetPath: string) => string,
- *   isCopyableFile: (entry: import('fs').Dirent) => boolean,
- *   copyFileToTarget: (
- *     io: {
- *       copyFile: (source: string, destination: string) => Promise<void>,
- *     },
- *     sourceDir: string,
- *     targetDir: string,
- *     name: string,
- *     messageLogger: { info: (message: string) => void },
- *   ) => Promise<void>,
- *   copyDirectory: (
- *     copyPlan: { source: string, target: string },
- *     io: {
- *       ensureDirectory: (target: string) => Promise<void>,
- *       readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
- *     },
- *     messageLogger: { info: (message: string) => void },
- *   ) => Promise<void>,
- *   copyDeclaredFiles: (
- *     copyPlan: { sourceDir: string, targetDir: string, files: string[] },
- *     io: {
- *       ensureDirectory: (target: string) => Promise<void>,
- *       copyFile: (source: string, destination: string) => Promise<void>,
- *     },
- *     messageLogger: { info: (message: string) => void },
- *   ) => Promise<void>,
- *   copyIndividualFiles: (
- *     copies: { source: string, target: string }[],
- *     io: {
- *       ensureDirectory: (target: string) => Promise<void>,
- *       copyFile: (source: string, destination: string) => Promise<void>,
- *     },
- *     messageLogger: { info: (message: string) => void },
- *   ) => Promise<void>,
- *   runCopyToInfra: ({
- *     directoryCopies: { source: string, target: string }[],
- *     fileCopies?: { sourceDir: string, targetDir: string, files: string[] },
- *     individualFileCopies?: { source: string, target: string }[],
- *     io: {
- *       ensureDirectory: (target: string) => Promise<void>,
- *       readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
- *       copyFile: (source: string, destination: string) => Promise<void>,
- *     },
- *     messageLogger: { info: (message: string) => void },
- *   }) => Promise<void>,
- * }}
+ * @returns {CopyToInfraHelpers} Copy helper utilities.
  */
 export function createCopyToInfraCore({
   projectRoot,
@@ -96,7 +120,7 @@ export function createCopyToInfraCore({
 
   /**
    * Copy a single file and log the operation.
-   * @param {{ copyFile: (source: string, destination: string) => Promise<void> }} io
+   * @param {{ copyFile: (source: string, destination: string) => Promise<void> }} io - Filesystem adapters.
    * @param {string} sourceDir - Directory containing the file.
    * @param {string} targetDir - Destination directory for the file.
    * @param {string} name - File name to copy.

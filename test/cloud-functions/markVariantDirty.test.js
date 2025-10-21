@@ -7,7 +7,7 @@ import { mockVerifyIdToken } from '../mocks/firebase-admin-auth.js';
 
 /**
  * Create a mock response object.
- * @returns {{status: jest.Mock, send: jest.Mock, json: jest.Mock}}
+ * @returns {{status: jest.Mock, send: jest.Mock, json: jest.Mock}} Mock Express response with chained spies.
  */
 function createRes() {
   return {

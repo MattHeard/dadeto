@@ -343,16 +343,31 @@ export function createGenerateStatsCore({
   const metadataTokenUrl =
     'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token';
 
+  /**
+   * Count the number of stories stored in Firestore.
+   * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.
+   * @returns {Promise<number>} Story count.
+   */
   async function getStoryCount(dbRef = db) {
     const snap = await dbRef.collection('stories').count().get();
     return snap.data().count || 0;
   }
 
+  /**
+   * Count the number of pages across every story variant.
+   * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.
+   * @returns {Promise<number>} Page count.
+   */
   async function getPageCount(dbRef = db) {
     const snap = await dbRef.collectionGroup('pages').count().get();
     return snap.data().count || 0;
   }
 
+  /**
+   * Count unmoderated variants by checking for zero and null reputation sums.
+   * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.
+   * @returns {Promise<number>} Unmoderated variant count.
+   */
   async function getUnmoderatedPageCount(dbRef = db) {
     const zeroSnap = await dbRef
       .collectionGroup('variants')
@@ -367,6 +382,12 @@ export function createGenerateStatsCore({
     return (zeroSnap.data().count || 0) + (nullSnap.data().count || 0);
   }
 
+  /**
+   * Retrieve the top stories by variant count.
+   * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.
+   * @param {number} [limit] - Maximum number of stories to fetch. Defaults to 5.
+   * @returns {Promise<Array<{ title: string, variantCount: number }>>} Top stories data.
+   */
   async function getTopStories(dbRef = db, limit = 5) {
     const statsSnap = await dbRef
       .collection('storyStats')
@@ -385,6 +406,10 @@ export function createGenerateStatsCore({
     return stories;
   }
 
+  /**
+   * Request a service account access token from the metadata server.
+   * @returns {Promise<string>} OAuth access token.
+   */
   async function getAccessTokenFromMetadata() {
     const response = await fetchImpl(metadataTokenUrl, {
       headers: { 'Metadata-Flavor': 'Google' },
@@ -396,6 +421,11 @@ export function createGenerateStatsCore({
     return accessToken;
   }
 
+  /**
+   * Invalidate CDN paths via the Compute Engine API.
+   * @param {string[]} paths - CDN paths to invalidate.
+   * @returns {Promise<void>} Resolves when invalidation requests finish.
+   */
   async function invalidatePaths(paths) {
     const token = await getAccessTokenFromMetadata();
     await Promise.all(
@@ -426,6 +456,19 @@ export function createGenerateStatsCore({
     );
   }
 
+  /**
+   * Generate the stats page HTML and upload it to Cloud Storage.
+   * @param {{
+   *   storyCountFn?: () => Promise<number>,
+   *   pageCountFn?: () => Promise<number>,
+   *   unmoderatedPageCountFn?: () => Promise<number>,
+   *   topStoriesFn?: () => Promise<Array<{ title: string, variantCount: number }>>,
+   *   storageInstance?: import('@google-cloud/storage').Storage,
+   *   bucketName?: string,
+   *   invalidatePathsFn?: (paths: string[]) => Promise<void>,
+   * }} deps - Optional dependency overrides.
+   * @returns {Promise<null>} Resolves with null for compatibility.
+   */
   async function generate(deps = {}) {
     const storyCountFn = deps.storyCountFn || getStoryCount;
     const pageCountFn = deps.pageCountFn || getPageCount;
@@ -453,6 +496,17 @@ export function createGenerateStatsCore({
     return null;
   }
 
+  /**
+   * Handle HTTP requests to trigger the stats generation workflow.
+   * @param {import('express').Request} req - Incoming HTTP request.
+   * @param {import('express').Response} res - Response object for sending results.
+   * @param {{
+   *   genFn?: () => Promise<unknown>,
+   *   authInstance?: import('firebase-admin/auth').Auth,
+   *   adminUid?: string,
+   * }} [deps] - Optional dependency overrides. Defaults to an empty object.
+   * @returns {Promise<void>} Resolves when the request finishes.
+   */
   async function handleRequest(req, res, deps = {}) {
     if (req.method !== 'POST') {
       res.status(405).send('POST only');

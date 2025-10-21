@@ -1,6 +1,12 @@
 import { jest } from '@jest/globals';
 import { createHandleSubmit } from '../../../../src/core/cloud/submit-new-page/core.js';
 
+/**
+ * Create a mock request tailored for the submit-new-page handler.
+ * @param {object} [body] Body payload provided to the handler.
+ * @param {object} [headers] Header values keyed by their case-insensitive names.
+ * @returns {{ body: object, get: (name: string) => string | undefined }} Mock request object exposing a get helper.
+ */
 function createRequest(body = {}, headers = {}) {
   const normalizedHeaders = Object.entries(headers).reduce(
     (acc, [key, value]) => ({ ...acc, [key.toLowerCase()]: value }),
