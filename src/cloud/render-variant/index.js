@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { FieldValue } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions/v1';
+import { createInvalidatePaths } from './invalidatePaths.js';
 import { buildAltsHtml, escapeHtml } from './buildAltsHtml.js';
 import { buildHtml } from './buildHtml.js';
 import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';
@@ -16,9 +17,9 @@ const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
 const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
 
 /**
- *
+ * Retrieve an access token from the metadata service.
  */
-async function getAccessTokenFromMetadata() {
+async function getMetadataAccessToken() {
   const r = await fetch(
     'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
     { headers: { 'Metadata-Flavor': 'Google' } }
@@ -28,39 +29,11 @@ async function getAccessTokenFromMetadata() {
   return access_token;
 }
 
-/**
- *
- * @param paths
- */
-async function invalidatePaths(paths) {
-  const token = await getAccessTokenFromMetadata();
-  await Promise.all(
-    paths.map(async path => {
-      try {
-        const res = await fetch(
-          `https://compute.googleapis.com/compute/v1/projects/${PROJECT}/global/urlMaps/${URL_MAP}/invalidateCache`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              host: CDN_HOST,
-              path,
-              requestId: crypto.randomUUID(),
-            }),
-          }
-        );
-        if (!res.ok) {
-          console.error(`invalidate ${path} failed: ${res.status}`);
-        }
-      } catch (e) {
-        console.error(`invalidate ${path} error`, e?.message || e);
-      }
-    })
-  );
-}
+const invalidatePaths = createInvalidatePaths({
+  fetchJson: fetch,
+  generateId: crypto.randomUUID,
+  logError: console.error,
+});
 
 /**
  * Render a variant when it is created, marked dirty, or its visibility
@@ -280,7 +253,13 @@ async function render(snap, ctx) {
     paths.push(parentUrl);
   }
 
-  await invalidatePaths(paths);
+  await invalidatePaths({
+    projectId: PROJECT,
+    urlMap: URL_MAP,
+    cdnHost: CDN_HOST,
+    paths,
+    getAccessToken: getMetadataAccessToken,
+  });
   return null;
 }
 
