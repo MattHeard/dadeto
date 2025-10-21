@@ -7,41 +7,33 @@ import {
 } from '../constants/selectors.js';
 
 /**
- * Removes a number input element if present.
- * @param {*} container - DOM container
- * @param {object} dom - DOM abstraction
+ * Factory that removes an element matching a selector when it exists.
+ * @param {string} selector - CSS selector to locate the element.
+ * @returns {(container: *, dom: object) => void} Remover callback.
  */
-export function maybeRemoveNumber(container, dom) {
-  const numberInput = dom.querySelector(container, NUMBER_INPUT_SELECTOR);
-  maybeRemoveElement(numberInput, container, dom);
+function createElementRemover(selector) {
+  return (container, dom) => {
+    const element = dom.querySelector(container, selector);
+    maybeRemoveElement(element, container, dom);
+  };
 }
+
+/**
+ * Removes a number input element if present.
+ */
+export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);
 
 /**
  * Removes a key-value container if present.
- * @param {*} container - DOM container
- * @param {object} dom - DOM abstraction
  */
-export function maybeRemoveKV(container, dom) {
-  const kvContainer = dom.querySelector(container, KV_CONTAINER_SELECTOR);
-  maybeRemoveElement(kvContainer, container, dom);
-}
+export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
 
 /**
  * Removes a dendrite form if present.
- * @param {*} container - DOM container
- * @param {object} dom - DOM abstraction
  */
-export function maybeRemoveDendrite(container, dom) {
-  const dendriteForm = dom.querySelector(container, DENDRITE_FORM_SELECTOR);
-  maybeRemoveElement(dendriteForm, container, dom);
-}
+export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
 
 /**
  * Removes a textarea input element if present.
- * @param {*} container - DOM container
- * @param {object} dom - DOM abstraction
  */
-export function maybeRemoveTextarea(container, dom) {
-  const textarea = dom.querySelector(container, TEXTAREA_SELECTOR);
-  maybeRemoveElement(textarea, container, dom);
-}
+export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);

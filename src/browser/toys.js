@@ -2,7 +2,10 @@ import { createParagraphElement } from './presenters/paragraph.js';
 import { createPrefixedLoggers, createRemoveListener } from './document.js';
 import { parseJsonOrDefault } from '../core/jsonUtils.js';
 import { deepClone } from '../core/objectUtils.js';
-import { getInputValue, setInputValue } from '../core/browser/inputValueStore.js';
+import {
+  getInputValue,
+  setInputValue,
+} from '../core/browser/inputValueStore.js';
 
 /**
  * Determines whether a value is a key/value pair object.
@@ -66,21 +69,41 @@ function getDefaultRowsJson(value) {
 }
 
 /**
+ * Retrieves the current value from DOM utilities if available.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} inputElement - Input element whose value is read.
+ * @returns {string|undefined} Value reported by the DOM helpers.
+ */
+function getDomValue(dom, inputElement) {
+  const { getValue } = Object(dom);
+  if (typeof getValue !== 'function') {
+    return undefined;
+  }
+  return getValue.call(dom, inputElement);
+}
+
+/**
+ * Selects the first candidate value that is not blank.
+ * @param {...*} candidates - Values to inspect.
+ * @returns {*|undefined} The first non-blank candidate.
+ */
+function pickFirstNonBlank(...candidates) {
+  return candidates.find(candidate => !isBlank(candidate));
+}
+
+/**
  * Retrieves the JSON string from the input element.
  * @param {object} dom - DOM utilities.
  * @param {HTMLElement} inputElement - Text input element.
  * @returns {string} JSON string to parse.
  */
 function getRowsJson(dom, inputElement) {
-  const storedValue = getInputValue(inputElement);
-  if (!isBlank(storedValue)) {
-    return getDefaultRowsJson(storedValue);
-  }
-  if (dom && typeof dom.getValue === 'function') {
-    const domValue = dom.getValue(inputElement);
-    return getDefaultRowsJson(domValue);
-  }
-  return getDefaultRowsJson(storedValue);
+  const preferredValue = pickFirstNonBlank(
+    getInputValue(inputElement),
+    getDomValue(dom, inputElement)
+  );
+
+  return getDefaultRowsJson(preferredValue);
 }
 
 /**
