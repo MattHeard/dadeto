@@ -8,7 +8,7 @@ import { promises as fsPromises } from 'fs';
  *   createDirectory: (target: string) => void,
  *   copyFile: (source: string, destination: string) => void,
  *   readDirEntries: (dir: string) => fs.Dirent[],
- * }}
+ * }} Collection of synchronous filesystem helpers.
  */
 export function createFsAdapters() {
   return {
@@ -25,7 +25,7 @@ export function createFsAdapters() {
  *   readDirEntries: (dir: string) => Promise<fs.Dirent[]>,
  *   ensureDirectory: (target: string) => Promise<void>,
  *   copyFile: (source: string, destination: string) => Promise<void>,
- * }}
+ * }} Collection of asynchronous filesystem helpers that swallow missing directories.
  */
 export function createAsyncFsAdapters() {
   return {

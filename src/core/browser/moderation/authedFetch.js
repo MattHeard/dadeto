@@ -1,14 +1,18 @@
 /**
+ * @typedef {{ headers?: object, [key: string]: any }} FetchOptions
+ */
+
+/**
  * Create an authenticated fetch helper that injects the current ID token.
  * @param {{
  *   getIdToken: () => (string|Promise<string|null>|null),
- *   fetchJson: (url: string, init: RequestInit) => Promise<{
+ *   fetchJson: (url: string, init: FetchOptions) => Promise<{
  *     ok: boolean,
  *     status: number,
  *     json: () => any,
  *   } | any>,
  * }} deps Dependencies for token lookup and network access.
- * @returns {(url: string, init?: RequestInit) => Promise<any>} Fetch helper.
+ * @returns {(url: string, init?: FetchOptions) => Promise<any>} Fetch helper adding an Authorization header.
  */
 export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
   if (typeof getIdToken !== 'function') {

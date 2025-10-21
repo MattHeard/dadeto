@@ -6,11 +6,8 @@ const { handleRenderRequest } = mod;
 const allowedOrigin = 'https://mattheard.net';
 
 /**
- *
- */
-/**
  * Create a mock response object.
- * @returns {{status: jest.Mock, send: jest.Mock, json: jest.Mock, set: jest.Mock}} Response
+ * @returns {{status: jest.Mock, send: jest.Mock, json: jest.Mock, set: jest.Mock}} Response mock with chained spies.
  */
 function createRes() {
   return {
@@ -21,6 +18,11 @@ function createRes() {
   };
 }
 
+/**
+ * Create a mock request object with overrideable headers.
+ * @param {{ method?: string, origin?: string | null, authorization?: string }} [options] Request configuration overrides.
+ * @returns {{ method: string, get: (name: string) => string }} Mock Express request used in tests.
+ */
 function createReq({ method = 'POST', origin = allowedOrigin, authorization = '' } = {}) {
   return {
     method,
@@ -36,6 +38,12 @@ function createReq({ method = 'POST', origin = allowedOrigin, authorization = ''
   };
 }
 
+/**
+ * Assert the expected set of CORS headers on the mocked response.
+ * @param {{ set: jest.Mock }} res Mocked Express response object.
+ * @param {{ origin?: string | null, allowed?: boolean }} [options] Expected origin configuration.
+ * @returns {void}
+ */
 function expectCorsHeaders(res, { origin = allowedOrigin, allowed = true } = {}) {
   expect(res.set).toHaveBeenCalledWith(
     'Access-Control-Allow-Headers',

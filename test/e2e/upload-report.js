@@ -13,6 +13,12 @@ if (!bucketName) throw new Error('REPORT_BUCKET not set');
 tlog('config', { bucketName, prefix, srcDir });
 
 const storage = new Storage();
+/**
+ * Recursively upload the report directory to Cloud Storage.
+ * @param {string} dir Absolute path to the source directory.
+ * @param {string} destPrefix Destination prefix used when writing to the bucket.
+ * @returns {Promise<void>} Promise that resolves when the directory upload completes.
+ */
 async function uploadDir(dir, destPrefix) {
   tlog('uploadDir:start', { dir, destPrefix });
   const entries = fs.readdirSync(dir, { withFileTypes: true });

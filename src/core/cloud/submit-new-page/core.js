@@ -1,3 +1,16 @@
+/**
+ * Create an HTTP handler that accepts interactive fiction submissions.
+ * @param {{
+ *   verifyIdToken: (token: string) => Promise<{ uid: string }>,
+ *   saveSubmission: (id: string, submission: object) => Promise<void>,
+ *   randomUUID: () => string,
+ *   serverTimestamp: () => unknown,
+ *   parseIncomingOption: (option: string) => unknown,
+ *   findExistingOption: (option: unknown) => Promise<string | null>,
+ *   findExistingPage: (page: number) => Promise<string | null>,
+ * }} deps Functions used to validate and persist the submission.
+ * @returns {(request: { body?: object, get?: (name: string) => string | undefined }) => Promise<{ status: number, body: object }>} Submission handler returning HTTP-style responses.
+ */
 export function createHandleSubmit({
   verifyIdToken,
   saveSubmission,
