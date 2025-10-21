@@ -7,8 +7,8 @@
 /**
  * Parse a single CSV row into an array of field strings using RFC 4180 rules.
  * Returns `null` when the row contains malformed quotes.
- * @param {string} line
- * @returns {string[] | null}
+ * @param {string} line CSV row to parse.
+ * @returns {string[] | null} Array of field values or null when quoting is malformed.
  */
 export function parseCsvLine(line) {
   if (typeof line !== 'string') {

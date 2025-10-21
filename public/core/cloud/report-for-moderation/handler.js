@@ -1,3 +1,19 @@
+/**
+ * @typedef {{ variant: string, createdAt: any }} ModerationReport
+ */
+
+/**
+ * @typedef {{
+ *   addModerationReport: (report: ModerationReport) => Promise<void>,
+ *   getServerTimestamp: () => any,
+ * }} ReportForModerationDeps
+ */
+
+/**
+ * Create an HTTP handler that persists moderation report requests.
+ * @param {ReportForModerationDeps} deps Dependency hooks for persistence and timestamp generation.
+ * @returns {(request: { method: string, body?: { variant?: string } }) => Promise<{status: number, body: any}>} Handler processing moderation report submissions.
+ */
 export function createReportForModerationHandler({
   addModerationReport,
   getServerTimestamp,

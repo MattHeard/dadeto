@@ -20,7 +20,7 @@ let endpointsPromise;
 
 /**
  * Resolve moderation endpoints from the static config with production fallbacks.
- * @returns {Promise<{getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string}>}
+ * @returns {Promise<{getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string}>} Promise containing moderation endpoint URLs.
  */
 async function getModerationEndpoints() {
   if (!endpointsPromise) {
