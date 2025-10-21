@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 
-import { createWriteFormattedHtml } from './writeFormattedHtml.js';
+import { createWriteFormattedHtml } from '../../../../src/core/scripts/generate/writeFormattedHtml.js';
 
 describe('createWriteFormattedHtml', () => {
   const baseDependencies = () => {
@@ -75,6 +75,57 @@ describe('createWriteFormattedHtml', () => {
     );
     expect(deps.logInfo).toHaveBeenLastCalledWith(
       'Unformatted HTML written to public/index.html'
+    );
+  });
+
+  it('uses default parser and empty config when resolveConfig returns null', async () => {
+    const deps = baseDependencies();
+    deps.resolveConfig.mockResolvedValue(null);
+    const writeFormattedHtml = createWriteFormattedHtml(deps);
+
+    await writeFormattedHtml({
+      blog: { title: 'Defaults' },
+      configPath: './missing-prettier',
+      outputPath: 'public/defaults.html',
+    });
+
+    expect(deps.formatHtml).toHaveBeenCalledWith('<html></html>', {
+      parser: 'html',
+    });
+    expect(deps.writeFile).toHaveBeenCalledWith(
+      'public/defaults.html',
+      '<html></html>-formatted(html)',
+      'utf8'
+    );
+    expect(deps.logInfo).toHaveBeenCalledWith(
+      'HTML formatted with Prettier and written to public/defaults.html'
+    );
+  });
+
+  it('logs and writes the raw HTML when resolving the config fails', async () => {
+    const deps = baseDependencies();
+    const configError = new Error('config missing');
+    deps.resolveConfig.mockRejectedValue(configError);
+    const writeFormattedHtml = createWriteFormattedHtml(deps);
+
+    await writeFormattedHtml({
+      blog: { title: 'Config Failure' },
+      configPath: './missing',
+      outputPath: 'public/fallback.html',
+    });
+
+    expect(deps.formatHtml).not.toHaveBeenCalled();
+    expect(deps.writeFile).toHaveBeenCalledWith(
+      'public/fallback.html',
+      '<html></html>',
+      'utf8'
+    );
+    expect(deps.logError).toHaveBeenCalledWith(
+      'Error formatting HTML',
+      configError
+    );
+    expect(deps.logInfo).toHaveBeenLastCalledWith(
+      'Unformatted HTML written to public/fallback.html'
     );
   });
 });

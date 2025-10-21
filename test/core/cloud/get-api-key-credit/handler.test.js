@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { createGetApiKeyCreditHandler } from './handler.js';
+import { createGetApiKeyCreditHandler } from '../../../../src/core/cloud/get-api-key-credit/handler.js';
 
 describe('createGetApiKeyCreditHandler', () => {
   const createDependencies = ({
@@ -120,5 +120,29 @@ describe('createGetApiKeyCreditHandler', () => {
 
     expect(fetchCredit).toHaveBeenCalledWith('uuid');
     expect(response).toEqual({ status: 200, body: { credit: 12 } });
+  });
+
+  it('treats non-string methods as POST requests', async () => {
+    const fetchCredit = jest.fn().mockResolvedValue(5);
+    const getUuid = jest.fn().mockReturnValue('generated-uuid');
+    const handler = createGetApiKeyCreditHandler({ fetchCredit, getUuid });
+
+    const response = await handler({ params: { id: 1 } });
+
+    expect(getUuid).toHaveBeenCalledWith({ params: { id: 1 } });
+    expect(fetchCredit).toHaveBeenCalledWith('generated-uuid');
+    expect(response).toEqual({ status: 200, body: { credit: 5 } });
+  });
+
+  it('supports being invoked without a request object', async () => {
+    const fetchCredit = jest.fn().mockResolvedValue(3);
+    const getUuid = jest.fn().mockReturnValue('helper-uuid');
+    const handler = createGetApiKeyCreditHandler({ fetchCredit, getUuid });
+
+    const response = await handler();
+
+    expect(getUuid).toHaveBeenCalledWith({});
+    expect(fetchCredit).toHaveBeenCalledWith('helper-uuid');
+    expect(response).toEqual({ status: 200, body: { credit: 3 } });
   });
 });

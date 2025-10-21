@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { createGoogleSignOut } from './googleSignOut.js';
+import { createGoogleSignOut } from '../../../src/core/auth/googleSignOut.js';
 
 describe('createGoogleSignOut', () => {
   it('signs out, clears the token, and disables auto select', async () => {
