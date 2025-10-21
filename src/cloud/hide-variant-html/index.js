@@ -1,11 +1,46 @@
 import * as functions from 'firebase-functions/v1';
 import { Storage } from '@google-cloud/storage';
+import { createRemoveVariantHtml } from '../../core/cloud/hide-variant-html/removeVariantHtml.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 
 ensureFirebaseApp();
 const storage = new Storage();
 const BUCKET = 'www.dendritestories.co.nz';
 const VISIBILITY_THRESHOLD = 0.5;
+
+const removeVariantHtml = createRemoveVariantHtml({
+  async loadPageForVariant({ pageRef }) {
+    if (!pageRef || typeof pageRef.get !== 'function') {
+      return null;
+    }
+
+    const pageSnap = await pageRef.get();
+    if (!pageSnap?.exists) {
+      return null;
+    }
+
+    return { page: pageSnap.data() };
+  },
+  buildVariantPath({ page, variantData }) {
+    return `p/${page.number}${variantData.name}.html`;
+  },
+  deleteRenderedFile(path) {
+    return storage.bucket(BUCKET).file(path).delete({ ignoreNotFound: true });
+  },
+});
+
+/**
+ * Transform a Firestore variant snapshot into the payload expected by the core helper.
+ * @param {functions.firestore.DocumentSnapshot} snap Variant snapshot to adapt.
+ * @returns {Promise<null>} Result of the removal helper.
+ */
+function removeVariantHtmlForSnapshot(snap) {
+  return removeVariantHtml({
+    variantId: snap.id,
+    variantData: snap.data(),
+    pageRef: snap.ref.parent?.parent ?? null,
+  });
+}
 
 /**
  * Delete the rendered HTML for a variant when it is removed or its visibility drops below the threshold.
@@ -15,33 +50,14 @@ export const hideVariantHtml = functions
   .firestore.document('stories/{storyId}/pages/{pageId}/variants/{variantId}')
   .onWrite(async change => {
     if (!change.after.exists) {
-      return removeFile(change.before);
+      return removeVariantHtmlForSnapshot(change.before);
     }
 
     const beforeVis = change.before.data()?.visibility ?? 0;
     const afterVis = change.after.data().visibility ?? 0;
     if (beforeVis >= VISIBILITY_THRESHOLD && afterVis < VISIBILITY_THRESHOLD) {
-      return removeFile(change.after);
+      return removeVariantHtmlForSnapshot(change.after);
     }
 
     return null;
   });
-
-/**
- * Remove the rendered HTML file for a variant snapshot.
- * @param {functions.firestore.DocumentSnapshot} snap Firestore snapshot of the variant.
- * @returns {Promise<null>} Resolves when the file deletion attempt completes.
- */
-async function removeFile(snap) {
-  const variant = snap.data();
-  const pageSnap = await snap.ref.parent.parent.get();
-  if (!pageSnap.exists) {
-    return null;
-  }
-
-  const page = pageSnap.data();
-  const path = `p/${page.number}${variant.name}.html`;
-
-  await storage.bucket(BUCKET).file(path).delete({ ignoreNotFound: true });
-  return null;
-}
