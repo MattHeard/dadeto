@@ -28,8 +28,9 @@ export const hideVariantHtml = functions
   });
 
 /**
- *
- * @param snap
+ * Remove the rendered HTML file for a variant snapshot.
+ * @param {functions.firestore.DocumentSnapshot} snap Firestore snapshot of the variant.
+ * @returns {Promise<null>} Resolves when the file deletion attempt completes.
  */
 async function removeFile(snap) {
   const variant = snap.data();

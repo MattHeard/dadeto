@@ -200,14 +200,9 @@ function createCorsOptions(createCorsOriginHandlerFn, corsConfig) {
 
 /**
  * Create a function that wires CORS middleware onto an Express app.
- * @param {(allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
- createCorsOriginHandlerFn
- * Factory that produces the origin callback for the CORS middleware.
- * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }) => unknown}
- corsFn
- * CORS middleware factory function.
- * @returns {(appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void}
- * Function that applies the configured CORS middleware to the Express app.
+ * @param {(allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} createCorsOriginHandlerFn - Factory that produces the origin callback for the CORS middleware.
+ * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }) => unknown} corsFn - CORS middleware factory function.
+ * @returns {(appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void} Function that applies the configured CORS middleware to the Express app.
  */
 export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
   return function setupCors(appInstance, corsConfig) {
@@ -428,12 +423,12 @@ export function createHandleAssignModerationJobCore(assignModerationWorkflow) {
 
 /**
  * @typedef {object} AssignModerationWorkflowDeps
- * @property {(context: { req: import('express').Request }) => Promise<{ error?: { status: number, body: string }, context?: { userRecord?: import('firebase-admin/auth').UserRecord } }>} runGuards
- * @property {(randomValue: number) => Promise<unknown>} fetchVariantSnapshot
- * @property {(snapshot: unknown) => { variantDoc?: { ref: unknown }, errorMessage?: string }} selectVariantDoc
- * @property {(uid: string) => { set: (assignment: unknown) => Promise<unknown> }} createModeratorRef
- * @property {() => unknown} now
- * @property {() => number} random
+ * @property {(context: { req: import('express').Request }) => Promise<{ error?: { status: number, body: string }, context?: { userRecord?: import('firebase-admin/auth').UserRecord } }>} runGuards - Guard runner that validates the incoming request.
+ * @property {(randomValue: number) => Promise<unknown>} fetchVariantSnapshot - Resolver that fetches a moderation candidate snapshot.
+ * @property {(snapshot: unknown) => { variantDoc?: { ref: unknown }, errorMessage?: string }} selectVariantDoc - Selector that extracts the chosen variant document from a snapshot.
+ * @property {(uid: string) => { set: (assignment: unknown) => Promise<unknown> }} createModeratorRef - Factory that returns the moderator document reference for persisting assignments.
+ * @property {() => unknown} now - Clock function that returns the timestamp persisted with the assignment.
+ * @property {() => number} random - RNG used to seed variant selection.
  */
 
 /**
@@ -443,7 +438,7 @@ export function createHandleAssignModerationJobCore(assignModerationWorkflow) {
 /**
  * Create the moderation assignment workflow.
  * @param {AssignModerationWorkflowDeps} deps Dependencies required by the workflow.
- * @returns {(input: AssignModerationWorkflowInput) => Promise<{ status: number, body?: string }>}
+ * @returns {(input: AssignModerationWorkflowInput) => Promise<{ status: number, body?: string }>} Moderation assignment workflow.
  */
 export function createAssignModerationWorkflow({
   runGuards,
@@ -488,6 +483,15 @@ export function createAssignModerationWorkflow({
   };
 }
 
+/**
+ * Create the Express handler that assigns moderation jobs using Firestore.
+ * @param {(db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
+ * @param {import('firebase-admin/auth').Auth} auth Firebase auth service used to verify ID tokens.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore database containing moderation records.
+ * @param {() => unknown} now Timestamp provider for persisted assignments.
+ * @param {() => number} random RNG used for variant selection.
+ * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Express handler that assigns a moderation job to the caller.
+ */
 export function createHandleAssignModerationJob(
   createRunVariantQuery,
   auth,
@@ -509,6 +513,13 @@ export function createHandleAssignModerationJob(
   );
 }
 
+/**
+ * Register the assign moderation job route on the provided Express app.
+ * @param {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: import('express').Express }} firebaseResources - Firebase resources used to serve the moderation endpoint.
+ * @param {(db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} createRunVariantQuery - Factory that binds the Firestore instance to the variant query runner.
+ * @param {() => unknown} now - Timestamp provider for persisted assignments.
+ * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Registered moderation handler.
+ */
 export function setupAssignModerationJobRoute(
   firebaseResources,
   createRunVariantQuery,
@@ -529,12 +540,27 @@ export function setupAssignModerationJobRoute(
   return handleAssignModerationJob;
 }
 
+/**
+ * Create the Cloud Function that serves the assign moderation job endpoint.
+ * @param {{ region: (region: string) => { https: { onRequest: (app: import('express').Express) => unknown } } }} functionsModule - Firebase functions module used to register the HTTP endpoint.
+ * @param {{ app: import('express').Express }} firebaseResources - Express app configured for the moderation route.
+ * @returns {unknown} Cloud Function handler that can be deployed.
+ */
 export function createAssignModerationJob(functionsModule, firebaseResources) {
   const { app } = firebaseResources;
 
   return functionsModule.region('europe-west1').https.onRequest(app);
 }
 
+/**
+ * Compose the moderation handler using Firebase auth and Firestore dependencies.
+ * @param {import('firebase-admin/auth').Auth} auth - Firebase auth service that verifies incoming tokens.
+ * @param {(randomValue: number) => Promise<unknown>} fetchVariantSnapshot - Snapshot fetcher used to select moderation candidates.
+ * @param {import('firebase-admin/firestore').Firestore} db - Firestore instance used to persist assignments.
+ * @param {() => unknown} now - Timestamp provider for persisted assignments.
+ * @param {() => number} random - RNG used for variant selection.
+ * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Express handler bound to Firebase auth.
+ */
 export function createHandleAssignModerationJobFromAuth(
   auth,
   fetchVariantSnapshot,
