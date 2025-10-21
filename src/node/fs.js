@@ -1,5 +1,6 @@
 import fs from 'fs';
-import { promises as fsPromises } from 'fs';
+
+const { promises: fsPromises } = fs;
 
 /**
  * Provide synchronous filesystem helpers required by the copy generator.
