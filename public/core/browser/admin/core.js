@@ -2,6 +2,28 @@ import { ADMIN_UID } from '../../admin-config.js';
 
 export { ADMIN_UID };
 
+/**
+ * @typedef {object} FetchRequestOptions
+ * @property {string} [method] - HTTP method to use for the request.
+ * @property {Record<string, string>} [headers] - Headers to include with the request.
+ * @property {string | undefined} [body] - Optional request payload as a string.
+ */
+
+/**
+ * @typedef {(url: string | URL, init?: FetchRequestOptions) => Promise<Response>} FetchFn
+ */
+
+/**
+ * @typedef {object} GoogleSignInOptions
+ * @property {(token: string) => void} [onSignIn] - Callback invoked once a token is available.
+ */
+
+/**
+ * @typedef {object} GoogleAccountsClient
+ * @property {(config: object) => void} initialize - Initializes the Google sign-in client.
+ * @property {(element: HTMLElement, options: object) => void} renderButton - Renders a sign-in button.
+ */
+
 export const DEFAULT_ADMIN_ENDPOINTS = {
   triggerRenderContentsUrl:
     'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents',
@@ -13,7 +35,7 @@ export const DEFAULT_ADMIN_ENDPOINTS = {
 
 /**
  * Provide a fresh copy of the default admin endpoints to avoid shared mutation.
- * @returns {{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}}
+ * @returns {{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}} Fresh copy of the default admin endpoints.
  */
 export function getDefaultAdminEndpointsCopy() {
   return { ...DEFAULT_ADMIN_ENDPOINTS };
@@ -21,8 +43,8 @@ export function getDefaultAdminEndpointsCopy() {
 
 /**
  * Normalize static config into admin endpoints with production fallbacks.
- * @param {Record<string, string>} config
- * @returns {{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}}
+ * @param {Record<string, string>} config - Static config values keyed by endpoint name.
+ * @returns {{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}} Normalized admin endpoints with production fallbacks.
  */
 export function mapConfigToAdminEndpoints(config) {
   return {
@@ -40,7 +62,7 @@ export function mapConfigToAdminEndpoints(config) {
 /**
  * Build the admin endpoints promise using a provided static config loader.
  * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for the static config.
- * @returns {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>}
+ * @returns {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>} Promise that resolves with admin endpoint URLs.
  */
 export function createAdminEndpointsPromise(loadStaticConfigFn) {
   if (typeof loadStaticConfigFn !== 'function') {
@@ -99,7 +121,7 @@ export function createGetAdminEndpointsFromStaticConfig(loadStaticConfigFn) {
 /**
  * Trigger the render contents endpoint using the provided dependencies.
  * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Function resolving admin endpoints.
- * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like function for network calls.
+ * @param {FetchFn} fetchFn - Fetch-like function for network calls.
  * @param {string} token - ID token attached to the Authorization header.
  * @returns {Promise<Response>} Response from the render trigger request.
  */
@@ -126,7 +148,7 @@ export async function postTriggerRenderContents(
  * Report the outcome of a trigger render request using the provided messenger.
  * @param {Response} res - Response returned by the trigger render request.
  * @param {(text: string) => void} showMessage - Callback to surface status messages.
- * @returns {Promise<void>}
+ * @returns {Promise<void>} Resolves after the trigger render result has been surfaced.
  */
 export async function announceTriggerRenderResult(res, showMessage) {
   if (!res?.ok) {
@@ -145,10 +167,10 @@ export async function announceTriggerRenderResult(res, showMessage) {
 /**
  * Execute the trigger render flow and report outcomes.
  * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ * @param {FetchFn} fetchFn - Fetch-like network caller.
  * @param {string} token - ID token attached to the Authorization header.
  * @param {(text: string) => void} showMessage - Callback to surface status messages.
- * @returns {Promise<void>}
+ * @returns {Promise<void>} Resolves after the trigger render flow finishes reporting.
  */
 export async function executeTriggerRender(
   getAdminEndpointsFn,
@@ -172,7 +194,7 @@ export async function executeTriggerRender(
  * Create a trigger render handler with the supplied dependencies.
  * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
  * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ * @param {FetchFn} fetchFn - Fetch-like network caller.
  * @param {(text: string) => void} showMessage - Callback to surface status messages.
  * @returns {() => Promise<void>} Function that triggers render when invoked.
  */
@@ -305,16 +327,16 @@ export function createWireSignOut(doc, googleAuth) {
 /**
  * Create an initializer for the Google sign-in button with injected dependencies.
  * @param {{
- *   googleAccountsId?: { initialize: Function, renderButton: Function } | (() => { initialize: Function, renderButton: Function } | undefined),
+ *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
  *   credentialFactory: (credential: string) => unknown,
  *   signInWithCredential: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
  *   auth: { currentUser?: { getIdToken?: () => Promise<string> } },
  *   storage: { setItem: (key: string, value: string) => void },
  *   matchMedia: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
- *   querySelectorAll: (selector: string) => Iterable<HTMLElement>,
+ *   querySelectorAll: (selector: string) => NodeList,
  *   logger?: { error?: (message: string) => void },
  * }} deps - Collaborators required to configure the Google sign-in button.
- * @returns {({ onSignIn }?: { onSignIn?: (token: string) => void }) => Promise<void> | void} Initialized sign-in function.
+ * @returns {(options?: GoogleSignInOptions) => Promise<void> | void} Initialized sign-in function.
  */
 export function createInitGoogleSignIn(deps) {
   const {
@@ -412,7 +434,7 @@ export function createInitGoogleSignIn(deps) {
  * Create a trigger stats handler with the supplied dependencies.
  * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
  * @param {() => Promise<{ generateStatsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ * @param {FetchFn} fetchFn - Fetch-like network caller.
  * @param {(text: string) => void} showMessage - Callback to surface status messages.
  * @returns {() => Promise<void>} Function that triggers stats generation when invoked.
  */
@@ -461,7 +483,7 @@ export function createTriggerStats(
  * @param {Document} doc - Document used to locate form inputs.
  * @param {(text: string) => void} showMessage - Callback to surface status messages.
  * @param {() => Promise<{ markVariantDirtyUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ * @param {FetchFn} fetchFn - Fetch-like network caller.
  * @returns {(event: Event) => Promise<void>} Function that triggers variant regeneration when invoked.
  */
 export function createRegenerateVariant(
@@ -574,7 +596,7 @@ export function createShowMessage(getStatusParagraphFn, doc) {
  * @param {() => unknown} getAuthFn - Getter for the Firebase auth instance.
  * @param {(auth: unknown, callback: () => void) => void} onAuthStateChangedFn - Firebase auth listener registrar.
  * @param {Document} doc - Document used to locate admin UI elements.
- * @param {(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>} fetchFn - Fetch-like network caller.
+ * @param {FetchFn} fetchFn - Fetch-like network caller.
  */
 export function initAdmin(
   googleAuthModule,
@@ -655,7 +677,7 @@ export function getAdminContent(doc) {
 /**
  * Locate all sign-in button elements within the provided document.
  * @param {Document} doc - Document to query for sign-in controls.
- * @returns {NodeListOf<HTMLElement>} Elements that trigger the sign-in flow.
+ * @returns {NodeList} Node list of elements that trigger the sign-in flow.
  */
 export function getSignInButtons(doc) {
   return doc.querySelectorAll('#signinButton');
@@ -664,7 +686,7 @@ export function getSignInButtons(doc) {
 /**
  * Locate all sign-out container elements within the provided document.
  * @param {Document} doc - Document to query for sign-out controls.
- * @returns {NodeListOf<HTMLElement>} Elements that wrap sign-out actions.
+ * @returns {NodeList} Node list of elements that wrap sign-out actions.
  */
 export function getSignOutSections(doc) {
   return doc.querySelectorAll('#signoutWrap');
@@ -687,8 +709,8 @@ export function getCurrentUser(getAuthFn) {
 /**
  * Update the display state of sign-in and sign-out controls based on the user.
  * @param {{ uid?: string } | null | undefined} user - Current authenticated user.
- * @param {NodeListOf<HTMLElement>} signIns - Elements that trigger sign-in.
- * @param {NodeListOf<HTMLElement>} signOuts - Elements that trigger sign-out.
+ * @param {Array<HTMLElement> | NodeList} signIns - Elements that trigger sign-in.
+ * @param {Array<HTMLElement> | NodeList} signOuts - Elements that trigger sign-out.
  */
 export function updateAuthControlsDisplay(user, signIns, signOuts) {
   const isSignedIn = Boolean(user);
