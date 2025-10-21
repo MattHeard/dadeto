@@ -16,7 +16,8 @@ const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
 const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
 
 /**
- *
+ * Retrieve an access token from the GCE metadata server.
+ * @returns {Promise<string>} Metadata service access token.
  */
 async function getAccessTokenFromMetadata() {
   const r = await fetch(
@@ -29,8 +30,9 @@ async function getAccessTokenFromMetadata() {
 }
 
 /**
- *
- * @param paths
+ * Request CDN cache invalidation for each provided path.
+ * @param {string[]} paths Collection of paths to invalidate.
+ * @returns {Promise<void>} Resolves when invalidation requests complete.
  */
 async function invalidatePaths(paths) {
   const token = await getAccessTokenFromMetadata();
@@ -95,9 +97,10 @@ export const renderVariant = functions
   });
 
 /**
- *
- * @param snap
- * @param ctx
+ * Render a Firestore variant document to static HTML.
+ * @param {functions.firestore.DocumentSnapshot} snap Snapshot for the variant.
+ * @param {functions.EventContext} ctx Event context for the trigger.
+ * @returns {Promise<null>} Resolves when the render process finishes.
  */
 async function render(snap, ctx) {
   const variant = snap.data();

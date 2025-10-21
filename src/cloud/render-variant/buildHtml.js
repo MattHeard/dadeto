@@ -25,8 +25,8 @@ function renderInlineMarkdown(text) {
  * @param {string} [storyTitle] Story title.
  * @param {string} [author] Author name.
  * @param {string} [authorUrl] Author link.
- * @param parentUrl
- * @param firstPageUrl
+ * @param {string} parentUrl URL of the parent variant, if any.
+ * @param {string} firstPageUrl URL to the story's first page.
  * @param {boolean} [showTitleHeading] Whether to include the story title as a
  *   page heading.
  * @returns {string} HTML page.

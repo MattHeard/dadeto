@@ -133,6 +133,7 @@ async function fetchStoryInfo(storyId) {
 /**
  * Generate contents pages and invalidate caches.
  * @param {{fetchTopStoryIds?: () => Promise<Array<string>>, fetchStoryInfo?: (id: string) => Promise<{title: string, pageNumber: number}|null>}} deps Optional dependencies for testing.
+ * @returns {Promise<null>} Resolves once rendering and cache invalidation finish.
  */
 async function render(deps = {}) {
   const {
@@ -216,10 +217,11 @@ function validateRequest(req, res) {
 }
 
 /**
- *
- * @param req
- * @param res
- * @param deps
+ * HTTP handler that validates the request and triggers contents rendering.
+ * @param {import('express').Request} req Incoming HTTP request.
+ * @param {import('express').Response} res HTTP response used for status and body.
+ * @param {{renderFn?: () => Promise<unknown>}} deps Optional dependency overrides.
+ * @returns {Promise<void>} Resolves when the response has been sent.
  */
 async function handleRenderRequest(req, res, deps = {}) {
   if (!validateRequest(req, res)) {
