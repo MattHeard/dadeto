@@ -49,7 +49,7 @@ npm install
   - `html.js` - HTML utility functions
   - `textFormatter.js` - Text formatting utilities
   - Other component files
-- `public/` - Generated output and static assets copied from `src/assets`
+- `public/` - Generated output and static assets copied from `src/browser/assets`
 - `test/` - Test files
 
 ### Commands

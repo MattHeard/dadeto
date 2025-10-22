@@ -35,7 +35,7 @@ const createDirectories = () => {
       publicDir,
       'browser/audio-controls.js'
     ),
-    srcAssetsDir: posix.join(srcDir, 'assets'),
+    srcAssetsDir: posix.join(srcDir, 'browser/assets'),
     publicAssetsDir: publicDir,
     srcPresentersDir: posix.join(srcDir, 'core/presenters'),
     publicPresentersDir: posix.join(publicDir, 'presenters'),
@@ -704,7 +704,7 @@ describe('createCopyCore', () => {
         'Warning: core directory not found at src/core'
       );
       expect(logger.warn).toHaveBeenCalledWith(
-        'Warning: assets directory not found at src/assets'
+        'Warning: assets directory not found at src/browser/assets'
       );
     });
   });
