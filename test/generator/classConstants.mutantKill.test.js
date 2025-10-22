@@ -1,5 +1,5 @@
 import { test, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { generateBlogOuter } from '../../src/build/generator.js';
 
 test('generateBlogOuter uses entry and footer classes', () => {
   const blog = {

@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 
-import {
-  createCopyCore,
-  createSharedDirectoryEntries,
-} from '../core/copy.js';
+import { createCopyCore, createSharedDirectoryEntries } from '../core/copy.js';
 import {
   createCopyDirectories,
   createPathAdapters,
@@ -26,7 +23,7 @@ const sharedDirectoryEntries = createSharedDirectoryEntries({
 
 const directories = createCopyDirectories(
   { projectRoot, srcDir, publicDir },
-  sharedDirectoryEntries,
+  sharedDirectoryEntries
 );
 
 const thirdParty = createFsAdapters();

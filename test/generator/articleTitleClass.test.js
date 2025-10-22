@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { generateBlogOuter } from '../../src/build/generator.js';
 
 describe('generator article title class', () => {
   test('generated blog includes article-title class', () => {

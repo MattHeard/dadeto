@@ -13,7 +13,7 @@ import {
   tagClose,
   equals,
   quote,
-} from '../../src/generator/html.js';
+} from '../../src/build/html.js';
 
 describe('html utilities', () => {
   test('createOpeningTag omits space when no attributes', () => {

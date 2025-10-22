@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { wrapHtml, doctype } from '../../src/generator/html.js';
+import { wrapHtml, doctype } from '../../src/build/html.js';
 
 describe('wrapHtml DOCTYPE runtime', () => {
   test('prepends the standard DOCTYPE', () => {

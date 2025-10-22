@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { styles } from '../../src/generator/styles.js';
+import { styles } from '../../src/build/styles.js';
 
 describe('styles constant', () => {
   test('includes body background color rule', () => {

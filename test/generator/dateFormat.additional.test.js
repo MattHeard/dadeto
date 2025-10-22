@@ -1,5 +1,5 @@
 import { test, expect } from '@jest/globals';
-import { generateBlog } from '../../src/generator/generator.js';
+import { generateBlog } from '../../src/build/generator.js';
 
 const header = '<body>';
 const footer = '</body>';

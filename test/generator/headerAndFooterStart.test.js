@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { getBlogGenerationArgs } from '../../src/generator/generator.js';
+import { getBlogGenerationArgs } from '../../src/build/generator.js';
 
 describe('entry class usage', () => {
   test('header and footer include entry class', () => {
