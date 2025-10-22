@@ -58,7 +58,7 @@ export function createCopyDirectories(baseDirectories, sharedDirectoryEntries) {
     srcDir,
     publicDir,
     ...sharedEntries,
-    srcAssetsDir: path.resolve(srcDir, 'assets'),
+    srcAssetsDir: path.resolve(srcDir, 'browser/assets'),
     publicAssetsDir: publicDir,
     srcBlogJson: path.join(srcDir, 'blog.json'),
     publicBlogJson: path.join(publicDir, 'blog.json'),
