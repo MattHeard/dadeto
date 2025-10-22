@@ -1,5 +1,5 @@
-import { deepClone } from '../../objectUtils.js';
-import { isValidString } from '../../validation.js';
+import { deepClone } from './objectUtils.js';
+import { isValidString } from './validation.js';
 import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
 
 /**
