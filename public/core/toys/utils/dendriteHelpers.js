@@ -1,6 +1,6 @@
 export { ensureDend2, createOptions };
 
-import { DENDRITE_OPTION_KEYS } from '../../../constants/dendrite.js';
+import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 
 /**
  * Check whether a value is a non-null object.

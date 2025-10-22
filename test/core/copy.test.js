@@ -23,7 +23,7 @@ const createDirectories = () => {
     publicUtilsDir: posix.join(publicDir, 'utils'),
     srcInputHandlersDir: posix.join(srcDir, 'inputHandlers'),
     publicInputHandlersDir: posix.join(publicDir, 'inputHandlers'),
-    srcConstantsDir: posix.join(srcDir, 'constants'),
+    srcConstantsDir: posix.join(srcDir, 'core/constants'),
     publicConstantsDir: posix.join(publicDir, 'constants'),
     srcCoreDir: posix.join(srcDir, 'core'),
     publicCoreDir: posix.join(publicDir, 'core'),
@@ -83,6 +83,14 @@ describe('createSharedDirectoryEntries', () => {
     expect(entries).toContainEqual([
       'publicPresentersDir',
       posix.join(publicDir, 'presenters'),
+    ]);
+    expect(entries).toContainEqual([
+      'srcConstantsDir',
+      posix.join(srcDir, 'core/constants'),
+    ]);
+    expect(entries).toContainEqual([
+      'publicConstantsDir',
+      posix.join(publicDir, 'constants'),
     ]);
   });
 
@@ -698,7 +706,7 @@ describe('createCopyCore', () => {
         'Warning: inputHandlers directory not found at src/inputHandlers'
       );
       expect(logger.warn).toHaveBeenCalledWith(
-        'Warning: constants directory not found at src/constants'
+        'Warning: constants directory not found at src/core/constants'
       );
       expect(logger.warn).toHaveBeenCalledWith(
         'Warning: core directory not found at src/core'

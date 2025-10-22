@@ -6,7 +6,11 @@ export const sharedDirectoryPairs = [
   },
   { key: 'Browser', relativePath: 'browser' },
   { key: 'InputHandlers', relativePath: 'inputHandlers' },
-  { key: 'Constants', relativePath: 'constants' },
+  {
+    key: 'Constants',
+    relativePath: 'core/constants',
+    publicRelativePath: 'constants',
+  },
   {
     key: 'Presenters',
     relativePath: 'core/presenters',

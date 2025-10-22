@@ -4,7 +4,7 @@ import {
   htmlTags,
   markdownMarkers,
   defaultOptions,
-} from '../../src/constants/markdown.js';
+} from '../../src/core/constants/markdown.js';
 
 // Additional coverage to kill Stryker mutants around CSS_CLASSES values
 
