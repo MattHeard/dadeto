@@ -73,8 +73,18 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     if (!relativePath) {
       return '.';
     }
+    return selectReadablePath(targetPath, relativePath);
+  }
+
+  /**
+   * Choose the most readable representation for a relative path.
+   * @param {string} absolutePath - Original absolute path provided to the logger.
+   * @param {string} relativePath - Path relative to the project root.
+   * @returns {string} Either the relative path or original absolute path when outside the project.
+   */
+  function selectReadablePath(absolutePath, relativePath) {
     if (relativePath.startsWith('..')) {
-      return targetPath;
+      return absolutePath;
     }
     return relativePath;
   }
@@ -172,10 +182,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   function createCopyPairs(files, sourceRoot, destinationRoot) {
     return files.map(filePath => ({
       source: filePath,
-      destination: join(
-        destinationRoot,
-        relative(sourceRoot, filePath)
-      ),
+      destination: join(destinationRoot, relative(sourceRoot, filePath)),
     }));
   }
 
@@ -584,4 +591,3 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     runCopyWorkflow,
   };
 }
-
