@@ -70,5 +70,9 @@ export function createCopyDirectories(baseDirectories, sharedDirectoryEntries) {
       publicDir,
       'browser/audio-controls.js'
     ),
+    srcCoreObjectUtilsFile: path.join(srcDir, 'core/objectUtils.js'),
+    publicObjectUtilsFile: path.join(publicDir, 'objectUtils.js'),
+    srcCoreValidationFile: path.join(srcDir, 'core/validation.js'),
+    publicValidationFile: path.join(publicDir, 'validation.js'),
   };
 }
