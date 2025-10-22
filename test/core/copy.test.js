@@ -35,6 +35,10 @@ const createDirectories = () => {
       publicDir,
       'browser/audio-controls.js'
     ),
+    srcCoreObjectUtilsFile: posix.join(srcDir, 'core/objectUtils.js'),
+    publicObjectUtilsFile: posix.join(publicDir, 'objectUtils.js'),
+    srcCoreValidationFile: posix.join(srcDir, 'core/validation.js'),
+    publicValidationFile: posix.join(publicDir, 'validation.js'),
     srcAssetsDir: posix.join(srcDir, 'browser/assets'),
     publicAssetsDir: publicDir,
     srcPresentersDir: posix.join(srcDir, 'core/presenters'),
@@ -394,6 +398,20 @@ describe('createCopyCore', () => {
       expect(logger.info).toHaveBeenCalledWith(
         'Copied: src/blog.json -> public/blog.json'
       );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        directories.srcCoreValidationFile,
+        directories.publicValidationFile
+      );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        directories.srcCoreObjectUtilsFile,
+        directories.publicObjectUtilsFile
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: src/core/validation.js -> public/validation.js'
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: src/core/objectUtils.js -> public/objectUtils.js'
+      );
     });
   });
 
@@ -551,6 +569,37 @@ describe('createCopyCore', () => {
       expect(logger.info).toHaveBeenCalledWith(
         'Copied: src/blog.json -> public/blog.json'
       );
+    });
+
+    it('copies root utility files into the public directory', () => {
+      const io = {
+        directoryExists: jest.fn().mockReturnValue(true),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyRootUtilityFiles(directories, io, logger);
+
+      expect(io.copyFile).toHaveBeenNthCalledWith(
+        1,
+        directories.srcCoreValidationFile,
+        directories.publicValidationFile
+      );
+      expect(io.copyFile).toHaveBeenNthCalledWith(
+        2,
+        directories.srcCoreObjectUtilsFile,
+        directories.publicObjectUtilsFile
+      );
+      expect(logger.info).toHaveBeenNthCalledWith(
+        1,
+        'Copied: src/core/validation.js -> public/validation.js'
+      );
+      expect(logger.info).toHaveBeenNthCalledWith(
+        2,
+        'Copied: src/core/objectUtils.js -> public/objectUtils.js'
+      );
+      expect(io.createDirectory).not.toHaveBeenCalled();
     });
 
     it('copies toy files and reports success', () => {

@@ -347,6 +347,36 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
+   * Copy core utility modules into the public root directory.
+   * @param {Record<string, string>} dirs - Directory map.
+   * @param {{
+   *   directoryExists: (target: string) => boolean,
+   *   createDirectory: (target: string) => void,
+   *   copyFile: (source: string, destination: string) => void,
+   * }} io - File system adapters.
+   * @param {{ info: (message: string) => void }} messageLogger - Logger for status updates.
+   * @returns {void}
+   */
+  function copyRootUtilityFiles(dirs, io, messageLogger) {
+    const filesToCopy = [
+      {
+        source: dirs.srcCoreValidationFile,
+        destination: dirs.publicValidationFile,
+        message: 'Copied: src/core/validation.js -> public/validation.js',
+      },
+      {
+        source: dirs.srcCoreObjectUtilsFile,
+        destination: dirs.publicObjectUtilsFile,
+        message: 'Copied: src/core/objectUtils.js -> public/objectUtils.js',
+      },
+    ];
+
+    filesToCopy.forEach(({ source, destination, message }) => {
+      copyFileWithDirectories(io, source, destination, messageLogger, message);
+    });
+  }
+
+  /**
    * Copy toy modules from the src tree into the public directory.
    * @param {Record<string, string>} dirs - Directory map.
    * @param {{
@@ -521,6 +551,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   function runCopyWorkflow({ directories: dirs, io, messageLogger }) {
     ensureDirectoryExists(io, dirs.publicDir);
     copyBlogJson(dirs, io, messageLogger);
+    copyRootUtilityFiles(dirs, io, messageLogger);
     copyToyFiles(dirs, io, messageLogger);
     copyPresenterFiles(dirs, io, messageLogger);
     copyBrowserAudioControls(dirs, io, messageLogger);
@@ -545,6 +576,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyDirRecursive,
     copyDirectoryTreeIfExists,
     copyBlogJson,
+    copyRootUtilityFiles,
     copyToyFiles,
     copyPresenterFiles,
     copyBrowserAudioControls,
