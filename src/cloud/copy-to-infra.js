@@ -118,6 +118,12 @@ const getApiKeyCreditHandlerSource = join(
   'handler.js',
 );
 
+const getApiKeyCreditV2HandlerSource = join(
+  srcCoreCloudDir,
+  'get-api-key-credit-v2',
+  'handler.js',
+);
+
 const hideVariantHtmlSource = join(
   srcCoreCloudDir,
   'hide-variant-html',
@@ -187,6 +193,10 @@ const individualFileCopies = [
   {
     source: getApiKeyCreditHandlerSource,
     target: join(infraFunctionsDir, 'get-api-key-credit', 'handler.js'),
+  },
+  {
+    source: getApiKeyCreditV2HandlerSource,
+    target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'handler.js'),
   },
   {
     source: hideVariantHtmlSource,
