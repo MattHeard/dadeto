@@ -2,9 +2,7 @@ import { describe, test, expect } from '@jest/globals';
 
 describe('header section generation', () => {
   test('generateBlogOuter includes banner and metadata when importing normally', async () => {
-    const { generateBlogOuter } = await import(
-      '../../src/generator/generator.js'
-    );
+    const { generateBlogOuter } = await import('../../src/build/generator.js');
     const html = generateBlogOuter({ posts: [] });
     expect(html).toContain('aria-label="Matt Heard"');
     expect(html).toContain('Software developer and philosopher in Berlin');
@@ -12,7 +10,7 @@ describe('header section generation', () => {
 
   test('header labeled sections have empty keys', async () => {
     const { getBlogGenerationArgs } = await import(
-      '../../src/generator/generator.js'
+      '../../src/build/generator.js'
     );
     const { header } = getBlogGenerationArgs();
     const keyMatches = [...header.matchAll(/<div class="key">([^<]*)<\/div>/g)];
@@ -24,7 +22,7 @@ describe('header section generation', () => {
 
   test('header joins parts without unexpected separators', async () => {
     const { getBlogGenerationArgs } = await import(
-      '../../src/generator/generator.js'
+      '../../src/build/generator.js'
     );
     const { header } = getBlogGenerationArgs();
     expect(header.includes('Stryker was here!')).toBe(false);

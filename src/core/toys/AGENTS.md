@@ -171,7 +171,7 @@ In all cases, as long as the toy module exposes the expected function and return
 
 **Sources:**
 
-* Static site generator code showing toy script injection and interface[[42]](../../generator/generator.js)[[43]](../../generator/generator.js).
+* Static site generator code showing toy script injection and interface[[42]](../../build/generator.js)[[43]](../../build/generator.js).
 
 * The global loader setup (addComponent and lazy initialization)[[44]](../../../public/index.html)[[9]](../../../public/index.html).
 
@@ -213,6 +213,6 @@ In all cases, as long as the toy module exposes the expected function and return
 
 [src/core/browser/data.js](../../core/browser/data.js)
 
-[[42]](../../generator/generator.js) [[43]](../../generator/generator.js)
+[[42]](../../build/generator.js) [[43]](../../build/generator.js)
 
-[src/generator/generator.js](../../generator/generator.js)
+[src/build/generator.js](../../build/generator.js)

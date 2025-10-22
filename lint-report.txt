@@ -11,7 +11,7 @@
   1084:32  warning  Arrow function has a complexity of 4. Maximum allowed is 2                             complexity
   1119:3   warning  Arrow function has too many parameters (6). Maximum allowed is 3                       max-params
 
-/workspace/dadeto/src/generator/generator.js
+/workspace/dadeto/src/build/generator.js
   928:1  warning  Function 'generateToyUISection' has a complexity of 4. Maximum allowed is 2  complexity
 
 /workspace/dadeto/src/inputHandlers/dendriteStory.js

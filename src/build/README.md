@@ -1,4 +1,4 @@
-# Generator Module
+# Build Module
 
 This directory contains the logic used to build the static HTML blog. Each file focuses on a specific part of the generation process.
 
@@ -16,4 +16,4 @@ This directory contains the logic used to build the static HTML blog. Each file 
 
 The `src/scripts/generate.js` script demonstrates invoking `generateBlogOuter` with the blog JSON data and writing the formatted HTML to `public/index.html`.
 
-Run `npm run generate` to create the blog output. Interactive component files can be copied by running `node src/generator/copy.js`.
+Run `npm run generate` to create the blog output. Interactive component files can be copied by running `node src/build/copy.js`.

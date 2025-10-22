@@ -1,5 +1,5 @@
 import { test, expect } from '@jest/globals';
-import { escapeHtml } from '../../src/generator/html.js';
+import { escapeHtml } from '../../src/build/html.js';
 
 test('escapeHtml returns original string when no characters need escaping', () => {
   const input = 'Hello World';

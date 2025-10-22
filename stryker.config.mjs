@@ -8,7 +8,7 @@ export default {
   mutate: [
     'src/**/*.js',
     '!**/*.html',
-    '!src/generator/styles.js',
+    '!src/build/styles.js',
     ...jestExcludes,
   ],
   testRunner: 'jest',

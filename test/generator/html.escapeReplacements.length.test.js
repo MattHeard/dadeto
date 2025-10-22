@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { htmlEscapeReplacements } from '../../src/generator/html.js';
+import { htmlEscapeReplacements } from '../../src/build/html.js';
 
 const compareStrings = (a, b) => a.localeCompare(b);
 

@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { defaultKeyExtraClasses } from '../../src/generator/generator.js';
+import { defaultKeyExtraClasses } from '../../src/build/generator.js';
 
 describe('defaultKeyExtraClasses', () => {
   test('initializes undefined property to empty string', () => {

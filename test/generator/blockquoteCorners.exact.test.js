@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { generateBlogOuter } from '../../src/build/generator.js';
 
 // New test to ensure the BLOCKQUOTE_CORNERS constant remains intact.
 describe('BLOCKQUOTE_CORNERS exact output', () => {

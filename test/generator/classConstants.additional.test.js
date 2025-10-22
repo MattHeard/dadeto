@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { generateBlogOuter } from '../../src/build/generator.js';
 
 describe('generator CLASS constants additional', () => {
   it('uses expected CSS classes in generated blog output', () => {

@@ -7,7 +7,7 @@ import { createRequire } from 'module';
 import fs from 'fs';
 import prettier from 'prettier';
 
-import { generateBlogOuter } from '../generator/generator.js';
+import { generateBlogOuter } from '../build/generator.js';
 import { createWriteFormattedHtml } from '../core/scripts/generate/writeFormattedHtml.js';
 
 const require = createRequire(import.meta.url);

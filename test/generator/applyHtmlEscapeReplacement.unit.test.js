@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { applyHtmlEscapeReplacement } from '../../src/generator/html.js';
+import { applyHtmlEscapeReplacement } from '../../src/build/html.js';
 
 describe('applyHtmlEscapeReplacement', () => {
   test('replaces all occurrences of the pattern', () => {

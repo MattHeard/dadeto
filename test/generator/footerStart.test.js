@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { getBlogGenerationArgs } from '../../src/generator/generator.js';
+import { getBlogGenerationArgs } from '../../src/build/generator.js';
 
 describe('footer start', () => {
   test('getBlogGenerationArgs footer starts with entry div', () => {

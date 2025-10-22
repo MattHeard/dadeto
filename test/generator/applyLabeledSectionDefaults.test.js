@@ -6,7 +6,7 @@ import { beforeAll, describe, test, expect } from '@jest/globals';
 let applyLabeledSectionDefaults;
 
 beforeAll(async () => {
-  const generatorPath = path.join(process.cwd(), 'src/generator/generator.js');
+  const generatorPath = path.join(process.cwd(), 'src/build/generator.js');
   let src = fs.readFileSync(generatorPath, 'utf8');
   src = src.replace(/from '\.\/(.*?)'/g, (_, p) => {
     const absolute = pathToFileURL(path.join(path.dirname(generatorPath), p));

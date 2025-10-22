@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { wrapHtml } from '../../src/generator/html.js';
+import { wrapHtml } from '../../src/build/html.js';
 
 describe('HTML_TAG_NAME usage', () => {
   test('wrapHtml wraps content in html tag', () => {

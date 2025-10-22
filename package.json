@@ -12,7 +12,7 @@
     "stryker": "node --experimental-vm-modules ./node_modules/.bin/stryker run > reports/mutation/text/mutation.txt",
     "sonar-issues": "src/scripts/get-sonar-issues.sh",
     "lint": "npx eslint . --fix --no-color --format=stylish -o reports/lint/lint.txt; cat reports/lint/lint.txt",
-    "copy": "node src/generator/copy.js",
+    "copy": "node src/build/copy.js",
     "build:cloud": "node src/cloud/copy-to-infra.js",
     "build:browser": "npm run copy && npm run generate",
     "build": "npm run build:browser",

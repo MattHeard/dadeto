@@ -9,7 +9,7 @@ This project aims to separate browser and cloud build steps and to consolidate a
 - Update Netlify and Terraform workflows to call the new build scripts.
 
 ## Incremental Plan
-1. **Asset relocation**: create `src/assets/`, move static files from `public/`, extend `src/generator/copy.js` to copy assets during `npm run build:browser`.
+1. **Asset relocation**: create `src/assets/`, move static files from `public/`, extend `src/build/copy.js` to copy assets during `npm run build:browser`.
 2. **Browser build script**: add `build:browser` script, adjust Netlify workflow to run it before deployment.
 3. **Cloud source reorganization**: move Cloud Function and admin JS from `infra/` to a new `src/cloud/` directory.
 4. **Cloud build script**: add `build:cloud` script that prepares Cloud Functions in a temporary build directory.

@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { headElement } from '../../src/generator/head.js';
+import { headElement } from '../../src/build/head.js';
 
 describe('headElement', () => {
   test('contains required meta tags', () => {

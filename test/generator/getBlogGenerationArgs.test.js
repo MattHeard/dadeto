@@ -5,7 +5,7 @@ let generateBlogOuter;
 
 beforeAll(async () => {
   ({ getBlogGenerationArgs, generateBlogOuter } = await import(
-    '../../src/generator/generator.js'
+    '../../src/build/generator.js'
   ));
 });
 
@@ -76,7 +76,7 @@ describe('getBlogGenerationArgs', () => {
 
   it('generates header content when imported inside the test', async () => {
     const { getBlogGenerationArgs } = await import(
-      '../../src/generator/generator.js'
+      '../../src/build/generator.js'
     );
     const { header } = getBlogGenerationArgs();
     expect(header).toContain('aria-label="Matt Heard"');

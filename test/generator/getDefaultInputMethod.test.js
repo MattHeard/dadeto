@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { getDefaultInputMethod } from '../../src/generator/generator.js';
+import { getDefaultInputMethod } from '../../src/build/generator.js';
 
 describe('getDefaultInputMethod', () => {
   test('returns the toy default when provided', () => {
