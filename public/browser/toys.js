@@ -172,7 +172,7 @@ import {
   maybeRemoveDendrite,
   maybeRemoveTextarea,
 } from '../inputHandlers/removeElements.js';
-import { KV_CONTAINER_SELECTOR } from '../constants/selectors.js';
+import { KV_CONTAINER_SELECTOR } from '../core/constants/selectors.js';
 import { hideAndDisable } from '../inputHandlers/inputState.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {

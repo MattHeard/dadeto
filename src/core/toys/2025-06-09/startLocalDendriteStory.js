@@ -1,4 +1,4 @@
-import { DENDRITE_OPTION_KEYS } from '../../../constants/dendrite.js';
+import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 import { deepClone } from '../../objectUtils.js';
 
 /**

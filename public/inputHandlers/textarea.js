@@ -4,7 +4,7 @@ import {
   maybeRemoveDendrite,
 } from './removeElements.js';
 import { hideAndDisable, revealAndEnable } from './inputState.js';
-import { TEXTAREA_SELECTOR } from '../constants/selectors.js';
+import { TEXTAREA_SELECTOR } from '../core/constants/selectors.js';
 import { createRemoveListener } from '../browser/document.js';
 import { getInputValue, setInputValue } from '../core/browser/inputValueStore.js';
 

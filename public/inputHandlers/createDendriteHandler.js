@@ -1,4 +1,4 @@
-import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
+import { DENDRITE_FORM_SELECTOR } from '../core/constants/selectors.js';
 import { parseJsonOrDefault } from '../core/jsonUtils.js';
 import {
   maybeRemoveNumber,
