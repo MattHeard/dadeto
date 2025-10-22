@@ -115,19 +115,25 @@ const reportForModerationHandlerSource = join(
 const getApiKeyCreditHandlerSource = join(
   srcCoreCloudDir,
   'get-api-key-credit',
-  'handler.js',
+  'handler.js'
 );
 
 const getApiKeyCreditV2HandlerSource = join(
   srcCoreCloudDir,
   'get-api-key-credit-v2',
-  'handler.js',
+  'handler.js'
 );
 
 const hideVariantHtmlSource = join(
   srcCoreCloudDir,
   'hide-variant-html',
-  'removeVariantHtml.js',
+  'removeVariantHtml.js'
+);
+
+const markVariantDirtyVerifyAdminSource = join(
+  srcCoreCloudDir,
+  'mark-variant-dirty',
+  'verifyAdmin.js'
 );
 
 const adminConfigFunctionDirectories = [
@@ -203,8 +209,22 @@ const individualFileCopies = [
     target: join(
       infraFunctionsDir,
       'hide-variant-html',
-      'removeVariantHtml.js',
+      'removeVariantHtml.js'
     ),
+  },
+  {
+    source: markVariantDirtyVerifyAdminSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'mark-variant-dirty',
+      'verifyAdmin.js'
+    ),
+  },
+  {
+    source: markVariantDirtyVerifyAdminSource,
+    target: join(infraFunctionsDir, 'mark-variant-dirty', 'verifyAdmin.js'),
   },
   ...adminConfigFunctionCopies,
   ...browserFileCopies,

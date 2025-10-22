@@ -7,6 +7,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { ADMIN_UID } from './admin-config.js';
+import { createVerifyAdmin } from './verifyAdmin.js';
 
 const db = getFirestoreInstance();
 ensureFirebaseApp();
@@ -137,24 +138,6 @@ function sendUnauthorized(res, message) {
 }
 
 /**
- * Decode an auth token.
- * @param {string} token ID token.
- * @returns {Promise<import('firebase-admin/auth').DecodedIdToken>} Decoded token.
- */
-function decodeAuth(token) {
-  return auth.verifyIdToken(token);
-}
-
-/**
- * Determine if a decoded token does not belong to the admin user.
- * @param {import('firebase-admin/auth').DecodedIdToken} decoded Decoded token.
- * @returns {boolean} True if not admin.
- */
-function isNotAdmin(decoded) {
-  return decoded.uid !== ADMIN_UID;
-}
-
-/**
  * Send a 403 Forbidden response.
  * @param {import('express').Response} res HTTP response.
  * @returns {void}
@@ -163,39 +146,23 @@ function sendForbidden(res) {
   res.status(403).send('Forbidden');
 }
 
-/**
- * Verify that the request is authorised by an admin user.
- * @param {import('express').Request} req HTTP request.
- * @param {import('express').Response} res HTTP response.
- * @returns {Promise<boolean>} True if request is authorised.
- */
-async function verifyAdmin(req, res) {
-  const authHeader = getAuthHeader(req);
-  const match = matchAuthHeader(authHeader);
-  if (!match) {
-    sendUnauthorized(res, 'Missing token');
-    return false;
-  }
-
-  try {
-    const decoded = await decodeAuth(match[1]);
-    if (isNotAdmin(decoded)) {
-      sendForbidden(res);
-      return false;
-    }
-  } catch (e) {
-    sendUnauthorized(res, e?.message || 'Invalid token');
-    return false;
-  }
-
-  return true;
-}
+const verifyAdmin = createVerifyAdmin({
+  getAuthHeader,
+  matchAuthHeader,
+  verifyToken: token => auth.verifyIdToken(token),
+  isAdminUid: decoded => decoded.uid === ADMIN_UID,
+  sendUnauthorized,
+  sendForbidden,
+});
 
 /**
  * Handle HTTP requests to mark a variant as dirty.
  * @param {import('express').Request} req HTTP request.
  * @param {import('express').Response} res HTTP response.
- * @param {{markFn?: typeof markVariantDirtyImpl}} [deps] Optional dependencies.
+ * @param {{
+ *   markFn?: typeof markVariantDirtyImpl,
+ *   verifyAdmin?: (req: import('express').Request, res: import('express').Response) => Promise<boolean>,
+ * }} [deps] Optional dependencies.
  * @returns {Promise<void>} Promise resolving when response is sent.
  */
 async function handleRequest(req, res, deps = {}) {
@@ -204,7 +171,9 @@ async function handleRequest(req, res, deps = {}) {
     return;
   }
 
-  const authorised = await verifyAdmin(req, res);
+  const verifyAdminFn =
+    typeof deps.verifyAdmin === 'function' ? deps.verifyAdmin : verifyAdmin;
+  const authorised = await verifyAdminFn(req, res);
   if (!authorised) {
     return;
   }
