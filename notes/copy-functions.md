@@ -1,4 +1,4 @@
-# Functions in `src/generator/copy.js`
+# Functions in `src/build/copy.js`
 
 ## Core functions
 - `isCorrectJsFileEnding(entryName)` – identifies JS files based on their filename suffix without relying on filesystem helpers.
@@ -28,5 +28,5 @@
 ## Next steps for isolating the core
 - Extract the pure helper factory (`createCopyCore`) into its own module so adapter scripts can import it without dragging in Node-specific setup.
 - Keep the existing `directories`, `path`, and `io` objects in the adapter entry point (`copy.js`) and pass them to the shared factory.
-- Once the factory is externalized, progressively move the pure helpers into `src/core` while leaving filesystem orchestration inside `src/generator` until the new adapter folder is ready.
+- Once the factory is externalized, progressively move the pure helpers into `src/core` while leaving filesystem orchestration inside `src/build` until the new adapter folder is ready.
 - Introduce focused unit tests around the exported factory to protect the pure logic during the upcoming directory reshuffle.

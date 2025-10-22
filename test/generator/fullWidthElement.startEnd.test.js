@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { fullWidthElement } from '../../src/generator/full-width.js';
+import { fullWidthElement } from '../../src/build/full-width.js';
 
 describe('fullWidthElement boundaries', () => {
   test('starts and ends with expected tags', () => {

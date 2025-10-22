@@ -5,7 +5,7 @@ import {
   htmlTagName,
   attrName,
   htmlEscapeReplacements,
-} from '../../src/generator/html.js';
+} from '../../src/build/html.js';
 
 describe('html constants', () => {
   test('DOCTYPE constant is correct', () => {

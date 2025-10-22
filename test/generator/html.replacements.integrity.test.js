@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { htmlEscapeReplacements } from '../../src/generator/html.js';
+import { htmlEscapeReplacements } from '../../src/build/html.js';
 
 /**
  * Escape a string using the provided replacements.

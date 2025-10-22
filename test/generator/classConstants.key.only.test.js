@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { generateBlogOuter } from '../../src/build/generator.js';
 
 describe('CLASS.KEY constant usage', () => {
   test('generateBlogOuter uses "key" CSS class for labels', () => {

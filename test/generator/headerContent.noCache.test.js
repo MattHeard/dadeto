@@ -1,4 +1,4 @@
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { generateBlogOuter } from '../../src/build/generator.js';
 import { describe, test, expect } from '@jest/globals';
 
 describe('header generation without cache busting', () => {

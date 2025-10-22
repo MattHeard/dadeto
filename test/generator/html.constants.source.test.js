@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { tagOpen, doctype } from '../../src/generator/html.js';
+import { tagOpen, doctype } from '../../src/build/html.js';
 
 describe('html constant functions', () => {
   test('tagOpen returns <', () => {

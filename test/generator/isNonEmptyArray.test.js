@@ -3,7 +3,7 @@ import { beforeAll, describe, test, expect } from '@jest/globals';
 let generateBlog;
 
 beforeAll(async () => {
-  ({ generateBlog } = await import('../../src/generator/generator.js'));
+  ({ generateBlog } = await import('../../src/build/generator.js'));
 });
 
 const header = '<body>';

@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { generateBlogOuter } from '../../src/build/generator.js';
 
 describe('media sections mutant', () => {
   test('blog html should not contain undefined when media present', () => {

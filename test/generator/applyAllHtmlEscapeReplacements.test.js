@@ -2,7 +2,7 @@ import { describe, test, expect } from '@jest/globals';
 import {
   applyAllHtmlEscapeReplacements,
   htmlEscapeReplacements,
-} from '../../src/generator/html.js';
+} from '../../src/build/html.js';
 
 describe('applyAllHtmlEscapeReplacements', () => {
   test('escapes all HTML special characters', () => {

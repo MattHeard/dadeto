@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { generateBlogOuter } from '../../src/generator/generator.js';
+import { generateBlogOuter } from '../../src/build/generator.js';
 
 describe('generateBlogOuter date formatting', () => {
   it('formats publication dates with short month names', () => {
