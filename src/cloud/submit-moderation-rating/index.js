@@ -3,7 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
-import corsConfig from './cors-config.js';
+import { getAllowedOrigins } from '../cors-config.js';
 import { randomUUID } from 'crypto';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
@@ -13,7 +13,7 @@ ensureFirebaseApp();
 const auth = getAuth();
 const app = express();
 
-const { allowedOrigins } = corsConfig;
+const allowedOrigins = getAllowedOrigins(process.env);
 app.use(
   cors({
     origin: (origin, cb) => {
