@@ -12,8 +12,12 @@ import {
 import * as gcf from './gcf.js';
 
 const { db, auth, app } = gcf.initializeFirebaseAppResources();
-const setupCors = createSetupCors(createCorsOriginHandler, cors);
-setupCors(app, corsConfig);
+const applyCors = (corsLibrary, appInstance, config) => {
+  const setupCors = createSetupCors(createCorsOriginHandler, corsLibrary);
+  setupCors(appInstance, config);
+};
+
+applyCors(cors, app, corsConfig);
 configureUrlencodedBodyParser(app, express);
 
 const firebaseResources = { db, auth, app };
