@@ -511,11 +511,11 @@ describe("setupAssignModerationJobRoute", () => {
     const post = jest.fn();
     const firebaseResources = { db: {}, auth: {}, app: { post } };
     const createRunVariantQuery = jest.fn();
+    const gcf = { createRunVariantQuery, now: jest.fn() };
 
     const handler = setupAssignModerationJobRoute(
       firebaseResources,
-      createRunVariantQuery,
-      jest.fn()
+      gcf
     );
 
     expect(post).toHaveBeenCalledWith("/", handler);

@@ -516,16 +516,18 @@ export function createHandleAssignModerationJob(
 /**
  * Register the assign moderation job route on the provided Express app.
  * @param {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: import('express').Express }} firebaseResources - Firebase resources used to serve the moderation endpoint.
- * @param {(db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} createRunVariantQuery - Factory that binds the Firestore instance to the variant query runner.
- * @param {() => unknown} now - Timestamp provider for persisted assignments.
+ * @param {{
+ *   createRunVariantQuery: (db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>;
+ *   now: () => unknown;
+ * }} gcf - Cloud Functions helpers supplying Firestore query factories and timestamp providers.
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Registered moderation handler.
  */
 export function setupAssignModerationJobRoute(
   firebaseResources,
-  createRunVariantQuery,
-  now
+  gcf
 ) {
   const { db, auth, app } = firebaseResources;
+  const { createRunVariantQuery, now } = gcf;
 
   const handleAssignModerationJob = createHandleAssignModerationJob(
     createRunVariantQuery,
