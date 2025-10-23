@@ -25,6 +25,7 @@
 - Tests run under Jest + jsdom. Name files `*.test.js` and colocate them with the modules they exercise.
 - Avoid `jest.resetModules`, `jest.unstable_mockModule`, and `import.meta.url`; they break mutation testing.
 - Always run `npm test` and `npm run lint` before pushing. If they fail, document the failure and corrective steps in your PR.
+- If any files under `src/core/` are modified, run `npm test` after your changes to ensure the core logic remains stable.
 - Use exported entry points instead of loading internals via `eval` or dynamic imports; export helpers when deeper testing is required.
 
 ## Commit & Pull Request Guidelines
