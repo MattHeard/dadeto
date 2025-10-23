@@ -6,6 +6,7 @@ import {
   getProjectFromEnv,
   getUrlMapFromEnv,
 } from '../../src/core/cloud/generate-stats/core.js';
+import { ADMIN_UID } from '../../src/core/admin-config.js';
 import {
   getPageCount,
   getUnmoderatedPageCount,
@@ -165,7 +166,7 @@ describe('createGenerateStatsCore', () => {
     const auth =
       overrides.auth ??
       {
-        verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }),
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: ADMIN_UID }),
       };
     const db = overrides.db ?? {};
     const env = overrides.env ?? { GOOGLE_CLOUD_PROJECT: 'project' };
@@ -176,7 +177,6 @@ describe('createGenerateStatsCore', () => {
       storage,
       fetchFn,
       env,
-      adminUid: 'admin',
       cryptoModule: overrides.cryptoModule ?? {
         randomUUID: jest.fn().mockReturnValue('uuid'),
       },
@@ -502,7 +502,12 @@ describe('createGenerateStatsCore', () => {
         key === 'Authorization' ? 'Bearer token' : '',
     };
 
-    await core.handleRequest(req, res, { genFn, authInstance: { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }) } });
+    await core.handleRequest(req, res, {
+      genFn,
+      authInstance: {
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: ADMIN_UID }),
+      },
+    });
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: 'fail' });
@@ -511,7 +516,7 @@ describe('createGenerateStatsCore', () => {
   test('handleRequest runs generation successfully for admins', async () => {
     const genFn = jest.fn().mockResolvedValue();
     const authInstance = {
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }),
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: ADMIN_UID }),
     };
     const { core } = createCore();
     const res = createResponse();
@@ -603,7 +608,9 @@ describe('createGenerateStatsCore', () => {
     };
 
     await core.handleRequest(req, res, {
-      authInstance: { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }) },
+      authInstance: {
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: ADMIN_UID }),
+      },
     });
 
     expect(res.status).toHaveBeenCalledWith(200);
@@ -631,7 +638,7 @@ describe('createGenerateStatsCore', () => {
   test('handleRequest reports generic errors when message is missing', async () => {
     const genFn = jest.fn().mockRejectedValue('nope');
     const authInstance = {
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }),
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: ADMIN_UID }),
     };
     const { core } = createCore();
     const res = createResponse();
@@ -659,7 +666,6 @@ describe('createGenerateStatsCore', () => {
           fetchFn: undefined,
           env: { GOOGLE_CLOUD_PROJECT: 'project' },
           urlMap: 'map',
-          adminUid: 'admin',
           cryptoModule: { randomUUID: jest.fn() },
         })
       ).toThrow(new Error('fetch implementation required'));
