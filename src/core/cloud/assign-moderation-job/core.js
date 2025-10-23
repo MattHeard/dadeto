@@ -1,3 +1,29 @@
+export const productionOrigins = [
+  'https://mattheard.net',
+  'https://dendritestories.co.nz',
+  'https://www.dendritestories.co.nz',
+];
+
+/**
+ * Resolve the allowed origins for the assign moderation endpoint.
+ * @param {Record<string, unknown>} [environmentVariables] Environment variables used to derive the configuration.
+ * @returns {string[]} List of origins permitted to call the endpoint.
+ */
+export function getAllowedOrigins(environmentVariables) {
+  const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
+  const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
+
+  if (environment === 'prod') {
+    return productionOrigins;
+  }
+
+  if (typeof environment === 'string' && environment.startsWith('t-')) {
+    return playwrightOrigin ? [playwrightOrigin] : [];
+  }
+
+  return productionOrigins;
+}
+
 /**
  * Extract the request body from an Express request.
  * @param {import('express').Request} req HTTP request object.
