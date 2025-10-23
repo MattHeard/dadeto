@@ -7,20 +7,16 @@ import {
   createFirebaseResources,
   setupAssignModerationJobRoute,
 } from './core.js';
-import {
-  initializeFirebaseAppResources,
-  createRunVariantQuery,
-  now,
-} from './gcf.js';
+import * as gcf from './gcf.js';
 
 const firebaseResources = createFirebaseResources(
-  initializeFirebaseAppResources,
+  gcf.initializeFirebaseAppResources,
   cors,
   corsConfig,
   express
 );
 
-setupAssignModerationJobRoute(firebaseResources, createRunVariantQuery, now);
+setupAssignModerationJobRoute(firebaseResources, gcf);
 
 export const assignModerationJob = createAssignModerationJob(
   functions,
