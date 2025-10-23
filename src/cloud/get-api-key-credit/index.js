@@ -4,12 +4,19 @@ import { createFirestore } from './createFirestore.js';
 
 const firestore = createFirestore(Firestore);
 
+/**
+ * Fetches the Firestore document containing API key credit information.
+ * @param {import('@google-cloud/firestore').Firestore} firestoreInstance Firestore client used for queries.
+ * @param {string|number} uuid Identifier for the API key credit document.
+ * @returns {Promise<import('@google-cloud/firestore').DocumentSnapshot>} The matching Firestore document snapshot.
+ */
+export function fetchApiKeyCreditDocument(firestoreInstance, uuid) {
+  return firestoreInstance.collection('api-key-credit').doc(String(uuid)).get();
+}
+
 const getApiKeyCredit = createGetApiKeyCreditHandler({
   async fetchCredit(uuid) {
-    const doc = await firestore
-      .collection('api-key-credit')
-      .doc(String(uuid))
-      .get();
+    const doc = await fetchApiKeyCreditDocument(firestore, uuid);
 
     if (!doc.exists) {
       return null;
