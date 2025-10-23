@@ -260,8 +260,23 @@ export function buildHtml(
  * @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string | undefined} Project identifier if present.
  */
+const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
+
 export function getProjectFromEnv(env = {}) {
   return env.GOOGLE_CLOUD_PROJECT || env.GCLOUD_PROJECT;
+}
+
+/**
+ * Resolve the URL map identifier used for CDN invalidations.
+ * @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @returns {string} URL map identifier.
+ */
+export function getUrlMapFromEnv(env = {}) {
+  if (!env || typeof env !== 'object') {
+    return DEFAULT_URL_MAP;
+  }
+
+  return env.URL_MAP || DEFAULT_URL_MAP;
 }
 
 /**
@@ -300,7 +315,7 @@ export function createFirebaseResources({
  *   storage: import('@google-cloud/storage').Storage,
  *   fetchFn: typeof fetch,
  *   env?: NodeJS.ProcessEnv | Record<string, string | undefined>,
- *   urlMap: string,
+ *   urlMap?: string,
  *   cdnHost: string,
  *   bucket: string,
  *   adminUid: string,
@@ -344,7 +359,9 @@ export function createGenerateStatsCore({
   adminUid,
   cryptoModule,
 }) {
-  const project = getProjectFromEnv(env ?? {});
+  const envRef = env && typeof env === 'object' ? env : {};
+  const project = getProjectFromEnv(envRef);
+  const resolvedUrlMap = urlMap || getUrlMapFromEnv(envRef);
   const fetchImpl = fetchFn ?? globalThis.fetch;
   if (typeof fetchImpl !== 'function') {
     throw new Error('fetch implementation required');
@@ -442,7 +459,7 @@ export function createGenerateStatsCore({
       paths.map(async path => {
         try {
           const res = await fetchImpl(
-            `https://compute.googleapis.com/compute/v1/projects/${project}/global/urlMaps/${urlMap}/invalidateCache`,
+            `https://compute.googleapis.com/compute/v1/projects/${project}/global/urlMaps/${resolvedUrlMap}/invalidateCache`,
             {
               method: 'POST',
               headers: {
