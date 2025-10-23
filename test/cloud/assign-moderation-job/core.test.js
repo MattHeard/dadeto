@@ -11,6 +11,7 @@ const {
   random,
   selectVariantDoc,
   createModeratorRefFactory,
+  createVariantsQuery,
   buildVariantQueryPlan,
   createVariantSnapshotFetcher,
   createFetchVariantSnapshotFromDbFactory,
@@ -287,6 +288,19 @@ describe("createModeratorRefFactory", () => {
 
     expect(database.collection).toHaveBeenCalledWith("moderators");
     expect(doc).toHaveBeenCalledWith("uid-1");
+  });
+});
+
+describe("createVariantsQuery", () => {
+  test("returns the variants collection group query", () => {
+    const query = Symbol("query");
+    const collectionGroup = jest.fn(() => query);
+    const database = { collectionGroup };
+
+    const result = createVariantsQuery(database);
+
+    expect(collectionGroup).toHaveBeenCalledWith("variants");
+    expect(result).toBe(query);
   });
 });
 
