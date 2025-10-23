@@ -32,6 +32,10 @@ describe('extractUuid', () => {
   it('returns an empty string when no UUID can be found', () => {
     expect(extractUuid({})).toBe('');
   });
+
+  it('returns an empty string when request is missing', () => {
+    expect(extractUuid()).toBe('');
+  });
 });
 
 describe('createGetApiKeyCreditV2Handler', () => {
@@ -39,6 +43,12 @@ describe('createGetApiKeyCreditV2Handler', () => {
     expect(() =>
       createGetApiKeyCreditV2Handler({ fetchCredit: null })
     ).toThrow(new TypeError('fetchCredit must be a function'));
+  });
+
+  it('throws when fetchCredit is missing', () => {
+    expect(() => createGetApiKeyCreditV2Handler()).toThrow(
+      new TypeError('fetchCredit must be a function')
+    );
   });
 
   it('returns 405 when the method is not GET', async () => {
@@ -103,5 +113,57 @@ describe('createGetApiKeyCreditV2Handler', () => {
     });
     expect(fetchCredit).toHaveBeenCalledWith('uuid-123');
     expect(logError).toHaveBeenCalledWith(error);
+  });
+
+  it('falls back to extractUuid when getUuid is not a function', async () => {
+    const fetchCredit = jest.fn().mockResolvedValue(7);
+    const handler = createGetApiKeyCreditV2Handler({
+      fetchCredit,
+      // @ts-expect-error - intentional non-function to exercise fallback branch.
+      getUuid: 'not-a-function',
+    });
+
+    await expect(
+      handler({
+        method: 'GET',
+        path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
+      })
+    ).resolves.toEqual({
+      status: 200,
+      body: { credit: 7 },
+    });
+
+    expect(fetchCredit).toHaveBeenCalledWith(
+      '123e4567-e89b-12d3-a456-426614174000'
+    );
+  });
+
+  it('returns 405 when the method is not a string', async () => {
+    const fetchCredit = jest.fn();
+    const handler = createGetApiKeyCreditV2Handler({ fetchCredit });
+
+    await expect(handler()).resolves.toEqual({
+      status: 405,
+      body: 'Method Not Allowed',
+      headers: { Allow: 'GET' },
+    });
+
+    expect(fetchCredit).not.toHaveBeenCalled();
+  });
+
+  it('returns 500 with default logger when fetchCredit throws', async () => {
+    const error = new Error('fail');
+    const fetchCredit = jest.fn().mockRejectedValue(error);
+    const handler = createGetApiKeyCreditV2Handler({
+      fetchCredit,
+      getUuid: () => 'uuid-123',
+    });
+
+    await expect(handler({ method: 'GET' })).resolves.toEqual({
+      status: 500,
+      body: 'Internal error',
+    });
+
+    expect(fetchCredit).toHaveBeenCalledWith('uuid-123');
   });
 });
