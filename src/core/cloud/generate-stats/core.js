@@ -350,7 +350,10 @@ export function createGenerateStatsCore({
   adminUid,
   cryptoModule,
 }) {
-  const envRef = env && typeof env === 'object' ? env : {};
+  let envRef = {};
+  if (env && typeof env === 'object') {
+    envRef = env;
+  }
   const project = getProjectFromEnv(envRef);
   const resolvedUrlMap = urlMap || getUrlMapFromEnv(envRef);
   const resolvedCdnHost = getCdnHostFromEnv(envRef);
