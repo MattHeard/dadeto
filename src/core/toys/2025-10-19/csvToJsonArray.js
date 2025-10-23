@@ -64,13 +64,12 @@ export function csvToJsonArrayToy(input, env) {
     }
 
     const record = {};
-    headerEntries.forEach(({ name, index }) => {
-      const rawValue = values[index] ?? '';
-      const value = rawValue.trim();
+    for (const { name, index } of headerEntries) {
+      const value = String(values[index] ?? '').trim();
       if (value.length > 0) {
         record[name] = value;
       }
-    });
+    }
 
     if (Object.keys(record).length > 0) {
       rows.push(record);
