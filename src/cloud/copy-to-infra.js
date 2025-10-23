@@ -127,6 +127,11 @@ const getApiKeyCreditFetchDocumentSource = join(
   'get-api-key-credit',
   'fetchApiKeyCreditDocument.js'
 );
+const getApiKeyCreditIsMissingDocumentSource = join(
+  srcCoreCloudDir,
+  'get-api-key-credit',
+  'isMissingDocument.js'
+);
 
 const getApiKeyCreditV2HandlerSource = join(
   srcCoreCloudDir,
@@ -232,6 +237,14 @@ const individualFileCopies = [
   {
     source: getApiKeyCreditFetchDocumentSource,
     target: join(infraFunctionsDir, 'get-api-key-credit', 'fetchApiKeyCreditDocument.js'),
+  },
+  {
+    source: getApiKeyCreditIsMissingDocumentSource,
+    target: join(
+      infraFunctionsDir,
+      'get-api-key-credit',
+      'isMissingDocument.js'
+    ),
   },
   {
     source: getApiKeyCreditV2HandlerSource,
