@@ -31,10 +31,10 @@ export function initializeFirebaseAppResources() {
 export function createRunVariantQuery(db) {
   return function runVariantQuery({ reputation, comparator, randomValue }) {
     const variantsQuery = createVariantsQuery(db);
-    const reputationScopedQuery =
-      reputation === 'zeroRated'
-        ? variantsQuery.where('moderatorReputationSum', '==', 0)
-        : variantsQuery;
+    const reputationScopedQuery = createReputationScopedQuery(
+      reputation,
+      variantsQuery,
+    );
     const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
     const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
     const limitedQuery = filteredQuery.limit(1);
@@ -44,3 +44,17 @@ export function createRunVariantQuery(db) {
 }
 
 export const now = () => FieldValue.serverTimestamp();
+
+/**
+ * Scope a variants query based on moderator reputation.
+ * @param {'zeroRated' | string} reputation Reputation category for moderators.
+ * @param {import('firebase-admin/firestore').Query} variantsQuery Query for fetching variants.
+ * @returns {import('firebase-admin/firestore').Query} Query scoped to the provided reputation.
+ */
+export function createReputationScopedQuery(reputation, variantsQuery) {
+  if (reputation === 'zeroRated') {
+    return variantsQuery.where('moderatorReputationSum', '==', 0);
+  }
+
+  return variantsQuery;
+}
