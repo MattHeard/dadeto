@@ -21,7 +21,7 @@ const createDirectories = () => {
     publicBrowserDir: posix.join(publicDir, 'browser'),
     srcUtilsDir: posix.join(srcDir, 'utils'),
     publicUtilsDir: posix.join(publicDir, 'utils'),
-    srcInputHandlersDir: posix.join(srcDir, 'inputHandlers'),
+    srcInputHandlersDir: posix.join(srcDir, 'core/inputHandlers'),
     publicInputHandlersDir: posix.join(publicDir, 'inputHandlers'),
     srcConstantsDir: posix.join(srcDir, 'core/constants'),
     publicConstantsDir: posix.join(publicDir, 'constants'),
@@ -765,7 +765,7 @@ describe('createCopyCore', () => {
         'Browser files copied successfully!'
       );
       expect(logger.warn).toHaveBeenCalledWith(
-        'Warning: inputHandlers directory not found at src/inputHandlers'
+        'Warning: inputHandlers directory not found at src/core/inputHandlers'
       );
       expect(logger.warn).toHaveBeenCalledWith(
         'Warning: constants directory not found at src/core/constants'

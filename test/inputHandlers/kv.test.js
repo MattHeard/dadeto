@@ -3,7 +3,7 @@ import {
   ensureKeyValueInput,
   handleKVType,
   kvHandler,
-} from '../../src/inputHandlers/kv.js';
+} from '../../src/core/inputHandlers/kv.js';
 
 describe('kv input handlers module', () => {
   test('re-exports key functions', () => {

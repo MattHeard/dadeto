@@ -1,4 +1,4 @@
-import { textHandler } from '../../src/inputHandlers/text.js';
+import { textHandler } from '../../src/core/inputHandlers/text.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('textHandler', () => {

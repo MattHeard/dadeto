@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { handleKVType } from '../../src/inputHandlers/kv.js';
-import { createNumberInput } from '../../src/inputHandlers/number.js';
+import { handleKVType } from '../../src/core/inputHandlers/kv.js';
+import { createNumberInput } from '../../src/core/inputHandlers/number.js';
 
 // Test ensuring createRemoveValueListener disposer runs when handleKVType removes a number input
 

@@ -1,5 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { textareaHandler } from '../../src/inputHandlers/textarea.js';
+import { textareaHandler } from '../../src/core/inputHandlers/textarea.js';
 
 describe('textareaHandler', () => {
   test('creates textarea, removes other inputs, and syncs values', () => {

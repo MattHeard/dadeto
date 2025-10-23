@@ -4,7 +4,7 @@ import {
   KV_CONTAINER_SELECTOR,
   DENDRITE_FORM_SELECTOR,
   TEXTAREA_SELECTOR,
-} from '../core/constants/selectors.js';
+} from '../constants/selectors.js';
 
 /**
  * Factory that removes an element matching a selector when it exists.
