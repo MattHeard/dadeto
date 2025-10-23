@@ -4,7 +4,7 @@ import {
   createPathAdapters,
   getCurrentDirectory,
   resolveProjectDirectories,
-} from '../node/path.js';
+} from '../build/path.js';
 
 const __dirname = getCurrentDirectory(import.meta.url);
 const { projectRoot, srcDir } = resolveProjectDirectories(__dirname);

@@ -6,7 +6,7 @@ import {
   createPathAdapters,
   getCurrentDirectory,
   resolveProjectDirectories,
-} from '../node/path.js';
+} from './path.js';
 import { createFsAdapters } from './fs.js';
 
 // Determine base directories using Node-specific helpers
