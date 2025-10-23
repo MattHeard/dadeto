@@ -14,6 +14,15 @@ export { ADMIN_UID };
  */
 
 /**
+ * @typedef {object} ExecuteTriggerRenderOptions
+ * @property {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpoints
+ *   - Resolves admin endpoints for triggering a render.
+ * @property {FetchFn} fetchFn - Fetch-like network caller.
+ * @property {string} token - ID token attached to the Authorization header.
+ * @property {(text: string) => void} showMessage - Callback to surface status messages.
+ */
+
+/**
  * @typedef {object} GoogleSignInOptions
  * @property {(token: string) => void} [onSignIn] - Callback invoked once a token is available.
  */
@@ -166,18 +175,15 @@ export async function announceTriggerRenderResult(res, showMessage) {
 
 /**
  * Execute the trigger render flow and report outcomes.
- * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
- * @param {string} token - ID token attached to the Authorization header.
- * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @param {ExecuteTriggerRenderOptions} options - Dependencies for the trigger render flow.
  * @returns {Promise<void>} Resolves after the trigger render flow finishes reporting.
  */
-export async function executeTriggerRender(
-  getAdminEndpointsFn,
+export async function executeTriggerRender({
+  getAdminEndpoints: getAdminEndpointsFn,
   fetchFn,
   token,
-  showMessage
-) {
+  showMessage,
+}) {
   try {
     const res = await postTriggerRenderContents(
       getAdminEndpointsFn,
@@ -222,12 +228,12 @@ export function createTriggerRender(
     if (!token) {
       showMessage('Render failed: missing ID token');
     } else {
-      await executeTriggerRender(
-        getAdminEndpointsFn,
+      await executeTriggerRender({
+        getAdminEndpoints: getAdminEndpointsFn,
         fetchFn,
         token,
-        showMessage
-      );
+        showMessage,
+      });
     }
   };
 }
