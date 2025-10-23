@@ -10,15 +10,6 @@ import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { createFirebaseResources, createGenerateStatsCore } from './core.js';
 
-const getUrlMap = (env) => {
-  if (!env || typeof env !== 'object') {
-    return 'prod-dendrite-url-map';
-  }
-
-  return env.URL_MAP || 'prod-dendrite-url-map';
-};
-
-const URL_MAP = getUrlMap(process.env);
 const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
 const BUCKET = 'www.dendritestories.co.nz';
 const fetchFn =
@@ -41,7 +32,6 @@ const generateStatsCore = createGenerateStatsCore({
   storage,
   fetchFn,
   env: process.env,
-  urlMap: URL_MAP,
   cdnHost: CDN_HOST,
   bucket: BUCKET,
   adminUid: ADMIN_UID,

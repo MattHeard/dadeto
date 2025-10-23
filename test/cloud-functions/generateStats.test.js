@@ -4,6 +4,7 @@ import {
   createFirebaseResources,
   createGenerateStatsCore,
   getProjectFromEnv,
+  getUrlMapFromEnv,
 } from '../../src/core/cloud/generate-stats/core.js';
 import {
   getPageCount,
@@ -49,6 +50,15 @@ describe('generate stats helpers', () => {
     expect(getProjectFromEnv({ GCLOUD_PROJECT: 'fallback' })).toBe(
       'fallback'
     );
+  });
+
+  test('getUrlMapFromEnv falls back to the production map', () => {
+    expect(getUrlMapFromEnv()).toBe('prod-dendrite-url-map');
+    expect(getUrlMapFromEnv(null)).toBe('prod-dendrite-url-map');
+  });
+
+  test('getUrlMapFromEnv reads overrides from env', () => {
+    expect(getUrlMapFromEnv({ URL_MAP: 'custom-map' })).toBe('custom-map');
   });
 
   test('getPageCount returns page count', async () => {
@@ -161,21 +171,26 @@ describe('createGenerateStatsCore', () => {
     const db = overrides.db ?? {};
     const env = overrides.env ?? { GOOGLE_CLOUD_PROJECT: 'project' };
 
+    const coreDeps = {
+      db,
+      auth,
+      storage,
+      fetchFn,
+      env,
+      cdnHost: 'cdn.example',
+      bucket: 'bucket-name',
+      adminUid: 'admin',
+      cryptoModule: overrides.cryptoModule ?? {
+        randomUUID: jest.fn().mockReturnValue('uuid'),
+      },
+    };
+
+    if (typeof overrides.urlMap !== 'undefined') {
+      coreDeps.urlMap = overrides.urlMap;
+    }
+
     return {
-      core: createGenerateStatsCore({
-        db,
-        auth,
-        storage,
-        fetchFn,
-        env,
-        urlMap: 'url-map',
-        cdnHost: 'cdn.example',
-        bucket: 'bucket-name',
-        adminUid: 'admin',
-        cryptoModule: overrides.cryptoModule ?? {
-          randomUUID: jest.fn().mockReturnValue('uuid'),
-        },
-      }),
+      core: createGenerateStatsCore(coreDeps),
       storage,
       bucketRef,
       file,
@@ -256,6 +271,53 @@ describe('createGenerateStatsCore', () => {
 
     expect(errors).toHaveBeenCalledWith('invalidate /stats.html error', 'fail');
     errors.mockRestore();
+  });
+
+  test('invalidatePaths derives the url map from env when not provided', async () => {
+    const fetchFn = jest.fn(url => {
+      if (url.startsWith('http://metadata')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'token' }),
+        });
+      }
+      return Promise.resolve({ ok: true });
+    });
+    const { core } = createCore({ fetchFn, env: {} });
+
+    await core.invalidatePaths(['/stats.html']);
+
+    const invalidateCall = fetchFn.mock.calls.find(([url]) =>
+      url.includes('/urlMaps/')
+    );
+
+    expect(invalidateCall).toBeDefined();
+    expect(invalidateCall?.[0]).toContain('/prod-dendrite-url-map/');
+    expect(invalidateCall?.[1]).toEqual(
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+
+  test('invalidatePaths uses an explicit url map override when provided', async () => {
+    const fetchFn = jest.fn(url => {
+      if (url.startsWith('http://metadata')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'token' }),
+        });
+      }
+      return Promise.resolve({ ok: true });
+    });
+    const { core } = createCore({ fetchFn, urlMap: 'custom-map' });
+
+    await core.invalidatePaths(['/stats.html']);
+
+    const invalidateCall = fetchFn.mock.calls.find(([url]) =>
+      url.includes('/urlMaps/')
+    );
+
+    expect(invalidateCall).toBeDefined();
+    expect(invalidateCall?.[0]).toContain('/custom-map/');
   });
 
   test('generates the stats page and invalidates cache', async () => {
