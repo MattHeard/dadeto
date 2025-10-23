@@ -28,10 +28,12 @@ export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
 
     const { headers: originalHeaders, ...rest } = init;
 
-    const resolvedHeaders =
-      typeof Headers !== 'undefined' && originalHeaders instanceof Headers
-        ? Object.fromEntries(originalHeaders.entries())
-        : { ...(originalHeaders || {}) };
+    let resolvedHeaders;
+    if (typeof Headers !== 'undefined' && originalHeaders instanceof Headers) {
+      resolvedHeaders = Object.fromEntries(originalHeaders.entries());
+    } else {
+      resolvedHeaders = { ...(originalHeaders || {}) };
+    }
 
     const headers = {
       'Content-Type': 'application/json',
