@@ -5,7 +5,7 @@
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage",
     "test:e2e": "playwright test",
-    "generate": "node src/scripts/generate.js",
+    "generate": "node src/build/generate.js",
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
     "tcr": "./tcr.sh",
     "build-and-tcr": "npm run build:browser && npm run tcr",
