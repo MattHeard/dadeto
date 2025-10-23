@@ -3,8 +3,10 @@ import * as assignModerationCore from "../../../src/core/cloud/assign-moderation
 
 const {
   createCreateCorsOrigin,
+  createCreateCorsOriginFromEnvironment,
   createCorsOriginHandler,
   createCorsOriginFactory,
+  createCorsOriginFromEnvironment,
   createRunGuards,
   createSetupCors,
   configureUrlencodedBodyParser,
@@ -72,6 +74,62 @@ describe("createCreateCorsOrigin", () => {
     expect(getAllowedOrigins).toHaveBeenCalledWith({
       DENDRITE_ENVIRONMENT: "test",
     });
+    expect(createCorsOriginHandlerFn).toHaveBeenCalledWith([
+      "https://allowed.example",
+    ]);
+    expect(handler).toBe(originHandler);
+  });
+});
+
+describe("createCreateCorsOriginFromEnvironment", () => {
+  test("wires the cors origin factory to the provided environment helpers", () => {
+    const originHandler = jest.fn();
+    const createCorsOriginHandlerFn = jest.fn(() => originHandler);
+    const environmentVariables = { DENDRITE_ENVIRONMENT: "test" };
+    const getAllowedOrigins = jest.fn(() => ["https://allowed.example"]);
+    const getEnvironmentVariables = jest
+      .fn()
+      .mockReturnValue(environmentVariables);
+
+    const createCorsOriginFromEnvironmentFn =
+      createCreateCorsOriginFromEnvironment({
+        createCreateCorsOrigin,
+        createCorsOriginHandler: createCorsOriginHandlerFn,
+      });
+
+    const handler = createCorsOriginFromEnvironmentFn({
+      getAllowedOrigins,
+      getEnvironmentVariables,
+    });
+
+    expect(getEnvironmentVariables).toHaveBeenCalledWith();
+    expect(getAllowedOrigins).toHaveBeenCalledWith(environmentVariables);
+    expect(createCorsOriginHandlerFn).toHaveBeenCalledWith([
+      "https://allowed.example",
+    ]);
+    expect(handler).toBe(originHandler);
+  });
+});
+
+describe("createCorsOriginFromEnvironment", () => {
+  test("resolves the origin handler directly from environment helpers", () => {
+    const originHandler = jest.fn();
+    const environmentVariables = { DENDRITE_ENVIRONMENT: "test" };
+    const getAllowedOrigins = jest.fn(() => ["https://allowed.example"]);
+    const getEnvironmentVariables = jest
+      .fn()
+      .mockReturnValue(environmentVariables);
+    const createCorsOriginHandlerFn = jest.fn(() => originHandler);
+
+    const handler = createCorsOriginFromEnvironment({
+      getAllowedOrigins,
+      getEnvironmentVariables,
+      createCreateCorsOrigin,
+      createCorsOriginHandler: createCorsOriginHandlerFn,
+    });
+
+    expect(getEnvironmentVariables).toHaveBeenCalledWith();
+    expect(getAllowedOrigins).toHaveBeenCalledWith(environmentVariables);
     expect(createCorsOriginHandlerFn).toHaveBeenCalledWith([
       "https://allowed.example",
     ]);
