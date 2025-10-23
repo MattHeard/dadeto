@@ -5,6 +5,7 @@ import corsConfig from './cors-config.js';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
+import { isAllowedOrigin } from '../../core/cloud/get-moderation-variant/cors.js';
 
 const db = getFirestoreInstance();
 ensureFirebaseApp();
@@ -13,7 +14,6 @@ const app = express();
 
 const { allowedOrigins } = corsConfig; // includes static-site domain
 
-const isAllowedOrigin = (origin, origins) => !origin || origins.includes(origin);
 const createHandleCorsOrigin = origins => (origin, cb) => {
   if (isAllowedOrigin(origin, origins)) {
     cb(null, true);
