@@ -5,5 +5,5 @@
 - Several documentation files and scripts referenced the old path. Tracking down nested instructions (especially the long `src/core/toys/AGENTS.md`) took extra time to keep documentation accurate after the rename.
 
 ## Resolutions
-- Used targeted Perl replacements (`src/generator/` → `src/build/`) followed by manual spot fixes for relative imports (e.g., `src/scripts/generate.js`) to keep module resolution intact.
+- Used targeted Perl replacements (`src/generator/` → `src/build/`) followed by manual spot fixes for relative imports (e.g., `src/build/generate.js`) to keep module resolution intact.
 - Updated docs/notes referencing the generator path and reran `npm test` plus `npm run lint` to confirm the rename did not break the build pipeline.
