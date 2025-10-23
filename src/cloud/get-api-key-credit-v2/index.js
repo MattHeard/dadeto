@@ -5,25 +5,9 @@ import {
   extractUuid,
 } from './handler.js';
 import { createDb } from './create-db.js';
-import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
+import { createFetchCredit } from './core.js';
 
 const db = createDb(Firestore);
-
-/**
- * Create a fetchCredit function bound to the supplied Firestore database.
- * @param {Firestore} db Firestore instance to use for lookups.
- * @returns {(uuid: string) => Promise<number|null>} Function to fetch credit.
- */
-export function createFetchCredit(db) {
-  return async function fetchCredit(uuid) {
-    const snap = await getApiKeyCreditSnapshot(db, uuid);
-    if (!snap.exists) {
-      return null;
-    }
-    const data = snap.data() || {};
-    return data.credit ?? 0;
-  };
-}
 
 export const fetchCredit = createFetchCredit(db);
 
