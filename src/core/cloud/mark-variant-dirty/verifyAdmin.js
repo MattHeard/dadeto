@@ -1,22 +1,42 @@
 const defaultMissingTokenMessage = 'Missing token';
 
 /**
+ * Determine whether a request exposes a header getter helper.
+ * @param {import('express').Request | { get?: (header: string) => string | undefined } | null | undefined} req
+ *   Incoming request supplying header access helpers.
+ * @returns {req is { get: (header: string) => string | undefined }} True when the request can read headers.
+ */
+function hasHeaderGetter(req) {
+  return typeof req?.get === 'function';
+}
+
+/**
+ * Read the Authorization header from a request guaranteed to support header lookups.
+ * @param {{ get: (header: string) => string | undefined }} req Request supporting the Express get helper.
+ * @returns {string} Authorization header value or an empty string when unavailable.
+ */
+function readAuthorizationHeader(req) {
+  const header = req.get('Authorization');
+
+  if (typeof header === 'string') {
+    return header;
+  }
+
+  return '';
+}
+
+/**
  * Retrieve the Authorization header from a request-like object.
  * @param {import('express').Request | { get?: (header: string) => string | undefined } | null | undefined} req
  *   Incoming request supplying header access helpers.
  * @returns {string} Authorization header value or an empty string when unavailable.
  */
 function defaultGetAuthHeader(req) {
-  if (!req || typeof req.get !== 'function') {
+  if (!hasHeaderGetter(req)) {
     return '';
   }
 
-  const header = req.get('Authorization');
-  if (typeof header !== 'string') {
-    return '';
-  }
-
-  return header;
+  return readAuthorizationHeader(req);
 }
 
 /**
@@ -34,7 +54,13 @@ function defaultMatchAuthHeader(authHeader) {
  * @returns {string} Message describing the failure.
  */
 function defaultInvalidTokenMessage(error) {
-  return error?.message || 'Invalid token';
+  const message = error?.message;
+
+  if (typeof message === 'string') {
+    return message;
+  }
+
+  return 'Invalid token';
 }
 
 /**

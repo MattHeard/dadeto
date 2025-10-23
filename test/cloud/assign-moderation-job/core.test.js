@@ -2,17 +2,20 @@ import { describe, expect, jest, test } from "@jest/globals";
 import * as assignModerationCore from "../../../src/core/cloud/assign-moderation-job/core.js";
 
 const {
+  createReputationScopedVariantsQuery,
   createCreateCorsOrigin,
   createCreateCorsOriginFromEnvironment,
   createCorsOriginHandler,
   createCorsOriginFactory,
   createCorsOriginFromEnvironment,
+  getAllowedOrigins,
   createRunGuards,
   createSetupCors,
   configureUrlencodedBodyParser,
   getBodyFromRequest,
   getIdTokenFromRequest,
   random,
+  productionOrigins,
   selectVariantDoc,
   createModeratorRefFactory,
   createVariantsQuery,
@@ -27,6 +30,73 @@ const {
   createAssignModerationJob,
   createHandleAssignModerationJobFromAuth,
 } = assignModerationCore;
+
+describe("getAllowedOrigins", () => {
+  test("returns production origins for the production environment", () => {
+    const result = getAllowedOrigins({
+      DENDRITE_ENVIRONMENT: "prod",
+    });
+
+    expect(result).toEqual(productionOrigins);
+  });
+
+  test("returns the playwright origin when a test environment provides one", () => {
+    const result = getAllowedOrigins({
+      DENDRITE_ENVIRONMENT: "t-chrome",
+      PLAYWRIGHT_ORIGIN: "https://playwright.example",
+    });
+
+    expect(result).toEqual(["https://playwright.example"]);
+  });
+
+  test("returns an empty allow list when the playwright origin is missing", () => {
+    const result = getAllowedOrigins({
+      DENDRITE_ENVIRONMENT: "t-firefox",
+    });
+
+    expect(result).toEqual([]);
+  });
+
+  test("falls back to production origins for unknown environments", () => {
+    const result = getAllowedOrigins({
+      DENDRITE_ENVIRONMENT: "dev",
+    });
+
+    expect(result).toEqual(productionOrigins);
+  });
+});
+
+describe("createReputationScopedVariantsQuery", () => {
+  test("scopes the query to zero rated moderators", () => {
+    const whereResult = Symbol("zero rated query");
+    const where = jest.fn(() => whereResult);
+    const query = { where };
+    const collectionGroup = jest.fn(() => query);
+    const database = { collectionGroup };
+
+    const result = createReputationScopedVariantsQuery(database, "zeroRated");
+
+    expect(collectionGroup).toHaveBeenCalledWith("variants");
+    expect(where).toHaveBeenCalledWith(
+      "moderatorReputationSum",
+      "==",
+      0
+    );
+    expect(result).toBe(whereResult);
+  });
+
+  test("returns the base query when a reputation filter is not required", () => {
+    const query = { where: jest.fn(() => Symbol("unused")) };
+    const collectionGroup = jest.fn(() => query);
+    const database = { collectionGroup };
+
+    const result = createReputationScopedVariantsQuery(database, "any");
+
+    expect(collectionGroup).toHaveBeenCalledWith("variants");
+    expect(query.where).not.toHaveBeenCalled();
+    expect(result).toBe(query);
+  });
+});
 
 describe("createCorsOriginFactory", () => {
   test("returns a factory that builds the origin handler from environment variables", () => {
