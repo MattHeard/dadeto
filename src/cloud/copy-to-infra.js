@@ -1,5 +1,5 @@
 import { createCopyToInfraCore } from '../core/cloud/copy.js';
-import { createAsyncFsAdapters } from '../node/fs.js';
+import { createAsyncFsAdapters } from '../build/fs.js';
 import {
   createPathAdapters,
   getCurrentDirectory,
