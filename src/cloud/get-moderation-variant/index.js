@@ -12,18 +12,25 @@ const auth = getAuth();
 const app = express();
 
 const { allowedOrigins } = corsConfig; // includes static-site domain
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error('CORS'));
-      }
-    },
-    methods: ['GET'],
-  })
-);
+
+const isAllowedOrigin = (origin, origins) => !origin || origins.includes(origin);
+const createHandleCorsOrigin = origins => (origin, cb) => {
+  if (isAllowedOrigin(origin, origins)) {
+    cb(null, true);
+  } else {
+    cb(new Error('CORS'));
+  }
+};
+const handleCorsOrigin = createHandleCorsOrigin(allowedOrigins);
+const corsOptions = {
+  origin: handleCorsOrigin,
+  methods: ['GET'],
+};
+const applyCorsMiddleware = (application, corsFactory, options) => {
+  application.use(corsFactory(options));
+};
+
+applyCorsMiddleware(app, cors, corsOptions);
 
 /**
  * Fetch the variant assigned to the authenticated moderator.
