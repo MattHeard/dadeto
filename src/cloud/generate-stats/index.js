@@ -10,7 +10,15 @@ import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { createFirebaseResources, createGenerateStatsCore } from './core.js';
 
-const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
+const getUrlMap = (env) => {
+  if (!env || typeof env !== 'object') {
+    return 'prod-dendrite-url-map';
+  }
+
+  return env.URL_MAP || 'prod-dendrite-url-map';
+};
+
+const URL_MAP = getUrlMap(process.env);
 const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
 const BUCKET = 'www.dendritestories.co.nz';
 const fetchFn =
