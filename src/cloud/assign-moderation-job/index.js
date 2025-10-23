@@ -14,25 +14,36 @@ import * as gcf from './gcf.js';
 const { db, auth, app } = gcf.initializeFirebaseAppResources();
 
 /**
- * Build the CORS origin handler using environment variables.
- * @param {(environmentVariables: Record<string, string | undefined>) => string[]} getAllowedOriginsFn
- * Function that resolves the allowed origins list from environment variables.
- * @param {() => Record<string, string | undefined>} getEnvironmentVariablesFn Function that retrieves
- * the environment variables exposed to the Cloud Function.
- * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
- * Configured origin handler consumed by the CORS middleware.
+ * Compose the helper that builds the CORS origin handler from environment variables.
+ * @param {typeof createCreateCorsOrigin} createCreateCorsOriginFn Factory that wires the origin handler dependencies.
+ * @param {typeof createCorsOriginHandler} createCorsOriginHandlerFn Function that creates the CORS origin handler.
+ * @returns {(
+ *   getAllowedOriginsFn: (environmentVariables: Record<string, string | undefined>) => string[],
+ *   getEnvironmentVariablesFn: () => Record<string, string | undefined>
+ * ) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
+ * Factory that resolves a configured CORS origin handler from environment helpers.
  */
-function createCorsOriginFromEnvironment(
-  getAllowedOriginsFn,
-  getEnvironmentVariablesFn
+function createCreateCorsOriginFromEnvironment(
+  createCreateCorsOriginFn,
+  createCorsOriginHandlerFn
 ) {
-  const createCorsOrigin = createCreateCorsOrigin({
-    getAllowedOrigins: getAllowedOriginsFn,
-    createCorsOriginHandler,
-  });
+  return function createCorsOriginFromEnvironment(
+    getAllowedOriginsFn,
+    getEnvironmentVariablesFn
+  ) {
+    const createCorsOrigin = createCreateCorsOriginFn({
+      getAllowedOrigins: getAllowedOriginsFn,
+      createCorsOriginHandler: createCorsOriginHandlerFn,
+    });
 
-  return createCorsOrigin(getEnvironmentVariablesFn);
+    return createCorsOrigin(getEnvironmentVariablesFn);
+  };
 }
+
+const createCorsOriginFromEnvironment = createCreateCorsOriginFromEnvironment(
+  createCreateCorsOrigin,
+  createCorsOriginHandler
+);
 
 const corsOptions = {
   origin: createCorsOriginFromEnvironment(
