@@ -12,13 +12,21 @@ import * as gcf from './gcf.js';
 
 const { db, auth, app } = gcf.initializeFirebaseAppResources();
 
-const corsOptions = {
+const createCorsOptions = (
+  getAllowedOriginsFunction,
+  getEnvironmentVariablesFunction
+) => ({
   origin: createCorsOriginFromEnvironment({
-    getAllowedOrigins,
-    getEnvironmentVariables: gcf.getEnvironmentVariables,
+    getAllowedOrigins: getAllowedOriginsFunction,
+    getEnvironmentVariables: getEnvironmentVariablesFunction,
   }),
   methods: ['POST'],
-};
+});
+
+const corsOptions = createCorsOptions(
+  getAllowedOrigins,
+  gcf.getEnvironmentVariables
+);
 
 app.use(cors(corsOptions));
 configureUrlencodedBodyParser(app, express);
