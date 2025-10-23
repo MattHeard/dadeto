@@ -258,9 +258,11 @@ export function buildHtml(
 const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
 const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
 
+/** @typedef {import('node:process').ProcessEnv} ProcessEnv */
+
 /**
  * Derive the Google Cloud project identifier from environment variables.
- * @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string | undefined} Project identifier if present.
  */
 export function getProjectFromEnv(env = {}) {
@@ -269,7 +271,7 @@ export function getProjectFromEnv(env = {}) {
 
 /**
  * Resolve the URL map identifier used for CDN invalidations.
- * @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string} URL map identifier.
  */
 export function getUrlMapFromEnv(env = {}) {
@@ -282,7 +284,7 @@ export function getUrlMapFromEnv(env = {}) {
 
 /**
  * Resolve the CDN host used for cache invalidations from environment variables.
- * @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string} CDN host name.
  */
 export function getCdnHostFromEnv(env = {}) {
@@ -305,7 +307,7 @@ export function getCdnHostFromEnv(env = {}) {
  *   auth: import('firebase-admin/auth').Auth,
  *   storage: import('@google-cloud/storage').Storage,
  *   fetchFn: typeof fetch,
- *   env?: NodeJS.ProcessEnv | Record<string, string | undefined>,
+ *   env?: ProcessEnv | Record<string, string | undefined>,
  *   urlMap?: string,
  *   bucket: string,
  *   adminUid: string,
