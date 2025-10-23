@@ -1,14 +1,6 @@
 import { Firestore } from '@google-cloud/firestore';
 import { createGetApiKeyCreditHandler } from './handler.js';
-
-/**
- * Instantiates a Firestore client using the provided constructor.
- * @param {typeof Firestore} FirestoreConstructor Firestore constructor.
- * @returns {Firestore} Initialized Firestore client.
- */
-export function createFirestore(FirestoreConstructor) {
-  return new FirestoreConstructor();
-}
+import { createFirestore } from './createFirestore.js';
 
 const firestore = createFirestore(Firestore);
 
@@ -52,3 +44,5 @@ export async function handler(req, res) {
 
   res.status(status).send(body);
 }
+
+export { createFirestore } from './createFirestore.js';
