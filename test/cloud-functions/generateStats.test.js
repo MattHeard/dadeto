@@ -52,6 +52,14 @@ describe('generate stats helpers', () => {
     );
   });
 
+  test('getProjectFromEnv returns undefined when env lacks project values', () => {
+    expect(getProjectFromEnv({})).toBeUndefined();
+  });
+
+  test('getProjectFromEnv returns undefined when env is omitted', () => {
+    expect(getProjectFromEnv()).toBeUndefined();
+  });
+
   test('getUrlMapFromEnv falls back to the production map', () => {
     expect(getUrlMapFromEnv()).toBe('prod-dendrite-url-map');
     expect(getUrlMapFromEnv(null)).toBe('prod-dendrite-url-map');
@@ -284,6 +292,31 @@ describe('createGenerateStatsCore', () => {
     expect(invalidateCall?.[1]).toEqual(
       expect.objectContaining({ method: 'POST' })
     );
+  });
+
+  test('invalidatePaths applies default configuration when env is not an object', async () => {
+    const fetchFn = jest.fn(url => {
+      if (url.startsWith('http://metadata')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'token' }),
+        });
+      }
+      return Promise.resolve({ ok: true });
+    });
+    const { core } = createCore({ fetchFn, env: 'not-object' });
+
+    await core.invalidatePaths(['/stats.html']);
+
+    const invalidateCall = fetchFn.mock.calls.find(([url]) =>
+      url.includes('/invalidateCache')
+    );
+
+    expect(invalidateCall).toBeDefined();
+    const [requestUrl, options] = invalidateCall ?? [];
+    expect(requestUrl).toContain('/prod-dendrite-url-map/');
+    const body = options?.body ? JSON.parse(options.body) : {};
+    expect(body.host).toBe('www.dendritestories.co.nz');
   });
 
   test('invalidatePaths uses an explicit url map override when provided', async () => {
