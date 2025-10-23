@@ -18,6 +18,16 @@ export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
 
 /**
  * @typedef {{
+ *   io: CopyIo,
+ *   sourceDir: string,
+ *   targetDir: string,
+ *   name: string,
+ *   messageLogger: CopyMessageLogger,
+ * }} CopyFileToTargetOptions
+ */
+
+/**
+ * @typedef {{
  *   ensureDirectory: (target: string) => Promise<void>,
  *   copyFile: (source: string, destination: string) => Promise<void>,
  * }} EnsureAndCopyIo
@@ -45,13 +55,7 @@ export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
  * @typedef {{
  *   formatPathForLog: (targetPath: string) => string,
  *   isCopyableFile: (entry: import('fs').Dirent) => boolean,
- *   copyFileToTarget: (
- *     io: CopyIo,
- *     sourceDir: string,
- *     targetDir: string,
- *     name: string,
- *     messageLogger: CopyMessageLogger,
- *   ) => Promise<void>,
+ *   copyFileToTarget: (options: CopyFileToTargetOptions) => Promise<void>,
  *   copyDirectory: (
  *     copyPlan: CopyPair,
  *     io: CopyAsyncIo,
@@ -120,19 +124,21 @@ export function createCopyToInfraCore({
 
   /**
    * Copy a single file and log the operation.
-   * @param {{ copyFile: (source: string, destination: string) => Promise<void> }} io - Filesystem adapters.
-   * @param {string} sourceDir - Directory containing the file.
-   * @param {string} targetDir - Destination directory for the file.
-   * @param {string} name - File name to copy.
-   * @param {{ info: (message: string) => void }} messageLogger - Logger to report progress.
+   * @param {CopyFileToTargetOptions} options - Filesystem adapters and logging hooks.
    * @returns {Promise<void>} Resolves when the file is copied.
    */
-  async function copyFileToTarget(io, sourceDir, targetDir, name, messageLogger) {
+  async function copyFileToTarget({
+    io,
+    sourceDir,
+    targetDir,
+    name,
+    messageLogger,
+  }) {
     const sourcePath = join(sourceDir, name);
     const destinationPath = join(targetDir, name);
     await io.copyFile(sourcePath, destinationPath);
     messageLogger.info(
-      `Copied: ${formatPathForLog(sourcePath)} -> ${formatPathForLog(destinationPath)}`,
+      `Copied: ${formatPathForLog(sourcePath)} -> ${formatPathForLog(destinationPath)}`
     );
   }
 
@@ -155,8 +161,14 @@ export function createCopyToInfraCore({
     const sourceFiles = sourceEntries.filter(isCopyableFile);
     await Promise.all(
       sourceFiles.map(entry =>
-        copyFileToTarget(io, source, target, entry.name, messageLogger),
-      ),
+        copyFileToTarget({
+          io,
+          sourceDir: source,
+          targetDir: target,
+          name: entry.name,
+          messageLogger,
+        })
+      )
     );
   }
 
@@ -172,7 +184,15 @@ export function createCopyToInfraCore({
     await io.ensureDirectory(targetDir);
 
     await Promise.all(
-      files.map(file => copyFileToTarget(io, sourceDir, targetDir, file, messageLogger)),
+      files.map(file =>
+        copyFileToTarget({
+          io,
+          sourceDir,
+          targetDir,
+          name: file,
+          messageLogger,
+        })
+      )
     );
   }
 
@@ -189,9 +209,9 @@ export function createCopyToInfraCore({
         await io.ensureDirectory(dirname(target));
         await io.copyFile(source, target);
         messageLogger.info(
-          `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(target)}`,
+          `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(target)}`
         );
-      }),
+      })
     );
   }
 
