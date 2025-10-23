@@ -8,11 +8,7 @@ import { ADMIN_UID } from './admin-config.js';
 import corsConfig from './cors-config.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
-import {
-  createFirebaseResources,
-  createGenerateStatsCore,
-  getCdnHostFromEnv,
-} from './core.js';
+import { createGenerateStatsCore, getCdnHostFromEnv } from './core.js';
 
 const CDN_HOST = getCdnHostFromEnv(process.env);
 const BUCKET = 'www.dendritestories.co.nz';
@@ -21,14 +17,10 @@ const fetchFn =
     ? globalThis.fetch.bind(globalThis)
     : undefined;
 
-const firebaseResources = createFirebaseResources({
-  ensureFirebaseApp,
-  getFirestoreInstance,
-  getAuth,
-  StorageCtor: Storage,
-});
-
-const { db, auth, storage } = firebaseResources;
+ensureFirebaseApp();
+const db = getFirestoreInstance();
+const auth = getAuth();
+const storage = new Storage();
 
 const generateStatsCore = createGenerateStatsCore({
   db,

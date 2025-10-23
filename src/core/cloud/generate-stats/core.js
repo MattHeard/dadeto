@@ -299,34 +299,6 @@ export function getCdnHostFromEnv(env = {}) {
 }
 
 /**
- * Initialize Firebase resources required for generating stats.
- * @param {{
- *   ensureFirebaseApp: () => void,
- *   getFirestoreInstance: () => import('firebase-admin/firestore').Firestore,
- *   getAuth: () => import('firebase-admin/auth').Auth,
- *   StorageCtor: new () => import('@google-cloud/storage').Storage,
- * }} deps Firebase initialization dependencies.
- * @returns {{
- *   db: import('firebase-admin/firestore').Firestore,
- *   auth: import('firebase-admin/auth').Auth,
- *   storage: import('@google-cloud/storage').Storage,
- * }} Firebase resources.
- */
-export function createFirebaseResources({
-  ensureFirebaseApp,
-  getFirestoreInstance,
-  getAuth,
-  StorageCtor,
-}) {
-  ensureFirebaseApp();
-  const db = getFirestoreInstance();
-  const auth = getAuth();
-  const storage = new StorageCtor();
-
-  return { db, auth, storage };
-}
-
-/**
  * Create the core helpers for the generate stats workflow.
  * @param {{
  *   db: import('firebase-admin/firestore').Firestore,

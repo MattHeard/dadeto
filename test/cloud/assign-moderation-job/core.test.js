@@ -2,7 +2,7 @@ import { describe, expect, jest, test } from "@jest/globals";
 import * as assignModerationCore from "../../../src/core/cloud/assign-moderation-job/core.js";
 
 const {
-  createFirebaseResources,
+  createCorsOriginHandler,
   createRunGuards,
   createSetupCors,
   configureUrlencodedBodyParser,
@@ -23,54 +23,6 @@ const {
   createAssignModerationJob,
   createHandleAssignModerationJobFromAuth,
 } = assignModerationCore;
-
-describe("createFirebaseResources", () => {
-  test("initializes firebase resources and configures the app", () => {
-    const use = jest.fn();
-    const dependencies = {
-      db: { name: "db" },
-      auth: { name: "auth" },
-      app: { name: "app", use },
-    };
-    const initializeFirebaseApp = jest.fn(() => dependencies);
-    const middleware = Symbol("cors-middleware");
-    const corsFn = jest.fn(() => middleware);
-    const urlencodedMiddleware = Symbol("urlencoded-middleware");
-    const expressModule = {
-      name: "express",
-      urlencoded: jest.fn(() => urlencodedMiddleware),
-    };
-    const allowedOrigins = ["https://allowed.example"];
-    const corsConfig = { allowedOrigins, credentials: true };
-    const result = createFirebaseResources(
-      initializeFirebaseApp,
-      corsFn,
-      corsConfig,
-      expressModule
-    );
-
-    expect(initializeFirebaseApp).toHaveBeenCalledTimes(1);
-    expect(corsFn).toHaveBeenCalledTimes(1);
-    expect(use).toHaveBeenCalledWith(middleware);
-    const [corsOptions] = corsFn.mock.calls[0];
-    expect(corsOptions).toMatchObject({
-      methods: ["POST"],
-      allowedOrigins,
-      credentials: true,
-    });
-    expect(typeof corsOptions.origin).toBe("function");
-    const originHandler = corsOptions.origin;
-    const allowCallback = jest.fn();
-    originHandler(allowedOrigins[0], allowCallback);
-    expect(allowCallback).toHaveBeenCalledWith(null, true);
-    const blockCallback = jest.fn();
-    originHandler("https://disallowed.example", blockCallback);
-    expect(blockCallback.mock.calls[0][0]).toEqual(new Error("CORS"));
-    expect(expressModule.urlencoded).toHaveBeenCalledWith({ extended: false });
-    expect(use).toHaveBeenCalledWith(urlencodedMiddleware);
-    expect(result).toStrictEqual(dependencies);
-  });
-});
 
 describe("createSetupCors", () => {
   test("registers cors middleware with the generated origin handler", () => {
@@ -95,6 +47,32 @@ describe("createSetupCors", () => {
       ...corsConfig,
     });
     expect(use).toHaveBeenCalledWith(middleware);
+  });
+});
+
+describe("createCorsOriginHandler", () => {
+  test("allows configured origins and missing origins", () => {
+    const allowedOrigins = ["https://allowed.example"];
+    const handler = createCorsOriginHandler(allowedOrigins);
+
+    const allowCallback = jest.fn();
+    handler(allowedOrigins[0], allowCallback);
+    expect(allowCallback).toHaveBeenCalledWith(null, true);
+
+    const implicitAllowCallback = jest.fn();
+    handler(undefined, implicitAllowCallback);
+    expect(implicitAllowCallback).toHaveBeenCalledWith(null, true);
+  });
+
+  test("rejects requests from disallowed origins", () => {
+    const handler = createCorsOriginHandler(["https://allowed.example"]);
+    const rejectCallback = jest.fn();
+
+    handler("https://blocked.example", rejectCallback);
+
+    expect(rejectCallback).toHaveBeenCalledTimes(1);
+    const [error] = rejectCallback.mock.calls[0];
+    expect(error).toEqual(new Error("CORS"));
   });
 });
 
