@@ -8,6 +8,49 @@
  * @property {(message: string, error: unknown) => void} logError Logger invoked for error messages.
  */
 
+const formatWithPrettier = async ({
+  resolveConfig,
+  formatHtml,
+  configPath,
+  html,
+  parser,
+  outputPath,
+  encoding,
+  writeFile,
+  logInfo,
+}) => {
+  const resolvedOptions = (await resolveConfig(configPath)) ?? {};
+  const formattedHtml = await formatHtml(html, {
+    ...resolvedOptions,
+    parser,
+  });
+
+  writeFile(outputPath, formattedHtml, encoding);
+  logInfo(`HTML formatted with Prettier and written to ${outputPath}`);
+};
+
+const writeUnformattedHtml = (
+  { logError, writeFile, logInfo, outputPath, html, encoding },
+  error
+) => {
+  logError('Error formatting HTML', error);
+  writeFile(outputPath, html, encoding);
+  logInfo(`Unformatted HTML written to ${outputPath}`);
+};
+
+const writeWithFallback = async options => {
+  try {
+    await formatWithPrettier(options);
+  } catch (error) {
+    writeUnformattedHtml(options, error);
+  }
+};
+
+const DEFAULT_WRITE_OPTIONS = {
+  encoding: 'utf8',
+  parser: 'html',
+};
+
 /**
  * Factory for writing formatted HTML generated from blog data.
  * @param {WriteFormattedHtmlDeps} deps Dependency injection container for formatting helpers.
@@ -21,28 +64,18 @@ export const createWriteFormattedHtml = ({
   logInfo,
   logError,
 }) => {
-  return async ({
-    blog,
-    configPath,
-    outputPath,
-    encoding = 'utf8',
-    parser = 'html',
-  }) => {
-    const html = generateHtml(blog);
-
-    try {
-      const resolvedOptions = (await resolveConfig(configPath)) ?? {};
-      const formattedHtml = await formatHtml(html, {
-        ...resolvedOptions,
-        parser,
-      });
-
-      writeFile(outputPath, formattedHtml, encoding);
-      logInfo(`HTML formatted with Prettier and written to ${outputPath}`);
-    } catch (error) {
-      logError('Error formatting HTML', error);
-      writeFile(outputPath, html, encoding);
-      logInfo(`Unformatted HTML written to ${outputPath}`);
-    }
+  return function writeFormattedHtml({ blog, configPath, outputPath, ...rest }) {
+    return writeWithFallback({
+      resolveConfig,
+      formatHtml,
+      writeFile,
+      logInfo,
+      logError,
+      ...DEFAULT_WRITE_OPTIONS,
+      ...rest,
+      html: generateHtml(blog),
+      configPath,
+      outputPath,
+    });
   };
 };
