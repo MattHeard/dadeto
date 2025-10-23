@@ -255,13 +255,14 @@ export function buildHtml(
 </html>`;
 }
 
+const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
+const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
+
 /**
  * Derive the Google Cloud project identifier from environment variables.
  * @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string | undefined} Project identifier if present.
  */
-const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
-
 export function getProjectFromEnv(env = {}) {
   return env.GOOGLE_CLOUD_PROJECT || env.GCLOUD_PROJECT;
 }
@@ -277,6 +278,24 @@ export function getUrlMapFromEnv(env = {}) {
   }
 
   return env.URL_MAP || DEFAULT_URL_MAP;
+}
+
+/**
+ * Resolve the CDN host used for cache invalidations from environment variables.
+ * @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @returns {string} CDN host name.
+ */
+export function getCdnHostFromEnv(env = {}) {
+  if (!env || typeof env !== 'object') {
+    return DEFAULT_CDN_HOST;
+  }
+
+  const cdnHost = env.CDN_HOST;
+  if (typeof cdnHost === 'string' && cdnHost.trim()) {
+    return cdnHost;
+  }
+
+  return DEFAULT_CDN_HOST;
 }
 
 /**
@@ -316,7 +335,7 @@ export function createFirebaseResources({
  *   fetchFn: typeof fetch,
  *   env?: NodeJS.ProcessEnv | Record<string, string | undefined>,
  *   urlMap?: string,
- *   cdnHost: string,
+ *   cdnHost?: string,
  *   bucket: string,
  *   adminUid: string,
  *   cryptoModule: { randomUUID: () => string },
@@ -362,6 +381,10 @@ export function createGenerateStatsCore({
   const envRef = env && typeof env === 'object' ? env : {};
   const project = getProjectFromEnv(envRef);
   const resolvedUrlMap = urlMap || getUrlMapFromEnv(envRef);
+  const resolvedCdnHost =
+    typeof cdnHost === 'string' && cdnHost.trim()
+      ? cdnHost
+      : getCdnHostFromEnv(envRef);
   const fetchImpl = fetchFn ?? globalThis.fetch;
   if (typeof fetchImpl !== 'function') {
     throw new Error('fetch implementation required');
@@ -467,7 +490,7 @@ export function createGenerateStatsCore({
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                host: cdnHost,
+                host: resolvedCdnHost,
                 path,
                 requestId: cryptoModule.randomUUID(),
               }),

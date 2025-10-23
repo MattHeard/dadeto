@@ -3,6 +3,7 @@ import {
   buildHtml,
   createFirebaseResources,
   createGenerateStatsCore,
+  getCdnHostFromEnv,
   getProjectFromEnv,
   getUrlMapFromEnv,
 } from '../../src/core/cloud/generate-stats/core.js';
@@ -59,6 +60,20 @@ describe('generate stats helpers', () => {
 
   test('getUrlMapFromEnv reads overrides from env', () => {
     expect(getUrlMapFromEnv({ URL_MAP: 'custom-map' })).toBe('custom-map');
+  });
+
+  test('getCdnHostFromEnv falls back to the production host', () => {
+    expect(getCdnHostFromEnv()).toBe('www.dendritestories.co.nz');
+    expect(getCdnHostFromEnv(null)).toBe('www.dendritestories.co.nz');
+    expect(getCdnHostFromEnv({ CDN_HOST: '   ' })).toBe(
+      'www.dendritestories.co.nz'
+    );
+  });
+
+  test('getCdnHostFromEnv prefers explicit env overrides', () => {
+    expect(getCdnHostFromEnv({ CDN_HOST: 'cdn.example.com' })).toBe(
+      'cdn.example.com'
+    );
   });
 
   test('getPageCount returns page count', async () => {
@@ -177,13 +192,18 @@ describe('createGenerateStatsCore', () => {
       storage,
       fetchFn,
       env,
-      cdnHost: 'cdn.example',
       bucket: 'bucket-name',
       adminUid: 'admin',
       cryptoModule: overrides.cryptoModule ?? {
         randomUUID: jest.fn().mockReturnValue('uuid'),
       },
     };
+
+    if ('cdnHost' in overrides) {
+      coreDeps.cdnHost = overrides.cdnHost;
+    } else {
+      coreDeps.cdnHost = 'cdn.example';
+    }
 
     if (typeof overrides.urlMap !== 'undefined') {
       coreDeps.urlMap = overrides.urlMap;
@@ -318,6 +338,35 @@ describe('createGenerateStatsCore', () => {
 
     expect(invalidateCall).toBeDefined();
     expect(invalidateCall?.[0]).toContain('/custom-map/');
+  });
+
+  test('invalidatePaths derives the CDN host from env when missing', async () => {
+    const fetchFn = jest.fn(url => {
+      if (url.startsWith('http://metadata')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'token' }),
+        });
+      }
+      return Promise.resolve({ ok: true });
+    });
+    const { core } = createCore({
+      fetchFn,
+      cdnHost: undefined,
+      env: { GOOGLE_CLOUD_PROJECT: 'project', CDN_HOST: 'env-host' },
+    });
+
+    await core.invalidatePaths(['/stats.html']);
+
+    const invalidateCall = fetchFn.mock.calls.find(([url]) =>
+      url.includes('/invalidateCache')
+    );
+
+    expect(invalidateCall).toBeDefined();
+    const [, options] = invalidateCall ?? [];
+    expect(options).toBeDefined();
+    const body = options?.body ? JSON.parse(options.body) : {};
+    expect(body.host).toBe('env-host');
   });
 
   test('generates the stats page and invalidates cache', async () => {
