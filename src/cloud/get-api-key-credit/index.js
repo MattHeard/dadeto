@@ -1,8 +1,10 @@
 import { Firestore } from '@google-cloud/firestore';
-import { createGetApiKeyCreditHandler } from './handler.js';
+import {
+  createGetApiKeyCreditHandler,
+  fetchApiKeyCreditDocument,
+  isMissingDocument,
+} from './core.js';
 import { createFirestore } from './createFirestore.js';
-import { fetchApiKeyCreditDocument } from './fetchApiKeyCreditDocument.js';
-import { isMissingDocument } from './isMissingDocument.js';
 
 const firestore = createFirestore(Firestore);
 
@@ -45,4 +47,8 @@ export async function handler(req, res) {
 }
 
 export { createFirestore } from './createFirestore.js';
-export { fetchApiKeyCreditDocument } from './fetchApiKeyCreditDocument.js';
+export {
+  createGetApiKeyCreditHandler,
+  fetchApiKeyCreditDocument,
+  isMissingDocument,
+} from './core.js';
