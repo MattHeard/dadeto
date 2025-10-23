@@ -10,7 +10,6 @@ import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { createFirebaseResources, createGenerateStatsCore } from './core.js';
 
-const PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
 const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
 const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
 const BUCKET = 'www.dendritestories.co.nz';
@@ -33,7 +32,7 @@ const generateStatsCore = createGenerateStatsCore({
   auth,
   storage,
   fetchFn,
-  project: PROJECT,
+  env: process.env,
   urlMap: URL_MAP,
   cdnHost: CDN_HOST,
   bucket: BUCKET,

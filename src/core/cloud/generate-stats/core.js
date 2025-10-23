@@ -256,6 +256,15 @@ export function buildHtml(
 }
 
 /**
+ * Derive the Google Cloud project identifier from environment variables.
+ * @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @returns {string | undefined} Project identifier if present.
+ */
+export function getProjectFromEnv(env = {}) {
+  return env.GOOGLE_CLOUD_PROJECT || env.GCLOUD_PROJECT;
+}
+
+/**
  * Initialize Firebase resources required for generating stats.
  * @param {{
  *   ensureFirebaseApp: () => void,
@@ -290,7 +299,7 @@ export function createFirebaseResources({
  *   auth: import('firebase-admin/auth').Auth,
  *   storage: import('@google-cloud/storage').Storage,
  *   fetchFn: typeof fetch,
- *   project?: string,
+ *   env?: NodeJS.ProcessEnv | Record<string, string | undefined>,
  *   urlMap: string,
  *   cdnHost: string,
  *   bucket: string,
@@ -328,13 +337,14 @@ export function createGenerateStatsCore({
   auth,
   storage,
   fetchFn,
-  project,
+  env,
   urlMap,
   cdnHost,
   bucket,
   adminUid,
   cryptoModule,
 }) {
+  const project = getProjectFromEnv(env ?? {});
   const fetchImpl = fetchFn ?? globalThis.fetch;
   if (typeof fetchImpl !== 'function') {
     throw new Error('fetch implementation required');
