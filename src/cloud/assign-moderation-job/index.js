@@ -13,10 +13,13 @@ import * as gcf from './gcf.js';
 
 const { db, auth, app } = gcf.initializeFirebaseAppResources();
 
-const createCorsOrigin = createCorsOriginFactory({
-  getAllowedOrigins,
-  createCorsOriginHandler,
-});
+const createCreateCorsOrigin = allowedOriginsFetcher =>
+  createCorsOriginFactory({
+    getAllowedOrigins: allowedOriginsFetcher,
+    createCorsOriginHandler,
+  });
+
+const createCorsOrigin = createCreateCorsOrigin(getAllowedOrigins);
 
 const corsOptions = {
   origin: createCorsOrigin(gcf.getEnvironmentVariables),
