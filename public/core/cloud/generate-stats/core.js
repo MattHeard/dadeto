@@ -1,3 +1,5 @@
+import { ADMIN_UID } from './admin-config.js';
+
 /**
  * Build stats HTML page.
  * @param {number} storyCount Story count.
@@ -310,7 +312,6 @@ export function getCdnHostFromEnv(env = {}) {
  *   fetchFn: typeof fetch,
  *   env?: ProcessEnv | Record<string, string | undefined>,
  *   urlMap?: string,
- *   adminUid: string,
  *   cryptoModule: { randomUUID: () => string },
  * }} deps Dependencies required by the workflow.
  * @returns {{
@@ -346,7 +347,6 @@ export function createGenerateStatsCore({
   fetchFn,
   env,
   urlMap,
-  adminUid,
   cryptoModule,
 }) {
   let envRef = {};
@@ -536,7 +536,7 @@ export function createGenerateStatsCore({
 
     const isCron = req.get('X-Appengine-Cron') === 'true';
     const authInstance = deps.authInstance || auth;
-    const adminId = deps.adminUid || adminUid;
+    const adminId = deps.adminUid || ADMIN_UID;
 
     if (!isCron) {
       const authHeader = req.get('Authorization') || '';
