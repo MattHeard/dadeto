@@ -13,13 +13,32 @@ import * as gcf from './gcf.js';
 
 const { db, auth, app } = gcf.initializeFirebaseAppResources();
 
-const createCorsOrigin = createCreateCorsOrigin({
-  getAllowedOrigins,
-  createCorsOriginHandler,
-});
+/**
+ * Build the CORS origin handler using environment variables.
+ * @param {(environmentVariables: Record<string, string | undefined>) => string[]} getAllowedOriginsFn
+ * Function that resolves the allowed origins list from environment variables.
+ * @param {() => Record<string, string | undefined>} getEnvironmentVariablesFn Function that retrieves
+ * the environment variables exposed to the Cloud Function.
+ * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
+ * Configured origin handler consumed by the CORS middleware.
+ */
+function createCorsOriginFromEnvironment(
+  getAllowedOriginsFn,
+  getEnvironmentVariablesFn
+) {
+  const createCorsOrigin = createCreateCorsOrigin({
+    getAllowedOrigins: getAllowedOriginsFn,
+    createCorsOriginHandler,
+  });
+
+  return createCorsOrigin(getEnvironmentVariablesFn);
+}
 
 const corsOptions = {
-  origin: createCorsOrigin(gcf.getEnvironmentVariables),
+  origin: createCorsOriginFromEnvironment(
+    getAllowedOrigins,
+    gcf.getEnvironmentVariables
+  ),
   methods: ['POST'],
 };
 
