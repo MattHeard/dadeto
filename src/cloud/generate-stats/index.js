@@ -5,7 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import { getAuth } from 'firebase-admin/auth';
 import { ADMIN_UID } from './admin-config.js';
-import corsConfig from './cors-config.js';
+import { getAllowedOrigins } from './cors-config.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { createGenerateStatsCore } from './core.js';
@@ -40,7 +40,7 @@ const {
   handleRequest,
 } = generateStatsCore;
 
-const { allowedOrigins = [] } = corsConfig;
+const allowedOrigins = getAllowedOrigins(process.env) ?? [];
 const app = express();
 
 app.use(
