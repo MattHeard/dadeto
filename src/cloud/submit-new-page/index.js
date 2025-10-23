@@ -4,7 +4,7 @@ import { getAuth } from 'firebase-admin/auth';
 import crypto from 'crypto';
 import express from 'express';
 import cors from 'cors';
-import corsConfig from './cors-config.js';
+import { getAllowedOrigins } from '../cors-config.js';
 import {
   parseIncomingOption,
   findExistingOption,
@@ -30,7 +30,7 @@ const handleSubmitCore = createHandleSubmit({
   findExistingPage: (pageNumber) => findExistingPage(db, pageNumber),
 });
 
-const { allowedOrigins } = corsConfig; // includes static-site domain
+const allowedOrigins = getAllowedOrigins(process.env); // includes static-site domain
 app.use(
   cors({
     origin: (origin, cb) => {
