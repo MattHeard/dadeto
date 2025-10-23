@@ -10,17 +10,21 @@ import { getFirestoreInstance } from './firestore.js';
 import { createGenerateStatsCore } from './core.js';
 import { fetchFn } from './gcf.js';
 
+const getProcessEnv = () => process.env;
+
 ensureFirebaseApp();
 const db = getFirestoreInstance();
 const auth = getAuth();
 const storage = new Storage();
+
+const env = getProcessEnv();
 
 const generateStatsCore = createGenerateStatsCore({
   db,
   auth,
   storage,
   fetchFn,
-  env: process.env,
+  env,
   cryptoModule: crypto,
 });
 
@@ -33,7 +37,7 @@ const {
   handleRequest,
 } = generateStatsCore;
 
-const allowedOrigins = getAllowedOrigins(process.env) ?? [];
+const allowedOrigins = getAllowedOrigins(env) ?? [];
 const app = express();
 
 app.use(
