@@ -232,9 +232,7 @@ export function createCorsOriginFromEnvironment({
  * @returns {(getEnvironmentVariables: () => Record<string, unknown>) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
  * Configured createCorsOrigin function that accepts an environment getter.
  */
-export function createCreateCorsOrigin({
-  getAllowedOrigins,
-}) {
+export function createCreateCorsOrigin({ getAllowedOrigins }) {
   return createCorsOriginFactory({
     getAllowedOrigins,
     createCorsOriginHandler,
@@ -249,7 +247,7 @@ export function createCreateCorsOrigin({
  * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }}
  * Configuration object for the CORS middleware.
  */
-function createCorsOptions(createCorsOriginHandlerFn, corsConfig) {
+function buildCorsOptions(createCorsOriginHandlerFn, corsConfig) {
   const { allowedOrigins } = corsConfig;
 
   return {
@@ -267,12 +265,30 @@ function createCorsOptions(createCorsOriginHandlerFn, corsConfig) {
  */
 export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
   return function setupCors(appInstance, corsConfig) {
-    const corsOptions = createCorsOptions(
-      createCorsOriginHandlerFn,
-      corsConfig
-    );
+    const corsOptions = buildCorsOptions(createCorsOriginHandlerFn, corsConfig);
 
     appInstance.use(corsFn(corsOptions));
+  };
+}
+
+/**
+ * Build the CORS options object using environment-aware helpers.
+ * @param {(environmentVariables: Record<string, unknown>) => string[]} getAllowedOriginsFunction Resolves allowed origins from environment variables.
+ * @param {() => Record<string, unknown>} getEnvironmentVariablesFunction Reads environment variables at runtime.
+ * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }}
+ * Configuration object for the CORS middleware.
+ */
+export function createCorsOptions(
+  getAllowedOriginsFunction,
+  getEnvironmentVariablesFunction
+) {
+  const environmentVariables = getEnvironmentVariablesFunction();
+  const allowedOrigins = getAllowedOriginsFunction(environmentVariables);
+  const corsOrigin = createCorsOriginHandler(allowedOrigins);
+
+  return {
+    origin: corsOrigin,
+    methods: ['POST'],
   };
 }
 
@@ -431,7 +447,9 @@ export function createVariantSnapshotFetcher({ runQuery }) {
  * @returns {(database: unknown) => (randomValue: number) => Promise<unknown>} Factory producing snapshot fetchers bound to a
  * Firestore database.
  */
-export function createFetchVariantSnapshotFromDbFactory(createRunVariantQueryFn) {
+export function createFetchVariantSnapshotFromDbFactory(
+  createRunVariantQueryFn
+) {
   return function createFetchVariantSnapshotFromDb(database) {
     const runVariantQuery = createRunVariantQueryFn(database);
     return createVariantSnapshotFetcher({
@@ -606,10 +624,7 @@ export function createHandleAssignModerationJob(
  * }} gcf - Cloud Functions helpers supplying Firestore query factories and timestamp providers.
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Registered moderation handler.
  */
-export function setupAssignModerationJobRoute(
-  firebaseResources,
-  gcf
-) {
+export function setupAssignModerationJobRoute(firebaseResources, gcf) {
   const { db, auth, app } = firebaseResources;
   const { createRunVariantQuery, now } = gcf;
 
