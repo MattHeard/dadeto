@@ -4,8 +4,9 @@ import {
   createGetApiKeyCreditV2Handler,
   extractUuid,
 } from './handler.js';
+import { createDb } from './create-db.js';
 
-const db = new Firestore();
+const db = createDb(Firestore);
 
 /**
  * Fetch stored credit for the supplied API key UUID.
@@ -46,3 +47,4 @@ export const getApiKeyCreditV2 = onRequest(async (req, res) => {
 });
 
 export { extractUuid } from './handler.js';
+export { createDb } from './create-db.js';
