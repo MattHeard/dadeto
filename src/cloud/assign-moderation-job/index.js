@@ -11,7 +11,7 @@ import {
   setupAssignModerationJobRoute,
 } from './core.js';
 import * as gcf from './gcf.js';
-import { ensureFirebaseApp } from '../firebaseApp.js';
+import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from '../firestore.js';
 
 const db = getFirestoreInstance();
