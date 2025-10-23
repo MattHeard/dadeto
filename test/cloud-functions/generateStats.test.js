@@ -3,6 +3,7 @@ import {
   buildHtml,
   createFirebaseResources,
   createGenerateStatsCore,
+  getProjectFromEnv,
 } from '../../src/core/cloud/generate-stats/core.js';
 import {
   getPageCount,
@@ -33,6 +34,21 @@ describe('generate stats helpers', () => {
     expect(html).toContain('rotate(90) scale(-1,1)');
     expect(html).toContain('var(--link)');
     expect(html).toContain('Story A');
+  });
+
+  test('getProjectFromEnv prefers GOOGLE_CLOUD_PROJECT', () => {
+    expect(
+      getProjectFromEnv({
+        GOOGLE_CLOUD_PROJECT: 'primary',
+        GCLOUD_PROJECT: 'secondary',
+      })
+    ).toBe('primary');
+  });
+
+  test('getProjectFromEnv falls back to GCLOUD_PROJECT', () => {
+    expect(getProjectFromEnv({ GCLOUD_PROJECT: 'fallback' })).toBe(
+      'fallback'
+    );
   });
 
   test('getPageCount returns page count', async () => {
@@ -143,6 +159,7 @@ describe('createGenerateStatsCore', () => {
         verifyIdToken: jest.fn().mockResolvedValue({ uid: 'admin' }),
       };
     const db = overrides.db ?? {};
+    const env = overrides.env ?? { GOOGLE_CLOUD_PROJECT: 'project' };
 
     return {
       core: createGenerateStatsCore({
@@ -150,7 +167,7 @@ describe('createGenerateStatsCore', () => {
         auth,
         storage,
         fetchFn,
-        project: 'project',
+        env,
         urlMap: 'url-map',
         cdnHost: 'cdn.example',
         bucket: 'bucket-name',
@@ -164,6 +181,7 @@ describe('createGenerateStatsCore', () => {
       file,
       fetchFn,
       auth,
+      env,
     };
   };
 
@@ -527,7 +545,7 @@ describe('createGenerateStatsCore', () => {
           auth: {},
           storage: { bucket: jest.fn() },
           fetchFn: undefined,
-          project: 'project',
+          env: { GOOGLE_CLOUD_PROJECT: 'project' },
           urlMap: 'map',
           cdnHost: 'cdn',
           bucket: 'bucket',
