@@ -12,6 +12,8 @@ import {
   getTopStories,
 } from '../../src/cloud/generate-stats/index.js';
 
+const DEFAULT_BUCKET_NAME = 'www.dendritestories.co.nz';
+
 describe('generate stats helpers', () => {
   test('buildHtml outputs counts', () => {
     const html = buildHtml(1, 2, 3);
@@ -174,7 +176,6 @@ describe('createGenerateStatsCore', () => {
       storage,
       fetchFn,
       env,
-      bucket: 'bucket-name',
       adminUid: 'admin',
       cryptoModule: overrides.cryptoModule ?? {
         randomUUID: jest.fn().mockReturnValue('uuid'),
@@ -391,7 +392,7 @@ describe('createGenerateStatsCore', () => {
     expect(pageCountFn).toHaveBeenCalledTimes(1);
     expect(unmoderatedPageCountFn).toHaveBeenCalledTimes(1);
     expect(topStoriesFn).toHaveBeenCalledTimes(1);
-    expect(storage.bucket).toHaveBeenCalledWith('bucket-name');
+    expect(storage.bucket).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
     expect(bucketRef.file).toHaveBeenCalledWith('stats.html');
     expect(file.save).toHaveBeenCalledWith(expect.stringContaining('<!doctype html>'), {
       contentType: 'text/html',
@@ -658,7 +659,6 @@ describe('createGenerateStatsCore', () => {
           fetchFn: undefined,
           env: { GOOGLE_CLOUD_PROJECT: 'project' },
           urlMap: 'map',
-          bucket: 'bucket',
           adminUid: 'admin',
           cryptoModule: { randomUUID: jest.fn() },
         })
@@ -794,7 +794,7 @@ describe('createGenerateStatsCore', () => {
 
     await expect(core.generate()).resolves.toBeNull();
 
-    expect(storage.bucket).toHaveBeenCalledWith('bucket-name');
+    expect(storage.bucket).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
     expect(bucketRef.file).toHaveBeenCalledWith('stats.html');
     expect(file.save).toHaveBeenCalledWith(
       expect.stringContaining('Story story-1'),
