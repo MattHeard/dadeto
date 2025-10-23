@@ -5,18 +5,9 @@ import {
   extractUuid,
 } from './handler.js';
 import { createDb } from './create-db.js';
+import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
 
 const db = createDb(Firestore);
-
-/**
- * Retrieve the Firestore snapshot for an API key credit document.
- * @param {import('@google-cloud/firestore').Firestore} database Firestore instance.
- * @param {string} uuid API key UUID.
- * @returns {Promise<import('@google-cloud/firestore').DocumentSnapshot>} Firestore snapshot.
- */
-export function getApiKeyCreditSnapshot(database, uuid) {
-  return database.collection('api-key-credit').doc(String(uuid)).get();
-}
 
 /**
  * Fetch stored credit for the supplied API key UUID.
@@ -58,3 +49,4 @@ export const getApiKeyCreditV2 = onRequest(async (req, res) => {
 
 export { extractUuid } from './handler.js';
 export { createDb } from './create-db.js';
+export { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
