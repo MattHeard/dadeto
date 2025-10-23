@@ -252,6 +252,15 @@ export function createModeratorRefFactory(database) {
 }
 
 /**
+ * Create the base variants collection group query.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
+ * @returns {import('firebase-admin/firestore').Query} Base variants query.
+ */
+export function createVariantsQuery(database) {
+  return database.collectionGroup('variants');
+}
+
+/**
  * @typedef {object} VariantQueryDescriptor
  * @property {"zeroRated"|"any"} reputation Reputation filter applied to the query.
  * @property {">="|"<"} comparator Comparison operator applied to the random value.
