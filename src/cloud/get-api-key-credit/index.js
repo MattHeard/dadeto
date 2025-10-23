@@ -1,15 +1,33 @@
-import { Firestore } from '@google-cloud/firestore';
 import {
   createGetApiKeyCreditHandler,
   fetchApiKeyCreditDocument,
   isMissingDocument,
 } from './core.js';
-import { createFirestore } from './createFirestore.js';
 
-const firestore = createFirestore(Firestore);
+/**
+ * Instantiate a Firestore client using the supplied constructor.
+ * @param {typeof import('@google-cloud/firestore').Firestore} FirestoreConstructor Firestore constructor.
+ * @returns {import('@google-cloud/firestore').Firestore} Initialized Firestore client.
+ */
+export function createFirestore(FirestoreConstructor) {
+  return new FirestoreConstructor();
+}
+
+let firestorePromise;
+
+async function getFirestoreInstance() {
+  if (!firestorePromise) {
+    firestorePromise = import('@google-cloud/firestore').then(({ Firestore }) =>
+      createFirestore(Firestore)
+    );
+  }
+
+  return firestorePromise;
+}
 
 const getApiKeyCredit = createGetApiKeyCreditHandler({
   async fetchCredit(uuid) {
+    const firestore = await getFirestoreInstance();
     const doc = await fetchApiKeyCreditDocument(firestore, uuid);
 
     if (isMissingDocument(doc)) {
@@ -51,4 +69,3 @@ export {
   fetchApiKeyCreditDocument,
   isMissingDocument,
 } from './core.js';
-export { createFirestore } from './createFirestore.js';

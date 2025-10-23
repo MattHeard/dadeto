@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { createFirestore } from '../../../../src/core/cloud/get-api-key-credit/createFirestore.js';
+import { createFirestore } from '../../../../src/cloud/get-api-key-credit/index.js';
 import {
   fetchApiKeyCreditDocument,
   isMissingDocument,

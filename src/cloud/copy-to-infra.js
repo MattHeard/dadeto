@@ -117,11 +117,6 @@ const getApiKeyCreditCoreSource = join(
   'get-api-key-credit',
   'core.js'
 );
-const getApiKeyCreditCreateFirestoreSource = join(
-  srcCoreCloudDir,
-  'get-api-key-credit',
-  'createFirestore.js'
-);
 
 const getApiKeyCreditV2CoreSource = join(
   srcCoreCloudDir,
@@ -215,10 +210,6 @@ const individualFileCopies = [
   {
     source: reportForModerationHandlerSource,
     target: join(infraFunctionsDir, 'report-for-moderation', 'handler.js'),
-  },
-  {
-    source: getApiKeyCreditCreateFirestoreSource,
-    target: join(infraFunctionsDir, 'get-api-key-credit', 'createFirestore.js'),
   },
   {
     source: getApiKeyCreditCoreSource,
