@@ -352,6 +352,18 @@ export function createReputationScopedQuery(reputation, variantsQuery) {
 }
 
 /**
+ * Build a reputation-scoped variants query from a Firestore instance.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
+ * @param {'zeroRated' | string} reputation Reputation category for moderators.
+ * @returns {import('firebase-admin/firestore').Query} Query scoped to the provided reputation.
+ */
+export function createReputationScopedVariantsQuery(database, reputation) {
+  const variantsQuery = createVariantsQuery(database);
+
+  return createReputationScopedQuery(reputation, variantsQuery);
+}
+
+/**
  * @typedef {object} VariantQueryDescriptor
  * @property {"zeroRated"|"any"} reputation Reputation filter applied to the query.
  * @property {">="|"<"} comparator Comparison operator applied to the random value.
