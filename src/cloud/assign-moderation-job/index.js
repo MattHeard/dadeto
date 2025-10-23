@@ -28,7 +28,11 @@ configureUrlencodedBodyParser(app, express);
 
 const firebaseResources = { db, auth, app };
 
-setupAssignModerationJobRoute(firebaseResources, gcf);
+setupAssignModerationJobRoute(
+  firebaseResources,
+  gcf.createRunVariantQuery,
+  gcf.now
+);
 
 export const assignModerationJob = createAssignModerationJob(
   functions,
