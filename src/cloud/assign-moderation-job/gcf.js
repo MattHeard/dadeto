@@ -3,6 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
+import { createVariantsQuery } from './core.js';
 
 /**
  * Initialize Firebase Admin and supporting services.
@@ -19,15 +20,6 @@ export function initializeFirebaseAppResources() {
     auth: getAuth(),
     app: express(),
   };
-}
-
-/**
- * Create the base variants collection group query.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @returns {import('firebase-admin/firestore').Query} Base variants query.
- */
-export function createVariantsQuery(db) {
-  return db.collectionGroup('variants');
 }
 
 /**
