@@ -175,6 +175,25 @@ export function createCorsOriginFactory({
 }
 
 /**
+ * Build a helper that configures the createCorsOrigin factory dependencies.
+ * @param {{
+ *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
+ *   createCorsOriginHandler: (allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void,
+ * }} deps Dependencies required to compose the CORS origin factory.
+ * @returns {(getEnvironmentVariables: () => Record<string, unknown>) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
+ * Configured createCorsOrigin function that accepts an environment getter.
+ */
+export function createCreateCorsOrigin({
+  getAllowedOrigins,
+  createCorsOriginHandler,
+}) {
+  return createCorsOriginFactory({
+    getAllowedOrigins,
+    createCorsOriginHandler,
+  });
+}
+
+/**
  * Build the CORS middleware options for the moderation app.
  * @param {(allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} createCorsOriginHandlerFn
  * Factory that produces the origin callback for the CORS middleware.
