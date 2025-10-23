@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
-import corsConfig from './cors-config.js';
+import { getAllowedOrigins } from '../cors-config.js';
 import { findPageRef, findPagesSnap, refFromSnap } from './findPageRef.js';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
@@ -14,7 +14,7 @@ ensureFirebaseApp();
 const auth = getAuth();
 const app = express();
 
-const { allowedOrigins } = corsConfig;
+const allowedOrigins = getAllowedOrigins(process.env);
 
 app.use(
   cors({
