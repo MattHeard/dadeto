@@ -2,12 +2,9 @@ import { Firestore } from '@google-cloud/firestore';
 import { createGetApiKeyCreditHandler } from './handler.js';
 import { createFirestore } from './createFirestore.js';
 import { fetchApiKeyCreditDocument } from './fetchApiKeyCreditDocument.js';
+import { isMissingDocument } from './isMissingDocument.js';
 
 const firestore = createFirestore(Firestore);
-
-function isMissingDocument(doc) {
-  return !doc.exists;
-}
 
 const getApiKeyCredit = createGetApiKeyCreditHandler({
   async fetchCredit(uuid) {
