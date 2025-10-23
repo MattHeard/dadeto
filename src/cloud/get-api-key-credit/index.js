@@ -5,11 +5,15 @@ import { fetchApiKeyCreditDocument } from './fetchApiKeyCreditDocument.js';
 
 const firestore = createFirestore(Firestore);
 
+function isMissingDocument(doc) {
+  return !doc.exists;
+}
+
 const getApiKeyCredit = createGetApiKeyCreditHandler({
   async fetchCredit(uuid) {
     const doc = await fetchApiKeyCreditDocument(firestore, uuid);
 
-    if (!doc.exists) {
+    if (isMissingDocument(doc)) {
       return null;
     }
 
