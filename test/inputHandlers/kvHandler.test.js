@@ -3,7 +3,7 @@ import {
   maybeRemoveNumber,
   maybeRemoveDendrite,
   maybeRemoveTextarea,
-} from '../../src/inputHandlers/removeElements.js';
+} from '../../src/core/inputHandlers/removeElements.js';
 
 // kvHandler relies on ensureKeyValueInput which is complex to mock in ES modules.
 // These tests focus on the removable helper functions to achieve full branch coverage.

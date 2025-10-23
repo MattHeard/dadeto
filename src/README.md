@@ -3,12 +3,9 @@
 This directory contains the main source code for Dadeto. It is organized into subfolders by concern:
 
 - `browser`: utilities and helpers for browser environments.
-- `constants`: shared constant values.
-- `generator`: logic for generating content and other artifacts.
-- `ideas`: curated collections of project and blog ideas.
-- `inputHandlers`: functions for handling user input.
-- `presenters`: components responsible for presenting data or UI.
+- `build`: tooling for asset and bundle generation.
+- `cloud`: Firebase functions and other backend adapters.
+- `core`: shared logic used across environments, including constants, input handlers (`core/inputHandlers`), presenters, and other browser adapters.
+- `node`: Node-specific entry points and helpers.
 - `scripts`: development and build scripts.
-- `toys`: experimental or demonstration code.
-- `utils`: general-purpose utility functions.
 - `blog.json`: sample data used during development.

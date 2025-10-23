@@ -1,12 +1,12 @@
-import { DENDRITE_FORM_SELECTOR } from '../core/constants/selectors.js';
-import { parseJsonOrDefault } from '../core/jsonUtils.js';
+import { DENDRITE_FORM_SELECTOR } from '../constants/selectors.js';
+import { parseJsonOrDefault } from '../jsonUtils.js';
 import {
   maybeRemoveNumber,
   maybeRemoveKV,
   maybeRemoveTextarea,
 } from './removeElements.js';
 import { hideAndDisable } from './inputState.js';
-import { getInputValue, setInputValue } from '../core/browser/inputValueStore.js';
+import { getInputValue, setInputValue } from '../browser/inputValueStore.js';
 
 /**
  * Create a handler for rendering and managing a dendrite form.

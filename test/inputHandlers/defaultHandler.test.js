@@ -1,4 +1,4 @@
-import { defaultHandler } from '../../src/inputHandlers/default.js';
+import { defaultHandler } from '../../src/core/inputHandlers/default.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('defaultHandler', () => {
