@@ -5,6 +5,7 @@ import { getAllowedOrigins } from './cors-config.js';
 import {
   createAssignModerationJob,
   createCorsOriginHandler,
+  createCorsOriginFactory,
   configureUrlencodedBodyParser,
   setupAssignModerationJobRoute,
 } from './core.js';
@@ -12,12 +13,10 @@ import * as gcf from './gcf.js';
 
 const { db, auth, app } = gcf.initializeFirebaseAppResources();
 
-function createCorsOrigin(getEnvironmentVariablesFn) {
-  const environmentVariables = getEnvironmentVariablesFn();
-  const allowedOrigins = getAllowedOrigins(environmentVariables);
-
-  return createCorsOriginHandler(allowedOrigins);
-}
+const createCorsOrigin = createCorsOriginFactory({
+  getAllowedOrigins,
+  createCorsOriginHandler,
+});
 
 const corsOptions = {
   origin: createCorsOrigin(gcf.getEnvironmentVariables),
