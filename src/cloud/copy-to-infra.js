@@ -112,25 +112,15 @@ const reportForModerationHandlerSource = join(
   'handler.js'
 );
 
-const getApiKeyCreditHandlerSource = join(
+const getApiKeyCreditCoreSource = join(
   srcCoreCloudDir,
   'get-api-key-credit',
-  'handler.js'
+  'core.js'
 );
 const getApiKeyCreditCreateFirestoreSource = join(
   srcCoreCloudDir,
   'get-api-key-credit',
   'createFirestore.js'
-);
-const getApiKeyCreditFetchDocumentSource = join(
-  srcCoreCloudDir,
-  'get-api-key-credit',
-  'fetchApiKeyCreditDocument.js'
-);
-const getApiKeyCreditIsMissingDocumentSource = join(
-  srcCoreCloudDir,
-  'get-api-key-credit',
-  'isMissingDocument.js'
 );
 
 const getApiKeyCreditV2CoreSource = join(
@@ -227,24 +217,12 @@ const individualFileCopies = [
     target: join(infraFunctionsDir, 'report-for-moderation', 'handler.js'),
   },
   {
-    source: getApiKeyCreditHandlerSource,
-    target: join(infraFunctionsDir, 'get-api-key-credit', 'handler.js'),
-  },
-  {
     source: getApiKeyCreditCreateFirestoreSource,
     target: join(infraFunctionsDir, 'get-api-key-credit', 'createFirestore.js'),
   },
   {
-    source: getApiKeyCreditFetchDocumentSource,
-    target: join(infraFunctionsDir, 'get-api-key-credit', 'fetchApiKeyCreditDocument.js'),
-  },
-  {
-    source: getApiKeyCreditIsMissingDocumentSource,
-    target: join(
-      infraFunctionsDir,
-      'get-api-key-credit',
-      'isMissingDocument.js'
-    ),
+    source: getApiKeyCreditCoreSource,
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'core.js'),
   },
   {
     source: getApiKeyCreditV2CoreSource,

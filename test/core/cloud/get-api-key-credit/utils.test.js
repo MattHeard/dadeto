@@ -1,7 +1,9 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { createFirestore } from '../../../../src/core/cloud/get-api-key-credit/createFirestore.js';
-import { fetchApiKeyCreditDocument } from '../../../../src/core/cloud/get-api-key-credit/fetchApiKeyCreditDocument.js';
-import { isMissingDocument } from '../../../../src/core/cloud/get-api-key-credit/isMissingDocument.js';
+import {
+  fetchApiKeyCreditDocument,
+  isMissingDocument,
+} from '../../../../src/core/cloud/get-api-key-credit/core.js';
 
 describe('createFirestore', () => {
   it('instantiates the provided constructor without arguments', () => {
