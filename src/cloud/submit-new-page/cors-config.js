@@ -1,3 +1,5 @@
-import config from '../cors-config.js';
+import { getAllowedOrigins } from '../cors-config.js';
+
+const config = { allowedOrigins: getAllowedOrigins() };
 
 export default config;
