@@ -274,8 +274,10 @@ describe('createCopyCore', () => {
         core.accumulateJsFiles(
           jsFiles,
           entry,
-          directories.srcToysDir,
-          listEntries
+          {
+            dir: directories.srcToysDir,
+            listEntries,
+          }
         )
       ).toEqual(['existing.js', fullPath]);
     });
@@ -318,7 +320,11 @@ describe('createCopyCore', () => {
         'widget.js'
       );
 
-      core.copyFileWithDirectories(io, source, destination, logger);
+      core.copyFileWithDirectories(io, {
+        source,
+        destination,
+        messageLogger: logger,
+      });
 
       expect(io.createDirectory).toHaveBeenCalledWith(
         directories.publicToysDir
@@ -336,10 +342,12 @@ describe('createCopyCore', () => {
       };
       core.copyFileWithDirectories(
         existingIo,
-        source,
-        destination,
-        logger,
-        customMessage
+        {
+          source,
+          destination,
+          messageLogger: logger,
+          message: customMessage,
+        }
       );
       expect(logger.info).toHaveBeenCalledWith(customMessage);
       expect(existingIo.createDirectory).not.toHaveBeenCalled();
@@ -431,13 +439,16 @@ describe('createCopyCore', () => {
       const logger = { info: jest.fn(), warn: jest.fn() };
       const directoryEntry = createDirectoryEntry('nested');
       const fileEntry = createFileEntry('keep.js');
+      const directoriesContext = {
+        src: directories.srcToysDir,
+        dest: directories.publicToysDir,
+      };
+      const copyContext = { io, messageLogger: logger };
 
       core.handleDirectoryEntry(
         directoryEntry,
-        directories.srcToysDir,
-        directories.publicToysDir,
-        io,
-        logger
+        directoriesContext,
+        copyContext
       );
 
       expect(io.copyFile).toHaveBeenCalledWith(
@@ -447,10 +458,8 @@ describe('createCopyCore', () => {
 
       core.handleDirectoryEntry(
         fileEntry,
-        directories.srcToysDir,
-        directories.publicToysDir,
-        io,
-        logger
+        directoriesContext,
+        copyContext
       );
 
       expect(io.copyFile).toHaveBeenCalledWith(
@@ -468,13 +477,16 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
       const entries = [createFileEntry('one.js'), createFileEntry('two.js')];
+      const directoriesContext = {
+        src: directories.srcToysDir,
+        dest: directories.publicToysDir,
+      };
+      const copyContext = { io, messageLogger: logger };
 
       core.processDirectoryEntries(
         entries,
-        directories.srcToysDir,
-        directories.publicToysDir,
-        io,
-        logger
+        directoriesContext,
+        copyContext
       );
 
       expect(io.copyFile).toHaveBeenCalledTimes(2);
@@ -495,10 +507,11 @@ describe('createCopyCore', () => {
       const logger = { info: jest.fn(), warn: jest.fn() };
 
       core.copyDirRecursive(
-        directories.srcBrowserDir,
-        directories.publicBrowserDir,
-        io,
-        logger
+        {
+          src: directories.srcBrowserDir,
+          dest: directories.publicBrowserDir,
+        },
+        { io, messageLogger: logger }
       );
 
       expect(io.createDirectory).toHaveBeenCalledWith(

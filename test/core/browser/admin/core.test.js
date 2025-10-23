@@ -612,7 +612,12 @@ describe('executeTriggerRender', () => {
     const fetch = jest.fn().mockResolvedValue({ ok: true });
     const showMessage = jest.fn();
 
-    await executeTriggerRender(getAdminEndpoints, fetch, 'token', showMessage);
+    await executeTriggerRender({
+      getAdminEndpoints,
+      fetchFn: fetch,
+      token: 'token',
+      showMessage,
+    });
 
     expect(fetch).toHaveBeenCalledWith('https://render', {
       method: 'POST',
@@ -626,7 +631,12 @@ describe('executeTriggerRender', () => {
     const fetch = jest.fn().mockRejectedValue(new Error('boom'));
     const showMessage = jest.fn();
 
-    await executeTriggerRender(getAdminEndpoints, fetch, 'token', showMessage);
+    await executeTriggerRender({
+      getAdminEndpoints,
+      fetchFn: fetch,
+      token: 'token',
+      showMessage,
+    });
 
     expect(showMessage).toHaveBeenCalledWith('Render failed: boom');
   });
@@ -636,7 +646,12 @@ describe('executeTriggerRender', () => {
     const fetch = jest.fn().mockRejectedValue('nope');
     const showMessage = jest.fn();
 
-    await executeTriggerRender(getAdminEndpoints, fetch, 'token', showMessage);
+    await executeTriggerRender({
+      getAdminEndpoints,
+      fetchFn: fetch,
+      token: 'token',
+      showMessage,
+    });
 
     expect(showMessage).toHaveBeenCalledWith('Render failed: nope');
   });

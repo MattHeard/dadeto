@@ -47,13 +47,13 @@ describe('createCopyToInfraCore', () => {
       const io = { copyFile: jest.fn().mockResolvedValue(undefined) };
       const logger = { info: jest.fn() };
 
-      await core.copyFileToTarget(
+      await core.copyFileToTarget({
         io,
-        posix.join(projectRoot, 'src'),
-        posix.join(projectRoot, 'infra'),
-        'index.js',
-        logger,
-      );
+        sourceDir: posix.join(projectRoot, 'src'),
+        targetDir: posix.join(projectRoot, 'infra'),
+        name: 'index.js',
+        messageLogger: logger,
+      });
 
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(projectRoot, 'src/index.js'),
