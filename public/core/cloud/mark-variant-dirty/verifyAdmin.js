@@ -32,7 +32,7 @@ function defaultInvalidTokenMessage(error) {
  * Create a verifyAdmin function with dependency injection.
  * @param {object} deps Collaborators for verification flow.
  * @param {(req: import('express').Request) => string} [deps.getAuthHeader] Extract Authorization header.
- * @param {(authHeader: string) => RegExpMatchArray | null} [deps.matchAuthHeader] Parse bearer token.
+ * @param {(authHeader: string) => string[] | null} [deps.matchAuthHeader] Parse bearer token.
  * @param {(token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>} deps.verifyToken Verify token.
  * @param {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} deps.isAdminUid Determine admin access.
  * @param {(res: import('express').Response, message: string) => void} deps.sendUnauthorized Send 401 response.
