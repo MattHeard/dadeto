@@ -3,7 +3,7 @@ import { Firestore } from '@google-cloud/firestore';
 import {
   createGetApiKeyCreditV2Handler,
   extractUuid,
-} from './handler.js';
+} from './core.js';
 import { createDb } from './create-db.js';
 import { createFetchCredit } from './core.js';
 
@@ -35,6 +35,6 @@ export const getApiKeyCreditV2 = onRequest(async (req, res) => {
   return res.status(status).send(body);
 });
 
-export { extractUuid } from './handler.js';
+export { extractUuid } from './core.js';
 export { createDb } from './create-db.js';
 export { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
