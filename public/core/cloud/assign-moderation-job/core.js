@@ -261,6 +261,20 @@ export function createVariantsQuery(database) {
 }
 
 /**
+ * Scope a variants query based on moderator reputation.
+ * @param {'zeroRated' | string} reputation Reputation category for moderators.
+ * @param {import('firebase-admin/firestore').Query} variantsQuery Query for fetching variants.
+ * @returns {import('firebase-admin/firestore').Query} Query scoped to the provided reputation.
+ */
+export function createReputationScopedQuery(reputation, variantsQuery) {
+  if (reputation === 'zeroRated') {
+    return variantsQuery.where('moderatorReputationSum', '==', 0);
+  }
+
+  return variantsQuery;
+}
+
+/**
  * @typedef {object} VariantQueryDescriptor
  * @property {"zeroRated"|"any"} reputation Reputation filter applied to the query.
  * @property {">="|"<"} comparator Comparison operator applied to the random value.
