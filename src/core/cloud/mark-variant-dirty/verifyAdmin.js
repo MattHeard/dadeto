@@ -7,7 +7,16 @@ const defaultMissingTokenMessage = 'Missing token';
  * @returns {string} Authorization header value or an empty string when unavailable.
  */
 function defaultGetAuthHeader(req) {
-  return typeof req?.get === 'function' ? req.get('Authorization') || '' : '';
+  if (!req || typeof req.get !== 'function') {
+    return '';
+  }
+
+  const header = req.get('Authorization');
+  if (typeof header !== 'string') {
+    return '';
+  }
+
+  return header;
 }
 
 /**
