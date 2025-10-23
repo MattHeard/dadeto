@@ -15,11 +15,8 @@ const getTextareaSourceValue = (textInput, dom) => {
   if (value) {
     return value;
   }
-  if (dom && typeof dom.getValue === 'function') {
-    const domValue = dom.getValue(textInput);
-    return domValue ?? '';
-  }
-  return value;
+  const domValue = dom?.getValue?.(textInput);
+  return domValue ?? '';
 };
 
 const createSyncTextInputValue = (textInput, dom) => event => {

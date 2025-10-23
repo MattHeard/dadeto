@@ -1,13 +1,29 @@
 const defaultMissingTokenMessage = 'Missing token';
 
+/**
+ * Retrieve the Authorization header from a request-like object.
+ * @param {import('express').Request | { get?: (header: string) => string | undefined } | null | undefined} req
+ *   Incoming request supplying header access helpers.
+ * @returns {string} Authorization header value or an empty string when unavailable.
+ */
 function defaultGetAuthHeader(req) {
   return typeof req?.get === 'function' ? req.get('Authorization') || '' : '';
 }
 
+/**
+ * Parse a bearer token from an Authorization header value.
+ * @param {string} authHeader Raw Authorization header string.
+ * @returns {string[] | null} Match result where index 1 holds the bearer token.
+ */
 function defaultMatchAuthHeader(authHeader) {
   return authHeader.match(/^Bearer (.+)$/);
 }
 
+/**
+ * Produce a human-friendly message for token verification failures.
+ * @param {unknown} error Error thrown during token validation.
+ * @returns {string} Message describing the failure.
+ */
 function defaultInvalidTokenMessage(error) {
   return error?.message || 'Invalid token';
 }
