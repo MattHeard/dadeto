@@ -3,7 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
-import { createVariantsQuery, createReputationScopedQuery } from './core.js';
+import { createReputationScopedVariantsQuery } from './core.js';
 
 /**
  * Initialize Firebase Admin and supporting services.
@@ -30,10 +30,9 @@ export function initializeFirebaseAppResources() {
  */
 export function createRunVariantQuery(db) {
   return function runVariantQuery({ reputation, comparator, randomValue }) {
-    const variantsQuery = createVariantsQuery(db);
-    const reputationScopedQuery = createReputationScopedQuery(
+    const reputationScopedQuery = createReputationScopedVariantsQuery(
+      db,
       reputation,
-      variantsQuery,
     );
     const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
     const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
