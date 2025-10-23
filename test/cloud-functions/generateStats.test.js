@@ -173,12 +173,6 @@ describe('createGenerateStatsCore', () => {
       },
     };
 
-    if ('cdnHost' in overrides) {
-      coreDeps.cdnHost = overrides.cdnHost;
-    } else {
-      coreDeps.cdnHost = 'cdn.example';
-    }
-
     if (typeof overrides.urlMap !== 'undefined') {
       coreDeps.urlMap = overrides.urlMap;
     }
@@ -326,7 +320,6 @@ describe('createGenerateStatsCore', () => {
     });
     const { core } = createCore({
       fetchFn,
-      cdnHost: undefined,
       env: { GOOGLE_CLOUD_PROJECT: 'project', CDN_HOST: 'env-host' },
     });
 
@@ -632,7 +625,6 @@ describe('createGenerateStatsCore', () => {
           fetchFn: undefined,
           env: { GOOGLE_CLOUD_PROJECT: 'project' },
           urlMap: 'map',
-          cdnHost: 'cdn',
           bucket: 'bucket',
           adminUid: 'admin',
           cryptoModule: { randomUUID: jest.fn() },

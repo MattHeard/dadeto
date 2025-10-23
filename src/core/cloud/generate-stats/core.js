@@ -307,7 +307,6 @@ export function getCdnHostFromEnv(env = {}) {
  *   fetchFn: typeof fetch,
  *   env?: NodeJS.ProcessEnv | Record<string, string | undefined>,
  *   urlMap?: string,
- *   cdnHost?: string,
  *   bucket: string,
  *   adminUid: string,
  *   cryptoModule: { randomUUID: () => string },
@@ -345,7 +344,6 @@ export function createGenerateStatsCore({
   fetchFn,
   env,
   urlMap,
-  cdnHost,
   bucket,
   adminUid,
   cryptoModule,
@@ -353,10 +351,7 @@ export function createGenerateStatsCore({
   const envRef = env && typeof env === 'object' ? env : {};
   const project = getProjectFromEnv(envRef);
   const resolvedUrlMap = urlMap || getUrlMapFromEnv(envRef);
-  const resolvedCdnHost =
-    typeof cdnHost === 'string' && cdnHost.trim()
-      ? cdnHost
-      : getCdnHostFromEnv(envRef);
+  const resolvedCdnHost = getCdnHostFromEnv(envRef);
   const fetchImpl = fetchFn ?? globalThis.fetch;
   if (typeof fetchImpl !== 'function') {
     throw new Error('fetch implementation required');
