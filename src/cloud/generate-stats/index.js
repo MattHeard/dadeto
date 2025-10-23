@@ -9,7 +9,6 @@ import { getAllowedOrigins } from './cors-config.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { createGenerateStatsCore } from './core.js';
-const BUCKET = 'www.dendritestories.co.nz';
 const fetchFn =
   typeof globalThis.fetch === 'function'
     ? globalThis.fetch.bind(globalThis)
@@ -26,7 +25,6 @@ const generateStatsCore = createGenerateStatsCore({
   storage,
   fetchFn,
   env: process.env,
-  bucket: BUCKET,
   adminUid: ADMIN_UID,
   cryptoModule: crypto,
 });

@@ -257,6 +257,7 @@ export function buildHtml(
 
 const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
 const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
+const DEFAULT_BUCKET_NAME = 'www.dendritestories.co.nz';
 
 /** @typedef {import('node:process').ProcessEnv} ProcessEnv */
 
@@ -309,7 +310,6 @@ export function getCdnHostFromEnv(env = {}) {
  *   fetchFn: typeof fetch,
  *   env?: ProcessEnv | Record<string, string | undefined>,
  *   urlMap?: string,
- *   bucket: string,
  *   adminUid: string,
  *   cryptoModule: { randomUUID: () => string },
  * }} deps Dependencies required by the workflow.
@@ -346,7 +346,6 @@ export function createGenerateStatsCore({
   fetchFn,
   env,
   urlMap,
-  bucket,
   adminUid,
   cryptoModule,
 }) {
@@ -498,7 +497,7 @@ export function createGenerateStatsCore({
       deps.unmoderatedPageCountFn || getUnmoderatedPageCount;
     const topStoriesFn = deps.topStoriesFn || getTopStories;
     const storageInstance = deps.storageInstance || storage;
-    const bucketName = deps.bucketName || bucket;
+    const bucketName = deps.bucketName || DEFAULT_BUCKET_NAME;
     const invalidatePathsFn = deps.invalidatePathsFn || invalidatePaths;
 
     const [storyCount, pageCount, unmoderatedCount, topStories] =
