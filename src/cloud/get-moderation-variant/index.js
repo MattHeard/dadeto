@@ -5,17 +5,12 @@ import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { isAllowedOrigin } from './cors.js';
+import { productionOrigins } from './core.js';
 
 const db = getFirestoreInstance();
 ensureFirebaseApp();
 const auth = getAuth();
 const app = express();
-
-const productionOrigins = [
-  'https://mattheard.net',
-  'https://dendritestories.co.nz',
-  'https://www.dendritestories.co.nz',
-];
 
 const getAllowedOrigins = environmentVariables => {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
