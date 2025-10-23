@@ -1,1 +1,1 @@
-export * from '../../core/cloud/hide-variant-html/removeVariantHtml.js';
+export * from '../../core/cloud/hide-variant-html/core.js';

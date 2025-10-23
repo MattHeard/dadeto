@@ -137,7 +137,7 @@ const getApiKeyCreditV2SnapshotSource = join(
 const hideVariantHtmlSource = join(
   srcCoreCloudDir,
   'hide-variant-html',
-  'removeVariantHtml.js'
+  'core.js'
 );
 
 const markVariantDirtyVerifyAdminSource = join(
@@ -236,7 +236,7 @@ const individualFileCopies = [
     target: join(
       infraFunctionsDir,
       'hide-variant-html',
-      'removeVariantHtml.js'
+      'core.js'
     ),
   },
   {
