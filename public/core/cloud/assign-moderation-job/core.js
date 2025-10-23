@@ -397,6 +397,25 @@ export function createReputationScopedVariantsQuery(database, reputation) {
  */
 
 /**
+ * Create a query runner that fetches a single variant candidate.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
+ * @returns {(descriptor: VariantQueryDescriptor) => Promise<import('firebase-admin/firestore').QuerySnapshot>} Query runner bound to the provided database.
+ */
+export function createRunVariantQuery(database) {
+  return function runVariantQuery({ reputation, comparator, randomValue }) {
+    const reputationScopedQuery = createReputationScopedVariantsQuery(
+      database,
+      reputation
+    );
+    const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
+    const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
+    const limitedQuery = filteredQuery.limit(1);
+
+    return limitedQuery.get();
+  };
+}
+
+/**
  * Describe the queries used to fetch a moderation candidate.
  * @param {number} randomValue Random value that seeds the Firestore cursor.
  * @returns {VariantQueryDescriptor[]} Ordered query descriptors.
