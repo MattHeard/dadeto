@@ -12,9 +12,7 @@ import * as gcf from './gcf.js';
 
 const { db, auth, app } = gcf.initializeFirebaseAppResources();
 
-const getEnvironmentVariables = () => process.env;
-
-const allowedOrigins = getAllowedOrigins(getEnvironmentVariables());
+const allowedOrigins = getAllowedOrigins(gcf.getEnvironmentVariables());
 const corsOptions = {
   allowedOrigins,
   origin: createCorsOriginHandler(allowedOrigins),
