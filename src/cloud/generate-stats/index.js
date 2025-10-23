@@ -4,7 +4,6 @@ import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
 import { getAuth } from 'firebase-admin/auth';
-import { ADMIN_UID } from './admin-config.js';
 import { getAllowedOrigins } from './cors-config.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
@@ -25,7 +24,6 @@ const generateStatsCore = createGenerateStatsCore({
   storage,
   fetchFn,
   env: process.env,
-  adminUid: ADMIN_UID,
   cryptoModule: crypto,
 });
 
