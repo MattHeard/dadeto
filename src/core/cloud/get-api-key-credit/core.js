@@ -9,6 +9,25 @@ const CREDIT_RESPONSE_BY_VALUE = new Map([
 ]);
 
 /**
+ * Determine whether a Firestore document snapshot is missing.
+ * @param {{ exists?: boolean }} doc Snapshot to inspect for existence.
+ * @returns {boolean} True when the document is absent.
+ */
+export function isMissingDocument(doc) {
+  return !doc?.exists;
+}
+
+/**
+ * Fetch the Firestore document containing API key credit information.
+ * @param {import('@google-cloud/firestore').Firestore} firestoreInstance Firestore client used for queries.
+ * @param {string | number} uuid Identifier for the API key credit document.
+ * @returns {Promise<import('@google-cloud/firestore').DocumentSnapshot>} The matching Firestore document snapshot.
+ */
+export function fetchApiKeyCreditDocument(firestoreInstance, uuid) {
+  return firestoreInstance.collection('api-key-credit').doc(String(uuid)).get();
+}
+
+/**
  * Ensure a dependency is a function before using it.
  * @param {string} name - Name of the dependency for error messaging.
  * @param {*} dependency - Candidate dependency to validate.
