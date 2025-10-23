@@ -22,6 +22,15 @@ export function initializeFirebaseAppResources() {
 }
 
 /**
+ * Create the base variants collection group query.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
+ * @returns {import('firebase-admin/firestore').Query} Base variants query.
+ */
+export function createVariantsQuery(db) {
+  return db.collectionGroup('variants');
+}
+
+/**
  * Build a Firestore query executor for selecting variants.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @returns {(options: { reputation: string, comparator: import('firebase-admin/firestore').WhereFilterOp, randomValue: number }) => Promise<import('firebase-admin/firestore').QuerySnapshot>}
@@ -29,18 +38,16 @@ export function initializeFirebaseAppResources() {
  */
 export function createRunVariantQuery(db) {
   return function runVariantQuery({ reputation, comparator, randomValue }) {
-    let query = db.collectionGroup('variants');
+    const variantsQuery = createVariantsQuery(db);
+    const reputationScopedQuery =
+      reputation === 'zeroRated'
+        ? variantsQuery.where('moderatorReputationSum', '==', 0)
+        : variantsQuery;
+    const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
+    const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
+    const limitedQuery = filteredQuery.limit(1);
 
-    if (reputation === 'zeroRated') {
-      query = query.where('moderatorReputationSum', '==', 0);
-    }
-
-    query = query
-      .orderBy('rand', 'asc')
-      .where('rand', comparator, randomValue)
-      .limit(1);
-
-    return query.get();
+    return limitedQuery.get();
   };
 }
 
