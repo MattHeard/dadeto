@@ -7,6 +7,7 @@ import {
   createCorsOptions,
   configureUrlencodedBodyParser,
   getAllowedOrigins,
+  createReputationScopedVariantsQuery,
   setupAssignModerationJobRoute,
 } from './core.js';
 import * as gcf from './gcf.js';
@@ -17,6 +18,20 @@ const db = getFirestoreInstance();
 ensureFirebaseApp();
 const auth = getAuth();
 const app = express();
+
+function createRunVariantQuery(db) {
+  return function runVariantQuery({ reputation, comparator, randomValue }) {
+    const reputationScopedQuery = createReputationScopedVariantsQuery(
+      db,
+      reputation,
+    );
+    const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
+    const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
+    const limitedQuery = filteredQuery.limit(1);
+
+    return limitedQuery.get();
+  };
+}
 
 const corsOptions = createCorsOptions(
   getAllowedOrigins,
@@ -30,7 +45,7 @@ const firebaseResources = { db, auth, app };
 
 setupAssignModerationJobRoute(
   firebaseResources,
-  gcf.createRunVariantQuery,
+  createRunVariantQuery,
   gcf.now
 );
 
