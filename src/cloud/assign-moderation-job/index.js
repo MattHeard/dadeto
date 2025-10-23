@@ -4,7 +4,7 @@ import cors from 'cors';
 import { getAllowedOrigins } from './cors-config.js';
 import {
   createAssignModerationJob,
-  createCorsOriginFromEnvironment,
+  createCorsOriginHandler,
   configureUrlencodedBodyParser,
   setupAssignModerationJobRoute,
 } from './core.js';
@@ -16,10 +16,9 @@ const createCorsOptions = (
   getAllowedOriginsFunction,
   getEnvironmentVariablesFunction
 ) => {
-  const corsOrigin = createCorsOriginFromEnvironment({
-    getAllowedOrigins: getAllowedOriginsFunction,
-    getEnvironmentVariables: getEnvironmentVariablesFunction,
-  });
+  const environmentVariables = getEnvironmentVariablesFunction();
+  const allowedOrigins = getAllowedOriginsFunction(environmentVariables);
+  const corsOrigin = createCorsOriginHandler(allowedOrigins);
 
   return {
     origin: corsOrigin,
