@@ -117,11 +117,31 @@ const getApiKeyCreditHandlerSource = join(
   'get-api-key-credit',
   'handler.js'
 );
+const getApiKeyCreditCreateFirestoreSource = join(
+  srcCoreCloudDir,
+  'get-api-key-credit',
+  'createFirestore.js'
+);
+const getApiKeyCreditFetchDocumentSource = join(
+  srcCoreCloudDir,
+  'get-api-key-credit',
+  'fetchApiKeyCreditDocument.js'
+);
 
 const getApiKeyCreditV2HandlerSource = join(
   srcCoreCloudDir,
   'get-api-key-credit-v2',
   'handler.js'
+);
+const getApiKeyCreditV2CreateDbSource = join(
+  srcCoreCloudDir,
+  'get-api-key-credit-v2',
+  'create-db.js'
+);
+const getApiKeyCreditV2SnapshotSource = join(
+  srcCoreCloudDir,
+  'get-api-key-credit-v2',
+  'get-api-key-credit-snapshot.js'
 );
 
 const hideVariantHtmlSource = join(
@@ -134,6 +154,11 @@ const markVariantDirtyVerifyAdminSource = join(
   srcCoreCloudDir,
   'mark-variant-dirty',
   'verifyAdmin.js'
+);
+const getModerationVariantCorsSource = join(
+  srcCoreCloudDir,
+  'get-moderation-variant',
+  'cors.js'
 );
 
 const adminConfigFunctionDirectories = [
@@ -201,8 +226,28 @@ const individualFileCopies = [
     target: join(infraFunctionsDir, 'get-api-key-credit', 'handler.js'),
   },
   {
+    source: getApiKeyCreditCreateFirestoreSource,
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'createFirestore.js'),
+  },
+  {
+    source: getApiKeyCreditFetchDocumentSource,
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'fetchApiKeyCreditDocument.js'),
+  },
+  {
     source: getApiKeyCreditV2HandlerSource,
     target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'handler.js'),
+  },
+  {
+    source: getApiKeyCreditV2CreateDbSource,
+    target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'create-db.js'),
+  },
+  {
+    source: getApiKeyCreditV2SnapshotSource,
+    target: join(
+      infraFunctionsDir,
+      'get-api-key-credit-v2',
+      'get-api-key-credit-snapshot.js'
+    ),
   },
   {
     source: hideVariantHtmlSource,
@@ -225,6 +270,10 @@ const individualFileCopies = [
   {
     source: markVariantDirtyVerifyAdminSource,
     target: join(infraFunctionsDir, 'mark-variant-dirty', 'verifyAdmin.js'),
+  },
+  {
+    source: getModerationVariantCorsSource,
+    target: join(infraFunctionsDir, 'get-moderation-variant', 'cors.js'),
   },
   ...adminConfigFunctionCopies,
   ...browserFileCopies,
