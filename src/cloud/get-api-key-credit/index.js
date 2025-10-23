@@ -1,7 +1,16 @@
 import { Firestore } from '@google-cloud/firestore';
 import { createGetApiKeyCreditHandler } from './handler.js';
 
-const firestore = new Firestore();
+/**
+ * Instantiates a Firestore client using the provided constructor.
+ * @param {typeof Firestore} FirestoreConstructor Firestore constructor.
+ * @returns {Firestore} Initialized Firestore client.
+ */
+export function createFirestore(FirestoreConstructor) {
+  return new FirestoreConstructor();
+}
+
+const firestore = createFirestore(Firestore);
 
 const getApiKeyCredit = createGetApiKeyCreditHandler({
   async fetchCredit(uuid) {
