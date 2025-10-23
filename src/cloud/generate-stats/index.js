@@ -8,7 +8,7 @@ import { getAllowedOrigins } from './cors-config.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { createGenerateStatsCore } from './core.js';
-const fetchFn = globalThis.fetch.bind(globalThis);
+import { fetchFn } from './gcf.js';
 
 ensureFirebaseApp();
 const db = getFirestoreInstance();
