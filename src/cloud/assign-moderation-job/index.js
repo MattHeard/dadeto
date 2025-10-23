@@ -4,9 +4,7 @@ import cors from 'cors';
 import { getAllowedOrigins } from './cors-config.js';
 import {
   createAssignModerationJob,
-  createCreateCorsOrigin,
   createCorsOriginFromEnvironment,
-  createCorsOriginHandler,
   configureUrlencodedBodyParser,
   setupAssignModerationJobRoute,
 } from './core.js';
@@ -18,8 +16,6 @@ const corsOptions = {
   origin: createCorsOriginFromEnvironment({
     getAllowedOrigins,
     getEnvironmentVariables: gcf.getEnvironmentVariables,
-    createCreateCorsOrigin,
-    createCorsOriginHandler,
   }),
   methods: ['POST'],
 };

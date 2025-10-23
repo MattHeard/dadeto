@@ -33,10 +33,11 @@ describe("createCorsOriginFactory", () => {
     const originHandler = jest.fn();
     const environmentVariables = { DENDRITE_ENVIRONMENT: "test" };
     const getAllowedOrigins = jest.fn(() => ["https://allowed.example"]);
-    const createCorsOriginHandlerFn = jest.fn(() => originHandler);
     const getEnvironmentVariables = jest
       .fn()
       .mockReturnValue(environmentVariables);
+
+    const createCorsOriginHandlerFn = jest.fn(() => originHandler);
 
     const factory = createCorsOriginFactory({
       getAllowedOrigins,
@@ -56,16 +57,13 @@ describe("createCorsOriginFactory", () => {
 
 describe("createCreateCorsOrigin", () => {
   test("wraps the cors origin factory with the provided dependencies", () => {
-    const originHandler = jest.fn();
     const getAllowedOrigins = jest.fn(() => ["https://allowed.example"]);
-    const createCorsOriginHandlerFn = jest.fn(() => originHandler);
     const getEnvironmentVariables = jest
       .fn()
       .mockReturnValue({ DENDRITE_ENVIRONMENT: "test" });
 
     const createCorsOrigin = createCreateCorsOrigin({
       getAllowedOrigins,
-      createCorsOriginHandler: createCorsOriginHandlerFn,
     });
 
     const handler = createCorsOrigin(getEnvironmentVariables);
@@ -74,17 +72,19 @@ describe("createCreateCorsOrigin", () => {
     expect(getAllowedOrigins).toHaveBeenCalledWith({
       DENDRITE_ENVIRONMENT: "test",
     });
-    expect(createCorsOriginHandlerFn).toHaveBeenCalledWith([
-      "https://allowed.example",
-    ]);
-    expect(handler).toBe(originHandler);
+    const allowCallback = jest.fn();
+    handler("https://allowed.example", allowCallback);
+    expect(allowCallback).toHaveBeenCalledWith(null, true);
+
+    const rejectCallback = jest.fn();
+    handler("https://blocked.example", rejectCallback);
+    const [error] = rejectCallback.mock.calls[0];
+    expect(error).toEqual(new Error("CORS"));
   });
 });
 
 describe("createCreateCorsOriginFromEnvironment", () => {
   test("wires the cors origin factory to the provided environment helpers", () => {
-    const originHandler = jest.fn();
-    const createCorsOriginHandlerFn = jest.fn(() => originHandler);
     const environmentVariables = { DENDRITE_ENVIRONMENT: "test" };
     const getAllowedOrigins = jest.fn(() => ["https://allowed.example"]);
     const getEnvironmentVariables = jest
@@ -94,7 +94,6 @@ describe("createCreateCorsOriginFromEnvironment", () => {
     const createCorsOriginFromEnvironmentFn =
       createCreateCorsOriginFromEnvironment({
         createCreateCorsOrigin,
-        createCorsOriginHandler: createCorsOriginHandlerFn,
       });
 
     const handler = createCorsOriginFromEnvironmentFn({
@@ -104,10 +103,14 @@ describe("createCreateCorsOriginFromEnvironment", () => {
 
     expect(getEnvironmentVariables).toHaveBeenCalledWith();
     expect(getAllowedOrigins).toHaveBeenCalledWith(environmentVariables);
-    expect(createCorsOriginHandlerFn).toHaveBeenCalledWith([
-      "https://allowed.example",
-    ]);
-    expect(handler).toBe(originHandler);
+    const allowCallback = jest.fn();
+    handler("https://allowed.example", allowCallback);
+    expect(allowCallback).toHaveBeenCalledWith(null, true);
+
+    const rejectCallback = jest.fn();
+    handler("https://blocked.example", rejectCallback);
+    const [error] = rejectCallback.mock.calls[0];
+    expect(error).toEqual(new Error("CORS"));
   });
 });
 
@@ -119,21 +122,22 @@ describe("createCorsOriginFromEnvironment", () => {
     const getEnvironmentVariables = jest
       .fn()
       .mockReturnValue(environmentVariables);
-    const createCorsOriginHandlerFn = jest.fn(() => originHandler);
 
     const handler = createCorsOriginFromEnvironment({
       getAllowedOrigins,
       getEnvironmentVariables,
-      createCreateCorsOrigin,
-      createCorsOriginHandler: createCorsOriginHandlerFn,
     });
 
     expect(getEnvironmentVariables).toHaveBeenCalledWith();
     expect(getAllowedOrigins).toHaveBeenCalledWith(environmentVariables);
-    expect(createCorsOriginHandlerFn).toHaveBeenCalledWith([
-      "https://allowed.example",
-    ]);
-    expect(handler).toBe(originHandler);
+    const allowCallback = jest.fn();
+    handler("https://allowed.example", allowCallback);
+    expect(allowCallback).toHaveBeenCalledWith(null, true);
+
+    const rejectCallback = jest.fn();
+    handler("https://blocked.example", rejectCallback);
+    const [error] = rejectCallback.mock.calls[0];
+    expect(error).toEqual(new Error("CORS"));
   });
 });
 

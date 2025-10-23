@@ -178,7 +178,6 @@ export function createCorsOriginFactory({
  * Compose helpers that resolve the CORS origin handler from environment configuration.
  * @param {{
  *   createCreateCorsOrigin: typeof createCreateCorsOrigin,
- *   createCorsOriginHandler: typeof createCorsOriginHandler,
  * }} deps Dependencies required to build the environment-aware factory.
  * @returns {({
  *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
@@ -188,7 +187,6 @@ export function createCorsOriginFactory({
  */
 export function createCreateCorsOriginFromEnvironment({
   createCreateCorsOrigin,
-  createCorsOriginHandler,
 }) {
   return function createCorsOriginFromEnvironment({
     getAllowedOrigins,
@@ -196,7 +194,6 @@ export function createCreateCorsOriginFromEnvironment({
   }) {
     const createCorsOrigin = createCreateCorsOrigin({
       getAllowedOrigins,
-      createCorsOriginHandler,
     });
 
     return createCorsOrigin(getEnvironmentVariables);
@@ -208,8 +205,6 @@ export function createCreateCorsOriginFromEnvironment({
  * @param {{
  *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
  *   getEnvironmentVariables: () => Record<string, unknown>,
- *   createCreateCorsOrigin: typeof createCreateCorsOrigin,
- *   createCorsOriginHandler: typeof createCorsOriginHandler,
  * }} deps Dependencies required to compute the origin handler.
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
  * Configured CORS origin handler.
@@ -217,13 +212,10 @@ export function createCreateCorsOriginFromEnvironment({
 export function createCorsOriginFromEnvironment({
   getAllowedOrigins,
   getEnvironmentVariables,
-  createCreateCorsOrigin,
-  createCorsOriginHandler,
 }) {
   const createCorsOriginFromEnvironmentFn =
     createCreateCorsOriginFromEnvironment({
       createCreateCorsOrigin,
-      createCorsOriginHandler,
     });
 
   return createCorsOriginFromEnvironmentFn({
@@ -236,14 +228,12 @@ export function createCorsOriginFromEnvironment({
  * Build a helper that configures the createCorsOrigin factory dependencies.
  * @param {{
  *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
- *   createCorsOriginHandler: (allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void,
  * }} deps Dependencies required to compose the CORS origin factory.
  * @returns {(getEnvironmentVariables: () => Record<string, unknown>) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
  * Configured createCorsOrigin function that accepts an environment getter.
  */
 export function createCreateCorsOrigin({
   getAllowedOrigins,
-  createCorsOriginHandler,
 }) {
   return createCorsOriginFactory({
     getAllowedOrigins,
