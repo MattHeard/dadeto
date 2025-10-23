@@ -10,18 +10,22 @@ import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
 const db = createDb(Firestore);
 
 /**
- * Fetch stored credit for the supplied API key UUID.
- * @param {string} uuid API key UUID.
- * @returns {Promise<number|null>} Stored credit value or null when missing.
+ * Create a fetchCredit function bound to the supplied Firestore database.
+ * @param {Firestore} db Firestore instance to use for lookups.
+ * @returns {(uuid: string) => Promise<number|null>} Function to fetch credit.
  */
-export async function fetchCredit(uuid) {
-  const snap = await getApiKeyCreditSnapshot(db, uuid);
-  if (!snap.exists) {
-    return null;
-  }
-  const data = snap.data() || {};
-  return data.credit ?? 0;
+export function createFetchCredit(db) {
+  return async function fetchCredit(uuid) {
+    const snap = await getApiKeyCreditSnapshot(db, uuid);
+    if (!snap.exists) {
+      return null;
+    }
+    const data = snap.data() || {};
+    return data.credit ?? 0;
+  };
 }
+
+export const fetchCredit = createFetchCredit(db);
 
 const handleRequest = createGetApiKeyCreditV2Handler({
   fetchCredit,
