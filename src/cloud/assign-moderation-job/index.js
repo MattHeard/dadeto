@@ -5,19 +5,20 @@ import corsConfig from './cors-config.js';
 import {
   createAssignModerationJob,
   createCorsOriginHandler,
-  createSetupCors,
   configureUrlencodedBodyParser,
   setupAssignModerationJobRoute,
 } from './core.js';
 import * as gcf from './gcf.js';
 
 const { db, auth, app } = gcf.initializeFirebaseAppResources();
-const applyCors = (corsLibrary, appInstance, config) => {
-  const setupCors = createSetupCors(createCorsOriginHandler, corsLibrary);
-  setupCors(appInstance, config);
+const { allowedOrigins } = corsConfig;
+const corsOptions = {
+  ...corsConfig,
+  origin: createCorsOriginHandler(allowedOrigins),
+  methods: ['POST'],
 };
 
-applyCors(cors, app, corsConfig);
+app.use(cors(corsOptions));
 configureUrlencodedBodyParser(app, express);
 
 const firebaseResources = { db, auth, app };
