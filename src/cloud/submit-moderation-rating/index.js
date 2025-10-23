@@ -3,7 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
-import { getAllowedOrigins } from '../cors-config.js';
+import { getAllowedOrigins } from './cors-config.js';
 import { randomUUID } from 'crypto';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
