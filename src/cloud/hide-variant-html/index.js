@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import { Storage } from '@google-cloud/storage';
-import { createRemoveVariantHtml } from './removeVariantHtml.js';
+import { createRemoveVariantHtml } from './core.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 
 ensureFirebaseApp();
