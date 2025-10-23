@@ -22,10 +22,10 @@ export function createHandleSubmit({
 }) {
   return async function handleSubmit(request) {
     const { body = {} } = request;
-    const getHeader =
-      typeof request.get === 'function'
-        ? (name) => request.get(name)
-        : () => undefined;
+    let getHeader = () => undefined;
+    if (typeof request.get === 'function') {
+      getHeader = name => request.get(name);
+    }
 
     const { incoming_option: rawIncomingOption, page: rawPage } = body;
     let { content = '', author = '???' } = body;
@@ -36,7 +36,14 @@ export function createHandleSubmit({
     const pageStr = rawPage?.toString().trim().slice(0, 120) || '';
     const hasIncoming = incomingOption !== '';
     const hasPage = pageStr !== '';
-    if ((hasIncoming ? 1 : 0) + (hasPage ? 1 : 0) !== 1) {
+    let providedOptionCount = 0;
+    if (hasIncoming) {
+      providedOptionCount += 1;
+    }
+    if (hasPage) {
+      providedOptionCount += 1;
+    }
+    if (providedOptionCount !== 1) {
       return {
         status: 400,
         body: { error: 'must provide exactly one of incoming option or page' },
