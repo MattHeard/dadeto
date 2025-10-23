@@ -140,7 +140,7 @@ export function random() {
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
  * Express CORS origin handler.
  */
-function createCorsOriginHandler(allowedOrigins) {
+export function createCorsOriginHandler(allowedOrigins) {
   return function corsOriginHandler(origin, cb) {
     const isOriginAllowed = !origin || allowedOrigins.includes(origin);
 
@@ -151,33 +151,6 @@ function createCorsOriginHandler(allowedOrigins) {
 
     cb(new Error('CORS'));
   };
-}
-
-/**
- * Build the Firebase resources used by the assign moderation job.
- * @param {() => { db: import('firebase-admin/firestore').Firestore,
- *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} initializeFirebaseApp
- * Function that initializes Firebase and returns dependencies.
- * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void,
- *   methods: string[] }) => unknown} corsFn
- * CORS middleware factory function.
- * @param {{ allowedOrigins?: string[] }} corsConfig CORS configuration for the endpoint.
- * @param {unknown} expressModule Express module exposing the urlencoded middleware factory.
- * @returns {{ db: import('firebase-admin/firestore').Firestore,
- *   auth: import('firebase-admin/auth').Auth, app: import('express').Express }} Initialized dependencies.
- */
-export function createFirebaseResources(
-  initializeFirebaseApp,
-  corsFn,
-  corsConfig,
-  expressModule
-) {
-  const { db, auth, app } = initializeFirebaseApp();
-  const setupCors = createSetupCors(createCorsOriginHandler, corsFn);
-  setupCors(app, corsConfig);
-  configureUrlencodedBodyParser(app, expressModule);
-
-  return { db, auth, app };
 }
 
 /**

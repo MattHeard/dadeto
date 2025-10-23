@@ -1,7 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import {
   buildHtml,
-  createFirebaseResources,
   createGenerateStatsCore,
   getCdnHostFromEnv,
   getProjectFromEnv,
@@ -135,31 +134,6 @@ describe('generate stats helpers', () => {
     ]);
   });
 
-});
-
-describe('createFirebaseResources', () => {
-  test('initializes firebase modules and returns dependencies', () => {
-    const ensureFirebaseApp = jest.fn();
-    const db = { name: 'db' };
-    const auth = { name: 'auth' };
-    const storageInstance = { name: 'storage' };
-    const getFirestoreInstance = jest.fn(() => db);
-    const getAuth = jest.fn(() => auth);
-    const StorageCtor = jest.fn(() => storageInstance);
-
-    const resources = createFirebaseResources({
-      ensureFirebaseApp,
-      getFirestoreInstance,
-      getAuth,
-      StorageCtor,
-    });
-
-    expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
-    expect(getFirestoreInstance).toHaveBeenCalledTimes(1);
-    expect(getAuth).toHaveBeenCalledTimes(1);
-    expect(StorageCtor).toHaveBeenCalledTimes(1);
-    expect(resources).toEqual({ db, auth, storage: storageInstance });
-  });
 });
 
 describe('createGenerateStatsCore', () => {
