@@ -107,10 +107,11 @@ export function createCopyToInfraCore({
     if (!relativePath) {
       return '.';
     }
-    if (relativePath.startsWith('..')) {
-      return targetPath;
-    }
-    return relativePath;
+    const pathSelection = {
+      true: targetPath,
+      false: relativePath,
+    };
+    return pathSelection[relativePath.startsWith('..')];
   }
 
   /**
