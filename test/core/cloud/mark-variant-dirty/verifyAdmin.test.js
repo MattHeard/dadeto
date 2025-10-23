@@ -70,6 +70,25 @@ describe('createVerifyAdmin', () => {
     expect(sendUnauthorized).toHaveBeenCalledWith(res, 'Missing token');
   });
 
+  test('treats a non-string Authorization header as a missing token', async () => {
+    const sendUnauthorized = jest.fn();
+    const verifyAdmin = createVerifyAdmin({
+      verifyToken: jest.fn(),
+      isAdminUid: jest.fn(),
+      sendUnauthorized,
+      sendForbidden: jest.fn(),
+    });
+
+    const req = { get: jest.fn().mockReturnValue(undefined) };
+    const res = {};
+
+    const authorised = await verifyAdmin(req, res);
+
+    expect(authorised).toBe(false);
+    expect(req.get).toHaveBeenCalledWith('Authorization');
+    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'Missing token');
+  });
+
   test('invokes collaborators to validate admin access', async () => {
     const getAuthHeader = jest.fn().mockReturnValue('Bearer good');
     const matchAuthHeader = jest.fn().mockReturnValue(['Bearer good', 'good']);
