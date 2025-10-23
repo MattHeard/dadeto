@@ -7,7 +7,7 @@ import {
   getCurrentDirectory,
   resolveProjectDirectories,
 } from '../node/path.js';
-import { createFsAdapters } from '../node/fs.js';
+import { createFsAdapters } from './fs.js';
 
 // Determine base directories using Node-specific helpers
 const __dirname = getCurrentDirectory(import.meta.url);
