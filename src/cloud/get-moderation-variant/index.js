@@ -5,7 +5,7 @@ import corsConfig from './cors-config.js';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
-import { isAllowedOrigin } from '../../core/cloud/get-moderation-variant/cors.js';
+import { isAllowedOrigin } from './cors.js';
 
 const db = getFirestoreInstance();
 ensureFirebaseApp();
