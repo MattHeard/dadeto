@@ -3,7 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
-import { createVariantsQuery } from './core.js';
+import { createVariantsQuery, createReputationScopedQuery } from './core.js';
 
 /**
  * Initialize Firebase Admin and supporting services.
@@ -44,17 +44,3 @@ export function createRunVariantQuery(db) {
 }
 
 export const now = () => FieldValue.serverTimestamp();
-
-/**
- * Scope a variants query based on moderator reputation.
- * @param {'zeroRated' | string} reputation Reputation category for moderators.
- * @param {import('firebase-admin/firestore').Query} variantsQuery Query for fetching variants.
- * @returns {import('firebase-admin/firestore').Query} Query scoped to the provided reputation.
- */
-export function createReputationScopedQuery(reputation, variantsQuery) {
-  if (reputation === 'zeroRated') {
-    return variantsQuery.where('moderatorReputationSum', '==', 0);
-  }
-
-  return variantsQuery;
-}

@@ -12,6 +12,7 @@ const {
   selectVariantDoc,
   createModeratorRefFactory,
   createVariantsQuery,
+  createReputationScopedQuery,
   buildVariantQueryPlan,
   createVariantSnapshotFetcher,
   createFetchVariantSnapshotFromDbFactory,
@@ -301,6 +302,28 @@ describe("createVariantsQuery", () => {
 
     expect(collectionGroup).toHaveBeenCalledWith("variants");
     expect(result).toBe(query);
+  });
+});
+
+describe("createReputationScopedQuery", () => {
+  test("adds an equality filter when the moderator is zero rated", () => {
+    const filteredQuery = Symbol("filtered-query");
+    const where = jest.fn(() => filteredQuery);
+    const variantsQuery = { where };
+
+    const result = createReputationScopedQuery("zeroRated", variantsQuery);
+
+    expect(where).toHaveBeenCalledWith("moderatorReputationSum", "==", 0);
+    expect(result).toBe(filteredQuery);
+  });
+
+  test("returns the original query for other reputation categories", () => {
+    const variantsQuery = { where: jest.fn() };
+
+    const result = createReputationScopedQuery("any", variantsQuery);
+
+    expect(variantsQuery.where).not.toHaveBeenCalled();
+    expect(result).toBe(variantsQuery);
   });
 });
 
