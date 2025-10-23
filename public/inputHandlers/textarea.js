@@ -10,13 +10,39 @@ import { getInputValue, setInputValue } from '../browser/inputValueStore.js';
 
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
 
-const getTextareaSourceValue = (textInput, dom) => {
-  const value = getInputValue(textInput);
+const hasDomGetValue = dom => typeof dom?.getValue === 'function';
+
+const toNonEmptyString = value => {
   if (value) {
     return value;
   }
-  const domValue = dom?.getValue?.(textInput);
-  return domValue ?? '';
+
+  return '';
+};
+
+const shouldSetTextareaValue = (value, skipEmpty) => {
+  if (skipEmpty) {
+    return Boolean(value);
+  }
+
+  return true;
+};
+
+const getDomTextareaValue = (textInput, dom) => {
+  if (!hasDomGetValue(dom)) {
+    return '';
+  }
+
+  return toNonEmptyString(dom.getValue(textInput));
+};
+
+const getTextareaSourceValue = (textInput, dom) => {
+  const storedValue = getInputValue(textInput);
+  if (storedValue) {
+    return storedValue;
+  }
+
+  return getDomTextareaValue(textInput, dom);
 };
 
 const createSyncTextInputValue = (textInput, dom) => event => {
@@ -41,23 +67,34 @@ const setupTextarea = ({ textarea, textInput, dom }) => {
   });
 };
 
-export const ensureTextareaInput = (container, textInput, dom) => {
-  let textarea = dom.querySelector(container, TEXTAREA_SELECTOR);
+const createTextarea = ({ container, textInput, dom }) => {
+  const textarea = dom.createElement('textarea');
+  dom.setClassName(textarea, TEXTAREA_CLASS);
+  positionTextarea({ container, textInput, textarea, dom });
+  setupTextarea({ textarea, textInput, dom });
+  return textarea;
+};
 
-  if (!textarea) {
-    textarea = dom.createElement('textarea');
-    dom.setClassName(textarea, TEXTAREA_CLASS);
-    const value = getTextareaSourceValue(textInput, dom);
-    if (value) {
-      dom.setValue(textarea, value);
-    }
-    positionTextarea({ container, textInput, textarea, dom });
-    setupTextarea({ textarea, textInput, dom });
-  } else {
-    const value = getTextareaSourceValue(textInput, dom);
-    dom.setValue(textarea, value);
+const syncTextareaValue = ({ textarea, textInput, dom, skipEmpty }) => {
+  const value = getTextareaSourceValue(textInput, dom);
+  if (!shouldSetTextareaValue(value, skipEmpty)) {
+    return;
   }
 
+  dom.setValue(textarea, value);
+};
+
+export const ensureTextareaInput = (container, textInput, dom) => {
+  const existingTextarea = dom.querySelector(container, TEXTAREA_SELECTOR);
+  const textarea =
+    existingTextarea ?? createTextarea({ container, textInput, dom });
+
+  syncTextareaValue({
+    textarea,
+    textInput,
+    dom,
+    skipEmpty: !existingTextarea,
+  });
   revealAndEnable(textarea, dom);
 
   return textarea;
