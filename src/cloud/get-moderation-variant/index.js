@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
-import corsConfig from './cors-config.js';
+import { getAllowedOrigins } from '../cors-config.js';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
@@ -12,7 +12,7 @@ ensureFirebaseApp();
 const auth = getAuth();
 const app = express();
 
-const { allowedOrigins } = corsConfig; // includes static-site domain
+const allowedOrigins = getAllowedOrigins(process.env); // includes static-site domain
 
 const createHandleCorsOrigin = origins => (origin, cb) => {
   if (isAllowedOrigin(origin, origins)) {
