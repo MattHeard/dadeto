@@ -22,19 +22,19 @@ describe('getAllowedOrigins', () => {
   it('returns production origins when environment is prod', () => {
     process.env.DENDRITE_ENVIRONMENT = 'prod';
 
-    expect(getAllowedOrigins()).toEqual(productionOrigins);
+    expect(getAllowedOrigins(process.env)).toEqual(productionOrigins);
   });
 
   it('returns playwright origin for t- environments when defined', () => {
     process.env.DENDRITE_ENVIRONMENT = 't-example';
     process.env.PLAYWRIGHT_ORIGIN = 'http://playwright.test';
 
-    expect(getAllowedOrigins()).toEqual(['http://playwright.test']);
+    expect(getAllowedOrigins(process.env)).toEqual(['http://playwright.test']);
   });
 
   it('returns an empty list when playwright origin is missing for t- environments', () => {
     process.env.DENDRITE_ENVIRONMENT = 't-example';
 
-    expect(getAllowedOrigins()).toEqual([]);
+    expect(getAllowedOrigins(process.env)).toEqual([]);
   });
 });
