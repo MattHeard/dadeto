@@ -3,6 +3,7 @@ import * as assignModerationCore from "../../../src/core/cloud/assign-moderation
 
 const {
   createCorsOriginHandler,
+  createCorsOriginFactory,
   createRunGuards,
   createSetupCors,
   configureUrlencodedBodyParser,
@@ -23,6 +24,32 @@ const {
   createAssignModerationJob,
   createHandleAssignModerationJobFromAuth,
 } = assignModerationCore;
+
+describe("createCorsOriginFactory", () => {
+  test("returns a factory that builds the origin handler from environment variables", () => {
+    const originHandler = jest.fn();
+    const environmentVariables = { DENDRITE_ENVIRONMENT: "test" };
+    const getAllowedOrigins = jest.fn(() => ["https://allowed.example"]);
+    const createCorsOriginHandlerFn = jest.fn(() => originHandler);
+    const getEnvironmentVariables = jest
+      .fn()
+      .mockReturnValue(environmentVariables);
+
+    const factory = createCorsOriginFactory({
+      getAllowedOrigins,
+      createCorsOriginHandler: createCorsOriginHandlerFn,
+    });
+
+    const handler = factory(getEnvironmentVariables);
+
+    expect(getEnvironmentVariables).toHaveBeenCalledWith();
+    expect(getAllowedOrigins).toHaveBeenCalledWith(environmentVariables);
+    expect(createCorsOriginHandlerFn).toHaveBeenCalledWith([
+      "https://allowed.example",
+    ]);
+    expect(handler).toBe(originHandler);
+  });
+});
 
 describe("createSetupCors", () => {
   test("registers cors middleware with the generated origin handler", () => {
