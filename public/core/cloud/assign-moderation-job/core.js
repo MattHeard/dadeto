@@ -175,6 +175,64 @@ export function createCorsOriginFactory({
 }
 
 /**
+ * Compose helpers that resolve the CORS origin handler from environment configuration.
+ * @param {{
+ *   createCreateCorsOrigin: typeof createCreateCorsOrigin,
+ *   createCorsOriginHandler: typeof createCorsOriginHandler,
+ * }} deps Dependencies required to build the environment-aware factory.
+ * @returns {({
+ *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
+ *   getEnvironmentVariables: () => Record<string, unknown>,
+ * }) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
+ * Factory that accepts environment helpers and resolves the configured origin handler.
+ */
+export function createCreateCorsOriginFromEnvironment({
+  createCreateCorsOrigin,
+  createCorsOriginHandler,
+}) {
+  return function createCorsOriginFromEnvironment({
+    getAllowedOrigins,
+    getEnvironmentVariables,
+  }) {
+    const createCorsOrigin = createCreateCorsOrigin({
+      getAllowedOrigins,
+      createCorsOriginHandler,
+    });
+
+    return createCorsOrigin(getEnvironmentVariables);
+  };
+}
+
+/**
+ * Resolve the CORS origin handler directly from environment utilities.
+ * @param {{
+ *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
+ *   getEnvironmentVariables: () => Record<string, unknown>,
+ *   createCreateCorsOrigin: typeof createCreateCorsOrigin,
+ *   createCorsOriginHandler: typeof createCorsOriginHandler,
+ * }} deps Dependencies required to compute the origin handler.
+ * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
+ * Configured CORS origin handler.
+ */
+export function createCorsOriginFromEnvironment({
+  getAllowedOrigins,
+  getEnvironmentVariables,
+  createCreateCorsOrigin,
+  createCorsOriginHandler,
+}) {
+  const createCorsOriginFromEnvironmentFn =
+    createCreateCorsOriginFromEnvironment({
+      createCreateCorsOrigin,
+      createCorsOriginHandler,
+    });
+
+  return createCorsOriginFromEnvironmentFn({
+    getAllowedOrigins,
+    getEnvironmentVariables,
+  });
+}
+
+/**
  * Build a helper that configures the createCorsOrigin factory dependencies.
  * @param {{
  *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
