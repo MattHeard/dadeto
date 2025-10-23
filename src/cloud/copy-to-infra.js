@@ -135,7 +135,7 @@ const getApiKeyCreditV2SnapshotSource = join(
   'get-api-key-credit-snapshot.js'
 );
 
-const hideVariantHtmlSource = join(
+const hideVariantHtmlCoreSource = join(
   srcCoreCloudDir,
   'hide-variant-html',
   'core.js'
@@ -237,7 +237,7 @@ const individualFileCopies = [
     ),
   },
   {
-    source: hideVariantHtmlSource,
+    source: hideVariantHtmlCoreSource,
     target: join(
       infraFunctionsDir,
       'hide-variant-html',

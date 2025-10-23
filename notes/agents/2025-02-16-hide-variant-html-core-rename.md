@@ -1,0 +1,2 @@
+- **Challenge:** Ensuring the Cloud Function consumed the correct helper after renaming the re-export, while avoiding stale copy paths in the infra sync script.
+- **Resolution:** Renamed the wrapper to `core.js`, updated the function entry point to reference it, and tweaked the copy script to continue drawing the deployed helper from `src/core/cloud/hide-variant-html/core.js`.
