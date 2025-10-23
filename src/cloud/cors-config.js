@@ -19,8 +19,3 @@ export const getAllowedOrigins = (environmentVariables) => {
   return productionOrigins;
 };
 
-export const allowedOrigins = getAllowedOrigins(process.env);
-
-const config = { allowedOrigins };
-
-export default config;
