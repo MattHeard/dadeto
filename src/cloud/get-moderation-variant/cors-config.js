@@ -1,4 +1,3 @@
-import config, { allowedOrigins } from '../cors-config.js';
+import config from '../cors-config.js';
 
-export { allowedOrigins };
 export default config;
