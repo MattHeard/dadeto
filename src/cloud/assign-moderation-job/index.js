@@ -15,13 +15,17 @@ const { db, auth, app } = gcf.initializeFirebaseAppResources();
 const createCorsOptions = (
   getAllowedOriginsFunction,
   getEnvironmentVariablesFunction
-) => ({
-  origin: createCorsOriginFromEnvironment({
+) => {
+  const corsOrigin = createCorsOriginFromEnvironment({
     getAllowedOrigins: getAllowedOriginsFunction,
     getEnvironmentVariables: getEnvironmentVariablesFunction,
-  }),
-  methods: ['POST'],
-});
+  });
+
+  return {
+    origin: corsOrigin,
+    methods: ['POST'],
+  };
+};
 
 const corsOptions = createCorsOptions(
   getAllowedOrigins,
