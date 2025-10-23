@@ -14,7 +14,6 @@ const { db, auth, app } = gcf.initializeFirebaseAppResources();
 
 const allowedOrigins = getAllowedOrigins(gcf.getEnvironmentVariables());
 const corsOptions = {
-  allowedOrigins,
   origin: createCorsOriginHandler(allowedOrigins),
   methods: ['POST'],
 };
