@@ -8,9 +8,13 @@ import { ADMIN_UID } from './admin-config.js';
 import corsConfig from './cors-config.js';
 import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
-import { createFirebaseResources, createGenerateStatsCore } from './core.js';
+import {
+  createFirebaseResources,
+  createGenerateStatsCore,
+  getCdnHostFromEnv,
+} from './core.js';
 
-const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
+const CDN_HOST = getCdnHostFromEnv(process.env);
 const BUCKET = 'www.dendritestories.co.nz';
 const fetchFn =
   typeof globalThis.fetch === 'function'
