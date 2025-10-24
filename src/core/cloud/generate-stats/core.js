@@ -261,6 +261,26 @@ const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
 const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
 const DEFAULT_BUCKET_NAME = 'www.dendritestories.co.nz';
 
+/**
+ * Determine whether a Firebase initialization error indicates a duplicate app.
+ * @param {unknown} error Error thrown when calling initializeApp.
+ * @returns {boolean} True when the error represents an existing app instance.
+ */
+export function isDuplicateAppError(error) {
+  if (!error) {
+    return false;
+  }
+
+  const hasDuplicateIdentifier =
+    error.code === 'app/duplicate-app' || typeof error.message === 'string';
+
+  if (!hasDuplicateIdentifier) {
+    return false;
+  }
+
+  return String(error.message).toLowerCase().includes('already exists');
+}
+
 /** @typedef {import('node:process').ProcessEnv} ProcessEnv */
 
 /**
