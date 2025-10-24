@@ -3,11 +3,35 @@ import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
+import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { ensureFirebaseApp } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import { createGenerateStatsCore } from './core.js';
 import { fetchFn } from './gcf.js';
+
+let firebaseInitialized = false;
+
+const ensureFirebaseApp = (initFn = initializeApp) => {
+  if (firebaseInitialized) {
+    return;
+  }
+
+  try {
+    initFn();
+  } catch (error) {
+    const duplicateApp =
+      error &&
+      (error.code === 'app/duplicate-app' ||
+        typeof error.message === 'string') &&
+      String(error.message).toLowerCase().includes('already exists');
+
+    if (!duplicateApp) {
+      throw error;
+    }
+  }
+
+  firebaseInitialized = true;
+};
 
 const productionOrigins = [
   'https://mattheard.net',

@@ -1,0 +1,2 @@
+- **Context:** Follow-up request to inline the `ensureFirebaseApp` helper directly in `src/cloud/generate-stats/index.js`.
+- **Resolution:** Copied the Firebase initialization guard into the module, importing `initializeApp` locally so the function no longer relies on the shared helper file.
