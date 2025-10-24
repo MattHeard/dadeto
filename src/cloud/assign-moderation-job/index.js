@@ -23,17 +23,21 @@ const firebaseInitializationHandlers = {
 };
 let cachedDb = null;
 
-export const firebaseInitialization = {
-  hasBeenInitialized() {
-    return firebaseInitializationState.initialized;
-  },
-  markInitialized() {
-    firebaseInitializationState.initialized = true;
-  },
-  reset() {
-    firebaseInitializationState.initialized = false;
-  },
-};
+function createFirebaseInitialization() {
+  return {
+    hasBeenInitialized() {
+      return firebaseInitializationState.initialized;
+    },
+    markInitialized() {
+      firebaseInitializationState.initialized = true;
+    },
+    reset() {
+      firebaseInitializationState.initialized = false;
+    },
+  };
+}
+
+export const firebaseInitialization = createFirebaseInitialization();
 
 const defaultEnsureFirebaseApp = () => {};
 
