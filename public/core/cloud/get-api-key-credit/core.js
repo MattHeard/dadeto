@@ -39,6 +39,17 @@ function assertFunctionDependency(name, dependency) {
 }
 
 /**
+ * Instantiate a Firestore client using the supplied constructor.
+ * @param {typeof import('@google-cloud/firestore').Firestore} FirestoreConstructor Firestore constructor.
+ * @returns {import('@google-cloud/firestore').Firestore} Initialized Firestore client.
+ */
+export function createFirestore(FirestoreConstructor) {
+  assertFunctionDependency('FirestoreConstructor', FirestoreConstructor);
+
+  return new FirestoreConstructor();
+}
+
+/**
  * Check whether a value is a non-empty string.
  * @param {*} value - Value to inspect.
  * @returns {boolean} True when the value is a non-empty string.
