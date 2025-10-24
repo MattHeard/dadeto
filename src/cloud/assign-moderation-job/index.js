@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import {
   createAssignModerationJob,
   createCorsOptions,
@@ -12,10 +13,15 @@ import {
   setupAssignModerationJobRoute,
 } from './core.js';
 import * as gcf from './gcf.js';
-import { registerFirebaseInitializationHandlers } from './firebaseApp.js';
-import { getFirestoreInstance } from './firestore.js';
+
+const firebaseInitializationHandlers = {
+  reset: () => {},
+};
 
 let firebaseInitialized = false;
+let cachedDb = null;
+
+const defaultEnsureFirebaseApp = () => {};
 
 /**
  * Determine whether the Firebase Admin app has already been initialized.
@@ -35,13 +41,109 @@ export function markFirebaseInitialized() {
 /**
  * Reset the initialization flag. Primarily used in tests.
  */
-export function resetFirebaseInitializationState() {
+function clearFirebaseInitializationFlag() {
   firebaseInitialized = false;
 }
 
-registerFirebaseInitializationHandlers({
-  reset: resetFirebaseInitializationState,
-});
+firebaseInitializationHandlers.reset = clearFirebaseInitializationFlag;
+
+/**
+ * Reset the initialization flag. Primarily used in tests.
+ */
+export function resetFirebaseInitializationState() {
+  firebaseInitializationHandlers.reset();
+}
+
+/**
+ * Parse the database identifier from the Firebase configuration.
+ * @param {Record<string, unknown>} environment Process environment variables.
+ * @returns {string | null} The configured database identifier when available.
+ */
+function resolveFirestoreDatabaseId(environment = process.env) {
+  const rawConfig = environment?.FIREBASE_CONFIG;
+
+  if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(rawConfig);
+    const { databaseId } = parsed;
+
+    if (typeof databaseId === 'string' && databaseId.trim() !== '') {
+      return databaseId;
+    }
+  } catch {
+    // Ignore malformed configuration strings and fall back to the default DB.
+  }
+
+  return null;
+}
+
+/**
+ * Select the correct Firestore database given the parsed configuration.
+ * @param {(
+ *   app?: import('firebase-admin/app').App,
+ *   databaseId?: string,
+ * ) => import('firebase-admin/firestore').Firestore} getFirestoreFn Firestore factory.
+ * @param {import('firebase-admin/app').App} firebaseApp Firebase Admin app instance.
+ * @param {string | null} databaseId Desired Firestore database identifier.
+ * @returns {import('firebase-admin/firestore').Firestore} Configured Firestore client.
+ */
+function getFirestoreForDatabase(getFirestoreFn, firebaseApp, databaseId) {
+  if (databaseId && databaseId !== '(default)') {
+    return getFirestoreFn(firebaseApp, databaseId);
+  }
+
+  return getFirestoreFn(firebaseApp);
+}
+
+/**
+ * Create or return the cached Firestore instance for the active environment.
+ * @param {{
+ *   ensureAppFn?: () => void,
+ *   getFirestoreFn?: (
+ *     app?: import('firebase-admin/app').App,
+ *     databaseId?: string,
+ *   ) => import('firebase-admin/firestore').Firestore,
+ *   environment?: Record<string, unknown>,
+ * }} [options] Optional dependency overrides for testing. When omitted,
+ * the function assumes the Firebase app was initialized by the caller.
+ * @returns {import('firebase-admin/firestore').Firestore} Firestore client instance.
+ */
+function getFirestoreInstance(options = {}) {
+  const {
+    ensureAppFn = defaultEnsureFirebaseApp,
+    getFirestoreFn = getAdminFirestore,
+    environment = process.env,
+  } = options;
+
+  ensureAppFn();
+
+  const databaseId = resolveFirestoreDatabaseId(environment);
+  const useCustomDependencies =
+    ensureAppFn !== defaultEnsureFirebaseApp ||
+    getFirestoreFn !== getAdminFirestore ||
+    environment !== process.env;
+
+  if (useCustomDependencies) {
+    return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+  }
+
+  if (!cachedDb) {
+    cachedDb = getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+  }
+
+  return cachedDb;
+}
+
+/**
+ * Reset the cached Firestore instance. Primarily used in tests.
+ */
+function clearFirestoreInstanceCache() {
+  cachedDb = null;
+  resetFirebaseInitializationState();
+}
 
 /**
  * Ensure the default Firebase Admin app is initialized.
@@ -94,3 +196,9 @@ export const assignModerationJob = createAssignModerationJob(
   functions,
   firebaseResources
 );
+
+export const testing = {
+  resolveFirestoreDatabaseId,
+  getFirestoreInstance,
+  clearFirestoreInstanceCache,
+};
