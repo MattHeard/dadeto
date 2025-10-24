@@ -1,3 +1,4 @@
+import { Firestore } from '@google-cloud/firestore';
 import {
   createFirestore,
   createGetApiKeyCreditHandler,
@@ -5,16 +6,14 @@ import {
   isMissingDocument,
 } from './core.js';
 
-let firestorePromise;
+let firestoreInstance;
 
 async function getFirestoreInstance() {
-  if (!firestorePromise) {
-    firestorePromise = import('@google-cloud/firestore').then(({ Firestore }) =>
-      createFirestore(Firestore)
-    );
+  if (!firestoreInstance) {
+    firestoreInstance = createFirestore(Firestore);
   }
 
-  return firestorePromise;
+  return firestoreInstance;
 }
 
 const getApiKeyCredit = createGetApiKeyCreditHandler({
