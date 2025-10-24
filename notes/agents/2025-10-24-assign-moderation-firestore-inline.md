@@ -1,0 +1,2 @@
+- **Challenge:** Consolidating the assign moderation Firestore helpers without reintroducing the circular dependency with the initialization reset logic.
+- **Resolution:** Inlined the Firestore cache helpers into `index.js`, preserved the reset hook wiring, and exposed a testing bundle so the pure helpers remain accessible without a separate module.
