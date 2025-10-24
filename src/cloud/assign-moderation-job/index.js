@@ -146,6 +146,27 @@ function clearFirestoreInstanceCache() {
 }
 
 /**
+ * Determine whether an initialization error indicates the app already exists.
+ * @param {unknown} error Error thrown during Firebase initialization.
+ * @returns {boolean} True when the error corresponds to a duplicate app.
+ */
+function isDuplicateFirebaseAppError(error) {
+  if (!error) {
+    return false;
+  }
+
+  const candidate = /** @type {{ code?: string, message?: unknown }} */ (error);
+  const hasDuplicateCode = candidate.code === 'app/duplicate-app';
+  const hasStringMessage = typeof candidate.message === 'string';
+  const messageText = String(candidate.message ?? '');
+
+  return (
+    (hasDuplicateCode || hasStringMessage) &&
+    messageText.toLowerCase().includes('already exists')
+  );
+}
+
+/**
  * Ensure the default Firebase Admin app is initialized.
  * @param {() => void} [initFn] Optional initializer for dependency injection.
  */
@@ -157,13 +178,7 @@ function ensureFirebaseApp(initFn = initializeApp) {
   try {
     initFn();
   } catch (error) {
-    const duplicateApp =
-      error &&
-      (error.code === 'app/duplicate-app' ||
-        typeof error.message === 'string') &&
-      String(error.message).toLowerCase().includes('already exists');
-
-    if (!duplicateApp) {
+    if (!isDuplicateFirebaseAppError(error)) {
       throw error;
     }
   }
