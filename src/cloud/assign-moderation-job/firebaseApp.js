@@ -1,23 +1,18 @@
-let firebaseInitialized = false;
+let resetHandler = () => {};
 
 /**
- * Determine whether the Firebase Admin app has already been initialized.
- * @returns {boolean} True when the shared Firebase app is ready.
+ * Register handlers that manage Firebase Admin app initialization state.
+ * @param {{ reset?: () => void }} handlers Callback implementations.
  */
-export function hasFirebaseBeenInitialized() {
-  return firebaseInitialized;
-}
-
-/**
- * Mark the Firebase Admin app as initialized.
- */
-export function markFirebaseInitialized() {
-  firebaseInitialized = true;
+export function registerFirebaseInitializationHandlers(handlers = {}) {
+  if (typeof handlers.reset === 'function') {
+    resetHandler = handlers.reset;
+  }
 }
 
 /**
  * Reset the initialization flag. Primarily used in tests.
  */
 export function resetFirebaseInitializationState() {
-  firebaseInitialized = false;
+  resetHandler();
 }

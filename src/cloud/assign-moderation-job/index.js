@@ -12,11 +12,36 @@ import {
   setupAssignModerationJobRoute,
 } from './core.js';
 import * as gcf from './gcf.js';
-import {
-  hasFirebaseBeenInitialized,
-  markFirebaseInitialized,
-} from './firebaseApp.js';
+import { registerFirebaseInitializationHandlers } from './firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
+
+let firebaseInitialized = false;
+
+/**
+ * Determine whether the Firebase Admin app has already been initialized.
+ * @returns {boolean} True when the shared Firebase app is ready.
+ */
+export function hasFirebaseBeenInitialized() {
+  return firebaseInitialized;
+}
+
+/**
+ * Mark the Firebase Admin app as initialized.
+ */
+export function markFirebaseInitialized() {
+  firebaseInitialized = true;
+}
+
+/**
+ * Reset the initialization flag. Primarily used in tests.
+ */
+export function resetFirebaseInitializationState() {
+  firebaseInitialized = false;
+}
+
+registerFirebaseInitializationHandlers({
+  reset: resetFirebaseInitializationState,
+});
 
 /**
  * Ensure the default Firebase Admin app is initialized.
