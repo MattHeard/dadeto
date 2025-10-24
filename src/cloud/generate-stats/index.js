@@ -11,6 +11,21 @@ import { fetchFn } from './gcf.js';
 
 let firebaseInitialized = false;
 
+const isDuplicateAppError = (error) => {
+  if (!error) {
+    return false;
+  }
+
+  const hasDuplicateIdentifier =
+    error.code === 'app/duplicate-app' || typeof error.message === 'string';
+
+  if (!hasDuplicateIdentifier) {
+    return false;
+  }
+
+  return String(error.message).toLowerCase().includes('already exists');
+};
+
 const ensureFirebaseApp = (initFn = initializeApp) => {
   if (firebaseInitialized) {
     return;
@@ -19,13 +34,7 @@ const ensureFirebaseApp = (initFn = initializeApp) => {
   try {
     initFn();
   } catch (error) {
-    const duplicateApp =
-      error &&
-      (error.code === 'app/duplicate-app' ||
-        typeof error.message === 'string') &&
-      String(error.message).toLowerCase().includes('already exists');
-
-    if (!duplicateApp) {
+    if (!isDuplicateAppError(error)) {
       throw error;
     }
   }
