@@ -5,6 +5,7 @@ import {
   getCdnHostFromEnv,
   getProjectFromEnv,
   getUrlMapFromEnv,
+  isDuplicateAppError,
 } from '../../src/core/cloud/generate-stats/core.js';
 import { ADMIN_UID } from '../../src/core/admin-config.js';
 import {
@@ -84,6 +85,25 @@ describe('generate stats helpers', () => {
     expect(getCdnHostFromEnv({ CDN_HOST: 'cdn.example.com' })).toBe(
       'cdn.example.com'
     );
+  });
+
+  test('isDuplicateAppError detects duplicate app code', () => {
+    expect(
+      isDuplicateAppError({
+        code: 'app/duplicate-app',
+        message: 'Firebase app named "[DEFAULT]" already exists',
+      })
+    ).toBe(true);
+  });
+
+  test('isDuplicateAppError ignores unrelated errors', () => {
+    expect(
+      isDuplicateAppError({
+        code: 'app/invalid-credential',
+        message: 'invalid',
+      })
+    ).toBe(false);
+    expect(isDuplicateAppError(null)).toBe(false);
   });
 
   test('getPageCount returns page count', async () => {

@@ -6,25 +6,10 @@ import cors from 'cors';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
-import { createGenerateStatsCore } from './core.js';
+import { createGenerateStatsCore, isDuplicateAppError } from './core.js';
 import { fetchFn } from './gcf.js';
 
 let firebaseInitialized = false;
-
-const isDuplicateAppError = (error) => {
-  if (!error) {
-    return false;
-  }
-
-  const hasDuplicateIdentifier =
-    error.code === 'app/duplicate-app' || typeof error.message === 'string';
-
-  if (!hasDuplicateIdentifier) {
-    return false;
-  }
-
-  return String(error.message).toLowerCase().includes('already exists');
-};
 
 const ensureFirebaseApp = (initFn = initializeApp) => {
   if (firebaseInitialized) {

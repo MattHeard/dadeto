@@ -1,0 +1,2 @@
+- **Challenge:** Needed to reuse the duplicate-app detection in multiple Firebase initializers without reimplementing the guard inside each Cloud Function entry point.
+- **Resolution:** Moved the helper into the shared generate-stats core module and added targeted tests to lock in the expected truth table before wiring it back into the HTTP handler.
