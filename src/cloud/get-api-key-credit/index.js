@@ -1,17 +1,9 @@
 import {
+  createFirestore,
   createGetApiKeyCreditHandler,
   fetchApiKeyCreditDocument,
   isMissingDocument,
 } from './core.js';
-
-/**
- * Instantiate a Firestore client using the supplied constructor.
- * @param {typeof import('@google-cloud/firestore').Firestore} FirestoreConstructor Firestore constructor.
- * @returns {import('@google-cloud/firestore').Firestore} Initialized Firestore client.
- */
-export function createFirestore(FirestoreConstructor) {
-  return new FirestoreConstructor();
-}
 
 let firestorePromise;
 
@@ -65,6 +57,7 @@ export async function handler(req, res) {
 }
 
 export {
+  createFirestore,
   createGetApiKeyCreditHandler,
   fetchApiKeyCreditDocument,
   isMissingDocument,
