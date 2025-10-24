@@ -14,12 +14,26 @@ import {
 } from './core.js';
 import * as gcf from './gcf.js';
 
+const firebaseInitializationState = {
+  initialized: false,
+};
+
 const firebaseInitializationHandlers = {
   reset: () => {},
 };
-
-let firebaseInitialized = false;
 let cachedDb = null;
+
+export const firebaseInitialization = {
+  hasBeenInitialized() {
+    return firebaseInitializationState.initialized;
+  },
+  markInitialized() {
+    firebaseInitializationState.initialized = true;
+  },
+  reset() {
+    firebaseInitializationState.initialized = false;
+  },
+};
 
 const defaultEnsureFirebaseApp = () => {};
 
@@ -28,21 +42,21 @@ const defaultEnsureFirebaseApp = () => {};
  * @returns {boolean} True when the shared Firebase app is ready.
  */
 export function hasFirebaseBeenInitialized() {
-  return firebaseInitialized;
+  return firebaseInitialization.hasBeenInitialized();
 }
 
 /**
  * Mark the Firebase Admin app as initialized.
  */
 export function markFirebaseInitialized() {
-  firebaseInitialized = true;
+  firebaseInitialization.markInitialized();
 }
 
 /**
  * Reset the initialization flag. Primarily used in tests.
  */
 function clearFirebaseInitializationFlag() {
-  firebaseInitialized = false;
+  firebaseInitialization.reset();
 }
 
 firebaseInitializationHandlers.reset = clearFirebaseInitializationFlag;
@@ -213,6 +227,7 @@ export const assignModerationJob = createAssignModerationJob(
 );
 
 export const testing = {
+  firebaseInitialization,
   resolveFirestoreDatabaseId,
   getFirestoreInstance,
   clearFirestoreInstanceCache,
