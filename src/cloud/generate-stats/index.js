@@ -5,7 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { getFirestoreInstance } from './firestore.js';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import { createGenerateStatsCore } from './core.js';
 import { fetchFn } from './gcf.js';
 
@@ -55,6 +55,65 @@ const getAllowedOrigins = (environmentVariables) => {
 };
 
 const getProcessEnv = () => process.env;
+
+const PRODUCTION_DATABASE_ID = '(default)';
+
+const resolveFirestoreDatabaseId = (environment = process.env) => {
+  const rawConfig = environment?.FIREBASE_CONFIG;
+
+  if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(rawConfig);
+    const { databaseId } = parsed || {};
+
+    if (typeof databaseId === 'string' && databaseId.trim() !== '') {
+      return databaseId;
+    }
+  } catch {
+    // Ignore malformed configuration strings and fall back to the default DB.
+  }
+
+  return null;
+};
+
+let cachedDb = null;
+
+const selectFirestoreDatabase = (getFirestoreFn, firebaseApp, databaseId) => {
+  if (databaseId && databaseId !== PRODUCTION_DATABASE_ID) {
+    return getFirestoreFn(firebaseApp, databaseId);
+  }
+
+  return getFirestoreFn(firebaseApp);
+};
+
+const getFirestoreInstance = (options = {}) => {
+  const {
+    ensureAppFn = ensureFirebaseApp,
+    getFirestoreFn = getAdminFirestore,
+    environment = process.env,
+  } = options;
+
+  ensureAppFn();
+
+  const databaseId = resolveFirestoreDatabaseId(environment);
+  const useCustomDependencies =
+    ensureAppFn !== ensureFirebaseApp ||
+    getFirestoreFn !== getAdminFirestore ||
+    environment !== process.env;
+
+  if (useCustomDependencies) {
+    return selectFirestoreDatabase(getFirestoreFn, undefined, databaseId);
+  }
+
+  if (!cachedDb) {
+    cachedDb = selectFirestoreDatabase(getFirestoreFn, undefined, databaseId);
+  }
+
+  return cachedDb;
+};
 
 ensureFirebaseApp();
 const db = getFirestoreInstance();
