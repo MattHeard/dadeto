@@ -14,25 +14,23 @@ import {
 } from './core.js';
 import * as gcf from './gcf.js';
 
-const firebaseInitializationState = {
-  initialized: false,
-};
-
 const firebaseInitializationHandlers = {
   reset: () => {},
 };
 let cachedDb = null;
 
 function createFirebaseInitialization() {
+  let initialized = false;
+
   return {
     hasBeenInitialized() {
-      return firebaseInitializationState.initialized;
+      return initialized;
     },
     markInitialized() {
-      firebaseInitializationState.initialized = true;
+      initialized = true;
     },
     reset() {
-      firebaseInitializationState.initialized = false;
+      initialized = false;
     },
   };
 }
