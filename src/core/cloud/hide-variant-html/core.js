@@ -49,15 +49,15 @@ export function createRemoveVariantHtml({
     const loadResult =
       (await loadPageForVariant({ variantId, variantData, pageRef })) ?? null;
 
-    const page =
-      loadResult && typeof loadResult === 'object' && 'page' in loadResult
-        ? loadResult.page
-        : loadResult;
-    const resolvedVariantData =
-      variantData ??
-      (loadResult && typeof loadResult === 'object'
-        ? loadResult.variant
-        : null);
+    let page = loadResult;
+    if (loadResult && typeof loadResult === 'object' && 'page' in loadResult) {
+      page = loadResult.page;
+    }
+
+    let resolvedVariantData = variantData ?? null;
+    if (resolvedVariantData === null && loadResult && typeof loadResult === 'object') {
+      resolvedVariantData = loadResult.variant ?? null;
+    }
 
     if (!page) {
       return null;
