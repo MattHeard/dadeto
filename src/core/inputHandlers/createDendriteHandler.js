@@ -6,6 +6,7 @@ import {
   maybeRemoveTextarea,
 } from './removeElements.js';
 import { hideAndDisable } from './inputState.js';
+import { isDisposable } from './disposeHelpers.js';
 import { getInputValue, setInputValue } from '../browser/inputValueStore.js';
 
 /**
@@ -20,7 +21,7 @@ export function createDendriteHandler(fields) {
    * @returns {void}
    */
   function disposeIfPossible(node) {
-    if (typeof node._dispose === 'function') {
+    if (isDisposable(node)) {
       node._dispose();
     }
   }

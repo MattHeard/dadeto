@@ -54,9 +54,14 @@ export function createRemoveVariantHtml({
       page = loadResult.page;
     }
 
-    let resolvedVariantData = variantData ?? null;
-    if (resolvedVariantData === null && loadResult && typeof loadResult === 'object') {
-      resolvedVariantData = loadResult.variant ?? null;
+    let resolvedVariantData = variantData;
+    if (
+      resolvedVariantData === undefined &&
+      loadResult &&
+      typeof loadResult === 'object' &&
+      'variant' in loadResult
+    ) {
+      resolvedVariantData = loadResult.variant;
     }
 
     if (!page) {
