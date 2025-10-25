@@ -11,11 +11,7 @@ import { fetchFn } from './gcf.js';
 
 let firebaseInitialized = false;
 
-const ensureFirebaseApp = (initFn = initializeApp) => {
-  if (firebaseInitialized) {
-    return;
-  }
-
+const initializeFirebaseApp = (initFn) => {
   try {
     initFn();
   } catch (error) {
@@ -23,6 +19,14 @@ const ensureFirebaseApp = (initFn = initializeApp) => {
       throw error;
     }
   }
+};
+
+const ensureFirebaseApp = (initFn = initializeApp) => {
+  if (firebaseInitialized) {
+    return;
+  }
+
+  initializeFirebaseApp(initFn);
 
   firebaseInitialized = true;
 };
