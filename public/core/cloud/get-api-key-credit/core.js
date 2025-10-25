@@ -1,3 +1,5 @@
+import { createDb } from '../get-api-key-credit-v2/create-db.js';
+
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'Method Not Allowed' };
 const MISSING_UUID_RESPONSE = { status: 400, body: 'Missing UUID' };
 const INTERNAL_ERROR_RESPONSE = { status: 500, body: 'Internal error' };
@@ -46,7 +48,7 @@ function assertFunctionDependency(name, dependency) {
 export function createFirestore(FirestoreConstructor) {
   assertFunctionDependency('FirestoreConstructor', FirestoreConstructor);
 
-  return new FirestoreConstructor();
+  return createDb(FirestoreConstructor);
 }
 
 /**
