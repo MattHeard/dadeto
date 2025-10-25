@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import * as assignModerationCore from '../../../src/core/cloud/assign-moderation-job/core.js';
+import * as assignModerationCore from '../../../src/core/cloud/assign-moderation-job/assign-moderation-job-core.js';
 
 const {
   createReputationScopedVariantsQuery,
