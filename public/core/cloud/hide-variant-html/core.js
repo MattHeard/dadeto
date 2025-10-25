@@ -45,6 +45,10 @@ export function createRemoveVariantHtml({
 
   return async function removeVariantHtml(payload = {}) {
     const { variantId, variantData, pageRef } = payload;
+    const hasVariantData = Object.prototype.hasOwnProperty.call(
+      payload,
+      'variantData'
+    );
 
     const loadResult =
       (await loadPageForVariant({ variantId, variantData, pageRef })) ?? null;
@@ -54,8 +58,16 @@ export function createRemoveVariantHtml({
       page = loadResult.page;
     }
 
-    let resolvedVariantData = variantData ?? null;
-    if (resolvedVariantData === null && loadResult && typeof loadResult === 'object') {
+    let resolvedVariantData;
+    if (hasVariantData) {
+      resolvedVariantData = variantData;
+    }
+    if (
+      !hasVariantData &&
+      loadResult &&
+      typeof loadResult === 'object' &&
+      'variant' in loadResult
+    ) {
       resolvedVariantData = loadResult.variant ?? null;
     }
 
