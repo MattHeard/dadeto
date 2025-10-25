@@ -27,11 +27,9 @@ const defaultEnsureFirebaseApp = () => {};
 /**
  * Reset the initialization flag. Primarily used in tests.
  */
-function clearFirebaseInitializationFlag() {
+firebaseInitializationHandlers.reset = () => {
   firebaseInitialization.reset();
-}
-
-firebaseInitializationHandlers.reset = clearFirebaseInitializationFlag;
+};
 
 /**
  * Parse the database identifier from the Firebase configuration.
