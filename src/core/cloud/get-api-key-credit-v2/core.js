@@ -12,10 +12,11 @@ const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
  * @returns {string} Extracted UUID or an empty string when missing.
  */
 export function extractUuid(request = {}) {
-  const path = typeof request.path === 'string' ? request.path : '';
-  const match = path.match(UUID_PATH_PATTERN);
-  if (match) {
-    return match[1];
+  if (typeof request.path === 'string') {
+    const match = request.path.match(UUID_PATH_PATTERN);
+    if (match) {
+      return match[1];
+    }
   }
 
   const paramsUuid = request.params?.uuid;
