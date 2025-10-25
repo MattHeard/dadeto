@@ -4,7 +4,7 @@ import {
   createGetApiKeyCreditV2Handler,
   extractUuid,
 } from './core.js';
-import { createDb } from './create-db.js';
+import { createDb } from './core.js';
 import { createFetchCredit } from './core.js';
 
 const db = createDb(Firestore);
@@ -36,5 +36,5 @@ export const getApiKeyCreditV2 = onRequest(async (req, res) => {
 });
 
 export { extractUuid } from './core.js';
-export { createDb } from './create-db.js';
+export { createDb } from './core.js';
 export { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
