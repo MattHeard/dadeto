@@ -201,6 +201,10 @@ const individualFileCopies = [
     target: join(infraFunctionsDir, 'assign-moderation-job', 'gcf.js'),
   },
   {
+    source: sharedGcfSource,
+    target: join(infraFunctionsDir, 'generate-stats', 'gcf.js'),
+  },
+  {
     source: generateStatsCoreSource,
     target: join(infraDir, 'core', 'cloud', 'generate-stats', 'core.js'),
   },
