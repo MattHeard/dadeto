@@ -18,8 +18,9 @@ function matchPathUuid(path) {
 }
 
 /**
- *
- * @param value
+ * Normalize a value into a UUID string.
+ * @param {unknown} value Candidate value that may contain a UUID.
+ * @returns {string} UUID string when valid, otherwise an empty string.
  */
 function readUuid(value) {
   return typeof value === 'string' && value ? value : '';
