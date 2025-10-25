@@ -27,6 +27,7 @@ import {
   createCheckAccess,
   initAdmin,
   ADMIN_UID,
+  __TEST_ONLY__,
 } from '../../../../src/core/browser/admin/core.js';
 
 const createConfig = overrides => ({
@@ -685,6 +686,23 @@ describe('createTriggerRender additional branches', () => {
     expect(() =>
       createTriggerRender({ getIdToken: jest.fn() }, jest.fn(), jest.fn(), null)
     ).toThrow(new TypeError('showMessage must be a function'));
+  });
+});
+
+describe('createAdminTokenAction', () => {
+  it('throws when the action is not a function', () => {
+    const { createAdminTokenAction } = __TEST_ONLY__;
+
+    expect(() =>
+      createAdminTokenAction({
+        googleAuth: { getIdToken: () => 'token' },
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+        showMessage: jest.fn(),
+        missingTokenMessage: 'missing',
+        action: null,
+      })
+    ).toThrow(new TypeError('action must be a function'));
   });
 });
 

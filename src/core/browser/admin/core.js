@@ -164,7 +164,10 @@ export async function announceTriggerRenderResult(res, showMessage) {
     const status = res?.status ?? 'unknown';
     const statusText = res?.statusText ?? 'unknown';
     const body = (await res?.text?.()) ?? '';
-    const bodySuffix = body ? ` - ${body}` : '';
+    let bodySuffix = '';
+    if (body) {
+      bodySuffix = ` - ${body}`;
+    }
 
     showMessage(`Render failed: ${status} ${statusText}${bodySuffix}`);
     return;
@@ -253,6 +256,10 @@ function createAdminTokenAction({
   };
 }
 
+export const __TEST_ONLY__ = {
+  createAdminTokenAction,
+};
+
 /**
  * Create a trigger render handler with the supplied dependencies.
  * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
@@ -273,7 +280,12 @@ export function createTriggerRender(
     fetchFn,
     showMessage,
     missingTokenMessage: 'Render failed: missing ID token',
-    action: ({ token, getAdminEndpoints, fetchFn: fetch, showMessage: report }) =>
+    action: ({
+      token,
+      getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage: report,
+    }) =>
       executeTriggerRender({
         getAdminEndpoints,
         fetchFn: fetch,
@@ -501,7 +513,12 @@ export function createTriggerStats(
     fetchFn,
     showMessage,
     missingTokenMessage: 'Stats generation failed',
-    action: async ({ token, getAdminEndpoints, fetchFn: fetch, showMessage: report }) => {
+    action: async ({
+      token,
+      getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage: report,
+    }) => {
       try {
         const { generateStatsUrl } = await getAdminEndpoints();
         await fetch(generateStatsUrl, {
