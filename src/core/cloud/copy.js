@@ -1,3 +1,5 @@
+import { selectReadablePath } from '../copy.js';
+
 export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
 
 /**
@@ -107,11 +109,7 @@ export function createCopyToInfraCore({
     if (!relativePath) {
       return '.';
     }
-    const pathSelection = {
-      true: targetPath,
-      false: relativePath,
-    };
-    return pathSelection[relativePath.startsWith('..')];
+    return selectReadablePath(targetPath, relativePath);
   }
 
   /**
