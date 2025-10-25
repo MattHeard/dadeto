@@ -34,13 +34,6 @@ function clearFirebaseInitializationFlag() {
 firebaseInitializationHandlers.reset = clearFirebaseInitializationFlag;
 
 /**
- * Reset the initialization flag. Primarily used in tests.
- */
-function resetFirebaseInitializationState() {
-  firebaseInitializationHandlers.reset();
-}
-
-/**
  * Parse the database identifier from the Firebase configuration.
  * @param {Record<string, unknown>} environment Process environment variables.
  * @returns {string | null} The configured database identifier when available.
@@ -128,7 +121,7 @@ function getFirestoreInstance(options = {}) {
  */
 function clearFirestoreInstanceCache() {
   cachedDb = null;
-  resetFirebaseInitializationState();
+  firebaseInitializationHandlers.reset();
 }
 
 /**
