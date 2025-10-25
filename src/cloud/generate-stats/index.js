@@ -6,20 +6,14 @@ import cors from 'cors';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
-import { createGenerateStatsCore, isDuplicateAppError } from './core.js';
+import {
+  createGenerateStatsCore,
+  initializeFirebaseApp,
+  isDuplicateAppError,
+} from './core.js';
 import { fetchFn } from './gcf.js';
 
 let firebaseInitialized = false;
-
-const initializeFirebaseApp = (initFn) => {
-  try {
-    initFn();
-  } catch (error) {
-    if (!isDuplicateAppError(error)) {
-      throw error;
-    }
-  }
-};
 
 const ensureFirebaseApp = (initFn = initializeApp) => {
   if (firebaseInitialized) {
