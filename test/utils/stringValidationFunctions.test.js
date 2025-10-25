@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { isValidText } from '../../src/core/stringUtils.js';
+import { isValidText } from '../../src/core/str.js';
 import { isValidString } from '../../src/core/validation.js';
 
 describe.each([
