@@ -6,10 +6,7 @@ export const createPlayClickHandler = (audio, stopDefault, playAudio) => {
 };
 
 export const createPauseClickHandler = (audio, stopDefault, pauseAudio) => {
-  return e => {
-    stopDefault(e);
-    pauseAudio(audio);
-  };
+  return createPlayClickHandler(audio, stopDefault, pauseAudio);
 };
 
 export const createStopClickHandler = (audio, stopDefault, pauseAudio) => {
