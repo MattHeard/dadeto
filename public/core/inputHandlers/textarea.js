@@ -6,7 +6,8 @@ import {
 import { hideAndDisable, revealAndEnable } from './inputState.js';
 import { TEXTAREA_SELECTOR } from '../constants/selectors.js';
 import { createRemoveListener } from '../../browser/document.js';
-import { getInputValue, setInputValue } from '../browser/inputValueStore.js';
+import { getInputValue } from '../browser/inputValueStore.js';
+import { createUpdateTextInputValue } from './number.js';
 
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
 
@@ -45,19 +46,13 @@ const getTextareaSourceValue = (textInput, dom) => {
   return getDomTextareaValue(textInput, dom);
 };
 
-const createSyncTextInputValue = (textInput, dom) => event => {
-  const targetValue = dom.getTargetValue(event);
-  dom.setValue(textInput, targetValue);
-  setInputValue(textInput, targetValue);
-};
-
 const positionTextarea = ({ container, textInput, textarea, dom }) => {
   const nextSibling = dom.getNextSibling(textInput);
   dom.insertBefore(container, textarea, nextSibling);
 };
 
 const setupTextarea = ({ textarea, textInput, dom }) => {
-  const handleInput = createSyncTextInputValue(textInput, dom);
+  const handleInput = createUpdateTextInputValue(textInput, dom);
   dom.addEventListener(textarea, 'input', handleInput);
   textarea._dispose = createRemoveListener({
     dom,
