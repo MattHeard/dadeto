@@ -51,9 +51,7 @@ describe('generate stats helpers', () => {
   });
 
   test('getProjectFromEnv falls back to GCLOUD_PROJECT', () => {
-    expect(getProjectFromEnv({ GCLOUD_PROJECT: 'fallback' })).toBe(
-      'fallback'
-    );
+    expect(getProjectFromEnv({ GCLOUD_PROJECT: 'fallback' })).toBe('fallback');
   });
 
   test('getProjectFromEnv returns undefined when env lacks project values', () => {
@@ -164,7 +162,6 @@ describe('generate stats helpers', () => {
       { title: 'Title s2', variantCount: 2 },
     ]);
   });
-
 });
 
 describe('createGenerateStatsCore', () => {
@@ -183,11 +180,9 @@ describe('createGenerateStatsCore', () => {
       bucket: jest.fn(() => bucketRef),
     };
     const fetchFn = overrides.fetchFn ?? jest.fn();
-    const auth =
-      overrides.auth ??
-      {
-        verifyIdToken: jest.fn().mockResolvedValue({ uid: ADMIN_UID }),
-      };
+    const auth = overrides.auth ?? {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: ADMIN_UID }),
+    };
     const db = overrides.db ?? {};
     const env = overrides.env ?? { GOOGLE_CLOUD_PROJECT: 'project' };
 
@@ -222,7 +217,7 @@ describe('createGenerateStatsCore', () => {
       ok: true,
       json: jest.fn().mockResolvedValue({ access_token: 'token' }),
     };
-    const fetchFn = jest.fn((url) => {
+    const fetchFn = jest.fn(url => {
       if (url.startsWith('http://metadata.google.internal')) {
         return Promise.resolve(metadataResponse);
       }
@@ -235,9 +230,7 @@ describe('createGenerateStatsCore', () => {
   });
 
   test('throws when metadata token fetch fails', async () => {
-    const fetchFn = jest.fn(() =>
-      Promise.resolve({ ok: false, status: 503 })
-    );
+    const fetchFn = jest.fn(() => Promise.resolve({ ok: false, status: 503 }));
     const { core } = createCore({ fetchFn });
 
     await expect(core.getAccessTokenFromMetadata()).rejects.toThrow(
@@ -248,7 +241,7 @@ describe('createGenerateStatsCore', () => {
   test('invalidates CDN paths and logs failures', async () => {
     const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
     let callIndex = 0;
-    const fetchFn = jest.fn((url) => {
+    const fetchFn = jest.fn(url => {
       if (url.startsWith('http://metadata')) {
         return Promise.resolve({
           ok: true,
@@ -414,10 +407,13 @@ describe('createGenerateStatsCore', () => {
     expect(topStoriesFn).toHaveBeenCalledTimes(1);
     expect(storage.bucket).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
     expect(bucketRef.file).toHaveBeenCalledWith('stats.html');
-    expect(file.save).toHaveBeenCalledWith(expect.stringContaining('<!doctype html>'), {
-      contentType: 'text/html',
-      metadata: { cacheControl: 'no-cache' },
-    });
+    expect(file.save).toHaveBeenCalledWith(
+      expect.stringContaining('<!doctype html>'),
+      {
+        contentType: 'text/html',
+        metadata: { cacheControl: 'no-cache' },
+      }
+    );
     expect(invalidatePathsFn).toHaveBeenCalledWith(['/stats.html']);
   });
 
@@ -437,7 +433,7 @@ describe('createGenerateStatsCore', () => {
     const res = createResponse();
     const req = {
       method: 'POST',
-      get: (key) => (key === 'X-Appengine-Cron' ? 'true' : ''),
+      get: key => (key === 'X-Appengine-Cron' ? 'true' : ''),
     };
 
     await core.handleRequest(req, res, { genFn });
@@ -452,7 +448,7 @@ describe('createGenerateStatsCore', () => {
     const res = createResponse();
     const req = {
       method: 'POST',
-      get: (key) => (key === 'Authorization' ? '' : ''),
+      get: key => (key === 'Authorization' ? '' : ''),
     };
 
     await core.handleRequest(req, res);
@@ -466,7 +462,7 @@ describe('createGenerateStatsCore', () => {
     const res = createResponse();
     const req = {
       method: 'POST',
-      get: (key) => (key === 'Authorization' ? 'token' : ''),
+      get: key => (key === 'Authorization' ? 'token' : ''),
     };
 
     await core.handleRequest(req, res);
@@ -483,8 +479,7 @@ describe('createGenerateStatsCore', () => {
     const res = createResponse();
     const req = {
       method: 'POST',
-      get: (key) =>
-        key === 'Authorization' ? 'Bearer abc' : '',
+      get: key => (key === 'Authorization' ? 'Bearer abc' : ''),
     };
 
     await core.handleRequest(req, res);
@@ -502,8 +497,7 @@ describe('createGenerateStatsCore', () => {
     const res = createResponse();
     const req = {
       method: 'POST',
-      get: (key) =>
-        key === 'Authorization' ? 'Bearer abc' : '',
+      get: key => (key === 'Authorization' ? 'Bearer abc' : ''),
     };
 
     await core.handleRequest(req, res);
@@ -518,8 +512,7 @@ describe('createGenerateStatsCore', () => {
     const res = createResponse();
     const req = {
       method: 'POST',
-      get: (key) =>
-        key === 'Authorization' ? 'Bearer token' : '',
+      get: key => (key === 'Authorization' ? 'Bearer token' : ''),
     };
 
     await core.handleRequest(req, res, {
@@ -542,8 +535,7 @@ describe('createGenerateStatsCore', () => {
     const res = createResponse();
     const req = {
       method: 'POST',
-      get: (key) =>
-        key === 'Authorization' ? 'Bearer token' : '',
+      get: key => (key === 'Authorization' ? 'Bearer token' : ''),
     };
 
     await core.handleRequest(req, res, { genFn, authInstance });
@@ -591,7 +583,9 @@ describe('createGenerateStatsCore', () => {
             }),
           };
         }
-        return { doc: () => ({ get: () => Promise.resolve({ data: () => ({}) }) }) };
+        return {
+          doc: () => ({ get: () => Promise.resolve({ data: () => ({}) }) }),
+        };
       }),
       collectionGroup: jest.fn(name => {
         if (name === 'pages') {
@@ -849,7 +843,9 @@ describe('createGenerateStatsCore', () => {
           };
         }
         return {
-          doc: () => ({ get: () => Promise.resolve({ data: () => undefined }) }),
+          doc: () => ({
+            get: () => Promise.resolve({ data: () => undefined }),
+          }),
         };
       },
     };
@@ -875,7 +871,8 @@ describe('createGenerateStatsCore', () => {
         }
         return {
           doc: id => ({
-            get: () => Promise.resolve({ data: () => ({ title: `Story ${id}` }) }),
+            get: () =>
+              Promise.resolve({ data: () => ({ title: `Story ${id}` }) }),
           }),
         };
       },

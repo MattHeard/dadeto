@@ -59,9 +59,8 @@ describe('createGetAdminEndpointsFromStaticConfig', () => {
   it('produces a memoized getter that loads the static config once', async () => {
     const loadStaticConfig = jest.fn().mockResolvedValue(createConfig());
 
-    const getAdminEndpoints = createGetAdminEndpointsFromStaticConfig(
-      loadStaticConfig
-    );
+    const getAdminEndpoints =
+      createGetAdminEndpointsFromStaticConfig(loadStaticConfig);
 
     const promise = getAdminEndpoints();
     const secondPromise = getAdminEndpoints();
@@ -156,9 +155,7 @@ describe('createTriggerRender', () => {
 
     expect(getAdminEndpoints).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
-    expect(showMessage).toHaveBeenCalledWith(
-      'Render failed: missing ID token'
-    );
+    expect(showMessage).toHaveBeenCalledWith('Render failed: missing ID token');
   });
 
   it('throws when googleAuth does not expose getIdToken', () => {
@@ -242,12 +239,7 @@ describe('createTriggerStats', () => {
 
   it('throws when googleAuth is missing getIdToken', () => {
     expect(() =>
-      createTriggerStats(
-        {},
-        jest.fn(),
-        jest.fn(),
-        jest.fn()
-      )
+      createTriggerStats({}, jest.fn(), jest.fn(), jest.fn())
     ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
   });
 });
@@ -448,7 +440,10 @@ describe('createWireSignOut', () => {
     wireSignOut();
 
     expect(doc.querySelectorAll).toHaveBeenCalledWith('#signoutLink');
-    expect(addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+    expect(addEventListener).toHaveBeenCalledWith(
+      'click',
+      expect.any(Function)
+    );
 
     const handler = addEventListener.mock.calls[0][1];
     const preventDefault = jest.fn();
@@ -471,9 +466,9 @@ describe('createWireSignOut', () => {
 
 describe('createAdminEndpointsPromise', () => {
   it('resolves with mapped endpoints when the loader succeeds', async () => {
-    const loadStaticConfig = jest.fn().mockResolvedValue(
-      createConfig({ markVariantDirtyUrl: undefined })
-    );
+    const loadStaticConfig = jest
+      .fn()
+      .mockResolvedValue(createConfig({ markVariantDirtyUrl: undefined }));
 
     await expect(
       createAdminEndpointsPromise(loadStaticConfig)
@@ -551,9 +546,7 @@ describe('postTriggerRenderContents', () => {
   it('throws when dependencies are invalid', async () => {
     await expect(
       postTriggerRenderContents(null, jest.fn(), 'token')
-    ).rejects.toThrow(
-      new TypeError('getAdminEndpointsFn must be a function')
-    );
+    ).rejects.toThrow(new TypeError('getAdminEndpointsFn must be a function'));
     await expect(
       postTriggerRenderContents(jest.fn(), null, 'token')
     ).rejects.toThrow(new TypeError('fetchFn must be a function'));
@@ -678,34 +671,19 @@ describe('createTriggerRender additional branches', () => {
 
   it('throws when getAdminEndpointsFn is not a function', () => {
     expect(() =>
-      createTriggerRender(
-        { getIdToken: jest.fn() },
-        null,
-        jest.fn(),
-        jest.fn()
-      )
+      createTriggerRender({ getIdToken: jest.fn() }, null, jest.fn(), jest.fn())
     ).toThrow(new TypeError('getAdminEndpointsFn must be a function'));
   });
 
   it('throws when fetchFn is not a function', () => {
     expect(() =>
-      createTriggerRender(
-        { getIdToken: jest.fn() },
-        jest.fn(),
-        null,
-        jest.fn()
-      )
+      createTriggerRender({ getIdToken: jest.fn() }, jest.fn(), null, jest.fn())
     ).toThrow(new TypeError('fetchFn must be a function'));
   });
 
   it('throws when showMessage is not a function', () => {
     expect(() =>
-      createTriggerRender(
-        { getIdToken: jest.fn() },
-        jest.fn(),
-        jest.fn(),
-        null
-      )
+      createTriggerRender({ getIdToken: jest.fn() }, jest.fn(), jest.fn(), null)
     ).toThrow(new TypeError('showMessage must be a function'));
   });
 });
@@ -734,34 +712,19 @@ describe('createTriggerStats additional branches', () => {
 
   it('throws when getAdminEndpointsFn is not a function', () => {
     expect(() =>
-      createTriggerStats(
-        { getIdToken: jest.fn() },
-        null,
-        jest.fn(),
-        jest.fn()
-      )
+      createTriggerStats({ getIdToken: jest.fn() }, null, jest.fn(), jest.fn())
     ).toThrow(new TypeError('getAdminEndpointsFn must be a function'));
   });
 
   it('throws when fetchFn is not a function', () => {
     expect(() =>
-      createTriggerStats(
-        { getIdToken: jest.fn() },
-        jest.fn(),
-        null,
-        jest.fn()
-      )
+      createTriggerStats({ getIdToken: jest.fn() }, jest.fn(), null, jest.fn())
     ).toThrow(new TypeError('fetchFn must be a function'));
   });
 
   it('throws when showMessage is not a function', () => {
     expect(() =>
-      createTriggerStats(
-        { getIdToken: jest.fn() },
-        jest.fn(),
-        jest.fn(),
-        null
-      )
+      createTriggerStats({ getIdToken: jest.fn() }, jest.fn(), jest.fn(), null)
     ).toThrow(new TypeError('showMessage must be a function'));
   });
 });
@@ -1381,7 +1344,9 @@ describe('initAdmin', () => {
         jest.fn().mockResolvedValue({ ok: true })
       )
     ).toThrow(
-      new TypeError('googleAuthModule must provide an initGoogleSignIn function')
+      new TypeError(
+        'googleAuthModule must provide an initGoogleSignIn function'
+      )
     );
   });
 
@@ -1405,7 +1370,11 @@ describe('initAdmin', () => {
 
     expect(() =>
       initAdmin(
-        { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+        {
+          getIdToken: jest.fn(),
+          signOut: jest.fn(),
+          initGoogleSignIn: jest.fn(),
+        },
         jest.fn().mockResolvedValue({}),
         null,
         jest.fn(),
@@ -1420,7 +1389,11 @@ describe('initAdmin', () => {
 
     expect(() =>
       initAdmin(
-        { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+        {
+          getIdToken: jest.fn(),
+          signOut: jest.fn(),
+          initGoogleSignIn: jest.fn(),
+        },
         jest.fn().mockResolvedValue({}),
         jest.fn(),
         null,
@@ -1433,7 +1406,11 @@ describe('initAdmin', () => {
   it('throws when document is invalid', () => {
     expect(() =>
       initAdmin(
-        { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+        {
+          getIdToken: jest.fn(),
+          signOut: jest.fn(),
+          initGoogleSignIn: jest.fn(),
+        },
         jest.fn().mockResolvedValue({}),
         jest.fn(),
         jest.fn(),
@@ -1448,7 +1425,11 @@ describe('initAdmin', () => {
 
     expect(() =>
       initAdmin(
-        { getIdToken: jest.fn(), signOut: jest.fn(), initGoogleSignIn: jest.fn() },
+        {
+          getIdToken: jest.fn(),
+          signOut: jest.fn(),
+          initGoogleSignIn: jest.fn(),
+        },
         jest.fn().mockResolvedValue({}),
         jest.fn(),
         jest.fn(),

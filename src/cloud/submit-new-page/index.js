@@ -20,14 +20,14 @@ const auth = getAuth();
 const app = express();
 
 const handleSubmitCore = createHandleSubmit({
-  verifyIdToken: (token) => auth.verifyIdToken(token),
+  verifyIdToken: token => auth.verifyIdToken(token),
   saveSubmission: (id, data) =>
     db.collection('pageFormSubmissions').doc(id).set(data),
   randomUUID: () => crypto.randomUUID(),
   serverTimestamp: () => FieldValue.serverTimestamp(),
   parseIncomingOption,
-  findExistingOption: (parsed) => findExistingOption(db, parsed),
-  findExistingPage: (pageNumber) => findExistingPage(db, pageNumber),
+  findExistingOption: parsed => findExistingOption(db, parsed),
+  findExistingPage: pageNumber => findExistingPage(db, pageNumber),
 });
 
 const allowedOrigins = getAllowedOrigins(process.env); // includes static-site domain

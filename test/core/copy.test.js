@@ -271,14 +271,10 @@ describe('createCopyCore', () => {
       const fullPath = posix.join(directories.srcToysDir, 'next.js');
       const listEntries = jest.fn();
       expect(
-        core.accumulateJsFiles(
-          jsFiles,
-          entry,
-          {
-            dir: directories.srcToysDir,
-            listEntries,
-          }
-        )
+        core.accumulateJsFiles(jsFiles, entry, {
+          dir: directories.srcToysDir,
+          listEntries,
+        })
       ).toEqual(['existing.js', fullPath]);
     });
   });
@@ -315,10 +311,7 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
       const source = posix.join(directories.srcToysDir, 'widget.js');
-      const destination = posix.join(
-        directories.publicToysDir,
-        'widget.js'
-      );
+      const destination = posix.join(directories.publicToysDir, 'widget.js');
 
       core.copyFileWithDirectories(io, {
         source,
@@ -340,15 +333,12 @@ describe('createCopyCore', () => {
         createDirectory: jest.fn(),
         copyFile: jest.fn(),
       };
-      core.copyFileWithDirectories(
-        existingIo,
-        {
-          source,
-          destination,
-          messageLogger: logger,
-          message: customMessage,
-        }
-      );
+      core.copyFileWithDirectories(existingIo, {
+        source,
+        destination,
+        messageLogger: logger,
+        message: customMessage,
+      });
       expect(logger.info).toHaveBeenCalledWith(customMessage);
       expect(existingIo.createDirectory).not.toHaveBeenCalled();
     });
@@ -456,11 +446,7 @@ describe('createCopyCore', () => {
         posix.join(directories.publicToysDir, 'nested/deep.js')
       );
 
-      core.handleDirectoryEntry(
-        fileEntry,
-        directoriesContext,
-        copyContext
-      );
+      core.handleDirectoryEntry(fileEntry, directoriesContext, copyContext);
 
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(directories.srcToysDir, 'keep.js'),
@@ -483,11 +469,7 @@ describe('createCopyCore', () => {
       };
       const copyContext = { io, messageLogger: logger };
 
-      core.processDirectoryEntries(
-        entries,
-        directoriesContext,
-        copyContext
-      );
+      core.processDirectoryEntries(entries, directoriesContext, copyContext);
 
       expect(io.copyFile).toHaveBeenCalledTimes(2);
     });

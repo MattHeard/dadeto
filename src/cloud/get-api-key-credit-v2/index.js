@@ -1,9 +1,6 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import { Firestore } from '@google-cloud/firestore';
-import {
-  createGetApiKeyCreditV2Handler,
-  extractUuid,
-} from './core.js';
+import { createGetApiKeyCreditV2Handler, extractUuid } from './core.js';
 import { createDb } from './core.js';
 import { createFetchCredit } from './core.js';
 

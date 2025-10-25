@@ -26,7 +26,7 @@ describe('createCopyToInfraCore', () => {
 
     it('returns the original path when outside of the project', () => {
       expect(core.formatPathForLog('/elsewhere/file.js')).toBe(
-        '/elsewhere/file.js',
+        '/elsewhere/file.js'
       );
     });
   });
@@ -37,7 +37,7 @@ describe('createCopyToInfraCore', () => {
       expect(core.isCopyableFile(createDirent('config.json'))).toBe(true);
       expect(core.isCopyableFile(createDirent('notes.txt'))).toBe(false);
       expect(core.isCopyableFile(createDirent('nested', { file: false }))).toBe(
-        false,
+        false
       );
     });
   });
@@ -57,10 +57,10 @@ describe('createCopyToInfraCore', () => {
 
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(projectRoot, 'src/index.js'),
-        posix.join(projectRoot, 'infra/index.js'),
+        posix.join(projectRoot, 'infra/index.js')
       );
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied: src/index.js -> infra/index.js',
+        'Copied: src/index.js -> infra/index.js'
       );
     });
 
@@ -84,21 +84,21 @@ describe('createCopyToInfraCore', () => {
           target: posix.join(projectRoot, 'infra/functions'),
         },
         io,
-        logger,
+        logger
       );
 
       expect(io.ensureDirectory).toHaveBeenCalledWith(
-        posix.join(projectRoot, 'infra/functions'),
+        posix.join(projectRoot, 'infra/functions')
       );
       expect(io.readDirEntries).toHaveBeenCalledWith(
-        posix.join(projectRoot, 'functions'),
+        posix.join(projectRoot, 'functions')
       );
       expect(io.copyFile).toHaveBeenCalledTimes(2);
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied: functions/index.js -> infra/functions/index.js',
+        'Copied: functions/index.js -> infra/functions/index.js'
       );
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied: functions/config.json -> infra/functions/config.json',
+        'Copied: functions/config.json -> infra/functions/config.json'
       );
     });
 
@@ -116,21 +116,21 @@ describe('createCopyToInfraCore', () => {
           files: ['package.json', 'config.json'],
         },
         io,
-        logger,
+        logger
       );
 
       expect(io.ensureDirectory).toHaveBeenCalledWith(
-        posix.join(projectRoot, 'infra'),
+        posix.join(projectRoot, 'infra')
       );
       expect(io.copyFile).toHaveBeenNthCalledWith(
         1,
         posix.join(projectRoot, 'src/package.json'),
-        posix.join(projectRoot, 'infra/package.json'),
+        posix.join(projectRoot, 'infra/package.json')
       );
       expect(io.copyFile).toHaveBeenNthCalledWith(
         2,
         posix.join(projectRoot, 'src/config.json'),
-        posix.join(projectRoot, 'infra/config.json'),
+        posix.join(projectRoot, 'infra/config.json')
       );
     });
 
@@ -153,26 +153,26 @@ describe('createCopyToInfraCore', () => {
           },
         ],
         io,
-        logger,
+        logger
       );
 
       expect(io.ensureDirectory).toHaveBeenNthCalledWith(
         1,
-        posix.join(projectRoot, 'infra'),
+        posix.join(projectRoot, 'infra')
       );
       expect(io.ensureDirectory).toHaveBeenNthCalledWith(
         2,
-        posix.join(projectRoot, 'infra/nested'),
+        posix.join(projectRoot, 'infra/nested')
       );
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(projectRoot, 'src/util.js'),
-        posix.join(projectRoot, 'infra/nested/util.js'),
+        posix.join(projectRoot, 'infra/nested/util.js')
       );
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied: src/index.js -> infra/index.js',
+        'Copied: src/index.js -> infra/index.js'
       );
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied: src/util.js -> infra/nested/util.js',
+        'Copied: src/util.js -> infra/nested/util.js'
       );
     });
   });
@@ -183,7 +183,10 @@ describe('createCopyToInfraCore', () => {
         ensureDirectory: jest.fn().mockResolvedValue(undefined),
         readDirEntries: jest
           .fn()
-          .mockResolvedValue([createDirent('index.js'), createDirent('README.md')]),
+          .mockResolvedValue([
+            createDirent('index.js'),
+            createDirent('README.md'),
+          ]),
         copyFile: jest.fn().mockResolvedValue(undefined),
       };
       const logger = { info: jest.fn() };
@@ -213,10 +216,10 @@ describe('createCopyToInfraCore', () => {
       expect(io.ensureDirectory).toHaveBeenCalled();
       expect(io.copyFile).toHaveBeenCalledTimes(3);
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied: functions/index.js -> infra/functions/index.js',
+        'Copied: functions/index.js -> infra/functions/index.js'
       );
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied: src/env.json -> infra/env.json',
+        'Copied: src/env.json -> infra/env.json'
       );
     });
 

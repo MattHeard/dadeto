@@ -32,7 +32,9 @@ describe('setLocalPermanentData', () => {
     const logError = jest.fn();
     const incoming = { foo: 'bar' };
 
-    expect(setLocalPermanentData(incoming, { logError })).toEqual({ foo: 'bar' });
+    expect(setLocalPermanentData(incoming, { logError })).toEqual({
+      foo: 'bar',
+    });
     expect(logError).not.toHaveBeenCalled();
   });
 
@@ -43,11 +45,7 @@ describe('setLocalPermanentData', () => {
     };
     const logError = jest.fn();
 
-    const result = setLocalPermanentData(
-      { foo: 'bar' },
-      { logError },
-      storage
-    );
+    const result = setLocalPermanentData({ foo: 'bar' }, { logError }, storage);
 
     expect(logError).toHaveBeenCalledWith(
       'Failed to read permanent data:',
@@ -66,11 +64,7 @@ describe('setLocalPermanentData', () => {
     };
     const logError = jest.fn();
 
-    const result = setLocalPermanentData(
-      { foo: 'bar' },
-      { logError },
-      storage
-    );
+    const result = setLocalPermanentData({ foo: 'bar' }, { logError }, storage);
 
     expect(result).toEqual({ foo: 'bar' });
     expect(logError).toHaveBeenCalledWith(
@@ -86,11 +80,7 @@ describe('setLocalPermanentData', () => {
     };
     const logError = jest.fn();
 
-    const result = setLocalPermanentData(
-      { foo: 'bar' },
-      { logError },
-      storage
-    );
+    const result = setLocalPermanentData({ foo: 'bar' }, { logError }, storage);
 
     expect(result).toEqual({ foo: 'bar' });
     expect(storage.setItem).toHaveBeenCalledWith(

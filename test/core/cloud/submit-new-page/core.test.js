@@ -15,7 +15,7 @@ function createRequest(body = {}, headers = {}) {
 
   return {
     body,
-    get: (name) => normalizedHeaders[name.toLowerCase()],
+    get: name => normalizedHeaders[name.toLowerCase()],
   };
 }
 

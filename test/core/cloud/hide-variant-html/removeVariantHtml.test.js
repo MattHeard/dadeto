@@ -114,6 +114,31 @@ describe('createRemoveVariantHtml', () => {
     });
   });
 
+  it('defaults to null when the loader exposes an undefined variant', async () => {
+    const loadPageForVariant = jest
+      .fn()
+      .mockResolvedValue({ page: { number: 72 }, variant: undefined });
+    const buildVariantPath = jest.fn().mockReturnValue('pages/72.html');
+    const deleteRenderedFile = jest.fn().mockResolvedValue(undefined);
+    const removeVariantHtml = createRemoveVariantHtml({
+      loadPageForVariant,
+      buildVariantPath,
+      deleteRenderedFile,
+    });
+
+    await expect(
+      removeVariantHtml({
+        variantId: 'variant-gamma',
+      })
+    ).resolves.toBeNull();
+
+    expect(buildVariantPath).toHaveBeenCalledWith({
+      variantId: 'variant-gamma',
+      variantData: null,
+      page: { number: 72 },
+    });
+  });
+
   it('falls back to the load result when no page property is present', async () => {
     const loadResult = { slug: 'landing' };
     const loadPageForVariant = jest.fn().mockResolvedValue(loadResult);
