@@ -64,7 +64,12 @@ export const createWriteFormattedHtml = ({
   logInfo,
   logError,
 }) => {
-  return function writeFormattedHtml({ blog, configPath, outputPath, ...rest }) {
+  return function writeFormattedHtml({
+    blog,
+    configPath,
+    outputPath,
+    ...rest
+  }) {
     return writeWithFallback({
       resolveConfig,
       formatHtml,

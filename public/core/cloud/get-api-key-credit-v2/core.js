@@ -5,6 +5,27 @@ export { createDb } from './create-db.js';
 const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
 
 /**
+ * Attempt to read a UUID segment from a credit API request path.
+ * @param {unknown} path Value representing the request path.
+ * @returns {string} Matched UUID, or an empty string when no match exists.
+ */
+function matchPathUuid(path) {
+  if (typeof path !== 'string') {
+    return '';
+  }
+  const match = path.match(UUID_PATH_PATTERN);
+  return match?.[1] ?? '';
+}
+
+/**
+ *
+ * @param value
+ */
+function readUuid(value) {
+  return typeof value === 'string' && value ? value : '';
+}
+
+/**
  * Extract an API key UUID from a request-like object.
  * @param {{
  *   path?: string,
@@ -14,21 +35,17 @@ const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
  * @returns {string} Extracted UUID or an empty string when missing.
  */
 export function extractUuid(request = {}) {
-  if (typeof request.path === 'string') {
-    const match = request.path.match(UUID_PATH_PATTERN);
-    if (match) {
-      return match[1];
+  const resolvers = [
+    () => matchPathUuid(request.path),
+    () => readUuid(request.params?.uuid),
+    () => readUuid(request.query?.uuid),
+  ];
+
+  for (const resolve of resolvers) {
+    const value = resolve();
+    if (value) {
+      return value;
     }
-  }
-
-  const paramsUuid = request.params?.uuid;
-  if (typeof paramsUuid === 'string' && paramsUuid) {
-    return paramsUuid;
-  }
-
-  const queryUuid = request.query?.uuid;
-  if (typeof queryUuid === 'string' && queryUuid) {
-    return queryUuid;
   }
 
   return '';
