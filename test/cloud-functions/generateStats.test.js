@@ -7,7 +7,7 @@ import {
   getUrlMapFromEnv,
   initializeFirebaseApp,
   isDuplicateAppError,
-} from '../../src/core/cloud/generate-stats/core.js';
+} from '../../src/core/cloud/generate-stats/generate-stats-core.js';
 import { ADMIN_UID } from '../../src/core/admin-config.js';
 import {
   getPageCount,
