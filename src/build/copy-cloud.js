@@ -1,10 +1,10 @@
 import { createCopyToInfraCore } from '../core/cloud/copy.js';
-import { createAsyncFsAdapters } from '../build/fs.js';
+import { createAsyncFsAdapters } from './fs.js';
 import {
   createPathAdapters,
   getCurrentDirectory,
   resolveProjectDirectories,
-} from '../build/path.js';
+} from './path.js';
 
 const __dirname = getCurrentDirectory(import.meta.url);
 const { projectRoot, srcDir } = resolveProjectDirectories(__dirname);
