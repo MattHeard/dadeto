@@ -1,0 +1,2 @@
+- **Challenge:** Updating the copy-to-infra script required verifying the destination filename so the new core module stayed in sync with the Cloud Function bundle.
+- **Resolution:** Swapped both the source and target paths in `src/build/copy-cloud.js` and ran the focused Jest suites to confirm the renamed module still exports the expected handlers.

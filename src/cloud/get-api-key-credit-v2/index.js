@@ -1,8 +1,11 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import { Firestore } from '@google-cloud/firestore';
-import { createGetApiKeyCreditV2Handler, extractUuid } from './core.js';
-import { createDb } from './core.js';
-import { createFetchCredit } from './core.js';
+import {
+  createGetApiKeyCreditV2Handler,
+  extractUuid,
+} from './get-api-key-credit-v2-core.js';
+import { createDb } from './get-api-key-credit-v2-core.js';
+import { createFetchCredit } from './get-api-key-credit-v2-core.js';
 
 const db = createDb(Firestore);
 
@@ -32,6 +35,6 @@ export const getApiKeyCreditV2 = onRequest(async (req, res) => {
   return res.status(status).send(body);
 });
 
-export { extractUuid } from './core.js';
-export { createDb } from './core.js';
+export { extractUuid } from './get-api-key-credit-v2-core.js';
+export { createDb } from './get-api-key-credit-v2-core.js';
 export { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';

@@ -124,7 +124,7 @@ const getApiKeyCreditCoreSource = join(
 const getApiKeyCreditV2CoreSource = join(
   srcCoreCloudDir,
   'get-api-key-credit-v2',
-  'core.js'
+  'get-api-key-credit-v2-core.js'
 );
 const getApiKeyCreditV2CreateDbSource = join(
   srcCoreCloudDir,
@@ -256,7 +256,11 @@ const individualFileCopies = [
   },
   {
     source: getApiKeyCreditV2CoreSource,
-    target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'core.js'),
+    target: join(
+      infraFunctionsDir,
+      'get-api-key-credit-v2',
+      'get-api-key-credit-v2-core.js'
+    ),
   },
   {
     source: getApiKeyCreditV2CreateDbSource,
