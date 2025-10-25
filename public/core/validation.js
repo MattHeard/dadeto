@@ -23,7 +23,7 @@ export function isValidString(str) {
  * @returns {boolean} True if the value is of boolean type
  */
 export function isBooleanType(value) {
-  return typeof value === 'boolean';
+  return isType(value, 'boolean');
 }
 
 /**
