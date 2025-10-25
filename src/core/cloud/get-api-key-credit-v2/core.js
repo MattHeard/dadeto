@@ -54,11 +54,21 @@ export function createGetApiKeyCreditV2Handler({
     throw new TypeError('fetchCredit must be a function');
   }
 
-  const resolveUuid = typeof getUuid === 'function' ? getUuid : extractUuid;
-  const errorLogger = typeof logError === 'function' ? logError : () => {};
+  let resolveUuid = extractUuid;
+  if (typeof getUuid === 'function') {
+    resolveUuid = getUuid;
+  }
+
+  let errorLogger = () => {};
+  if (typeof logError === 'function') {
+    errorLogger = logError;
+  }
 
   return async function handleRequest(request = {}) {
-    const method = typeof request.method === 'string' ? request.method : '';
+    let method = '';
+    if (typeof request.method === 'string') {
+      method = request.method;
+    }
     if (method !== 'GET') {
       return {
         status: 405,
