@@ -25,13 +25,6 @@ export const firebaseInitialization = createFirebaseInitialization();
 const defaultEnsureFirebaseApp = () => {};
 
 /**
- * Mark the Firebase Admin app as initialized.
- */
-function markFirebaseInitialized() {
-  firebaseInitialization.markInitialized();
-}
-
-/**
  * Reset the initialization flag. Primarily used in tests.
  */
 function clearFirebaseInitializationFlag() {
@@ -176,7 +169,7 @@ function ensureFirebaseApp(initFn = initializeApp) {
     }
   }
 
-  markFirebaseInitialized();
+  firebaseInitialization.markInitialized();
 }
 
 ensureFirebaseApp();
