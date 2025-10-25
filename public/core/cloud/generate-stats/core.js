@@ -281,6 +281,20 @@ export function isDuplicateAppError(error) {
   return String(error.message).toLowerCase().includes('already exists');
 }
 
+/**
+ * Initialize the Firebase app, ignoring duplicate app errors.
+ * @param {() => void} initFn Initialization function to invoke.
+ */
+export function initializeFirebaseApp(initFn) {
+  try {
+    initFn();
+  } catch (error) {
+    if (!isDuplicateAppError(error)) {
+      throw error;
+    }
+  }
+}
+
 /** @typedef {import('node:process').ProcessEnv} ProcessEnv */
 
 /**
