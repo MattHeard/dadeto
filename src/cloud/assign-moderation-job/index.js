@@ -28,14 +28,14 @@ const defaultEnsureFirebaseApp = () => {};
  * Determine whether the Firebase Admin app has already been initialized.
  * @returns {boolean} True when the shared Firebase app is ready.
  */
-export function hasFirebaseBeenInitialized() {
+function hasFirebaseBeenInitialized() {
   return firebaseInitialization.hasBeenInitialized();
 }
 
 /**
  * Mark the Firebase Admin app as initialized.
  */
-export function markFirebaseInitialized() {
+function markFirebaseInitialized() {
   firebaseInitialization.markInitialized();
 }
 
@@ -51,7 +51,7 @@ firebaseInitializationHandlers.reset = clearFirebaseInitializationFlag;
 /**
  * Reset the initialization flag. Primarily used in tests.
  */
-export function resetFirebaseInitializationState() {
+function resetFirebaseInitializationState() {
   firebaseInitializationHandlers.reset();
 }
 
