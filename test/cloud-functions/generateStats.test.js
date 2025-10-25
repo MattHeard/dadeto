@@ -5,6 +5,7 @@ import {
   getCdnHostFromEnv,
   getProjectFromEnv,
   getUrlMapFromEnv,
+  initializeFirebaseApp,
   isDuplicateAppError,
 } from '../../src/core/cloud/generate-stats/core.js';
 import { ADMIN_UID } from '../../src/core/admin-config.js';
@@ -102,6 +103,30 @@ describe('generate stats helpers', () => {
       })
     ).toBe(false);
     expect(isDuplicateAppError(null)).toBe(false);
+  });
+
+  test('isDuplicateAppError returns false when identifiers are missing', () => {
+    expect(isDuplicateAppError({})).toBe(false);
+    expect(isDuplicateAppError({ code: 'something' })).toBe(false);
+  });
+
+  test('initializeFirebaseApp suppresses duplicate app errors', () => {
+    const initFn = jest.fn(() => {
+      const error = new Error('Firebase app named "[DEFAULT]" already exists');
+      error.code = 'app/duplicate-app';
+      throw error;
+    });
+
+    expect(() => initializeFirebaseApp(initFn)).not.toThrow();
+    expect(initFn).toHaveBeenCalledTimes(1);
+  });
+
+  test('initializeFirebaseApp rethrows non-duplicate errors', () => {
+    const initFn = jest.fn(() => {
+      throw new Error('boom');
+    });
+
+    expect(() => initializeFirebaseApp(initFn)).toThrow('boom');
   });
 
   test('getPageCount returns page count', async () => {

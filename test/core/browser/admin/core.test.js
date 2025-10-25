@@ -28,6 +28,7 @@ import {
   initAdmin,
   ADMIN_UID,
 } from '../../../../src/core/browser/admin/core.js';
+import { createAdminTokenAction } from '../../../../src/core/browser/admin/token-action.js';
 
 const createConfig = overrides => ({
   triggerRenderContentsUrl: 'https://example.com/render',
@@ -685,6 +686,21 @@ describe('createTriggerRender additional branches', () => {
     expect(() =>
       createTriggerRender({ getIdToken: jest.fn() }, jest.fn(), jest.fn(), null)
     ).toThrow(new TypeError('showMessage must be a function'));
+  });
+});
+
+describe('createAdminTokenAction', () => {
+  it('throws when the action is not a function', () => {
+    expect(() =>
+      createAdminTokenAction({
+        googleAuth: { getIdToken: () => 'token' },
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+        showMessage: jest.fn(),
+        missingTokenMessage: 'missing',
+        action: null,
+      })
+    ).toThrow(new TypeError('action must be a function'));
   });
 });
 
