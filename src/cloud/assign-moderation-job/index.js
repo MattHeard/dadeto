@@ -17,7 +17,7 @@ import * as gcf from './gcf.js';
 
 let cachedDb = null;
 
-export const firebaseInitialization = createFirebaseInitialization();
+const firebaseInitialization = createFirebaseInitialization();
 
 /**
  * Reset the initialization flag. Primarily used in tests.
