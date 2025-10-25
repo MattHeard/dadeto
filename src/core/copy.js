@@ -24,6 +24,19 @@ export const sharedDirectoryPairs = [
 ];
 
 /**
+ * Choose the most readable representation for a relative path.
+ * @param {string} absolutePath - Original absolute path provided to the logger.
+ * @param {string} relativePath - Path relative to the project root.
+ * @returns {string} Either the relative path or original absolute path when outside the project.
+ */
+export function selectReadablePath(absolutePath, relativePath) {
+  if (relativePath.startsWith('..')) {
+    return absolutePath;
+  }
+  return relativePath;
+}
+
+/**
  * Build the directory entry tuples used to configure shared copy locations.
  * @param {{
  *   path: { join: typeof import('path').join },
@@ -78,19 +91,6 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       return '.';
     }
     return selectReadablePath(targetPath, relativePath);
-  }
-
-  /**
-   * Choose the most readable representation for a relative path.
-   * @param {string} absolutePath - Original absolute path provided to the logger.
-   * @param {string} relativePath - Path relative to the project root.
-   * @returns {string} Either the relative path or original absolute path when outside the project.
-   */
-  function selectReadablePath(absolutePath, relativePath) {
-    if (relativePath.startsWith('..')) {
-      return absolutePath;
-    }
-    return relativePath;
   }
 
   /**
