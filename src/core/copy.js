@@ -37,6 +37,21 @@ export function selectReadablePath(absolutePath, relativePath) {
 }
 
 /**
+ * Format a target path relative to the provided project root.
+ * @param {string} projectRoot - Root directory to use for relative comparisons.
+ * @param {string} targetPath - Path to format for display.
+ * @param {(from: string, to: string) => string} relativeFn - Path.relative implementation.
+ * @returns {string} Human-readable representation of the path.
+ */
+export function formatPathRelativeToProject(projectRoot, targetPath, relativeFn) {
+  const relativePath = relativeFn(projectRoot, targetPath);
+  if (!relativePath) {
+    return '.';
+  }
+  return selectReadablePath(targetPath, relativePath);
+}
+
+/**
  * Build the directory entry tuples used to configure shared copy locations.
  * @param {{
  *   path: { join: typeof import('path').join },
@@ -86,11 +101,11 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * @returns {string} Human-friendly relative path.
    */
   function formatPathForLog(targetPath) {
-    const relativePath = relative(dirConfig.projectRoot, targetPath);
-    if (!relativePath) {
-      return '.';
-    }
-    return selectReadablePath(targetPath, relativePath);
+    return formatPathRelativeToProject(
+      dirConfig.projectRoot,
+      targetPath,
+      relative
+    );
   }
 
   /**

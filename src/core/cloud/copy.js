@@ -1,4 +1,4 @@
-import { selectReadablePath } from '../copy.js';
+import { formatPathRelativeToProject } from '../copy.js';
 
 export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
 
@@ -105,11 +105,7 @@ export function createCopyToInfraCore({
    * @returns {string} Relative path or the original when outside the project.
    */
   function formatPathForLog(targetPath) {
-    const relativePath = relative(projectRoot, targetPath);
-    if (!relativePath) {
-      return '.';
-    }
-    return selectReadablePath(targetPath, relativePath);
+    return formatPathRelativeToProject(projectRoot, targetPath, relative);
   }
 
   /**
