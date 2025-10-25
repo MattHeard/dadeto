@@ -9,7 +9,7 @@ import {
   createGenerateStatsCore,
   initializeFirebaseApp,
   isDuplicateAppError,
-} from './core.js';
+} from './generate-stats-core.js';
 import { crypto, fetchFn } from './gcf.js';
 
 let firebaseInitialized = false;

@@ -1,0 +1,2 @@
+- Challenge: Renaming the generate stats core module required tracking down the re-export wrapper and the downstream Firestore function entrypoint that referenced the old filename.
+- Resolution: Updated both core and cloud layers plus the Jest suite to import `generate-stats-core.js`, ensuring the re-export path remained accurate after the rename.
