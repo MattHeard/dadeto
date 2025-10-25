@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { createCorsOptions } from '../../../src/core/cloud/assign-moderation-job/core.js';
+import { createCorsOptions } from '../../../src/core/cloud/assign-moderation-job/assign-moderation-job-core.js';
 
 describe('createCorsOptions', () => {
   test('builds the cors options from environment helpers', () => {
