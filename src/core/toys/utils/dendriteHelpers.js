@@ -1,15 +1,7 @@
 export { ensureDend2, createOptions };
 
 import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
-
-/**
- * Check whether a value is a non-null object.
- * @param {*} value - Value to check.
- * @returns {boolean} True if `value` is an object.
- */
-function isObject(value) {
-  return typeof value === 'object' && value !== null;
-}
+import { isNonNullObject } from '../../state.js';
 
 /**
  * Create a blank DEND2 structure.
@@ -35,7 +27,9 @@ function hasArrayProps(obj, keys) {
  * @returns {boolean} True if `obj` is valid.
  */
 function isValidDend2(obj) {
-  return isObject(obj) && hasArrayProps(obj, ['stories', 'pages', 'options']);
+  return (
+    isNonNullObject(obj) && hasArrayProps(obj, ['stories', 'pages', 'options'])
+  );
 }
 
 /**
@@ -44,7 +38,7 @@ function isValidDend2(obj) {
  * @returns {boolean} True when valid.
  */
 function isTemporaryValid(data) {
-  if (!isObject(data.temporary)) {
+  if (!isNonNullObject(data.temporary)) {
     return false;
   }
   return isValidDend2(data.temporary.DEND2);
