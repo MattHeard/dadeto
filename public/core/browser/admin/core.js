@@ -241,7 +241,11 @@ export function createTriggerRender(
  * @param {() => void | Promise<void>} triggerRenderFn - Handler invoked when the button is clicked.
  * @returns {HTMLElement | null} The render button when found, otherwise null.
  */
-export function bindTriggerRenderClick(doc, triggerRenderFn) {
+export function bindTriggerRenderClick(
+  doc,
+  triggerRenderFn,
+  elementId = 'renderBtn'
+) {
   if (!doc || typeof doc.getElementById !== 'function') {
     throw new TypeError('doc must be a Document-like object');
   }
@@ -249,7 +253,7 @@ export function bindTriggerRenderClick(doc, triggerRenderFn) {
     throw new TypeError('triggerRenderFn must be a function');
   }
 
-  const button = doc.getElementById('renderBtn');
+  const button = doc.getElementById(elementId);
   if (button?.addEventListener) {
     button.addEventListener('click', triggerRenderFn);
   }
@@ -264,19 +268,11 @@ export function bindTriggerRenderClick(doc, triggerRenderFn) {
  * @returns {HTMLElement | null} The stats button when found, otherwise null.
  */
 export function bindTriggerStatsClick(doc, triggerStatsFn) {
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
   if (typeof triggerStatsFn !== 'function') {
     throw new TypeError('triggerStatsFn must be a function');
   }
 
-  const button = doc.getElementById('statsBtn');
-  if (button?.addEventListener) {
-    button.addEventListener('click', triggerStatsFn);
-  }
-
-  return button ?? null;
+  return bindTriggerRenderClick(doc, triggerStatsFn, 'statsBtn');
 }
 
 /**
