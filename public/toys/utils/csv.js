@@ -4,6 +4,9 @@
  * quoted fields with escaped quotes.
  */
 
+const QUOTE = '"';
+const DELIMITER = ',';
+
 /**
  * Parse a single CSV row into an array of field strings using RFC 4180 rules.
  * Returns `null` when the row contains malformed quotes.
@@ -15,36 +18,124 @@ export function parseCsvLine(line) {
     return null;
   }
 
-  const fields = [];
-  let field = '';
-  let inQuotes = false;
+  return new CsvLineParser(line).parse();
+}
 
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        field += '"';
-        i += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-
-    if (char === ',' && !inQuotes) {
-      fields.push(field);
-      field = '';
-      continue;
-    }
-
-    field += char;
+class CsvLineParser {
+  constructor(line) {
+    this.line = line;
+    this.index = 0;
+    this.fields = [];
+    this.field = '';
+    this.inQuotes = false;
   }
 
-  if (inQuotes) {
-    return null;
+  parse() {
+    while (this.hasMore()) {
+      this.consume();
+    }
+
+    return this.finish();
   }
 
-  fields.push(field);
-  return fields;
+  hasMore() {
+    return this.index < this.line.length;
+  }
+
+  consume() {
+    if (this.consumeQuote(this.currentChar())) {
+      this.index += 1;
+      return;
+    }
+
+    this.consumeNonQuote();
+  }
+
+  consumeNonQuote() {
+    if (this.consumeDelimiter(this.currentChar())) {
+      this.index += 1;
+      return;
+    }
+
+    this.appendCurrentChar();
+  }
+
+  appendCurrentChar() {
+    this.field += this.currentChar();
+    this.index += 1;
+  }
+
+  consumeQuote(char) {
+    if (!this.isQuote(char)) {
+      return false;
+    }
+
+    return this.toggleQuote();
+  }
+
+  isQuote(char) {
+    return char === QUOTE;
+  }
+
+  toggleQuote() {
+    if (!this.inQuotes) {
+      this.inQuotes = true;
+      return true;
+    }
+
+    return this.closeQuote();
+  }
+
+  closeQuote() {
+    if (this.peek() === QUOTE) {
+      this.field += QUOTE;
+      this.index += 1;
+      return true;
+    }
+
+    this.inQuotes = false;
+    return true;
+  }
+
+  peek() {
+    return this.line[this.index + 1];
+  }
+
+  consumeDelimiter(char) {
+    if (!this.canConsumeDelimiter(char)) {
+      return false;
+    }
+
+    this.commitField();
+    return true;
+  }
+
+  canConsumeDelimiter(char) {
+    return this.isDelimiter(char) && this.isOutsideQuotedField();
+  }
+
+  isDelimiter(char) {
+    return char === DELIMITER;
+  }
+
+  isOutsideQuotedField() {
+    return !this.inQuotes;
+  }
+
+  commitField() {
+    this.fields.push(this.field);
+    this.field = '';
+  }
+
+  currentChar() {
+    return this.line[this.index];
+  }
+
+  finish() {
+    if (this.inQuotes) {
+      return null;
+    }
+
+    return [...this.fields, this.field];
+  }
 }
