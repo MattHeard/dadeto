@@ -1,0 +1,2 @@
+- **Challenge:** Needed to update the Firebase initialization handlers without double-assigning the `reset` callback while preserving existing behavior for tests.
+- **Resolution:** Reordered the declarations so the Firebase initialization object is created before the handlers and defined the `reset` callback once within the handler map.
