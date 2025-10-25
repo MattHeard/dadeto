@@ -15,21 +15,20 @@ import {
 } from './core.js';
 import * as gcf from './gcf.js';
 
-const firebaseInitializationHandlers = {
-  reset: () => {},
-};
 let cachedDb = null;
 
 export const firebaseInitialization = createFirebaseInitialization();
 
-const defaultEnsureFirebaseApp = () => {};
-
 /**
  * Reset the initialization flag. Primarily used in tests.
  */
-firebaseInitializationHandlers.reset = () => {
-  firebaseInitialization.reset();
+const firebaseInitializationHandlers = {
+  reset: () => {
+    firebaseInitialization.reset();
+  },
 };
+
+const defaultEnsureFirebaseApp = () => {};
 
 /**
  * Parse the database identifier from the Firebase configuration.
