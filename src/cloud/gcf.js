@@ -1,5 +1,7 @@
 import { FieldValue } from 'firebase-admin/firestore';
 
+export { default as crypto } from 'crypto';
+
 export const now = () => FieldValue.serverTimestamp();
 
 /**
