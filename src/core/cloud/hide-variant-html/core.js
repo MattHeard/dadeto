@@ -10,29 +10,29 @@ function assertFunctionDependency(name, dependency) {
 }
 
 /**
+ * @typedef {object} RemoveVariantHtmlPayload
+ * @property {string | null | undefined} [variantId] Optional variant identifier.
+ * @property {*} [variantData] Raw variant details required to locate the page.
+ * @property {*} [pageRef] Hint that allows dependencies to locate the page snapshot.
+ */
+
+/**
+ * @typedef {object} RemoveVariantHtmlResult
+ * @property {*} page Page information returned by the loader.
+ * @property {*} [variant] Optional variant details from the loader.
+ */
+
+/**
+ * @typedef {RemoveVariantHtmlResult | * | null} RemoveVariantLoadResult
+ */
+
+/**
  * Create a helper that deletes rendered HTML for a variant.
- * @param {{
- *   loadPageForVariant: (payload: {
- *     variantId?: string | null,
- *     variantData?: unknown,
- *     pageRef?: unknown,
- *   }) => Promise<
- *     | { page: unknown, variant?: unknown }
- *     | unknown
- *     | null
- *   >,
- *   buildVariantPath: (payload: {
- *     variantId: string | null,
- *     variantData: unknown,
- *     page: unknown,
- *   }) => Promise<string> | string,
- *   deleteRenderedFile: (path: string) => Promise<unknown>,
- * }} dependencies Collaborators required to remove the HTML artifact.
- * @returns {(payload: {
- *   variantId?: string | null,
- *   variantData?: unknown,
- *   pageRef?: unknown,
- * }) => Promise<null>} Helper that removes the rendered HTML file when possible.
+ * @param {object} dependencies Collaborators required to remove the HTML artifact.
+ * @param {(payload: RemoveVariantHtmlPayload) => Promise<RemoveVariantLoadResult>} dependencies.loadPageForVariant Function that retrieves the page and variant data.
+ * @param {(payload: { variantId: string | null, variantData: *, page: * }) => Promise<string> | string} dependencies.buildVariantPath Function that maps a variant to the rendered file path.
+ * @param {(path: string) => Promise<*>} dependencies.deleteRenderedFile Function that deletes the rendered file from storage.
+ * @returns {(payload?: RemoveVariantHtmlPayload) => Promise<null>} Helper that removes the rendered HTML file when possible.
  */
 export function createRemoveVariantHtml({
   loadPageForVariant,
