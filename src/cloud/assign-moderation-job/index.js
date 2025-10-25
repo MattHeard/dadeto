@@ -6,6 +6,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import {
   createAssignModerationJob,
+  createFirebaseInitialization,
   createCorsOptions,
   configureUrlencodedBodyParser,
   getAllowedOrigins,
@@ -18,22 +19,6 @@ const firebaseInitializationHandlers = {
   reset: () => {},
 };
 let cachedDb = null;
-
-function createFirebaseInitialization() {
-  let initialized = false;
-
-  return {
-    hasBeenInitialized() {
-      return initialized;
-    },
-    markInitialized() {
-      initialized = true;
-    },
-    reset() {
-      initialized = false;
-    },
-  };
-}
 
 export const firebaseInitialization = createFirebaseInitialization();
 

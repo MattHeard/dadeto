@@ -5,6 +5,30 @@ export const productionOrigins = [
 ];
 
 /**
+ * Create helpers that track Firebase initialization state.
+ * @returns {{
+ *   hasBeenInitialized: () => boolean,
+ *   markInitialized: () => void,
+ *   reset: () => void,
+ * }} Initialization state tracker.
+ */
+export function createFirebaseInitialization() {
+  let initialized = false;
+
+  return {
+    hasBeenInitialized() {
+      return initialized;
+    },
+    markInitialized() {
+      initialized = true;
+    },
+    reset() {
+      initialized = false;
+    },
+  };
+}
+
+/**
  * Resolve the allowed origins for the assign moderation endpoint.
  * @param {Record<string, unknown>} [environmentVariables] Environment variables used to derive the configuration.
  * @returns {string[]} List of origins permitted to call the endpoint.
