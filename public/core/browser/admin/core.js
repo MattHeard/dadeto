@@ -1,4 +1,5 @@
 import { ADMIN_UID } from '../../admin-config.js';
+import { createAdminTokenAction } from './token-action.js';
 
 export { ADMIN_UID };
 
@@ -164,7 +165,10 @@ export async function announceTriggerRenderResult(res, showMessage) {
     const status = res?.status ?? 'unknown';
     const statusText = res?.statusText ?? 'unknown';
     const body = (await res?.text?.()) ?? '';
-    const bodySuffix = body ? ` - ${body}` : '';
+    let bodySuffix = '';
+    if (body) {
+      bodySuffix = ` - ${body}`;
+    }
 
     showMessage(`Render failed: ${status} ${statusText}${bodySuffix}`);
     return;
@@ -197,63 +201,6 @@ export async function executeTriggerRender({
 }
 
 /**
- * Validate admin token action dependencies and produce a handler.
- * @param {{
- *   googleAuth: { getIdToken: () => string | null | undefined },
- *   getAdminEndpointsFn: () => Promise<object>,
- *   fetchFn: FetchFn,
- *   showMessage: (text: string) => void,
- *   missingTokenMessage: string,
- *   action: ({
- *     token: string,
- *     getAdminEndpoints: () => Promise<object>,
- *     fetchFn: FetchFn,
- *     showMessage: (text: string) => void,
- *   }) => Promise<void>,
- * }} options - Dependencies and configuration for the admin action.
- * @returns {() => Promise<void>} Handler guarded by the shared validation logic.
- */
-function createAdminTokenAction({
-  googleAuth,
-  getAdminEndpointsFn,
-  fetchFn,
-  showMessage,
-  missingTokenMessage,
-  action,
-}) {
-  if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
-    throw new TypeError('googleAuth must provide a getIdToken function');
-  }
-  if (typeof getAdminEndpointsFn !== 'function') {
-    throw new TypeError('getAdminEndpointsFn must be a function');
-  }
-  if (typeof fetchFn !== 'function') {
-    throw new TypeError('fetchFn must be a function');
-  }
-  if (typeof showMessage !== 'function') {
-    throw new TypeError('showMessage must be a function');
-  }
-  if (typeof action !== 'function') {
-    throw new TypeError('action must be a function');
-  }
-
-  return async function adminTokenAction() {
-    const token = googleAuth.getIdToken();
-    if (!token) {
-      showMessage(missingTokenMessage);
-      return;
-    }
-
-    await action({
-      token,
-      getAdminEndpoints: getAdminEndpointsFn,
-      fetchFn,
-      showMessage,
-    });
-  };
-}
-
-/**
  * Create a trigger render handler with the supplied dependencies.
  * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
  * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
@@ -273,7 +220,12 @@ export function createTriggerRender(
     fetchFn,
     showMessage,
     missingTokenMessage: 'Render failed: missing ID token',
-    action: ({ token, getAdminEndpoints, fetchFn: fetch, showMessage: report }) =>
+    action: ({
+      token,
+      getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage: report,
+    }) =>
       executeTriggerRender({
         getAdminEndpoints,
         fetchFn: fetch,
@@ -501,7 +453,12 @@ export function createTriggerStats(
     fetchFn,
     showMessage,
     missingTokenMessage: 'Stats generation failed',
-    action: async ({ token, getAdminEndpoints, fetchFn: fetch, showMessage: report }) => {
+    action: async ({
+      token,
+      getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage: report,
+    }) => {
       try {
         const { generateStatsUrl } = await getAdminEndpoints();
         await fetch(generateStatsUrl, {
