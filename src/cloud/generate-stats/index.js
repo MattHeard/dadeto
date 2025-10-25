@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { Storage } from '@google-cloud/storage';
 import * as functions from 'firebase-functions/v1';
 import express from 'express';
@@ -11,7 +10,7 @@ import {
   initializeFirebaseApp,
   isDuplicateAppError,
 } from './core.js';
-import { fetchFn } from './gcf.js';
+import { crypto, fetchFn } from './gcf.js';
 
 let firebaseInitialized = false;
 
