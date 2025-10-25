@@ -6,15 +6,19 @@ import {
   isMissingDocument,
 } from './core.js';
 
-let firestoreInstance;
+function createGetFirestoreInstance() {
+  let firestoreInstance;
 
-async function getFirestoreInstance() {
-  if (!firestoreInstance) {
-    firestoreInstance = createFirestore(Firestore);
-  }
+  return async function getFirestoreInstance() {
+    if (!firestoreInstance) {
+      firestoreInstance = createFirestore(Firestore);
+    }
 
-  return firestoreInstance;
+    return firestoreInstance;
+  };
 }
+
+const getFirestoreInstance = createGetFirestoreInstance();
 
 const getApiKeyCredit = createGetApiKeyCreditHandler({
   async fetchCredit(uuid) {
