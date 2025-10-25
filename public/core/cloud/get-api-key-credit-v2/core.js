@@ -1,5 +1,7 @@
 import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
 
+export { createDb } from './create-db.js';
+
 const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
 
 /**
