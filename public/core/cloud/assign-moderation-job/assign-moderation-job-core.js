@@ -1,8 +1,6 @@
-export const productionOrigins = [
-  'https://mattheard.net',
-  'https://dendritestories.co.nz',
-  'https://www.dendritestories.co.nz',
-];
+import { productionOrigins } from './cloud-core.js';
+
+export { productionOrigins };
 
 /**
  * Create helpers that track Firebase initialization state.
