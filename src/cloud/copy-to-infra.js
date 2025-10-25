@@ -95,6 +95,8 @@ const assignModerationCoreSource = join(
   'assign-moderation-job-core.js'
 );
 
+const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
+
 const generateStatsCoreSource = join(
   srcCoreCloudDir,
   'generate-stats',
@@ -199,11 +201,29 @@ const individualFileCopies = [
     ),
   },
   {
+    source: cloudCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'assign-moderation-job',
+      'cloud-core.js'
+    ),
+  },
+  {
     source: assignModerationCoreSource,
     target: join(
       infraFunctionsDir,
       'assign-moderation-job',
       'assign-moderation-job-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'assign-moderation-job',
+      'cloud-core.js'
     ),
   },
   {
