@@ -54,13 +54,9 @@ function defaultMatchAuthHeader(authHeader) {
  * @returns {string} Message describing the failure.
  */
 function defaultInvalidTokenMessage(error) {
-  const message = error?.message;
+  const candidate = error?.message;
 
-  if (typeof message === 'string') {
-    return message;
-  }
-
-  return 'Invalid token';
+  return ['Invalid token', candidate][Number(typeof candidate === 'string')];
 }
 
 /**
