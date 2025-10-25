@@ -4,7 +4,7 @@ const productionOrigins = [
   'https://www.dendritestories.co.nz',
 ];
 
-export const getAllowedOrigins = (environmentVariables) => {
+export const getAllowedOrigins = environmentVariables => {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
 
@@ -18,4 +18,3 @@ export const getAllowedOrigins = (environmentVariables) => {
 
   return productionOrigins;
 };
-

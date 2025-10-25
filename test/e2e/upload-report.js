@@ -27,7 +27,7 @@ async function uploadDir(dir, destPrefix) {
     const rel = path.relative(srcDir, abs);
     const dst = path.posix.join(destPrefix, rel);
     if (e.isDirectory()) {
-      await uploadDir(abs, destPrefix + '/' + e.name);
+      await uploadDir(abs, `${destPrefix}/${e.name}`);
     } else {
       const start = Date.now();
       tlog('upload:file:start', { abs, dst });
@@ -37,8 +37,10 @@ async function uploadDir(dir, destPrefix) {
   }
 }
 uploadDir(srcDir, `${prefix}/${runId}`)
-  .then(() => tlog('uploadDir:done', { gs: `gs://${bucketName}/${prefix}/${runId}` }))
-  .catch((err) => {
+  .then(() =>
+    tlog('uploadDir:done', { gs: `gs://${bucketName}/${prefix}/${runId}` })
+  )
+  .catch(err => {
     tlog('uploadDir:error', { message: err?.message, code: err?.code });
     process.exit(1);
   });

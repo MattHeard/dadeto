@@ -5,6 +5,11 @@ import * as baseValidation from '../../../../src/core/validation.js';
 import * as reExportedValidation from '../../../../src/core/toys/2025-07-05/validation.js';
 
 describe('add dendrite page re-exports', () => {
+  /**
+   *
+   * @param baseModule
+   * @param reExportedModule
+   */
   function expectModuleExportsToMatch(baseModule, reExportedModule) {
     const baseKeys = Object.keys(baseModule).sort();
     const reExportedKeys = Object.keys(reExportedModule).sort();

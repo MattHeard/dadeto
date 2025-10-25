@@ -23,7 +23,11 @@ function createRes() {
  * @param {{ method?: string, origin?: string | null, authorization?: string }} [options] Request configuration overrides.
  * @returns {{ method: string, get: (name: string) => string }} Mock Express request used in tests.
  */
-function createReq({ method = 'POST', origin = allowedOrigin, authorization = '' } = {}) {
+function createReq({
+  method = 'POST',
+  origin = allowedOrigin,
+  authorization = '',
+} = {}) {
   return {
     method,
     get: h => {
@@ -44,7 +48,10 @@ function createReq({ method = 'POST', origin = allowedOrigin, authorization = ''
  * @param {{ origin?: string | null, allowed?: boolean }} [options] Expected origin configuration.
  * @returns {void}
  */
-function expectCorsHeaders(res, { origin = allowedOrigin, allowed = true } = {}) {
+function expectCorsHeaders(
+  res,
+  { origin = allowedOrigin, allowed = true } = {}
+) {
   expect(res.set).toHaveBeenCalledWith(
     'Access-Control-Allow-Headers',
     'Authorization'

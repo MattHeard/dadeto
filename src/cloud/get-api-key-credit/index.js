@@ -6,6 +6,9 @@ import {
   isMissingDocument,
 } from './core.js';
 
+/**
+ *
+ */
 function createGetFirestoreInstance() {
   let firestoreInstance;
 

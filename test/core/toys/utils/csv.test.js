@@ -7,7 +7,11 @@ describe('parseCsvLine', () => {
   });
 
   it('splits unquoted comma-separated values', () => {
-    expect(parseCsvLine('alpha,beta,gamma')).toEqual(['alpha', 'beta', 'gamma']);
+    expect(parseCsvLine('alpha,beta,gamma')).toEqual([
+      'alpha',
+      'beta',
+      'gamma',
+    ]);
   });
 
   it('handles quoted fields and escaped quotes', () => {

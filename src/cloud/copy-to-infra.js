@@ -242,11 +242,7 @@ const individualFileCopies = [
   },
   {
     source: hideVariantHtmlCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'hide-variant-html',
-      'core.js'
-    ),
+    target: join(infraFunctionsDir, 'hide-variant-html', 'core.js'),
   },
   {
     source: markVariantDirtyVerifyAdminSource,

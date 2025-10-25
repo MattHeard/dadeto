@@ -1,4 +1,1 @@
-export {
-  createGetApiKeyCreditV2Handler,
-  extractUuid,
-} from './core.js';
+export { createGetApiKeyCreditV2Handler, extractUuid } from './core.js';

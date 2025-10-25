@@ -29,6 +29,15 @@ describe('extractUuid', () => {
     ).toBe('query-uuid');
   });
 
+  it('ignores non-matching path segments when extracting the UUID', () => {
+    expect(
+      extractUuid({
+        path: '/api-keys/not-a-valid-uuid/credit',
+        params: { uuid: 'fallback-param' },
+      })
+    ).toBe('fallback-param');
+  });
+
   it('returns an empty string when no UUID can be found', () => {
     expect(extractUuid({})).toBe('');
   });
@@ -40,9 +49,9 @@ describe('extractUuid', () => {
 
 describe('createGetApiKeyCreditV2Handler', () => {
   it('throws when fetchCredit is not a function', () => {
-    expect(() =>
-      createGetApiKeyCreditV2Handler({ fetchCredit: null })
-    ).toThrow(new TypeError('fetchCredit must be a function'));
+    expect(() => createGetApiKeyCreditV2Handler({ fetchCredit: null })).toThrow(
+      new TypeError('fetchCredit must be a function')
+    );
   });
 
   it('throws when fetchCredit is missing', () => {

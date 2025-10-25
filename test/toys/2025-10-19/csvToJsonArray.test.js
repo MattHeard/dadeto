@@ -22,7 +22,8 @@ describe('csvToJsonArrayToy', () => {
   });
 
   it('supports quoted values and ignores blank lines', () => {
-    const input = 'name,notes\n"Alice","Loves apples, pears, and grapes"\n\n"Bob","Enjoys ""escaping"" characters"';
+    const input =
+      'name,notes\n"Alice","Loves apples, pears, and grapes"\n\n"Bob","Enjoys ""escaping"" characters"';
     const expected = JSON.stringify([
       {
         name: 'Alice',
@@ -41,7 +42,9 @@ describe('csvToJsonArrayToy', () => {
     expect(csvToJsonArrayToy('')).toBe(JSON.stringify([]));
     expect(csvToJsonArrayToy('headerOnly')).toBe(JSON.stringify([]));
     expect(csvToJsonArrayToy('a,b\n"unterminated')).toBe(JSON.stringify([]));
-    expect(csvToJsonArrayToy('name,age\nAlice,30\n"Bob,25')).toBe(JSON.stringify([]));
+    expect(csvToJsonArrayToy('name,age\nAlice,30\n"Bob,25')).toBe(
+      JSON.stringify([])
+    );
     expect(csvToJsonArrayToy(42)).toBe(JSON.stringify([]));
   });
 
