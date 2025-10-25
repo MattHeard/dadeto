@@ -25,14 +25,6 @@ export const firebaseInitialization = createFirebaseInitialization();
 const defaultEnsureFirebaseApp = () => {};
 
 /**
- * Determine whether the Firebase Admin app has already been initialized.
- * @returns {boolean} True when the shared Firebase app is ready.
- */
-function hasFirebaseBeenInitialized() {
-  return firebaseInitialization.hasBeenInitialized();
-}
-
-/**
  * Mark the Firebase Admin app as initialized.
  */
 function markFirebaseInitialized() {
@@ -172,7 +164,7 @@ function isDuplicateFirebaseAppError(error) {
  * @param {() => void} [initFn] Optional initializer for dependency injection.
  */
 function ensureFirebaseApp(initFn = initializeApp) {
-  if (hasFirebaseBeenInitialized()) {
+  if (firebaseInitialization.hasBeenInitialized()) {
     return;
   }
 
