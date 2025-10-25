@@ -327,6 +327,21 @@ describe('bindTriggerRenderClick', () => {
     expect(result).toBeNull();
   });
 
+  it('uses the provided element id when supplied', () => {
+    const addEventListener = jest.fn();
+    const button = { addEventListener };
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(button),
+    };
+    const triggerRender = jest.fn();
+
+    const result = bindTriggerRenderClick(doc, triggerRender, 'customBtn');
+
+    expect(doc.getElementById).toHaveBeenCalledWith('customBtn');
+    expect(addEventListener).toHaveBeenCalledWith('click', triggerRender);
+    expect(result).toBe(button);
+  });
+
   it('throws when provided document is invalid', () => {
     expect(() => bindTriggerRenderClick(null, jest.fn())).toThrow(
       new TypeError('doc must be a Document-like object')
