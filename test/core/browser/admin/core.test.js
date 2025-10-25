@@ -27,8 +27,8 @@ import {
   createCheckAccess,
   initAdmin,
   ADMIN_UID,
-  __TEST_ONLY__,
 } from '../../../../src/core/browser/admin/core.js';
+import { createAdminTokenAction } from '../../../../src/core/browser/admin/token-action.js';
 
 const createConfig = overrides => ({
   triggerRenderContentsUrl: 'https://example.com/render',
@@ -691,8 +691,6 @@ describe('createTriggerRender additional branches', () => {
 
 describe('createAdminTokenAction', () => {
   it('throws when the action is not a function', () => {
-    const { createAdminTokenAction } = __TEST_ONLY__;
-
     expect(() =>
       createAdminTokenAction({
         googleAuth: { getIdToken: () => 'token' },
