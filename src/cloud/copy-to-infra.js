@@ -100,7 +100,7 @@ const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
 const generateStatsCoreSource = join(
   srcCoreCloudDir,
   'generate-stats',
-  'core.js'
+  'generate-stats-core.js'
 );
 
 const submitNewPageCoreSource = join(
@@ -236,11 +236,29 @@ const individualFileCopies = [
   },
   {
     source: generateStatsCoreSource,
-    target: join(infraDir, 'core', 'cloud', 'generate-stats', 'core.js'),
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'generate-stats',
+      'generate-stats-core.js'
+    ),
   },
   {
     source: generateStatsCoreSource,
-    target: join(infraFunctionsDir, 'generate-stats', 'core.js'),
+    target: join(
+      infraFunctionsDir,
+      'generate-stats',
+      'generate-stats-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'generate-stats',
+      'cloud-core.js'
+    ),
   },
   {
     source: submitNewPageCoreSource,
