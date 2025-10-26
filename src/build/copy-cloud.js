@@ -170,6 +170,16 @@ const getModerationVariantCorsSource = join(
   'get-moderation-variant',
   'cors.js'
 );
+const getModerationVariantCoreSource = join(
+  srcCoreCloudDir,
+  'get-moderation-variant',
+  'get-moderation-variant-core.js'
+);
+const getModerationVariantGcfSource = join(
+  srcCloudDir,
+  'get-moderation-variant',
+  'get-moderation-variant-gcf.js'
+);
 
 const adminConfigFunctionDirectories = [
   'generate-stats',
@@ -416,6 +426,56 @@ const individualFileCopies = [
   {
     source: markVariantDirtyVerifyAdminSource,
     target: join(infraFunctionsDir, 'mark-variant-dirty', 'verifyAdmin.js'),
+  },
+  {
+    source: getModerationVariantCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'get-moderation-variant',
+      'get-moderation-variant-core.js'
+    ),
+  },
+  {
+    source: getModerationVariantCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'get-moderation-variant',
+      'get-moderation-variant-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'get-moderation-variant',
+      'cloud-core.js'
+    ),
+  },
+  {
+    source: commonCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'get-moderation-variant',
+      'common-core.js'
+    ),
+  },
+  {
+    source: commonGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'get-moderation-variant',
+      'common-gcf.js'
+    ),
+  },
+  {
+    source: getModerationVariantGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'get-moderation-variant',
+      'get-moderation-variant-gcf.js'
+    ),
   },
   {
     source: getModerationVariantCorsSource,
