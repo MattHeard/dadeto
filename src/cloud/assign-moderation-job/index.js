@@ -13,7 +13,7 @@ import {
   createRunVariantQuery,
   setupAssignModerationJobRoute,
 } from './assign-moderation-job-core.js';
-import * as gcf from './gcf.js';
+import * as gcf from './assign-moderation-job-gcf.js';
 
 let cachedDb = null;
 
