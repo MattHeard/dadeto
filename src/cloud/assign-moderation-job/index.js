@@ -1,9 +1,13 @@
-import * as functions from 'firebase-functions/v1';
-import express from 'express';
-import cors from 'cors';
-import { initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
+import {
+  functions,
+  express,
+  cors,
+  initializeApp,
+  getAuth,
+  getFirestore as getAdminFirestore,
+  getEnvironmentVariables,
+  now,
+} from './assign-moderation-job-gcf.js';
 import {
   createAssignModerationJob,
   createFirebaseInitialization,
@@ -13,7 +17,6 @@ import {
   createRunVariantQuery,
   setupAssignModerationJobRoute,
 } from './assign-moderation-job-core.js';
-import * as gcf from './assign-moderation-job-gcf.js';
 
 let cachedDb = null;
 
@@ -169,7 +172,7 @@ const app = express();
 
 const corsOptions = createCorsOptions(
   getAllowedOrigins,
-  gcf.getEnvironmentVariables
+  getEnvironmentVariables
 );
 
 app.use(cors(corsOptions));
@@ -177,11 +180,7 @@ configureUrlencodedBodyParser(app, express);
 
 const firebaseResources = { db, auth, app };
 
-setupAssignModerationJobRoute(
-  firebaseResources,
-  createRunVariantQuery,
-  gcf.now
-);
+setupAssignModerationJobRoute(firebaseResources, createRunVariantQuery, now);
 
 export const assignModerationJob = createAssignModerationJob(
   functions,
