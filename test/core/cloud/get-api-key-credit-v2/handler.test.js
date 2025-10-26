@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import {
   createGetApiKeyCreditV2Handler,
   extractUuid,
-} from '../../../../src/core/cloud/get-api-key-credit-v2/core.js';
+} from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 
 describe('extractUuid', () => {
   it('extracts the UUID from the request path', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { createFetchCredit } from '../../../../src/core/cloud/get-api-key-credit-v2/core.js';
+import { createFetchCredit } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 import { getApiKeyCreditSnapshot } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-snapshot.js';
 
 /**
