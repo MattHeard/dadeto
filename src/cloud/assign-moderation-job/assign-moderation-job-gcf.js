@@ -1,1 +1,1 @@
-export * from '../common-gcf.js';
+export * from './common-gcf.js';
