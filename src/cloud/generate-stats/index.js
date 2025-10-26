@@ -1,16 +1,20 @@
-import { Storage } from '@google-cloud/storage';
-import * as functions from 'firebase-functions/v1';
-import express from 'express';
-import cors from 'cors';
-import { initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
+import {
+  Storage,
+  functions,
+  express,
+  cors,
+  initializeApp,
+  getAuth,
+  getFirestore as getAdminFirestore,
+  getEnvironmentVariables,
+  crypto,
+  fetchFn,
+} from './generate-stats-gcf.js';
 import {
   createGenerateStatsCore,
   initializeFirebaseApp,
-  isDuplicateAppError,
+  productionOrigins,
 } from './generate-stats-core.js';
-import { crypto, fetchFn } from './generate-stats-gcf.js';
 
 let firebaseInitialized = false;
 
@@ -23,12 +27,6 @@ const ensureFirebaseApp = (initFn = initializeApp) => {
 
   firebaseInitialized = true;
 };
-
-const productionOrigins = [
-  'https://mattheard.net',
-  'https://dendritestories.co.nz',
-  'https://www.dendritestories.co.nz',
-];
 
 const getAllowedOrigins = environmentVariables => {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
@@ -44,8 +42,6 @@ const getAllowedOrigins = environmentVariables => {
 
   return productionOrigins;
 };
-
-const getProcessEnv = () => process.env;
 
 const PRODUCTION_DATABASE_ID = '(default)';
 
@@ -107,11 +103,10 @@ const getFirestoreInstance = (options = {}) => {
 };
 
 ensureFirebaseApp();
-const db = getFirestoreInstance();
+const env = getEnvironmentVariables();
+const db = getFirestoreInstance({ environment: env });
 const auth = getAuth();
 const storage = new Storage();
-
-const env = getProcessEnv();
 
 const generateStatsCore = createGenerateStatsCore({
   db,
