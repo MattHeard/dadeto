@@ -6,7 +6,7 @@ import { isValidString } from './validation.js';
  * @returns {boolean} True if the string is empty or contains only whitespace
  */
 export function isEmpty(text) {
-  return typeof text !== 'string' || !text.trim();
+  return !safeTrim(text);
 }
 
 /**
