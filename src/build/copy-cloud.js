@@ -220,11 +220,7 @@ const individualFileCopies = [
   },
   {
     source: cloudCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'assign-moderation-job',
-      'cloud-core.js'
-    ),
+    target: join(infraFunctionsDir, 'assign-moderation-job', 'cloud-core.js'),
   },
   {
     source: sharedGcfSource,

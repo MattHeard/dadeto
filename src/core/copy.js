@@ -43,7 +43,11 @@ export function selectReadablePath(absolutePath, relativePath) {
  * @param {(from: string, to: string) => string} relativeFn - Path.relative implementation.
  * @returns {string} Human-readable representation of the path.
  */
-export function formatPathRelativeToProject(projectRoot, targetPath, relativeFn) {
+export function formatPathRelativeToProject(
+  projectRoot,
+  targetPath,
+  relativeFn
+) {
   const relativePath = relativeFn(projectRoot, targetPath);
   if (!relativePath) {
     return '.';
