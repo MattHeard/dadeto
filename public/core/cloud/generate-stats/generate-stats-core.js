@@ -1,3 +1,4 @@
+import { createVerifyAdmin } from '../mark-variant-dirty/verifyAdmin.js';
 import { ADMIN_UID } from './admin-config.js';
 import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
@@ -572,21 +573,19 @@ export function createGenerateStatsCore({
     const adminId = deps.adminUid || ADMIN_UID;
 
     if (!isCron) {
-      const authHeader = req.get('Authorization') || '';
-      const match = authHeader.match(/^Bearer (.+)$/);
-      if (!match) {
-        res.status(401).send('Missing token');
-        return;
-      }
-      let decoded;
-      try {
-        decoded = await authInstance.verifyIdToken(match[1]);
-      } catch (err) {
-        res.status(401).send(err?.message || 'Invalid token');
-        return;
-      }
-      if (decoded.uid !== adminId) {
-        res.status(403).send('Forbidden');
+      const verifyAdmin = createVerifyAdmin({
+        verifyToken: token => authInstance.verifyIdToken(token),
+        isAdminUid: decoded => decoded.uid === adminId,
+        sendUnauthorized: (response, message) => {
+          response.status(401).send(message);
+        },
+        sendForbidden: response => {
+          response.status(403).send('Forbidden');
+        },
+      });
+
+      const isAuthorized = await verifyAdmin(req, res);
+      if (!isAuthorized) {
         return;
       }
     }
