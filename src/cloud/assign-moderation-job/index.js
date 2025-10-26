@@ -20,6 +20,8 @@ import {
 
 let cachedDb = null;
 
+const defaultEnvironment = getEnvironmentVariables();
+
 const firebaseInitialization = createFirebaseInitialization();
 
 /**
@@ -38,7 +40,7 @@ const defaultEnsureFirebaseApp = () => {};
  * @param {Record<string, unknown>} environment Process environment variables.
  * @returns {string | null} The configured database identifier when available.
  */
-function resolveFirestoreDatabaseId(environment = process.env) {
+function resolveFirestoreDatabaseId(environment = defaultEnvironment) {
   const rawConfig = environment?.FIREBASE_CONFIG;
 
   if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
@@ -94,7 +96,7 @@ function getFirestoreInstance(options = {}) {
   const {
     ensureAppFn = defaultEnsureFirebaseApp,
     getFirestoreFn = getAdminFirestore,
-    environment = process.env,
+    environment = defaultEnvironment,
   } = options;
 
   ensureAppFn();
@@ -103,7 +105,7 @@ function getFirestoreInstance(options = {}) {
   const useCustomDependencies =
     ensureAppFn !== defaultEnsureFirebaseApp ||
     getFirestoreFn !== getAdminFirestore ||
-    environment !== process.env;
+    environment !== defaultEnvironment;
 
   if (useCustomDependencies) {
     return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
