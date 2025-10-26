@@ -1,0 +1,1 @@
+Handled lint requirement by refactoring core cloud UUID matcher. Reducing complexity to meet the strict max=2 rule required experimenting with array utilities and helpers before settling on a try/catch based guard that preserved behavior without extra branches.
