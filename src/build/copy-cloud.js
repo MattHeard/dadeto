@@ -22,6 +22,7 @@ const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
 const srcCoreAuthDir = resolve(srcCoreDir, 'auth');
 const browserDir = resolve(srcDir, 'browser');
 const sharedGcfSource = join(srcCloudDir, 'gcf.js');
+const commonGcfSource = join(srcCloudDir, 'common-gcf.js');
 const assignModerationJobGcfSource = join(
   srcCloudDir,
   'assign-moderation-job',
@@ -226,6 +227,14 @@ const individualFileCopies = [
   {
     source: cloudCoreSource,
     target: join(infraFunctionsDir, 'assign-moderation-job', 'cloud-core.js'),
+  },
+  {
+    source: commonGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'assign-moderation-job',
+      'common-gcf.js'
+    ),
   },
   {
     source: assignModerationJobGcfSource,
