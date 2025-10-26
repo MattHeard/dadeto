@@ -5,16 +5,28 @@ export { createDb } from './create-db.js';
 const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
 
 /**
+ * Attempt to execute the UUID path pattern against a value.
+ * @param {unknown} value Value representing the request path.
+ * @returns {RegExpExecArray|null} Regex match result when successful.
+ */
+function execUuidPathPattern(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  return UUID_PATH_PATTERN.exec(value);
+}
+
+/**
  * Attempt to read a UUID segment from a credit API request path.
  * @param {unknown} path Value representing the request path.
  * @returns {string} Matched UUID, or an empty string when no match exists.
  */
 function matchPathUuid(path) {
-  if (typeof path !== 'string') {
-    return '';
+  const match = execUuidPathPattern(path);
+  if (match && typeof match[1] === 'string') {
+    return match[1];
   }
-  const match = path.match(UUID_PATH_PATTERN);
-  return match?.[1] ?? '';
+  return '';
 }
 
 /**
