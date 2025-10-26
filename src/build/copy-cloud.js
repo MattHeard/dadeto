@@ -175,6 +175,36 @@ const markVariantDirtyVerifyAdminSource = join(
   'mark-variant-dirty',
   'verifyAdmin.js'
 );
+const processNewPageCoreSource = join(
+  srcCoreCloudDir,
+  'process-new-page',
+  'process-new-page-core.js'
+);
+const processNewPageGcfSource = join(
+  srcCloudDir,
+  'process-new-page',
+  'process-new-page-gcf.js'
+);
+const processNewStoryCoreSource = join(
+  srcCoreCloudDir,
+  'process-new-story',
+  'process-new-story-core.js'
+);
+const processNewStoryGcfSource = join(
+  srcCloudDir,
+  'process-new-story',
+  'process-new-story-gcf.js'
+);
+const prodUpdateVariantVisibilityCoreSource = join(
+  srcCoreCloudDir,
+  'prod-update-variant-visibility',
+  'prod-update-variant-visibility-core.js'
+);
+const prodUpdateVariantVisibilityGcfSource = join(
+  srcCloudDir,
+  'prod-update-variant-visibility',
+  'prod-update-variant-visibility-gcf.js'
+);
 const getModerationVariantCorsSource = join(
   srcCoreCloudDir,
   'get-moderation-variant',
@@ -497,6 +527,132 @@ const individualFileCopies = [
       infraFunctionsDir,
       'mark-variant-dirty',
       'mark-variant-dirty-gcf.js'
+    ),
+  },
+  {
+    source: processNewPageCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'process-new-page',
+      'process-new-page-core.js'
+    ),
+  },
+  {
+    source: processNewPageCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'process-new-page',
+      'process-new-page-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(infraFunctionsDir, 'process-new-page', 'cloud-core.js'),
+  },
+  {
+    source: commonCoreSource,
+    target: join(infraFunctionsDir, 'process-new-page', 'common-core.js'),
+  },
+  {
+    source: commonGcfSource,
+    target: join(infraFunctionsDir, 'process-new-page', 'common-gcf.js'),
+  },
+  {
+    source: processNewPageGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'process-new-page',
+      'process-new-page-gcf.js'
+    ),
+  },
+  {
+    source: processNewStoryCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'process-new-story',
+      'process-new-story-core.js'
+    ),
+  },
+  {
+    source: processNewStoryCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'process-new-story',
+      'process-new-story-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(infraFunctionsDir, 'process-new-story', 'cloud-core.js'),
+  },
+  {
+    source: commonCoreSource,
+    target: join(infraFunctionsDir, 'process-new-story', 'common-core.js'),
+  },
+  {
+    source: commonGcfSource,
+    target: join(infraFunctionsDir, 'process-new-story', 'common-gcf.js'),
+  },
+  {
+    source: processNewStoryGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'process-new-story',
+      'process-new-story-gcf.js'
+    ),
+  },
+  {
+    source: prodUpdateVariantVisibilityCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'prod-update-variant-visibility',
+      'prod-update-variant-visibility-core.js'
+    ),
+  },
+  {
+    source: prodUpdateVariantVisibilityCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'prod-update-variant-visibility',
+      'prod-update-variant-visibility-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'prod-update-variant-visibility',
+      'cloud-core.js'
+    ),
+  },
+  {
+    source: commonCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'prod-update-variant-visibility',
+      'common-core.js'
+    ),
+  },
+  {
+    source: commonGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'prod-update-variant-visibility',
+      'common-gcf.js'
+    ),
+  },
+  {
+    source: prodUpdateVariantVisibilityGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'prod-update-variant-visibility',
+      'prod-update-variant-visibility-gcf.js'
     ),
   },
   {

@@ -1,88 +1,23 @@
-import { FieldValue } from 'firebase-admin/firestore';
-import * as functions from 'firebase-functions/v1';
-import crypto from 'crypto';
-import { getFirestoreInstance } from './firestore.js';
+import { randomUUID } from 'node:crypto';
+import {
+  functions,
+  FieldValue,
+  getFirestoreInstance,
+} from './process-new-story-gcf.js';
+import { createProcessNewStoryHandler } from './process-new-story-core.js';
 
 const db = getFirestoreInstance();
+
+const handleProcessNewStory = createProcessNewStoryHandler({
+  db,
+  fieldValue: FieldValue,
+  randomUUID,
+  random: Math.random,
+});
 
 export const processNewStory = functions
   .region('europe-west1')
   .firestore.document('storyFormSubmissions/{subId}')
-  .onCreate(async (snap, ctx) => {
-    const sub = snap.data();
-    if (sub.processed) {
-      return null;
-    }
+  .onCreate((snap, context) => handleProcessNewStory(snap, context));
 
-    const storyId = ctx.params.subId;
-    const pageId = crypto.randomUUID();
-    const variantId = crypto.randomUUID();
-
-    let i = 0;
-    let candidate = 1;
-    while (true) {
-      const max = 2 ** i;
-      candidate = Math.floor(Math.random() * max) + 1;
-      const snapshot = await db
-        .collectionGroup('pages')
-        .where('number', '==', candidate)
-        .limit(1)
-        .get();
-      if (snapshot.empty) {
-        break;
-      }
-      i += 1;
-    }
-
-    const storyRef = db.doc(`stories/${storyId}`);
-    const pageRef = storyRef.collection('pages').doc(pageId);
-    const variantRef = pageRef.collection('variants').doc(variantId);
-
-    const batch = db.batch();
-    batch.set(storyRef, {
-      title: sub.title,
-      rootPage: pageRef,
-      createdAt: FieldValue.serverTimestamp(),
-    });
-
-    batch.set(pageRef, {
-      number: candidate,
-      incomingOption: null,
-      createdAt: FieldValue.serverTimestamp(),
-    });
-
-    batch.set(variantRef, {
-      name: 'a',
-      content: sub.content,
-      authorId: sub.authorId || null,
-      authorName: sub.author,
-      moderatorReputationSum: 0,
-      rand: Math.random(),
-      createdAt: FieldValue.serverTimestamp(),
-    });
-
-    sub.options.forEach((text, position) => {
-      const optionRef = variantRef
-        .collection('options')
-        .doc(crypto.randomUUID());
-      batch.set(optionRef, {
-        content: text,
-        createdAt: FieldValue.serverTimestamp(),
-        position,
-      });
-    });
-
-    batch.set(db.doc(`storyStats/${storyId}`), { variantCount: 1 });
-    batch.update(snap.ref, { processed: true });
-
-    if (sub.authorId) {
-      const authorRef = db.doc(`authors/${sub.authorId}`);
-      const authorSnap = await authorRef.get();
-      if (!authorSnap.exists) {
-        batch.set(authorRef, { uuid: crypto.randomUUID() });
-      }
-    }
-
-    await batch.commit();
-    return null;
-  });
+export { handleProcessNewStory };
