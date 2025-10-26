@@ -1,4 +1,5 @@
 import { ADMIN_UID } from './admin-config.js';
+import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
 /**
  * Build stats HTML page.
@@ -259,8 +260,6 @@ export function buildHtml(
 
 const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
 const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
-const DEFAULT_BUCKET_NAME = 'www.dendritestories.co.nz';
-
 /**
  * Determine whether a Firebase initialization error indicates a duplicate app.
  * @param {unknown} error Error thrown when calling initializeApp.
