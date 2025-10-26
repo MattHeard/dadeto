@@ -220,6 +220,56 @@ const getModerationVariantGcfSource = join(
   'get-moderation-variant',
   'get-moderation-variant-gcf.js'
 );
+const renderContentsCoreSource = join(
+  srcCoreCloudDir,
+  'render-contents',
+  'render-contents-core.js'
+);
+const renderContentsGcfSource = join(
+  srcCloudDir,
+  'render-contents',
+  'render-contents-gcf.js'
+);
+const renderContentsHtmlSnippetsSource = join(
+  srcCoreCloudDir,
+  'render-contents',
+  'htmlSnippets.js'
+);
+const renderVariantCoreSource = join(
+  srcCoreCloudDir,
+  'render-variant',
+  'render-variant-core.js'
+);
+const renderVariantGcfSource = join(
+  srcCloudDir,
+  'render-variant',
+  'render-variant-gcf.js'
+);
+const renderVariantBuildAltsSource = join(
+  srcCoreCloudDir,
+  'render-variant',
+  'buildAltsHtml.js'
+);
+const renderVariantBuildHtmlSource = join(
+  srcCoreCloudDir,
+  'render-variant',
+  'buildHtml.js'
+);
+const renderVariantVisibilitySource = join(
+  srcCoreCloudDir,
+  'render-variant',
+  'visibility.js'
+);
+const reportForModerationCoreSource = join(
+  srcCoreCloudDir,
+  'report-for-moderation',
+  'report-for-moderation-core.js'
+);
+const reportForModerationGcfSource = join(
+  srcCloudDir,
+  'report-for-moderation',
+  'report-for-moderation-gcf.js'
+);
 
 const adminConfigFunctionDirectories = [
   'generate-stats',
@@ -722,6 +772,192 @@ const individualFileCopies = [
   {
     source: getModerationVariantCorsSource,
     target: join(infraFunctionsDir, 'get-moderation-variant', 'cors.js'),
+  },
+  {
+    source: renderContentsCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'render-contents',
+      'render-contents-core.js'
+    ),
+  },
+  {
+    source: renderContentsCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'render-contents',
+      'render-contents-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(infraFunctionsDir, 'render-contents', 'cloud-core.js'),
+  },
+  {
+    source: commonCoreSource,
+    target: join(infraFunctionsDir, 'render-contents', 'common-core.js'),
+  },
+  {
+    source: commonGcfSource,
+    target: join(infraFunctionsDir, 'render-contents', 'common-gcf.js'),
+  },
+  {
+    source: renderContentsGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'render-contents',
+      'render-contents-gcf.js'
+    ),
+  },
+  {
+    source: renderContentsHtmlSnippetsSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'render-contents',
+      'htmlSnippets.js'
+    ),
+  },
+  {
+    source: renderContentsHtmlSnippetsSource,
+    target: join(
+      infraFunctionsDir,
+      'render-contents',
+      'htmlSnippets.js'
+    ),
+  },
+  {
+    source: renderVariantCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'render-variant',
+      'render-variant-core.js'
+    ),
+  },
+  {
+    source: renderVariantCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'render-variant',
+      'render-variant-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(infraFunctionsDir, 'render-variant', 'cloud-core.js'),
+  },
+  {
+    source: commonCoreSource,
+    target: join(infraFunctionsDir, 'render-variant', 'common-core.js'),
+  },
+  {
+    source: commonGcfSource,
+    target: join(infraFunctionsDir, 'render-variant', 'common-gcf.js'),
+  },
+  {
+    source: renderVariantGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'render-variant',
+      'render-variant-gcf.js'
+    ),
+  },
+  {
+    source: renderVariantBuildAltsSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'render-variant',
+      'buildAltsHtml.js'
+    ),
+  },
+  {
+    source: renderVariantBuildAltsSource,
+    target: join(
+      infraFunctionsDir,
+      'render-variant',
+      'buildAltsHtml.js'
+    ),
+  },
+  {
+    source: renderVariantBuildHtmlSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'render-variant',
+      'buildHtml.js'
+    ),
+  },
+  {
+    source: renderVariantBuildHtmlSource,
+    target: join(
+      infraFunctionsDir,
+      'render-variant',
+      'buildHtml.js'
+    ),
+  },
+  {
+    source: renderVariantVisibilitySource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'render-variant',
+      'visibility.js'
+    ),
+  },
+  {
+    source: renderVariantVisibilitySource,
+    target: join(
+      infraFunctionsDir,
+      'render-variant',
+      'visibility.js'
+    ),
+  },
+  {
+    source: reportForModerationCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'report-for-moderation',
+      'report-for-moderation-core.js'
+    ),
+  },
+  {
+    source: reportForModerationCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'report-for-moderation',
+      'report-for-moderation-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(infraFunctionsDir, 'report-for-moderation', 'cloud-core.js'),
+  },
+  {
+    source: commonCoreSource,
+    target: join(infraFunctionsDir, 'report-for-moderation', 'common-core.js'),
+  },
+  {
+    source: commonGcfSource,
+    target: join(infraFunctionsDir, 'report-for-moderation', 'common-gcf.js'),
+  },
+  {
+    source: reportForModerationGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'report-for-moderation',
+      'report-for-moderation-gcf.js'
+    ),
   },
   ...adminConfigFunctionCopies,
   ...browserFileCopies,

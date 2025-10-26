@@ -1,290 +1,69 @@
-import crypto from 'crypto';
-import { FieldValue } from 'firebase-admin/firestore';
-import { Storage } from '@google-cloud/storage';
-import * as functions from 'firebase-functions/v1';
-import { buildAltsHtml, escapeHtml } from './buildAltsHtml.js';
-import { buildHtml } from './buildHtml.js';
-import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';
-import { getFirestoreInstance } from './firestore.js';
+import {
+  functions,
+  FieldValue,
+  Storage,
+  ensureFirebaseApp,
+  getFirestoreInstance,
+  fetchFn,
+  crypto,
+  getEnvironmentVariables,
+} from './render-variant-gcf.js';
+import {
+  buildAltsHtml,
+  buildHtml,
+  createHandleVariantWrite,
+  createRenderVariant,
+  getVisibleVariants,
+  DEFAULT_BUCKET_NAME,
+  VISIBILITY_THRESHOLD,
+} from './render-variant-core.js';
 
-const storage = new Storage();
+ensureFirebaseApp();
+
 const db = getFirestoreInstance();
-
-// keep defaults so you don't need infra changes today
-const PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
-const URL_MAP = process.env.URL_MAP || 'prod-dendrite-url-map';
-const CDN_HOST = process.env.CDN_HOST || 'www.dendritestories.co.nz';
-
-/**
- * Retrieve an access token from the GCE metadata server.
- * @returns {Promise<string>} Metadata service access token.
- */
-async function getAccessTokenFromMetadata() {
-  const r = await fetch(
-    'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
-    { headers: { 'Metadata-Flavor': 'Google' } }
+const storage = new Storage();
+const environmentVariables = getEnvironmentVariables();
+const bucketName = DEFAULT_BUCKET_NAME;
+const projectId =
+  environmentVariables.GOOGLE_CLOUD_PROJECT || environmentVariables.GCLOUD_PROJECT;
+const urlMapName = environmentVariables.URL_MAP;
+const cdnHost = environmentVariables.CDN_HOST;
+const dynamicFetch = (...args) =>
+  (typeof globalThis.fetch === 'function' ? globalThis.fetch : fetchFn).apply(
+    globalThis,
+    args
   );
-  if (!r.ok) throw new Error(`metadata token: HTTP ${r.status}`);
-  const { access_token } = await r.json();
-  return access_token;
+
+let renderInstance;
+
+function resolveRenderVariant() {
+  if (!renderInstance) {
+    renderInstance = createRenderVariant({
+      db,
+      storage,
+      fetchFn: dynamicFetch,
+      randomUUID: () => crypto.randomUUID(),
+      projectId,
+      urlMapName,
+      cdnHost,
+      bucketName,
+      consoleError: (...args) => console.error(...args),
+    });
+  }
+
+  return renderInstance;
 }
 
-/**
- * Request CDN cache invalidation for each provided path.
- * @param {string[]} paths Collection of paths to invalidate.
- * @returns {Promise<void>} Resolves when invalidation requests complete.
- */
-async function invalidatePaths(paths) {
-  const token = await getAccessTokenFromMetadata();
-  await Promise.all(
-    paths.map(async path => {
-      try {
-        const res = await fetch(
-          `https://compute.googleapis.com/compute/v1/projects/${PROJECT}/global/urlMaps/${URL_MAP}/invalidateCache`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              host: CDN_HOST,
-              path,
-              requestId: crypto.randomUUID(),
-            }),
-          }
-        );
-        if (!res.ok) {
-          console.error(`invalidate ${path} failed: ${res.status}`);
-        }
-      } catch (e) {
-        console.error(`invalidate ${path} error`, e?.message || e);
-      }
-    })
-  );
-}
+const handleVariantWrite = createHandleVariantWrite({
+  renderVariant: (snap, context) => resolveRenderVariant()(snap, context),
+  getDeleteSentinel: () => FieldValue.delete(),
+});
 
-/**
- * Render a variant when it is created, marked dirty, or its visibility
- * crosses upwards past the threshold.
- */
 export const renderVariant = functions
   .region('europe-west1')
   .firestore.document('stories/{storyId}/pages/{pageId}/variants/{variantId}')
-  .onWrite(async (change, ctx) => {
-    if (!change.after.exists) {
-      return null;
-    }
+  .onWrite((change, context) => handleVariantWrite(change, context));
 
-    const data = change.after.data() || {};
-    if (Object.prototype.hasOwnProperty.call(data, 'dirty')) {
-      await render(change.after, ctx);
-      await change.after.ref.update({ dirty: FieldValue.delete() });
-      return null;
-    }
+export const render = (...args) => resolveRenderVariant()(...args);
 
-    if (!change.before.exists) {
-      return render(change.after, ctx);
-    }
-
-    const beforeVis = change.before.data().visibility ?? 0;
-    const afterVis = data.visibility ?? 0;
-    if (beforeVis < VISIBILITY_THRESHOLD && afterVis >= VISIBILITY_THRESHOLD) {
-      return render(change.after, ctx);
-    }
-
-    return null;
-  });
-
-/**
- * Render a Firestore variant document to static HTML.
- * @param {functions.firestore.DocumentSnapshot} snap Snapshot for the variant.
- * @param {functions.EventContext} ctx Event context for the trigger.
- * @returns {Promise<null>} Resolves when the render process finishes.
- */
-async function render(snap, ctx) {
-  const variant = snap.data();
-
-  const pageSnap = await snap.ref.parent.parent.get();
-  if (!pageSnap.exists) {
-    return null;
-  }
-  const page = pageSnap.data();
-
-  const docName = `/${snap.ref.path}`;
-
-  const optionsSnap = await snap.ref.collection('options').get();
-  const optionsData = optionsSnap.docs
-    .map(doc => doc.data())
-    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-  const options = await Promise.all(
-    optionsData.map(async data => {
-      let targetPageNumber;
-      let targetVariantName;
-      let targetVariants;
-      if (data.targetPage) {
-        try {
-          const targetSnap = await data.targetPage.get();
-          if (targetSnap.exists) {
-            targetPageNumber = targetSnap.data().number;
-            const variantSnap = await data.targetPage
-              .collection('variants')
-              .orderBy('name')
-              .get();
-            const visible = variantSnap.docs.filter(
-              doc => (doc.data().visibility ?? 1) >= VISIBILITY_THRESHOLD
-            );
-            if (visible.length) {
-              targetVariantName = visible[0].data().name;
-              targetVariants = visible.map(doc => ({
-                name: doc.data().name,
-                weight: doc.data().visibility ?? 1,
-              }));
-            }
-          }
-        } catch (e) {
-          console.error('target page lookup failed', e?.message || e);
-        }
-      } else if (data.targetPageNumber !== undefined) {
-        targetPageNumber = data.targetPageNumber;
-      }
-      return {
-        content: data.content || '',
-        position: data.position ?? 0,
-        ...(targetPageNumber !== undefined && { targetPageNumber }),
-        ...(targetVariantName && { targetVariantName }),
-        ...(targetVariants && { targetVariants }),
-      };
-    })
-  );
-  const storyRef = pageSnap.ref.parent.parent;
-  const storySnap = await storyRef.get();
-  let storyTitle = '';
-  let firstPageUrl;
-  if (storySnap.exists) {
-    const storyData = storySnap.data();
-    storyTitle = storyData.title || '';
-    if (page.incomingOption && storyData.rootPage) {
-      try {
-        const rootPageSnap = await storyData.rootPage.get();
-        if (rootPageSnap.exists) {
-          const rootVariantSnap = await storyData.rootPage
-            .collection('variants')
-            .orderBy('name')
-            .limit(1)
-            .get();
-          if (!rootVariantSnap.empty) {
-            firstPageUrl = `/p/${rootPageSnap.data().number}${rootVariantSnap.docs[0].data().name}.html`;
-          }
-        }
-      } catch (e) {
-        console.error('root page lookup failed', e?.message || e);
-      }
-    }
-  }
-
-  const authorName = variant.authorName || variant.author || '';
-  let authorUrl;
-  if (variant.authorId && authorName) {
-    try {
-      const authorRef = db.doc(`authors/${variant.authorId}`);
-      const authorSnap = await authorRef.get();
-      if (authorSnap.exists) {
-        const { uuid } = authorSnap.data() || {};
-        if (uuid) {
-          const authorPath = `a/${uuid}.html`;
-          const authorFile = storage
-            .bucket('www.dendritestories.co.nz')
-            .file(authorPath);
-          const [exists] = await authorFile.exists();
-          if (!exists) {
-            const authorHtml = `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite - ${escapeHtml(authorName)}</title><link rel="icon" href="/favicon.ico" /><link rel="stylesheet" href="/dendrite.css" /></head><body><main><h1>${escapeHtml(authorName)}</h1></main></body></html>`;
-            await authorFile.save(authorHtml, { contentType: 'text/html' });
-          }
-          authorUrl = `/${authorPath}`;
-        }
-      }
-    } catch (e) {
-      console.error('author lookup failed', e?.message || e);
-    }
-  }
-  let parentUrl;
-  if (variant.incomingOption) {
-    try {
-      const optionRef = db.doc(variant.incomingOption);
-      const parentVariantRef = optionRef.parent.parent;
-      const parentPageRef = parentVariantRef.parent.parent;
-
-      const [parentVariantSnap, parentPageSnap] = await Promise.all([
-        parentVariantRef.get(),
-        parentPageRef.get(),
-      ]);
-
-      if (parentVariantSnap.exists && parentPageSnap.exists) {
-        const parentName = parentVariantSnap.data().name;
-        if (parentName) {
-          const parentNumber = parentPageSnap.data().number;
-          parentUrl = `/p/${parentNumber}${parentName}.html`;
-        }
-      }
-    } catch (e) {
-      console.error('parent lookup failed', e?.message || e);
-    }
-  }
-
-  const html = buildHtml(
-    page.number,
-    variant.name,
-    variant.content,
-    options,
-    storyTitle,
-    authorName,
-    authorUrl,
-    parentUrl,
-    firstPageUrl,
-    !page.incomingOption
-  );
-  const filePath = `p/${page.number}${variant.name}.html`;
-  const openVariant = options.some(opt => opt.targetPageNumber === undefined);
-
-  await storage
-    .bucket('www.dendritestories.co.nz')
-    .file(filePath)
-    .save(html, {
-      contentType: 'text/html',
-      ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
-    });
-
-  const variantsSnap = await snap.ref.parent.get();
-  const variants = getVisibleVariants(variantsSnap.docs);
-  const altsHtml = buildAltsHtml(page.number, variants);
-  const altsPath = `p/${page.number}-alts.html`;
-
-  await storage
-    .bucket('www.dendritestories.co.nz')
-    .file(altsPath)
-    .save(altsHtml, { contentType: 'text/html' });
-
-  const pendingName = variant.incomingOption
-    ? ctx.params.variantId
-    : ctx.params.storyId;
-  const pendingPath = `pending/${pendingName}.json`;
-  await storage
-    .bucket('www.dendritestories.co.nz')
-    .file(pendingPath)
-    .save(JSON.stringify({ path: filePath }), {
-      contentType: 'application/json',
-      metadata: { cacheControl: 'no-store' }, // 🔑 stop both positive *and* negative caching
-    });
-
-  const paths = [`/${altsPath}`, `/${filePath}`];
-
-  if (parentUrl) {
-    paths.push(parentUrl);
-  }
-
-  await invalidatePaths(paths);
-  return null;
-}
-
-export { buildAltsHtml, buildHtml, render };
+export { buildAltsHtml, buildHtml, getVisibleVariants, VISIBILITY_THRESHOLD };

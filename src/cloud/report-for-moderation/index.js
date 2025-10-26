@@ -1,10 +1,20 @@
-import { FieldValue } from 'firebase-admin/firestore';
-import * as functions from 'firebase-functions/v1';
-import express from 'express';
-import cors from 'cors';
+import {
+  functions,
+  express,
+  cors,
+  FieldValue,
+  ensureFirebaseApp,
+  getFirestoreInstance,
+  getEnvironmentVariables,
+} from './report-for-moderation-gcf.js';
+import {
+  createCorsOptions,
+  createHandleReportForModeration,
+  createReportForModerationHandler,
+} from './report-for-moderation-core.js';
 import { getAllowedOrigins } from './cors-config.js';
-import { getFirestoreInstance } from './firestore.js';
-import { createReportForModerationHandler } from './handler.js';
+
+ensureFirebaseApp();
 
 const db = getFirestoreInstance();
 const moderationReportsCollection = db.collection('moderationReports');
@@ -14,49 +24,19 @@ const reportForModerationHandler = createReportForModerationHandler({
   ),
   getServerTimestamp: FieldValue.serverTimestamp,
 });
-const app = express();
 
-const allowedOrigins = getAllowedOrigins(process.env);
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error('CORS'));
-      }
-    },
-    methods: ['POST'],
-  })
+const handleReportForModeration = createHandleReportForModeration(
+  reportForModerationHandler
 );
 
+const app = express();
+
+const environmentVariables = getEnvironmentVariables();
+const allowedOrigins = getAllowedOrigins(environmentVariables);
+const corsOptions = createCorsOptions({ allowedOrigins, methods: ['POST'] });
+
+app.use(cors(corsOptions));
 app.use(express.json());
-
-/**
- * Create a moderation report for a variant slug.
- * @param {import('express').Request} req HTTP request object.
- * @param {import('express').Response} res HTTP response object.
- * @returns {Promise<void>} Promise resolving when response is sent.
- */
-async function handleReportForModeration(req, res) {
-  const { status, body } = await reportForModerationHandler({
-    method: req.method,
-    body: req.body,
-  });
-
-  if (typeof body === 'string') {
-    res.status(status).send(body);
-    return;
-  }
-
-  if (typeof body === 'undefined') {
-    res.sendStatus(status);
-    return;
-  }
-
-  res.status(status).json(body);
-}
-
 app.all('/', handleReportForModeration);
 
 export const reportForModeration = functions
