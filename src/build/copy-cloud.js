@@ -113,13 +113,31 @@ const generateStatsCoreSource = join(
 const submitNewPageCoreSource = join(
   srcCoreCloudDir,
   'submit-new-page',
-  'core.js'
+  'submit-new-page-core.js'
+);
+
+const submitNewPageHelpersSource = join(
+  srcCoreCloudDir,
+  'submit-new-page',
+  'helpers.js'
 );
 
 const reportForModerationHandlerSource = join(
   srcCoreCloudDir,
   'report-for-moderation',
   'handler.js'
+);
+
+const submitModerationRatingCoreSource = join(
+  srcCoreCloudDir,
+  'submit-moderation-rating',
+  'submit-moderation-rating-core.js'
+);
+
+const submitNewStoryCoreSource = join(
+  srcCoreCloudDir,
+  'submit-new-story',
+  'submit-new-story-core.js'
 );
 
 const getApiKeyCreditCoreSource = join(
@@ -403,7 +421,47 @@ const individualFileCopies = [
   },
   {
     source: submitNewPageCoreSource,
-    target: join(infraFunctionsDir, 'submit-new-page', 'core.js'),
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'submit-new-page',
+      'submit-new-page-core.js'
+    ),
+  },
+  {
+    source: submitNewPageCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'submit-new-page',
+      'submit-new-page-core.js'
+    ),
+  },
+  {
+    source: submitNewPageHelpersSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'submit-new-page',
+      'helpers.js'
+    ),
+  },
+  {
+    source: submitNewPageHelpersSource,
+    target: join(infraFunctionsDir, 'submit-new-page', 'helpers.js'),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(infraFunctionsDir, 'submit-new-page', 'cloud-core.js'),
+  },
+  {
+    source: commonCoreSource,
+    target: join(infraFunctionsDir, 'submit-new-page', 'common-core.js'),
+  },
+  {
+    source: commonGcfSource,
+    target: join(infraFunctionsDir, 'submit-new-page', 'common-gcf.js'),
   },
   {
     source: reportForModerationHandlerSource,
@@ -957,6 +1015,90 @@ const individualFileCopies = [
       infraFunctionsDir,
       'report-for-moderation',
       'report-for-moderation-gcf.js'
+    ),
+  },
+  {
+    source: submitModerationRatingCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'submit-moderation-rating',
+      'submit-moderation-rating-core.js'
+    ),
+  },
+  {
+    source: submitModerationRatingCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'submit-moderation-rating',
+      'submit-moderation-rating-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'submit-moderation-rating',
+      'cloud-core.js'
+    ),
+  },
+  {
+    source: commonCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'submit-moderation-rating',
+      'common-core.js'
+    ),
+  },
+  {
+    source: commonGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'submit-moderation-rating',
+      'common-gcf.js'
+    ),
+  },
+  {
+    source: submitNewStoryCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'submit-new-story',
+      'submit-new-story-core.js'
+    ),
+  },
+  {
+    source: submitNewStoryCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'submit-new-story',
+      'submit-new-story-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'submit-new-story',
+      'cloud-core.js'
+    ),
+  },
+  {
+    source: commonCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'submit-new-story',
+      'common-core.js'
+    ),
+  },
+  {
+    source: commonGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'submit-new-story',
+      'common-gcf.js'
     ),
   },
   ...adminConfigFunctionCopies,
