@@ -3,7 +3,7 @@ import {
   createFirestore,
   fetchApiKeyCreditDocument,
   isMissingDocument,
-} from '../../../../src/core/cloud/get-api-key-credit/core.js';
+} from '../../../../src/core/cloud/get-api-key-credit/get-api-key-credit-core.js';
 
 describe('createFirestore', () => {
   it('instantiates the provided constructor without arguments', () => {

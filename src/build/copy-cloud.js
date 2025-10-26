@@ -125,7 +125,12 @@ const reportForModerationHandlerSource = join(
 const getApiKeyCreditCoreSource = join(
   srcCoreCloudDir,
   'get-api-key-credit',
-  'core.js'
+  'get-api-key-credit-core.js'
+);
+const getApiKeyCreditGcfSource = join(
+  srcCloudDir,
+  'get-api-key-credit',
+  'get-api-key-credit-gcf.js'
 );
 
 const getApiKeyCreditV2CoreSource = join(
@@ -301,7 +306,53 @@ const individualFileCopies = [
   },
   {
     source: getApiKeyCreditCoreSource,
-    target: join(infraFunctionsDir, 'get-api-key-credit', 'core.js'),
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'get-api-key-credit',
+      'get-api-key-credit-core.js'
+    ),
+  },
+  {
+    source: getApiKeyCreditCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'get-api-key-credit',
+      'get-api-key-credit-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'get-api-key-credit',
+      'cloud-core.js'
+    ),
+  },
+  {
+    source: commonCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'get-api-key-credit',
+      'common-core.js'
+    ),
+  },
+  {
+    source: commonGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'get-api-key-credit',
+      'common-gcf.js'
+    ),
+  },
+  {
+    source: getApiKeyCreditGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'get-api-key-credit',
+      'get-api-key-credit-gcf.js'
+    ),
   },
   {
     source: getApiKeyCreditV2CoreSource,
