@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { createGetApiKeyCreditHandler } from '../../../../src/core/cloud/get-api-key-credit/core.js';
+import { createGetApiKeyCreditHandler } from '../../../../src/core/cloud/get-api-key-credit/get-api-key-credit-core.js';
 
 describe('createGetApiKeyCreditHandler', () => {
   const createDependencies = ({

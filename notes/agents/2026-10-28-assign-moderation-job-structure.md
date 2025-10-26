@@ -1,0 +1,2 @@
+- **Challenge:** Introducing the new `common-core` bridge meant the copy script no longer deployed the shared helper to the Cloud Function package.
+- **Resolution:** Added an explicit copy step for `src/core/common-core.js` alongside the existing assign moderation copies so the infra bundle retains the shared constants.

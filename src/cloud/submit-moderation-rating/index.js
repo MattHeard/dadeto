@@ -1,95 +1,80 @@
-import { getAuth } from 'firebase-admin/auth';
-import { FieldValue } from 'firebase-admin/firestore';
-import * as functions from 'firebase-functions/v1';
-import express from 'express';
-import cors from 'cors';
+import {
+  functions,
+  express,
+  cors,
+  getAuth,
+  FieldValue,
+  ensureFirebaseApp,
+  getFirestoreInstance,
+  crypto,
+  getEnvironmentVariables,
+} from './submit-moderation-rating-gcf.js';
 import { getAllowedOrigins } from './cors-config.js';
-import { randomUUID } from 'crypto';
-import { ensureFirebaseApp } from './firebaseApp.js';
-import { getFirestoreInstance } from './firestore.js';
+import {
+  createCorsOptions,
+  createHandleSubmitModerationRating,
+  createSubmitModerationRatingResponder,
+} from './submit-moderation-rating-core.js';
 
-const db = getFirestoreInstance();
 ensureFirebaseApp();
+const db = getFirestoreInstance();
 const auth = getAuth();
 const app = express();
 
-const allowedOrigins = getAllowedOrigins(process.env);
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error('CORS'));
-      }
-    },
-    methods: ['POST'],
-  })
-);
+const environmentVariables = getEnvironmentVariables();
+const allowedOrigins = getAllowedOrigins(environmentVariables);
+const corsOptions = createCorsOptions({ allowedOrigins });
 
+app.use(cors(corsOptions));
 app.use(express.json());
 
-/**
- * Record a moderator's rating for their assigned variant.
- * @param {import('express').Request} req HTTP request object.
- * @param {import('express').Response} res HTTP response object.
- * @returns {Promise<void>} Promise resolving when the response is sent.
- */
-async function handleSubmitModerationRating(req, res) {
-  if (req.method !== 'POST') {
-    res.status(405).send('POST only');
-    return;
-  }
-
-  const { isApproved } = req.body || {};
-  if (typeof isApproved !== 'boolean') {
-    res.status(400).send('Missing or invalid isApproved');
-    return;
-  }
-
-  const authHeader = req.get('Authorization') || '';
-  const match = authHeader.match(/^Bearer (.+)$/);
-  if (!match) {
-    res.status(401).send('Missing or invalid Authorization header');
-    return;
-  }
-
-  let uid;
-  try {
-    const decoded = await auth.verifyIdToken(match[1]);
-    uid = decoded.uid;
-  } catch (err) {
-    res.status(401).send(err.message || 'Invalid or expired token');
-    return;
-  }
-
+const fetchModeratorAssignment = async uid => {
   const moderatorRef = db.collection('moderators').doc(uid);
   const moderatorSnap = await moderatorRef.get();
+
   if (!moderatorSnap.exists) {
-    res.status(404).send('No moderation job');
-    return;
-  }
-  const moderatorData = moderatorSnap.data();
-  if (!moderatorData.variant) {
-    res.status(404).send('No moderation job');
-    return;
+    return null;
   }
 
-  const variantRef = moderatorData.variant;
-  const variantId = `/${variantRef.path}`;
+  const data = moderatorSnap.data() ?? {};
+  const variantRef = data.variant;
 
-  const ratingId = randomUUID();
-  await db.collection('moderationRatings').doc(ratingId).set({
-    moderatorId: uid,
+  if (!variantRef) {
+    return null;
+  }
+
+  return {
+    variantId: `/${variantRef.path}`,
+    clearAssignment: () =>
+      moderatorRef.update({ variant: FieldValue.delete() }),
+  };
+};
+
+const recordModerationRating = async ({
+  id,
+  moderatorId,
+  variantId,
+  isApproved,
+  ratedAt,
+}) =>
+  db.collection('moderationRatings').doc(id).set({
+    moderatorId,
     variantId,
     isApproved,
-    ratedAt: FieldValue.serverTimestamp(),
+    ratedAt,
   });
 
-  await moderatorRef.update({ variant: FieldValue.delete() });
+const submitModerationRatingResponder = createSubmitModerationRatingResponder({
+  verifyIdToken: token => auth.verifyIdToken(token),
+  fetchModeratorAssignment,
+  recordModerationRating,
+  randomUUID: () => crypto.randomUUID(),
+  getServerTimestamp: () => FieldValue.serverTimestamp(),
+});
 
-  res.status(201).json({});
-}
+const handleSubmitModerationRating = createHandleSubmitModerationRating(
+  submitModerationRatingResponder
+);
 
 app.post('/', handleSubmitModerationRating);
 

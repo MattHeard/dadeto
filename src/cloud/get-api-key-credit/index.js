@@ -1,10 +1,10 @@
-import { Firestore } from './common-gcf.js';
+import { Firestore } from './get-api-key-credit-gcf.js';
 import {
   createFirestore,
   createGetApiKeyCreditHandler,
   fetchApiKeyCreditDocument,
   isMissingDocument,
-} from './core.js';
+} from './get-api-key-credit-core.js';
 
 /**
  *
@@ -67,4 +67,4 @@ export {
   createGetApiKeyCreditHandler,
   fetchApiKeyCreditDocument,
   isMissingDocument,
-} from './core.js';
+} from './get-api-key-credit-core.js';

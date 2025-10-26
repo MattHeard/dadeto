@@ -1,12 +1,23 @@
-import * as functions from 'firebase-functions/v1';
-import { Storage } from '@google-cloud/storage';
-import { createRemoveVariantHtml } from './core.js';
-import { ensureFirebaseApp } from './firebaseApp.js';
+import {
+  functions,
+  Storage,
+  ensureFirebaseApp,
+} from './hide-variant-html-gcf.js';
+import {
+  VISIBILITY_THRESHOLD,
+  buildVariantPath,
+  createBucketFileRemover,
+  createHandleVariantVisibilityChange,
+  createRemoveVariantHtml,
+  createRemoveVariantHtmlForSnapshot,
+  getVariantVisibility,
+} from './hide-variant-html-core.js';
 
 ensureFirebaseApp();
+
 const storage = new Storage();
-const BUCKET = 'www.dendritestories.co.nz';
-const VISIBILITY_THRESHOLD = 0.5;
+
+const deleteRenderedFile = createBucketFileRemover({ storage });
 
 const removeVariantHtml = createRemoveVariantHtml({
   async loadPageForVariant({ pageRef }) {
@@ -15,49 +26,29 @@ const removeVariantHtml = createRemoveVariantHtml({
     }
 
     const pageSnap = await pageRef.get();
+
     if (!pageSnap?.exists) {
       return null;
     }
 
     return { page: pageSnap.data() };
   },
-  buildVariantPath({ page, variantData }) {
-    return `p/${page.number}${variantData.name}.html`;
-  },
-  deleteRenderedFile(path) {
-    return storage.bucket(BUCKET).file(path).delete({ ignoreNotFound: true });
-  },
+  buildVariantPath,
+  deleteRenderedFile,
 });
 
-/**
- * Transform a Firestore variant snapshot into the payload expected by the core helper.
- * @param {functions.firestore.DocumentSnapshot} snap Variant snapshot to adapt.
- * @returns {Promise<null>} Result of the removal helper.
- */
-function removeVariantHtmlForSnapshot(snap) {
-  return removeVariantHtml({
-    variantId: snap.id,
-    variantData: snap.data(),
-    pageRef: snap.ref.parent?.parent ?? null,
-  });
-}
+const removeVariantHtmlForSnapshot =
+  createRemoveVariantHtmlForSnapshot(removeVariantHtml);
 
-/**
- * Delete the rendered HTML for a variant when it is removed or its visibility drops below the threshold.
- */
+const handleVariantVisibilityChange = createHandleVariantVisibilityChange({
+  removeVariantHtmlForSnapshot,
+  getVisibility: getVariantVisibility,
+  visibilityThreshold: VISIBILITY_THRESHOLD,
+});
+
 export const hideVariantHtml = functions
   .region('europe-west1')
   .firestore.document('stories/{storyId}/pages/{pageId}/variants/{variantId}')
-  .onWrite(async change => {
-    if (!change.after.exists) {
-      return removeVariantHtmlForSnapshot(change.before);
-    }
+  .onWrite(change => handleVariantVisibilityChange(change));
 
-    const beforeVis = change.before.data()?.visibility ?? 0;
-    const afterVis = change.after.data().visibility ?? 0;
-    if (beforeVis >= VISIBILITY_THRESHOLD && afterVis < VISIBILITY_THRESHOLD) {
-      return removeVariantHtmlForSnapshot(change.after);
-    }
-
-    return null;
-  });
+export { handleVariantVisibilityChange };
