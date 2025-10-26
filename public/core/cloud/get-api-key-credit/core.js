@@ -1,4 +1,5 @@
 import { createDb } from '../get-api-key-credit-v2/create-db.js';
+import { isValidString } from '../../validation.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'Method Not Allowed' };
 const MISSING_UUID_RESPONSE = { status: 400, body: 'Missing UUID' };
@@ -52,15 +53,6 @@ export function createFirestore(FirestoreConstructor) {
 }
 
 /**
- * Check whether a value is a non-empty string.
- * @param {*} value - Value to inspect.
- * @returns {boolean} True when the value is a non-empty string.
- */
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value !== '';
-}
-
-/**
  * Normalize a request method for validation.
  * @param {*} method - Method value taken from the request.
  * @returns {string} Uppercase representation or the default POST method.
@@ -92,7 +84,7 @@ function validateMethod(method) {
  */
 function resolveUuid(request, getUuid) {
   const directUuid = request.uuid;
-  if (isNonEmptyString(directUuid)) {
+  if (isValidString(directUuid)) {
     return directUuid;
   }
   return getUuid(request);
@@ -130,7 +122,7 @@ async function fetchCreditResponse(fetchCredit, uuid) {
  * @returns {{ status: number, body: string } | null} Response when missing, otherwise null.
  */
 function getMissingUuidResponse(uuid) {
-  if (isNonEmptyString(uuid)) {
+  if (isValidString(uuid)) {
     return null;
   }
   return MISSING_UUID_RESPONSE;
