@@ -157,7 +157,17 @@ const getApiKeyCreditV2GcfSource = join(
 const hideVariantHtmlCoreSource = join(
   srcCoreCloudDir,
   'hide-variant-html',
-  'core.js'
+  'hide-variant-html-core.js'
+);
+const hideVariantHtmlGcfSource = join(
+  srcCloudDir,
+  'hide-variant-html',
+  'hide-variant-html-gcf.js'
+);
+const markVariantDirtyCoreSource = join(
+  srcCoreCloudDir,
+  'mark-variant-dirty',
+  'mark-variant-dirty-core.js'
 );
 
 const markVariantDirtyVerifyAdminSource = join(
@@ -411,7 +421,83 @@ const individualFileCopies = [
   },
   {
     source: hideVariantHtmlCoreSource,
-    target: join(infraFunctionsDir, 'hide-variant-html', 'core.js'),
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'hide-variant-html',
+      'hide-variant-html-core.js'
+    ),
+  },
+  {
+    source: hideVariantHtmlCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'hide-variant-html',
+      'hide-variant-html-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(infraFunctionsDir, 'hide-variant-html', 'cloud-core.js'),
+  },
+  {
+    source: commonCoreSource,
+    target: join(infraFunctionsDir, 'hide-variant-html', 'common-core.js'),
+  },
+  {
+    source: commonGcfSource,
+    target: join(infraFunctionsDir, 'hide-variant-html', 'common-gcf.js'),
+  },
+  {
+    source: hideVariantHtmlGcfSource,
+    target: join(
+      infraFunctionsDir,
+      'hide-variant-html',
+      'hide-variant-html-gcf.js'
+    ),
+  },
+  {
+    source: markVariantDirtyCoreSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'mark-variant-dirty',
+      'mark-variant-dirty-core.js'
+    ),
+  },
+  {
+    source: markVariantDirtyCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'mark-variant-dirty',
+      'mark-variant-dirty-core.js'
+    ),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(infraFunctionsDir, 'mark-variant-dirty', 'cloud-core.js'),
+  },
+  {
+    source: commonCoreSource,
+    target: join(infraFunctionsDir, 'mark-variant-dirty', 'common-core.js'),
+  },
+  {
+    source: commonGcfSource,
+    target: join(infraFunctionsDir, 'mark-variant-dirty', 'common-gcf.js'),
+  },
+  {
+    source: join(
+      srcCloudDir,
+      'mark-variant-dirty',
+      'mark-variant-dirty-gcf.js'
+    ),
+    target: join(
+      infraFunctionsDir,
+      'mark-variant-dirty',
+      'mark-variant-dirty-gcf.js'
+    ),
   },
   {
     source: markVariantDirtyVerifyAdminSource,
