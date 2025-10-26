@@ -23,7 +23,10 @@ function matchPathUuid(path) {
  * @returns {string} UUID string when valid, otherwise an empty string.
  */
 function readUuid(value) {
-  return typeof value === 'string' && value ? value : '';
+  if (typeof value !== 'string' || !value) {
+    return '';
+  }
+  return value;
 }
 
 /**
