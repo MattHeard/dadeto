@@ -2,6 +2,8 @@ import { createVerifyAdmin } from '../mark-variant-dirty/verifyAdmin.js';
 import { ADMIN_UID } from './admin-config.js';
 import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
+export { productionOrigins } from './cloud-core.js';
+
 /**
  * Build stats HTML page.
  * @param {number} storyCount Story count.

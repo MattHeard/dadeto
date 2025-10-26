@@ -1,7 +1,1 @@
-export const productionOrigins = [
-  'https://mattheard.net',
-  'https://dendritestories.co.nz',
-  'https://www.dendritestories.co.nz',
-];
-
-export const DEFAULT_BUCKET_NAME = 'www.dendritestories.co.nz';
+export { productionOrigins, DEFAULT_BUCKET_NAME } from './common-core.js';
