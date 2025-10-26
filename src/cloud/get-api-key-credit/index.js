@@ -1,4 +1,4 @@
-import { Firestore } from './gcf.js';
+import { Firestore } from './common-gcf.js';
 import {
   createFirestore,
   createGetApiKeyCreditHandler,
