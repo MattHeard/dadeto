@@ -237,7 +237,11 @@ const individualFileCopies = [
   },
   {
     source: sharedGcfSource,
-    target: join(infraFunctionsDir, 'generate-stats', 'gcf.js'),
+    target: join(
+      infraFunctionsDir,
+      'generate-stats',
+      'generate-stats-gcf.js'
+    ),
   },
   {
     source: generateStatsCoreSource,
