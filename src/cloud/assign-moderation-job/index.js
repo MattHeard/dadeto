@@ -16,6 +16,8 @@ import {
   getAllowedOrigins,
   createRunVariantQuery,
   setupAssignModerationJobRoute,
+  resolveFirestoreEnvironment,
+  shouldUseCustomFirestoreDependencies,
 } from './assign-moderation-job-core.js';
 
 let cachedDb = null;
@@ -97,18 +99,20 @@ function getFirestoreInstance(options = {}) {
     environment: providedEnvironment,
   } = options;
 
-  const environment =
-    providedEnvironment !== undefined
-      ? providedEnvironment
-      : getEnvironmentVariables();
+  const environment = resolveFirestoreEnvironment(
+    providedEnvironment,
+    getEnvironmentVariables
+  );
 
   ensureAppFn();
 
   const databaseId = resolveFirestoreDatabaseId(environment);
-  const useCustomDependencies =
-    ensureAppFn !== defaultEnsureFirebaseApp ||
-    getFirestoreFn !== getAdminFirestore ||
-    providedEnvironment !== undefined;
+  const useCustomDependencies = shouldUseCustomFirestoreDependencies(
+    options,
+    defaultEnsureFirebaseApp,
+    getAdminFirestore,
+    providedEnvironment
+  );
 
   if (useCustomDependencies) {
     return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
@@ -195,6 +199,8 @@ export const assignModerationJob = createAssignModerationJob(
 export const testing = {
   firebaseInitialization,
   resolveFirestoreDatabaseId,
+  resolveFirestoreEnvironment,
+  shouldUseCustomFirestoreDependencies,
   getFirestoreInstance,
   clearFirestoreInstanceCache,
 };

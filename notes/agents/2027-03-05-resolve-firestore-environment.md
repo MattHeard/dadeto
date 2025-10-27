@@ -1,0 +1,2 @@
+- **Challenge:** Extracting the environment resolution logic from `getFirestoreInstance` without duplicating the environment getter dependency.
+- **Resolution:** Introduced `resolveFirestoreEnvironment` to accept both the provided override and the getter, then reused it inside the Firestore factory and exposed it through the testing helpers for targeted verification.
