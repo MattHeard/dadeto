@@ -3,6 +3,47 @@ import { productionOrigins } from './cloud-core.js';
 export { productionOrigins };
 
 /**
+ * Resolve the environment configuration used for Firestore operations.
+ * @param {Record<string, unknown> | undefined} providedEnvironment Environment override supplied by the caller.
+ * @param {() => Record<string, unknown>} getEnvironmentVariablesFn Getter returning the current environment variables.
+ * @returns {Record<string, unknown> | undefined} Environment object used to configure Firestore.
+ */
+export function resolveFirestoreEnvironment(
+  providedEnvironment,
+  getEnvironmentVariablesFn
+) {
+  if (providedEnvironment !== undefined) {
+    return providedEnvironment;
+  }
+
+  return getEnvironmentVariablesFn();
+}
+
+/**
+ * Determine whether the caller supplied custom Firestore dependencies.
+ * @param {Record<string, unknown> | undefined} options Options provided to the Firestore factory.
+ * @param {() => void} defaultEnsureFn Default Firebase app initializer.
+ * @param {(app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore} defaultGetFirestoreFn
+ * Default Firestore factory from the Admin SDK.
+ * @param {Record<string, unknown> | undefined} providedEnvironment Environment override supplied by the caller.
+ * @returns {boolean} True when custom dependencies should be used.
+ */
+export function shouldUseCustomFirestoreDependencies(
+  options,
+  defaultEnsureFn,
+  defaultGetFirestoreFn,
+  providedEnvironment
+) {
+  const { ensureAppFn, getFirestoreFn } = options ?? {};
+
+  return (
+    (ensureAppFn && ensureAppFn !== defaultEnsureFn) ||
+    (getFirestoreFn && getFirestoreFn !== defaultGetFirestoreFn) ||
+    providedEnvironment !== undefined
+  );
+}
+
+/**
  * Create helpers that track Firebase initialization state.
  * @returns {{
  *   hasBeenInitialized: () => boolean,
