@@ -35,4 +35,3 @@ export const getApiKeyCreditV2 = onRequest(async (req, res) => {
 });
 
 export { extractUuid, createDb } from './get-api-key-credit-v2-core.js';
-export { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
