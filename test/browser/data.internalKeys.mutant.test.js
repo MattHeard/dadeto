@@ -19,7 +19,7 @@ describe('getData dynamic import', () => {
       logError: jest.fn(),
       logWarning: jest.fn(),
     };
-    const result = getData(state, fetchFn, loggers);
+    const result = getData(state, { fetch: fetchFn, loggers });
     expect(result).toEqual({ blog: { title: 't' } });
     expect(result).not.toHaveProperty('blogStatus');
     expect(result).not.toHaveProperty('blogError');

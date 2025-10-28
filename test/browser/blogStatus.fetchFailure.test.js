@@ -13,9 +13,13 @@ describe('BLOG_STATUS fetch failure handling', () => {
       blogFetchPromise: null,
     };
     const fetchFn = jest.fn(() => Promise.reject(new Error('fail')));
-    const loggers = { logInfo: jest.fn(), logError: jest.fn() };
+    const loggers = {
+      logInfo: jest.fn(),
+      logError: jest.fn(),
+      logWarning: jest.fn(),
+    };
 
-    await fetchAndCacheBlogData(state, fetchFn, loggers);
+    await fetchAndCacheBlogData(state, { fetch: fetchFn, loggers });
 
     expect(state.blogStatus).toBe('error');
     expect(loggers.logError).toHaveBeenCalledWith(
