@@ -9,7 +9,8 @@
 ## Current Progress
 - **Cloud Functions** already conform to the pattern. For example, `src/cloud/get-moderation-variant/index.js` imports Google Cloud dependencies from `get-moderation-variant-gcf.js`, prepares the Firebase + Express environment, and then delegates all logic to factories defined in `get-moderation-variant-core.js`.
 - The build pipeline copies both bridge and core modules for each function (see `src/build/copy-cloud.js`) so the deployment artifacts stay aligned with source structure.
-- **Browser entry points** (e.g. `src/browser/main.js`) have the right separation of concerns conceptually—runtime wiring is handled in the entry file, while behavior is sourced from `src/core/browser/*` modules such as `data.js`, `audio-controls.js`, and `beta.js`.
+- **Browser entry points** (e.g. `src/browser/main.js`) have the right separation of concerns conceptually—runtime wiring is handled in the entry file, while behavior is sourced from `src/core/browser/*` modules such as `data.js`, `audio-controls.js`, and `beta.js`. The entry file constructs a dedicated `createEnv` factory so the core layer can request DOM, randomization, and storage helpers lazily instead of capturing globals upfront.
+- Supporting bridge utilities already follow the same pattern. `src/browser/loadStaticConfig.js` injects `fetch` and logging facades into `createLoadStaticConfig`, keeping the pure loader isolated from the browser API surface.
 
 ## High-Level Changes to Pursue
 1. **Formalize Browser Bridges**
