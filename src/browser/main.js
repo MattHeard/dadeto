@@ -1,11 +1,6 @@
 import { setupAudio } from '../core/browser/audio-controls.js';
 import { handleTagLinks } from '../core/browser/tags.js';
-import {
-  fetchAndCacheBlogData,
-  getData,
-  setLocalTemporaryData,
-  setLocalPermanentData,
-} from '../core/browser/data.js';
+import { createBlogDataController } from '../core/browser/data.js';
 import { getEncodeBase64 } from '../core/encoding.js';
 import {
   createOutputDropdownHandler,
@@ -49,7 +44,19 @@ const globalState = {
  * @returns {Map<string, Function>} Map of environment functions.
  */
 const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
-const blogDataDependencies = { fetch, loggers };
+
+const createBlogDependencies = () => ({
+  fetch,
+  loggers,
+  storage: localStorage,
+});
+
+const {
+  fetchAndCacheBlogData: fetchBlogData,
+  getData: getBlogData,
+  setLocalTemporaryData: applyLocalTemporaryData,
+  setLocalPermanentData: applyLocalPermanentData,
+} = createBlogDataController(createBlogDependencies);
 
 /**
  * Generates a fresh environment map.
@@ -60,19 +67,13 @@ function createEnv() {
     ['getRandomNumber', getRandomNumber],
     ['getCurrentTime', getCurrentTime],
     ['getUuid', getUuid],
-    ['getData', () => getData(globalState, blogDataDependencies)],
+    ['getData', () => getBlogData(globalState)],
     [
       'setLocalTemporaryData',
       newData =>
-        setLocalTemporaryData(
-          { desired: newData, current: globalState },
-          loggers
-        ),
+        applyLocalTemporaryData({ desired: newData, current: globalState }),
     ],
-    [
-      'setLocalPermanentData',
-      newData => setLocalPermanentData(newData, loggers, localStorage),
-    ],
+    ['setLocalPermanentData', newData => applyLocalPermanentData(newData)],
     ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
   ]);
 }
@@ -107,13 +108,13 @@ initializeVisibleComponents(
 handleTagLinks(dom);
 
 // --- Initial Data Fetch ---
-fetchAndCacheBlogData(globalState, blogDataDependencies);
+fetchBlogData(globalState);
 
 setupAudio(dom, dom.setTextContent);
 
 // --- Dropdown Initialization ---
 
-const getDataCallback = () => getData(globalState, blogDataDependencies);
+const getDataCallback = () => getBlogData(globalState);
 
 const onOutputDropdownChange = createOutputDropdownHandler(
   handleDropdownChange,
