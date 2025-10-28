@@ -12,9 +12,16 @@ describe('BLOG_STATUS constants integration', () => {
     const fetchFn = jest.fn(() =>
       Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
     );
-    const loggers = { logInfo: jest.fn(), logError: jest.fn() };
+    const loggers = {
+      logInfo: jest.fn(),
+      logError: jest.fn(),
+      logWarning: jest.fn(),
+    };
 
-    const promise = fetchAndCacheBlogData(state, fetchFn, loggers);
+    const promise = fetchAndCacheBlogData(state, {
+      fetch: fetchFn,
+      loggers,
+    });
     expect(state.blogStatus).toBe('loading');
 
     await promise;
@@ -30,8 +37,15 @@ describe('BLOG_STATUS constants integration', () => {
       blogFetchPromise: null,
     };
     const fetchFn = jest.fn(() => Promise.reject(new Error('fail')));
-    const loggers = { logInfo: jest.fn(), logError: jest.fn() };
-    await fetchAndCacheBlogData(state, fetchFn, loggers);
+    const loggers = {
+      logInfo: jest.fn(),
+      logError: jest.fn(),
+      logWarning: jest.fn(),
+    };
+    await fetchAndCacheBlogData(state, {
+      fetch: fetchFn,
+      loggers,
+    });
     expect(state.blogStatus).toBe('error');
   });
 
@@ -45,9 +59,16 @@ describe('BLOG_STATUS constants integration', () => {
     const fetchFn = jest.fn(() =>
       Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
     );
-    const loggers = { logInfo: jest.fn(), logError: jest.fn() };
+    const loggers = {
+      logInfo: jest.fn(),
+      logError: jest.fn(),
+      logWarning: jest.fn(),
+    };
 
-    const promise = fetchAndCacheBlogData(state, fetchFn, loggers);
+    const promise = fetchAndCacheBlogData(state, {
+      fetch: fetchFn,
+      loggers,
+    });
     expect(state.blogStatus).toBe('loading');
     expect(state.blogError).toBeNull();
 

@@ -10,9 +10,15 @@ describe('fetchAndCacheBlogData error status', () => {
       blogFetchPromise: null,
     };
     const fetchFn = jest.fn(() => Promise.resolve({ ok: false, status: 500 }));
-    const loggers = { logInfo: jest.fn(), logError: jest.fn() };
+    const loggers = {
+      logInfo: jest.fn(),
+      logError: jest.fn(),
+      logWarning: jest.fn(),
+    };
 
-    await fetchAndCacheBlogData(state, fetchFn, loggers).catch(() => {});
+    await fetchAndCacheBlogData(state, { fetch: fetchFn, loggers }).catch(
+      () => {}
+    );
 
     expect(state.blogStatus).toBe('error');
     expect(loggers.logError).toHaveBeenCalled();

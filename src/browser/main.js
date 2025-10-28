@@ -49,6 +49,7 @@ const globalState = {
  * @returns {Map<string, Function>} Map of environment functions.
  */
 const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
+const blogDataDependencies = { fetch, loggers };
 
 /**
  * Generates a fresh environment map.
@@ -59,7 +60,7 @@ function createEnv() {
     ['getRandomNumber', getRandomNumber],
     ['getCurrentTime', getCurrentTime],
     ['getUuid', getUuid],
-    ['getData', () => getData(globalState, fetch, loggers)],
+    ['getData', () => getData(globalState, blogDataDependencies)],
     [
       'setLocalTemporaryData',
       newData =>
@@ -106,16 +107,13 @@ initializeVisibleComponents(
 handleTagLinks(dom);
 
 // --- Initial Data Fetch ---
-fetchAndCacheBlogData(globalState, fetch, {
-  logInfo: log,
-  logError: dom.logError,
-});
+fetchAndCacheBlogData(globalState, blogDataDependencies);
 
 setupAudio(dom, dom.setTextContent);
 
 // --- Dropdown Initialization ---
 
-const getDataCallback = () => getData(globalState, fetch, loggers);
+const getDataCallback = () => getData(globalState, blogDataDependencies);
 
 const onOutputDropdownChange = createOutputDropdownHandler(
   handleDropdownChange,

@@ -11,6 +11,7 @@
 - The build pipeline copies both bridge and core modules for each function (see `src/build/copy-cloud.js`) so the deployment artifacts stay aligned with source structure.
 - **Browser entry points** (e.g. `src/browser/main.js`) have the right separation of concerns conceptually—runtime wiring is handled in the entry file, while behavior is sourced from `src/core/browser/*` modules such as `data.js`, `audio-controls.js`, and `beta.js`. The entry file constructs a dedicated `createEnv` factory so the core layer can request DOM, randomization, and storage helpers lazily instead of capturing globals upfront.
 - Supporting bridge utilities already follow the same pattern. `src/browser/loadStaticConfig.js` injects `fetch` and logging facades into `createLoadStaticConfig`, keeping the pure loader isolated from the browser API surface.
+- The browser data loader now consumes an explicit `BlogDataDependencies` bundle, letting `src/browser/main.js` pass its fetch + logger wiring as a single injected object.
 
 ## High-Level Changes to Pursue
 1. **Formalize Browser Bridges**

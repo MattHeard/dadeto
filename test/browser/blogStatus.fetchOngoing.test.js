@@ -17,9 +17,16 @@ describe('BLOG_STATUS ongoing fetch detection', () => {
       resolve = r;
     });
     const fetchFn = jest.fn(() => fetchPromise);
-    const loggers = { logInfo: jest.fn(), logError: jest.fn() };
+    const dependencies = {
+      fetch: fetchFn,
+      loggers: {
+        logInfo: jest.fn(),
+        logError: jest.fn(),
+        logWarning: jest.fn(),
+      },
+    };
 
-    const promise = fetchAndCacheBlogData(state, fetchFn, loggers);
+    const promise = fetchAndCacheBlogData(state, dependencies);
 
     expect(state.blogStatus).toBe('loading');
     const logFn = jest.fn();

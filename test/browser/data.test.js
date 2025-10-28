@@ -61,6 +61,14 @@ describe('fetchAndCacheBlogData', () => {
   let mockFetch;
   let mockLog;
   let mockError;
+  const createDependencies = () => ({
+    fetch: mockFetch,
+    loggers: {
+      logInfo: mockLog,
+      logError: mockError,
+      logWarning: jest.fn(),
+    },
+  });
 
   beforeEach(() => {
     state = {
@@ -81,10 +89,7 @@ describe('fetchAndCacheBlogData', () => {
     state.blogStatus = 'loading';
     state.blogFetchPromise = promise;
 
-    const result = fetchAndCacheBlogData(state, mockFetch, {
-      logInfo: mockLog,
-      logError: mockError,
-    });
+    const result = fetchAndCacheBlogData(state, createDependencies());
     expect(result).toBe(promise);
     expect(mockLog).toHaveBeenCalledWith(
       'Blog data fetch already in progress.'
@@ -97,10 +102,7 @@ describe('fetchAndCacheBlogData', () => {
       Promise.resolve({ ok: true, json: () => Promise.resolve(blogData) })
     );
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, {
-      logInfo: mockLog,
-      logError: mockError,
-    });
+    const promise = fetchAndCacheBlogData(state, createDependencies());
     expect(state.blogStatus).toBe('loading');
     expect(state.blogError).toBeNull();
 
@@ -118,10 +120,7 @@ describe('fetchAndCacheBlogData', () => {
   it('should handle HTTP errors properly', async () => {
     mockFetch = jest.fn(() => Promise.resolve({ ok: false, status: 500 }));
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, {
-      logInfo: mockLog,
-      logError: mockError,
-    });
+    const promise = fetchAndCacheBlogData(state, createDependencies());
     await promise;
 
     expect(state.blogStatus).toBe('error');
@@ -138,10 +137,7 @@ describe('fetchAndCacheBlogData', () => {
     const error = new Error('Network failure');
     mockFetch = jest.fn(() => Promise.reject(error));
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, {
-      logInfo: mockLog,
-      logError: mockError,
-    });
+    const promise = fetchAndCacheBlogData(state, createDependencies());
     await promise;
 
     expect(state.blogStatus).toBe('error');
@@ -156,10 +152,7 @@ describe('fetchAndCacheBlogData', () => {
       Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
     );
 
-    await fetchAndCacheBlogData(state, mockFetch, {
-      logInfo: mockLog,
-      logError: mockError,
-    });
+    await fetchAndCacheBlogData(state, createDependencies());
 
     expect(mockFetch).toHaveBeenCalledWith('./blog.json');
     expect(mockLog).toHaveBeenCalledWith('Starting to fetch blog data...');
@@ -168,10 +161,7 @@ describe('fetchAndCacheBlogData', () => {
   it('throws specific error when response is not ok', async () => {
     mockFetch = jest.fn(() => Promise.resolve({ ok: false, status: 418 }));
 
-    const promise = fetchAndCacheBlogData(state, mockFetch, {
-      logInfo: mockLog,
-      logError: mockError,
-    });
+    const promise = fetchAndCacheBlogData(state, createDependencies());
     await promise;
 
     expect(state.blogStatus).toBe('error');
@@ -188,6 +178,14 @@ describe('getData, setData, and getDeepStateCopy', () => {
   let errorFn;
   let warnFn;
   let fetchFn;
+  const createDependencies = () => ({
+    fetch: fetchFn,
+    loggers: {
+      logInfo: logFn,
+      logError: errorFn,
+      logWarning: warnFn,
+    },
+  });
 
   beforeEach(() => {
     state = {
@@ -216,15 +214,13 @@ describe('getData, setData, and getDeepStateCopy', () => {
   });
 
   it('getData triggers fetch if status is idle', () => {
-    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    getData(state, fetchFn, loggers);
+    getData(state, createDependencies());
     expect(fetchFn).toHaveBeenCalled();
   });
 
   it('getData logs warning on error state', () => {
     state.blogStatus = 'error';
-    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    getData(state, fetchFn, loggers);
+    getData(state, createDependencies());
     expect(warnFn).toHaveBeenCalledWith(
       'Blog data previously failed to load:',
       state.blogError
@@ -233,8 +229,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
 
   it('getData does nothing when status is loaded', () => {
     state.blogStatus = 'loaded';
-    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    getData(state, fetchFn, loggers);
+    getData(state, createDependencies());
     expect(fetchFn).not.toHaveBeenCalled();
     expect(warnFn).not.toHaveBeenCalled();
   });
@@ -242,8 +237,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
   it('getData omits internal state fields', async () => {
     state.blog = { title: 'x' };
     state.blogStatus = 'loaded';
-    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    const result = getData(state, fetchFn, loggers);
+    const result = getData(state, createDependencies());
     expect(result.blog).toEqual({ title: 'x' });
     expect(result).not.toHaveProperty('blogStatus');
     expect(result).not.toHaveProperty('blogError');
@@ -253,8 +247,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
   it('getData returns a deep copy when status is idle', () => {
     state.blog = { title: 'copy test' };
     state.blogStatus = 'idle';
-    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    const result = getData(state, fetchFn, loggers);
+    const result = getData(state, createDependencies());
     expect(result).not.toBe(state);
     expect(result.blog).not.toBe(state.blog);
   });
@@ -262,15 +255,13 @@ describe('getData, setData, and getDeepStateCopy', () => {
   it('getData returns original object when status is loaded', () => {
     state.blog = { title: 'no copy' };
     state.blogStatus = 'loaded';
-    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    const result = getData(state, fetchFn, loggers);
+    const result = getData(state, createDependencies());
     expect(result).toBe(state);
   });
 
   it('getData does nothing when status is blank', () => {
     state.blogStatus = '';
-    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    getData(state, fetchFn, loggers);
+    getData(state, createDependencies());
     expect(fetchFn).not.toHaveBeenCalled();
     expect(warnFn).not.toHaveBeenCalled();
   });
@@ -280,9 +271,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
     fetchFn = jest.fn(() =>
       Promise.resolve({ ok: true, json: () => Promise.resolve(blogData) })
     );
-    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-
-    getData(state, fetchFn, loggers);
+    getData(state, createDependencies());
 
     expect(state.blogStatus).toBe('loading');
     const promise = state.blogFetchPromise;
@@ -518,8 +507,7 @@ describe('getData, setData, and getDeepStateCopy', () => {
     state.blog = blog;
     state.blogStatus = 'loaded';
 
-    const loggers = { logInfo: logFn, logError: errorFn, logWarning: warnFn };
-    const result = getData(state, fetchFn, loggers);
+    const result = getData(state, createDependencies());
 
     expect(result.blog).toEqual(blog);
     expect(fetchFn).not.toHaveBeenCalled();
