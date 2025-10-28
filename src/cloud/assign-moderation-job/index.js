@@ -20,8 +20,6 @@ import {
   shouldUseCustomFirestoreDependencies,
 } from './assign-moderation-job-core.js';
 
-let cachedDb = null;
-
 const firebaseInitialization = createFirebaseInitialization();
 
 /**
@@ -34,6 +32,66 @@ const firebaseInitializationHandlers = {
 };
 
 const defaultEnsureFirebaseApp = () => {};
+
+function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
+  let cachedDb = null;
+
+  /**
+   * Create or return the cached Firestore instance for the active environment.
+   * @param {{
+   *   ensureAppFn?: () => void,
+   *   getFirestoreFn?: (
+   *     app?: import('firebase-admin/app').App,
+   *     databaseId?: string,
+   *   ) => import('firebase-admin/firestore').Firestore,
+   *   environment?: Record<string, unknown>,
+   * }} [options] Optional dependency overrides for testing. When omitted,
+   * the function assumes the Firebase app was initialized by the caller.
+   * @returns {import('firebase-admin/firestore').Firestore} Firestore client instance.
+   */
+  function getFirestoreInstance(options = {}) {
+    const {
+      ensureAppFn = defaultEnsureFirebaseApp,
+      getFirestoreFn = getAdminFirestore,
+      environment: providedEnvironment,
+    } = options;
+
+    const environment = resolveFirestoreEnvironment(
+      providedEnvironment,
+      getEnvironmentVariables
+    );
+
+    ensureAppFn();
+
+    const databaseId = resolveFirestoreDatabaseId(environment);
+    const useCustomDependencies = shouldUseCustomFirestoreDependencies(
+      options,
+      defaultEnsureFirebaseApp,
+      getAdminFirestore,
+      providedEnvironment
+    );
+
+    if (useCustomDependencies) {
+      return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+    }
+
+    if (!cachedDb) {
+      cachedDb = getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+    }
+
+    return cachedDb;
+  }
+
+  /**
+   * Reset the cached Firestore instance. Primarily used in tests.
+   */
+  function clearFirestoreInstanceCache() {
+    cachedDb = null;
+    firebaseInitializationHandlers.reset();
+  }
+
+  return { getFirestoreInstance, clearFirestoreInstanceCache };
+}
 
 /**
  * Parse the database identifier from the Firebase configuration.
@@ -79,59 +137,8 @@ function getFirestoreForDatabase(getFirestoreFn, firebaseApp, databaseId) {
   return getFirestoreFn(firebaseApp);
 }
 
-/**
- * Create or return the cached Firestore instance for the active environment.
- * @param {{
- *   ensureAppFn?: () => void,
- *   getFirestoreFn?: (
- *     app?: import('firebase-admin/app').App,
- *     databaseId?: string,
- *   ) => import('firebase-admin/firestore').Firestore,
- *   environment?: Record<string, unknown>,
- * }} [options] Optional dependency overrides for testing. When omitted,
- * the function assumes the Firebase app was initialized by the caller.
- * @returns {import('firebase-admin/firestore').Firestore} Firestore client instance.
- */
-function getFirestoreInstance(options = {}) {
-  const {
-    ensureAppFn = defaultEnsureFirebaseApp,
-    getFirestoreFn = getAdminFirestore,
-    environment: providedEnvironment,
-  } = options;
-
-  const environment = resolveFirestoreEnvironment(
-    providedEnvironment,
-    getEnvironmentVariables
-  );
-
-  ensureAppFn();
-
-  const databaseId = resolveFirestoreDatabaseId(environment);
-  const useCustomDependencies = shouldUseCustomFirestoreDependencies(
-    options,
-    defaultEnsureFirebaseApp,
-    getAdminFirestore,
-    providedEnvironment
-  );
-
-  if (useCustomDependencies) {
-    return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
-  }
-
-  if (!cachedDb) {
-    cachedDb = getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
-  }
-
-  return cachedDb;
-}
-
-/**
- * Reset the cached Firestore instance. Primarily used in tests.
- */
-function clearFirestoreInstanceCache() {
-  cachedDb = null;
-  firebaseInitializationHandlers.reset();
-}
+const { getFirestoreInstance, clearFirestoreInstanceCache } =
+  createFirestoreInstanceHandlers(firebaseInitializationHandlers);
 
 /**
  * Determine whether an initialization error indicates the app already exists.
