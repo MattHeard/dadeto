@@ -1,6 +1,16 @@
 import { deepClone } from '../objectUtils.js';
 import { isNonNullObject } from '../state.js';
 
+/**
+ * @typedef {object} BlogDataDependencies
+ * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
+ * @property {{
+ *   logInfo: Function,
+ *   logError: Function,
+ *   logWarning?: Function,
+ * }} loggers - Logger bundle injected by the entry layer.
+ */
+
 export { deepMerge } from '../state.js';
 export { getEncodeBase64 } from '../encoding.js';
 
@@ -52,15 +62,13 @@ export function shouldUseExistingFetch(globalState, logFn) {
 }
 
 /**
- * Wrapper for fetchAndCacheBlogData with explicit arguments.
+ * Wrapper for blog-data fetching that accepts an injected dependency bundle.
  * @param {object} state - The global state object.
- * @param {Function} fetch - The fetch function to use.
- * @param {object} loggers - The logging functions object.
- * @param {Function} loggers.logInfo - The logging function to use.
- * @param {Function} loggers.logError - The error logging function to use.
+ * @param {BlogDataDependencies} dependencies - Injected fetch + logger bundle.
  * @returns {Promise<unknown>} Promise resolving when fetch completes.
  */
-export function fetchAndCacheBlogData(state, fetch, loggers) {
+export function fetchAndCacheBlogData(state, dependencies) {
+  const { fetch, loggers } = dependencies;
   const { logInfo, logError } = loggers;
 
   // Prevent multiple simultaneous fetches
@@ -231,13 +239,13 @@ function maybeLogFetchError(state, logWarning) {
 /**
  * Handles fetch-related state transitions and logging.
  * @param {object} state - Global state to update.
- * @param {Function} fetch - Fetch function.
- * @param {object} loggers - Logger functions.
+ * @param {BlogDataDependencies} dependencies - Injected fetch + logger bundle.
  */
-function handleBlogFetchState(state, fetch, loggers) {
-  const doFetch = () => fetchAndCacheBlogData(state, fetch, loggers);
+function handleBlogFetchState(state, dependencies) {
+  const { fetch, loggers } = dependencies;
+  const doFetch = () => fetchAndCacheBlogData(state, dependencies);
   tryFetchingBlog(state, doFetch);
-  const { logWarning } = loggers;
+  const { logWarning = () => {} } = loggers;
   maybeLogFetchError(state, logWarning);
 }
 
@@ -267,13 +275,12 @@ function getRelevantStateCopy(state) {
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
  * @param {object} state - The main application state.
- * @param {Function} fetch - The fetch function.
- * @param {object} loggers - An object with logInfo, logError, and logWarning functions.
+ * @param {BlogDataDependencies} dependencies - Injected fetch + logger bundle.
  * @returns {object} A deep copy of the relevant state for the toy.
  */
-export const getData = (state, fetch, loggers) => {
+export const getData = (state, dependencies) => {
   const stateCopy = getRelevantStateCopy(state);
-  handleBlogFetchState(state, fetch, loggers);
+  handleBlogFetchState(state, dependencies);
   stripInternalFields(stateCopy);
   return stateCopy;
 };
