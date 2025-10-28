@@ -8,6 +8,7 @@ import {
   deepMerge,
   shouldCopyStateForFetch,
   getEncodeBase64,
+  createBlogDataController,
 } from '../../src/core/browser/data.js';
 
 describe('shouldCopyStateForFetch', () => {
@@ -77,6 +78,7 @@ describe('fetchAndCacheBlogData', () => {
       blogError: null,
       blogFetchPromise: null,
     };
+    mockFetch = jest.fn();
     mockLog = jest.fn();
     mockError = jest.fn();
   });
@@ -169,6 +171,83 @@ describe('fetchAndCacheBlogData', () => {
       'Error fetching blog data:',
       expect.objectContaining({ message: 'HTTP error! status: 418' })
     );
+  });
+});
+
+describe('createBlogDataController', () => {
+  const createState = () => ({
+    blog: null,
+    blogStatus: 'idle',
+    blogError: null,
+    blogFetchPromise: null,
+    temporary: {},
+  });
+
+  it('throws when dependency factory is not a function', () => {
+    expect(() => createBlogDataController(null)).toThrow(
+      'createBlogDataController expects a dependency factory function.'
+    );
+  });
+
+  it('memoizes dependency factory results and wires helpers together', async () => {
+    const storage = {
+      getItem: jest.fn(() => '{}'),
+      setItem: jest.fn(),
+    };
+    const fetchFn = jest.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve({ title: 'x' }) })
+    );
+    const logInfo = jest.fn();
+    const logError = jest.fn();
+    const logWarning = jest.fn();
+    const factory = jest.fn(() => ({
+      fetch: fetchFn,
+      loggers: { logInfo, logError, logWarning },
+      storage,
+    }));
+
+    const controller = createBlogDataController(factory);
+    const state = createState();
+    const result = controller.getData(state);
+    expect(factory).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({ temporary: {} });
+
+    await state.blogFetchPromise;
+    expect(state.blogStatus).toBe('loaded');
+
+    controller.setLocalTemporaryData({
+      desired: { temporary: { value: 1 } },
+      current: state,
+    });
+    expect(logError).not.toHaveBeenCalled();
+    expect(state.temporary).toEqual({ value: 1 });
+
+    controller.setLocalPermanentData({ widget: true });
+    expect(storage.setItem).toHaveBeenCalledWith(
+      'permanentData',
+      JSON.stringify({ widget: true })
+    );
+
+    await controller.fetchAndCacheBlogData(state);
+    expect(factory).toHaveBeenCalledTimes(1);
+  });
+
+  it('normalizes missing warning logger', () => {
+    const factory = () => ({
+      fetch: jest.fn(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
+      ),
+      loggers: { logInfo: jest.fn(), logError: jest.fn() },
+    });
+
+    const controller = createBlogDataController(factory);
+    const state = createState();
+    state.blogStatus = 'error';
+    state.blogError = new Error('boom');
+    controller.getData(state);
+    // Ensure absence of logWarning does not throw
+    expect(state.blogError).toBeInstanceOf(Error);
   });
 });
 

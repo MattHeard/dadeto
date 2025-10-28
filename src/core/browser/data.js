@@ -9,12 +9,19 @@ import { isNonNullObject } from '../state.js';
  *   logError: Function,
  *   logWarning?: Function,
  * }} loggers - Logger bundle injected by the entry layer.
+ * @property {Storage} [storage] - Optional storage implementation for permanent state.
  */
 
 export { deepMerge } from '../state.js';
 export { getEncodeBase64 } from '../encoding.js';
 
 const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
+const BLOG_DATA_URL = './blog.json';
+
+/**
+ * @callback BlogDependencyFactory
+ * @returns {BlogDataDependencies}
+ */
 
 export const BLOG_STATUS = {
   IDLE: 'idle',
@@ -77,11 +84,13 @@ export function fetchAndCacheBlogData(state, dependencies) {
     return state.blogFetchPromise;
   }
 
+  const blogUrl = BLOG_DATA_URL;
+
   logInfo('Starting to fetch blog data...');
   state.blogStatus = BLOG_STATUS.LOADING;
   state.blogError = null;
 
-  state.blogFetchPromise = fetch('./blog.json')
+  state.blogFetchPromise = fetch(blogUrl)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -378,7 +387,106 @@ function savePermanentData(storage, data, logError) {
   writePermanentData(storage, data, logError);
 }
 
-export const setLocalPermanentData = (desired, loggers, storage) => {
+/**
+ *
+ * @param loggers
+ * @param key
+ */
+function ensureLoggerFunction(loggers, key) {
+  const fn = loggers[key];
+  if (typeof fn !== 'function') {
+    throw new TypeError(
+      `createBlogDataController requires loggers.${key} to be a function.`
+    );
+  }
+  return fn;
+}
+
+/**
+ *
+ * @param bundle
+ */
+function normalizeDependencies(bundle) {
+  if (!isNonNullObject(bundle)) {
+    throw new TypeError(
+      'createBlogDataController expected createDependencies to return an object.'
+    );
+  }
+
+  const { fetch: fetchImpl, loggers, storage } = bundle;
+
+  if (typeof fetchImpl !== 'function') {
+    throw new TypeError(
+      'createBlogDataController requires fetch to be provided as a function.'
+    );
+  }
+
+  if (!isNonNullObject(loggers)) {
+    throw new TypeError(
+      'createBlogDataController requires loggers to be an object with logging functions.'
+    );
+  }
+
+  const normalizedLoggers = {
+    logInfo: ensureLoggerFunction(loggers, 'logInfo'),
+    logError: ensureLoggerFunction(loggers, 'logError'),
+    logWarning:
+      typeof loggers.logWarning === 'function' ? loggers.logWarning : () => {},
+  };
+
+  return {
+    fetch: fetchImpl,
+    loggers: normalizedLoggers,
+    storage: storage ?? null,
+  };
+}
+
+/**
+ *
+ * @param createDependencies
+ */
+function createDependencyAccessor(createDependencies) {
+  if (typeof createDependencies !== 'function') {
+    throw new TypeError(
+      'createBlogDataController expects a dependency factory function.'
+    );
+  }
+
+  let cachedDependencies;
+  return () => {
+    if (!cachedDependencies) {
+      cachedDependencies = normalizeDependencies(createDependencies());
+    }
+    return cachedDependencies;
+  };
+}
+
+/**
+ *
+ * @param createDependencies
+ */
+export function createBlogDataController(createDependencies) {
+  const getDependencies = createDependencyAccessor(createDependencies);
+
+  return {
+    fetchAndCacheBlogData(state) {
+      return fetchAndCacheBlogData(state, getDependencies());
+    },
+    getData(state) {
+      return getData(state, getDependencies());
+    },
+    setLocalTemporaryData(state) {
+      const { loggers } = getDependencies();
+      return setLocalTemporaryData(state, loggers);
+    },
+    setLocalPermanentData(desired) {
+      const { loggers, storage } = getDependencies();
+      return setLocalPermanentDataCore(desired, loggers, storage);
+    },
+  };
+}
+
+const setLocalPermanentDataCore = (desired, loggers, storage) => {
   const { logError } = loggers;
   validateIncomingPermanentState(desired, logError);
 
@@ -388,3 +496,5 @@ export const setLocalPermanentData = (desired, loggers, storage) => {
 
   return updated;
 };
+
+export const setLocalPermanentData = setLocalPermanentDataCore;
