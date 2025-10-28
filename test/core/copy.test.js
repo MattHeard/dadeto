@@ -724,6 +724,39 @@ describe('createCopyCore', () => {
       expect(io.copyFile).not.toHaveBeenCalled();
     });
 
+    it('copies core browser modules including load static config core', () => {
+      const existingSources = new Set([directories.srcCoreDir]);
+      const entriesMap = new Map();
+      entriesMap.set(directories.srcCoreDir, [createDirectoryEntry('browser')]);
+      entriesMap.set(posix.join(directories.srcCoreDir, 'browser'), [
+        createFileEntry('load-static-config-core.js'),
+      ]);
+
+      const io = {
+        directoryExists: jest.fn(target => existingSources.has(target)),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(dir => entriesMap.get(dir) ?? []),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copySupportingDirectories(directories, io, logger);
+
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(
+          directories.srcCoreDir,
+          'browser/load-static-config-core.js'
+        ),
+        posix.join(
+          directories.publicCoreDir,
+          'browser/load-static-config-core.js'
+        )
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Core files copied successfully!'
+      );
+    });
+
     it('copies supporting directories and logs missing ones', () => {
       const existingSources = new Set([directories.srcBrowserDir]);
       const entriesMap = new Map();
