@@ -16,17 +16,23 @@ import {
   productionOrigins,
 } from './generate-stats-core.js';
 
-let firebaseInitialized = false;
+const createEnsureFirebaseApp = (initialInitializeApp = initializeApp) => {
+  let firebaseInitialized = false;
 
-const ensureFirebaseApp = (initFn = initializeApp) => {
-  if (firebaseInitialized) {
-    return;
-  }
+  const ensureFirebaseApp = (initFn = initialInitializeApp) => {
+    if (firebaseInitialized) {
+      return;
+    }
 
-  initializeFirebaseApp(initFn);
+    initializeFirebaseApp(initFn);
 
-  firebaseInitialized = true;
+    firebaseInitialized = true;
+  };
+
+  return ensureFirebaseApp;
 };
+
+const ensureFirebaseApp = createEnsureFirebaseApp();
 
 const getAllowedOrigins = environmentVariables => {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
