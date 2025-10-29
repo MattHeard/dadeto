@@ -1,12 +1,30 @@
 import { FieldValue as AdminFieldValue } from 'firebase-admin/firestore';
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 
+/**
+ * @typedef {import('firebase-admin/firestore').Firestore} Firestore
+ * @typedef {import('firebase-admin/firestore').FieldValue} FieldValue
+ * @typedef {import('firebase-admin/firestore').DocumentReference} DocumentReference
+ * @typedef {import('firebase-admin/firestore').WriteBatch} WriteBatch
+ * @typedef {import('firebase-admin/firestore').DocumentSnapshot | import('firebase-admin/firestore').QueryDocumentSnapshot} FirestoreDocumentSnapshot
+ */
+
+/**
+ * Ensure the provided database exposes the Firestore helpers used by the handler.
+ * @param {{ doc: (path: string) => DocumentReference, batch: () => WriteBatch }} db Firestore instance to assert.
+ * @returns {void}
+ */
 function assertDb(db) {
   if (!db || typeof db.doc !== 'function' || typeof db.batch !== 'function') {
     throw new TypeError('db must expose doc and batch helpers');
   }
 }
 
+/**
+ * Ensure the provided FieldValue helper offers the required APIs.
+ * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} fieldValue FieldValue helper to assert.
+ * @returns {void}
+ */
 function assertFieldValue(fieldValue) {
   if (!fieldValue || typeof fieldValue.serverTimestamp !== 'function') {
     throw new TypeError('fieldValue.serverTimestamp must be a function');
@@ -17,18 +35,33 @@ function assertFieldValue(fieldValue) {
   }
 }
 
+/**
+ * Ensure the provided random helper is callable.
+ * @param {() => number} random Random number generator to assert.
+ * @returns {void}
+ */
 function assertRandom(random) {
   if (typeof random !== 'function') {
     throw new TypeError('random must be a function');
   }
 }
 
+/**
+ * Ensure the provided UUID helper is callable.
+ * @param {() => string} randomUUID UUID generator to assert.
+ * @returns {void}
+ */
 function assertRandomUuid(randomUUID) {
   if (typeof randomUUID !== 'function') {
     throw new TypeError('randomUUID must be a function');
   }
 }
 
+/**
+ * Extract submission data from an incoming Firestore snapshot.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot captured by the trigger.
+ * @returns {Record<string, unknown> | null} Submission payload when available.
+ */
 function getSubmissionData(snapshot) {
   if (!snapshot || typeof snapshot.data !== 'function') {
     return null;
@@ -37,6 +70,11 @@ function getSubmissionData(snapshot) {
   return snapshot.data();
 }
 
+/**
+ * Resolve a function that returns the Firestore server timestamp helper.
+ * @param {{ serverTimestamp: () => FieldValue }} fieldValue FieldValue helper provided to the handler.
+ * @returns {() => FieldValue} Function returning a server timestamp FieldValue.
+ */
 function resolveServerTimestamp(fieldValue) {
   if (fieldValue === AdminFieldValue) {
     return () => AdminFieldValue.serverTimestamp();
@@ -45,10 +83,21 @@ function resolveServerTimestamp(fieldValue) {
   return () => fieldValue.serverTimestamp();
 }
 
+/**
+ * Normalize submission options into an array of strings.
+ * @param {unknown} options Incoming options payload.
+ * @returns {string[]} Normalized options array.
+ */
 function normalizeOptions(options) {
   return Array.isArray(options) ? options : [];
 }
 
+/**
+ * Resolve the author document reference when an author identifier is available.
+ * @param {Firestore} db Firestore instance used to build references.
+ * @param {string | null | undefined} authorId Author identifier supplied by the submission.
+ * @returns {DocumentReference | null} Reference to the author document or null when unavailable.
+ */
 function resolveAuthorRef(db, authorId) {
   if (!authorId || typeof authorId !== 'string') {
     return null;
@@ -60,17 +109,12 @@ function resolveAuthorRef(db, authorId) {
 /**
  * Create the handler that processes new story submissions.
  * @param {object} options Collaborators required by the handler.
- * @param {import('firebase-admin/firestore').Firestore} options.db Firestore instance.
- * @param {{
- *   serverTimestamp: () => import('firebase-admin/firestore').FieldValue,
- *   increment: (value: number) => import('firebase-admin/firestore').FieldValue,
- * }} options.fieldValue FieldValue helper with timestamp and increment helpers.
+ * @param {Firestore} options.db Firestore instance.
+ * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper with timestamp and increment helpers.
  * @param {() => string} options.randomUUID UUID generator.
- * @param {() => number} [options.random=Math.random] Random number generator.
- * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number) => Promise<number>} [options.findAvailablePa
-geNumberFn=defaultFindAvailablePageNumber]
- * Resolver that returns an unused page number.
- * @returns {(snap: *, context: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler.
+ * @param {() => number} [options.random] Random number generator (defaults to Math.random).
+ * @param {(db: Firestore, random?: () => number) => Promise<number>} [options.findAvailablePageNumberFn] Resolver that returns an unused page number. Defaults to defaultFindAvailablePageNumber.
+ * @returns {(snap: FirestoreDocumentSnapshot | null | undefined, context: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler.
  */
 export function createProcessNewStoryHandler({
   db,
