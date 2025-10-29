@@ -71,7 +71,11 @@ function getSubmissionData(snapshot) {
 }
 
 function normalizeOptions(options) {
-  return Array.isArray(options) ? options : [];
+  if (Array.isArray(options)) {
+    return options;
+  }
+
+  return [];
 }
 
 function ensureDocumentReference(reference, message) {

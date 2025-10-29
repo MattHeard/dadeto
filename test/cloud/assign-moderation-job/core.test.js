@@ -30,7 +30,86 @@ const {
   setupAssignModerationJobRoute,
   createAssignModerationJob,
   createHandleAssignModerationJobFromAuth,
+  resolveFirestoreEnvironment,
+  shouldUseCustomFirestoreDependencies,
 } = assignModerationCore;
+
+describe('resolveFirestoreEnvironment', () => {
+  test('returns provided environment when supplied', () => {
+    const provided = { projectId: 'custom' };
+    const getEnv = jest.fn();
+
+    const result = resolveFirestoreEnvironment(provided, getEnv);
+
+    expect(result).toBe(provided);
+    expect(getEnv).not.toHaveBeenCalled();
+  });
+
+  test('delegates to environment getter when override is absent', () => {
+    const derived = { projectId: 'derived' };
+    const getEnv = jest.fn(() => derived);
+
+    const result = resolveFirestoreEnvironment(undefined, getEnv);
+
+    expect(getEnv).toHaveBeenCalledTimes(1);
+    expect(result).toBe(derived);
+  });
+});
+
+describe('shouldUseCustomFirestoreDependencies', () => {
+  test('returns false when defaults are used without overrides', () => {
+    const defaultEnsure = () => {};
+    const defaultGetFirestore = () => {};
+
+    const result = shouldUseCustomFirestoreDependencies(
+      undefined,
+      defaultEnsure,
+      defaultGetFirestore,
+      undefined
+    );
+
+    expect(result).toBe(false);
+  });
+
+  test('returns true when ensure function differs', () => {
+    const defaultEnsure = () => {};
+    const customEnsure = () => {};
+
+    const result = shouldUseCustomFirestoreDependencies(
+      { ensureAppFn: customEnsure },
+      defaultEnsure,
+      () => {},
+      undefined
+    );
+
+    expect(result).toBe(true);
+  });
+
+  test('returns true when getFirestore function differs', () => {
+    const defaultGetFirestore = () => {};
+    const customGetFirestore = () => {};
+
+    const result = shouldUseCustomFirestoreDependencies(
+      { getFirestoreFn: customGetFirestore },
+      () => {},
+      defaultGetFirestore,
+      undefined
+    );
+
+    expect(result).toBe(true);
+  });
+
+  test('returns true when environment override is provided', () => {
+    const result = shouldUseCustomFirestoreDependencies(
+      undefined,
+      () => {},
+      () => {},
+      { projectId: 'custom' }
+    );
+
+    expect(result).toBe(true);
+  });
+});
 
 describe('getAllowedOrigins', () => {
   test('returns production origins for the production environment', () => {
