@@ -6,7 +6,7 @@
  * from the header. Empty values are omitted from the resulting objects.
  */
 
-import { parseCsvLine } from '../utils/csv.js';
+import { parseCsvLine } from './toys-core.js';
 
 /**
  * Convert a multi-row CSV string into a JSON array string.
