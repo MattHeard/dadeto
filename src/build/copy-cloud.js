@@ -1,3 +1,5 @@
+import { promises as fs } from 'fs';
+
 import { createCopyToInfraCore } from '../core/cloud/copy.js';
 import { createAsyncFsAdapters } from './fs.js';
 import {
@@ -10,7 +12,7 @@ const __dirname = getCurrentDirectory(import.meta.url);
 const { projectRoot, srcDir } = resolveProjectDirectories(__dirname);
 
 const pathAdapters = createPathAdapters();
-const { join, resolve } = pathAdapters;
+const { join, resolve, relative } = pathAdapters;
 
 const infraDir = resolve(projectRoot, 'infra');
 const srcCloudDir = resolve(srcDir, 'cloud');
@@ -159,6 +161,10 @@ const getApiKeyCreditCreateDbSource = join(
   'get-api-key-credit',
   'create-db.js'
 );
+const getApiKeyCreditValidationSource = join(
+  srcCoreDir,
+  'validation.js'
+);
 const getApiKeyCreditGcfSource = join(
   srcCloudDir,
   'get-api-key-credit',
@@ -301,6 +307,39 @@ const reportForModerationGcfSource = join(
   srcCloudDir,
   'report-for-moderation',
   'report-for-moderation-gcf.js'
+);
+
+const getApiKeyCreditFunctionDir = join(
+  infraFunctionsDir,
+  'get-api-key-credit'
+);
+const getApiKeyCreditCoreFile = join(
+  getApiKeyCreditFunctionDir,
+  'get-api-key-credit-core.js'
+);
+const getApiKeyCreditValidationTarget = join(
+  getApiKeyCreditFunctionDir,
+  'validation.js'
+);
+const processNewStoryFunctionDir = join(
+  infraFunctionsDir,
+  'process-new-story'
+);
+const processNewStoryCoreFile = join(
+  processNewStoryFunctionDir,
+  'process-new-story-core.js'
+);
+const processNewStoryPageDependencyTarget = join(
+  processNewStoryFunctionDir,
+  'process-new-page-core.js'
+);
+const generateStatsFunctionDir = join(
+  infraFunctionsDir,
+  'generate-stats'
+);
+const generateStatsVerifyAdminFile = join(
+  generateStatsFunctionDir,
+  'verifyAdmin.js'
 );
 
 const adminConfigFunctionDirectories = [
@@ -500,6 +539,10 @@ const individualFileCopies = [
     target: join(infraFunctionsDir, 'get-api-key-credit', 'create-db.js'),
   },
   {
+    source: getApiKeyCreditValidationSource,
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'validation.js'),
+  },
+  {
     source: cloudCoreSource,
     target: join(infraFunctionsDir, 'get-api-key-credit', 'cloud-core.js'),
   },
@@ -696,6 +739,14 @@ const individualFileCopies = [
     ),
   },
   {
+    source: processNewPageCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'process-new-story',
+      'process-new-page-core.js'
+    ),
+  },
+  {
     source: cloudCoreSource,
     target: join(infraFunctionsDir, 'process-new-story', 'cloud-core.js'),
   },
@@ -778,6 +829,14 @@ const individualFileCopies = [
   {
     source: markVariantDirtyVerifyAdminSource,
     target: join(infraFunctionsDir, 'mark-variant-dirty', 'verifyAdmin.js'),
+  },
+  {
+    source: markVariantDirtyVerifyAdminSource,
+    target: join(
+      infraFunctionsDir,
+      'generate-stats',
+      'mark-variant-dirty-verifyAdmin.js'
+    ),
   },
   {
     source: getModerationVariantCoreSource,
@@ -1062,9 +1121,50 @@ const { runCopyToInfra } = createCopyToInfraCore({
   path: pathAdapters,
 });
 
+function formatForLog(targetPath) {
+  return relative(projectRoot, targetPath);
+}
+
+async function rewriteImport(filePath, from, to) {
+  const original = await fs.readFile(filePath, 'utf8');
+
+  if (!original.includes(from)) {
+    return;
+  }
+
+  const updated = original.replaceAll(from, to);
+
+  if (updated === original) {
+    return;
+  }
+
+  await fs.writeFile(filePath, updated);
+  logger.info(
+    `Rewrote ${formatForLog(filePath)} import from "${from}" to "${to}"`
+  );
+}
+
 await runCopyToInfra({
   directoryCopies,
   individualFileCopies,
   io,
   messageLogger: logger,
 });
+
+await Promise.all([
+  rewriteImport(
+    getApiKeyCreditCoreFile,
+    '../../validation.js',
+    './validation.js'
+  ),
+  rewriteImport(
+    processNewStoryCoreFile,
+    '../process-new-page/process-new-page-core.js',
+    './process-new-page-core.js'
+  ),
+  rewriteImport(
+    generateStatsVerifyAdminFile,
+    '../mark-variant-dirty/verifyAdmin.js',
+    './mark-variant-dirty-verifyAdmin.js'
+  ),
+]);
