@@ -1,19 +1,36 @@
 /**
+ * @typedef {object} GoogleAuthLike
+ * @property {() => (string | null | undefined)} getIdToken Returns the cached Google ID token if one exists.
+ */
+
+/**
+ * @typedef {object} AdminTokenActionContext
+ * @property {string} token Token retrieved from the Google auth instance.
+ * @property {() => Promise<object>} getAdminEndpoints Lazily resolves admin endpoints.
+ * @property {import('./core.js').FetchFn} fetchFn Fetch implementation to use for network calls.
+ * @property {(text: string) => void} showMessage Displays validation feedback to the user.
+ */
+
+/**
+ * @callback AdminTokenAction
+ * @param {AdminTokenActionContext} context Contextual helpers passed to the action.
+ * @returns {Promise<void>}
+ */
+
+/**
+ * @typedef {object} AdminTokenActionOptions
+ * @property {GoogleAuthLike} googleAuth Google auth helper that yields the current ID token.
+ * @property {() => Promise<object>} getAdminEndpointsFn Lazily loads the admin endpoints.
+ * @property {import('./core.js').FetchFn} fetchFn Fetch implementation for network requests.
+ * @property {(text: string) => void} showMessage Renders validation feedback in the UI.
+ * @property {string} missingTokenMessage Message displayed when the token is unavailable.
+ * @property {AdminTokenAction} action Action to invoke once dependencies are validated.
+ */
+
+/**
  * Validate admin token action dependencies and produce a handler.
- * @param {{
- *   googleAuth: { getIdToken: () => string | null | undefined },
- *   getAdminEndpointsFn: () => Promise<object>,
- *   fetchFn: import('./core.js').FetchFn,
- *   showMessage: (text: string) => void,
- *   missingTokenMessage: string,
- *   action: ({
- *     token: string,
- *     getAdminEndpoints: () => Promise<object>,
- *     fetchFn: import('./core.js').FetchFn,
- *     showMessage: (text: string) => void,
- *   }) => Promise<void>,
- * }} options - Dependencies and configuration for the admin action.
- * @returns {() => Promise<void>} Handler guarded by the shared validation logic.
+ * @param {AdminTokenActionOptions} options Dependencies and configuration for the admin action.
+ * @returns {AdminTokenAction} Handler guarded by the shared validation logic.
  */
 export function createAdminTokenAction({
   googleAuth,
