@@ -132,9 +132,15 @@ export function createBucketFileRemover({
  * @returns {string} Relative path to the rendered HTML file.
  */
 export function buildVariantPath({ page, variantData }) {
-  const pageNumber = typeof page?.number === 'number' ? page.number : '';
-  const variantName =
-    typeof variantData?.name === 'string' ? variantData.name : '';
+  let pageNumber = '';
+  if (typeof page?.number === 'number') {
+    pageNumber = page.number;
+  }
+
+  let variantName = '';
+  if (typeof variantData?.name === 'string') {
+    variantName = variantData.name;
+  }
 
   return `p/${pageNumber}${variantName}.html`;
 }
