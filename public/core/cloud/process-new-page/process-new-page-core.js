@@ -52,6 +52,13 @@ function getBatch(database) {
   return database.batch();
 }
 
+/**
+ * Validate that the provided FieldValue helper exposes the expected methods.
+ * @param {{
+ *   serverTimestamp: () => unknown,
+ *   increment: (value: number) => unknown,
+ * } | typeof AdminFieldValue} fieldValue FieldValue helper used to write metadata.
+ */
 function assertFieldValue(fieldValue) {
   if (!fieldValue || typeof fieldValue.serverTimestamp !== 'function') {
     throw new TypeError('fieldValue.serverTimestamp must be a function');
@@ -62,12 +69,22 @@ function assertFieldValue(fieldValue) {
   }
 }
 
+/**
+ * Ensure a UUID generator function is provided.
+ * @param {() => string} randomUUID Function that returns a UUID string.
+ */
 function assertRandomUuid(randomUUID) {
   if (typeof randomUUID !== 'function') {
     throw new TypeError('randomUUID must be a function');
   }
 }
 
+/**
+ * Read the submission payload from a Firestore snapshot.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData> | null | undefined} snapshot
+ *   Document snapshot containing the submission data.
+ * @returns {import('firebase-admin/firestore').DocumentData | null} Parsed submission data or null when unavailable.
+ */
 function getSubmissionData(snapshot) {
   if (!snapshot || typeof snapshot.data !== 'function') {
     return null;
@@ -76,6 +93,11 @@ function getSubmissionData(snapshot) {
   return snapshot.data();
 }
 
+/**
+ * Normalize the submitted options list into an array.
+ * @param {unknown} options Options payload received from the submission.
+ * @returns {string[]} Normalized list of option strings.
+ */
 function normalizeOptions(options) {
   if (Array.isArray(options)) {
     return options;
@@ -84,6 +106,14 @@ function normalizeOptions(options) {
   return [];
 }
 
+/**
+ * Validate that a Firestore reference exposes collection helpers.
+ * @template T
+ * @param {import('firebase-admin/firestore').DocumentReference<T> | null | undefined} reference
+ *   Firestore reference to validate.
+ * @param {string} message Error message to surface when validation fails.
+ * @returns {import('firebase-admin/firestore').DocumentReference<T>} The validated Firestore reference.
+ */
 function ensureDocumentReference(reference, message) {
   if (!reference || typeof reference.collection !== 'function') {
     throw new TypeError(message);
@@ -92,6 +122,13 @@ function ensureDocumentReference(reference, message) {
   return reference;
 }
 
+/**
+ * Attempt to update a Firestore reference when supported.
+ * @param {{ update: (data: Record<string, unknown>) => Promise<unknown> } | null | undefined} target
+ *   Firestore reference that may expose an update method.
+ * @param {Record<string, unknown>} payload Data to persist on the reference.
+ * @returns {Promise<unknown>} Result of the update call or a resolved promise when unavailable.
+ */
 function ensureUpdate(target, payload) {
   if (target && typeof target.update === 'function') {
     return target.update(payload);
@@ -126,6 +163,16 @@ export async function findAvailablePageNumber(db, random = Math.random, depth = 
   return findAvailablePageNumber(db, random, depth + 1);
 }
 
+/**
+ * Resolve the related Firestore references for an option document.
+ * @param {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null | undefined} optionRef
+ *   Document reference for the incoming option.
+ * @returns {{
+ *   variantRef: import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null,
+ *   pageRef: import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null,
+ *   storyRef: import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null,
+ * }} Collection of related Firestore references.
+ */
 function resolveStoryRefFromOption(optionRef) {
   if (!optionRef) {
     return null;
@@ -138,6 +185,13 @@ function resolveStoryRefFromOption(optionRef) {
   return { variantRef, pageRef, storyRef };
 }
 
+/**
+ * Confirm that an option target points to a page document reference.
+ * @param {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null | undefined} targetPage
+ *   Reference stored on the option document.
+ * @returns {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null}
+ *   A page reference when valid, otherwise null.
+ */
 function resolvePageFromTarget(targetPage) {
   if (targetPage && typeof targetPage.get === 'function') {
     return targetPage;
@@ -146,6 +200,13 @@ function resolvePageFromTarget(targetPage) {
   return null;
 }
 
+/**
+ * Build a reference to the story statistics document.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used for lookups.
+ * @param {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} storyRef
+ *   Story reference whose identifier is used to build the stats path.
+ * @returns {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} Stats document reference.
+ */
 function resolveStoryStatsRef(db, storyRef) {
   if (!storyRef || typeof storyRef.id !== 'string') {
     throw new TypeError('storyRef must have an id');
@@ -158,6 +219,13 @@ function resolveStoryStatsRef(db, storyRef) {
   return db.doc(`storyStats/${storyRef.id}`);
 }
 
+/**
+ * Build a reference to an author document when an identifier is provided.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore instance used for lookups.
+ * @param {string | null | undefined} authorId Identifier for the author.
+ * @returns {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null}
+ *   Firestore document reference for the author or null when unavailable.
+ */
 function resolveAuthorRef(db, authorId) {
   if (!authorId || typeof authorId !== 'string') {
     return null;
@@ -170,6 +238,12 @@ function resolveAuthorRef(db, authorId) {
   return db.doc(`authors/${authorId}`);
 }
 
+/**
+ * Resolve the variants collection for the provided page reference.
+ * @param {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} pageRef
+ *   Page reference that owns the variants collection.
+ * @returns {import('firebase-admin/firestore').CollectionReference<import('firebase-admin/firestore').DocumentData>} Collection of variants.
+ */
 function getVariantCollection(pageRef) {
   if (!pageRef || typeof pageRef.collection !== 'function') {
     throw new TypeError('pageRef.collection must be a function');
@@ -178,6 +252,11 @@ function getVariantCollection(pageRef) {
   return pageRef.collection('variants');
 }
 
+/**
+ * Resolve a server timestamp factory from the provided FieldValue helper.
+ * @param {{ serverTimestamp: () => unknown } | typeof AdminFieldValue} fieldValue FieldValue helper supplied to the handler.
+ * @returns {() => unknown} Function that returns a Firestore server timestamp sentinel value.
+ */
 function resolveServerTimestamp(fieldValue) {
   if (fieldValue === AdminFieldValue) {
     return () => AdminFieldValue.serverTimestamp();
@@ -196,11 +275,11 @@ function resolveServerTimestamp(fieldValue) {
  * }} options.fieldValue FieldValue helper with server timestamp and increment.
  * @param {() => string} options.randomUUID UUID generator.
  * @param {() => number} [options.random=Math.random] Random number generator.
- * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number) => Promise<number>} [options.findAvailablePa
-geNumberFn=findAvailablePageNumber]
- * Finder that returns an unused page number.
+ * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} [options.findAvailablePageNumberFn=findAvailablePageNumber]
+ *   Finder that returns an unused page number.
  * @param {(name: string) => string} [options.incrementVariantNameFn=incrementVariantName] Helper that increments variant names.
- * @returns {(snap: *, context: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler.
+ * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>}
+ *   Firestore trigger handler.
  */
 export function createProcessNewPageHandler({
   db,
