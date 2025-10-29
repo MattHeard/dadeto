@@ -113,6 +113,11 @@ const generateStatsCoreSource = join(
   'generate-stats',
   'generate-stats-core.js'
 );
+const generateStatsVerifyAdminSource = join(
+  srcCoreCloudDir,
+  'generate-stats',
+  'verifyAdmin.js'
+);
 
 const submitNewPageCoreSource = join(
   srcCoreCloudDir,
@@ -148,6 +153,11 @@ const getApiKeyCreditCoreSource = join(
   srcCoreCloudDir,
   'get-api-key-credit',
   'get-api-key-credit-core.js'
+);
+const getApiKeyCreditCreateDbSource = join(
+  srcCoreCloudDir,
+  'get-api-key-credit',
+  'create-db.js'
 );
 const getApiKeyCreditGcfSource = join(
   srcCloudDir,
@@ -363,19 +373,11 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'assign-moderation-job',
-      'common-core.js'
-    ),
+    target: join(infraFunctionsDir, 'assign-moderation-job', 'common-core.js'),
   },
   {
     source: commonGcfSource,
-    target: join(
-      infraFunctionsDir,
-      'assign-moderation-job',
-      'common-gcf.js'
-    ),
+    target: join(infraFunctionsDir, 'assign-moderation-job', 'common-gcf.js'),
   },
   {
     source: assignModerationJobGcfSource,
@@ -387,11 +389,7 @@ const individualFileCopies = [
   },
   {
     source: generateStatsGcfSource,
-    target: join(
-      infraFunctionsDir,
-      'generate-stats',
-      'generate-stats-gcf.js'
-    ),
+    target: join(infraFunctionsDir, 'generate-stats', 'generate-stats-gcf.js'),
   },
   {
     source: generateStatsCoreSource,
@@ -404,12 +402,16 @@ const individualFileCopies = [
     ),
   },
   {
+    source: generateStatsVerifyAdminSource,
+    target: join(infraDir, 'core', 'cloud', 'generate-stats', 'verifyAdmin.js'),
+  },
+  {
     source: generateStatsCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'generate-stats',
-      'generate-stats-core.js'
-    ),
+    target: join(infraFunctionsDir, 'generate-stats', 'generate-stats-core.js'),
+  },
+  {
+    source: generateStatsVerifyAdminSource,
+    target: join(infraFunctionsDir, 'generate-stats', 'verifyAdmin.js'),
   },
   {
     source: cloudCoreSource,
@@ -443,13 +445,7 @@ const individualFileCopies = [
   },
   {
     source: submitNewPageHelpersSource,
-    target: join(
-      infraDir,
-      'core',
-      'cloud',
-      'submit-new-page',
-      'helpers.js'
-    ),
+    target: join(infraDir, 'core', 'cloud', 'submit-new-page', 'helpers.js'),
   },
   {
     source: submitNewPageHelpersSource,
@@ -482,6 +478,16 @@ const individualFileCopies = [
     ),
   },
   {
+    source: getApiKeyCreditCreateDbSource,
+    target: join(
+      infraDir,
+      'core',
+      'cloud',
+      'get-api-key-credit',
+      'create-db.js'
+    ),
+  },
+  {
     source: getApiKeyCreditCoreSource,
     target: join(
       infraFunctionsDir,
@@ -490,28 +496,20 @@ const individualFileCopies = [
     ),
   },
   {
+    source: getApiKeyCreditCreateDbSource,
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'create-db.js'),
+  },
+  {
     source: cloudCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'get-api-key-credit',
-      'cloud-core.js'
-    ),
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'cloud-core.js'),
   },
   {
     source: commonCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'get-api-key-credit',
-      'common-core.js'
-    ),
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'common-core.js'),
   },
   {
     source: commonGcfSource,
-    target: join(
-      infraFunctionsDir,
-      'get-api-key-credit',
-      'common-gcf.js'
-    ),
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'common-gcf.js'),
   },
   {
     source: getApiKeyCreditGcfSource,
@@ -801,27 +799,15 @@ const individualFileCopies = [
   },
   {
     source: cloudCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'get-moderation-variant',
-      'cloud-core.js'
-    ),
+    target: join(infraFunctionsDir, 'get-moderation-variant', 'cloud-core.js'),
   },
   {
     source: commonCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'get-moderation-variant',
-      'common-core.js'
-    ),
+    target: join(infraFunctionsDir, 'get-moderation-variant', 'common-core.js'),
   },
   {
     source: commonGcfSource,
-    target: join(
-      infraFunctionsDir,
-      'get-moderation-variant',
-      'common-gcf.js'
-    ),
+    target: join(infraFunctionsDir, 'get-moderation-variant', 'common-gcf.js'),
   },
   {
     source: getModerationVariantGcfSource,
@@ -885,11 +871,7 @@ const individualFileCopies = [
   },
   {
     source: renderContentsHtmlSnippetsSource,
-    target: join(
-      infraFunctionsDir,
-      'render-contents',
-      'htmlSnippets.js'
-    ),
+    target: join(infraFunctionsDir, 'render-contents', 'htmlSnippets.js'),
   },
   {
     source: renderVariantCoreSource,
@@ -903,11 +885,7 @@ const individualFileCopies = [
   },
   {
     source: renderVariantCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'render-variant',
-      'render-variant-core.js'
-    ),
+    target: join(infraFunctionsDir, 'render-variant', 'render-variant-core.js'),
   },
   {
     source: cloudCoreSource,
@@ -923,11 +901,7 @@ const individualFileCopies = [
   },
   {
     source: renderVariantGcfSource,
-    target: join(
-      infraFunctionsDir,
-      'render-variant',
-      'render-variant-gcf.js'
-    ),
+    target: join(infraFunctionsDir, 'render-variant', 'render-variant-gcf.js'),
   },
   {
     source: renderVariantBuildAltsSource,
@@ -941,47 +915,23 @@ const individualFileCopies = [
   },
   {
     source: renderVariantBuildAltsSource,
-    target: join(
-      infraFunctionsDir,
-      'render-variant',
-      'buildAltsHtml.js'
-    ),
+    target: join(infraFunctionsDir, 'render-variant', 'buildAltsHtml.js'),
   },
   {
     source: renderVariantBuildHtmlSource,
-    target: join(
-      infraDir,
-      'core',
-      'cloud',
-      'render-variant',
-      'buildHtml.js'
-    ),
+    target: join(infraDir, 'core', 'cloud', 'render-variant', 'buildHtml.js'),
   },
   {
     source: renderVariantBuildHtmlSource,
-    target: join(
-      infraFunctionsDir,
-      'render-variant',
-      'buildHtml.js'
-    ),
+    target: join(infraFunctionsDir, 'render-variant', 'buildHtml.js'),
   },
   {
     source: renderVariantVisibilitySource,
-    target: join(
-      infraDir,
-      'core',
-      'cloud',
-      'render-variant',
-      'visibility.js'
-    ),
+    target: join(infraDir, 'core', 'cloud', 'render-variant', 'visibility.js'),
   },
   {
     source: renderVariantVisibilitySource,
-    target: join(
-      infraFunctionsDir,
-      'render-variant',
-      'visibility.js'
-    ),
+    target: join(infraFunctionsDir, 'render-variant', 'visibility.js'),
   },
   {
     source: reportForModerationCoreSource,
@@ -1083,27 +1033,15 @@ const individualFileCopies = [
   },
   {
     source: cloudCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'submit-new-story',
-      'cloud-core.js'
-    ),
+    target: join(infraFunctionsDir, 'submit-new-story', 'cloud-core.js'),
   },
   {
     source: commonCoreSource,
-    target: join(
-      infraFunctionsDir,
-      'submit-new-story',
-      'common-core.js'
-    ),
+    target: join(infraFunctionsDir, 'submit-new-story', 'common-core.js'),
   },
   {
     source: commonGcfSource,
-    target: join(
-      infraFunctionsDir,
-      'submit-new-story',
-      'common-gcf.js'
-    ),
+    target: join(infraFunctionsDir, 'submit-new-story', 'common-gcf.js'),
   },
   ...adminConfigFunctionCopies,
   ...browserFileCopies,
