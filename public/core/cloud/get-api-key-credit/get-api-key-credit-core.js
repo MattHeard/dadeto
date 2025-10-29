@@ -1,4 +1,4 @@
-import { createDb } from '../get-api-key-credit-v2/create-db.js';
+import { createDb } from './create-db.js';
 import { isValidString } from '../../validation.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'Method Not Allowed' };
