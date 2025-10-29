@@ -6,7 +6,7 @@ import {
 } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createAuthedFetch } from './authedFetch.js';
-import { createGetModerationEndpointsFromStaticConfig } from '../core/browser/moderation/endpoints.js';
+import { createGetModerationEndpointsFromStaticConfig } from './moderation/endpoints.js';
 
 const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
   loadStaticConfig,
