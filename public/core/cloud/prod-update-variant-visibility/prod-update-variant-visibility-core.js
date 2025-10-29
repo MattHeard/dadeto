@@ -1,13 +1,27 @@
+/**
+ * Ensure the provided Firestore instance exposes the expected helpers.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore client to validate.
+ */
 function assertDb(db) {
   if (!db || typeof db.doc !== 'function') {
     throw new TypeError('db must expose a doc helper');
   }
 }
 
+/**
+ * Validate that the supplied value behaves like a Firestore document snapshot.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot | null | undefined} snapshot Value to verify.
+ * @returns {boolean} True when the snapshot exposes the Firestore getter API.
+ */
 function assertDocumentSnapshot(snapshot) {
-  return snapshot && typeof snapshot.get === 'function';
+  return Boolean(snapshot && typeof snapshot.get === 'function');
 }
 
+/**
+ * Extract the underlying data from a snapshot when it is available.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot | null | undefined} snapshot Snapshot returned by a trigger.
+ * @returns {Record<string, unknown> | null} Stored document data, if present.
+ */
 function getSnapshotData(snapshot) {
   if (!snapshot || typeof snapshot.data !== 'function') {
     return null;
@@ -16,6 +30,11 @@ function getSnapshotData(snapshot) {
   return snapshot.data();
 }
 
+/**
+ * Cast nullable numeric values into a usable number for calculations.
+ * @param {number | null | undefined} value Possible numeric input.
+ * @returns {number} Normalized number, defaulting to zero when absent.
+ */
 function toNumber(value) {
   return typeof value === 'number' ? value : 0;
 }
@@ -60,9 +79,8 @@ export function calculateUpdatedVisibility(variantData, newRating) {
 
 /**
  * Build the handler that updates variant visibility in production.
- * @param {object} options Collaborators required by the handler.
- * @param {import('firebase-admin/firestore').Firestore} options.db Firestore instance.
- * @returns {(snap: *) => Promise<null>} Firestore trigger handler.
+ * @param {{ db: import('firebase-admin/firestore').Firestore }} options Collaborators required by the handler.
+ * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Firestore trigger handler.
  */
 export function createProdUpdateVariantVisibilityHandler({ db }) {
   assertDb(db);
@@ -92,7 +110,10 @@ export function createProdUpdateVariantVisibilityHandler({ db }) {
     const variantData = variantSnap.data() ?? {};
     const newRating = isApproved ? 1 : 0;
 
-    const updatedVisibility = calculateUpdatedVisibility(variantData, newRating);
+    const updatedVisibility = calculateUpdatedVisibility(
+      variantData,
+      newRating
+    );
     const moderationRatingCount = toNumber(variantData.moderationRatingCount);
     const moderatorReputationSum = toNumber(variantData.moderatorReputationSum);
 
