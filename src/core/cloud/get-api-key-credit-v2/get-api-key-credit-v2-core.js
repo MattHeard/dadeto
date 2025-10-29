@@ -7,6 +7,17 @@ export { productionOrigins };
 const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
 
 /**
+ * Result of executing a UUID capturing regex.
+ * @typedef {(
+ *   Array<string> & {
+ *     index: number,
+ *     input: string,
+ *     groups?: Record<string, string | undefined>,
+ *   }
+ * )} RegExpExecArray
+ */
+
+/**
  * Attempt to execute the UUID path pattern against a value.
  * @param {unknown} value Value representing the request path.
  * @returns {RegExpExecArray|null} Regex match result when successful.
