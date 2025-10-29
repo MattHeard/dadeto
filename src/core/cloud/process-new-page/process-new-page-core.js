@@ -38,6 +38,12 @@ function assertRandom(random) {
   }
 }
 
+/**
+ * Retrieve a new write batch from the provided Firestore-like database.
+ * @param {{ batch: () => import('firebase-admin/firestore').WriteBatch }} database Database reference
+ * that exposes a {@link import('firebase-admin/firestore').WriteBatch} factory.
+ * @returns {import('firebase-admin/firestore').WriteBatch} Newly created write batch.
+ */
 function getBatch(database) {
   if (!database || typeof database.batch !== 'function') {
     throw new TypeError('db must provide a batch method');
