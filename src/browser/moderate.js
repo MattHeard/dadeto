@@ -6,40 +6,14 @@ import {
 } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createAuthedFetch } from './authedFetch.js';
+import { createGetModerationEndpointsFromStaticConfig } from '../core/browser/moderation/endpoints.js';
 
-const DEFAULT_ENDPOINTS = {
-  getModerationVariantUrl:
-    'https://europe-west1-irien-465710.cloudfunctions.net/prod-get-moderation-variant',
-  assignModerationJobUrl:
-    'https://europe-west1-irien-465710.cloudfunctions.net/prod-assign-moderation-job',
-  submitModerationRatingUrl:
-    'https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-moderation-rating',
-};
-
-let endpointsPromise;
-
-/**
- * Resolve moderation endpoints from the static config with production fallbacks.
- * @returns {Promise<{getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string}>} Promise containing moderation endpoint URLs.
- */
-async function getModerationEndpoints() {
-  if (!endpointsPromise) {
-    endpointsPromise = loadStaticConfig()
-      .then(config => ({
-        getModerationVariantUrl:
-          config?.getModerationVariantUrl ??
-          DEFAULT_ENDPOINTS.getModerationVariantUrl,
-        assignModerationJobUrl:
-          config?.assignModerationJobUrl ??
-          DEFAULT_ENDPOINTS.assignModerationJobUrl,
-        submitModerationRatingUrl:
-          config?.submitModerationRatingUrl ??
-          DEFAULT_ENDPOINTS.submitModerationRatingUrl,
-      }))
-      .catch(() => ({ ...DEFAULT_ENDPOINTS }));
+const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
+  loadStaticConfig,
+  {
+    logger: console,
   }
-  return endpointsPromise;
-}
+);
 
 /**
  * Enable or disable moderation action buttons.
