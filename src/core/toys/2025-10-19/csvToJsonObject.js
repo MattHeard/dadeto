@@ -5,7 +5,7 @@
  * string. Empty values are omitted from the result.
  */
 
-import { parseCsvLine } from '../utils/csv.js';
+import { parseCsvLine } from './toys-core.js';
 
 /**
  * Throw a descriptive error when a CSV precondition fails.
