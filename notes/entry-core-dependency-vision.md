@@ -1,88 +1,23 @@
 # Entry/Core Dependency Injection Vision
 
 ## Architectural Goals
-- Every deployment surface (Cloud Functions, CDN-hosted pages, admin tooling) should expose a single entry module that imports third-party or platform-specific dependencies and passes them into a pure core module.
-- Core modules live alongside their entry points, export a single factory or handler function, and depend only on the injected environment so they remain unit-testable and context-agnostic.
-- Dependency "bundles" such as `gcf` objects or `browser` maps are the only approved way for core code to talk to Firebase, Express, DOM APIs, or other side-effectful services.
-- Whenever practical, pass dependency *factories* (e.g., `gcf`, `browser`) so the core module controls when the environment is materialized and can defer heavy setup until it is needed.
+- Every deployment surface (Cloud Functions, CDN-hosted pages, admin tooling) exposes a single entry module that gathers third-party dependencies and hands them to a pure `*-core.js` module.
+- Core modules live alongside their entry points, export factories or handlers, and stay side-effect free by depending only on injected bundles.
+- Dependency containers (`gcf`, `browser`, etc.) are the sanctioned gateway to Firebase, Express, DOM APIs, and other mutable services; prefer factories so core logic decides when environments are realized.
 
-## Current Progress
-- **Cloud Functions** already conform to the pattern. For example, `src/cloud/get-moderation-variant/index.js` imports Google Cloud dependencies from `get-moderation-variant-gcf.js`, prepares the Firebase + Express environment, and then delegates all logic to factories defined in `get-moderation-variant-core.js`.
-- The build pipeline copies both bridge and core modules for each function (see `src/build/copy-cloud.js`) so the deployment artifacts stay aligned with source structure.
-- **Browser entry points** (e.g. `src/browser/main.js`) have the right separation of concerns conceptually—runtime wiring is handled in the entry file, while behavior is sourced from `src/core/browser/*` modules such as `data.js`, `audio-controls.js`, and `beta.js`. The entry file constructs a dedicated `createEnv` factory so the core layer can request DOM, randomization, and storage helpers lazily instead of capturing globals upfront.
-- Supporting bridge utilities already follow the same pattern. `src/browser/loadStaticConfig.js` injects `fetch` and logging facades into `createLoadStaticConfig`, keeping the pure loader isolated from the browser API surface.
-- The browser data loader now consumes an explicit `BlogDataDependencies` bundle, letting `src/browser/main.js` pass its fetch + logger wiring as a single injected object.
+## Completed Work
+- Cloud Functions now follow the bridge/core split. Example: `src/cloud/get-moderation-variant/index.js` imports its Firebase + Express wiring from `get-moderation-variant-gcf.js` and delegates behavior to `get-moderation-variant-core.js`.
+- The cloud copy pipeline (`src/build/copy-cloud.js`) packages both bridge and core modules into the Terraform build artifacts so deployments stay in sync with source.
+- Supporting utilities such as `src/browser/loadStaticConfig.js` already inject their external dependencies rather than importing globals, and data controllers accept dependency bundles.
 
-## High-Level Changes to Pursue
-1. **Formalize Browser Bridges**
-   - Introduce explicit `*-browser.js` bridge files that gather DOM, storage, and fetch dependencies before invoking a `*-core.js` module.
-   - Update existing pages (`public/blog/index.html`, Dendrite static pages) so each script tag points at the new bridge file instead of directly importing scattered helpers.
-2. **Unify Dependency Containers**
-   - Define a shared contract for bridge objects (`gcf`, `browser`) with documented shape via JSDoc typedefs in `src/core/types.js`.
-   - Replace ad-hoc imports inside core modules with injected utilities. For example, refactor `src/core/browser/data.js` to accept `{ fetch, loggers, storage }` rather than importing `fetch` or `localStorage` globally.
-3. **Strengthen Testing Hooks**
-   - Provide factory exports from each core module that accept a dependency bundle and return the operational handler. Example: `export function createHandleGetModerationVariant({ gcf }) { ... }`.
-   - Ensure Jest suites instantiate these factories with mock bundles to keep tests isolated from Firebase/DOM.
+## Outstanding Work
+- Browser entry files like `src/browser/main.js` still bootstrap DOM interactions directly; introduce explicit `*-browser.js` bridge modules and update HTML entry points to load them.
+- Define shared dependency bundle contracts (for example via JSDoc typedefs in `src/core/types.js`) so core modules consume consistent shapes across browser and cloud surfaces.
+- Refactor remaining core modules to remove direct global imports (`fetch`, `document`, etc.) in favor of injected bundles, then add lint/codemod enforcement to guard the boundary.
+- Update developer documentation (`README.md`, `CLAUDE.md`, onboarding notes) once the bridge naming and bundle contracts settle.
 
-## Concrete Examples
-
-```js
-// src/cloud/example-function/index.js
-import { gcf } from './example-function-gcf.js';
-import { registerExampleFunction } from './example-function-core.js';
-
-export const exampleFunction = registerExampleFunction(gcf);
-```
-
-```js
-// src/cloud/example-function-core.js
-export function registerExampleFunction(gcf) {
-  const { functions, express } = gcf();
-  const app = express();
-
-  app.get('/', (req, res) => {
-    res.send('hello from the injected world');
-  });
-
-  return functions.https.onRequest(app);
-}
-```
-
-```js
-// src/browser/example-page-browser.js
-import { browser } from './browser-dependencies.js';
-import { createExamplePage } from '../core/browser/example-page-core.js';
-
-createExamplePage(browser);
-```
-
-```js
-// src/core/browser/example-page-core.js
-export function createExamplePage(browser) {
-  const { dom, fetch, storage } = browser();
-
-  // use injected dependencies instead of globals
-  fetch('/api/example')
-    .then((response) => response.json())
-    .then((data) => {
-      storage.setItem('example-data', JSON.stringify(data));
-      dom.querySelector('#example').textContent = data.message;
-    });
-}
-```
-
-```js
-// src/browser/browser-dependencies.js
-export function browser() {
-  return {
-    dom: document,
-    fetch,
-    storage: window.localStorage,
-  };
-}
-```
-
-## Next Steps
-- Audit every existing entry file under `src/cloud/*/index.js` and `src/browser/*.js` to document the dependencies they pass so the `*-core.js` layer can expose a consistent signature.
-- Update developer docs (e.g. `README.md`, `CLAUDE.md`) once the bridge/core naming convention is standardized.
-- Add lint rules or codemods that flag direct third-party imports inside `src/core/**` to enforce dependency injection over time.
+## Immediate Next Steps
+1. Catalogue the dependencies each browser entry currently wires up and sketch the corresponding bridge module structure.
+2. Prototype one page (e.g. the main blog entry) using a `*-browser.js` bridge and confirm generated bundles keep working.
+3. Draft shared typedefs and circulate them with maintainers before rolling the refactor across the rest of the browser code.
+4. Plan lint enforcement (custom ESLint rule or codemod) after the initial bridge rollout to prevent regressions.
