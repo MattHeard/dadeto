@@ -28,6 +28,10 @@ export function incrementVariantName(name) {
   return 'a'.repeat(name.length + 1);
 }
 
+/**
+ * Ensure the provided random generator behaves like Math.random.
+ * @param {() => number} random Function used to generate pseudo-random numbers.
+ */
 function assertRandom(random) {
   if (typeof random !== 'function') {
     throw new TypeError('random must be a function');
