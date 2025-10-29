@@ -1,11 +1,56 @@
+/**
+ * @typedef {object} SubmitNewStoryRequest
+ * @property {string} [method] - HTTP method supplied by the caller.
+ * @property {Record<string, unknown>} [body] - Parsed request payload when available.
+ * @property {(name: string) => string | undefined} [get] - Express-style header accessor.
+ * @property {Record<string, string | string[]>} [headers] - Raw header bag for non-Express environments.
+ */
+
+/**
+ * @typedef {object} SubmissionRecord
+ * @property {string} title - Submitted story title.
+ * @property {string} content - Story content body.
+ * @property {string} author - Display author name supplied by the client.
+ * @property {string | null} authorId - Authenticated user identifier when available.
+ * @property {string[]} options - Optional poll choices included with the story.
+ * @property {unknown} createdAt - Timestamp describing when the submission was received.
+ */
+
+/**
+ * @typedef {{ status: number, body?: unknown }} HttpResponse
+ */
+
+/**
+ * @typedef {object} SubmitNewStoryDependencies
+ * @property {(token: string) => Promise<{ uid?: string | undefined }>} verifyIdToken - Validates an identity token and returns decoded claims.
+ * @property {(id: string, submission: SubmissionRecord) => Promise<void>} saveSubmission - Persists a submission under the provided identifier.
+ * @property {() => string} randomUUID - Generates a unique identifier for a submission.
+ * @property {() => unknown} getServerTimestamp - Supplies a server-side timestamp representation.
+ */
+
+/**
+ * Standard response returned when a non-POST request is received.
+ * @type {HttpResponse}
+ */
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 
+/**
+ * Ensure the provided candidate is a callable dependency.
+ * @param {unknown} candidate - Dependency instance to validate.
+ * @param {string} name - Human-readable name of the dependency for error messages.
+ * @throws {TypeError} Thrown when the candidate is not a function.
+ */
 function assertFunction(candidate, name) {
   if (typeof candidate !== 'function') {
     throw new TypeError(`${name} must be a function`);
   }
 }
 
+/**
+ * Normalize an incoming HTTP method to its uppercase representation.
+ * @param {unknown} method - Incoming HTTP method value.
+ * @returns {string} Uppercase HTTP method or an empty string when invalid.
+ */
 function normalizeMethod(method) {
   if (typeof method !== 'string') {
     return '';
@@ -14,6 +59,11 @@ function normalizeMethod(method) {
   return method.toUpperCase();
 }
 
+/**
+ * Retrieve the Authorization header from an incoming request object.
+ * @param {SubmitNewStoryRequest | undefined} request - Express or plain-object request instance.
+ * @returns {string | null} The header value, or null when absent.
+ */
 function getAuthorizationHeader(request) {
   if (request && typeof request.get === 'function') {
     const header = request.get('Authorization') ?? request.get('authorization');
@@ -39,6 +89,11 @@ function getAuthorizationHeader(request) {
   return null;
 }
 
+/**
+ * Extract a bearer token from an Authorization header.
+ * @param {unknown} header - Authorization header value.
+ * @returns {string | null} Bearer token value when present.
+ */
 function extractBearerToken(header) {
   if (typeof header !== 'string') {
     return null;
@@ -49,6 +104,12 @@ function extractBearerToken(header) {
   return match ? match[1] : null;
 }
 
+/**
+ * Normalize a textual input into a trimmed string bounded by the provided length.
+ * @param {unknown} value - Raw value supplied by the client.
+ * @param {number} maxLength - Maximum number of characters allowed in the normalized result.
+ * @returns {string} Normalized string respecting the requested length.
+ */
 function normalizeString(value, maxLength) {
   if (typeof value !== 'string') {
     value = value === undefined || value === null ? '' : String(value);
@@ -57,12 +118,24 @@ function normalizeString(value, maxLength) {
   return value.trim().slice(0, maxLength);
 }
 
+/**
+ * Normalize content by coercing to string, harmonizing newlines, and truncating.
+ * @param {unknown} value - Submitted content value.
+ * @param {number} maxLength - Maximum number of characters allowed.
+ * @returns {string} Content ready for persistence.
+ */
 function normalizeContent(value, maxLength) {
   const normalized = typeof value === 'string' ? value : String(value ?? '');
 
   return normalized.replace(/\r\n?/g, '\n').slice(0, maxLength);
 }
 
+/**
+ * Gather optional poll choices from the incoming request body.
+ * @param {Record<string, unknown> | undefined} body - Request body containing poll options.
+ * @param {number} maxLength - Maximum number of characters per option.
+ * @returns {string[]} Normalized non-empty poll options.
+ */
 function collectOptions(body, maxLength) {
   const options = [];
 
@@ -84,6 +157,12 @@ function collectOptions(body, maxLength) {
   return options;
 }
 
+/**
+ * Resolve the authenticated author identifier from a request and verification function.
+ * @param {SubmitNewStoryRequest | undefined} request - Request potentially carrying an identity token.
+ * @param {SubmitNewStoryDependencies['verifyIdToken']} verifyIdToken - Token verification dependency.
+ * @returns {Promise<string | null>} Resolved author identifier when verification succeeds.
+ */
 async function resolveAuthorId(request, verifyIdToken) {
   const header = getAuthorizationHeader(request);
   const token = extractBearerToken(header);
@@ -105,10 +184,23 @@ async function resolveAuthorId(request, verifyIdToken) {
   return null;
 }
 
+/**
+ * Create a minimal HTTP response envelope.
+ * @param {number} status - HTTP status code to emit.
+ * @param {unknown} body - Response body payload.
+ * @returns {HttpResponse} HTTP response envelope.
+ */
 function createResponse(status, body) {
   return { status, body };
 }
 
+/**
+ * Build CORS configuration for the submit-new-story endpoint.
+ * @param {object} config - CORS configuration values.
+ * @param {string[]} [config.allowedOrigins] - Whitelisted origins permitted to access the endpoint.
+ * @param {string[]} [config.methods] - Allowed HTTP methods for the route. Defaults to ['POST'].
+ * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }} Express-compatible CORS options.
+ */
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
   const origins = Array.isArray(allowedOrigins) ? allowedOrigins : [];
 
@@ -124,6 +216,13 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
   };
 }
 
+/**
+ * Produce an Express error handler that converts CORS denials into structured responses.
+ * @param {object} [options] - Overrides for the generated error handler. Defaults to an object emitting a 403 response.
+ * @param {number} [options.status] - Status code to use when the origin is rejected. Defaults to 403.
+ * @param {unknown} [options.body] - JSON payload sent on origin rejection. Defaults to { error: 'Origin not allowed' }.
+ * @returns {(err: unknown, req: object, res: { status: (code: number) => { json: (payload: unknown) => void } }, next: (error?: unknown) => void) => void} Express-style error middleware.
+ */
 export function createCorsErrorHandler({
   status = 403,
   body = { error: 'Origin not allowed' },
@@ -138,6 +237,11 @@ export function createCorsErrorHandler({
   };
 }
 
+/**
+ * Adapt a domain responder into an Express request handler.
+ * @param {(request: SubmitNewStoryRequest) => Promise<HttpResponse>} responder - Domain-specific request handler.
+ * @returns {(req: SubmitNewStoryRequest, res: { status: (code: number) => { json: (payload: unknown) => void, send: (payload: unknown) => void, sendStatus: (code: number) => void } }) => Promise<void>} Express-compatible route handler.
+ */
 export function createHandleSubmitNewStory(responder) {
   assertFunction(responder, 'responder');
 
@@ -165,6 +269,11 @@ export function createHandleSubmitNewStory(responder) {
   };
 }
 
+/**
+ * Construct the submit-new-story domain responder with the required dependencies.
+ * @param {SubmitNewStoryDependencies} dependencies - Injectable services used by the responder.
+ * @returns {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} Domain responder for new story submissions.
+ */
 export function createSubmitNewStoryResponder({
   verifyIdToken,
   saveSubmission,

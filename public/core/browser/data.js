@@ -2,14 +2,40 @@ import { deepClone } from '../objectUtils.js';
 import { isNonNullObject } from '../state.js';
 
 /**
+ * @typedef {(message: string, ...meta: unknown[]) => void} BlogLogFn
+ */
+
+/**
+ * @typedef {object} BlogDataLoggers
+ * @property {BlogLogFn} logInfo - Info level logger.
+ * @property {BlogLogFn} logError - Error level logger.
+ * @property {BlogLogFn} [logWarning] - Optional warning logger.
+ */
+
+/**
  * @typedef {object} BlogDataDependencies
  * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
- * @property {{
- *   logInfo: Function,
- *   logError: Function,
- *   logWarning?: Function,
- * }} loggers - Logger bundle injected by the entry layer.
+ * @property {BlogDataLoggers} loggers - Logger bundle injected by the entry layer.
  * @property {Storage} [storage] - Optional storage implementation for permanent state.
+ */
+
+/**
+ * @typedef {object} NormalizedBlogDataDependencies
+ * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
+ * @property {{
+ *   logInfo: BlogLogFn,
+ *   logError: BlogLogFn,
+ *   logWarning: BlogLogFn,
+ * }} loggers - Logger bundle with guaranteed callable members.
+ * @property {Storage | null} storage - Storage implementation or null when unavailable.
+ */
+
+/**
+ * @typedef {object} BlogDataController
+ * @property {(state: object) => Promise<unknown>} fetchAndCacheBlogData - Starts a blog data fetch and caches the result.
+ * @property {(state: object) => object} getData - Returns the current blog data state snapshot.
+ * @property {(state: object) => object} setLocalTemporaryData - Persists temporary blog state locally.
+ * @property {(desired: object) => object} setLocalPermanentData - Persists permanent blog state locally.
  */
 
 export { deepMerge } from '../state.js';
@@ -388,9 +414,10 @@ function savePermanentData(storage, data, logError) {
 }
 
 /**
- *
- * @param loggers
- * @param key
+ * Ensure a logger entry exists and is callable.
+ * @param {BlogDataLoggers} loggers - Logger bundle supplied by the dependency factory.
+ * @param {'logInfo'|'logError'|'logWarning'} key - Logger key that must resolve to a function.
+ * @returns {BlogLogFn} Callable logger implementation.
  */
 function ensureLoggerFunction(loggers, key) {
   const fn = loggers[key];
@@ -403,8 +430,9 @@ function ensureLoggerFunction(loggers, key) {
 }
 
 /**
- *
- * @param bundle
+ * Validate and normalize the dependency bundle returned by the factory.
+ * @param {BlogDataDependencies} bundle - Raw dependencies returned by the factory.
+ * @returns {NormalizedBlogDataDependencies} Sanitized dependency bundle.
  */
 function normalizeDependencies(bundle) {
   if (!isNonNullObject(bundle)) {
@@ -442,8 +470,9 @@ function normalizeDependencies(bundle) {
 }
 
 /**
- *
- * @param createDependencies
+ * Cache dependency bundle creation so shared helpers reuse instances.
+ * @param {BlogDependencyFactory} createDependencies - Factory that resolves runtime dependencies.
+ * @returns {() => NormalizedBlogDataDependencies} Function that lazily resolves normalized dependencies.
  */
 function createDependencyAccessor(createDependencies) {
   if (typeof createDependencies !== 'function') {
@@ -462,8 +491,9 @@ function createDependencyAccessor(createDependencies) {
 }
 
 /**
- *
- * @param createDependencies
+ * Build a blog data controller that wires helpers to the provided dependencies.
+ * @param {BlogDependencyFactory} createDependencies - Dependency factory invoked on first use.
+ * @returns {BlogDataController} Controller API used by the entry layer.
  */
 export function createBlogDataController(createDependencies) {
   const getDependencies = createDependencyAccessor(createDependencies);
