@@ -2,17 +2,14 @@
 
 This project aims to separate browser and cloud build steps and to consolidate assets and logic in clearer locations.
 
-## Goals
-- Move non-generated files from `public/` to `src/browser/assets/` so that `public/` becomes build output only.
-- Introduce `build:browser` and `build:cloud` scripts in `package.json`.
-- Relocate JavaScript from `infra/` into `src/`.
-- Update Netlify and Terraform workflows to call the new build scripts.
+## Completed Work
+- Introduced `build:browser` and `build:cloud` scripts in `package.json` and wired `npm run build:browser` into the Netlify deployment workflow.
+- Relocated Cloud Function JavaScript from `infra/` into `src/cloud/` and ensured `npm run build:cloud` packages the functions for Terraform.
+- Updated both `gcp-test` and `gcp-prod` workflows to execute `npm run build:cloud` before running Terraform.
 
-## Incremental Plan
-1. **Asset relocation**: create `src/browser/assets/`, move static files from `public/`, extend `src/build/copy.js` to copy assets during `npm run build:browser`.
-2. **Browser build script**: add `build:browser` script, adjust Netlify workflow to run it before deployment.
-3. **Cloud source reorganization**: move Cloud Function and admin JS from `infra/` to a new `src/cloud/` directory.
-4. **Cloud build script**: add `build:cloud` script that prepares Cloud Functions in a temporary build directory.
-5. **Terraform workflow**: modify workflow to run `npm run build:cloud` and point Terraform to the temporary directory.
+## Next Steps
+- Finish relocating legacy HTML, audio, and image assets from `public/` into `src/browser/assets/` (or module-specific folders) so that `public/` only contains generated output.
+- Slim down `src/core/copy.js` so it copies only the assets that must ship with the browser bundle instead of mirroring entire source directories into `public/`.
+- After the directory reshuffle, run `npm run build:browser` to repopulate `public/` and confirm no source files remain.
 
 Progress through these steps independently to minimize disruption and keep builds green.
