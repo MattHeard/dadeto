@@ -22,6 +22,14 @@ const config = {
     testEnvironment: '@stryker-mutator/jest-runner/jest-env/node',
   }),
   testPathIgnorePatterns: ['<rootDir>/.stryker-tmp/', '<rootDir>/test/e2e/'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    // Cloud function bridge shims that only re-export their underlying implementation.
+    '<rootDir>/src/core/cloud/(?:[^/]+/)+(?:cloud|common)-core\\.js$',
+    '<rootDir>/src/core/cloud/(?:[^/]+/)+admin-config\\.js$',
+    // Toy bridge modules that forward to shared object utility and validation helpers.
+    '<rootDir>/src/core/toys/\\d{4}-\\d{2}-\\d{2}/(?:objectUtils|validation)\\.js$',
+  ],
   collectCoverageFrom: [
     'src/core/**/*.js',
     '!**/node_modules/**',
