@@ -359,6 +359,18 @@ describe('getData, setData, and getDeepStateCopy', () => {
     );
   });
 
+  it('uses default warning logger when dependency omits it', () => {
+    state.blogStatus = 'error';
+    state.blogError = new Error('load failure');
+    const dependencies = {
+      fetch: jest.fn(),
+      loggers: { logInfo: jest.fn(), logError: jest.fn() },
+    };
+
+    expect(() => getData(state, dependencies)).not.toThrow();
+    expect(dependencies.fetch).not.toHaveBeenCalled();
+  });
+
   it('getData does nothing when status is loaded', () => {
     state.blogStatus = 'loaded';
     getData(state, createDependencies());
