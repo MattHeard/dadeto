@@ -35,7 +35,11 @@
 - Ensure generated outputs or reports are up to date, but avoid committing transient build products outside approved directories.
 
 ## Agent Retrospectives
-- After completing your work, add a brief note in a new file under `notes/agents/` describing the specific challenges you encountered and how you resolved them. Create the directory if it does not yet exist.
+- After completing your work, add a reflective note in a new file under `notes/agents/`. Create the directory if it does not yet exist.
+- Focus on **unexpected** hurdles or surprises. Describe what threw you off, how you diagnosed the issue, and the options you considered before landing on a fix.
+- Capture what you learned or would do differently next time. Convert that learning into actionable guidance (links to source, scripts, or checklists) so future agents can benefit immediately.
+- Close with any open questions or follow-up ideas that surfaced while solving the problem.
+- Keep the note concise (a few focused paragraphs or bullets) but specific enough that another agent could reuse the insight without rereading the entire codebase.
 
 ## Automation & Deployment Notes
 - Terraform changes are applied by `.github/workflows/gcp-prod.yml`; modify the workflow to adjust behavior instead of running Terraform manually.
