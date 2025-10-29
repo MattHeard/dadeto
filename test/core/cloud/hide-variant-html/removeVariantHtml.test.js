@@ -1,5 +1,12 @@
 import { jest } from '@jest/globals';
-import { createRemoveVariantHtml } from '../../../../src/core/cloud/hide-variant-html/hide-variant-html-core.js';
+import {
+  createBucketFileRemover,
+  createHandleVariantVisibilityChange,
+  createRemoveVariantHtml,
+  createRemoveVariantHtmlForSnapshot,
+  buildVariantPath,
+  getVariantVisibility,
+} from '../../../../src/core/cloud/hide-variant-html/hide-variant-html-core.js';
 
 describe('createRemoveVariantHtml', () => {
   it('throws when dependencies are not functions', () => {
@@ -163,5 +170,247 @@ describe('createRemoveVariantHtml', () => {
       page: loadResult,
     });
     expect(deleteRenderedFile).toHaveBeenCalledWith('pages/landing.html');
+  });
+});
+
+describe('createBucketFileRemover', () => {
+  it('throws when storage bucket helper is missing', () => {
+    expect(() =>
+      createBucketFileRemover({
+        storage: {},
+      })
+    ).toThrow(new TypeError('storage.bucket must be a function'));
+  });
+
+  it('throws when bucket name is empty', () => {
+    const storage = { bucket: jest.fn() };
+
+    expect(() =>
+      createBucketFileRemover({
+        storage,
+        bucketName: '   ',
+      })
+    ).toThrow(new TypeError('bucketName must be a non-empty string'));
+  });
+
+  it('ignores non-string paths', async () => {
+    const deleteFn = jest.fn();
+    const storage = {
+      bucket: jest.fn(() => ({
+        file: jest.fn(() => ({ delete: deleteFn })),
+      })),
+    };
+    const deleteRenderedFile = createBucketFileRemover({
+      storage,
+      bucketName: 'variants',
+    });
+
+    await expect(deleteRenderedFile()).resolves.toBeUndefined();
+    await expect(deleteRenderedFile(null)).resolves.toBeUndefined();
+    await expect(deleteRenderedFile(42)).resolves.toBeUndefined();
+    await expect(deleteRenderedFile('')).resolves.toBeUndefined();
+
+    expect(storage.bucket).not.toHaveBeenCalled();
+    expect(deleteFn).not.toHaveBeenCalled();
+  });
+
+  it('deletes the rendered file when provided a path', async () => {
+    const deleteFn = jest.fn(() => Promise.resolve('ignored'));
+    const file = jest.fn(() => ({ delete: deleteFn }));
+    const bucket = jest.fn(() => ({ file }));
+    const storage = { bucket };
+    const deleteRenderedFile = createBucketFileRemover({
+      storage,
+      bucketName: 'variants',
+    });
+
+    await expect(
+      deleteRenderedFile('p/12variant.html')
+    ).resolves.toBeUndefined();
+
+    expect(bucket).toHaveBeenCalledWith('variants');
+    expect(file).toHaveBeenCalledWith('p/12variant.html');
+    expect(deleteFn).toHaveBeenCalledWith({ ignoreNotFound: true });
+  });
+});
+
+describe('buildVariantPath', () => {
+  it('combines the page number and variant name', () => {
+    expect(
+      buildVariantPath({
+        page: { number: 42 },
+        variantData: { name: '-alpha' },
+      })
+    ).toBe('p/42-alpha.html');
+  });
+
+  it('falls back to empty segments when metadata is missing', () => {
+    expect(
+      buildVariantPath({
+        page: { number: undefined },
+        variantData: {},
+      })
+    ).toBe('p/.html');
+  });
+});
+
+describe('createRemoveVariantHtmlForSnapshot', () => {
+  it('invokes removeVariantHtml with no arguments when snapshot is missing', async () => {
+    const removeVariantHtml = jest.fn().mockResolvedValue(null);
+    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml);
+
+    await expect(adapter(null)).resolves.toBeNull();
+
+    expect(removeVariantHtml).toHaveBeenCalledWith();
+  });
+
+  it('adapts snapshot data and forwards it to removeVariantHtml', async () => {
+    const removeVariantHtml = jest.fn().mockResolvedValue(null);
+    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml);
+    const variantData = { visibility: 0.2 };
+    const pageRef = { parent: { parent: { id: 'pageRef' } } };
+    const snapshot = {
+      id: 'variant-123',
+      data: () => variantData,
+      ref: pageRef,
+    };
+
+    await expect(adapter(snapshot)).resolves.toBeNull();
+
+    expect(removeVariantHtml).toHaveBeenCalledWith({
+      variantId: 'variant-123',
+      variantData,
+      pageRef: pageRef.parent.parent,
+    });
+  });
+
+  it('leaves variant data undefined when snapshot data is not a function', async () => {
+    const removeVariantHtml = jest.fn().mockResolvedValue(null);
+    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml);
+    const snapshot = {
+      id: 'variant-without-data',
+      data: undefined,
+      ref: {},
+    };
+
+    await expect(adapter(snapshot)).resolves.toBeNull();
+
+    expect(removeVariantHtml).toHaveBeenCalledWith({
+      variantId: 'variant-without-data',
+      variantData: undefined,
+      pageRef: null,
+    });
+  });
+
+  it('normalizes missing snapshot identifiers to null', async () => {
+    const removeVariantHtml = jest.fn().mockResolvedValue(null);
+    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml);
+    const snapshot = {
+      data: () => ({ name: 'delta' }),
+      ref: { parent: { parent: { id: 'pageRef' } } },
+    };
+
+    await expect(adapter(snapshot)).resolves.toBeNull();
+
+    expect(removeVariantHtml).toHaveBeenCalledWith({
+      variantId: null,
+      variantData: { name: 'delta' },
+      pageRef: snapshot.ref.parent.parent,
+    });
+  });
+});
+
+describe('getVariantVisibility', () => {
+  it('returns zero when the snapshot is missing', () => {
+    expect(getVariantVisibility(null)).toBe(0);
+    expect(getVariantVisibility({})).toBe(0);
+  });
+
+  it('returns the numeric visibility value from snapshot data', () => {
+    const snapshot = {
+      data: () => ({ visibility: 0.75 }),
+    };
+
+    expect(getVariantVisibility(snapshot)).toBe(0.75);
+  });
+
+  it('returns zero when visibility is not a number', () => {
+    const snapshot = {
+      data: () => ({ visibility: 'hidden' }),
+    };
+
+    expect(getVariantVisibility(snapshot)).toBe(0);
+  });
+});
+
+describe('createHandleVariantVisibilityChange', () => {
+  it('requires function dependencies', () => {
+    expect(() => createHandleVariantVisibilityChange({})).toThrow(
+      new TypeError('removeVariantHtmlForSnapshot must be a function')
+    );
+  });
+
+  it('removes HTML when the variant is deleted', async () => {
+    const removeVariantHtmlForSnapshot = jest.fn().mockResolvedValue(null);
+    const handleChange = createHandleVariantVisibilityChange({
+      removeVariantHtmlForSnapshot,
+    });
+    const before = { id: 'before' };
+
+    await expect(
+      handleChange({ before, after: { exists: false } })
+    ).resolves.toBeNull();
+
+    expect(removeVariantHtmlForSnapshot).toHaveBeenCalledWith(before);
+  });
+
+  it('removes HTML when visibility crosses below the threshold', async () => {
+    const removeVariantHtmlForSnapshot = jest.fn().mockResolvedValue(null);
+    const getVisibility = jest
+      .fn()
+      .mockReturnValueOnce(0.6)
+      .mockReturnValueOnce(0.25);
+    const handleChange = createHandleVariantVisibilityChange({
+      removeVariantHtmlForSnapshot,
+      getVisibility,
+      visibilityThreshold: 0.5,
+    });
+    const after = { id: 'after' };
+
+    await expect(
+      handleChange({
+        before: { id: 'before' },
+        after: { ...after, exists: true },
+      })
+    ).resolves.toBeNull();
+
+    expect(removeVariantHtmlForSnapshot).toHaveBeenCalledWith({
+      ...after,
+      exists: true,
+    });
+  });
+
+  it('returns null when visibility remains above the threshold', async () => {
+    const removeVariantHtmlForSnapshot = jest.fn().mockResolvedValue(null);
+    const handleChange = createHandleVariantVisibilityChange({
+      removeVariantHtmlForSnapshot,
+    });
+    const before = { id: 'before' };
+    const after = { id: 'after', exists: true };
+
+    await expect(handleChange({ before, after })).resolves.toBeNull();
+
+    expect(removeVariantHtmlForSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('handles missing change payloads by invoking the remover with null', async () => {
+    const removeVariantHtmlForSnapshot = jest.fn().mockResolvedValue(null);
+    const handleChange = createHandleVariantVisibilityChange({
+      removeVariantHtmlForSnapshot,
+    });
+
+    await expect(handleChange()).resolves.toBeNull();
+
+    expect(removeVariantHtmlForSnapshot).toHaveBeenCalledWith(null);
   });
 });

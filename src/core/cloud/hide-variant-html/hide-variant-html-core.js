@@ -158,7 +158,10 @@ export function createRemoveVariantHtmlForSnapshot(removeVariantHtml) {
       return removeVariantHtml();
     }
 
-    const data = typeof snapshot.data === 'function' ? snapshot.data() : undefined;
+    let data;
+    if (typeof snapshot.data === 'function') {
+      data = snapshot.data();
+    }
     const pageRef = snapshot.ref?.parent?.parent ?? null;
 
     return removeVariantHtml({
@@ -182,7 +185,11 @@ export function getVariantVisibility(snapshot) {
   const data = snapshot.data();
   const visibility = data?.visibility;
 
-  return typeof visibility === 'number' ? visibility : 0;
+  if (typeof visibility === 'number') {
+    return visibility;
+  }
+
+  return 0;
 }
 
 /**
