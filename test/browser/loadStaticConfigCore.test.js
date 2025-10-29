@@ -23,6 +23,12 @@ describe('parseStaticConfigResponse', () => {
     );
     expect(json).not.toHaveBeenCalled();
   });
+
+  it('uses an unknown status placeholder when the response is missing', async () => {
+    await expect(parseStaticConfigResponse()).rejects.toThrow(
+      'Failed to load static config: unknown'
+    );
+  });
 });
 
 describe('createLoadStaticConfig', () => {
@@ -56,5 +62,15 @@ describe('createLoadStaticConfig', () => {
     await expect(loadStaticConfig()).resolves.toEqual({});
     expect(fetchFn).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith('Failed to load static config', error);
+  });
+
+  it('defaults warn logger to a noop when not provided', async () => {
+    const payload = { value: 1 };
+    const json = jest.fn().mockResolvedValue(payload);
+    const fetchFn = jest.fn().mockResolvedValue({ ok: true, json });
+
+    const loadStaticConfig = createLoadStaticConfig({ fetchFn });
+
+    await expect(loadStaticConfig()).resolves.toEqual(payload);
   });
 });

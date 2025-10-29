@@ -67,6 +67,16 @@ describe('createModerationEndpointsPromise', () => {
     );
     expect(result).toEqual(DEFAULT_MODERATION_ENDPOINTS);
   });
+
+  it('falls back to defaults when loader rejects without a logger', async () => {
+    const loadStaticConfig = jest.fn().mockRejectedValue(new Error('nope'));
+
+    const result = await createModerationEndpointsPromise(loadStaticConfig);
+
+    expect(loadStaticConfig).toHaveBeenCalledTimes(1);
+    expect(result).toEqual(DEFAULT_MODERATION_ENDPOINTS);
+    expect(result).not.toBe(DEFAULT_MODERATION_ENDPOINTS);
+  });
 });
 
 describe('createGetModerationEndpoints', () => {

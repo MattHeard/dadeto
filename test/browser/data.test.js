@@ -249,6 +249,59 @@ describe('createBlogDataController', () => {
     // Ensure absence of logWarning does not throw
     expect(state.blogError).toBeInstanceOf(Error);
   });
+
+  it('throws when dependency factory returns a non-object', () => {
+    const factory = () => null;
+
+    const controller = createBlogDataController(factory);
+
+    expect(() => controller.getData(createState())).toThrow(
+      'createBlogDataController expected createDependencies to return an object.'
+    );
+  });
+
+  it('throws when fetch dependency is not a function', () => {
+    const factory = () => ({
+      fetch: null,
+      loggers: { logInfo: jest.fn(), logError: jest.fn() },
+    });
+
+    const controller = createBlogDataController(factory);
+
+    expect(() => controller.getData(createState())).toThrow(
+      'createBlogDataController requires fetch to be provided as a function.'
+    );
+  });
+
+  it('throws when loggers container is not an object', () => {
+    const factory = () => ({
+      fetch: jest.fn(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
+      ),
+      loggers: null,
+    });
+
+    const controller = createBlogDataController(factory);
+
+    expect(() => controller.getData(createState())).toThrow(
+      'createBlogDataController requires loggers to be an object with logging functions.'
+    );
+  });
+
+  it('throws when required logger functions are missing', () => {
+    const factory = () => ({
+      fetch: jest.fn(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
+      ),
+      loggers: { logInfo: 'nope', logError: jest.fn() },
+    });
+
+    const controller = createBlogDataController(factory);
+
+    expect(() => controller.getData(createState())).toThrow(
+      'createBlogDataController requires loggers.logInfo to be a function.'
+    );
+  });
 });
 
 describe('getData, setData, and getDeepStateCopy', () => {
