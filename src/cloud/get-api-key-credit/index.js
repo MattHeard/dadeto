@@ -7,7 +7,8 @@ import {
 } from './get-api-key-credit-core.js';
 
 /**
- *
+ * Create a memoized async getter for a Firestore instance.
+ * @returns {() => Promise<import('@google-cloud/firestore').Firestore>} Memoized Firestore accessor.
  */
 function createGetFirestoreInstance() {
   let firestoreInstance;
