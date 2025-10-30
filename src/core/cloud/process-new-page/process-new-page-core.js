@@ -277,11 +277,19 @@ function resolveServerTimestamp(fieldValue) {
  * @param {string} params.incomingOptionFullName Full document path for the option that triggered the submission.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot from the trigger.
  * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to queue updates.
- * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} params.findAvailablePageNumberFn Helper that finds the next available page number.
+ * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} params.findAvailablePageNumberFn
+ *   Helper that finds the next available page number.
  * @param {() => string} params.randomUUID UUID generator used to create new document identifiers.
  * @param {() => number} params.random Random number generator for variant metadata.
  * @param {() => unknown} params.getServerTimestamp Function that returns a Firestore server timestamp sentinel.
- * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference | null, variantRef: import('firebase-admin/firestore').DocumentReference | null, pageNumber: number | null }}> Resolved context or null when the submission is already processed.
+ * @returns {Promise<
+ *   null | {
+ *     pageDocRef: import('firebase-admin/firestore').DocumentReference,
+ *     storyRef: import('firebase-admin/firestore').DocumentReference | null,
+ *     variantRef: import('firebase-admin/firestore').DocumentReference | null,
+ *     pageNumber: number | null,
+ *   }
+ * >} Resolved context or null when the submission is already processed.
  */
 async function resolveIncomingOptionContext({
   db,
@@ -306,50 +314,135 @@ async function resolveIncomingOptionContext({
     pageRef: inferredPageRef,
     storyRef: initialStoryRef,
   } = resolveStoryRefFromOption(optionRef);
-  let storyRef = initialStoryRef ?? null;
-  let pageDocRef = null;
-  let pageNumber = null;
-
+  const storyRef = initialStoryRef ?? null;
   const optionData = optionSnap.data() ?? {};
   const targetPage = resolvePageFromTarget(optionData.targetPage);
+  const existingContext = await resolveExistingPageContext(targetPage);
+  const pageContext =
+    existingContext ??
+    (await createPageContext({
+      storyRef,
+      db,
+      random,
+      findAvailablePageNumberFn,
+      randomUUID,
+      batch,
+      optionRef,
+      incomingOptionFullName,
+      getServerTimestamp,
+    }));
 
-  if (targetPage) {
-    try {
-      const existingPageSnap = await targetPage.get();
-      if (existingPageSnap?.exists) {
-        pageNumber = existingPageSnap.data()?.number ?? null;
-        pageDocRef = targetPage;
-      }
-    } catch {
-      pageDocRef = null;
-    }
+  const finalStoryRef = ensureStoryReference(storyRef, inferredPageRef);
+
+  return {
+    ...pageContext,
+    storyRef: finalStoryRef,
+    variantRef,
+  };
+}
+
+/**
+ * Resolve an existing page reference from a target page selection.
+ * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} targetPage The referenced page.
+ * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null }>}
+ * Resolved context or null when no existing page is found.
+ */
+async function resolveExistingPageContext(targetPage) {
+  if (!targetPage) {
+    return null;
   }
 
-  if (!pageDocRef) {
-    const nextPageNumber = await findAvailablePageNumberFn(db, random);
-
-    if (!storyRef || typeof storyRef.collection !== 'function') {
-      throw new TypeError('storyRef.collection must be a function');
-    }
-
-    const newPageId = randomUUID();
-    pageDocRef = storyRef.collection('pages').doc(newPageId);
-
-    batch.set(pageDocRef, {
-      number: nextPageNumber,
-      incomingOption: incomingOptionFullName,
-      createdAt: getServerTimestamp(),
-    });
-
-    batch.update(optionRef, { targetPage: pageDocRef });
-    pageNumber = nextPageNumber;
+  const existingPageSnap = await safeGetPage(targetPage);
+  if (!existingPageSnap?.exists) {
+    return null;
   }
 
-  if (!storyRef) {
-    storyRef = inferredPageRef?.parent?.parent ?? null;
+  return {
+    pageDocRef: targetPage,
+    pageNumber: existingPageSnap.data()?.number ?? null,
+  };
+}
+
+/**
+ * Safely retrieve the snapshot for an existing page reference.
+ * @param {import('firebase-admin/firestore').DocumentReference} targetPage Page reference to query.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentSnapshot | null>} The snapshot or null when unavailable.
+ */
+async function safeGetPage(targetPage) {
+  try {
+    return await targetPage.get();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Create a new page context when no existing page was found for the option submission.
+ * @param {object} params Parameters describing the creation request.
+ * @param {import('firebase-admin/firestore').DocumentReference | null} params.storyRef Story reference inferred from the option.
+ * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
+ * @param {() => number} params.random Random number generator for variant ordering.
+ * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} params.findAvailablePageNumberFn
+ *   Helper that finds the next page number.
+ * @param {() => string} params.randomUUID UUID generator for new page documents.
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch collecting Firestore operations.
+ * @param {import('firebase-admin/firestore').DocumentReference} params.optionRef Option reference used for updates.
+ * @param {string} params.incomingOptionFullName Full document path for the option.
+ * @param {() => unknown} params.getServerTimestamp Function returning a Firestore server timestamp sentinel.
+ * @returns {Promise<{
+ *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
+ *   pageNumber: number,
+ * }>} Newly created page context.
+ */
+async function createPageContext({
+  storyRef,
+  db,
+  random,
+  findAvailablePageNumberFn,
+  randomUUID,
+  batch,
+  optionRef,
+  incomingOptionFullName,
+  getServerTimestamp,
+}) {
+  const nextPageNumber = await findAvailablePageNumberFn(db, random);
+
+  if (!storyRef || typeof storyRef.collection !== 'function') {
+    throw new TypeError('storyRef.collection must be a function');
   }
 
-  return { pageDocRef, storyRef, variantRef, pageNumber };
+  const newPageId = randomUUID();
+  const pageDocRef = storyRef.collection('pages').doc(newPageId);
+
+  batch.set(pageDocRef, {
+    number: nextPageNumber,
+    incomingOption: incomingOptionFullName,
+    createdAt: getServerTimestamp(),
+  });
+
+  batch.update(optionRef, { targetPage: pageDocRef });
+
+  return { pageDocRef, pageNumber: nextPageNumber };
+}
+
+/**
+ * Determine the final story reference from the resolved context.
+ * @param {import('firebase-admin/firestore').DocumentReference | null} storyRef Story reference determined from the option.
+ * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} inferredPageRef Page reference inferred fro
+m the option.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Final story reference.
+ */
+function ensureStoryReference(storyRef, inferredPageRef) {
+  if (storyRef) {
+    return storyRef;
+  }
+
+  if (!inferredPageRef) {
+    return null;
+  }
+
+  const parent = inferredPageRef.parent;
+  return parent?.parent ?? null;
 }
 
 /**
