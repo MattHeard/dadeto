@@ -37,7 +37,10 @@ const app = express();
 
 const environmentVariables = getEnvironmentVariables();
 const allowedOrigins = getAllowedOrigins(environmentVariables);
-const handleCorsOrigin = createHandleCorsOrigin(isAllowedOrigin, allowedOrigins);
+const handleCorsOrigin = createHandleCorsOrigin(
+  isAllowedOrigin,
+  allowedOrigins
+);
 const corsOptions = createCorsOptions(handleCorsOrigin, ['POST']);
 
 app.use(cors(corsOptions));

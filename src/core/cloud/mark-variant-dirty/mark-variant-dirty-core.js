@@ -202,7 +202,12 @@ export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
     throw new TypeError('db must be provided');
   }
 
-  const variantRef = await findVariantRef(db, pageNumber, variantName, firebase);
+  const variantRef = await findVariantRef(
+    db,
+    pageNumber,
+    variantName,
+    firebase
+  );
 
   if (!variantRef) {
     return false;
