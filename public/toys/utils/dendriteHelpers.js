@@ -1,7 +1,13 @@
 export { ensureDend2, createOptions };
 
-import { DENDRITE_OPTION_KEYS } from '../../constants/dendrite.js';
 import { isNonNullObject } from '../../state.js';
+
+const DENDRITE_OPTION_KEYS = [
+  'firstOption',
+  'secondOption',
+  'thirdOption',
+  'fourthOption',
+];
 
 /**
  * Create a blank DEND2 structure.
