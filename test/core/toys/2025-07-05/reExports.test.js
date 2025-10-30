@@ -6,9 +6,10 @@ import * as reExportedValidation from '../../../../src/core/toys/2025-07-05/vali
 
 describe('add dendrite page re-exports', () => {
   /**
+   * Assert that the exports from a re-exported module match the base module.
    *
-   * @param baseModule
-   * @param reExportedModule
+   * @param {Record<string, unknown>} baseModule - The canonical module whose exports serve as the baseline.
+   * @param {Record<string, unknown>} reExportedModule - The module under test that should mirror the base exports.
    */
   function expectModuleExportsToMatch(baseModule, reExportedModule) {
     const baseKeys = Object.keys(baseModule).sort();
