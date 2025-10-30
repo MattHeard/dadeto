@@ -272,16 +272,16 @@ function resolveServerTimestamp(fieldValue) {
 /**
  * Resolve page and story references when a submission targets an existing option.
  * Returns null when the submission should be marked as processed without further work.
- * @param {object} params
- * @param {import('firebase-admin/firestore').Firestore} params.db
- * @param {string} params.incomingOptionFullName
- * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch
- * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} params.findAvailablePageNumberFn
- * @param {() => string} params.randomUUID
- * @param {() => number} params.random
- * @param {() => unknown} params.getServerTimestamp
- * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference | null, variantRef: import('firebase-admin/firestore').DocumentReference | null, pageNumber: number | null }>}
+ * @param {object} params Parameters required to resolve the context from an option submission.
+ * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used for lookups.
+ * @param {string} params.incomingOptionFullName Full document path for the option that triggered the submission.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot from the trigger.
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to queue updates.
+ * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} params.findAvailablePageNumberFn Helper that finds the next available page number.
+ * @param {() => string} params.randomUUID UUID generator used to create new document identifiers.
+ * @param {() => number} params.random Random number generator for variant metadata.
+ * @param {() => unknown} params.getServerTimestamp Function that returns a Firestore server timestamp sentinel.
+ * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference | null, variantRef: import('firebase-admin/firestore').DocumentReference | null, pageNumber: number | null }}> Resolved context or null when the submission is already processed.
  */
 async function resolveIncomingOptionContext({
   db,
@@ -355,11 +355,11 @@ async function resolveIncomingOptionContext({
 /**
  * Resolve page and story references when the submission provides a direct page number.
  * Returns null when the submission should simply be marked processed.
- * @param {object} params
- * @param {import('firebase-admin/firestore').Firestore} params.db
- * @param {number} params.directPageNumber
- * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot
- * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference | null, variantRef: null, pageNumber: number }>}
+ * @param {object} params Parameters supplied when a submission specifies a direct page number.
+ * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used to query existing pages.
+ * @param {number} params.directPageNumber Page number requested by the submission.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot from the trigger.
+ * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference | null, variantRef: null, pageNumber: number }}> Resolved context or null when the submission has already been handled.
  */
 async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
   const pageSnap = await db
@@ -386,16 +386,16 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
 
 /**
  * Create the new variant document alongside option children.
- * @param {object} params
- * @param {import('firebase-admin/firestore').DocumentReference} params.pageDocRef
- * @param {import('firebase-admin/firestore').DocumentReference} params.snapshotRef
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch
- * @param {object} params.submission
- * @param {() => string} params.randomUUID
- * @param {() => unknown} params.getServerTimestamp
- * @param {() => number} params.random
- * @param {(name: string) => string} params.incrementVariantNameFn
- * @returns {Promise<import('firebase-admin/firestore').DocumentReference>}
+ * @param {object} params Parameters describing the variant creation request.
+ * @param {import('firebase-admin/firestore').DocumentReference} params.pageDocRef Page document where the variant will be stored.
+ * @param {import('firebase-admin/firestore').DocumentReference} params.snapshotRef Submission document reference used for deterministic IDs.
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to queue writes for commit.
+ * @param {object} params.submission Submission payload containing variant content and options.
+ * @param {() => string} params.randomUUID UUID generator for new Firestore documents.
+ * @param {() => unknown} params.getServerTimestamp Function that returns a Firestore server timestamp sentinel.
+ * @param {() => number} params.random Random number generator for variant ordering.
+ * @param {(name: string) => string} params.incrementVariantNameFn Helper that calculates the next variant name.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentReference>} Reference to the newly created variant document.
  */
 async function createVariantWithOptions({
   pageDocRef,
@@ -448,12 +448,12 @@ async function createVariantWithOptions({
 
 /**
  * Ensure the submitting author has a Firestore document.
- * @param {object} params
- * @param {import('firebase-admin/firestore').Firestore} params.db
- * @param {import('firebase-admin/firestore').WriteBatch} params.batch
- * @param {object} params.submission
- * @param {() => string} params.randomUUID
- * @returns {Promise<void>}
+ * @param {object} params Parameters controlling author record initialization.
+ * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used to resolve author documents.
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to schedule author writes.
+ * @param {object} params.submission Submission payload containing author identifiers.
+ * @param {() => string} params.randomUUID UUID generator for new author documents.
+ * @returns {Promise<void>} Promise that resolves when the author record has been ensured.
  */
 async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
   const authorRef = resolveAuthorRef(db, submission.authorId);
@@ -471,19 +471,18 @@ async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
 /**
  * Build the Cloud Function handler for processing new page submissions.
  * @param {object} options Collaborators required by the handler.
- * @param {import('firebase-admin/firestore').Firestore} options.db Firestore instance.
+ * @param {import('firebase-admin/firestore').Firestore} options.db Firestore instance used for document access.
  * @param {{
  *   serverTimestamp: () => import('firebase-admin/firestore').FieldValue,
  *   increment: (value: number) => import('firebase-admin/firestore').FieldValue,
- * }} options.fieldValue FieldValue helper with server timestamp and increment.
- * @param {() => string} options.randomUUID UUID generator.
+ * }} options.fieldValue FieldValue helper with server timestamp and increment capabilities.
+ * @param {() => string} options.randomUUID UUID generator used for new documents.
  * @param {() => number} [options.random] Random number generator (defaults to Math.random).
  * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} [options.findAvailablePageNumberFn]
  *   Finder that returns an unused page number (defaults to findAvailablePageNumber).
  * @param {(name: string) => string} [options.incrementVariantNameFn]
  *   Helper that increments variant names (defaults to incrementVariantName).
- * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>}
- *   Firestore trigger handler.
+ * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler that processes new page submissions.
  */
 export function createProcessNewPageHandler({
   db,
