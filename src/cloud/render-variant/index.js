@@ -18,6 +18,11 @@ import {
   VISIBILITY_THRESHOLD,
 } from './render-variant-core.js';
 
+/**
+ * @typedef {(snap: {exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}, context?: {params?: Record<string, string>}) => Promise<null>} RenderVariantHandler
+ *   Async renderer that materializes a Firestore variant into HTML and metadata.
+ */
+
 ensureFirebaseApp();
 
 const db = getFirestoreInstance();
@@ -36,6 +41,10 @@ const dynamicFetch = (...args) =>
 
 let renderInstance;
 
+/**
+ * Resolve the shared render handler, creating it on first access.
+ * @returns {RenderVariantHandler} Lazily-instantiated handler that renders Firestore variant documents.
+ */
 function resolveRenderVariant() {
   if (!renderInstance) {
     renderInstance = createRenderVariant({
@@ -64,6 +73,11 @@ export const renderVariant = functions
   .firestore.document('stories/{storyId}/pages/{pageId}/variants/{variantId}')
   .onWrite((change, context) => handleVariantWrite(change, context));
 
+/**
+ * Execute the memoized render handler with the provided Firestore change payload.
+ * @param {...any} args - Arguments passed to the underlying render handler.
+ * @returns {Promise<null>} Promise resolving when the rendering workflow completes.
+ */
 export const render = (...args) => resolveRenderVariant()(...args);
 
 export { buildAltsHtml, buildHtml, getVisibleVariants, VISIBILITY_THRESHOLD };
