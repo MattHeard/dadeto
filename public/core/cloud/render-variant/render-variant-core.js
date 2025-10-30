@@ -5,24 +5,51 @@ import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';
 
 export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
+/**
+ * Ensure a Firestore-like database instance exposes the required helpers.
+ * @param {{doc: Function}} db - Database instance that should provide a `doc` helper.
+ * @throws {TypeError} When the provided database does not expose a `doc` function.
+ */
 function assertDb(db) {
   if (!db || typeof db.doc !== 'function') {
     throw new TypeError('db must provide a doc helper');
   }
 }
 
+/**
+ * Confirm the storage dependency can create bucket handles.
+ * @param {{bucket: Function}} storage - Storage implementation expected to expose a `bucket` helper.
+ * @throws {TypeError} When the provided storage does not expose a `bucket` function.
+ */
 function assertStorage(storage) {
   if (!storage || typeof storage.bucket !== 'function') {
     throw new TypeError('storage must provide a bucket helper');
   }
 }
 
+/**
+ * Validate that the provided dependency is a function.
+ * @param {unknown} candidate - Value to check.
+ * @param {string} name - Human readable name for the dependency being validated.
+ * @throws {TypeError} When the candidate is not a function.
+ */
 function assertFunction(candidate, name) {
   if (typeof candidate !== 'function') {
     throw new TypeError(`${name} must be a function`);
   }
 }
 
+/**
+ * Build a helper that invalidates CDN paths via the Google Compute API.
+ * @param {object} options - Configuration for cache invalidation.
+ * @param {(url: string, init?: object) => Promise<{ok: boolean, status: number, json: () => Promise<object>}>} options.fetchFn - Fetch implementation used to communicate with the metadata and compute APIs.
+ * @param {string} [options.projectId] - Google Cloud project identifier owning the URL map.
+ * @param {string} [options.urlMapName] - Name of the URL map whose cache should be invalidated.
+ * @param {string} [options.cdnHost] - Hostname associated with the CDN-backed site.
+ * @param {() => string} options.randomUUID - UUID generator for cache invalidation requests.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger invoked when invalidation fails.
+ * @returns {(paths: string[]) => Promise<void>} Invalidation routine that accepts absolute paths to purge.
+ */
 function createInvalidatePaths({
   fetchFn,
   projectId,
@@ -37,6 +64,10 @@ function createInvalidatePaths({
   const host = cdnHost || 'www.dendritestories.co.nz';
   const urlMap = urlMapName || 'prod-dendrite-url-map';
 
+  /**
+   * Retrieve an access token from the metadata server for authenticated requests.
+   * @returns {Promise<string>} Resolves with a short-lived OAuth access token.
+   */
   async function getAccessToken() {
     const response = await fetchFn(
       'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
@@ -91,6 +122,15 @@ function createInvalidatePaths({
   };
 }
 
+/**
+ * Construct metadata for a single option attached to a story variant.
+ * @param {object} options - Information about the option to prepare for rendering.
+ * @param {Record<string, any>} options.data - Raw option document data.
+ * @param {number} options.visibilityThreshold - Minimum visibility required for a variant to be considered published.
+ * @param {{doc: Function}} options.db - Firestore-like database used for lookups.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @returns {Promise<object>} Metadata describing the option suitable for HTML rendering.
+ */
 async function buildOptionMetadata({
   data,
   visibilityThreshold,
@@ -141,6 +181,15 @@ async function buildOptionMetadata({
   };
 }
 
+/**
+ * Load and normalize option documents for a particular variant.
+ * @param {object} options - Dependencies required to load options.
+ * @param {{ref: {collection: Function}}} options.snap - Firestore snapshot for the variant whose options are being read.
+ * @param {number} options.visibilityThreshold - Minimum visibility required for inclusion.
+ * @param {{doc: Function}} options.db - Firestore-like database for nested lookups.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @returns {Promise<object[]>} Ordered option metadata entries.
+ */
 async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
   const optionsSnap = await snap.ref.collection('options').get();
   const optionsData = optionsSnap.docs
@@ -159,6 +208,14 @@ async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
   );
 }
 
+/**
+ * Resolve title and navigation metadata for the story owning the variant.
+ * @param {object} options - Input describing the current page and lookup helpers.
+ * @param {{ref: {parent?: {parent?: any}}, get: Function, exists: boolean}} options.pageSnap - Firestore snapshot for the current page.
+ * @param {Record<string, any>} options.page - Raw page document data.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata used in templates.
+ */
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   const storyRef = pageSnap.ref.parent?.parent;
 
@@ -203,6 +260,15 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   return { storyTitle, firstPageUrl };
 }
 
+/**
+ * Resolve author metadata for the rendered variant, creating landing pages if needed.
+ * @param {object} options - Inputs for author lookup.
+ * @param {Record<string, any>} options.variant - Variant data being rendered.
+ * @param {{doc: Function}} options.db - Firestore-like database used to load author documents.
+ * @param {{file: (path: string) => { save: Function, exists: () => Promise<[boolean]> }}} options.bucket - Bucket handle used to read/write author HTML.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @returns {Promise<{authorName: string, authorUrl: string | undefined}>} Author metadata for templates.
+ */
 async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
   const authorName = variant.authorName || variant.author || '';
 
@@ -247,6 +313,14 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
   }
 }
 
+/**
+ * Determine the canonical URL of the variant's parent, if any.
+ * @param {object} options - Inputs for parent resolution.
+ * @param {Record<string, any>} options.variant - Variant data referencing its parent option.
+ * @param {{doc: Function}} options.db - Firestore-like database used for lookups.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @returns {Promise<string | undefined>} URL to the parent variant when it can be resolved.
+ */
 async function resolveParentUrl({ variant, db, consoleError }) {
   if (!variant.incomingOption) {
     return undefined;
@@ -287,6 +361,21 @@ async function resolveParentUrl({ variant, db, consoleError }) {
   }
 }
 
+/**
+ * Create a renderer that materializes variant HTML and supporting metadata.
+ * @param {object} dependencies - External services and configuration values.
+ * @param {{doc: Function}} dependencies.db - Firestore-like database used to load related documents.
+ * @param {{bucket: (name: string) => { file: (path: string) => { save: Function } }}} dependencies.storage - Cloud storage helper capable of writing files.
+ * @param {(url: string, init?: object) => Promise<{ok: boolean, status: number, json: () => Promise<object>}>} dependencies.fetchFn - Fetch implementation used for cache invalidation calls.
+ * @param {() => string} dependencies.randomUUID - UUID generator for request identifiers.
+ * @param {string} [dependencies.projectId] - Google Cloud project identifier used for cache invalidation.
+ * @param {string} [dependencies.urlMapName] - URL map name whose cache should be invalidated.
+ * @param {string} [dependencies.cdnHost] - Hostname whose cache entries should be purged.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [dependencies.consoleError] - Logger for recoverable failures.
+ * @param {string} [dependencies.bucketName] - Name of the bucket where rendered HTML is written.
+ * @param {number} [dependencies.visibilityThreshold] - Minimum visibility used when publishing variants.
+ * @returns {(snap: {exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}, context?: {params?: Record<string, string>}) => Promise<null>} Async renderer for variant snapshots.
+ */
 export function createRenderVariant({
   db,
   storage,
@@ -359,14 +448,14 @@ export function createRenderVariant({
       !page.incomingOption
     );
     const filePath = `p/${page.number}${variant.name}.html`;
-    const openVariant = options.some(option => option.targetPageNumber === undefined);
+    const openVariant = options.some(
+      option => option.targetPageNumber === undefined
+    );
 
-    await bucket
-      .file(filePath)
-      .save(html, {
-        contentType: 'text/html',
-        ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
-      });
+    await bucket.file(filePath).save(html, {
+      contentType: 'text/html',
+      ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
+    });
 
     const variantsSnap = await snap.ref.parent.get();
     const variants = getVisibleVariants(variantsSnap.docs);
@@ -396,6 +485,14 @@ export function createRenderVariant({
   };
 }
 
+/**
+ * Build a change handler that renders visible variants and clears dirty markers.
+ * @param {object} options - Dependencies for the change handler.
+ * @param {(snap: any, context?: object) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
+ * @param {() => unknown} options.getDeleteSentinel - Function that produces the sentinel used to clear dirty flags.
+ * @param {number} [options.visibilityThreshold] - Minimum visibility required before rendering.
+ * @returns {(change: {before: {exists: boolean, data: () => Record<string, any>}, after: {exists: boolean, data: () => Record<string, any>, ref: {update: Function}}}, context?: {params?: Record<string, string>}) => Promise<null>} Firestore change handler.
+ */
 export function createHandleVariantWrite({
   renderVariant,
   getDeleteSentinel,
