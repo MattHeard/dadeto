@@ -21,7 +21,6 @@ const srcCoreDir = resolve(srcDir, 'core');
 const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
 const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
 const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
-const srcCoreAuthDir = resolve(srcCoreDir, 'auth');
 const browserDir = resolve(srcDir, 'browser');
 const generateStatsGcfSource = join(
   srcCloudDir,
@@ -367,8 +366,8 @@ const individualFileCopies = [
     target: join(infraDir, 'core', 'admin-config.js'),
   },
   {
-    source: join(srcCoreAuthDir, 'googleSignOut.js'),
-    target: join(infraDir, 'core', 'auth', 'googleSignOut.js'),
+    source: join(srcCoreBrowserDir, 'browser-core.js'),
+    target: join(infraDir, 'core', 'browser', 'browser-core.js'),
   },
   {
     source: join(srcCoreBrowserDir, 'load-static-config-core.js'),
