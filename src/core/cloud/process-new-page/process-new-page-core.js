@@ -140,8 +140,8 @@ function ensureUpdate(target, payload) {
 /**
  * Choose a random page number that is not already taken.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @param {() => number} [random=Math.random] Random number generator.
- * @param {number} [depth=0] Recursion depth used to widen the search range.
+ * @param {() => number} [random] Random number generator (defaults to Math.random).
+ * @param {number} [depth] Recursion depth used to widen the search range (defaults to 0).
  * @returns {Promise<number>} A unique page number.
  */
 export async function findAvailablePageNumber(db, random = Math.random, depth = 0) {
@@ -274,10 +274,11 @@ function resolveServerTimestamp(fieldValue) {
  *   increment: (value: number) => import('firebase-admin/firestore').FieldValue,
  * }} options.fieldValue FieldValue helper with server timestamp and increment.
  * @param {() => string} options.randomUUID UUID generator.
- * @param {() => number} [options.random=Math.random] Random number generator.
- * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} [options.findAvailablePageNumberFn=findAvailablePageNumber]
- *   Finder that returns an unused page number.
- * @param {(name: string) => string} [options.incrementVariantNameFn=incrementVariantName] Helper that increments variant names.
+ * @param {() => number} [options.random] Random number generator (defaults to Math.random).
+ * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} [options.findAvailablePageNumberFn]
+ *   Finder that returns an unused page number (defaults to findAvailablePageNumber).
+ * @param {(name: string) => string} [options.incrementVariantNameFn]
+ *   Helper that increments variant names (defaults to incrementVariantName).
  * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>}
  *   Firestore trigger handler.
  */
