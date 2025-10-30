@@ -4,7 +4,7 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
-import { createGoogleSignOut } from './googleSignOut.js';
+import { createGoogleSignOut } from './browser-core.js';
 import { createInitGoogleSignIn } from './admin-core.js';
 import { ADMIN_UID } from './admin-config.js';
 
