@@ -1,0 +1,7 @@
+Unexpected hurdle: running `npm test` hit macOS sandbox restrictions when watchman tried to write under `~/Library/LaunchAgents`. Switching to `--watchman=false` let Jest proceed.
+
+Second surprise: Jest loud duplicate mock warnings came from stale `.stryker-tmp` sandboxes that the mutation tooling leaves behind. They do not break tests but flood the log. If time allows, scrub that directory before test runs (`rm -rf .stryker-tmp`) or add it to Jest's watch ignore patterns.
+
+Takeaway: prefer `npm test -- --watchman=false` in this environment and clear mutation leftovers first. Future agents running tests should budget for the extra flag or clean-up so failures surface faster.
+
+Open question: should we automate removal of `.stryker-tmp` in `npm test` presteps? Worth raising if the warnings keep obscuring real failures.
