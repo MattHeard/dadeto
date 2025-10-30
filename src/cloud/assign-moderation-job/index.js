@@ -33,6 +33,22 @@ const firebaseInitializationHandlers = {
 
 const defaultEnsureFirebaseApp = () => {};
 
+/**
+ * Create handlers for retrieving and clearing Firestore instances.
+ * @param {{ reset: () => void }} firebaseInitializationHandlers Handlers that
+ *   manage Firebase initialization state.
+ * @returns {{
+ *   getFirestoreInstance: (options?: {
+ *     ensureAppFn?: () => void,
+ *     getFirestoreFn?: (
+ *       app?: import('firebase-admin/app').App,
+ *       databaseId?: string,
+ *     ) => import('firebase-admin/firestore').Firestore,
+ *     environment?: Record<string, unknown>,
+ *   }) => import('firebase-admin/firestore').Firestore,
+ *   clearFirestoreInstanceCache: () => void,
+ * }} Utility functions for interacting with the Firestore client cache.
+ */
 function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
   let cachedDb = null;
 
@@ -84,6 +100,7 @@ function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
 
   /**
    * Reset the cached Firestore instance. Primarily used in tests.
+   * @returns {void}
    */
   function clearFirestoreInstanceCache() {
     cachedDb = null;
@@ -164,6 +181,7 @@ function isDuplicateFirebaseAppError(error) {
 /**
  * Ensure the default Firebase Admin app is initialized.
  * @param {() => void} [initFn] Optional initializer for dependency injection.
+ * @returns {void}
  */
 function ensureFirebaseApp(initFn = initializeApp) {
   if (firebaseInitialization.hasBeenInitialized()) {
