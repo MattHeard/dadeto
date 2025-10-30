@@ -3,6 +3,32 @@ import { productionOrigins } from './cloud-core.js';
 export { productionOrigins };
 
 /**
+ * @typedef {(environmentVariables: Record<string, unknown>) => string[]} ResolveAllowedOrigins
+ */
+
+/**
+ * @typedef {object} CorsEnvironmentHelpers
+ * @property {ResolveAllowedOrigins} getAllowedOrigins Resolves allowed origins from environment variables.
+ * @property {() => Record<string, unknown>} getEnvironmentVariables Reads environment variables at runtime.
+ */
+
+/**
+ * @typedef {(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => void} CorsOriginHandler
+ */
+
+/**
+ * @typedef {(allowedOrigins: string[]) => CorsOriginHandler} CorsOriginHandlerFactory
+ */
+
+/**
+ * @typedef {(getEnvironmentVariables: () => Record<string, unknown>) => CorsOriginHandler} CorsOriginFactory
+ */
+
+/**
+ * @typedef {(helpers: CorsEnvironmentHelpers) => CorsOriginHandler} CorsOriginResolver
+ */
+
+/**
  * Resolve the environment configuration used for Firestore operations.
  * @param {Record<string, unknown> | undefined} providedEnvironment Environment override supplied by the caller.
  * @param {() => Record<string, unknown>} getEnvironmentVariablesFn Getter returning the current environment variables.
@@ -245,11 +271,10 @@ export function createCorsOriginHandler(allowedOrigins) {
 /**
  * Build a factory that composes a CORS origin handler from environment variables.
  * @param {{
- *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
- *   createCorsOriginHandler: (allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void,
+ *   getAllowedOrigins: ResolveAllowedOrigins,
+ *   createCorsOriginHandler: CorsOriginHandlerFactory,
  * }} deps Dependencies required to build the origin handler.
- * @returns {(getEnvironmentVariables: () => Record<string, unknown>) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
- * Factory that accepts an environment getter and returns the configured origin callback.
+ * @returns {CorsOriginFactory} Factory that accepts an environment getter and returns the configured origin callback.
  */
 export function createCorsOriginFactory({
   getAllowedOrigins,
@@ -268,11 +293,7 @@ export function createCorsOriginFactory({
  * @param {{
  *   createCreateCorsOrigin: typeof createCreateCorsOrigin,
  * }} deps Dependencies required to build the environment-aware factory.
- * @returns {({
- *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
- *   getEnvironmentVariables: () => Record<string, unknown>,
- * }) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
- * Factory that accepts environment helpers and resolves the configured origin handler.
+ * @returns {CorsOriginResolver} Factory that accepts environment helpers and resolves the configured origin handler.
  */
 export function createCreateCorsOriginFromEnvironment({
   createCreateCorsOrigin,
@@ -291,12 +312,8 @@ export function createCreateCorsOriginFromEnvironment({
 
 /**
  * Resolve the CORS origin handler directly from environment utilities.
- * @param {{
- *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
- *   getEnvironmentVariables: () => Record<string, unknown>,
- * }} deps Dependencies required to compute the origin handler.
- * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
- * Configured CORS origin handler.
+ * @param {CorsEnvironmentHelpers} deps Dependencies required to compute the origin handler.
+ * @returns {CorsOriginHandler} Configured CORS origin handler.
  */
 export function createCorsOriginFromEnvironment({
   getAllowedOrigins,
@@ -316,10 +333,9 @@ export function createCorsOriginFromEnvironment({
 /**
  * Build a helper that configures the createCorsOrigin factory dependencies.
  * @param {{
- *   getAllowedOrigins: (environmentVariables: Record<string, unknown>) => string[],
+ *   getAllowedOrigins: ResolveAllowedOrigins,
  * }} deps Dependencies required to compose the CORS origin factory.
- * @returns {(getEnvironmentVariables: () => Record<string, unknown>) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
- * Configured createCorsOrigin function that accepts an environment getter.
+ * @returns {CorsOriginFactory} Configured createCorsOrigin function that accepts an environment getter.
  */
 export function createCreateCorsOrigin({ getAllowedOrigins }) {
   return createCorsOriginFactory({
@@ -330,11 +346,9 @@ export function createCreateCorsOrigin({ getAllowedOrigins }) {
 
 /**
  * Build the CORS middleware options for the moderation app.
- * @param {(allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} createCorsOriginHandlerFn
- * Factory that produces the origin callback for the CORS middleware.
+ * @param {CorsOriginHandlerFactory} createCorsOriginHandlerFn Factory that produces the origin callback for the CORS middleware.
  * @param {{ allowedOrigins?: string[], methods?: string[] }} corsConfig CORS configuration for the endpoint.
- * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }}
- * Configuration object for the CORS middleware.
+ * @returns {{ origin: CorsOriginHandler, methods: string[] }} Configuration object for the CORS middleware.
  */
 function buildCorsOptions(createCorsOriginHandlerFn, corsConfig) {
   const { allowedOrigins } = corsConfig;
@@ -348,8 +362,8 @@ function buildCorsOptions(createCorsOriginHandlerFn, corsConfig) {
 
 /**
  * Create a function that wires CORS middleware onto an Express app.
- * @param {(allowedOrigins: string[]) => (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} createCorsOriginHandlerFn - Factory that produces the origin callback for the CORS middleware.
- * @param {(options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }) => unknown} corsFn - CORS middleware factory function.
+ * @param {CorsOriginHandlerFactory} createCorsOriginHandlerFn - Factory that produces the origin callback for the CORS middleware.
+ * @param {(options: { origin: CorsOriginHandler, methods: string[] }) => unknown} corsFn - CORS middleware factory function.
  * @returns {(appInstance: import('express').Express, corsConfig: { allowedOrigins?: string[] }) => void} Function that applies the configured CORS middleware to the Express app.
  */
 export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
@@ -362,10 +376,9 @@ export function createSetupCors(createCorsOriginHandlerFn, corsFn) {
 
 /**
  * Build the CORS options object using environment-aware helpers.
- * @param {(environmentVariables: Record<string, unknown>) => string[]} getAllowedOriginsFunction Resolves allowed origins from environment variables.
+ * @param {ResolveAllowedOrigins} getAllowedOriginsFunction Resolves allowed origins from environment variables.
  * @param {() => Record<string, unknown>} getEnvironmentVariablesFunction Reads environment variables at runtime.
- * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }}
- * Configuration object for the CORS middleware.
+ * @returns {{ origin: CorsOriginHandler, methods: string[] }} Configuration object for the CORS middleware.
  */
 export function createCorsOptions(
   getAllowedOriginsFunction,
