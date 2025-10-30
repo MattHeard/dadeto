@@ -1120,10 +1120,24 @@ const { runCopyToInfra } = createCopyToInfraCore({
   path: pathAdapters,
 });
 
+/**
+ * Format an absolute path so log messages show it relative to the project root.
+ *
+ * @param {string} targetPath - Absolute path being logged.
+ * @returns {string} Relative path suitable for log output.
+ */
 function formatForLog(targetPath) {
   return relative(projectRoot, targetPath);
 }
 
+/**
+ * Rewrite an import specifier within a file if the original specifier is found.
+ *
+ * @param {string} filePath - Absolute path to the file whose contents may change.
+ * @param {string} from - The import specifier to search for.
+ * @param {string} to - The replacement import specifier.
+ * @returns {Promise<void>} Promise that resolves once the file has been updated or skipped.
+ */
 async function rewriteImport(filePath, from, to) {
   const original = await fs.readFile(filePath, 'utf8');
 
