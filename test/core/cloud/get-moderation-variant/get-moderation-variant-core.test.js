@@ -62,6 +62,11 @@ describe('createCorsOptions', () => {
 describe('createGetModerationVariantResponder', () => {
   const token = 'encoded-token';
 
+  /**
+   * Create a request stub that exposes an Express-style get accessor.
+   * @param {string | undefined | null} header Authorization header returned by the accessor.
+   * @returns {{ get: (name: string) => string | undefined }} Request stub that returns the supplied header.
+   */
   function createRequestWithGet(header) {
     return {
       get(name) {
@@ -73,10 +78,24 @@ describe('createGetModerationVariantResponder', () => {
     };
   }
 
+  /**
+   * Create a request stub that exposes a headers map.
+   * @param {Record<string, unknown>} headers Header map returned by the request object.
+   * @returns {{ headers: Record<string, unknown> }} Request stub exposing the provided headers.
+   */
   function createRequestWithHeaders(headers) {
     return { headers };
   }
 
+  /**
+   * Build a Firestore-like stub that resolves with the supplied snapshot.
+   * @param {unknown} returnedSnap Snapshot returned when the nested get call resolves.
+   * @returns {{
+   *   collection: (name: string) => {
+   *     doc: (id: string) => { get: () => Promise<unknown> };
+   *   };
+   * }} Firestore dependency stub.
+   */
   function createDb(returnedSnap) {
     return {
       collection(name) {
