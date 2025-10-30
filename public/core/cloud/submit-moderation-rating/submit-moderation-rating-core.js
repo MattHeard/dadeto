@@ -242,7 +242,8 @@ async function resolveModeratorAssignment(fetchModeratorAssignment, uid) {
 
   return {
     variantId,
-    clearAssignment: typeof clearAssignment === 'function' ? clearAssignment : null,
+    clearAssignment:
+      typeof clearAssignment === 'function' ? clearAssignment : null,
   };
 }
 
