@@ -277,7 +277,7 @@ function maybeLogFetchError(state, logWarning) {
  * @param {BlogDataDependencies} dependencies - Injected fetch + logger bundle.
  */
 function handleBlogFetchState(state, dependencies) {
-  const { fetch, loggers } = dependencies;
+  const { loggers } = dependencies;
   const doFetch = () => fetchAndCacheBlogData(state, dependencies);
   tryFetchingBlog(state, doFetch);
   const { logWarning = () => {} } = loggers;
