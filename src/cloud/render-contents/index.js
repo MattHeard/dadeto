@@ -35,7 +35,8 @@ const auth = getAuth();
 const environmentVariables = getEnvironmentVariables();
 const bucketName = DEFAULT_BUCKET_NAME;
 const projectId =
-  environmentVariables.GOOGLE_CLOUD_PROJECT || environmentVariables.GCLOUD_PROJECT;
+  environmentVariables.GOOGLE_CLOUD_PROJECT ||
+  environmentVariables.GCLOUD_PROJECT;
 const urlMapName = environmentVariables.URL_MAP;
 const cdnHost = environmentVariables.CDN_HOST;
 

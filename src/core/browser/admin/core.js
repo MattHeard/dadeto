@@ -239,7 +239,7 @@ export function createTriggerRender(
  * Attach the trigger render handler to the render button when present.
  * @param {Document} doc - Document used to locate the render button.
  * @param {() => void | Promise<void>} triggerRenderFn - Handler invoked when the button is clicked.
- * @param {string} [elementId='renderBtn'] - ID of the button element to bind the handler to.
+ * @param {string} [elementId] - ID of the button element to bind the handler to.
  * @returns {HTMLElement | null} The render button when found, otherwise null.
  */
 export function bindTriggerRenderClick(

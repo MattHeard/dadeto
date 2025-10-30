@@ -37,9 +37,8 @@ describe('submitModerationRating core', () => {
     });
 
     it('rejects non-POST requests', async () => {
-      const responder = createSubmitModerationRatingResponder(
-        createDependencies()
-      );
+      const responder =
+        createSubmitModerationRatingResponder(createDependencies());
 
       await expect(
         responder({ method: 'GET', body: { isApproved: true } })
@@ -47,22 +46,18 @@ describe('submitModerationRating core', () => {
     });
 
     it('rejects missing isApproved flag', async () => {
-      const responder = createSubmitModerationRatingResponder(
-        createDependencies()
-      );
+      const responder =
+        createSubmitModerationRatingResponder(createDependencies());
 
-      await expect(
-        responder({ method: 'POST', body: {} })
-      ).resolves.toEqual({
+      await expect(responder({ method: 'POST', body: {} })).resolves.toEqual({
         status: 400,
         body: 'Missing or invalid isApproved',
       });
     });
 
     it('rejects when Authorization header is missing', async () => {
-      const responder = createSubmitModerationRatingResponder(
-        createDependencies()
-      );
+      const responder =
+        createSubmitModerationRatingResponder(createDependencies());
 
       await expect(
         responder({ method: 'POST', body: { isApproved: true } })

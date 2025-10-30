@@ -11,7 +11,9 @@ import {
 
 describe('getAllowedOrigins', () => {
   it('returns production origins in prod', () => {
-    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'prod' })).toEqual(productionOrigins);
+    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'prod' })).toEqual(
+      productionOrigins
+    );
   });
 
   it('returns playwright origin when targeting playwright environments', () => {
@@ -19,22 +21,25 @@ describe('getAllowedOrigins', () => {
       getAllowedOrigins({
         DENDRITE_ENVIRONMENT: 't-1234',
         PLAYWRIGHT_ORIGIN: 'https://playwright.example',
-      }),
+      })
     ).toEqual(['https://playwright.example']);
   });
 
   it('falls back to production origins without playwright origin override', () => {
     expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 't-e2e' })).toEqual([]);
-    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'staging' })).toEqual(productionOrigins);
+    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'staging' })).toEqual(
+      productionOrigins
+    );
     expect(getAllowedOrigins(undefined)).toEqual(productionOrigins);
   });
 });
 
 describe('createHandleCorsOrigin', () => {
   it('approves origins that pass the predicate', () => {
-    const handler = createHandleCorsOrigin((origin, origins) => origin === origins[0], [
-      'https://allowed.example',
-    ]);
+    const handler = createHandleCorsOrigin(
+      (origin, origins) => origin === origins[0],
+      ['https://allowed.example']
+    );
 
     handler('https://allowed.example', (error, allow) => {
       expect(error).toBeNull();
@@ -119,7 +124,7 @@ describe('createGetModerationVariantResponder', () => {
       createGetModerationVariantResponder({
         db: null,
         auth: { verifyIdToken: jest.fn() },
-      }),
+      })
     ).toThrow(new TypeError('db must provide a collection method'));
   });
 
@@ -128,7 +133,7 @@ describe('createGetModerationVariantResponder', () => {
       createGetModerationVariantResponder({
         db: { collection: jest.fn() },
         auth: null,
-      }),
+      })
     ).toThrow(new TypeError('auth.verifyIdToken must be a function'));
   });
 
@@ -151,9 +156,7 @@ describe('createGetModerationVariantResponder', () => {
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(
-        createRequestWithGet('Basic credentials'),
-      ),
+      responder(createRequestWithGet('Basic credentials'))
     ).resolves.toEqual({
       status: 401,
       body: 'Missing or invalid Authorization header',
@@ -170,8 +173,8 @@ describe('createGetModerationVariantResponder', () => {
 
     await expect(
       responder(
-        createRequestWithHeaders({ authorization: ['Bearer ' + token] }),
-      ),
+        createRequestWithHeaders({ authorization: [`Bearer ${token}`] })
+      )
     ).resolves.toEqual({
       status: 401,
       body: 'Token expired',
@@ -190,7 +193,7 @@ describe('createGetModerationVariantResponder', () => {
           return undefined;
         }
         if (name === 'authorization') {
-          return 'Bearer ' + token;
+          return `Bearer ${token}`;
         }
         return undefined;
       },
@@ -211,7 +214,9 @@ describe('createGetModerationVariantResponder', () => {
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithHeaders({ authorization: ['Bearer ' + token] })),
+      responder(
+        createRequestWithHeaders({ authorization: [`Bearer ${token}`] })
+      )
     ).resolves.toEqual({
       status: 401,
       body: 'Invalid or expired token',
@@ -225,7 +230,7 @@ describe('createGetModerationVariantResponder', () => {
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithHeaders({ authorization: 'Bearer ' + token })),
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
     ).resolves.toEqual({
       status: 401,
       body: 'Invalid or expired token',
@@ -239,7 +244,7 @@ describe('createGetModerationVariantResponder', () => {
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder({ headers: { authorization: 123 } }),
+      responder({ headers: { authorization: 123 } })
     ).resolves.toEqual({
       status: 401,
       body: 'Missing or invalid Authorization header',
@@ -250,11 +255,13 @@ describe('createGetModerationVariantResponder', () => {
   it('returns no job when the moderator document is missing', async () => {
     const moderatorSnap = { exists: false };
     const db = createDb(moderatorSnap);
-    const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }) };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithHeaders({ Authorization: 'Bearer ' + token })),
+      responder(createRequestWithHeaders({ Authorization: `Bearer ${token}` }))
     ).resolves.toEqual({ status: 404, body: 'No moderation job' });
   });
 
@@ -264,11 +271,15 @@ describe('createGetModerationVariantResponder', () => {
       data: () => ({}),
     };
     const db = createDb(moderatorSnap);
-    const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }) };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithHeaders({ authorization: ['Bearer ' + token] })),
+      responder(
+        createRequestWithHeaders({ authorization: [`Bearer ${token}`] })
+      )
     ).resolves.toEqual({ status: 404, body: 'No moderation job' });
   });
 
@@ -285,11 +296,13 @@ describe('createGetModerationVariantResponder', () => {
       }),
     };
     const db = createDb(moderatorSnap);
-    const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }) };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithHeaders({ authorization: 'Bearer ' + token })),
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
     ).resolves.toEqual(variantNotFoundResponse);
   });
 
@@ -300,7 +313,7 @@ describe('createGetModerationVariantResponder', () => {
 
     const request = {
       get: () => 42,
-      headers: { authorization: 'Bearer ' + token },
+      headers: { authorization: `Bearer ${token}` },
     };
 
     await expect(responder(request)).resolves.toEqual({
@@ -349,11 +362,13 @@ describe('createGetModerationVariantResponder', () => {
       data: () => ({ variant: variantRef }),
     };
     const db = createDb(moderatorSnap);
-    const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }) };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithHeaders({ authorization: 'Bearer ' + token })),
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
     ).resolves.toEqual({
       status: 200,
       body: {
@@ -402,11 +417,13 @@ describe('createGetModerationVariantResponder', () => {
       data: () => ({ variant: variantRef }),
     };
     const db = createDb(moderatorSnap);
-    const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }) };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithGet('Bearer ' + token)),
+      responder(createRequestWithGet(`Bearer ${token}`))
     ).resolves.toEqual({
       status: 200,
       body: {
@@ -449,7 +466,9 @@ describe('createGetModerationVariantResponder', () => {
           async get() {
             return {
               docs: [
-                { data: () => ({ content: 'With target', targetPageNumber: 7 }) },
+                {
+                  data: () => ({ content: 'With target', targetPageNumber: 7 }),
+                },
                 { data: () => ({ content: 'Without target' }) },
               ],
             };
@@ -469,11 +488,13 @@ describe('createGetModerationVariantResponder', () => {
       data: () => ({ variant: variantRef }),
     };
     const db = createDb(moderatorSnap);
-    const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }) };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithHeaders({ authorization: 'Bearer ' + token })),
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
     ).resolves.toEqual({
       status: 200,
       body: {
@@ -517,11 +538,13 @@ describe('createGetModerationVariantResponder', () => {
       data: () => ({ variant: variantRef }),
     };
     const db = createDb(moderatorSnap);
-    const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }) };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithHeaders({ authorization: 'Bearer ' + token })),
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
     ).resolves.toEqual({
       status: 200,
       body: {
@@ -571,11 +594,13 @@ describe('createGetModerationVariantResponder', () => {
       data: () => ({ variant: variantRef }),
     };
     const db = createDb(moderatorSnap);
-    const auth = { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }) };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder(createRequestWithHeaders({ authorization: 'Bearer ' + token })),
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
     ).resolves.toEqual({
       status: 200,
       body: {
