@@ -22,7 +22,10 @@ const app = express();
 
 const environmentVariables = getEnvironmentVariables();
 const allowedOrigins = getAllowedOrigins(environmentVariables);
-const handleCorsOrigin = createHandleCorsOrigin(isAllowedOrigin, allowedOrigins);
+const handleCorsOrigin = createHandleCorsOrigin(
+  isAllowedOrigin,
+  allowedOrigins
+);
 const corsOptions = createCorsOptions(handleCorsOrigin);
 
 app.use(cors(corsOptions));
@@ -38,6 +41,12 @@ const getModerationVariantResponse = createGetModerationVariantResponder({
   auth,
 });
 
+/**
+ * Handle the HTTP request to fetch the moderation variant for the authenticated user.
+ * @param {import('express').Request} req Incoming HTTP request.
+ * @param {import('express').Response} res HTTP response used to send the variant payload.
+ * @returns {Promise<void>} Promise that resolves once the response has been sent.
+ */
 async function handleGetModerationVariant(req, res) {
   const { status, body } = await getModerationVariantResponse(req);
 
