@@ -64,7 +64,7 @@ export function createHandleCorsOrigin(isAllowedOriginFn, allowedOrigins) {
 /**
  * Compose the CORS middleware configuration.
  * @param {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} handleCorsOrigin Origin handler.
- * @param {string[]} [methods=[POST_METHOD]] Allowed HTTP methods.
+ * @param {string[]} [methods] Allowed HTTP methods. Defaults to an array containing the POST method.
  * @returns {{ origin: typeof handleCorsOrigin, methods: string[] }} Express CORS configuration.
  */
 export function createCorsOptions(handleCorsOrigin, methods = [POST_METHOD]) {
