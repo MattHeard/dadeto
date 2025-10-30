@@ -160,10 +160,7 @@ const getApiKeyCreditCreateDbSource = join(
   'get-api-key-credit',
   'create-db.js'
 );
-const getApiKeyCreditValidationSource = join(
-  srcCoreDir,
-  'validation.js'
-);
+const getApiKeyCreditValidationSource = join(srcCoreDir, 'validation.js');
 const getApiKeyCreditGcfSource = join(
   srcCloudDir,
   'get-api-key-credit',
@@ -316,26 +313,12 @@ const getApiKeyCreditCoreFile = join(
   getApiKeyCreditFunctionDir,
   'get-api-key-credit-core.js'
 );
-const getApiKeyCreditValidationTarget = join(
-  getApiKeyCreditFunctionDir,
-  'validation.js'
-);
-const processNewStoryFunctionDir = join(
-  infraFunctionsDir,
-  'process-new-story'
-);
+const processNewStoryFunctionDir = join(infraFunctionsDir, 'process-new-story');
 const processNewStoryCoreFile = join(
   processNewStoryFunctionDir,
   'process-new-story-core.js'
 );
-const processNewStoryPageDependencyTarget = join(
-  processNewStoryFunctionDir,
-  'process-new-page-core.js'
-);
-const generateStatsFunctionDir = join(
-  infraFunctionsDir,
-  'generate-stats'
-);
+const generateStatsFunctionDir = join(infraFunctionsDir, 'generate-stats');
 const generateStatsVerifyAdminFile = join(
   generateStatsFunctionDir,
   'verifyAdmin.js'
@@ -1122,7 +1105,6 @@ const { runCopyToInfra } = createCopyToInfraCore({
 
 /**
  * Format an absolute path so log messages show it relative to the project root.
- *
  * @param {string} targetPath - Absolute path being logged.
  * @returns {string} Relative path suitable for log output.
  */
@@ -1132,7 +1114,6 @@ function formatForLog(targetPath) {
 
 /**
  * Rewrite an import specifier within a file if the original specifier is found.
- *
  * @param {string} filePath - Absolute path to the file whose contents may change.
  * @param {string} from - The import specifier to search for.
  * @param {string} to - The replacement import specifier.
