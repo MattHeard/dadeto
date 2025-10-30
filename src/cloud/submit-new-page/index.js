@@ -52,6 +52,11 @@ const handleSubmitCore = createHandleSubmit({
   findExistingPage: pageNumber => findExistingPage(db, pageNumber),
 });
 
+/**
+ * Handle POST submissions for the submit new page endpoint.
+ * @param {import('express').Request} req Incoming Express request containing the submission payload.
+ * @param {import('express').Response} res Express response instance used to return the status and body.
+ */
 async function handleSubmit(req, res) {
   const { status, body } = await handleSubmitCore(req);
   res.status(status).json(body);
