@@ -144,7 +144,11 @@ function ensureUpdate(target, payload) {
  * @param {number} [depth] Recursion depth used to widen the search range (defaults to 0).
  * @returns {Promise<number>} A unique page number.
  */
-export async function findAvailablePageNumber(db, random = Math.random, depth = 0) {
+export async function findAvailablePageNumber(
+  db,
+  random = Math.random,
+  depth = 0
+) {
   assertRandom(random);
 
   const max = 2 ** depth;
@@ -266,6 +270,205 @@ function resolveServerTimestamp(fieldValue) {
 }
 
 /**
+ * Resolve page and story references when a submission targets an existing option.
+ * Returns null when the submission should be marked as processed without further work.
+ * @param {object} params
+ * @param {import('firebase-admin/firestore').Firestore} params.db
+ * @param {string} params.incomingOptionFullName
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch
+ * @param {(db: import('firebase-admin/firestore').Firestore, random?: () => number, depth?: number) => Promise<number>} params.findAvailablePageNumberFn
+ * @param {() => string} params.randomUUID
+ * @param {() => number} params.random
+ * @param {() => unknown} params.getServerTimestamp
+ * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference | null, variantRef: import('firebase-admin/firestore').DocumentReference | null, pageNumber: number | null }>}
+ */
+async function resolveIncomingOptionContext({
+  db,
+  incomingOptionFullName,
+  snapshot,
+  batch,
+  findAvailablePageNumberFn,
+  randomUUID,
+  random,
+  getServerTimestamp,
+}) {
+  const optionRef = db.doc(incomingOptionFullName);
+  const optionSnap = await optionRef.get();
+
+  if (!optionSnap?.exists) {
+    await ensureUpdate(snapshot?.ref, { processed: true });
+    return null;
+  }
+
+  const {
+    variantRef,
+    pageRef: inferredPageRef,
+    storyRef: initialStoryRef,
+  } = resolveStoryRefFromOption(optionRef);
+  let storyRef = initialStoryRef ?? null;
+  let pageDocRef = null;
+  let pageNumber = null;
+
+  const optionData = optionSnap.data() ?? {};
+  const targetPage = resolvePageFromTarget(optionData.targetPage);
+
+  if (targetPage) {
+    try {
+      const existingPageSnap = await targetPage.get();
+      if (existingPageSnap?.exists) {
+        pageNumber = existingPageSnap.data()?.number ?? null;
+        pageDocRef = targetPage;
+      }
+    } catch {
+      pageDocRef = null;
+    }
+  }
+
+  if (!pageDocRef) {
+    const nextPageNumber = await findAvailablePageNumberFn(db, random);
+
+    if (!storyRef || typeof storyRef.collection !== 'function') {
+      throw new TypeError('storyRef.collection must be a function');
+    }
+
+    const newPageId = randomUUID();
+    pageDocRef = storyRef.collection('pages').doc(newPageId);
+
+    batch.set(pageDocRef, {
+      number: nextPageNumber,
+      incomingOption: incomingOptionFullName,
+      createdAt: getServerTimestamp(),
+    });
+
+    batch.update(optionRef, { targetPage: pageDocRef });
+    pageNumber = nextPageNumber;
+  }
+
+  if (!storyRef) {
+    storyRef = inferredPageRef?.parent?.parent ?? null;
+  }
+
+  return { pageDocRef, storyRef, variantRef, pageNumber };
+}
+
+/**
+ * Resolve page and story references when the submission provides a direct page number.
+ * Returns null when the submission should simply be marked processed.
+ * @param {object} params
+ * @param {import('firebase-admin/firestore').Firestore} params.db
+ * @param {number} params.directPageNumber
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot
+ * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference | null, variantRef: null, pageNumber: number }>}
+ */
+async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
+  const pageSnap = await db
+    .collectionGroup('pages')
+    .where('number', '==', directPageNumber)
+    .limit(1)
+    .get();
+
+  if (pageSnap.empty) {
+    await ensureUpdate(snapshot?.ref, { processed: true });
+    return null;
+  }
+
+  const pageDocRef = pageSnap.docs[0].ref;
+  const storyRef = pageDocRef.parent?.parent ?? null;
+
+  return {
+    pageDocRef,
+    storyRef,
+    variantRef: null,
+    pageNumber: directPageNumber,
+  };
+}
+
+/**
+ * Create the new variant document alongside option children.
+ * @param {object} params
+ * @param {import('firebase-admin/firestore').DocumentReference} params.pageDocRef
+ * @param {import('firebase-admin/firestore').DocumentReference} params.snapshotRef
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch
+ * @param {object} params.submission
+ * @param {() => string} params.randomUUID
+ * @param {() => unknown} params.getServerTimestamp
+ * @param {() => number} params.random
+ * @param {(name: string) => string} params.incrementVariantNameFn
+ * @returns {Promise<import('firebase-admin/firestore').DocumentReference>}
+ */
+async function createVariantWithOptions({
+  pageDocRef,
+  snapshotRef,
+  batch,
+  submission,
+  randomUUID,
+  getServerTimestamp,
+  random,
+  incrementVariantNameFn,
+}) {
+  const variantsSnap = await pageDocRef
+    .collection('variants')
+    .orderBy('name', 'desc')
+    .limit(1)
+    .get();
+
+  const latestName = variantsSnap.docs[0]?.data()?.name ?? '';
+  const nextName = variantsSnap.empty
+    ? 'a'
+    : incrementVariantNameFn(latestName);
+
+  const newVariantRef = getVariantCollection(pageDocRef).doc(
+    snapshotRef?.id ?? randomUUID()
+  );
+
+  batch.set(newVariantRef, {
+    name: nextName,
+    content: submission.content,
+    authorId: submission.authorId || null,
+    authorName: submission.author,
+    incomingOption: submission.incomingOptionFullName || null,
+    moderatorReputationSum: 0,
+    rand: random(),
+    createdAt: getServerTimestamp(),
+  });
+
+  normalizeOptions(submission.options).forEach((text, position) => {
+    const optionRef = newVariantRef.collection('options').doc(randomUUID());
+
+    batch.set(optionRef, {
+      content: text,
+      createdAt: getServerTimestamp(),
+      position,
+    });
+  });
+
+  return newVariantRef;
+}
+
+/**
+ * Ensure the submitting author has a Firestore document.
+ * @param {object} params
+ * @param {import('firebase-admin/firestore').Firestore} params.db
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch
+ * @param {object} params.submission
+ * @param {() => string} params.randomUUID
+ * @returns {Promise<void>}
+ */
+async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
+  const authorRef = resolveAuthorRef(db, submission.authorId);
+
+  if (!authorRef) {
+    return;
+  }
+
+  const authorSnap = await authorRef.get();
+  if (!authorSnap?.exists) {
+    batch.set(authorRef, { uuid: randomUUID() });
+  }
+}
+
+/**
  * Build the Cloud Function handler for processing new page submissions.
  * @param {object} options Collaborators required by the handler.
  * @param {import('firebase-admin/firestore').Firestore} options.db Firestore instance.
@@ -329,110 +532,47 @@ export function createProcessNewPageHandler({
     let pageNumber = null;
 
     const batch = getBatch(db);
-
-    if (incomingOptionFullName) {
-      const optionRef = db.doc(incomingOptionFullName);
-      const optionSnap = await optionRef.get();
-
-      if (!optionSnap?.exists) {
-        await ensureUpdate(snapshot?.ref, { processed: true });
-        return null;
-      }
-
-      const references = resolveStoryRefFromOption(optionRef);
-      variantRef = references.variantRef;
-      const inferredPageRef = references.pageRef;
-      storyRef = references.storyRef;
-
-      const optionData = optionSnap.data() ?? {};
-      const targetPage = resolvePageFromTarget(optionData.targetPage);
-
-      if (targetPage) {
-        try {
-          const existingPageSnap = await targetPage.get();
-          if (existingPageSnap?.exists) {
-            pageNumber = existingPageSnap.data()?.number ?? null;
-            pageDocRef = targetPage;
-          }
-        } catch {
-          pageDocRef = null;
-        }
-      }
-
-      if (!pageDocRef) {
-        pageNumber = await findAvailablePageNumberFn(db, random);
-
-        if (!storyRef || typeof storyRef.collection !== 'function') {
-          throw new TypeError('storyRef.collection must be a function');
-        }
-
-        const newPageId = randomUUID();
-        pageDocRef = storyRef.collection('pages').doc(newPageId);
-
-        batch.set(pageDocRef, {
-          number: pageNumber,
-          incomingOption: incomingOptionFullName,
-          createdAt: getServerTimestamp(),
+    const pageContext = incomingOptionFullName
+      ? await resolveIncomingOptionContext({
+          db,
+          incomingOptionFullName,
+          snapshot,
+          batch,
+          findAvailablePageNumberFn,
+          randomUUID,
+          random,
+          getServerTimestamp,
+        })
+      : await resolveDirectPageContext({
+          db,
+          directPageNumber,
+          snapshot,
         });
 
-        batch.update(optionRef, { targetPage: pageDocRef });
-      }
-
-      if (!storyRef) {
-        storyRef = inferredPageRef?.parent?.parent ?? null;
-      }
-    } else {
-      pageNumber = directPageNumber;
-
-      const pageSnap = await db
-        .collectionGroup('pages')
-        .where('number', '==', pageNumber)
-        .limit(1)
-        .get();
-
-      if (pageSnap.empty) {
-        await ensureUpdate(snapshot?.ref, { processed: true });
-        return null;
-      }
-
-      pageDocRef = pageSnap.docs[0].ref;
-      storyRef = pageDocRef.parent?.parent ?? null;
+    if (!pageContext) {
+      return null;
     }
 
-    pageDocRef = ensureDocumentReference(pageDocRef, 'pageDocRef.collection must be a function');
-    storyRef = ensureDocumentReference(storyRef, 'storyRef.collection must be a function');
+    ({ pageDocRef, storyRef, variantRef, pageNumber } = pageContext);
 
-    const variantsSnap = await pageDocRef
-      .collection('variants')
-      .orderBy('name', 'desc')
-      .limit(1)
-      .get();
+    pageDocRef = ensureDocumentReference(
+      pageDocRef,
+      'pageDocRef.collection must be a function'
+    );
+    storyRef = ensureDocumentReference(
+      storyRef,
+      'storyRef.collection must be a function'
+    );
 
-    const nextName = variantsSnap.empty
-      ? 'a'
-      : incrementVariantNameFn(variantsSnap.docs[0]?.data()?.name ?? '');
-
-    const newVariantRef = getVariantCollection(pageDocRef).doc(snapshot?.id ?? randomUUID());
-
-    batch.set(newVariantRef, {
-      name: nextName,
-      content: submission.content,
-      authorId: submission.authorId || null,
-      authorName: submission.author,
-      incomingOption: incomingOptionFullName || null,
-      moderatorReputationSum: 0,
-      rand: random(),
-      createdAt: getServerTimestamp(),
-    });
-
-    normalizeOptions(submission.options).forEach((text, position) => {
-      const optionRef = newVariantRef.collection('options').doc(randomUUID());
-
-      batch.set(optionRef, {
-        content: text,
-        createdAt: getServerTimestamp(),
-        position,
-      });
+    const newVariantRef = await createVariantWithOptions({
+      pageDocRef,
+      snapshotRef: snapshot?.ref ?? null,
+      batch,
+      submission,
+      randomUUID,
+      getServerTimestamp,
+      random,
+      incrementVariantNameFn,
     });
 
     const storyStatsRef = resolveStoryStatsRef(db, storyRef);
@@ -448,15 +588,7 @@ export function createProcessNewPageHandler({
     }
 
     batch.update(snapshot?.ref, { processed: true });
-
-    const authorRef = resolveAuthorRef(db, submission.authorId);
-
-    if (authorRef) {
-      const authorSnap = await authorRef.get();
-      if (!authorSnap?.exists) {
-        batch.set(authorRef, { uuid: randomUUID() });
-      }
-    }
+    await ensureAuthorRecordExists({ db, batch, submission, randomUUID });
 
     await batch.commit();
     return null;

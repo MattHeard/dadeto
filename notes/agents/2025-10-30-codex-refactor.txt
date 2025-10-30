@@ -1,0 +1,7 @@
+Unexpected hurdle: breaking `handleProcessNewPage` apart surfaced how tightly coupled the option and direct-page flows were. My first helper draft forgot that the Firestore trigger snapshot exposes its document id directly, not just via `ref`, so variant creation defaulted to random UUIDs. Spotting the mismatch in the diff reminded me to pass the reference explicitly.
+
+Second surprise: ESLint still flags the handler at complexity 13 even after splitting, which means more granular helpers (option target resolution vs. batch writes) are still on the table. For now the reduction from 42→13 keeps the refactor manageable without touching business logic.
+
+Takeaway for future agents: when extracting helpers around Firestore docs, double-check which objects are snapshots vs. references so the IDs stay deterministic. Keeping a quick grep of `reports/lint/lint.txt` in the loop helps verify the expected complexity drop before moving on.
+
+Open question: should we extract the variant creation into a shared utility to reuse between "new page" and other flows? Worth revisiting if we tackle the remaining complexity warnings.
