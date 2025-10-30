@@ -1,12 +1,16 @@
 import { FieldValue } from 'firebase-admin/firestore';
 
+/**
+ * @typedef {import('node:process').ProcessEnv} ProcessEnv
+ */
+
 export { default as crypto } from 'crypto';
 
 export const now = () => FieldValue.serverTimestamp();
 
 /**
  * Retrieve the current environment variables for the Cloud Function.
- * @returns {NodeJS.ProcessEnv} Environment variables exposed to the function.
+ * @returns {ProcessEnv} Environment variables exposed to the function.
  */
 export function getEnvironmentVariables() {
   return process.env;
