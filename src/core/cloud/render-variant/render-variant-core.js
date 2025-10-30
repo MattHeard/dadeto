@@ -404,85 +404,160 @@ export function createRenderVariant({
   });
 
   return async function render(snap, context = {}) {
-    if (snap && 'exists' in snap && !snap.exists) {
-      return null;
-    }
-
-    const variant = snap.data() || {};
-    const pageSnap = await snap.ref.parent?.parent?.get();
-
-    if (!pageSnap?.exists) {
-      return null;
-    }
-
-    const page = pageSnap.data() || {};
-    const options = await loadOptions({
+    const renderPlan = await resolveRenderPlan({
       snap,
-      visibilityThreshold,
-      db,
-      consoleError,
-    });
-    const { storyTitle, firstPageUrl } = await resolveStoryMetadata({
-      pageSnap,
-      page,
-      consoleError,
-    });
-    const { authorName, authorUrl } = await resolveAuthorMetadata({
-      variant,
       db,
       bucket,
       consoleError,
-    });
-    const parentUrl = await resolveParentUrl({ variant, db, consoleError });
-
-    const html = buildHtml(
-      page.number,
-      variant.name,
-      variant.content,
-      options,
-      storyTitle,
-      authorName,
-      authorUrl,
-      parentUrl,
-      firstPageUrl,
-      !page.incomingOption
-    );
-    const filePath = `p/${page.number}${variant.name}.html`;
-    const openVariant = options.some(
-      option => option.targetPageNumber === undefined
-    );
-
-    await bucket.file(filePath).save(html, {
-      contentType: 'text/html',
-      ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
+      visibilityThreshold,
     });
 
-    const variantsSnap = await snap.ref.parent.get();
-    const variants = getVisibleVariants(variantsSnap.docs);
-    const altsHtml = buildAltsHtml(page.number, variants);
-    const altsPath = `p/${page.number}-alts.html`;
-
-    await bucket.file(altsPath).save(altsHtml, { contentType: 'text/html' });
-
-    const pendingName = variant.incomingOption
-      ? context?.params?.variantId
-      : context?.params?.storyId;
-    const pendingPath = `pending/${pendingName}.json`;
-
-    await bucket.file(pendingPath).save(JSON.stringify({ path: filePath }), {
-      contentType: 'application/json',
-      metadata: { cacheControl: 'no-store' },
-    });
-
-    const paths = [`/${altsPath}`, `/${filePath}`];
-
-    if (parentUrl) {
-      paths.push(parentUrl);
+    if (!renderPlan) {
+      return null;
     }
 
-    await invalidatePaths(paths);
+    await persistRenderPlan({
+      snap,
+      context,
+      bucket,
+      invalidatePaths,
+      ...renderPlan,
+    });
     return null;
   };
+}
+
+/**
+ * Prepare the information required to render and publish a variant.
+ * @param {object} options - Dependencies and inputs for rendering.
+ * @param {{exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}} options.snap - Variant snapshot.
+ * @param {{doc: Function}} options.db - Firestore-like database instance.
+ * @param {{bucket: Function}} options.bucket - Storage bucket factory.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Optional logger.
+ * @param {number} options.visibilityThreshold - Minimum visibility required for variant publication.
+ * @returns {Promise<null | {
+ *   variant: Record<string, any>,
+ *   page: Record<string, any>,
+ *   parentUrl: string | undefined,
+ *   html: string,
+ *   filePath: string,
+ *   openVariant: boolean
+ * }>} Render plan describing the variant artefacts.
+ */
+async function resolveRenderPlan({
+  snap,
+  db,
+  bucket,
+  consoleError,
+  visibilityThreshold,
+}) {
+  if (snap && 'exists' in snap && !snap.exists) {
+    return null;
+  }
+
+  const variant = snap.data() || {};
+  const pageSnap = await snap.ref.parent?.parent?.get();
+
+  if (!pageSnap?.exists) {
+    return null;
+  }
+
+  const page = pageSnap.data() || {};
+  const options = await loadOptions({
+    snap,
+    visibilityThreshold,
+    db,
+    consoleError,
+  });
+  const { storyTitle, firstPageUrl } = await resolveStoryMetadata({
+    pageSnap,
+    page,
+    consoleError,
+  });
+  const { authorName, authorUrl } = await resolveAuthorMetadata({
+    variant,
+    db,
+    bucket,
+    consoleError,
+  });
+  const parentUrl = await resolveParentUrl({ variant, db, consoleError });
+
+  const html = buildHtml(
+    page.number,
+    variant.name,
+    variant.content,
+    options,
+    storyTitle,
+    authorName,
+    authorUrl,
+    parentUrl,
+    firstPageUrl,
+    !page.incomingOption
+  );
+  const filePath = `p/${page.number}${variant.name}.html`;
+  const openVariant = options.some(
+    option => option.targetPageNumber === undefined
+  );
+
+  return { variant, page, parentUrl, html, filePath, openVariant };
+}
+
+/**
+ * Persist rendered variant artefacts and trigger CDN invalidation.
+ * @param {object} options - Artefacts and dependencies used for persistence.
+ * @param {{exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}} options.snap - Variant snapshot.
+ * @param {object} [options.context] - Invocation context containing request parameters.
+ * @param {{bucket: (name: string) => { file: (path: string) => { save: Function } }}} options.bucket - Storage helper.
+ * @param {(paths: string[]) => Promise<void>} options.invalidatePaths - Cache invalidation routine.
+ * @param {Record<string, any>} options.variant - Variant document data.
+ * @param {Record<string, any>} options.page - Parent page document data.
+ * @param {string | undefined} options.parentUrl - URL of the parent variant, when available.
+ * @param {string} options.html - Rendered HTML payload for the variant.
+ * @param {string} options.filePath - Storage path for the rendered HTML.
+ * @param {boolean} options.openVariant - Indicates whether the variant is open (no target page).
+ * @returns {Promise<void>} Resolves when artefacts are persisted and caches invalidated.
+ */
+async function persistRenderPlan({
+  snap,
+  context,
+  bucket,
+  invalidatePaths,
+  variant,
+  page,
+  parentUrl,
+  html,
+  filePath,
+  openVariant,
+}) {
+  await bucket.file(filePath).save(html, {
+    contentType: 'text/html',
+    ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
+  });
+
+  const variantsSnap = await snap.ref.parent.get();
+  const variants = getVisibleVariants(variantsSnap.docs);
+  const altsHtml = buildAltsHtml(page.number, variants);
+  const altsPath = `p/${page.number}-alts.html`;
+
+  await bucket.file(altsPath).save(altsHtml, { contentType: 'text/html' });
+
+  const pendingName = variant.incomingOption
+    ? context?.params?.variantId
+    : context?.params?.storyId;
+  const pendingPath = `pending/${pendingName}.json`;
+
+  await bucket.file(pendingPath).save(JSON.stringify({ path: filePath }), {
+    contentType: 'application/json',
+    metadata: { cacheControl: 'no-store' },
+  });
+
+  const paths = [`/${altsPath}`, `/${filePath}`];
+
+  if (parentUrl) {
+    paths.push(parentUrl);
+  }
+
+  await invalidatePaths(paths);
 }
 
 /**
