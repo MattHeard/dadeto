@@ -407,6 +407,41 @@ function assertFunction(value, message) {
 }
 
 /**
+ * Ensure Google sign-in dependencies expose the expected interfaces.
+ * @param {{
+ *   credentialFactory: (credential: string) => unknown,
+ *   signInWithCredential: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
+ *   auth?: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage?: { setItem?: (key: string, value: string) => void },
+ *   matchMedia: (query: string) => { matches: boolean },
+ *   querySelectorAll: (selector: string) => NodeList,
+ * }} deps - Dependencies to validate.
+ * @returns {void} - Throws when any dependency is invalid.
+ */
+function validateGoogleSignInDeps({
+  credentialFactory,
+  signInWithCredential,
+  auth,
+  storage,
+  matchMedia,
+  querySelectorAll,
+}) {
+  assertFunction(credentialFactory, 'credentialFactory must be a function');
+  assertFunction(
+    signInWithCredential,
+    'signInWithCredential must be a function'
+  );
+  if (!auth || typeof auth !== 'object') {
+    throw new TypeError('auth must be provided');
+  }
+  if (!storage || typeof storage.setItem !== 'function') {
+    throw new TypeError('storage must provide a setItem function');
+  }
+  assertFunction(matchMedia, 'matchMedia must be a function');
+  assertFunction(querySelectorAll, 'querySelectorAll must be a function');
+}
+
+/**
  * Validate and normalize dependencies for Google sign-in initialization.
  * @param {{
  *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
@@ -441,19 +476,14 @@ function normalizeGoogleSignInDeps(deps = {}) {
     logger = console,
   } = deps;
 
-  assertFunction(credentialFactory, 'credentialFactory must be a function');
-  assertFunction(
+  validateGoogleSignInDeps({
+    credentialFactory,
     signInWithCredential,
-    'signInWithCredential must be a function'
-  );
-  if (!auth || typeof auth !== 'object') {
-    throw new TypeError('auth must be provided');
-  }
-  if (!storage || typeof storage.setItem !== 'function') {
-    throw new TypeError('storage must provide a setItem function');
-  }
-  assertFunction(matchMedia, 'matchMedia must be a function');
-  assertFunction(querySelectorAll, 'querySelectorAll must be a function');
+    auth,
+    storage,
+    matchMedia,
+    querySelectorAll,
+  });
 
   const resolveGoogleAccountsId =
     typeof googleAccountsId === 'function'
