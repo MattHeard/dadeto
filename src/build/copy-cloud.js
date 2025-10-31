@@ -157,7 +157,7 @@ const getApiKeyCreditCoreSource = join(
 );
 const getApiKeyCreditCreateDbSource = join(
   srcCoreCloudDir,
-  'get-api-key-credit',
+  'get-api-key-credit-v2',
   'create-db.js'
 );
 const getApiKeyCreditValidationSource = join(srcCoreDir, 'validation.js');
