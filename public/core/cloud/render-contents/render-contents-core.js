@@ -260,52 +260,79 @@ export function createRenderContents({
   let fetchTopStoryIds;
   let fetchStoryInfo;
 
-  return async function render(deps = {}) {
-    let loadStoryIds = deps.fetchTopStoryIds;
-
-    if (!loadStoryIds) {
-      if (!fetchTopStoryIds) {
-        if (!db || typeof db.collection !== 'function') {
-          throw new TypeError('db must provide a collection helper');
-        }
-
-        fetchTopStoryIds = createFetchTopStoryIds(db);
-      }
-
-      loadStoryIds = fetchTopStoryIds;
+  /**
+   * Resolve an asynchronous fetcher from provided dependencies or cached factories.
+   * @param {{
+   *   provided: (() => Promise<any[]>) | undefined,
+   *   cache: (() => Promise<any[]>) | undefined,
+   *   setCache: (fn: () => Promise<any[]>) => void,
+   *   factory: (db: { collection: Function }) => () => Promise<any[]>,
+   *   db: { collection?: Function } | undefined
+   * }} options Fetcher resolution inputs.
+   * @returns {() => Promise<any[]>} Fetch implementation to use.
+   */
+  function resolveFetcher({
+    provided,
+    cache,
+    setCache,
+    factory,
+    db: database,
+  }) {
+    if (typeof provided === 'function') {
+      return provided;
     }
 
-    let loadStoryInfo = deps.fetchStoryInfo;
-
-    if (!loadStoryInfo) {
-      if (!fetchStoryInfo) {
-        if (!db || typeof db.collection !== 'function') {
-          throw new TypeError('db must provide a collection helper');
-        }
-
-        fetchStoryInfo = createFetchStoryInfo(db);
-      }
-
-      loadStoryInfo = fetchStoryInfo;
+    if (cache) {
+      return cache;
     }
 
-    const ids = await loadStoryIds();
+    if (!database || typeof database.collection !== 'function') {
+      throw new TypeError('db must provide a collection helper');
+    }
+
+    const created = factory(database);
+    setCache(created);
+    return created;
+  }
+
+  /**
+   * Load story metadata for rendering.
+   * @param {() => Promise<string[]>} loadIds Loader for top story identifiers.
+   * @param {(id: string) => Promise<Record<string, any> | null>} loadInfo Loader for story details.
+   * @returns {Promise<Record<string, any>[]>} Collected story data.
+   */
+  async function buildStoryItems(loadIds, loadInfo) {
+    const ids = await loadIds();
     const items = [];
 
     for (const id of ids) {
-      const info = await loadStoryInfo(id);
+      const info = await loadInfo(id);
 
       if (info) {
         items.push(info);
       }
     }
 
-    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    return items;
+  }
+
+  /**
+   * Publish paginated story listings and return the invalidation paths.
+   * @param {{ items: Record<string, any>[], pageSize: number, bucket: { file: (path: string) => { save: Function } } }} options
+   * Rendering configuration.
+   * @returns {Promise<string[]>} Paths that were written and need invalidation.
+   */
+  async function publishStoryPages({
+    items,
+    pageSize: size,
+    bucket: targetBucket,
+  }) {
+    const totalPages = Math.max(1, Math.ceil(items.length / size));
     const paths = [];
 
     for (let page = 1; page <= totalPages; page += 1) {
-      const start = (page - 1) * pageSize;
-      const pageItems = items.slice(start, start + pageSize);
+      const start = (page - 1) * size;
+      const pageItems = items.slice(start, start + size);
       const html = buildHtml(pageItems);
       const filePath = page === 1 ? 'index.html' : `contents/${page}.html`;
       const options = { contentType: 'text/html' };
@@ -314,9 +341,40 @@ export function createRenderContents({
         options.metadata = { cacheControl: 'no-cache' };
       }
 
-      await bucket.file(filePath).save(html, options);
+      await targetBucket.file(filePath).save(html, options);
       paths.push(`/${filePath}`);
     }
+
+    return paths;
+  }
+
+  return async function render(deps = {}) {
+    const loadStoryIds = resolveFetcher({
+      provided: deps.fetchTopStoryIds,
+      cache: fetchTopStoryIds,
+      setCache: value => {
+        fetchTopStoryIds = value;
+      },
+      factory: createFetchTopStoryIds,
+      db,
+    });
+
+    const loadStoryInfo = resolveFetcher({
+      provided: deps.fetchStoryInfo,
+      cache: fetchStoryInfo,
+      setCache: value => {
+        fetchStoryInfo = value;
+      },
+      factory: createFetchStoryInfo,
+      db,
+    });
+
+    const items = await buildStoryItems(loadStoryIds, loadStoryInfo);
+    const paths = await publishStoryPages({
+      items,
+      pageSize,
+      bucket,
+    });
 
     await invalidatePaths(paths);
     return null;

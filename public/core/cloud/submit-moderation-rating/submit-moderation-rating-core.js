@@ -68,29 +68,70 @@ function normalizeMethod(method) {
  * @param {SubmitModerationRatingRequest | undefined} request Request object supplied by the adapter.
  * @returns {string | null} Raw Authorization header value or null when absent.
  */
+function readAuthorizationFromGetter(request) {
+  if (!request || typeof request.get !== 'function') {
+    return null;
+  }
+
+  const header = request.get('Authorization');
+  if (typeof header === 'string') {
+    return header;
+  }
+
+  const fallback = request.get('authorization');
+  return typeof fallback === 'string' ? fallback : null;
+}
+
+/**
+ * Normalize header values to the first available string entry.
+ * @param {unknown} value Header value to normalize.
+ * @returns {string | null} String header representation or null when unavailable.
+ */
+function coerceAuthorizationHeader(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const [first] = value;
+  return typeof first === 'string' ? first : null;
+}
+
+/**
+ * Resolve the Authorization header from a headers object.
+ * @param {Record<string, unknown> | null | undefined} headers Raw headers provided by the caller.
+ * @returns {string | null} Header value when present, otherwise null.
+ */
+function readAuthorizationFromHeaders(headers) {
+  if (!headers || typeof headers !== 'object') {
+    return null;
+  }
+
+  const lowercase = coerceAuthorizationHeader(headers.authorization);
+  if (lowercase !== null) {
+    return lowercase;
+  }
+
+  const uppercase = coerceAuthorizationHeader(headers.Authorization);
+  return uppercase;
+}
+
+/**
+ * Resolve an Authorization header from a heterogeneous request shape.
+ * @param {{ get?: (name: string) => unknown, headers?: Record<string, unknown> | null }} request Request-like value.
+ * @returns {string | null} Header value when present, otherwise null.
+ */
 function getAuthorizationHeader(request) {
-  if (request && typeof request.get === 'function') {
-    const header = request.get('Authorization') ?? request.get('authorization');
+  const headerFromGetter = readAuthorizationFromGetter(request);
 
-    if (typeof header === 'string') {
-      return header;
-    }
+  if (headerFromGetter !== null) {
+    return headerFromGetter;
   }
 
-  const headers = request?.headers;
-  if (headers && typeof headers === 'object') {
-    const header = headers.authorization ?? headers.Authorization;
-
-    if (Array.isArray(header)) {
-      return header[0] ?? null;
-    }
-
-    if (typeof header === 'string') {
-      return header;
-    }
-  }
-
-  return null;
+  return readAuthorizationFromHeaders(request?.headers);
 }
 
 /**
