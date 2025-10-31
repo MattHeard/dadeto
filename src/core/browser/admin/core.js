@@ -627,37 +627,100 @@ export function createRegenerateVariant(
     }
 
     const input = doc.getElementById('regenInput');
-    const value = input?.value?.trim?.();
-    const match = value?.match?.(/^(\d+)([a-zA-Z]+)$/);
+    const pageVariant = parsePageVariantInput(input);
 
-    if (!match) {
+    if (!pageVariant) {
       showMessage('Invalid format');
       return;
     }
 
-    const page = Number(match[1]);
-    const variant = match[2];
-
     try {
-      const { markVariantDirtyUrl } = await getAdminEndpointsFn();
-      const res = await fetchFn(markVariantDirtyUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ page, variant }),
-      });
-
-      if (!res?.ok) {
-        throw new Error('fail');
-      }
-
+      await sendRegenerateVariantRequest(
+        fetchFn,
+        getAdminEndpointsFn,
+        token,
+        pageVariant
+      );
       showMessage('Regeneration triggered');
     } catch {
       showMessage('Regeneration failed');
     }
   };
+}
+
+/**
+ * Parse the regenerate input element into a page and variant pair.
+ * @param {HTMLInputElement | null | undefined} inputElement - Input element containing the page and variant value.
+ * @returns {{page: number, variant: string} | null} Parsed page and variant when the input is valid; otherwise null.
+ */
+function parsePageVariantInput(inputElement) {
+  const trimmedValue = getTrimmedInputValue(inputElement);
+  if (!trimmedValue) {
+    return null;
+  }
+
+  return parsePageVariantValue(trimmedValue);
+}
+
+/**
+ * Read and trim the value from the regenerate input element.
+ * @param {HTMLInputElement | null | undefined} inputElement - Potential regenerate input element.
+ * @returns {string} Trimmed value or an empty string when unavailable.
+ */
+function getTrimmedInputValue(inputElement) {
+  if (!inputElement) {
+    return '';
+  }
+
+  const { value } = inputElement;
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.trim();
+}
+
+/**
+ * Convert a raw regenerate input string into a page and variant pair.
+ * @param {string} value - Raw input string in the "123abc" format.
+ * @returns {{page: number, variant: string} | null} Parsed page and variant when the value matches the expected format.
+ */
+function parsePageVariantValue(value) {
+  const match = value.match(/^(\d+)([a-zA-Z]+)$/);
+  if (!match) {
+    return null;
+  }
+
+  return { page: Number(match[1]), variant: match[2] };
+}
+
+/**
+ * Submit a request to mark a variant dirty for regeneration.
+ * @param {FetchFn} fetchFn - Fetch-like network caller.
+ * @param {() => Promise<{ markVariantDirtyUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
+ * @param {string} token - Authorization token used to authenticate the request.
+ * @param {{page: number, variant: string}} pageVariant - Page and variant identifiers for regeneration.
+ * @returns {Promise<void>} Promise that resolves when the request succeeds.
+ */
+async function sendRegenerateVariantRequest(
+  fetchFn,
+  getAdminEndpointsFn,
+  token,
+  pageVariant
+) {
+  const { markVariantDirtyUrl } = await getAdminEndpointsFn();
+  const res = await fetchFn(markVariantDirtyUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(pageVariant),
+  });
+
+  if (!res?.ok) {
+    throw new Error('fail');
+  }
 }
 
 /**
