@@ -314,11 +314,71 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
 }
 
 /**
+ * Resolve parent document references for the variant hierarchy.
+ * @param {{ parent?: { parent?: any } } | null | undefined} optionRef Reference to the incoming option document.
+ * @returns {{ parentVariantRef: { get: Function, parent?: { parent?: any } }, parentPageRef: { get: Function } } | null} Parent
+ * references when the hierarchy can be resolved, otherwise null.
+ */
+function resolveParentReferences(optionRef) {
+  if (!optionRef) {
+    return null;
+  }
+
+  const parentVariantRef = optionRef.parent?.parent;
+  const parentPageRef = parentVariantRef?.parent?.parent;
+
+  if (!parentVariantRef || !parentPageRef) {
+    return null;
+  }
+
+  return { parentVariantRef, parentPageRef };
+}
+
+/**
+ * Fetch the parent variant and page documents.
+ * @param {{ get: () => Promise<{ exists: boolean }> }} parentVariantRef Firestore-like document reference.
+ * @param {{ get: () => Promise<{ exists: boolean }> }} parentPageRef Firestore-like document reference.
+ * @returns {Promise<{ parentVariantSnap: { exists: boolean, data: () => Record<string, any> }, parentPageSnap: { exists: boolean, data: () => Record<string, any> } } | null>} Snapshot tuple when both documents exist, otherwise null.
+ */
+async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
+  const [parentVariantSnap, parentPageSnap] = await Promise.all([
+    parentVariantRef.get(),
+    parentPageRef.get(),
+  ]);
+
+  if (!parentVariantSnap.exists || !parentPageSnap.exists) {
+    return null;
+  }
+
+  return { parentVariantSnap, parentPageSnap };
+}
+
+/**
+ * Create the parent route slug from snapshot data.
+ * @param {{ data: () => Record<string, any> }} parentVariantSnap Variant snapshot.
+ * @param {{ data: () => Record<string, any> }} parentPageSnap Page snapshot.
+ * @returns {string | null} Route path when identifiers can be derived, otherwise null.
+ */
+function buildParentRoute(parentVariantSnap, parentPageSnap) {
+  const parentData = parentVariantSnap.data() || {};
+  const pageData = parentPageSnap.data() || {};
+  const parentName = parentData.name;
+  const parentNumber = pageData.number;
+
+  if (!parentName || parentNumber === undefined) {
+    return null;
+  }
+
+  return `/p/${parentNumber}${parentName}.html`;
+}
+
+/**
  * Determine the canonical URL of the variant's parent, if any.
- * @param {object} options - Inputs for parent resolution.
- * @param {Record<string, any>} options.variant - Variant data referencing its parent option.
- * @param {{doc: Function}} options.db - Firestore-like database used for lookups.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @param {{
+ *   variant: Record<string, any>,
+ *   db: { doc: (path: string) => { parent?: { parent?: any }, get: Function } },
+ *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
+ * }} options Inputs for parent resolution.
  * @returns {Promise<string | undefined>} URL to the parent variant when it can be resolved.
  */
 async function resolveParentUrl({ variant, db, consoleError }) {
@@ -328,30 +388,31 @@ async function resolveParentUrl({ variant, db, consoleError }) {
 
   try {
     const optionRef = db.doc(variant.incomingOption);
-    const parentVariantRef = optionRef.parent?.parent;
-    const parentPageRef = parentVariantRef?.parent?.parent;
+    const references = resolveParentReferences(optionRef);
 
-    if (!parentVariantRef || !parentPageRef) {
+    if (!references) {
       return undefined;
     }
 
-    const [parentVariantSnap, parentPageSnap] = await Promise.all([
-      parentVariantRef.get(),
-      parentPageRef.get(),
-    ]);
+    const snapshots = await fetchParentSnapshots(
+      references.parentVariantRef,
+      references.parentPageRef
+    );
 
-    if (!parentVariantSnap.exists || !parentPageSnap.exists) {
+    if (!snapshots) {
       return undefined;
     }
 
-    const parentName = parentVariantSnap.data().name;
-    const parentNumber = parentPageSnap.data().number;
+    const route = buildParentRoute(
+      snapshots.parentVariantSnap,
+      snapshots.parentPageSnap
+    );
 
-    if (!parentName || parentNumber === undefined) {
+    if (route === null) {
       return undefined;
     }
 
-    return `/p/${parentNumber}${parentName}.html`;
+    return route;
   } catch (error) {
     if (consoleError) {
       consoleError('parent lookup failed', error?.message || error);
