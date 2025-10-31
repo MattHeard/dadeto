@@ -325,6 +325,169 @@ export function createWireSignOut(doc, googleAuth) {
 }
 
 /**
+ * Ensure the provided value is a callable function.
+ * @param {unknown} value - Value that should be a function.
+ * @param {string} message - Error message thrown when validation fails.
+ * @returns {void}
+ */
+function assertFunction(value, message) {
+  if (typeof value !== 'function') {
+    throw new TypeError(message);
+  }
+}
+
+/**
+ * Validate and normalize dependencies for Google sign-in initialization.
+ * @param {{
+ *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
+ *   credentialFactory: (credential: string) => unknown,
+ *   signInWithCredential: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
+ *   auth: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage: { setItem: (key: string, value: string) => void },
+ *   matchMedia: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
+ *   querySelectorAll: (selector: string) => NodeList,
+ *   logger?: { error?: (message: string) => void },
+ * }} deps - Raw dependency bag.
+ * @returns {{
+ *   resolveGoogleAccountsId: () => GoogleAccountsClient | undefined,
+ *   credentialFactory: (credential: string) => unknown,
+ *   signInWithCredential: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
+ *   auth: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage: { setItem: (key: string, value: string) => void },
+ *   matchMedia: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
+ *   querySelectorAll: (selector: string) => NodeList,
+ *   safeLogger: { error?: (message: string) => void },
+ * }} Normalized dependencies with required helpers.
+ */
+function normalizeGoogleSignInDeps(deps = {}) {
+  const {
+    googleAccountsId,
+    credentialFactory,
+    signInWithCredential,
+    auth,
+    storage,
+    matchMedia,
+    querySelectorAll,
+    logger = console,
+  } = deps;
+
+  assertFunction(credentialFactory, 'credentialFactory must be a function');
+  assertFunction(
+    signInWithCredential,
+    'signInWithCredential must be a function'
+  );
+  if (!auth || typeof auth !== 'object') {
+    throw new TypeError('auth must be provided');
+  }
+  if (!storage || typeof storage.setItem !== 'function') {
+    throw new TypeError('storage must provide a setItem function');
+  }
+  assertFunction(matchMedia, 'matchMedia must be a function');
+  assertFunction(querySelectorAll, 'querySelectorAll must be a function');
+
+  const resolveGoogleAccountsId =
+    typeof googleAccountsId === 'function'
+      ? googleAccountsId
+      : () => googleAccountsId;
+
+  const safeLogger =
+    logger && typeof logger.error === 'function' ? logger : console;
+
+  return {
+    resolveGoogleAccountsId,
+    credentialFactory,
+    signInWithCredential,
+    auth,
+    storage,
+    matchMedia,
+    querySelectorAll,
+    safeLogger,
+  };
+}
+
+/**
+ * Determine whether the Google Identity client exposes the expected methods.
+ * @param {unknown} accountsId - Candidate Google Identity client.
+ * @returns {boolean} True when the client provides initialize and renderButton.
+ */
+function hasRequiredGoogleIdentityMethods(accountsId) {
+  return (
+    Boolean(accountsId) &&
+    typeof accountsId.initialize === 'function' &&
+    typeof accountsId.renderButton === 'function'
+  );
+}
+
+/**
+ * Report a missing Google Identity script to the provided logger.
+ * @param {{ error?: (message: string) => void }} logger - Logger used for reporting.
+ * @returns {void}
+ */
+function reportMissingGoogleIdentity(logger) {
+  logger?.error?.('Google Identity script missing');
+}
+
+/**
+ * Complete the Firebase sign-in flow using a Google credential.
+ * @param {{ credential: string }} param0 - Payload containing the Google credential.
+ * @param {{
+ *   credentialFactory: (credential: string) => unknown,
+ *   signInWithCredential: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
+ *   auth: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage: { setItem: (key: string, value: string) => void },
+ *   onSignIn?: (token: string) => void,
+ * }} context - Collaborators required to complete the sign-in.
+ * @returns {Promise<void>} Resolves once the credential has been processed.
+ */
+async function handleCredentialSignIn(
+  { credential },
+  { credentialFactory, signInWithCredential, auth, storage, onSignIn }
+) {
+  const firebaseCredential = credentialFactory(credential);
+  await signInWithCredential(auth, firebaseCredential);
+
+  const currentUser = auth.currentUser;
+  const getIdToken = currentUser?.getIdToken;
+
+  if (typeof getIdToken !== 'function') {
+    throw new TypeError('auth.currentUser.getIdToken must be a function');
+  }
+
+  const idToken = await getIdToken.call(currentUser);
+  storage.setItem('id_token', idToken);
+  onSignIn?.(idToken);
+}
+
+/**
+ * Render Google sign-in buttons with a theme derived from the media query.
+ * @param {GoogleAccountsClient} accountsId - Google Identity client used to render buttons.
+ * @param {(selector: string) => NodeList} querySelectorAll - DOM query helper.
+ * @param {{ matches: boolean, addEventListener?: (type: string, listener: () => void) => void } | undefined} mediaQueryList - Media query list controlling the theme.
+ * @returns {void}
+ */
+function renderSignInButtons(accountsId, querySelectorAll, mediaQueryList) {
+  const elements = Array.from(querySelectorAll('#signinButton') ?? []);
+  let theme = 'filled_blue';
+
+  if (mediaQueryList?.matches) {
+    theme = 'filled_black';
+  }
+
+  elements.forEach(el => {
+    if (!el) {
+      return;
+    }
+
+    el.innerHTML = '';
+    accountsId.renderButton(el, {
+      theme,
+      size: 'large',
+      text: 'signin_with',
+    });
+  });
+}
+
+/**
  * Create an initializer for the Google sign-in button with injected dependencies.
  * @param {{
  *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
@@ -339,91 +502,44 @@ export function createWireSignOut(doc, googleAuth) {
  * @returns {(options?: GoogleSignInOptions) => Promise<void> | void} Initialized sign-in function.
  */
 export function createInitGoogleSignIn(deps) {
-  const {
-    googleAccountsId,
-    credentialFactory,
-    signInWithCredential,
-    auth,
-    storage,
-    matchMedia,
-    querySelectorAll,
-    logger = console,
-  } = deps ?? {};
-
-  if (typeof credentialFactory !== 'function') {
-    throw new TypeError('credentialFactory must be a function');
-  }
-  if (typeof signInWithCredential !== 'function') {
-    throw new TypeError('signInWithCredential must be a function');
-  }
-  if (!auth || typeof auth !== 'object') {
-    throw new TypeError('auth must be provided');
-  }
-  if (!storage || typeof storage.setItem !== 'function') {
-    throw new TypeError('storage must provide a setItem function');
-  }
-  if (typeof matchMedia !== 'function') {
-    throw new TypeError('matchMedia must be a function');
-  }
-  if (typeof querySelectorAll !== 'function') {
-    throw new TypeError('querySelectorAll must be a function');
-  }
-
-  const resolveGoogleAccountsId =
-    typeof googleAccountsId === 'function'
-      ? googleAccountsId
-      : () => googleAccountsId;
-
-  const safeLogger =
-    logger && typeof logger.error === 'function' ? logger : console;
+  const normalizedDeps = normalizeGoogleSignInDeps(deps);
 
   return function initGoogleSignIn({ onSignIn } = {}) {
+    const {
+      resolveGoogleAccountsId,
+      credentialFactory,
+      signInWithCredential,
+      auth,
+      storage,
+      matchMedia,
+      querySelectorAll,
+      safeLogger,
+    } = normalizedDeps;
+
     const accountsId = resolveGoogleAccountsId();
 
-    if (!accountsId || typeof accountsId.initialize !== 'function') {
-      safeLogger?.error?.('Google Identity script missing');
-      return;
-    }
-    if (typeof accountsId.renderButton !== 'function') {
-      safeLogger?.error?.('Google Identity script missing');
+    if (!hasRequiredGoogleIdentityMethods(accountsId)) {
+      reportMissingGoogleIdentity(safeLogger);
       return;
     }
 
     accountsId.initialize({
       client_id:
         '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
-      callback: async ({ credential }) => {
-        const firebaseCredential = credentialFactory(credential);
-        await signInWithCredential(auth, firebaseCredential);
-
-        const currentUser = auth.currentUser;
-        const getIdToken = currentUser?.getIdToken;
-
-        if (typeof getIdToken !== 'function') {
-          throw new TypeError('auth.currentUser.getIdToken must be a function');
-        }
-
-        const idToken = await getIdToken.call(currentUser);
-        storage.setItem('id_token', idToken);
-        onSignIn?.(idToken);
-      },
+      callback: options =>
+        handleCredentialSignIn(options, {
+          credentialFactory,
+          signInWithCredential,
+          auth,
+          storage,
+          onSignIn,
+        }),
       ux_mode: 'popup',
     });
 
     const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
-
-    const renderButton = () => {
-      const elements = Array.from(querySelectorAll('#signinButton') ?? []);
-      elements.forEach(el => {
-        if (!el) return;
-        el.innerHTML = '';
-        accountsId.renderButton(el, {
-          theme: mediaQueryList?.matches ? 'filled_black' : 'filled_blue',
-          size: 'large',
-          text: 'signin_with',
-        });
-      });
-    };
+    const renderButton = () =>
+      renderSignInButtons(accountsId, querySelectorAll, mediaQueryList);
 
     renderButton();
     mediaQueryList?.addEventListener?.('change', renderButton);
