@@ -53,12 +53,13 @@ export function getFirestoreInstance(options = {}) {
   ensureAppFn();
 
   const databaseId = resolveFirestoreDatabaseId(environment);
-  const useCustomDependencies =
-    ensureAppFn !== ensureFirebaseApp ||
-    getFirestoreFn !== getAdminFirestore ||
-    environment !== process.env;
-
-  if (useCustomDependencies) {
+  if (
+    shouldBypassFirestoreCache({
+      ensureAppFn,
+      getFirestoreFn,
+      environment,
+    })
+  ) {
     return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
   }
 
@@ -93,4 +94,25 @@ function getFirestoreForDatabase(getFirestoreFn, firebaseApp, databaseId) {
   }
 
   return getFirestoreFn(firebaseApp);
+}
+
+/**
+ * Determine whether dependency overrides require bypassing the shared cache.
+ * @param {{
+ *   ensureAppFn: typeof ensureFirebaseApp,
+ *   getFirestoreFn: typeof getAdminFirestore,
+ *   environment: Record<string, unknown>,
+ * }} options Dependency overrides provided to {@link getFirestoreInstance}.
+ * @returns {boolean} True when the cache should not be used.
+ */
+function shouldBypassFirestoreCache({
+  ensureAppFn,
+  getFirestoreFn,
+  environment,
+}) {
+  return (
+    ensureAppFn !== ensureFirebaseApp ||
+    getFirestoreFn !== getAdminFirestore ||
+    environment !== process.env
+  );
 }
