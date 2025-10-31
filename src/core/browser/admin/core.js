@@ -160,21 +160,91 @@ export async function postTriggerRenderContents(
  * @param {(text: string) => void} showMessage - Callback to surface status messages.
  * @returns {Promise<void>} Resolves after the trigger render result has been surfaced.
  */
-export async function announceTriggerRenderResult(res, showMessage) {
-  if (!res?.ok) {
-    const status = res?.status ?? 'unknown';
-    const statusText = res?.statusText ?? 'unknown';
-    const body = (await res?.text?.()) ?? '';
-    let bodySuffix = '';
-    if (body) {
-      bodySuffix = ` - ${body}`;
-    }
+/**
+ * Resolve the HTTP status for a trigger render response.
+ * @param {Response|null|undefined} res Response returned by the trigger render request.
+ * @returns {number | string} Known status code or the string "unknown" when unavailable.
+ */
+function resolveTriggerRenderStatus(res) {
+  const status = res?.status;
+  return status ?? 'unknown';
+}
 
-    showMessage(`Render failed: ${status} ${statusText}${bodySuffix}`);
+/**
+ * Resolve the HTTP status text for a trigger render response.
+ * @param {Response|null|undefined} res Response returned by the trigger render request.
+ * @returns {string} Known status text or the string "unknown" when unavailable.
+ */
+function resolveTriggerRenderStatusText(res) {
+  const statusText = res?.statusText;
+  if (!statusText) {
+    return 'unknown';
+  }
+
+  return statusText;
+}
+
+/**
+ * Attempt to read a textual body from the trigger render response.
+ * @param {Response|null|undefined} res Response returned by the trigger render request.
+ * @returns {Promise<string>} Body content when readable, otherwise an empty string.
+ */
+async function readTriggerRenderBody(res) {
+  const readText = res?.text;
+  if (typeof readText !== 'function') {
+    return '';
+  }
+
+  const body = await readText.call(res);
+  return body || '';
+}
+
+/**
+ * Format a trigger render failure message using resolved response details.
+ * @param {{ status: number | string, statusText: string, body: string }} params Response details.
+ * @returns {string} Human-readable failure message.
+ */
+function formatTriggerRenderFailureMessage({ status, statusText, body }) {
+  if (!body) {
+    return `Render failed: ${status} ${statusText}`;
+  }
+
+  return `Render failed: ${status} ${statusText} - ${body}`;
+}
+
+/**
+ * Report a trigger render failure to the provided messenger.
+ * @param {Response|null|undefined} res Response returned by the trigger render request.
+ * @param {(text: string) => void} showMessage Callback used to surface status messages.
+ * @returns {Promise<void>} Resolves after the failure has been reported.
+ */
+async function reportTriggerRenderFailure(res, showMessage) {
+  const status = resolveTriggerRenderStatus(res);
+  const statusText = resolveTriggerRenderStatusText(res);
+  const body = await readTriggerRenderBody(res);
+
+  showMessage(
+    formatTriggerRenderFailureMessage({
+      status,
+      statusText,
+      body,
+    })
+  );
+}
+
+/**
+ * Report the outcome of a trigger render request using the provided messenger.
+ * @param {Response|null|undefined} res Response returned by the trigger render request.
+ * @param {(text: string) => void} showMessage Callback to surface status messages.
+ * @returns {Promise<void>} Resolves after the trigger render result has been surfaced.
+ */
+export async function announceTriggerRenderResult(res, showMessage) {
+  if (res && res.ok) {
+    showMessage('Render triggered');
     return;
   }
 
-  showMessage('Render triggered');
+  await reportTriggerRenderFailure(res, showMessage);
 }
 
 /**
