@@ -13,6 +13,153 @@ function renderInlineMarkdown(text) {
 }
 
 /**
+ * Build the HTML list item for a single variant option.
+ * @param {number} pageNumber Page number of the current variant.
+ * @param {string} variantName Variant name identifier.
+ * @param {{
+ *   content: string,
+ *   position: number,
+ *   targetPageNumber?: number,
+ *   targetVariantName?: string,
+ *   targetVariants?: Array<{ name: string, weight?: number }>,
+ * }} option Option metadata.
+ * @returns {string} Rendered option list item HTML.
+ */
+function buildOptionItem(pageNumber, variantName, option) {
+  const slug = `${pageNumber}-${variantName}-${option.position}`;
+  let href = `../new-page.html?option=${slug}`;
+  if (option.targetPageNumber !== undefined) {
+    const suffix = option.targetVariantName || '';
+    href = `/p/${option.targetPageNumber}${suffix}.html`;
+  }
+  const optionHtml = renderInlineMarkdown(option.content);
+  const attrs = [
+    'class="variant-link"',
+    `data-link-id="${slug}"`,
+    `href="${href}"`,
+  ];
+  if (option.targetVariants) {
+    const variantsAttr = option.targetVariants
+      .map(v => `${option.targetPageNumber}${v.name}:${v.weight ?? 1}`)
+      .join(',');
+    attrs.push(`data-variants="${escapeHtml(variantsAttr)}"`);
+  }
+  return `<li><a ${attrs.join(' ')}>${optionHtml}</a></li>`;
+}
+
+/**
+ * Build the combined options list HTML for the variant.
+ * @param {number} pageNumber Page number of the current variant.
+ * @param {string} variantName Variant name identifier.
+ * @param {Array<object>} options Variant option metadata.
+ * @returns {string} HTML string for the ordered list contents.
+ */
+function buildOptionsHtml(pageNumber, variantName, options = []) {
+  return options
+    .map(option => buildOptionItem(pageNumber, variantName, option))
+    .join('');
+}
+
+/**
+ * Build the optional story title heading HTML.
+ * @param {string} storyTitle Story title text.
+ * @param {boolean} showTitleHeading Whether to render the heading.
+ * @returns {string} HTML string for the title heading, if any.
+ */
+function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
+  if (!storyTitle || !showTitleHeading) return '';
+  return `<h1>${escapeHtml(storyTitle)}</h1>`;
+}
+
+/**
+ * Resolve the document head title text.
+ * @param {string} storyTitle Story title text.
+ * @returns {string} Value for the `<title>` element.
+ */
+function buildHeadTitle(storyTitle) {
+  if (storyTitle) {
+    return `Dendrite - ${escapeHtml(storyTitle)}`;
+  }
+  return 'Dendrite';
+}
+
+/**
+ * Build the author attribution HTML.
+ * @param {string} author Author name.
+ * @param {string} authorUrl Optional URL for the author.
+ * @returns {string} HTML paragraph with the author attribution, if any.
+ */
+function buildAuthorHtml(author, authorUrl) {
+  if (!author) return '';
+  if (authorUrl) {
+    return `<p>By <a href="${authorUrl}">${escapeHtml(author)}</a></p>`;
+  }
+  return `<p>By ${escapeHtml(author)}</p>`;
+}
+
+/**
+ * Build a paragraph that contains a simple navigation link.
+ * @param {string} url Link target URL.
+ * @param {string} label Anchor label text.
+ * @returns {string} HTML paragraph or empty string when no URL is provided.
+ */
+function buildLinkParagraph(url, label) {
+  if (!url) return '';
+  return `<p><a href="${url}">${label}</a></p>`;
+}
+
+/**
+ * Build the rewrite link HTML for the current page.
+ * @param {number} pageNumber Page number of the current variant.
+ * @returns {string} Anchor HTML that links to the rewrite page.
+ */
+function buildRewriteLink(pageNumber) {
+  return `<a href="../new-page.html?page=${pageNumber}">Rewrite</a> `;
+}
+
+/**
+ * Build the report link and inline handler script.
+ * @param {number} pageNumber Page number of the current variant.
+ * @param {string} variantName Variant name identifier.
+ * @returns {string} HTML snippet for reporting inappropriate content.
+ */
+function buildReportHtml(pageNumber, variantName) {
+  const variantSlug = `${pageNumber}${variantName}`;
+  return (
+    '<p><a id="reportLink" href="#">⚑ Report</a></p>' +
+    `<script>document.getElementById('reportLink').onclick=async e=>{e.preventDefault();try{await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant:'${variantSlug}'})});alert('Thanks for your report.');}catch(e){alert('Sorry, something went wrong.');}};</script>`
+  );
+}
+
+/**
+ * Build the pager navigation HTML that links to previous and next pages.
+ * @param {number} pageNumber Page number of the current variant.
+ * @returns {string} HTML paragraph with pager links.
+ */
+function buildPageNumberHtml(pageNumber) {
+  return (
+    `<p style="text-align:center">` +
+    `<a style="text-decoration:none" href="/p/${pageNumber - 1}a.html">◀</a> ` +
+    `${pageNumber} ` +
+    `<a style="text-decoration:none" href="/p/${pageNumber + 1}a.html">▶</a>` +
+    `</p>`
+  );
+}
+
+/**
+ * Build paragraphs for the supplied variant content.
+ * @param {string} content Variant narrative content.
+ * @returns {string} HTML string containing `<p>` elements for each line.
+ */
+function buildParagraphsHtml(content) {
+  return String(content ?? '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map(line => `<p>${renderInlineMarkdown(line)}</p>`)
+    .join('');
+}
+
+/**
  * Build HTML page for the variant.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
@@ -43,58 +190,16 @@ export function buildHtml(
   firstPageUrl = '',
   showTitleHeading = true
 ) {
-  const items = options
-    .map(opt => {
-      const slug = `${pageNumber}-${variantName}-${opt.position}`;
-      const href =
-        opt.targetPageNumber !== undefined
-          ? `/p/${opt.targetPageNumber}${opt.targetVariantName || ''}.html`
-          : `../new-page.html?option=${slug}`;
-      const optionHtml = renderInlineMarkdown(opt.content);
-      const attrs = [
-        'class="variant-link"',
-        `data-link-id="${slug}"`,
-        `href="${href}"`,
-      ];
-      if (opt.targetVariants) {
-        const variantsAttr = opt.targetVariants
-          .map(v => `${opt.targetPageNumber}${v.name}:${v.weight ?? 1}`)
-          .join(',');
-        attrs.push(`data-variants="${escapeHtml(variantsAttr)}"`);
-      }
-      return `<li><a ${attrs.join(' ')}>${optionHtml}</a></li>`;
-    })
-    .join('');
-  const title =
-    storyTitle && showTitleHeading ? `<h1>${escapeHtml(storyTitle)}</h1>` : '';
-  const headTitle = storyTitle
-    ? `Dendrite - ${escapeHtml(storyTitle)}`
-    : 'Dendrite';
-  const authorHtml = author
-    ? authorUrl
-      ? `<p>By <a href="${authorUrl}">${escapeHtml(author)}</a></p>`
-      : `<p>By ${escapeHtml(author)}</p>`
-    : '';
-  const parentHtml = parentUrl ? `<p><a href="${parentUrl}">Back</a></p>` : '';
-  const firstHtml = firstPageUrl
-    ? `<p><a href="${firstPageUrl}">First page</a></p>`
-    : '';
-  const rewriteLink = `<a href="../new-page.html?page=${pageNumber}">Rewrite</a> `;
-  const variantSlug = `${pageNumber}${variantName}`;
-  const reportHtml =
-    '<p><a id="reportLink" href="#">⚑ Report</a></p>' +
-    `<script>document.getElementById('reportLink').onclick=async e=>{e.preventDefault();try{await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant:'${variantSlug}'})});alert('Thanks for your report.');}catch(e){alert('Sorry, something went wrong.');}};</script>`;
-  const pageNumberHtml =
-    `<p style="text-align:center">` +
-    `<a style="text-decoration:none" href="/p/${pageNumber - 1}a.html">◀</a> ` +
-    `${pageNumber} ` +
-    `<a style="text-decoration:none" href="/p/${pageNumber + 1}a.html">▶</a>` +
-    `</p>`;
-  const paragraphs = String(content ?? '')
-    .replace(/\r\n?/g, '\n')
-    .split('\n')
-    .map(line => `<p>${renderInlineMarkdown(line)}</p>`)
-    .join('');
+  const items = buildOptionsHtml(pageNumber, variantName, options);
+  const title = buildTitleHeadingHtml(storyTitle, showTitleHeading);
+  const headTitle = buildHeadTitle(storyTitle);
+  const authorHtml = buildAuthorHtml(author, authorUrl);
+  const parentHtml = buildLinkParagraph(parentUrl, 'Back');
+  const firstHtml = buildLinkParagraph(firstPageUrl, 'First page');
+  const rewriteLink = buildRewriteLink(pageNumber);
+  const reportHtml = buildReportHtml(pageNumber, variantName);
+  const pageNumberHtml = buildPageNumberHtml(pageNumber);
+  const paragraphs = buildParagraphsHtml(content);
   return `<!doctype html>
 <html lang="en">
   <head>
