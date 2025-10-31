@@ -49,6 +49,99 @@ function startAnimation(id, text) {
 }
 
 /**
+ * Create a DOM element with optional text content.
+ * @param {string} tagName The tag name for the element.
+ * @param {string} text The text content to assign.
+ * @returns {HTMLElement} The created element.
+ */
+function createTextElement(tagName, text) {
+  const el = document.createElement(tagName);
+  el.textContent = text || '';
+  return el;
+}
+
+/**
+ * Append the variant options list to the container.
+ * @param {HTMLElement} container The container receiving the list.
+ * @param {Array<{content: string, targetPageNumber?: number}>} options Variant options.
+ * @returns {void}
+ */
+function appendOptionsList(container, options) {
+  if (!Array.isArray(options) || options.length === 0) return;
+  const list = document.createElement('ol');
+  options.forEach(opt => {
+    const li = document.createElement('li');
+    li.textContent =
+      opt.targetPageNumber !== undefined
+        ? `${opt.content} (${opt.targetPageNumber})`
+        : opt.content;
+    list.appendChild(li);
+  });
+  container.appendChild(list);
+}
+
+/**
+ * Wire up and enable moderation action buttons.
+ * @returns {void}
+ */
+function enableModerationButtons() {
+  const approve = document.getElementById('approveBtn');
+  const reject = document.getElementById('rejectBtn');
+  if (!approve || !reject) return;
+  approve.disabled = false;
+  reject.disabled = false;
+  approve.onclick = () => submitRating(true);
+  reject.onclick = () => submitRating(false);
+}
+
+/**
+ * Render the moderation variant contents.
+ * @param {{title?: string, author?: string, content?: string, options?: Array<{content: string, targetPageNumber?: number}>}} data Variant payload.
+ * @returns {void}
+ */
+function renderVariant(data) {
+  const container = document.getElementById('pageContent');
+  if (!container) return;
+
+  container.style.display = '';
+  container.innerHTML = '';
+
+  container.appendChild(createTextElement('h3', data.title));
+  const author = data.author ? `By ${data.author}` : '';
+  container.appendChild(createTextElement('p', author));
+  container.appendChild(createTextElement('p', data.content));
+  appendOptionsList(container, data.options);
+
+  enableModerationButtons();
+}
+
+/**
+ * Determine whether the load should be retried for a 404 error.
+ * @param {unknown} err The caught error.
+ * @param {boolean} retried Whether a retry has already occurred.
+ * @returns {boolean} True if a retry should be attempted.
+ */
+function shouldRetryLoad(err, retried) {
+  if (retried) return false;
+  return Boolean(
+    err && typeof err.message === 'string' && err.message.includes('HTTP 404')
+  );
+}
+
+/**
+ * Attempt to assign a new job and reload the variant.
+ * @returns {Promise<void>} Resolves once the retry flow completes.
+ */
+async function retryLoadVariant() {
+  try {
+    await assignJob();
+    await loadVariant(true);
+  } catch (innerErr) {
+    console.error(innerErr);
+  }
+}
+
+/**
  * Register the click handler for the sign-out button.
  */
 function wireSignOut() {
@@ -105,46 +198,10 @@ async function loadVariant(retried = false) {
   try {
     const { getModerationVariantUrl } = await getModerationEndpoints();
     const data = await authedFetch(getModerationVariantUrl);
-    const container = document.getElementById('pageContent');
-    container.style.display = '';
-    container.innerHTML = '';
-    const title = document.createElement('h3');
-    title.textContent = data.title || '';
-    const author = document.createElement('p');
-    author.textContent = data.author ? `By ${data.author}` : '';
-    const content = document.createElement('p');
-    content.textContent = data.content || '';
-    container.appendChild(title);
-    container.appendChild(author);
-    container.appendChild(content);
-    if (Array.isArray(data.options) && data.options.length) {
-      const list = document.createElement('ol');
-      data.options.forEach(opt => {
-        const li = document.createElement('li');
-        li.textContent =
-          opt.targetPageNumber !== undefined
-            ? `${opt.content} (${opt.targetPageNumber})`
-            : opt.content;
-        list.appendChild(li);
-      });
-      container.appendChild(list);
-    }
-    const approve = document.getElementById('approveBtn');
-    const reject = document.getElementById('rejectBtn');
-    if (approve && reject) {
-      approve.disabled = false;
-      reject.disabled = false;
-      approve.onclick = () => submitRating(true);
-      reject.onclick = () => submitRating(false);
-    }
+    renderVariant(data);
   } catch (err) {
-    if (err.message.includes('HTTP 404') && !retried) {
-      try {
-        await assignJob();
-        await loadVariant(true);
-      } catch (innerErr) {
-        console.error(innerErr);
-      }
+    if (shouldRetryLoad(err, retried)) {
+      await retryLoadVariant();
     } else {
       console.error(err);
     }
