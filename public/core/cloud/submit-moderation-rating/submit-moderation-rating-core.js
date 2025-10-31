@@ -311,50 +311,110 @@ export function createSubmitModerationRatingResponder({
       return METHOD_NOT_ALLOWED_RESPONSE;
     }
 
-    const { body = {} } = request;
-    const { isApproved } = body;
-
-    if (!ensureBoolean(isApproved)) {
-      return INVALID_BODY_RESPONSE;
+    const bodyResult = validateRatingBody(request.body);
+    if (bodyResult.error) {
+      return bodyResult.error;
     }
 
-    const authorizationHeader = getAuthorizationHeader(request);
-    const token = extractBearerToken(authorizationHeader);
-
-    if (!token) {
-      return MISSING_AUTHORIZATION_RESPONSE;
+    const tokenResult = resolveAuthorizationToken(request);
+    if (tokenResult.error) {
+      return tokenResult.error;
     }
 
-    let uid;
-    try {
-      uid = await resolveUid(verifyIdToken, token);
-    } catch (err) {
-      const message = err?.message || 'Invalid or expired token';
-      return createResponse(401, message);
-    }
-
-    const assignment = await resolveModeratorAssignment(
+    const contextResult = await resolveModeratorContext({
+      verifyIdToken,
       fetchModeratorAssignment,
-      uid
-    );
+      token: tokenResult.token,
+    });
 
-    if (!assignment) {
-      return NO_JOB_RESPONSE;
+    if (contextResult.error) {
+      return contextResult.error;
     }
 
     const ratingId = randomUUID();
     await recordModerationRating({
       id: ratingId,
-      moderatorId: uid,
-      variantId: assignment.variantId,
-      isApproved,
+      moderatorId: contextResult.uid,
+      variantId: contextResult.assignment.variantId,
+      isApproved: bodyResult.isApproved,
       ratedAt: getServerTimestamp(),
     });
 
-    if (assignment.clearAssignment) {
-      await assignment.clearAssignment();
-    }
+    await clearAssignment(contextResult.assignment);
 
     return createResponse(201, {});
   };
+}
+
+/**
+ * Validate the incoming request body and extract the approval flag.
+ * @param {SubmitModerationRatingRequest['body']} body Request body provided by the caller.
+ * @returns {{ isApproved: boolean } | { error: SubmitModerationRatingResponse }} Result containing the approval flag or an error response.
+ */
+function validateRatingBody(body) {
+  const isApproved =
+    body && typeof body === 'object' ? body.isApproved : undefined;
+
+  if (!ensureBoolean(isApproved)) {
+    return { error: INVALID_BODY_RESPONSE };
+  }
+
+  return { isApproved };
+}
+
+/**
+ * Resolve a bearer token from the inbound request.
+ * @param {SubmitModerationRatingRequest | undefined} request Incoming request object.
+ * @returns {{ token: string } | { error: SubmitModerationRatingResponse }} Result containing the token or an error response.
+ */
+function resolveAuthorizationToken(request) {
+  const authorizationHeader = getAuthorizationHeader(request);
+  const token = extractBearerToken(authorizationHeader);
+
+  if (!token) {
+    return { error: MISSING_AUTHORIZATION_RESPONSE };
+  }
+
+  return { token };
+}
+
+/**
+ * Resolve the moderator identity and assignment for a verified request.
+ * @param {{ verifyIdToken: SubmitModerationRatingDependencies['verifyIdToken'], fetchModeratorAssignment: SubmitModerationRatingDependencies['fetchModeratorAssignment'], token: string }} options Dependencies and request token used to fetch the moderator context.
+ * @returns {Promise<{ uid: string, assignment: ModeratorAssignment } | { error: SubmitModerationRatingResponse }>} Resolves with moderator context or an error response.
+ */
+async function resolveModeratorContext({
+  verifyIdToken,
+  fetchModeratorAssignment,
+  token,
+}) {
+  let uid;
+  try {
+    uid = await resolveUid(verifyIdToken, token);
+  } catch (err) {
+    const message = err?.message || 'Invalid or expired token';
+    return { error: createResponse(401, message) };
+  }
+
+  const assignment = await resolveModeratorAssignment(
+    fetchModeratorAssignment,
+    uid
+  );
+
+  if (!assignment) {
+    return { error: NO_JOB_RESPONSE };
+  }
+
+  return { uid, assignment };
+}
+
+/**
+ * Invoke the assignment cleanup callback when present.
+ * @param {ModeratorAssignment} assignment Assignment returned from the resolver.
+ * @returns {Promise<void>}
+ */
+async function clearAssignment(assignment) {
+  if (assignment.clearAssignment) {
+    await assignment.clearAssignment();
+  }
 }
