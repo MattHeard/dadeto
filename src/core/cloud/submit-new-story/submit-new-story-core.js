@@ -60,33 +60,73 @@ function normalizeMethod(method) {
 }
 
 /**
- * Retrieve the Authorization header from an incoming request object.
- * @param {SubmitNewStoryRequest | undefined} request - Express or plain-object request instance.
- * @returns {string | null} The header value, or null when absent.
+ * Convert a header candidate into a normalized string value.
+ * @param {unknown} candidate - Raw header candidate.
+ * @returns {string | null} Normalized string when available.
  */
-function getAuthorizationHeader(request) {
-  if (request && typeof request.get === 'function') {
-    const header = request.get('Authorization') ?? request.get('authorization');
-
-    if (typeof header === 'string') {
-      return header;
-    }
+function normalizeAuthorizationCandidate(candidate) {
+  if (typeof candidate === 'string') {
+    return candidate;
   }
 
-  const headers = request?.headers;
-  if (headers && typeof headers === 'object') {
-    const header = headers.authorization ?? headers.Authorization;
+  if (Array.isArray(candidate)) {
+    const [first] = candidate;
 
-    if (Array.isArray(header)) {
-      return header[0] ?? null;
-    }
-
-    if (typeof header === 'string') {
-      return header;
-    }
+    return typeof first === 'string' ? first : null;
   }
 
   return null;
+}
+
+/**
+ * Retrieve the Authorization header using an Express-style getter.
+ * @param {SubmitNewStoryRequest | undefined} request - Express or plain-object request instance.
+ * @returns {string | null} Header value when available.
+ */
+function readAuthorizationFromGetter(request) {
+  const getter = request?.get;
+  if (typeof getter !== 'function') {
+    return null;
+  }
+
+  const uppercase = normalizeAuthorizationCandidate(getter('Authorization'));
+  if (uppercase) {
+    return uppercase;
+  }
+
+  return normalizeAuthorizationCandidate(getter('authorization'));
+}
+
+/**
+ * Read the Authorization header from a headers bag.
+ * @param {SubmitNewStoryRequest['headers']} headers - Raw headers map.
+ * @returns {string | null} Header value when present.
+ */
+function readAuthorizationFromHeadersBag(headers) {
+  if (!headers || typeof headers !== 'object') {
+    return null;
+  }
+
+  const lowercase = normalizeAuthorizationCandidate(headers.authorization);
+  if (lowercase) {
+    return lowercase;
+  }
+
+  return normalizeAuthorizationCandidate(headers.Authorization);
+}
+
+/**
+ * Retrieve the Authorization header from an incoming request object.
+ * @param {SubmitNewStoryRequest | undefined} request - Express or plain-object request instance.
+ * @returns {string | null} Header value when available.
+ */
+function getAuthorizationHeader(request) {
+  const getterHeader = readAuthorizationFromGetter(request);
+  if (getterHeader) {
+    return getterHeader;
+  }
+
+  return readAuthorizationFromHeadersBag(request?.headers);
 }
 
 /**
