@@ -14,6 +14,51 @@ function assertFunctionDependency(name, dependency) {
 }
 
 /**
+ * Normalize the result returned by the loader so downstream logic can rely on
+ * consistent structure.
+ * @param {*} loadResult Value returned by loadPageForVariant.
+ * @returns {{ page: * | null, variant: * | null }} Normalized payload data.
+ */
+function normalizeRemoveVariantLoadResult(loadResult) {
+  if (!loadResult) {
+    return { page: null, variant: null };
+  }
+
+  if (typeof loadResult !== 'object') {
+    return { page: loadResult, variant: null };
+  }
+
+  if ('page' in loadResult || 'variant' in loadResult) {
+    return {
+      page: loadResult.page ?? null,
+      variant: loadResult.variant ?? null,
+    };
+  }
+
+  return { page: loadResult, variant: null };
+}
+
+/**
+ * Determine which variant data should be used when deleting the rendered HTML.
+ * @param {object} options Resolution inputs.
+ * @param {boolean} options.hasProvidedData Whether the payload supplied variant data.
+ * @param {*} options.providedData Variant data passed directly to the helper.
+ * @param {*} options.loadedVariant Variant data returned by the loader.
+ * @returns {*} The variant data to use when building the path.
+ */
+function resolveVariantData({ hasProvidedData, providedData, loadedVariant }) {
+  if (hasProvidedData) {
+    return providedData;
+  }
+
+  if (loadedVariant !== undefined) {
+    return loadedVariant ?? null;
+  }
+
+  return null;
+}
+
+/**
  * @typedef {object} RemoveVariantHtmlPayload
  * @property {string | null | undefined} [variantId] Optional variant identifier.
  * @property {*} [variantData] Raw variant details required to locate the page.
@@ -56,30 +101,22 @@ export function createRemoveVariantHtml({
       'variantData'
     );
 
-    const loadResult =
-      (await loadPageForVariant({ variantId, variantData, pageRef })) ?? null;
-
-    let page = loadResult;
-    if (loadResult && typeof loadResult === 'object' && 'page' in loadResult) {
-      page = loadResult.page;
-    }
-
-    let resolvedVariantData;
-    if (hasVariantData) {
-      resolvedVariantData = variantData;
-    }
-    if (
-      !hasVariantData &&
-      loadResult &&
-      typeof loadResult === 'object' &&
-      'variant' in loadResult
-    ) {
-      resolvedVariantData = loadResult.variant ?? null;
-    }
+    const loadResult = await loadPageForVariant({
+      variantId,
+      variantData,
+      pageRef,
+    });
+    const { page, variant } = normalizeRemoveVariantLoadResult(loadResult);
 
     if (!page) {
       return null;
     }
+
+    const resolvedVariantData = resolveVariantData({
+      hasProvidedData: hasVariantData,
+      providedData: variantData,
+      loadedVariant: variant,
+    });
 
     const path = await buildVariantPath({
       variantId: variantId ?? null,
