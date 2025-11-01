@@ -1,14 +1,4 @@
-/**
- * Ensure a candidate value is a callable function.
- * @param {unknown} candidate Value to validate.
- * @param {string} name Name used in the validation error message.
- * @returns {void}
- */
-function assertFunction(candidate, name) {
-  if (typeof candidate !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
+import { assertFunction } from './cloud-core.js';
 
 /**
  * Determine whether the provided request body contains a variant string.

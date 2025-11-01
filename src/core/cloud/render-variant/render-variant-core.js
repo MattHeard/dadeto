@@ -1,4 +1,4 @@
-import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
+import { assertFunction, DEFAULT_BUCKET_NAME } from './cloud-core.js';
 import { buildAltsHtml, escapeHtml } from './buildAltsHtml.js';
 import { buildHtml } from './buildHtml.js';
 import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';
@@ -24,18 +24,6 @@ function assertDb(db) {
 function assertStorage(storage) {
   if (!storage || typeof storage.bucket !== 'function') {
     throw new TypeError('storage must provide a bucket helper');
-  }
-}
-
-/**
- * Validate that the provided dependency is a function.
- * @param {unknown} candidate - Value to check.
- * @param {string} name - Human readable name for the dependency being validated.
- * @throws {TypeError} When the candidate is not a function.
- */
-function assertFunction(candidate, name) {
-  if (typeof candidate !== 'function') {
-    throw new TypeError(`${name} must be a function`);
   }
 }
 
