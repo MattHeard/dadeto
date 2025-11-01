@@ -1,4 +1,5 @@
 import { isObject } from './common.js';
+import { safeJsonParse } from './browser-core.js';
 import { deepMerge } from '../state.js';
 import { deepClone } from '../objectUtils.js';
 
@@ -28,22 +29,6 @@ function parseJsonObject(input) {
     return parsed;
   }
   return ensurePlainObject(parsed.data);
-}
-
-/**
- * Safely parse a JSON string.
- * @param {string} input - JSON string to parse.
- * @returns {{ok: boolean, message?: string, data?: object}} Parsed result.
- */
-function safeJsonParse(input) {
-  try {
-    return { ok: true, data: JSON.parse(input) };
-  } catch (parseError) {
-    return {
-      ok: false,
-      message: `Error: Invalid JSON input. ${parseError.message}`,
-    };
-  }
 }
 
 /**
