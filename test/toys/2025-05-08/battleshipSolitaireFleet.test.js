@@ -1,4 +1,4 @@
-import { generateFleet } from '../../../src/core/toys/2025-05-08/battleshipSolitaireFleet.js';
+import { generateFleet } from '../../../src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js';
 import { describe, test, expect } from '@jest/globals';
 
 describe('generateFleet', () => {

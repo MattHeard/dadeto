@@ -1,5 +1,5 @@
 import { test, expect } from '@jest/globals';
-import { ticTacToeMove } from '../../../src/core/toys/2025-04-06/ticTacToe.js';
+import { ticTacToeMove } from '../../../src/core/browser/toys/2025-04-06/ticTacToe.js';
 
 test('returns optimal move for invalid input', () => {
   const env = new Map();

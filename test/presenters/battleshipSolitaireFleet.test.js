@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { createBattleshipFleetBoardElement } from '../../src/core/presenters/battleshipSolitaireFleet.js';
+import { createBattleshipFleetBoardElement } from '../../src/core/browser/presenters/battleshipSolitaireFleet.js';
 
 describe('createBattleshipFleetBoardElement', () => {
   // Mock dom abstraction

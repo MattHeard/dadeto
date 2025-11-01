@@ -5,7 +5,7 @@
     "fragment": "\nfunction ensureDend2(data) {\n  if (typeof data.temporary !== 'object' || data.temporary === null) {\n    data.temporary = { DEND2: { stories: [], pages: [], options: [] } };\n    return;\n  }\n  const t = data.temporary;\n  if (\n    typeof t.DEND2 !== 'object' ||\n    t.DEND2 === null ||\n    !Array.isArray(t.DEND2.stories) ||\n    !Array.isArray(t.DEND2.pages) ||\n    !Array.isArray(t.DEND2.options)\n  ) {\n    t.DEND2 = { stories: [], pages: [], options: [] };\n  }\n}\n\n/**\n * Validate the parsed story input.\n * @param {object} [obj] - Parsed object.\n * @param {string} obj.title - Story title.\n * @param {string} obj.content - Story content.\n * @returns {boolean} True when valid.\n */",
     "tokens": 0,
     "firstFile": {
-      "name": "src/core/toys/2025-07-04/transformDendriteStory.js",
+      "name": "src/core/browser/toys/2025-07-04/transformDendriteStory.js",
       "start": 8,
       "end": 32,
       "startLoc": {
@@ -20,7 +20,7 @@
       }
     },
     "secondFile": {
-      "name": "src/core/toys/2025-07-05/addDendritePage.js",
+      "name": "src/core/browser/toys/2025-07-05/addDendritePage.js",
       "start": 9,
       "end": 33,
       "startLoc": {
@@ -41,7 +41,7 @@
     "fragment": "(input, env) {\n  try {\n    const parsed = JSON.parse(input);\n    if (!isValidInput(parsed)) {\n      throw new Error('invalid');\n    }\n\n    const getUuid = env.get('getUuid');\n    const getData = env.get('getData');\n    const setLocalTemporaryData = env.get('setLocalTemporaryData');\n    const storyId",
     "tokens": 0,
     "firstFile": {
-      "name": "src/core/toys/2025-07-04/transformDendriteStory.js",
+      "name": "src/core/browser/toys/2025-07-04/transformDendriteStory.js",
       "start": 56,
       "end": 66,
       "startLoc": {
@@ -56,7 +56,7 @@
       }
     },
     "secondFile": {
-      "name": "src/core/toys/2025-07-05/addDendritePage.js",
+      "name": "src/core/browser/toys/2025-07-05/addDendritePage.js",
       "start": 64,
       "end": 74,
       "startLoc": {
@@ -77,7 +77,7 @@
     "fragment": ");\n    newData.temporary.DEND2.pages.push(page);\n    newData.temporary.DEND2.options.push(...opts);\n    setLocalTemporaryData(newData);\n\n    return JSON.stringify({ stories",
     "tokens": 0,
     "firstFile": {
-      "name": "src/core/toys/2025-07-04/transformDendriteStory.js",
+      "name": "src/core/browser/toys/2025-07-04/transformDendriteStory.js",
       "start": 78,
       "end": 83,
       "startLoc": {
@@ -92,7 +92,7 @@
       }
     },
     "secondFile": {
-      "name": "src/core/toys/2025-07-05/addDendritePage.js",
+      "name": "src/core/browser/toys/2025-07-05/addDendritePage.js",
       "start": 84,
       "end": 89,
       "startLoc": {
@@ -113,7 +113,7 @@
     "fragment": "(marker) {\n  // Escape marker if it's a special regex character\n  let escapedMarker;\n  if (REGEX_SPECIAL_CHARS.test(marker)) {\n    escapedMarker = `\\\\${marker}`;\n  } else {\n    escapedMarker = marker;\n  }\n  return",
     "tokens": 0,
     "firstFile": {
-      "name": "src/core/toys/2025-03-21/italics.js",
+      "name": "src/core/browser/toys/2025-03-21/italics.js",
       "start": 95,
       "end": 103,
       "startLoc": {
@@ -128,7 +128,7 @@
       }
     },
     "secondFile": {
-      "name": "src/core/toys/2025-03-21/italics.js",
+      "name": "src/core/browser/toys/2025-03-21/italics.js",
       "start": 52,
       "end": 60,
       "startLoc": {

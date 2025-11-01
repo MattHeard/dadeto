@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { httpRequest } from '../../../src/core/toys/2025-04-05/httpRequest.js';
+import { httpRequest } from '../../../src/core/browser/toys/2025-04-05/httpRequest.js';
 
 describe('httpRequest', () => {
   test('returns correct JSON for a basic URL', () => {

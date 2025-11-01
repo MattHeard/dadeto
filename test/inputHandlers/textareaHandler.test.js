@@ -2,7 +2,7 @@ import { describe, test, expect, jest } from '@jest/globals';
 import {
   textareaHandler,
   ensureTextareaInput,
-} from '../../src/core/inputHandlers/textarea.js';
+} from '../../src/core/browser/inputHandlers/textarea.js';
 import {
   setInputValue,
   clearInputValue,

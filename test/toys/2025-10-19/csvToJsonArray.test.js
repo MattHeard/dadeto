@@ -1,4 +1,4 @@
-import { csvToJsonArrayToy } from '../../../src/core/toys/2025-10-19/csvToJsonArray.js';
+import { csvToJsonArrayToy } from '../../../src/core/browser/toys/2025-10-19/csvToJsonArray.js';
 
 describe('csvToJsonArrayToy', () => {
   it('converts multi-line CSV into a JSON array string', () => {

@@ -1,8 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
 import * as baseObjectUtils from '../../../../src/core/objectUtils.js';
-import * as reExportedObjectUtils from '../../../../src/core/toys/2025-07-05/objectUtils.js';
+import * as reExportedObjectUtils from '../../../../src/core/browser/toys/2025-07-05/objectUtils.js';
 import * as baseValidation from '../../../../src/core/validation.js';
-import * as reExportedValidation from '../../../../src/core/toys/2025-07-05/validation.js';
+import * as reExportedValidation from '../../../../src/core/browser/toys/2025-07-05/validation.js';
 
 describe('add dendrite page re-exports', () => {
   /**

@@ -1,6 +1,10 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { textAppendList } from '../../../src/core/toys/2025-11-01/textAppendList.js';
+import { textAppendList } from '../../../src/core/browser/toys/2025-11-01/textAppendList.js';
 
+/**
+ *
+ * @param initial
+ */
 function createStorageMock(initial = {}) {
   const store = { ...initial };
   return {

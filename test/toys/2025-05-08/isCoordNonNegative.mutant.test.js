@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { isCoordNonNegative } from '../../../src/core/toys/2025-05-08/battleshipSolitaireFleet.js';
+import { isCoordNonNegative } from '../../../src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js';
 
 describe('isCoordNonNegative mutant', () => {
   test('returns false when either coordinate is negative', () => {

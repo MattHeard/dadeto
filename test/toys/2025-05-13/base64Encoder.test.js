@@ -1,4 +1,4 @@
-import { encodeBase64 } from '../../../src/core/toys/2025-05-13/base64Encoder.js';
+import { encodeBase64 } from '../../../src/core/browser/toys/2025-05-13/base64Encoder.js';
 import { jest } from '@jest/globals';
 
 describe('encodeBase64', () => {

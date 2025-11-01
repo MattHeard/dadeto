@@ -3,7 +3,7 @@ import {
   ensureKeyValueInput as coreEnsureKeyValueInput,
   handleKVType as coreHandleKVType,
   kvHandler as coreKvHandler,
-} from '../../../src/core/inputHandlers/kv.js';
+} from '../../../src/core/browser/inputHandlers/kv.js';
 import {
   ensureKeyValueInput as browserEnsureKeyValueInput,
   handleKVType as browserHandleKVType,

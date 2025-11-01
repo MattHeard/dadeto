@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { neighbours } from '../../../src/core/toys/2025-05-08/battleshipSolitaireFleet.js';
+import { neighbours } from '../../../src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js';
 
 describe('neighbours output', () => {
   test.each([

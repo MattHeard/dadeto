@@ -15,13 +15,13 @@ const createDirectories = () => {
     projectRoot,
     srcDir,
     publicDir,
-    srcToysDir: posix.join(srcDir, 'core/toys'),
+    srcToysDir: posix.join(srcDir, 'core/browser/toys'),
     publicToysDir: posix.join(publicDir, 'toys'),
     srcBrowserDir: posix.join(srcDir, 'browser'),
     publicBrowserDir: posix.join(publicDir, 'browser'),
     srcUtilsDir: posix.join(srcDir, 'utils'),
     publicUtilsDir: posix.join(publicDir, 'utils'),
-    srcInputHandlersDir: posix.join(srcDir, 'core/inputHandlers'),
+    srcInputHandlersDir: posix.join(srcDir, 'core/browser/inputHandlers'),
     publicInputHandlersDir: posix.join(publicDir, 'inputHandlers'),
     srcConstantsDir: posix.join(srcDir, 'core/constants'),
     publicConstantsDir: posix.join(publicDir, 'constants'),
@@ -41,7 +41,7 @@ const createDirectories = () => {
     publicValidationFile: posix.join(publicDir, 'validation.js'),
     srcAssetsDir: posix.join(srcDir, 'browser/assets'),
     publicAssetsDir: publicDir,
-    srcPresentersDir: posix.join(srcDir, 'core/presenters'),
+    srcPresentersDir: posix.join(srcDir, 'core/browser/presenters'),
     publicPresentersDir: posix.join(publicDir, 'presenters'),
     srcBlogJson: posix.join(srcDir, 'blog.json'),
     publicBlogJson: posix.join(publicDir, 'blog.json'),
@@ -74,7 +74,7 @@ describe('createSharedDirectoryEntries', () => {
 
     expect(entries).toContainEqual([
       'srcToysDir',
-      posix.join(srcDir, 'core/toys'),
+      posix.join(srcDir, 'core/browser/toys'),
     ]);
     expect(entries).toContainEqual([
       'publicToysDir',
@@ -160,9 +160,11 @@ describe('createCopyCore', () => {
     it('returns a relative path for files inside the project', () => {
       const filePath = posix.join(
         directories.projectRoot,
-        'src/core/toys/widget.js'
+        'src/core/browser/toys/widget.js'
       );
-      expect(core.formatPathForLog(filePath)).toBe('src/core/toys/widget.js');
+      expect(core.formatPathForLog(filePath)).toBe(
+        'src/core/browser/toys/widget.js'
+      );
     });
 
     it('returns the original path for files outside of the project', () => {
@@ -324,7 +326,7 @@ describe('createCopyCore', () => {
       );
       expect(io.copyFile).toHaveBeenCalledWith(source, destination);
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied: src/core/toys/widget.js -> public/toys/widget.js'
+        'Copied: src/core/browser/toys/widget.js -> public/toys/widget.js'
       );
 
       const customMessage = 'Custom copy';
@@ -669,7 +671,7 @@ describe('createCopyCore', () => {
         posix.join(directories.publicPresentersDir, 'deck.js')
       );
       expect(logger.info).toHaveBeenCalledWith(
-        'Copied presenter: src/core/presenters/deck.js -> public/presenters/deck.js'
+        'Copied presenter: src/core/browser/presenters/deck.js -> public/presenters/deck.js'
       );
       expect(logger.info).toHaveBeenLastCalledWith(
         'Presenter files copied successfully!'
@@ -678,7 +680,7 @@ describe('createCopyCore', () => {
       io.directoryExists.mockReturnValue(false);
       core.copyPresenterFiles(directories, io, logger);
       expect(logger.warn).toHaveBeenCalledWith(
-        'Warning: presenters directory not found at src/core/presenters'
+        'Warning: presenters directory not found at src/core/browser/presenters'
       );
     });
 
@@ -780,7 +782,7 @@ describe('createCopyCore', () => {
         'Browser files copied successfully!'
       );
       expect(logger.warn).toHaveBeenCalledWith(
-        'Warning: inputHandlers directory not found at src/core/inputHandlers'
+        'Warning: inputHandlers directory not found at src/core/browser/inputHandlers'
       );
       expect(logger.warn).toHaveBeenCalledWith(
         'Warning: constants directory not found at src/core/constants'

@@ -1,5 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { numberHandler } from '../../src/core/inputHandlers/number.js';
+import { numberHandler } from '../../src/core/browser/inputHandlers/number.js';
 
 describe('numberHandler', () => {
   test('removes kv and dendrite elements and leaves existing number input', () => {

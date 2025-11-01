@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { get } from '../../../src/core/toys/2025-03-29/get.js';
+import { get } from '../../../src/core/browser/toys/2025-03-29/get.js';
 
 describe('get function with path traversal', () => {
   let mockGetData;

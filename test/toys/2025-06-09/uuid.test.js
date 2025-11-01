@@ -1,4 +1,4 @@
-import { uuidToy } from '../../../src/core/toys/2025-06-09/uuid.js';
+import { uuidToy } from '../../../src/core/browser/toys/2025-06-09/uuid.js';
 import { jest } from '@jest/globals';
 
 describe('uuidToy', () => {

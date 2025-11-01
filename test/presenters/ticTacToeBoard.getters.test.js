@@ -2,7 +2,7 @@ import { describe, it, expect } from '@jest/globals';
 import {
   getPlayer,
   getPosition,
-} from '../../src/core/presenters/ticTacToeBoard.js';
+} from '../../src/core/browser/presenters/ticTacToeBoard.js';
 
 describe('ticTacToeBoard getters', () => {
   const invalidInputs = [

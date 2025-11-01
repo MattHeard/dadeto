@@ -1,8 +1,8 @@
-# AGENTS Instructions for src/core/toys
+# AGENTS Instructions for src/core/browser/toys
 
 ## Scope
 
-These instructions apply to files in `src/core/toys` and its subdirectories.
+These instructions apply to files in `src/core/browser/toys` and its subdirectories.
 
 ## Guidelines
 
@@ -38,9 +38,9 @@ Most toys treat the input as plain text (the site always passes a string from th
 
 * **Environment (env) Parameter:** The second argument is a **Map of utility functions** provided by the site at runtime[[3]](../../../public/2025-07-05/setPermanentData.js)[[4]](../../../public/2025-07-05/setPermanentData.js). The toy should use these for side effects or common tasks. Key entries include:
 
-* **setLocalTemporaryData(desiredObj)** – Merges a given object into the site’s in-memory temporary state (globalState.temporary) and returns the updated state. Used for “ephemeral” storage (resets on page reload). For example, a toy might call env.get('setLocalTemporaryData')({foo: "bar"}) to store data[[5]](../../../public/2025-07-05/setPermanentData.js)[[6]](../../browser/main.js).
+* **setLocalTemporaryData(desiredObj)** – Merges a given object into the site’s in-memory temporary state (globalState.temporary) and returns the updated state. Used for “ephemeral” storage (resets on page reload). For example, a toy might call env.get('setLocalTemporaryData')({foo: "bar"}) to store data[[5]](../../../public/2025-07-05/setPermanentData.js)[[6]](../../../browser/main.js).
 
-* **setLocalPermanentData(obj)** – Persists data to localStorage and returns the merged result[[5]](../../../public/2025-07-05/setPermanentData.js)[[7]](../../browser/main.js). Toys use this to save state that persists across sessions (the site passes in localStorage under the hood). For instance, the **“Set Permanent Data”** toy parses a JSON string from the user and calls this function to store it; it returns the updated JSON as output[[3]](../../../public/2025-07-05/setPermanentData.js)[[4]](../../../public/2025-07-05/setPermanentData.js).
+* **setLocalPermanentData(obj)** – Persists data to localStorage and returns the merged result[[5]](../../../public/2025-07-05/setPermanentData.js)[[7]](../../../browser/main.js). Toys use this to save state that persists across sessions (the site passes in localStorage under the hood). For instance, the **“Set Permanent Data”** toy parses a JSON string from the user and calls this function to store it; it returns the updated JSON as output[[3]](../../../public/2025-07-05/setPermanentData.js)[[4]](../../../public/2025-07-05/setPermanentData.js).
 
 * **getRandomNumber()** – Returns a random number (the site’s utility, often just wrapping Math.random). For example, a **“Random Number”** toy can call env.get('getRandomNumber')() and return that value as a string.
 
@@ -48,7 +48,7 @@ Most toys treat the input as plain text (the site always passes a string from th
 
 * **getCurrentTime()** – Provides the current timestamp. A toy could use this for time-based output.
 
-* **encodeBase64(str)** – Encodes a string to Base64[[8]](../../browser/main.js). The **“Base64 Encoder”** toy, for instance, uses env.get('encodeBase64') on the input and returns the Base64 result.
+* **encodeBase64(str)** – Encodes a string to Base64[[8]](../../../browser/main.js). The **“Base64 Encoder”** toy, for instance, uses env.get('encodeBase64') on the input and returns the Base64 result.
 
 * **getData()** – Fetches the site’s blog data (not commonly used by toys, but available).
 
@@ -89,23 +89,23 @@ toy: {
 
 * **window.addComponent(...):** This global helper (injected site-wide) registers the toy with the loader. It records the toy’s ID, module path, and export name in a global list (window.interactiveComponents)[[10]](../../../public/index.html)[[11]](../../../public/index.html). The toy itself does not call this – it’s done by the site generator.
 
-* **Lazy Injection via Intersection Observer:** A site-wide initialization script scans all registered toys and sets up an IntersectionObserver for each[[12]](../../browser/toys.js)[[13]](../../browser/toys.js). Toys are **lazy-loaded** – the module is imported when its containing article scrolls into view. This optimizes performance by not blocking initial page load with all toy scripts.
+* **Lazy Injection via Intersection Observer:** A site-wide initialization script scans all registered toys and sets up an IntersectionObserver for each[[12]](../../../browser/toys.js)[[13]](../../../browser/toys.js). Toys are **lazy-loaded** – the module is imported when its containing article scrolls into view. This optimizes performance by not blocking initial page load with all toy scripts.
 
 * **Module Import and Initialization:** When a toy enters the viewport, the loader does:
 
 * **Dynamic Import:** Loads the module at the given modulePath.
 
-* **Extract Function:** Retrieves the exported function by name. (The loader calls module[functionName] to get the toy’s function[[14]](../../browser/toys.js)[[15]](../../browser/toys.js).)
+* **Extract Function:** Retrieves the exported function by name. (The loader calls module[functionName] to get the toy’s function[[14]](../../../browser/toys.js)[[15]](../../../browser/toys.js).)
 
 * **Initialize UI:** The loader then calls an internal initializer with the toy’s HTML container and the function. This sets up the toy’s input/output fields and event handlers.
 
 * **Lifecycle in the UI:** Once loaded, the toy’s interactive elements are enabled:
 
-* The **text input** and **Submit button** are initially disabled and show a placeholder message (“This toy requires JavaScript to run.”). During initialization, the loader replaces that with “Initialising...” and then enables the input and button[[16]](../../browser/toys.js)[[17]](../../browser/toys.js).
+* The **text input** and **Submit button** are initially disabled and show a placeholder message (“This toy requires JavaScript to run.”). During initialization, the loader replaces that with “Initialising...” and then enables the input and button[[16]](../../../browser/toys.js)[[17]](../../../browser/toys.js).
 
-* When the user enters input and clicks **Submit** (or presses Enter), the loader calls the toy’s function with the current input string and a fresh env Map (via createEnv() each time)[[18]](../../browser/toys.js)[[19]](../../browser/toys.js). The toy’s return value is captured.
+* When the user enters input and clicks **Submit** (or presses Enter), the loader calls the toy’s function with the current input string and a fresh env Map (via createEnv() each time)[[18]](../../../browser/toys.js)[[19]](../../../browser/toys.js). The toy’s return value is captured.
 
-* The loader then displays the result in the output area. By default, it treats the result as text and injects it into the page (replacing the “Initialising...” message)[[20]](../../browser/toys.js). The Submit handler wraps this process with error handling (any exception is caught and shown as an error message in the output)[[21]](../../browser/toys.js)[[22]](../../browser/toys.js).
+* The loader then displays the result in the output area. By default, it treats the result as text and injects it into the page (replacing the “Initialising...” message)[[20]](../../../browser/toys.js). The Submit handler wraps this process with error handling (any exception is caught and shown as an error message in the output)[[21]](../../../browser/toys.js)[[22]](../../../browser/toys.js).
 
 * **State Management:** If the toy modified site state via setLocalTemporaryData or setLocalPermanentData, that state is now updated for future toy calls. For example, a **“Get Data”** toy could then retrieve what was stored by a previous **“Set Data”** call. (The “get” toy might simply call the setter with an empty object to fetch current state, since setLocal… returns the merged state.) The environment ensures these calls are consistent – e.g. setLocalPermanentData merges the object into existing localStorage data and returns the new object[[23]](../../core/browser/data.js). In tests, these toy functions all conform to returning updated state or computed results as strings.
 
@@ -123,11 +123,11 @@ toy: {
 
   * **Custom presenters:** Some toys define richer visualizations. For example:
 
-  * **“tic-tac-toe”:** If the toy returns a representation of a Tic Tac Toe board or move, selecting this will render an actual 3×3 board UI using a presenter function (instead of just text)[[28]](../../browser/toys.js).
+  * **“tic-tac-toe”:** If the toy returns a representation of a Tic Tac Toe board or move, selecting this will render an actual 3×3 board UI using a presenter function (instead of just text)[[28]](../../../browser/toys.js).
 
-  * **“battleship-solitaire-fleet” and “...-clues-presenter”:** These output modes invoke custom rendering. The **Battleship Fleet Generator** toy returns a JSON layout of ships, and if the user selects “battleship-solitaire-fleet”, the site calls a presenter that draws a grid with ships placed[[28]](../../browser/toys.js). Similarly, the **Battleship Clues** toy returns JSON clues; the “clues-presenter” mode will format those clues in a grid/table UI[[29]](../../../public/index.html)[[30]](../../../public/index.html). (If left in “text” or “pre” mode, the JSON would just be displayed as text.)
+  * **“battleship-solitaire-fleet” and “...-clues-presenter”:** These output modes invoke custom rendering. The **Battleship Fleet Generator** toy returns a JSON layout of ships, and if the user selects “battleship-solitaire-fleet”, the site calls a presenter that draws a grid with ships placed[[28]](../../../browser/toys.js). Similarly, the **Battleship Clues** toy returns JSON clues; the “clues-presenter” mode will format those clues in a grid/table UI[[29]](../../../public/index.html)[[30]](../../../public/index.html). (If left in “text” or “pre” mode, the JSON would just be displayed as text.)
 
-  * Under the hood, the framework maps output “keys” to presenter functions (see presentersMap in the code)[[31]](../../browser/toys.js)[[32]](../../browser/toys.js). After the toy returns its string, the site either parses it as JSON or uses it directly. If the selected presenter expects structured data, the framework will parse the JSON string into an object. For example, a battleship toy’s output (JSON string) is parsed, and the **BattleshipCluesBoard** presenter is given that object to generate DOM elements (rows of numbers, etc.). If parsing fails or no special presenter is selected, the site simply inserts the string as-is[[33]](../../browser/toys.js)[[34]](../../browser/toys.js).
+  * Under the hood, the framework maps output “keys” to presenter functions (see presentersMap in the code)[[31]](../../../browser/toys.js)[[32]](../../../browser/toys.js). After the toy returns its string, the site either parses it as JSON or uses it directly. If the selected presenter expects structured data, the framework will parse the JSON string into an object. For example, a battleship toy’s output (JSON string) is parsed, and the **BattleshipCluesBoard** presenter is given that object to generate DOM elements (rows of numbers, etc.). If parsing fails or no special presenter is selected, the site simply inserts the string as-is[[33]](../../../browser/toys.js)[[34]](../../../browser/toys.js).
 
 * **Toy Types – Text vs DOM:** In summary, **every toy is fundamentally text-in/text-out**, but the site can mount interactive or graphical components **to display the output**. The toys themselves do not provide UI components; instead, they provide data which the site’s common presenters use to render DOM. This clean separation means a toy can be very simple (pure function) while the site loader handles all DOM mounting. For instance:
 
@@ -175,7 +175,7 @@ In all cases, as long as the toy module exposes the expected function and return
 
 * The global loader setup (addComponent and lazy initialization)[[44]](../../../public/index.html)[[9]](../../../public/index.html).
 
-* Environment utilities provided to toys (from createEnv in **main.js**)[[45]](../../browser/main.js)[[46]](../../browser/main.js).
+* Environment utilities provided to toys (from createEnv in **main.js**)[[45]](../../../browser/main.js)[[46]](../../../browser/main.js).
 
 * Example toy implementations and their behavior in the site HTML:
 
@@ -189,7 +189,7 @@ In all cases, as long as the toy module exposes the expected function and return
 
   * *Battleship Fleet toy with kv input and custom outputs*[[39]](../../../public/index.html)[[40]](../../../public/index.html).
 
-* Internal code handling toy execution and output rendering (submission flow)[[18]](../../browser/toys.js)[[19]](../../browser/toys.js)[[31]](../../browser/toys.js).
+* Internal code handling toy execution and output rendering (submission flow)[[18]](../../../browser/toys.js)[[19]](../../../browser/toys.js)[[31]](../../../browser/toys.js).
 
 ---
 
@@ -201,13 +201,13 @@ In all cases, as long as the toy module exposes the expected function and return
 
 [public/2025-07-05/setPermanentData.js](../../../public/2025-07-05/setPermanentData.js)
 
-[[6]](../../browser/main.js) [[7]](../../browser/main.js) [[8]](../../browser/main.js) [[45]](../../browser/main.js) [[46]](../../browser/main.js)
+[[6]](../../../browser/main.js) [[7]](../../../browser/main.js) [[8]](../../../browser/main.js) [[45]](../../../browser/main.js) [[46]](../../../browser/main.js)
 
-[src/browser/main.js](../../browser/main.js)
+[src/browser/main.js](../../../browser/main.js)
 
-[[12]](../../browser/toys.js) [[13]](../../browser/toys.js) [[14]](../../browser/toys.js) [[15]](../../browser/toys.js) [[16]](../../browser/toys.js) [[17]](../../browser/toys.js) [[18]](../../browser/toys.js) [[19]](../../browser/toys.js) [[20]](../../browser/toys.js) [[21]](../../browser/toys.js) [[22]](../../browser/toys.js) [[28]](../../browser/toys.js) [[31]](../../browser/toys.js) [[32]](../../browser/toys.js) [[33]](../../browser/toys.js) [[34]](../../browser/toys.js)
+[[12]](../../../browser/toys.js) [[13]](../../../browser/toys.js) [[14]](../../../browser/toys.js) [[15]](../../../browser/toys.js) [[16]](../../../browser/toys.js) [[17]](../../../browser/toys.js) [[18]](../../../browser/toys.js) [[19]](../../../browser/toys.js) [[20]](../../../browser/toys.js) [[21]](../../../browser/toys.js) [[22]](../../../browser/toys.js) [[28]](../../../browser/toys.js) [[31]](../../../browser/toys.js) [[32]](../../../browser/toys.js) [[33]](../../../browser/toys.js) [[34]](../../../browser/toys.js)
 
-[src/browser/toys.js](../../browser/toys.js)
+[src/browser/toys.js](../../../browser/toys.js)
 
 [[23]](../../core/browser/data.js)
 

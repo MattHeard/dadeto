@@ -1,5 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { createPreElement } from '../../src/core/presenters/pre.js';
+import { createPreElement } from '../../src/core/browser/presenters/pre.js';
 
 // Simple mock DOM abstraction
 /**

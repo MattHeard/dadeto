@@ -1,4 +1,4 @@
-import { startLocalDendriteStory } from '../../../src/core/toys/2025-06-09/startLocalDendriteStory.js';
+import { startLocalDendriteStory } from '../../../src/core/browser/toys/2025-06-09/startLocalDendriteStory.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('startLocalDendriteStory', () => {

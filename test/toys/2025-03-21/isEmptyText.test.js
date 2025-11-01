@@ -7,7 +7,7 @@ let isEmptyText;
 beforeAll(async () => {
   const filePath = path.join(
     process.cwd(),
-    'src/core/toys/2025-03-21/italics.js'
+    'src/core/browser/toys/2025-03-21/italics.js'
   );
   let src = fs.readFileSync(filePath, 'utf8');
   src += '\nexport { isEmptyText };';

@@ -3,7 +3,7 @@ import {
   isDisposable,
   disposeAndRemove,
   maybeRemoveElement,
-} from '../../src/core/inputHandlers/disposeHelpers.js';
+} from '../../src/core/browser/inputHandlers/disposeHelpers.js';
 
 describe('disposeHelpers', () => {
   test('isDisposable detects element with dispose', () => {

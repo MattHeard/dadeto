@@ -1,13 +1,13 @@
 export const sharedDirectoryPairs = [
   {
     key: 'Toys',
-    relativePath: 'core/toys',
+    relativePath: 'core/browser/toys',
     publicRelativePath: 'toys',
   },
   { key: 'Browser', relativePath: 'browser' },
   {
     key: 'InputHandlers',
-    relativePath: 'core/inputHandlers',
+    relativePath: 'core/browser/inputHandlers',
     publicRelativePath: 'inputHandlers',
   },
   {
@@ -17,7 +17,7 @@ export const sharedDirectoryPairs = [
   },
   {
     key: 'Presenters',
-    relativePath: 'core/presenters',
+    relativePath: 'core/browser/presenters',
     publicRelativePath: 'presenters',
   },
   { key: 'Core', relativePath: 'core' },

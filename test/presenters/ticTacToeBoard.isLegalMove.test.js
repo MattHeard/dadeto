@@ -8,7 +8,7 @@ let isLegalMove;
 beforeAll(async () => {
   const filePath = path.join(
     process.cwd(),
-    'src/core/presenters/ticTacToeBoard.js'
+    'src/core/browser/presenters/ticTacToeBoard.js'
   );
   let src = fs.readFileSync(filePath, 'utf8');
   src = src.replace(/from '((?:\.\.?\/)[^']*)'/g, (_, p) => {

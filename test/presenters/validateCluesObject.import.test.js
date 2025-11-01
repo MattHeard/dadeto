@@ -10,7 +10,7 @@ import { it /*, describe, expect */ } from '@jest/globals';
 export async function loadValidateCluesObject() {
   const srcPath = path.join(
     process.cwd(),
-    'src/core/presenters/battleshipSolitaireClues.js'
+    'src/core/browser/presenters/battleshipSolitaireClues.js'
   );
   let src = fs.readFileSync(srcPath, 'utf8');
   src = src.replace(/from '((?:\.\.?\/).*?)'/g, (_, p) => {

@@ -1,1 +1,1 @@
-export { createTicTacToeBoardElement } from '../../core/presenters/ticTacToeBoard.js';
+export { createTicTacToeBoardElement } from '../../core/browser/presenters/ticTacToeBoard.js';
