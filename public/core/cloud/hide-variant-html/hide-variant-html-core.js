@@ -35,7 +35,7 @@ function normalizeRemoveVariantLoadResult(loadResult) {
     };
   }
 
-  return { page: loadResult, variant: null };
+  return { page: loadResult, variant: undefined };
 }
 
 /**
@@ -55,7 +55,7 @@ function resolveVariantData({ hasProvidedData, providedData, loadedVariant }) {
     return loadedVariant ?? null;
   }
 
-  return null;
+  return undefined;
 }
 
 /**

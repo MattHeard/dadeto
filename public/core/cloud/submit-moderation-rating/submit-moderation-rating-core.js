@@ -1,3 +1,5 @@
+import { assertFunction } from './cloud-core.js';
+
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 const INVALID_BODY_RESPONSE = {
   status: 400,
@@ -37,18 +39,6 @@ const NO_JOB_RESPONSE = { status: 404, body: 'No moderation job' };
  * @property {() => string} randomUUID Generate a unique identifier for the rating entry.
  * @property {() => unknown} getServerTimestamp Provide the timestamp stored with the rating.
  */
-
-/**
- * Ensure a candidate dependency is a callable function.
- * @param {unknown} candidate Value being validated.
- * @param {string} name Name of the dependency for error reporting.
- * @returns {void}
- */
-function assertFunction(candidate, name) {
-  if (typeof candidate !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
 
 /**
  * Normalize a request method to an uppercase HTTP verb.

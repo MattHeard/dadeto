@@ -1,3 +1,5 @@
+import { assertFunction } from './cloud-core.js';
+
 /**
  * @typedef {object} SubmitNewStoryRequest
  * @property {string} [method] - HTTP method supplied by the caller.
@@ -33,18 +35,6 @@
  * @type {HttpResponse}
  */
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
-
-/**
- * Ensure the provided candidate is a callable dependency.
- * @param {unknown} candidate - Dependency instance to validate.
- * @param {string} name - Human-readable name of the dependency for error messages.
- * @throws {TypeError} Thrown when the candidate is not a function.
- */
-function assertFunction(candidate, name) {
-  if (typeof candidate !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
 
 /**
  * Normalize an incoming HTTP method to its uppercase representation.
