@@ -1,3 +1,1 @@
-import { createSectionSetter } from '../core/browser/createSectionSetter.js';
-
-export const setOutput = createSectionSetter('output');
+export * from '../core/browser/setOutput.js';
