@@ -107,6 +107,185 @@ function resolveAuthorRef(db, authorId) {
 }
 
 /**
+ * Normalize a potential identifier to a non-empty string.
+ * @param {unknown} value Candidate value that may contain an identifier.
+ * @returns {string | null} Identifier when valid.
+ */
+function normalizeIdentifier(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  return value ? value : null;
+}
+
+/**
+ * Resolve the story identifier prioritized by context, then the snapshot, and finally a random UUID.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot captured by the trigger.
+ * @param {{ params?: Record<string, string> } | undefined} context Trigger execution context.
+ * @param {() => string} randomUUID UUID generator provided to the handler.
+ * @returns {string} Story identifier.
+ */
+function resolveStoryId(snapshot, context, randomUUID) {
+  const contextId = normalizeIdentifier(context?.params?.subId);
+  if (contextId) {
+    return contextId;
+  }
+
+  const snapshotId = normalizeIdentifier(snapshot?.id);
+  if (snapshotId) {
+    return snapshotId;
+  }
+
+  return randomUUID();
+}
+
+/**
+ * Resolve identifiers required to persist a new story submission.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot captured by the trigger.
+ * @param {{ params?: Record<string, string> } | undefined} context Trigger execution context.
+ * @param {() => string} randomUUID UUID generator provided to the handler.
+ * @returns {{ storyId: string, pageId: string, variantId: string }} Identifiers for the story graph.
+ */
+function resolveStoryIdentifiers(snapshot, context, randomUUID) {
+  const storyId = resolveStoryId(snapshot, context, randomUUID);
+
+  return {
+    storyId,
+    pageId: randomUUID(),
+    variantId: randomUUID(),
+  };
+}
+
+/**
+ * Build the document references required to store a new story submission.
+ * @param {Firestore} db Firestore instance.
+ * @param {{ storyId: string, pageId: string, variantId: string }} identifiers Identifiers describing the story graph.
+ * @returns {{ storyRef: DocumentReference, pageRef: DocumentReference, variantRef: DocumentReference }} Firestore references.
+ */
+function createStoryReferences(db, { storyId, pageId, variantId }) {
+  const storyRef = db.doc(`stories/${storyId}`);
+  const pageRef = storyRef.collection('pages').doc(pageId);
+  const variantRef = pageRef.collection('variants').doc(variantId);
+
+  return { storyRef, pageRef, variantRef };
+}
+
+/**
+ * Queue writes for variant options associated with the submission.
+ * @param {object} options Collaborators required to queue option writes.
+ * @param {WriteBatch} options.batch Firestore batch instance.
+ * @param {Record<string, unknown>} options.submission Submission payload to inspect.
+ * @param {import('firebase-admin/firestore').DocumentReference} options.variantRef Variant document reference.
+ * @param {() => string} options.randomUUID UUID generator.
+ * @param {() => FieldValue} options.getServerTimestamp Function returning server timestamps.
+ * @returns {void}
+ */
+function queueVariantOptions({
+  batch,
+  submission,
+  variantRef,
+  randomUUID,
+  getServerTimestamp,
+}) {
+  normalizeOptions(submission.options).forEach((text, position) => {
+    const optionRef = variantRef.collection('options').doc(randomUUID());
+
+    batch.set(optionRef, {
+      content: text,
+      createdAt: getServerTimestamp(),
+      position,
+    });
+  });
+}
+
+/**
+ * Queue writes that persist the submission and its options.
+ * @param {object} options Collaborators and values required to queue writes.
+ * @param {WriteBatch} options.batch Firestore batch instance.
+ * @param {Firestore} options.db Firestore instance.
+ * @param {{ storyRef: DocumentReference, pageRef: DocumentReference, variantRef: DocumentReference }} options.refs Firestore references.
+ * @param {Record<string, unknown>} options.submission Submission payload to persist.
+ * @param {number} options.pageNumber Page number assigned to the story.
+ * @param {() => number} options.random Random number generator.
+ * @param {() => string} options.randomUUID UUID generator.
+ * @param {() => FieldValue} options.getServerTimestamp Function returning server timestamps.
+ * @param {string} options.storyId Story identifier used for stats documents.
+ * @param {FirestoreDocumentSnapshot | null | undefined} options.snapshot Original snapshot reference.
+ * @returns {void}
+ */
+function queueSubmissionWrites({
+  batch,
+  db,
+  refs,
+  submission,
+  pageNumber,
+  random,
+  randomUUID,
+  getServerTimestamp,
+  storyId,
+  snapshot,
+}) {
+  const { storyRef, pageRef, variantRef } = refs;
+
+  batch.set(storyRef, {
+    title: submission.title,
+    rootPage: pageRef,
+    createdAt: getServerTimestamp(),
+  });
+
+  batch.set(pageRef, {
+    number: pageNumber,
+    incomingOption: null,
+    createdAt: getServerTimestamp(),
+  });
+
+  batch.set(variantRef, {
+    name: 'a',
+    content: submission.content,
+    authorId: submission.authorId || null,
+    authorName: submission.author,
+    moderatorReputationSum: 0,
+    rand: random(),
+    createdAt: getServerTimestamp(),
+  });
+
+  queueVariantOptions({
+    batch,
+    submission,
+    variantRef,
+    randomUUID,
+    getServerTimestamp,
+  });
+
+  batch.set(db.doc(`storyStats/${storyId}`), { variantCount: 1 });
+  batch.update(snapshot?.ref, { processed: true });
+}
+
+/**
+ * Ensure the author's document exists when an author identifier is provided.
+ * @param {object} options Collaborators required to verify the author document.
+ * @param {WriteBatch} options.batch Firestore batch instance.
+ * @param {Firestore} options.db Firestore instance.
+ * @param {Record<string, unknown>} options.submission Submission payload to inspect.
+ * @param {() => string} options.randomUUID UUID generator.
+ * @returns {Promise<void>} Resolves once the author document is scheduled for creation when needed.
+ */
+async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
+  const authorRef = resolveAuthorRef(db, submission.authorId);
+
+  if (!authorRef) {
+    return;
+  }
+
+  const authorSnap = await authorRef.get();
+
+  if (!authorSnap?.exists) {
+    batch.set(authorRef, { uuid: randomUUID() });
+  }
+}
+
+/**
  * Create the handler that processes new story submissions.
  * @param {object} options Collaborators required by the handler.
  * @param {Firestore} options.db Firestore instance.
@@ -141,61 +320,25 @@ export function createProcessNewStoryHandler({
       return null;
     }
 
-    const storyId = context?.params?.subId ?? snapshot?.id ?? randomUUID();
-    const pageId = randomUUID();
-    const variantId = randomUUID();
-
+    const identifiers = resolveStoryIdentifiers(snapshot, context, randomUUID);
     const pageNumber = await findAvailablePageNumberFn(db, random);
-
-    const storyRef = db.doc(`stories/${storyId}`);
-    const pageRef = storyRef.collection('pages').doc(pageId);
-    const variantRef = pageRef.collection('variants').doc(variantId);
-
+    const refs = createStoryReferences(db, identifiers);
     const batch = db.batch();
 
-    batch.set(storyRef, {
-      title: submission.title,
-      rootPage: pageRef,
-      createdAt: getServerTimestamp(),
+    queueSubmissionWrites({
+      batch,
+      db,
+      refs,
+      submission,
+      pageNumber,
+      random,
+      randomUUID,
+      getServerTimestamp,
+      storyId: identifiers.storyId,
+      snapshot,
     });
 
-    batch.set(pageRef, {
-      number: pageNumber,
-      incomingOption: null,
-      createdAt: getServerTimestamp(),
-    });
-
-    batch.set(variantRef, {
-      name: 'a',
-      content: submission.content,
-      authorId: submission.authorId || null,
-      authorName: submission.author,
-      moderatorReputationSum: 0,
-      rand: random(),
-      createdAt: getServerTimestamp(),
-    });
-
-    normalizeOptions(submission.options).forEach((text, position) => {
-      const optionRef = variantRef.collection('options').doc(randomUUID());
-
-      batch.set(optionRef, {
-        content: text,
-        createdAt: getServerTimestamp(),
-        position,
-      });
-    });
-
-    batch.set(db.doc(`storyStats/${storyId}`), { variantCount: 1 });
-    batch.update(snapshot?.ref, { processed: true });
-
-    const authorRef = resolveAuthorRef(db, submission.authorId);
-
-    if (authorRef) {
-      const authorSnap = await authorRef.get();
-      if (!authorSnap?.exists) {
-        batch.set(authorRef, { uuid: randomUUID() });
-      }
-    }
+    await ensureAuthorRecord({ batch, db, submission, randomUUID });
 
     await batch.commit();
     return null;
