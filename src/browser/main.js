@@ -1,7 +1,7 @@
-import { setupAudio } from '../core/browser/audio-controls.js';
-import { handleTagLinks } from '../core/browser/tags.js';
-import { createBlogDataController } from '../core/browser/data.js';
-import { getEncodeBase64 } from '../core/encoding.js';
+import { setupAudio } from './audio-controls.js';
+import { handleTagLinks } from './tags.js';
+import { createBlogDataController } from './data.js';
+import { getEncodeBase64 } from './encoding.js';
 import {
   createOutputDropdownHandler,
   createInputDropdownHandler,
@@ -24,7 +24,7 @@ import {
   getInteractiveComponentCount,
   getInteractiveComponents,
 } from './document.js';
-import { revealBetaArticles } from '../core/browser/beta.js';
+import { revealBetaArticles } from './beta.js';
 
 const globalState = {
   blog: null, // Holds the fetched blog data

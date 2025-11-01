@@ -67,7 +67,7 @@ export const logError = (...args) => console.error(...args);
 export {
   createPrefixedLogger,
   createPrefixedLoggers,
-} from '../core/logging.js';
+} from './logging.js';
 
 // Utility functions
 export const getClasses = el => Array.from(el.classList);
