@@ -1,3 +1,3 @@
-import { createSectionSetter } from '../../browser/createSectionSetter.js';
+import { createSectionSetter } from '../../createSectionSetter.js';
 
 export const setTemporary = createSectionSetter('temporary');

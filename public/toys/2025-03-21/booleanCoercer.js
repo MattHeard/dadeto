@@ -1,4 +1,4 @@
-import { isType } from '../../validation.js';
+import { isType } from '../../../validation.js';
 
 /**
  * Attempt to coerce a value to boolean.

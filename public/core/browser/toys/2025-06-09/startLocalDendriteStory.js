@@ -1,4 +1,4 @@
-import { deepClone } from '../../objectUtils.js';
+import { deepClone } from '../../../objectUtils.js';
 
 const DENDRITE_OPTION_KEYS = [
   'firstOption',

@@ -4,9 +4,9 @@ import {
   maybeRemoveDendrite,
 } from './removeElements.js';
 import { hideAndDisable, revealAndEnable } from './inputState.js';
-import { TEXTAREA_SELECTOR } from '../constants/selectors.js';
-import { createRemoveListener } from '../../browser/document.js';
-import { getInputValue } from '../browser/inputValueStore.js';
+import { TEXTAREA_SELECTOR } from '../../constants/selectors.js';
+import { createRemoveListener } from '../../../browser/document.js';
+import { getInputValue } from '../inputValueStore.js';
 import { createUpdateTextInputValue } from './number.js';
 
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);

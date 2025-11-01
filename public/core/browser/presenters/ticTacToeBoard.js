@@ -1,4 +1,4 @@
-import { isObject } from '../browser/common.js';
+import { isObject } from '../common.js';
 
 /**
  * Extract the player from a move object.

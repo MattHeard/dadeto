@@ -7,7 +7,7 @@
  * @returns {*} - description
  */
 
-import { safeParseJson } from '../../jsonUtils.js';
+import { safeParseJson } from '../../../jsonUtils.js';
 
 /**
  *

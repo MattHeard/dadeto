@@ -22,6 +22,10 @@ export function textAppendList(input, env) {
   return updated;
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeInput(value) {
   if (typeof value === 'string') {
     return value;
@@ -32,6 +36,10 @@ function normalizeInput(value) {
   return String(value);
 }
 
+/**
+ *
+ * @param env
+ */
 function getStorageFunction(env) {
   if (!env || typeof env.get !== 'function') {
     return null;
@@ -40,6 +48,10 @@ function getStorageFunction(env) {
   return typeof storageFn === 'function' ? storageFn : null;
 }
 
+/**
+ *
+ * @param storageFn
+ */
 function readExistingList(storageFn) {
   try {
     const existingData = storageFn({});
@@ -50,6 +62,11 @@ function readExistingList(storageFn) {
   }
 }
 
+/**
+ *
+ * @param storageFn
+ * @param list
+ */
 function persistUpdatedList(storageFn, list) {
   try {
     storageFn({ [TOY_KEY]: list });
