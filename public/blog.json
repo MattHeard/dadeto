@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "LIST1",
+      "title": "Text Append List",
+      "publicationDate": "2025-11-01",
+      "content": [
+        "Appends submitted text to a newline-delimited list persisted across sessions.",
+        "Each run returns the complete history pulled from the toy's storage key."
+      ],
+      "toy": {
+        "modulePath": "/toys/2025-11-01/textAppendList.js",
+        "functionName": "textAppendList"
+      },
+      "tags": [
+        "toy",
+        "storage",
+        "text"
+      ]
+    },
+    {
       "key": "CSVJ2",
       "title": "CSV to JSON Array",
       "publicationDate": "2025-10-19",

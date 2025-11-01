@@ -348,6 +348,70 @@
           Software developer and philosopher in Berlin
         </div>
       </div>
+      <article class="entry tag-toy tag-storage tag-text" id="LIST1">
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">LIST1</div>
+        <div class="value">
+          <h2><a href="#LIST1">Text Append List</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">1 Nov 2025</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-storage">storage</a>,
+          <a class="tag-text">text</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Appends submitted text to a newline-delimited list persisted across
+          sessions.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Each run returns the complete history pulled from the toy's storage
+          key.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea">textarea</option>
+            <option value="number">number</option>
+            <option value="kv">kv</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value"><button type="submit" disabled>Submit</button></div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'LIST1',
+            '/toys/2025-11-01/textAppendList.js',
+            'textAppendList'
+          );
+        </script>
+      </article>
       <article class="entry tag-toy tag-csv tag-json tag-array" id="CSVJ2">
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
         <div class="value full-width">
