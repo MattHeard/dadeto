@@ -1,0 +1,5 @@
+# Text Append List Toy Notes
+
+- **Surprise:** There is no dedicated getter for permanent toy state. To seed the list I had to call `setLocalPermanentData({})`, which feels counterintuitive because it looks like a write. Inspecting `src/core/browser/data.js` confirmed it simply merges objects and persists, so calling it with an empty object is effectively a read-then-write of the same payload. Future agents adding persistent toys should wrap that call in a try/catch to tolerate storage failures.
+- **Diagnosis:** I traced the env helpers in `src/browser/main.js` and followed them into `createBlogDataController` until I found `setLocalPermanentDataCore`. That clarified that the helper returns the merged object, which we can reuse to capture existing state.
+- **Future tip:** Consider extracting a small utility (e.g. `getLocalPermanentData`) if multiple toys start needing read access. Until then, document the empty-object pattern inside each toy so it is obvious why the helper is invoked twice.
