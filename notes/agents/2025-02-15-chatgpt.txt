@@ -1,0 +1,5 @@
+## Agent Retrospective - 2025-02-15
+
+- I expected to read the lint output once, but the repository enforces a very low cyclomatic complexity cap. Running the default lint task only reports violations, so I needed to temporarily override the `complexity` rule to capture the exact values for documentation. Using `npx eslint --rule "complexity: [1, 0]"` exposed the data without altering project configuration.
+- Re-running lint after reverting and re-applying the patch was necessary to cite the original complexity. Saving the diff before checkout prevented me from losing work while I gathered the baseline numbers.
+- In the future, I would plan to collect before/after metrics up front—either by teeing the first lint run to a file or by scripting the targeted eslint invocation—so I do not have to juggle patch files mid-task.
