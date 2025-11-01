@@ -1,11 +1,11 @@
 import { createParagraphElement } from './presenters/paragraph.js';
 import { createPrefixedLoggers, createRemoveListener } from './document.js';
-import { parseJsonOrDefault } from '../core/jsonUtils.js';
-import { deepClone } from '../core/objectUtils.js';
+import { parseJsonOrDefault } from './jsonUtils.js';
+import { deepClone } from './objectUtils.js';
 import {
   getInputValue,
   setInputValue,
-} from '../core/browser/inputValueStore.js';
+} from './inputValueStore.js';
 
 /**
  * Determines whether a value is a key/value pair object.
@@ -161,19 +161,19 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
   dom.addEventListener(dropdown, 'change', onChange);
 };
 
-import { textHandler } from '../core/browser/inputHandlers/text.js';
-import { textareaHandler } from '../core/browser/inputHandlers/textarea.js';
-import { numberHandler } from '../core/browser/inputHandlers/number.js';
-import { defaultHandler } from '../core/browser/inputHandlers/default.js';
-import { dendriteStoryHandler } from '../core/browser/inputHandlers/dendriteStory.js';
-import { dendritePageHandler } from '../core/browser/inputHandlers/dendritePage.js';
+import { textHandler } from './inputHandlers/text.js';
+import { textareaHandler } from './inputHandlers/textarea.js';
+import { numberHandler } from './inputHandlers/number.js';
+import { defaultHandler } from './inputHandlers/default.js';
+import { dendriteStoryHandler } from './inputHandlers/dendriteStory.js';
+import { dendritePageHandler } from './inputHandlers/dendritePage.js';
 import {
   maybeRemoveNumber,
   maybeRemoveDendrite,
   maybeRemoveTextarea,
-} from '../core/browser/inputHandlers/removeElements.js';
-import { KV_CONTAINER_SELECTOR } from '../core/constants/selectors.js';
-import { hideAndDisable } from '../core/browser/inputHandlers/inputState.js';
+} from './inputHandlers/removeElements.js';
+import { KV_CONTAINER_SELECTOR } from './constants/selectors.js';
+import { hideAndDisable } from './inputHandlers/inputState.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
   let kvContainer = dom.querySelector(container, KV_CONTAINER_SELECTOR);
@@ -626,7 +626,7 @@ export function handleRequestResponse(url, env, options) {
   fetchFn(url).then(getText).then(displayBody).catch(handleFetchError);
 }
 
-import { isObject } from '../core/browser/common.js';
+import { isObject } from './common.js';
 
 /**
  * Creates a number input element with the specified value and change handler
@@ -1056,7 +1056,7 @@ export function parseJSONResult(result) {
  * @returns {Function} An event handler function.
  */
 
-import { setOutput } from '../core/browser/setOutput.js';
+import { setOutput } from './setOutput.js';
 
 // New wrapper function
 /**
