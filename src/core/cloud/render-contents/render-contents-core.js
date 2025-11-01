@@ -1,4 +1,4 @@
-import { DEFAULT_BUCKET_NAME, productionOrigins } from './cloud-core.js';
+import { assertFunction, DEFAULT_BUCKET_NAME, productionOrigins } from './cloud-core.js';
 import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
 
 export { DEFAULT_BUCKET_NAME, productionOrigins };
@@ -35,18 +35,6 @@ function assertDb(db) {
 function assertStorage(storage) {
   if (!storage || typeof storage.bucket !== 'function') {
     throw new TypeError('storage must provide a bucket helper');
-  }
-}
-
-/**
- * Assert that a candidate value is a function.
- * @param {*} candidate Value that should be a function.
- * @param {string} name Human readable identifier for error messages.
- * @returns {void}
- */
-function assertFunction(candidate, name) {
-  if (typeof candidate !== 'function') {
-    throw new TypeError(`${name} must be a function`);
   }
 }
 
