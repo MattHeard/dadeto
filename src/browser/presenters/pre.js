@@ -1,1 +1,1 @@
-export { createPreElement } from '../../core/presenters/pre.js';
+export { createPreElement } from '../../core/browser/presenters/pre.js';

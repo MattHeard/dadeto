@@ -1,4 +1,4 @@
-import { parseCsvLine } from '../../../src/core/toys/toys-core.js';
+import { parseCsvLine } from '../../../src/core/browser/toys/toys-core.js';
 
 describe('parseCsvLine', () => {
   it('returns null when provided a non-string input', () => {

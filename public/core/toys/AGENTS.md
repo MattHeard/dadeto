@@ -1,8 +1,8 @@
-# AGENTS Instructions for src/core/toys
+# AGENTS Instructions for src/core/browser/toys
 
 ## Scope
 
-These instructions apply to files in `src/core/toys` and its subdirectories.
+These instructions apply to files in `src/core/browser/toys` and its subdirectories.
 
 ## Guidelines
 

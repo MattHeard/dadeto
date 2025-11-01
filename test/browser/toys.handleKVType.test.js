@@ -1,5 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { handleKVType } from '../../src/core/inputHandlers/kv.js';
+import { handleKVType } from '../../src/core/browser/inputHandlers/kv.js';
 
 describe('handleKVType', () => {
   test('can be invoked with an empty DOM object', () => {

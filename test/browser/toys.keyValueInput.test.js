@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { ensureKeyValueInput } from '../../src/core/inputHandlers/kv.js';
+import { ensureKeyValueInput } from '../../src/core/browser/inputHandlers/kv.js';
 
 describe('Key-Value Input', () => {
   it('creates a key-value container when none exists', () => {

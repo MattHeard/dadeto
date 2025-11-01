@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { coerceToBoolean } from '../../../src/core/toys/2025-03-21/booleanCoercer.js';
+import { coerceToBoolean } from '../../../src/core/browser/toys/2025-03-21/booleanCoercer.js';
 
 describe('coerceToBoolean', () => {
   test.each([

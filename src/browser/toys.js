@@ -161,19 +161,19 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
   dom.addEventListener(dropdown, 'change', onChange);
 };
 
-import { textHandler } from '../core/inputHandlers/text.js';
-import { textareaHandler } from '../core/inputHandlers/textarea.js';
-import { numberHandler } from '../core/inputHandlers/number.js';
-import { defaultHandler } from '../core/inputHandlers/default.js';
-import { dendriteStoryHandler } from '../core/inputHandlers/dendriteStory.js';
-import { dendritePageHandler } from '../core/inputHandlers/dendritePage.js';
+import { textHandler } from '../core/browser/inputHandlers/text.js';
+import { textareaHandler } from '../core/browser/inputHandlers/textarea.js';
+import { numberHandler } from '../core/browser/inputHandlers/number.js';
+import { defaultHandler } from '../core/browser/inputHandlers/default.js';
+import { dendriteStoryHandler } from '../core/browser/inputHandlers/dendriteStory.js';
+import { dendritePageHandler } from '../core/browser/inputHandlers/dendritePage.js';
 import {
   maybeRemoveNumber,
   maybeRemoveDendrite,
   maybeRemoveTextarea,
-} from '../core/inputHandlers/removeElements.js';
+} from '../core/browser/inputHandlers/removeElements.js';
 import { KV_CONTAINER_SELECTOR } from '../core/constants/selectors.js';
-import { hideAndDisable } from '../core/inputHandlers/inputState.js';
+import { hideAndDisable } from '../core/browser/inputHandlers/inputState.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
   let kvContainer = dom.querySelector(container, KV_CONTAINER_SELECTOR);

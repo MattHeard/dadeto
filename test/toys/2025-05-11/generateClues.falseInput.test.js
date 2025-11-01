@@ -1,5 +1,5 @@
 import { test, expect } from '@jest/globals';
-import { generateClues } from '../../../src/core/toys/2025-05-11/battleshipSolitaireClues.js';
+import { generateClues } from '../../../src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js';
 
 test.each([['false'], ['null']])(
   'generateClues gracefully handles %s input',

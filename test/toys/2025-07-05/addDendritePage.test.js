@@ -1,4 +1,4 @@
-import { addDendritePage } from '../../../src/core/toys/2025-07-05/addDendritePage.js';
+import { addDendritePage } from '../../../src/core/browser/toys/2025-07-05/addDendritePage.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('addDendritePage', () => {

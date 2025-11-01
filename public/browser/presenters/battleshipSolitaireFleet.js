@@ -1,1 +1,1 @@
-export { createBattleshipFleetBoardElement } from '../../core/presenters/battleshipSolitaireFleet.js';
+export { createBattleshipFleetBoardElement } from '../../core/browser/presenters/battleshipSolitaireFleet.js';

@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { createNumberInput } from '../../src/core/inputHandlers/number.js';
+import { createNumberInput } from '../../src/core/browser/inputHandlers/number.js';
 
 describe('createNumberInput', () => {
   let mockDom;

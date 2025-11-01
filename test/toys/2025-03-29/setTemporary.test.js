@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { setTemporary } from '../../../src/core/toys/2025-03-29/setTemporary.js';
+import { setTemporary } from '../../../src/core/browser/toys/2025-03-29/setTemporary.js';
 
 describe('setTemporary function (getData -> merge -> setData)', () => {
   let mockGetData;

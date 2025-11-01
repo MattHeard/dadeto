@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { placeAllShips } from '../../../src/core/toys/2025-05-08/battleshipSolitaireFleet.js';
+import { placeAllShips } from '../../../src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js';
 
 describe('placeAllShips mutation', () => {
   test.each([

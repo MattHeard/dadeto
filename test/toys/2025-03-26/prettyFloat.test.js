@@ -1,7 +1,7 @@
 import {
   decomposeFloat,
   formatDecimal,
-} from '../../../src/core/toys/2025-03-26/prettyFloat.js';
+} from '../../../src/core/browser/toys/2025-03-26/prettyFloat.js';
 
 describe('formatDecimal', () => {
   test('toPrecision(17) can return a string without a decimal point for large integers', () => {

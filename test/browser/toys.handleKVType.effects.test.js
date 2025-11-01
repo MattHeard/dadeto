@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { handleKVType } from '../../src/core/inputHandlers/kv.js';
+import { handleKVType } from '../../src/core/browser/inputHandlers/kv.js';
 
 describe('handleKVType effects', () => {
   it('removes number input and sets up key-value container', () => {

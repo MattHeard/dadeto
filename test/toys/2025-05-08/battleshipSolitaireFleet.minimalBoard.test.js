@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { generateFleet } from '../../../src/core/toys/2025-05-08/battleshipSolitaireFleet.js';
+import { generateFleet } from '../../../src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js';
 
 /**
  * Ensure generateFleet can place a single ship on a small board.

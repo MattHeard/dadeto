@@ -1,1 +1,1 @@
-export { createParagraphElement } from '../../core/presenters/paragraph.js';
+export { createParagraphElement } from '../../core/browser/presenters/paragraph.js';

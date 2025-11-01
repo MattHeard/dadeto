@@ -9,7 +9,7 @@ import { describe, test, expect } from '@jest/globals';
 async function loadMinimax() {
   const filePath = path.join(
     process.cwd(),
-    'src/core/toys/2025-04-06/ticTacToe.js'
+    'src/core/browser/toys/2025-04-06/ticTacToe.js'
   );
   let src = fs.readFileSync(filePath, 'utf8');
   src += '\nexport { minimax };';
