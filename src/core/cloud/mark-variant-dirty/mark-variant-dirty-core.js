@@ -257,6 +257,64 @@ export function sendForbidden(res) {
 }
 
 /**
+ * Ensure the incoming request uses the allowed HTTP method.
+ * @param {import('express').Request} req HTTP request.
+ * @param {import('express').Response} res HTTP response.
+ * @param {string} allowedMethod Allowed HTTP method.
+ * @returns {boolean} True when the method is allowed.
+ */
+function enforceAllowedMethod(req, res, allowedMethod) {
+  if (req?.method === allowedMethod) {
+    return true;
+  }
+
+  res.status(405).send(`${allowedMethod} only`);
+  return false;
+}
+
+/**
+ * Parse and validate the incoming request body.
+ * @param {import('express').Request} req HTTP request.
+ * @param {import('express').Response} res HTTP response.
+ * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Body parser.
+ * @returns {{ pageNumber: number, variantName: string } | null} Parsed parameters or null when invalid.
+ */
+function parseValidRequest(req, res, parseRequestBody) {
+  const { pageNumber, variantName } = parseRequestBody(req?.body);
+
+  if (Number.isInteger(pageNumber) && variantName) {
+    return { pageNumber, variantName };
+  }
+
+  res.status(400).json({ error: 'Invalid input' });
+  return null;
+}
+
+/**
+ * Mark the variant dirty and send the appropriate response.
+ * @param {import('express').Response} res HTTP response.
+ * @param {(pageNumber: number, variantName: string) => Promise<boolean>} markFn Mutation helper.
+ * @param {number} pageNumber Page number.
+ * @param {string} variantName Variant name.
+ * @returns {Promise<void>} Resolves when the response has been sent.
+ */
+async function markVariantAndRespond(res, markFn, pageNumber, variantName) {
+  try {
+    const ok = await markFn(pageNumber, variantName);
+    if (!ok) {
+      res.status(404).json({ error: 'Variant not found' });
+      return;
+    }
+
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    const message =
+      typeof error?.message === 'string' ? error.message : 'update failed';
+    res.status(500).json({ error: message });
+  }
+}
+
+/**
  * Create a predicate that checks whether a decoded token matches the admin UID.
  * @param {string} adminUid Authorized admin UID.
  * @returns {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} Admin check predicate.
@@ -300,41 +358,30 @@ export function createHandleRequest({
   }
 
   return async function handleRequest(req, res, deps = {}) {
-    if (req?.method !== allowedMethod) {
-      res.status(405).send(`${allowedMethod} only`);
+    if (!enforceAllowedMethod(req, res, allowedMethod)) {
       return;
     }
 
     const verifyAdminFn =
       typeof deps.verifyAdmin === 'function' ? deps.verifyAdmin : verifyAdmin;
 
-    const authorised = await verifyAdminFn(req, res);
-    if (!authorised) {
+    if (!(await verifyAdminFn(req, res))) {
       return;
     }
 
-    const { pageNumber, variantName } = parseRequestBody(req?.body);
-
-    if (!Number.isInteger(pageNumber) || !variantName) {
-      res.status(400).json({ error: 'Invalid input' });
+    const parsed = parseValidRequest(req, res, parseRequestBody);
+    if (!parsed) {
       return;
     }
 
     const markFn =
       typeof deps.markFn === 'function' ? deps.markFn : markVariantDirty;
 
-    try {
-      const ok = await markFn(pageNumber, variantName);
-      if (!ok) {
-        res.status(404).json({ error: 'Variant not found' });
-        return;
-      }
-
-      res.status(200).json({ ok: true });
-    } catch (error) {
-      const message =
-        typeof error?.message === 'string' ? error.message : 'update failed';
-      res.status(500).json({ error: message });
-    }
+    await markVariantAndRespond(
+      res,
+      markFn,
+      parsed.pageNumber,
+      parsed.variantName
+    );
   };
 }
