@@ -3,5 +3,5 @@ export { Storage } from '@google-cloud/storage';
 export { getAuth } from 'firebase-admin/auth';
 export { ensureFirebaseApp } from './firebaseApp.js';
 export { getFirestoreInstance } from './firestore.js';
-export { ADMIN_UID } from './admin-config.js';
+export { ADMIN_UID } from './common-core.js';
 export { fetchFn, crypto, getEnvironmentVariables } from './common-gcf.js';
