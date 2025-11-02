@@ -41,6 +41,37 @@ function ensureTemporaryData(obj) {
 }
 
 /**
+ * Create a normalized dendrite story result object from raw data.
+ * @param {object} data - Parsed story data.
+ * @param {() => string} getUuid - UUID generator.
+ * @returns {object} Normalized story result.
+ */
+function createStoryResult(data, getUuid) {
+  return {
+    id: getUuid(),
+    title: data.title,
+    content: data.content,
+    options: createOptions(data, getUuid),
+  };
+}
+
+/**
+ * Store the dendrite story result inside the environment's temporary data.
+ * @param {Map<string, Function>} env - Environment helpers.
+ * @param {object} result - Story result to persist.
+ * @returns {void}
+ */
+function persistStoryResult(env, result) {
+  const getData = env.get('getData');
+  const setLocalTemporaryData = env.get('setLocalTemporaryData');
+  const currentData = getData();
+  const newData = deepClone(currentData);
+  ensureTemporaryData(newData);
+  newData.temporary.DEND1.push(result);
+  setLocalTemporaryData(newData);
+}
+
+/**
  * Adds a new dendrite story entry to the application's data store.
  * @param {string} input - JSON string containing story data.
  * @param {Map<string, Function>} env - Environment with data accessors.
@@ -50,21 +81,9 @@ export function startLocalDendriteStory(input, env) {
   try {
     const data = JSON.parse(input);
     const getUuid = env.get('getUuid');
-    const getData = env.get('getData');
-    const setLocalTemporaryData = env.get('setLocalTemporaryData');
+    const result = createStoryResult(data, getUuid);
 
-    const result = {
-      id: getUuid(),
-      title: data.title,
-      content: data.content,
-      options: createOptions(data, getUuid),
-    };
-
-    const currentData = getData();
-    const newData = deepClone(currentData);
-    ensureTemporaryData(newData);
-    newData.temporary.DEND1.push(result);
-    setLocalTemporaryData(newData);
+    persistStoryResult(env, result);
 
     return JSON.stringify(result);
   } catch {
