@@ -1,2 +1,0 @@
-- **Challenge:** Ensuring the Firestore environment helper lives in the shared core package without breaking existing behavior.
-- **Resolution:** Moved the helper into the core module and reused it from the Cloud Function entry point, then ran the full Jest suite to confirm parity.

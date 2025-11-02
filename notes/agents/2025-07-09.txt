@@ -1,1 +1,0 @@
-Handled code review feedback questioning the regex try/catch by extracting a reusable exec helper for the UUID matcher to keep the guard explicit without raising lint complexity warnings.

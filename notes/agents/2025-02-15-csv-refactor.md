@@ -1,6 +1,0 @@
-# CSV toy refactor hurdles
-
-- **Surprise:** eslint's per-function complexity threshold is set to `2`, so even splitting the 16-branch toy triggered new warnings on the helper functions. I initially expected the new helpers to be "clean", but the rule still fires. Re-running the lint command confirmed the rule is global and forced me to keep the refactor scoped instead of chasing every warning.
-- **Diagnosis:** After the first lint pass I inspected `reports/lint/lint.txt` and compared before/after complexity counts. The helper names surfaced with fresh warnings, which made it obvious the lint report aggregates everything—no incremental diff there.
-- **Next time:** Budget time for documenting helpers right away; the lint config requires full JSDoc blocks even for internal utilities. When touching toys, keep the refactor limited and capture the before/after complexity numbers from the same lint report chunk so you can report them without parsing the entire file again.
-- **Open question:** Is there an internal script that produces a summarized complexity report? Scrolling past hundreds of warnings to find the right lines is noisy; a targeted lint pattern (or eslint --rule) could speed up future work.

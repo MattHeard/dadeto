@@ -1,2 +1,0 @@
-- **Challenge:** Moving `initializeFirebaseApp` into the shared core module risked creating dependency cycles if the function referenced GCF-specific utilities.
-- **Resolution:** Verified that the helper only depends on `isDuplicateAppError`, which already lives in the shared core, and relocated the logic without introducing additional imports.

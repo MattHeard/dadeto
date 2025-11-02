@@ -1,6 +1,0 @@
-# Handle request complexity extraction
-
-- **Unexpected hurdle:** The lint report listed dozens of complexity warnings, so isolating the single highest instance (the mark-variant-dirty handler) required scripting against `reports/lint/lint.txt` to confirm it really topped out at 14. The report format interleaves file headers with warning lines, so a quick `rg` was noisy; a Python snippet that tracked the max value gave a definitive answer.
-- **Diagnostic steps:** Once I knew `handleRequest` was the worst offender, I reread the function to map every branch contributing to the cyclomatic score. Grouping the method guard, admin verification, payload validation, and mutation/response logic revealed three distinct responsibilities that could be peeled into helpers without changing behavior.
-- **Resolution:** I introduced `enforceAllowedMethod`, `parseValidRequest`, and `markVariantAndRespond`. Each helper returns early when it handles an error, keeping the main handler as a short orchestration. After refactoring, rerunning `npm run lint` confirmed the handler dropped to a complexity of 7.
-- **Carry-forward advice:** When tackling similar lint-driven refactors, script the report parsing first so you can prove which function is the true outlier, then look for clusters of conditional logic that can be isolated into descriptive helpers with narrow responsibilities.
