@@ -1,4 +1,4 @@
-import { productionOrigins } from './cloud-core.js';
+import { normalizeString, productionOrigins } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
 export { productionOrigins, coreIsAllowedOrigin as isAllowedOrigin };
@@ -123,14 +123,7 @@ function assertAuthInstance(auth) {
     throw new TypeError('auth.verifyIdToken must be a function');
   }
 }
-/**
- * Normalizes an arbitrary value to a safe string representation.
- * @param {unknown} value Value to normalize.
- * @returns {string} Normalized string value.
- */
-function normalizeString(value) {
-  return typeof value === 'string' ? value : '';
-}
+
 /**
  * Extracts a bearer token from an Authorization header value.
  * @param {string | null | undefined} authHeader Authorization header value to parse.
