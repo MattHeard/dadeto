@@ -1,2 +1,0 @@
-- **Challenge:** Removing the injected `bucket` dependency meant several Jest helpers still expected to override it, causing failures during the refactor.
-- **Resolution:** Introduced an internal default bucket constant in `createGenerateStatsCore` and updated the tests to assert against that value (or override it per-call), keeping the dependency surface smaller without sacrificing test coverage.

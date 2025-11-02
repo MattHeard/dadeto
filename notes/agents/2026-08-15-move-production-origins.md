@@ -1,2 +1,0 @@
-- **Challenge:** Moving the `productionOrigins` array into a shared module meant the infra copy script needed to include the new file everywhere the core module is mirrored.
-- **Resolution:** Added copies for `cloud-core.js` to both the shared infra core directory and the Cloud Function deploy folder so relative imports remain intact.

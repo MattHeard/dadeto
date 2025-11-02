@@ -1,2 +1,0 @@
-- **Challenge:** Needed to relocate the shared production origin list without breaking the existing cloud-core re-export pattern.
-- **Resolution:** Removed the array from the common core module and defined it directly in `src/core/cloud/cloud-core.js`, continuing to re-export the default bucket name from the shared module.

@@ -1,1 +1,0 @@
-Encountered overlapping module responsibilities while updating the assign moderation job Cloud Function. Resolved by consolidating the Firebase Functions import through the GCF shim and destructuring the helper utilities to avoid duplicate imports.

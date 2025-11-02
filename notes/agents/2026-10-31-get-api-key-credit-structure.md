@@ -1,2 +1,0 @@
-- **Challenge:** Align the get-api-key-credit function with the new bridge layout without breaking existing imports that still pointed at the legacy `core.js` wrapper.
-- **Resolution:** Renamed the core implementation to `get-api-key-credit-core.js`, updated the tests and Cloud entry point to import through the new bridge, and taught the copy script to stage the additional shared files for deployment.

@@ -1,2 +1,0 @@
-- **Challenge:** Updating the blog data loader to accept a dependency bundle without breaking the broad Jest coverage.
-- **Resolution:** Added the `BlogDataDependencies` typedef, refactored `fetchAndCacheBlogData`/`getData` to use it, and updated the browser entry point plus tests to inject the new shape.

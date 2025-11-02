@@ -1,2 +1,0 @@
-- **Challenge:** Moving the infra copy script into the build folder meant the relative imports for the fs/path adapters would break and the npm script reference would be outdated.
-- **Resolution:** Updated the script's imports to use local paths after relocating it and pointed the `build:cloud` npm script at the new location.

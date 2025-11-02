@@ -1,2 +1,0 @@
-- **Challenge:** Aligning hide-variant-html and mark-variant-dirty with the new bridge layout required peeling apart their inline handlers without breaking the long-standing tests that poke the raw helpers.
-- **Resolution:** Moved the shared helpers into dedicated core modules, introduced the GCF shims, and extended the copy script so deployment bundles now include the new cores alongside the shared cloud/common bridges.

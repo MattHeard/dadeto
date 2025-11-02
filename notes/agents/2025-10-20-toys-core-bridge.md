@@ -1,2 +1,0 @@
-- **Challenge:** Required local toy modules to import `toys-core.js` without traversing up a directory while still sharing the central implementation.
-- **Resolution:** Added bridge re-export files alongside each toy and updated their imports to target the local bridge so relative paths remain stable if directories are reorganized.
