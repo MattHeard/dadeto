@@ -2,10 +2,7 @@ import { createParagraphElement } from './presenters/paragraph.js';
 import { createPrefixedLoggers, createRemoveListener } from './document.js';
 import { parseJsonOrDefault } from './jsonUtils.js';
 import { deepClone } from './objectUtils.js';
-import {
-  getInputValue,
-  setInputValue,
-} from './inputValueStore.js';
+import { getInputValue, setInputValue } from './inputValueStore.js';
 
 /**
  * Determines whether a value is a key/value pair object.
