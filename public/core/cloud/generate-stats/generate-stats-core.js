@@ -1,5 +1,5 @@
 import { createVerifyAdmin } from './verifyAdmin.js';
-import { ADMIN_UID } from './admin-config.js';
+import { ADMIN_UID } from './common-core.js';
 import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
 export { productionOrigins } from './cloud-core.js';

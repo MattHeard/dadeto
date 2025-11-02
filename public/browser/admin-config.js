@@ -1,1 +1,1 @@
-export * from '../core/admin-config.js';
+export * from './common-core.js';
