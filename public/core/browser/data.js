@@ -1,5 +1,5 @@
 import { deepClone } from '../objectUtils.js';
-import { isNonNullObject } from '../state.js';
+import { isNonNullObject } from './browser-core.js';
 
 /**
  * @typedef {(message: string, ...meta: unknown[]) => void} BlogLogFn
@@ -38,7 +38,7 @@ import { isNonNullObject } from '../state.js';
  * @property {(desired: object) => object} setLocalPermanentData - Persists permanent blog state locally.
  */
 
-export { deepMerge } from '../state.js';
+export { deepMerge } from './browser-core.js';
 export { getEncodeBase64 } from '../encoding.js';
 
 const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
