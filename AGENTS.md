@@ -1,5 +1,14 @@
 # Repository Guidelines
 
+## General Recommendations for Future Agents
+- **Consult guidelines and past notes first.** Review relevant documentation, retrospectives, and prior changes before starting work so your approach aligns with established patterns and known pitfalls.
+- **Plan broad changes carefully.** Script repetitive edits, break large refactors into incremental steps, update related docs, and validate each phase—especially configs and tests—before moving on.
+- **Test and lint early and often.** Run the suite and lint checks throughout your work, address failures immediately, and record the commands and outcomes in your PR notes.
+- **Practice defensive programming.** Anticipate edge cases, validate inputs, prefer safe defaults, and resolve lint findings instead of disabling rules so the system fails gracefully when surprises occur.
+- **Keep project guidelines cohesive.** When you add or revise rules, integrate them with existing sections, update references after structural changes, and maintain the established tone and formatting.
+- **Emphasize learning in retrospectives.** Capture unexpected hurdles, how you diagnosed them, and actionable follow-ups so future agents can apply the lessons without repeating the discovery process.
+- **Communicate clearly and proactively.** Use descriptive commit messages, summarize intent and testing in PRs, link supporting artifacts, and flag any behavioral changes that reviewers should note.
+
 ## Project Structure & Module Organization
 - `src/` holds the blog generator, including `generator.js`, HTML helpers, and the `blog.json` content source; keep new modules focused on a single responsibility.
 - `public/` contains generated assets. Do not edit files here directly—run the generator instead.

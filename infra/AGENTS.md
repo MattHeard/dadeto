@@ -4,6 +4,14 @@
 
 These instructions apply to everything under `infra/`.
 
+## General Recommendations for Future Agents
+- Consult the repository-wide guidelines and prior retrospectives before modifying infrastructure to align with established patterns and avoid hidden pitfalls.
+- Script and stage broad Terraform or HTML updates incrementally, validating each change and updating related documentation as you proceed.
+- Run the expected lint, test, or validation commands early and often, capturing the results for your commit or PR notes.
+- Harden changes defensively by checking for nulls, sanitizing inputs, and addressing lint warnings directly so deployments behave predictably.
+- Keep these instructions cohesive with the root guidelines when adding new infra policies, and document lessons learned in retrospectives for future reference.
+- Communicate clearly through descriptive commits and PR summaries that outline the intent, testing, and any deployment considerations.
+
 ## Static vs generated HTML
 
 Several HTML files in this directory are uploaded verbatim to the static site
