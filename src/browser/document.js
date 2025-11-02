@@ -64,10 +64,7 @@ export const log = (...args) => console.log(...args);
 export const warn = (...args) => console.warn(...args);
 export const logError = (...args) => console.error(...args);
 
-export {
-  createPrefixedLogger,
-  createPrefixedLoggers,
-} from './logging.js';
+export { createPrefixedLogger, createPrefixedLoggers } from './logging.js';
 
 // Utility functions
 export const getClasses = el => Array.from(el.classList);
