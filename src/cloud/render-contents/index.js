@@ -1,3 +1,4 @@
+import { initializeApp } from 'firebase-admin/app';
 import {
   functions,
   Storage,
@@ -27,7 +28,7 @@ import {
  * @typedef {import('../../core/cloud/render-contents/render-contents-core.js').StoryInfo} StoryInfo
  */
 
-const { ensureFirebaseApp } = createFirebaseAppManager();
+const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 
 ensureFirebaseApp();
 
