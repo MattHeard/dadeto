@@ -1,36 +1,71 @@
 import { initializeApp } from 'firebase-admin/app';
 
-let firebaseInitialized = false;
+const defaultInitializationState = { firebaseInitialized: false };
 
 /**
- * Ensure the default Firebase Admin app is initialized.
- * @param {() => void} [initFn] Optional initializer for dependency injection.
+ * Determine whether an initialization error indicates a duplicate Firebase app.
+ * @param {unknown} error Error thrown during Firebase initialization.
+ * @returns {boolean} True when the error corresponds to an already-initialized app.
  */
-export function ensureFirebaseApp(initFn = initializeApp) {
-  if (firebaseInitialized) {
-    return;
+function isDuplicateFirebaseAppError(error) {
+  if (!error) {
+    return false;
   }
 
-  try {
-    initFn();
-  } catch (error) {
-    const duplicateApp =
-      error &&
-      (error.code === 'app/duplicate-app' ||
-        typeof error.message === 'string') &&
-      String(error.message).toLowerCase().includes('already exists');
+  const candidate = /** @type {{ code?: string, message?: unknown }} */ (error);
+  const hasDuplicateCode = candidate.code === 'app/duplicate-app';
+  const hasStringMessage = typeof candidate.message === 'string';
+  const messageText = String(candidate.message ?? '').toLowerCase();
 
-    if (!duplicateApp) {
-      throw error;
+  return messageText.includes('already exists') && (hasDuplicateCode || hasStringMessage);
+}
+
+/**
+ * Create helpers that manage Firebase Admin app initialization state.
+ * @param {() => void} [initializer] Optional initializer injected for testing.
+ * @param {{ firebaseInitialized: boolean }} [state] Shared state bucket tracking initialization.
+ * @returns {{
+ *   ensureFirebaseApp: (initFn?: () => void) => void,
+ *   resetFirebaseInitializationState: () => void,
+ * }} Firebase initialization helpers.
+ */
+export function createFirebaseAppManager(
+  initializer = initializeApp,
+  state = defaultInitializationState
+) {
+  /**
+   * Ensure the default Firebase Admin app is initialized.
+   * @param {() => void} [initFn] Optional initializer for dependency injection.
+   * @returns {void}
+   */
+  function ensureFirebaseApp(initFn = initializer) {
+    if (state.firebaseInitialized) {
+      return;
     }
+
+    try {
+      initFn();
+    } catch (error) {
+      if (!isDuplicateFirebaseAppError(error)) {
+        throw error;
+      }
+    }
+
+    state.firebaseInitialized = true;
   }
 
-  firebaseInitialized = true;
+  /**
+   * Reset the initialization flag. Primarily used in tests.
+   * @returns {void}
+   */
+  function resetFirebaseInitializationState() {
+    state.firebaseInitialized = false;
+  }
+
+  return { ensureFirebaseApp, resetFirebaseInitializationState };
 }
 
-/**
- * Reset the initialization flag. Primarily used in tests.
- */
-export function resetFirebaseInitializationState() {
-  firebaseInitialized = false;
-}
+export const {
+  ensureFirebaseApp,
+  resetFirebaseInitializationState,
+} = createFirebaseAppManager();

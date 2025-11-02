@@ -1,1 +1,1 @@
-export { ensureFirebaseApp } from '../firebaseApp.js';
+export { createFirebaseAppManager } from '../firebaseApp.js';

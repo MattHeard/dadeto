@@ -2,7 +2,7 @@ import {
   functions,
   Storage,
   getAuth,
-  ensureFirebaseApp,
+  createFirebaseAppManager,
   getFirestoreInstance,
   ADMIN_UID,
   fetchFn,
@@ -26,6 +26,8 @@ import {
  * @typedef {import('../../core/cloud/render-contents/render-contents-core.js').RenderDependencies} RenderDependencies
  * @typedef {import('../../core/cloud/render-contents/render-contents-core.js').StoryInfo} StoryInfo
  */
+
+const { ensureFirebaseApp } = createFirebaseAppManager();
 
 ensureFirebaseApp();
 

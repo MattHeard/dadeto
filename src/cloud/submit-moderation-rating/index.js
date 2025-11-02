@@ -4,7 +4,7 @@ import {
   cors,
   getAuth,
   FieldValue,
-  ensureFirebaseApp,
+  createFirebaseAppManager,
   getFirestoreInstance,
   crypto,
   getEnvironmentVariables,
@@ -15,6 +15,8 @@ import {
   createHandleSubmitModerationRating,
   createSubmitModerationRatingResponder,
 } from './submit-moderation-rating-core.js';
+
+const { ensureFirebaseApp } = createFirebaseAppManager();
 
 ensureFirebaseApp();
 const db = getFirestoreInstance();

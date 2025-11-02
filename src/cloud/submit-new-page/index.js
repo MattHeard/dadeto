@@ -5,7 +5,7 @@ import {
   express,
   cors,
   crypto,
-  ensureFirebaseApp,
+  createFirebaseAppManager,
   getFirestoreInstance,
   getEnvironmentVariables,
 } from './submit-new-page-gcf.js';
@@ -16,6 +16,8 @@ import {
   findExistingOption,
   findExistingPage,
 } from './helpers.js';
+
+const { ensureFirebaseApp } = createFirebaseAppManager();
 
 ensureFirebaseApp();
 const db = getFirestoreInstance();

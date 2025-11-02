@@ -5,7 +5,7 @@ import {
   getAuth,
   getEnvironmentVariables,
 } from './get-moderation-variant-gcf.js';
-import { ensureFirebaseApp } from './firebaseApp.js';
+import { createFirebaseAppManager } from '../firebaseApp.js';
 import { getFirestoreInstance } from './firestore.js';
 import {
   createCorsOptions,
@@ -14,6 +14,8 @@ import {
   getAllowedOrigins,
   isAllowedOrigin,
 } from './get-moderation-variant-core.js';
+
+const { ensureFirebaseApp } = createFirebaseAppManager();
 
 const db = getFirestoreInstance();
 ensureFirebaseApp();
