@@ -4,6 +4,14 @@
 
 These instructions apply to files in `src/core/browser/toys` and its subdirectories.
 
+## General Recommendations for Future Agents
+- Review the root guidelines, past retrospectives, and existing toy implementations before making changes so you stay consistent with established patterns.
+- When adjusting multiple toys or shared helpers, plan the edits as incremental steps, validate each phase, and update related docs or metadata immediately.
+- Run linting and relevant tests throughout development, capturing command output for your eventual PR summary.
+- Anticipate edge cases—validate inputs, handle unexpected env data, and resolve lint feedback instead of suppressing it.
+- Keep any additions to these toy guidelines cohesive with the repository tone, and record noteworthy discoveries in a retrospective once work wraps up.
+- Communicate intent and verification clearly in commit messages and PR descriptions, including any artifacts that illustrate behavior changes.
+
 ## Guidelines
 
 - Use these directories for experimental or playground code.
