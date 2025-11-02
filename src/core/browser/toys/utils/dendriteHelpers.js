@@ -1,6 +1,6 @@
 export { ensureDend2, createOptions };
 
-import { isNonNullObject } from '../../../state.js';
+import { isNonNullObject } from '../../browser-core.js';
 
 const DENDRITE_OPTION_KEYS = [
   'firstOption',

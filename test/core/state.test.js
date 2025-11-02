@@ -1,4 +1,7 @@
-import { deepMerge, isNonNullObject } from '../../src/core/state.js';
+import {
+  deepMerge,
+  isNonNullObject,
+} from '../../src/core/browser/browser-core.js';
 
 describe('state helpers', () => {
   describe('isNonNullObject', () => {
