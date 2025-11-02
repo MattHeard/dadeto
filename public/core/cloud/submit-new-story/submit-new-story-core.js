@@ -276,27 +276,86 @@ export function createHandleSubmitNewStory(responder) {
   assertFunction(responder, 'responder');
 
   return async function handleSubmitNewStory(req, res) {
-    const result = await responder({
-      method: req?.method,
-      body: req?.body,
-      get: typeof req?.get === 'function' ? name => req.get(name) : undefined,
-      headers: req?.headers,
-    });
+    const request = mapSubmitNewStoryRequest(req);
+    const result = await responder(request);
 
-    const { status, body } = result;
-
-    if (typeof body === 'object' && body !== null) {
-      res.status(status).json(body);
-      return;
-    }
-
-    if (typeof body === 'undefined') {
-      res.sendStatus(status);
-      return;
-    }
-
-    res.status(status).send(body);
+    sendResponderResult(res, result.status, result.body);
   };
+}
+
+/**
+ * Normalize an Express request into the shape expected by the responder.
+ * @param {SubmitNewStoryRequest} req - Incoming Express request.
+ * @returns {SubmitNewStoryRequest} Request data for the responder.
+ */
+function mapSubmitNewStoryRequest(req) {
+  const request = req ?? {};
+
+  return {
+    method: request.method,
+    body: request.body,
+    get: resolveRequestGetter(request),
+    headers: request.headers,
+  };
+}
+
+const responderHandlers = {
+  object(res, status, body) {
+    res.status(status).json(body);
+  },
+  undefined(res, status) {
+    res.sendStatus(status);
+  },
+  default(res, status, body) {
+    res.status(status).send(body);
+  },
+};
+
+const responderKeyByType = {
+  true: 'undefined',
+  false: 'default',
+};
+
+/**
+ * Send an HTTP response based on the responder result payload.
+ * @param {import('express').Response} res - Response instance used to send data.
+ * @param {number} status - HTTP status code emitted to the client.
+ * @param {unknown} body - Payload returned by the domain responder.
+ */
+function sendResponderResult(res, status, body) {
+  if (isObjectBody(body)) {
+    responderHandlers.object(res, status, body);
+    return;
+  }
+
+  const handlerKey = responderKeyByType[body === undefined];
+  responderHandlers[handlerKey](res, status, body);
+}
+
+/**
+ * Resolve the header getter from an Express request when available.
+ * @param {SubmitNewStoryRequest} req - Incoming Express request.
+ * @returns {SubmitNewStoryRequest['get']} Header getter.
+ */
+function resolveRequestGetter(req) {
+  if (typeof req.get !== 'function') {
+    return undefined;
+  }
+
+  return name => req.get(name);
+}
+
+/**
+ * Determine whether a responder body should be serialized as JSON.
+ * @param {unknown} body - Response body candidate.
+ * @returns {body is Record<string, unknown>} Whether the body is a JSON object.
+ */
+function isObjectBody(body) {
+  if (!body) {
+    return false;
+  }
+
+  return typeof body === 'object';
 }
 
 /**
