@@ -13,6 +13,20 @@ export function assertFunction(candidate, name) {
 }
 
 /**
+ * Normalize a textual input into a trimmed string bounded by the provided length.
+ * @param {unknown} value Raw value supplied by the client.
+ * @param {number} maxLength Maximum number of characters allowed in the normalized result.
+ * @returns {string} Normalized string respecting the requested length.
+ */
+export function normalizeString(value, maxLength) {
+  if (typeof value !== 'string') {
+    value = value === undefined || value === null ? '' : String(value);
+  }
+
+  return value.trim().slice(0, maxLength);
+}
+
+/**
  * Origins that are permitted to access production endpoints.
  * Centralizes the allow list so every Cloud Function can reference
  * the same deployment configuration.
