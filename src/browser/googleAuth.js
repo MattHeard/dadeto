@@ -6,7 +6,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { createGoogleSignOut } from './browser-core.js';
 import { createInitGoogleSignIn } from './admin-core.js';
-import { ADMIN_UID } from './admin-config.js';
+import { ADMIN_UID } from './common-core.js';
 
 initializeApp({
   apiKey: 'AIzaSyDRc1CakoDi6airj7t7DgY4KDSlxNwKIIQ',

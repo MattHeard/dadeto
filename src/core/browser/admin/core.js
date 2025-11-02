@@ -1,4 +1,4 @@
-import { ADMIN_UID } from '../../admin-config.js';
+import { ADMIN_UID } from '../common-core.js';
 import { createAdminTokenAction } from './token-action.js';
 
 export { ADMIN_UID };

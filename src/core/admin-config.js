@@ -1,1 +1,1 @@
-export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
+export { ADMIN_UID } from './common-core.js';
