@@ -1,7 +1,5 @@
 import { initializeApp } from 'firebase-admin/app';
 
-const defaultInitializationState = { firebaseInitialized: false };
-
 /**
  * Determine whether an initialization error indicates a duplicate Firebase app.
  * @param {unknown} error Error thrown during Firebase initialization.
@@ -22,17 +20,14 @@ function isDuplicateFirebaseAppError(error) {
 
 /**
  * Create helpers that manage Firebase Admin app initialization state.
- * @param {() => void} [initializer] Optional initializer injected for testing.
- * @param {{ firebaseInitialized: boolean }} [state] Shared state bucket tracking initialization.
+ * @param {() => void} initializer Firebase initialization function.
  * @returns {{
  *   ensureFirebaseApp: (initFn?: () => void) => void,
  *   resetFirebaseInitializationState: () => void,
  * }} Firebase initialization helpers.
  */
-export function createFirebaseAppManager(
-  initializer = initializeApp,
-  state = defaultInitializationState
-) {
+export function createFirebaseAppManager(initializer) {
+  const state = { firebaseInitialized: false };
   /**
    * Ensure the default Firebase Admin app is initialized.
    * @param {() => void} [initFn] Optional initializer for dependency injection.
@@ -68,4 +63,4 @@ export function createFirebaseAppManager(
 export const {
   ensureFirebaseApp,
   resetFirebaseInitializationState,
-} = createFirebaseAppManager();
+} = createFirebaseAppManager(initializeApp);

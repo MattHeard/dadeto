@@ -1,3 +1,4 @@
+import { initializeApp } from 'firebase-admin/app';
 import {
   functions,
   express,
@@ -29,7 +30,7 @@ import {
   sendUnauthorized,
 } from './mark-variant-dirty-core.js';
 
-const { ensureFirebaseApp } = createFirebaseAppManager();
+const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 
 ensureFirebaseApp();
 

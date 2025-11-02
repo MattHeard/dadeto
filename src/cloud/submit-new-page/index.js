@@ -1,3 +1,4 @@
+import { initializeApp } from 'firebase-admin/app';
 import {
   functions,
   FieldValue,
@@ -17,7 +18,7 @@ import {
   findExistingPage,
 } from './helpers.js';
 
-const { ensureFirebaseApp } = createFirebaseAppManager();
+const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 
 ensureFirebaseApp();
 const db = getFirestoreInstance();

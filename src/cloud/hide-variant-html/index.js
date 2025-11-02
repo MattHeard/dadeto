@@ -1,3 +1,4 @@
+import { initializeApp } from 'firebase-admin/app';
 import {
   functions,
   Storage,
@@ -13,7 +14,7 @@ import {
   getVariantVisibility,
 } from './hide-variant-html-core.js';
 
-const { ensureFirebaseApp } = createFirebaseAppManager();
+const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 
 ensureFirebaseApp();
 

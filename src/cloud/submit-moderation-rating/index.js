@@ -1,3 +1,4 @@
+import { initializeApp } from 'firebase-admin/app';
 import {
   functions,
   express,
@@ -16,7 +17,7 @@ import {
   createSubmitModerationRatingResponder,
 } from './submit-moderation-rating-core.js';
 
-const { ensureFirebaseApp } = createFirebaseAppManager();
+const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 
 ensureFirebaseApp();
 const db = getFirestoreInstance();

@@ -1,0 +1,10 @@
+## Summary
+- Adjusted Firebase app manager usage to require an explicit initializer to avoid implicit dependencies.
+- Ensured dependent Cloud Function entry points and Firestore utilities provide the initializer so shared state remains predictable.
+
+## Hurdles
+- Running the comprehensive Jest suite took a long time, so I tailed the log instead of streaming directly to keep the shell responsive.
+- Needed to update many entry points; keeping the import ordering consistent across files helped avoid lint concerns.
+
+## Follow-ups
+- None noted beyond monitoring lint checks for import order preferences, but everything passed locally.
