@@ -1,3 +1,5 @@
+import { normalizeString } from './cloud-core.js';
+
 /**
  * Normalize submit-new-page request body values.
  * @param {Record<string, unknown>} body Raw request body provided by Express.
@@ -12,10 +14,10 @@ function normalizeSubmissionBody(body) {
   } = body;
 
   return {
-    incomingOption: rawIncomingOption?.toString().trim().slice(0, 120) || '',
-    pageStr: rawPage?.toString().trim().slice(0, 120) || '',
+    incomingOption: normalizeString(rawIncomingOption, 120),
+    pageStr: normalizeString(rawPage, 120),
     content: rawContent.toString().replace(/\r\n?/g, '\n').slice(0, 10_000),
-    author: rawAuthor.toString().trim().slice(0, 120),
+    author: normalizeString(rawAuthor, 120),
   };
 }
 
@@ -109,7 +111,7 @@ function collectOptions(body) {
     if (raw === undefined || raw === null) {
       continue;
     }
-    const val = raw.toString().trim().slice(0, 120);
+    const val = normalizeString(raw, 120);
     if (val) {
       options.push(val);
     }
