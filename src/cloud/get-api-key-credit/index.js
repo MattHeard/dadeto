@@ -24,6 +24,64 @@ function createGetFirestoreInstance() {
 
 const getFirestoreInstance = createGetFirestoreInstance();
 
+/**
+ * Normalize a potential UUID candidate sourced from an HTTP request.
+ * @param {unknown} candidate Value read from the request payload.
+ * @returns {string|undefined} Sanitized UUID value when present.
+ */
+function readUuidCandidate(candidate) {
+  if (typeof candidate !== 'string') {
+    return undefined;
+  }
+
+  const trimmedCandidate = candidate.trim();
+
+  if (trimmedCandidate.length === 0) {
+    return undefined;
+  }
+
+  return trimmedCandidate;
+}
+
+/**
+ * Resolve the first UUID-like value from an Express request.
+ * @param {import('express').Request|undefined} request Incoming request object.
+ * @returns {string|undefined} UUID extracted from params, query, or body.
+ */
+function findUuidFromRequest(request) {
+  if (!request) {
+    return undefined;
+  }
+
+  let paramsUuid;
+
+  if (request.params) {
+    paramsUuid = readUuidCandidate(request.params.uuid);
+  }
+
+  if (paramsUuid) {
+    return paramsUuid;
+  }
+
+  let queryUuid;
+
+  if (request.query) {
+    queryUuid = readUuidCandidate(request.query.uuid);
+  }
+
+  if (queryUuid) {
+    return queryUuid;
+  }
+
+  let bodyUuid;
+
+  if (request.body) {
+    bodyUuid = readUuidCandidate(request.body.uuid);
+  }
+
+  return bodyUuid;
+}
+
 const getApiKeyCredit = createGetApiKeyCreditHandler({
   async fetchCredit(uuid) {
     const firestore = await getFirestoreInstance();
@@ -38,7 +96,7 @@ const getApiKeyCredit = createGetApiKeyCreditHandler({
     return data ? data.credit : undefined;
   },
   getUuid(request) {
-    return request?.params?.uuid || request?.query?.uuid || request?.body?.uuid;
+    return findUuidFromRequest(request);
   },
 });
 
