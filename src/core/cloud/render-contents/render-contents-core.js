@@ -1,4 +1,8 @@
-import { assertFunction, DEFAULT_BUCKET_NAME, productionOrigins } from './cloud-core.js';
+import {
+  assertFunction,
+  DEFAULT_BUCKET_NAME,
+  productionOrigins,
+} from './cloud-core.js';
 import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
 
 export { DEFAULT_BUCKET_NAME, productionOrigins };
@@ -538,37 +542,62 @@ export function createHandleRenderRequest({
     throw new TypeError('adminUid must be provided');
   }
 
+  /**
+   * Validate the authorization header and ensure the requester is the admin.
+   * @param {{ req: { get?: (name: string) => unknown, headers?: object }, res: { status: Function, send: Function } }} options
+   * Request/response pair used to communicate failures.
+   * @returns {Promise<{ uid?: string } | null>} The decoded token when authorized, otherwise null.
+   */
+  async function authorizeRequest({ req, res }) {
+    const token = getAuthorizationToken(req);
+
+    if (!token) {
+      res.status(401).send('Missing token');
+      return null;
+    }
+
+    try {
+      const decoded = await verifyIdToken(token);
+
+      if (!decoded || decoded.uid !== adminUid) {
+        res.status(403).send('Forbidden');
+        return null;
+      }
+
+      return decoded;
+    } catch (error) {
+      res.status(401).send(error?.message || 'Invalid token');
+      return null;
+    }
+  }
+
+  /**
+   * Resolve the render function and ensure it is callable.
+   * @param {() => Promise<void> | undefined} candidate Potential override supplied by the caller.
+   * @returns {() => Promise<void>} Callable render function.
+   */
+  function resolveRenderFn(candidate) {
+    const renderFn = candidate ?? render;
+
+    if (typeof renderFn !== 'function') {
+      throw new TypeError('renderFn must be a function');
+    }
+
+    return renderFn;
+  }
+
   return async function handleRenderRequest(req, res, overrides = {}) {
     if (!validateRequest(req, res)) {
       return;
     }
 
-    const token = getAuthorizationToken(req);
+    const decoded = await authorizeRequest({ req, res });
 
-    if (!token) {
-      res.status(401).send('Missing token');
+    if (!decoded) {
       return;
     }
 
-    let decoded;
-
-    try {
-      decoded = await verifyIdToken(token);
-    } catch (error) {
-      res.status(401).send(error?.message || 'Invalid token');
-      return;
-    }
-
-    if (!decoded || decoded.uid !== adminUid) {
-      res.status(403).send('Forbidden');
-      return;
-    }
-
-    const renderFn = overrides.renderFn ?? render;
-
-    if (typeof renderFn !== 'function') {
-      throw new TypeError('renderFn must be a function');
-    }
+    const renderFn = resolveRenderFn(overrides.renderFn);
 
     try {
       await renderFn();
