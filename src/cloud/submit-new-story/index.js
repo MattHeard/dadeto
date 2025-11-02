@@ -5,7 +5,7 @@ import {
   express,
   cors,
   crypto,
-  ensureFirebaseApp,
+  createFirebaseAppManager,
   getFirestoreInstance,
   getEnvironmentVariables,
 } from './submit-new-story-gcf.js';
@@ -16,6 +16,8 @@ import {
   createHandleSubmitNewStory,
   createSubmitNewStoryResponder,
 } from './submit-new-story-core.js';
+
+const { ensureFirebaseApp } = createFirebaseAppManager();
 
 ensureFirebaseApp();
 const db = getFirestoreInstance();

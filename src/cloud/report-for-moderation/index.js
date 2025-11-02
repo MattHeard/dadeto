@@ -3,7 +3,7 @@ import {
   express,
   cors,
   FieldValue,
-  ensureFirebaseApp,
+  createFirebaseAppManager,
   getFirestoreInstance,
   getEnvironmentVariables,
 } from './report-for-moderation-gcf.js';
@@ -13,6 +13,8 @@ import {
   createReportForModerationHandler,
 } from './report-for-moderation-core.js';
 import { getAllowedOrigins } from './cors-config.js';
+
+const { ensureFirebaseApp } = createFirebaseAppManager();
 
 ensureFirebaseApp();
 

@@ -1,7 +1,7 @@
 import {
   functions,
   Storage,
-  ensureFirebaseApp,
+  createFirebaseAppManager,
 } from './hide-variant-html-gcf.js';
 import {
   VISIBILITY_THRESHOLD,
@@ -12,6 +12,8 @@ import {
   createRemoveVariantHtmlForSnapshot,
   getVariantVisibility,
 } from './hide-variant-html-core.js';
+
+const { ensureFirebaseApp } = createFirebaseAppManager();
 
 ensureFirebaseApp();
 

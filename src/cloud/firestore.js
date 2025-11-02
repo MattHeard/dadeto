@@ -1,8 +1,8 @@
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
-import {
-  ensureFirebaseApp,
-  resetFirebaseInitializationState,
-} from './firebaseApp.js';
+import { createFirebaseAppManager } from './firebaseApp.js';
+
+const { ensureFirebaseApp, resetFirebaseInitializationState } =
+  createFirebaseAppManager();
 
 /**
  * Parse the database identifier from the Firebase configuration.

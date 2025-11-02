@@ -3,7 +3,7 @@ import {
   express,
   cors,
   getAuth,
-  ensureFirebaseApp,
+  createFirebaseAppManager,
   getFirestoreInstance,
   getEnvironmentVariables,
   ADMIN_UID,
@@ -28,6 +28,8 @@ import {
   sendForbidden,
   sendUnauthorized,
 } from './mark-variant-dirty-core.js';
+
+const { ensureFirebaseApp } = createFirebaseAppManager();
 
 ensureFirebaseApp();
 

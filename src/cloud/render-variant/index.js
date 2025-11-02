@@ -2,7 +2,7 @@ import {
   functions,
   FieldValue,
   Storage,
-  ensureFirebaseApp,
+  createFirebaseAppManager,
   getFirestoreInstance,
   fetchFn,
   crypto,
@@ -17,6 +17,8 @@ import {
   DEFAULT_BUCKET_NAME,
   VISIBILITY_THRESHOLD,
 } from './render-variant-core.js';
+
+const { ensureFirebaseApp } = createFirebaseAppManager();
 
 /**
  * @typedef {(snap: {exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}, context?: {params?: Record<string, string>}) => Promise<null>} RenderVariantHandler
