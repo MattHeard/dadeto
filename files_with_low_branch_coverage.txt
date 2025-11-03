@@ -1,4 +1,3 @@
-src/core/cloud/common-core.js
 src/core/cloud/generate-stats/generate-stats-core.js
 src/core/cloud/generate-stats/verifyAdmin.js
 src/core/cloud/get-api-key-credit/create-db.js
