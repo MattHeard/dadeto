@@ -15,7 +15,10 @@ function isDuplicateFirebaseAppError(error) {
   const hasStringMessage = typeof candidate.message === 'string';
   const messageText = String(candidate.message ?? '').toLowerCase();
 
-  return messageText.includes('already exists') && (hasDuplicateCode || hasStringMessage);
+  return (
+    messageText.includes('already exists') &&
+    (hasDuplicateCode || hasStringMessage)
+  );
 }
 
 /**
@@ -60,7 +63,5 @@ export function createFirebaseAppManager(initializer) {
   return { ensureFirebaseApp, resetFirebaseInitializationState };
 }
 
-export const {
-  ensureFirebaseApp,
-  resetFirebaseInitializationState,
-} = createFirebaseAppManager(initializeApp);
+export const { ensureFirebaseApp, resetFirebaseInitializationState } =
+  createFirebaseAppManager(initializeApp);
