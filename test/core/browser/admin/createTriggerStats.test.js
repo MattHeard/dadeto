@@ -37,7 +37,7 @@ describe('createTriggerStats', () => {
     };
 
     mockDoc = {
-      getElementById: (id) => {
+      getElementById: id => {
         if (id === 'renderStatus') {
           return mockRenderStatusElement;
         }
@@ -46,7 +46,7 @@ describe('createTriggerStats', () => {
     };
 
     showMessageCalls = [];
-    mockShowMessage = (text) => {
+    mockShowMessage = text => {
       showMessageCalls.push(text);
       const statusParagraph = mockDoc.getElementById('renderStatus');
       if (statusParagraph) {

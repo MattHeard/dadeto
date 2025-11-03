@@ -30,7 +30,7 @@ describe('createRegenerateVariant', () => {
     };
 
     mockDoc = {
-      getElementById: (id) => {
+      getElementById: id => {
         if (id === 'renderStatus') {
           return mockRenderStatusElement;
         }
@@ -53,7 +53,7 @@ describe('createRegenerateVariant', () => {
     mockFetchFn.shouldThrow = false;
 
     showMessageCalls = [];
-    mockShowMessage = (text) => {
+    mockShowMessage = text => {
       showMessageCalls.push(text);
       const statusParagraph = mockDoc.getElementById('renderStatus');
       if (statusParagraph) {
