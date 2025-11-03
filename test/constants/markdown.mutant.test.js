@@ -2,13 +2,32 @@ import { describe, test, expect } from '@jest/globals';
 import {
   cssClasses,
   htmlTags,
-  markdownMarkers,
+  createConstantFactory,
   defaultOptions,
 } from '../../src/core/constants/markdown.js';
 
 // Additional coverage to kill Stryker mutants around CSS_CLASSES values
 
 describe('markdown constants mutants', () => {
+  const markdownMarkers = createConstantFactory({
+    ASTERISK: '*',
+    UNDERSCORE: '_',
+    BACKTICK: '`',
+    TILDE: '~',
+    DASH: '-',
+    EQUAL: '=',
+    HASH: '#',
+    GREATER_THAN: '>',
+    PIPE: '|',
+    BACKSLASH: '\\',
+    SLASH: '/',
+    EXCLAMATION: '!',
+    BRACKET_OPEN: '[',
+    BRACKET_CLOSE: ']',
+    PAREN_OPEN: '(',
+    PAREN_CLOSE: ')',
+  });
+
   test('MARKDOWN_MARKERS object has expected values', () => {
     const MARKDOWN_MARKERS = markdownMarkers();
     expect(MARKDOWN_MARKERS).toEqual({
@@ -91,23 +110,21 @@ describe('markdown constants mutants', () => {
   });
 
   test('constant objects are frozen', () => {
-    const MARKDOWN_MARKERS = markdownMarkers();
     const HTML_TAGS = htmlTags();
     const CSS_CLASSES = cssClasses();
     const DEFAULT_OPTIONS = defaultOptions();
-    expect(Object.isFrozen(MARKDOWN_MARKERS)).toBe(true);
+    expect(Object.isFrozen(markdownMarkers())).toBe(true);
     expect(Object.isFrozen(HTML_TAGS)).toBe(true);
     expect(Object.isFrozen(CSS_CLASSES)).toBe(true);
     expect(Object.isFrozen(DEFAULT_OPTIONS)).toBe(true);
   });
 
   test('constant objects cannot be modified', () => {
-    const MARKDOWN_MARKERS = markdownMarkers();
     const HTML_TAGS = htmlTags();
     const CSS_CLASSES = cssClasses();
     const DEFAULT_OPTIONS = defaultOptions();
     expect(() => {
-      MARKDOWN_MARKERS.ASTERISK = 'changed';
+      markdownMarkers().ASTERISK = 'changed';
     }).toThrow();
     expect(() => {
       HTML_TAGS.EMPHASIS = 'changed';
