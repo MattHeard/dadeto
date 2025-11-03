@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { createGenerateStatsCore } from '../../../../src/core/cloud/generate-stats/generate-stats-core.js';
 
 describe('createGenerateStatsCore', () => {
@@ -30,19 +31,7 @@ describe('createGenerateStatsCore', () => {
       file: () => mockStorage,
       save: () => Promise.resolve(),
     };
-    mockFetchFn = () =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ access_token: 'some-token' }),
-      });
-    mockFetchFn.calls = [];
-    mockFetchFn.mockImplementation = fn => {
-      mockFetchFn = fn;
-    };
-    mockFetchFn.mockImplementationOnce = fn => {
-      mockFetchFn = fn;
-    };
-
+    mockFetchFn = jest.fn(); // Make mockFetchFn a Jest mock function
     mockEnv = {};
     mockUrlMap = 'some-url-map';
     mockCryptoModule = { randomUUID: () => 'some-uuid' };
@@ -332,6 +321,96 @@ describe('createGenerateStatsCore', () => {
       expect(mockStorageInstance.saveCalled).toBe(true);
       expect(mockInvalidatePathsFn.called).toBe(true);
       expect(mockInvalidatePathsFn.paths).toEqual(['/stats.html']);
+    });
+  });
+
+  describe('getAccessTokenFromMetadata', () => {
+    it('should return an access token', async () => {
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'test-access-token' }),
+        })
+      );
+      const token = await core.getAccessTokenFromMetadata();
+      expect(token).toBe('test-access-token');
+    });
+
+    it('should throw an error if fetch is not ok', async () => {
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: false,
+          status: 404,
+        })
+      );
+      await expect(core.getAccessTokenFromMetadata()).rejects.toThrow(
+        'metadata token: HTTP 404'
+      );
+    });
+  });
+
+  describe('invalidatePaths', () => {
+    it('should invalidate paths successfully', async () => {
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'test-access-token' }),
+        })
+      );
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+        })
+      );
+      const paths = ['/path1', '/path2'];
+      await core.invalidatePaths(paths);
+      // Expect no error to be thrown
+    });
+
+    it('should log an error if invalidate cache fails', async () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'test-access-token' }),
+        })
+      );
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: false,
+          status: 500,
+        })
+      );
+      const paths = ['/path1'];
+      await core.invalidatePaths(paths);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'invalidate /path1 failed: 500'
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should log an error if fetch throws an exception', async () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'test-access-token' }),
+        })
+      );
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.reject(new Error('Network error'))
+      );
+      const paths = ['/path1'];
+      await core.invalidatePaths(paths);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'invalidate /path1 error',
+        'Network error'
+      );
+      consoleErrorSpy.mockRestore();
     });
   });
 });
