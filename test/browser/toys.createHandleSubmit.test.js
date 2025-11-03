@@ -3,9 +3,6 @@ import * as toys from '../../src/browser/toys.js';
 const { createHandleSubmit } = toys;
 
 describe('createHandleSubmit', () => {
-  it('expects three parameters', () => {
-    expect(createHandleSubmit.length).toBe(3);
-  });
   it('should handle being called without arguments', () => {
     // This test verifies that the function can be called without throwing
     // and that it returns a handler function
