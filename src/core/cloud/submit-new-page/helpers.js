@@ -17,6 +17,9 @@ export function parseIncomingOption(str) {
   const [pageStr, variantName, optionStr] = parts;
   const pageNumber = Number.parseInt(pageStr, 10);
   const optionNumber = Number.parseInt(optionStr, 10);
+  if (!/^[a-zA-Z]+$/.test(variantName)) {
+    return null;
+  }
   if (!Number.isInteger(pageNumber) || !Number.isInteger(optionNumber)) {
     return null;
   }
