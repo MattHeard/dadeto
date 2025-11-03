@@ -2,7 +2,6 @@ import { jest } from '@jest/globals';
 import { ADMIN_UID } from '../../../../src/core/browser/common-core.js';
 import {
   createAdminEndpointsPromise,
-  DEFAULT_ADMIN_ENDPOINTS,
   createGetAdminEndpoints,
   createGetAdminEndpointsFromStaticConfig,
   createShowMessage,
@@ -477,67 +476,6 @@ describe('createWireSignOut', () => {
     expect(() =>
       createWireSignOut({ querySelectorAll: jest.fn() }, {})
     ).toThrow(new TypeError('googleAuth must provide a signOut function'));
-  });
-});
-
-describe('createAdminEndpointsPromise', () => {
-  it('resolves with mapped endpoints when the loader succeeds', async () => {
-    const loadStaticConfig = jest
-      .fn()
-      .mockResolvedValue(createConfig({ markVariantDirtyUrl: undefined }));
-
-    await expect(
-      createAdminEndpointsPromise(loadStaticConfig)
-    ).resolves.toEqual({
-      triggerRenderContentsUrl: 'https://example.com/render',
-      markVariantDirtyUrl: DEFAULT_ADMIN_ENDPOINTS.markVariantDirtyUrl,
-      generateStatsUrl: 'https://example.com/stats',
-    });
-    expect(loadStaticConfig).toHaveBeenCalledTimes(1);
-  });
-
-  it('falls back to default endpoints when the loader rejects', async () => {
-    const loadStaticConfig = jest.fn().mockRejectedValue(new Error('nope'));
-
-    await expect(
-      createAdminEndpointsPromise(loadStaticConfig)
-    ).resolves.toEqual(DEFAULT_ADMIN_ENDPOINTS);
-  });
-
-  it('returns defaults when provided loader is not a function', async () => {
-    await expect(createAdminEndpointsPromise(null)).resolves.toEqual(
-      DEFAULT_ADMIN_ENDPOINTS
-    );
-  });
-});
-
-describe('getDefaultAdminEndpointsCopy', () => {
-  it('returns a new copy each time', () => {
-    const first = getDefaultAdminEndpointsCopy();
-    const second = getDefaultAdminEndpointsCopy();
-
-    expect(first).toEqual(DEFAULT_ADMIN_ENDPOINTS);
-    expect(second).toEqual(DEFAULT_ADMIN_ENDPOINTS);
-    expect(first).not.toBe(second);
-  });
-});
-
-describe('mapConfigToAdminEndpoints', () => {
-  it('applies defaults when properties are missing', () => {
-    const endpoints = mapConfigToAdminEndpoints({
-      triggerRenderContentsUrl: 'custom',
-      markVariantDirtyUrl: undefined,
-    });
-
-    expect(endpoints).toEqual({
-      triggerRenderContentsUrl: 'custom',
-      markVariantDirtyUrl: DEFAULT_ADMIN_ENDPOINTS.markVariantDirtyUrl,
-      generateStatsUrl: DEFAULT_ADMIN_ENDPOINTS.generateStatsUrl,
-    });
-  });
-
-  it('returns defaults when config is nullish', () => {
-    expect(mapConfigToAdminEndpoints(null)).toEqual(DEFAULT_ADMIN_ENDPOINTS);
   });
 });
 

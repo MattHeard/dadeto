@@ -32,7 +32,7 @@ import { createAdminTokenAction } from './token-action.js';
  * @property {(element: HTMLElement, options: object) => void} renderButton - Renders a sign-in button.
  */
 
-export const DEFAULT_ADMIN_ENDPOINTS = {
+const DEFAULT_ADMIN_ENDPOINTS = {
   triggerRenderContentsUrl:
     'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents',
   markVariantDirtyUrl:
