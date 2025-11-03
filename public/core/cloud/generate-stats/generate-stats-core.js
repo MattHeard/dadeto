@@ -384,6 +384,7 @@ export function createGenerateStatsCore({
   env,
   urlMap,
   cryptoModule,
+  console = globalThis.console,
 }) {
   let envRef = {};
   if (env && typeof env === 'object') {
@@ -481,9 +482,10 @@ export function createGenerateStatsCore({
   /**
    * Invalidate CDN paths via the Compute Engine API.
    * @param {string[]} paths - CDN paths to invalidate.
+   * @param console
    * @returns {Promise<void>} Resolves when invalidation requests finish.
    */
-  async function invalidatePaths(paths) {
+  async function invalidatePaths(paths, console) {
     const token = await getAccessTokenFromMetadata();
     await Promise.all(
       paths.map(async path => {
@@ -549,7 +551,7 @@ export function createGenerateStatsCore({
       contentType: 'text/html',
       metadata: { cacheControl: 'no-cache' },
     });
-    await invalidatePathsFn(['/stats.html']);
+    await invalidatePathsFn(['/stats.html'], console);
     return null;
   }
 
@@ -608,7 +610,7 @@ export function createGenerateStatsCore({
     getUnmoderatedPageCount,
     getTopStories,
     getAccessTokenFromMetadata,
-    invalidatePaths,
+    invalidatePaths: paths => invalidatePaths(paths, console),
     generate,
     handleRequest,
   };
