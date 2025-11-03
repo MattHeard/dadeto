@@ -1,4 +1,3 @@
-src/core/browser/admin/core.js
 src/core/browser/inputHandlers/kv.js
 src/core/browser/toys/2025-10-19/toys-core.js
 src/core/cloud/common-core.js
