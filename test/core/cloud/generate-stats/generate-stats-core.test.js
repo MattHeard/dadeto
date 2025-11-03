@@ -12,6 +12,8 @@ describe('createGenerateStatsCore', () => {
   let core;
   let mockVerifyAdmin;
 
+  let mockConsoleError;
+
   beforeEach(() => {
     mockDb = {
       collection: () => mockDb,
@@ -35,6 +37,8 @@ describe('createGenerateStatsCore', () => {
     mockEnv = {};
     mockUrlMap = 'some-url-map';
     mockCryptoModule = { randomUUID: () => 'some-uuid' };
+    mockConsoleError = jest.fn(); // Initialize mockConsoleError
+    const mockConsole = { error: mockConsoleError }; // Create mockConsole object
 
     // Mock the createVerifyAdmin function
     mockVerifyAdmin = {
@@ -79,6 +83,7 @@ describe('createGenerateStatsCore', () => {
       env: mockEnv,
       urlMap: mockUrlMap,
       cryptoModule: mockCryptoModule,
+      console: mockConsole, // Inject mockConsole
       createVerifyAdmin: deps => {
         return async (req, res) => {
           const authHeader = deps.getAuthHeader(req);
@@ -368,9 +373,6 @@ describe('createGenerateStatsCore', () => {
     });
 
     it('should log an error if invalidate cache fails', async () => {
-      const consoleErrorSpy = jest
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
       mockFetchFn.mockImplementationOnce(() =>
         Promise.resolve({
           ok: true,
@@ -385,16 +387,12 @@ describe('createGenerateStatsCore', () => {
       );
       const paths = ['/path1'];
       await core.invalidatePaths(paths);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect(mockConsoleError).toHaveBeenCalledWith(
         'invalidate /path1 failed: 500'
       );
-      consoleErrorSpy.mockRestore();
     });
 
     it('should log an error if fetch throws an exception', async () => {
-      const consoleErrorSpy = jest
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
       mockFetchFn.mockImplementationOnce(() =>
         Promise.resolve({
           ok: true,
@@ -406,11 +404,10 @@ describe('createGenerateStatsCore', () => {
       );
       const paths = ['/path1'];
       await core.invalidatePaths(paths);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect(mockConsoleError).toHaveBeenCalledWith(
         'invalidate /path1 error',
         'Network error'
       );
-      consoleErrorSpy.mockRestore();
     });
   });
 });
