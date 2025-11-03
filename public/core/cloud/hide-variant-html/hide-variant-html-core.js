@@ -19,7 +19,7 @@ function assertFunctionDependency(name, dependency) {
  * @param {*} loadResult Value returned by loadPageForVariant.
  * @returns {{ page: * | null, variant: * | null }} Normalized payload data.
  */
-function normalizeRemoveVariantLoadResult(loadResult) {
+export function normalizeRemoveVariantLoadResult(loadResult) {
   if (!loadResult) {
     return { page: null, variant: null };
   }

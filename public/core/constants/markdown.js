@@ -3,7 +3,7 @@
  * @param {object} obj - Object to freeze.
  * @returns {() => Readonly<object>} Function returning the frozen object.
  */
-function createConstantFactory(obj) {
+export function createConstantFactory(obj) {
   const frozen = Object.freeze(obj);
   return () => frozen;
 }
@@ -12,7 +12,7 @@ function createConstantFactory(obj) {
  * Markdown formatting markers.
  * @returns {Readonly<Record<string, string>>} Object of marker characters.
  */
-export const markdownMarkers = createConstantFactory({
+const markdownMarkers = createConstantFactory({
   ASTERISK: '*',
   UNDERSCORE: '_',
   BACKTICK: '`',

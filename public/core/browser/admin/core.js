@@ -1,8 +1,6 @@
 import { ADMIN_UID } from '../common-core.js';
 import { createAdminTokenAction } from './token-action.js';
 
-export { ADMIN_UID };
-
 /**
  * @typedef {object} FetchRequestOptions
  * @property {string} [method] - HTTP method to use for the request.
