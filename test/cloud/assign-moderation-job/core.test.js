@@ -32,7 +32,35 @@ const {
   createHandleAssignModerationJobFromAuth,
   resolveFirestoreEnvironment,
   shouldUseCustomFirestoreDependencies,
+  createFirebaseInitialization,
 } = assignModerationCore;
+
+describe('createFirebaseInitialization', () => {
+  test('should return an object with hasBeenInitialized, markInitialized, and reset methods', () => {
+    const initialization = createFirebaseInitialization();
+    expect(initialization).toHaveProperty('hasBeenInitialized');
+    expect(initialization).toHaveProperty('markInitialized');
+    expect(initialization).toHaveProperty('reset');
+  });
+
+  test('hasBeenInitialized should return false initially', () => {
+    const initialization = createFirebaseInitialization();
+    expect(initialization.hasBeenInitialized()).toBe(false);
+  });
+
+  test('markInitialized should set initialized to true', () => {
+    const initialization = createFirebaseInitialization();
+    initialization.markInitialized();
+    expect(initialization.hasBeenInitialized()).toBe(true);
+  });
+
+  test('reset should set initialized to false', () => {
+    const initialization = createFirebaseInitialization();
+    initialization.markInitialized();
+    initialization.reset();
+    expect(initialization.hasBeenInitialized()).toBe(false);
+  });
+});
 
 describe('resolveFirestoreEnvironment', () => {
   test('returns provided environment when supplied', () => {
