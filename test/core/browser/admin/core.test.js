@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { ADMIN_UID } from '../../../../src/core/browser/common-core.js';
 import {
   createAdminEndpointsPromise,
   DEFAULT_ADMIN_ENDPOINTS,
@@ -26,7 +27,6 @@ import {
   updateAuthControlsDisplay,
   createCheckAccess,
   initAdmin,
-  ADMIN_UID,
 } from '../../../../src/core/browser/admin/core.js';
 import { createAdminTokenAction } from '../../../../src/core/browser/admin/token-action.js';
 
