@@ -304,7 +304,10 @@ export function initializeFirebaseApp(initFn) {
  * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string | undefined} Project identifier if present.
  */
-export function getProjectFromEnv(env = {}) {
+export function getProjectFromEnv(env) {
+  if (!env || typeof env !== 'object') {
+    return undefined;
+  }
   return env.GOOGLE_CLOUD_PROJECT || env.GCLOUD_PROJECT;
 }
 
@@ -485,7 +488,7 @@ export function createGenerateStatsCore({
    * @param console
    * @returns {Promise<void>} Resolves when invalidation requests finish.
    */
-  async function invalidatePaths(paths, console) {
+  async function invalidatePaths(paths) {
     const token = await getAccessTokenFromMetadata();
     await Promise.all(
       paths.map(async path => {

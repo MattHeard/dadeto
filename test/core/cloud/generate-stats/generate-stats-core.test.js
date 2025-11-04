@@ -369,7 +369,21 @@ describe('createGenerateStatsCore', () => {
       );
       const paths = ['/path1', '/path2'];
       await core.invalidatePaths(paths);
-      // Expect no error to be thrown
+      expect(mockFetchFn).toHaveBeenCalledWith(
+        'https://compute.googleapis.com/compute/v1/projects/undefined/global/urlMaps/some-url-map/invalidateCache',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer test-access-token',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            host: 'www.dendritestories.co.nz',
+            path: '/path1',
+            requestId: 'some-uuid',
+          }),
+        }
+      );
     });
 
     it('should log an error if invalidate cache fails', async () => {
