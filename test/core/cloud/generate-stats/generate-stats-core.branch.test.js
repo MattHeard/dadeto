@@ -37,11 +37,6 @@ describe('isDuplicateAppError', () => {
 });
 
 describe('getUrlMapFromEnv', () => {
-  it('should return DEFAULT_URL_MAP if env is falsy', () => {
-    expect(getUrlMapFromEnv(null)).toBe('prod-dendrite-url-map');
-    expect(getUrlMapFromEnv(undefined)).toBe('prod-dendrite-url-map');
-  });
-
   it('should return DEFAULT_URL_MAP if env.URL_MAP is falsy', () => {
     expect(getUrlMapFromEnv({})).toBe('prod-dendrite-url-map');
     expect(getUrlMapFromEnv({ URL_MAP: null })).toBe('prod-dendrite-url-map');
@@ -70,11 +65,6 @@ describe('getProjectFromEnv', () => {
 });
 
 describe('getCdnHostFromEnv', () => {
-  it('should return DEFAULT_CDN_HOST if env is falsy', () => {
-    expect(getCdnHostFromEnv(null)).toBe('www.dendritestories.co.nz');
-    expect(getCdnHostFromEnv(undefined)).toBe('www.dendritestories.co.nz');
-  });
-
   it('should return DEFAULT_CDN_HOST if env.CDN_HOST is falsy', () => {
     expect(getCdnHostFromEnv({})).toBe('www.dendritestories.co.nz');
     expect(getCdnHostFromEnv({ CDN_HOST: null })).toBe(

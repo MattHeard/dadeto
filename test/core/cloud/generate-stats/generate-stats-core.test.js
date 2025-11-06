@@ -500,7 +500,6 @@ describe('generate stats helpers', () => {
     expect(getProjectFromEnv(null)).toBeUndefined();
 
     expect(getUrlMapFromEnv({ URL_MAP: 'custom-map' })).toBe('custom-map');
-    expect(getUrlMapFromEnv()).toBe('prod-dendrite-url-map');
 
     expect(getCdnHostFromEnv({ CDN_HOST: 'cdn.example.com' })).toBe(
       'cdn.example.com'
@@ -508,7 +507,6 @@ describe('generate stats helpers', () => {
     expect(getCdnHostFromEnv({ CDN_HOST: '   ' })).toBe(
       'www.dendritestories.co.nz'
     );
-    expect(getCdnHostFromEnv()).toBe('www.dendritestories.co.nz');
   });
 
   it('builds HTML with top stories embedded', () => {

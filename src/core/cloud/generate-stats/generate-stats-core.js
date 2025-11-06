@@ -311,7 +311,7 @@ export function getProjectFromEnv(env) {
  * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string} URL map identifier.
  */
-export function getUrlMapFromEnv(env = {}) {
+export function getUrlMapFromEnv(env) {
   if (!env || typeof env !== 'object') {
     return DEFAULT_URL_MAP;
   }
@@ -324,7 +324,7 @@ export function getUrlMapFromEnv(env = {}) {
  * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string} CDN host name.
  */
-export function getCdnHostFromEnv(env = {}) {
+export function getCdnHostFromEnv(env) {
   if (!env || typeof env !== 'object') {
     return DEFAULT_CDN_HOST;
   }
