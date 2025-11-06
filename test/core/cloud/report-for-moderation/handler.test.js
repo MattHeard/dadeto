@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { createReportForModerationHandler } from '../../../../src/core/cloud/report-for-moderation/handler.js';
+import { createReportForModerationHandler } from '../../../../src/core/cloud/report-for-moderation/report-for-moderation-core.js';
 
 describe('createReportForModerationHandler', () => {
   it('creates a moderation report when the request is valid', async () => {

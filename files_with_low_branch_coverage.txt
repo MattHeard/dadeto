@@ -10,7 +10,6 @@ src/core/cloud/render-variant/buildAltsHtml.js
 src/core/cloud/render-variant/buildHtml.js
 src/core/cloud/render-variant/render-variant-core.js
 src/core/cloud/render-variant/visibility.js
-src/core/cloud/report-for-moderation/handler.js
 src/core/cloud/report-for-moderation/report-for-moderation-core.js
 src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js
 src/core/cloud/submit-new-page/helpers.js

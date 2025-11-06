@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage",
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false",
     "test:e2e": "playwright test",
     "generate": "node src/build/generate.js",
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
