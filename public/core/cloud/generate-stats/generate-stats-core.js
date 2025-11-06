@@ -13,12 +13,7 @@ export { productionOrigins } from './cloud-core.js';
  *   Top stories by variant count.
  * @returns {string} HTML page.
  */
-export function buildHtml(
-  storyCount,
-  pageCount,
-  unmoderatedCount,
-  topStories = []
-) {
+export function buildHtml(storyCount, pageCount, unmoderatedCount, topStories) {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -316,7 +311,7 @@ export function getProjectFromEnv(env) {
  * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string} URL map identifier.
  */
-export function getUrlMapFromEnv(env = {}) {
+export function getUrlMapFromEnv(env) {
   if (!env || typeof env !== 'object') {
     return DEFAULT_URL_MAP;
   }
@@ -329,7 +324,7 @@ export function getUrlMapFromEnv(env = {}) {
  * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string} CDN host name.
  */
-export function getCdnHostFromEnv(env = {}) {
+export function getCdnHostFromEnv(env) {
   if (!env || typeof env !== 'object') {
     return DEFAULT_CDN_HOST;
   }
@@ -411,7 +406,7 @@ export function createGenerateStatsCore({
    */
   async function getStoryCount(dbRef = db) {
     const snap = await dbRef.collection('stories').count().get();
-    return snap.data().count || 0;
+    return snap.data().count;
   }
 
   /**
@@ -421,7 +416,7 @@ export function createGenerateStatsCore({
    */
   async function getPageCount(dbRef = db) {
     const snap = await dbRef.collectionGroup('pages').count().get();
-    return snap.data().count || 0;
+    return snap.data().count;
   }
 
   /**
@@ -440,7 +435,7 @@ export function createGenerateStatsCore({
       .where('moderatorReputationSum', '==', null)
       .count()
       .get();
-    return (zeroSnap.data().count || 0) + (nullSnap.data().count || 0);
+    return zeroSnap.data().count + nullSnap.data().count;
   }
 
   /**

@@ -1,7 +1,13 @@
 import { assertFunction, DEFAULT_BUCKET_NAME } from './cloud-core.js';
 import { buildAltsHtml, escapeHtml } from './buildAltsHtml.js';
 import { buildHtml } from './buildHtml.js';
+
+export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 export const VISIBILITY_THRESHOLD = 0.5;
+/**
+ *
+ * @param docs
+ */
 export function getVisibleVariants(docs) {
   return docs
     .filter(doc => (doc.data().visibility ?? 1) >= VISIBILITY_THRESHOLD)
@@ -10,8 +16,6 @@ export function getVisibleVariants(docs) {
       content: doc.data().content || '',
     }));
 }
-
-export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
 /**
  * Ensure a Firestore-like database instance exposes the required helpers.
@@ -46,7 +50,7 @@ function assertStorage(storage) {
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger invoked when invalidation fails.
  * @returns {(paths: string[]) => Promise<void>} Invalidation routine that accepts absolute paths to purge.
  */
-function createInvalidatePaths({
+export function createInvalidatePaths({
   fetchFn,
   projectId,
   urlMapName,
@@ -664,4 +668,15 @@ export function createHandleVariantWrite({
   };
 }
 
+export {
+  buildOptionMetadata,
+  loadOptions,
+  resolveStoryMetadata,
+  resolveAuthorMetadata,
+  resolveParentReferences,
+  fetchParentSnapshots,
+  buildParentRoute,
+  resolveParentUrl,
+  resolveRenderPlan,
+};
 export { buildAltsHtml, buildHtml };
