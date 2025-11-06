@@ -5,9 +5,15 @@ import {
   createHandleCorsOrigin,
   createCorsOptions,
   findPageRef,
+  findPagesSnap,
+  findVariantsSnap,
   findVariantRef,
+  refFromSnap,
   markVariantDirtyImpl,
   matchAuthHeader,
+  getAuthHeader,
+  sendUnauthorized,
+  sendForbidden,
   createIsAdminUid,
   parseMarkVariantRequestBody,
   createHandleRequest,
@@ -33,6 +39,12 @@ describe('mark-variant-dirty core helpers', () => {
 
     it('returns empty array for t- environments without origin', () => {
       expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 't-1' })).toEqual([]);
+    });
+
+    it('defaults to production origins for other environments', () => {
+      expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'stage' })).toEqual(
+        productionOrigins
+      );
     });
   });
 
@@ -98,6 +110,14 @@ describe('mark-variant-dirty core helpers', () => {
         methods: ['POST'],
       });
     });
+
+    it('allows overriding the methods array', () => {
+      const origin = jest.fn();
+      expect(createCorsOptions(origin, ['HEAD', 'POST'])).toEqual({
+        origin,
+        methods: ['HEAD', 'POST'],
+      });
+    });
   });
 
   describe('findPageRef', () => {
@@ -114,6 +134,50 @@ describe('mark-variant-dirty core helpers', () => {
 
       expect(findPagesSnap).toHaveBeenCalledWith(database, 3);
       expect(refFromSnap).toHaveBeenCalledWith(snap);
+    });
+  });
+
+  describe('findPagesSnap and findVariantsSnap', () => {
+    it('queries page documents by number', async () => {
+      const get = jest.fn().mockResolvedValue('pagesSnap');
+      const limit = jest.fn(() => ({ get }));
+      const where = jest.fn(() => ({ limit }));
+      const collectionGroup = jest.fn(() => ({ where }));
+      const db = { collectionGroup };
+
+      const result = await findPagesSnap(db, 4);
+
+      expect(collectionGroup).toHaveBeenCalledWith('pages');
+      expect(where).toHaveBeenCalledWith('number', '==', 4);
+      expect(limit).toHaveBeenCalledWith(1);
+      expect(result).toBe('pagesSnap');
+    });
+
+    it('queries variants within a page reference', async () => {
+      const get = jest.fn().mockResolvedValue('variantsSnap');
+      const limit = jest.fn(() => ({ get }));
+      const where = jest.fn(() => ({ limit }));
+      const collection = jest.fn(() => ({ where }));
+      const pageRef = { collection };
+
+      const result = await findVariantsSnap(pageRef, 'beta');
+
+      expect(collection).toHaveBeenCalledWith('variants');
+      expect(where).toHaveBeenCalledWith('name', '==', 'beta');
+      expect(limit).toHaveBeenCalledWith(1);
+      expect(result).toBe('variantsSnap');
+    });
+  });
+
+  describe('refFromSnap', () => {
+    it('returns the ref when a document exists', () => {
+      const ref = { id: 'ref' };
+      expect(refFromSnap({ docs: [{ ref }] })).toBe(ref);
+    });
+
+    it('returns null when the document is missing', () => {
+      expect(refFromSnap({ docs: [] })).toBeNull();
+      expect(refFromSnap(null)).toBeNull();
     });
   });
 
@@ -187,12 +251,55 @@ describe('mark-variant-dirty core helpers', () => {
 
       expect(updateVariantDirty).toHaveBeenCalledWith('variantRef');
     });
+
+    it('relies on the default update function when not overridden', async () => {
+      const variantRef = { update: jest.fn().mockResolvedValue(undefined) };
+      const firebase = {
+        findPageRef: jest.fn().mockResolvedValue('pageRef'),
+        findVariantsSnap: jest.fn().mockResolvedValue('variantSnap'),
+        refFromSnap: jest.fn().mockReturnValue(variantRef),
+      };
+
+      await expect(
+        markVariantDirtyImpl(9, 'variant-b', { db: {}, firebase })
+      ).resolves.toBe(true);
+
+      expect(variantRef.update).toHaveBeenCalledWith({ dirty: null });
+    });
   });
 
   describe('auth helpers', () => {
     it('extracts bearer token via matchAuthHeader', () => {
       expect(matchAuthHeader('Bearer token-value')[1]).toBe('token-value');
       expect(matchAuthHeader('Basic abc')).toBeNull();
+    });
+
+    it('reads the authorization header defensively', () => {
+      const req = { get: jest.fn().mockReturnValue('Bearer token') };
+      expect(getAuthHeader(req)).toBe('Bearer token');
+      expect(req.get).toHaveBeenCalledWith('Authorization');
+      expect(getAuthHeader({})).toBe('');
+      expect(getAuthHeader()).toBe('');
+    });
+
+    it('writes unauthorized and forbidden responses', () => {
+      const res = {
+        status: jest.fn(function status() {
+          return res;
+        }),
+        send: jest.fn(),
+      };
+
+      sendUnauthorized(res, 'nope');
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.send).toHaveBeenCalledWith('nope');
+
+      res.status.mockClear();
+      res.send.mockClear();
+
+      sendForbidden(res);
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.send).toHaveBeenCalledWith('Forbidden');
     });
 
     it('matches admin uid with createIsAdminUid', () => {
@@ -224,6 +331,16 @@ describe('mark-variant-dirty core helpers', () => {
       };
       return res;
     };
+
+    it('validates handler dependencies', () => {
+      expect(() =>
+        createHandleRequest({ verifyAdmin: null, markVariantDirty: jest.fn() })
+      ).toThrow(new TypeError('verifyAdmin must be a function'));
+
+      expect(() =>
+        createHandleRequest({ verifyAdmin: jest.fn(), markVariantDirty: null })
+      ).toThrow(new TypeError('markVariantDirty must be a function'));
+    });
 
     it('rejects disallowed HTTP methods', async () => {
       const verifyAdmin = jest.fn();
@@ -300,6 +417,46 @@ describe('mark-variant-dirty core helpers', () => {
 
       expect(res.status).toHaveBeenLastCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: 'boom' });
+    });
+
+    it('honors dependency overrides for admin verification and marking', async () => {
+      const verifyAdmin = jest.fn().mockResolvedValue(true);
+      const markVariantDirty = jest.fn();
+      const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
+      const res = createResponse();
+      const overrideVerify = jest.fn().mockResolvedValue(true);
+      const overrideMark = jest.fn().mockResolvedValue(true);
+
+      await handle(
+        { method: 'POST', body: { page: 11, variant: 'override' } },
+        res,
+        { verifyAdmin: overrideVerify, markFn: overrideMark }
+      );
+
+      expect(verifyAdmin).not.toHaveBeenCalled();
+      expect(overrideVerify).toHaveBeenCalled();
+      expect(overrideMark).toHaveBeenCalledWith(11, 'override');
+    });
+
+    it('supports custom body parsers for request validation', async () => {
+      const verifyAdmin = jest.fn().mockResolvedValue(true);
+      const markVariantDirty = jest.fn().mockResolvedValue(true);
+      const parseRequestBody = jest.fn().mockReturnValue({
+        pageNumber: 21,
+        variantName: 'parsed',
+      });
+      const handle = createHandleRequest({
+        verifyAdmin,
+        markVariantDirty,
+        parseRequestBody,
+        allowedMethod: 'PATCH',
+      });
+      const res = createResponse();
+
+      await handle({ method: 'PATCH', body: { ignored: true } }, res);
+
+      expect(parseRequestBody).toHaveBeenCalledWith({ ignored: true });
+      expect(markVariantDirty).toHaveBeenCalledWith(21, 'parsed');
     });
   });
 });
