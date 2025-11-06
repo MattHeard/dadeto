@@ -438,6 +438,23 @@ describe('createGenerateStatsCore', () => {
         'Network error'
       );
     });
+
+    it('should log the raw error if the thrown value has no message', async () => {
+      const rawError = { reason: 'timeout' };
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'token' }),
+        })
+      );
+      mockFetchFn.mockImplementationOnce(() => Promise.reject(rawError));
+
+      await core.invalidatePaths(['/path1']);
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        'invalidate /path1 error',
+        rawError
+      );
+    });
   });
 
   it('throws when fetch implementation is not provided', () => {
