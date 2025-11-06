@@ -525,6 +525,8 @@ describe('generate stats helpers', () => {
     expect(getCdnHostFromEnv({ CDN_HOST: '   ' })).toBe(
       'www.dendritestories.co.nz'
     );
+    expect(getCdnHostFromEnv(null)).toBe('www.dendritestories.co.nz');
+    expect(getCdnHostFromEnv(undefined)).toBe('www.dendritestories.co.nz');
   });
 
   it('builds HTML with top stories embedded', () => {
