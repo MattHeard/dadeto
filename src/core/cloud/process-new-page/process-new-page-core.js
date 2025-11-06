@@ -196,14 +196,6 @@ function resolvePageFromTarget(targetPage) {
  * @returns {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} Stats document reference.
  */
 function resolveStoryStatsRef(db, storyRef) {
-  if (!storyRef || typeof storyRef.id !== 'string') {
-    throw new TypeError('storyRef must have an id');
-  }
-
-  if (typeof db?.doc !== 'function') {
-    throw new TypeError('db.doc must be a function');
-  }
-
   return db.doc(`storyStats/${storyRef.id}`);
 }
 
