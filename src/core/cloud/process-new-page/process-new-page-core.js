@@ -44,14 +44,6 @@ function assertRandom(random) {
  * that exposes a {@link import('firebase-admin/firestore').WriteBatch} factory.
  * @returns {import('firebase-admin/firestore').WriteBatch} Newly created write batch.
  */
-function getBatch(database) {
-  if (!database || typeof database.batch !== 'function') {
-    throw new TypeError('db must provide a batch method');
-  }
-
-  return database.batch();
-}
-
 /**
  * Validate that the provided FieldValue helper exposes the expected methods.
  * @param {{
@@ -589,7 +581,7 @@ export function createProcessNewPageHandler({
   assertRandomUuid(randomUUID);
   assertFieldValue(fieldValue);
 
-  if (!db || typeof db.doc !== 'function') {
+  if (!db || typeof db.doc !== 'function' || typeof db.batch !== 'function') {
     throw new TypeError('db must provide doc and batch helpers');
   }
 
@@ -623,7 +615,7 @@ export function createProcessNewPageHandler({
     let variantRef = null;
     let pageNumber = null;
 
-    const batch = getBatch(db);
+    const batch = db.batch();
     const pageContext = incomingOptionFullName
       ? await resolveIncomingOptionContext({
           db,

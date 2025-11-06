@@ -261,6 +261,18 @@ describe('createProcessNewPageHandler', () => {
     ).toThrow(new TypeError('incrementVariantName must be a function'));
   });
 
+  it('throws when the database does not expose a batch helper', () => {
+    const db = { doc: jest.fn() };
+
+    expect(() =>
+      createProcessNewPageHandler({
+        db,
+        fieldValue,
+        randomUUID: () => 'uuid',
+      })
+    ).toThrow(new TypeError('db must provide doc and batch helpers'));
+  });
+
   it('returns early when the submission is already processed', async () => {
     const handler = createProcessNewPageHandler({
       db: { doc: jest.fn(), batch: jest.fn(() => createBatch()) },
