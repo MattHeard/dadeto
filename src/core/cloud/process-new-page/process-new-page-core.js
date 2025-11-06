@@ -221,10 +221,6 @@ function resolveAuthorRef(db, authorId) {
  * @returns {import('firebase-admin/firestore').CollectionReference<import('firebase-admin/firestore').DocumentData>} Collection of variants.
  */
 function getVariantCollection(pageRef) {
-  if (!pageRef || typeof pageRef.collection !== 'function') {
-    throw new TypeError('pageRef.collection must be a function');
-  }
-
   return pageRef.collection('variants');
 }
 
