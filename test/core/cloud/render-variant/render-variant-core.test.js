@@ -340,6 +340,183 @@ describe('createRenderVariant', () => {
     expect(storage.bucket).toHaveBeenCalled();
   });
 
+  it('handles missing story metadata without errors', async () => {
+    const consoleError = jest.fn();
+
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/7a.html') {
+          return variantFile;
+        }
+        if (path === 'p/7-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/story-1.json') {
+          return pendingFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 7 }),
+      ref: { parent: {} },
+    };
+
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: undefined },
+    };
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db: { doc: jest.fn() },
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({ name: 'a', content: 'Body' }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-1' } });
+
+    expect(consoleError).not.toHaveBeenCalled();
+    expect(fetchFn).toHaveBeenCalledTimes(3);
+  });
+
+  it('logs when the root page lookup fails', async () => {
+    const consoleError = jest.fn();
+
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/9a.html') {
+          return variantFile;
+        }
+        if (path === 'p/9-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/variant-1.json') {
+          return pendingFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const rootPageRef = {
+      get: jest.fn(() => Promise.reject(new Error('boom'))),
+    };
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ title: 'Story', rootPage: rootPageRef }),
+      }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 9, incomingOption: 'incoming/options/opt' }),
+      ref: { parent: { parent: storyRef } },
+    };
+
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: storyRef },
+    };
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db: { doc: jest.fn() },
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        incomingOption: null,
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { variantId: 'variant-1' } });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'root page lookup failed',
+      'boom'
+    );
+  });
+
   it('rejects when metadata token request fails', async () => {
     const bucket = {
       file: jest.fn(() => ({
@@ -500,6 +677,205 @@ describe('createRenderVariant', () => {
     );
     expect(consoleError).toHaveBeenCalledWith(
       'invalidate /p/1a.html failed: 503'
+    );
+  });
+
+  it('omits parent invalidation when parent references are missing', async () => {
+    const consoleError = jest.fn();
+
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/4a.html') {
+          return variantFile;
+        }
+        if (path === 'p/4-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/story-4.json') {
+          return pendingFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const optionRef = { parent: { parent: null } };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'options/no-parent') {
+          return optionRef;
+        }
+        return { get: jest.fn() };
+      }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 4 }),
+      ref: { parent: { parent: null } },
+    };
+
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: null },
+    };
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        incomingOption: 'options/no-parent',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-4' } });
+
+    const computeCalls = fetchFn.mock.calls.filter(([url]) =>
+      url.startsWith('https://compute.googleapis.com')
+    );
+
+    expect(computeCalls).toHaveLength(2);
+  });
+
+  it('logs and skips parent url when lookup fails', async () => {
+    const consoleError = jest.fn();
+
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/6a.html') {
+          return variantFile;
+        }
+        if (path === 'p/6-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/story-6.json') {
+          return pendingFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const optionError = new Error('missing parent');
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'options/throw') {
+          throw optionError;
+        }
+
+        return { get: jest.fn() };
+      }),
+    };
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => ({}) }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 6 }),
+      ref: { parent: { parent: storyRef } },
+    };
+
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: storyRef },
+    };
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        incomingOption: 'options/throw',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-6' } });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'parent lookup failed',
+      'missing parent'
     );
   });
 
