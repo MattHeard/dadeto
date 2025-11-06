@@ -209,9 +209,11 @@ describe('createGenerateStatsCore', () => {
       };
     };
 
-    const createStorageMock = ({ failSave = false } = {}) => {
+    const createStorageMock = ({ failSave = false, errorValue } = {}) => {
       const save = failSave
-        ? jest.fn(() => Promise.reject(new Error('Generation failed')))
+        ? jest.fn(() =>
+            Promise.reject(errorValue ?? new Error('Generation failed'))
+          )
         : jest.fn(() => Promise.resolve());
       const file = jest.fn(() => ({ save }));
       const bucket = jest.fn(() => ({ file }));
@@ -366,6 +368,18 @@ describe('createGenerateStatsCore', () => {
       await coreInstance.handleRequest(mockReq, mockRes);
       expect(mockRes.statusCode).toBe(500);
       expect(mockRes.jsonResponse).toEqual({ error: 'Generation failed' });
+    });
+
+    it('returns the fallback message when generate throws without a message', async () => {
+      const storage = createStorageMock({
+        failSave: true,
+        errorValue: { reason: 'timeout' },
+      });
+      const { coreInstance } = buildCoreForHandleRequest({ storage });
+      mockReq.isCron = 'true';
+      await coreInstance.handleRequest(mockReq, mockRes);
+      expect(mockRes.statusCode).toBe(500);
+      expect(mockRes.jsonResponse).toEqual({ error: 'generate failed' });
     });
   });
 
