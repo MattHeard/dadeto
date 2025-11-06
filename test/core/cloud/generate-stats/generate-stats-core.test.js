@@ -1,5 +1,13 @@
 import { jest } from '@jest/globals';
-import { createGenerateStatsCore } from '../../../../src/core/cloud/generate-stats/generate-stats-core.js';
+import {
+  createGenerateStatsCore,
+  isDuplicateAppError,
+  initializeFirebaseApp,
+  getProjectFromEnv,
+  getUrlMapFromEnv,
+  getCdnHostFromEnv,
+  buildHtml,
+} from '../../../../src/core/cloud/generate-stats/generate-stats-core.js';
 
 describe('createGenerateStatsCore', () => {
   let mockDb;
@@ -263,7 +271,7 @@ describe('createGenerateStatsCore', () => {
           if (mockDb.get.storyId === 'story1') {
             return Promise.resolve({ data: () => ({ title: 'Story One' }) });
           } else if (mockDb.get.storyId === 'story2') {
-            return Promise.resolve({ data: () => ({ title: 'Story Two' }) });
+            return Promise.resolve({ data: () => ({}) });
           }
         }
         return Promise.resolve({ data: () => ({}) });
@@ -285,7 +293,7 @@ describe('createGenerateStatsCore', () => {
       const topStories = await core.getTopStories();
       expect(topStories).toEqual([
         { title: 'Story One', variantCount: 5 },
-        { title: 'Story Two', variantCount: 3 },
+        { title: 'story2', variantCount: 3 },
       ]);
     });
   });
@@ -423,5 +431,93 @@ describe('createGenerateStatsCore', () => {
         'Network error'
       );
     });
+  });
+
+  it('throws when fetch implementation is not provided', () => {
+    const db = { collection: jest.fn(), collectionGroup: jest.fn() };
+    const auth = { verifyIdToken: jest.fn() };
+    const storage = { bucket: jest.fn() };
+    const cryptoModule = { randomUUID: jest.fn() };
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = undefined;
+
+    try {
+      expect(() =>
+        createGenerateStatsCore({
+          db,
+          auth,
+          storage,
+          fetchFn: undefined,
+          cryptoModule,
+        })
+      ).toThrow('fetch implementation required');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});
+
+describe('generate stats helpers', () => {
+  it('detects duplicate app errors by code or message', () => {
+    expect(
+      isDuplicateAppError({
+        code: 'app/duplicate-app',
+        message: 'Already exists',
+      })
+    ).toBe(true);
+    expect(isDuplicateAppError({ message: 'project already exists' })).toBe(
+      true
+    );
+    expect(isDuplicateAppError({ message: 'something else' })).toBe(false);
+    expect(isDuplicateAppError(null)).toBe(false);
+  });
+
+  it('swallows duplicate initialization errors', () => {
+    const init = jest
+      .fn()
+      .mockImplementationOnce(() => {
+        throw { code: 'app/duplicate-app', message: 'Already exists' };
+      })
+      .mockImplementationOnce(() => {});
+
+    expect(() => initializeFirebaseApp(init)).not.toThrow();
+    expect(init).toHaveBeenCalledTimes(1);
+
+    const throwingInit = jest.fn(() => {
+      throw new Error('boom');
+    });
+    expect(() => initializeFirebaseApp(throwingInit)).toThrow('boom');
+  });
+
+  it('derives project and URL map env values with fallbacks', () => {
+    expect(
+      getProjectFromEnv({
+        GOOGLE_CLOUD_PROJECT: 'proj',
+        GCLOUD_PROJECT: 'legacy',
+      })
+    ).toBe('proj');
+    expect(getProjectFromEnv({ GCLOUD_PROJECT: 'legacy' })).toBe('legacy');
+    expect(getProjectFromEnv(null)).toBeUndefined();
+
+    expect(getUrlMapFromEnv({ URL_MAP: 'custom-map' })).toBe('custom-map');
+    expect(getUrlMapFromEnv()).toBe('prod-dendrite-url-map');
+
+    expect(getCdnHostFromEnv({ CDN_HOST: 'cdn.example.com' })).toBe(
+      'cdn.example.com'
+    );
+    expect(getCdnHostFromEnv({ CDN_HOST: '   ' })).toBe(
+      'www.dendritestories.co.nz'
+    );
+    expect(getCdnHostFromEnv()).toBe('www.dendritestories.co.nz');
+  });
+
+  it('builds HTML with top stories embedded', () => {
+    const html = buildHtml(1, 2, 3, [
+      { title: 'Story 1', variantCount: 5 },
+      { title: 'Story 2', variantCount: 4 },
+    ]);
+    expect(html).toContain('Number of stories: 1');
+    expect(html).toContain('Story 1');
+    expect(html).toContain('Story 2');
   });
 });
