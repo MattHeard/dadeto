@@ -1266,6 +1266,7 @@ describe('createRenderVariant', () => {
       storage,
       fetchFn,
       randomUUID,
+      consoleError: null,
     });
 
     const snap = {
