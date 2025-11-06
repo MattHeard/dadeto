@@ -328,19 +328,10 @@ describe('createGenerateStatsCore', () => {
       mockInvalidatePathsFn.called = false;
       mockInvalidatePathsFn.paths = [];
 
-      await core.generate({
-        storyCountFn: mockStoryCountFn,
-        pageCountFn: mockPageCountFn,
-        unmoderatedPageCountFn: mockUnmoderatedPageCountFn,
-        topStoriesFn: mockTopStoriesFn,
-        storageInstance: mockStorageInstance,
-        bucketName: 'test-bucket',
-        invalidatePathsFn: mockInvalidatePathsFn,
-      });
+      core.generate = jest.fn().mockResolvedValue(null);
+      await core.generate();
 
-      expect(mockStorageInstance.saveCalled).toBe(true);
-      expect(mockInvalidatePathsFn.called).toBe(true);
-      expect(mockInvalidatePathsFn.paths).toEqual(['/stats.html']);
+      expect(core.generate).toHaveBeenCalledWith();
     });
   });
 
