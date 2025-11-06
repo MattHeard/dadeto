@@ -5,175 +5,165 @@ import {
   createSubmitModerationRatingResponder,
 } from '../../../../src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js';
 
-describe('submitModerationRating core', () => {
-  describe('createSubmitModerationRatingResponder', () => {
-    const createDependencies = ({
-      verifyIdToken = jest.fn().mockResolvedValue({ uid: 'user-1' }),
-      fetchModeratorAssignment = jest.fn().mockResolvedValue({
-        variantId: '/variants/1',
-        clearAssignment: jest.fn().mockResolvedValue(),
+describe('createCorsOptions', () => {
+  it('whitelists origins and rejects others', () => {
+    const cors = createCorsOptions({ allowedOrigins: ['https://allowed'] });
+    const cb = jest.fn();
+
+    cors.origin('https://allowed', cb);
+    expect(cb).toHaveBeenCalledWith(null, true);
+
+    cb.mockClear();
+    cors.origin('https://blocked', cb);
+    expect(cb.mock.calls[0][0]).toBeInstanceOf(Error);
+    expect(cb.mock.calls[0][0].message).toBe('CORS');
+  });
+
+  it('defaults to POST method when unspecified', () => {
+    const cors = createCorsOptions({ allowedOrigins: [] });
+    expect(cors.methods).toEqual(['POST']);
+  });
+});
+
+describe('createSubmitModerationRatingResponder', () => {
+  const verifyIdToken = jest.fn();
+  const fetchModeratorAssignment = jest.fn();
+  const recordModerationRating = jest.fn();
+  const randomUUID = jest.fn(() => 'rating-id');
+  const getServerTimestamp = jest.fn(() => 'ts');
+
+  const responder = createSubmitModerationRatingResponder({
+    verifyIdToken,
+    fetchModeratorAssignment,
+    recordModerationRating,
+    randomUUID,
+    getServerTimestamp,
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('rejects non-POST requests', async () => {
+    await expect(responder({ method: 'GET' })).resolves.toEqual({
+      status: 405,
+      body: 'POST only',
+    });
+  });
+
+  it('validates body and authorization header formats', async () => {
+    await expect(responder({ method: 'POST', body: {} })).resolves.toEqual({
+      status: 400,
+      body: 'Missing or invalid isApproved',
+    });
+
+    await expect(
+      responder({ method: 'POST', body: { isApproved: true } })
+    ).resolves.toEqual({
+      status: 401,
+      body: 'Missing or invalid Authorization header',
+    });
+  });
+
+  it('handles invalid tokens and missing assignments', async () => {
+    verifyIdToken.mockRejectedValueOnce(new Error('expired'));
+    const response = await responder({
+      method: 'POST',
+      body: { isApproved: false },
+      headers: { Authorization: 'Bearer bad' },
+    });
+    expect(response).toEqual({ status: 401, body: 'expired' });
+
+    verifyIdToken.mockResolvedValueOnce({ uid: 'mod-1' });
+    fetchModeratorAssignment.mockResolvedValueOnce(null);
+    const noJob = await responder({
+      method: 'POST',
+      body: { isApproved: true },
+      headers: { Authorization: 'Bearer token' },
+    });
+    expect(noJob).toEqual({ status: 404, body: 'No moderation job' });
+  });
+
+  it('records moderation ratings and clears assignments', async () => {
+    verifyIdToken.mockResolvedValueOnce({ uid: 'mod-1' });
+    const clearAssignment = jest.fn().mockResolvedValue(undefined);
+    fetchModeratorAssignment.mockResolvedValueOnce({
+      variantId: 'variant-123',
+      clearAssignment,
+    });
+    recordModerationRating.mockResolvedValueOnce(undefined);
+
+    const response = await responder({
+      method: 'POST',
+      body: { isApproved: false },
+      headers: { Authorization: 'Bearer token' },
+    });
+
+    expect(recordModerationRating).toHaveBeenCalledWith({
+      id: 'rating-id',
+      moderatorId: 'mod-1',
+      variantId: 'variant-123',
+      isApproved: false,
+      ratedAt: 'ts',
+    });
+    expect(clearAssignment).toHaveBeenCalled();
+    expect(response).toEqual({ status: 201, body: {} });
+  });
+});
+
+describe('createHandleSubmitModerationRating', () => {
+  it('normalizes Express requests and writes JSON/primitive bodies', async () => {
+    const responder = jest
+      .fn()
+      .mockResolvedValueOnce({ status: 201, body: {} })
+      .mockResolvedValueOnce({ status: 202, body: 'Accepted' })
+      .mockResolvedValueOnce({ status: 204, body: undefined });
+
+    const handle = createHandleSubmitModerationRating(responder);
+    const res = {
+      status: jest.fn(function status() {
+        return res;
       }),
-      recordModerationRating = jest.fn().mockResolvedValue(),
-      randomUUID = jest.fn().mockReturnValue('rating-1'),
-      getServerTimestamp = jest.fn().mockReturnValue('now'),
-    } = {}) => ({
-      verifyIdToken,
-      fetchModeratorAssignment,
-      recordModerationRating,
-      randomUUID,
-      getServerTimestamp,
-    });
+      json: jest.fn(),
+      send: jest.fn(),
+      sendStatus: jest.fn(),
+    };
 
-    it('throws when verifyIdToken is not a function', () => {
-      expect(() =>
-        createSubmitModerationRatingResponder({
-          verifyIdToken: null,
-          fetchModeratorAssignment: jest.fn(),
-          recordModerationRating: jest.fn(),
-          randomUUID: jest.fn(),
-          getServerTimestamp: jest.fn(),
-        })
-      ).toThrow(new TypeError('verifyIdToken must be a function'));
-    });
+    await handle(
+      {
+        method: 'POST',
+        body: { isApproved: true },
+        get: name => (name === 'Authorization' ? 'Bearer token' : undefined),
+        headers: {},
+      },
+      res
+    );
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({});
 
-    it('rejects non-POST requests', async () => {
-      const responder =
-        createSubmitModerationRatingResponder(createDependencies());
+    await handle({ method: 'POST' }, res);
+    expect(res.send).toHaveBeenCalledWith('Accepted');
 
-      await expect(
-        responder({ method: 'GET', body: { isApproved: true } })
-      ).resolves.toEqual({ status: 405, body: 'POST only' });
-    });
-
-    it('rejects missing isApproved flag', async () => {
-      const responder =
-        createSubmitModerationRatingResponder(createDependencies());
-
-      await expect(responder({ method: 'POST', body: {} })).resolves.toEqual({
-        status: 400,
-        body: 'Missing or invalid isApproved',
-      });
-    });
-
-    it('rejects when Authorization header is missing', async () => {
-      const responder =
-        createSubmitModerationRatingResponder(createDependencies());
-
-      await expect(
-        responder({ method: 'POST', body: { isApproved: true } })
-      ).resolves.toEqual({
-        status: 401,
-        body: 'Missing or invalid Authorization header',
-      });
-    });
-
-    it('propagates token verification errors as 401 responses', async () => {
-      const verifyIdToken = jest.fn().mockRejectedValue(new Error('bad token'));
-      const responder = createSubmitModerationRatingResponder(
-        createDependencies({ verifyIdToken })
-      );
-
-      await expect(
-        responder({
-          method: 'POST',
-          body: { isApproved: true },
-          get: name => (name === 'Authorization' ? 'Bearer secret' : null),
-        })
-      ).resolves.toEqual({ status: 401, body: 'bad token' });
-    });
-
-    it('returns 404 when the moderator has no assignment', async () => {
-      const fetchModeratorAssignment = jest.fn().mockResolvedValue(null);
-      const responder = createSubmitModerationRatingResponder(
-        createDependencies({ fetchModeratorAssignment })
-      );
-
-      await expect(
-        responder({
-          method: 'POST',
-          body: { isApproved: true },
-          headers: { Authorization: 'Bearer token' },
-        })
-      ).resolves.toEqual({ status: 404, body: 'No moderation job' });
-    });
-
-    it('records the rating and clears the assignment on success', async () => {
-      const clearAssignment = jest.fn().mockResolvedValue();
-      const fetchModeratorAssignment = jest
-        .fn()
-        .mockResolvedValue({ variantId: '/variants/123', clearAssignment });
-      const recordModerationRating = jest.fn().mockResolvedValue();
-      const randomUUID = jest.fn().mockReturnValue('rating-99');
-      const getServerTimestamp = jest.fn().mockReturnValue('timestamp');
-      const responder = createSubmitModerationRatingResponder(
-        createDependencies({
-          fetchModeratorAssignment,
-          recordModerationRating,
-          randomUUID,
-          getServerTimestamp,
-        })
-      );
-
-      await expect(
-        responder({
-          method: 'POST',
-          body: { isApproved: false },
-          headers: { Authorization: 'Bearer secure' },
-        })
-      ).resolves.toEqual({ status: 201, body: {} });
-
-      expect(randomUUID).toHaveBeenCalledWith();
-      expect(recordModerationRating).toHaveBeenCalledWith({
-        id: 'rating-99',
-        moderatorId: 'user-1',
-        variantId: '/variants/123',
-        isApproved: false,
-        ratedAt: 'timestamp',
-      });
-      expect(clearAssignment).toHaveBeenCalledWith();
-    });
+    await handle({ method: 'POST' }, res);
+    expect(res.sendStatus).toHaveBeenCalledWith(204);
   });
 
-  describe('createHandleSubmitModerationRating', () => {
-    it('sends JSON responses for object bodies', async () => {
-      const responder = jest.fn().mockResolvedValue({ status: 201, body: {} });
-      const handle = createHandleSubmitModerationRating(responder);
-      const json = jest.fn();
-      const status = jest.fn().mockReturnValue({ json });
-      const res = { status };
+  it('wraps the header accessor defensively', async () => {
+    const responder = jest.fn().mockResolvedValue({ status: 200, body: {} });
+    const handle = createHandleSubmitModerationRating(responder);
+    const res = {
+      status: jest.fn(() => res),
+      json: jest.fn(),
+      send: jest.fn(),
+      sendStatus: jest.fn(),
+    };
 
-      await handle(
-        { method: 'POST', body: { isApproved: true }, headers: {} },
-        res
-      );
-
-      expect(responder).toHaveBeenCalledWith(
-        expect.objectContaining({ method: 'POST' })
-      );
-      expect(status).toHaveBeenCalledWith(201);
-      expect(json).toHaveBeenCalledWith({});
-    });
-  });
-
-  describe('createCorsOptions', () => {
-    it('allows requests with permitted origins', () => {
-      const options = createCorsOptions({
-        allowedOrigins: ['https://allowed.example'],
-      });
-
-      const callback = jest.fn();
-      options.origin('https://allowed.example', callback);
-
-      expect(callback).toHaveBeenCalledWith(null, true);
-    });
-
-    it('rejects disallowed origins', () => {
-      const options = createCorsOptions({ allowedOrigins: [] });
-      const callback = jest.fn();
-
-      options.origin('https://blocked.example', callback);
-
-      expect(callback).toHaveBeenCalledWith(expect.any(Error));
+    await handle({ method: 'POST', get: 'not-a-function' }, res);
+    expect(responder).toHaveBeenCalledWith({
+      method: 'POST',
+      body: undefined,
+      get: undefined,
+      headers: undefined,
     });
   });
 });
