@@ -516,6 +516,8 @@ describe('generate stats helpers', () => {
     expect(getProjectFromEnv(null)).toBeUndefined();
 
     expect(getUrlMapFromEnv({ URL_MAP: 'custom-map' })).toBe('custom-map');
+    expect(getUrlMapFromEnv(null)).toBe('prod-dendrite-url-map');
+    expect(getUrlMapFromEnv(undefined)).toBe('prod-dendrite-url-map');
 
     expect(getCdnHostFromEnv({ CDN_HOST: 'cdn.example.com' })).toBe(
       'cdn.example.com'
