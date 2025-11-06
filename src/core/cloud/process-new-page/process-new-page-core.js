@@ -211,10 +211,6 @@ function resolveAuthorRef(db, authorId) {
     return null;
   }
 
-  if (typeof db?.doc !== 'function') {
-    throw new TypeError('db.doc must be a function');
-  }
-
   return db.doc(`authors/${authorId}`);
 }
 
