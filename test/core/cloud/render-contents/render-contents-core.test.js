@@ -1,0 +1,456 @@
+import { jest } from '@jest/globals';
+import {
+  buildHtml,
+  createFetchTopStoryIds,
+  createFetchStoryInfo,
+  createRenderContents,
+  getAllowedOrigins,
+  createApplyCorsHeaders,
+  createValidateRequest,
+  createAuthorizationExtractor,
+  createHandleRenderRequest,
+  DEFAULT_BUCKET_NAME,
+  productionOrigins,
+} from '../../../../src/core/cloud/render-contents/render-contents-core.js';
+
+describe('buildHtml', () => {
+  it('escapes titles and renders list items', () => {
+    const html = buildHtml([
+      { pageNumber: 5, title: 'Hello <World>' },
+      { pageNumber: '6a', title: 'Another & Story' },
+    ]);
+
+    expect(html).toContain('<ol class="contents">');
+    expect(html).toContain('&lt;World&gt;');
+    expect(html).toContain('&amp;');
+    expect(html).toContain('./p/5a.html');
+  });
+});
+
+describe('createFetchTopStoryIds', () => {
+  it('orders and limits story stats', async () => {
+    const snapshot = {
+      docs: [{ id: 'one' }, { id: 'two' }],
+    };
+    const db = {
+      collection: jest.fn(() => ({
+        orderBy: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue(snapshot),
+          })),
+        })),
+      })),
+    };
+
+    const fetchTopStoryIds = createFetchTopStoryIds(db);
+    await expect(fetchTopStoryIds()).resolves.toEqual(['one', 'two']);
+    expect(db.collection).toHaveBeenCalledWith('storyStats');
+  });
+});
+
+describe('createFetchStoryInfo', () => {
+  it('returns null when story or root page is missing', async () => {
+    const docRef = {
+      get: jest.fn().mockResolvedValue({ exists: false }),
+    };
+    const db = {
+      collection: jest.fn(() => ({ doc: () => docRef })),
+    };
+
+    const fetchStoryInfo = createFetchStoryInfo(db);
+    await expect(fetchStoryInfo('missing')).resolves.toBeNull();
+
+    docRef.get.mockResolvedValueOnce({ exists: true, data: () => ({}) });
+    await expect(fetchStoryInfo('no-root')).resolves.toBeNull();
+  });
+
+  it('returns story title and root page number', async () => {
+    const rootPageSnap = {
+      exists: true,
+      data: () => ({ number: 7 }),
+    };
+    const rootPageRef = {
+      get: jest.fn().mockResolvedValue(rootPageSnap),
+    };
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Story', rootPage: rootPageRef }),
+    };
+    const db = {
+      collection: jest.fn(() => ({
+        doc: () => ({ get: jest.fn().mockResolvedValue(storySnap) }),
+      })),
+    };
+
+    const fetchStoryInfo = createFetchStoryInfo(db);
+    await expect(fetchStoryInfo('id')).resolves.toEqual({
+      title: 'Story',
+      pageNumber: 7,
+    });
+  });
+});
+
+describe('createRenderContents', () => {
+  it('validates required dependencies', async () => {
+    const storage = { bucket: jest.fn() };
+    const fetchFn = jest.fn();
+    const randomUUID = jest.fn();
+
+    const renderContents = createRenderContents({
+      storage,
+      fetchFn,
+      randomUUID,
+    });
+
+    await expect(renderContents()).rejects.toThrow(
+      new TypeError('db must provide a collection helper')
+    );
+
+    expect(() =>
+      createRenderContents({
+        db: { collection: jest.fn() },
+        storage: null,
+        fetchFn,
+        randomUUID,
+      })
+    ).toThrow(new TypeError('storage must provide a bucket helper'));
+
+    expect(() =>
+      createRenderContents({
+        db: { collection: jest.fn() },
+        storage,
+        fetchFn: null,
+        randomUUID,
+      })
+    ).toThrow(new TypeError('fetchFn must be a function'));
+
+    expect(() =>
+      createRenderContents({
+        db: { collection: jest.fn() },
+        storage,
+        fetchFn,
+        randomUUID: null,
+      })
+    ).toThrow(new TypeError('randomUUID must be a function'));
+  });
+
+  it('renders pages with provided fetchers and invalidates caches', async () => {
+    const bucketFile = jest.fn(path => ({
+      save: jest.fn().mockResolvedValue(undefined),
+    }));
+    const bucket = { file: bucketFile };
+    const storage = {
+      bucket: jest.fn(name => {
+        expect(name).toBe(DEFAULT_BUCKET_NAME);
+        return bucket;
+      }),
+    };
+
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn().mockReturnValue('uuid');
+
+    const renderContents = createRenderContents({
+      storage,
+      fetchFn,
+      randomUUID,
+      pageSize: 2,
+    });
+
+    const items = [
+      { title: 'One', pageNumber: 1 },
+      { title: 'Two', pageNumber: 2 },
+      { title: 'Three', pageNumber: 3 },
+    ];
+
+    const render = renderContents({
+      fetchTopStoryIds: async () => ['a', 'b', 'c'],
+      fetchStoryInfo: async id => items[{ a: 0, b: 1, c: 2 }[id]],
+    });
+
+    await expect(render).resolves.toBeNull();
+    expect(bucketFile).toHaveBeenCalledWith('index.html');
+    expect(bucketFile).toHaveBeenCalledWith('contents/2.html');
+    expect(fetchFn).toHaveBeenCalled();
+  });
+
+  it('uses cached factories when overrides are not supplied', async () => {
+    const storyStatsSnapshot = {
+      docs: [{ id: 'id' }],
+    };
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 3 }),
+    };
+    const rootRef = { get: jest.fn().mockResolvedValue(pageSnap) };
+    const db = {
+      collection: jest.fn(name => {
+        if (name === 'storyStats') {
+          return {
+            orderBy: jest.fn(() => ({
+              limit: jest.fn(() => ({
+                get: jest.fn().mockResolvedValue(storyStatsSnapshot),
+              })),
+            })),
+          };
+        }
+        if (name === 'stories') {
+          return {
+            doc: () => ({
+              get: jest.fn().mockResolvedValue({
+                exists: true,
+                data: () => ({ title: 'Story', rootPage: rootRef }),
+              }),
+            }),
+          };
+        }
+        throw new Error(`unexpected collection ${name}`);
+      }),
+    };
+
+    const bucket = { file: jest.fn(() => ({ save: jest.fn() })) };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 't' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+    const randomUUID = jest.fn().mockReturnValue('uuid');
+
+    const renderContents = createRenderContents({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+    });
+
+    await renderContents();
+    await renderContents();
+
+    expect(rootRef.get).toHaveBeenCalledTimes(2);
+  });
+
+  it('logs invalidation failures without throwing', async () => {
+    const bucket = { file: jest.fn(() => ({ save: jest.fn() })) };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const consoleError = jest.fn();
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 't' }),
+      })
+      .mockResolvedValue({ ok: false, status: 500, json: async () => ({}) });
+    const randomUUID = jest.fn().mockReturnValue('uuid');
+
+    const renderContents = createRenderContents({
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    await renderContents({
+      fetchTopStoryIds: async () => [],
+      fetchStoryInfo: async () => null,
+    });
+
+    expect(consoleError).toHaveBeenCalled();
+  });
+});
+
+describe('getAllowedOrigins', () => {
+  it('returns configured origins when present', () => {
+    const origins = getAllowedOrigins({
+      RENDER_CONTENTS_ALLOWED_ORIGINS: ' https://a.test ,https://b.test ',
+    });
+
+    expect(origins).toEqual(['https://a.test', 'https://b.test']);
+  });
+
+  it('falls back to production origins', () => {
+    expect(getAllowedOrigins({})).toEqual(productionOrigins);
+  });
+});
+
+describe('createApplyCorsHeaders', () => {
+  it('allows requests without an origin', () => {
+    const res = { set: jest.fn() };
+    const apply = createApplyCorsHeaders({
+      allowedOrigins: ['https://allowed'],
+    });
+
+    expect(apply({}, res)).toBe(true);
+    expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', '*');
+  });
+
+  it('allows configured origins and varies header', () => {
+    const res = { set: jest.fn() };
+    const req = { get: jest.fn().mockReturnValue('https://allowed') };
+    const apply = createApplyCorsHeaders({
+      allowedOrigins: ['https://allowed'],
+    });
+
+    expect(apply(req, res)).toBe(true);
+    expect(res.set).toHaveBeenCalledWith(
+      'Access-Control-Allow-Origin',
+      'https://allowed'
+    );
+    expect(res.set).toHaveBeenCalledWith('Vary', 'Origin');
+  });
+
+  it('rejects unknown origins', () => {
+    const res = { set: jest.fn() };
+    const req = { get: jest.fn().mockReturnValue('https://denied') };
+    const apply = createApplyCorsHeaders({
+      allowedOrigins: ['https://allowed'],
+    });
+
+    expect(apply(req, res)).toBe(false);
+    expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', 'null');
+  });
+});
+
+describe('createValidateRequest', () => {
+  it('handles OPTIONS, CORS and method checks', () => {
+    const applyCorsHeaders = jest.fn(() => false);
+    const validate = createValidateRequest({ applyCorsHeaders });
+    const res = {
+      status: jest.fn().mockReturnValue({ send: jest.fn() }),
+      send: jest.fn(),
+    };
+
+    expect(validate({ method: 'OPTIONS' }, res)).toBe(false);
+    expect(res.status).toHaveBeenCalledWith(403);
+
+    applyCorsHeaders.mockReturnValueOnce(false);
+    res.status.mockClear();
+    expect(validate({ method: 'POST' }, res)).toBe(false);
+    expect(res.status).toHaveBeenCalledWith(403);
+
+    applyCorsHeaders.mockReturnValueOnce(true);
+    res.status.mockClear();
+    expect(validate({ method: 'GET' }, res)).toBe(false);
+    expect(res.status).toHaveBeenCalledWith(405);
+
+    applyCorsHeaders.mockReturnValueOnce(true);
+    res.status.mockClear();
+    expect(validate({ method: 'POST' }, res)).toBe(true);
+  });
+});
+
+describe('createAuthorizationExtractor', () => {
+  it('supports req.get and headers variations', () => {
+    const extractor = createAuthorizationExtractor();
+    const req = { get: jest.fn().mockReturnValue('Bearer token') };
+    expect(extractor(req)).toBe('token');
+
+    expect(
+      extractor({ headers: { Authorization: ['Bearer other', 'ignored'] } })
+    ).toBe('other');
+    expect(extractor({ headers: { authorization: 'Bearer lower' } })).toBe(
+      'lower'
+    );
+    expect(extractor({})).toBe('');
+  });
+});
+
+describe('createHandleRenderRequest', () => {
+  const validateRequest = jest.fn(() => true);
+  const getAuthorizationToken = jest.fn(() => 'Bearer token');
+  const verifyIdToken = jest.fn();
+  const render = jest.fn();
+
+  const handler = createHandleRenderRequest({
+    validateRequest,
+    getAuthorizationToken,
+    verifyIdToken,
+    adminUid: 'admin',
+    render,
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('rejects when validateRequest blocks the call', async () => {
+    validateRequest.mockReturnValueOnce(false);
+    await handler({}, { status: jest.fn(), send: jest.fn(), json: jest.fn() });
+    expect(verifyIdToken).not.toHaveBeenCalled();
+  });
+
+  it('handles missing tokens and invalid admin', async () => {
+    getAuthorizationToken.mockReturnValueOnce('');
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+    };
+    await handler({}, res);
+    expect(res.status).toHaveBeenCalledWith(401);
+
+    getAuthorizationToken.mockReturnValueOnce('Bearer token');
+    verifyIdToken.mockResolvedValueOnce({ uid: 'not-admin' });
+    res.status.mockClear();
+    await handler({}, res);
+    expect(res.status).toHaveBeenCalledWith(403);
+  });
+
+  it('returns 401 when verification throws', async () => {
+    getAuthorizationToken.mockReturnValueOnce('Bearer token');
+    verifyIdToken.mockRejectedValueOnce(new Error('bad token'));
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+    };
+    await handler({}, res);
+    expect(res.status).toHaveBeenCalledWith(401);
+  });
+
+  it('runs render and returns JSON payload', async () => {
+    getAuthorizationToken.mockReturnValueOnce('Bearer token');
+    verifyIdToken.mockResolvedValueOnce({ uid: 'admin' });
+    render.mockResolvedValueOnce(undefined);
+
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+    };
+    await handler({}, res);
+
+    expect(render).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  it('supports render overrides and propagates errors', async () => {
+    getAuthorizationToken.mockReturnValueOnce('Bearer token');
+    verifyIdToken.mockResolvedValueOnce({ uid: 'admin' });
+
+    const failingRender = jest.fn(() => Promise.reject(new Error('boom')));
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+    };
+    await handler({}, res, { renderFn: failingRender });
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 'boom' });
+
+    getAuthorizationToken.mockReturnValueOnce('Bearer token');
+    verifyIdToken.mockResolvedValueOnce({ uid: 'admin' });
+    await expect(handler({}, res, { renderFn: 'invalid' })).rejects.toThrow(
+      new TypeError('renderFn must be a function')
+    );
+  });
+});
