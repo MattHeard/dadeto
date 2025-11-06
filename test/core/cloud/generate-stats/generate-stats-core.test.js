@@ -472,6 +472,22 @@ describe('generate stats helpers', () => {
     expect(isDuplicateAppError(null)).toBe(false);
   });
 
+  it('returns false when duplicate identifiers are absent', () => {
+    expect(
+      isDuplicateAppError({
+        code: 'app/other-error',
+        message: 'different failure',
+      })
+    ).toBe(false);
+    expect(
+      isDuplicateAppError({
+        code: 'app/duplicate-app',
+        message: 'duplicate flag missing',
+      })
+    ).toBe(false);
+    expect(isDuplicateAppError({ code: 'app/other-error' })).toBe(false);
+  });
+
   it('swallows duplicate initialization errors', () => {
     const init = jest
       .fn()
