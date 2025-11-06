@@ -9,6 +9,7 @@ import {
   buildHtml,
 } from '../../../../src/core/cloud/generate-stats/generate-stats-core.js';
 import { DEFAULT_BUCKET_NAME } from '../../../../src/core/cloud/cloud-core.js';
+import { ADMIN_UID } from '../../../../src/core/common-core.js';
 
 describe('createGenerateStatsCore', () => {
   let mockDb;
@@ -127,6 +128,138 @@ describe('createGenerateStatsCore', () => {
     let mockReq;
     let mockRes;
 
+    const createDbMock = () => {
+      let variantIndex = 0;
+      const counts = [2, 1];
+      return {
+        _collectionName: null,
+        _collectionGroupName: null,
+        _docId: null,
+        collection(name) {
+          this._collectionName = name;
+          this._collectionGroupName = null;
+          return this;
+        },
+        collectionGroup(name) {
+          this._collectionGroupName = name;
+          this._collectionName = null;
+          if (name === 'variants') {
+            variantIndex = 0;
+          }
+          return this;
+        },
+        count() {
+          if (this._collectionName === 'stories') {
+            return {
+              get: () => Promise.resolve({ data: () => ({ count: 4 }) }),
+            };
+          }
+
+          if (this._collectionGroupName === 'pages') {
+            return {
+              get: () => Promise.resolve({ data: () => ({ count: 7 }) }),
+            };
+          }
+
+          if (this._collectionGroupName === 'variants') {
+            return {
+              get: () =>
+                Promise.resolve({
+                  data: () => ({ count: counts[variantIndex++] ?? 0 }),
+                }),
+            };
+          }
+
+          return {
+            get: () => Promise.resolve({ data: () => ({ count: 0 }) }),
+          };
+        },
+        where() {
+          return this;
+        },
+        orderBy() {
+          return this;
+        },
+        limit() {
+          return this;
+        },
+        doc(id) {
+          this._docId = id;
+          return this;
+        },
+        get() {
+          if (this._collectionName === 'storyStats') {
+            return Promise.resolve({
+              docs: [
+                { id: 'story1', data: () => ({ variantCount: 5 }) },
+                { id: 'story2', data: () => ({}) },
+              ],
+            });
+          }
+
+          if (this._collectionName === 'stories') {
+            return Promise.resolve({
+              data: () =>
+                this._docId === 'story1' ? { title: 'Story One' } : {},
+            });
+          }
+
+          return Promise.resolve({ data: () => ({}) });
+        },
+      };
+    };
+
+    const createStorageMock = ({ failSave = false } = {}) => {
+      const save = failSave
+        ? jest.fn(() => Promise.reject(new Error('Generation failed')))
+        : jest.fn(() => Promise.resolve());
+      const file = jest.fn(() => ({ save }));
+      const bucket = jest.fn(() => ({ file }));
+      return { bucket, __mocks: { save, file, bucket } };
+    };
+
+    const createFetchMock = ({
+      metadataResponse = {
+        ok: true,
+        json: async () => ({ access_token: 'token-123' }),
+      },
+      invalidateResponse = { ok: true },
+    } = {}) => {
+      const fetchFn = jest.fn();
+      fetchFn.mockResolvedValueOnce(metadataResponse);
+      fetchFn.mockResolvedValueOnce(invalidateResponse);
+      return fetchFn;
+    };
+
+    const buildCoreForHandleRequest = ({ auth, storage, fetchFn, db } = {}) => {
+      const authInstance = auth || {
+        verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
+      };
+      const storageInstance = storage || createStorageMock();
+      const fetchInstance = fetchFn || createFetchMock();
+      const dbInstance = db || createDbMock();
+      const consoleError = jest.fn();
+
+      const coreInstance = createGenerateStatsCore({
+        db: dbInstance,
+        auth: authInstance,
+        storage: storageInstance,
+        fetchFn: fetchInstance,
+        env: {},
+        urlMap: 'test-url-map',
+        cryptoModule: { randomUUID: jest.fn(() => 'uuid-123') },
+        console: { error: consoleError },
+      });
+
+      return {
+        coreInstance,
+        storageInstance,
+        fetchInstance,
+        authInstance,
+        consoleError,
+      };
+    };
+
     beforeEach(() => {
       mockReq = {
         method: 'POST',
@@ -160,73 +293,77 @@ describe('createGenerateStatsCore', () => {
     });
 
     it('should return 405 for non-POST requests', async () => {
+      const { coreInstance } = buildCoreForHandleRequest();
       mockReq.method = 'GET';
-      await core.handleRequest(mockReq, mockRes);
+      await coreInstance.handleRequest(mockReq, mockRes);
       expect(mockRes.statusCode).toBe(405);
       expect(mockRes.message).toBe('POST only');
     });
 
     it('should succeed if X-Appengine-Cron header is true', async () => {
+      const { coreInstance, fetchInstance } = buildCoreForHandleRequest();
       mockReq.isCron = 'true';
-      // Mock generate to succeed
-      const mockGenFn = () => Promise.resolve();
-      await core.handleRequest(mockReq, mockRes, { genFn: mockGenFn });
+      await coreInstance.handleRequest(mockReq, mockRes);
       expect(mockRes.statusCode).toBe(200);
       expect(mockRes.jsonResponse).toEqual({ ok: true });
+      expect(fetchInstance).toHaveBeenCalledTimes(2);
     });
 
     it('should return 401 if not cron and not authorized (missing token)', async () => {
+      const { coreInstance } = buildCoreForHandleRequest();
       mockReq.isCron = 'false';
       mockReq.authorization = undefined; // No authorization header
-      await core.handleRequest(mockReq, mockRes);
+      await coreInstance.handleRequest(mockReq, mockRes);
       expect(mockRes.statusCode).toBe(401);
       expect(mockRes.message).toBe('Missing token');
     });
 
     it('should return 401 if not cron and not authorized (invalid token)', async () => {
+      const auth = {
+        verifyIdToken: jest.fn(() =>
+          Promise.reject(new Error('Firebase ID token has invalid signature.'))
+        ),
+      };
+      const { coreInstance } = buildCoreForHandleRequest({ auth });
       mockReq.isCron = 'false';
       mockReq.authorization = 'Bearer invalid-token';
-      mockAuth.verifyIdToken = () =>
-        Promise.reject(new Error('Firebase ID token has invalid signature.'));
-      await core.handleRequest(mockReq, mockRes);
+      await coreInstance.handleRequest(mockReq, mockRes);
       expect(mockRes.statusCode).toBe(401);
       expect(mockRes.message).toBe('Firebase ID token has invalid signature.');
     });
 
     it('should return 403 if not cron and user is not admin', async () => {
+      const auth = {
+        verifyIdToken: jest.fn(() => Promise.resolve({ uid: 'not-admin' })),
+      };
+      const { coreInstance } = buildCoreForHandleRequest({ auth });
       mockReq.isCron = 'false';
       mockReq.authorization = 'Bearer valid-token';
-      mockAuth.verifyIdToken = () => Promise.resolve({ uid: 'not-admin' });
-      await core.handleRequest(mockReq, mockRes, {
-        adminUid: 'some-admin-uid',
-      });
+      await coreInstance.handleRequest(mockReq, mockRes);
       expect(mockRes.statusCode).toBe(403);
       expect(mockRes.message).toBe('Forbidden');
     });
 
     it('should succeed if not cron and authorized admin', async () => {
+      const auth = {
+        verifyIdToken: jest.fn(() => Promise.resolve({ uid: ADMIN_UID })),
+      };
+      const { coreInstance, fetchInstance } = buildCoreForHandleRequest({
+        auth,
+      });
       mockReq.isCron = 'false';
       mockReq.authorization = 'Bearer valid-token';
-      mockAuth.verifyIdToken = () => Promise.resolve({ uid: 'some-admin-uid' });
-      // Mock generate to succeed
-      const mockGenFn = () => Promise.resolve();
-      await core.handleRequest(mockReq, mockRes, {
-        adminUid: 'some-admin-uid',
-        genFn: mockGenFn,
-      });
+      await coreInstance.handleRequest(mockReq, mockRes);
       expect(mockRes.statusCode).toBe(200);
       expect(mockRes.jsonResponse).toEqual({ ok: true });
+      expect(fetchInstance).toHaveBeenCalledTimes(2);
     });
 
-    it('should return 500 if genFn throws an error', async () => {
-      mockReq.isCron = 'false';
-      mockReq.authorization = 'Bearer valid-token';
-      mockAuth.verifyIdToken = () => Promise.resolve({ uid: 'some-admin-uid' });
-      const mockGenFn = () => Promise.reject(new Error('Generation failed'));
-      await core.handleRequest(mockReq, mockRes, {
-        adminUid: 'some-admin-uid',
-        genFn: mockGenFn,
-      });
+    it('should return 500 when generate rejects', async () => {
+      const storage = createStorageMock({ failSave: true });
+      const { coreInstance } = buildCoreForHandleRequest({ storage });
+      mockReq.isCron = 'true';
+      await coreInstance.handleRequest(mockReq, mockRes);
       expect(mockRes.statusCode).toBe(500);
       expect(mockRes.jsonResponse).toEqual({ error: 'Generation failed' });
     });
