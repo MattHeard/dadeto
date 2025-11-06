@@ -212,6 +212,14 @@ describe('createProcessNewPageHandler', () => {
     expect(() =>
       createProcessNewPageHandler({
         db: { doc: jest.fn(), batch: jest.fn() },
+        fieldValue: { increment: () => {} },
+        randomUUID: () => 'uuid',
+      })
+    ).toThrow(new TypeError('fieldValue.serverTimestamp must be a function'));
+
+    expect(() =>
+      createProcessNewPageHandler({
+        db: { doc: jest.fn(), batch: jest.fn() },
         fieldValue: { serverTimestamp: () => {} },
         randomUUID: () => 'uuid',
       })
@@ -224,6 +232,15 @@ describe('createProcessNewPageHandler', () => {
         randomUUID: null,
       })
     ).toThrow(new TypeError('randomUUID must be a function'));
+
+    expect(() =>
+      createProcessNewPageHandler({
+        db: { doc: jest.fn(), batch: jest.fn() },
+        fieldValue,
+        randomUUID: () => 'uuid',
+        random: null,
+      })
+    ).toThrow(new TypeError('random must be a function'));
 
     expect(() =>
       createProcessNewPageHandler({
@@ -273,6 +290,21 @@ describe('createProcessNewPageHandler', () => {
 
     await handler(snapshot);
     expect(snapshot.ref.update).toHaveBeenCalledWith({ processed: true });
+  });
+
+  it('returns gracefully when the snapshot is unavailable', async () => {
+    const handler = createProcessNewPageHandler({
+      db: {
+        doc: jest.fn(() => ({
+          get: jest.fn().mockResolvedValue({ exists: false }),
+        })),
+        batch: jest.fn(() => createBatch()),
+      },
+      fieldValue,
+      randomUUID: () => 'uuid',
+    });
+
+    await expect(handler(null)).resolves.toBeNull();
   });
 
   it('creates a new variant for a direct page submission', async () => {
@@ -346,6 +378,41 @@ describe('createProcessNewPageHandler', () => {
     expect(optionDocs).toHaveLength(2);
   });
 
+  it('marks direct page submissions as processed when no match is found', async () => {
+    const batch = createBatch();
+    const db = {
+      doc: jest.fn(path => {
+        if (path.startsWith('storyStats/')) {
+          return { path };
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+      batch: jest.fn(() => batch),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ empty: true }),
+          })),
+        })),
+      })),
+    };
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: () => 'uuid',
+      random: jest.fn(() => 0.5),
+    });
+
+    const snapshot = {
+      ref: { update: jest.fn() },
+      data: () => ({ pageNumber: 42, processed: false }),
+    };
+
+    await expect(handler(snapshot)).resolves.toBeNull();
+    expect(snapshot.ref.update).toHaveBeenCalledWith({ processed: true });
+  });
+
   it('updates existing option submissions by reusing the target page', async () => {
     const optionDocs = [];
     const { pageDocRef, variantDoc } = createStoryHierarchy({
@@ -407,5 +474,135 @@ describe('createProcessNewPageHandler', () => {
     expect(pageDocRef.get).toHaveBeenCalled();
     expect(batch.update).toHaveBeenCalledWith(variantRef, { dirty: null });
     expect(batch.commit).toHaveBeenCalled();
+  });
+
+  it('creates a page when option submissions lack a target page', async () => {
+    const optionDocs = [];
+    const { storyRef, pageDocRef, variantDoc, variantsCollection } =
+      createStoryHierarchy({ optionDocs });
+
+    const createdPages = [];
+    const pageCollection = {
+      doc: jest.fn(id => {
+        const variantDoc = createVariantDoc({ optionDocs });
+        const variantsCollection = createVariantCollection({
+          existingName: null,
+          variantDoc,
+        });
+
+        const docRef = {
+          id,
+          path: `pages/${id}`,
+          parent: { parent: storyRef },
+          collection: jest.fn(name => {
+            if (name === 'variants') {
+              variantsCollection.parent = docRef;
+              variantDoc.parent = variantsCollection;
+              return variantsCollection;
+            }
+            throw new Error(`Unexpected collection request: ${name}`);
+          }),
+        };
+
+        createdPages.push(docRef);
+        return docRef;
+      }),
+    };
+
+    storyRef.collection.mockReturnValue(pageCollection);
+
+    const optionRef = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => ({}) }),
+      parent: {
+        parent: variantDoc,
+      },
+    };
+
+    variantsCollection.parent = pageDocRef;
+    pageDocRef.parent = { parent: storyRef };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'incoming/options/opt-two') {
+          return optionRef;
+        }
+        if (path.startsWith('storyStats/')) {
+          return { path };
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+      batch: jest.fn(() => createBatch()),
+    };
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: jest.fn(() => 'generated'),
+      random: jest.fn(() => 0.3),
+      findAvailablePageNumberFn: jest.fn(() => Promise.resolve(7)),
+    });
+
+    const snapshot = {
+      ref: { id: 'submission-789', update: jest.fn() },
+      data: () => ({
+        incomingOptionFullName: 'incoming/options/opt-two',
+        processed: false,
+        options: ['Keep original'],
+        author: 'Writer',
+      }),
+    };
+
+    await handler(snapshot);
+
+    expect(createdPages).toHaveLength(1);
+    expect(storyRef.collection).toHaveBeenCalledWith('pages');
+  });
+
+  it('throws when the resolved page reference lacks a collection helper', async () => {
+    const db = {
+      doc: jest.fn(path => {
+        if (path.startsWith('storyStats/')) {
+          return { path };
+        }
+        throw new Error(`Unexpected doc request: ${path}`);
+      }),
+      batch: jest.fn(() => createBatch()),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              empty: false,
+              docs: [
+                {
+                  ref: {
+                    parent: {
+                      parent: {
+                        collection: jest.fn(() => ({ doc: jest.fn() })),
+                      },
+                    },
+                  },
+                },
+              ],
+            }),
+          })),
+        })),
+      })),
+    };
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: () => 'uuid',
+      random: jest.fn(() => 0.2),
+    });
+
+    const snapshot = {
+      ref: { update: jest.fn() },
+      data: () => ({ pageNumber: 8, processed: false }),
+    };
+
+    await expect(handler(snapshot)).rejects.toEqual(
+      new TypeError('pageDocRef.collection must be a function')
+    );
   });
 });
