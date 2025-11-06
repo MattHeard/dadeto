@@ -23,6 +23,14 @@ describe('createCorsOptions', () => {
     const cors = createCorsOptions({ allowedOrigins: [] });
     expect(cors.methods).toEqual(['POST']);
   });
+
+  it('allows requests with missing origin', () => {
+    const cors = createCorsOptions({ allowedOrigins: ['https://allowed'] });
+    const cb = jest.fn();
+
+    cors.origin(undefined, cb);
+    expect(cb).toHaveBeenCalledWith(null, true);
+  });
 });
 
 describe('createSubmitModerationRatingResponder', () => {
@@ -42,6 +50,12 @@ describe('createSubmitModerationRatingResponder', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('treats missing requests as non-POST submissions', async () => {
+    const response = await responder();
+    expect(response).toEqual({ status: 405, body: 'POST only' });
+    expect(verifyIdToken).not.toHaveBeenCalled();
   });
 
   it('rejects non-POST requests', async () => {
@@ -109,6 +123,57 @@ describe('createSubmitModerationRatingResponder', () => {
     expect(clearAssignment).toHaveBeenCalled();
     expect(response).toEqual({ status: 201, body: {} });
   });
+
+  it('reads authorization via getter fallback and rejects empty variant assignments', async () => {
+    verifyIdToken.mockResolvedValueOnce({ uid: 'mod-2' });
+    fetchModeratorAssignment.mockResolvedValueOnce({ variantId: '' });
+
+    const response = await responder({
+      method: 'POST',
+      body: { isApproved: true },
+      get: name => (name === 'authorization' ? 'Bearer token' : undefined),
+    });
+
+    expect(response).toEqual({ status: 404, body: 'No moderation job' });
+    expect(fetchModeratorAssignment).toHaveBeenCalledWith('mod-2');
+  });
+
+  it('accepts array headers and skips clearing when no callback is provided', async () => {
+    verifyIdToken.mockResolvedValueOnce({ uid: 'mod-3' });
+    fetchModeratorAssignment.mockResolvedValueOnce({
+      variantId: 'variant-789',
+      clearAssignment: 'not-a-function',
+    });
+    recordModerationRating.mockResolvedValueOnce(undefined);
+
+    const response = await responder({
+      method: 'POST',
+      body: { isApproved: true },
+      headers: { authorization: ['Bearer arrayToken'] },
+    });
+
+    expect(recordModerationRating).toHaveBeenCalledWith(
+      expect.objectContaining({
+        moderatorId: 'mod-3',
+        variantId: 'variant-789',
+        isApproved: true,
+      })
+    );
+    expect(response).toEqual({ status: 201, body: {} });
+  });
+
+  it('returns an auth error when the token lacks a uid', async () => {
+    verifyIdToken.mockResolvedValueOnce({ uid: '' });
+
+    const response = await responder({
+      method: 'POST',
+      body: { isApproved: false },
+      headers: { authorization: 'Bearer token' },
+    });
+
+    expect(response).toEqual({ status: 401, body: 'Invalid or expired token' });
+    expect(fetchModeratorAssignment).not.toHaveBeenCalled();
+  });
 });
 
 describe('createHandleSubmitModerationRating', () => {
@@ -165,5 +230,23 @@ describe('createHandleSubmitModerationRating', () => {
       get: undefined,
       headers: undefined,
     });
+  });
+
+  it('handles undefined requests by forwarding an empty payload', async () => {
+    const responder = jest
+      .fn()
+      .mockResolvedValue({ status: 418, body: undefined });
+    const handle = createHandleSubmitModerationRating(responder);
+    const res = {
+      status: jest.fn(() => res),
+      json: jest.fn(),
+      send: jest.fn(),
+      sendStatus: jest.fn(),
+    };
+
+    await handle(undefined, res);
+
+    expect(responder).toHaveBeenCalledWith({});
+    expect(res.sendStatus).toHaveBeenCalledWith(418);
   });
 });
