@@ -526,30 +526,21 @@ export function createGenerateStatsCore({
    * }} deps - Optional dependency overrides.
    * @returns {Promise<null>} Resolves with null for compatibility.
    */
-  async function generate(deps = {}) {
-    const storyCountFn = deps.storyCountFn || getStoryCount;
-    const pageCountFn = deps.pageCountFn || getPageCount;
-    const unmoderatedPageCountFn =
-      deps.unmoderatedPageCountFn || getUnmoderatedPageCount;
-    const topStoriesFn = deps.topStoriesFn || getTopStories;
-    const storageInstance = deps.storageInstance || storage;
-    const bucketName = deps.bucketName || DEFAULT_BUCKET_NAME;
-    const invalidatePathsFn = deps.invalidatePathsFn || invalidatePaths;
-
+  async function generate() {
     const [storyCount, pageCount, unmoderatedCount, topStories] =
       await Promise.all([
-        storyCountFn(),
-        pageCountFn(),
-        unmoderatedPageCountFn(),
-        topStoriesFn(),
+        getStoryCount(),
+        getPageCount(),
+        getUnmoderatedPageCount(),
+        getTopStories(),
       ]);
     const html = buildHtml(storyCount, pageCount, unmoderatedCount, topStories);
-    const bucketRef = storageInstance.bucket(bucketName);
+    const bucketRef = storage.bucket(DEFAULT_BUCKET_NAME);
     await bucketRef.file('stats.html').save(html, {
       contentType: 'text/html',
       metadata: { cacheControl: 'no-cache' },
     });
-    await invalidatePathsFn(['/stats.html'], console);
+    await invalidatePaths(['/stats.html'], console);
     return null;
   }
 
@@ -564,15 +555,15 @@ export function createGenerateStatsCore({
    * }} [deps] - Optional dependency overrides. Defaults to an empty object.
    * @returns {Promise<void>} Resolves when the request finishes.
    */
-  async function handleRequest(req, res, deps = {}) {
+  async function handleRequest(req, res) {
     if (req.method !== 'POST') {
       res.status(405).send('POST only');
       return;
     }
 
     const isCron = req.get('X-Appengine-Cron') === 'true';
-    const authInstance = deps.authInstance || auth;
-    const adminId = deps.adminUid || ADMIN_UID;
+    const authInstance = auth;
+    const adminId = ADMIN_UID;
 
     if (!isCron) {
       const verifyAdmin = createVerifyAdmin({
@@ -592,10 +583,8 @@ export function createGenerateStatsCore({
       }
     }
 
-    const genFn = deps.genFn || generate;
-
     try {
-      await genFn();
+      await generate();
       res.status(200).json({ ok: true });
     } catch (err) {
       res.status(500).json({ error: err?.message || 'generate failed' });

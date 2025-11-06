@@ -44,14 +44,6 @@ function assertRandom(random) {
  * that exposes a {@link import('firebase-admin/firestore').WriteBatch} factory.
  * @returns {import('firebase-admin/firestore').WriteBatch} Newly created write batch.
  */
-function getBatch(database) {
-  if (!database || typeof database.batch !== 'function') {
-    throw new TypeError('db must provide a batch method');
-  }
-
-  return database.batch();
-}
-
 /**
  * Validate that the provided FieldValue helper exposes the expected methods.
  * @param {{
@@ -144,11 +136,7 @@ function ensureUpdate(target, payload) {
  * @param {number} [depth] Recursion depth used to widen the search range (defaults to 0).
  * @returns {Promise<number>} A unique page number.
  */
-export async function findAvailablePageNumber(
-  db,
-  random = Math.random,
-  depth = 0
-) {
+export async function findAvailablePageNumber(db, random, depth = 0) {
   assertRandom(random);
 
   const max = 2 ** depth;
@@ -178,13 +166,9 @@ export async function findAvailablePageNumber(
  * }} Collection of related Firestore references.
  */
 function resolveStoryRefFromOption(optionRef) {
-  if (!optionRef) {
-    return null;
-  }
-
-  const variantRef = optionRef.parent?.parent ?? null;
-  const pageRef = variantRef?.parent?.parent ?? null;
-  const storyRef = pageRef?.parent?.parent ?? null;
+  const variantRef = optionRef.parent.parent;
+  const pageRef = variantRef.parent.parent;
+  const storyRef = pageRef.parent.parent;
 
   return { variantRef, pageRef, storyRef };
 }
@@ -212,14 +196,6 @@ function resolvePageFromTarget(targetPage) {
  * @returns {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} Stats document reference.
  */
 function resolveStoryStatsRef(db, storyRef) {
-  if (!storyRef || typeof storyRef.id !== 'string') {
-    throw new TypeError('storyRef must have an id');
-  }
-
-  if (typeof db?.doc !== 'function') {
-    throw new TypeError('db.doc must be a function');
-  }
-
   return db.doc(`storyStats/${storyRef.id}`);
 }
 
@@ -235,10 +211,6 @@ function resolveAuthorRef(db, authorId) {
     return null;
   }
 
-  if (typeof db?.doc !== 'function') {
-    throw new TypeError('db.doc must be a function');
-  }
-
   return db.doc(`authors/${authorId}`);
 }
 
@@ -249,10 +221,6 @@ function resolveAuthorRef(db, authorId) {
  * @returns {import('firebase-admin/firestore').CollectionReference<import('firebase-admin/firestore').DocumentData>} Collection of variants.
  */
 function getVariantCollection(pageRef) {
-  if (!pageRef || typeof pageRef.collection !== 'function') {
-    throw new TypeError('pageRef.collection must be a function');
-  }
-
   return pageRef.collection('variants');
 }
 
@@ -589,7 +557,7 @@ export function createProcessNewPageHandler({
   assertRandomUuid(randomUUID);
   assertFieldValue(fieldValue);
 
-  if (!db || typeof db.doc !== 'function') {
+  if (!db || typeof db.doc !== 'function' || typeof db.batch !== 'function') {
     throw new TypeError('db must provide doc and batch helpers');
   }
 
@@ -623,7 +591,7 @@ export function createProcessNewPageHandler({
     let variantRef = null;
     let pageNumber = null;
 
-    const batch = getBatch(db);
+    const batch = db.batch();
     const pageContext = incomingOptionFullName
       ? await resolveIncomingOptionContext({
           db,
