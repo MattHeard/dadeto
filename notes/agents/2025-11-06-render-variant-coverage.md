@@ -1,0 +1,7 @@
+## Render-variant coverage push (2025-11-06)
+
+- **Unexpected hurdle:** Branch gaps hid inside helper functions (`buildOptionMetadata`, `resolveStoryMetadata`, etc.) that `createRenderVariant` wraps. Exercising them through the full handler meant reproducing deep Firestore chains in every test. Exporting the helpers and testing them directly kept mocks focused and avoided brittle end-to-end scaffolding.
+- **Diagnosis & options:** I considered stubbing `buildHtml` so the handler tests could assert on option metadata, but that would require module-level mocking and contradict our guideline to avoid module resets. Exporting the helpers let me assert on plain objects instead of parsing HTML.
+- **Lessons learned:** When coverage stalls around internal helpers, prefer adding narrow unit tests rather than bolting more cases onto the big integration suite. It shortens the mock surface area and keeps failure messages actionable.
+- **Actionable tip:** If you need Firestore-like chains (`doc().collection().orderBy()`), build small factory helpers that return the nested jest fns—you can reuse them across unit suites without recreating verbose mocks.
+- **Open question:** Should we document these helper exports as "test-only" utilities somewhere? It might prevent future contributors from relying on them in production code by accident.

@@ -1,11 +1,334 @@
 import { jest } from '@jest/globals';
 import {
+  createInvalidatePaths,
+  buildOptionMetadata,
+  resolveStoryMetadata,
+  resolveAuthorMetadata,
+  buildParentRoute,
+  resolveParentUrl,
   createRenderVariant,
   createHandleVariantWrite,
   VISIBILITY_THRESHOLD,
   DEFAULT_BUCKET_NAME,
   getVisibleVariants,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
+
+describe('createInvalidatePaths', () => {
+  it('returns early when paths are not provided', async () => {
+    const fetchFn = jest.fn();
+    const randomUUID = jest.fn(() => 'uuid');
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID,
+    });
+
+    await invalidatePaths(undefined);
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('logs errors when the invalidation request rejects', async () => {
+    const consoleError = jest.fn();
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockRejectedValueOnce(new Error('boom'));
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+      consoleError,
+      projectId: 'proj',
+      urlMapName: 'map',
+      cdnHost: 'cdn.example.com',
+    });
+
+    await invalidatePaths(['/p/1a.html']);
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /p/1a.html error',
+      'boom'
+    );
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
+  it('swallows invalidation errors when no logger is provided', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockRejectedValueOnce(new Error('network'));
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+    });
+
+    await expect(invalidatePaths(['/p/2a.html'])).resolves.toBeUndefined();
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('buildOptionMetadata', () => {
+  it('derives target metadata when the target page exists', async () => {
+    const variantDocs = {
+      docs: [
+        { data: () => ({ name: 'a', visibility: 0.8 }) },
+        { data: () => ({ name: 'b', visibility: 0.6 }) },
+      ],
+    };
+
+    const targetPage = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 12 }),
+      }),
+      collection: jest.fn(() => ({
+        orderBy: jest.fn(() => ({
+          get: jest.fn().mockResolvedValue(variantDocs),
+        })),
+      })),
+    };
+
+    const result = await buildOptionMetadata({
+      data: {
+        content: 'Choice',
+        position: 1,
+        targetPage,
+      },
+      visibilityThreshold: 0.5,
+      db: { doc: jest.fn() },
+      consoleError: jest.fn(),
+    });
+
+    expect(targetPage.get).toHaveBeenCalled();
+    expect(result).toEqual({
+      content: 'Choice',
+      position: 1,
+      targetPageNumber: 12,
+      targetVariantName: 'a',
+      targetVariants: [
+        { name: 'a', weight: 0.8 },
+        { name: 'b', weight: 0.6 },
+      ],
+    });
+  });
+
+  it('logs when the target page lookup fails', async () => {
+    const consoleError = jest.fn();
+    const targetPage = {
+      get: jest.fn().mockRejectedValue(new Error('missing')),
+    };
+
+    const result = await buildOptionMetadata({
+      data: { content: 'Alt', position: 0, targetPage },
+      visibilityThreshold: 0.5,
+      db: { doc: jest.fn() },
+      consoleError,
+    });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'target page lookup failed',
+      'missing'
+    );
+    expect(result).toEqual({ content: 'Alt', position: 0 });
+  });
+
+  it('falls back to a provided target page number', async () => {
+    const result = await buildOptionMetadata({
+      data: { content: 'Direct', position: 2, targetPageNumber: 7 },
+      visibilityThreshold: 0.5,
+      db: { doc: jest.fn() },
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual({
+      content: 'Direct',
+      position: 2,
+      targetPageNumber: 7,
+    });
+  });
+});
+
+describe('resolveStoryMetadata', () => {
+  it('builds the parent URL when the story exposes a root page', async () => {
+    const rootVariantSnap = {
+      empty: false,
+      docs: [{ data: () => ({ name: 'a' }) }],
+    };
+
+    const rootPageRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 7 }),
+      }),
+      collection: jest.fn(() => ({
+        orderBy: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue(rootVariantSnap),
+          })),
+        })),
+      })),
+    };
+
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Story', rootPage: rootPageRef }),
+    };
+
+    const pageSnap = {
+      ref: {
+        parent: { parent: { get: jest.fn().mockResolvedValue(storySnap) } },
+      },
+    };
+
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: { incomingOption: true },
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual({
+      storyTitle: 'Story',
+      firstPageUrl: '/p/7a.html',
+    });
+  });
+
+  it('logs when the root page lookup rejects', async () => {
+    const consoleError = jest.fn();
+    const rootPageRef = {
+      get: jest.fn().mockRejectedValue(new Error('offline')),
+      collection: jest.fn(),
+    };
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Story', rootPage: rootPageRef }),
+    };
+    const pageSnap = {
+      ref: {
+        parent: { parent: { get: jest.fn().mockResolvedValue(storySnap) } },
+      },
+    };
+
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: { incomingOption: true },
+      consoleError,
+    });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'root page lookup failed',
+      'offline'
+    );
+    expect(result.firstPageUrl).toBeUndefined();
+  });
+});
+
+describe('resolveAuthorMetadata', () => {
+  it('creates a landing page when the author uuid is missing from storage', async () => {
+    const authorFile = {
+      exists: jest.fn().mockResolvedValue([false]),
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    const bucket = {
+      file: jest.fn(() => authorFile),
+    };
+
+    const authorSnap = {
+      exists: true,
+      data: () => ({ uuid: 'writer-1' }),
+    };
+
+    const db = {
+      doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue(authorSnap) })),
+    };
+
+    const result = await resolveAuthorMetadata({
+      variant: { authorId: 'author-1', authorName: 'Writer' },
+      db,
+      bucket,
+      consoleError: jest.fn(),
+    });
+
+    expect(bucket.file).toHaveBeenCalledWith('a/writer-1.html');
+    expect(authorFile.save).toHaveBeenCalled();
+    expect(result).toEqual({
+      authorName: 'Writer',
+      authorUrl: '/a/writer-1.html',
+    });
+  });
+
+  it('logs and recovers when author lookups fail', async () => {
+    const consoleError = jest.fn();
+    const db = {
+      doc: jest.fn(() => ({
+        get: jest.fn(() => Promise.reject(new Error('offline'))),
+      })),
+    };
+
+    const result = await resolveAuthorMetadata({
+      variant: { authorId: 'author-1', authorName: 'Writer' },
+      db,
+      bucket: { file: jest.fn() },
+      consoleError,
+    });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'author lookup failed',
+      'offline'
+    );
+    expect(result.authorUrl).toBeUndefined();
+  });
+});
+
+describe('buildParentRoute', () => {
+  it('returns null when parent identifiers are missing', () => {
+    const parentVariantSnap = { data: () => ({}) };
+    const parentPageSnap = { data: () => ({ number: undefined }) };
+
+    expect(buildParentRoute(parentVariantSnap, parentPageSnap)).toBeNull();
+  });
+
+  it('returns a formatted parent path when identifiers exist', () => {
+    const parentVariantSnap = { data: () => ({ name: 'b' }) };
+    const parentPageSnap = { data: () => ({ number: 14 }) };
+
+    expect(buildParentRoute(parentVariantSnap, parentPageSnap)).toBe(
+      '/p/14b.html'
+    );
+  });
+});
+
+describe('resolveParentUrl', () => {
+  it('returns undefined when the incoming option is not provided', async () => {
+    await expect(
+      resolveParentUrl({ variant: {}, db: { doc: jest.fn() } })
+    ).resolves.toBeUndefined();
+  });
+
+  it('logs lookup failures when parent resolution throws', async () => {
+    const consoleError = jest.fn();
+    const db = {
+      doc: jest.fn(() => {
+        throw new Error('boom');
+      }),
+    };
+
+    await expect(
+      resolveParentUrl({
+        variant: { incomingOption: 'options/1' },
+        db,
+        consoleError,
+      })
+    ).resolves.toBeUndefined();
+
+    expect(consoleError).toHaveBeenCalledWith('parent lookup failed', 'boom');
+  });
+});
 
 describe('createRenderVariant', () => {
   it('validates required dependencies', () => {
@@ -1288,6 +1611,105 @@ describe('createRenderVariant', () => {
     expect(computeCalls).toHaveLength(2);
   });
 
+  it('recovers from author lookup errors without logging when the logger is missing', async () => {
+    const authorFile = {
+      save: jest.fn().mockResolvedValue(undefined),
+      exists: jest.fn().mockResolvedValue([false]),
+    };
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/9a.html') {
+          return variantFile;
+        }
+        if (path === 'p/9-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/story-9.json') {
+          return pendingFile;
+        }
+        if (path === 'a/author-1.html') {
+          return authorFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 9 }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: null },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        authorId: 'author-1',
+        authorName: 'Author',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    const failingDb = {
+      doc: jest.fn(() => ({
+        get: jest.fn(() => Promise.reject(new Error('lookup failed'))),
+      })),
+    };
+
+    const renderVariant = createRenderVariant({
+      db: failingDb,
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError: null,
+    });
+
+    await expect(
+      renderVariant(snap, { params: { storyId: 'story-9' } })
+    ).resolves.toBeNull();
+
+    expect(bucket.file).toHaveBeenCalledWith('p/9a.html');
+    expect(bucket.file).not.toHaveBeenCalledWith('a/author-1.html');
+    expect(authorFile.save).not.toHaveBeenCalled();
+  });
+
   it('omits parent invalidation when parent references are missing', async () => {
     const consoleError = jest.fn();
 
@@ -1384,6 +1806,101 @@ describe('createRenderVariant', () => {
     );
 
     expect(computeCalls).toHaveLength(2);
+  });
+
+  it('skips parent invalidation when the option reference cannot be loaded', async () => {
+    const consoleError = jest.fn();
+
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/5a.html') {
+          return variantFile;
+        }
+        if (path === 'p/5-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/story-5.json') {
+          return pendingFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 5 }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: null },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db: {
+        doc: jest.fn(path => {
+          if (path === 'options/missing-ref') {
+            return null;
+          }
+          return { get: jest.fn().mockResolvedValue({ exists: false }) };
+        }),
+      },
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        incomingOption: 'options/missing-ref',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-5' } });
+
+    const computeCalls = fetchFn.mock.calls.filter(([url]) =>
+      url.startsWith('https://compute.googleapis.com')
+    );
+
+    expect(computeCalls).toHaveLength(2);
+    expect(consoleError).not.toHaveBeenCalled();
   });
 
   it('skips parent url when parent route cannot be constructed', async () => {

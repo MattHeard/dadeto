@@ -50,7 +50,7 @@ function assertStorage(storage) {
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger invoked when invalidation fails.
  * @returns {(paths: string[]) => Promise<void>} Invalidation routine that accepts absolute paths to purge.
  */
-function createInvalidatePaths({
+export function createInvalidatePaths({
   fetchFn,
   projectId,
   urlMapName,
@@ -668,4 +668,15 @@ export function createHandleVariantWrite({
   };
 }
 
+export {
+  buildOptionMetadata,
+  loadOptions,
+  resolveStoryMetadata,
+  resolveAuthorMetadata,
+  resolveParentReferences,
+  fetchParentSnapshots,
+  buildParentRoute,
+  resolveParentUrl,
+  resolveRenderPlan,
+};
 export { buildAltsHtml, buildHtml };
