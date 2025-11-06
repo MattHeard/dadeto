@@ -517,6 +517,530 @@ describe('createRenderVariant', () => {
     );
   });
 
+  it('does not fetch root variants when the submission is direct', async () => {
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(() => ({
+        save: jest.fn().mockResolvedValue(undefined),
+        exists: jest.fn().mockResolvedValue([true]),
+      })),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const rootPageRef = {
+      get: jest
+        .fn()
+        .mockResolvedValue({ exists: true, data: () => ({ number: 30 }) }),
+      collection: jest.fn(),
+    };
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ title: 'Story Title', rootPage: rootPageRef }),
+      }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 14 }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: storyRef },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsSnap = {
+      docs: [{ data: () => ({ name: 'a', content: 'Body', visibility: 1 }) }],
+    };
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue(variantsSnap),
+    };
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db: { doc: jest.fn() },
+      storage,
+      fetchFn,
+      randomUUID,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({ name: 'a', content: 'Body' }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-14' } });
+
+    expect(rootPageRef.collection).not.toHaveBeenCalled();
+  });
+
+  it('handles missing root page snapshots without logging', async () => {
+    const consoleError = jest.fn();
+
+    const bucket = {
+      file: jest.fn(() => ({
+        save: jest.fn().mockResolvedValue(undefined),
+        exists: jest.fn().mockResolvedValue([true]),
+      })),
+    };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const rootPageRef = {
+      get: jest.fn().mockResolvedValue({ exists: false }),
+    };
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ title: 'Story', rootPage: rootPageRef }),
+      }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({
+        number: 15,
+        incomingOption: 'incoming/options/opt',
+        incomingOptionFullName: 'incoming/options/opt',
+      }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: storyRef },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db: {
+        doc: jest.fn(() => ({
+          get: jest.fn().mockResolvedValue({ exists: false }),
+        })),
+      },
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        incomingOption: 'options/opt',
+        incomingOptionFullName: 'incoming/options/opt',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-15' } });
+
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it('constructs story metadata and parent route for closed variants', async () => {
+    const consoleError = jest.fn();
+
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/12a.html') {
+          return variantFile;
+        }
+        if (path === 'p/12-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/story-12.json') {
+          return pendingFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const parentVariantSnap = {
+      exists: true,
+      data: () => ({ name: 'b' }),
+    };
+    const parentPageSnap = { exists: true, data: () => ({ number: 99 }) };
+    const parentPageRef = { get: jest.fn().mockResolvedValue(parentPageSnap) };
+    const parentVariantRef = {
+      get: jest.fn().mockResolvedValue(parentVariantSnap),
+      parent: { parent: parentPageRef },
+    };
+    const optionCollection = { parent: parentVariantRef };
+    const optionRef = { parent: optionCollection };
+
+    const rootVariantQuery = {
+      limit: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          empty: false,
+          docs: [{ data: () => ({ name: 'z' }) }],
+        }),
+      })),
+    };
+
+    const rootPageRef = {
+      get: jest
+        .fn()
+        .mockResolvedValue({ exists: true, data: () => ({ number: 30 }) }),
+      collection: jest.fn(() => ({ orderBy: jest.fn(() => rootVariantQuery) })),
+    };
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ title: 'Story Title', rootPage: rootPageRef }),
+      }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({
+        number: 12,
+        incomingOption: 'incoming/options/opt',
+        incomingOptionFullName: 'incoming/options/opt',
+      }),
+      ref: null,
+    };
+
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: storyRef },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsSnapForPersist = {
+      docs: [{ data: () => ({ name: 'a', content: 'Body', visibility: 1 }) }],
+    };
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue(variantsSnapForPersist),
+    };
+
+    const optionsSnap = {
+      docs: [
+        {
+          data: () => ({
+            content: 'Go to page 20',
+            position: 1,
+            targetPageNumber: 20,
+          }),
+        },
+      ],
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue(optionsSnap),
+    };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'options/opt') {
+          return optionRef;
+        }
+        if (path.startsWith('authors/')) {
+          return {
+            get: jest.fn().mockResolvedValue({ exists: false }),
+          };
+        }
+        return { get: jest.fn() };
+      }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        incomingOption: 'options/opt',
+        incomingOptionFullName: 'incoming/options/opt',
+        authorId: 'auth-1',
+        authorName: 'Author',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-12' } });
+
+    expect(variantFile.save.mock.calls[0][1]).toEqual({
+      contentType: 'text/html',
+    });
+    const html = variantFile.save.mock.calls[0][0];
+    expect(html).toContain('/p/30z.html');
+    expect(html).toContain('Story Title');
+
+    const computeCalls = fetchFn.mock.calls.filter(([url]) =>
+      url.startsWith('https://compute.googleapis.com')
+    );
+    expect(computeCalls).toHaveLength(3);
+    expect(JSON.parse(computeCalls[2][1].body).path).toBe('/p/99b.html');
+  });
+
+  it('skips author landing page creation when uuid is missing', async () => {
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/2a.html') {
+          return variantFile;
+        }
+        if (path === 'p/2-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/variant-2.json') {
+          return pendingFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => ({}) }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 2 }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: storyRef },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsSnap = {
+      docs: [{ data: () => ({ name: 'a', content: 'Body', visibility: 1 }) }],
+    };
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue(variantsSnap),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'authors/auth-uuid') {
+          return {
+            get: jest
+              .fn()
+              .mockResolvedValue({ exists: true, data: () => ({}) }),
+          };
+        }
+        return { get: jest.fn() };
+      }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        authorId: 'auth-uuid',
+        authorName: 'Author Missing UUID',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-2' } });
+
+    expect(bucket.file).not.toHaveBeenCalledWith('a/author-uuid.html');
+  });
+
+  it('returns empty story metadata when the story document is missing', async () => {
+    const consoleError = jest.fn();
+
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/3a.html') {
+          return variantFile;
+        }
+        if (path === 'p/3-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/story-3.json') {
+          return pendingFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue({ exists: false }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 3 }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: storyRef },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsSnap = {
+      docs: [{ data: () => ({ name: 'a', content: 'Body', visibility: 1 }) }],
+    };
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue(variantsSnap),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db: { doc: jest.fn() },
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({ name: 'a', content: 'Body' }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-3' } });
+
+    const html = variantFile.save.mock.calls[0][0];
+    expect(html).not.toContain('Story Title');
+    expect(html).not.toContain('/p/30z.html');
+  });
+
   it('rejects when metadata token request fails', async () => {
     const bucket = {
       file: jest.fn(() => ({
@@ -569,6 +1093,21 @@ describe('createRenderVariant', () => {
     ).rejects.toThrow('metadata token: HTTP 500');
 
     expect(bucket.file).toHaveBeenCalledWith('p/1a.html');
+  });
+
+  it('returns null when the variant snapshot no longer exists', async () => {
+    const storage = { bucket: jest.fn() };
+    const renderVariant = createRenderVariant({
+      db: { doc: jest.fn() },
+      storage,
+      fetchFn: jest.fn(),
+      randomUUID: jest.fn(),
+    });
+
+    await expect(
+      renderVariant({ exists: false, ref: {} }, { params: {} })
+    ).resolves.toBeNull();
+    expect(storage.bucket).toHaveBeenCalledTimes(1);
   });
 
   it('logs invalidation failures and handles missing parent info', async () => {
@@ -680,6 +1219,74 @@ describe('createRenderVariant', () => {
     );
   });
 
+  it('handles invalidation failures without a logger', async () => {
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/11a.html') return variantFile;
+        if (path === 'p/11-alts.html') return altsFile;
+        if (path === 'pending/story-11.json') return pendingFile;
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: false, status: 503 });
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 11 }),
+      ref: { parent: { parent: null } },
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: null },
+    };
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db: { doc: jest.fn() },
+      storage,
+      fetchFn,
+      randomUUID,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({ name: 'a', content: 'Body' }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await expect(
+      renderVariant(snap, { params: { storyId: 'story-11' } })
+    ).resolves.toBeNull();
+
+    const computeCalls = fetchFn.mock.calls.filter(([url]) =>
+      url.startsWith('https://compute.googleapis.com')
+    );
+    expect(computeCalls).toHaveLength(2);
+  });
+
   it('omits parent invalidation when parent references are missing', async () => {
     const consoleError = jest.fn();
 
@@ -775,6 +1382,103 @@ describe('createRenderVariant', () => {
       url.startsWith('https://compute.googleapis.com')
     );
 
+    expect(computeCalls).toHaveLength(2);
+  });
+
+  it('skips parent url when parent route cannot be constructed', async () => {
+    const bucket = {
+      file: jest.fn(path => ({
+        save: jest.fn().mockResolvedValue(undefined),
+        exists: jest.fn().mockResolvedValue([true]),
+      })),
+    };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const parentVariantRef = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => ({}) }),
+      parent: {
+        parent: {
+          get: jest.fn().mockResolvedValue({
+            exists: true,
+            data: () => ({ number: undefined }),
+          }),
+        },
+      },
+    };
+
+    const optionRef = { parent: { parent: parentVariantRef } };
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => ({}) }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({
+        number: 10,
+        incomingOption: 'incoming/options/opt',
+        incomingOptionFullName: 'incoming/options/opt',
+      }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: storyRef },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'options/malformed-parent') {
+          return optionRef;
+        }
+        return { get: jest.fn() };
+      }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        incomingOption: 'options/malformed-parent',
+        incomingOptionFullName: 'incoming/options/opt',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-10' } });
+
+    const computeCalls = fetchFn.mock.calls.filter(([url]) =>
+      url.startsWith('https://compute.googleapis.com')
+    );
     expect(computeCalls).toHaveLength(2);
   });
 
@@ -877,6 +1581,123 @@ describe('createRenderVariant', () => {
       'parent lookup failed',
       'missing parent'
     );
+  });
+
+  it('omits parent invalidation when parent snapshots are missing', async () => {
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/8a.html') {
+          return variantFile;
+        }
+        if (path === 'p/8-alts.html') {
+          return altsFile;
+        }
+        if (path === 'pending/story-8.json') {
+          return pendingFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const parentVariantRef = {
+      get: jest.fn().mockResolvedValue({ exists: false }),
+      parent: {
+        parent: {
+          get: jest
+            .fn()
+            .mockResolvedValue({ exists: true, data: () => ({ number: 77 }) }),
+        },
+      },
+    };
+    const optionCollection = { parent: parentVariantRef };
+    const optionRef = { parent: optionCollection };
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => ({}) }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({
+        number: 8,
+        incomingOption: 'incoming/options/opt',
+        incomingOptionFullName: 'incoming/options/opt',
+      }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: storyRef },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsSnap = {
+      docs: [{ data: () => ({ name: 'a', content: 'Body', visibility: 1 }) }],
+    };
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue(variantsSnap),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'options/missing-parent') {
+          return optionRef;
+        }
+        return { get: jest.fn() };
+      }),
+    };
+
+    const renderVariant = createRenderVariant({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+    });
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        incomingOption: 'options/missing-parent',
+        incomingOptionFullName: 'incoming/options/opt',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    await renderVariant(snap, { params: { storyId: 'story-8' } });
+
+    const computeCalls = fetchFn.mock.calls.filter(([url]) =>
+      url.startsWith('https://compute.googleapis.com')
+    );
+    expect(computeCalls).toHaveLength(2);
   });
 
   it('handles author lookups that reject and writes cached author pages', async () => {
@@ -1020,6 +1841,18 @@ describe('getVisibleVariants', () => {
       { name: 'c', content: 'C' },
     ]);
   });
+
+  it('treats missing fields as defaults', () => {
+    const docs = [
+      { data: () => ({}) },
+      { data: () => ({ visibility: 1, name: 'ok', content: 'Text' }) },
+    ];
+
+    expect(getVisibleVariants(docs)).toEqual([
+      { name: '', content: '' },
+      { name: 'ok', content: 'Text' },
+    ]);
+  });
 });
 
 describe('createHandleVariantWrite', () => {
@@ -1101,6 +1934,19 @@ describe('createHandleVariantWrite', () => {
       {}
     );
 
+    expect(renderVariant).not.toHaveBeenCalled();
+  });
+
+  it('returns early when the variant snapshot is deleted', async () => {
+    const renderVariant = jest.fn();
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel: () => null,
+    });
+
+    await expect(
+      handler({ before: { exists: true }, after: { exists: false } }, {})
+    ).resolves.toBeNull();
     expect(renderVariant).not.toHaveBeenCalled();
   });
 });
