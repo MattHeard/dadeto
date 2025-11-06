@@ -13,12 +13,7 @@ export { productionOrigins } from './cloud-core.js';
  *   Top stories by variant count.
  * @returns {string} HTML page.
  */
-export function buildHtml(
-  storyCount,
-  pageCount,
-  unmoderatedCount,
-  topStories = []
-) {
+export function buildHtml(storyCount, pageCount, unmoderatedCount, topStories) {
   return `<!doctype html>
 <html lang="en">
   <head>
