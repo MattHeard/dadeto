@@ -258,42 +258,49 @@ describe('createGenerateStatsCore', () => {
       expect(count).toBe(3);
     });
 
-    it('getTopStories should return the correct data', async () => {
-      mockDb.get = () => {
-        if (mockDb.get.mockName === 'storyStats') {
-          return Promise.resolve({
-            docs: [
-              { id: 'story1', data: () => ({ variantCount: 5 }) },
-              { id: 'story2', data: () => ({ variantCount: 3 }) },
-            ],
-          });
-        } else if (mockDb.get.mockName === 'stories') {
-          if (mockDb.get.storyId === 'story1') {
-            return Promise.resolve({ data: () => ({ title: 'Story One' }) });
-          } else if (mockDb.get.storyId === 'story2') {
-            return Promise.resolve({ data: () => ({}) });
-          }
+    it('getTopStories normalizes missing metadata', async () => {
+      const statsDocs = [
+        { id: 'story1', data: () => ({ variantCount: 5 }) },
+        { id: 'story2', data: () => ({}) },
+      ];
+
+      const storiesDocs = {
+        story1: { data: () => ({ title: 'Story One' }) },
+        story2: { data: () => ({}) },
+      };
+
+      const collectionMock = name => {
+        mockDb._collectionName = name;
+        return mockDb;
+      };
+
+      const docMock = id => {
+        mockDb._docId = id;
+        return mockDb;
+      };
+
+      const getMock = () => {
+        if (mockDb._collectionName === 'storyStats') {
+          return Promise.resolve({ docs: statsDocs });
         }
+
+        if (mockDb._collectionName === 'stories') {
+          return Promise.resolve(
+            storiesDocs[mockDb._docId] ?? { data: () => ({}) }
+          );
+        }
+
         return Promise.resolve({ data: () => ({}) });
       };
 
-      mockDb.collection = name => {
-        if (name === 'storyStats') {
-          mockDb.get.mockName = 'storyStats';
-        } else if (name === 'stories') {
-          mockDb.get.mockName = 'stories';
-        }
-        return mockDb;
-      };
-      mockDb.doc = id => {
-        mockDb.get.storyId = id;
-        return mockDb;
-      };
+      mockDb.collection = collectionMock;
+      mockDb.doc = docMock;
+      mockDb.get = getMock;
 
       const topStories = await core.getTopStories();
       expect(topStories).toEqual([
         { title: 'Story One', variantCount: 5 },
-        { title: 'story2', variantCount: 3 },
+        { title: 'story2', variantCount: 0 },
       ]);
     });
   });
