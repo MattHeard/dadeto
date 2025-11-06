@@ -8,6 +8,7 @@ import {
   getCdnHostFromEnv,
   buildHtml,
 } from '../../../../src/core/cloud/generate-stats/generate-stats-core.js';
+import { DEFAULT_BUCKET_NAME } from '../../../../src/core/cloud/cloud-core.js';
 
 describe('createGenerateStatsCore', () => {
   let mockDb;
@@ -328,10 +329,127 @@ describe('createGenerateStatsCore', () => {
       mockInvalidatePathsFn.called = false;
       mockInvalidatePathsFn.paths = [];
 
-      core.generate = jest.fn().mockResolvedValue(null);
-      await core.generate();
+      const variantCounts = [2, 1];
+      const storiesCollection = {
+        count: jest.fn(() => ({
+          get: jest.fn(() => Promise.resolve({ data: () => ({ count: 4 }) })),
+        })),
+        doc: jest.fn(id => ({
+          get: jest.fn(() =>
+            Promise.resolve(
+              id === 'story1'
+                ? { data: () => ({ title: 'Story One' }) }
+                : { data: () => ({}) }
+            )
+          ),
+        })),
+      };
 
-      expect(core.generate).toHaveBeenCalledWith();
+      const storyStatsCollection = {
+        orderBy: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn(() =>
+              Promise.resolve({
+                docs: [
+                  { id: 'story1', data: () => ({ variantCount: 5 }) },
+                  { id: 'story2', data: () => ({}) },
+                ],
+              })
+            ),
+          })),
+        })),
+      };
+
+      const db = {
+        collection: jest.fn(name => {
+          if (name === 'stories') {
+            return storiesCollection;
+          }
+          if (name === 'storyStats') {
+            return storyStatsCollection;
+          }
+          throw new Error(`Unexpected collection ${name}`);
+        }),
+        collectionGroup: jest.fn(name => {
+          if (name === 'pages') {
+            return {
+              count: jest.fn(() => ({
+                get: jest.fn(() =>
+                  Promise.resolve({ data: () => ({ count: 7 }) })
+                ),
+              })),
+            };
+          }
+
+          if (name === 'variants') {
+            let index = 0;
+            return {
+              where: jest.fn(() => ({
+                count: jest.fn(() => ({
+                  get: jest.fn(() =>
+                    Promise.resolve({
+                      data: () => ({ count: variantCounts[index++] ?? 0 }),
+                    })
+                  ),
+                })),
+              })),
+            };
+          }
+
+          throw new Error(`Unexpected collectionGroup ${name}`);
+        }),
+      };
+
+      const saveMock = jest.fn(() => Promise.resolve());
+      const fileMock = jest.fn(() => ({ save: saveMock }));
+      const bucketMock = jest.fn(() => ({ file: fileMock }));
+      const storage = { bucket: bucketMock };
+
+      const fetchFn = jest
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ access_token: 'token-123' }),
+        })
+        .mockResolvedValueOnce({ ok: true });
+
+      const cryptoModule = { randomUUID: jest.fn(() => 'uuid-123') };
+
+      const testCore = createGenerateStatsCore({
+        db,
+        auth: { verifyIdToken: jest.fn() },
+        storage,
+        fetchFn,
+        env: {},
+        cryptoModule,
+      });
+
+      await testCore.generate();
+
+      expect(bucketMock).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
+      expect(fileMock).toHaveBeenCalledWith('stats.html');
+      expect(saveMock).toHaveBeenCalledTimes(1);
+
+      const savedHtml = saveMock.mock.calls[0][0];
+      expect(savedHtml).toContain('Number of stories: 4');
+      expect(savedHtml).toContain('Number of pages: 7');
+      expect(savedHtml).toContain('Story One');
+      expect(savedHtml).toContain('story2');
+
+      const saveOptions = saveMock.mock.calls[0][1];
+      expect(saveOptions).toEqual({
+        contentType: 'text/html',
+        metadata: { cacheControl: 'no-cache' },
+      });
+
+      expect(fetchFn).toHaveBeenCalledTimes(2);
+      const invalidateCall = fetchFn.mock.calls[1];
+      const invalidateBody = JSON.parse(invalidateCall[1].body);
+      expect(invalidateBody).toEqual({
+        host: 'www.dendritestories.co.nz',
+        path: '/stats.html',
+        requestId: 'uuid-123',
+      });
     });
   });
 
