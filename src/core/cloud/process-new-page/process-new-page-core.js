@@ -166,9 +166,9 @@ export async function findAvailablePageNumber(db, random, depth = 0) {
  * }} Collection of related Firestore references.
  */
 function resolveStoryRefFromOption(optionRef) {
-  const variantRef = optionRef.parent?.parent ?? null;
-  const pageRef = variantRef?.parent?.parent ?? null;
-  const storyRef = pageRef?.parent?.parent ?? null;
+  const variantRef = optionRef.parent.parent;
+  const pageRef = variantRef.parent.parent;
+  const storyRef = pageRef.parent.parent;
 
   return { variantRef, pageRef, storyRef };
 }
