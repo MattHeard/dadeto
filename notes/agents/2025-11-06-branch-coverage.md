@@ -6,3 +6,6 @@ Before wiring complex Firestore flows, review downstream calls (especially chain
 
 ## Open questions
 Should we extract a shared mock factory for Firestore collections/documents across tests? Several suites duplicate similar scaffolding, and centralising it might keep future branch-coverage pushes from reinventing the same chains.
+
+## Additional surprise while covering render-variant
+While extending coverage for `render-variant-core`, I initially forgot that downstream metadata helpers expect the page snapshot returned from `pageRef.get()` to expose its own `ref`. The test blew up with "Cannot read properties of undefined (reading 'parent')" when the resolver tried to walk back to the story document. The fix was simply to echo the real Firestore behaviour by attaching the originating ref to the fake snapshot before handing it back. When mocking parent lookups, double-check whether callers dereference `.ref` on returned snapshots.

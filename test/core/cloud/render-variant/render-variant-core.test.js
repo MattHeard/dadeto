@@ -4,6 +4,7 @@ import {
   createHandleVariantWrite,
   VISIBILITY_THRESHOLD,
   DEFAULT_BUCKET_NAME,
+  getVisibleVariants,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('createRenderVariant', () => {
@@ -500,6 +501,148 @@ describe('createRenderVariant', () => {
     expect(consoleError).toHaveBeenCalledWith(
       'invalidate /p/1a.html failed: 503'
     );
+  });
+
+  it('handles author lookups that reject and writes cached author pages', async () => {
+    const consoleError = jest.fn();
+
+    const authorFile = {
+      exists: jest
+        .fn()
+        .mockResolvedValueOnce([false])
+        .mockResolvedValue([true]),
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'a/author-uuid.html') {
+          return authorFile;
+        }
+
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'authors/auth-1') {
+          return {
+            get: jest.fn().mockResolvedValue({
+              exists: true,
+              data: () => ({ uuid: 'author-uuid' }),
+            }),
+          };
+        }
+
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+    };
+
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 12 }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: null },
+    };
+    pageSnap.ref = pageRef;
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const variantSnap = {
+      exists: true,
+      data: () => ({
+        name: 'b',
+        content: 'sample',
+        authorId: 'auth-1',
+        authorName: 'Author',
+      }),
+      ref: {
+        parent: {
+          parent: pageRef,
+          get: jest.fn().mockResolvedValue({ docs: [] }),
+        },
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    const renderVariant = createRenderVariant({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    await renderVariant(variantSnap, { params: { storyId: 'story-7' } });
+
+    expect(authorFile.save).toHaveBeenCalledWith(
+      expect.stringContaining('<h1>Author</h1>'),
+      { contentType: 'text/html' }
+    );
+
+    const errorDb = {
+      doc: jest.fn(() => ({
+        get: jest.fn(() => Promise.reject(new Error('fail'))),
+      })),
+    };
+
+    const errorRender = createRenderVariant({
+      db: errorDb,
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    await errorRender(variantSnap, { params: { storyId: 'story-7' } });
+    expect(consoleError).toHaveBeenCalledWith('author lookup failed', 'fail');
+  });
+});
+
+describe('getVisibleVariants', () => {
+  it('filters variants below the visibility threshold', () => {
+    const docs = [
+      {
+        data: () => ({
+          visibility: VISIBILITY_THRESHOLD,
+          name: 'a',
+          content: 'A',
+        }),
+      },
+      {
+        data: () => ({ visibility: 0.25, name: 'b', content: 'B' }),
+      },
+      {
+        data: () => ({ name: 'c', content: 'C' }),
+      },
+    ];
+
+    const variants = getVisibleVariants(docs);
+    expect(variants).toEqual([
+      { name: 'a', content: 'A' },
+      { name: 'c', content: 'C' },
+    ]);
   });
 });
 
