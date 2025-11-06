@@ -413,6 +413,41 @@ describe('createProcessNewPageHandler', () => {
     expect(snapshot.ref.update).toHaveBeenCalledWith({ processed: true });
   });
 
+  it('marks incoming option submissions as processed when the option doc is missing', async () => {
+    const optionRef = {
+      get: jest.fn().mockResolvedValue({ exists: false }),
+    };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'incoming/options/missing') {
+          return optionRef;
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+      batch: jest.fn(() => createBatch()),
+    };
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: jest.fn(() => 'uuid'),
+      random: jest.fn(() => 0.15),
+    });
+
+    const snapshot = {
+      ref: { update: jest.fn() },
+      data: () => ({
+        incomingOptionFullName: 'incoming/options/missing',
+        processed: false,
+      }),
+    };
+
+    await expect(handler(snapshot)).resolves.toBeNull();
+    expect(optionRef.get).toHaveBeenCalled();
+    expect(snapshot.ref.update).toHaveBeenCalledWith({ processed: true });
+  });
+
   it('updates existing option submissions by reusing the target page', async () => {
     const optionDocs = [];
     const { pageDocRef, variantDoc } = createStoryHierarchy({
@@ -558,6 +593,101 @@ describe('createProcessNewPageHandler', () => {
     expect(storyRef.collection).toHaveBeenCalledWith('pages');
   });
 
+  it('recovers when reading a target page fails by creating a replacement page', async () => {
+    const optionDocs = [];
+    const { storyRef, pageDocRef, variantDoc } = createStoryHierarchy({
+      optionDocs,
+    });
+
+    const createdPages = [];
+    storyRef.collection.mockImplementation(name => {
+      if (name !== 'pages') {
+        throw new Error(`Unexpected collection request: ${name}`);
+      }
+      return {
+        doc: jest.fn(id => {
+          const newVariantDoc = createVariantDoc({ optionDocs });
+          const newVariantsCollection = createVariantCollection({
+            existingName: null,
+            variantDoc: newVariantDoc,
+          });
+
+          const docRef = {
+            id,
+            path: `pages/${id}`,
+            parent: { parent: storyRef },
+            collection: jest.fn(collectionName => {
+              if (collectionName !== 'variants') {
+                throw new Error(
+                  `Unexpected collection request: ${collectionName}`
+                );
+              }
+              newVariantsCollection.parent = docRef;
+              newVariantDoc.parent = newVariantsCollection;
+              return newVariantsCollection;
+            }),
+          };
+
+          createdPages.push(docRef);
+          return docRef;
+        }),
+      };
+    });
+
+    const targetPage = {
+      get: jest.fn().mockRejectedValue(new Error('unavailable')),
+    };
+
+    const optionRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ targetPage }),
+      }),
+      parent: { parent: variantDoc },
+    };
+
+    const batch = createBatch();
+    const findAvailablePageNumberFn = jest.fn(() => Promise.resolve(11));
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'incoming/options/error-target') {
+          return optionRef;
+        }
+        if (path.startsWith('storyStats/')) {
+          return { path };
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+      batch: jest.fn(() => batch),
+    };
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: jest.fn(() => 'generated'),
+      random: jest.fn(() => 0.6),
+      findAvailablePageNumberFn,
+    });
+
+    const snapshot = {
+      ref: { id: 'submission-111', update: jest.fn() },
+      data: () => ({
+        incomingOptionFullName: 'incoming/options/error-target',
+        processed: false,
+      }),
+    };
+
+    await handler(snapshot);
+
+    expect(targetPage.get).toHaveBeenCalled();
+    expect(findAvailablePageNumberFn).toHaveBeenCalled();
+    expect(batch.update).toHaveBeenCalledWith(optionRef, {
+      targetPage: expect.objectContaining({ id: 'generated' }),
+    });
+    expect(createdPages).toHaveLength(1);
+  });
+
   it('throws when the resolved page reference lacks a collection helper', async () => {
     const db = {
       doc: jest.fn(path => {
@@ -604,5 +734,68 @@ describe('createProcessNewPageHandler', () => {
     await expect(handler(snapshot)).rejects.toEqual(
       new TypeError('pageDocRef.collection must be a function')
     );
+  });
+
+  it('increments variant names and falls back to randomUUID when snapshots lack identifiers', async () => {
+    const optionDocs = [];
+    const { pageDocRef, variantDoc } = createStoryHierarchy({
+      existingVariantName: 'd',
+      optionDocs,
+      pageSnapshotNumber: 4,
+    });
+
+    const optionRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ targetPage: pageDocRef }),
+      }),
+      parent: { parent: variantDoc },
+    };
+
+    const batch = createBatch();
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'incoming/options/preserved') {
+          return optionRef;
+        }
+        if (path.startsWith('storyStats/')) {
+          return { path };
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+      batch: jest.fn(() => batch),
+    };
+
+    const randomUUID = jest.fn(() => 'generated-id');
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID,
+      random: jest.fn(() => 0.75),
+    });
+
+    const snapshot = {
+      ref: { update: jest.fn() },
+      data: () => ({
+        incomingOptionFullName: 'incoming/options/preserved',
+        processed: false,
+        content: 'Story text',
+        options: 'not-an-array',
+      }),
+    };
+
+    await handler(snapshot);
+
+    const variantCall = batch.set.mock.calls.find(
+      ([, payload]) =>
+        payload && Object.prototype.hasOwnProperty.call(payload, 'name')
+    );
+
+    expect(variantCall?.[1].name).toBe('e');
+    expect(variantCall?.[1].incomingOption).toBe('incoming/options/preserved');
+    expect(randomUUID).toHaveBeenCalled();
+    expect(optionDocs).toHaveLength(0);
   });
 });
