@@ -1,7 +1,15 @@
 import { assertFunction, DEFAULT_BUCKET_NAME } from './cloud-core.js';
 import { buildAltsHtml, escapeHtml } from './buildAltsHtml.js';
 import { buildHtml } from './buildHtml.js';
-import { getVisibleVariants, VISIBILITY_THRESHOLD } from './visibility.js';
+export const VISIBILITY_THRESHOLD = 0.5;
+export function getVisibleVariants(docs) {
+  return docs
+    .filter(doc => (doc.data().visibility ?? 1) >= VISIBILITY_THRESHOLD)
+    .map(doc => ({
+      name: doc.data().name || '',
+      content: doc.data().content || '',
+    }));
+}
 
 export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
@@ -656,4 +664,4 @@ export function createHandleVariantWrite({
   };
 }
 
-export { buildAltsHtml, buildHtml, getVisibleVariants, VISIBILITY_THRESHOLD };
+export { buildAltsHtml, buildHtml };
