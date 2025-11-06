@@ -406,7 +406,7 @@ export function createGenerateStatsCore({
    */
   async function getStoryCount(dbRef = db) {
     const snap = await dbRef.collection('stories').count().get();
-    return snap.data().count || 0;
+    return snap.data().count;
   }
 
   /**
@@ -416,7 +416,7 @@ export function createGenerateStatsCore({
    */
   async function getPageCount(dbRef = db) {
     const snap = await dbRef.collectionGroup('pages').count().get();
-    return snap.data().count || 0;
+    return snap.data().count;
   }
 
   /**
@@ -435,7 +435,7 @@ export function createGenerateStatsCore({
       .where('moderatorReputationSum', '==', null)
       .count()
       .get();
-    return (zeroSnap.data().count || 0) + (nullSnap.data().count || 0);
+    return zeroSnap.data().count + nullSnap.data().count;
   }
 
   /**
