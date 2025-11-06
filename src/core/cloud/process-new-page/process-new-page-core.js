@@ -136,11 +136,7 @@ function ensureUpdate(target, payload) {
  * @param {number} [depth] Recursion depth used to widen the search range (defaults to 0).
  * @returns {Promise<number>} A unique page number.
  */
-export async function findAvailablePageNumber(
-  db,
-  random = Math.random,
-  depth = 0
-) {
+export async function findAvailablePageNumber(db, random, depth = 0) {
   assertRandom(random);
 
   const max = 2 ** depth;
