@@ -680,7 +680,7 @@ export function createInvalidatePaths({
  * @param {Record<string, any>} options.data - Raw option document data.
  * @param {number} options.visibilityThreshold - Minimum visibility required for a variant to be considered published.
  * @param {{doc: Function}} options.db - Firestore-like database used for lookups.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} options.consoleError - Logger for recoverable failures.
  * @returns {Promise<object>} Metadata describing the option suitable for HTML rendering.
  */
 async function buildOptionMetadata({
@@ -716,9 +716,7 @@ async function buildOptionMetadata({
         }
       }
     } catch (error) {
-      if (consoleError) {
-        consoleError('target page lookup failed', error?.message || error);
-      }
+      consoleError('target page lookup failed', error?.message || error);
     }
   } else if (data.targetPageNumber !== undefined) {
     targetPageNumber = data.targetPageNumber;
