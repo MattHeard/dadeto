@@ -11,6 +11,7 @@ import {
   VISIBILITY_THRESHOLD,
   DEFAULT_BUCKET_NAME,
   getVisibleVariants,
+  loadOptions,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('createInvalidatePaths', () => {
@@ -151,6 +152,63 @@ describe('buildOptionMetadata', () => {
       position: 2,
       targetPageNumber: 7,
     });
+  });
+});
+
+describe('loadOptions', () => {
+  it('defaults missing variant visibility to 1 when building targets', async () => {
+    const optionDocs = [
+      {
+        data: () => ({
+          content: 'Explore',
+          position: 0,
+          targetPage: {
+            get: jest.fn().mockResolvedValue({
+              exists: true,
+              data: () => ({ number: 9 }),
+            }),
+            collection: jest.fn(() => ({
+              orderBy: jest.fn(() => ({
+                get: jest.fn().mockResolvedValue({
+                  docs: [
+                    { data: () => ({ name: 'a', visibility: 0.6 }) },
+                    { data: () => ({ name: 'b' }) },
+                  ],
+                }),
+              })),
+            })),
+          },
+        }),
+      },
+    ];
+
+    const snap = {
+      ref: {
+        collection: () => ({
+          get: jest.fn().mockResolvedValue({ docs: optionDocs }),
+        }),
+      },
+    };
+
+    const result = await loadOptions({
+      snap,
+      visibilityThreshold: 0.5,
+      db: { doc: jest.fn() },
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual([
+      {
+        content: 'Explore',
+        position: 0,
+        targetPageNumber: 9,
+        targetVariantName: 'a',
+        targetVariants: [
+          { name: 'a', weight: 0.6 },
+          { name: 'b', weight: 1 },
+        ],
+      },
+    ]);
   });
 });
 
