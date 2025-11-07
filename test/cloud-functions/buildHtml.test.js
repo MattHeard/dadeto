@@ -1,6 +1,6 @@
 import { describe, test, expect } from '@jest/globals';
 import { JSDOM } from 'jsdom';
-import { buildHtml } from '../../src/cloud/render-variant/buildHtml.js';
+import { buildHtml } from '../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('buildHtml', () => {
   test('sets default head title when story title missing', () => {

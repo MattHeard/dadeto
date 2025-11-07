@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { buildAltsHtml } from '../../src/cloud/render-variant/buildAltsHtml.js';
+import { buildAltsHtml } from '../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('buildAltsHtml', () => {
   test('links to variant pages in /p path', () => {
