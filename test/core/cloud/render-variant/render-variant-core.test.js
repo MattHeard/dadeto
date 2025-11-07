@@ -155,6 +155,33 @@ describe('buildOptionMetadata', () => {
     expect(targetPage.get).toHaveBeenCalled();
   });
 
+  it('skips variant metadata when no visible variants are found', async () => {
+    const variantDocs = { docs: [] };
+    const targetPage = {
+      get: jest
+        .fn()
+        .mockResolvedValue({ exists: true, data: () => ({ number: 42 }) }),
+      collection: jest.fn(() => ({
+        orderBy: jest.fn(() => ({
+          get: jest.fn().mockResolvedValue(variantDocs),
+        })),
+      })),
+    };
+
+    const result = await buildOptionMetadata({
+      data: { content: 'No variants', position: 3, targetPage },
+      visibilityThreshold: 0.5,
+      db: { doc: jest.fn() },
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual({
+      content: 'No variants',
+      position: 3,
+      targetPageNumber: 42,
+    });
+  });
+
   it('falls back to a provided target page number', async () => {
     const result = await buildOptionMetadata({
       data: { content: 'Direct', position: 2, targetPageNumber: 7 },
