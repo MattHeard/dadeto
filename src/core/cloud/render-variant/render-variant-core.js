@@ -22,7 +22,7 @@ export function escapeHtml(text) {
  * @param text
  */
 function renderInlineMarkdown(text) {
-  let html = escapeHtml(String(text ?? ''));
+  let html = escapeHtml(text);
   html = html.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
   html = html.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
   return html;
