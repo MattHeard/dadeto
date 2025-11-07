@@ -139,6 +139,22 @@ describe('buildOptionMetadata', () => {
     expect(result).toEqual({ content: 'Alt', position: 0 });
   });
 
+  it('returns bare metadata when the target page snapshot is missing', async () => {
+    const targetPage = {
+      get: jest.fn().mockResolvedValue({ exists: false }),
+    };
+
+    const result = await buildOptionMetadata({
+      data: { content: 'Unknown', position: 5, targetPage },
+      visibilityThreshold: 0.5,
+      db: { doc: jest.fn() },
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual({ content: 'Unknown', position: 5 });
+    expect(targetPage.get).toHaveBeenCalled();
+  });
+
   it('falls back to a provided target page number', async () => {
     const result = await buildOptionMetadata({
       data: { content: 'Direct', position: 2, targetPageNumber: 7 },
