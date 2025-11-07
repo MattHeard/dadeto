@@ -152,7 +152,7 @@ function buildPageNumberHtml(pageNumber) {
  * @param content
  */
 function buildParagraphsHtml(content) {
-  return String(content ?? '')
+  return content
     .replace(/\r\n?/g, '\n')
     .split('\n')
     .map(line => `<p>${renderInlineMarkdown(line)}</p>`)
