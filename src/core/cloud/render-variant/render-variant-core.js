@@ -62,7 +62,7 @@ function buildOptionItem(pageNumber, variantName, option) {
  * @param variantName
  * @param options
  */
-function buildOptionsHtml(pageNumber, variantName, options = []) {
+function buildOptionsHtml(pageNumber, variantName, options) {
   return options
     .map(option => buildOptionItem(pageNumber, variantName, option))
     .join('');
