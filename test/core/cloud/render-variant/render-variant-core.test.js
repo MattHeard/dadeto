@@ -1542,6 +1542,116 @@ describe('createRenderVariant', () => {
     );
   });
 
+  it('logs raw errors when invalidatePaths rejects without a message', async () => {
+    const consoleError = jest.fn();
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/1a.html') return variantFile;
+        if (path === 'p/1-alts.html') return altsFile;
+        if (path === 'pending/variant-xyz.json') return pendingFile;
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockRejectedValue({ reason: 'fail' });
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const authorRef = {
+      get: jest.fn().mockResolvedValue({ exists: false }),
+    };
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'authors/missing') {
+          return authorRef;
+        }
+        if (path === 'options/parentless') {
+          return { parent: null };
+        }
+        throw new Error(`Unexpected doc path ${path}`);
+      }),
+    };
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 1, incomingOption: 'options/parentless' }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: { parent: null },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsCollectionRef = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({
+        docs: [
+          { data: () => ({ name: 'a', content: 'alpha', visibility: 1 }) },
+        ],
+      }),
+    };
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({
+        docs: [
+          {
+            data: () => ({
+              content: 'choice',
+              position: 0,
+              targetPageNumber: 3,
+            }),
+          },
+        ],
+      }),
+    };
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Hello',
+        authorName: 'Author',
+        authorId: 'missing',
+        incomingOption: 'options/parentless',
+      }),
+      ref: {
+        parent: variantsCollectionRef,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    const renderVariant = createRenderVariant({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    await expect(
+      renderVariant(snap, { params: { variantId: 'variant-xyz' } })
+    ).resolves.toBeNull();
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /p/1-alts.html error',
+      { reason: 'fail' }
+    );
+    expect(consoleError).toHaveBeenCalledWith('invalidate /p/1a.html error', {
+      reason: 'fail',
+    });
+  });
+
   it('handles invalidation failures without a logger', async () => {
     const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
     const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
