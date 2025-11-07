@@ -1,9 +1,561 @@
 import { assertFunction, DEFAULT_BUCKET_NAME } from './cloud-core.js';
-import { buildAltsHtml, escapeHtml } from './buildAltsHtml.js';
-import { buildHtml } from './buildHtml.js';
 
 export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 export const VISIBILITY_THRESHOLD = 0.5;
+
+/**
+ * Escape HTML special characters to prevent injection.
+ * @param {string} text Text to escape.
+ * @returns {string} Escaped text.
+ */
+export function escapeHtml(text) {
+  return String(text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ *
+ * @param text
+ */
+function renderInlineMarkdown(text) {
+  let html = escapeHtml(String(text ?? ''));
+  html = html.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
+  html = html.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+  return html;
+}
+
+/**
+ *
+ * @param pageNumber
+ * @param variantName
+ * @param option
+ */
+function buildOptionItem(pageNumber, variantName, option) {
+  const slug = `${pageNumber}-${variantName}-${option.position}`;
+  let href = `../new-page.html?option=${slug}`;
+  if (option.targetPageNumber !== undefined) {
+    const suffix = option.targetVariantName || '';
+    href = `/p/${option.targetPageNumber}${suffix}.html`;
+  }
+  const optionHtml = renderInlineMarkdown(option.content);
+  const attrs = [
+    'class="variant-link"',
+    `data-link-id="${slug}"`,
+    `href="${href}"`,
+  ];
+  if (option.targetVariants) {
+    const variantsAttr = option.targetVariants
+      .map(v => `${option.targetPageNumber}${v.name}:${v.weight ?? 1}`)
+      .join(',');
+    attrs.push(`data-variants="${escapeHtml(variantsAttr)}"`);
+  }
+  return `<li><a ${attrs.join(' ')}>${optionHtml}</a></li>`;
+}
+
+/**
+ *
+ * @param pageNumber
+ * @param variantName
+ * @param options
+ */
+function buildOptionsHtml(pageNumber, variantName, options = []) {
+  return options
+    .map(option => buildOptionItem(pageNumber, variantName, option))
+    .join('');
+}
+
+/**
+ *
+ * @param storyTitle
+ * @param showTitleHeading
+ */
+function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
+  if (!storyTitle || !showTitleHeading) return '';
+  return `<h1>${escapeHtml(storyTitle)}</h1>`;
+}
+
+/**
+ *
+ * @param storyTitle
+ */
+function buildHeadTitle(storyTitle) {
+  if (storyTitle) {
+    return `Dendrite - ${escapeHtml(storyTitle)}`;
+  }
+  return 'Dendrite';
+}
+
+/**
+ *
+ * @param author
+ * @param authorUrl
+ */
+function buildAuthorHtml(author, authorUrl) {
+  if (!author) return '';
+  if (authorUrl) {
+    return `<p>By <a href="${authorUrl}">${escapeHtml(author)}</a></p>`;
+  }
+  return `<p>By ${escapeHtml(author)}</p>`;
+}
+
+/**
+ *
+ * @param url
+ * @param label
+ */
+function buildLinkParagraph(url, label) {
+  if (!url) return '';
+  return `<p><a href="${url}">${label}</a></p>`;
+}
+
+/**
+ *
+ * @param pageNumber
+ */
+function buildRewriteLink(pageNumber) {
+  return `<a href="../new-page.html?page=${pageNumber}">Rewrite</a> `;
+}
+
+/**
+ *
+ * @param pageNumber
+ * @param variantName
+ */
+function buildReportHtml(pageNumber, variantName) {
+  const variantSlug = `${pageNumber}${variantName}`;
+  return (
+    '<p><a id="reportLink" href="#">⚑ Report</a></p>' +
+    `<script>document.getElementById('reportLink').onclick=async e=>{e.preventDefault();try{await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant:'${variantSlug}'})});alert('Thanks for your report.');}catch(e){alert('Sorry, something went wrong.');}};</script>`
+  );
+}
+
+/**
+ *
+ * @param pageNumber
+ */
+function buildPageNumberHtml(pageNumber) {
+  return (
+    `<p style="text-align:center">` +
+    `<a style="text-decoration:none" href="/p/${pageNumber - 1}a.html">◀</a> ` +
+    `${pageNumber} ` +
+    `<a style="text-decoration:none" href="/p/${pageNumber + 1}a.html">▶</a>` +
+    `</p>`
+  );
+}
+
+/**
+ *
+ * @param content
+ */
+function buildParagraphsHtml(content) {
+  return String(content ?? '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map(line => `<p>${renderInlineMarkdown(line)}</p>`)
+    .join('');
+}
+
+/**
+ *
+ * @param pageNumber
+ * @param variantName
+ * @param content
+ * @param options
+ * @param storyTitle
+ * @param author
+ * @param authorUrl
+ * @param parentUrl
+ * @param firstPageUrl
+ * @param showTitleHeading
+ */
+export function buildHtml(
+  pageNumber,
+  variantName,
+  content,
+  options,
+  storyTitle = '',
+  author = '',
+  authorUrl = '',
+  parentUrl = '',
+  firstPageUrl = '',
+  showTitleHeading = true
+) {
+  const items = buildOptionsHtml(pageNumber, variantName, options);
+  const title = buildTitleHeadingHtml(storyTitle, showTitleHeading);
+  const headTitle = buildHeadTitle(storyTitle);
+  const authorHtml = buildAuthorHtml(author, authorUrl);
+  const parentHtml = buildLinkParagraph(parentUrl, 'Back');
+  const firstHtml = buildLinkParagraph(firstPageUrl, 'First page');
+  const rewriteLink = buildRewriteLink(pageNumber);
+  const reportHtml = buildReportHtml(pageNumber, variantName);
+  const pageNumberHtml = buildPageNumberHtml(pageNumber);
+  const paragraphs = buildParagraphsHtml(content);
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${headTitle}</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
+    />
+    <link rel="stylesheet" href="/dendrite.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">
+        <img src="/img/logo.png" alt="Dendrite logo" />
+        Dendrite
+      </a>
+
+      <nav class="nav-inline" aria-label="Primary">
+        <a href="/new-story.html">New story</a>
+        <a href="/mod.html">Moderate</a>
+        <a href="/stats.html">Stats</a>
+        <a href="/about.html">About</a>
+        <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
+        <div id="signinButton"></div>
+        <div id="signoutWrap" style="display:none">
+          <a id="signoutLink" href="#">Sign out</a>
+        </div>
+      </nav>
+
+      <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">☰</button>
+    </header>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="menu-overlay" hidden aria-hidden="true">
+      <div class="menu-sheet" role="dialog" aria-modal="true">
+        <button class="menu-close" aria-label="Close menu">✕</button>
+
+        <nav class="menu-groups">
+          <div class="menu-group">
+            <h3>Write</h3>
+            <a href="/new-story.html">New story</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>Moderation</h3>
+            <a href="/mod.html">Moderate</a>
+            <a href="/stats.html">Stats</a>
+            <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>About</h3>
+            <a href="/about.html">About</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>Account</h3>
+            <div id="signinButton"></div>
+            <div id="signoutWrap" style="display:none">
+              <a id="signoutLink" href="#">Sign out</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p>${rewriteLink}<a href="./${pageNumber}-alts.html">Other variants</a></p>${pageNumberHtml}${reportHtml}</main>
+    <script src="https://accounts.google.com/gsi/client" defer></script>
+    <script type="module">
+      import {
+        initGoogleSignIn,
+        getIdToken,
+        isAdmin,
+        signOut,
+      } from '../googleAuth.js';
+      const als = document.querySelectorAll('.admin-link');
+      const sbs = document.querySelectorAll('#signinButton');
+      const sws = document.querySelectorAll('#signoutWrap');
+      const sos = document.querySelectorAll('#signoutLink');
+      function showSignedIn() {
+        sbs.forEach(el => (el.style.display = 'none'));
+        sws.forEach(el => (el.style.display = ''));
+        if (isAdmin()) als.forEach(el => (el.style.display = ''));
+      }
+      function showSignedOut() {
+        sbs.forEach(el => (el.style.display = ''));
+        sws.forEach(el => (el.style.display = 'none'));
+        als.forEach(el => (el.style.display = 'none'));
+      }
+      initGoogleSignIn({ onSignIn: showSignedIn });
+      sos.forEach(link => {
+        link.addEventListener('click', async e => {
+          e.preventDefault();
+          await signOut();
+          showSignedOut();
+        });
+      });
+      if (getIdToken()) {
+        showSignedIn();
+      }
+    </script>
+    <script>
+      (function () {
+        const toggle = document.querySelector('.menu-toggle');
+        const overlay = document.getElementById('mobile-menu');
+        const sheet = overlay.querySelector('.menu-sheet');
+        const closeBtn = overlay.querySelector('.menu-close');
+
+        function openMenu() {
+          overlay.hidden = false;
+          overlay.setAttribute('aria-hidden', 'false');
+          toggle.setAttribute('aria-expanded', 'true');
+          document.body.style.overflow = 'hidden';
+          const first = sheet.querySelector('a,button,[tabindex="0"]');
+          if (first) first.focus();
+        }
+        function closeMenu() {
+          overlay.setAttribute('aria-hidden', 'true');
+          toggle.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+          setTimeout(() => (overlay.hidden = true), 180);
+          toggle.focus();
+        }
+        toggle.addEventListener('click', () =>
+          overlay.hidden ? openMenu() : closeMenu()
+        );
+        closeBtn.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', e => {
+          if (e.target === overlay) closeMenu();
+        });
+        addEventListener('keydown', e => {
+          if (e.key === 'Escape' && !overlay.hidden) closeMenu();
+        });
+      })();
+    </script>
+    <script>
+      (function () {
+        function pickWeighted(pairs) {
+          let total = 0;
+          for (const p of pairs) {
+            const w = Number(p.w);
+            if (!Number.isFinite(w) || w <= 0) continue;
+            total += w;
+          }
+          if (total <= 0) return null;
+          const a = new Uint32Array(1);
+          crypto.getRandomValues(a);
+          const u = (a[0] + 1) / 4294967297;
+          let threshold = u * total;
+          for (const p of pairs) {
+            const w = Number(p.w);
+            if (!Number.isFinite(w) || w <= 0) continue;
+            threshold -= w;
+            if (threshold <= 0) return p.slug;
+          }
+          return pairs[pairs.length - 1]?.slug ?? null;
+        }
+        function parseVariants(attr) {
+          if (!attr) return [];
+          const trimmed = attr.trim();
+          if (!trimmed) return [];
+          if (trimmed[0] === '[' || trimmed[0] === '{') {
+            try {
+              const arr = JSON.parse(trimmed);
+              if (Array.isArray(arr))
+                return arr.map(x => ({ slug: x.slug, w: x.w }));
+            } catch {}
+            return [];
+          }
+          return trimmed
+            .split(',')
+            .map(pair => {
+              const [slug, w] = pair.split(':');
+              return { slug: slug?.trim(), w: Number(w ?? 1) };
+            })
+            .filter(x => x.slug);
+        }
+        function rewriteLink(a) {
+          const raw = a.getAttribute('data-variants');
+          const pairs = parseVariants(raw);
+          if (!pairs.length) return;
+          const chosen = pickWeighted(pairs);
+          if (!chosen) return;
+          try {
+            const href = new URL(a.getAttribute('href', 2), location.href);
+            const chosenUrl = new URL(href, location.href);
+            const parts = chosenUrl.pathname.split('/');
+            parts[parts.length - 1] = chosen + '.html';
+            chosenUrl.pathname = parts.join('/');
+            a.setAttribute('href', chosenUrl.toString());
+            a.setAttribute('data-chosen-variant', chosen);
+          } catch {}
+        }
+        function init() {
+          const links = document.querySelectorAll(
+            'a.variant-link[data-variants]'
+          );
+          links.forEach(rewriteLink);
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+  </body>
+</html>`;
+}
+
+/**
+ *
+ * @param pageNumber
+ * @param variants
+ */
+export function buildAltsHtml(pageNumber, variants) {
+  const items = variants
+    .map(variant => {
+      const words = String(variant.content || '')
+        .split(/\s+/)
+        .slice(0, 5)
+        .join(' ');
+      return `<li><a href="/p/${pageNumber}${variant.name}.html">${escapeHtml(
+        words
+      )}</a></li>`;
+    })
+    .join('');
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dendrite</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
+    />
+    <link rel="stylesheet" href="/dendrite.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">
+        <img src="/img/logo.png" alt="Dendrite logo" />
+        Dendrite
+      </a>
+
+      <nav class="nav-inline" aria-label="Primary">
+        <a href="/new-story.html">New story</a>
+        <a href="/mod.html">Moderate</a>
+        <a href="/stats.html">Stats</a>
+        <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
+        <div id="signinButton"></div>
+        <div id="signoutWrap" style="display:none">
+          <a id="signoutLink" href="#">Sign out</a>
+        </div>
+      </nav>
+
+      <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">☰</button>
+    </header>
+
+    <div id="mobile-menu" class="menu-overlay" hidden aria-hidden="true">
+      <div class="menu-sheet" role="dialog" aria-modal="true">
+        <button class="menu-close" aria-label="Close menu">✕</button>
+
+        <nav class="menu-groups">
+          <div class="menu-group">
+            <h3>Write</h3>
+            <a href="/new-story.html">New story</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>Moderation</h3>
+            <a href="/mod.html">Moderate</a>
+            <a href="/stats.html">Stats</a>
+            <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>Account</h3>
+            <div id="signinButton"></div>
+            <div id="signoutWrap" style="display:none">
+              <a id="signoutLink" href="#">Sign out</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <main><ol>${items}</ol></main>
+    <script src="https://accounts.google.com/gsi/client" defer></script>
+    <script type="module">
+      import {
+        initGoogleSignIn,
+        getIdToken,
+        isAdmin,
+        signOut,
+      } from '../googleAuth.js';
+      const als = document.querySelectorAll('.admin-link');
+      const sbs = document.querySelectorAll('#signinButton');
+      const sws = document.querySelectorAll('#signoutWrap');
+      const sos = document.querySelectorAll('#signoutLink');
+      function showSignedIn() {
+        sbs.forEach(el => (el.style.display = 'none'));
+        sws.forEach(el => (el.style.display = ''));
+        if (isAdmin()) als.forEach(el => (el.style.display = ''));
+      }
+      function showSignedOut() {
+        sbs.forEach(el => (el.style.display = ''));
+        sws.forEach(el => (el.style.display = 'none'));
+        als.forEach(el => (el.style.display = 'none'));
+      }
+      initGoogleSignIn({ onSignIn: showSignedIn });
+      sos.forEach(link => {
+        link.addEventListener('click', async e => {
+          e.preventDefault();
+          await signOut();
+          showSignedOut();
+        });
+      });
+      if (getIdToken()) {
+        showSignedIn();
+      }
+    </script>
+    <script>
+      (function () {
+        const toggle = document.querySelector('.menu-toggle');
+        const overlay = document.getElementById('mobile-menu');
+        const sheet = overlay.querySelector('.menu-sheet');
+        const closeBtn = overlay.querySelector('.menu-close');
+
+        function openMenu() {
+          overlay.hidden = false;
+          overlay.setAttribute('aria-hidden', 'false');
+          toggle.setAttribute('aria-expanded', 'true');
+          document.body.style.overflow = 'hidden';
+          const first = sheet.querySelector('a,button,[tabindex="0"]');
+          if (first) first.focus();
+        }
+        function closeMenu() {
+          overlay.setAttribute('aria-hidden', 'true');
+          toggle.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+          setTimeout(() => (overlay.hidden = true), 180);
+          toggle.focus();
+        }
+        toggle.addEventListener('click', () =>
+          overlay.hidden ? openMenu() : closeMenu()
+        );
+        closeBtn.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', e => {
+          if (e.target === overlay) closeMenu();
+        });
+        addEventListener('keydown', e => {
+          if (e.key === 'Escape' && !overlay.hidden) closeMenu();
+        });
+      })();
+    </script>
+  </body>
+</html>`;
+}
 /**
  *
  * @param docs
@@ -679,4 +1231,3 @@ export {
   resolveParentUrl,
   resolveRenderPlan,
 };
-export { buildAltsHtml, buildHtml };
