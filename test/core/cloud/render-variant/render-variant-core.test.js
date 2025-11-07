@@ -139,6 +139,26 @@ describe('buildOptionMetadata', () => {
     expect(result).toEqual({ content: 'Alt', position: 0 });
   });
 
+  it('logs the raw error when no message property exists', async () => {
+    const consoleError = jest.fn();
+    const errorObject = { foo: 'bar' };
+    const targetPage = {
+      get: jest.fn().mockRejectedValue(errorObject),
+    };
+
+    await buildOptionMetadata({
+      data: { content: 'Alt', position: 0, targetPage },
+      visibilityThreshold: 0.5,
+      db: { doc: jest.fn() },
+      consoleError,
+    });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'target page lookup failed',
+      errorObject
+    );
+  });
+
   it('returns bare metadata when the target page snapshot is missing', async () => {
     const targetPage = {
       get: jest.fn().mockResolvedValue({ exists: false }),
