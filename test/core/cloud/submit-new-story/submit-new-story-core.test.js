@@ -145,6 +145,26 @@ describe('submit-new-story core', () => {
       expect(status).toHaveBeenCalledWith(201);
       expect(json).toHaveBeenCalledWith({ id: 'story-1' });
     });
+
+    it('handles falsy requests safely', async () => {
+      const responder = jest.fn().mockResolvedValue({
+        status: 204,
+        body: undefined,
+      });
+      const handle = createHandleSubmitNewStory(responder);
+      const sendStatus = jest.fn();
+      const res = { sendStatus };
+
+      await handle(null, res);
+
+      expect(responder).toHaveBeenCalledWith({
+        method: undefined,
+        body: undefined,
+        get: undefined,
+        headers: undefined,
+      });
+      expect(sendStatus).toHaveBeenCalledWith(204);
+    });
   });
 
   describe('CORS helpers', () => {
