@@ -328,10 +328,6 @@ function createInvalidatePaths({
   }
 
   return async function invalidatePaths(paths) {
-    if (!Array.isArray(paths) || paths.length === 0) {
-      return;
-    }
-
     const token = await getAccessToken();
     const url = `https://compute.googleapis.com/compute/v1/projects/${
       projectId || ''
