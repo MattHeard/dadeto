@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { PAGE_HTML } from '../../src/cloud/render-contents/htmlSnippets.js';
+import { PAGE_HTML } from '../../src/core/cloud/render-contents/render-contents-core.js';
 
 describe('PAGE_HTML', () => {
   test('places navigation links above the contents heading', () => {

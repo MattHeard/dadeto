@@ -264,11 +264,6 @@ const renderContentsGcfSource = join(
   'render-contents',
   'render-contents-gcf.js'
 );
-const renderContentsHtmlSnippetsSource = join(
-  srcCoreCloudDir,
-  'render-contents',
-  'htmlSnippets.js'
-);
 const renderVariantCoreSource = join(
   srcCoreCloudDir,
   'render-variant',
@@ -899,20 +894,6 @@ const individualFileCopies = [
       'render-contents',
       'render-contents-gcf.js'
     ),
-  },
-  {
-    source: renderContentsHtmlSnippetsSource,
-    target: join(
-      infraDir,
-      'core',
-      'cloud',
-      'render-contents',
-      'htmlSnippets.js'
-    ),
-  },
-  {
-    source: renderContentsHtmlSnippetsSource,
-    target: join(infraFunctionsDir, 'render-contents', 'htmlSnippets.js'),
   },
   {
     source: renderVariantCoreSource,
