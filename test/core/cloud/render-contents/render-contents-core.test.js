@@ -25,6 +25,14 @@ describe('buildHtml', () => {
     expect(html).toContain('&amp;');
     expect(html).toContain('./p/5a.html');
   });
+
+  it('coerces falsy titles to empty strings', () => {
+    const html = buildHtml([{ pageNumber: 1, title: null }]);
+
+    expect(html).toContain('<ol class="contents">');
+    expect(html).not.toContain('null');
+    expect(html).not.toContain('undefined');
+  });
 });
 
 describe('createFetchTopStoryIds', () => {
