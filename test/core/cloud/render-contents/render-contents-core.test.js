@@ -28,6 +28,12 @@ describe('buildHtml', () => {
 });
 
 describe('createFetchTopStoryIds', () => {
+  it('throws when db is falsy', () => {
+    expect(() => createFetchTopStoryIds(null)).toThrow(
+      new TypeError('db must provide a collection helper')
+    );
+  });
+
   it('orders and limits story stats', async () => {
     const snapshot = {
       docs: [{ id: 'one' }, { id: 'two' }],
