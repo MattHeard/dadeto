@@ -181,6 +181,33 @@ describe('submit-new-story core', () => {
       expect(status).toHaveBeenCalledWith(500);
       expect(send).toHaveBeenCalledWith('error happened');
     });
+
+    it('treats a non-function getter as undefined', async () => {
+      const responder = jest.fn().mockResolvedValue({
+        status: 200,
+        body: { ok: true },
+      });
+      const handle = createHandleSubmitNewStory(responder);
+      const json = jest.fn();
+      const status = jest.fn().mockReturnValue({ json });
+      const req = {
+        method: 'POST',
+        body: {},
+        get: 'not a function',
+        headers: {},
+      };
+
+      await handle(req, { status });
+
+      expect(responder).toHaveBeenCalledWith({
+        method: 'POST',
+        body: {},
+        get: undefined,
+        headers: {},
+      });
+      expect(status).toHaveBeenCalledWith(200);
+      expect(json).toHaveBeenCalledWith({ ok: true });
+    });
   });
 
   describe('CORS helpers', () => {
