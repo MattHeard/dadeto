@@ -141,7 +141,7 @@ function extractBearerToken(header) {
  * @returns {string} Content ready for persistence.
  */
 function normalizeContent(value, maxLength) {
-  const normalized = String(value ?? '');
+  const normalized = String(value);
 
   return normalized.replace(/\r\n?/g, '\n').slice(0, maxLength);
 }
