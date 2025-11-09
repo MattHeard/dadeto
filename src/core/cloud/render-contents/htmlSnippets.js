@@ -1,6 +1,3 @@
-export const LIST_ITEM_HTML = (pageNumber, title) =>
-  `<li><a href="./p/${pageNumber}a.html">${title}</a></li>`;
-
 export const PAGE_HTML = list => `<!doctype html>
 <html lang="en">
   <head>

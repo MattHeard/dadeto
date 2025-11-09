@@ -3,7 +3,7 @@ import {
   DEFAULT_BUCKET_NAME,
   productionOrigins,
 } from './cloud-core.js';
-import { LIST_ITEM_HTML, PAGE_HTML } from './htmlSnippets.js';
+import { PAGE_HTML } from './htmlSnippets.js';
 
 export { DEFAULT_BUCKET_NAME, productionOrigins };
 const DEFAULT_PAGE_SIZE = 100;
@@ -57,13 +57,23 @@ function escapeHtml(text) {
 }
 
 /**
+ * Render a single list entry pointing to the provided page number.
+ * @param {number|string} pageNumber Identifier for the story page.
+ * @param {string} title Escaped story title.
+ * @returns {string} List item HTML snippet.
+ */
+function listItemHtml(pageNumber, title) {
+  return `<li><a href="./p/${pageNumber}a.html">${title}</a></li>`;
+}
+
+/**
  * Build an HTML document for the provided story summaries.
  * @param {{ pageNumber: number|string, title: string }[]} items Story info items to render.
  * @returns {string} Rendered HTML string for the dashboard page.
  */
 export function buildHtml(items) {
   const list = items
-    .map(item => LIST_ITEM_HTML(item.pageNumber, escapeHtml(item.title)))
+    .map(item => listItemHtml(item.pageNumber, escapeHtml(item.title)))
     .join('');
 
   return PAGE_HTML(list);
