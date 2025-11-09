@@ -180,5 +180,16 @@ describe('submit-new-story core', () => {
       expect(json).toHaveBeenCalledWith({ error: 'Origin not allowed' });
       expect(next).not.toHaveBeenCalled();
     });
+
+    it('ignores allowedOrigins when the config is not an array', () => {
+      const options = createCorsOptions({
+        allowedOrigins: 'https://allowed.example',
+      });
+      const callback = jest.fn();
+
+      options.origin('https://allowed.example', callback);
+
+      expect(callback).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 });
