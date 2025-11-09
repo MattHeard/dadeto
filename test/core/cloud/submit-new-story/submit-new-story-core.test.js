@@ -165,6 +165,22 @@ describe('submit-new-story core', () => {
       });
       expect(sendStatus).toHaveBeenCalledWith(204);
     });
+
+    it('sends non-object bodies via the default handler', async () => {
+      const responder = jest.fn().mockResolvedValue({
+        status: 500,
+        body: 'error happened',
+      });
+      const handle = createHandleSubmitNewStory(responder);
+      const send = jest.fn();
+      const status = jest.fn().mockReturnValue({ send });
+      const res = { status };
+
+      await handle({ method: 'POST', body: {} }, res);
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(send).toHaveBeenCalledWith('error happened');
+    });
   });
 
   describe('CORS helpers', () => {
