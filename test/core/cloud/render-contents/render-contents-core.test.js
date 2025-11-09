@@ -419,6 +419,18 @@ describe('createApplyCorsHeaders', () => {
     expect(apply(req, res)).toBe(false);
     expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', 'null');
   });
+
+  it('respects only array inputs for allowed origins', () => {
+    const res = { set: jest.fn() };
+    const req = { get: jest.fn().mockReturnValue('https://allowed') };
+    const apply = createApplyCorsHeaders({
+      allowedOrigins: 'https://allowed',
+    });
+
+    expect(apply(req, res)).toBe(false);
+    expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', 'null');
+    expect(res.set).toHaveBeenCalledWith('Vary', 'Origin');
+  });
 });
 
 describe('createValidateRequest', () => {
