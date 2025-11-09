@@ -311,6 +311,30 @@ describe('createRenderContents', () => {
 
     expect(consoleError).toHaveBeenCalled();
   });
+
+  it('propagates access token failures thrown by invalidatePaths', async () => {
+    const bucket = { file: jest.fn(() => ({ save: jest.fn() })) };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const randomUUID = jest.fn().mockReturnValue('uuid');
+    const fetchFn = jest.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: 'denied' }),
+    });
+
+    const renderContents = createRenderContents({
+      storage,
+      fetchFn,
+      randomUUID,
+    });
+
+    await expect(
+      renderContents({
+        fetchTopStoryIds: async () => [],
+        fetchStoryInfo: async () => null,
+      })
+    ).rejects.toThrow('metadata token: HTTP 401');
+  });
 });
 
 describe('getAllowedOrigins', () => {
