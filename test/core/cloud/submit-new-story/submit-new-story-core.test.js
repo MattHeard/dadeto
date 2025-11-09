@@ -108,6 +108,25 @@ describe('submit-new-story core', () => {
         expect.objectContaining({ authorId: null })
       );
     });
+
+    it('handles requests with falsy get and headers helpers', async () => {
+      const saveSubmission = jest.fn().mockResolvedValue();
+      const responder = createSubmitNewStoryResponder(
+        createDependencies({ saveSubmission })
+      );
+
+      await responder({
+        method: 'POST',
+        body: { title: 'Test', content: 'Body', author: 'X' },
+        get: null,
+        headers: null,
+      });
+
+      expect(saveSubmission).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ authorId: null })
+      );
+    });
   });
 
   describe('createHandleSubmitNewStory', () => {
