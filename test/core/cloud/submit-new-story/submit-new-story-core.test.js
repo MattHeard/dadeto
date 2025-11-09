@@ -40,6 +40,15 @@ describe('submit-new-story core', () => {
       });
     });
 
+    it('rejects requests when method is not a string', async () => {
+      const responder = createSubmitNewStoryResponder(createDependencies());
+
+      await expect(responder({ method: 123 })).resolves.toEqual({
+        status: 405,
+        body: 'POST only',
+      });
+    });
+
     it('saves a normalized submission and returns the payload', async () => {
       const saveSubmission = jest.fn().mockResolvedValue();
       const randomUUID = jest.fn().mockReturnValue('story-77');
