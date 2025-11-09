@@ -181,6 +181,20 @@ describe('submit-new-story core', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
+    it('passes non-CORS errors to the next middleware', () => {
+      const handler = createCorsErrorHandler();
+      const status = jest.fn();
+      const json = jest.fn();
+      const res = { status: jest.fn().mockReturnValue({ json }) };
+      const next = jest.fn();
+      const other = new Error('not cors');
+
+      handler(other, {}, res, next);
+
+      expect(res.status).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalledWith(other);
+    });
+
     it('ignores allowedOrigins when the config is not an array', () => {
       const options = createCorsOptions({
         allowedOrigins: 'https://allowed.example',
