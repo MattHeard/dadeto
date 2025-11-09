@@ -75,7 +75,14 @@ describe('createFetchStoryInfo', () => {
     await expect(fetchStoryInfo('missing')).resolves.toBeNull();
 
     docRef.get.mockResolvedValueOnce({ exists: true, data: () => ({}) });
-    await expect(fetchStoryInfo('no-root')).resolves.toBeNull();
+    await expect(fetchStoryInfo('no-root-ref')).resolves.toBeNull();
+
+    const rootRef = { get: jest.fn().mockResolvedValue({ exists: false }) };
+    docRef.get.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ rootPage: rootRef }),
+    });
+    await expect(fetchStoryInfo('missing-root-page')).resolves.toBeNull();
   });
 
   it('returns story title and root page number', async () => {
