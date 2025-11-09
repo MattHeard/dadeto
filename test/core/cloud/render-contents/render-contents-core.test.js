@@ -109,6 +109,31 @@ describe('createFetchStoryInfo', () => {
       pageNumber: 7,
     });
   });
+
+  it('defaults missing story titles to empty string', async () => {
+    const rootPageSnap = {
+      exists: true,
+      data: () => ({ number: 2 }),
+    };
+    const rootPageRef = {
+      get: jest.fn().mockResolvedValue(rootPageSnap),
+    };
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: null, rootPage: rootPageRef }),
+    };
+    const db = {
+      collection: jest.fn(() => ({
+        doc: () => ({ get: jest.fn().mockResolvedValue(storySnap) }),
+      })),
+    };
+
+    const fetchStoryInfo = createFetchStoryInfo(db);
+    await expect(fetchStoryInfo('null-title')).resolves.toEqual({
+      title: '',
+      pageNumber: 2,
+    });
+  });
 });
 
 describe('createRenderContents', () => {
