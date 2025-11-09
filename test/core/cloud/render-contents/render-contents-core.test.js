@@ -335,6 +335,38 @@ describe('createRenderContents', () => {
       })
     ).rejects.toThrow('metadata token: HTTP 401');
   });
+
+  it('logs thrown invalidation errors without truthy messages', async () => {
+    const bucket = { file: jest.fn(() => ({ save: jest.fn() })) };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const consoleError = jest.fn();
+    const thrownError = { code: 'ERR' };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 't' }),
+      })
+      .mockRejectedValueOnce(thrownError);
+    const randomUUID = jest.fn().mockReturnValue('uuid');
+
+    const renderContents = createRenderContents({
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    await renderContents({
+      fetchTopStoryIds: async () => ['story'],
+      fetchStoryInfo: async () => ({ title: 'Story', pageNumber: 1 }),
+    });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /index.html error',
+      thrownError
+    );
+  });
 });
 
 describe('getAllowedOrigins', () => {
