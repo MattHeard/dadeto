@@ -263,11 +263,6 @@ const renderVariantGcfSource = join(
   'render-variant',
   'render-variant-gcf.js'
 );
-const renderVariantBuildAltsSource = join(
-  srcCoreCloudDir,
-  'render-variant',
-  'buildAltsHtml.js'
-);
 const renderVariantBuildHtmlSource = join(
   srcCoreCloudDir,
   'render-variant',
@@ -904,20 +899,6 @@ const individualFileCopies = [
   {
     source: renderVariantGcfSource,
     target: join(infraFunctionsDir, 'render-variant', 'render-variant-gcf.js'),
-  },
-  {
-    source: renderVariantBuildAltsSource,
-    target: join(
-      infraDir,
-      'core',
-      'cloud',
-      'render-variant',
-      'buildAltsHtml.js'
-    ),
-  },
-  {
-    source: renderVariantBuildAltsSource,
-    target: join(infraFunctionsDir, 'render-variant', 'buildAltsHtml.js'),
   },
   {
     source: renderVariantBuildHtmlSource,

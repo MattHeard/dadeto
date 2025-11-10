@@ -1,7 +1,7 @@
 import {
   escapeHtml,
   buildAltsHtml,
-} from '../../../../src/core/cloud/render-variant/buildAltsHtml.js';
+} from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('escapeHtml', () => {
   it('escapes the common HTML entities', () => {
