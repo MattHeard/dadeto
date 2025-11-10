@@ -742,20 +742,7 @@ async function buildOptionMetadata({
  */
 async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
   const optionsSnap = await snap.ref.collection('options').get();
-  const optionsData = optionsSnap.docs.map(doc => {
-    const optionData = doc.data();
-
-    if (typeof optionData.content !== 'string') {
-      throw new TypeError('option content must be a string');
-    }
-
-    if (typeof optionData.position !== 'number') {
-      throw new TypeError('option position must be a number');
-    }
-
-    return optionData;
-  });
-
+  const optionsData = optionsSnap.docs.map(doc => doc.data());
   optionsData.sort((a, b) => a.position - b.position);
 
   return Promise.all(
