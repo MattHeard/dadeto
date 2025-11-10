@@ -549,6 +549,10 @@ export function createProcessNewPageHandler({
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
   return async function handleProcessNewPage(snapshot, context = {}) {
+    if (!snapshot) {
+      return null;
+    }
+
     const submission = getSubmissionData(snapshot) ?? {};
 
     if (submission.processed) {
@@ -559,7 +563,7 @@ export function createProcessNewPageHandler({
     const directPageNumber = submission.pageNumber;
 
     if (!incomingOptionFullName && !Number.isInteger(directPageNumber)) {
-      await ensureUpdate(snapshot?.ref, { processed: true });
+      await ensureUpdate(snapshot.ref, { processed: true });
       return null;
     }
 
@@ -603,7 +607,7 @@ export function createProcessNewPageHandler({
 
     const newVariantRef = await createVariantWithOptions({
       pageDocRef,
-      snapshotRef: snapshot?.ref ?? null,
+      snapshotRef: snapshot.ref,
       batch,
       submission,
       randomUUID,
