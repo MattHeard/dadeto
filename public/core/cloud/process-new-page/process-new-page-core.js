@@ -105,14 +105,6 @@ function ensureDocumentReference(reference, message) {
  * @param {Record<string, unknown>} payload Data to persist on the reference.
  * @returns {Promise<unknown>} Result of the update call or a resolved promise when unavailable.
  */
-function ensureUpdate(target, payload) {
-  if (target && typeof target.update === 'function') {
-    return target.update(payload);
-  }
-
-  return Promise.resolve();
-}
-
 /**
  * Choose a random page number that is not already taken.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
@@ -253,7 +245,7 @@ async function resolveIncomingOptionContext({
   const optionSnap = await optionRef.get();
 
   if (!optionSnap?.exists) {
-    await ensureUpdate(snapshot?.ref, { processed: true });
+    await snapshot.ref.update({ processed: true });
     return null;
   }
 
@@ -397,7 +389,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
     .get();
 
   if (pageSnap.empty) {
-    await ensureUpdate(snapshot?.ref, { processed: true });
+    await snapshot.ref.update({ processed: true });
     return null;
   }
 
@@ -549,7 +541,7 @@ export function createProcessNewPageHandler({
     const directPageNumber = submission.pageNumber;
 
     if (!incomingOptionFullName && !Number.isInteger(directPageNumber)) {
-      await ensureUpdate(snapshot.ref, { processed: true });
+      await snapshot.ref.update({ processed: true });
       return null;
     }
 
