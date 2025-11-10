@@ -12,6 +12,7 @@ import {
   DEFAULT_BUCKET_NAME,
   getVisibleVariants,
   loadOptions,
+  escapeHtml,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('createInvalidatePaths', () => {
@@ -71,6 +72,15 @@ describe('createInvalidatePaths', () => {
 
     await expect(invalidatePaths(['/p/2a.html'])).resolves.toBeUndefined();
     expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('escapeHtml', () => {
+  it('coerces falsy values to their string equivalents', () => {
+    expect(escapeHtml(null)).toBe('');
+    expect(escapeHtml(undefined)).toBe('');
+    expect(escapeHtml(0)).toBe('0');
+    expect(escapeHtml(false)).toBe('false');
   });
 });
 
