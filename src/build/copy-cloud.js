@@ -263,11 +263,6 @@ const renderVariantGcfSource = join(
   'render-variant',
   'render-variant-gcf.js'
 );
-const renderVariantBuildHtmlSource = join(
-  srcCoreCloudDir,
-  'render-variant',
-  'buildHtml.js'
-);
 const reportForModerationCoreSource = join(
   srcCoreCloudDir,
   'report-for-moderation',
@@ -899,14 +894,6 @@ const individualFileCopies = [
   {
     source: renderVariantGcfSource,
     target: join(infraFunctionsDir, 'render-variant', 'render-variant-gcf.js'),
-  },
-  {
-    source: renderVariantBuildHtmlSource,
-    target: join(infraDir, 'core', 'cloud', 'render-variant', 'buildHtml.js'),
-  },
-  {
-    source: renderVariantBuildHtmlSource,
-    target: join(infraFunctionsDir, 'render-variant', 'buildHtml.js'),
   },
   {
     source: reportForModerationCoreSource,

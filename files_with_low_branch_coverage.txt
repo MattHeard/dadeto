@@ -6,7 +6,6 @@ src/core/cloud/process-new-page/process-new-page-core.js
 src/core/cloud/process-new-story/process-new-story-core.js
 src/core/cloud/update-variant-visibility/update-variant-visibility-core.js
 src/core/cloud/render-contents/render-contents-core.js
-src/core/cloud/render-variant/buildHtml.js
 src/core/cloud/render-variant/render-variant-core.js
 src/core/cloud/render-variant/visibility.js
 src/core/cloud/report-for-moderation/report-for-moderation-core.js
