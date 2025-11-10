@@ -208,6 +208,36 @@ describe('submit-new-story core', () => {
       expect(status).toHaveBeenCalledWith(200);
       expect(json).toHaveBeenCalledWith({ ok: true });
     });
+
+    it('passes through a real getter function', async () => {
+      const responder = jest.fn().mockResolvedValue({
+        status: 200,
+        body: { ok: true },
+      });
+      const handle = createHandleSubmitNewStory(responder);
+      const get = jest
+        .fn()
+        .mockImplementation(name =>
+          name === 'Authorization' ? 'Bearer token' : null
+        );
+      const json = jest.fn();
+      const status = jest.fn().mockReturnValue({ json });
+
+      await handle({ method: 'POST', body: {}, get, headers: {} }, { status });
+
+      expect(responder).toHaveBeenCalledWith({
+        method: 'POST',
+        body: {},
+        get: expect.any(Function),
+        headers: {},
+      });
+      expect(responder.mock.calls[0][0].get('Authorization')).toBe(
+        'Bearer token'
+      );
+      expect(responder.mock.calls[0][0].get('authorization')).toBe(null);
+      expect(status).toHaveBeenCalledWith(200);
+      expect(json).toHaveBeenCalledWith({ ok: true });
+    });
   });
 
   describe('CORS helpers', () => {
