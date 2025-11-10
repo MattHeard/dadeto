@@ -49,7 +49,7 @@ function buildOptionItem(pageNumber, variantName, option) {
   ];
   if (option.targetVariants) {
     const variantsAttr = option.targetVariants
-      .map(v => `${option.targetPageNumber}${v.name}:${v.weight ?? 1}`)
+      .map(v => `${option.targetPageNumber}${v.name}:${v.weight}`)
       .join(',');
     attrs.push(`data-variants="${escapeHtml(variantsAttr)}"`);
   }

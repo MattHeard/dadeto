@@ -85,20 +85,6 @@ describe('buildHtml', () => {
     expect(html).toContain('a.variant-link[data-variants]');
   });
 
-  test('defaults target variant weight to 1 when missing', () => {
-    const html = buildHtml(7, 'c', 'content', [
-      {
-        content: 'Stay here',
-        position: 1,
-        targetPageNumber: 99,
-        targetVariants: [{ name: 'a' }, { name: 'b', weight: 3 }],
-      },
-    ]);
-    expect(html).toContain(
-      '<li><a class="variant-link" data-link-id="7-c-1" href="/p/99.html" data-variants="99a:1,99b:3">Stay here</a></li>'
-    );
-  });
-
   test('includes author below options when provided', () => {
     const html = buildHtml(3, 'a', 'content', [], '', 'Jane Doe');
     const optionsIndex = html.indexOf('</ol>');
