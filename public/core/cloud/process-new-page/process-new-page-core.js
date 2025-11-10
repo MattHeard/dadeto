@@ -277,7 +277,7 @@ async function resolveIncomingOptionContext({
     storyRef: initialStoryRef,
   } = resolveStoryRefFromOption(optionRef);
   const storyRef = initialStoryRef ?? null;
-  const optionData = optionSnap.data() ?? {};
+  const optionData = optionSnap.data();
   const targetPage = resolvePageFromTarget(optionData.targetPage);
   const existingContext = await resolveExistingPageContext(targetPage);
   const pageContext =
