@@ -793,11 +793,9 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
           .limit(1)
           .get();
 
-        if (!rootVariantSnap.empty) {
-          firstPageUrl = `/p/${rootPageSnap.data().number}${
-            rootVariantSnap.docs[0].data().name
-          }.html`;
-        }
+        firstPageUrl = `/p/${rootPageSnap.data().number}${
+          rootVariantSnap.docs[0].data().name
+        }.html`;
       }
     } catch (error) {
       if (consoleError) {
