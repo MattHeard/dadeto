@@ -321,7 +321,7 @@ async function resolveExistingPageContext(targetPage) {
 
   return {
     pageDocRef: targetPage,
-    pageNumber: existingPageSnap.data()?.number ?? null,
+    pageNumber: existingPageSnap.data().number,
   };
 }
 
