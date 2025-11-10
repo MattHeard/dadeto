@@ -78,14 +78,14 @@ export function calculateUpdatedVisibility(variantData, newRating) {
 }
 
 /**
- * Build the handler that updates variant visibility in production.
+ * Build the handler that updates variant visibility.
  * @param {{ db: import('firebase-admin/firestore').Firestore }} options Collaborators required by the handler.
  * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Firestore trigger handler.
  */
-export function createProdUpdateVariantVisibilityHandler({ db }) {
+export function createUpdateVariantVisibilityHandler({ db }) {
   assertDb(db);
 
-  return async function handleProdUpdateVariantVisibility(snapshot) {
+  return async function handleUpdateVariantVisibility(snapshot) {
     const data = getSnapshotData(snapshot) ?? {};
     const variantId = data.variantId;
     const isApproved = data.isApproved;

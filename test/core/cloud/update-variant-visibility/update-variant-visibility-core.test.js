@@ -2,8 +2,8 @@ import { jest } from '@jest/globals';
 import {
   normalizeVariantPath,
   calculateUpdatedVisibility,
-  createProdUpdateVariantVisibilityHandler,
-} from '../../../../src/core/cloud/prod-update-variant-visibility/prod-update-variant-visibility-core.js';
+  createUpdateVariantVisibilityHandler,
+} from '../../../../src/core/cloud/update-variant-visibility/update-variant-visibility-core.js';
 
 describe('normalizeVariantPath', () => {
   it('trims leading slashes and whitespace', () => {
@@ -44,13 +44,13 @@ describe('calculateUpdatedVisibility', () => {
   });
 });
 
-describe('createProdUpdateVariantVisibilityHandler', () => {
+describe('createUpdateVariantVisibilityHandler', () => {
   const createSnapshot = data => ({
     data: () => data,
   });
 
   it('throws when db is missing doc helper', () => {
-    expect(() => createProdUpdateVariantVisibilityHandler({ db: {} })).toThrow(
+    expect(() => createUpdateVariantVisibilityHandler({ db: {} })).toThrow(
       new TypeError('db must expose a doc helper')
     );
   });
@@ -61,7 +61,7 @@ describe('createProdUpdateVariantVisibilityHandler', () => {
       update: jest.fn(),
     };
     const db = { doc: jest.fn(() => variantRef) };
-    const handler = createProdUpdateVariantVisibilityHandler({ db });
+    const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
       handler(createSnapshot({ variantId: 'foo' }))
@@ -75,7 +75,7 @@ describe('createProdUpdateVariantVisibilityHandler', () => {
       update: jest.fn(),
     };
     const db = { doc: jest.fn(() => variantRef) };
-    const handler = createProdUpdateVariantVisibilityHandler({ db });
+    const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
       handler(createSnapshot({ variantId: '   ', isApproved: true }))
@@ -90,7 +90,7 @@ describe('createProdUpdateVariantVisibilityHandler', () => {
         update: jest.fn(),
       })),
     };
-    const handler = createProdUpdateVariantVisibilityHandler({ db });
+    const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
       handler(createSnapshot({ variantId: 'variants/id', isApproved: true }))
@@ -104,7 +104,7 @@ describe('createProdUpdateVariantVisibilityHandler', () => {
         update: jest.fn(),
       })),
     };
-    const handler = createProdUpdateVariantVisibilityHandler({ db });
+    const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
       handler(createSnapshot({ variantId: 'variants/id', isApproved: true }))
@@ -126,7 +126,7 @@ describe('createProdUpdateVariantVisibilityHandler', () => {
       update: jest.fn().mockResolvedValue(undefined),
     };
     const db = { doc: jest.fn(() => variantRef) };
-    const handler = createProdUpdateVariantVisibilityHandler({ db });
+    const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
       handler(createSnapshot({ variantId: '/variants/id', isApproved: true }))
@@ -155,7 +155,7 @@ describe('createProdUpdateVariantVisibilityHandler', () => {
       update: jest.fn().mockResolvedValue(undefined),
     };
     const db = { doc: jest.fn(() => variantRef) };
-    const handler = createProdUpdateVariantVisibilityHandler({ db });
+    const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(
       createSnapshot({ variantId: 'variants/id', isApproved: false })

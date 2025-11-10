@@ -44,7 +44,7 @@ const functionDirectories = [
   'mark-variant-dirty',
   'process-new-page',
   'process-new-story',
-  'prod-update-variant-visibility',
+  'update-variant-visibility',
   'render-contents',
   'render-variant',
   'report-for-moderation',
@@ -229,15 +229,15 @@ const processNewStoryGcfSource = join(
   'process-new-story',
   'process-new-story-gcf.js'
 );
-const prodUpdateVariantVisibilityCoreSource = join(
+const updateVariantVisibilityCoreSource = join(
   srcCoreCloudDir,
-  'prod-update-variant-visibility',
-  'prod-update-variant-visibility-core.js'
+  'update-variant-visibility',
+  'update-variant-visibility-core.js'
 );
-const prodUpdateVariantVisibilityGcfSource = join(
+const updateVariantVisibilityGcfSource = join(
   srcCloudDir,
-  'prod-update-variant-visibility',
-  'prod-update-variant-visibility-gcf.js'
+  'update-variant-visibility',
+  'update-variant-visibility-gcf.js'
 );
 const getModerationVariantCorsSource = join(
   srcCoreCloudDir,
@@ -744,28 +744,28 @@ const individualFileCopies = [
     ),
   },
   {
-    source: prodUpdateVariantVisibilityCoreSource,
+    source: updateVariantVisibilityCoreSource,
     target: join(
       infraDir,
       'core',
       'cloud',
-      'prod-update-variant-visibility',
-      'prod-update-variant-visibility-core.js'
+      'update-variant-visibility',
+      'update-variant-visibility-core.js'
     ),
   },
   {
-    source: prodUpdateVariantVisibilityCoreSource,
+    source: updateVariantVisibilityCoreSource,
     target: join(
       infraFunctionsDir,
-      'prod-update-variant-visibility',
-      'prod-update-variant-visibility-core.js'
+      'update-variant-visibility',
+      'update-variant-visibility-core.js'
     ),
   },
   {
     source: cloudCoreSource,
     target: join(
       infraFunctionsDir,
-      'prod-update-variant-visibility',
+      'update-variant-visibility',
       'cloud-core.js'
     ),
   },
@@ -773,7 +773,7 @@ const individualFileCopies = [
     source: commonCoreSource,
     target: join(
       infraFunctionsDir,
-      'prod-update-variant-visibility',
+      'update-variant-visibility',
       'common-core.js'
     ),
   },
@@ -781,16 +781,16 @@ const individualFileCopies = [
     source: commonGcfSource,
     target: join(
       infraFunctionsDir,
-      'prod-update-variant-visibility',
+      'update-variant-visibility',
       'common-gcf.js'
     ),
   },
   {
-    source: prodUpdateVariantVisibilityGcfSource,
+    source: updateVariantVisibilityGcfSource,
     target: join(
       infraFunctionsDir,
-      'prod-update-variant-visibility',
-      'prod-update-variant-visibility-gcf.js'
+      'update-variant-visibility',
+      'update-variant-visibility-gcf.js'
     ),
   },
   {

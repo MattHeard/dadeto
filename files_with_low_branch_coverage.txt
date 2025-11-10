@@ -4,7 +4,7 @@ src/core/cloud/get-api-key-credit/create-db.js
 src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js
 src/core/cloud/process-new-page/process-new-page-core.js
 src/core/cloud/process-new-story/process-new-story-core.js
-src/core/cloud/prod-update-variant-visibility/prod-update-variant-visibility-core.js
+src/core/cloud/update-variant-visibility/update-variant-visibility-core.js
 src/core/cloud/render-contents/render-contents-core.js
 src/core/cloud/render-variant/buildAltsHtml.js
 src/core/cloud/render-variant/buildHtml.js

@@ -726,8 +726,8 @@ resource "google_cloudfunctions_function" "process_new_story" {
 
 data "archive_file" "prod_update_variant_visibility_src" {
   type        = "zip"
-  source_dir  = "${path.module}/cloud-functions/prod-update-variant-visibility"
-  output_path = "${path.module}/build/prod-update-variant-visibility.zip"
+  source_dir  = "${path.module}/cloud-functions/update-variant-visibility"
+  output_path = "${path.module}/build/update-variant-visibility.zip"
 }
 
 resource "google_storage_bucket_object" "prod_update_variant_visibility" {
@@ -740,7 +740,7 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
   name        = "${var.environment}-update-variant-visibility"
   runtime     = var.cloud_functions_runtime
   region      = var.region
-  entry_point = "prodUpdateVariantVisibility"
+  entry_point = "updateVariantVisibility"
 
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.prod_update_variant_visibility.name
