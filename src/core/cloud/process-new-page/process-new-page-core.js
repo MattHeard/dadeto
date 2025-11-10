@@ -371,10 +371,6 @@ async function createPageContext({
 }) {
   const nextPageNumber = await findAvailablePageNumberFn(db, random);
 
-  if (!storyRef || typeof storyRef.collection !== 'function') {
-    throw new TypeError('storyRef.collection must be a function');
-  }
-
   const newPageId = randomUUID();
   const pageDocRef = storyRef.collection('pages').doc(newPageId);
 
