@@ -42,6 +42,19 @@ describe('calculateUpdatedVisibility', () => {
 
     expect(result).toBe(0);
   });
+
+  it('treats non-numeric visibility as zero', () => {
+    const result = calculateUpdatedVisibility(
+      {
+        visibility: 'invalid',
+        moderationRatingCount: 1,
+        moderatorReputationSum: 1,
+      },
+      1
+    );
+
+    expect(result).toBeCloseTo((0 * 1 + 1) / 2);
+  });
 });
 
 describe('createUpdateVariantVisibilityHandler', () => {
