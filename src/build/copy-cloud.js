@@ -132,12 +132,6 @@ const submitNewPageHelpersSource = join(
   'helpers.js'
 );
 
-const reportForModerationHandlerSource = join(
-  srcCoreCloudDir,
-  'report-for-moderation',
-  'handler.js'
-);
-
 const submitModerationRatingCoreSource = join(
   srcCoreCloudDir,
   'submit-moderation-rating',
@@ -478,10 +472,6 @@ const individualFileCopies = [
   {
     source: commonGcfSource,
     target: join(infraFunctionsDir, 'submit-new-page', 'common-gcf.js'),
-  },
-  {
-    source: reportForModerationHandlerSource,
-    target: join(infraFunctionsDir, 'report-for-moderation', 'handler.js'),
   },
   {
     source: getApiKeyCreditCoreSource,
