@@ -3,7 +3,6 @@ const config = {
     '^.+\\.js$': 'babel-jest',
   },
   moduleNameMapper: {
-    '\\./firebaseApp\\.js$': '<rootDir>/src/cloud/firebaseApp.js',
     '\\./firestore\\.js$': '<rootDir>/src/cloud/firestore.js',
     '^https://www\\.gstatic\\.com/firebasejs/12\\.0\\.0/(.*)$':
       '<rootDir>/test/mocks/$1',

@@ -1,6 +1,6 @@
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
-import { createFirebaseAppManager } from './firebaseApp.js';
+import { createFirebaseAppManager } from './common-gcf.js';
 
 const { ensureFirebaseApp, resetFirebaseInitializationState } =
   createFirebaseAppManager(initializeApp);

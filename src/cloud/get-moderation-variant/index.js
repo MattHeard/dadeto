@@ -6,7 +6,7 @@ import {
   getAuth,
   getEnvironmentVariables,
 } from './get-moderation-variant-gcf.js';
-import { createFirebaseAppManager } from '../firebaseApp.js';
+import { createFirebaseAppManager } from '../common-gcf.js';
 import { getFirestoreInstance } from './firestore.js';
 import {
   createCorsOptions,
