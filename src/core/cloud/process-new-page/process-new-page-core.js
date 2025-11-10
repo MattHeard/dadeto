@@ -412,7 +412,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
   }
 
   const pageDocRef = pageSnap.docs[0].ref;
-  const storyRef = pageDocRef.parent?.parent ?? null;
+  const storyRef = pageDocRef.parent.parent;
 
   return {
     pageDocRef,
