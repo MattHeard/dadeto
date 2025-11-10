@@ -762,7 +762,7 @@ async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
  * @param {object} options - Input describing the current page and lookup helpers.
  * @param {{ref: {parent?: {parent?: any}}, get: Function, exists: boolean}} options.pageSnap - Firestore snapshot for the current page.
  * @param {Record<string, any>} options.page - Raw page document data.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} options.consoleError - Logger for recoverable failures.
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata used in templates.
  */
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
@@ -798,9 +798,7 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
         }.html`;
       }
     } catch (error) {
-      if (consoleError) {
-        consoleError('root page lookup failed', error?.message || error);
-      }
+      consoleError('root page lookup failed', error?.message || error);
     }
   }
 

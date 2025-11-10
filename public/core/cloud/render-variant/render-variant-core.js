@@ -737,7 +737,7 @@ async function buildOptionMetadata({
  * @param {{ref: {collection: Function}}} options.snap - Firestore snapshot for the variant whose options are being read.
  * @param {number} options.visibilityThreshold - Minimum visibility required for inclusion.
  * @param {{doc: Function}} options.db - Firestore-like database for nested lookups.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} options.consoleError - Logger for recoverable failures.
  * @returns {Promise<object[]>} Ordered option metadata entries.
  */
 async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
@@ -778,7 +778,7 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
     return { storyTitle: '', firstPageUrl: undefined };
   }
 
-  const storyData = storySnap.data() || {};
+  const storyData = storySnap.data();
   const storyTitle = storyData.title || '';
   let firstPageUrl;
 
@@ -793,16 +793,12 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
           .limit(1)
           .get();
 
-        if (!rootVariantSnap.empty) {
-          firstPageUrl = `/p/${rootPageSnap.data().number}${
-            rootVariantSnap.docs[0].data().name
-          }.html`;
-        }
+        firstPageUrl = `/p/${rootPageSnap.data().number}${
+          rootVariantSnap.docs[0].data().name
+        }.html`;
       }
     } catch (error) {
-      if (consoleError) {
-        consoleError('root page lookup failed', error?.message || error);
-      }
+      consoleError('root page lookup failed', error?.message || error);
     }
   }
 
