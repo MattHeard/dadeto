@@ -70,20 +70,6 @@ function assertRandomUuid(randomUUID) {
 }
 
 /**
- * Read the submission payload from a Firestore snapshot.
- * @param {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData> | null | undefined} snapshot
- *   Document snapshot containing the submission data.
- * @returns {import('firebase-admin/firestore').DocumentData | null} Parsed submission data or null when unavailable.
- */
-function getSubmissionData(snapshot) {
-  if (!snapshot || typeof snapshot.data !== 'function') {
-    return null;
-  }
-
-  return snapshot.data();
-}
-
-/**
  * Normalize the submitted options list into an array.
  * @param {unknown} options Options payload received from the submission.
  * @returns {string[]} Normalized list of option strings.
@@ -553,11 +539,7 @@ export function createProcessNewPageHandler({
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
   return async function handleProcessNewPage(snapshot, context = {}) {
-    if (!snapshot) {
-      return null;
-    }
-
-    const submission = getSubmissionData(snapshot) ?? {};
+    const submission = snapshot.data();
 
     if (submission.processed) {
       return null;

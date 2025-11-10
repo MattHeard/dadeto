@@ -304,21 +304,6 @@ describe('createProcessNewPageHandler', () => {
     expect(snapshot.ref.update).toHaveBeenCalledWith({ processed: true });
   });
 
-  it('returns gracefully when the snapshot is unavailable', async () => {
-    const handler = createProcessNewPageHandler({
-      db: {
-        doc: jest.fn(() => ({
-          get: jest.fn().mockResolvedValue({ exists: false }),
-        })),
-        batch: jest.fn(() => createBatch()),
-      },
-      fieldValue,
-      randomUUID: () => 'uuid',
-    });
-
-    await expect(handler(null)).resolves.toBeNull();
-  });
-
   it('creates a new variant for a direct page submission', async () => {
     const optionDocs = [];
     const { pageDocRef, storyRef } = createStoryHierarchy({ optionDocs });
