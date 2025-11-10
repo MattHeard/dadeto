@@ -360,7 +360,7 @@ export function createSubmitNewStoryResponder({
   assertFunction(randomUUID, 'randomUUID');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 
-  return async function submitNewStoryResponder(request = {}) {
+  return async function submitNewStoryResponder(request) {
     if (normalizeMethod(request.method) !== 'POST') {
       return METHOD_NOT_ALLOWED_RESPONSE;
     }
