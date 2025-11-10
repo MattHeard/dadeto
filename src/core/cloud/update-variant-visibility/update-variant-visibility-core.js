@@ -22,14 +22,6 @@ function assertDocumentSnapshot(snapshot) {
  * @param {import('firebase-admin/firestore').DocumentSnapshot | null | undefined} snapshot Snapshot returned by a trigger.
  * @returns {Record<string, unknown> | null} Stored document data, if present.
  */
-function getSnapshotData(snapshot) {
-  if (!snapshot || typeof snapshot.data !== 'function') {
-    return null;
-  }
-
-  return snapshot.data();
-}
-
 /**
  * Cast nullable numeric values into a usable number for calculations.
  * @param {number | null | undefined} value Possible numeric input.
@@ -86,7 +78,7 @@ export function createUpdateVariantVisibilityHandler({ db }) {
   assertDb(db);
 
   return async function handleUpdateVariantVisibility(snapshot) {
-    const data = getSnapshotData(snapshot) ?? {};
+    const data = snapshot.data() ?? {};
     const variantId = data.variantId;
     const isApproved = data.isApproved;
 
