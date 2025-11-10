@@ -141,7 +141,7 @@ function extractBearerToken(header) {
  * @returns {string} Content ready for persistence.
  */
 function normalizeContent(value, maxLength) {
-  const normalized = typeof value === 'string' ? value : String(value ?? '');
+  const normalized = String(value);
 
   return normalized.replace(/\r\n?/g, '\n').slice(0, maxLength);
 }
@@ -360,7 +360,7 @@ export function createSubmitNewStoryResponder({
   assertFunction(randomUUID, 'randomUUID');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 
-  return async function submitNewStoryResponder(request = {}) {
+  return async function submitNewStoryResponder(request) {
     if (normalizeMethod(request.method) !== 'POST') {
       return METHOD_NOT_ALLOWED_RESPONSE;
     }
