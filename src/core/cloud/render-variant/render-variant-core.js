@@ -778,7 +778,7 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
     return { storyTitle: '', firstPageUrl: undefined };
   }
 
-  const storyData = storySnap.data() || {};
+  const storyData = storySnap.data();
   const storyTitle = storyData.title || '';
   let firstPageUrl;
 
