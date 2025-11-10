@@ -78,7 +78,7 @@ export function createUpdateVariantVisibilityHandler({ db }) {
   assertDb(db);
 
   return async function handleUpdateVariantVisibility(snapshot) {
-    const data = snapshot.data() ?? {};
+    const data = snapshot.data();
     const variantId = data.variantId;
     const isApproved = data.isApproved;
 
