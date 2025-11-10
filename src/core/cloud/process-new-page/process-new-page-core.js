@@ -296,11 +296,9 @@ async function resolveIncomingOptionContext({
       getServerTimestamp,
     }));
 
-  const finalStoryRef = ensureStoryReference(storyRef, inferredPageRef);
-
   return {
     ...pageContext,
-    storyRef: finalStoryRef,
+    storyRef,
     variantRef,
   };
 }
@@ -392,19 +390,6 @@ async function createPageContext({
 m the option.
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Final story reference.
  */
-function ensureStoryReference(storyRef, inferredPageRef) {
-  if (storyRef) {
-    return storyRef;
-  }
-
-  if (!inferredPageRef) {
-    return null;
-  }
-
-  const parent = inferredPageRef.parent;
-  return parent?.parent ?? null;
-}
-
 /**
  * Resolve page and story references when the submission provides a direct page number.
  * Returns null when the submission should simply be marked processed.
