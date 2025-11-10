@@ -357,6 +357,36 @@ describe('resolveStoryMetadata', () => {
     );
     expect(result.firstPageUrl).toBeUndefined();
   });
+
+  it('logs raw error when rejection message is falsy', async () => {
+    const consoleError = jest.fn();
+    const rejectionError = { message: undefined };
+    const rootPageRef = {
+      get: jest.fn().mockRejectedValue(rejectionError),
+      collection: jest.fn(),
+    };
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Story', rootPage: rootPageRef }),
+    };
+    const pageSnap = {
+      ref: {
+        parent: { parent: { get: jest.fn().mockResolvedValue(storySnap) } },
+      },
+    };
+
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: { incomingOption: true },
+      consoleError,
+    });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'root page lookup failed',
+      rejectionError
+    );
+    expect(result.firstPageUrl).toBeUndefined();
+  });
 });
 
 describe('resolveAuthorMetadata', () => {
