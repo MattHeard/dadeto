@@ -278,11 +278,6 @@ const renderVariantBuildHtmlSource = join(
   'render-variant',
   'buildHtml.js'
 );
-const renderVariantVisibilitySource = join(
-  srcCoreCloudDir,
-  'render-variant',
-  'visibility.js'
-);
 const reportForModerationCoreSource = join(
   srcCoreCloudDir,
   'report-for-moderation',
@@ -936,14 +931,6 @@ const individualFileCopies = [
   {
     source: renderVariantBuildHtmlSource,
     target: join(infraFunctionsDir, 'render-variant', 'buildHtml.js'),
-  },
-  {
-    source: renderVariantVisibilitySource,
-    target: join(infraDir, 'core', 'cloud', 'render-variant', 'visibility.js'),
-  },
-  {
-    source: renderVariantVisibilitySource,
-    target: join(infraFunctionsDir, 'render-variant', 'visibility.js'),
   },
   {
     source: reportForModerationCoreSource,
