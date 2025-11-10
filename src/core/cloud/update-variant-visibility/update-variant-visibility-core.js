@@ -99,7 +99,7 @@ export function createUpdateVariantVisibilityHandler({ db }) {
       return null;
     }
 
-    const variantData = variantSnap.data() ?? {};
+    const variantData = variantSnap.data();
     const newRating = isApproved ? 1 : 0;
 
     const updatedVisibility = calculateUpdatedVisibility(
