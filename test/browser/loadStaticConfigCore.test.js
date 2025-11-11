@@ -73,4 +73,17 @@ describe('createLoadStaticConfig', () => {
 
     await expect(loadStaticConfig()).resolves.toEqual(payload);
   });
+
+  it('uses the noop warn helper when a non-function is supplied', async () => {
+    const payload = { value: 2 };
+    const json = jest.fn().mockResolvedValue(payload);
+    const fetchFn = jest.fn().mockResolvedValue({ ok: true, json });
+
+    const loadStaticConfig = createLoadStaticConfig({
+      fetchFn,
+      warn: 'not-a-function',
+    });
+
+    await expect(loadStaticConfig()).resolves.toEqual(payload);
+  });
 });
