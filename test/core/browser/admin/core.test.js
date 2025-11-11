@@ -71,6 +71,46 @@ describe('createGetAdminEndpointsFromStaticConfig', () => {
   });
 });
 
+describe('mapConfigToAdminEndpoints', () => {
+  it('falls back to production defaults when entries are missing', () => {
+    const defaults = getDefaultAdminEndpointsCopy();
+    const endpoints = mapConfigToAdminEndpoints({});
+
+    expect(endpoints).toEqual(defaults);
+  });
+});
+
+describe('createAdminEndpointsPromise', () => {
+  it('resolves to defaults when the loader is not a function', async () => {
+    await expect(createAdminEndpointsPromise(null)).resolves.toEqual(
+      getDefaultAdminEndpointsCopy()
+    );
+  });
+
+  it('rescues rejected loads and returns defaults', async () => {
+    const loader = jest.fn().mockRejectedValue(new Error('boom'));
+
+    await expect(createAdminEndpointsPromise(loader)).resolves.toEqual(
+      getDefaultAdminEndpointsCopy()
+    );
+    expect(loader).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('mapConfigToAdminEndpoints', () => {
+  it('falls back to defaults when some endpoints are missing', () => {
+    const defaults = getDefaultAdminEndpointsCopy();
+    const endpoints = mapConfigToAdminEndpoints({
+      triggerRenderContentsUrl: 'https://example.com/render',
+    });
+
+    expect(endpoints).toEqual({
+      ...defaults,
+      triggerRenderContentsUrl: 'https://example.com/render',
+    });
+  });
+});
+
 describe('createShowMessage', () => {
   it('returns a messenger that updates the status paragraph when present', () => {
     const element = { innerHTML: '' };
@@ -542,6 +582,19 @@ describe('announceTriggerRenderResult', () => {
     expect(showMessage).toHaveBeenCalledWith('Render failed: 503 Unavailable');
   });
 
+  it('handles empty body strings when announcing failures', async () => {
+    const showMessage = jest.fn();
+    const text = jest.fn().mockResolvedValue('');
+
+    await announceTriggerRenderResult(
+      { ok: false, status: 500, statusText: 'ERR', text },
+      showMessage
+    );
+
+    expect(text).toHaveBeenCalledTimes(1);
+    expect(showMessage).toHaveBeenCalledWith('Render failed: 500 ERR');
+  });
+
   it('falls back to unknown status details when response fields are missing', async () => {
     const showMessage = jest.fn();
 
@@ -742,6 +795,51 @@ describe('createRegenerateVariant additional branches', () => {
 
     expect(showMessage).toHaveBeenCalledWith('Invalid format');
     expect(getAdminEndpoints).not.toHaveBeenCalled();
+  });
+
+  it('reports invalid format when the regenerate input is missing', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const doc = { getElementById: jest.fn().mockReturnValue(null) };
+    const showMessage = jest.fn();
+    const getAdminEndpoints = jest.fn();
+    const fetch = jest.fn();
+
+    const regenerateVariant = createRegenerateVariant(
+      googleAuth,
+      doc,
+      showMessage,
+      getAdminEndpoints,
+      fetch
+    );
+
+    await regenerateVariant({ preventDefault: jest.fn() });
+
+    expect(showMessage).toHaveBeenCalledWith('Invalid format');
+    expect(getAdminEndpoints).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('reports invalid format when the regenerate input value is not a string', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const input = { value: 123 };
+    const doc = { getElementById: jest.fn().mockReturnValue(input) };
+    const showMessage = jest.fn();
+    const getAdminEndpoints = jest.fn();
+    const fetch = jest.fn();
+
+    const regenerateVariant = createRegenerateVariant(
+      googleAuth,
+      doc,
+      showMessage,
+      getAdminEndpoints,
+      fetch
+    );
+
+    await regenerateVariant({ preventDefault: jest.fn() });
+
+    expect(showMessage).toHaveBeenCalledWith('Invalid format');
+    expect(getAdminEndpoints).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('reports failure when the endpoint rejects', async () => {

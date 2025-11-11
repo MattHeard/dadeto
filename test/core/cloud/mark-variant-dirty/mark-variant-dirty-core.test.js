@@ -94,6 +94,16 @@ describe('mark-variant-dirty core helpers', () => {
       expect(cb.mock.calls[0][0].message).toBe('CORS');
       expect(cb.mock.calls[0][1]).toBeUndefined();
     });
+
+    it('passes null to the predicate when the origin is absent', () => {
+      const predicate = jest.fn().mockReturnValue(false);
+      const cb = jest.fn();
+
+      createHandleCorsOrigin(predicate, [])(undefined, cb);
+
+      expect(predicate).toHaveBeenCalledWith(null, []);
+      expect(cb).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
   describe('createCorsOptions', () => {
@@ -134,6 +144,21 @@ describe('mark-variant-dirty core helpers', () => {
 
       expect(findPagesSnap).toHaveBeenCalledWith(database, 3);
       expect(refFromSnap).toHaveBeenCalledWith(snap);
+    });
+
+    it('falls back to the built-in helpers when no overrides are supplied', async () => {
+      const pagesSnap = { docs: [{ ref: 'defaultRef' }] };
+      const get = jest.fn().mockResolvedValue(pagesSnap);
+      const limit = jest.fn(() => ({ get }));
+      const where = jest.fn(() => ({ limit }));
+      const collectionGroup = jest.fn(() => ({ where }));
+      const db = { collectionGroup };
+
+      await expect(findPageRef(db, 7)).resolves.toBe('defaultRef');
+
+      expect(collectionGroup).toHaveBeenCalledWith('pages');
+      expect(where).toHaveBeenCalledWith('number', '==', 7);
+      expect(limit).toHaveBeenCalledWith(1);
     });
   });
 
@@ -213,6 +238,33 @@ describe('mark-variant-dirty core helpers', () => {
         'variant-a'
       );
       expect(firebase.refFromSnap).toHaveBeenCalledWith('variantsSnap');
+    });
+
+    it('uses built-in helpers when firebase overrides are omitted', async () => {
+      const variantRef = { id: 'variantRef' };
+      const variantsSnap = { docs: [{ ref: variantRef }] };
+      const variantsGet = jest.fn().mockResolvedValue(variantsSnap);
+      const variantsLimit = jest.fn(() => ({ get: variantsGet }));
+      const variantsWhere = jest.fn(() => ({ limit: variantsLimit }));
+      const pageRef = {
+        collection: jest.fn(() => ({
+          where: variantsWhere,
+        })),
+      };
+
+      const pagesSnap = { docs: [{ ref: pageRef }] };
+      const pagesGet = jest.fn().mockResolvedValue(pagesSnap);
+      const pagesLimit = jest.fn(() => ({ get: pagesGet }));
+      const pagesWhere = jest.fn(() => ({ limit: pagesLimit }));
+      const collectionGroup = jest.fn(() => ({ where: pagesWhere }));
+      const db = { collectionGroup };
+
+      await expect(findVariantRef(db, 8, 'variant-b')).resolves.toBe(
+        variantRef
+      );
+
+      expect(collectionGroup).toHaveBeenCalledWith('pages');
+      expect(variantsWhere).toHaveBeenCalledWith('name', '==', 'variant-b');
     });
   });
 
@@ -417,6 +469,18 @@ describe('mark-variant-dirty core helpers', () => {
 
       expect(res.status).toHaveBeenLastCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: 'boom' });
+    });
+
+    it('reports generic failure when thrown error lacks a message', async () => {
+      const verifyAdmin = jest.fn().mockResolvedValue(true);
+      const markVariantDirty = jest.fn().mockRejectedValue({});
+      const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
+      const res = createResponse();
+
+      await handle({ method: 'POST', body: { page: 4, variant: 'err' } }, res);
+
+      expect(res.status).toHaveBeenLastCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: 'update failed' });
     });
 
     it('honors dependency overrides for admin verification and marking', async () => {
