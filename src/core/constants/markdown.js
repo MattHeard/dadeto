@@ -12,7 +12,7 @@ export function createConstantFactory(obj) {
  * Markdown formatting markers.
  * @returns {Readonly<Record<string, string>>} Object of marker characters.
  */
-const markdownMarkers = createConstantFactory({
+export const markdownMarkers = createConstantFactory({
   ASTERISK: '*',
   UNDERSCORE: '_',
   BACKTICK: '`',

@@ -1,6 +1,5 @@
 import { isObject } from './common.js';
-import { safeJsonParse } from './browser-core.js';
-import { deepMerge } from './browser-core.js';
+import { safeJsonParse, deepMerge } from './browser-core.js';
 import { deepClone } from '../objectUtils.js';
 
 /**

@@ -679,14 +679,12 @@ export function createInvalidatePaths({
  * @param {object} options - Information about the option to prepare for rendering.
  * @param {Record<string, any>} options.data - Raw option document data.
  * @param {number} options.visibilityThreshold - Minimum visibility required for a variant to be considered published.
- * @param {{doc: Function}} options.db - Firestore-like database used for lookups.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} options.consoleError - Logger for recoverable failures.
  * @returns {Promise<object>} Metadata describing the option suitable for HTML rendering.
  */
 async function buildOptionMetadata({
   data,
   visibilityThreshold,
-  db,
   consoleError,
 }) {
   let targetPageNumber;
@@ -716,7 +714,9 @@ async function buildOptionMetadata({
         }
       }
     } catch (error) {
-      consoleError('target page lookup failed', error?.message || error);
+      if (consoleError) {
+        consoleError('target page lookup failed', error?.message || error);
+      }
     }
   } else if (data.targetPageNumber !== undefined) {
     targetPageNumber = data.targetPageNumber;
@@ -736,11 +736,10 @@ async function buildOptionMetadata({
  * @param {object} options - Dependencies required to load options.
  * @param {{ref: {collection: Function}}} options.snap - Firestore snapshot for the variant whose options are being read.
  * @param {number} options.visibilityThreshold - Minimum visibility required for inclusion.
- * @param {{doc: Function}} options.db - Firestore-like database for nested lookups.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
  * @returns {Promise<object[]>} Ordered option metadata entries.
  */
-async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
+async function loadOptions({ snap, visibilityThreshold, consoleError }) {
   const optionsSnap = await snap.ref.collection('options').get();
   const optionsData = optionsSnap.docs.map(doc => doc.data());
   optionsData.sort((a, b) => a.position - b.position);
@@ -750,7 +749,6 @@ async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
       buildOptionMetadata({
         data,
         visibilityThreshold,
-        db,
         consoleError,
       })
     )

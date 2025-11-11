@@ -622,7 +622,7 @@ export function createInitGoogleSignIn(deps) {
     }
 
     accountsId.initialize({
-      client_id:
+      ['client_id']:
         '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
       callback: options =>
         handleCredentialSignIn(options, {
@@ -632,7 +632,7 @@ export function createInitGoogleSignIn(deps) {
           storage,
           onSignIn,
         }),
-      ux_mode: 'popup',
+      ['ux_mode']: 'popup',
     });
 
     const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
