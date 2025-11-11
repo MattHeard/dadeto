@@ -541,6 +541,26 @@ describe('resolveParentUrl', () => {
 
     expect(consoleError).toHaveBeenCalledWith('parent lookup failed', 'boom');
   });
+
+  it('logs raw errors when lookup rejects without a message', async () => {
+    const consoleError = jest.fn();
+    const rawError = { code: 500 };
+    const db = {
+      doc: jest.fn(() => {
+        throw rawError;
+      }),
+    };
+
+    await expect(
+      resolveParentUrl({
+        variant: { incomingOption: 'options/1' },
+        db,
+        consoleError,
+      })
+    ).resolves.toBeUndefined();
+
+    expect(consoleError).toHaveBeenCalledWith('parent lookup failed', rawError);
+  });
 });
 
 describe('createRenderVariant', () => {
