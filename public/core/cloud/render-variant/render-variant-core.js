@@ -49,7 +49,7 @@ function buildOptionItem(pageNumber, variantName, option) {
   ];
   if (option.targetVariants) {
     const variantsAttr = option.targetVariants
-      .map(v => `${option.targetPageNumber}${v.name}:${v.weight ?? 1}`)
+      .map(v => `${option.targetPageNumber}${v.name}:${v.weight}`)
       .join(',');
     attrs.push(`data-variants="${escapeHtml(variantsAttr)}"`);
   }
@@ -737,7 +737,7 @@ async function buildOptionMetadata({
  * @param {{ref: {collection: Function}}} options.snap - Firestore snapshot for the variant whose options are being read.
  * @param {number} options.visibilityThreshold - Minimum visibility required for inclusion.
  * @param {{doc: Function}} options.db - Firestore-like database for nested lookups.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} options.consoleError - Logger for recoverable failures.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
  * @returns {Promise<object[]>} Ordered option metadata entries.
  */
 async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
@@ -762,7 +762,7 @@ async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
  * @param {object} options - Input describing the current page and lookup helpers.
  * @param {{ref: {parent?: {parent?: any}}, get: Function, exists: boolean}} options.pageSnap - Firestore snapshot for the current page.
  * @param {Record<string, any>} options.page - Raw page document data.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} options.consoleError - Logger for recoverable failures.
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata used in templates.
  */
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {

@@ -254,9 +254,11 @@ async function resolveIncomingOptionContext({
     pageRef: inferredPageRef,
     storyRef: initialStoryRef,
   } = resolveStoryRefFromOption(optionRef);
-  const storyRef = initialStoryRef ?? null;
+
+  const storyRef = initialStoryRef;
   const optionData = optionSnap.data();
   const targetPage = resolvePageFromTarget(optionData.targetPage);
+
   const existingContext = await resolveExistingPageContext(targetPage);
   const pageContext =
     existingContext ??
@@ -272,11 +274,9 @@ async function resolveIncomingOptionContext({
       getServerTimestamp,
     }));
 
-  const finalStoryRef = ensureStoryReference(storyRef, inferredPageRef);
-
   return {
     ...pageContext,
-    storyRef: finalStoryRef,
+    storyRef,
     variantRef,
   };
 }
@@ -347,10 +347,6 @@ async function createPageContext({
 }) {
   const nextPageNumber = await findAvailablePageNumberFn(db, random);
 
-  if (!storyRef || typeof storyRef.collection !== 'function') {
-    throw new TypeError('storyRef.collection must be a function');
-  }
-
   const newPageId = randomUUID();
   const pageDocRef = storyRef.collection('pages').doc(newPageId);
 
@@ -394,7 +390,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
   }
 
   const pageDocRef = pageSnap.docs[0].ref;
-  const storyRef = pageDocRef.parent?.parent ?? null;
+  const storyRef = pageDocRef.parent.parent;
 
   return {
     pageDocRef,
@@ -569,6 +565,7 @@ export function createProcessNewPageHandler({
         });
 
     if (!pageContext) {
+      await snapshot.ref.update({ processed: true });
       return null;
     }
 
