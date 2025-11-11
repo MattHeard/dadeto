@@ -829,7 +829,7 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
       return { authorName, authorUrl: undefined };
     }
 
-    const { uuid } = authorSnap.data() || {};
+    const { uuid } = authorSnap.data();
 
     if (!uuid) {
       return { authorName, authorUrl: undefined };
