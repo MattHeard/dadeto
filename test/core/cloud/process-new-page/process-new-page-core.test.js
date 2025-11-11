@@ -748,6 +748,66 @@ describe('createProcessNewPageHandler', () => {
     );
   });
 
+  it('throws when the inferred story reference is missing from an option submission', async () => {
+    const pageDocRef = {
+      id: 'page-without-story',
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 19 }),
+      }),
+      collection: jest.fn(() => ({ doc: jest.fn() })),
+      parent: { parent: undefined },
+    };
+
+    const variantsCollection = { parent: pageDocRef };
+    const variantRef = { parent: variantsCollection };
+    const optionCollection = { parent: variantRef };
+
+    const optionRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ targetPage: pageDocRef }),
+      }),
+      parent: optionCollection,
+    };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'incoming/options/missing-story') {
+          return optionRef;
+        }
+        throw new Error(`Unexpected doc request: ${path}`);
+      }),
+      batch: jest.fn(() => createBatch()),
+    };
+
+    const findAvailablePageNumberFn = jest.fn();
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: jest.fn(() => 'uuid'),
+      random: jest.fn(() => 0.5),
+      findAvailablePageNumberFn,
+    });
+
+    const snapshot = {
+      ref: { update: jest.fn() },
+      data: () => ({
+        incomingOptionFullName: 'incoming/options/missing-story',
+        processed: false,
+      }),
+    };
+
+    await expect(handler(snapshot)).rejects.toEqual(
+      new TypeError('storyRef.collection must be a function')
+    );
+
+    expect(optionRef.get).toHaveBeenCalled();
+    expect(pageDocRef.get).toHaveBeenCalled();
+    expect(findAvailablePageNumberFn).not.toHaveBeenCalled();
+  });
+
   it('increments variant names and falls back to randomUUID when snapshots lack identifiers', async () => {
     const optionDocs = [];
     const { pageDocRef, variantDoc } = createStoryHierarchy({
