@@ -905,8 +905,8 @@ async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
  * @returns {string | null} Route path when identifiers can be derived, otherwise null.
  */
 function buildParentRoute(parentVariantSnap, parentPageSnap) {
-  const parentData = parentVariantSnap.data() || {};
-  const pageData = parentPageSnap.data() || {};
+  const parentData = parentVariantSnap.data();
+  const pageData = parentPageSnap.data();
   const parentName = parentData.name;
   const parentNumber = pageData.number;
 
