@@ -766,7 +766,7 @@ describe('createProcessNewPageHandler', () => {
     const optionRef = {
       get: jest.fn().mockResolvedValue({
         exists: true,
-        data: () => ({ targetPage: pageDocRef }),
+        data: () => undefined,
       }),
       parent: optionCollection,
     };
@@ -781,7 +781,7 @@ describe('createProcessNewPageHandler', () => {
       batch: jest.fn(() => createBatch()),
     };
 
-    const findAvailablePageNumberFn = jest.fn();
+    const findAvailablePageNumberFn = jest.fn().mockResolvedValue(23);
 
     const handler = createProcessNewPageHandler({
       db,
@@ -804,8 +804,7 @@ describe('createProcessNewPageHandler', () => {
     );
 
     expect(optionRef.get).toHaveBeenCalled();
-    expect(pageDocRef.get).toHaveBeenCalled();
-    expect(findAvailablePageNumberFn).not.toHaveBeenCalled();
+    expect(findAvailablePageNumberFn).toHaveBeenCalledTimes(1);
   });
 
   it('increments variant names and falls back to randomUUID when snapshots lack identifiers', async () => {
