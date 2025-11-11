@@ -89,7 +89,11 @@ function resolveServerTimestamp(fieldValue) {
  * @returns {string[]} Normalized options array.
  */
 function normalizeOptions(options) {
-  return Array.isArray(options) ? options : [];
+  if (Array.isArray(options)) {
+    return options;
+  }
+
+  return [];
 }
 
 /**
@@ -116,7 +120,11 @@ function normalizeIdentifier(value) {
     return null;
   }
 
-  return value ? value : null;
+  if (!value) {
+    return null;
+  }
+
+  return value;
 }
 
 /**
