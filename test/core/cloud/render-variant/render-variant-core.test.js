@@ -476,6 +476,26 @@ describe('resolveAuthorMetadata', () => {
     );
     expect(result.authorUrl).toBeUndefined();
   });
+
+  it('logs raw errors when lookup rejects without a message', async () => {
+    const consoleError = jest.fn();
+    const rawError = { code: 500 };
+    const db = {
+      doc: jest.fn(() => ({
+        get: jest.fn(() => Promise.reject(rawError)),
+      })),
+    };
+
+    const result = await resolveAuthorMetadata({
+      variant: { authorId: 'author-1', authorName: 'Writer' },
+      db,
+      bucket: { file: jest.fn() },
+      consoleError,
+    });
+
+    expect(consoleError).toHaveBeenCalledWith('author lookup failed', rawError);
+    expect(result.authorUrl).toBeUndefined();
+  });
 });
 
 describe('buildParentRoute', () => {
