@@ -1,4 +1,3 @@
-import { FieldValue as AdminFieldValue } from 'firebase-admin/firestore';
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 
 /**
@@ -76,10 +75,6 @@ function getSubmissionData(snapshot) {
  * @returns {() => FieldValue} Function returning a server timestamp FieldValue.
  */
 function resolveServerTimestamp(fieldValue) {
-  if (fieldValue === AdminFieldValue) {
-    return () => AdminFieldValue.serverTimestamp();
-  }
-
   return () => fieldValue.serverTimestamp();
 }
 

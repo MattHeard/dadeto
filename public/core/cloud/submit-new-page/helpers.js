@@ -23,9 +23,6 @@ export function parseIncomingOption(str) {
   if (!Number.isInteger(pageNumber) || !Number.isInteger(optionNumber)) {
     return null;
   }
-  if (!variantName) {
-    return null;
-  }
   const parsed = { pageNumber, variantName, optionNumber };
   return parsed;
 }

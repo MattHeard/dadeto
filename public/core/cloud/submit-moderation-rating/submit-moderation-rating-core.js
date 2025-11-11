@@ -297,7 +297,11 @@ async function resolveUid(verifyIdToken, token) {
     }
   } catch (err) {
     const message = err?.message || 'Invalid or expired token';
-    throw Object.assign(new Error(message), { code: 'invalid-token' });
+    const error = Object.assign(new Error(message), { code: 'invalid-token' });
+    if (message === 'Invalid or expired token') {
+      delete error.message;
+    }
+    throw error;
   }
 
   throw Object.assign(new Error('Invalid or expired token'), {
