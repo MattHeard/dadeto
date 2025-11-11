@@ -169,6 +169,20 @@ describe('buildOptionMetadata', () => {
     );
   });
 
+  it('quietly ignores failures when no logger is supplied', async () => {
+    const targetPage = {
+      get: jest.fn().mockRejectedValue(new Error('boom')),
+    };
+
+    const result = await buildOptionMetadata({
+      data: { content: 'Silent', position: 9, targetPage },
+      visibilityThreshold: 0.5,
+      db: { doc: jest.fn() },
+    });
+
+    expect(result).toEqual({ content: 'Silent', position: 9 });
+  });
+
   it('returns bare metadata when the target page snapshot is missing', async () => {
     const targetPage = {
       get: jest.fn().mockResolvedValue({ exists: false }),
