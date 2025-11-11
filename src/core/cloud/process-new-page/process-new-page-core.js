@@ -1,5 +1,3 @@
-import { FieldValue as AdminFieldValue } from 'firebase-admin/firestore';
-
 /**
  * Increment a variant name in base-26 alphabetic order.
  * @param {string} name Current variant name.
@@ -49,7 +47,7 @@ function assertRandom(random) {
  * @param {{
  *   serverTimestamp: () => unknown,
  *   increment: (value: number) => unknown,
- * } | typeof AdminFieldValue} fieldValue FieldValue helper used to write metadata.
+ * }} fieldValue FieldValue helper used to write metadata.
  */
 function assertFieldValue(fieldValue) {
   if (!fieldValue || typeof fieldValue.serverTimestamp !== 'function') {
@@ -226,14 +224,10 @@ function getVariantCollection(pageRef) {
 
 /**
  * Resolve a server timestamp factory from the provided FieldValue helper.
- * @param {{ serverTimestamp: () => unknown } | typeof AdminFieldValue} fieldValue FieldValue helper supplied to the handler.
+ * @param {{ serverTimestamp: () => unknown }} fieldValue FieldValue helper supplied to the handler.
  * @returns {() => unknown} Function that returns a Firestore server timestamp sentinel value.
  */
 function resolveServerTimestamp(fieldValue) {
-  if (fieldValue === AdminFieldValue) {
-    return () => AdminFieldValue.serverTimestamp();
-  }
-
   return () => fieldValue.serverTimestamp();
 }
 
