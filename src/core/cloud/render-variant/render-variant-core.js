@@ -922,7 +922,7 @@ function buildParentRoute(parentVariantSnap, parentPageSnap) {
  * @param {{
  *   variant: Record<string, any>,
  *   db: { doc: (path: string) => { parent?: { parent?: any }, get: Function } },
- *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
+ *   consoleError: (message?: unknown, ...optionalParams: unknown[]) => void
  * }} options Inputs for parent resolution.
  * @returns {Promise<string | undefined>} URL to the parent variant when it can be resolved.
  */
@@ -959,9 +959,7 @@ async function resolveParentUrl({ variant, db, consoleError }) {
 
     return route;
   } catch (error) {
-    if (consoleError) {
-      consoleError('parent lookup failed', error?.message || error);
-    }
+    consoleError('parent lookup failed', error?.message || error);
 
     return undefined;
   }
