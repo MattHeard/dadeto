@@ -610,7 +610,7 @@ export function createGenerateStatsCore({
     getUnmoderatedPageCount,
     getTopStories,
     getAccessTokenFromMetadata,
-    invalidatePaths: paths => invalidatePaths(paths, console),
+    invalidatePaths,
     generate,
     handleRequest,
   };
