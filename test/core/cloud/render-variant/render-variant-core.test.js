@@ -423,6 +423,38 @@ describe('resolveAuthorMetadata', () => {
     });
   });
 
+  it('reuses the existing author file when present', async () => {
+    const authorFile = {
+      exists: jest.fn().mockResolvedValue([true]),
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    const bucket = {
+      file: jest.fn(() => authorFile),
+    };
+
+    const authorSnap = {
+      exists: true,
+      data: () => ({ uuid: 'writer-2' }),
+    };
+
+    const db = {
+      doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue(authorSnap) })),
+    };
+
+    const result = await resolveAuthorMetadata({
+      variant: { authorId: 'author-2', authorName: 'Second' },
+      db,
+      bucket,
+      consoleError: jest.fn(),
+    });
+
+    expect(authorFile.save).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      authorName: 'Second',
+      authorUrl: '/a/writer-2.html',
+    });
+  });
+
   it('logs and recovers when author lookups fail', async () => {
     const consoleError = jest.fn();
     const db = {
