@@ -1,3 +1,5 @@
+import { createRemoveListener } from '../core/browser/browser-core.js';
+
 // DOM helper functions
 export const getElementById = id => document.getElementById(id);
 export const querySelector = (el, selector) => el.querySelector(selector);
@@ -169,20 +171,6 @@ export const removeNextSibling = link => link.nextElementSibling?.remove();
 export const removeEventListener = (target, event, handler) => {
   target.removeEventListener(event, handler);
 };
-
-/**
- * Generates a disposer that removes an event listener.
- * @param {object} options - Parameters for the remover.
- * @param {object} options.dom - DOM helper utilities.
- * @param {EventTarget} options.el - The element to detach from.
- * @param {string} options.event - The event type to remove.
- * @param {Function} options.handler - The handler to detach.
- * @returns {Function} Disposer function removing the listener.
- */
-export const createRemoveListener =
-  ({ dom, el, event, handler }) =>
-  () =>
-    dom.removeEventListener(el, event, handler);
 
 /**
  * Determines if the current URL contains the `beta` query parameter

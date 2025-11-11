@@ -88,3 +88,17 @@ export function deepMerge(target, source) {
   Object.keys(source).forEach(mergeKey);
   return output;
 }
+
+/**
+ * Generates a disposer that removes an event listener.
+ * @param {object} options - Parameters for the remover.
+ * @param {object} options.dom - DOM helper utilities.
+ * @param {EventTarget} options.el - The element to detach from.
+ * @param {string} options.event - The event type to remove.
+ * @param {Function} options.handler - The handler to detach.
+ * @returns {Function} Disposer function removing the listener.
+ */
+export const createRemoveListener =
+  ({ dom, el, event, handler }) =>
+  () =>
+    dom.removeEventListener(el, event, handler);

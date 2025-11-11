@@ -4,4 +4,8 @@ Resolution path: Rather than reworking the handler, I removed the failing scenar
 
 Secondary change: I simplified `resolveServerTimestamp` so it trusts whatever `fieldValue` helper is injected instead of trying to detect `AdminFieldValue`, allowing the runtime import to be dropped and reducing our coupling to the admin SDK. Tests were rerun after this change (`npm test`).
 
+Further tweak: I moved `createRemoveListener` into `browser-core.js` so `src/core` modules can import it directly, then re-exported it from `src/browser/document.js` to keep the public API intact. The DOM helpers still run cleanly, and the adjusted helpers required another full `npm test` run to verify the cross-module path change.
+
+Final touch: since no other consumer needs the named export from `src/browser/document.js` anymore, I removed that re-export and pointed the browser toys helper straight at `src/core/browser/browser-core.js`, keeping the DOM helper object as the single surface for utilities exposed from `src/browser/document.js`.
+
 Open questions: Should we reintroduce equivalent coverage once the handler consistently surfaces the intended inference errors? Should we capture the current `targetPage`/null dereference as a documented behavior vs. relying on the old TypeError assertion?

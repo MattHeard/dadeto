@@ -5,7 +5,7 @@ import {
 } from './removeElements.js';
 import { NUMBER_INPUT_SELECTOR } from '../../constants/selectors.js';
 import { hideAndDisable } from './inputState.js';
-import { createRemoveListener } from '../../../browser/document.js';
+import { createRemoveListener } from '../browser-core.js';
 import { getInputValue, setInputValue } from '../inputValueStore.js';
 
 const createBaseNumberInput = dom => {
