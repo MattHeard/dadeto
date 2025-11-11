@@ -523,6 +523,66 @@ describe('createProcessNewPageHandler', () => {
     expect(batch.commit).toHaveBeenCalled();
   });
 
+  it('reuses an existing target page when the snapshot lacks a page number', async () => {
+    const optionDocs = [];
+    const { storyRef, pageDocRef, variantDoc } = createStoryHierarchy({ optionDocs });
+
+    pageDocRef.get = jest.fn().mockResolvedValue({
+      exists: true,
+      data: () => ({}),
+    });
+
+    const optionRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ targetPage: pageDocRef }),
+      }),
+      parent: { parent: variantDoc },
+    };
+
+    const batch = createBatch();
+    const findAvailablePageNumberFn = jest.fn(() => Promise.resolve(41));
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'incoming/options/existing-target') {
+          return optionRef;
+        }
+        if (path.startsWith('storyStats/')) {
+          return { path };
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+      batch: jest.fn(() => batch),
+    };
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: jest.fn(() => 'uuid'),
+      random: jest.fn(() => 0.25),
+      findAvailablePageNumberFn,
+    });
+
+    const snapshot = {
+      ref: { id: 'submission-999', update: jest.fn() },
+      data: () => ({
+        incomingOptionFullName: 'incoming/options/existing-target',
+        processed: false,
+        content: 'Keep existing',
+        options: ['Option A'],
+      }),
+    };
+
+    await expect(handler(snapshot)).resolves.toBeNull();
+
+    expect(pageDocRef.get).toHaveBeenCalled();
+    expect(findAvailablePageNumberFn).not.toHaveBeenCalled();
+    expect(storyRef.collection).not.toHaveBeenCalledWith('pages');
+    expect(optionDocs).toHaveLength(1);
+    expect(batch.commit).toHaveBeenCalled();
+  });
+
   it('creates a page when option submissions lack a target page', async () => {
     const optionDocs = [];
     const { storyRef, pageDocRef, variantDoc, variantsCollection } =
