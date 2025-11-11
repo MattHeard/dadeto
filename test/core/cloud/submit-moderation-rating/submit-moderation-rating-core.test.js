@@ -352,4 +352,30 @@ describe('createHandleSubmitModerationRating', () => {
     expect(responder).toHaveBeenCalledWith({});
     expect(res.sendStatus).toHaveBeenCalledWith(418);
   });
+
+  it('exposes the normalized get accessor to the responder', async () => {
+    const responder = jest.fn().mockResolvedValue({ status: 200, body: {} });
+    const handle = createHandleSubmitModerationRating(responder);
+    const res = {
+      status: jest.fn(() => res),
+      json: jest.fn(),
+      send: jest.fn(),
+      sendStatus: jest.fn(),
+    };
+
+    const req = {
+      method: 'POST',
+      body: { isApproved: true },
+      get: jest.fn(name =>
+        name === 'Authorization' ? 'Bearer him' : undefined
+      ),
+    };
+
+    await handle(req, res);
+
+    const forwarded = responder.mock.calls[0][0];
+    expect(typeof forwarded.get).toBe('function');
+    expect(forwarded.get('Authorization')).toBe('Bearer him');
+    expect(req.get).toHaveBeenCalledWith('Authorization');
+  });
 });
