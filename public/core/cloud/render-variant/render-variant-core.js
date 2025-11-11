@@ -1187,7 +1187,7 @@ export function createHandleVariantWrite({
       return null;
     }
 
-    const data = change.after.data() || {};
+    const data = change.after.data();
 
     if (Object.prototype.hasOwnProperty.call(data, 'dirty')) {
       await renderVariant(change.after, context);
@@ -1199,8 +1199,8 @@ export function createHandleVariantWrite({
       return renderVariant(change.after, context);
     }
 
-    const beforeVisibility = change.before.data().visibility ?? 0;
-    const afterVisibility = data.visibility ?? 0;
+    const beforeVisibility = change.before.data().visibility;
+    const afterVisibility = data.visibility;
 
     if (
       beforeVisibility < visibilityThreshold &&
