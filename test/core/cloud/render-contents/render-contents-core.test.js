@@ -367,6 +367,61 @@ describe('createRenderContents', () => {
       thrownError
     );
   });
+
+  it('supports missing consoleError handlers when invalidation throws', async () => {
+    const bucket = { file: jest.fn(() => ({ save: jest.fn() })) };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockRejectedValueOnce(new Error('boom'));
+    const randomUUID = jest.fn().mockReturnValue('uuid');
+
+    const renderContents = createRenderContents({
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError: null,
+    });
+
+    await expect(
+      renderContents({
+        fetchTopStoryIds: async () => ['a'],
+        fetchStoryInfo: async () => ({ title: 'One', pageNumber: 1 }),
+      })
+    ).resolves.toBeNull();
+  });
+
+  it('handles fetchStoryInfo returning null for identifiers', async () => {
+    const bucket = {
+      file: jest.fn(() => ({ save: jest.fn().mockResolvedValue(undefined) })),
+    };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+    const randomUUID = jest.fn().mockReturnValue('uuid');
+
+    const renderContents = createRenderContents({
+      storage,
+      fetchFn,
+      randomUUID,
+    });
+
+    await expect(
+      renderContents({
+        fetchTopStoryIds: async () => ['missing'],
+        fetchStoryInfo: async () => null,
+      })
+    ).resolves.toBeNull();
+  });
 });
 
 describe('getAllowedOrigins', () => {
@@ -475,6 +530,30 @@ describe('createAuthorizationExtractor', () => {
     );
     expect(extractor({})).toBe('');
   });
+
+  it('covers array headers without usable entries and rejects non-Bearer strings', () => {
+    const extractor = createAuthorizationExtractor();
+    expect(
+      extractor({ headers: { Authorization: [undefined, 'ignored'] } })
+    ).toBe('');
+    expect(extractor({ headers: { Authorization: 'Basic wrong' } })).toBe('');
+    expect(extractor({ headers: { authorization: ['Bearer other'] } })).toBe(
+      'other'
+    );
+    expect(extractor({ headers: { Authorization: [123] } })).toBe('');
+    expect(extractor(null)).toBe('');
+  });
+
+  it('handles non-function getters and non-string headers', () => {
+    const extractor = createAuthorizationExtractor();
+    expect(
+      extractor({
+        get: null,
+        headers: { Authorization: 'Bearer fallback' },
+      })
+    ).toBe('fallback');
+    expect(extractor({ headers: { Authorization: 123 } })).toBe('');
+  });
 });
 
 describe('createHandleRenderRequest', () => {
@@ -528,6 +607,48 @@ describe('createHandleRenderRequest', () => {
     };
     await handler({}, res);
     expect(res.status).toHaveBeenCalledWith(401);
+  });
+
+  it('throws when adminUid is missing', () => {
+    expect(() =>
+      createHandleRenderRequest({
+        validateRequest: jest.fn(),
+        getAuthorizationToken: jest.fn(),
+        verifyIdToken: jest.fn(),
+        render: jest.fn(),
+      })
+    ).toThrow(new TypeError('adminUid must be provided'));
+  });
+
+  it('reports invalid tokens without messages', async () => {
+    getAuthorizationToken.mockReturnValueOnce('Bearer token');
+    verifyIdToken.mockRejectedValueOnce({});
+
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+    };
+
+    await handler({}, res);
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('Invalid token');
+  });
+
+  it('returns generic render errors when messages are missing', async () => {
+    getAuthorizationToken.mockReturnValueOnce('Bearer token');
+    verifyIdToken.mockResolvedValueOnce({ uid: 'admin' });
+    render.mockRejectedValueOnce({});
+
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+    };
+
+    await handler({}, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 'render failed' });
   });
 
   it('runs render and returns JSON payload', async () => {

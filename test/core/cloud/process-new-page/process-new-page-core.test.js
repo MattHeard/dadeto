@@ -375,6 +375,60 @@ describe('createProcessNewPageHandler', () => {
     expect(optionDocs).toHaveLength(2);
   });
 
+  it('does nothing when the author document already exists', async () => {
+    const optionDocs = [];
+    const { pageDocRef, storyRef } = createStoryHierarchy({ optionDocs });
+    const batch = createBatch();
+    const authorDoc = createAuthorDoc({ exists: true });
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path.startsWith('storyStats/')) {
+          return { path };
+        }
+        if (path.startsWith('authors/')) {
+          return authorDoc;
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+      batch: jest.fn(() => batch),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              empty: false,
+              docs: [{ ref: pageDocRef }],
+            }),
+          })),
+        })),
+      })),
+    };
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: jest.fn().mockReturnValue('uuid'),
+      random: jest.fn(() => 0.3),
+    });
+
+    const snapshot = {
+      ref: { id: 'submission-xyz', update: jest.fn() },
+      data: () => ({
+        pageNumber: 5,
+        processed: false,
+        authorId: 'author-1',
+        author: 'Author Name',
+        content: 'Story content',
+        options: ['Option X'],
+      }),
+    };
+
+    await handler(snapshot);
+
+    expect(authorDoc.get).toHaveBeenCalled();
+    expect(batch.set).not.toHaveBeenCalledWith(authorDoc, expect.anything());
+  });
+
   it('marks direct page submissions as processed when no match is found', async () => {
     const batch = createBatch();
     const db = {

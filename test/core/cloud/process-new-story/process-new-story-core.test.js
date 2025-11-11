@@ -230,6 +230,31 @@ describe('createProcessNewStoryHandler', () => {
     expect(batch.commit).toHaveBeenCalled();
   });
 
+  it('handles missing snapshots and defaults context quietly', async () => {
+    const { db } = createFakeDb();
+    const findAvailablePageNumberFn = jest.fn().mockResolvedValue(5);
+    const randomUUID = jest
+      .fn()
+      .mockReturnValueOnce('story-id')
+      .mockReturnValueOnce('page-id')
+      .mockReturnValueOnce('variant-id');
+    const random = jest.fn(() => 0.2);
+
+    const handler = createProcessNewStoryHandler({
+      db,
+      fieldValue: baseFieldValue,
+      randomUUID,
+      random,
+      findAvailablePageNumberFn,
+    });
+
+    await expect(handler(null)).resolves.toBeNull();
+
+    expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, random);
+    expect(db.doc).toHaveBeenCalledWith('stories/story-id');
+    expect(randomUUID).toHaveBeenCalledTimes(3);
+  });
+
   it('uses the snapshot identifier when context parameters are missing', async () => {
     const { db, getDoc } = createFakeDb({ authorExists: true });
     const randomUUID = jest

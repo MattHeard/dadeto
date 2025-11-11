@@ -189,6 +189,7 @@ export function createHandleSubmit({
         pageNumber: target.pageNumber,
         content,
         author,
+        authorId,
         options,
       },
     };

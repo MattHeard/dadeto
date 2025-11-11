@@ -57,6 +57,7 @@ describe('createHandleSubmit', () => {
         pageNumber: null,
         content: 'Line1\nLine2',
         author: 'Alice',
+        authorId: 'user-1',
         options: ['First', 'Second'],
       },
     });
@@ -162,6 +163,7 @@ describe('createHandleSubmit', () => {
         pageNumber: 10,
         content: 'Hello',
         author: 'Bob',
+        authorId: null,
         options: [],
       },
     });
@@ -176,6 +178,23 @@ describe('createHandleSubmit', () => {
       options: [],
       createdAt: 'ts',
     });
+  });
+
+  it('omits the author id when the token lacks a uid', async () => {
+    const deps = baseDeps();
+    deps.verifyIdToken.mockResolvedValue({});
+    deps.findExistingPage.mockResolvedValue('/pages/7');
+    const handler = createHandleSubmit(deps);
+
+    const result = await handler(
+      createRequest(
+        { page: '7', content: 'Hi', author: 'Sam' },
+        { Authorization: 'Bearer token' }
+      )
+    );
+
+    expect(result.body.authorId).toBeNull();
+    expect(deps.verifyIdToken).toHaveBeenCalledWith('token');
   });
 
   it('falls back to missing headers when request.get is unavailable', async () => {

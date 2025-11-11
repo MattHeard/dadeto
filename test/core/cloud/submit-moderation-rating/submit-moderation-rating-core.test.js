@@ -31,6 +31,15 @@ describe('createCorsOptions', () => {
     cors.origin(undefined, cb);
     expect(cb).toHaveBeenCalledWith(null, true);
   });
+
+  it('falls back to an empty origin list when allowedOrigins is not an array', () => {
+    const cors = createCorsOptions({ allowedOrigins: null });
+    const cb = jest.fn();
+
+    cors.origin('https://allowed', cb);
+    expect(cb.mock.calls[0][0]).toBeInstanceOf(Error);
+    expect(cb.mock.calls[0][0].message).toBe('CORS');
+  });
 });
 
 describe('createSubmitModerationRatingResponder', () => {
@@ -98,6 +107,30 @@ describe('createSubmitModerationRatingResponder', () => {
     expect(noJob).toEqual({ status: 404, body: 'No moderation job' });
   });
 
+  it('consumes Authorization getter before fallback', async () => {
+    verifyIdToken.mockResolvedValueOnce({ uid: 'mod-4' });
+    const assignment = {
+      variantId: 'variant-alt',
+      clearAssignment: jest.fn().mockResolvedValue(undefined),
+    };
+    fetchModeratorAssignment.mockResolvedValueOnce(assignment);
+    recordModerationRating.mockResolvedValueOnce(undefined);
+
+    const response = await responder({
+      method: 'POST',
+      body: { isApproved: false },
+      get: name =>
+        name === 'Authorization' ? 'Bearer getterToken' : undefined,
+    });
+
+    expect(recordModerationRating).toHaveBeenCalledWith(
+      expect.objectContaining({
+        moderatorId: 'mod-4',
+      })
+    );
+    expect(response).toEqual({ status: 201, body: {} });
+  });
+
   it('records moderation ratings and clears assignments', async () => {
     verifyIdToken.mockResolvedValueOnce({ uid: 'mod-1' });
     const clearAssignment = jest.fn().mockResolvedValue(undefined);
@@ -122,6 +155,76 @@ describe('createSubmitModerationRatingResponder', () => {
     });
     expect(clearAssignment).toHaveBeenCalled();
     expect(response).toEqual({ status: 201, body: {} });
+  });
+
+  it('treats non-string authorization fallbacks as missing', async () => {
+    await expect(
+      responder({
+        method: 'POST',
+        body: { isApproved: true },
+        get: name =>
+          name === 'Authorization'
+            ? undefined
+            : name === 'authorization'
+              ? 123
+              : undefined,
+      })
+    ).resolves.toEqual({
+      status: 401,
+      body: 'Missing or invalid Authorization header',
+    });
+  });
+
+  it('rejects invalid header arrays and non-Bearer strings', async () => {
+    await expect(
+      responder({
+        method: 'POST',
+        body: { isApproved: true },
+        headers: { Authorization: [123] },
+      })
+    ).resolves.toEqual({
+      status: 401,
+      body: 'Missing or invalid Authorization header',
+    });
+
+    await expect(
+      responder({
+        method: 'POST',
+        body: { isApproved: true },
+        headers: { Authorization: 'Basic auth' },
+      })
+    ).resolves.toEqual({
+      status: 401,
+      body: 'Missing or invalid Authorization header',
+    });
+  });
+
+  it('returns invalid token message when verification lacks details', async () => {
+    verifyIdToken.mockRejectedValueOnce({});
+
+    const response = await responder({
+      method: 'POST',
+      body: { isApproved: false },
+      headers: { Authorization: 'Bearer token' },
+    });
+
+    expect(response).toEqual({
+      status: 401,
+      body: 'Invalid or expired token',
+    });
+  });
+
+  it('rejects non-object request bodies', async () => {
+    await expect(
+      responder({
+        method: 'POST',
+        body: 'not-an-object',
+        headers: { Authorization: 'Bearer token' },
+      })
+    ).resolves.toEqual({
+      status: 400,
+      body: 'Missing or invalid isApproved',
+    });
   });
 
   it('reads authorization via getter fallback and rejects empty variant assignments', async () => {

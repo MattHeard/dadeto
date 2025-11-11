@@ -94,6 +94,16 @@ describe('createCorsOriginValidator', () => {
     expect(cb.mock.calls[0][0].message).toBe('CORS');
     expect(cb.mock.calls[0][1]).toBeUndefined();
   });
+
+  it('falls back to an empty whitelist when origins are not arrays', () => {
+    const validator = createCorsOriginValidator(null);
+    const cb = jest.fn();
+
+    validator('https://denied.test', cb);
+
+    expect(cb.mock.calls[0][0]).toBeInstanceOf(Error);
+    expect(cb.mock.calls[0][0].message).toBe('CORS');
+  });
 });
 
 describe('createCorsOptions', () => {
