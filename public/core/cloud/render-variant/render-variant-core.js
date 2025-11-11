@@ -1061,14 +1061,14 @@ async function resolveRenderPlan({
     return null;
   }
 
-  const variant = snap.data() || {};
+  const variant = snap.data();
   const pageSnap = await snap.ref.parent?.parent?.get();
 
   if (!pageSnap?.exists) {
     return null;
   }
 
-  const page = pageSnap.data() || {};
+  const page = pageSnap.data();
   const options = await loadOptions({
     snap,
     visibilityThreshold,
