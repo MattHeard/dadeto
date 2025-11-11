@@ -928,6 +928,74 @@ describe('createProcessNewPageHandler', () => {
     expect(findAvailablePageNumberFn).toHaveBeenCalledTimes(1);
   });
 
+  it('reuses a target page yet still fails when the story inference resolves to null', async () => {
+    const optionDocs = [];
+    const { pageDocRef, variantDoc } = createStoryHierarchy({
+      optionDocs,
+      pageSnapshotNumber: 17,
+    });
+
+    const storyParentGetter = jest.fn(() => null);
+    const pagesCollection = {};
+    Object.defineProperty(pagesCollection, 'parent', {
+      get: storyParentGetter,
+    });
+    pageDocRef.parent = pagesCollection;
+
+    pageDocRef.get = jest.fn().mockResolvedValue({
+      exists: true,
+      data: () => ({ number: 17 }),
+    });
+
+    const optionRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ targetPage: pageDocRef }),
+      }),
+      parent: { parent: variantDoc },
+    };
+
+    const batch = createBatch();
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'incoming/options/null-inferred-story') {
+          return optionRef;
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+      batch: jest.fn(() => batch),
+    };
+
+    const findAvailablePageNumberFn = jest.fn();
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: jest.fn(() => 'uuid'),
+      random: jest.fn(() => 0.2),
+      findAvailablePageNumberFn,
+    });
+
+    const snapshot = {
+      ref: { update: jest.fn() },
+      data: () => ({
+        incomingOptionFullName: 'incoming/options/null-inferred-story',
+        processed: false,
+        content: 'Existing page should be reused',
+      }),
+    };
+
+    await expect(handler(snapshot)).rejects.toEqual(
+      new TypeError('storyRef.collection must be a function')
+    ); // Missing story reference inference should surface as the downstream TypeError.
+
+    expect(storyParentGetter).toHaveBeenCalledTimes(2);
+    expect(findAvailablePageNumberFn).not.toHaveBeenCalled();
+    expect(pageDocRef.get).toHaveBeenCalled();
+    expect(optionRef.get).toHaveBeenCalled();
+  });
+
   it('increments variant names and falls back to randomUUID when snapshots lack identifiers', async () => {
     const optionDocs = [];
     const { pageDocRef, variantDoc } = createStoryHierarchy({
