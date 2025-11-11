@@ -1182,7 +1182,7 @@ export function createHandleVariantWrite({
   assertFunction(renderVariant, 'renderVariant');
   assertFunction(getDeleteSentinel, 'getDeleteSentinel');
 
-  return async function handleVariantWrite(change, context = {}) {
+  return async function handleVariantWrite(change, context) {
     if (!change.after.exists) {
       return null;
     }
