@@ -86,4 +86,14 @@ describe('createLoadStaticConfig', () => {
 
     await expect(loadStaticConfig()).resolves.toEqual(payload);
   });
+
+  it('uses the noop warn helper when the fetch fails', async () => {
+    const error = new Error('broken');
+    const fetchFn = jest.fn().mockRejectedValue(error);
+
+    const loadStaticConfig = createLoadStaticConfig({ fetchFn });
+
+    await expect(loadStaticConfig()).resolves.toEqual({});
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
 });
