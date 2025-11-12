@@ -22,8 +22,9 @@ export function csvToJsonArrayToy(input, env) {
 }
 
 /**
- *
- * @param input
+ * Extract row objects from the provided CSV text, returning `null` when parsing fails.
+ * @param {string} input - Raw CSV text that should contain a header row followed by data rows.
+ * @returns {Array<Record<string, string>>|null} Parsed row objects or null when the input is invalid.
  */
 function extractCsvRows(input) {
   const trimmedLines = normalizeInputLines(input);
@@ -35,8 +36,9 @@ function extractCsvRows(input) {
 }
 
 /**
- *
- * @param input
+ * Normalize the incoming CSV text into trimmed lines.
+ * @param {string} input - Raw CSV text.
+ * @returns {string[]|null} Trimmed lines when there are at least two rows, otherwise null.
  */
 function normalizeInputLines(input) {
   if (typeof input !== 'string') {
@@ -46,20 +48,30 @@ function normalizeInputLines(input) {
   const normalizedInput = input.replace(/\r\n?/g, '\n');
   const trimmedLines = removeTrailingEmptyLines(normalizedInput.split('\n'));
 
-  return trimmedLines.length < 2 ? null : trimmedLines;
+  if (trimmedLines.length < 2) {
+    return null;
+  }
+
+  return trimmedLines;
 }
 
 /**
- *
- * @param trimmedLines
+ * Build row objects when header metadata is available.
+ * @param {string[]} trimmedLines - Normalized CSV lines with at least a header row.
+ * @returns {Array<Record<string, string>>|null} Row objects or null when parsing fails.
  */
 function buildRowsFromLines(trimmedLines) {
   const headerInfo = parseHeaderEntries(trimmedLines);
-  const rows = headerInfo
-    ? buildRows(headerInfo.dataLines, headerInfo.headerEntries)
-    : null;
+  let rows = null;
+  if (headerInfo) {
+    rows = buildRows(headerInfo.dataLines, headerInfo.headerEntries);
+  }
 
-  return rows?.length ? rows : null;
+  if (rows?.length) {
+    return rows;
+  }
+
+  return null;
 }
 
 /**
@@ -134,8 +146,9 @@ function buildRows(dataLines, headerEntries) {
 }
 
 /**
- *
- * @param rawLine
+ * Normalize an individual CSV line by trimming trailing whitespace.
+ * @param {string} rawLine - Data line read from the CSV input.
+ * @returns {string|null} Trimmed line or null when it is empty.
  */
 function normalizeDataLine(rawLine) {
   if (rawLine.trim().length === 0) {
@@ -146,9 +159,10 @@ function normalizeDataLine(rawLine) {
 }
 
 /**
- *
- * @param line
- * @param headerEntries
+ * Build a single record from a parsed CSV line using the provided headers.
+ * @param {string} line - A normalized CSV data line.
+ * @param {Array<{name: string, index: number}>} headerEntries - Header metadata.
+ * @returns {Record<string, string>|null} Record object or null when parsing fails.
  */
 function buildRecordFromLine(line, headerEntries) {
   const values = parseCsvLine(line);
