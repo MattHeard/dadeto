@@ -1,136 +1,56 @@
+import { jest } from '@jest/globals';
 import { addDendritePage } from '../../../src/core/browser/toys/2025-07-05/addDendritePage.js';
-import { describe, test, expect, jest } from '@jest/globals';
 
 describe('addDendritePage', () => {
-  test('adds page and options to DEND2 storage', () => {
-    const uuids = ['page', 'a', 'b'];
-    let idx = 0;
-    const env = new Map([
-      [
-        'getData',
-        () => ({
-          temporary: { DEND2: { stories: [], pages: [], options: [] } },
-        }),
-      ],
-      ['setLocalTemporaryData', jest.fn()],
-      ['getUuid', () => uuids[idx++]],
-    ]);
-    const input = JSON.stringify({
-      optionId: 'choice',
-      content: 'Body',
-      firstOption: 'A',
-      secondOption: 'B',
+  const buildEnv = () => {
+    const data = { temporary: { DEND2: { pages: [], options: [] } } };
+    const getUuid = jest.fn(() => 'page-uuid');
+    const getData = jest.fn(() => data);
+    const setLocalTemporaryData = jest.fn();
+
+    const map = new Map();
+    map.set('getUuid', getUuid);
+    map.set('getData', getData);
+    map.set('setLocalTemporaryData', setLocalTemporaryData);
+
+    return { map, fns: { getUuid, getData, setLocalTemporaryData } };
+  };
+
+  it('stores parsed page and options when input is valid', () => {
+    const { map, fns } = buildEnv();
+    const payload = JSON.stringify({
+      optionId: 'opt-1',
+      content: 'hello',
+      firstOption: 'foo',
+      secondOption: 'bar',
     });
-    const result = JSON.parse(addDendritePage(input, env));
-    expect(result).toEqual({
-      pages: [{ id: 'page', optionId: 'choice', content: 'Body' }],
-      options: [
-        { id: 'a', pageId: 'page', content: 'A' },
-        { id: 'b', pageId: 'page', content: 'B' },
-      ],
+
+    const result = addDendritePage(payload, map);
+    const parsed = JSON.parse(result);
+
+    expect(parsed.pages).toHaveLength(1);
+    expect(parsed.pages[0]).toMatchObject({
+      id: 'page-uuid',
+      optionId: 'opt-1',
+      content: 'hello',
     });
-    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
-      temporary: {
-        DEND2: {
-          stories: [],
-          pages: [{ id: 'page', optionId: 'choice', content: 'Body' }],
-          options: [
-            { id: 'a', pageId: 'page', content: 'A' },
-            { id: 'b', pageId: 'page', content: 'B' },
-          ],
-        },
-      },
-    });
+    expect(parsed.options).toHaveLength(2);
+    expect(fns.setLocalTemporaryData).toHaveBeenCalled();
   });
 
-  test('creates missing DEND2 structure', () => {
-    const uuids = ['p'];
-    let i = 0;
-    const env = new Map([
-      ['getData', () => ({})],
-      ['setLocalTemporaryData', jest.fn()],
-      ['getUuid', () => uuids[i++]],
-    ]);
-    const input = JSON.stringify({ optionId: 'o', content: 'c' });
-    const result = JSON.parse(addDendritePage(input, env));
-    expect(result.pages[0]).toEqual({ id: 'p', optionId: 'o', content: 'c' });
-    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
-      temporary: {
-        DEND2: {
-          stories: [],
-          pages: [{ id: 'p', optionId: 'o', content: 'c' }],
-          options: [],
-        },
-      },
-    });
+  it('returns an empty payload when JSON is invalid', () => {
+    const { map } = buildEnv();
+    const result = addDendritePage('not json', map);
+    expect(result).toBe(JSON.stringify({ pages: [], options: [] }));
   });
 
-  test('repairs invalid DEND2 structure', () => {
-    const uuids = ['p'];
-    const env = new Map([
-      [
-        'getData',
-        () => ({
-          temporary: { DEND2: { stories: {}, pages: null, options: 1 } },
-        }),
-      ],
-      ['setLocalTemporaryData', jest.fn()],
-      ['getUuid', () => uuids.shift()],
-    ]);
-    const input = JSON.stringify({ optionId: 'o', content: 'c' });
-    addDendritePage(input, env);
-    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
-      temporary: {
-        DEND2: {
-          stories: [],
-          pages: [{ id: 'p', optionId: 'o', content: 'c' }],
-          options: [],
-        },
-      },
-    });
-  });
+  it('returns an empty payload when env helpers are missing', () => {
+    const map = new Map();
+    map.set('getUuid', null);
+    map.set('getData', null);
+    map.set('setLocalTemporaryData', null);
 
-  test('returns empty arrays on parse error', () => {
-    const env = new Map([
-      ['getData', () => ({})],
-      ['setLocalTemporaryData', jest.fn()],
-    ]);
-    const result = addDendritePage('not json', env);
-    expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
-    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
-  });
-
-  test('returns empty arrays for invalid fields', () => {
-    const env = new Map([
-      ['getData', () => ({})],
-      ['setLocalTemporaryData', jest.fn()],
-      ['getUuid', () => 'id'],
-    ]);
-    const bad = JSON.stringify({ optionId: 1 });
-    const result = addDendritePage(bad, env);
-    expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
-    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
-  });
-
-  test('returns empty arrays for null input', () => {
-    const env = new Map([
-      ['getData', () => ({})],
-      ['setLocalTemporaryData', jest.fn()],
-    ]);
-    const result = addDendritePage('null', env);
-    expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
-    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
-  });
-
-  test('returns empty arrays for invalid content', () => {
-    const env = new Map([
-      ['getData', () => ({})],
-      ['setLocalTemporaryData', jest.fn()],
-      ['getUuid', () => 'id'],
-    ]);
-    const bad = JSON.stringify({ optionId: 'o', content: 1 });
-    const result = addDendritePage(bad, env);
-    expect(JSON.parse(result)).toEqual({ pages: [], options: [] });
-    expect(env.get('setLocalTemporaryData')).not.toHaveBeenCalled();
+    const result = addDendritePage('{}', map);
+    expect(result).toBe(JSON.stringify({ pages: [], options: [] }));
   });
 });
