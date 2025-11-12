@@ -9,7 +9,6 @@ import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
  * @param {string} obj.content - Page content.
  * @returns {boolean} True when valid.
  */
-// eslint-disable-next-line complexity
 function isValidInput(obj) {
   if (!obj) {
     return false;
@@ -23,7 +22,6 @@ function isValidInput(obj) {
  * @param {Map<string, Function>} env - Environment with data helpers.
  * @returns {string} JSON string of the new page and options.
  */
-// eslint-disable-next-line complexity
 export function addDendritePage(input, env) {
   try {
     const parsed = JSON.parse(input);
