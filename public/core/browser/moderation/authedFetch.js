@@ -8,11 +8,23 @@
  * @returns {Record<string, any>} Normalized headers map.
  */
 function normalizeHeaders(originalHeaders) {
-  if (typeof Headers !== 'undefined' && originalHeaders instanceof Headers) {
+  if (isHeadersInstance(originalHeaders)) {
     return Object.fromEntries(originalHeaders.entries());
   }
 
   return { ...(originalHeaders || {}) };
+}
+
+/**
+ *
+ * @param value
+ */
+function isHeadersInstance(value) {
+  if (typeof Headers === 'undefined') {
+    return false;
+  }
+
+  return value instanceof Headers;
 }
 
 /**

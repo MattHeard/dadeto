@@ -74,25 +74,53 @@ export function mapConfigToModerationEndpoints(
  */
 export function createModerationEndpointsPromise(
   loadStaticConfigFn,
-  { defaults = DEFAULT_MODERATION_ENDPOINTS, logger } = {}
+  options = {}
 ) {
+  const { defaults = DEFAULT_MODERATION_ENDPOINTS, logger } = options;
+  return getModerationEndpointsLoader(loadStaticConfigFn, defaults, logger)();
+}
+
+/**
+ *
+ * @param loadStaticConfigFn
+ * @param defaults
+ * @param logger
+ */
+function getModerationEndpointsLoader(loadStaticConfigFn, defaults, logger) {
   if (typeof loadStaticConfigFn !== 'function') {
-    return Promise.resolve({ ...defaults });
+    return () => Promise.resolve({ ...defaults });
   }
 
-  return Promise.resolve()
-    .then(() => loadStaticConfigFn())
-    .then(config => mapConfigToModerationEndpoints(config, defaults))
-    .catch(error => {
-      if (logger?.error) {
-        logger.error(
-          'Failed to load moderation endpoints, falling back to defaults.',
-          error
-        );
-      }
+  return () => loadModerationEndpoints(loadStaticConfigFn, defaults, logger);
+}
 
-      return { ...defaults };
-    });
+/**
+ *
+ * @param loadStaticConfigFn
+ * @param defaults
+ * @param logger
+ */
+async function loadModerationEndpoints(loadStaticConfigFn, defaults, logger) {
+  try {
+    const config = await loadStaticConfigFn();
+    return mapConfigToModerationEndpoints(config, defaults);
+  } catch (error) {
+    logModerationEndpointError(logger, error);
+    return { ...defaults };
+  }
+}
+
+/**
+ * Report that the moderation endpoints could not be loaded.
+ * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Optional logger that will surface the error.
+ * @param {unknown} error - Error produced while loading the endpoints.
+ * @returns {void}
+ */
+function logModerationEndpointError(logger, error) {
+  logger?.error?.(
+    'Failed to load moderation endpoints, falling back to defaults.',
+    error
+  );
 }
 
 /**

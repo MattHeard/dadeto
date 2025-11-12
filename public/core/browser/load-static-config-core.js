@@ -51,22 +51,44 @@ function createStaticConfigError(response) {
  * @returns {() => Promise<Record<string, unknown>>} Static config loader.
  */
 export function createLoadStaticConfig({ fetchFn, warn } = {}) {
+  ensureFetchFunction(fetchFn);
+  const logWarn = resolveLogWarn(warn);
+  return createStaticConfigLoader(fetchFn, logWarn);
+}
+
+/**
+ *
+ * @param fetchFn
+ */
+function ensureFetchFunction(fetchFn) {
   if (typeof fetchFn !== 'function') {
     throw new TypeError('fetchFn must be a function');
   }
+}
 
-  let logWarn;
+/**
+ *
+ * @param warn
+ */
+function resolveLogWarn(warn) {
   if (typeof warn === 'function') {
-    logWarn = warn;
-  } else {
-    logWarn = () => {};
+    return warn;
   }
+
+  return () => {};
+}
+
+/**
+ *
+ * @param fetchFn
+ * @param logWarn
+ */
+function createStaticConfigLoader(fetchFn, logWarn) {
   let configPromise;
 
   /**
-   * Handle errors produced while loading the static configuration.
-   * @param {unknown} error - Error generated while loading the configuration.
-   * @returns {Record<string, unknown>} Empty configuration fallback.
+   *
+   * @param error
    */
   function handleStaticConfigError(error) {
     logWarn('Failed to load static config', error);
@@ -74,8 +96,7 @@ export function createLoadStaticConfig({ fetchFn, warn } = {}) {
   }
 
   /**
-   * Kick off the config fetch request and normalize the resulting promise.
-   * @returns {Promise<Record<string, unknown>>} Promise resolving to the config payload.
+   *
    */
   function createStaticConfigPromise() {
     return fetchFn('/config.json', { cache: 'no-store' })
@@ -83,15 +104,7 @@ export function createLoadStaticConfig({ fetchFn, warn } = {}) {
       .catch(handleStaticConfigError);
   }
 
-  /**
-   * Retrieve the memoized static configuration payload.
-   * @returns {Promise<Record<string, unknown>>} Promise resolving to the cached config.
-   */
   return function loadStaticConfig() {
-    if (!configPromise) {
-      configPromise = createStaticConfigPromise();
-    }
-
-    return configPromise;
+    return configPromise || (configPromise = createStaticConfigPromise());
   };
 }

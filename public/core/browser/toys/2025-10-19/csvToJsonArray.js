@@ -62,11 +62,21 @@ function normalizeInputLines(input) {
  */
 function buildRowsFromLines(trimmedLines) {
   const headerInfo = parseHeaderEntries(trimmedLines);
-  let rows = null;
-  if (headerInfo) {
-    rows = buildRows(headerInfo.dataLines, headerInfo.headerEntries);
+  if (!headerInfo) {
+    return null;
   }
 
+  return getRowsFromHeaderInfo(headerInfo);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.dataLines
+ * @param root0.headerEntries
+ */
+function getRowsFromHeaderInfo({ dataLines, headerEntries }) {
+  const rows = buildRows(dataLines, headerEntries);
   if (rows?.length) {
     return rows;
   }
@@ -95,26 +105,68 @@ function removeTrailingEmptyLines(lines) {
  * Returns header metadata plus remaining data lines, or null when parsing fails.
  */
 function parseHeaderEntries(lines) {
+  const parsedHeader = getParsedHeaderLines(lines);
+  if (!parsedHeader) {
+    return null;
+  }
+
+  const headerEntries = buildHeaderEntries(parsedHeader.headers);
+  if (headerEntries.length === 0) {
+    return null;
+  }
+
+  return { headerEntries, dataLines: parsedHeader.dataLines };
+}
+
+/**
+ *
+ * @param lines
+ */
+function getParsedHeaderLines(lines) {
   const [headerLine, ...dataLines] = lines;
-  const trimmedHeader = headerLine.trim();
+  const trimmedHeader = getTrimmedHeaderLine(headerLine);
   if (!trimmedHeader) {
     return null;
   }
 
+  return getParsedHeaders(trimmedHeader, dataLines);
+}
+
+/**
+ *
+ * @param headerLine
+ */
+function getTrimmedHeaderLine(headerLine) {
+  if (!headerLine) {
+    return null;
+  }
+
+  const trimmedHeader = headerLine.trim();
+  return trimmedHeader || null;
+}
+
+/**
+ *
+ * @param trimmedHeader
+ * @param dataLines
+ */
+function getParsedHeaders(trimmedHeader, dataLines) {
   const headers = parseCsvLine(trimmedHeader);
   if (!headers) {
     return null;
   }
 
-  const headerEntries = headers
+  return { headers, dataLines };
+}
+
+/**
+ *
+ * @param headers
+ */
+function buildHeaderEntries(headers) {
+  return headers
     .map((header, index) => ({ name: header.trim(), index }))
     .filter(entry => entry.name.length > 0);
-
-  if (headerEntries.length === 0) {
-    return null;
-  }
-
-  return { headerEntries, dataLines };
 }
 
 /**

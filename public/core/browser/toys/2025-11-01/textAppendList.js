@@ -31,10 +31,18 @@ function normalizeInput(value) {
   if (typeof value === 'string') {
     return value;
   }
-  if (value === undefined || value === null) {
+  if (isNullish(value)) {
     return '';
   }
   return String(value);
+}
+
+/**
+ *
+ * @param value
+ */
+function isNullish(value) {
+  return value === undefined || value === null;
 }
 
 /**
@@ -43,13 +51,31 @@ function normalizeInput(value) {
  * @returns {((args: object) => unknown) | null} Storage helper when available.
  */
 function getStorageFunction(env) {
-  if (!env || typeof env.get !== 'function') {
+  if (!isStorageEnvironment(env)) {
     return null;
   }
+
+  return resolveStorageFn(env);
+}
+
+/**
+ *
+ * @param env
+ */
+function isStorageEnvironment(env) {
+  return Boolean(env && typeof env.get === 'function');
+}
+
+/**
+ *
+ * @param env
+ */
+function resolveStorageFn(env) {
   const storageFn = env.get('setLocalPermanentData');
   if (typeof storageFn === 'function') {
     return storageFn;
   }
+
   return null;
 }
 
@@ -60,15 +86,31 @@ function getStorageFunction(env) {
  */
 function readExistingList(storageFn) {
   try {
-    const existingData = storageFn({});
-    const stored = existingData?.[TOY_KEY];
-    if (typeof stored === 'string') {
-      return stored;
-    }
-    return '';
+    return getStoredListValue(storageFn);
   } catch {
     return '';
   }
+}
+
+/**
+ *
+ * @param storageFn
+ */
+function getStoredListValue(storageFn) {
+  const existingData = storageFn({});
+  return ensureString(existingData?.[TOY_KEY]);
+}
+
+/**
+ *
+ * @param value
+ */
+function ensureString(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return '';
 }
 
 /**

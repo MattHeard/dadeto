@@ -196,11 +196,33 @@ function resolveTriggerRenderStatusText(res) {
  * @returns {Promise<string>} Body content when readable, otherwise an empty string.
  */
 async function readTriggerRenderBody(res) {
-  const readText = res?.text;
-  if (typeof readText !== 'function') {
+  const readText = getResponseTextReader(res);
+  if (!readText) {
     return '';
   }
 
+  return readResponseText(readText, res);
+}
+
+/**
+ *
+ * @param res
+ */
+function getResponseTextReader(res) {
+  const reader = res?.text;
+  if (typeof reader !== 'function') {
+    return null;
+  }
+
+  return reader;
+}
+
+/**
+ *
+ * @param readText
+ * @param res
+ */
+async function readResponseText(readText, res) {
   const body = await readText.call(res);
   return body || '';
 }
@@ -338,9 +360,21 @@ function requireFunction(value, name) {
  * @returns {void}
  */
 function requireDocumentLike(value, name = 'doc') {
-  if (!value || typeof value.getElementById !== 'function') {
+  if (!isDocumentLike(value)) {
     throw new TypeError(`${name} must be a Document-like object`);
   }
+}
+
+/**
+ *
+ * @param value
+ */
+function isDocumentLike(value) {
+  if (!value) {
+    return false;
+  }
+
+  return typeof value.getElementById === 'function';
 }
 
 /**
@@ -351,12 +385,7 @@ function requireDocumentLike(value, name = 'doc') {
  * @returns {HTMLElement | null} The element the listener was bound to, or null when missing.
  */
 function addClickListener(doc, elementId, listener) {
-  const element = doc.getElementById(elementId);
-  if (element?.addEventListener) {
-    element.addEventListener('click', listener);
-  }
-
-  return element ?? null;
+  return bindElementEvent(doc, elementId, listener, 'click');
 }
 
 /**
@@ -367,12 +396,24 @@ function addClickListener(doc, elementId, listener) {
  * @returns {HTMLElement | null} Located form element or null when missing.
  */
 function attachSubmitListener(doc, elementId, listener) {
-  const form = doc.getElementById(elementId);
-  if (form?.addEventListener) {
-    form.addEventListener('submit', listener);
+  return bindElementEvent(doc, elementId, listener, 'submit');
+}
+
+/**
+ *
+ * @param doc
+ * @param elementId
+ * @param listener
+ * @param eventType
+ */
+function bindElementEvent(doc, elementId, listener, eventType) {
+  const element = doc.getElementById(elementId);
+  if (!element || typeof element.addEventListener !== 'function') {
+    return null;
   }
 
-  return form ?? null;
+  element.addEventListener(eventType, listener);
+  return element;
 }
 
 /**
@@ -684,15 +725,23 @@ async function handleCredentialSignIn(
   await signInWithCredential(auth, firebaseCredential);
 
   const currentUser = auth.currentUser;
-  const getIdToken = currentUser?.getIdToken;
+  const getIdToken = resolveGetIdToken(currentUser);
+  const idToken = await getIdToken();
+  storage.setItem('id_token', idToken);
+  onSignIn?.(idToken);
+}
 
-  if (typeof getIdToken !== 'function') {
+/**
+ *
+ * @param currentUser
+ */
+function resolveGetIdToken(currentUser) {
+  const getter = currentUser?.getIdToken;
+  if (typeof getter !== 'function') {
     throw new TypeError('auth.currentUser.getIdToken must be a function');
   }
 
-  const idToken = await getIdToken.call(currentUser);
-  storage.setItem('id_token', idToken);
-  onSignIn?.(idToken);
+  return () => getter.call(currentUser);
 }
 
 /**
@@ -703,24 +752,48 @@ async function handleCredentialSignIn(
  * @returns {void}
  */
 function renderSignInButtons(accountsId, querySelectorAll, mediaQueryList) {
-  const elements = Array.from(querySelectorAll('#signinButton') ?? []);
-  let theme = 'filled_blue';
+  const elements = getSignInButtonElements(querySelectorAll);
+  const theme = resolveSignInTheme(mediaQueryList);
 
+  elements.forEach(el => renderSignInButton(el, accountsId, theme));
+}
+
+/**
+ *
+ * @param querySelectorAll
+ */
+function getSignInButtonElements(querySelectorAll) {
+  return Array.from(querySelectorAll('#signinButton') ?? []);
+}
+
+/**
+ *
+ * @param mediaQueryList
+ */
+function resolveSignInTheme(mediaQueryList) {
   if (mediaQueryList?.matches) {
-    theme = 'filled_black';
+    return 'filled_black';
   }
 
-  elements.forEach(el => {
-    if (!el) {
-      return;
-    }
+  return 'filled_blue';
+}
 
-    el.innerHTML = '';
-    accountsId.renderButton(el, {
-      theme,
-      size: 'large',
-      text: 'signin_with',
-    });
+/**
+ *
+ * @param element
+ * @param accountsId
+ * @param theme
+ */
+function renderSignInButton(element, accountsId, theme) {
+  if (!element) {
+    return;
+  }
+
+  element.innerHTML = '';
+  accountsId.renderButton(element, {
+    theme,
+    size: 'large',
+    text: 'signin_with',
   });
 }
 
@@ -882,18 +955,12 @@ function createRegenerateVariantHandler({
   fetchFn,
 }) {
   return async function regenerateVariant(event) {
-    event?.preventDefault?.();
+    preventDefaultEvent(event);
 
     const payload = resolveRegenerationPayload(doc, showMessage, googleAuth);
-    if (!payload) {
-      return;
-    }
-
-    await performRegeneration({
+    await performRegenerationWhenReady(payload, {
       fetchFn,
       getAdminEndpointsFn,
-      token: payload.token,
-      pageVariant: payload.pageVariant,
       showMessage,
     });
   };
@@ -934,6 +1001,31 @@ function resolveRegenerationPayload(doc, showMessage, googleAuth) {
   }
 
   return { token, pageVariant };
+}
+
+/**
+ *
+ * @param event
+ */
+function preventDefaultEvent(event) {
+  event?.preventDefault?.();
+}
+
+/**
+ *
+ * @param payload
+ * @param deps
+ */
+async function performRegenerationWhenReady(payload, deps) {
+  if (!payload) {
+    return;
+  }
+
+  await performRegeneration({
+    ...deps,
+    token: payload.token,
+    pageVariant: payload.pageVariant,
+  });
 }
 
 /**
@@ -1070,22 +1162,32 @@ export function getStatusParagraph(doc) {
  * @returns {(text: string) => void} Function that renders status messages.
  */
 export function createShowMessage(getStatusParagraphFn, doc) {
-  if (typeof getStatusParagraphFn !== 'function') {
-    throw new TypeError('getStatusParagraphFn must be a function');
+  const statusParagraph = resolveStatusParagraph(getStatusParagraphFn, doc);
+  return text => renderStatusParagraph(statusParagraph, text);
+}
+
+/**
+ *
+ * @param getStatusParagraphFn
+ * @param doc
+ */
+function resolveStatusParagraph(getStatusParagraphFn, doc) {
+  requireFunction(getStatusParagraphFn, 'getStatusParagraphFn');
+  requireDocumentLike(doc);
+  return getStatusParagraphFn(doc);
+}
+
+/**
+ *
+ * @param statusParagraph
+ * @param text
+ */
+function renderStatusParagraph(statusParagraph, text) {
+  if (!statusParagraph) {
+    return;
   }
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
 
-  const statusParagraph = getStatusParagraphFn(doc);
-
-  return function showMessage(text) {
-    if (!statusParagraph) {
-      return;
-    }
-
-    statusParagraph.innerHTML = `<strong>${String(text)}</strong>`;
-  };
+  statusParagraph.innerHTML = `<strong>${String(text)}</strong>`;
 }
 
 /**
@@ -1226,12 +1328,20 @@ export function getSignOutSections(doc) {
  * @returns {unknown | null} Current user when available.
  */
 export function getCurrentUser(getAuthFn) {
+  const auth = resolveAuthInstance(getAuthFn);
+  return auth?.currentUser ?? null;
+}
+
+/**
+ *
+ * @param getAuthFn
+ */
+function resolveAuthInstance(getAuthFn) {
   if (typeof getAuthFn !== 'function') {
     return null;
   }
 
-  const auth = getAuthFn();
-  return auth?.currentUser ?? null;
+  return getAuthFn();
 }
 
 /**
