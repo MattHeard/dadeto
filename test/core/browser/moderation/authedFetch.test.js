@@ -133,6 +133,33 @@ describe('createAuthedFetch', () => {
     });
   });
 
+  it('handles environments where Headers is undefined', async () => {
+    delete global.Headers;
+
+    const getIdToken = jest.fn().mockResolvedValue('no-headers-token');
+    const fetchJson = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => ({ ok: true }),
+    });
+    const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
+
+    await authedFetch('https://example.com/missing-headers', {
+      headers: { 'X-Test': 'ok' },
+    });
+
+    expect(fetchJson).toHaveBeenCalledWith(
+      'https://example.com/missing-headers',
+      expect.objectContaining({
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Test': 'ok',
+          Authorization: 'Bearer no-headers-token',
+        },
+      })
+    );
+  });
+
   it('returns raw responses when no json function is present', async () => {
     const getIdToken = jest.fn().mockResolvedValue('raw');
     const response = { ok: true, status: 204 };

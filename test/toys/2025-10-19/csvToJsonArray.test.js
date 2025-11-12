@@ -60,6 +60,12 @@ describe('csvToJsonArrayToy', () => {
     expect(csvToJsonArrayToy(input)).toBe(JSON.stringify([]));
   });
 
+  it('returns an empty array string when the header row trims to empty', () => {
+    const input = '   \nvalue1,value2';
+
+    expect(csvToJsonArrayToy(input)).toBe(JSON.stringify([]));
+  });
+
   it('fails when the header row cannot be parsed as CSV', () => {
     const input = '"unterminated header\nvalue1,value2';
 
