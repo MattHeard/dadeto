@@ -270,18 +270,20 @@ export async function executeTriggerRender({
 
 /**
  * Create a trigger render handler with the supplied dependencies.
- * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
- * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
- * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   getAdminEndpointsFn: () => Promise<{ triggerRenderContentsUrl: string }>,
+ *   fetchFn: FetchFn,
+ *   showMessage: (text: string) => void,
+ * }} options - Dependencies used during trigger render execution.
  * @returns {() => Promise<void>} Function that triggers render when invoked.
  */
-export function createTriggerRender(
+export function createTriggerRender({
   googleAuth,
   getAdminEndpointsFn,
   fetchFn,
-  showMessage
-) {
+  showMessage,
+}) {
   return createAdminTokenAction({
     googleAuth,
     getAdminEndpointsFn,
@@ -646,18 +648,20 @@ export function createInitGoogleSignIn(deps) {
 
 /**
  * Create a trigger stats handler with the supplied dependencies.
- * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
- * @param {() => Promise<{ generateStatsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
- * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   getAdminEndpointsFn: () => Promise<{ generateStatsUrl: string }>,
+ *   fetchFn: FetchFn,
+ *   showMessage: (text: string) => void,
+ * }} options - Dependencies used during stats generation.
  * @returns {() => Promise<void>} Function that triggers stats generation when invoked.
  */
-export function createTriggerStats(
+export function createTriggerStats({
   googleAuth,
   getAdminEndpointsFn,
   fetchFn,
-  showMessage
-) {
+  showMessage,
+}) {
   return createAdminTokenAction({
     googleAuth,
     getAdminEndpointsFn,
@@ -686,20 +690,22 @@ export function createTriggerStats(
 
 /**
  * Create a regenerate variant handler with the supplied dependencies.
- * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
- * @param {Document} doc - Document used to locate form inputs.
- * @param {(text: string) => void} showMessage - Callback to surface status messages.
- * @param {() => Promise<{ markVariantDirtyUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   doc: Document,
+ *   showMessage: (text: string) => void,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   fetchFn: FetchFn,
+ * }} options - Dependencies for the regenerate workflow.
  * @returns {(event: Event) => Promise<void>} Function that triggers variant regeneration when invoked.
  */
-export function createRegenerateVariant(
+export function createRegenerateVariant({
   googleAuth,
   doc,
   showMessage,
   getAdminEndpointsFn,
-  fetchFn
-) {
+  fetchFn,
+}) {
   if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
     throw new TypeError('googleAuth must provide a getIdToken function');
   }
@@ -733,12 +739,12 @@ export function createRegenerateVariant(
     }
 
     try {
-      await sendRegenerateVariantRequest(
+      await sendRegenerateVariantRequest({
         fetchFn,
         getAdminEndpointsFn,
         token,
-        pageVariant
-      );
+        pageVariant,
+      });
       showMessage('Regeneration triggered');
     } catch {
       showMessage('Regeneration failed');
@@ -794,18 +800,20 @@ function parsePageVariantValue(value) {
 
 /**
  * Submit a request to mark a variant dirty for regeneration.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
- * @param {() => Promise<{ markVariantDirtyUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {string} token - Authorization token used to authenticate the request.
- * @param {{page: number, variant: string}} pageVariant - Page and variant identifiers for regeneration.
+ * @param {{
+ *   fetchFn: FetchFn,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   token: string,
+ *   pageVariant: { page: number, variant: string },
+ * }} options - Dependencies and payload for the regenerate request.
  * @returns {Promise<void>} Promise that resolves when the request succeeds.
  */
-async function sendRegenerateVariantRequest(
+async function sendRegenerateVariantRequest({
   fetchFn,
   getAdminEndpointsFn,
   token,
-  pageVariant
-) {
+  pageVariant,
+}) {
   const { markVariantDirtyUrl } = await getAdminEndpointsFn();
   const res = await fetchFn(markVariantDirtyUrl, {
     method: 'POST',
@@ -858,24 +866,26 @@ export function createShowMessage(getStatusParagraphFn, doc) {
 /**
  * Initialize the admin interface by wiring event handlers and auth listeners.
  * @param {{
- *   initGoogleSignIn: () => void,
- *   getIdToken: () => string | null | undefined,
- *   signOut: () => Promise<void> | void,
- * }} googleAuthModule - Google auth helper with sign-in utilities.
- * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for the static config JSON.
- * @param {() => unknown} getAuthFn - Getter for the Firebase auth instance.
- * @param {(auth: unknown, callback: () => void) => void} onAuthStateChangedFn - Firebase auth listener registrar.
- * @param {Document} doc - Document used to locate admin UI elements.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
+ *   googleAuthModule: {
+ *     initGoogleSignIn: () => void,
+ *     getIdToken: () => string | null | undefined,
+ *     signOut: () => Promise<void> | void,
+ *   },
+ *   loadStaticConfigFn: () => Promise<Record<string, string>>,
+ *   getAuthFn: () => unknown,
+ *   onAuthStateChangedFn: (auth: unknown, callback: () => void) => void,
+ *   doc: Document,
+ *   fetchFn: FetchFn,
+ * }} options - Dependencies required for admin initialization.
  */
-export function initAdmin(
+export function initAdmin({
   googleAuthModule,
   loadStaticConfigFn,
   getAuthFn,
   onAuthStateChangedFn,
   doc,
-  fetchFn
-) {
+  fetchFn,
+}) {
   if (!googleAuthModule) {
     throw new TypeError('googleAuthModule must be provided');
   }
@@ -898,27 +908,27 @@ export function initAdmin(
 
   const checkAccess = createCheckAccess(getAuthFn, doc);
 
-  const triggerRender = createTriggerRender(
-    googleAuthModule,
-    getAdminEndpoints,
+  const triggerRender = createTriggerRender({
+    googleAuth: googleAuthModule,
+    getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
-    showMessage
-  );
+    showMessage,
+  });
 
-  const triggerStats = createTriggerStats(
-    googleAuthModule,
-    getAdminEndpoints,
+  const triggerStats = createTriggerStats({
+    googleAuth: googleAuthModule,
+    getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
-    showMessage
-  );
+    showMessage,
+  });
 
-  const regenerateVariant = createRegenerateVariant(
-    googleAuthModule,
+  const regenerateVariant = createRegenerateVariant({
+    googleAuth: googleAuthModule,
     doc,
     showMessage,
-    getAdminEndpoints,
-    fetchFn
-  );
+    getAdminEndpointsFn: getAdminEndpoints,
+    fetchFn,
+  });
 
   bindTriggerRenderClick(doc, triggerRender);
   bindTriggerStatsClick(doc, triggerStats);

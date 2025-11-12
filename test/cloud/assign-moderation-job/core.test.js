@@ -89,12 +89,12 @@ describe('shouldUseCustomFirestoreDependencies', () => {
     const defaultEnsure = () => {};
     const defaultGetFirestore = () => {};
 
-    const result = shouldUseCustomFirestoreDependencies(
-      undefined,
-      defaultEnsure,
-      defaultGetFirestore,
-      undefined
-    );
+    const result = shouldUseCustomFirestoreDependencies({
+      options: undefined,
+      defaultEnsureFn: defaultEnsure,
+      defaultGetFirestoreFn: defaultGetFirestore,
+      providedEnvironment: undefined,
+    });
 
     expect(result).toBe(false);
   });
@@ -103,12 +103,12 @@ describe('shouldUseCustomFirestoreDependencies', () => {
     const defaultEnsure = () => {};
     const customEnsure = () => {};
 
-    const result = shouldUseCustomFirestoreDependencies(
-      { ensureAppFn: customEnsure },
-      defaultEnsure,
-      () => {},
-      undefined
-    );
+    const result = shouldUseCustomFirestoreDependencies({
+      options: { ensureAppFn: customEnsure },
+      defaultEnsureFn: defaultEnsure,
+      defaultGetFirestoreFn: () => {},
+      providedEnvironment: undefined,
+    });
 
     expect(result).toBe(true);
   });
@@ -117,23 +117,23 @@ describe('shouldUseCustomFirestoreDependencies', () => {
     const defaultGetFirestore = () => {};
     const customGetFirestore = () => {};
 
-    const result = shouldUseCustomFirestoreDependencies(
-      { getFirestoreFn: customGetFirestore },
-      () => {},
-      defaultGetFirestore,
-      undefined
-    );
+    const result = shouldUseCustomFirestoreDependencies({
+      options: { getFirestoreFn: customGetFirestore },
+      defaultEnsureFn: () => {},
+      defaultGetFirestoreFn: defaultGetFirestore,
+      providedEnvironment: undefined,
+    });
 
     expect(result).toBe(true);
   });
 
   test('returns true when environment override is provided', () => {
-    const result = shouldUseCustomFirestoreDependencies(
-      undefined,
-      () => {},
-      () => {},
-      { projectId: 'custom' }
-    );
+    const result = shouldUseCustomFirestoreDependencies({
+      options: undefined,
+      defaultEnsureFn: () => {},
+      defaultGetFirestoreFn: () => {},
+      providedEnvironment: { projectId: 'custom' },
+    });
 
     expect(result).toBe(true);
   });
@@ -829,13 +829,13 @@ describe('createHandleAssignModerationJob', () => {
     const now = jest.fn();
     const randomFn = jest.fn();
 
-    const handle = createHandleAssignModerationJob(
+    const handle = createHandleAssignModerationJob({
       createRunVariantQuery,
       auth,
       db,
       now,
-      randomFn
-    );
+      random: randomFn,
+    });
 
     expect(typeof handle).toBe('function');
     expect(createRunVariantQuery).toHaveBeenCalledWith(db);
@@ -882,13 +882,13 @@ describe('createHandleAssignModerationJobFromAuth', () => {
     const now = jest.fn();
     const randomFn = jest.fn();
 
-    const handle = createHandleAssignModerationJobFromAuth(
+    const handle = createHandleAssignModerationJobFromAuth({
       auth,
       fetchVariantSnapshot,
       db,
       now,
-      randomFn
-    );
+      random: randomFn,
+    });
 
     expect(typeof handle).toBe('function');
   });

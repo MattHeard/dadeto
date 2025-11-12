@@ -71,14 +71,14 @@ describe('admin/core uncovered branches', () => {
 
   it('should throw TypeError if googleAuthModule does not provide initGoogleSignIn', () => {
     expect(() =>
-      initAdmin(
-        mockGoogleAuthModule,
-        mockLoadStaticConfigFn,
-        mockGetAuthFn,
-        mockOnAuthStateChangedFn,
-        mockDoc,
-        mockFetchFn
-      )
+      initAdmin({
+        googleAuthModule: mockGoogleAuthModule,
+        loadStaticConfigFn: mockLoadStaticConfigFn,
+        getAuthFn: mockGetAuthFn,
+        onAuthStateChangedFn: mockOnAuthStateChangedFn,
+        doc: mockDoc,
+        fetchFn: mockFetchFn,
+      })
     ).toThrow(
       new TypeError(
         'googleAuthModule must provide an initGoogleSignIn function'
@@ -89,12 +89,13 @@ describe('admin/core uncovered branches', () => {
   it('createTriggerStats should report failure when fetchFn throws an error', async () => {
     mockFetchFn.shouldThrow = true;
 
-    const triggerStats = createTriggerStats(
-      mockGoogleAuthModule,
-      () => Promise.resolve({ generateStatsUrl: 'some-url' }),
-      mockFetchFn,
-      mockShowMessage
-    );
+    const triggerStats = createTriggerStats({
+      googleAuth: mockGoogleAuthModule,
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ generateStatsUrl: 'some-url' }),
+      fetchFn: mockFetchFn,
+      showMessage: mockShowMessage,
+    });
 
     await triggerStats();
 
@@ -113,13 +114,14 @@ describe('admin/core uncovered branches', () => {
       return null;
     };
 
-    const regenerateVariant = createRegenerateVariant(
-      mockGoogleAuthModule,
-      mockDoc,
-      mockShowMessage,
-      () => Promise.resolve({ markVariantDirtyUrl: 'some-url' }),
-      mockFetchFn
-    );
+    const regenerateVariant = createRegenerateVariant({
+      googleAuth: mockGoogleAuthModule,
+      doc: mockDoc,
+      showMessage: mockShowMessage,
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ markVariantDirtyUrl: 'some-url' }),
+      fetchFn: mockFetchFn,
+    });
 
     await regenerateVariant({ preventDefault: () => {} });
 
@@ -138,13 +140,14 @@ describe('admin/core uncovered branches', () => {
     };
     mockFetchFn.shouldThrow = true;
 
-    const regenerateVariant = createRegenerateVariant(
-      mockGoogleAuthModule,
-      mockDoc,
-      mockShowMessage,
-      () => Promise.resolve({ markVariantDirtyUrl: 'some-url' }),
-      mockFetchFn
-    );
+    const regenerateVariant = createRegenerateVariant({
+      googleAuth: mockGoogleAuthModule,
+      doc: mockDoc,
+      showMessage: mockShowMessage,
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ markVariantDirtyUrl: 'some-url' }),
+      fetchFn: mockFetchFn,
+    });
 
     await regenerateVariant({ preventDefault: () => {} });
 

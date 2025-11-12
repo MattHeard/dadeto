@@ -58,12 +58,13 @@ describe('createTriggerStats', () => {
   it('should report failure when fetchFn throws an error', async () => {
     mockFetchFn.shouldThrow = true;
 
-    const triggerStats = createTriggerStats(
-      mockGoogleAuthModule,
-      () => Promise.resolve({ generateStatsUrl: 'some-url' }),
-      mockFetchFn,
-      mockShowMessage
-    );
+    const triggerStats = createTriggerStats({
+      googleAuth: mockGoogleAuthModule,
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ generateStatsUrl: 'some-url' }),
+      fetchFn: mockFetchFn,
+      showMessage: mockShowMessage,
+    });
 
     await triggerStats();
 

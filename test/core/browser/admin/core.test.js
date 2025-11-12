@@ -160,12 +160,12 @@ describe('createTriggerRender', () => {
     const fetch = jest.fn().mockResolvedValue({ ok: true });
     const showMessage = jest.fn();
 
-    const triggerRender = createTriggerRender(
+    const triggerRender = createTriggerRender({
       googleAuth,
-      getAdminEndpoints,
-      fetch,
-      showMessage
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+    });
 
     await triggerRender();
 
@@ -184,12 +184,12 @@ describe('createTriggerRender', () => {
     const fetch = jest.fn();
     const showMessage = jest.fn();
 
-    const triggerRender = createTriggerRender(
+    const triggerRender = createTriggerRender({
       googleAuth,
-      getAdminEndpoints,
-      fetch,
-      showMessage
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+    });
 
     await triggerRender();
 
@@ -200,7 +200,12 @@ describe('createTriggerRender', () => {
 
   it('throws when googleAuth does not expose getIdToken', () => {
     expect(() =>
-      createTriggerRender({}, jest.fn(), jest.fn(), jest.fn())
+      createTriggerRender({
+        googleAuth: {},
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+        showMessage: jest.fn(),
+      })
     ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
   });
 });
@@ -217,12 +222,12 @@ describe('createTriggerStats', () => {
     const fetch = jest.fn().mockResolvedValue({});
     const showMessage = jest.fn();
 
-    const triggerStats = createTriggerStats(
+    const triggerStats = createTriggerStats({
       googleAuth,
-      getAdminEndpoints,
-      fetch,
-      showMessage
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+    });
 
     await triggerStats();
 
@@ -242,12 +247,12 @@ describe('createTriggerStats', () => {
     const fetch = jest.fn();
     const showMessage = jest.fn();
 
-    const triggerStats = createTriggerStats(
+    const triggerStats = createTriggerStats({
       googleAuth,
-      getAdminEndpoints,
-      fetch,
-      showMessage
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+    });
 
     await triggerStats();
 
@@ -265,12 +270,12 @@ describe('createTriggerStats', () => {
     const fetch = jest.fn().mockRejectedValue(new Error('nope'));
     const showMessage = jest.fn();
 
-    const triggerStats = createTriggerStats(
+    const triggerStats = createTriggerStats({
       googleAuth,
-      getAdminEndpoints,
-      fetch,
-      showMessage
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+    });
 
     await triggerStats();
 
@@ -279,7 +284,12 @@ describe('createTriggerStats', () => {
 
   it('throws when googleAuth is missing getIdToken', () => {
     expect(() =>
-      createTriggerStats({}, jest.fn(), jest.fn(), jest.fn())
+      createTriggerStats({
+        googleAuth: {},
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+        showMessage: jest.fn(),
+      })
     ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
   });
 });
@@ -301,13 +311,13 @@ describe('createRegenerateVariant', () => {
     const fetch = jest.fn().mockResolvedValue({ ok: true });
     const preventDefault = jest.fn();
 
-    const regenerateVariant = createRegenerateVariant(
+    const regenerateVariant = createRegenerateVariant({
       googleAuth,
       doc,
       showMessage,
-      getAdminEndpoints,
-      fetch
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+    });
 
     await regenerateVariant({ preventDefault });
 
@@ -328,13 +338,13 @@ describe('createRegenerateVariant', () => {
 
   it('throws when googleAuth is missing getIdToken', () => {
     expect(() =>
-      createRegenerateVariant(
-        {},
-        { getElementById: jest.fn() },
-        jest.fn(),
-        jest.fn(),
-        jest.fn()
-      )
+      createRegenerateVariant({
+        googleAuth: {},
+        doc: { getElementById: jest.fn() },
+        showMessage: jest.fn(),
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+      })
     ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
   });
 });
@@ -664,12 +674,12 @@ describe('createTriggerRender additional branches', () => {
     const fetch = jest.fn().mockRejectedValue(new Error('explode'));
     const showMessage = jest.fn();
 
-    const triggerRender = createTriggerRender(
+    const triggerRender = createTriggerRender({
       googleAuth,
-      getAdminEndpoints,
-      fetch,
-      showMessage
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+    });
 
     await triggerRender();
 
@@ -678,19 +688,34 @@ describe('createTriggerRender additional branches', () => {
 
   it('throws when getAdminEndpointsFn is not a function', () => {
     expect(() =>
-      createTriggerRender({ getIdToken: jest.fn() }, null, jest.fn(), jest.fn())
+      createTriggerRender({
+        googleAuth: { getIdToken: jest.fn() },
+        getAdminEndpointsFn: null,
+        fetchFn: jest.fn(),
+        showMessage: jest.fn(),
+      })
     ).toThrow(new TypeError('getAdminEndpointsFn must be a function'));
   });
 
   it('throws when fetchFn is not a function', () => {
     expect(() =>
-      createTriggerRender({ getIdToken: jest.fn() }, jest.fn(), null, jest.fn())
+      createTriggerRender({
+        googleAuth: { getIdToken: jest.fn() },
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: null,
+        showMessage: jest.fn(),
+      })
     ).toThrow(new TypeError('fetchFn must be a function'));
   });
 
   it('throws when showMessage is not a function', () => {
     expect(() =>
-      createTriggerRender({ getIdToken: jest.fn() }, jest.fn(), jest.fn(), null)
+      createTriggerRender({
+        googleAuth: { getIdToken: jest.fn() },
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+        showMessage: null,
+      })
     ).toThrow(new TypeError('showMessage must be a function'));
   });
 });
@@ -720,12 +745,12 @@ describe('createTriggerStats additional branches', () => {
     const fetch = jest.fn().mockResolvedValue({ ok: false });
     const showMessage = jest.fn();
 
-    const triggerStats = createTriggerStats(
+    const triggerStats = createTriggerStats({
       googleAuth,
-      getAdminEndpoints,
-      fetch,
-      showMessage
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+    });
 
     await triggerStats();
 
@@ -734,19 +759,34 @@ describe('createTriggerStats additional branches', () => {
 
   it('throws when getAdminEndpointsFn is not a function', () => {
     expect(() =>
-      createTriggerStats({ getIdToken: jest.fn() }, null, jest.fn(), jest.fn())
+      createTriggerStats({
+        googleAuth: { getIdToken: jest.fn() },
+        getAdminEndpointsFn: null,
+        fetchFn: jest.fn(),
+        showMessage: jest.fn(),
+      })
     ).toThrow(new TypeError('getAdminEndpointsFn must be a function'));
   });
 
   it('throws when fetchFn is not a function', () => {
     expect(() =>
-      createTriggerStats({ getIdToken: jest.fn() }, jest.fn(), null, jest.fn())
+      createTriggerStats({
+        googleAuth: { getIdToken: jest.fn() },
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: null,
+        showMessage: jest.fn(),
+      })
     ).toThrow(new TypeError('fetchFn must be a function'));
   });
 
   it('throws when showMessage is not a function', () => {
     expect(() =>
-      createTriggerStats({ getIdToken: jest.fn() }, jest.fn(), jest.fn(), null)
+      createTriggerStats({
+        googleAuth: { getIdToken: jest.fn() },
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+        showMessage: null,
+      })
     ).toThrow(new TypeError('showMessage must be a function'));
   });
 });
@@ -761,13 +801,13 @@ describe('createRegenerateVariant additional branches', () => {
     const getAdminEndpoints = jest.fn();
     const fetch = jest.fn();
 
-    const regenerateVariant = createRegenerateVariant(
+    const regenerateVariant = createRegenerateVariant({
       googleAuth,
       doc,
       showMessage,
-      getAdminEndpoints,
-      fetch
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+    });
 
     await regenerateVariant({ preventDefault: jest.fn() });
 
@@ -783,13 +823,13 @@ describe('createRegenerateVariant additional branches', () => {
     const getAdminEndpoints = jest.fn();
     const fetch = jest.fn();
 
-    const regenerateVariant = createRegenerateVariant(
+    const regenerateVariant = createRegenerateVariant({
       googleAuth,
       doc,
       showMessage,
-      getAdminEndpoints,
-      fetch
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+    });
 
     await regenerateVariant({ preventDefault: jest.fn() });
 
@@ -804,13 +844,13 @@ describe('createRegenerateVariant additional branches', () => {
     const getAdminEndpoints = jest.fn();
     const fetch = jest.fn();
 
-    const regenerateVariant = createRegenerateVariant(
+    const regenerateVariant = createRegenerateVariant({
       googleAuth,
       doc,
       showMessage,
-      getAdminEndpoints,
-      fetch
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+    });
 
     await regenerateVariant({ preventDefault: jest.fn() });
 
@@ -827,13 +867,13 @@ describe('createRegenerateVariant additional branches', () => {
     const getAdminEndpoints = jest.fn();
     const fetch = jest.fn();
 
-    const regenerateVariant = createRegenerateVariant(
+    const regenerateVariant = createRegenerateVariant({
       googleAuth,
       doc,
       showMessage,
-      getAdminEndpoints,
-      fetch
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+    });
 
     await regenerateVariant({ preventDefault: jest.fn() });
 
@@ -852,13 +892,13 @@ describe('createRegenerateVariant additional branches', () => {
       .mockResolvedValue({ markVariantDirtyUrl });
     const fetch = jest.fn().mockRejectedValue(new Error('nope'));
 
-    const regenerateVariant = createRegenerateVariant(
+    const regenerateVariant = createRegenerateVariant({
       googleAuth,
       doc,
       showMessage,
-      getAdminEndpoints,
-      fetch
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+    });
 
     await regenerateVariant({ preventDefault: jest.fn() });
 
@@ -876,13 +916,13 @@ describe('createRegenerateVariant additional branches', () => {
       .mockResolvedValue({ markVariantDirtyUrl });
     const fetch = jest.fn().mockResolvedValue({ ok: false });
 
-    const regenerateVariant = createRegenerateVariant(
+    const regenerateVariant = createRegenerateVariant({
       googleAuth,
       doc,
       showMessage,
-      getAdminEndpoints,
-      fetch
-    );
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+    });
 
     await regenerateVariant({ preventDefault: jest.fn() });
 
@@ -891,49 +931,49 @@ describe('createRegenerateVariant additional branches', () => {
 
   it('throws when provided document is invalid', () => {
     expect(() =>
-      createRegenerateVariant(
-        { getIdToken: jest.fn() },
-        null,
-        jest.fn(),
-        jest.fn(),
-        jest.fn()
-      )
+      createRegenerateVariant({
+        googleAuth: { getIdToken: jest.fn() },
+        doc: null,
+        showMessage: jest.fn(),
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+      })
     ).toThrow(new TypeError('doc must be a Document-like object'));
   });
 
   it('throws when showMessage is not a function', () => {
     expect(() =>
-      createRegenerateVariant(
-        { getIdToken: jest.fn() },
-        { getElementById: jest.fn() },
-        null,
-        jest.fn(),
-        jest.fn()
-      )
+      createRegenerateVariant({
+        googleAuth: { getIdToken: jest.fn() },
+        doc: { getElementById: jest.fn() },
+        showMessage: null,
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+      })
     ).toThrow(new TypeError('showMessage must be a function'));
   });
 
   it('throws when getAdminEndpointsFn is not a function', () => {
     expect(() =>
-      createRegenerateVariant(
-        { getIdToken: jest.fn() },
-        { getElementById: jest.fn() },
-        jest.fn(),
-        null,
-        jest.fn()
-      )
+      createRegenerateVariant({
+        googleAuth: { getIdToken: jest.fn() },
+        doc: { getElementById: jest.fn() },
+        showMessage: jest.fn(),
+        getAdminEndpointsFn: null,
+        fetchFn: jest.fn(),
+      })
     ).toThrow(new TypeError('getAdminEndpointsFn must be a function'));
   });
 
   it('throws when fetchFn is not a function', () => {
     expect(() =>
-      createRegenerateVariant(
-        { getIdToken: jest.fn() },
-        { getElementById: jest.fn() },
-        jest.fn(),
-        jest.fn(),
-        null
-      )
+      createRegenerateVariant({
+        googleAuth: { getIdToken: jest.fn() },
+        doc: { getElementById: jest.fn() },
+        showMessage: jest.fn(),
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: null,
+      })
     ).toThrow(new TypeError('fetchFn must be a function'));
   });
 });
@@ -1362,14 +1402,14 @@ describe('initAdmin', () => {
     const { doc, elements, signOutLink } = makeDoc();
     const fetch = jest.fn().mockResolvedValue({ ok: true });
 
-    initAdmin(
+    initAdmin({
       googleAuthModule,
-      loadStaticConfig,
+      loadStaticConfigFn: loadStaticConfig,
       getAuthFn,
       onAuthStateChangedFn,
       doc,
-      fetch
-    );
+      fetchFn: fetch,
+    });
 
     expect(getAuthFn).toHaveBeenCalledTimes(2);
     expect(onAuthStateChangedFn).toHaveBeenCalledWith(
@@ -1399,17 +1439,19 @@ describe('initAdmin', () => {
     const { doc } = makeDoc();
 
     expect(() =>
-      initAdmin(
-        {
+      initAdmin({
+        googleAuthModule: {
           getIdToken: jest.fn().mockReturnValue('token'),
           signOut: jest.fn(),
         },
-        jest.fn().mockResolvedValue({}),
-        jest.fn().mockReturnValue({ currentUser: { uid: ADMIN_UID } }),
-        jest.fn(),
+        loadStaticConfigFn: jest.fn().mockResolvedValue({}),
+        getAuthFn: jest
+          .fn()
+          .mockReturnValue({ currentUser: { uid: ADMIN_UID } }),
+        onAuthStateChangedFn: jest.fn(),
         doc,
-        jest.fn().mockResolvedValue({ ok: true })
-      )
+        fetchFn: jest.fn().mockResolvedValue({ ok: true }),
+      })
     ).toThrow(
       new TypeError(
         'googleAuthModule must provide an initGoogleSignIn function'
@@ -1421,14 +1463,14 @@ describe('initAdmin', () => {
     const { doc } = makeDoc();
 
     expect(() =>
-      initAdmin(
-        null,
-        jest.fn().mockResolvedValue({}),
-        jest.fn(),
-        jest.fn(),
+      initAdmin({
+        googleAuthModule: null,
+        loadStaticConfigFn: jest.fn().mockResolvedValue({}),
+        getAuthFn: jest.fn(),
+        onAuthStateChangedFn: jest.fn(),
         doc,
-        jest.fn()
-      )
+        fetchFn: jest.fn(),
+      })
     ).toThrow(new TypeError('googleAuthModule must be provided'));
   });
 
@@ -1436,18 +1478,18 @@ describe('initAdmin', () => {
     const { doc } = makeDoc();
 
     expect(() =>
-      initAdmin(
-        {
+      initAdmin({
+        googleAuthModule: {
           getIdToken: jest.fn(),
           signOut: jest.fn(),
           initGoogleSignIn: jest.fn(),
         },
-        jest.fn().mockResolvedValue({}),
-        null,
-        jest.fn(),
+        loadStaticConfigFn: jest.fn().mockResolvedValue({}),
+        getAuthFn: null,
+        onAuthStateChangedFn: jest.fn(),
         doc,
-        jest.fn()
-      )
+        fetchFn: jest.fn(),
+      })
     ).toThrow(new TypeError('getAuthFn must be a function'));
   });
 
@@ -1455,35 +1497,35 @@ describe('initAdmin', () => {
     const { doc } = makeDoc();
 
     expect(() =>
-      initAdmin(
-        {
+      initAdmin({
+        googleAuthModule: {
           getIdToken: jest.fn(),
           signOut: jest.fn(),
           initGoogleSignIn: jest.fn(),
         },
-        jest.fn().mockResolvedValue({}),
-        jest.fn(),
-        null,
+        loadStaticConfigFn: jest.fn().mockResolvedValue({}),
+        getAuthFn: jest.fn(),
+        onAuthStateChangedFn: null,
         doc,
-        jest.fn()
-      )
+        fetchFn: jest.fn(),
+      })
     ).toThrow(new TypeError('onAuthStateChangedFn must be a function'));
   });
 
   it('throws when document is invalid', () => {
     expect(() =>
-      initAdmin(
-        {
+      initAdmin({
+        googleAuthModule: {
           getIdToken: jest.fn(),
           signOut: jest.fn(),
           initGoogleSignIn: jest.fn(),
         },
-        jest.fn().mockResolvedValue({}),
-        jest.fn(),
-        jest.fn(),
-        null,
-        jest.fn()
-      )
+        loadStaticConfigFn: jest.fn().mockResolvedValue({}),
+        getAuthFn: jest.fn(),
+        onAuthStateChangedFn: jest.fn(),
+        doc: null,
+        fetchFn: jest.fn(),
+      })
     ).toThrow(new TypeError('doc must be a Document-like object'));
   });
 
@@ -1491,18 +1533,18 @@ describe('initAdmin', () => {
     const { doc } = makeDoc();
 
     expect(() =>
-      initAdmin(
-        {
+      initAdmin({
+        googleAuthModule: {
           getIdToken: jest.fn(),
           signOut: jest.fn(),
           initGoogleSignIn: jest.fn(),
         },
-        jest.fn().mockResolvedValue({}),
-        jest.fn(),
-        jest.fn(),
+        loadStaticConfigFn: jest.fn().mockResolvedValue({}),
+        getAuthFn: jest.fn(),
+        onAuthStateChangedFn: jest.fn(),
         doc,
-        null
-      )
+        fetchFn: null,
+      })
     ).toThrow(new TypeError('fetchFn must be a function'));
   });
 });

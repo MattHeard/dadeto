@@ -66,13 +66,14 @@ describe('createRegenerateVariant', () => {
     mockRegenInputElement.value = '123abc'; // Simulate valid input
     mockFetchFn.shouldThrow = true;
 
-    const regenerateVariant = createRegenerateVariant(
-      mockGoogleAuthModule,
-      mockDoc,
-      mockShowMessage,
-      () => Promise.resolve({ markVariantDirtyUrl: 'some-url' }),
-      mockFetchFn
-    );
+    const regenerateVariant = createRegenerateVariant({
+      googleAuth: mockGoogleAuthModule,
+      doc: mockDoc,
+      showMessage: mockShowMessage,
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ markVariantDirtyUrl: 'some-url' }),
+      fetchFn: mockFetchFn,
+    });
 
     await regenerateVariant({ preventDefault: () => {} });
 

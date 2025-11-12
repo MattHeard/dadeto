@@ -13,14 +13,14 @@ describe('initAdmin', () => {
     const mockFetchFn = () => Promise.resolve({});
 
     expect(() =>
-      initAdmin(
-        mockGoogleAuthModule,
-        mockLoadStaticConfigFn,
-        mockGetAuthFn,
-        mockOnAuthStateChangedFn,
-        mockDoc,
-        mockFetchFn
-      )
+      initAdmin({
+        googleAuthModule: mockGoogleAuthModule,
+        loadStaticConfigFn: mockLoadStaticConfigFn,
+        getAuthFn: mockGetAuthFn,
+        onAuthStateChangedFn: mockOnAuthStateChangedFn,
+        doc: mockDoc,
+        fetchFn: mockFetchFn,
+      })
     ).toThrow(
       new TypeError(
         'googleAuthModule must provide an initGoogleSignIn function'

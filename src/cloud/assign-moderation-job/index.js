@@ -80,12 +80,12 @@ function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
     ensureAppFn();
 
     const databaseId = resolveFirestoreDatabaseId(environment);
-    const useCustomDependencies = shouldUseCustomFirestoreDependencies(
+    const useCustomDependencies = shouldUseCustomFirestoreDependencies({
       options,
-      defaultEnsureFirebaseApp,
-      getAdminFirestore,
-      providedEnvironment
-    );
+      defaultEnsureFn: defaultEnsureFirebaseApp,
+      defaultGetFirestoreFn: getAdminFirestore,
+      providedEnvironment,
+    });
 
     if (useCustomDependencies) {
       return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);

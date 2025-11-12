@@ -243,7 +243,8 @@ export function createCorsErrorHandler({
   status = 403,
   body = { error: 'Origin not allowed' },
 } = {}) {
-  return function corsErrorHandler(err, req, res, next) {
+  return function corsErrorHandler(...args) {
+    const [err, req, res, next] = args;
     if (err instanceof Error && err.message === 'CORS') {
       res.status(status).json(body);
       return;

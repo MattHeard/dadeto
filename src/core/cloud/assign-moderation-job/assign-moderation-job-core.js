@@ -47,19 +47,23 @@ export function resolveFirestoreEnvironment(
 
 /**
  * Determine whether the caller supplied custom Firestore dependencies.
- * @param {Record<string, unknown> | undefined} options Options provided to the Firestore factory.
- * @param {() => void} defaultEnsureFn Default Firebase app initializer.
- * @param {(app?: import('firebase-admin/app').App, databaseId?: string) => import('firebase-admin/firestore').Firestore} defaultGetFirestoreFn
- * Default Firestore factory from the Admin SDK.
- * @param {Record<string, unknown> | undefined} providedEnvironment Environment override supplied by the caller.
+ * @param {{
+ *   options: Record<string, unknown> | undefined,
+ *   defaultEnsureFn: () => void,
+ *   defaultGetFirestoreFn: (
+ *     app?: import('firebase-admin/app').App,
+ *     databaseId?: string
+ *   ) => import('firebase-admin/firestore').Firestore,
+ *   providedEnvironment: Record<string, unknown> | undefined,
+ * }} params - Dependencies used to evaluate the Firestore configuration.
  * @returns {boolean} True when custom dependencies should be used.
  */
-export function shouldUseCustomFirestoreDependencies(
+export function shouldUseCustomFirestoreDependencies({
   options,
   defaultEnsureFn,
   defaultGetFirestoreFn,
-  providedEnvironment
-) {
+  providedEnvironment,
+}) {
   const { ensureAppFn, getFirestoreFn } = options ?? {};
 
   return (
@@ -727,25 +731,25 @@ export function createAssignModerationWorkflow({
  * @param {() => number} random RNG used for variant selection.
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Express handler that assigns a moderation job to the caller.
  */
-export function createHandleAssignModerationJob(
+export function createHandleAssignModerationJob({
   createRunVariantQuery,
   auth,
   db,
   now,
-  random
-) {
+  random,
+}) {
   const createFetchVariantSnapshotFromDb =
     createFetchVariantSnapshotFromDbFactory(createRunVariantQuery);
 
   const fetchVariantSnapshot = createFetchVariantSnapshotFromDb(db);
 
-  return createHandleAssignModerationJobFromAuth(
+  return createHandleAssignModerationJobFromAuth({
     auth,
     fetchVariantSnapshot,
     db,
     now,
-    random
-  );
+    random,
+  });
 }
 
 /**
@@ -762,13 +766,13 @@ export function setupAssignModerationJobRoute(
 ) {
   const { db, auth, app } = firebaseResources;
 
-  const handleAssignModerationJob = createHandleAssignModerationJob(
+  const handleAssignModerationJob = createHandleAssignModerationJob({
     createRunVariantQuery,
     auth,
     db,
     now,
-    random
-  );
+    random,
+  });
 
   app.post('/', handleAssignModerationJob);
 
@@ -796,13 +800,13 @@ export function createAssignModerationJob(functionsModule, firebaseResources) {
  * @param {() => number} random - RNG used for variant selection.
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Express handler bound to Firebase auth.
  */
-export function createHandleAssignModerationJobFromAuth(
+export function createHandleAssignModerationJobFromAuth({
   auth,
   fetchVariantSnapshot,
   db,
   now,
-  random
-) {
+  random,
+}) {
   const runGuards = createRunGuards(auth);
   const createModeratorRef = createModeratorRefFactory(db);
 

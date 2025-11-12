@@ -213,7 +213,12 @@ describe('mark-variant-dirty core helpers', () => {
       };
 
       await expect(
-        findVariantRef({}, 7, 'variant-a', firebase)
+        findVariantRef({
+          database: {},
+          pageNumber: 7,
+          variantName: 'variant-a',
+          firebase,
+        })
       ).resolves.toBeNull();
     });
 
@@ -226,7 +231,12 @@ describe('mark-variant-dirty core helpers', () => {
       };
 
       await expect(
-        findVariantRef({ db: true }, 8, 'variant-a', firebase)
+        findVariantRef({
+          database: { db: true },
+          pageNumber: 8,
+          variantName: 'variant-a',
+          firebase,
+        })
       ).resolves.toBe(variantRef);
 
       expect(firebase.findPageRef).toHaveBeenCalledWith({ db: true }, 8, {
@@ -259,9 +269,13 @@ describe('mark-variant-dirty core helpers', () => {
       const collectionGroup = jest.fn(() => ({ where: pagesWhere }));
       const db = { collectionGroup };
 
-      await expect(findVariantRef(db, 8, 'variant-b')).resolves.toBe(
-        variantRef
-      );
+      await expect(
+        findVariantRef({
+          database: db,
+          pageNumber: 8,
+          variantName: 'variant-b',
+        })
+      ).resolves.toBe(variantRef);
 
       expect(collectionGroup).toHaveBeenCalledWith('pages');
       expect(variantsWhere).toHaveBeenCalledWith('name', '==', 'variant-b');

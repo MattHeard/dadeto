@@ -65,13 +65,14 @@ describe('createRegenerateVariant', () => {
   it('should show "Invalid format" if parsePageVariantInput returns null', async () => {
     mockRegenInputElement.value = ''; // Simulate empty input
 
-    const regenerateVariant = createRegenerateVariant(
-      mockGoogleAuthModule,
-      mockDoc,
-      mockShowMessage,
-      () => Promise.resolve({ markVariantDirtyUrl: 'some-url' }),
-      mockFetchFn
-    );
+    const regenerateVariant = createRegenerateVariant({
+      googleAuth: mockGoogleAuthModule,
+      doc: mockDoc,
+      showMessage: mockShowMessage,
+      getAdminEndpointsFn: () =>
+        Promise.resolve({ markVariantDirtyUrl: 'some-url' }),
+      fetchFn: mockFetchFn,
+    });
 
     await regenerateVariant({ preventDefault: () => {} });
 

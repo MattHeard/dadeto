@@ -135,23 +135,25 @@ export function findVariantsSnap(pageRef, variantName) {
 
 /**
  * Find a reference to the variant document.
- * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
- * @param {number} pageNumber Page number.
- * @param {string} variantName Variant name.
  * @param {{
- *   findPageRef?: typeof findPageRef,
- *   findPagesSnap?: typeof findPagesSnap,
- *   findVariantsSnap?: typeof findVariantsSnap,
- *   refFromSnap?: typeof refFromSnap,
- * }} [firebase] Optional Firebase helpers.
+ *   database: import('firebase-admin/firestore').Firestore,
+ *   pageNumber: number,
+ *   variantName: string,
+ *   firebase?: {
+ *     findPageRef?: typeof findPageRef,
+ *     findPagesSnap?: typeof findPagesSnap,
+ *     findVariantsSnap?: typeof findVariantsSnap,
+ *     refFromSnap?: typeof refFromSnap,
+ *   },
+ * }} params - Dependencies used to locate the variant.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant doc ref.
  */
-export async function findVariantRef(
+export async function findVariantRef({
   database,
   pageNumber,
   variantName,
-  firebase = {}
-) {
+  firebase = {},
+}) {
   const findPageRefFn = firebase.findPageRef ?? findPageRef;
   const findVariantsSnapFn = firebase.findVariantsSnap ?? findVariantsSnap;
   const findPagesSnapFn = firebase.findPagesSnap ?? findPagesSnap;
@@ -202,12 +204,12 @@ export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
     throw new TypeError('db must be provided');
   }
 
-  const variantRef = await findVariantRef(
-    db,
+  const variantRef = await findVariantRef({
+    database: db,
     pageNumber,
     variantName,
-    firebase
-  );
+    firebase,
+  });
 
   if (!variantRef) {
     return false;
@@ -292,13 +294,15 @@ function parseValidRequest(req, res, parseRequestBody) {
 
 /**
  * Mark the variant dirty and send the appropriate response.
- * @param {import('express').Response} res HTTP response.
- * @param {(pageNumber: number, variantName: string) => Promise<boolean>} markFn Mutation helper.
- * @param {number} pageNumber Page number.
- * @param {string} variantName Variant name.
+ * @param {{
+ *   res: import('express').Response,
+ *   markFn: (pageNumber: number, variantName: string) => Promise<boolean>,
+ *   pageNumber: number,
+ *   variantName: string,
+ * }} params - Response and mutation dependencies.
  * @returns {Promise<void>} Resolves when the response has been sent.
  */
-async function markVariantAndRespond(res, markFn, pageNumber, variantName) {
+async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
   try {
     const ok = await markFn(pageNumber, variantName);
     if (!ok) {
@@ -377,11 +381,11 @@ export function createHandleRequest({
     const markFn =
       typeof deps.markFn === 'function' ? deps.markFn : markVariantDirty;
 
-    await markVariantAndRespond(
+    await markVariantAndRespond({
       res,
       markFn,
-      parsed.pageNumber,
-      parsed.variantName
-    );
+      pageNumber: parsed.pageNumber,
+      variantName: parsed.variantName,
+    });
   };
 }

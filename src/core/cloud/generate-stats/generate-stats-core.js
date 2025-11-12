@@ -11,9 +11,12 @@ export { productionOrigins } from './cloud-core.js';
  * @param {number} unmoderatedCount Unmoderated page count.
  * @param {Array<{title: string, variantCount: number}>} [topStories]
  *   Top stories by variant count.
+ * @param {...any} args
  * @returns {string} HTML page.
  */
-export function buildHtml(storyCount, pageCount, unmoderatedCount, topStories) {
+export function buildHtml(...args) {
+  const [storyCount, pageCount, unmoderatedCount, topStories] = args;
+  const resolvedTopStories = topStories ?? [];
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -123,7 +126,7 @@ export function buildHtml(storyCount, pageCount, unmoderatedCount, topStories) {
     </script>
     <script>
       (function () {
-        const data = ${JSON.stringify(topStories)};
+        const data = ${JSON.stringify(resolvedTopStories)};
         const root = document.getElementById("topStories");
         if (
           !root ||

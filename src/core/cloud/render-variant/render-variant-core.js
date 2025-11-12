@@ -171,19 +171,51 @@ function buildParagraphsHtml(content) {
  * @param parentUrl
  * @param firstPageUrl
  * @param showTitleHeading
+ * @param buildHtmlInput
  */
-export function buildHtml(
-  pageNumber,
-  variantName,
-  content,
-  options,
-  storyTitle = '',
-  author = '',
-  authorUrl = '',
-  parentUrl = '',
-  firstPageUrl = '',
-  showTitleHeading = true
-) {
+export function buildHtml(buildHtmlInput) {
+  const positionalArgs = arguments;
+  const isObjectForm =
+    buildHtmlInput &&
+    typeof buildHtmlInput === 'object' &&
+    'pageNumber' in buildHtmlInput;
+  const baseDefaults = {
+    storyTitle: '',
+    author: '',
+    authorUrl: '',
+    parentUrl: '',
+    firstPageUrl: '',
+    showTitleHeading: true,
+  };
+  const resolvedParams = isObjectForm
+    ? { ...baseDefaults, ...buildHtmlInput }
+    : {
+        pageNumber: positionalArgs[0],
+        variantName: positionalArgs[1],
+        content: positionalArgs[2],
+        options: positionalArgs[3],
+        storyTitle: positionalArgs[4] ?? baseDefaults.storyTitle,
+        author: positionalArgs[5] ?? baseDefaults.author,
+        authorUrl: positionalArgs[6] ?? baseDefaults.authorUrl,
+        parentUrl: positionalArgs[7] ?? baseDefaults.parentUrl,
+        firstPageUrl: positionalArgs[8] ?? baseDefaults.firstPageUrl,
+        showTitleHeading:
+          positionalArgs.length > 9
+            ? positionalArgs[9]
+            : baseDefaults.showTitleHeading,
+      };
+  const {
+    pageNumber,
+    variantName,
+    content,
+    options,
+    storyTitle,
+    author,
+    authorUrl,
+    parentUrl,
+    firstPageUrl,
+    showTitleHeading,
+  } = resolvedParams;
   const items = buildOptionsHtml(pageNumber, variantName, options);
   const title = buildTitleHeadingHtml(storyTitle, showTitleHeading);
   const headTitle = buildHeadTitle(storyTitle);
@@ -1084,18 +1116,18 @@ async function resolveRenderPlan({
   });
   const parentUrl = await resolveParentUrl({ variant, db, consoleError });
 
-  const html = buildHtml(
-    page.number,
-    variant.name,
-    variant.content,
+  const html = buildHtml({
+    pageNumber: page.number,
+    variantName: variant.name,
+    content: variant.content,
     options,
     storyTitle,
-    authorName,
+    author: authorName,
     authorUrl,
     parentUrl,
     firstPageUrl,
-    !page.incomingOption
-  );
+    showTitleHeading: !page.incomingOption,
+  });
   const filePath = `p/${page.number}${variant.name}.html`;
   const openVariant = options.some(
     option => option.targetPageNumber === undefined
