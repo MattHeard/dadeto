@@ -1334,5 +1334,9 @@ function setElementVisibility(element, visible) {
     return;
   }
 
-  element.style.display = visible ? '' : 'none';
+  if (visible) {
+    element.style.display = '';
+  } else {
+    element.style.display = 'none';
+  }
 }
