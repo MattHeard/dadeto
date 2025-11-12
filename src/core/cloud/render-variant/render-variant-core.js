@@ -200,23 +200,30 @@ export function buildHtml(buildHtmlInput) {
     firstPageUrl: '',
     showTitleHeading: true,
   };
-  const resolvedParams = isObjectForm
-    ? { ...baseDefaults, ...buildHtmlInput }
-    : {
-        pageNumber: positionalArgs[0],
-        variantName: positionalArgs[1],
-        content: positionalArgs[2],
-        options: positionalArgs[3],
-        storyTitle: positionalArgs[4] ?? baseDefaults.storyTitle,
-        author: positionalArgs[5] ?? baseDefaults.author,
-        authorUrl: positionalArgs[6] ?? baseDefaults.authorUrl,
-        parentUrl: positionalArgs[7] ?? baseDefaults.parentUrl,
-        firstPageUrl: positionalArgs[8] ?? baseDefaults.firstPageUrl,
-        showTitleHeading:
-          positionalArgs.length > 9
-            ? positionalArgs[9]
-            : baseDefaults.showTitleHeading,
-      };
+  let resolvedParams;
+  if (isObjectForm) {
+    resolvedParams = { ...baseDefaults, ...buildHtmlInput };
+  } else {
+    let showTitleHeading;
+    if (positionalArgs.length > 9) {
+      showTitleHeading = positionalArgs[9];
+    } else {
+      showTitleHeading = baseDefaults.showTitleHeading;
+    }
+
+    resolvedParams = {
+      pageNumber: positionalArgs[0],
+      variantName: positionalArgs[1],
+      content: positionalArgs[2],
+      options: positionalArgs[3],
+      storyTitle: positionalArgs[4] ?? baseDefaults.storyTitle,
+      author: positionalArgs[5] ?? baseDefaults.author,
+      authorUrl: positionalArgs[6] ?? baseDefaults.authorUrl,
+      parentUrl: positionalArgs[7] ?? baseDefaults.parentUrl,
+      firstPageUrl: positionalArgs[8] ?? baseDefaults.firstPageUrl,
+      showTitleHeading,
+    };
+  }
   const {
     pageNumber,
     variantName,
@@ -364,9 +371,13 @@ export function buildHtml(buildHtmlInput) {
           setTimeout(() => (overlay.hidden = true), 180);
           toggle.focus();
         }
-        toggle.addEventListener('click', () =>
-          overlay.hidden ? openMenu() : closeMenu()
-        );
+    toggle.addEventListener('click', () => {
+      if (overlay.hidden) {
+        openMenu();
+      } else {
+        closeMenu();
+      }
+    });
         closeBtn.addEventListener('click', closeMenu);
         overlay.addEventListener('click', e => {
           if (e.target === overlay) closeMenu();
@@ -587,9 +598,13 @@ export function buildAltsHtml(pageNumber, variants) {
           setTimeout(() => (overlay.hidden = true), 180);
           toggle.focus();
         }
-        toggle.addEventListener('click', () =>
-          overlay.hidden ? openMenu() : closeMenu()
-        );
+        toggle.addEventListener('click', () => {
+          if (overlay.hidden) {
+            openMenu();
+          } else {
+            closeMenu();
+          }
+        });
         closeBtn.addEventListener('click', closeMenu);
         overlay.addEventListener('click', e => {
           if (e.target === overlay) closeMenu();
@@ -1190,9 +1205,12 @@ async function persistRenderPlan({
 
   await bucket.file(altsPath).save(altsHtml, { contentType: 'text/html' });
 
-  const pendingName = variant.incomingOption
-    ? context?.params?.variantId
-    : context?.params?.storyId;
+  let pendingName;
+  if (variant.incomingOption) {
+    pendingName = context?.params?.variantId;
+  } else {
+    pendingName = context?.params?.storyId;
+  }
   const pendingPath = `pending/${pendingName}.json`;
 
   await bucket.file(pendingPath).save(JSON.stringify({ path: filePath }), {

@@ -111,7 +111,10 @@ export function getAllowedOrigins(environmentVariables) {
   }
 
   if (typeof environment === 'string' && environment.startsWith('t-')) {
-    return playwrightOrigin ? [playwrightOrigin] : [];
+    if (playwrightOrigin) {
+      return [playwrightOrigin];
+    }
+    return [];
   }
 
   return productionOrigins;

@@ -18,9 +18,10 @@ export function getAllowedOrigins(environmentVariables) {
   }
 
   if (typeof environment === 'string' && environment.startsWith('t-')) {
-    return typeof playwrightOrigin === 'string' && playwrightOrigin
-      ? [playwrightOrigin]
-      : [];
+    if (typeof playwrightOrigin === 'string' && playwrightOrigin) {
+      return [playwrightOrigin];
+    }
+    return [];
   }
 
   return productionOrigins;
@@ -312,8 +313,10 @@ async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
 
     res.status(200).json({ ok: true });
   } catch (error) {
-    const message =
-      typeof error?.message === 'string' ? error.message : 'update failed';
+    let message = 'update failed';
+    if (typeof error?.message === 'string') {
+      message = error.message;
+    }
     res.status(500).json({ error: message });
   }
 }
@@ -334,7 +337,10 @@ export function createIsAdminUid(adminUid) {
  */
 export function parseMarkVariantRequestBody(body) {
   const pageNumber = Number(body?.page);
-  const variantName = typeof body?.variant === 'string' ? body.variant : '';
+  let variantName = '';
+  if (typeof body?.variant === 'string') {
+    variantName = body.variant;
+  }
 
   return { pageNumber, variantName };
 }
@@ -366,8 +372,10 @@ export function createHandleRequest({
       return;
     }
 
-    const verifyAdminFn =
-      typeof deps.verifyAdmin === 'function' ? deps.verifyAdmin : verifyAdmin;
+    let verifyAdminFn = verifyAdmin;
+    if (typeof deps.verifyAdmin === 'function') {
+      verifyAdminFn = deps.verifyAdmin;
+    }
 
     if (!(await verifyAdminFn(req, res))) {
       return;
@@ -378,8 +386,10 @@ export function createHandleRequest({
       return;
     }
 
-    const markFn =
-      typeof deps.markFn === 'function' ? deps.markFn : markVariantDirty;
+    let markFn = markVariantDirty;
+    if (typeof deps.markFn === 'function') {
+      markFn = deps.markFn;
+    }
 
     await markVariantAndRespond({
       res,

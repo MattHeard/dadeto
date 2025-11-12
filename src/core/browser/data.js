@@ -458,8 +458,12 @@ function normalizeDependencies(bundle) {
   const normalizedLoggers = {
     logInfo: ensureLoggerFunction(loggers, 'logInfo'),
     logError: ensureLoggerFunction(loggers, 'logError'),
-    logWarning:
-      typeof loggers.logWarning === 'function' ? loggers.logWarning : () => {},
+    logWarning: (() => {
+      if (typeof loggers.logWarning === 'function') {
+        return loggers.logWarning;
+      }
+      return () => {};
+    })(),
   };
 
   return {

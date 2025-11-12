@@ -432,9 +432,12 @@ async function createVariantWithOptions({
     .get();
 
   const latestName = variantsSnap.docs[0]?.data()?.name ?? '';
-  const nextName = variantsSnap.empty
-    ? 'a'
-    : incrementVariantNameFn(latestName);
+  let nextName;
+  if (variantsSnap.empty) {
+    nextName = 'a';
+  } else {
+    nextName = incrementVariantNameFn(latestName);
+  }
 
   const newVariantRef = getVariantCollection(pageDocRef).doc(
     snapshotRef?.id ?? randomUUID()
@@ -548,22 +551,25 @@ export function createProcessNewPageHandler({
     let variantRef = null;
 
     const batch = db.batch();
-    const pageContext = incomingOptionFullName
-      ? await resolveIncomingOptionContext({
-          db,
-          incomingOptionFullName,
-          snapshot,
-          batch,
-          findAvailablePageNumberFn,
-          randomUUID,
-          random,
-          getServerTimestamp,
-        })
-      : await resolveDirectPageContext({
-          db,
-          directPageNumber,
-          snapshot,
-        });
+    let pageContext;
+    if (incomingOptionFullName) {
+      pageContext = await resolveIncomingOptionContext({
+        db,
+        incomingOptionFullName,
+        snapshot,
+        batch,
+        findAvailablePageNumberFn,
+        randomUUID,
+        random,
+        getServerTimestamp,
+      });
+    } else {
+      pageContext = await resolveDirectPageContext({
+        db,
+        directPageNumber,
+        snapshot,
+      });
+    }
 
     if (!pageContext) {
       await snapshot.ref.update({ processed: true });

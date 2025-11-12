@@ -47,7 +47,10 @@ function getStorageFunction(env) {
     return null;
   }
   const storageFn = env.get('setLocalPermanentData');
-  return typeof storageFn === 'function' ? storageFn : null;
+  if (typeof storageFn === 'function') {
+    return storageFn;
+  }
+  return null;
 }
 
 /**
@@ -59,7 +62,10 @@ function readExistingList(storageFn) {
   try {
     const existingData = storageFn({});
     const stored = existingData?.[TOY_KEY];
-    return typeof stored === 'string' ? stored : '';
+    if (typeof stored === 'string') {
+      return stored;
+    }
+    return '';
   } catch {
     return '';
   }

@@ -144,10 +144,12 @@ export function createHandleSubmit({
 }) {
   return async function handleSubmit(request) {
     const { body = {} } = request;
-    const getHeader =
-      typeof request.get === 'function'
-        ? name => request.get(name)
-        : () => undefined;
+    let getHeader;
+    if (typeof request.get === 'function') {
+      getHeader = name => request.get(name);
+    } else {
+      getHeader = () => undefined;
+    }
 
     const { incomingOption, pageStr, content, author } =
       normalizeSubmissionBody(body);

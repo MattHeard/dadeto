@@ -37,7 +37,12 @@ export function createLoadStaticConfig({ fetchFn, warn } = {}) {
     throw new TypeError('fetchFn must be a function');
   }
 
-  const logWarn = typeof warn === 'function' ? warn : () => {};
+  let logWarn;
+  if (typeof warn === 'function') {
+    logWarn = warn;
+  } else {
+    logWarn = () => {};
+  }
   let configPromise;
 
   /**

@@ -264,7 +264,13 @@ export async function executeTriggerRender({
     );
     await announceTriggerRenderResult(res, showMessage);
   } catch (e) {
-    showMessage(`Render failed: ${e instanceof Error ? e.message : String(e)}`);
+    let message;
+    if (e instanceof Error) {
+      message = e.message;
+    } else {
+      message = String(e);
+    }
+    showMessage(`Render failed: ${message}`);
   }
 }
 
@@ -485,13 +491,19 @@ function normalizeGoogleSignInDeps(deps = {}) {
     querySelectorAll,
   });
 
-  const resolveGoogleAccountsId =
-    typeof googleAccountsId === 'function'
-      ? googleAccountsId
-      : () => googleAccountsId;
+  let resolveGoogleAccountsId;
+  if (typeof googleAccountsId === 'function') {
+    resolveGoogleAccountsId = googleAccountsId;
+  } else {
+    resolveGoogleAccountsId = () => googleAccountsId;
+  }
 
-  const safeLogger =
-    logger && typeof logger.error === 'function' ? logger : console;
+  let safeLogger;
+  if (logger && typeof logger.error === 'function') {
+    safeLogger = logger;
+  } else {
+    safeLogger = console;
+  }
 
   return {
     resolveGoogleAccountsId,
@@ -996,11 +1008,19 @@ export function updateAuthControlsDisplay(user, signIns, signOuts) {
   const isSignedIn = Boolean(user);
 
   signIns.forEach(element => {
-    element.style.display = isSignedIn ? 'none' : '';
+    if (isSignedIn) {
+      element.style.display = 'none';
+    } else {
+      element.style.display = '';
+    }
   });
 
   signOuts.forEach(element => {
-    element.style.display = isSignedIn ? '' : 'none';
+    if (isSignedIn) {
+      element.style.display = '';
+    } else {
+      element.style.display = 'none';
+    }
   });
 }
 

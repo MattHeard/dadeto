@@ -95,7 +95,12 @@ export function createReportForModerationHandler({
  * @returns {(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void} Validation callback compatible with the CORS package.
  */
 export function createCorsOriginValidator(allowedOrigins) {
-  const origins = Array.isArray(allowedOrigins) ? allowedOrigins : [];
+  let origins;
+  if (Array.isArray(allowedOrigins)) {
+    origins = allowedOrigins;
+  } else {
+    origins = [];
+  }
 
   return function corsOriginValidator(origin, cb) {
     if (!origin || origins.includes(origin)) {

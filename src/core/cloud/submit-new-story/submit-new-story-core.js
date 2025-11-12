@@ -62,7 +62,10 @@ function normalizeAuthorizationCandidate(candidate) {
   if (Array.isArray(candidate)) {
     const [first] = candidate;
 
-    return typeof first === 'string' ? first : null;
+    if (typeof first === 'string') {
+      return first;
+    }
+    return null;
   }
 
   return null;
@@ -130,8 +133,10 @@ function extractBearerToken(header) {
   }
 
   const match = header.match(/^Bearer (.+)$/);
-
-  return match ? match[1] : null;
+  if (match) {
+    return match[1];
+  }
+  return null;
 }
 
 /**
@@ -218,7 +223,12 @@ function createResponse(status, body) {
  * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }} Express-compatible CORS options.
  */
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
-  const origins = Array.isArray(allowedOrigins) ? allowedOrigins : [];
+  let origins;
+  if (Array.isArray(allowedOrigins)) {
+    origins = allowedOrigins;
+  } else {
+    origins = [];
+  }
 
   return {
     origin: (origin, cb) => {
