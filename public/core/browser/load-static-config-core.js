@@ -57,8 +57,9 @@ export function createLoadStaticConfig({ fetchFn, warn } = {}) {
 }
 
 /**
- *
- * @param fetchFn
+ * Validate that the injected fetch helper is callable.
+ * @param {(input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} fetchFn - Fetch-like function.
+ * @returns {void}
  */
 function ensureFetchFunction(fetchFn) {
   if (typeof fetchFn !== 'function') {
@@ -67,8 +68,9 @@ function ensureFetchFunction(fetchFn) {
 }
 
 /**
- *
- * @param warn
+ * Ensure a warning logger is available, defaulting to no-op.
+ * @param {(message: string, error?: unknown) => void | undefined} warn - Optional logger dependency.
+ * @returns {(message: string, error?: unknown) => void} Logger invoked when static config loading fails.
  */
 function resolveLogWarn(warn) {
   if (typeof warn === 'function') {
@@ -79,16 +81,18 @@ function resolveLogWarn(warn) {
 }
 
 /**
- *
- * @param fetchFn
- * @param logWarn
+ * Build a memoized loader that parses the remote static config once.
+ * @param {(input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} fetchFn - Network helper that retrieves config.
+ * @param {(message: string, error?: unknown) => void} logWarn - Logger used when loading fails.
+ * @returns {() => Promise<Record<string, unknown>>} Loader that returns the cached payload.
  */
 function createStaticConfigLoader(fetchFn, logWarn) {
   let configPromise;
 
   /**
-   *
-   * @param error
+   * Log failures and fall back to an empty payload.
+   * @param {unknown} error - Issue encountered while fetching config.
+   * @returns {Record<string, unknown>} Empty fallback config.
    */
   function handleStaticConfigError(error) {
     logWarn('Failed to load static config', error);
@@ -96,7 +100,8 @@ function createStaticConfigLoader(fetchFn, logWarn) {
   }
 
   /**
-   *
+   * Kick off the static config fetch and parse pipeline.
+   * @returns {Promise<Record<string, unknown>>} Promise resolving to the parsed payload.
    */
   function createStaticConfigPromise() {
     return fetchFn('/config.json', { cache: 'no-store' })

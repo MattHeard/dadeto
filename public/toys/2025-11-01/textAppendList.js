@@ -38,8 +38,9 @@ function normalizeInput(value) {
 }
 
 /**
- *
- * @param value
+ * Determine whether a value is nullish.
+ * @param {unknown} value - Candidate value.
+ * @returns {boolean} True when the value is `null` or `undefined`.
  */
 function isNullish(value) {
   return value === undefined || value === null;
@@ -59,16 +60,18 @@ function getStorageFunction(env) {
 }
 
 /**
- *
- * @param env
+ * Check whether the provided environment exposes the expected storage getter.
+ * @param {{ get?: (key: string) => unknown } | null | undefined} env - Dependency bag with storage accessors.
+ * @returns {boolean} True when the storage helper is available.
  */
 function isStorageEnvironment(env) {
   return Boolean(env && typeof env.get === 'function');
 }
 
 /**
- *
- * @param env
+ * Resolve the persistence helper from the environment.
+ * @param {{ get: (key: string) => unknown }} env - Environment containing the storage getter.
+ * @returns {((args: object) => unknown) | null} Storage function when available.
  */
 function resolveStorageFn(env) {
   const storageFn = env.get('setLocalPermanentData');
@@ -93,8 +96,9 @@ function readExistingList(storageFn) {
 }
 
 /**
- *
- * @param storageFn
+ * Read the current list contents from storage while ensuring a string is returned.
+ * @param {(args: object) => unknown} storageFn - Storage accessor used to read the current list.
+ * @returns {string} Stored list contents or an empty string.
  */
 function getStoredListValue(storageFn) {
   const existingData = storageFn({});
@@ -102,8 +106,9 @@ function getStoredListValue(storageFn) {
 }
 
 /**
- *
- * @param value
+ * Normalize a stored value into a string.
+ * @param {unknown} value - Value read from storage.
+ * @returns {string} The normalized string or an empty string when the value is not a string.
  */
 function ensureString(value) {
   if (typeof value === 'string') {

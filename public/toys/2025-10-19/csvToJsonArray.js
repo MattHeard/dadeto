@@ -70,10 +70,12 @@ function buildRowsFromLines(trimmedLines) {
 }
 
 /**
- *
- * @param root0
- * @param root0.dataLines
- * @param root0.headerEntries
+ * Build rows once header parsing succeeded and rows exist.
+ * @param {{
+ *   dataLines: string[],
+ *   headerEntries: Array<{ name: string, index: number }>
+ * }} headerInfo - Parsed header metadata with remaining data lines.
+ * @returns {Array<Record<string, string>>|null} Parsed row objects or null when none could be built.
  */
 function getRowsFromHeaderInfo({ dataLines, headerEntries }) {
   const rows = buildRows(dataLines, headerEntries);
@@ -119,8 +121,9 @@ function parseHeaderEntries(lines) {
 }
 
 /**
- *
- * @param lines
+ * Parse header and data lines when trimming succeeds.
+ * @param {string[]} lines - Normalized CSV lines including the header row.
+ * @returns {{ headers: string[], dataLines: string[] } | null} Parsed header tokens and remaining data lines when available.
  */
 function getParsedHeaderLines(lines) {
   const [headerLine, ...dataLines] = lines;
@@ -133,8 +136,9 @@ function getParsedHeaderLines(lines) {
 }
 
 /**
- *
- * @param headerLine
+ * Trim the header line before parsing.
+ * @param {string | undefined} headerLine - Raw header text from the CSV input.
+ * @returns {string|null} Trimmed header string when content exists, otherwise null.
  */
 function getTrimmedHeaderLine(headerLine) {
   if (!headerLine) {
@@ -146,9 +150,10 @@ function getTrimmedHeaderLine(headerLine) {
 }
 
 /**
- *
- * @param trimmedHeader
- * @param dataLines
+ * Parse the trimmed header into individual tokens.
+ * @param {string} trimmedHeader - Header line without leading/trailing whitespace.
+ * @param {string[]} dataLines - Remaining lines representing data rows.
+ * @returns {{ headers: string[], dataLines: string[] } | null} Header tokens and untouched data lines, or null when parsing fails.
  */
 function getParsedHeaders(trimmedHeader, dataLines) {
   const headers = parseCsvLine(trimmedHeader);
@@ -160,8 +165,9 @@ function getParsedHeaders(trimmedHeader, dataLines) {
 }
 
 /**
- *
- * @param headers
+ * Convert header tokens into metadata records used for column lookups.
+ * @param {string[]} headers - Parsed header values.
+ * @returns {Array<{ name: string, index: number }>} Metadata entries for non-empty headers.
  */
 function buildHeaderEntries(headers) {
   return headers

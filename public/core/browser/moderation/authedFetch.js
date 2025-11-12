@@ -16,8 +16,9 @@ function normalizeHeaders(originalHeaders) {
 }
 
 /**
- *
- * @param value
+ * Determine whether the runtime provides a `Headers` constructor that accepts the supplied value.
+ * @param {unknown} value - Candidate header-like object.
+ * @returns {value is Headers} True when the object is an instance of `Headers`.
  */
 function isHeadersInstance(value) {
   if (typeof Headers === 'undefined') {
