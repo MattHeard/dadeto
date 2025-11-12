@@ -71,7 +71,7 @@ describe('textAppendList additional branches', () => {
 
 /**
  * Helper that tracks storage mutations through a mock function.
- * @param initial Initial key/value pairs to seed the store.
+ * @param {Record<string,string>} [initial] Initial key/value pairs to seed the store.
  * @returns {{store: object, fn: jest.Mock}} Storage snapshot and setter mock.
  */
 function createStorageMock(initial = {}) {

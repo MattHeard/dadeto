@@ -3,17 +3,9 @@
  */
 
 /**
- * Create an authenticated fetch helper that injects the current ID token.
- * @param {{
- *   getIdToken: () => (string|Promise<string|null>|null),
- *   fetchJson: (url: string, init: FetchOptions) => Promise<{
- *     ok: boolean,
- *     status: number,
- *     json: () => any,
- *   } | any>,
- * }} deps Dependencies for token lookup and network access.
- * @param originalHeaders
- * @returns {(url: string, init?: FetchOptions) => Promise<any>} Fetch helper adding an Authorization header.
+ * Normalize header-like inputs into an object for fetch.
+ * @param {Headers|FetchOptions|Record<string, any>|null|undefined} originalHeaders Header-like data.
+ * @returns {Record<string, any>} Normalized headers map.
  */
 function normalizeHeaders(originalHeaders) {
   if (typeof Headers !== 'undefined' && originalHeaders instanceof Headers) {
@@ -46,6 +38,18 @@ function handleAuthedResponse(response) {
   return response;
 }
 
+/**
+ * Create an authenticated fetch helper that injects the current ID token.
+ * @param {{
+ *   getIdToken: () => (string|Promise<string|null>|null),
+ *   fetchJson: (url: string, init: FetchOptions) => Promise<{
+ *     ok: boolean,
+ *     status: number,
+ *     json: () => any,
+ *   } | any>,
+ * }} deps Dependencies for token lookup and network access.
+ * @returns {(url: string, init?: FetchOptions) => Promise<any>} Fetch helper adding an Authorization header.
+ */
 export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
   if (typeof getIdToken !== 'function') {
     throw new TypeError('getIdToken must be a function');

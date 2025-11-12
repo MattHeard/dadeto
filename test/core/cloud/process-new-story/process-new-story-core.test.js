@@ -3,8 +3,8 @@ import { createProcessNewStoryHandler } from '../../../../src/core/cloud/process
 
 /**
  * Build a fake Firestore database for story handler tests.
- * @param root0
- * @param root0.authorExists Controls whether author docs are marked as existing.
+ * @param {{authorExists?: boolean}} root0 Configuration for author existence.
+ * @param {boolean} [root0.authorExists] Controls whether author docs are marked as existing.
  * @returns {{db: {doc: Function, batch: Function}, getDoc: Function}} Test DB helpers.
  */
 function createFakeDb({ authorExists = true } = {}) {

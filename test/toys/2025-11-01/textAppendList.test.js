@@ -3,7 +3,7 @@ import { textAppendList } from '../../../src/core/browser/toys/2025-11-01/textAp
 
 /**
  * Helper that tracks storage mutations through a mock function.
- * @param initial Initial key/value pairs to seed the store.
+ * @param {Record<string,string>} [initial] Initial key/value pairs to seed the store.
  * @returns {{store: object, fn: jest.Mock}} Storage snapshot and setter mock.
  */
 function createStorageMock(initial = {}) {
