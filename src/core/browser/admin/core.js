@@ -205,8 +205,9 @@ async function readTriggerRenderBody(res) {
 }
 
 /**
- *
- * @param res
+ * Extract the text reader from a response when available.
+ * @param {Response|null|undefined} res - Response that should expose a `text` method.
+ * @returns {(() => Promise<string>) | null} Callable reader or null when absent.
  */
 function getResponseTextReader(res) {
   const reader = res?.text;
@@ -218,9 +219,10 @@ function getResponseTextReader(res) {
 }
 
 /**
- *
- * @param readText
- * @param res
+ * Invoke the reader bound to the provided response.
+ * @param {() => Promise<string>} readText - Reader previously extracted from the response.
+ * @param {Response|null|undefined} res - Response used to call the reader with the correct context.
+ * @returns {Promise<string>} Promise resolving to response text or an empty string.
  */
 async function readResponseText(readText, res) {
   const body = await readText.call(res);
@@ -366,8 +368,9 @@ function requireDocumentLike(value, name = 'doc') {
 }
 
 /**
- *
- * @param value
+ * Detect whether a value can perform document lookups.
+ * @param {*} value - Candidate object evaluated for DOM parity.
+ * @returns {boolean} True when the value exposes `getElementById`.
  */
 function isDocumentLike(value) {
   if (!value) {
@@ -403,10 +406,18 @@ const bindClickEvent = createElementEventBinder('click');
 const bindSubmitEvent = createElementEventBinder('submit');
 
 /**
- *
- * @param eventType
+ * Create an element event binder for a specific DOM event.
+ * @param {string} eventType - Named event type handled by the binder.
+ * @returns {(doc: Document, elementId: string, listener: (event: Event) => void | Promise<void>) => HTMLElement | null} Binder that attaches the listener to the resolved element.
  */
 function createElementEventBinder(eventType) {
+  /**
+   * Bind the listener to the element resolved from the provided document.
+   * @param {Document} doc - Document used to locate the element.
+   * @param {string} elementId - ID of the element to bind to.
+   * @param {(() => void) | ((event: Event) => void | Promise<void>)} listener - Handler invoked when the event fires.
+   * @returns {HTMLElement | null} The bound element or null when missing/cannot listen.
+   */
   return function bindElementEvent(doc, elementId, listener) {
     const element = doc.getElementById(elementId);
     if (!element || typeof element.addEventListener !== 'function') {
@@ -734,8 +745,9 @@ async function handleCredentialSignIn(
 }
 
 /**
- *
- * @param currentUser
+ * Build a getter for the current user's `getIdToken` method.
+ * @param {{ getIdToken?: () => Promise<string> | () => string | null | undefined } | null | undefined} currentUser - Auth user object.
+ * @returns {() => Promise<string>} Function returning a promised token.
  */
 function resolveGetIdToken(currentUser) {
   const getter = currentUser?.getIdToken;
@@ -761,16 +773,18 @@ function renderSignInButtons(accountsId, querySelectorAll, mediaQueryList) {
 }
 
 /**
- *
- * @param querySelectorAll
+ * Collect available sign-in button elements via the DOM helper.
+ * @param {(selector: string) => NodeList} querySelectorAll - DOM helper for locating nodes.
+ * @returns {HTMLElement[]} Array of sign-in button elements.
  */
 function getSignInButtonElements(querySelectorAll) {
   return Array.from(querySelectorAll('#signinButton') ?? []);
 }
 
 /**
- *
- * @param mediaQueryList
+ * Resolve the button theme based on the provided media-query match.
+ * @param {{ matches: boolean } | undefined} mediaQueryList - Optional media query list controlling dark mode.
+ * @returns {'filled_blue' | 'filled_black'} Theme name passed to the Google button renderer.
  */
 function resolveSignInTheme(mediaQueryList) {
   if (mediaQueryList?.matches) {
@@ -781,10 +795,11 @@ function resolveSignInTheme(mediaQueryList) {
 }
 
 /**
- *
- * @param element
- * @param accountsId
- * @param theme
+ * Render a single Google sign-in button element.
+ * @param {HTMLElement | null} element - DOM element targeted for rendering.
+ * @param {GoogleAccountsClient} accountsId - Google Identity client exposing `renderButton`.
+ * @param {'filled_blue' | 'filled_black'} theme - Theme applied to the rendered button.
+ * @returns {void}
  */
 function renderSignInButton(element, accountsId, theme) {
   if (!element) {
@@ -1006,17 +1021,23 @@ function resolveRegenerationPayload(doc, showMessage, googleAuth) {
 }
 
 /**
- *
- * @param event
+ * Safely prevent the default action for the provided event.
+ * @param {{ preventDefault?: () => void } | null | undefined} event - Event-like object.
+ * @returns {void}
  */
 function preventDefaultEvent(event) {
   event?.preventDefault?.();
 }
 
 /**
- *
- * @param payload
- * @param deps
+ * Trigger regeneration once the payload is available.
+ * @param {{ token: string, pageVariant: { page: number, variant: string } } | null} payload - Payload with token and route data.
+ * @param {{
+ *   fetchFn: FetchFn,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   showMessage: (text: string) => void,
+ * }} deps - Dependencies required to execute the regeneration request.
+ * @returns {Promise<void>}
  */
 async function performRegenerationWhenReady(payload, deps) {
   if (!payload) {
@@ -1169,9 +1190,10 @@ export function createShowMessage(getStatusParagraphFn, doc) {
 }
 
 /**
- *
- * @param getStatusParagraphFn
- * @param doc
+ * Validate deps and resolve the paragraph element used for statuses.
+ * @param {(doc: Document) => HTMLElement | null} getStatusParagraphFn - Provides the paragraph element from a document.
+ * @param {Document} doc - Document used to resolve the element.
+ * @returns {HTMLElement | null} Bound paragraph element for status messages.
  */
 function resolveStatusParagraph(getStatusParagraphFn, doc) {
   requireFunction(getStatusParagraphFn, 'getStatusParagraphFn');
@@ -1180,9 +1202,10 @@ function resolveStatusParagraph(getStatusParagraphFn, doc) {
 }
 
 /**
- *
- * @param statusParagraph
- * @param text
+ * Render text into the provided status paragraph.
+ * @param {HTMLElement | null} statusParagraph - Element used to display admin messages.
+ * @param {string} text - Message text to show.
+ * @returns {void}
  */
 function renderStatusParagraph(statusParagraph, text) {
   if (!statusParagraph) {
@@ -1206,6 +1229,8 @@ function renderStatusParagraph(statusParagraph, text) {
  *   doc: Document,
  *   fetchFn: FetchFn,
  * }} options - Dependencies required for admin initialization.
+ * @param {() => unknown} options.getAuthFn - Getter that returns the current auth instance.
+ * @returns {void}
  */
 export function initAdmin({
   googleAuthModule,
@@ -1335,8 +1360,9 @@ export function getCurrentUser(getAuthFn) {
 }
 
 /**
- *
- * @param getAuthFn
+ * Safely resolve the auth instance via the provided getter.
+ * @param {() => { currentUser: unknown } | null | undefined} getAuthFn - Function that returns the auth object.
+ * @returns {{ currentUser: unknown } | null | undefined} Resolved auth instance or nullish when unavailable.
  */
 function resolveAuthInstance(getAuthFn) {
   if (typeof getAuthFn !== 'function') {

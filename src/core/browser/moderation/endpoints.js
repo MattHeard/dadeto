@@ -81,10 +81,15 @@ export function createModerationEndpointsPromise(
 }
 
 /**
- *
- * @param loadStaticConfigFn
- * @param defaults
- * @param logger
+ * Produce a loader that resolves moderation endpoints, handling missing config loaders.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader that reads the static configuration.
+ * @param {{
+ *   getModerationVariantUrl: string,
+ *   assignModerationJobUrl: string,
+ *   submitModerationRatingUrl: string,
+ * }} defaults - Fallback endpoint map.
+ * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Optional logger used when loading fails.
+ * @returns {() => Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Loader used to resolve moderation endpoints.
  */
 function getModerationEndpointsLoader(loadStaticConfigFn, defaults, logger) {
   if (typeof loadStaticConfigFn !== 'function') {
@@ -95,10 +100,15 @@ function getModerationEndpointsLoader(loadStaticConfigFn, defaults, logger) {
 }
 
 /**
- *
- * @param loadStaticConfigFn
- * @param defaults
- * @param logger
+ * Load moderation endpoints via the static config loader, reporting errors when they occur.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader that fetches static config overrides.
+ * @param {{
+ *   getModerationVariantUrl: string,
+ *   assignModerationJobUrl: string,
+ *   submitModerationRatingUrl: string,
+ * }} defaults - Default endpoint map when overrides are missing.
+ * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Logger that reports failures.
+ * @returns {Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Promise resolving to normalized endpoint URLs.
  */
 async function loadModerationEndpoints(loadStaticConfigFn, defaults, logger) {
   try {
