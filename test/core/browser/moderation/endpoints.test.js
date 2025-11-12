@@ -10,16 +10,22 @@ import {
 
 describe('mapConfigToModerationEndpoints', () => {
   it('uses defaults when config is undefined', () => {
-    const result = mapConfigToModerationEndpoints();
+    const result = mapConfigToModerationEndpoints(
+      undefined,
+      DEFAULT_MODERATION_ENDPOINTS
+    );
 
     expect(result).toEqual(DEFAULT_MODERATION_ENDPOINTS);
     expect(result).not.toBe(DEFAULT_MODERATION_ENDPOINTS);
   });
 
   it('merges provided config with defaults', () => {
-    const result = mapConfigToModerationEndpoints({
-      getModerationVariantUrl: 'https://example.com/variant',
-    });
+    const result = mapConfigToModerationEndpoints(
+      {
+        getModerationVariantUrl: 'https://example.com/variant',
+      },
+      DEFAULT_MODERATION_ENDPOINTS
+    );
 
     expect(result).toEqual({
       ...DEFAULT_MODERATION_ENDPOINTS,
