@@ -8,10 +8,11 @@ export const DEFAULT_MODERATION_ENDPOINTS = {
 };
 
 /**
- *
- * @param config
- * @param defaults
- * @param key
+ * Resolve a moderation endpoint by checking config overrides first.
+ * @param {Record<string, string>} config - Static config overrides grouped by endpoint key.
+ * @param {{getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string}} defaults - Default endpoint values.
+ * @param {'getModerationVariantUrl'|'assignModerationJobUrl'|'submitModerationRatingUrl'} key - Endpoint key to resolve.
+ * @returns {string} Endpoint URL resolved from config or defaults.
  */
 function resolveEndpointValue(config, defaults, key) {
   return config?.[key] ?? defaults[key];
