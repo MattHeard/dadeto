@@ -28,12 +28,21 @@ export async function parseStaticConfigResponse(response) {
  * @returns {StaticConfigResponse} The validated response ready for parsing.
  */
 function ensureStaticConfigResponseOk(response) {
-  if (!response?.ok) {
-    const status = response?.status ?? 'unknown';
-    throw new Error(`Failed to load static config: ${status}`);
+  if (response?.ok) {
+    return response;
   }
 
-  return response;
+  throw createStaticConfigError(response);
+}
+
+/**
+ * Build an error message when the static config fetch fails.
+ * @param {StaticConfigResponse | null | undefined} response - Response that triggered the error.
+ * @returns {Error} Error describing why the fetch failed.
+ */
+function createStaticConfigError(response) {
+  const status = response?.status ?? 'unknown';
+  return new Error(`Failed to load static config: ${status}`);
 }
 
 /**
