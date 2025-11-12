@@ -551,7 +551,7 @@ function normalizeGoogleSignInDeps(deps = {}) {
 
 /**
  * Resolve the accounts ID helper into a callable resolver.
- * @param {GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined} googleAccountsId
+ * @param {GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined} googleAccountsId - Optional helper that provides the Google Identity client.
  * @returns {() => GoogleAccountsClient | undefined} Resolver that always returns the accounts client.
  */
 function resolveGoogleAccounts(googleAccountsId) {
@@ -563,7 +563,7 @@ function resolveGoogleAccounts(googleAccountsId) {
 
 /**
  * Ensure we always have a logger that can report errors.
- * @param {{ error?: (message: string) => void } | undefined} logger
+ * @param {{ error?: (message: string) => void } | undefined} logger - Optional logger provided by the caller.
  * @returns {{ error?: (message: string) => void }} Logger that safely exposes `error`.
  */
 function resolveLogger(logger) {
@@ -774,13 +774,15 @@ export function createRegenerateVariant(options) {
 }
 
 /**
- *
- * @param root0
- * @param root0.googleAuth
- * @param root0.doc
- * @param root0.showMessage
- * @param root0.getAdminEndpointsFn
- * @param root0.fetchFn
+ * Validate dependencies before producing the regenerate variant handler.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   doc: Document,
+ *   showMessage: (text: string) => void,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   fetchFn: FetchFn,
+ * }} deps - Dependencies required for regenerating a variant.
+ * @returns {void}
  */
 function validateRegenerateVariantDeps({
   googleAuth,
@@ -1067,13 +1069,19 @@ export function initAdmin({
 }
 
 /**
- *
- * @param root0
- * @param root0.googleAuthModule
- * @param root0.getAuthFn
- * @param root0.onAuthStateChangedFn
- * @param root0.doc
- * @param root0.fetchFn
+ * Validate core admin initialization helpers before wiring event listeners.
+ * @param {{
+ *   googleAuthModule: {
+ *     initGoogleSignIn?: () => void,
+ *     getIdToken: () => string | null | undefined,
+ *     signOut: () => Promise<void> | void,
+ *   },
+ *   getAuthFn: () => unknown,
+ *   onAuthStateChangedFn: (auth: unknown, callback: () => void) => void,
+ *   doc: Document,
+ *   fetchFn: FetchFn,
+ * }} deps - Core dependencies required to initialize the admin UI.
+ * @returns {void}
  */
 function validateInitAdminDeps({
   googleAuthModule,
