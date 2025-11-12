@@ -25,6 +25,7 @@ export function textAppendList(input, env) {
 /**
  *
  * @param value
+ * @returns {string} Normalized string value.
  */
 function normalizeInput(value) {
   if (typeof value === 'string') {
@@ -39,6 +40,7 @@ function normalizeInput(value) {
 /**
  *
  * @param env
+ * @returns {((args: object) => unknown) | null} Storage helper when available.
  */
 function getStorageFunction(env) {
   if (!env || typeof env.get !== 'function') {
@@ -51,6 +53,7 @@ function getStorageFunction(env) {
 /**
  *
  * @param storageFn
+ * @returns {string} Stored list contents or empty string.
  */
 function readExistingList(storageFn) {
   try {
@@ -66,6 +69,7 @@ function readExistingList(storageFn) {
  *
  * @param storageFn
  * @param list
+ * @returns {void}
  */
 function persistUpdatedList(storageFn, list) {
   try {

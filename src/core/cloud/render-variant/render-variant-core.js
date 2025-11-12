@@ -20,6 +20,7 @@ export function escapeHtml(text) {
 /**
  *
  * @param text
+ * @returns {string} HTML representation of the provided text using inline Markdown.
  */
 function renderInlineMarkdown(text) {
   let html = escapeHtml(text);
@@ -33,6 +34,7 @@ function renderInlineMarkdown(text) {
  * @param pageNumber
  * @param variantName
  * @param option
+ * @returns {string} HTML list item for the option.
  */
 function buildOptionItem(pageNumber, variantName, option) {
   const slug = `${pageNumber}-${variantName}-${option.position}`;
@@ -61,6 +63,7 @@ function buildOptionItem(pageNumber, variantName, option) {
  * @param pageNumber
  * @param variantName
  * @param options
+ * @returns {string} Joined HTML list of options.
  */
 function buildOptionsHtml(pageNumber, variantName, options) {
   return options
@@ -72,6 +75,7 @@ function buildOptionsHtml(pageNumber, variantName, options) {
  *
  * @param storyTitle
  * @param showTitleHeading
+ * @returns {string} Heading HTML showing the story title when applicable.
  */
 function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
   if (!storyTitle || !showTitleHeading) return '';
@@ -81,6 +85,7 @@ function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
 /**
  *
  * @param storyTitle
+ * @returns {string} Title displayed in the document head.
  */
 function buildHeadTitle(storyTitle) {
   if (storyTitle) {
@@ -93,6 +98,7 @@ function buildHeadTitle(storyTitle) {
  *
  * @param author
  * @param authorUrl
+ * @returns {string} Author credits HTML.
  */
 function buildAuthorHtml(author, authorUrl) {
   if (!author) return '';
@@ -106,6 +112,7 @@ function buildAuthorHtml(author, authorUrl) {
  *
  * @param url
  * @param label
+ * @returns {string} Link paragraph HTML or empty string.
  */
 function buildLinkParagraph(url, label) {
   if (!url) return '';
@@ -115,6 +122,7 @@ function buildLinkParagraph(url, label) {
 /**
  *
  * @param pageNumber
+ * @returns {string} Rewrite link HTML.
  */
 function buildRewriteLink(pageNumber) {
   return `<a href="../new-page.html?page=${pageNumber}">Rewrite</a> `;
@@ -124,6 +132,7 @@ function buildRewriteLink(pageNumber) {
  *
  * @param pageNumber
  * @param variantName
+ * @returns {string} Report link HTML snippet.
  */
 function buildReportHtml(pageNumber, variantName) {
   const variantSlug = `${pageNumber}${variantName}`;
@@ -136,6 +145,7 @@ function buildReportHtml(pageNumber, variantName) {
 /**
  *
  * @param pageNumber
+ * @returns {string} Pagination controls HTML.
  */
 function buildPageNumberHtml(pageNumber) {
   return (
@@ -150,6 +160,7 @@ function buildPageNumberHtml(pageNumber) {
 /**
  *
  * @param content
+ * @returns {string} Paragraph HTML representing the content.
  */
 function buildParagraphsHtml(content) {
   return content
@@ -173,6 +184,7 @@ function buildParagraphsHtml(content) {
  *   firstPageUrl?: string,
  *   showTitleHeading?: boolean,
  * }} buildHtmlInput
+ * @returns {string} Rendered variant page.
  */
 export function buildHtml(buildHtmlInput) {
   const positionalArgs = arguments;
@@ -443,6 +455,7 @@ export function buildHtml(buildHtmlInput) {
  *
  * @param pageNumber
  * @param variants
+ * @returns {string} HTML for alternate variants list.
  */
 export function buildAltsHtml(pageNumber, variants) {
   const items = variants
@@ -592,6 +605,7 @@ export function buildAltsHtml(pageNumber, variants) {
 /**
  *
  * @param docs
+ * @returns {Array<{name: string, content: string}>} Visible variant summaries.
  */
 export function getVisibleVariants(docs) {
   return docs
