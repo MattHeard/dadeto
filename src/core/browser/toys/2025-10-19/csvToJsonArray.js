@@ -132,12 +132,29 @@ function buildRows(dataLines, headerEntries) {
       return null;
     }
 
-    if (record && Object.keys(record).length > 0) {
-      rows.push(record);
-    }
+    pushRecordIfNotEmpty(rows, record);
   }
 
   return rows;
+}
+
+/**
+ * Append parsed rows when the record contains data.
+ * @param {Array<Record<string, string>>} rows - Collection being built.
+ * @param {Record<string, string> | undefined | null} record - Parsed row data.
+ * @returns {void}
+ */
+function pushRecordIfNotEmpty(rows, record) {
+  if (!record) {
+    return;
+  }
+
+  const valueKeys = Object.keys(record);
+  if (valueKeys.length === 0) {
+    return;
+  }
+
+  rows.push(record);
 }
 
 /**
