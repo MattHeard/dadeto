@@ -312,6 +312,43 @@ export function createTriggerRender({
 }
 
 /**
+ *
+ * @param value
+ * @param name
+ */
+function requireFunction(value, name) {
+  if (typeof value !== 'function') {
+    throw new TypeError(`${name} must be a function`);
+  }
+}
+
+/**
+ *
+ * @param value
+ * @param name
+ */
+function requireDocumentLike(value, name = 'doc') {
+  if (!value || typeof value.getElementById !== 'function') {
+    throw new TypeError(`${name} must be a Document-like object`);
+  }
+}
+
+/**
+ *
+ * @param doc
+ * @param elementId
+ * @param listener
+ */
+function addClickListener(doc, elementId, listener) {
+  const element = doc.getElementById(elementId);
+  if (element?.addEventListener) {
+    element.addEventListener('click', listener);
+  }
+
+  return element ?? null;
+}
+
+/**
  * Attach the trigger render handler to the render button when present.
  * @param {Document} doc - Document used to locate the render button.
  * @param {() => void | Promise<void>} triggerRenderFn - Handler invoked when the button is clicked.
@@ -323,19 +360,10 @@ export function bindTriggerRenderClick(
   triggerRenderFn,
   elementId = 'renderBtn'
 ) {
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
-  if (typeof triggerRenderFn !== 'function') {
-    throw new TypeError('triggerRenderFn must be a function');
-  }
+  requireDocumentLike(doc);
+  requireFunction(triggerRenderFn, 'triggerRenderFn');
 
-  const button = doc.getElementById(elementId);
-  if (button?.addEventListener) {
-    button.addEventListener('click', triggerRenderFn);
-  }
-
-  return button ?? null;
+  return addClickListener(doc, elementId, triggerRenderFn);
 }
 
 /**
@@ -711,7 +739,21 @@ export function createTriggerStats({
  * }} options - Dependencies for the regenerate workflow.
  * @returns {(event: Event) => Promise<void>} Function that triggers variant regeneration when invoked.
  */
-export function createRegenerateVariant({
+export function createRegenerateVariant(options) {
+  validateRegenerateVariantDeps(options);
+  return createRegenerateVariantHandler(options);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.googleAuth
+ * @param root0.doc
+ * @param root0.showMessage
+ * @param root0.getAdminEndpointsFn
+ * @param root0.fetchFn
+ */
+function validateRegenerateVariantDeps({
   googleAuth,
   doc,
   showMessage,
@@ -721,19 +763,28 @@ export function createRegenerateVariant({
   if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
     throw new TypeError('googleAuth must provide a getIdToken function');
   }
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
-  if (typeof showMessage !== 'function') {
-    throw new TypeError('showMessage must be a function');
-  }
-  if (typeof getAdminEndpointsFn !== 'function') {
-    throw new TypeError('getAdminEndpointsFn must be a function');
-  }
-  if (typeof fetchFn !== 'function') {
-    throw new TypeError('fetchFn must be a function');
-  }
+  requireDocumentLike(doc);
+  requireFunction(showMessage, 'showMessage');
+  requireFunction(getAdminEndpointsFn, 'getAdminEndpointsFn');
+  requireFunction(fetchFn, 'fetchFn');
+}
 
+/**
+ *
+ * @param root0
+ * @param root0.googleAuth
+ * @param root0.doc
+ * @param root0.showMessage
+ * @param root0.getAdminEndpointsFn
+ * @param root0.fetchFn
+ */
+function createRegenerateVariantHandler({
+  googleAuth,
+  doc,
+  showMessage,
+  getAdminEndpointsFn,
+  fetchFn,
+}) {
   return async function regenerateVariant(event) {
     event?.preventDefault?.();
 
@@ -898,21 +949,13 @@ export function initAdmin({
   doc,
   fetchFn,
 }) {
-  if (!googleAuthModule) {
-    throw new TypeError('googleAuthModule must be provided');
-  }
-  if (typeof getAuthFn !== 'function') {
-    throw new TypeError('getAuthFn must be a function');
-  }
-  if (typeof onAuthStateChangedFn !== 'function') {
-    throw new TypeError('onAuthStateChangedFn must be a function');
-  }
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
-  if (typeof fetchFn !== 'function') {
-    throw new TypeError('fetchFn must be a function');
-  }
+  validateInitAdminDeps({
+    googleAuthModule,
+    getAuthFn,
+    onAuthStateChangedFn,
+    doc,
+    fetchFn,
+  });
 
   const getAdminEndpoints =
     createGetAdminEndpointsFromStaticConfig(loadStaticConfigFn);
@@ -955,6 +998,31 @@ export function initAdmin({
       'googleAuthModule must provide an initGoogleSignIn function'
     );
   }
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.googleAuthModule
+ * @param root0.getAuthFn
+ * @param root0.onAuthStateChangedFn
+ * @param root0.doc
+ * @param root0.fetchFn
+ */
+function validateInitAdminDeps({
+  googleAuthModule,
+  getAuthFn,
+  onAuthStateChangedFn,
+  doc,
+  fetchFn,
+}) {
+  if (!googleAuthModule) {
+    throw new TypeError('googleAuthModule must be provided');
+  }
+  requireFunction(getAuthFn, 'getAuthFn');
+  requireFunction(onAuthStateChangedFn, 'onAuthStateChangedFn');
+  requireDocumentLike(doc);
+  requireFunction(fetchFn, 'fetchFn');
 }
 
 /**

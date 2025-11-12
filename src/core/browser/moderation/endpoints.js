@@ -8,6 +8,16 @@ export const DEFAULT_MODERATION_ENDPOINTS = {
 };
 
 /**
+ *
+ * @param config
+ * @param defaults
+ * @param key
+ */
+function resolveEndpointValue(config, defaults, key) {
+  return config?.[key] ?? defaults[key];
+}
+
+/**
  * Map a static config object into moderation endpoints with defaults.
  * @param {Record<string, string>} config - Static config values keyed by endpoint name.
  * @param {{
@@ -26,12 +36,21 @@ export function mapConfigToModerationEndpoints(
   defaults = DEFAULT_MODERATION_ENDPOINTS
 ) {
   return {
-    getModerationVariantUrl:
-      config?.getModerationVariantUrl ?? defaults.getModerationVariantUrl,
-    assignModerationJobUrl:
-      config?.assignModerationJobUrl ?? defaults.assignModerationJobUrl,
-    submitModerationRatingUrl:
-      config?.submitModerationRatingUrl ?? defaults.submitModerationRatingUrl,
+    getModerationVariantUrl: resolveEndpointValue(
+      config,
+      defaults,
+      'getModerationVariantUrl'
+    ),
+    assignModerationJobUrl: resolveEndpointValue(
+      config,
+      defaults,
+      'assignModerationJobUrl'
+    ),
+    submitModerationRatingUrl: resolveEndpointValue(
+      config,
+      defaults,
+      'submitModerationRatingUrl'
+    ),
   };
 }
 

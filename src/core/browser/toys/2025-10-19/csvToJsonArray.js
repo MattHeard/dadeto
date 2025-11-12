@@ -94,21 +94,14 @@ function buildRows(dataLines, headerEntries) {
   const rows = [];
 
   for (const rawLine of dataLines) {
-    if (rawLine.trim().length === 0) {
+    const normalizedLine = normalizeDataLine(rawLine);
+    if (!normalizedLine) {
       continue;
     }
 
-    const values = parseCsvLine(rawLine.trimEnd());
-    if (!values) {
+    const record = buildRecordFromLine(normalizedLine, headerEntries);
+    if (record === null) {
       return null;
-    }
-
-    const record = {};
-    for (const { name, index } of headerEntries) {
-      const value = String(values[index] ?? '').trim();
-      if (value.length > 0) {
-        record[name] = value;
-      }
     }
 
     if (Object.keys(record).length > 0) {
@@ -117,4 +110,38 @@ function buildRows(dataLines, headerEntries) {
   }
 
   return rows;
+}
+
+/**
+ *
+ * @param rawLine
+ */
+function normalizeDataLine(rawLine) {
+  if (rawLine.trim().length === 0) {
+    return null;
+  }
+
+  return rawLine.trimEnd();
+}
+
+/**
+ *
+ * @param line
+ * @param headerEntries
+ */
+function buildRecordFromLine(line, headerEntries) {
+  const values = parseCsvLine(line);
+  if (!values) {
+    return null;
+  }
+
+  const record = {};
+  for (const { name, index } of headerEntries) {
+    const value = String(values[index] ?? '').trim();
+    if (value.length > 0) {
+      record[name] = value;
+    }
+  }
+
+  return record;
 }
