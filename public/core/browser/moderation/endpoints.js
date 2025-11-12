@@ -28,25 +28,13 @@ export const DEFAULT_MODERATION_ENDPOINTS = {
  *   submitModerationRatingUrl: string,
  * }} Normalized moderation endpoint URLs.
  */
-export function mapConfigToModerationEndpoints(
-  config = {},
-  defaults = DEFAULT_MODERATION_ENDPOINTS
-) {
-  const merged = mergeModerationEndpoints(config, defaults);
+export function mapConfigToModerationEndpoints(config = {}, defaults) {
+  const merged = { ...defaults, ...config };
   return {
     getModerationVariantUrl: merged.getModerationVariantUrl,
     assignModerationJobUrl: merged.assignModerationJobUrl,
     submitModerationRatingUrl: merged.submitModerationRatingUrl,
   };
-}
-
-/**
- *
- * @param config
- * @param defaults
- */
-function mergeModerationEndpoints(config, defaults) {
-  return { ...defaults, ...config };
 }
 
 /**
