@@ -109,13 +109,11 @@ describe('createGetModerationEndpointsFromStaticConfig', () => {
     const loadStaticConfig = jest
       .fn()
       .mockResolvedValue({ submitModerationRatingUrl: 'https://example.com' });
-
     const logger = { error: jest.fn() };
     const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
       loadStaticConfig,
-      {
-        logger,
-      }
+      DEFAULT_MODERATION_ENDPOINTS,
+      logger
     );
 
     const first = await getModerationEndpoints();
