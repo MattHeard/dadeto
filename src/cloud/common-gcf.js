@@ -58,7 +58,8 @@ export function createFirebaseAppManager(initializer) {
 
   /**
    *
-   * @param initFn
+   * @param {() => void} initFn Initialization function invoked if the app is not yet ready.
+   * @returns {void}
    */
   function ensureFirebaseApp(initFn = initializer) {
     if (state.firebaseInitialized) {

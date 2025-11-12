@@ -19,7 +19,7 @@ export function escapeHtml(text) {
 
 /**
  *
- * @param text
+ * @param {string} text
  * @returns {string} HTML representation of the provided text using inline Markdown.
  */
 function renderInlineMarkdown(text) {
@@ -31,9 +31,9 @@ function renderInlineMarkdown(text) {
 
 /**
  *
- * @param pageNumber
- * @param variantName
- * @param option
+ * @param {number} pageNumber
+ * @param {string} variantName
+ * @param {object} option
  * @returns {string} HTML list item for the option.
  */
 function buildOptionItem(pageNumber, variantName, option) {
@@ -60,9 +60,9 @@ function buildOptionItem(pageNumber, variantName, option) {
 
 /**
  *
- * @param pageNumber
- * @param variantName
- * @param options
+ * @param {number} pageNumber
+ * @param {string} variantName
+ * @param {object[]} options
  * @returns {string} Joined HTML list of options.
  */
 function buildOptionsHtml(pageNumber, variantName, options) {
@@ -73,8 +73,8 @@ function buildOptionsHtml(pageNumber, variantName, options) {
 
 /**
  *
- * @param storyTitle
- * @param showTitleHeading
+ * @param {string} storyTitle
+ * @param {boolean} showTitleHeading
  * @returns {string} Heading HTML showing the story title when applicable.
  */
 function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
@@ -84,7 +84,7 @@ function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
 
 /**
  *
- * @param storyTitle
+ * @param {string} storyTitle
  * @returns {string} Title displayed in the document head.
  */
 function buildHeadTitle(storyTitle) {
@@ -96,8 +96,8 @@ function buildHeadTitle(storyTitle) {
 
 /**
  *
- * @param author
- * @param authorUrl
+ * @param {string} author
+ * @param {string} authorUrl
  * @returns {string} Author credits HTML.
  */
 function buildAuthorHtml(author, authorUrl) {
@@ -110,8 +110,8 @@ function buildAuthorHtml(author, authorUrl) {
 
 /**
  *
- * @param url
- * @param label
+ * @param {string} url
+ * @param {string} label
  * @returns {string} Link paragraph HTML or empty string.
  */
 function buildLinkParagraph(url, label) {
@@ -121,7 +121,7 @@ function buildLinkParagraph(url, label) {
 
 /**
  *
- * @param pageNumber
+ * @param {number} pageNumber
  * @returns {string} Rewrite link HTML.
  */
 function buildRewriteLink(pageNumber) {
@@ -130,8 +130,8 @@ function buildRewriteLink(pageNumber) {
 
 /**
  *
- * @param pageNumber
- * @param variantName
+ * @param {number} pageNumber
+ * @param {string} variantName
  * @returns {string} Report link HTML snippet.
  */
 function buildReportHtml(pageNumber, variantName) {
@@ -144,7 +144,7 @@ function buildReportHtml(pageNumber, variantName) {
 
 /**
  *
- * @param pageNumber
+ * @param {number} pageNumber
  * @returns {string} Pagination controls HTML.
  */
 function buildPageNumberHtml(pageNumber) {
@@ -159,7 +159,7 @@ function buildPageNumberHtml(pageNumber) {
 
 /**
  *
- * @param content
+ * @param {string} content
  * @returns {string} Paragraph HTML representing the content.
  */
 function buildParagraphsHtml(content) {
@@ -453,8 +453,8 @@ export function buildHtml(buildHtmlInput) {
 
 /**
  *
- * @param pageNumber
- * @param variants
+ * @param {number} pageNumber
+ * @param {Array<{name: string, content: string}>} variants
  * @returns {string} HTML for alternate variants list.
  */
 export function buildAltsHtml(pageNumber, variants) {
@@ -604,7 +604,7 @@ export function buildAltsHtml(pageNumber, variants) {
 }
 /**
  *
- * @param docs
+ * @param {Array<{data: () => {visibility?: number, name?: string, content?: string}}>} docs
  * @returns {Array<{name: string, content: string}>} Visible variant summaries.
  */
 export function getVisibleVariants(docs) {
