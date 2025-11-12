@@ -50,20 +50,28 @@ export function getDefaultAdminEndpointsCopy() {
 }
 
 /**
+ * Resolve an admin endpoint using config overrides with production defaults.
+ * @param {Record<string, string>} config - Configuration object containing endpoint overrides.
+ * @param {'triggerRenderContentsUrl'|'markVariantDirtyUrl'|'generateStatsUrl'} key - Endpoint key to resolve.
+ * @returns {string} Resolved endpoint URL.
+ */
+function resolveAdminEndpoint(config, key) {
+  return config?.[key] ?? DEFAULT_ADMIN_ENDPOINTS[key];
+}
+
+/**
  * Normalize static config into admin endpoints with production fallbacks.
  * @param {Record<string, string>} config - Static config values keyed by endpoint name.
  * @returns {{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}} Normalized admin endpoints with production fallbacks.
  */
 export function mapConfigToAdminEndpoints(config) {
   return {
-    triggerRenderContentsUrl:
-      config?.triggerRenderContentsUrl ??
-      DEFAULT_ADMIN_ENDPOINTS.triggerRenderContentsUrl,
-    markVariantDirtyUrl:
-      config?.markVariantDirtyUrl ??
-      DEFAULT_ADMIN_ENDPOINTS.markVariantDirtyUrl,
-    generateStatsUrl:
-      config?.generateStatsUrl ?? DEFAULT_ADMIN_ENDPOINTS.generateStatsUrl,
+    triggerRenderContentsUrl: resolveAdminEndpoint(
+      config,
+      'triggerRenderContentsUrl'
+    ),
+    markVariantDirtyUrl: resolveAdminEndpoint(config, 'markVariantDirtyUrl'),
+    generateStatsUrl: resolveAdminEndpoint(config, 'generateStatsUrl'),
   };
 }
 
@@ -312,9 +320,10 @@ export function createTriggerRender({
 }
 
 /**
- *
- * @param value
- * @param name
+ * Ensure the value is a callable function.
+ * @param {*} value - Value that should be a function.
+ * @param {string} name - Error message target when validation fails.
+ * @returns {void}
  */
 function requireFunction(value, name) {
   if (typeof value !== 'function') {
@@ -323,9 +332,10 @@ function requireFunction(value, name) {
 }
 
 /**
- *
- * @param value
- * @param name
+ * Ensure the value acts like a Document for DOM lookups.
+ * @param {*} value - Candidate document-like object.
+ * @param {string} [name] - Identifier used inside the error message.
+ * @returns {void}
  */
 function requireDocumentLike(value, name = 'doc') {
   if (!value || typeof value.getElementById !== 'function') {
@@ -334,10 +344,11 @@ function requireDocumentLike(value, name = 'doc') {
 }
 
 /**
- *
- * @param doc
- * @param elementId
- * @param listener
+ * Attach a click listener to a DOM element when present.
+ * @param {Document} doc - Document used to resolve the element.
+ * @param {string} elementId - ID of the target element.
+ * @param {() => void | Promise<void>} listener - Handler invoked on click.
+ * @returns {HTMLElement | null} The element the listener was bound to, or null when missing.
  */
 function addClickListener(doc, elementId, listener) {
   const element = doc.getElementById(elementId);
@@ -346,6 +357,22 @@ function addClickListener(doc, elementId, listener) {
   }
 
   return element ?? null;
+}
+
+/**
+ * Attach a submit handler to the specified form element.
+ * @param {Document} doc - Document used to resolve the form.
+ * @param {string} elementId - ID of the form element to attach to.
+ * @param {(event: Event) => void | Promise<void>} listener - Handler invoked on submit.
+ * @returns {HTMLElement | null} Located form element or null when missing.
+ */
+function attachSubmitListener(doc, elementId, listener) {
+  const form = doc.getElementById(elementId);
+  if (form?.addEventListener) {
+    form.addEventListener('submit', listener);
+  }
+
+  return form ?? null;
 }
 
 /**
@@ -387,19 +414,10 @@ export function bindTriggerStatsClick(doc, triggerStatsFn) {
  * @returns {HTMLElement | null} The regenerate form when found, otherwise null.
  */
 export function bindRegenerateVariantSubmit(doc, regenerateVariantFn) {
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
-  if (typeof regenerateVariantFn !== 'function') {
-    throw new TypeError('regenerateVariantFn must be a function');
-  }
+  requireDocumentLike(doc);
+  requireFunction(regenerateVariantFn, 'regenerateVariantFn');
 
-  const form = doc.getElementById('regenForm');
-  if (form?.addEventListener) {
-    form.addEventListener('submit', regenerateVariantFn);
-  }
-
-  return form ?? null;
+  return attachSubmitListener(doc, 'regenForm', regenerateVariantFn);
 }
 
 /**

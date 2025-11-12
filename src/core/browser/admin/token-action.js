@@ -32,7 +32,59 @@
  * @param {AdminTokenActionOptions} options Dependencies and configuration for the admin action.
  * @returns {AdminTokenAction} Handler guarded by the shared validation logic.
  */
-export function createAdminTokenAction({
+export function createAdminTokenAction(options) {
+  validateAdminTokenActionOptions(options);
+  return buildAdminTokenAction(options);
+}
+
+/**
+ * Validate the provided dependencies required by `createAdminTokenAction`.
+ * @param {AdminTokenActionOptions} options - Configuration to validate.
+ * @returns {void}
+ */
+function validateAdminTokenActionOptions({
+  googleAuth,
+  getAdminEndpointsFn,
+  fetchFn,
+  showMessage,
+  action,
+}) {
+  ensureGoogleAuth(googleAuth);
+  ensureFunctionDefined(getAdminEndpointsFn, 'getAdminEndpointsFn');
+  ensureFunctionDefined(fetchFn, 'fetchFn');
+  ensureFunctionDefined(showMessage, 'showMessage');
+  ensureFunctionDefined(action, 'action');
+}
+
+/**
+ * Ensure the Google auth helper exposes an ID token getter.
+ * @param {GoogleAuthLike} googleAuth - Helper to validate.
+ * @returns {void}
+ */
+function ensureGoogleAuth(googleAuth) {
+  if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
+    throw new TypeError('googleAuth must provide a getIdToken function');
+  }
+}
+
+/**
+ * Ensure the value is a callable function.
+ * @param {*} value - Candidate value to validate.
+ * @param {string} name - Name used inside the error message.
+ * @returns {void}
+ */
+function ensureFunctionDefined(value, name) {
+  if (typeof value !== 'function') {
+    throw new TypeError(`${name} must be a function`);
+  }
+}
+
+/**
+ * Build the admin token action once dependencies are validated.
+ * @param {AdminTokenActionOptions} options - Validated dependencies for the action.
+ * @returns {AdminTokenAction} Token action bound to the provided helpers.
+ */
+function buildAdminTokenAction({
   googleAuth,
   getAdminEndpointsFn,
   fetchFn,
@@ -40,22 +92,6 @@ export function createAdminTokenAction({
   missingTokenMessage,
   action,
 }) {
-  if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
-    throw new TypeError('googleAuth must provide a getIdToken function');
-  }
-  if (typeof getAdminEndpointsFn !== 'function') {
-    throw new TypeError('getAdminEndpointsFn must be a function');
-  }
-  if (typeof fetchFn !== 'function') {
-    throw new TypeError('fetchFn must be a function');
-  }
-  if (typeof showMessage !== 'function') {
-    throw new TypeError('showMessage must be a function');
-  }
-  if (typeof action !== 'function') {
-    throw new TypeError('action must be a function');
-  }
-
   return async function adminTokenAction() {
     const token = googleAuth.getIdToken();
     if (!token) {
