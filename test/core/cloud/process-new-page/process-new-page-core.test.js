@@ -70,7 +70,8 @@ describe('findAvailablePageNumber', () => {
 });
 
 /**
- *
+ * Create a mock Firestore batch for writes.
+ * @returns {{set: jest.Mock, update: jest.Mock, commit: jest.Mock}} Batch helpers.
  */
 function createBatch() {
   return {
@@ -81,10 +82,11 @@ function createBatch() {
 }
 
 /**
- *
+ * Build a fake variants collection for hierarchy tests.
  * @param root0
- * @param root0.existingName
- * @param root0.variantDoc
+ * @param root0.existingName Upgrade target name, if any.
+ * @param root0.variantDoc Variant document to expose.
+ * @returns {{parent: null, orderBy: Function, doc: Function}} Mock collection API.
  */
 function createVariantCollection({ existingName = null, variantDoc }) {
   return {
@@ -110,9 +112,10 @@ function createVariantCollection({ existingName = null, variantDoc }) {
 }
 
 /**
- *
+ * Build a variant document that tracks option fixtures.
  * @param root0
- * @param root0.optionDocs
+ * @param root0.optionDocs Array that receives created option docs.
+ * @returns {{id: string, path: string, parent: object|null, collection: Function}} Variant doc.
  */
 function createVariantDoc({ optionDocs }) {
   const variantDoc = {
@@ -132,11 +135,17 @@ function createVariantDoc({ optionDocs }) {
 }
 
 /**
- *
+ * Create a fake story hierarchy with optional existing variant/page state.
  * @param root0
- * @param root0.existingVariantName
- * @param root0.optionDocs
- * @param root0.pageSnapshotNumber
+ * @param root0.existingVariantName Existing variant name to simulate.
+ * @param root0.optionDocs Mutable array for option documents.
+ * @param root0.pageSnapshotNumber Optional snapshot number for the current page.
+ * @returns {{
+ *   storyRef: object,
+ *   pageDocRef: object,
+ *   variantDoc: object,
+ *   variantsCollection: object
+ * }} Story hierarchy fixtures.
  */
 function createStoryHierarchy({
   existingVariantName = null,
@@ -178,9 +187,10 @@ function createStoryHierarchy({
 }
 
 /**
- *
+ * Create an author document mock.
  * @param root0
- * @param root0.exists
+ * @param root0.exists Whether the doc should pretend to exist.
+ * @returns {{id: string, path: string, get: jest.Mock}} Author document reference.
  */
 function createAuthorDoc({ exists }) {
   return {

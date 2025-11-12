@@ -2,9 +2,10 @@ import { jest } from '@jest/globals';
 import { createProcessNewStoryHandler } from '../../../../src/core/cloud/process-new-story/process-new-story-core.js';
 
 /**
- *
+ * Build a fake Firestore database for story handler tests.
  * @param root0
- * @param root0.authorExists
+ * @param root0.authorExists Controls whether author docs are marked as existing.
+ * @returns {{db: {doc: Function, batch: Function}, getDoc: Function}} Test DB helpers.
  */
 function createFakeDb({ authorExists = true } = {}) {
   const cache = new Map();

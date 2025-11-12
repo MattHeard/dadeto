@@ -24,8 +24,9 @@ function normalizeHeaders(originalHeaders) {
 }
 
 /**
- *
- * @param response
+ * Normalize successful responses and throw on HTTP errors.
+ * @param {object|null|undefined} response Raw fetch response or failure object.
+ * @returns {*} Parsed JSON payload or the original response.
  */
 function handleAuthedResponse(response) {
   if (!response || typeof response.ok !== 'boolean') {
