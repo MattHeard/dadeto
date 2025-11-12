@@ -17,28 +17,49 @@ import { parseCsvLine } from './toys-core.js';
  */
 export function csvToJsonArrayToy(input, env) {
   void env;
+  const rows = extractCsvRows(input);
+  return JSON.stringify(rows ?? []);
+}
+
+/**
+ *
+ * @param input
+ */
+function extractCsvRows(input) {
+  const trimmedLines = normalizeInputLines(input);
+  if (!trimmedLines) {
+    return null;
+  }
+
+  return buildRowsFromLines(trimmedLines);
+}
+
+/**
+ *
+ * @param input
+ */
+function normalizeInputLines(input) {
   if (typeof input !== 'string') {
-    return JSON.stringify([]);
+    return null;
   }
 
   const normalizedInput = input.replace(/\r\n?/g, '\n');
   const trimmedLines = removeTrailingEmptyLines(normalizedInput.split('\n'));
 
-  if (trimmedLines.length < 2) {
-    return JSON.stringify([]);
-  }
+  return trimmedLines.length < 2 ? null : trimmedLines;
+}
 
+/**
+ *
+ * @param trimmedLines
+ */
+function buildRowsFromLines(trimmedLines) {
   const headerInfo = parseHeaderEntries(trimmedLines);
-  if (!headerInfo) {
-    return JSON.stringify([]);
-  }
+  const rows = headerInfo
+    ? buildRows(headerInfo.dataLines, headerInfo.headerEntries)
+    : null;
 
-  const rows = buildRows(headerInfo.dataLines, headerInfo.headerEntries);
-  if (!rows || rows.length === 0) {
-    return JSON.stringify([]);
-  }
-
-  return JSON.stringify(rows);
+  return rows?.length ? rows : null;
 }
 
 /**

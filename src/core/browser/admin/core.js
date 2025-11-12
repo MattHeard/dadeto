@@ -537,30 +537,37 @@ function normalizeGoogleSignInDeps(deps = {}) {
     querySelectorAll,
   });
 
-  let resolveGoogleAccountsId;
-  if (typeof googleAccountsId === 'function') {
-    resolveGoogleAccountsId = googleAccountsId;
-  } else {
-    resolveGoogleAccountsId = () => googleAccountsId;
-  }
-
-  let safeLogger;
-  if (logger && typeof logger.error === 'function') {
-    safeLogger = logger;
-  } else {
-    safeLogger = console;
-  }
-
   return {
-    resolveGoogleAccountsId,
+    resolveGoogleAccountsId: resolveGoogleAccounts(googleAccountsId),
     credentialFactory,
     signInWithCredential,
     auth,
     storage,
     matchMedia,
     querySelectorAll,
-    safeLogger,
+    safeLogger: resolveLogger(logger),
   };
+}
+
+/**
+ * Resolve the accounts ID helper into a callable resolver.
+ * @param {GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined} googleAccountsId
+ * @returns {() => GoogleAccountsClient | undefined}
+ */
+function resolveGoogleAccounts(googleAccountsId) {
+  if (typeof googleAccountsId === 'function') {
+    return googleAccountsId;
+  }
+  return () => googleAccountsId;
+}
+
+/**
+ * Ensure we always have a logger that can report errors.
+ * @param {{ error?: (message: string) => void } | undefined} logger
+ * @returns {{ error?: (message: string) => void }}
+ */
+function resolveLogger(logger) {
+  return logger && typeof logger.error === 'function' ? logger : console;
 }
 
 /**
@@ -811,26 +818,58 @@ function createRegenerateVariantHandler({
       return;
     }
 
-    const input = doc.getElementById('regenInput');
-    const pageVariant = parsePageVariantInput(input);
-
+    const pageVariant = getPageVariantFromDoc(doc);
     if (!pageVariant) {
       showMessage('Invalid format');
       return;
     }
 
-    try {
-      await sendRegenerateVariantRequest({
-        fetchFn,
-        getAdminEndpointsFn,
-        token,
-        pageVariant,
-      });
-      showMessage('Regeneration triggered');
-    } catch {
-      showMessage('Regeneration failed');
-    }
+    await performRegeneration({
+      fetchFn,
+      getAdminEndpointsFn,
+      token,
+      pageVariant,
+      showMessage,
+    });
   };
+}
+
+/**
+ *
+ * @param doc
+ */
+function getPageVariantFromDoc(doc) {
+  const input = doc.getElementById('regenInput');
+  return parsePageVariantInput(input);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.fetchFn
+ * @param root0.getAdminEndpointsFn
+ * @param root0.token
+ * @param root0.pageVariant
+ * @param root0.showMessage
+ */
+async function performRegeneration({
+  fetchFn,
+  getAdminEndpointsFn,
+  token,
+  pageVariant,
+  showMessage,
+}) {
+  try {
+    await sendRegenerateVariantRequest({
+      fetchFn,
+      getAdminEndpointsFn,
+      token,
+      pageVariant,
+    });
+    showMessage('Regeneration triggered');
+  } catch {
+    showMessage('Regeneration failed');
+  }
 }
 
 /**
