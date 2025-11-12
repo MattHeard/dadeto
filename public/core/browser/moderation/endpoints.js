@@ -196,55 +196,11 @@ export function createGetModerationEndpoints(createEndpointsPromiseFn) {
  * Build a memoized moderation endpoints getter backed by the static config loader.
  * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for static config.
  * @param {{
- *   defaults?: {
- *     getModerationVariantUrl: string,
- *     assignModerationJobUrl: string,
- *     submitModerationRatingUrl: string,
- *   },
- *   logger: { error: (message: string, error?: unknown) => void },
- * }} [options] - Optional overrides and required logger for endpoint failures.
- * @returns {() => Promise<{
  *   getModerationVariantUrl: string,
  *   assignModerationJobUrl: string,
  *   submitModerationRatingUrl: string,
- * }>} Memoized moderation endpoints getter.
- */
-/**
- * Build a memoized moderation endpoints getter backed by the static config loader.
- * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for static config.
- * @param {{
- *   defaults?: {
- *     getModerationVariantUrl: string,
- *     assignModerationJobUrl: string,
- *     submitModerationRatingUrl: string,
- *   },
- *   logger?: { error?: (message: string, error?: unknown) => void },
- * }} [options] - Optional overrides for defaults and logging.
- * @returns {() => Promise<{
- *   getModerationVariantUrl: string,
- *   assignModerationJobUrl: string,
- *   submitModerationRatingUrl: string,
- * }>} Memoized moderation endpoints getter.
- */
-
-/**
- *
- * @param loadStaticConfigFn
- * @param root0
- * @param root0.defaults
- * @param root0.logger
- */
-/**
- * Build a memoized moderation endpoints getter backed by the static config loader.
- * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for static config.
- * @param {{
- *   defaults?: {
- *     getModerationVariantUrl: string,
- *     assignModerationJobUrl: string,
- *     submitModerationRatingUrl: string,
- *   },
- *   logger?: { error?: (message: string, error?: unknown) => void },
- * }} [options] - Optional overrides for defaults and logging.
+ * }} defaults - Fallback endpoints for the memoized getter.
+ * @param {{ error: (message: string, error?: unknown) => void }} logger - Logger used when loading endpoints fails.
  * @returns {() => Promise<{
  *   getModerationVariantUrl: string,
  *   assignModerationJobUrl: string,
@@ -253,17 +209,13 @@ export function createGetModerationEndpoints(createEndpointsPromiseFn) {
  */
 export function createGetModerationEndpointsFromStaticConfig(
   loadStaticConfigFn,
-  { defaults = DEFAULT_MODERATION_ENDPOINTS, logger } = {}
+  defaults,
+  logger
 ) {
-  let endpointsPromise;
-
-  return function getModerationEndpoints() {
-    return (
-      endpointsPromise ??
-      (endpointsPromise = createModerationEndpointsPromise(loadStaticConfigFn, {
-        defaults,
-        logger,
-      }))
-    );
-  };
+  return createGetModerationEndpoints(() =>
+    createModerationEndpointsPromise(loadStaticConfigFn, {
+      defaults,
+      logger,
+    })
+  );
 }

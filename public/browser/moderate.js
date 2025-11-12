@@ -6,13 +6,15 @@ import {
 } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createAuthedFetch } from './authedFetch.js';
-import { createGetModerationEndpointsFromStaticConfig } from './moderation/endpoints.js';
+import {
+  createGetModerationEndpointsFromStaticConfig,
+  DEFAULT_MODERATION_ENDPOINTS,
+} from './moderation/endpoints.js';
 
 const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
   loadStaticConfig,
-  {
-    logger: console,
-  }
+  DEFAULT_MODERATION_ENDPOINTS,
+  console
 );
 
 /**
