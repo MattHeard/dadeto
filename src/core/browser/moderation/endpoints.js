@@ -123,23 +123,12 @@ async function loadModerationEndpoints(loadStaticConfigFn, defaults, logger) {
     const config = await loadStaticConfigFn();
     return mapConfigToModerationEndpoints(config, defaults);
   } catch (error) {
-    logModerationEndpointError(logger, error);
+    logger?.error?.(
+      'Failed to load moderation endpoints, falling back to defaults.',
+      error
+    );
     return { ...defaults };
   }
-}
-
-/**
- * Report that the moderation endpoints could not be loaded.
- * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Optional logger that will surface the error.
- * @param {unknown} error - Error produced while loading the endpoints.
- * @returns {void}
- */
-function logModerationEndpointError(logger, error) {
-  const errorLogger = logger?.error ?? (() => {});
-  errorLogger(
-    'Failed to load moderation endpoints, falling back to defaults.',
-    error
-  );
 }
 
 /**
