@@ -12,8 +12,39 @@
  *     json: () => any,
  *   } | any>,
  * }} deps Dependencies for token lookup and network access.
+ * @param originalHeaders
  * @returns {(url: string, init?: FetchOptions) => Promise<any>} Fetch helper adding an Authorization header.
  */
+function normalizeHeaders(originalHeaders) {
+  if (typeof Headers !== 'undefined' && originalHeaders instanceof Headers) {
+    return Object.fromEntries(originalHeaders.entries());
+  }
+
+  return { ...(originalHeaders || {}) };
+}
+
+/**
+ *
+ * @param response
+ */
+function handleAuthedResponse(response) {
+  if (!response || typeof response.ok !== 'boolean') {
+    return response;
+  }
+
+  if (!response.ok) {
+    const error = new Error(`HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+
+  if (typeof response.json === 'function') {
+    return response.json();
+  }
+
+  return response;
+}
+
 export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
   if (typeof getIdToken !== 'function') {
     throw new TypeError('getIdToken must be a function');
@@ -27,17 +58,9 @@ export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
     if (!token) throw new Error('not signed in');
 
     const { headers: originalHeaders, ...rest } = init;
-
-    let resolvedHeaders;
-    if (typeof Headers !== 'undefined' && originalHeaders instanceof Headers) {
-      resolvedHeaders = Object.fromEntries(originalHeaders.entries());
-    } else {
-      resolvedHeaders = { ...(originalHeaders || {}) };
-    }
-
     const headers = {
       'Content-Type': 'application/json',
-      ...resolvedHeaders,
+      ...normalizeHeaders(originalHeaders),
       Authorization: `Bearer ${token}`,
     };
 
@@ -46,17 +69,6 @@ export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
       headers,
     });
 
-    if (response && typeof response.ok === 'boolean') {
-      if (!response.ok) {
-        const error = new Error(`HTTP ${response.status}`);
-        error.status = response.status;
-        throw error;
-      }
-      if (typeof response.json === 'function') {
-        return response.json();
-      }
-    }
-
-    return response;
+    return handleAuthedResponse(response);
   };
 };
