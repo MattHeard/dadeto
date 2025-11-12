@@ -46,8 +46,8 @@ export function mapConfigToModerationEndpoints(config = {}, defaults) {
  *     assignModerationJobUrl: string,
  *     submitModerationRatingUrl: string,
  *   },
- *   logger?: { error?: (message: string, error?: unknown) => void },
- * }} [options] - Optional overrides for defaults and logging.
+ *   logger: { error: (message: string, error?: unknown) => void },
+ * }} [options] - Optional defaults and required logger for error reporting.
  * @returns {Promise<{
  *   getModerationVariantUrl: string,
  *   assignModerationJobUrl: string,
@@ -93,7 +93,7 @@ function resolveModerationDefaults(options) {
  *   assignModerationJobUrl: string,
  *   submitModerationRatingUrl: string,
  * }} defaults - Default endpoint map when overrides are unavailable.
- * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Logger reporting failures.
+ * @param {{ error: (message: string, error?: unknown) => void }} logger - Logger reporting failures.
  * @returns {Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Promise resolving to either the parsed endpoints or the defaults.
  */
 function loadModerationEndpointsSafely(loadStaticConfigFn, defaults, logger) {
@@ -112,7 +112,7 @@ function loadModerationEndpointsSafely(loadStaticConfigFn, defaults, logger) {
  *   assignModerationJobUrl: string,
  *   submitModerationRatingUrl: string,
  * }} defaults - Default endpoint map when overrides are missing.
- * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Logger that reports failures.
+ * @param {{ error: (message: string, error?: unknown) => void }} logger - Logger that reports failures.
  * @returns {Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Promise resolving to normalized endpoint URLs.
  */
 function loadModerationEndpoints(loadStaticConfigFn, defaults, logger) {
@@ -156,7 +156,7 @@ async function loadModerationEndpointsUnsafe(loadStaticConfigFn, defaults) {
  * }} Fallback endpoints applied after a failure.
  */
 function handleEndpointFailure(logger, defaults, error) {
-  logger?.error?.(
+  logger.error(
     'Failed to load moderation endpoints, falling back to defaults.',
     error
   );
@@ -201,8 +201,8 @@ export function createGetModerationEndpoints(createEndpointsPromiseFn) {
  *     assignModerationJobUrl: string,
  *     submitModerationRatingUrl: string,
  *   },
- *   logger?: { error?: (message: string, error?: unknown) => void },
- * }} [options] - Optional overrides for defaults and logging.
+ *   logger: { error: (message: string, error?: unknown) => void },
+ * }} [options] - Optional overrides and required logger for endpoint failures.
  * @returns {() => Promise<{
  *   getModerationVariantUrl: string,
  *   assignModerationJobUrl: string,

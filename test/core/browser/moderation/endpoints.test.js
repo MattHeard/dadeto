@@ -36,7 +36,10 @@ describe('mapConfigToModerationEndpoints', () => {
 
 describe('createModerationEndpointsPromise', () => {
   it('resolves defaults when loader is missing', async () => {
-    const result = await createModerationEndpointsPromise();
+    const logger = { error: jest.fn() };
+    const result = await createModerationEndpointsPromise(undefined, {
+      logger,
+    });
 
     expect(result).toEqual(DEFAULT_MODERATION_ENDPOINTS);
     expect(result).not.toBe(DEFAULT_MODERATION_ENDPOINTS);
@@ -46,8 +49,11 @@ describe('createModerationEndpointsPromise', () => {
     const loadStaticConfig = jest.fn().mockResolvedValue({
       assignModerationJobUrl: 'https://example.com/assign',
     });
+    const logger = { error: jest.fn() };
 
-    const result = await createModerationEndpointsPromise(loadStaticConfig);
+    const result = await createModerationEndpointsPromise(loadStaticConfig, {
+      logger,
+    });
 
     expect(loadStaticConfig).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
@@ -72,16 +78,6 @@ describe('createModerationEndpointsPromise', () => {
       error
     );
     expect(result).toEqual(DEFAULT_MODERATION_ENDPOINTS);
-  });
-
-  it('falls back to defaults when loader rejects without a logger', async () => {
-    const loadStaticConfig = jest.fn().mockRejectedValue(new Error('nope'));
-
-    const result = await createModerationEndpointsPromise(loadStaticConfig);
-
-    expect(loadStaticConfig).toHaveBeenCalledTimes(1);
-    expect(result).toEqual(DEFAULT_MODERATION_ENDPOINTS);
-    expect(result).not.toBe(DEFAULT_MODERATION_ENDPOINTS);
   });
 });
 
@@ -114,8 +110,13 @@ describe('createGetModerationEndpointsFromStaticConfig', () => {
       .fn()
       .mockResolvedValue({ submitModerationRatingUrl: 'https://example.com' });
 
-    const getModerationEndpoints =
-      createGetModerationEndpointsFromStaticConfig(loadStaticConfig);
+    const logger = { error: jest.fn() };
+    const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
+      loadStaticConfig,
+      {
+        logger,
+      }
+    );
 
     const first = await getModerationEndpoints();
     const second = await getModerationEndpoints();
