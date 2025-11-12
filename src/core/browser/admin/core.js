@@ -385,7 +385,7 @@ function isDocumentLike(value) {
  * @returns {HTMLElement | null} The element the listener was bound to, or null when missing.
  */
 function addClickListener(doc, elementId, listener) {
-  return bindElementEvent(doc, elementId, listener, 'click');
+  return bindClickEvent(doc, elementId, listener);
 }
 
 /**
@@ -396,24 +396,26 @@ function addClickListener(doc, elementId, listener) {
  * @returns {HTMLElement | null} Located form element or null when missing.
  */
 function attachSubmitListener(doc, elementId, listener) {
-  return bindElementEvent(doc, elementId, listener, 'submit');
+  return bindSubmitEvent(doc, elementId, listener);
 }
+
+const bindClickEvent = createElementEventBinder('click');
+const bindSubmitEvent = createElementEventBinder('submit');
 
 /**
  *
- * @param doc
- * @param elementId
- * @param listener
  * @param eventType
  */
-function bindElementEvent(doc, elementId, listener, eventType) {
-  const element = doc.getElementById(elementId);
-  if (!element || typeof element.addEventListener !== 'function') {
-    return null;
-  }
+function createElementEventBinder(eventType) {
+  return function bindElementEvent(doc, elementId, listener) {
+    const element = doc.getElementById(elementId);
+    if (!element || typeof element.addEventListener !== 'function') {
+      return null;
+    }
 
-  element.addEventListener(eventType, listener);
-  return element;
+    element.addEventListener(eventType, listener);
+    return element;
+  };
 }
 
 /**
