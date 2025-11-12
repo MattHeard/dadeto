@@ -552,7 +552,7 @@ function normalizeGoogleSignInDeps(deps = {}) {
 /**
  * Resolve the accounts ID helper into a callable resolver.
  * @param {GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined} googleAccountsId
- * @returns {() => GoogleAccountsClient | undefined}
+ * @returns {() => GoogleAccountsClient | undefined} Resolver that always returns the accounts client.
  */
 function resolveGoogleAccounts(googleAccountsId) {
   if (typeof googleAccountsId === 'function') {
@@ -564,10 +564,14 @@ function resolveGoogleAccounts(googleAccountsId) {
 /**
  * Ensure we always have a logger that can report errors.
  * @param {{ error?: (message: string) => void } | undefined} logger
- * @returns {{ error?: (message: string) => void }}
+ * @returns {{ error?: (message: string) => void }} Logger that safely exposes `error`.
  */
 function resolveLogger(logger) {
-  return logger && typeof logger.error === 'function' ? logger : console;
+  if (logger && typeof logger.error === 'function') {
+    return logger;
+  }
+
+  return console;
 }
 
 /**
@@ -795,13 +799,15 @@ function validateRegenerateVariantDeps({
 }
 
 /**
- *
- * @param root0
- * @param root0.googleAuth
- * @param root0.doc
- * @param root0.showMessage
- * @param root0.getAdminEndpointsFn
- * @param root0.fetchFn
+ * Build the actual regenerate variant handler after validation.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   doc: Document,
+ *   showMessage: (text: string) => void,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   fetchFn: FetchFn,
+ * }} options - Dependencies needed to trigger regeneration.
+ * @returns {(event: Event) => Promise<void>} Handler that reads the input, builds the payload, and submits the request.
  */
 function createRegenerateVariantHandler({
   googleAuth,
@@ -835,8 +841,9 @@ function createRegenerateVariantHandler({
 }
 
 /**
- *
- * @param doc
+ * Read and parse the page/variant input from the regeneration form.
+ * @param {Document} doc - Document containing the regenerate input.
+ * @returns {{page: number, variant: string} | null} Parsed page/variant info or null when invalid.
  */
 function getPageVariantFromDoc(doc) {
   const input = doc.getElementById('regenInput');
@@ -844,13 +851,15 @@ function getPageVariantFromDoc(doc) {
 }
 
 /**
- *
- * @param root0
- * @param root0.fetchFn
- * @param root0.getAdminEndpointsFn
- * @param root0.token
- * @param root0.pageVariant
- * @param root0.showMessage
+ * Submit the regenerate variant request and report the result.
+ * @param {{
+ *   fetchFn: FetchFn,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   token: string,
+ *   pageVariant: { page: number, variant: string },
+ *   showMessage: (text: string) => void,
+ * }} options - Dependencies and payload for the regeneration flow.
+ * @returns {Promise<void>} Resolves once the request has been attempted.
  */
 async function performRegeneration({
   fetchFn,
