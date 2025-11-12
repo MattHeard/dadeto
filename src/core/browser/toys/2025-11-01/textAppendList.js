@@ -24,7 +24,7 @@ export function textAppendList(input, env) {
 
 /**
  *
- * @param {unknown} value
+ * @param {unknown} value - Value read from the toy input.
  * @returns {string} Normalized string value.
  */
 function normalizeInput(value) {
@@ -39,7 +39,7 @@ function normalizeInput(value) {
 
 /**
  *
- * @param {{get?: (key: string) => unknown}} env
+ * @param {{get?: (key: string) => unknown}} env - Environment with storage dependencies.
  * @returns {((args: object) => unknown) | null} Storage helper when available.
  */
 function getStorageFunction(env) {
@@ -52,7 +52,7 @@ function getStorageFunction(env) {
 
 /**
  *
- * @param {(args: object) => unknown} storageFn
+ * @param {(args: object) => unknown} storageFn - Storage accessor used to read the current list.
  * @returns {string} Stored list contents or empty string.
  */
 function readExistingList(storageFn) {
@@ -67,8 +67,8 @@ function readExistingList(storageFn) {
 
 /**
  *
- * @param {(args: object) => unknown} storageFn
- * @param {string} list
+ * @param {(args: object) => unknown} storageFn - Function writing the updated list to storage.
+ * @param {string} list - Latest list contents to persist.
  * @returns {void}
  */
 function persistUpdatedList(storageFn, list) {

@@ -19,7 +19,7 @@ export function escapeHtml(text) {
 
 /**
  *
- * @param {string} text
+ * @param {string} text - Raw text with Markdown-like emphasis markers.
  * @returns {string} HTML representation of the provided text using inline Markdown.
  */
 function renderInlineMarkdown(text) {
@@ -31,9 +31,9 @@ function renderInlineMarkdown(text) {
 
 /**
  *
- * @param {number} pageNumber
- * @param {string} variantName
- * @param {object} option
+ * @param {number} pageNumber - Page number the option belongs to.
+ * @param {string} variantName - Variant identifier tied to the option.
+ * @param {object} option - Option metadata from Firestore.
  * @returns {string} HTML list item for the option.
  */
 function buildOptionItem(pageNumber, variantName, option) {
@@ -60,9 +60,9 @@ function buildOptionItem(pageNumber, variantName, option) {
 
 /**
  *
- * @param {number} pageNumber
- * @param {string} variantName
- * @param {object[]} options
+ * @param {number} pageNumber - Page number used for slug creation.
+ * @param {string} variantName - Variant identifier used for slug creation.
+ * @param {object[]} options - List of variant navigation options.
  * @returns {string} Joined HTML list of options.
  */
 function buildOptionsHtml(pageNumber, variantName, options) {
@@ -73,8 +73,8 @@ function buildOptionsHtml(pageNumber, variantName, options) {
 
 /**
  *
- * @param {string} storyTitle
- * @param {boolean} showTitleHeading
+ * @param {string} storyTitle - Title to display when heading is enabled.
+ * @param {boolean} showTitleHeading - Controls whether the heading renders.
  * @returns {string} Heading HTML showing the story title when applicable.
  */
 function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
@@ -84,7 +84,7 @@ function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
 
 /**
  *
- * @param {string} storyTitle
+ * @param {string} storyTitle - Title shown in the document's `<title>`.
  * @returns {string} Title displayed in the document head.
  */
 function buildHeadTitle(storyTitle) {
@@ -96,8 +96,8 @@ function buildHeadTitle(storyTitle) {
 
 /**
  *
- * @param {string} author
- * @param {string} authorUrl
+ * @param {string} author - Name of the story author.
+ * @param {string} authorUrl - Optional author link.
  * @returns {string} Author credits HTML.
  */
 function buildAuthorHtml(author, authorUrl) {
@@ -110,8 +110,8 @@ function buildAuthorHtml(author, authorUrl) {
 
 /**
  *
- * @param {string} url
- * @param {string} label
+ * @param {string} url - Target URL for the back/first page links.
+ * @param {string} label - Link label.
  * @returns {string} Link paragraph HTML or empty string.
  */
 function buildLinkParagraph(url, label) {
@@ -121,7 +121,7 @@ function buildLinkParagraph(url, label) {
 
 /**
  *
- * @param {number} pageNumber
+ * @param {number} pageNumber - Page number used in rewrite link.
  * @returns {string} Rewrite link HTML.
  */
 function buildRewriteLink(pageNumber) {
@@ -130,8 +130,8 @@ function buildRewriteLink(pageNumber) {
 
 /**
  *
- * @param {number} pageNumber
- * @param {string} variantName
+ * @param {number} pageNumber - Page number for the report slug.
+ * @param {string} variantName - Variant identifier used in the report payload.
  * @returns {string} Report link HTML snippet.
  */
 function buildReportHtml(pageNumber, variantName) {
@@ -144,7 +144,7 @@ function buildReportHtml(pageNumber, variantName) {
 
 /**
  *
- * @param {number} pageNumber
+ * @param {number} pageNumber - Current page number for navigation links.
  * @returns {string} Pagination controls HTML.
  */
 function buildPageNumberHtml(pageNumber) {
@@ -159,7 +159,7 @@ function buildPageNumberHtml(pageNumber) {
 
 /**
  *
- * @param {string} content
+ * @param {string} content - Variant body content.
  * @returns {string} Paragraph HTML representing the content.
  */
 function buildParagraphsHtml(content) {
@@ -183,7 +183,7 @@ function buildParagraphsHtml(content) {
  *   parentUrl?: string,
  *   firstPageUrl?: string,
  *   showTitleHeading?: boolean,
- * }} buildHtmlInput
+ * }} buildHtmlInput - Rendering parameters provided either positionally or via an object.
  * @returns {string} Rendered variant page.
  */
 export function buildHtml(buildHtmlInput) {
@@ -453,8 +453,8 @@ export function buildHtml(buildHtmlInput) {
 
 /**
  *
- * @param {number} pageNumber
- * @param {Array<{name: string, content: string}>} variants
+ * @param {number} pageNumber - Page number used to build each link.
+ * @param {Array<{name: string, content: string}>} variants - Alternate variants to render.
  * @returns {string} HTML for alternate variants list.
  */
 export function buildAltsHtml(pageNumber, variants) {
@@ -604,7 +604,7 @@ export function buildAltsHtml(pageNumber, variants) {
 }
 /**
  *
- * @param {Array<{data: () => {visibility?: number, name?: string, content?: string}}>} docs
+ * @param {Array<{data: () => {visibility?: number, name?: string, content?: string}}>} docs - Firestore snapshots to inspect.
  * @returns {Array<{name: string, content: string}>} Visible variant summaries.
  */
 export function getVisibleVariants(docs) {
