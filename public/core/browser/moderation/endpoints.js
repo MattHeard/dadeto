@@ -118,17 +118,52 @@ function loadModerationEndpointsSafely(loadStaticConfigFn, defaults, logger) {
  * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Logger that reports failures.
  * @returns {Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Promise resolving to normalized endpoint URLs.
  */
-async function loadModerationEndpoints(loadStaticConfigFn, defaults, logger) {
-  try {
-    const config = await loadStaticConfigFn();
-    return mapConfigToModerationEndpoints(config, defaults);
-  } catch (error) {
-    logger?.error?.(
-      'Failed to load moderation endpoints, falling back to defaults.',
-      error
-    );
-    return { ...defaults };
-  }
+function loadModerationEndpoints(loadStaticConfigFn, defaults, logger) {
+  return loadModerationEndpointsUnsafe(loadStaticConfigFn, defaults).catch(
+    error => handleEndpointFailure(logger, defaults, error)
+  );
+}
+
+/**
+ * Fetch the static config and turn it into endpoint URLs.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for the config.
+ * @param {{
+ *   getModerationVariantUrl: string,
+ *   assignModerationJobUrl: string,
+ *   submitModerationRatingUrl: string,
+ * }} defaults - Defaults used when the loader doesn't override the entries.
+ * @returns {Promise<{
+ *   getModerationVariantUrl: string,
+ *   assignModerationJobUrl: string,
+ *   submitModerationRatingUrl: string,
+ * }>} Promise resolving to the normalized endpoint URLs.
+ */
+async function loadModerationEndpointsUnsafe(loadStaticConfigFn, defaults) {
+  const config = await loadStaticConfigFn();
+  return mapConfigToModerationEndpoints(config, defaults);
+}
+
+/**
+ * Handle failures when loading moderation endpoints.
+ * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Logger used to report the error.
+ * @param {{
+ *   getModerationVariantUrl: string,
+ *   assignModerationJobUrl: string,
+ *   submitModerationRatingUrl: string,
+ * }} defaults - Fallback endpoints used when loading fails.
+ * @param {unknown} error - Error reported by the loader.
+ * @returns {{
+ *   getModerationVariantUrl: string,
+ *   assignModerationJobUrl: string,
+ *   submitModerationRatingUrl: string,
+ * }} Fallback endpoints applied after a failure.
+ */
+function handleEndpointFailure(logger, defaults, error) {
+  logger?.error?.(
+    'Failed to load moderation endpoints, falling back to defaults.',
+    error
+  );
+  return { ...defaults };
 }
 
 /**
