@@ -14,13 +14,8 @@ export const DEFAULT_MODERATION_ENDPOINTS = {
  * @param {'getModerationVariantUrl'|'assignModerationJobUrl'|'submitModerationRatingUrl'} key - Endpoint key to resolve.
  * @returns {string} Endpoint URL resolved from config or defaults.
  */
-function resolveEndpointValue(config, defaults, key) {
-  if (config && key in config) {
-    return config[key];
-  }
-
-  return defaults[key];
-}
+const resolveEndpointValue = (config, defaults, key) =>
+  config?.[key] ?? defaults[key];
 
 /**
  * Map a static config object into moderation endpoints with defaults.
@@ -76,12 +71,22 @@ export function mapConfigToModerationEndpoints(
  *   submitModerationRatingUrl: string,
  * }>} Promise resolving to moderation endpoint URLs.
  */
-export function createModerationEndpointsPromise(
+export const createModerationEndpointsPromise = (
   loadStaticConfigFn,
   options = {}
-) {
-  const { defaults = DEFAULT_MODERATION_ENDPOINTS, logger } = options;
-  return loadModerationEndpointsSafely(loadStaticConfigFn, defaults, logger);
+) =>
+  loadModerationEndpointsSafely(
+    loadStaticConfigFn,
+    resolveModerationDefaults(options),
+    options.logger
+  );
+
+/**
+ *
+ * @param options
+ */
+function resolveModerationDefaults(options) {
+  return options.defaults ?? DEFAULT_MODERATION_ENDPOINTS;
 }
 
 /**
@@ -95,13 +100,10 @@ export function createModerationEndpointsPromise(
  * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Logger reporting failures.
  * @returns {Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Promise resolving to either the parsed endpoints or the defaults.
  */
-function loadModerationEndpointsSafely(loadStaticConfigFn, defaults, logger) {
-  if (typeof loadStaticConfigFn !== 'function') {
-    return Promise.resolve({ ...defaults });
-  }
-
-  return loadModerationEndpoints(loadStaticConfigFn, defaults, logger);
-}
+const loadModerationEndpointsSafely = (loadStaticConfigFn, defaults, logger) =>
+  typeof loadStaticConfigFn === 'function'
+    ? loadModerationEndpoints(loadStaticConfigFn, defaults, logger)
+    : Promise.resolve({ ...defaults });
 
 /**
  * Load moderation endpoints via the static config loader, reporting errors when they occur.
@@ -131,12 +133,7 @@ async function loadModerationEndpoints(loadStaticConfigFn, defaults, logger) {
  * @returns {void}
  */
 function logModerationEndpointError(logger, error) {
-  const logError = logger?.error;
-  if (!logError) {
-    return;
-  }
-
-  logError(
+  logger?.error?.(
     'Failed to load moderation endpoints, falling back to defaults.',
     error
   );
@@ -188,37 +185,30 @@ export function createGetModerationEndpoints(createEndpointsPromiseFn) {
  *   submitModerationRatingUrl: string,
  * }>} Memoized moderation endpoints getter.
  */
-export function createGetModerationEndpointsFromStaticConfig(
-  loadStaticConfigFn,
-  { defaults = DEFAULT_MODERATION_ENDPOINTS, logger } = {}
-) {
-  const createEndpointsPromise = createModerationEndpointsPromiseFactory(
-    loadStaticConfigFn,
-    defaults,
-    logger
-  );
-  return createGetModerationEndpoints(createEndpointsPromise);
-}
-
 /**
- * Build the lazy promise factory for moderation endpoints.
- * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader that provides the static config overrides.
+ * Build a memoized moderation endpoints getter backed by the static config loader.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for static config.
  * @param {{
+ *   defaults?: {
+ *     getModerationVariantUrl: string,
+ *     assignModerationJobUrl: string,
+ *     submitModerationRatingUrl: string,
+ *   },
+ *   logger?: { error?: (message: string, error?: unknown) => void },
+ * }} [options] - Optional overrides for defaults and logging.
+ * @returns {() => Promise<{
  *   getModerationVariantUrl: string,
  *   assignModerationJobUrl: string,
  *   submitModerationRatingUrl: string,
- * }} defaults - Default endpoint map when overrides are absent.
- * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Optional logger for failures.
- * @returns {() => Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Factory returning the normalized endpoints promise.
+ * }>} Memoized moderation endpoints getter.
  */
-function createModerationEndpointsPromiseFactory(
+export const createGetModerationEndpointsFromStaticConfig = (
   loadStaticConfigFn,
-  defaults,
-  logger
-) {
-  return () =>
+  { defaults = DEFAULT_MODERATION_ENDPOINTS, logger } = {}
+) =>
+  createGetModerationEndpoints(() =>
     createModerationEndpointsPromise(loadStaticConfigFn, {
       defaults,
       logger,
-    });
-}
+    })
+  );
