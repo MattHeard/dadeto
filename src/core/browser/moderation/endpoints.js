@@ -134,12 +134,6 @@ async function loadModerationEndpoints(loadStaticConfigFn, defaults, logger) {
  * @param {unknown} error - Error produced while loading the endpoints.
  * @returns {void}
  */
-
-/**
- *
- * @param logger
- * @param error
- */
 function logModerationEndpointError(logger, error) {
   const errorLogger = logger?.error ?? (() => {});
   errorLogger(
@@ -218,6 +212,23 @@ export function createGetModerationEndpoints(createEndpointsPromiseFn) {
  * @param root0
  * @param root0.defaults
  * @param root0.logger
+ */
+/**
+ * Build a memoized moderation endpoints getter backed by the static config loader.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for static config.
+ * @param {{
+ *   defaults?: {
+ *     getModerationVariantUrl: string,
+ *     assignModerationJobUrl: string,
+ *     submitModerationRatingUrl: string,
+ *   },
+ *   logger?: { error?: (message: string, error?: unknown) => void },
+ * }} [options] - Optional overrides for defaults and logging.
+ * @returns {() => Promise<{
+ *   getModerationVariantUrl: string,
+ *   assignModerationJobUrl: string,
+ *   submitModerationRatingUrl: string,
+ * }>} Memoized moderation endpoints getter.
  */
 export function createGetModerationEndpointsFromStaticConfig(
   loadStaticConfigFn,

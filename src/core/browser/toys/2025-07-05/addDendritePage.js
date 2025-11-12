@@ -53,8 +53,9 @@ export function addDendritePage(input, env) {
 }
 
 /**
- *
- * @param input
+ * Parse the JSON input without throwing.
+ * @param {string} input - JSON string representing the payload.
+ * @returns {object|null} Parsed object or null when parsing fails.
  */
 function safeParseJson(input) {
   try {
@@ -65,15 +66,17 @@ function safeParseJson(input) {
 }
 
 /**
- *
+ * Render a canonical empty response for the toy.
+ * @returns {string} JSON string representing no pages/options.
  */
 function emptyResponse() {
   return JSON.stringify({ pages: [], options: [] });
 }
 
 /**
- *
- * @param {...any} fns
+ * Check that every argument is callable before invoking.
+ * @param {...unknown} fns - Candidates for callable functions.
+ * @returns {boolean} True when all arguments are functions.
  */
 function areCallables(...fns) {
   return fns.every(fn => typeof fn === 'function');
