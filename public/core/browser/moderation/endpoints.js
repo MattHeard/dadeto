@@ -15,7 +15,11 @@ export const DEFAULT_MODERATION_ENDPOINTS = {
  * @returns {string} Endpoint URL resolved from config or defaults.
  */
 function resolveEndpointValue(config, defaults, key) {
-  return config?.[key] ?? defaults[key];
+  if (config && key in config) {
+    return config[key];
+  }
+
+  return defaults[key];
 }
 
 /**
@@ -77,26 +81,26 @@ export function createModerationEndpointsPromise(
   options = {}
 ) {
   const { defaults = DEFAULT_MODERATION_ENDPOINTS, logger } = options;
-  return getModerationEndpointsLoader(loadStaticConfigFn, defaults, logger)();
+  return loadModerationEndpointsSafely(loadStaticConfigFn, defaults, logger);
 }
 
 /**
- * Produce a loader that resolves moderation endpoints, handling missing config loaders.
- * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader that reads the static configuration.
+ * Resolve moderation endpoints when the loader is configured; fall back to defaults otherwise.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader that fetches overrides.
  * @param {{
  *   getModerationVariantUrl: string,
  *   assignModerationJobUrl: string,
  *   submitModerationRatingUrl: string,
- * }} defaults - Fallback endpoint map.
- * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Optional logger used when loading fails.
- * @returns {() => Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Loader used to resolve moderation endpoints.
+ * }} defaults - Default endpoint map when overrides are unavailable.
+ * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Logger reporting failures.
+ * @returns {Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Promise resolving to either the parsed endpoints or the defaults.
  */
-function getModerationEndpointsLoader(loadStaticConfigFn, defaults, logger) {
+function loadModerationEndpointsSafely(loadStaticConfigFn, defaults, logger) {
   if (typeof loadStaticConfigFn !== 'function') {
-    return () => Promise.resolve({ ...defaults });
+    return Promise.resolve({ ...defaults });
   }
 
-  return () => loadModerationEndpoints(loadStaticConfigFn, defaults, logger);
+  return loadModerationEndpoints(loadStaticConfigFn, defaults, logger);
 }
 
 /**
@@ -127,7 +131,12 @@ async function loadModerationEndpoints(loadStaticConfigFn, defaults, logger) {
  * @returns {void}
  */
 function logModerationEndpointError(logger, error) {
-  logger?.error?.(
+  const logError = logger?.error;
+  if (!logError) {
+    return;
+  }
+
+  logError(
     'Failed to load moderation endpoints, falling back to defaults.',
     error
   );
@@ -183,10 +192,33 @@ export function createGetModerationEndpointsFromStaticConfig(
   loadStaticConfigFn,
   { defaults = DEFAULT_MODERATION_ENDPOINTS, logger } = {}
 ) {
-  return createGetModerationEndpoints(() =>
+  const createEndpointsPromise = createModerationEndpointsPromiseFactory(
+    loadStaticConfigFn,
+    defaults,
+    logger
+  );
+  return createGetModerationEndpoints(createEndpointsPromise);
+}
+
+/**
+ * Build the lazy promise factory for moderation endpoints.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader that provides the static config overrides.
+ * @param {{
+ *   getModerationVariantUrl: string,
+ *   assignModerationJobUrl: string,
+ *   submitModerationRatingUrl: string,
+ * }} defaults - Default endpoint map when overrides are absent.
+ * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Optional logger for failures.
+ * @returns {() => Promise<{ getModerationVariantUrl: string, assignModerationJobUrl: string, submitModerationRatingUrl: string }>} Factory returning the normalized endpoints promise.
+ */
+function createModerationEndpointsPromiseFactory(
+  loadStaticConfigFn,
+  defaults,
+  logger
+) {
+  return () =>
     createModerationEndpointsPromise(loadStaticConfigFn, {
       defaults,
       logger,
-    })
-  );
+    });
 }

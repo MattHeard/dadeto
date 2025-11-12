@@ -8,11 +8,12 @@
  * @returns {Record<string, any>} Normalized headers map.
  */
 function normalizeHeaders(originalHeaders) {
-  if (isHeadersInstance(originalHeaders)) {
-    return Object.fromEntries(originalHeaders.entries());
+  const entries = getHeaderEntries(originalHeaders);
+  if (entries) {
+    return Object.fromEntries(entries);
   }
 
-  return { ...(originalHeaders || {}) };
+  return buildHeaderFallback(originalHeaders);
 }
 
 /**
@@ -26,6 +27,28 @@ function isHeadersInstance(value) {
   }
 
   return value instanceof Headers;
+}
+
+/**
+ * Extract entries from a Headers-like object when accessible.
+ * @param {unknown} value - Candidate header store.
+ * @returns {Headers['entries'] | null} Iterator over header entries when available.
+ */
+function getHeaderEntries(value) {
+  if (!isHeadersInstance(value)) {
+    return null;
+  }
+
+  return value.entries();
+}
+
+/**
+ * Clone non-`Headers` inputs into a plain object.
+ * @param {FetchOptions|Record<string, any>|null|undefined} originalHeaders Header-like data.
+ * @returns {Record<string, any>} Shallow copy of the provided headers.
+ */
+function buildHeaderFallback(originalHeaders) {
+  return { ...(originalHeaders || {}) };
 }
 
 /**
@@ -56,12 +79,29 @@ function shouldProcessAuthedResponse(response) {
  * @returns {*} Parsed JSON payload or the original response when no parser is available.
  */
 function parseAuthedResponse(response) {
+  ensureResponseOk(response);
+  return getResponseBody(response);
+}
+
+/**
+ * Ensure the response reported success before parsing.
+ * @param {{ ok: boolean, status?: number }} response - Validated response object.
+ * @returns {void}
+ */
+function ensureResponseOk(response) {
   if (!response.ok) {
     const error = new Error(`HTTP ${response.status}`);
     error.status = response.status;
     throw error;
   }
+}
 
+/**
+ * Resolve the body payload for a successful response.
+ * @param {{ json?: () => any }} response - Response providing an optional JSON parser.
+ * @returns {*} Parsed JSON payload or the original response when parsing is unavailable.
+ */
+function getResponseBody(response) {
   if (typeof response.json === 'function') {
     return response.json();
   }
@@ -82,29 +122,64 @@ function parseAuthedResponse(response) {
  * @returns {(url: string, init?: FetchOptions) => Promise<any>} Fetch helper adding an Authorization header.
  */
 export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
-  if (typeof getIdToken !== 'function') {
-    throw new TypeError('getIdToken must be a function');
-  }
-  if (typeof fetchJson !== 'function') {
-    throw new TypeError('fetchJson must be a function');
-  }
+  validateAuthedFetchDeps(getIdToken, fetchJson);
 
   return async (url, init = {}) => {
-    const token = await getIdToken();
-    if (!token) throw new Error('not signed in');
-
+    const token = await requireToken(getIdToken);
     const { headers: originalHeaders, ...rest } = init;
-    const headers = {
-      'Content-Type': 'application/json',
-      ...normalizeHeaders(originalHeaders),
-      Authorization: `Bearer ${token}`,
-    };
-
-    const response = await fetchJson(url, {
-      ...rest,
-      headers,
-    });
-
+    const headers = buildAuthedHeaders(originalHeaders, token);
+    const response = await fetchJson(url, { ...rest, headers });
     return handleAuthedResponse(response);
   };
 };
+
+/**
+ * Ensure injected helpers are callable before wiring the auth helper.
+ * @param {unknown} getIdToken - Candidate token getter.
+ * @param {unknown} fetchJson - Candidate fetch helper.
+ * @returns {void}
+ */
+function validateAuthedFetchDeps(getIdToken, fetchJson) {
+  ensureFunction(getIdToken, 'getIdToken');
+  ensureFunction(fetchJson, 'fetchJson');
+}
+
+/**
+ * Throw when the provided value is not a function.
+ * @param {unknown} value - Candidate function.
+ * @param {string} name - Name used inside the error message.
+ * @returns {void}
+ */
+function ensureFunction(value, name) {
+  if (typeof value !== 'function') {
+    throw new TypeError(`${name} must be a function`);
+  }
+}
+
+/**
+ * Retrieve a token from the provided getter, throwing when absent.
+ * @param {() => (string|Promise<string|null>|null)} getIdToken - Getter returning the ID token.
+ * @returns {Promise<string>} Promise resolving to the ID token.
+ */
+async function requireToken(getIdToken) {
+  const token = await getIdToken();
+  if (!token) {
+    throw new Error('not signed in');
+  }
+
+  return token;
+}
+
+/**
+ * Compose headers for authenticated requests, injecting the ID token.
+ * @param {FetchOptions|Record<string, any>|null|undefined} originalHeaders - Headers from the caller.
+ * @param {string} token - Valid ID token.
+ * @returns {Record<string, string>} Headers map used for the authenticated fetch.
+ */
+function buildAuthedHeaders(originalHeaders, token) {
+  return {
+    'Content-Type': 'application/json',
+    ...normalizeHeaders(originalHeaders),
+    Authorization: `Bearer ${token}`,
+  };
+}
