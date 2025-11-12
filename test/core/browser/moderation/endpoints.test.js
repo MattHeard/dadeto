@@ -62,6 +62,20 @@ describe('createModerationEndpointsPromise', () => {
     });
   });
 
+  it('uses default options when not provided', async () => {
+    const loadStaticConfig = jest.fn().mockResolvedValue({
+      submitModerationRatingUrl: 'https://example.com/rating',
+    });
+
+    const result = await createModerationEndpointsPromise(loadStaticConfig);
+
+    expect(loadStaticConfig).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      ...DEFAULT_MODERATION_ENDPOINTS,
+      submitModerationRatingUrl: 'https://example.com/rating',
+    });
+  });
+
   it('falls back to defaults and logs when loader rejects', async () => {
     const error = new Error('boom');
     const logger = { error: jest.fn() };
