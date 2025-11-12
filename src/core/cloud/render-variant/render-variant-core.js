@@ -161,17 +161,18 @@ function buildParagraphsHtml(content) {
 
 /**
  *
- * @param pageNumber
- * @param variantName
- * @param content
- * @param options
- * @param storyTitle
- * @param author
- * @param authorUrl
- * @param parentUrl
- * @param firstPageUrl
- * @param showTitleHeading
- * @param buildHtmlInput
+ * @param {{
+ *   pageNumber: number,
+ *   variantName: string,
+ *   content: string,
+ *   options: unknown,
+ *   storyTitle?: string,
+ *   author?: string,
+ *   authorUrl?: string,
+ *   parentUrl?: string,
+ *   firstPageUrl?: string,
+ *   showTitleHeading?: boolean,
+ * }} buildHtmlInput
  */
 export function buildHtml(buildHtmlInput) {
   const positionalArgs = arguments;

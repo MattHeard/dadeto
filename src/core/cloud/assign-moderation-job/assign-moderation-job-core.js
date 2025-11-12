@@ -724,11 +724,13 @@ export function createAssignModerationWorkflow({
 
 /**
  * Create the Express handler that assigns moderation jobs using Firestore.
- * @param {(db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
- * @param {import('firebase-admin/auth').Auth} auth Firebase auth service used to verify ID tokens.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore database containing moderation records.
- * @param {() => unknown} now Timestamp provider for persisted assignments.
- * @param {() => number} random RNG used for variant selection.
+ * @param {{
+ *   createRunVariantQuery: (db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>,
+ *   auth: import('firebase-admin/auth').Auth,
+ *   db: import('firebase-admin/firestore').Firestore,
+ *   now: () => unknown,
+ *   random: () => number,
+ * }} options - Dependencies used to compose the handler.
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Express handler that assigns a moderation job to the caller.
  */
 export function createHandleAssignModerationJob({
@@ -793,11 +795,13 @@ export function createAssignModerationJob(functionsModule, firebaseResources) {
 
 /**
  * Compose the moderation handler using Firebase auth and Firestore dependencies.
- * @param {import('firebase-admin/auth').Auth} auth - Firebase auth service that verifies incoming tokens.
- * @param {(randomValue: number) => Promise<unknown>} fetchVariantSnapshot - Snapshot fetcher used to select moderation candidates.
- * @param {import('firebase-admin/firestore').Firestore} db - Firestore instance used to persist assignments.
- * @param {() => unknown} now - Timestamp provider for persisted assignments.
- * @param {() => number} random - RNG used for variant selection.
+ * @param {{
+ *   auth: import('firebase-admin/auth').Auth,
+ *   fetchVariantSnapshot: (randomValue: number) => Promise<unknown>,
+ *   db: import('firebase-admin/firestore').Firestore,
+ *   now: () => unknown,
+ *   random: () => number,
+ * }} options - Dependencies for the handler.
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Express handler bound to Firebase auth.
  */
 export function createHandleAssignModerationJobFromAuth({

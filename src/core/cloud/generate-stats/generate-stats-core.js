@@ -6,12 +6,7 @@ export { productionOrigins } from './cloud-core.js';
 
 /**
  * Build stats HTML page.
- * @param {number} storyCount Story count.
- * @param {number} pageCount Page count.
- * @param {number} unmoderatedCount Unmoderated page count.
- * @param {Array<{title: string, variantCount: number}>} [topStories]
- *   Top stories by variant count.
- * @param {...any} args
+ * @param {...unknown} args Rendering inputs: storyCount, pageCount, unmoderatedCount, and optional topStories.
  * @returns {string} HTML page.
  */
 export function buildHtml(...args) {
