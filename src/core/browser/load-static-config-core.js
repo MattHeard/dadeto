@@ -14,17 +14,18 @@
  */
 
 /**
- * Parse the static config fetch response, enforcing a successful status.
+ * Parse the static config fetch response, ensuring a successful status.
  * @param {StaticConfigResponse} response - Fetch response for the config.json request.
- * @returns {Promise<Record<string, unknown>>} Parsed configuration payload.
+ * @returns {Promise<Record<string, unknown>>} Promise resolving to the parsed config payload.
  */
 export async function parseStaticConfigResponse(response) {
   return ensureStaticConfigResponseOk(response).json();
 }
 
 /**
- *
- * @param response
+ * Ensure a static config fetch result succeeded before returning it.
+ * @param {StaticConfigResponse} response - Raw fetch response.
+ * @returns {StaticConfigResponse} The validated response ready for parsing.
  */
 function ensureStaticConfigResponseOk(response) {
   if (!response?.ok) {

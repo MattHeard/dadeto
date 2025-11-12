@@ -17,7 +17,7 @@ function normalizeHeaders(originalHeaders) {
 
 /**
  * Normalize successful responses and throw on HTTP errors.
- * @param {object|null|undefined} response Raw fetch response or failure object.
+ * @param {object|null|undefined} response - Raw fetch response or failure object.
  * @returns {*} Parsed JSON payload or the original response.
  */
 function handleAuthedResponse(response) {
@@ -29,16 +29,18 @@ function handleAuthedResponse(response) {
 }
 
 /**
- *
- * @param response
+ * Determine whether the provided response can be normalized.
+ * @param {object|null|undefined} response - Candidate response object.
+ * @returns {boolean} True when a response object with an `ok` flag is provided.
  */
 function shouldProcessAuthedResponse(response) {
   return Boolean(response && typeof response.ok === 'boolean');
 }
 
 /**
- *
- * @param response
+ * Parse an authenticated response, throwing on HTTP failures.
+ * @param {{ ok: boolean, status?: number, json?: () => any }} response - Validated fetch response.
+ * @returns {*} Parsed JSON payload or the original response when no parser is available.
  */
 function parseAuthedResponse(response) {
   if (!response.ok) {
