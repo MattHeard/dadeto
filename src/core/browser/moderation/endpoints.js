@@ -32,12 +32,21 @@ export function mapConfigToModerationEndpoints(
   config = {},
   defaults = DEFAULT_MODERATION_ENDPOINTS
 ) {
-  const merged = { ...defaults, ...config };
+  const merged = mergeModerationEndpoints(config, defaults);
   return {
     getModerationVariantUrl: merged.getModerationVariantUrl,
     assignModerationJobUrl: merged.assignModerationJobUrl,
     submitModerationRatingUrl: merged.submitModerationRatingUrl,
   };
+}
+
+/**
+ *
+ * @param config
+ * @param defaults
+ */
+function mergeModerationEndpoints(config, defaults) {
+  return { ...defaults, ...config };
 }
 
 /**
