@@ -50,20 +50,28 @@ export function getDefaultAdminEndpointsCopy() {
 }
 
 /**
+ * Resolve an admin endpoint using config overrides with production defaults.
+ * @param {Record<string, string>} config - Configuration object containing endpoint overrides.
+ * @param {'triggerRenderContentsUrl'|'markVariantDirtyUrl'|'generateStatsUrl'} key - Endpoint key to resolve.
+ * @returns {string} Resolved endpoint URL.
+ */
+function resolveAdminEndpoint(config, key) {
+  return config?.[key] ?? DEFAULT_ADMIN_ENDPOINTS[key];
+}
+
+/**
  * Normalize static config into admin endpoints with production fallbacks.
  * @param {Record<string, string>} config - Static config values keyed by endpoint name.
  * @returns {{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}} Normalized admin endpoints with production fallbacks.
  */
 export function mapConfigToAdminEndpoints(config) {
   return {
-    triggerRenderContentsUrl:
-      config?.triggerRenderContentsUrl ??
-      DEFAULT_ADMIN_ENDPOINTS.triggerRenderContentsUrl,
-    markVariantDirtyUrl:
-      config?.markVariantDirtyUrl ??
-      DEFAULT_ADMIN_ENDPOINTS.markVariantDirtyUrl,
-    generateStatsUrl:
-      config?.generateStatsUrl ?? DEFAULT_ADMIN_ENDPOINTS.generateStatsUrl,
+    triggerRenderContentsUrl: resolveAdminEndpoint(
+      config,
+      'triggerRenderContentsUrl'
+    ),
+    markVariantDirtyUrl: resolveAdminEndpoint(config, 'markVariantDirtyUrl'),
+    generateStatsUrl: resolveAdminEndpoint(config, 'generateStatsUrl'),
   };
 }
 
@@ -264,24 +272,32 @@ export async function executeTriggerRender({
     );
     await announceTriggerRenderResult(res, showMessage);
   } catch (e) {
-    showMessage(`Render failed: ${e instanceof Error ? e.message : String(e)}`);
+    let message;
+    if (e instanceof Error) {
+      message = e.message;
+    } else {
+      message = String(e);
+    }
+    showMessage(`Render failed: ${message}`);
   }
 }
 
 /**
  * Create a trigger render handler with the supplied dependencies.
- * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
- * @param {() => Promise<{ triggerRenderContentsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
- * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   getAdminEndpointsFn: () => Promise<{ triggerRenderContentsUrl: string }>,
+ *   fetchFn: FetchFn,
+ *   showMessage: (text: string) => void,
+ * }} options - Dependencies used during trigger render execution.
  * @returns {() => Promise<void>} Function that triggers render when invoked.
  */
-export function createTriggerRender(
+export function createTriggerRender({
   googleAuth,
   getAdminEndpointsFn,
   fetchFn,
-  showMessage
-) {
+  showMessage,
+}) {
   return createAdminTokenAction({
     googleAuth,
     getAdminEndpointsFn,
@@ -304,6 +320,62 @@ export function createTriggerRender(
 }
 
 /**
+ * Ensure the value is a callable function.
+ * @param {*} value - Value that should be a function.
+ * @param {string} name - Error message target when validation fails.
+ * @returns {void}
+ */
+function requireFunction(value, name) {
+  if (typeof value !== 'function') {
+    throw new TypeError(`${name} must be a function`);
+  }
+}
+
+/**
+ * Ensure the value acts like a Document for DOM lookups.
+ * @param {*} value - Candidate document-like object.
+ * @param {string} [name] - Identifier used inside the error message.
+ * @returns {void}
+ */
+function requireDocumentLike(value, name = 'doc') {
+  if (!value || typeof value.getElementById !== 'function') {
+    throw new TypeError(`${name} must be a Document-like object`);
+  }
+}
+
+/**
+ * Attach a click listener to a DOM element when present.
+ * @param {Document} doc - Document used to resolve the element.
+ * @param {string} elementId - ID of the target element.
+ * @param {() => void | Promise<void>} listener - Handler invoked on click.
+ * @returns {HTMLElement | null} The element the listener was bound to, or null when missing.
+ */
+function addClickListener(doc, elementId, listener) {
+  const element = doc.getElementById(elementId);
+  if (element?.addEventListener) {
+    element.addEventListener('click', listener);
+  }
+
+  return element ?? null;
+}
+
+/**
+ * Attach a submit handler to the specified form element.
+ * @param {Document} doc - Document used to resolve the form.
+ * @param {string} elementId - ID of the form element to attach to.
+ * @param {(event: Event) => void | Promise<void>} listener - Handler invoked on submit.
+ * @returns {HTMLElement | null} Located form element or null when missing.
+ */
+function attachSubmitListener(doc, elementId, listener) {
+  const form = doc.getElementById(elementId);
+  if (form?.addEventListener) {
+    form.addEventListener('submit', listener);
+  }
+
+  return form ?? null;
+}
+
+/**
  * Attach the trigger render handler to the render button when present.
  * @param {Document} doc - Document used to locate the render button.
  * @param {() => void | Promise<void>} triggerRenderFn - Handler invoked when the button is clicked.
@@ -315,19 +387,10 @@ export function bindTriggerRenderClick(
   triggerRenderFn,
   elementId = 'renderBtn'
 ) {
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
-  if (typeof triggerRenderFn !== 'function') {
-    throw new TypeError('triggerRenderFn must be a function');
-  }
+  requireDocumentLike(doc);
+  requireFunction(triggerRenderFn, 'triggerRenderFn');
 
-  const button = doc.getElementById(elementId);
-  if (button?.addEventListener) {
-    button.addEventListener('click', triggerRenderFn);
-  }
-
-  return button ?? null;
+  return addClickListener(doc, elementId, triggerRenderFn);
 }
 
 /**
@@ -351,19 +414,10 @@ export function bindTriggerStatsClick(doc, triggerStatsFn) {
  * @returns {HTMLElement | null} The regenerate form when found, otherwise null.
  */
 export function bindRegenerateVariantSubmit(doc, regenerateVariantFn) {
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
-  if (typeof regenerateVariantFn !== 'function') {
-    throw new TypeError('regenerateVariantFn must be a function');
-  }
+  requireDocumentLike(doc);
+  requireFunction(regenerateVariantFn, 'regenerateVariantFn');
 
-  const form = doc.getElementById('regenForm');
-  if (form?.addEventListener) {
-    form.addEventListener('submit', regenerateVariantFn);
-  }
-
-  return form ?? null;
+  return attachSubmitListener(doc, 'regenForm', regenerateVariantFn);
 }
 
 /**
@@ -373,22 +427,71 @@ export function bindRegenerateVariantSubmit(doc, regenerateVariantFn) {
  * @returns {() => void} Function that attaches click handlers to sign-out links.
  */
 export function createWireSignOut(doc, googleAuth) {
-  if (!doc || typeof doc.querySelectorAll !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
+  ensureSignOutDoc(doc);
+  ensureSignOutAuth(googleAuth);
+
+  return function wireSignOut() {
+    attachSignOutLinks(doc, googleAuth);
+  };
+}
+
+/**
+ * Guard that ensures the Google auth helper exposes a sign-out method.
+ * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper used to sign the admin out.
+ * @returns {void}
+ */
+function ensureSignOutAuth(googleAuth) {
   if (!googleAuth || typeof googleAuth.signOut !== 'function') {
     throw new TypeError('googleAuth must provide a signOut function');
   }
+}
 
-  return function wireSignOut() {
-    doc.querySelectorAll('#signoutLink').forEach(link => {
-      if (link?.addEventListener) {
-        link.addEventListener('click', async event => {
-          event?.preventDefault?.();
-          await googleAuth.signOut();
-        });
-      }
-    });
+/**
+ * Ensure the provided document exposes `querySelectorAll` before wiring handlers.
+ * @param {{ querySelectorAll?: (selector: string) => NodeList }} doc - Document-like object used during binding.
+ * @returns {void}
+ */
+function ensureSignOutDoc(doc) {
+  if (!doc || typeof doc.querySelectorAll !== 'function') {
+    throw new TypeError('doc must be a Document-like object');
+  }
+}
+
+/**
+ * Attach a click listener to a single sign-out link.
+ * @param {HTMLElement | null | undefined} link - Element that should trigger sign-out when clicked.
+ * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper used by the handler.
+ * @returns {void}
+ */
+function attachSignOutLink(link, googleAuth) {
+  if (!link?.addEventListener) {
+    return;
+  }
+
+  link.addEventListener('click', createSignOutClickHandler(googleAuth));
+}
+
+/**
+ * Attach sign-out listeners to every link with the `#signoutLink` selector.
+ * @param {Document} doc - Document used to query sign-out links.
+ * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper passed to each listener.
+ * @returns {void}
+ */
+function attachSignOutLinks(doc, googleAuth) {
+  doc
+    .querySelectorAll('#signoutLink')
+    .forEach(link => attachSignOutLink(link, googleAuth));
+}
+
+/**
+ * Build a click handler that prevents the default action and calls signOut.
+ * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper whose signOut is invoked.
+ * @returns {(event: Event) => Promise<void>} Click handler that triggers sign-out.
+ */
+function createSignOutClickHandler(googleAuth) {
+  return async event => {
+    event?.preventDefault?.();
+    await googleAuth.signOut();
   };
 }
 
@@ -401,6 +504,29 @@ export function createWireSignOut(doc, googleAuth) {
 function assertFunction(value, message) {
   if (typeof value !== 'function') {
     throw new TypeError(message);
+  }
+}
+
+/**
+ * Ensure the provided value is a non-null object.
+ * @param {*} value - Candidate value that should behave like an object.
+ * @param {string} message - Message used for the thrown error when validation fails.
+ * @returns {void}
+ */
+function ensureObject(value, message) {
+  if (!value || typeof value !== 'object') {
+    throw new TypeError(message);
+  }
+}
+
+/**
+ * Ensure the provided storage exposes a `setItem` method.
+ * @param {{ setItem?: (key: string, value: string) => void } | null | undefined} storage - Storage-like interface.
+ * @returns {void}
+ */
+function ensureStorage(storage) {
+  if (!storage || typeof storage.setItem !== 'function') {
+    throw new TypeError('storage must provide a setItem function');
   }
 }
 
@@ -429,12 +555,8 @@ function validateGoogleSignInDeps({
     signInWithCredential,
     'signInWithCredential must be a function'
   );
-  if (!auth || typeof auth !== 'object') {
-    throw new TypeError('auth must be provided');
-  }
-  if (!storage || typeof storage.setItem !== 'function') {
-    throw new TypeError('storage must provide a setItem function');
-  }
+  ensureObject(auth, 'auth must be provided');
+  ensureStorage(storage);
   assertFunction(matchMedia, 'matchMedia must be a function');
   assertFunction(querySelectorAll, 'querySelectorAll must be a function');
 }
@@ -483,24 +605,41 @@ function normalizeGoogleSignInDeps(deps = {}) {
     querySelectorAll,
   });
 
-  const resolveGoogleAccountsId =
-    typeof googleAccountsId === 'function'
-      ? googleAccountsId
-      : () => googleAccountsId;
-
-  const safeLogger =
-    logger && typeof logger.error === 'function' ? logger : console;
-
   return {
-    resolveGoogleAccountsId,
+    resolveGoogleAccountsId: resolveGoogleAccounts(googleAccountsId),
     credentialFactory,
     signInWithCredential,
     auth,
     storage,
     matchMedia,
     querySelectorAll,
-    safeLogger,
+    safeLogger: resolveLogger(logger),
   };
+}
+
+/**
+ * Resolve the accounts ID helper into a callable resolver.
+ * @param {GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined} googleAccountsId - Optional helper that provides the Google Identity client.
+ * @returns {() => GoogleAccountsClient | undefined} Resolver that always returns the accounts client.
+ */
+function resolveGoogleAccounts(googleAccountsId) {
+  if (typeof googleAccountsId === 'function') {
+    return googleAccountsId;
+  }
+  return () => googleAccountsId;
+}
+
+/**
+ * Ensure we always have a logger that can report errors.
+ * @param {{ error?: (message: string) => void } | undefined} logger - Optional logger provided by the caller.
+ * @returns {{ error?: (message: string) => void }} Logger that safely exposes `error`.
+ */
+function resolveLogger(logger) {
+  if (logger && typeof logger.error === 'function') {
+    return logger;
+  }
+
+  return console;
 }
 
 /**
@@ -616,13 +755,12 @@ export function createInitGoogleSignIn(deps) {
 
     const accountsId = resolveGoogleAccountsId();
 
-    if (!hasRequiredGoogleIdentityMethods(accountsId)) {
-      reportMissingGoogleIdentity(safeLogger);
+    if (!ensureGoogleIdentityAvailable(accountsId, safeLogger)) {
       return;
     }
 
     accountsId.initialize({
-      client_id:
+      ['client_id']:
         '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
       callback: options =>
         handleCredentialSignIn(options, {
@@ -632,32 +770,30 @@ export function createInitGoogleSignIn(deps) {
           storage,
           onSignIn,
         }),
-      ux_mode: 'popup',
+      ['ux_mode']: 'popup',
     });
 
     const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
-    const renderButton = () =>
-      renderSignInButtons(accountsId, querySelectorAll, mediaQueryList);
-
-    renderButton();
-    mediaQueryList?.addEventListener?.('change', renderButton);
+    setupSignInButtonRenderer(accountsId, querySelectorAll, mediaQueryList);
   };
 }
 
 /**
  * Create a trigger stats handler with the supplied dependencies.
- * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
- * @param {() => Promise<{ generateStatsUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
- * @param {(text: string) => void} showMessage - Callback to surface status messages.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   getAdminEndpointsFn: () => Promise<{ generateStatsUrl: string }>,
+ *   fetchFn: FetchFn,
+ *   showMessage: (text: string) => void,
+ * }} options - Dependencies used during stats generation.
  * @returns {() => Promise<void>} Function that triggers stats generation when invoked.
  */
-export function createTriggerStats(
+export function createTriggerStats({
   googleAuth,
   getAdminEndpointsFn,
   fetchFn,
-  showMessage
-) {
+  showMessage,
+}) {
   return createAdminTokenAction({
     googleAuth,
     getAdminEndpointsFn,
@@ -686,64 +822,159 @@ export function createTriggerStats(
 
 /**
  * Create a regenerate variant handler with the supplied dependencies.
- * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Google auth helper with a `getIdToken` accessor.
- * @param {Document} doc - Document used to locate form inputs.
- * @param {(text: string) => void} showMessage - Callback to surface status messages.
- * @param {() => Promise<{ markVariantDirtyUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   doc: Document,
+ *   showMessage: (text: string) => void,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   fetchFn: FetchFn,
+ * }} options - Dependencies for the regenerate workflow.
  * @returns {(event: Event) => Promise<void>} Function that triggers variant regeneration when invoked.
  */
-export function createRegenerateVariant(
+export function createRegenerateVariant(options) {
+  validateRegenerateVariantDeps(options);
+  return createRegenerateVariantHandler(options);
+}
+
+/**
+ * Validate dependencies before producing the regenerate variant handler.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   doc: Document,
+ *   showMessage: (text: string) => void,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   fetchFn: FetchFn,
+ * }} deps - Dependencies required for regenerating a variant.
+ * @returns {void}
+ */
+function validateRegenerateVariantDeps({
   googleAuth,
   doc,
   showMessage,
   getAdminEndpointsFn,
-  fetchFn
-) {
+  fetchFn,
+}) {
   if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
     throw new TypeError('googleAuth must provide a getIdToken function');
   }
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
-  if (typeof showMessage !== 'function') {
-    throw new TypeError('showMessage must be a function');
-  }
-  if (typeof getAdminEndpointsFn !== 'function') {
-    throw new TypeError('getAdminEndpointsFn must be a function');
-  }
-  if (typeof fetchFn !== 'function') {
-    throw new TypeError('fetchFn must be a function');
-  }
+  requireDocumentLike(doc);
+  requireFunction(showMessage, 'showMessage');
+  requireFunction(getAdminEndpointsFn, 'getAdminEndpointsFn');
+  requireFunction(fetchFn, 'fetchFn');
+}
 
+/**
+ * Build the actual regenerate variant handler after validation.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   doc: Document,
+ *   showMessage: (text: string) => void,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   fetchFn: FetchFn,
+ * }} options - Dependencies needed to trigger regeneration.
+ * @returns {(event: Event) => Promise<void>} Handler that reads the input, builds the payload, and submits the request.
+ */
+function createRegenerateVariantHandler({
+  googleAuth,
+  doc,
+  showMessage,
+  getAdminEndpointsFn,
+  fetchFn,
+}) {
   return async function regenerateVariant(event) {
     event?.preventDefault?.();
 
-    const token = googleAuth.getIdToken();
-    if (!token) {
+    const payload = resolveRegenerationPayload(doc, showMessage, googleAuth);
+    if (!payload) {
       return;
     }
 
-    const input = doc.getElementById('regenInput');
-    const pageVariant = parsePageVariantInput(input);
-
-    if (!pageVariant) {
-      showMessage('Invalid format');
-      return;
-    }
-
-    try {
-      await sendRegenerateVariantRequest(
-        fetchFn,
-        getAdminEndpointsFn,
-        token,
-        pageVariant
-      );
-      showMessage('Regeneration triggered');
-    } catch {
-      showMessage('Regeneration failed');
-    }
+    await performRegeneration({
+      fetchFn,
+      getAdminEndpointsFn,
+      token: payload.token,
+      pageVariant: payload.pageVariant,
+      showMessage,
+    });
   };
+}
+
+/**
+ * Parse the regenerate form input and return structured page/variant data.
+ * @param {Document} doc - Document containing the regenerate input.
+ * @param {(text: string) => void} showMessage - Reporter used when the input is invalid.
+ * @returns {{page: number, variant: string} | null} Parsed page/variant info when valid.
+ */
+function resolveValidPageVariant(doc, showMessage) {
+  const pageVariant = getPageVariantFromDoc(doc);
+  if (!pageVariant) {
+    showMessage('Invalid format');
+    return null;
+  }
+
+  return pageVariant;
+}
+
+/**
+ * Resolve the ID token and page/variant pair for regeneration.
+ * @param {Document} doc - Document holding the regeneration input.
+ * @param {(text: string) => void} showMessage - Reporter for invalid input.
+ * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Auth helper that supplies the token.
+ * @returns {{ token: string, pageVariant: { page: number, variant: string } } | null}
+ */
+function resolveRegenerationPayload(doc, showMessage, googleAuth) {
+  const token = googleAuth.getIdToken();
+  if (!token) {
+    return null;
+  }
+
+  const pageVariant = resolveValidPageVariant(doc, showMessage);
+  if (!pageVariant) {
+    return null;
+  }
+
+  return { token, pageVariant };
+}
+
+/**
+ * Read and parse the page/variant input from the regeneration form.
+ * @param {Document} doc - Document containing the regenerate input.
+ * @returns {{page: number, variant: string} | null} Parsed page/variant info or null when invalid.
+ */
+function getPageVariantFromDoc(doc) {
+  const input = doc.getElementById('regenInput');
+  return parsePageVariantInput(input);
+}
+
+/**
+ * Submit the regenerate variant request and report the result.
+ * @param {{
+ *   fetchFn: FetchFn,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   token: string,
+ *   pageVariant: { page: number, variant: string },
+ *   showMessage: (text: string) => void,
+ * }} options - Dependencies and payload for the regeneration flow.
+ * @returns {Promise<void>} Resolves once the request has been attempted.
+ */
+async function performRegeneration({
+  fetchFn,
+  getAdminEndpointsFn,
+  token,
+  pageVariant,
+  showMessage,
+}) {
+  try {
+    await sendRegenerateVariantRequest({
+      fetchFn,
+      getAdminEndpointsFn,
+      token,
+      pageVariant,
+    });
+    showMessage('Regeneration triggered');
+  } catch {
+    showMessage('Regeneration failed');
+  }
 }
 
 /**
@@ -794,18 +1025,20 @@ function parsePageVariantValue(value) {
 
 /**
  * Submit a request to mark a variant dirty for regeneration.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
- * @param {() => Promise<{ markVariantDirtyUrl: string }>} getAdminEndpointsFn - Resolves admin endpoints.
- * @param {string} token - Authorization token used to authenticate the request.
- * @param {{page: number, variant: string}} pageVariant - Page and variant identifiers for regeneration.
+ * @param {{
+ *   fetchFn: FetchFn,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   token: string,
+ *   pageVariant: { page: number, variant: string },
+ * }} options - Dependencies and payload for the regenerate request.
  * @returns {Promise<void>} Promise that resolves when the request succeeds.
  */
-async function sendRegenerateVariantRequest(
+async function sendRegenerateVariantRequest({
   fetchFn,
   getAdminEndpointsFn,
   token,
-  pageVariant
-) {
+  pageVariant,
+}) {
   const { markVariantDirtyUrl } = await getAdminEndpointsFn();
   const res = await fetchFn(markVariantDirtyUrl, {
     method: 'POST',
@@ -858,39 +1091,33 @@ export function createShowMessage(getStatusParagraphFn, doc) {
 /**
  * Initialize the admin interface by wiring event handlers and auth listeners.
  * @param {{
- *   initGoogleSignIn: () => void,
- *   getIdToken: () => string | null | undefined,
- *   signOut: () => Promise<void> | void,
- * }} googleAuthModule - Google auth helper with sign-in utilities.
- * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for the static config JSON.
- * @param {() => unknown} getAuthFn - Getter for the Firebase auth instance.
- * @param {(auth: unknown, callback: () => void) => void} onAuthStateChangedFn - Firebase auth listener registrar.
- * @param {Document} doc - Document used to locate admin UI elements.
- * @param {FetchFn} fetchFn - Fetch-like network caller.
+ *   googleAuthModule: {
+ *     initGoogleSignIn: () => void,
+ *     getIdToken: () => string | null | undefined,
+ *     signOut: () => Promise<void> | void,
+ *   },
+ *   loadStaticConfigFn: () => Promise<Record<string, string>>,
+ *   getAuthFn: () => unknown,
+ *   onAuthStateChangedFn: (auth: unknown, callback: () => void) => void,
+ *   doc: Document,
+ *   fetchFn: FetchFn,
+ * }} options - Dependencies required for admin initialization.
  */
-export function initAdmin(
+export function initAdmin({
   googleAuthModule,
   loadStaticConfigFn,
   getAuthFn,
   onAuthStateChangedFn,
   doc,
-  fetchFn
-) {
-  if (!googleAuthModule) {
-    throw new TypeError('googleAuthModule must be provided');
-  }
-  if (typeof getAuthFn !== 'function') {
-    throw new TypeError('getAuthFn must be a function');
-  }
-  if (typeof onAuthStateChangedFn !== 'function') {
-    throw new TypeError('onAuthStateChangedFn must be a function');
-  }
-  if (!doc || typeof doc.getElementById !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
-  if (typeof fetchFn !== 'function') {
-    throw new TypeError('fetchFn must be a function');
-  }
+  fetchFn,
+}) {
+  validateInitAdminDeps({
+    googleAuthModule,
+    getAuthFn,
+    onAuthStateChangedFn,
+    doc,
+    fetchFn,
+  });
 
   const getAdminEndpoints =
     createGetAdminEndpointsFromStaticConfig(loadStaticConfigFn);
@@ -898,27 +1125,27 @@ export function initAdmin(
 
   const checkAccess = createCheckAccess(getAuthFn, doc);
 
-  const triggerRender = createTriggerRender(
-    googleAuthModule,
-    getAdminEndpoints,
+  const triggerRender = createTriggerRender({
+    googleAuth: googleAuthModule,
+    getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
-    showMessage
-  );
+    showMessage,
+  });
 
-  const triggerStats = createTriggerStats(
-    googleAuthModule,
-    getAdminEndpoints,
+  const triggerStats = createTriggerStats({
+    googleAuth: googleAuthModule,
+    getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
-    showMessage
-  );
+    showMessage,
+  });
 
-  const regenerateVariant = createRegenerateVariant(
-    googleAuthModule,
+  const regenerateVariant = createRegenerateVariant({
+    googleAuth: googleAuthModule,
     doc,
     showMessage,
-    getAdminEndpoints,
-    fetchFn
-  );
+    getAdminEndpointsFn: getAdminEndpoints,
+    fetchFn,
+  });
 
   bindTriggerRenderClick(doc, triggerRender);
   bindTriggerStatsClick(doc, triggerStats);
@@ -933,6 +1160,37 @@ export function initAdmin(
       'googleAuthModule must provide an initGoogleSignIn function'
     );
   }
+}
+
+/**
+ * Validate core admin initialization helpers before wiring event listeners.
+ * @param {{
+ *   googleAuthModule: {
+ *     initGoogleSignIn?: () => void,
+ *     getIdToken: () => string | null | undefined,
+ *     signOut: () => Promise<void> | void,
+ *   },
+ *   getAuthFn: () => unknown,
+ *   onAuthStateChangedFn: (auth: unknown, callback: () => void) => void,
+ *   doc: Document,
+ *   fetchFn: FetchFn,
+ * }} deps - Core dependencies required to initialize the admin UI.
+ * @returns {void}
+ */
+function validateInitAdminDeps({
+  googleAuthModule,
+  getAuthFn,
+  onAuthStateChangedFn,
+  doc,
+  fetchFn,
+}) {
+  if (!googleAuthModule) {
+    throw new TypeError('googleAuthModule must be provided');
+  }
+  requireFunction(getAuthFn, 'getAuthFn');
+  requireFunction(onAuthStateChangedFn, 'onAuthStateChangedFn');
+  requireDocumentLike(doc);
+  requireFunction(fetchFn, 'fetchFn');
 }
 
 /**
@@ -986,12 +1244,52 @@ export function updateAuthControlsDisplay(user, signIns, signOuts) {
   const isSignedIn = Boolean(user);
 
   signIns.forEach(element => {
-    element.style.display = isSignedIn ? 'none' : '';
+    if (isSignedIn) {
+      element.style.display = 'none';
+    } else {
+      element.style.display = '';
+    }
   });
 
   signOuts.forEach(element => {
-    element.style.display = isSignedIn ? '' : 'none';
+    if (isSignedIn) {
+      element.style.display = '';
+    } else {
+      element.style.display = 'none';
+    }
   });
+}
+
+/**
+ *
+ * @param accountsId
+ * @param logger
+ */
+function ensureGoogleIdentityAvailable(accountsId, logger) {
+  if (!hasRequiredGoogleIdentityMethods(accountsId)) {
+    reportMissingGoogleIdentity(logger);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ *
+ * @param accountsId
+ * @param querySelectorAll
+ * @param mediaQueryList
+ */
+function setupSignInButtonRenderer(
+  accountsId,
+  querySelectorAll,
+  mediaQueryList
+) {
+  const renderButton = () =>
+    renderSignInButtons(accountsId, querySelectorAll, mediaQueryList);
+
+  renderButton();
+  mediaQueryList?.addEventListener?.('change', renderButton);
 }
 
 /**
@@ -1009,11 +1307,28 @@ export function createCheckAccess(getAuthFn, doc) {
 
     updateAuthControlsDisplay(user, signins, signouts);
 
-    if (!user || user.uid !== ADMIN_UID) {
-      if (content) content.style.display = 'none';
-      return;
-    }
-
-    if (content) content.style.display = '';
+    const hasAccess = isAdminUser(user);
+    setElementVisibility(content, hasAccess);
   };
+}
+
+/**
+ *
+ * @param user
+ */
+function isAdminUser(user) {
+  return Boolean(user && user.uid === ADMIN_UID);
+}
+
+/**
+ *
+ * @param element
+ * @param visible
+ */
+function setElementVisibility(element, visible) {
+  if (!element) {
+    return;
+  }
+
+  element.style.display = visible ? '' : 'none';
 }

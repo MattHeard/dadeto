@@ -199,9 +199,13 @@ export const PAGE_HTML = list => `<!doctype html>
           setTimeout(() => (overlay.hidden = true), 180);
           toggle.focus();
         }
-        toggle.addEventListener('click', () =>
-          overlay.hidden ? openMenu() : closeMenu()
-        );
+        toggle.addEventListener('click', () => {
+          if (overlay.hidden) {
+            openMenu();
+          } else {
+            closeMenu();
+          }
+        });
         closeBtn.addEventListener('click', closeMenu);
         overlay.addEventListener('click', e => {
           if (e.target === overlay) closeMenu();
@@ -480,7 +484,12 @@ export function createRenderContents({
       const start = (page - 1) * size;
       const pageItems = items.slice(start, start + size);
       const html = buildHtml(pageItems);
-      const filePath = page === 1 ? 'index.html' : `contents/${page}.html`;
+      let filePath;
+      if (page === 1) {
+        filePath = 'index.html';
+      } else {
+        filePath = `contents/${page}.html`;
+      }
       const options = { contentType: 'text/html' };
 
       if (page === totalPages) {
@@ -552,11 +561,20 @@ export function getAllowedOrigins(environmentVariables) {
  * @returns {(req: { get?: (name: string) => unknown }, res: { set: Function, status?: Function }) => boolean} Header applier returning whether the origin is allowed.
  */
 export function createApplyCorsHeaders({ allowedOrigins }) {
-  const origins = Array.isArray(allowedOrigins) ? allowedOrigins : [];
+  let origins;
+  if (Array.isArray(allowedOrigins)) {
+    origins = allowedOrigins;
+  } else {
+    origins = [];
+  }
 
   return function applyCorsHeaders(req, res) {
-    const origin =
-      typeof req?.get === 'function' ? req.get('Origin') : undefined;
+    let origin;
+    if (typeof req?.get === 'function') {
+      origin = req.get('Origin');
+    } else {
+      origin = undefined;
+    }
     let originAllowed = false;
 
     if (!origin) {
@@ -592,7 +610,11 @@ export function createValidateRequest({ applyCorsHeaders }) {
     const method = req?.method;
 
     if (method === 'OPTIONS') {
-      res.status(originAllowed ? 204 : 403).send('');
+      if (originAllowed) {
+        res.status(204).send('');
+      } else {
+        res.status(403).send('');
+      }
       return false;
     }
 
@@ -616,8 +638,12 @@ export function createValidateRequest({ applyCorsHeaders }) {
  * @returns {string} Authorization header or an empty string.
  */
 function resolveAuthorizationHeader(req) {
-  const getterHeader =
-    typeof req?.get === 'function' ? req.get('Authorization') : undefined;
+  let getterHeader;
+  if (typeof req?.get === 'function') {
+    getterHeader = req.get('Authorization');
+  } else {
+    getterHeader = undefined;
+  }
 
   if (typeof getterHeader === 'string') {
     return getterHeader;
@@ -654,7 +680,10 @@ function extractBearerToken(header) {
 
   const match = header.match(/^Bearer (.+)$/);
 
-  return match ? match[1] : '';
+  if (match) {
+    return match[1];
+  }
+  return '';
 }
 
 /**

@@ -20,7 +20,11 @@ export function assertFunction(candidate, name) {
  */
 export function normalizeString(value, maxLength) {
   if (typeof value !== 'string') {
-    value = value === undefined || value === null ? '' : String(value);
+    if (value === undefined || value === null) {
+      value = '';
+    } else {
+      value = String(value);
+    }
   }
 
   return value.trim().slice(0, maxLength);

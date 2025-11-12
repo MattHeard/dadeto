@@ -136,7 +136,10 @@ function parseAuthorizationHeader(authHeader) {
 
   const match = authHeader.match(/^Bearer (.+)$/);
 
-  return match ? match[1] : null;
+  if (match) {
+    return match[1];
+  }
+  return null;
 }
 /**
  * Reads the Authorization header from an Express-style request object.
@@ -202,14 +205,20 @@ async function fetchVariantSnapshot(db, uid) {
  */
 async function fetchStoryTitle(variantRef) {
   const pageRef = variantRef.parent?.parent;
-  const pageSnap = pageRef ? await pageRef.get() : null;
+  let pageSnap = null;
+  if (pageRef) {
+    pageSnap = await pageRef.get();
+  }
 
   if (!pageSnap?.exists) {
     return '';
   }
 
   const storyRef = pageSnap.ref.parent?.parent;
-  const storySnap = storyRef ? await storyRef.get() : null;
+  let storySnap = null;
+  if (storyRef) {
+    storySnap = await storyRef.get();
+  }
 
   if (!storySnap?.exists) {
     return '';
@@ -263,7 +272,10 @@ export function getAllowedOrigins(environmentVariables) {
   }
 
   if (typeof environment === 'string' && environment.startsWith('t-')) {
-    return playwrightOrigin ? [playwrightOrigin] : [];
+    if (playwrightOrigin) {
+      return [playwrightOrigin];
+    }
+    return [];
   }
 
   return productionOrigins;

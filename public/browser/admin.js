@@ -6,11 +6,11 @@ import {
   onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 
-initAdmin(
-  googleAuth,
-  loadStaticConfig,
-  getAuth,
-  onAuthStateChanged,
-  document,
-  fetch
-);
+initAdmin({
+  googleAuthModule: googleAuth,
+  loadStaticConfigFn: loadStaticConfig,
+  getAuthFn: getAuth,
+  onAuthStateChangedFn: onAuthStateChanged,
+  doc: document,
+  fetchFn: fetch,
+});

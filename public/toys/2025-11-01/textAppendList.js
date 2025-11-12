@@ -24,7 +24,8 @@ export function textAppendList(input, env) {
 
 /**
  *
- * @param value
+ * @param {unknown} value - Value read from the toy input.
+ * @returns {string} Normalized string value.
  */
 function normalizeInput(value) {
   if (typeof value === 'string') {
@@ -38,25 +39,33 @@ function normalizeInput(value) {
 
 /**
  *
- * @param env
+ * @param {{get?: (key: string) => unknown}} env - Environment with storage dependencies.
+ * @returns {((args: object) => unknown) | null} Storage helper when available.
  */
 function getStorageFunction(env) {
   if (!env || typeof env.get !== 'function') {
     return null;
   }
   const storageFn = env.get('setLocalPermanentData');
-  return typeof storageFn === 'function' ? storageFn : null;
+  if (typeof storageFn === 'function') {
+    return storageFn;
+  }
+  return null;
 }
 
 /**
  *
- * @param storageFn
+ * @param {(args: object) => unknown} storageFn - Storage accessor used to read the current list.
+ * @returns {string} Stored list contents or empty string.
  */
 function readExistingList(storageFn) {
   try {
     const existingData = storageFn({});
     const stored = existingData?.[TOY_KEY];
-    return typeof stored === 'string' ? stored : '';
+    if (typeof stored === 'string') {
+      return stored;
+    }
+    return '';
   } catch {
     return '';
   }
@@ -64,8 +73,9 @@ function readExistingList(storageFn) {
 
 /**
  *
- * @param storageFn
- * @param list
+ * @param {(args: object) => unknown} storageFn - Function writing the updated list to storage.
+ * @param {string} list - Latest list contents to persist.
+ * @returns {void}
  */
 function persistUpdatedList(storageFn, list) {
   try {

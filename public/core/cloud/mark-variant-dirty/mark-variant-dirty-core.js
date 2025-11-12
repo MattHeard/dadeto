@@ -18,9 +18,10 @@ export function getAllowedOrigins(environmentVariables) {
   }
 
   if (typeof environment === 'string' && environment.startsWith('t-')) {
-    return typeof playwrightOrigin === 'string' && playwrightOrigin
-      ? [playwrightOrigin]
-      : [];
+    if (typeof playwrightOrigin === 'string' && playwrightOrigin) {
+      return [playwrightOrigin];
+    }
+    return [];
   }
 
   return productionOrigins;
@@ -135,23 +136,25 @@ export function findVariantsSnap(pageRef, variantName) {
 
 /**
  * Find a reference to the variant document.
- * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
- * @param {number} pageNumber Page number.
- * @param {string} variantName Variant name.
  * @param {{
- *   findPageRef?: typeof findPageRef,
- *   findPagesSnap?: typeof findPagesSnap,
- *   findVariantsSnap?: typeof findVariantsSnap,
- *   refFromSnap?: typeof refFromSnap,
- * }} [firebase] Optional Firebase helpers.
+ *   database: import('firebase-admin/firestore').Firestore,
+ *   pageNumber: number,
+ *   variantName: string,
+ *   firebase?: {
+ *     findPageRef?: typeof findPageRef,
+ *     findPagesSnap?: typeof findPagesSnap,
+ *     findVariantsSnap?: typeof findVariantsSnap,
+ *     refFromSnap?: typeof refFromSnap,
+ *   },
+ * }} params - Dependencies used to locate the variant.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant doc ref.
  */
-export async function findVariantRef(
+export async function findVariantRef({
   database,
   pageNumber,
   variantName,
-  firebase = {}
-) {
+  firebase = {},
+}) {
   const findPageRefFn = firebase.findPageRef ?? findPageRef;
   const findVariantsSnapFn = firebase.findVariantsSnap ?? findVariantsSnap;
   const findPagesSnapFn = firebase.findPagesSnap ?? findPagesSnap;
@@ -202,12 +205,12 @@ export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
     throw new TypeError('db must be provided');
   }
 
-  const variantRef = await findVariantRef(
-    db,
+  const variantRef = await findVariantRef({
+    database: db,
     pageNumber,
     variantName,
-    firebase
-  );
+    firebase,
+  });
 
   if (!variantRef) {
     return false;
@@ -292,13 +295,15 @@ function parseValidRequest(req, res, parseRequestBody) {
 
 /**
  * Mark the variant dirty and send the appropriate response.
- * @param {import('express').Response} res HTTP response.
- * @param {(pageNumber: number, variantName: string) => Promise<boolean>} markFn Mutation helper.
- * @param {number} pageNumber Page number.
- * @param {string} variantName Variant name.
+ * @param {{
+ *   res: import('express').Response,
+ *   markFn: (pageNumber: number, variantName: string) => Promise<boolean>,
+ *   pageNumber: number,
+ *   variantName: string,
+ * }} params - Response and mutation dependencies.
  * @returns {Promise<void>} Resolves when the response has been sent.
  */
-async function markVariantAndRespond(res, markFn, pageNumber, variantName) {
+async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
   try {
     const ok = await markFn(pageNumber, variantName);
     if (!ok) {
@@ -308,8 +313,10 @@ async function markVariantAndRespond(res, markFn, pageNumber, variantName) {
 
     res.status(200).json({ ok: true });
   } catch (error) {
-    const message =
-      typeof error?.message === 'string' ? error.message : 'update failed';
+    let message = 'update failed';
+    if (typeof error?.message === 'string') {
+      message = error.message;
+    }
     res.status(500).json({ error: message });
   }
 }
@@ -330,7 +337,10 @@ export function createIsAdminUid(adminUid) {
  */
 export function parseMarkVariantRequestBody(body) {
   const pageNumber = Number(body?.page);
-  const variantName = typeof body?.variant === 'string' ? body.variant : '';
+  let variantName = '';
+  if (typeof body?.variant === 'string') {
+    variantName = body.variant;
+  }
 
   return { pageNumber, variantName };
 }
@@ -362,8 +372,10 @@ export function createHandleRequest({
       return;
     }
 
-    const verifyAdminFn =
-      typeof deps.verifyAdmin === 'function' ? deps.verifyAdmin : verifyAdmin;
+    let verifyAdminFn = verifyAdmin;
+    if (typeof deps.verifyAdmin === 'function') {
+      verifyAdminFn = deps.verifyAdmin;
+    }
 
     if (!(await verifyAdminFn(req, res))) {
       return;
@@ -374,14 +386,16 @@ export function createHandleRequest({
       return;
     }
 
-    const markFn =
-      typeof deps.markFn === 'function' ? deps.markFn : markVariantDirty;
+    let markFn = markVariantDirty;
+    if (typeof deps.markFn === 'function') {
+      markFn = deps.markFn;
+    }
 
-    await markVariantAndRespond(
+    await markVariantAndRespond({
       res,
       markFn,
-      parsed.pageNumber,
-      parsed.variantName
-    );
+      pageNumber: parsed.pageNumber,
+      variantName: parsed.variantName,
+    });
   };
 }

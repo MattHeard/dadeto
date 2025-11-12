@@ -17,28 +17,61 @@ import { parseCsvLine } from './toys-core.js';
  */
 export function csvToJsonArrayToy(input, env) {
   void env;
+  const rows = extractCsvRows(input);
+  return JSON.stringify(rows ?? []);
+}
+
+/**
+ * Extract row objects from the provided CSV text, returning `null` when parsing fails.
+ * @param {string} input - Raw CSV text that should contain a header row followed by data rows.
+ * @returns {Array<Record<string, string>>|null} Parsed row objects or null when the input is invalid.
+ */
+function extractCsvRows(input) {
+  const trimmedLines = normalizeInputLines(input);
+  if (!trimmedLines) {
+    return null;
+  }
+
+  return buildRowsFromLines(trimmedLines);
+}
+
+/**
+ * Normalize the incoming CSV text into trimmed lines.
+ * @param {string} input - Raw CSV text.
+ * @returns {string[]|null} Trimmed lines when there are at least two rows, otherwise null.
+ */
+function normalizeInputLines(input) {
   if (typeof input !== 'string') {
-    return JSON.stringify([]);
+    return null;
   }
 
   const normalizedInput = input.replace(/\r\n?/g, '\n');
   const trimmedLines = removeTrailingEmptyLines(normalizedInput.split('\n'));
 
   if (trimmedLines.length < 2) {
-    return JSON.stringify([]);
+    return null;
   }
 
+  return trimmedLines;
+}
+
+/**
+ * Build row objects when header metadata is available.
+ * @param {string[]} trimmedLines - Normalized CSV lines with at least a header row.
+ * @returns {Array<Record<string, string>>|null} Row objects or null when parsing fails.
+ */
+function buildRowsFromLines(trimmedLines) {
   const headerInfo = parseHeaderEntries(trimmedLines);
-  if (!headerInfo) {
-    return JSON.stringify([]);
+  let rows = null;
+  if (headerInfo) {
+    rows = buildRows(headerInfo.dataLines, headerInfo.headerEntries);
   }
 
-  const rows = buildRows(headerInfo.dataLines, headerInfo.headerEntries);
-  if (!rows || rows.length === 0) {
-    return JSON.stringify([]);
+  if (rows?.length) {
+    return rows;
   }
 
-  return JSON.stringify(rows);
+  return null;
 }
 
 /**
@@ -94,27 +127,75 @@ function buildRows(dataLines, headerEntries) {
   const rows = [];
 
   for (const rawLine of dataLines) {
-    if (rawLine.trim().length === 0) {
-      continue;
-    }
-
-    const values = parseCsvLine(rawLine.trimEnd());
-    if (!values) {
+    const record = createRecordForLine(rawLine, headerEntries);
+    if (record === null) {
       return null;
     }
 
-    const record = {};
-    for (const { name, index } of headerEntries) {
-      const value = String(values[index] ?? '').trim();
-      if (value.length > 0) {
-        record[name] = value;
-      }
-    }
-
-    if (Object.keys(record).length > 0) {
+    if (record && Object.keys(record).length > 0) {
       rows.push(record);
     }
   }
 
   return rows;
+}
+
+/**
+ *
+ * @param rawLine
+ * @param headerEntries
+ */
+function createRecordForLine(rawLine, headerEntries) {
+  const normalizedLine = normalizeDataLine(rawLine);
+  if (!normalizedLine) {
+    return undefined;
+  }
+
+  return buildRecordFromLine(normalizedLine, headerEntries);
+}
+
+/**
+ * Normalize an individual CSV line by trimming trailing whitespace.
+ * @param {string} rawLine - Data line read from the CSV input.
+ * @returns {string|null} Trimmed line or null when it is empty.
+ */
+function normalizeDataLine(rawLine) {
+  if (rawLine.trim().length === 0) {
+    return null;
+  }
+
+  return rawLine.trimEnd();
+}
+
+/**
+ * Build a single record from a parsed CSV line using the provided headers.
+ * @param {string} line - A normalized CSV data line.
+ * @param {Array<{name: string, index: number}>} headerEntries - Header metadata.
+ * @returns {Record<string, string>|null} Record object or null when parsing fails.
+ */
+function buildRecordFromLine(line, headerEntries) {
+  const values = parseCsvLine(line);
+  if (!values) {
+    return null;
+  }
+
+  const record = {};
+  headerEntries.forEach(entry => assignRecordValue(record, entry, values));
+
+  return record;
+}
+
+/**
+ *
+ * @param record
+ * @param root0
+ * @param root0.name
+ * @param root0.index
+ * @param values
+ */
+function assignRecordValue(record, { name, index }, values) {
+  const value = String(values[index] ?? '').trim();
+  if (value.length > 0) {
+    record[name] = value;
+  }
 }

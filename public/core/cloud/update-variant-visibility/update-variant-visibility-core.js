@@ -28,7 +28,10 @@ function assertDocumentSnapshot(snapshot) {
  * @returns {number} Normalized number, defaulting to zero when absent.
  */
 function toNumber(value) {
-  return typeof value === 'number' ? value : 0;
+  if (typeof value === 'number') {
+    return value;
+  }
+  return 0;
 }
 
 /**
@@ -100,7 +103,12 @@ export function createUpdateVariantVisibilityHandler({ db }) {
     }
 
     const variantData = variantSnap.data();
-    const newRating = isApproved ? 1 : 0;
+    let newRating;
+    if (isApproved) {
+      newRating = 1;
+    } else {
+      newRating = 0;
+    }
 
     const updatedVisibility = calculateUpdatedVisibility(
       variantData,

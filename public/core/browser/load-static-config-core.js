@@ -19,12 +19,20 @@
  * @returns {Promise<Record<string, unknown>>} Parsed configuration payload.
  */
 export async function parseStaticConfigResponse(response) {
+  return ensureStaticConfigResponseOk(response).json();
+}
+
+/**
+ *
+ * @param response
+ */
+function ensureStaticConfigResponseOk(response) {
   if (!response?.ok) {
     const status = response?.status ?? 'unknown';
     throw new Error(`Failed to load static config: ${status}`);
   }
 
-  return response.json();
+  return response;
 }
 
 /**
@@ -37,7 +45,12 @@ export function createLoadStaticConfig({ fetchFn, warn } = {}) {
     throw new TypeError('fetchFn must be a function');
   }
 
-  const logWarn = typeof warn === 'function' ? warn : () => {};
+  let logWarn;
+  if (typeof warn === 'function') {
+    logWarn = warn;
+  } else {
+    logWarn = () => {};
+  }
   let configPromise;
 
   /**

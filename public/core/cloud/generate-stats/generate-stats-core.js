@@ -6,14 +6,12 @@ export { productionOrigins } from './cloud-core.js';
 
 /**
  * Build stats HTML page.
- * @param {number} storyCount Story count.
- * @param {number} pageCount Page count.
- * @param {number} unmoderatedCount Unmoderated page count.
- * @param {Array<{title: string, variantCount: number}>} [topStories]
- *   Top stories by variant count.
+ * @param {...unknown} args Rendering inputs: storyCount, pageCount, unmoderatedCount, and optional topStories.
  * @returns {string} HTML page.
  */
-export function buildHtml(storyCount, pageCount, unmoderatedCount, topStories) {
+export function buildHtml(...args) {
+  const [storyCount, pageCount, unmoderatedCount, topStories] = args;
+  const resolvedTopStories = topStories ?? [];
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -123,7 +121,7 @@ export function buildHtml(storyCount, pageCount, unmoderatedCount, topStories) {
     </script>
     <script>
       (function () {
-        const data = ${JSON.stringify(topStories)};
+        const data = ${JSON.stringify(resolvedTopStories)};
         const root = document.getElementById("topStories");
         if (
           !root ||
@@ -480,10 +478,10 @@ export function createGenerateStatsCore({
   /**
    * Invalidate CDN paths via the Compute Engine API.
    * @param {string[]} paths - CDN paths to invalidate.
-   * @param console
+   * @param {{ error?: (message: string, ...args: any[]) => void }} [logger] Logger used to surface invalidation errors.
    * @returns {Promise<void>} Resolves when invalidation requests finish.
    */
-  async function invalidatePaths(paths) {
+  async function invalidatePaths(paths, logger = console) {
     const token = await getAccessTokenFromMetadata();
     await Promise.all(
       paths.map(async path => {
@@ -504,10 +502,10 @@ export function createGenerateStatsCore({
             }
           );
           if (!res.ok) {
-            console.error(`invalidate ${path} failed: ${res.status}`);
+            logger.error?.(`invalidate ${path} failed: ${res.status}`);
           }
         } catch (err) {
-          console.error(`invalidate ${path} error`, err?.message || err);
+          logger.error?.(`invalidate ${path} error`, err?.message || err);
         }
       })
     );
@@ -526,21 +524,30 @@ export function createGenerateStatsCore({
    * }} deps - Optional dependency overrides.
    * @returns {Promise<null>} Resolves with null for compatibility.
    */
-  async function generate() {
+  async function generate(deps = {}) {
+    const {
+      storyCountFn = getStoryCount,
+      pageCountFn = getPageCount,
+      unmoderatedPageCountFn = getUnmoderatedPageCount,
+      topStoriesFn = getTopStories,
+      storageInstance = storage,
+      bucketName = DEFAULT_BUCKET_NAME,
+      invalidatePathsFn = invalidatePaths,
+    } = deps;
     const [storyCount, pageCount, unmoderatedCount, topStories] =
       await Promise.all([
-        getStoryCount(),
-        getPageCount(),
-        getUnmoderatedPageCount(),
-        getTopStories(),
+        storyCountFn(),
+        pageCountFn(),
+        unmoderatedPageCountFn(),
+        topStoriesFn(),
       ]);
     const html = buildHtml(storyCount, pageCount, unmoderatedCount, topStories);
-    const bucketRef = storage.bucket(DEFAULT_BUCKET_NAME);
+    const bucketRef = storageInstance.bucket(bucketName);
     await bucketRef.file('stats.html').save(html, {
       contentType: 'text/html',
       metadata: { cacheControl: 'no-cache' },
     });
-    await invalidatePaths(['/stats.html'], console);
+    await invalidatePathsFn(['/stats.html'], console);
     return null;
   }
 
@@ -555,15 +562,19 @@ export function createGenerateStatsCore({
    * }} [deps] - Optional dependency overrides. Defaults to an empty object.
    * @returns {Promise<void>} Resolves when the request finishes.
    */
-  async function handleRequest(req, res) {
+  async function handleRequest(req, res, deps = {}) {
+    const {
+      genFn = generate,
+      authInstance = auth,
+      adminUid = ADMIN_UID,
+    } = deps;
     if (req.method !== 'POST') {
       res.status(405).send('POST only');
       return;
     }
 
     const isCron = req.get('X-Appengine-Cron') === 'true';
-    const authInstance = auth;
-    const adminId = ADMIN_UID;
+    const adminId = adminUid;
 
     if (!isCron) {
       const verifyAdmin = createVerifyAdmin({
@@ -584,7 +595,7 @@ export function createGenerateStatsCore({
     }
 
     try {
-      await generate();
+      await genFn();
       res.status(200).json({ ok: true });
     } catch (err) {
       res.status(500).json({ error: err?.message || 'generate failed' });
@@ -597,7 +608,7 @@ export function createGenerateStatsCore({
     getUnmoderatedPageCount,
     getTopStories,
     getAccessTokenFromMetadata,
-    invalidatePaths: paths => invalidatePaths(paths, console),
+    invalidatePaths,
     generate,
     handleRequest,
   };

@@ -19,7 +19,8 @@ export function escapeHtml(text) {
 
 /**
  *
- * @param text
+ * @param {string} text - Raw text with Markdown-like emphasis markers.
+ * @returns {string} HTML representation of the provided text using inline Markdown.
  */
 function renderInlineMarkdown(text) {
   let html = escapeHtml(text);
@@ -30,9 +31,10 @@ function renderInlineMarkdown(text) {
 
 /**
  *
- * @param pageNumber
- * @param variantName
- * @param option
+ * @param {number} pageNumber - Page number the option belongs to.
+ * @param {string} variantName - Variant identifier tied to the option.
+ * @param {object} option - Option metadata from Firestore.
+ * @returns {string} HTML list item for the option.
  */
 function buildOptionItem(pageNumber, variantName, option) {
   const slug = `${pageNumber}-${variantName}-${option.position}`;
@@ -58,9 +60,10 @@ function buildOptionItem(pageNumber, variantName, option) {
 
 /**
  *
- * @param pageNumber
- * @param variantName
- * @param options
+ * @param {number} pageNumber - Page number used for slug creation.
+ * @param {string} variantName - Variant identifier used for slug creation.
+ * @param {object[]} options - List of variant navigation options.
+ * @returns {string} Joined HTML list of options.
  */
 function buildOptionsHtml(pageNumber, variantName, options) {
   return options
@@ -70,8 +73,9 @@ function buildOptionsHtml(pageNumber, variantName, options) {
 
 /**
  *
- * @param storyTitle
- * @param showTitleHeading
+ * @param {string} storyTitle - Title to display when heading is enabled.
+ * @param {boolean} showTitleHeading - Controls whether the heading renders.
+ * @returns {string} Heading HTML showing the story title when applicable.
  */
 function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
   if (!storyTitle || !showTitleHeading) return '';
@@ -80,7 +84,8 @@ function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
 
 /**
  *
- * @param storyTitle
+ * @param {string} storyTitle - Title shown in the document's `<title>`.
+ * @returns {string} Title displayed in the document head.
  */
 function buildHeadTitle(storyTitle) {
   if (storyTitle) {
@@ -91,8 +96,9 @@ function buildHeadTitle(storyTitle) {
 
 /**
  *
- * @param author
- * @param authorUrl
+ * @param {string} author - Name of the story author.
+ * @param {string} authorUrl - Optional author link.
+ * @returns {string} Author credits HTML.
  */
 function buildAuthorHtml(author, authorUrl) {
   if (!author) return '';
@@ -104,8 +110,9 @@ function buildAuthorHtml(author, authorUrl) {
 
 /**
  *
- * @param url
- * @param label
+ * @param {string} url - Target URL for the back/first page links.
+ * @param {string} label - Link label.
+ * @returns {string} Link paragraph HTML or empty string.
  */
 function buildLinkParagraph(url, label) {
   if (!url) return '';
@@ -114,7 +121,8 @@ function buildLinkParagraph(url, label) {
 
 /**
  *
- * @param pageNumber
+ * @param {number} pageNumber - Page number used in rewrite link.
+ * @returns {string} Rewrite link HTML.
  */
 function buildRewriteLink(pageNumber) {
   return `<a href="../new-page.html?page=${pageNumber}">Rewrite</a> `;
@@ -122,8 +130,9 @@ function buildRewriteLink(pageNumber) {
 
 /**
  *
- * @param pageNumber
- * @param variantName
+ * @param {number} pageNumber - Page number for the report slug.
+ * @param {string} variantName - Variant identifier used in the report payload.
+ * @returns {string} Report link HTML snippet.
  */
 function buildReportHtml(pageNumber, variantName) {
   const variantSlug = `${pageNumber}${variantName}`;
@@ -135,7 +144,8 @@ function buildReportHtml(pageNumber, variantName) {
 
 /**
  *
- * @param pageNumber
+ * @param {number} pageNumber - Current page number for navigation links.
+ * @returns {string} Pagination controls HTML.
  */
 function buildPageNumberHtml(pageNumber) {
   return (
@@ -149,7 +159,8 @@ function buildPageNumberHtml(pageNumber) {
 
 /**
  *
- * @param content
+ * @param {string} content - Variant body content.
+ * @returns {string} Paragraph HTML representing the content.
  */
 function buildParagraphsHtml(content) {
   return content
@@ -161,29 +172,70 @@ function buildParagraphsHtml(content) {
 
 /**
  *
- * @param pageNumber
- * @param variantName
- * @param content
- * @param options
- * @param storyTitle
- * @param author
- * @param authorUrl
- * @param parentUrl
- * @param firstPageUrl
- * @param showTitleHeading
+ * @param {{
+ *   pageNumber: number,
+ *   variantName: string,
+ *   content: string,
+ *   options: unknown,
+ *   storyTitle?: string,
+ *   author?: string,
+ *   authorUrl?: string,
+ *   parentUrl?: string,
+ *   firstPageUrl?: string,
+ *   showTitleHeading?: boolean,
+ * }} buildHtmlInput - Rendering parameters provided either positionally or via an object.
+ * @returns {string} Rendered variant page.
  */
-export function buildHtml(
-  pageNumber,
-  variantName,
-  content,
-  options,
-  storyTitle = '',
-  author = '',
-  authorUrl = '',
-  parentUrl = '',
-  firstPageUrl = '',
-  showTitleHeading = true
-) {
+export function buildHtml(buildHtmlInput) {
+  const positionalArgs = arguments;
+  const isObjectForm =
+    buildHtmlInput &&
+    typeof buildHtmlInput === 'object' &&
+    'pageNumber' in buildHtmlInput;
+  const baseDefaults = {
+    storyTitle: '',
+    author: '',
+    authorUrl: '',
+    parentUrl: '',
+    firstPageUrl: '',
+    showTitleHeading: true,
+  };
+  let resolvedParams;
+  if (isObjectForm) {
+    resolvedParams = { ...baseDefaults, ...buildHtmlInput };
+  } else {
+    let showTitleHeading;
+    if (positionalArgs.length > 9) {
+      showTitleHeading = positionalArgs[9];
+    } else {
+      showTitleHeading = baseDefaults.showTitleHeading;
+    }
+
+    resolvedParams = {
+      pageNumber: positionalArgs[0],
+      variantName: positionalArgs[1],
+      content: positionalArgs[2],
+      options: positionalArgs[3],
+      storyTitle: positionalArgs[4] ?? baseDefaults.storyTitle,
+      author: positionalArgs[5] ?? baseDefaults.author,
+      authorUrl: positionalArgs[6] ?? baseDefaults.authorUrl,
+      parentUrl: positionalArgs[7] ?? baseDefaults.parentUrl,
+      firstPageUrl: positionalArgs[8] ?? baseDefaults.firstPageUrl,
+      showTitleHeading,
+    };
+  }
+  const {
+    pageNumber,
+    variantName,
+    content,
+    options,
+    storyTitle,
+    author,
+    authorUrl,
+    parentUrl,
+    firstPageUrl,
+    showTitleHeading,
+  } = resolvedParams;
   const items = buildOptionsHtml(pageNumber, variantName, options);
   const title = buildTitleHeadingHtml(storyTitle, showTitleHeading);
   const headTitle = buildHeadTitle(storyTitle);
@@ -319,9 +371,13 @@ export function buildHtml(
           setTimeout(() => (overlay.hidden = true), 180);
           toggle.focus();
         }
-        toggle.addEventListener('click', () =>
-          overlay.hidden ? openMenu() : closeMenu()
-        );
+    toggle.addEventListener('click', () => {
+      if (overlay.hidden) {
+        openMenu();
+      } else {
+        closeMenu();
+      }
+    });
         closeBtn.addEventListener('click', closeMenu);
         overlay.addEventListener('click', e => {
           if (e.target === overlay) closeMenu();
@@ -408,8 +464,9 @@ export function buildHtml(
 
 /**
  *
- * @param pageNumber
- * @param variants
+ * @param {number} pageNumber - Page number used to build each link.
+ * @param {Array<{name: string, content: string}>} variants - Alternate variants to render.
+ * @returns {string} HTML for alternate variants list.
  */
 export function buildAltsHtml(pageNumber, variants) {
   const items = variants
@@ -541,9 +598,13 @@ export function buildAltsHtml(pageNumber, variants) {
           setTimeout(() => (overlay.hidden = true), 180);
           toggle.focus();
         }
-        toggle.addEventListener('click', () =>
-          overlay.hidden ? openMenu() : closeMenu()
-        );
+        toggle.addEventListener('click', () => {
+          if (overlay.hidden) {
+            openMenu();
+          } else {
+            closeMenu();
+          }
+        });
         closeBtn.addEventListener('click', closeMenu);
         overlay.addEventListener('click', e => {
           if (e.target === overlay) closeMenu();
@@ -558,7 +619,8 @@ export function buildAltsHtml(pageNumber, variants) {
 }
 /**
  *
- * @param docs
+ * @param {Array<{data: () => {visibility?: number, name?: string, content?: string}}>} docs - Firestore snapshots to inspect.
+ * @returns {Array<{name: string, content: string}>} Visible variant summaries.
  */
 export function getVisibleVariants(docs) {
   return docs
@@ -679,14 +741,12 @@ export function createInvalidatePaths({
  * @param {object} options - Information about the option to prepare for rendering.
  * @param {Record<string, any>} options.data - Raw option document data.
  * @param {number} options.visibilityThreshold - Minimum visibility required for a variant to be considered published.
- * @param {{doc: Function}} options.db - Firestore-like database used for lookups.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} options.consoleError - Logger for recoverable failures.
  * @returns {Promise<object>} Metadata describing the option suitable for HTML rendering.
  */
 async function buildOptionMetadata({
   data,
   visibilityThreshold,
-  db,
   consoleError,
 }) {
   let targetPageNumber;
@@ -716,7 +776,9 @@ async function buildOptionMetadata({
         }
       }
     } catch (error) {
-      consoleError('target page lookup failed', error?.message || error);
+      if (consoleError) {
+        consoleError('target page lookup failed', error?.message || error);
+      }
     }
   } else if (data.targetPageNumber !== undefined) {
     targetPageNumber = data.targetPageNumber;
@@ -736,11 +798,10 @@ async function buildOptionMetadata({
  * @param {object} options - Dependencies required to load options.
  * @param {{ref: {collection: Function}}} options.snap - Firestore snapshot for the variant whose options are being read.
  * @param {number} options.visibilityThreshold - Minimum visibility required for inclusion.
- * @param {{doc: Function}} options.db - Firestore-like database for nested lookups.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
  * @returns {Promise<object[]>} Ordered option metadata entries.
  */
-async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
+async function loadOptions({ snap, visibilityThreshold, consoleError }) {
   const optionsSnap = await snap.ref.collection('options').get();
   const optionsData = optionsSnap.docs.map(doc => doc.data());
   optionsData.sort((a, b) => a.position - b.position);
@@ -750,7 +811,6 @@ async function loadOptions({ snap, visibilityThreshold, db, consoleError }) {
       buildOptionMetadata({
         data,
         visibilityThreshold,
-        db,
         consoleError,
       })
     )
@@ -1086,18 +1146,18 @@ async function resolveRenderPlan({
   });
   const parentUrl = await resolveParentUrl({ variant, db, consoleError });
 
-  const html = buildHtml(
-    page.number,
-    variant.name,
-    variant.content,
+  const html = buildHtml({
+    pageNumber: page.number,
+    variantName: variant.name,
+    content: variant.content,
     options,
     storyTitle,
-    authorName,
+    author: authorName,
     authorUrl,
     parentUrl,
     firstPageUrl,
-    !page.incomingOption
-  );
+    showTitleHeading: !page.incomingOption,
+  });
   const filePath = `p/${page.number}${variant.name}.html`;
   const openVariant = options.some(
     option => option.targetPageNumber === undefined
@@ -1145,9 +1205,12 @@ async function persistRenderPlan({
 
   await bucket.file(altsPath).save(altsHtml, { contentType: 'text/html' });
 
-  const pendingName = variant.incomingOption
-    ? context?.params?.variantId
-    : context?.params?.storyId;
+  let pendingName;
+  if (variant.incomingOption) {
+    pendingName = context?.params?.variantId;
+  } else {
+    pendingName = context?.params?.storyId;
+  }
   const pendingPath = `pending/${pendingName}.json`;
 
   await bucket.file(pendingPath).save(JSON.stringify({ path: filePath }), {

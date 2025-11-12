@@ -69,7 +69,10 @@ function readAuthorizationFromGetter(request) {
   }
 
   const fallback = request.get('authorization');
-  return typeof fallback === 'string' ? fallback : null;
+  if (typeof fallback === 'string') {
+    return fallback;
+  }
+  return null;
 }
 
 /**
@@ -87,7 +90,10 @@ function coerceAuthorizationHeader(value) {
   }
 
   const [first] = value;
-  return typeof first === 'string' ? first : null;
+  if (typeof first === 'string') {
+    return first;
+  }
+  return null;
 }
 
 /**
@@ -135,8 +141,10 @@ function extractBearerToken(header) {
   }
 
   const match = header.match(/^Bearer (.+)$/);
-
-  return match ? match[1] : null;
+  if (match) {
+    return match[1];
+  }
+  return null;
 }
 
 /**
@@ -171,7 +179,12 @@ function validateAllowedOrigin(origin, allowedOrigins) {
  * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }} CORS configuration compatible with Express middleware.
  */
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
-  const origins = Array.isArray(allowedOrigins) ? allowedOrigins : [];
+  let origins;
+  if (Array.isArray(allowedOrigins)) {
+    origins = allowedOrigins;
+  } else {
+    origins = [];
+  }
 
   return {
     origin: (origin, cb) => {
@@ -330,10 +343,13 @@ async function resolveModeratorAssignment(fetchModeratorAssignment, uid) {
 
   const clearAssignment = assignment.clearAssignment;
 
+  let normalizedClearAssignment = null;
+  if (typeof clearAssignment === 'function') {
+    normalizedClearAssignment = clearAssignment;
+  }
   return {
     variantId,
-    clearAssignment:
-      typeof clearAssignment === 'function' ? clearAssignment : null,
+    clearAssignment: normalizedClearAssignment,
   };
 }
 
@@ -401,8 +417,12 @@ export function createSubmitModerationRatingResponder({
  * @returns {{ isApproved: boolean } | { error: SubmitModerationRatingResponse }} Result containing the approval flag or an error response.
  */
 function validateRatingBody(body) {
-  const isApproved =
-    body && typeof body === 'object' ? body.isApproved : undefined;
+  let isApproved;
+  if (body && typeof body === 'object') {
+    isApproved = body.isApproved;
+  } else {
+    isApproved = undefined;
+  }
 
   if (!ensureBoolean(isApproved)) {
     return { error: INVALID_BODY_RESPONSE };

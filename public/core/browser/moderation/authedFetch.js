@@ -3,6 +3,58 @@
  */
 
 /**
+ * Normalize header-like inputs into an object for fetch.
+ * @param {Headers|FetchOptions|Record<string, any>|null|undefined} originalHeaders Header-like data.
+ * @returns {Record<string, any>} Normalized headers map.
+ */
+function normalizeHeaders(originalHeaders) {
+  if (typeof Headers !== 'undefined' && originalHeaders instanceof Headers) {
+    return Object.fromEntries(originalHeaders.entries());
+  }
+
+  return { ...(originalHeaders || {}) };
+}
+
+/**
+ * Normalize successful responses and throw on HTTP errors.
+ * @param {object|null|undefined} response Raw fetch response or failure object.
+ * @returns {*} Parsed JSON payload or the original response.
+ */
+function handleAuthedResponse(response) {
+  if (!shouldProcessAuthedResponse(response)) {
+    return response;
+  }
+
+  return parseAuthedResponse(response);
+}
+
+/**
+ *
+ * @param response
+ */
+function shouldProcessAuthedResponse(response) {
+  return Boolean(response && typeof response.ok === 'boolean');
+}
+
+/**
+ *
+ * @param response
+ */
+function parseAuthedResponse(response) {
+  if (!response.ok) {
+    const error = new Error(`HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+
+  if (typeof response.json === 'function') {
+    return response.json();
+  }
+
+  return response;
+}
+
+/**
  * Create an authenticated fetch helper that injects the current ID token.
  * @param {{
  *   getIdToken: () => (string|Promise<string|null>|null),
@@ -27,17 +79,9 @@ export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
     if (!token) throw new Error('not signed in');
 
     const { headers: originalHeaders, ...rest } = init;
-
-    let resolvedHeaders;
-    if (typeof Headers !== 'undefined' && originalHeaders instanceof Headers) {
-      resolvedHeaders = Object.fromEntries(originalHeaders.entries());
-    } else {
-      resolvedHeaders = { ...(originalHeaders || {}) };
-    }
-
     const headers = {
       'Content-Type': 'application/json',
-      ...resolvedHeaders,
+      ...normalizeHeaders(originalHeaders),
       Authorization: `Bearer ${token}`,
     };
 
@@ -46,17 +90,6 @@ export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
       headers,
     });
 
-    if (response && typeof response.ok === 'boolean') {
-      if (!response.ok) {
-        const error = new Error(`HTTP ${response.status}`);
-        error.status = response.status;
-        throw error;
-      }
-      if (typeof response.json === 'function') {
-        return response.json();
-      }
-    }
-
-    return response;
+    return handleAuthedResponse(response);
   };
 };

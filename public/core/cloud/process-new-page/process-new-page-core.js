@@ -249,11 +249,8 @@ async function resolveIncomingOptionContext({
     return null;
   }
 
-  const {
-    variantRef,
-    pageRef: inferredPageRef,
-    storyRef: initialStoryRef,
-  } = resolveStoryRefFromOption(optionRef);
+  const { variantRef, storyRef: initialStoryRef } =
+    resolveStoryRefFromOption(optionRef);
 
   const storyRef = initialStoryRef;
   const optionData = optionSnap.data();
@@ -375,7 +372,12 @@ m the option.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used to query existing pages.
  * @param {number} params.directPageNumber Page number requested by the submission.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot from the trigger.
- * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, storyRef: import('firebase-admin/firestore').DocumentReference | null, variantRef: null, pageNumber: number }}> Resolved context or null when the submission has already been handled.
+ * @returns {Promise<null | {
+ *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
+ *   storyRef: import('firebase-admin/firestore').DocumentReference | null,
+ *   variantRef: null,
+ *   pageNumber: number,
+ * }>} Resolved context or null when the submission has already been handled.
  */
 async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
   const pageSnap = await db
@@ -430,9 +432,12 @@ async function createVariantWithOptions({
     .get();
 
   const latestName = variantsSnap.docs[0]?.data()?.name ?? '';
-  const nextName = variantsSnap.empty
-    ? 'a'
-    : incrementVariantNameFn(latestName);
+  let nextName;
+  if (variantsSnap.empty) {
+    nextName = 'a';
+  } else {
+    nextName = incrementVariantNameFn(latestName);
+  }
 
   const newVariantRef = getVariantCollection(pageDocRef).doc(
     snapshotRef?.id ?? randomUUID()
@@ -526,7 +531,7 @@ export function createProcessNewPageHandler({
 
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
-  return async function handleProcessNewPage(snapshot, context = {}) {
+  return async function handleProcessNewPage(snapshot) {
     const submission = snapshot.data();
 
     if (submission.processed) {
@@ -544,32 +549,34 @@ export function createProcessNewPageHandler({
     let pageDocRef = null;
     let storyRef = null;
     let variantRef = null;
-    let pageNumber = null;
 
     const batch = db.batch();
-    const pageContext = incomingOptionFullName
-      ? await resolveIncomingOptionContext({
-          db,
-          incomingOptionFullName,
-          snapshot,
-          batch,
-          findAvailablePageNumberFn,
-          randomUUID,
-          random,
-          getServerTimestamp,
-        })
-      : await resolveDirectPageContext({
-          db,
-          directPageNumber,
-          snapshot,
-        });
+    let pageContext;
+    if (incomingOptionFullName) {
+      pageContext = await resolveIncomingOptionContext({
+        db,
+        incomingOptionFullName,
+        snapshot,
+        batch,
+        findAvailablePageNumberFn,
+        randomUUID,
+        random,
+        getServerTimestamp,
+      });
+    } else {
+      pageContext = await resolveDirectPageContext({
+        db,
+        directPageNumber,
+        snapshot,
+      });
+    }
 
     if (!pageContext) {
       await snapshot.ref.update({ processed: true });
       return null;
     }
 
-    ({ pageDocRef, storyRef, variantRef, pageNumber } = pageContext);
+    ({ pageDocRef, storyRef, variantRef } = pageContext);
 
     pageDocRef = ensureDocumentReference(
       pageDocRef,
@@ -580,7 +587,7 @@ export function createProcessNewPageHandler({
       'storyRef.collection must be a function'
     );
 
-    const newVariantRef = await createVariantWithOptions({
+    await createVariantWithOptions({
       pageDocRef,
       snapshotRef: snapshot.ref,
       batch,
