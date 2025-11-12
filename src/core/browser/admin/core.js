@@ -549,7 +549,7 @@ function validateGoogleSignInDeps({
   storage,
   matchMedia,
   querySelectorAll,
-} = {}) {
+}) {
   assertFunction(credentialFactory, 'credentialFactory must be a function');
   assertFunction(
     signInWithCredential,
