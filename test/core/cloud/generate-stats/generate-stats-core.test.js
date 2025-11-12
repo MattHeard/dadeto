@@ -822,4 +822,11 @@ describe('generate stats helpers', () => {
     expect(html).toContain('Story 1');
     expect(html).toContain('Story 2');
   });
+
+  it('renders Stats page even when top stories are absent', () => {
+    const html = buildHtml(4, 5, 6);
+    expect(html).toContain('const data = [];');
+    expect(html).toContain('Number of pages: 5');
+    expect(html).not.toContain('Story 1');
+  });
 });
