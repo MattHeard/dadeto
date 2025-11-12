@@ -920,7 +920,7 @@ function resolveValidPageVariant(doc, showMessage) {
  * @param {Document} doc - Document holding the regeneration input.
  * @param {(text: string) => void} showMessage - Reporter for invalid input.
  * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Auth helper that supplies the token.
- * @returns {{ token: string, pageVariant: { page: number, variant: string } } | null}
+ * @returns {{ token: string, pageVariant: { page: number, variant: string } } | null} Structured payload or null when a dependency is missing.
  */
 function resolveRegenerationPayload(doc, showMessage, googleAuth) {
   const token = googleAuth.getIdToken();
@@ -1261,9 +1261,10 @@ export function updateAuthControlsDisplay(user, signIns, signOuts) {
 }
 
 /**
- *
- * @param accountsId
- * @param logger
+ * Ensure the Google Identity client exposes the expected interface before usage.
+ * @param {GoogleAccountsClient | undefined} accountsId - Candidate Google Identity client.
+ * @param {{ error?: (message: string) => void }} logger - Logger used to report missing scripts.
+ * @returns {boolean} True when the client provides both `initialize` and `renderButton`.
  */
 function ensureGoogleIdentityAvailable(accountsId, logger) {
   if (!hasRequiredGoogleIdentityMethods(accountsId)) {
@@ -1275,10 +1276,11 @@ function ensureGoogleIdentityAvailable(accountsId, logger) {
 }
 
 /**
- *
- * @param accountsId
- * @param querySelectorAll
- * @param mediaQueryList
+ * Render the sign-in button and keep it synchronized with the color scheme.
+ * @param {GoogleAccountsClient} accountsId - Google Identity client used to render buttons.
+ * @param {(selector: string) => NodeList} querySelectorAll - DOM helper used to resolve sign-in button targets.
+ * @param {{ matches: boolean, addEventListener?: (type: string, listener: () => void) => void } | undefined} mediaQueryList - Optional media query list for theme switching.
+ * @returns {void}
  */
 function setupSignInButtonRenderer(
   accountsId,
@@ -1313,17 +1315,19 @@ export function createCheckAccess(getAuthFn, doc) {
 }
 
 /**
- *
- * @param user
+ * Determine whether the current user is the admin.
+ * @param {{ uid?: string } | null | undefined} user - Candidate authenticated user.
+ * @returns {boolean} True when the user matches the admin UID.
  */
 function isAdminUser(user) {
   return Boolean(user && user.uid === ADMIN_UID);
 }
 
 /**
- *
- * @param element
- * @param visible
+ * Toggle the visibility of an element.
+ * @param {HTMLElement | null | undefined} element - Element to show or hide.
+ * @param {boolean} visible - True to display the element, false to hide it.
+ * @returns {void}
  */
 function setElementVisibility(element, visible) {
   if (!element) {

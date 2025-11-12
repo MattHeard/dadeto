@@ -141,9 +141,10 @@ function buildRows(dataLines, headerEntries) {
 }
 
 /**
- *
- * @param rawLine
- * @param headerEntries
+ * Build a record for a single CSV line using the supplied headers.
+ * @param {string} rawLine - Raw data line read from the CSV input.
+ * @param {Array<{name: string, index: number}>} headerEntries - Header metadata for column lookups.
+ * @returns {Record<string, string> | undefined | null} Record when parsing succeeds, `undefined` when empty, or `null` when invalid.
  */
 function createRecordForLine(rawLine, headerEntries) {
   const normalizedLine = normalizeDataLine(rawLine);
@@ -186,12 +187,11 @@ function buildRecordFromLine(line, headerEntries) {
 }
 
 /**
- *
- * @param record
- * @param root0
- * @param root0.name
- * @param root0.index
- * @param values
+ * Assign a cell value to the record when the parsed value is not empty.
+ * @param {Record<string, string>} record - Target record collecting field values.
+ * @param {{ name: string, index: number }} column - Header metadata describing the column.
+ * @param {Array<string>} values - Parsed CSV values for the row.
+ * @returns {void}
  */
 function assignRecordValue(record, { name, index }, values) {
   const value = String(values[index] ?? '').trim();

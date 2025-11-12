@@ -31,6 +31,13 @@ import { isNonNullObject } from './browser-core.js';
  */
 
 /**
+ * @typedef {object} NormalizedBlogDataLoggers
+ * @property {BlogLogFn} logInfo - Guaranteed info-level logger.
+ * @property {BlogLogFn} logError - Guaranteed error-level logger.
+ * @property {BlogLogFn} logWarning - Guaranteed warning logger (no-op when not supplied).
+ */
+
+/**
  * @typedef {object} BlogDataController
  * @property {(state: object) => Promise<unknown>} fetchAndCacheBlogData - Starts a blog data fetch and caches the result.
  * @property {(state: object) => object} getData - Returns the current blog data state snapshot.
@@ -430,8 +437,9 @@ function ensureLoggerFunction(loggers, key) {
 }
 
 /**
- *
- * @param loggers
+ * Return a safe warning logger when one is supplied, otherwise no-op.
+ * @param {BlogDataLoggers} loggers - Logger bundle supplied by the dependency factory.
+ * @returns {BlogLogFn} Warning logger that can safely be called.
  */
 function createWarningLogger(loggers) {
   if (typeof loggers.logWarning === 'function') {
