@@ -21,10 +21,26 @@ function normalizeHeaders(originalHeaders) {
  * @returns {*} Parsed JSON payload or the original response.
  */
 function handleAuthedResponse(response) {
-  if (!response || typeof response.ok !== 'boolean') {
+  if (!shouldProcessAuthedResponse(response)) {
     return response;
   }
 
+  return parseAuthedResponse(response);
+}
+
+/**
+ *
+ * @param response
+ */
+function shouldProcessAuthedResponse(response) {
+  return Boolean(response && typeof response.ok === 'boolean');
+}
+
+/**
+ *
+ * @param response
+ */
+function parseAuthedResponse(response) {
   if (!response.ok) {
     const error = new Error(`HTTP ${response.status}`);
     error.status = response.status;

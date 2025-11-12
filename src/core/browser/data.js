@@ -430,46 +430,87 @@ function ensureLoggerFunction(loggers, key) {
 }
 
 /**
- * Validate and normalize the dependency bundle returned by the factory.
+ *
+ * @param loggers
+ */
+function createWarningLogger(loggers) {
+  if (typeof loggers.logWarning === 'function') {
+    return loggers.logWarning;
+  }
+
+  return () => {};
+}
+/**
+ * Normalize the dependency bundle returned by the factory.
  * @param {BlogDataDependencies} bundle - Raw dependencies returned by the factory.
  * @returns {NormalizedBlogDataDependencies} Sanitized dependency bundle.
  */
 function normalizeDependencies(bundle) {
-  if (!isNonNullObject(bundle)) {
-    throw new TypeError(
-      'createBlogDataController expected createDependencies to return an object.'
-    );
-  }
+  ensureBundleObject(bundle);
 
   const { fetch: fetchImpl, loggers, storage } = bundle;
 
-  if (typeof fetchImpl !== 'function') {
-    throw new TypeError(
-      'createBlogDataController requires fetch to be provided as a function.'
-    );
-  }
+  ensureFetchFunction(fetchImpl);
+  ensureLoggersObject(loggers);
 
-  if (!isNonNullObject(loggers)) {
-    throw new TypeError(
-      'createBlogDataController requires loggers to be an object with logging functions.'
-    );
-  }
-
-  const normalizedLoggers = {
-    logInfo: ensureLoggerFunction(loggers, 'logInfo'),
-    logError: ensureLoggerFunction(loggers, 'logError'),
-    logWarning: (() => {
-      if (typeof loggers.logWarning === 'function') {
-        return loggers.logWarning;
-      }
-      return () => {};
-    })(),
-  };
+  const normalizedLoggers = createNormalizedLoggers(loggers);
 
   return {
     fetch: fetchImpl,
     loggers: normalizedLoggers,
     storage: storage ?? null,
+  };
+}
+
+/**
+ * Ensure the dependency bundle is an object.
+ * @param {*} bundle - Candidate dependency bundle.
+ * @returns {void}
+ */
+function ensureBundleObject(bundle) {
+  if (!isNonNullObject(bundle)) {
+    throw new TypeError(
+      'createBlogDataController expected createDependencies to return an object.'
+    );
+  }
+}
+
+/**
+ * Ensure the fetch implementation is defined as a function.
+ * @param {*} fetchImpl - Candidate fetch implementation.
+ * @returns {void}
+ */
+function ensureFetchFunction(fetchImpl) {
+  if (typeof fetchImpl !== 'function') {
+    throw new TypeError(
+      'createBlogDataController requires fetch to be provided as a function.'
+    );
+  }
+}
+
+/**
+ * Ensure loggers are supplied as an object.
+ * @param {*} loggers - Candidate logger bundle.
+ * @returns {void}
+ */
+function ensureLoggersObject(loggers) {
+  if (!isNonNullObject(loggers)) {
+    throw new TypeError(
+      'createBlogDataController requires loggers to be an object with logging functions.'
+    );
+  }
+}
+
+/**
+ * Build the normalized logger helpers used by the controller.
+ * @param {BlogDataLoggers} loggers - Logger implementations provided by dependencies.
+ * @returns {NormalizedBlogDataLoggers} Sanitized logger collection.
+ */
+function createNormalizedLoggers(loggers) {
+  return {
+    logInfo: ensureLoggerFunction(loggers, 'logInfo'),
+    logError: ensureLoggerFunction(loggers, 'logError'),
+    logWarning: createWarningLogger(loggers),
   };
 }
 

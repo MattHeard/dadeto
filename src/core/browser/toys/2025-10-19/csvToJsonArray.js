@@ -127,22 +127,31 @@ function buildRows(dataLines, headerEntries) {
   const rows = [];
 
   for (const rawLine of dataLines) {
-    const normalizedLine = normalizeDataLine(rawLine);
-    if (!normalizedLine) {
-      continue;
-    }
-
-    const record = buildRecordFromLine(normalizedLine, headerEntries);
+    const record = createRecordForLine(rawLine, headerEntries);
     if (record === null) {
       return null;
     }
 
-    if (Object.keys(record).length > 0) {
+    if (record && Object.keys(record).length > 0) {
       rows.push(record);
     }
   }
 
   return rows;
+}
+
+/**
+ *
+ * @param rawLine
+ * @param headerEntries
+ */
+function createRecordForLine(rawLine, headerEntries) {
+  const normalizedLine = normalizeDataLine(rawLine);
+  if (!normalizedLine) {
+    return undefined;
+  }
+
+  return buildRecordFromLine(normalizedLine, headerEntries);
 }
 
 /**
@@ -171,12 +180,22 @@ function buildRecordFromLine(line, headerEntries) {
   }
 
   const record = {};
-  for (const { name, index } of headerEntries) {
-    const value = String(values[index] ?? '').trim();
-    if (value.length > 0) {
-      record[name] = value;
-    }
-  }
+  headerEntries.forEach(entry => assignRecordValue(record, entry, values));
 
   return record;
+}
+
+/**
+ *
+ * @param record
+ * @param root0
+ * @param root0.name
+ * @param root0.index
+ * @param values
+ */
+function assignRecordValue(record, { name, index }, values) {
+  const value = String(values[index] ?? '').trim();
+  if (value.length > 0) {
+    record[name] = value;
+  }
 }

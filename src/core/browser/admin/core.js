@@ -427,22 +427,71 @@ export function bindRegenerateVariantSubmit(doc, regenerateVariantFn) {
  * @returns {() => void} Function that attaches click handlers to sign-out links.
  */
 export function createWireSignOut(doc, googleAuth) {
-  if (!doc || typeof doc.querySelectorAll !== 'function') {
-    throw new TypeError('doc must be a Document-like object');
-  }
+  ensureSignOutDoc(doc);
+  ensureSignOutAuth(googleAuth);
+
+  return function wireSignOut() {
+    attachSignOutLinks(doc, googleAuth);
+  };
+}
+
+/**
+ * Guard that ensures the Google auth helper exposes a sign-out method.
+ * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper used to sign the admin out.
+ * @returns {void}
+ */
+function ensureSignOutAuth(googleAuth) {
   if (!googleAuth || typeof googleAuth.signOut !== 'function') {
     throw new TypeError('googleAuth must provide a signOut function');
   }
+}
 
-  return function wireSignOut() {
-    doc.querySelectorAll('#signoutLink').forEach(link => {
-      if (link?.addEventListener) {
-        link.addEventListener('click', async event => {
-          event?.preventDefault?.();
-          await googleAuth.signOut();
-        });
-      }
-    });
+/**
+ * Ensure the provided document exposes `querySelectorAll` before wiring handlers.
+ * @param {{ querySelectorAll?: (selector: string) => NodeList }} doc - Document-like object used during binding.
+ * @returns {void}
+ */
+function ensureSignOutDoc(doc) {
+  if (!doc || typeof doc.querySelectorAll !== 'function') {
+    throw new TypeError('doc must be a Document-like object');
+  }
+}
+
+/**
+ * Attach a click listener to a single sign-out link.
+ * @param {HTMLElement | null | undefined} link - Element that should trigger sign-out when clicked.
+ * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper used by the handler.
+ * @returns {void}
+ */
+function attachSignOutLink(link, googleAuth) {
+  if (!link?.addEventListener) {
+    return;
+  }
+
+  link.addEventListener('click', createSignOutClickHandler(googleAuth));
+}
+
+/**
+ * Attach sign-out listeners to every link with the `#signoutLink` selector.
+ * @param {Document} doc - Document used to query sign-out links.
+ * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper passed to each listener.
+ * @returns {void}
+ */
+function attachSignOutLinks(doc, googleAuth) {
+  doc
+    .querySelectorAll('#signoutLink')
+    .forEach(link => attachSignOutLink(link, googleAuth));
+}
+
+/**
+ * Build a click handler that prevents the default action and calls signOut.
+ * @param {{ signOut: () => Promise<void> | void }} googleAuth - Auth helper whose signOut is invoked.
+ * @returns {(event: Event) => Promise<void>} Click handler that triggers sign-out.
+ */
+function createSignOutClickHandler(googleAuth) {
+  return async event => {
+    event?.preventDefault?.();
+    await googleAuth.signOut();
   };
 }
 
@@ -455,6 +504,29 @@ export function createWireSignOut(doc, googleAuth) {
 function assertFunction(value, message) {
   if (typeof value !== 'function') {
     throw new TypeError(message);
+  }
+}
+
+/**
+ * Ensure the provided value is a non-null object.
+ * @param {*} value - Candidate value that should behave like an object.
+ * @param {string} message - Message used for the thrown error when validation fails.
+ * @returns {void}
+ */
+function ensureObject(value, message) {
+  if (!value || typeof value !== 'object') {
+    throw new TypeError(message);
+  }
+}
+
+/**
+ * Ensure the provided storage exposes a `setItem` method.
+ * @param {{ setItem?: (key: string, value: string) => void } | null | undefined} storage - Storage-like interface.
+ * @returns {void}
+ */
+function ensureStorage(storage) {
+  if (!storage || typeof storage.setItem !== 'function') {
+    throw new TypeError('storage must provide a setItem function');
   }
 }
 
@@ -477,18 +549,14 @@ function validateGoogleSignInDeps({
   storage,
   matchMedia,
   querySelectorAll,
-}) {
+} = {}) {
   assertFunction(credentialFactory, 'credentialFactory must be a function');
   assertFunction(
     signInWithCredential,
     'signInWithCredential must be a function'
   );
-  if (!auth || typeof auth !== 'object') {
-    throw new TypeError('auth must be provided');
-  }
-  if (!storage || typeof storage.setItem !== 'function') {
-    throw new TypeError('storage must provide a setItem function');
-  }
+  ensureObject(auth, 'auth must be provided');
+  ensureStorage(storage);
   assertFunction(matchMedia, 'matchMedia must be a function');
   assertFunction(querySelectorAll, 'querySelectorAll must be a function');
 }
@@ -687,8 +755,7 @@ export function createInitGoogleSignIn(deps) {
 
     const accountsId = resolveGoogleAccountsId();
 
-    if (!hasRequiredGoogleIdentityMethods(accountsId)) {
-      reportMissingGoogleIdentity(safeLogger);
+    if (!ensureGoogleIdentityAvailable(accountsId, safeLogger)) {
       return;
     }
 
@@ -707,11 +774,7 @@ export function createInitGoogleSignIn(deps) {
     });
 
     const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
-    const renderButton = () =>
-      renderSignInButtons(accountsId, querySelectorAll, mediaQueryList);
-
-    renderButton();
-    mediaQueryList?.addEventListener?.('change', renderButton);
+    setupSignInButtonRenderer(accountsId, querySelectorAll, mediaQueryList);
   };
 }
 
@@ -821,25 +884,56 @@ function createRegenerateVariantHandler({
   return async function regenerateVariant(event) {
     event?.preventDefault?.();
 
-    const token = googleAuth.getIdToken();
-    if (!token) {
-      return;
-    }
-
-    const pageVariant = getPageVariantFromDoc(doc);
-    if (!pageVariant) {
-      showMessage('Invalid format');
+    const payload = resolveRegenerationPayload(doc, showMessage, googleAuth);
+    if (!payload) {
       return;
     }
 
     await performRegeneration({
       fetchFn,
       getAdminEndpointsFn,
-      token,
-      pageVariant,
+      token: payload.token,
+      pageVariant: payload.pageVariant,
       showMessage,
     });
   };
+}
+
+/**
+ * Parse the regenerate form input and return structured page/variant data.
+ * @param {Document} doc - Document containing the regenerate input.
+ * @param {(text: string) => void} showMessage - Reporter used when the input is invalid.
+ * @returns {{page: number, variant: string} | null} Parsed page/variant info when valid.
+ */
+function resolveValidPageVariant(doc, showMessage) {
+  const pageVariant = getPageVariantFromDoc(doc);
+  if (!pageVariant) {
+    showMessage('Invalid format');
+    return null;
+  }
+
+  return pageVariant;
+}
+
+/**
+ * Resolve the ID token and page/variant pair for regeneration.
+ * @param {Document} doc - Document holding the regeneration input.
+ * @param {(text: string) => void} showMessage - Reporter for invalid input.
+ * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Auth helper that supplies the token.
+ * @returns {{ token: string, pageVariant: { page: number, variant: string } } | null}
+ */
+function resolveRegenerationPayload(doc, showMessage, googleAuth) {
+  const token = googleAuth.getIdToken();
+  if (!token) {
+    return null;
+  }
+
+  const pageVariant = resolveValidPageVariant(doc, showMessage);
+  if (!pageVariant) {
+    return null;
+  }
+
+  return { token, pageVariant };
 }
 
 /**
@@ -1167,6 +1261,38 @@ export function updateAuthControlsDisplay(user, signIns, signOuts) {
 }
 
 /**
+ *
+ * @param accountsId
+ * @param logger
+ */
+function ensureGoogleIdentityAvailable(accountsId, logger) {
+  if (!hasRequiredGoogleIdentityMethods(accountsId)) {
+    reportMissingGoogleIdentity(logger);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ *
+ * @param accountsId
+ * @param querySelectorAll
+ * @param mediaQueryList
+ */
+function setupSignInButtonRenderer(
+  accountsId,
+  querySelectorAll,
+  mediaQueryList
+) {
+  const renderButton = () =>
+    renderSignInButtons(accountsId, querySelectorAll, mediaQueryList);
+
+  renderButton();
+  mediaQueryList?.addEventListener?.('change', renderButton);
+}
+
+/**
  * Build a check access handler tied to the provided auth getter and document.
  * @param {() => { currentUser?: { uid?: string } } | null | undefined} getAuthFn - Getter for the auth instance.
  * @param {Document} doc - Document used to resolve admin controls.
@@ -1181,11 +1307,28 @@ export function createCheckAccess(getAuthFn, doc) {
 
     updateAuthControlsDisplay(user, signins, signouts);
 
-    if (!user || user.uid !== ADMIN_UID) {
-      if (content) content.style.display = 'none';
-      return;
-    }
-
-    if (content) content.style.display = '';
+    const hasAccess = isAdminUser(user);
+    setElementVisibility(content, hasAccess);
   };
+}
+
+/**
+ *
+ * @param user
+ */
+function isAdminUser(user) {
+  return Boolean(user && user.uid === ADMIN_UID);
+}
+
+/**
+ *
+ * @param element
+ * @param visible
+ */
+function setElementVisibility(element, visible) {
+  if (!element) {
+    return;
+  }
+
+  element.style.display = visible ? '' : 'none';
 }
