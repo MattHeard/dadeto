@@ -10,10 +10,9 @@ import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
  * @returns {boolean} True when valid.
  */
 function isValidInput(obj) {
-  if (!obj) {
-    return false;
-  }
-  return isValidString(obj.optionId) && isValidString(obj.content);
+  return (
+    Boolean(obj) && isValidString(obj.optionId) && isValidString(obj.content)
+  );
 }
 
 /**
@@ -23,32 +22,59 @@ function isValidInput(obj) {
  * @returns {string} JSON string of the new page and options.
  */
 export function addDendritePage(input, env) {
-  try {
-    const parsed = JSON.parse(input);
-    if (!isValidInput(parsed)) {
-      throw new Error('invalid');
-    }
-
-    const getUuid = env.get('getUuid');
-    const getData = env.get('getData');
-    const setLocalTemporaryData = env.get('setLocalTemporaryData');
-    const pageId = getUuid();
-    const opts = createOptions(parsed, getUuid, pageId);
-    const page = {
-      id: pageId,
-      optionId: parsed.optionId,
-      content: parsed.content,
-    };
-
-    const currentData = getData();
-    const newData = deepClone(currentData);
-    ensureDend2(newData);
-    newData.temporary.DEND2.pages.push(page);
-    newData.temporary.DEND2.options.push(...opts);
-    setLocalTemporaryData(newData);
-
-    return JSON.stringify({ pages: [page], options: opts });
-  } catch {
-    return JSON.stringify({ pages: [], options: [] });
+  const parsed = safeParseJson(input);
+  if (!isValidInput(parsed)) {
+    return emptyResponse();
   }
+
+  const getUuid = env?.get?.('getUuid');
+  const getData = env?.get?.('getData');
+  const setLocalTemporaryData = env?.get?.('setLocalTemporaryData');
+  if (!areCallables(getUuid, getData, setLocalTemporaryData)) {
+    return emptyResponse();
+  }
+
+  const pageId = getUuid();
+  const opts = createOptions(parsed, getUuid, pageId);
+  const page = {
+    id: pageId,
+    optionId: parsed.optionId,
+    content: parsed.content,
+  };
+
+  const currentData = getData();
+  const newData = deepClone(currentData);
+  ensureDend2(newData);
+  newData.temporary.DEND2.pages.push(page);
+  newData.temporary.DEND2.options.push(...opts);
+  setLocalTemporaryData(newData);
+
+  return JSON.stringify({ pages: [page], options: opts });
+}
+
+/**
+ *
+ * @param input
+ */
+function safeParseJson(input) {
+  try {
+    return JSON.parse(input);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ *
+ */
+function emptyResponse() {
+  return JSON.stringify({ pages: [], options: [] });
+}
+
+/**
+ *
+ * @param {...any} fns
+ */
+function areCallables(...fns) {
+  return fns.every(fn => typeof fn === 'function');
 }
