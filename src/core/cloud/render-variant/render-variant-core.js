@@ -466,8 +466,6 @@ function isBuildHtmlObjectForm(buildHtmlInput) {
  * @returns {string} Rendered variant page.
  */
 export function buildHtml(buildHtmlInput) {
-  const positionalArgs = arguments;
-  const isObjectForm = isBuildHtmlObjectForm(buildHtmlInput);
   const baseDefaults = {
     storyTitle: '',
     author: '',
@@ -476,12 +474,11 @@ export function buildHtml(buildHtmlInput) {
     firstPageUrl: '',
     showTitleHeading: true,
   };
-  const resolvedParams = resolveBuildHtmlParams({
-    isObjectForm,
-    baseDefaults,
+  const resolvedParams = resolveBuildHtmlParameters(
     buildHtmlInput,
-    positionalArgs,
-  });
+    baseDefaults,
+    arguments
+  );
   const {
     pageNumber,
     variantName,
@@ -555,14 +552,17 @@ function resolvePositionalParams(positionalArgs, baseDefaults) {
 /**
  * Resolve parameters for `buildHtml` regardless of signature form.
  * @param {{ isObjectForm: boolean, baseDefaults: object, buildHtmlInput: unknown, positionalArgs: IArguments }} options - Resolution context.
+ * @param buildHtmlInput
+ * @param baseDefaults
+ * @param positionalArgs
  * @returns {{ pageNumber: number, variantName: string, content: string, options: unknown, storyTitle: string, author: string, authorUrl: string, parentUrl: string, firstPageUrl: string, showTitleHeading: boolean }}
  */
-function resolveBuildHtmlParams({
-  isObjectForm,
-  baseDefaults,
+function resolveBuildHtmlParameters(
   buildHtmlInput,
-  positionalArgs,
-}) {
+  baseDefaults,
+  positionalArgs
+) {
+  const isObjectForm = isBuildHtmlObjectForm(buildHtmlInput);
   if (isObjectForm) {
     return { ...baseDefaults, ...buildHtmlInput };
   }
