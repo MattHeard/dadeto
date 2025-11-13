@@ -695,35 +695,19 @@ function extractBearerToken(header) {
 }
 
 /**
- * Build a render-request handler bound to the shared authorization extractor.
- * @param {object} root0 Handler dependencies.
- * @param {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
- * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
- * @param {string} root0.adminUid UID allowed to trigger rendering.
- * @param {() => Promise<void>} root0.render Rendering function.
- * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Fully wired handler.
+ * Create the helper that validates the Authorization header against an admin user.
+ * @param {(token: string) => Promise<{ uid?: string }>} verifyIdToken Firebase token verifier.
+ * @param {string} adminUid UID allowed to authorize the request.
+ * @returns {(options: { req: { get?: (name: string) => unknown, headers?: object }, res: { status: Function, send: Function } }) => Promise<{ uid?: string } | null>} Authorization checker.
  */
-export function buildHandleRenderRequest({
-  validateRequest,
-  verifyIdToken,
-  adminUid,
-  render,
-}) {
-  assertFunction(validateRequest, 'validateRequest');
+export function createAuthorizeRequest({ verifyIdToken, adminUid }) {
   assertFunction(verifyIdToken, 'verifyIdToken');
-  assertFunction(render, 'render');
 
   if (!adminUid) {
     throw new TypeError('adminUid must be provided');
   }
 
-  /**
-   * Validate the authorization header and ensure the requester is the admin.
-   * @param {{ req: { get?: (name: string) => unknown, headers?: object }, res: { status: Function, send: Function } }} options
-   * Request/response pair used to communicate failures.
-   * @returns {Promise<{ uid?: string } | null>} The decoded token when authorized, otherwise null.
-   */
-  async function authorizeRequest({ req, res }) {
+  return async function authorizeRequest({ req, res }) {
     const header = resolveAuthorizationHeader(req);
     const token = extractBearerToken(header);
 
@@ -745,6 +729,34 @@ export function buildHandleRenderRequest({
       res.status(401).send(error?.message || 'Invalid token');
       return null;
     }
+  };
+}
+
+/**
+ * Build a render-request handler bound to the shared authorization extractor.
+ * @param {object} root0 Handler dependencies.
+ * @param {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
+ * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
+ * @param {string} root0.adminUid UID allowed to trigger rendering.
+ * @param {() => Promise<void>} root0.render Rendering function.
+ * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Fully wired handler.
+ */
+export function buildHandleRenderRequest({
+  validateRequest,
+  verifyIdToken,
+  adminUid,
+  render,
+}) {
+  assertFunction(validateRequest, 'validateRequest');
+  assertFunction(render, 'render');
+
+  const authorizeRequest = createAuthorizeRequest({
+    verifyIdToken,
+    adminUid,
+  });
+
+  if (!authorizeRequest) {
+    throw new TypeError('authorizeRequest creation failed');
   }
 
   /**
