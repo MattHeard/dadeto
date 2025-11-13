@@ -695,14 +695,9 @@ function extractBearerToken(header) {
 }
 
 /**
- * Create a helper that extracts bearer tokens from requests.
- * @returns {(req: { get?: (name: string) => unknown, headers?: object }) => string} Authorization token extractor.
- */
-/**
  * Create the HTTP handler that protects and executes the render contents workflow.
  * @param {object} root0 Handler dependencies.
  * @param {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
- * @param {(req: { get?: (name: string) => unknown, headers?: object }) => string} root0.getAuthorizationToken Extracts the bearer token.
  * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
  * @param {string} root0.adminUid UID allowed to trigger rendering.
  * @param {() => Promise<void>} root0.render Rendering function.
@@ -710,13 +705,11 @@ function extractBearerToken(header) {
  */
 export function createHandleRenderRequest({
   validateRequest,
-  getAuthorizationToken,
   verifyIdToken,
   adminUid,
   render,
 }) {
   assertFunction(validateRequest, 'validateRequest');
-  assertFunction(getAuthorizationToken, 'getAuthorizationToken');
   assertFunction(verifyIdToken, 'verifyIdToken');
   assertFunction(render, 'render');
 
@@ -731,7 +724,7 @@ export function createHandleRenderRequest({
    * @returns {Promise<{ uid?: string } | null>} The decoded token when authorized, otherwise null.
    */
   async function authorizeRequest({ req, res }) {
-    const token = getAuthorizationToken(req);
+    const token = getAuthorizationTokenFromRequest(req);
 
     if (!token) {
       res.status(401).send('Missing token');
@@ -787,14 +780,9 @@ export function createHandleRenderRequest({
 }
 
 /**
- * Build a render-request handler bound to the shared authorization extractor.
- * @param {object} root0 Handler dependencies.
- * @param {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
- * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
- * @param {string} root0.adminUid UID allowed to trigger rendering.
- * @param {() => Promise<void>} root0.render Rendering function.
- * @param req
- * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Fully wired handler.
+ * Resolve the bearer token from a request by normalizing authorization headers.
+ * @param {{ get?: (name: string) => unknown, headers?: object }} req Request-like object.
+ * @returns {string} Bearer token or an empty string if missing/invalid.
  */
 function getAuthorizationTokenFromRequest(req) {
   const header = resolveAuthorizationHeader(req);
@@ -802,12 +790,13 @@ function getAuthorizationTokenFromRequest(req) {
 }
 
 /**
- *
- * @param root0
- * @param root0.validateRequest
- * @param root0.verifyIdToken
- * @param root0.adminUid
- * @param root0.render
+ * Build a render-request handler bound to the shared authorization extractor.
+ * @param {object} root0 Handler dependencies.
+ * @param {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
+ * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
+ * @param {string} root0.adminUid UID allowed to trigger rendering.
+ * @param {() => Promise<void>} root0.render Rendering function.
+ * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Fully wired handler.
  */
 export function buildHandleRenderRequest({
   validateRequest,
@@ -817,7 +806,6 @@ export function buildHandleRenderRequest({
 }) {
   return createHandleRenderRequest({
     validateRequest,
-    getAuthorizationToken: getAuthorizationTokenFromRequest,
     verifyIdToken,
     adminUid,
     render,
