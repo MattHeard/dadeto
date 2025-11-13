@@ -555,28 +555,20 @@ export function createGenerateStatsCore({
    * Handle HTTP requests to trigger the stats generation workflow.
    * @param {import('express').Request} req - Incoming HTTP request.
    * @param {import('express').Response} res - Response object for sending results.
-   * @param {{
-   *   genFn?: () => Promise<unknown>,
-   *   authInstance?: import('firebase-admin/auth').Auth,
-   *   adminUid?: string,
-   * }} [deps] - Optional dependency overrides. Defaults to an empty object.
    * @returns {Promise<void>} Resolves when the request finishes.
    */
   async function handleRequest(req, res) {
-    const genFn = generate;
-    const authInstance = auth;
-    const adminUid = ADMIN_UID;
     if (req.method !== 'POST') {
       res.status(405).send('POST only');
       return;
     }
 
     const isCron = req.get('X-Appengine-Cron') === 'true';
-    const adminId = adminUid;
+    const adminId = ADMIN_UID;
 
     if (!isCron) {
       const verifyAdmin = createVerifyAdmin({
-        verifyToken: token => authInstance.verifyIdToken(token),
+        verifyToken: token => auth.verifyIdToken(token),
         isAdminUid: decoded => decoded.uid === adminId,
         sendUnauthorized: (response, message) => {
           response.status(401).send(message);
@@ -593,7 +585,7 @@ export function createGenerateStatsCore({
     }
 
     try {
-      await genFn();
+      await generate();
       res.status(200).json({ ok: true });
     } catch (err) {
       res.status(500).json({ error: err?.message || 'generate failed' });
