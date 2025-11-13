@@ -31,9 +31,19 @@ function normalizeInput(value) {
   if (typeof value === 'string') {
     return value;
   }
+  return stringFromValue(value);
+}
+
+/**
+ * Transform any value into a string unless it is nullish.
+ * @param {unknown} value - Candidate value read from input.
+ * @returns {string} Empty string when the value is nullish, otherwise the string representation.
+ */
+function stringFromValue(value) {
   if (isNullish(value)) {
     return '';
   }
+
   return String(value);
 }
 
