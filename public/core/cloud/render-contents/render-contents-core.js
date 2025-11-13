@@ -724,7 +724,8 @@ export function createHandleRenderRequest({
    * @returns {Promise<{ uid?: string } | null>} The decoded token when authorized, otherwise null.
    */
   async function authorizeRequest({ req, res }) {
-    const token = getAuthorizationTokenFromRequest(req);
+    const header = resolveAuthorizationHeader(req);
+    const token = extractBearerToken(header);
 
     if (!token) {
       res.status(401).send('Missing token');
@@ -777,16 +778,6 @@ export function createHandleRenderRequest({
       await executeRenderRequest(req, res);
     }
   };
-}
-
-/**
- * Resolve the bearer token from a request by normalizing authorization headers.
- * @param {{ get?: (name: string) => unknown, headers?: object }} req Request-like object.
- * @returns {string} Bearer token or an empty string if missing/invalid.
- */
-function getAuthorizationTokenFromRequest(req) {
-  const header = resolveAuthorizationHeader(req);
-  return extractBearerToken(header);
 }
 
 /**
