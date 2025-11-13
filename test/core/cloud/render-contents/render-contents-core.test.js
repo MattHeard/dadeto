@@ -7,8 +7,8 @@ import {
   getAllowedOrigins,
   createApplyCorsHeaders,
   createValidateRequest,
-  createAuthorizationExtractor,
   createHandleRenderRequest,
+  buildHandleRenderRequest,
   DEFAULT_BUCKET_NAME,
   productionOrigins,
 } from '../../../../src/core/cloud/render-contents/render-contents-core.js';
@@ -530,43 +530,51 @@ describe('createValidateRequest', () => {
   });
 });
 
-describe('createAuthorizationExtractor', () => {
-  it('supports req.get and headers variations', () => {
-    const extractor = createAuthorizationExtractor();
+describe('buildHandleRenderRequest', () => {
+  const validateRequest = jest.fn(() => true);
+  const render = jest.fn().mockResolvedValue(undefined);
+  const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'admin' });
+
+  const build = () =>
+    buildHandleRenderRequest({
+      validateRequest,
+      verifyIdToken,
+      adminUid: 'admin',
+      render,
+    });
+
+  const makeResponse = () => ({
+    status: jest.fn().mockReturnThis(),
+    send: jest.fn(),
+    json: jest.fn(),
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    render.mockResolvedValue(undefined);
+    verifyIdToken.mockResolvedValue({ uid: 'admin' });
+  });
+
+  it('extracts tokens via req.get before verifying', async () => {
+    const handler = build();
     const req = { get: jest.fn().mockReturnValue('Bearer token') };
-    expect(extractor(req)).toBe('token');
+    const res = makeResponse();
 
-    expect(
-      extractor({ headers: { Authorization: ['Bearer other', 'ignored'] } })
-    ).toBe('other');
-    expect(extractor({ headers: { authorization: 'Bearer lower' } })).toBe(
-      'lower'
-    );
-    expect(extractor({})).toBe('');
+    await handler(req, res);
+
+    expect(verifyIdToken).toHaveBeenCalledWith('token');
   });
 
-  it('covers array headers without usable entries and rejects non-Bearer strings', () => {
-    const extractor = createAuthorizationExtractor();
-    expect(
-      extractor({ headers: { Authorization: [undefined, 'ignored'] } })
-    ).toBe('');
-    expect(extractor({ headers: { Authorization: 'Basic wrong' } })).toBe('');
-    expect(extractor({ headers: { authorization: ['Bearer other'] } })).toBe(
-      'other'
-    );
-    expect(extractor({ headers: { Authorization: [123] } })).toBe('');
-    expect(extractor(null)).toBe('');
-  });
+  it('falls back to headers when getter is absent', async () => {
+    const handler = build();
+    const req = {
+      headers: { Authorization: ['Bearer first', 'Bearer second'] },
+    };
+    const res = makeResponse();
 
-  it('handles non-function getters and non-string headers', () => {
-    const extractor = createAuthorizationExtractor();
-    expect(
-      extractor({
-        get: null,
-        headers: { Authorization: 'Bearer fallback' },
-      })
-    ).toBe('fallback');
-    expect(extractor({ headers: { Authorization: 123 } })).toBe('');
+    await handler(req, res);
+
+    expect(verifyIdToken).toHaveBeenCalledWith('first');
   });
 });
 
