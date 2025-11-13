@@ -627,7 +627,7 @@ const BUILD_HTML_BASE_DEFAULTS = {
  * @param buildHtmlInput
  */
 export function buildHtml(buildHtmlInput) {
-  const resolvedParams = resolveBuildHtmlArguments(buildHtmlInput, arguments);
+  const resolvedParams = { ...BUILD_HTML_BASE_DEFAULTS, ...buildHtmlInput };
   const headTitle = buildHeadTitleFromParams(resolvedParams);
   const mainContent = buildMainContent(resolvedParams);
   const headElement = buildHeadElement(headTitle);
@@ -645,28 +645,12 @@ ${bodyElement}
  * @param baseDefaults
  * @param positionalArgs
  */
-function resolveBuildHtmlParameters(
-  buildHtmlInput,
-  baseDefaults,
-  positionalArgs
-) {
-  return { ...baseDefaults, ...buildHtmlInput };
-}
-
 /**
  * Normalize the arguments provided to `buildHtml` regardless of its overload.
  * @param {unknown} buildHtmlInput - First argument, possibly the object form.
  * @param {IArguments} posArgs - The entire arguments list provided to `buildHtml`.
  * @returns {{ pageNumber: number, variantName: string, content: string, options: unknown, storyTitle: string, author: string, authorUrl: string, parentUrl: string, firstPageUrl: string, showTitleHeading: boolean }}
  */
-function resolveBuildHtmlArguments(buildHtmlInput, posArgs) {
-  return resolveBuildHtmlParameters(
-    buildHtmlInput,
-    BUILD_HTML_BASE_DEFAULTS,
-    posArgs
-  );
-}
-
 /**
  *
  * @param {number} pageNumber - Page number used to build each link.
