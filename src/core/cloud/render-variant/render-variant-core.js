@@ -272,25 +272,7 @@ export function buildHtml(buildHtmlInput) {
   if (isObjectForm) {
     resolvedParams = { ...baseDefaults, ...buildHtmlInput };
   } else {
-    let showTitleHeading;
-    if (positionalArgs.length > 9) {
-      showTitleHeading = positionalArgs[9];
-    } else {
-      showTitleHeading = baseDefaults.showTitleHeading;
-    }
-
-    resolvedParams = {
-      pageNumber: positionalArgs[0],
-      variantName: positionalArgs[1],
-      content: positionalArgs[2],
-      options: positionalArgs[3],
-      storyTitle: positionalArgs[4] ?? baseDefaults.storyTitle,
-      author: positionalArgs[5] ?? baseDefaults.author,
-      authorUrl: positionalArgs[6] ?? baseDefaults.authorUrl,
-      parentUrl: positionalArgs[7] ?? baseDefaults.parentUrl,
-      firstPageUrl: positionalArgs[8] ?? baseDefaults.firstPageUrl,
-      showTitleHeading,
-    };
+    resolvedParams = resolvePositionalParams(positionalArgs, baseDefaults);
   }
   const {
     pageNumber,
@@ -416,7 +398,7 @@ export function buildHtml(buildHtmlInput) {
       if (getIdToken()) {
         showSignedIn();
       }
-    </script>
+  </script>
     <script>
       (function () {
         const toggle = document.querySelector('.menu-toggle');
@@ -524,10 +506,35 @@ export function buildHtml(buildHtmlInput) {
         } else {
           init();
         }
-      })();
-    </script>
-  </body>
+    })();
+  </script>
+</body>
 </html>`;
+}
+
+/**
+ * Resolve parameters for the positional `buildHtml` signature.
+ * @param {IArguments} positionalArgs - Arguments object from `buildHtml`.
+ * @param {{ storyTitle: string, author: string, authorUrl: string, parentUrl: string, firstPageUrl: string }} baseDefaults - Default fallback values.
+ * @param {boolean} showTitleHeading - Already resolved flag for title rendering.
+ * @returns {{ pageNumber: number, variantName: string, content: string, options: unknown, storyTitle: string, author: string, authorUrl: string, parentUrl: string, firstPageUrl: string, showTitleHeading: boolean }}
+ */
+function resolvePositionalParams(positionalArgs, baseDefaults) {
+  return {
+    pageNumber: positionalArgs[0],
+    variantName: positionalArgs[1],
+    content: positionalArgs[2],
+    options: positionalArgs[3],
+    storyTitle: positionalArgs[4] ?? baseDefaults.storyTitle,
+    author: positionalArgs[5] ?? baseDefaults.author,
+    authorUrl: positionalArgs[6] ?? baseDefaults.authorUrl,
+    parentUrl: positionalArgs[7] ?? baseDefaults.parentUrl,
+    firstPageUrl: positionalArgs[8] ?? baseDefaults.firstPageUrl,
+    showTitleHeading:
+      positionalArgs.length > 9
+        ? positionalArgs[9]
+        : baseDefaults.showTitleHeading,
+  };
 }
 
 /**
