@@ -634,6 +634,18 @@ describe('buildHandleRenderRequest', () => {
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.send).toHaveBeenCalledWith('Missing token');
   });
+
+  it('rejects non-string authorization headers', async () => {
+    const handler = build();
+    const req = { headers: { Authorization: [123] } };
+    const res = makeResponse();
+
+    await handler(req, res);
+
+    expect(verifyIdToken).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('Missing token');
+  });
 });
 
 describe('createHandleRenderRequest', () => {
