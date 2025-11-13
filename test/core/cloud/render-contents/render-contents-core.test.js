@@ -576,6 +576,18 @@ describe('buildHandleRenderRequest', () => {
 
     expect(verifyIdToken).toHaveBeenCalledWith('first');
   });
+
+  it('uses lower-case headers when Authorization is missing', async () => {
+    const handler = build();
+    const req = {
+      headers: { authorization: 'Bearer lower' },
+    };
+    const res = makeResponse();
+
+    await handler(req, res);
+
+    expect(verifyIdToken).toHaveBeenCalledWith('lower');
+  });
 });
 
 describe('createHandleRenderRequest', () => {
