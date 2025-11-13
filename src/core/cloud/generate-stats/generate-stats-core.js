@@ -577,17 +577,28 @@ export function createGenerateStatsCore({
   const verifyAdmin = createVerifyAdmin(verifyAdminDeps);
 
   /**
+   *
+   * @param req
+   */
+  function isPostMethod(req) {
+    return req.method === 'POST';
+  }
+
+  /**
+   *
+   * @param res
+   */
+  function sendPostOnlyResponse(res) {
+    res.status(405).send('POST only');
+  }
+
+  /**
    * Handle HTTP requests to trigger the stats generation workflow.
    * @param {import('express').Request} req - Incoming HTTP request.
    * @param {import('express').Response} res - Response object for sending results.
    * @returns {Promise<void>} Resolves when the request finishes.
    */
-  async function handleRequest(req, res) {
-    if (req.method !== 'POST') {
-      res.status(405).send('POST only');
-      return;
-    }
-
+  async function handleAuthorizedRequest(req, res) {
     const isCron = req.get('X-Appengine-Cron') === 'true';
 
     if (!isCron) {
@@ -602,6 +613,19 @@ export function createGenerateStatsCore({
       res.status(200).json({ ok: true });
     } catch (err) {
       res.status(500).json({ error: err?.message || 'generate failed' });
+    }
+  }
+
+  /**
+   *
+   * @param req
+   * @param res
+   */
+  async function handleRequest(req, res) {
+    if (!isPostMethod(req)) {
+      sendPostOnlyResponse(res);
+    } else {
+      await handleAuthorizedRequest(req, res);
     }
   }
 
