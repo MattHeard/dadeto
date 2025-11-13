@@ -281,6 +281,16 @@ function buildOptionsHtml(pageNumber, variantName, options) {
 }
 
 /**
+ * Build the rendered option items for the resolved build data.
+ * @param {{ pageNumber: number, variantName: string, options: unknown }} resolvedParams - Normalized parameters.
+ * @returns {string} All option list items.
+ */
+function buildOptionsItems(resolvedParams) {
+  const { pageNumber, variantName, options } = resolvedParams;
+  return buildOptionsHtml(pageNumber, variantName, options);
+}
+
+/**
  * Resolve the href used to navigate from an option entry.
  * @param {string} slug - Slug referencing the option when linking back to the editor.
  * @param {{ targetPageNumber?: number, targetVariantName?: string }} option - Option metadata.
@@ -346,6 +356,92 @@ function buildVariantAttrs(variants, targetPageNumber) {
 function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
   if (!storyTitle || !showTitleHeading) return '';
   return `<h1>${escapeHtml(storyTitle)}</h1>`;
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.storyTitle
+ */
+function buildHeadTitleFromParams({ storyTitle }) {
+  return buildHeadTitle(storyTitle);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.author
+ * @param root0.authorUrl
+ */
+function buildAuthorHtmlFromParams({ author, authorUrl }) {
+  return buildAuthorHtml(author, authorUrl);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.parentUrl
+ */
+function buildParentLink({ parentUrl }) {
+  return buildLinkParagraph(parentUrl, 'Back');
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.firstPageUrl
+ */
+function buildFirstPageLink({ firstPageUrl }) {
+  return buildLinkParagraph(firstPageUrl, 'First page');
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.pageNumber
+ */
+function buildRewriteLinkFromParams({ pageNumber }) {
+  return buildRewriteLink(pageNumber);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.pageNumber
+ * @param root0.variantName
+ */
+function buildReportHtmlFromParams({ pageNumber, variantName }) {
+  return buildReportHtml(pageNumber, variantName);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.pageNumber
+ */
+function buildPageNumberHtmlFromParams({ pageNumber }) {
+  return buildPageNumberHtml(pageNumber);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.content
+ */
+function buildParagraphsFromParams({ content }) {
+  return buildParagraphsHtml(content);
+}
+
+/**
+ * Return the title section for resolved build parameters.
+ * @param {{ storyTitle: string, showTitleHeading: boolean }} resolvedParams - Parameters controlling title rendering.
+ * @returns {string} HTML for the title heading when enabled.
+ */
+function buildTitleHeading(resolvedParams) {
+  return buildTitleHeadingHtml(
+    resolvedParams.storyTitle,
+    resolvedParams.showTitleHeading
+  );
 }
 
 /**
@@ -437,6 +533,57 @@ function buildParagraphsHtml(content) {
 }
 
 /**
+ *
+ * @param headTitle
+ */
+function buildHeadElement(headTitle) {
+  return `  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${headTitle}</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
+    />
+    <link rel="stylesheet" href="/dendrite.css" />
+  </head>`;
+}
+
+/**
+ *
+ * @param mainContent
+ */
+function buildBodyElement(mainContent) {
+  return `  <body>
+${HEADER_HTML}
+${mainContent}
+${GOOGLE_SIGNIN_SCRIPTS}
+${MENU_TOGGLE_SCRIPT}
+${VARIANT_REDIRECT_SCRIPT}
+  </body>`;
+}
+
+/**
+ * Build the `<main>` section for the resolved build variant parameters.
+ * @param {{ pageNumber: number, variantName: string }} resolvedParams - Normalized build inputs.
+ * @returns {string} Rendered `<main>` block.
+ */
+function buildMainContent(resolvedParams) {
+  const title = buildTitleHeading(resolvedParams);
+  const paragraphs = buildParagraphsFromParams(resolvedParams);
+  const items = buildOptionsItems(resolvedParams);
+  const authorHtml = buildAuthorHtmlFromParams(resolvedParams);
+  const parentHtml = buildParentLink(resolvedParams);
+  const firstHtml = buildFirstPageLink(resolvedParams);
+  const rewriteLink = buildRewriteLinkFromParams(resolvedParams);
+  const reportHtml = buildReportHtmlFromParams(resolvedParams);
+  const pageNumberHtml = buildPageNumberHtmlFromParams(resolvedParams);
+  const pageNumber = resolvedParams.pageNumber;
+  return `<main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p>${rewriteLink}<a href="./${pageNumber}-alts.html">Other variants</a></p>${pageNumberHtml}${reportHtml}</main>`;
+}
+
+/**
  * Determine whether the `buildHtml` helper was called with the object form.
  * @param {unknown} buildHtmlInput - Argument passed in by the caller.
  * @returns {boolean} True when the input looks like the object signature.
@@ -480,48 +627,14 @@ const BUILD_HTML_BASE_DEFAULTS = {
  */
 export function buildHtml(buildHtmlInput) {
   const resolvedParams = resolveBuildHtmlArguments(buildHtmlInput, arguments);
-  const {
-    pageNumber,
-    variantName,
-    content,
-    options,
-    storyTitle,
-    author,
-    authorUrl,
-    parentUrl,
-    firstPageUrl,
-    showTitleHeading,
-  } = resolvedParams;
-  const items = buildOptionsHtml(pageNumber, variantName, options);
-  const title = buildTitleHeadingHtml(storyTitle, showTitleHeading);
-  const headTitle = buildHeadTitle(storyTitle);
-  const authorHtml = buildAuthorHtml(author, authorUrl);
-  const parentHtml = buildLinkParagraph(parentUrl, 'Back');
-  const firstHtml = buildLinkParagraph(firstPageUrl, 'First page');
-  const rewriteLink = buildRewriteLink(pageNumber);
-  const reportHtml = buildReportHtml(pageNumber, variantName);
-  const pageNumberHtml = buildPageNumberHtml(pageNumber);
-  const paragraphs = buildParagraphsHtml(content);
+  const headTitle = buildHeadTitleFromParams(resolvedParams);
+  const mainContent = buildMainContent(resolvedParams);
+  const headElement = buildHeadElement(headTitle);
+  const bodyElement = buildBodyElement(mainContent);
   return `<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${headTitle}</title>
-    <link rel="icon" href="/favicon.ico" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
-    />
-    <link rel="stylesheet" href="/dendrite.css" />
-  </head>
-  <body>
-${HEADER_HTML}
-    <main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p>${rewriteLink}<a href="./${pageNumber}-alts.html">Other variants</a></p>${pageNumberHtml}${reportHtml}</main>
-${GOOGLE_SIGNIN_SCRIPTS}
-${MENU_TOGGLE_SCRIPT}
-${VARIANT_REDIRECT_SCRIPT}
-  </body>
+${headElement}
+${bodyElement}
 </html>`;
 }
 
