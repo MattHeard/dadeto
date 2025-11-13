@@ -753,11 +753,12 @@ export function createHandleRenderRequest({
     }
   }
 
-  return async function handleRenderRequest(req, res) {
-    if (!validateRequest(req, res)) {
-      return;
-    }
-
+  /**
+   *
+   * @param req
+   * @param res
+   */
+  async function executeRenderRequest(req, res) {
     const decoded = await authorizeRequest({ req, res });
 
     if (!decoded) {
@@ -770,5 +771,13 @@ export function createHandleRenderRequest({
     } catch (error) {
       res.status(500).json({ error: error?.message || 'render failed' });
     }
+  }
+
+  return async function handleRenderRequest(req, res) {
+    if (!validateRequest(req, res)) {
+      return;
+    }
+
+    await executeRenderRequest(req, res);
   };
 }
