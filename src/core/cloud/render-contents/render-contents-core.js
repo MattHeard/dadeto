@@ -765,6 +765,14 @@ export function createHandleRenderRequest({
       return;
     }
 
+    await executeRenderRequestAfterGuard(res);
+  }
+
+  /**
+   *
+   * @param res
+   */
+  async function executeRenderRequestAfterGuard(res) {
     try {
       await render();
       res.status(200).json({ ok: true });
