@@ -73,6 +73,24 @@ describe('createInvalidatePaths', () => {
     await expect(invalidatePaths(['/p/2a.html'])).resolves.toBeUndefined();
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
+
+  it('rejects when metadata token endpoint returns a failure', async () => {
+    const fetchFn = jest.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({}),
+    });
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+    });
+
+    await expect(invalidatePaths(['/p/7a.html'])).rejects.toThrow(
+      'metadata token: HTTP 401'
+    );
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('escapeHtml', () => {
