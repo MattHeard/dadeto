@@ -89,7 +89,16 @@ describe('createGetModerationVariantResponder', () => {
    * @returns {{ headers: Record<string, unknown> }} Request stub exposing the provided headers.
    */
   function createRequestWithHeaders(headers) {
-    return { headers };
+    return {
+      headers,
+      get(name) {
+        const value = headers[name] ?? headers[name.toLowerCase()];
+        if (Array.isArray(value)) {
+          return value[0];
+        }
+        return value;
+      },
+    };
   }
 
   /**
@@ -142,7 +151,7 @@ describe('createGetModerationVariantResponder', () => {
     const auth = { verifyIdToken: jest.fn() };
     const responder = createGetModerationVariantResponder({ db, auth });
 
-    await expect(responder({})).resolves.toEqual({
+    await expect(responder({ get: () => undefined })).resolves.toEqual({
       status: 401,
       body: 'Missing or invalid Authorization header',
     });
@@ -244,7 +253,7 @@ describe('createGetModerationVariantResponder', () => {
     const responder = createGetModerationVariantResponder({ db, auth });
 
     await expect(
-      responder({ headers: { authorization: 123 } })
+      responder(createRequestWithHeaders({ authorization: 123 }))
     ).resolves.toEqual({
       status: 401,
       body: 'Missing or invalid Authorization header',
@@ -318,7 +327,7 @@ describe('createGetModerationVariantResponder', () => {
 
     await expect(responder(request)).resolves.toEqual({
       status: 401,
-      body: 'Invalid or expired token',
+      body: 'Missing or invalid Authorization header',
     });
     expect(db.collection).not.toHaveBeenCalled();
   });
@@ -328,9 +337,7 @@ describe('createGetModerationVariantResponder', () => {
     const auth = { verifyIdToken: jest.fn() };
     const responder = createGetModerationVariantResponder({ db, auth });
 
-    const request = {
-      headers: { authorization: [] },
-    };
+    const request = createRequestWithHeaders({ authorization: [] });
 
     await expect(responder(request)).resolves.toEqual({
       status: 401,

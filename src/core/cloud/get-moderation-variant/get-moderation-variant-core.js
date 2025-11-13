@@ -147,28 +147,8 @@ function parseAuthorizationHeader(authHeader) {
  * @returns {string | null} Authorization header string when provided, otherwise null.
  */
 function getAuthorizationHeader(request) {
-  if (request && typeof request.get === 'function') {
-    const header = request.get('Authorization') ?? request.get('authorization');
-
-    if (typeof header === 'string') {
-      return header;
-    }
-  }
-
-  const headers = request?.headers;
-  if (headers && typeof headers === 'object') {
-    const header = headers.authorization ?? headers.Authorization;
-
-    if (Array.isArray(header)) {
-      return header[0] ?? null;
-    }
-
-    if (typeof header === 'string') {
-      return header;
-    }
-  }
-
-  return null;
+  const header = request.get('Authorization') ?? request.get('authorization');
+  return typeof header === 'string' ? header : null;
 }
 /**
  * Resolves the variant assigned to the authenticated moderator.
