@@ -574,6 +574,7 @@ export function createGenerateStatsCore({
     sendUnauthorized,
     sendForbidden,
   };
+  const verifyAdmin = createVerifyAdmin(verifyAdminDeps);
 
   /**
    * Handle HTTP requests to trigger the stats generation workflow.
@@ -590,8 +591,6 @@ export function createGenerateStatsCore({
     const isCron = req.get('X-Appengine-Cron') === 'true';
 
     if (!isCron) {
-      const verifyAdmin = createVerifyAdmin(verifyAdminDeps);
-
       const isAuthorized = await verifyAdmin(req, res);
       if (!isAuthorized) {
         return;
