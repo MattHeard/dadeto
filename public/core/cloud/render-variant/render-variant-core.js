@@ -80,11 +80,24 @@ function buildOptionsHtml(pageNumber, variantName, options) {
  */
 function resolveOptionHref(slug, option) {
   if (option.targetPageNumber !== undefined) {
-    const suffix = option.targetVariantName || '';
-    return `/p/${option.targetPageNumber}${suffix}.html`;
+    return resolveTargetVariantHref(
+      option.targetVariantName,
+      option.targetPageNumber
+    );
   }
 
   return `../new-page.html?option=${slug}`;
+}
+
+/**
+ * Build the href for an option that targets another variant.
+ * @param {string | undefined} targetVariantName - Variant identifier applied to the target page.
+ * @param {number} targetPageNumber - Page number of the target variant.
+ * @returns {string} URL pointing at the target variant page.
+ */
+function resolveTargetVariantHref(targetVariantName, targetPageNumber) {
+  const suffix = targetVariantName || '';
+  return `/p/${targetPageNumber}${suffix}.html`;
 }
 
 /**
@@ -216,6 +229,19 @@ function buildParagraphsHtml(content) {
 }
 
 /**
+ * Determine whether the `buildHtml` helper was called with the object form.
+ * @param {unknown} buildHtmlInput - Argument passed in by the caller.
+ * @returns {boolean} True when the input looks like the object signature.
+ */
+function isBuildHtmlObjectForm(buildHtmlInput) {
+  return (
+    buildHtmlInput &&
+    typeof buildHtmlInput === 'object' &&
+    'pageNumber' in buildHtmlInput
+  );
+}
+
+/**
  *
  * @param {{
  *   pageNumber: number,
@@ -233,10 +259,7 @@ function buildParagraphsHtml(content) {
  */
 export function buildHtml(buildHtmlInput) {
   const positionalArgs = arguments;
-  const isObjectForm =
-    buildHtmlInput &&
-    typeof buildHtmlInput === 'object' &&
-    'pageNumber' in buildHtmlInput;
+  const isObjectForm = isBuildHtmlObjectForm(buildHtmlInput);
   const baseDefaults = {
     storyTitle: '',
     author: '',
