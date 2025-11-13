@@ -562,12 +562,10 @@ export function createGenerateStatsCore({
    * }} [deps] - Optional dependency overrides. Defaults to an empty object.
    * @returns {Promise<void>} Resolves when the request finishes.
    */
-  async function handleRequest(req, res, deps = {}) {
-    const {
-      genFn = generate,
-      authInstance = auth,
-      adminUid = ADMIN_UID,
-    } = deps;
+  async function handleRequest(req, res) {
+    const genFn = generate;
+    const authInstance = auth;
+    const adminUid = ADMIN_UID;
     if (req.method !== 'POST') {
       res.status(405).send('POST only');
       return;
