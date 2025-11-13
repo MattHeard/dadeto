@@ -597,14 +597,6 @@ function buildMainContent(resolvedParams) {
  * @param {unknown} buildHtmlInput - Argument passed in by the caller.
  * @returns {boolean} True when the input looks like the object signature.
  */
-function isBuildHtmlObjectForm(buildHtmlInput) {
-  return (
-    buildHtmlInput &&
-    typeof buildHtmlInput === 'object' &&
-    'pageNumber' in buildHtmlInput
-  );
-}
-
 /**
  *
  * @param {{
@@ -685,12 +677,7 @@ function resolveBuildHtmlParameters(
   baseDefaults,
   positionalArgs
 ) {
-  const isObjectForm = isBuildHtmlObjectForm(buildHtmlInput);
-  if (isObjectForm) {
-    return { ...baseDefaults, ...buildHtmlInput };
-  }
-
-  return resolvePositionalParams(positionalArgs, baseDefaults);
+  return { ...baseDefaults, ...buildHtmlInput };
 }
 
 /**
