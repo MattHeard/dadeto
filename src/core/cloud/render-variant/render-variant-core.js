@@ -1080,10 +1080,23 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
  * @param {{doc: Function}} options.db - Firestore-like database used to load author documents.
  * @param {{file: (path: string) => { save: Function, exists: () => Promise<[boolean]> }}} options.bucket - Bucket handle used to read/write author HTML.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
+ * @param variant
  * @returns {Promise<{authorName: string, authorUrl: string | undefined}>} Author metadata for templates.
  */
+function deriveAuthorName(variant) {
+  return variant.authorName || variant.author || '';
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.variant
+ * @param root0.db
+ * @param root0.bucket
+ * @param root0.consoleError
+ */
 async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
-  const authorName = variant.authorName || variant.author || '';
+  const authorName = deriveAuthorName(variant);
 
   if (!variant.authorId || !authorName) {
     return { authorName, authorUrl: undefined };
