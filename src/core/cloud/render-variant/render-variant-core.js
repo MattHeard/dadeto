@@ -465,20 +465,21 @@ function isBuildHtmlObjectForm(buildHtmlInput) {
  * }} buildHtmlInput - Rendering parameters provided either positionally or via an object.
  * @returns {string} Rendered variant page.
  */
+const BUILD_HTML_BASE_DEFAULTS = {
+  storyTitle: '',
+  author: '',
+  authorUrl: '',
+  parentUrl: '',
+  firstPageUrl: '',
+  showTitleHeading: true,
+};
+
+/**
+ *
+ * @param buildHtmlInput
+ */
 export function buildHtml(buildHtmlInput) {
-  const baseDefaults = {
-    storyTitle: '',
-    author: '',
-    authorUrl: '',
-    parentUrl: '',
-    firstPageUrl: '',
-    showTitleHeading: true,
-  };
-  const resolvedParams = resolveBuildHtmlParameters(
-    buildHtmlInput,
-    baseDefaults,
-    arguments
-  );
+  const resolvedParams = resolveBuildHtmlArguments(buildHtmlInput, arguments);
   const {
     pageNumber,
     variantName,
@@ -568,6 +569,20 @@ function resolveBuildHtmlParameters(
   }
 
   return resolvePositionalParams(positionalArgs, baseDefaults);
+}
+
+/**
+ * Normalize the arguments provided to `buildHtml` regardless of its overload.
+ * @param {unknown} buildHtmlInput - First argument, possibly the object form.
+ * @param {IArguments} posArgs - The entire arguments list provided to `buildHtml`.
+ * @returns {{ pageNumber: number, variantName: string, content: string, options: unknown, storyTitle: string, author: string, authorUrl: string, parentUrl: string, firstPageUrl: string, showTitleHeading: boolean }}
+ */
+function resolveBuildHtmlArguments(buildHtmlInput, posArgs) {
+  return resolveBuildHtmlParameters(
+    buildHtmlInput,
+    BUILD_HTML_BASE_DEFAULTS,
+    posArgs
+  );
 }
 
 /**
