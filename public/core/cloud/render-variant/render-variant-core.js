@@ -1089,6 +1089,14 @@ function deriveAuthorName(variant) {
 
 /**
  *
+ * @param authorName
+ */
+function emptyAuthorMetadata(authorName) {
+  return { authorName, authorUrl: undefined };
+}
+
+/**
+ *
  * @param root0
  * @param root0.variant
  * @param root0.db
@@ -1099,7 +1107,7 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
   const authorName = deriveAuthorName(variant);
 
   if (!variant.authorId || !authorName) {
-    return { authorName, authorUrl: undefined };
+    return emptyAuthorMetadata(authorName);
   }
 
   try {
@@ -1107,13 +1115,13 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
     const authorSnap = await authorRef.get();
 
     if (!authorSnap.exists) {
-      return { authorName, authorUrl: undefined };
+      return emptyAuthorMetadata(authorName);
     }
 
     const { uuid } = authorSnap.data();
 
     if (!uuid) {
-      return { authorName, authorUrl: undefined };
+      return emptyAuthorMetadata(authorName);
     }
 
     const authorPath = `a/${uuid}.html`;
@@ -1135,7 +1143,7 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
       consoleError('author lookup failed', error?.message || error);
     }
 
-    return { authorName, authorUrl: undefined };
+    return emptyAuthorMetadata(authorName);
   }
 }
 
