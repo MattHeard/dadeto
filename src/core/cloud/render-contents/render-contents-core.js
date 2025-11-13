@@ -633,17 +633,25 @@ export function createValidateRequest({ applyCorsHeaders }) {
 }
 
 /**
+ * Extract the Authorization header via the request getter.
+ * @param {{ get?: (name: string) => unknown }} req Incoming request-like object.
+ * @returns {unknown} Value returned by {@code req.get('Authorization')} or undefined.
+ */
+function getAuthorizationHeaderFromGetter(req) {
+  if (typeof req?.get === 'function') {
+    return req.get('Authorization');
+  }
+
+  return undefined;
+}
+
+/**
  * Resolve the Authorization header from a request-like object.
  * @param {{ get?: (name: string) => unknown, headers?: object }} req Incoming request object.
  * @returns {string} Authorization header or an empty string.
  */
 function resolveAuthorizationHeader(req) {
-  let getterHeader;
-  if (typeof req?.get === 'function') {
-    getterHeader = req.get('Authorization');
-  } else {
-    getterHeader = undefined;
-  }
+  const getterHeader = getAuthorizationHeaderFromGetter(req);
 
   if (typeof getterHeader === 'string') {
     return getterHeader;
@@ -784,4 +792,30 @@ export function createHandleRenderRequest({
       await executeRenderRequest(req, res);
     }
   };
+}
+
+/**
+ * Build a render-request handler bound to the shared authorization extractor.
+ * @param {object} root0 Handler dependencies.
+ * @param {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
+ * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
+ * @param {string} root0.adminUid UID allowed to trigger rendering.
+ * @param {() => Promise<void>} root0.render Rendering function.
+ * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Fully wired handler.
+ */
+export function buildHandleRenderRequest({
+  validateRequest,
+  verifyIdToken,
+  adminUid,
+  render,
+}) {
+  const getAuthorizationToken = createAuthorizationExtractor();
+
+  return createHandleRenderRequest({
+    validateRequest,
+    getAuthorizationToken,
+    verifyIdToken,
+    adminUid,
+    render,
+  });
 }

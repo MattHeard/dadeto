@@ -12,11 +12,10 @@ import {
 } from './render-contents-gcf.js';
 import {
   buildHtml,
-  createAuthorizationExtractor,
+  buildHandleRenderRequest,
   createApplyCorsHeaders,
   createFetchStoryInfo,
   createFetchTopStoryIds,
-  createHandleRenderRequest,
   createRenderContents,
   createValidateRequest,
   DEFAULT_BUCKET_NAME,
@@ -110,11 +109,9 @@ function resolveFetchStoryInfo() {
 const allowedOrigins = getAllowedOrigins(environmentVariables);
 const applyCorsHeaders = createApplyCorsHeaders({ allowedOrigins });
 const validateRequest = createValidateRequest({ applyCorsHeaders });
-const getAuthorizationToken = createAuthorizationExtractor();
 
-const handleRenderRequest = createHandleRenderRequest({
+const handleRenderRequest = buildHandleRenderRequest({
   validateRequest,
-  getAuthorizationToken,
   verifyIdToken: token => auth.verifyIdToken(token),
   adminUid: ADMIN_UID,
   render: () => render(),
