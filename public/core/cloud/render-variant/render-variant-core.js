@@ -17,6 +17,62 @@ export function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
+const HEADER_HTML = `
+    <header class="site-header">
+      <a class="brand" href="/">
+        <img src="/img/logo.png" alt="Dendrite logo" />
+        Dendrite
+      </a>
+
+      <nav class="nav-inline" aria-label="Primary">
+        <a href="/new-story.html">New story</a>
+        <a href="/mod.html">Moderate</a>
+        <a href="/stats.html">Stats</a>
+        <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
+        <div id="signinButton"></div>
+        <div id="signoutWrap" style="display:none">
+          <a id="signoutLink" href="#">Sign out</a>
+        </div>
+      </nav>
+
+      <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">☰</button>
+    </header>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="menu-overlay" hidden aria-hidden="true">
+      <div class="menu-sheet" role="dialog" aria-modal="true">
+        <button class="menu-close" aria-label="Close menu">✕</button>
+
+        <nav class="menu-groups">
+          <div class="menu-group">
+            <h3>Write</h3>
+            <a href="/new-story.html">New story</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>Moderation</h3>
+            <a href="/mod.html">Moderate</a>
+            <a href="/stats.html">Stats</a>
+            <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>About</h3>
+            <a href="/about.html">About</a>
+          </div>
+
+          <div class="menu-group">
+            <h3>Account</h3>
+            <div id="signinButton"></div>
+            <div id="signoutWrap" style="display:none">
+              <a id="signoutLink" href="#">Sign out</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+`;
+
 /**
  *
  * @param {string} text - Raw text with Markdown-like emphasis markers.
