@@ -514,6 +514,20 @@ describe('createValidateRequest', () => {
     res.status.mockClear();
     expect(validate({ method: 'POST' }, res)).toBe(true);
   });
+
+  it('responds 204 for OPTIONS when the origin is allowed', () => {
+    const applyCorsHeaders = jest.fn(() => true);
+    const validate = createValidateRequest({ applyCorsHeaders });
+    const send = jest.fn();
+    const res = {
+      status: jest.fn().mockReturnValue({ send }),
+      send: jest.fn(),
+    };
+
+    expect(validate({ method: 'OPTIONS' }, res)).toBe(false);
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(send).toHaveBeenCalledWith('');
+  });
 });
 
 describe('createAuthorizationExtractor', () => {
