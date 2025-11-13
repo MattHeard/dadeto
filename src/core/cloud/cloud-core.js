@@ -20,14 +20,32 @@ export function assertFunction(candidate, name) {
  */
 export function normalizeString(value, maxLength) {
   if (typeof value !== 'string') {
-    if (value === undefined || value === null) {
-      value = '';
-    } else {
-      value = String(value);
-    }
+    value = normalizeNonStringValue(value);
   }
 
   return value.trim().slice(0, maxLength);
+}
+
+/**
+ * Convert non-string values into a working string.
+ * @param {unknown} value Candidate value normalized by `normalizeString`.
+ * @returns {string} Converted string, empty when the value is nullish.
+ */
+function normalizeNonStringValue(value) {
+  if (isNullish(value)) {
+    return '';
+  }
+
+  return String(value);
+}
+
+/**
+ * Check whether a value is `null` or `undefined`.
+ * @param {unknown} value Candidate value to inspect.
+ * @returns {boolean} True when the input is nullish.
+ */
+function isNullish(value) {
+  return value === undefined || value === null;
 }
 
 /**
