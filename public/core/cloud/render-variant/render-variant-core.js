@@ -73,6 +73,158 @@ const HEADER_HTML = `
     </div>
 `;
 
+const GOOGLE_SIGNIN_SCRIPTS = `
+    <script src="https://accounts.google.com/gsi/client" defer></script>
+    <script type="module">
+      import {
+        initGoogleSignIn,
+        getIdToken,
+        isAdmin,
+        signOut,
+      } from '../googleAuth.js';
+      const als = document.querySelectorAll('.admin-link');
+      const sbs = document.querySelectorAll('#signinButton');
+      const sws = document.querySelectorAll('#signoutWrap');
+      const sos = document.querySelectorAll('#signoutLink');
+      function showSignedIn() {
+        sbs.forEach(el => (el.style.display = 'none'));
+        sws.forEach(el => (el.style.display = ''));
+        if (isAdmin()) als.forEach(el => (el.style.display = ''));
+      }
+      function showSignedOut() {
+        sbs.forEach(el => (el.style.display = ''));
+        sws.forEach(el => (el.style.display = 'none'));
+        als.forEach(el => (el.style.display = 'none'));
+      }
+      initGoogleSignIn({ onSignIn: showSignedIn });
+      sos.forEach(link => {
+        link.addEventListener('click', async e => {
+          e.preventDefault();
+          await signOut();
+          showSignedOut();
+        });
+      });
+      if (getIdToken()) {
+        showSignedIn();
+      }
+    </script>
+`;
+
+const MENU_TOGGLE_SCRIPT = `
+    <script>
+      (function () {
+        const toggle = document.querySelector('.menu-toggle');
+        const overlay = document.getElementById('mobile-menu');
+        const sheet = overlay.querySelector('.menu-sheet');
+        const closeBtn = overlay.querySelector('.menu-close');
+
+        function openMenu() {
+          overlay.hidden = false;
+          overlay.setAttribute('aria-hidden', 'false');
+          toggle.setAttribute('aria-expanded', 'true');
+          document.body.style.overflow = 'hidden';
+          const first = sheet.querySelector('a,button,[tabindex="0"]');
+          if (first) first.focus();
+        }
+        function closeMenu() {
+          overlay.setAttribute('aria-hidden', 'true');
+          toggle.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+          setTimeout(() => (overlay.hidden = true), 180);
+          toggle.focus();
+        }
+        toggle.addEventListener('click', () => {
+          if (overlay.hidden) {
+            openMenu();
+          } else {
+            closeMenu();
+          }
+        });
+        closeBtn.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', e => {
+          if (e.target === overlay) closeMenu();
+        });
+        addEventListener('keydown', e => {
+          if (e.key === 'Escape' && !overlay.hidden) closeMenu();
+        });
+      })();
+    </script>
+`;
+
+const VARIANT_REDIRECT_SCRIPT = `
+    <script>
+      (function () {
+        function pickWeighted(pairs) {
+          let total = 0;
+          for (const p of pairs) {
+            const w = Number(p.w);
+            if (!Number.isFinite(w) || w <= 0) continue;
+            total += w;
+          }
+          if (total <= 0) return null;
+          const a = new Uint32Array(1);
+          crypto.getRandomValues(a);
+          const u = (a[0] + 1) / 4294967297;
+          let threshold = u * total;
+          for (const p of pairs) {
+            const w = Number(p.w);
+            if (!Number.isFinite(w) || w <= 0) continue;
+            threshold -= w;
+            if (threshold <= 0) return p.slug;
+          }
+          return pairs[pairs.length - 1]?.slug ?? null;
+        }
+        function parseVariants(attr) {
+          if (!attr) return [];
+          const trimmed = attr.trim();
+          if (!trimmed) return [];
+          if (trimmed[0] === '[' || trimmed[0] === '{') {
+            try {
+              const arr = JSON.parse(trimmed);
+              if (Array.isArray(arr))
+                return arr.map(x => ({ slug: x.slug, w: x.w }));
+            } catch {}
+            return [];
+          }
+          return trimmed
+            .split(',')
+            .map(pair => {
+              const [slug, w] = pair.split(':');
+              return { slug: slug?.trim(), w: Number(w ?? 1) };
+            })
+            .filter(x => x.slug);
+        }
+        function rewriteLink(a) {
+          const raw = a.getAttribute('data-variants');
+          const pairs = parseVariants(raw);
+          if (!pairs.length) return;
+          const chosen = pickWeighted(pairs);
+          if (!chosen) return;
+          try {
+            const href = new URL(a.getAttribute('href', 2), location.href);
+            const chosenUrl = new URL(href, location.href);
+            const parts = chosenUrl.pathname.split('/');
+            parts[parts.length - 1] = chosen + '.html';
+            chosenUrl.pathname = parts.join('/');
+            a.setAttribute('href', chosenUrl.toString());
+            a.setAttribute('data-chosen-variant', chosen);
+          } catch {}
+        }
+        function init() {
+          const links = document.querySelectorAll(
+            'a.variant-link[data-variants]'
+          );
+          links.forEach(rewriteLink);
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+`;
+
 /**
  *
  * @param {string} text - Raw text with Markdown-like emphasis markers.
@@ -368,150 +520,10 @@ export function buildHtml(buildHtmlInput) {
   <body>
 ${HEADER_HTML}
     <main>${title}${paragraphs}<ol>${items}</ol>${authorHtml}${parentHtml}${firstHtml}<p>${rewriteLink}<a href="./${pageNumber}-alts.html">Other variants</a></p>${pageNumberHtml}${reportHtml}</main>
-    <script src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module">
-      import {
-        initGoogleSignIn,
-        getIdToken,
-        isAdmin,
-        signOut,
-      } from '../googleAuth.js';
-      const als = document.querySelectorAll('.admin-link');
-      const sbs = document.querySelectorAll('#signinButton');
-      const sws = document.querySelectorAll('#signoutWrap');
-      const sos = document.querySelectorAll('#signoutLink');
-      function showSignedIn() {
-        sbs.forEach(el => (el.style.display = 'none'));
-        sws.forEach(el => (el.style.display = ''));
-        if (isAdmin()) als.forEach(el => (el.style.display = ''));
-      }
-      function showSignedOut() {
-        sbs.forEach(el => (el.style.display = ''));
-        sws.forEach(el => (el.style.display = 'none'));
-        als.forEach(el => (el.style.display = 'none'));
-      }
-      initGoogleSignIn({ onSignIn: showSignedIn });
-      sos.forEach(link => {
-        link.addEventListener('click', async e => {
-          e.preventDefault();
-          await signOut();
-          showSignedOut();
-        });
-      });
-      if (getIdToken()) {
-        showSignedIn();
-      }
-  </script>
-    <script>
-      (function () {
-        const toggle = document.querySelector('.menu-toggle');
-        const overlay = document.getElementById('mobile-menu');
-        const sheet = overlay.querySelector('.menu-sheet');
-        const closeBtn = overlay.querySelector('.menu-close');
-
-        function openMenu() {
-          overlay.hidden = false;
-          overlay.setAttribute('aria-hidden', 'false');
-          toggle.setAttribute('aria-expanded', 'true');
-          document.body.style.overflow = 'hidden';
-          const first = sheet.querySelector('a,button,[tabindex="0"]');
-          if (first) first.focus();
-        }
-        function closeMenu() {
-          overlay.setAttribute('aria-hidden', 'true');
-          toggle.setAttribute('aria-expanded', 'false');
-          document.body.style.overflow = '';
-          setTimeout(() => (overlay.hidden = true), 180);
-          toggle.focus();
-        }
-    toggle.addEventListener('click', () => {
-      if (overlay.hidden) {
-        openMenu();
-      } else {
-        closeMenu();
-      }
-    });
-        closeBtn.addEventListener('click', closeMenu);
-        overlay.addEventListener('click', e => {
-          if (e.target === overlay) closeMenu();
-        });
-        addEventListener('keydown', e => {
-          if (e.key === 'Escape' && !overlay.hidden) closeMenu();
-        });
-      })();
-    </script>
-    <script>
-      (function () {
-        function pickWeighted(pairs) {
-          let total = 0;
-          for (const p of pairs) {
-            const w = Number(p.w);
-            if (!Number.isFinite(w) || w <= 0) continue;
-            total += w;
-          }
-          if (total <= 0) return null;
-          const a = new Uint32Array(1);
-          crypto.getRandomValues(a);
-          const u = (a[0] + 1) / 4294967297;
-          let threshold = u * total;
-          for (const p of pairs) {
-            const w = Number(p.w);
-            if (!Number.isFinite(w) || w <= 0) continue;
-            threshold -= w;
-            if (threshold <= 0) return p.slug;
-          }
-          return pairs[pairs.length - 1]?.slug ?? null;
-        }
-        function parseVariants(attr) {
-          if (!attr) return [];
-          const trimmed = attr.trim();
-          if (!trimmed) return [];
-          if (trimmed[0] === '[' || trimmed[0] === '{') {
-            try {
-              const arr = JSON.parse(trimmed);
-              if (Array.isArray(arr))
-                return arr.map(x => ({ slug: x.slug, w: x.w }));
-            } catch {}
-            return [];
-          }
-          return trimmed
-            .split(',')
-            .map(pair => {
-              const [slug, w] = pair.split(':');
-              return { slug: slug?.trim(), w: Number(w ?? 1) };
-            })
-            .filter(x => x.slug);
-        }
-        function rewriteLink(a) {
-          const raw = a.getAttribute('data-variants');
-          const pairs = parseVariants(raw);
-          if (!pairs.length) return;
-          const chosen = pickWeighted(pairs);
-          if (!chosen) return;
-          try {
-            const href = new URL(a.getAttribute('href', 2), location.href);
-            const chosenUrl = new URL(href, location.href);
-            const parts = chosenUrl.pathname.split('/');
-            parts[parts.length - 1] = chosen + '.html';
-            chosenUrl.pathname = parts.join('/');
-            a.setAttribute('href', chosenUrl.toString());
-            a.setAttribute('data-chosen-variant', chosen);
-          } catch {}
-        }
-        function init() {
-          const links = document.querySelectorAll(
-            'a.variant-link[data-variants]'
-          );
-          links.forEach(rewriteLink);
-        }
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', init);
-        } else {
-          init();
-        }
-    })();
-  </script>
-</body>
+${GOOGLE_SIGNIN_SCRIPTS}
+${MENU_TOGGLE_SCRIPT}
+${VARIANT_REDIRECT_SCRIPT}
+  </body>
 </html>`;
 }
 
