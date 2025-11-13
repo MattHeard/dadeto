@@ -695,15 +695,15 @@ function extractBearerToken(header) {
 }
 
 /**
- * Create the HTTP handler that protects and executes the render contents workflow.
+ * Build a render-request handler bound to the shared authorization extractor.
  * @param {object} root0 Handler dependencies.
  * @param {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
  * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
  * @param {string} root0.adminUid UID allowed to trigger rendering.
  * @param {() => Promise<void>} root0.render Rendering function.
- * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Express handler.
+ * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Fully wired handler.
  */
-export function createHandleRenderRequest({
+export function buildHandleRenderRequest({
   validateRequest,
   verifyIdToken,
   adminUid,
@@ -778,27 +778,4 @@ export function createHandleRenderRequest({
       await executeRenderRequest(req, res);
     }
   };
-}
-
-/**
- * Build a render-request handler bound to the shared authorization extractor.
- * @param {object} root0 Handler dependencies.
- * @param {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
- * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
- * @param {string} root0.adminUid UID allowed to trigger rendering.
- * @param {() => Promise<void>} root0.render Rendering function.
- * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Fully wired handler.
- */
-export function buildHandleRenderRequest({
-  validateRequest,
-  verifyIdToken,
-  adminUid,
-  render,
-}) {
-  return createHandleRenderRequest({
-    validateRequest,
-    verifyIdToken,
-    adminUid,
-    render,
-  });
 }

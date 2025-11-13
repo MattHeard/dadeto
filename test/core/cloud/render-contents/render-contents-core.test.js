@@ -7,7 +7,6 @@ import {
   getAllowedOrigins,
   createApplyCorsHeaders,
   createValidateRequest,
-  createHandleRenderRequest,
   buildHandleRenderRequest,
   DEFAULT_BUCKET_NAME,
   productionOrigins,
@@ -583,6 +582,11 @@ describe('buildHandleRenderRequest', () => {
     json: jest.fn(),
   });
 
+  const makeRequest = authHeader => ({
+    get: jest.fn().mockReturnValue(authHeader),
+    headers: authHeader ? { Authorization: authHeader } : undefined,
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     render.mockResolvedValue(undefined);
@@ -646,42 +650,22 @@ describe('buildHandleRenderRequest', () => {
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.send).toHaveBeenCalledWith('Missing token');
   });
-});
-
-describe('createHandleRenderRequest', () => {
-  const validateRequest = jest.fn(() => true);
-  const verifyIdToken = jest.fn();
-  const render = jest.fn();
-
-  const handler = createHandleRenderRequest({
-    validateRequest,
-    verifyIdToken,
-    adminUid: 'admin',
-    render,
-  });
-
-  const makeRequest = authHeader => ({
-    get: jest.fn().mockReturnValue(authHeader),
-    headers: authHeader ? { Authorization: authHeader } : undefined,
-  });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
 
   it('rejects when validateRequest blocks the call', async () => {
     validateRequest.mockReturnValueOnce(false);
-    await handler({}, { status: jest.fn(), send: jest.fn(), json: jest.fn() });
+    const handler = build();
+    const res = makeResponse();
+
+    await handler(makeRequest('Bearer token'), res);
+
     expect(verifyIdToken).not.toHaveBeenCalled();
   });
 
   it('handles missing tokens and invalid admin', async () => {
-    const res = {
-      status: jest.fn(() => res),
-      send: jest.fn(),
-      json: jest.fn(),
-    };
-    await handler({}, res);
+    const handler = build();
+    const res = makeResponse();
+
+    await handler(makeRequest(undefined), res);
     expect(res.status).toHaveBeenCalledWith(401);
 
     const req = makeRequest('Bearer token');
@@ -692,20 +676,19 @@ describe('createHandleRenderRequest', () => {
   });
 
   it('returns 401 when verification throws', async () => {
+    const handler = build();
     const req = makeRequest('Bearer token');
     verifyIdToken.mockRejectedValueOnce(new Error('bad token'));
-    const res = {
-      status: jest.fn(() => res),
-      send: jest.fn(),
-      json: jest.fn(),
-    };
+    const res = makeResponse();
+
     await handler(req, res);
+
     expect(res.status).toHaveBeenCalledWith(401);
   });
 
   it('throws when adminUid is missing', () => {
     expect(() =>
-      createHandleRenderRequest({
+      buildHandleRenderRequest({
         validateRequest: jest.fn(),
         verifyIdToken: jest.fn(),
         render: jest.fn(),
@@ -714,14 +697,10 @@ describe('createHandleRenderRequest', () => {
   });
 
   it('reports invalid tokens without messages', async () => {
+    const handler = build();
     const req = makeRequest('Bearer token');
     verifyIdToken.mockRejectedValueOnce({});
-
-    const res = {
-      status: jest.fn(() => res),
-      send: jest.fn(),
-      json: jest.fn(),
-    };
+    const res = makeResponse();
 
     await handler(req, res);
     expect(res.status).toHaveBeenCalledWith(401);
@@ -729,31 +708,25 @@ describe('createHandleRenderRequest', () => {
   });
 
   it('returns generic render errors when messages are missing', async () => {
+    const handler = build();
     const req = makeRequest('Bearer token');
     verifyIdToken.mockResolvedValueOnce({ uid: 'admin' });
     render.mockRejectedValueOnce({});
-
-    const res = {
-      status: jest.fn(() => res),
-      send: jest.fn(),
-      json: jest.fn(),
-    };
+    const res = makeResponse();
 
     await handler(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: 'render failed' });
   });
 
   it('runs render and returns JSON payload', async () => {
+    const handler = build();
     const req = makeRequest('Bearer token');
     verifyIdToken.mockResolvedValueOnce({ uid: 'admin' });
     render.mockResolvedValueOnce(undefined);
+    const res = makeResponse();
 
-    const res = {
-      status: jest.fn(() => res),
-      send: jest.fn(),
-      json: jest.fn(),
-    };
     await handler(req, res);
 
     expect(render).toHaveBeenCalled();
@@ -762,17 +735,14 @@ describe('createHandleRenderRequest', () => {
   });
 
   it('propagates render errors from the configured renderer', async () => {
+    const handler = build();
     const req = makeRequest('Bearer token');
     verifyIdToken.mockResolvedValueOnce({ uid: 'admin' });
-
     render.mockRejectedValueOnce(new Error('boom'));
-    const res = {
-      status: jest.fn(() => res),
-      send: jest.fn(),
-      json: jest.fn(),
-    };
+    const res = makeResponse();
 
     await handler(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: 'boom' });
   });
