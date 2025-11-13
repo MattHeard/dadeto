@@ -553,11 +553,26 @@ export function createGenerateStatsCore({
 
   const verifyToken = token => auth.verifyIdToken(token);
   const isAdminUid = decoded => decoded.uid === ADMIN_UID;
-  const sendUnauthorized = (res, message) => {
+  /**
+   *
+   * @param res
+   * @param message
+   */
+  function sendUnauthorized(res, message) {
     res.status(401).send(message);
-  };
-  const sendForbidden = res => {
+  }
+  /**
+   *
+   * @param res
+   */
+  function sendForbidden(res) {
     res.status(403).send('Forbidden');
+  }
+  const verifyAdminDeps = {
+    verifyToken,
+    isAdminUid,
+    sendUnauthorized,
+    sendForbidden,
   };
 
   /**
@@ -575,12 +590,7 @@ export function createGenerateStatsCore({
     const isCron = req.get('X-Appengine-Cron') === 'true';
 
     if (!isCron) {
-      const verifyAdmin = createVerifyAdmin({
-        verifyToken,
-        isAdminUid,
-        sendUnauthorized,
-        sendForbidden,
-      });
+      const verifyAdmin = createVerifyAdmin(verifyAdminDeps);
 
       const isAuthorized = await verifyAdmin(req, res);
       if (!isAuthorized) {
