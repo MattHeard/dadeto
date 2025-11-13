@@ -793,7 +793,21 @@ export function createHandleRenderRequest({
  * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
  * @param {string} root0.adminUid UID allowed to trigger rendering.
  * @param {() => Promise<void>} root0.render Rendering function.
+ * @param req
  * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Fully wired handler.
+ */
+function getAuthorizationTokenFromRequest(req) {
+  const header = resolveAuthorizationHeader(req);
+  return extractBearerToken(header);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.validateRequest
+ * @param root0.verifyIdToken
+ * @param root0.adminUid
+ * @param root0.render
  */
 export function buildHandleRenderRequest({
   validateRequest,
@@ -801,14 +815,9 @@ export function buildHandleRenderRequest({
   adminUid,
   render,
 }) {
-  const getAuthorizationToken = req => {
-    const header = resolveAuthorizationHeader(req);
-    return extractBearerToken(header);
-  };
-
   return createHandleRenderRequest({
     validateRequest,
-    getAuthorizationToken,
+    getAuthorizationToken: getAuthorizationTokenFromRequest,
     verifyIdToken,
     adminUid,
     render,
