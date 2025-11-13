@@ -1034,11 +1034,7 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata used in templates.
  */
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
-  const storyRef = pageSnap.ref.parent?.parent;
-
-  if (!storyRef) {
-    return { storyTitle: '', firstPageUrl: undefined };
-  }
+  const storyRef = pageSnap.ref.parent.parent;
 
   const storySnap = await storyRef.get();
 
