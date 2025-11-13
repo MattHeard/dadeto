@@ -138,6 +138,27 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
 }
 
 /**
+ * Emit a simple string response with the provided status code.
+ * @param {{ status: (code: number) => { send: (body: string) => void } }} res - Express-like response object.
+ * @param {number} status - HTTP status code to send.
+ * @param {string} body - String body to send in the response.
+ * @returns {void}
+ */
+function sendResponse(res, status, body) {
+  res.status(status).send(body);
+}
+
+/**
+ * Emit a bare status response.
+ * @param {{ sendStatus: (code: number) => void }} res - Express-style response object.
+ * @param {number} status - HTTP status code to emit.
+ * @returns {void}
+ */
+function sendStatusResponse(res, status) {
+  res.sendStatus(status);
+}
+
+/**
  * Wrap the domain handler in an Express-style request handler.
  * @param {(request: { method?: string, body?: { variant?: unknown } | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} reportForModerationHandler Domain-specific request handler.
  * @returns {(req: { method?: string, body?: { variant?: unknown } | null }, res: { status: (code: number) => { send: (body: string) => void, json: (body: Record<string, unknown>) => void }, sendStatus: (code: number) => void }) => Promise<void>} Express-compatible request handler that writes to the provided response.
@@ -151,16 +172,33 @@ export function createHandleReportForModeration(reportForModerationHandler) {
       body: req.body,
     });
 
-    if (typeof body === 'string') {
-      res.status(status).send(body);
-      return;
-    }
-
-    if (typeof body === 'undefined') {
-      res.sendStatus(status);
-      return;
-    }
-
-    res.status(status).json(body);
+    const responder = createResponseSender(body);
+    responder(res, status);
   };
+}
+
+/**
+ * Choose the appropriate response helper for the given body.
+ * @param {string | Record<string, unknown> | undefined} body - Response body produced by the domain handler.
+ * @returns {(res: { status: (code: number) => { send: (body: string) => void, json: (body: Record<string, unknown>) => void }, sendStatus: (code: number) => void }, status: number) => void} Sender that knows how to write the response.
+ */
+function createResponseSender(body) {
+  const responders = {
+    string: sendResponse,
+    undefined: sendStatusResponse,
+    object: sendJsonResponse,
+  };
+
+  return (res, status) => responders[typeof body](res, status, body);
+}
+
+/**
+ * Emit a JSON response.
+ * @param {{ status: (code: number) => { json: (body: Record<string, unknown>) => void } }} res - Express-style response object that can emit JSON.
+ * @param {number} status - HTTP status code to emit.
+ * @param {Record<string, unknown>} body - JSON payload to send.
+ * @returns {void}
+ */
+function sendJsonResponse(res, status, body) {
+  res.status(status).json(body);
 }
