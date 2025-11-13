@@ -706,9 +706,7 @@ export function createAuthorizationExtractor() {
  * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
  * @param {string} root0.adminUid UID allowed to trigger rendering.
  * @param {() => Promise<void>} root0.render Rendering function.
- * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }, overrides?: {
- *   renderFn?: () => Promise<void>
- * }) => Promise<void>} Express handler.
+ * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Express handler.
  */
 export function createHandleRenderRequest({
   validateRequest,
@@ -755,22 +753,7 @@ export function createHandleRenderRequest({
     }
   }
 
-  /**
-   * Resolve the render function and ensure it is callable.
-   * @param {() => Promise<void> | undefined} candidate Potential override supplied by the caller.
-   * @returns {() => Promise<void>} Callable render function.
-   */
-  function resolveRenderFn(candidate) {
-    const renderFn = candidate ?? render;
-
-    if (typeof renderFn !== 'function') {
-      throw new TypeError('renderFn must be a function');
-    }
-
-    return renderFn;
-  }
-
-  return async function handleRenderRequest(req, res, overrides = {}) {
+  return async function handleRenderRequest(req, res) {
     if (!validateRequest(req, res)) {
       return;
     }
@@ -781,10 +764,8 @@ export function createHandleRenderRequest({
       return;
     }
 
-    const renderFn = resolveRenderFn(overrides.renderFn);
-
     try {
-      await renderFn();
+      await render();
       res.status(200).json({ ok: true });
     } catch (error) {
       res.status(500).json({ error: error?.message || 'render failed' });
