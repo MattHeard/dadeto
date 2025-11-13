@@ -938,6 +938,26 @@ async function buildOptionMetadata({
   visibilityThreshold,
   consoleError,
 }) {
+  const { targetPageNumber, targetVariantName, targetVariants } =
+    await resolveTargetMetadata(data, visibilityThreshold, consoleError);
+
+  return {
+    content: data.content,
+    position: data.position,
+    ...(targetPageNumber !== undefined && { targetPageNumber }),
+    ...(targetVariantName && { targetVariantName }),
+    ...(targetVariants && { targetVariants }),
+  };
+}
+
+/**
+ * Resolve the target metadata referenced by an option document.
+ * @param {Record<string, any>} data Raw option document data.
+ * @param {number} visibilityThreshold Minimum visibility required for variants.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for errors.
+ * @returns {Promise<{targetPageNumber?: number, targetVariantName?: string, targetVariants?: {name: string, weight: number}[]}>}
+ */
+async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
   let targetPageNumber;
   let targetVariantName;
   let targetVariants;
@@ -974,11 +994,9 @@ async function buildOptionMetadata({
   }
 
   return {
-    content: data.content,
-    position: data.position,
-    ...(targetPageNumber !== undefined && { targetPageNumber }),
-    ...(targetVariantName && { targetVariantName }),
-    ...(targetVariants && { targetVariants }),
+    targetPageNumber,
+    targetVariantName,
+    targetVariants,
   };
 }
 
