@@ -268,12 +268,12 @@ export function buildHtml(buildHtmlInput) {
     firstPageUrl: '',
     showTitleHeading: true,
   };
-  let resolvedParams;
-  if (isObjectForm) {
-    resolvedParams = { ...baseDefaults, ...buildHtmlInput };
-  } else {
-    resolvedParams = resolvePositionalParams(positionalArgs, baseDefaults);
-  }
+  const resolvedParams = resolveBuildHtmlParams({
+    isObjectForm,
+    baseDefaults,
+    buildHtmlInput,
+    positionalArgs,
+  });
   const {
     pageNumber,
     variantName,
@@ -535,6 +535,24 @@ function resolvePositionalParams(positionalArgs, baseDefaults) {
         ? positionalArgs[9]
         : baseDefaults.showTitleHeading,
   };
+}
+
+/**
+ * Resolve parameters for `buildHtml` regardless of signature form.
+ * @param {{ isObjectForm: boolean, baseDefaults: object, buildHtmlInput: unknown, positionalArgs: IArguments }} options - Resolution context.
+ * @returns {{ pageNumber: number, variantName: string, content: string, options: unknown, storyTitle: string, author: string, authorUrl: string, parentUrl: string, firstPageUrl: string, showTitleHeading: boolean }}
+ */
+function resolveBuildHtmlParams({
+  isObjectForm,
+  baseDefaults,
+  buildHtmlInput,
+  positionalArgs,
+}) {
+  if (isObjectForm) {
+    return { ...baseDefaults, ...buildHtmlInput };
+  }
+
+  return resolvePositionalParams(positionalArgs, baseDefaults);
 }
 
 /**
