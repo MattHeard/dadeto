@@ -103,12 +103,22 @@ export function createCorsOriginValidator(allowedOrigins) {
   }
 
   return function corsOriginValidator(origin, cb) {
-    if (!origin || origins.includes(origin)) {
+    if (isCorsOriginAllowed(origin, origins)) {
       cb(null, true);
     } else {
       cb(new Error('CORS'));
     }
   };
+}
+
+/**
+ * Determine whether the provided origin satisfies the CORS allow list.
+ * @param {string | undefined} origin - Origin header emitted by the browser.
+ * @param {string[]} allowedOrigins - Origins explicitly permitted to access the endpoint.
+ * @returns {boolean} True when the origin is either missing or present in the allow list.
+ */
+function isCorsOriginAllowed(origin, allowedOrigins) {
+  return !origin || allowedOrigins.includes(origin);
 }
 
 /**
@@ -137,8 +147,8 @@ export function createHandleReportForModeration(reportForModerationHandler) {
 
   return async function handleReportForModeration(req, res) {
     const { status, body } = await reportForModerationHandler({
-      method: req?.method,
-      body: req?.body,
+      method: req.method,
+      body: req.body,
     });
 
     if (typeof body === 'string') {
