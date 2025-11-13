@@ -1089,14 +1089,6 @@ function deriveAuthorName(variant) {
 
 /**
  *
- * @param authorName
- */
-function emptyAuthorMetadata(authorName) {
-  return { authorName, authorUrl: undefined };
-}
-
-/**
- *
  * @param root0
  * @param root0.variant
  * @param root0.db
@@ -1105,9 +1097,20 @@ function emptyAuthorMetadata(authorName) {
  */
 async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
   const authorName = deriveAuthorName(variant);
+  const authorUrl = await resolveAuthorUrl(variant, db, bucket, consoleError);
+  return { authorName, authorUrl };
+}
 
-  if (!variant.authorId || !authorName) {
-    return emptyAuthorMetadata(authorName);
+/**
+ *
+ * @param variant
+ * @param db
+ * @param bucket
+ * @param consoleError
+ */
+async function resolveAuthorUrl(variant, db, bucket, consoleError) {
+  if (!variant.authorId) {
+    return undefined;
   }
 
   try {
@@ -1115,13 +1118,13 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
     const authorSnap = await authorRef.get();
 
     if (!authorSnap.exists) {
-      return emptyAuthorMetadata(authorName);
+      return undefined;
     }
 
     const { uuid } = authorSnap.data();
 
     if (!uuid) {
-      return emptyAuthorMetadata(authorName);
+      return undefined;
     }
 
     const authorPath = `a/${uuid}.html`;
@@ -1129,6 +1132,7 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
     const [exists] = await file.exists();
 
     if (!exists) {
+      const authorName = deriveAuthorName(variant);
       const authorHtml = `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite - ${escapeHtml(
         authorName
       )}</title><link rel="icon" href="/favicon.ico" /><link rel="stylesheet" href="/dendrite.css" /></head><body><main><h1>${escapeHtml(
@@ -1137,13 +1141,12 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
       await file.save(authorHtml, { contentType: 'text/html' });
     }
 
-    return { authorName, authorUrl: `/${authorPath}` };
+    return `/${authorPath}`;
   } catch (error) {
     if (consoleError) {
       consoleError('author lookup failed', error?.message || error);
     }
-
-    return emptyAuthorMetadata(authorName);
+    return undefined;
   }
 }
 
