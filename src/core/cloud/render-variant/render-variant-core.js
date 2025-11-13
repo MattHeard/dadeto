@@ -37,25 +37,26 @@ function renderInlineMarkdown(text) {
  * @returns {string} HTML list item for the option.
  */
 function buildOptionItem(pageNumber, variantName, option) {
-  const slug = `${pageNumber}-${variantName}-${option.position}`;
-  let href = `../new-page.html?option=${slug}`;
-  if (option.targetPageNumber !== undefined) {
-    const suffix = option.targetVariantName || '';
-    href = `/p/${option.targetPageNumber}${suffix}.html`;
-  }
+  const slug = buildOptionSlug(pageNumber, variantName, option.position);
+  const href = resolveOptionHref(slug, option);
   const optionHtml = renderInlineMarkdown(option.content);
-  const attrs = [
-    'class="variant-link"',
-    `data-link-id="${slug}"`,
-    `href="${href}"`,
-  ];
-  if (option.targetVariants) {
-    const variantsAttr = option.targetVariants
-      .map(v => `${option.targetPageNumber}${v.name}:${v.weight}`)
-      .join(',');
-    attrs.push(`data-variants="${escapeHtml(variantsAttr)}"`);
-  }
+  const baseAttrs = buildBaseAttrs(slug, href);
+  const variantAttrs = buildVariantAttrs(
+    option.targetVariants,
+    option.targetPageNumber
+  );
+  const attrs = [...baseAttrs, ...variantAttrs];
   return `<li><a ${attrs.join(' ')}>${optionHtml}</a></li>`;
+}
+
+/**
+ * Build the base attribute array that every option anchor shares.
+ * @param {string} slug - Slug identifying the option.
+ * @param {string} href - Destination URL for the option link.
+ * @returns {string[]} Attribute strings.
+ */
+function buildBaseAttrs(slug, href) {
+  return ['class="variant-link"', `data-link-id="${slug}"`, `href="${href}"`];
 }
 
 /**
@@ -69,6 +70,50 @@ function buildOptionsHtml(pageNumber, variantName, options) {
   return options
     .map(option => buildOptionItem(pageNumber, variantName, option))
     .join('');
+}
+
+/**
+ * Resolve the href used to navigate from an option entry.
+ * @param {string} slug - Slug referencing the option when linking back to the editor.
+ * @param {{ targetPageNumber?: number, targetVariantName?: string }} option - Option metadata.
+ * @returns {string} Final href for the option link.
+ */
+function resolveOptionHref(slug, option) {
+  if (option.targetPageNumber !== undefined) {
+    const suffix = option.targetVariantName || '';
+    return `/p/${option.targetPageNumber}${suffix}.html`;
+  }
+
+  return `../new-page.html?option=${slug}`;
+}
+
+/**
+ * Build the slug used to reference a specific variant option.
+ * @param {number} pageNumber - Page number the option belongs to.
+ * @param {string} variantName - Variant identifier for the option.
+ * @param {number} position - Position index of the option.
+ * @returns {string} Slug uniquely identifying the option.
+ */
+function buildOptionSlug(pageNumber, variantName, position) {
+  return `${pageNumber}-${variantName}-${position}`;
+}
+
+/**
+ * Build any additional data attributes for options that target other variants.
+ * @param {Array<{ name: string, weight: number }> | undefined} variants - Variant descriptors to encode.
+ * @param {number | undefined} targetPageNumber - Page number of the target variant.
+ * @returns {string[]} Attribute strings for the option anchor.
+ */
+function buildVariantAttrs(variants, targetPageNumber) {
+  if (!variants) {
+    return [];
+  }
+
+  const variantsAttr = variants
+    .map(v => `${targetPageNumber}${v.name}:${v.weight}`)
+    .join(',');
+
+  return [`data-variants="${escapeHtml(variantsAttr)}"`];
 }
 
 /**
