@@ -668,24 +668,19 @@ describe('createHandleRenderRequest', () => {
     expect(res.json).toHaveBeenCalledWith({ ok: true });
   });
 
-  it('supports render overrides and propagates errors', async () => {
+  it('propagates render errors from the configured renderer', async () => {
     getAuthorizationToken.mockReturnValueOnce('Bearer token');
     verifyIdToken.mockResolvedValueOnce({ uid: 'admin' });
 
-    const failingRender = jest.fn(() => Promise.reject(new Error('boom')));
+    render.mockRejectedValueOnce(new Error('boom'));
     const res = {
       status: jest.fn(() => res),
       send: jest.fn(),
       json: jest.fn(),
     };
-    await handler({}, res, { renderFn: failingRender });
+
+    await handler({}, res);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: 'boom' });
-
-    getAuthorizationToken.mockReturnValueOnce('Bearer token');
-    verifyIdToken.mockResolvedValueOnce({ uid: 'admin' });
-    await expect(handler({}, res, { renderFn: 'invalid' })).rejects.toThrow(
-      new TypeError('renderFn must be a function')
-    );
   });
 });
