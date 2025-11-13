@@ -551,6 +551,15 @@ export function createGenerateStatsCore({
     return null;
   }
 
+  const verifyToken = token => auth.verifyIdToken(token);
+  const isAdminUid = decoded => decoded.uid === ADMIN_UID;
+  const sendUnauthorized = (res, message) => {
+    res.status(401).send(message);
+  };
+  const sendForbidden = res => {
+    res.status(403).send('Forbidden');
+  };
+
   /**
    * Handle HTTP requests to trigger the stats generation workflow.
    * @param {import('express').Request} req - Incoming HTTP request.
@@ -564,18 +573,13 @@ export function createGenerateStatsCore({
     }
 
     const isCron = req.get('X-Appengine-Cron') === 'true';
-    const adminId = ADMIN_UID;
 
     if (!isCron) {
       const verifyAdmin = createVerifyAdmin({
-        verifyToken: token => auth.verifyIdToken(token),
-        isAdminUid: decoded => decoded.uid === adminId,
-        sendUnauthorized: (response, message) => {
-          response.status(401).send(message);
-        },
-        sendForbidden: response => {
-          response.status(403).send('Forbidden');
-        },
+        verifyToken,
+        isAdminUid,
+        sendUnauthorized,
+        sendForbidden,
       });
 
       const isAuthorized = await verifyAdmin(req, res);
