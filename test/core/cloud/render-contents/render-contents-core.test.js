@@ -395,6 +395,40 @@ describe('createRenderContents', () => {
     ).resolves.toBeNull();
   });
 
+  it('logs failed invalidation responses when provided', async () => {
+    const bucket = { file: jest.fn(() => ({ save: jest.fn() })) };
+    const storage = { bucket: jest.fn(() => bucket) };
+    const consoleError = jest.fn();
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => ({}),
+      });
+    const randomUUID = jest.fn().mockReturnValue('uuid');
+
+    const renderContents = createRenderContents({
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    await renderContents({
+      fetchTopStoryIds: async () => ['story'],
+      fetchStoryInfo: async () => ({ title: 'Story', pageNumber: 1 }),
+    });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /index.html failed: 503'
+    );
+  });
+
   it('handles fetchStoryInfo returning null for identifiers', async () => {
     const bucket = {
       file: jest.fn(() => ({ save: jest.fn().mockResolvedValue(undefined) })),
