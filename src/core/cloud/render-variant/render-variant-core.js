@@ -938,15 +938,16 @@ async function buildOptionMetadata({
   visibilityThreshold,
   consoleError,
 }) {
-  const { targetPageNumber, targetVariantName, targetVariants } =
-    await resolveTargetMetadata(data, visibilityThreshold, consoleError);
+  const targetMetadata = await resolveTargetMetadata(
+    data,
+    visibilityThreshold,
+    consoleError
+  );
 
   return {
     content: data.content,
     position: data.position,
-    ...(targetPageNumber !== undefined && { targetPageNumber }),
-    ...(targetVariantName && { targetVariantName }),
-    ...(targetVariants && { targetVariants }),
+    ...targetMetadata,
   };
 }
 
