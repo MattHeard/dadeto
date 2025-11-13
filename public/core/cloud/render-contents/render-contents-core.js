@@ -698,14 +698,6 @@ function extractBearerToken(header) {
  * Create a helper that extracts bearer tokens from requests.
  * @returns {(req: { get?: (name: string) => unknown, headers?: object }) => string} Authorization token extractor.
  */
-export function createAuthorizationExtractor() {
-  return function getAuthorizationToken(req) {
-    const header = resolveAuthorizationHeader(req);
-
-    return extractBearerToken(header);
-  };
-}
-
 /**
  * Create the HTTP handler that protects and executes the render contents workflow.
  * @param {object} root0 Handler dependencies.
@@ -809,7 +801,10 @@ export function buildHandleRenderRequest({
   adminUid,
   render,
 }) {
-  const getAuthorizationToken = createAuthorizationExtractor();
+  const getAuthorizationToken = req => {
+    const header = resolveAuthorizationHeader(req);
+    return extractBearerToken(header);
+  };
 
   return createHandleRenderRequest({
     validateRequest,
