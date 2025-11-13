@@ -349,12 +349,21 @@ function buildVariantAttrs(variants, targetPageNumber) {
 
 /**
  *
+ * @param storyTitle
+ * @param showTitleHeading
+ */
+function shouldRenderTitleHeading(storyTitle, showTitleHeading) {
+  return Boolean(storyTitle && showTitleHeading);
+}
+
+/**
+ *
  * @param {string} storyTitle - Title to display when heading is enabled.
  * @param {boolean} showTitleHeading - Controls whether the heading renders.
  * @returns {string} Heading HTML showing the story title when applicable.
  */
 function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
-  if (!storyTitle || !showTitleHeading) return '';
+  if (!shouldRenderTitleHeading(storyTitle, showTitleHeading)) return '';
   return `<h1>${escapeHtml(storyTitle)}</h1>`;
 }
 
