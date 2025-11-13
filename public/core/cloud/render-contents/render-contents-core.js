@@ -761,11 +761,9 @@ export function createHandleRenderRequest({
   async function executeRenderRequest(req, res) {
     const decoded = await authorizeRequest({ req, res });
 
-    if (!decoded) {
-      return;
+    if (decoded) {
+      await executeRenderRequestAfterGuard(res);
     }
-
-    await executeRenderRequestAfterGuard(res);
   }
 
   /**
