@@ -774,10 +774,8 @@ export function createHandleRenderRequest({
   }
 
   return async function handleRenderRequest(req, res) {
-    if (!validateRequest(req, res)) {
-      return;
+    if (validateRequest(req, res)) {
+      await executeRenderRequest(req, res);
     }
-
-    await executeRenderRequest(req, res);
   };
 }
