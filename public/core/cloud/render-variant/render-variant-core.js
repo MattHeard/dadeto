@@ -866,6 +866,7 @@ export function createInvalidatePaths({
 
   const host = cdnHost || 'www.dendritestories.co.nz';
   const urlMap = urlMapName || 'prod-dendrite-url-map';
+  const resolvedProjectId = projectId ? projectId : '';
 
   /**
    * Retrieve an access token from the metadata server for authenticated requests.
@@ -892,9 +893,7 @@ export function createInvalidatePaths({
     }
 
     const token = await getAccessToken();
-    const url = `https://compute.googleapis.com/compute/v1/projects/${
-      projectId || ''
-    }/global/urlMaps/${urlMap}/invalidateCache`;
+    const url = `https://compute.googleapis.com/compute/v1/projects/${resolvedProjectId}/global/urlMaps/${urlMap}/invalidateCache`;
 
     await Promise.all(
       paths.map(async path => {
