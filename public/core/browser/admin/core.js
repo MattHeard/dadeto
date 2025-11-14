@@ -164,7 +164,7 @@ export async function postTriggerRenderContents(
  * @returns {number | string} Known status code or the string "unknown" when unavailable.
  */
 function resolveTriggerRenderStatus(res) {
-  const status = res?.status;
+  const status = res.status;
   return status ?? 'unknown';
 }
 
@@ -174,7 +174,7 @@ function resolveTriggerRenderStatus(res) {
  * @returns {string} Known status text or the string "unknown" when unavailable.
  */
 function resolveTriggerRenderStatusText(res) {
-  const statusText = res?.statusText;
+  const statusText = res.statusText;
   if (!statusText) {
     return 'unknown';
   }
@@ -202,7 +202,7 @@ async function readTriggerRenderBody(res) {
  * @returns {(() => Promise<string>) | null} Callable reader or null when absent.
  */
 function getResponseTextReader(res) {
-  const reader = res?.text;
+  const reader = res.text;
   if (typeof reader !== 'function') {
     return null;
   }
