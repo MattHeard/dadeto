@@ -149,13 +149,6 @@ export async function postTriggerRenderContents(
   fetchFn,
   token
 ) {
-  if (typeof getAdminEndpointsFn !== 'function') {
-    throw new TypeError('getAdminEndpointsFn must be a function');
-  }
-  if (typeof fetchFn !== 'function') {
-    throw new TypeError('fetchFn must be a function');
-  }
-
   const { triggerRenderContentsUrl } = await getAdminEndpointsFn();
   return fetchFn(triggerRenderContentsUrl, {
     method: 'POST',
