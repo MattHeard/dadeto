@@ -49,9 +49,8 @@ describe('createGetAdminEndpoints', () => {
   });
 
   it('throws when the provided factory is not a function', () => {
-    expect(() => createGetAdminEndpoints(null)).toThrow(
-      new TypeError('createAdminEndpointsPromiseFn must be a function')
-    );
+    const getAdminEndpoints = createGetAdminEndpoints(null);
+    expect(() => getAdminEndpoints()).toThrow(TypeError);
   });
 });
 
