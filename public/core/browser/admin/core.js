@@ -107,10 +107,6 @@ export function createAdminEndpointsPromise(loadStaticConfigFn) {
  * }>} Function returning a memoized admin endpoints promise.
  */
 export function createGetAdminEndpoints(createAdminEndpointsPromiseFn) {
-  if (typeof createAdminEndpointsPromiseFn !== 'function') {
-    throw new TypeError('createAdminEndpointsPromiseFn must be a function');
-  }
-
   let adminEndpointsPromise;
 
   return function getAdminEndpoints() {
