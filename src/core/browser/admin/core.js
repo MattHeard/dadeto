@@ -56,7 +56,10 @@ export function getDefaultAdminEndpointsCopy() {
  * @returns {string} Resolved endpoint URL.
  */
 function resolveAdminEndpoint(config, key) {
-  return config[key] ?? DEFAULT_ADMIN_ENDPOINTS[key];
+  const endpointSources = [config, DEFAULT_ADMIN_ENDPOINTS];
+  const sourceWithKey = endpointSources.find(source => key in source);
+
+  return sourceWithKey[key];
 }
 
 /**
