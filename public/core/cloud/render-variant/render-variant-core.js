@@ -1152,7 +1152,7 @@ async function resolveAuthorUrl(variant, db, bucket, consoleError) {
  * @returns {{ parentVariantRef: { get: Function, parent?: { parent?: any } }, parentPageRef: { get: Function } } | null} Parent
  * references when the hierarchy can be resolved, otherwise null.
  */
-function resolveParentReferences(optionRef) {
+export function resolveParentReferences(optionRef) {
   if (!optionRef) {
     return null;
   }
@@ -1507,7 +1507,6 @@ export {
   loadOptions,
   resolveStoryMetadata,
   resolveAuthorMetadata,
-  resolveParentReferences,
   fetchParentSnapshots,
   buildParentRoute,
   resolveParentUrl,
