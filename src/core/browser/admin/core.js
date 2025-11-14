@@ -288,14 +288,20 @@ export async function executeTriggerRender({
     );
     await announceTriggerRenderResult(res, showMessage);
   } catch (e) {
-    let message;
-    if (e instanceof Error) {
-      message = e.message;
-    } else {
-      message = String(e);
-    }
-    showMessage(`Render failed: ${message}`);
+    showMessage(`Render failed: ${renderErrorMessage(e)}`);
   }
+}
+
+/**
+ *
+ * @param error
+ */
+function renderErrorMessage(error) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
 }
 
 /**
