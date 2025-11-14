@@ -651,6 +651,30 @@ describe('buildHandleRenderRequest', () => {
     expect(res.send).toHaveBeenCalledWith('Missing token');
   });
 
+  it('treats array headers with missing first entries as missing tokens', async () => {
+    const handler = build();
+    const req = { headers: { Authorization: [undefined, 'Bearer second'] } };
+    const res = makeResponse();
+
+    await handler(req, res);
+
+    expect(verifyIdToken).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('Missing token');
+  });
+
+  it('ignores header values that are neither strings nor arrays', async () => {
+    const handler = build();
+    const req = { headers: { Authorization: { token: 'Bearer missing' } } };
+    const res = makeResponse();
+
+    await handler(req, res);
+
+    expect(verifyIdToken).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('Missing token');
+  });
+
   it('rejects when validateRequest blocks the call', async () => {
     validateRequest.mockReturnValueOnce(false);
     const handler = build();

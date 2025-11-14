@@ -755,10 +755,6 @@ export function buildHandleRenderRequest({
     adminUid,
   });
 
-  if (!authorizeRequest) {
-    throw new TypeError('authorizeRequest creation failed');
-  }
-
   /**
    *
    * @param req

@@ -75,6 +75,62 @@ describe('createInvalidatePaths', () => {
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
+  it('logs raw errors when invalidation rejects without a message', async () => {
+    const rawError = { code: 500 };
+    const consoleError = jest.fn();
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockRejectedValueOnce(rawError);
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+      projectId: 'proj',
+      urlMapName: 'map',
+      cdnHost: 'cdn.example.com',
+      consoleError,
+    });
+
+    await invalidatePaths(['/p/raw.html']);
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /p/raw.html error',
+      rawError
+    );
+  });
+
+  it('uses the empty project path when a falsy projectId is supplied', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({}),
+      });
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+      projectId: '',
+      urlMapName: 'map',
+      cdnHost: 'cdn.example.com',
+    });
+
+    await invalidatePaths(['/p/9a.html']);
+
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(fetchFn.mock.calls[1][0]).toContain(
+      '/projects//global/urlMaps/map/invalidateCache'
+    );
+  });
+
   it('rejects when metadata token endpoint returns a failure', async () => {
     const fetchFn = jest.fn().mockResolvedValueOnce({
       ok: false,
@@ -527,6 +583,22 @@ describe('resolveAuthorMetadata', () => {
     });
 
     expect(consoleError).toHaveBeenCalledWith('author lookup failed', rawError);
+    expect(result.authorUrl).toBeUndefined();
+  });
+
+  it('silently ignores author lookup failures when no logger is provided', async () => {
+    const db = {
+      doc: jest.fn(() => ({
+        get: jest.fn(() => Promise.reject(new Error('offline'))),
+      })),
+    };
+
+    const result = await resolveAuthorMetadata({
+      variant: { authorId: 'author-1', authorName: 'Writer' },
+      db,
+      bucket: { file: jest.fn() },
+    });
+
     expect(result.authorUrl).toBeUndefined();
   });
 });
