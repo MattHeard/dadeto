@@ -280,21 +280,45 @@ export async function executeTriggerRender({
   token,
   showMessage,
 }) {
-  try {
-    const res = await postTriggerRenderContents(
-      getAdminEndpoints,
-      fetchFn,
-      token
-    );
-    await announceTriggerRenderResult(res, showMessage);
-  } catch (e) {
+  return executeTriggerRenderCore({
+    getAdminEndpoints,
+    fetchFn,
+    token,
+    showMessage,
+  }).catch(e => {
     showMessage(`Render failed: ${renderErrorMessage(e)}`);
-  }
+  });
 }
 
 /**
- *
- * @param error
+ * Internal helper that drives the render call and reporting flow.
+ * @param {{
+ *   getAdminEndpoints: () => Promise<{ triggerRenderContentsUrl: string }>,
+ *   fetchFn: FetchFn,
+ *   token: string,
+ *   showMessage: (text: string) => void,
+ * }} params - Dependencies required for executing the render flow.
+ * @returns {Promise<void>} Resolves when reporting the outcome completes.
+ */
+async function executeTriggerRenderCore({
+  getAdminEndpoints,
+  fetchFn,
+  token,
+  showMessage,
+}) {
+  const res = await postTriggerRenderContents(
+    getAdminEndpoints,
+    fetchFn,
+    token
+  );
+
+  await announceTriggerRenderResult(res, showMessage);
+}
+
+/**
+ * Format an error thrown during render execution.
+ * @param {unknown} error - Throwable provided by the failed HTTP call.
+ * @returns {string} Normalized message suitable for displaying to users.
  */
 function renderErrorMessage(error) {
   if (error instanceof Error) {
@@ -371,11 +395,52 @@ function requireDocumentLike(value, name = 'doc') {
  * @returns {boolean} True when the value exposes `getElementById`.
  */
 function isDocumentLike(value) {
-  if (!value) {
-    return false;
-  }
+  return Boolean(value && typeof value.getElementById === 'function');
+}
 
-  return typeof value.getElementById === 'function';
+/**
+ * Determine whether an element can accept DOM event listeners.
+ * @param {EventTarget | null | undefined} element - Candidate element.
+ * @returns {boolean} True when `addEventListener` exists on the element.
+ */
+function canListenToEvent(element) {
+  return Boolean(element && typeof element.addEventListener === 'function');
+}
+
+/**
+ * Check whether the provided auth helper exposes `signOut`.
+ * @param {{ signOut?: () => Promise<void> | void } | null | undefined} googleAuth - Auth helper candidate.
+ * @returns {boolean} True when a `signOut` method exists.
+ */
+function hasSignOutMethod(googleAuth) {
+  return Boolean(googleAuth && typeof googleAuth.signOut === 'function');
+}
+
+/**
+ * Verify the document exposes `querySelectorAll`.
+ * @param {{ querySelectorAll?: (selector: string) => NodeList } | null | undefined} doc - Candidate document object.
+ * @returns {boolean} True when `querySelectorAll` is callable.
+ */
+function hasQuerySelectorAll(doc) {
+  return Boolean(doc && typeof doc.querySelectorAll === 'function');
+}
+
+/**
+ * Determine whether a value behaves like a plain object.
+ * @param {*} value - Candidate value.
+ * @returns {boolean} True when the value is a non-null object.
+ */
+function isObject(value) {
+  return Boolean(value && typeof value === 'object');
+}
+
+/**
+ * Confirm the storage helper exposes `setItem`.
+ * @param {{ setItem?: (key: string, value: string) => void } | null | undefined} storage - Storage helper.
+ * @returns {boolean} True when a `setItem` function exists.
+ */
+function hasStorageSetItem(storage) {
+  return Boolean(storage && typeof storage.setItem === 'function');
 }
 
 /**
@@ -418,7 +483,7 @@ function createElementEventBinder(eventType) {
    */
   return function bindElementEvent(doc, elementId, listener) {
     const element = doc.getElementById(elementId);
-    if (!element || typeof element.addEventListener !== 'function') {
+    if (!canListenToEvent(element)) {
       return null;
     }
 
@@ -493,7 +558,7 @@ export function createWireSignOut(doc, googleAuth) {
  * @returns {void}
  */
 function ensureSignOutAuth(googleAuth) {
-  if (!googleAuth || typeof googleAuth.signOut !== 'function') {
+  if (!hasSignOutMethod(googleAuth)) {
     throw new TypeError('googleAuth must provide a signOut function');
   }
 }
@@ -504,7 +569,7 @@ function ensureSignOutAuth(googleAuth) {
  * @returns {void}
  */
 function ensureSignOutDoc(doc) {
-  if (!doc || typeof doc.querySelectorAll !== 'function') {
+  if (!hasQuerySelectorAll(doc)) {
     throw new TypeError('doc must be a Document-like object');
   }
 }
@@ -516,7 +581,7 @@ function ensureSignOutDoc(doc) {
  * @returns {void}
  */
 function attachSignOutLink(link, googleAuth) {
-  if (!link?.addEventListener) {
+  if (!canListenToEvent(link)) {
     return;
   }
 
@@ -566,7 +631,7 @@ function assertFunction(value, message) {
  * @returns {void}
  */
 function ensureObject(value, message) {
-  if (!value || typeof value !== 'object') {
+  if (!isObject(value)) {
     throw new TypeError(message);
   }
 }
@@ -577,7 +642,7 @@ function ensureObject(value, message) {
  * @returns {void}
  */
 function ensureStorage(storage) {
-  if (!storage || typeof storage.setItem !== 'function') {
+  if (!hasStorageSetItem(storage)) {
     throw new TypeError('storage must provide a setItem function');
   }
 }
