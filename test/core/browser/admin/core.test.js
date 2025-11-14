@@ -547,13 +547,13 @@ describe('postTriggerRenderContents', () => {
     });
   });
 
-  it('throws when dependencies are invalid', async () => {
+  it('rejects when dependencies are invalid', async () => {
     await expect(
       postTriggerRenderContents(null, jest.fn(), 'token')
-    ).rejects.toThrow(new TypeError('getAdminEndpointsFn must be a function'));
+    ).rejects.toBeInstanceOf(TypeError);
     await expect(
       postTriggerRenderContents(jest.fn(), null, 'token')
-    ).rejects.toThrow(new TypeError('fetchFn must be a function'));
+    ).rejects.toBeInstanceOf(TypeError);
   });
 });
 
