@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import * as RenderVariantCore from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 import {
   createInvalidatePaths,
   buildOptionMetadata,
@@ -1760,6 +1761,95 @@ describe('createRenderVariant', () => {
       'parent lookup failed',
       'missing parent'
     );
+  });
+
+  it('resolves parent references with null when the option ref is unavailable', async () => {
+    const consoleError = jest.fn();
+
+    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
+    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
+
+    const bucket = {
+      file: jest.fn(path => {
+        if (path === 'p/5a.html') return variantFile;
+        if (path === 'p/5-alts.html') return altsFile;
+        if (path === 'pending/story-5.json') return pendingFile;
+        return {
+          save: jest.fn().mockResolvedValue(undefined),
+          exists: jest.fn().mockResolvedValue([true]),
+        };
+      }),
+    };
+
+    const storage = { bucket: jest.fn(() => bucket) };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+    const randomUUID = jest.fn(() => 'uuid');
+
+    const pageSnap = {
+      exists: true,
+      data: () => ({ number: 5 }),
+      ref: null,
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue(pageSnap),
+      parent: {
+        parent: {
+          get: jest.fn().mockResolvedValue({
+            exists: true,
+            data: () => ({ number: 10 }),
+          }),
+        },
+      },
+    };
+    pageSnap.ref = pageRef;
+
+    const variantsCollection = {
+      parent: pageRef,
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const optionsCollection = {
+      get: jest.fn().mockResolvedValue({ docs: [] }),
+    };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'options/missing') {
+          return null;
+        }
+        return { get: jest.fn().mockResolvedValue({ docs: [] }) };
+      }),
+    };
+
+    const snap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Body',
+        incomingOption: 'options/missing',
+      }),
+      ref: {
+        parent: variantsCollection,
+        collection: jest.fn(() => optionsCollection),
+      },
+    };
+
+    const renderVariant = createRenderVariant({
+      db,
+      storage,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
+
+    await renderVariant(snap, { params: { storyId: 'story-5' } });
   });
 
   it('omits parent invalidation when parent snapshots are missing', async () => {
