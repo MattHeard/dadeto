@@ -261,7 +261,7 @@ async function reportTriggerRenderFailure(res, showMessage) {
  * @returns {Promise<void>} Resolves after the trigger render result has been surfaced.
  */
 export async function announceTriggerRenderResult(res, showMessage) {
-  if (res && res.ok) {
+  if (res.ok) {
     showMessage('Render triggered');
     return;
   }
@@ -275,14 +275,14 @@ export async function announceTriggerRenderResult(res, showMessage) {
  * @returns {Promise<void>} Resolves after the trigger render flow finishes reporting.
  */
 export async function executeTriggerRender({
-  getAdminEndpoints: getAdminEndpointsFn,
+  getAdminEndpoints,
   fetchFn,
   token,
   showMessage,
 }) {
   try {
     const res = await postTriggerRenderContents(
-      getAdminEndpointsFn,
+      getAdminEndpoints,
       fetchFn,
       token
     );
