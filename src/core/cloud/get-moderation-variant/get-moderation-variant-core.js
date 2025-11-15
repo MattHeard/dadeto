@@ -187,28 +187,11 @@ async function fetchVariantSnapshot(db, uid) {
  */
 async function fetchStoryTitle(variantRef) {
   const pageRef = variantRef.parent.parent;
-  let pageSnap = null;
-  if (pageRef) {
-    pageSnap = await pageRef.get();
-  }
-
-  if (!pageSnap?.exists) {
-    return '';
-  }
-
-  const storyRef = pageSnap.ref.parent?.parent;
-  let storySnap = null;
-  if (storyRef) {
-    storySnap = await storyRef.get();
-  }
-
-  if (!storySnap?.exists) {
-    return '';
-  }
-
+  const storyRef = pageRef.parent.parent;
+  const storySnap = await storyRef.get();
   const storyData = storySnap.data();
 
-  return normalizeString(storyData?.title);
+  return normalizeString(storyData.title);
 }
 /**
  * Maps a Firestore option document into a serializable payload.

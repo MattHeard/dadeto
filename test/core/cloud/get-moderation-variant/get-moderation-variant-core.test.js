@@ -346,105 +346,6 @@ describe('createGetModerationVariantResponder', () => {
     expect(db.collection).not.toHaveBeenCalled();
   });
 
-  it('returns an empty title when the variant lacks a page reference', async () => {
-    const variantSnap = {
-      exists: true,
-      data: () => ({ content: 'Narrative', author: 'Author' }),
-    };
-    const variantRef = {
-      async get() {
-        return variantSnap;
-      },
-      collection() {
-        return {
-          async get() {
-            return { docs: [] };
-          },
-        };
-      },
-      parent: {},
-    };
-    const moderatorSnap = {
-      exists: true,
-      data: () => ({ variant: variantRef }),
-    };
-    const db = createDb(moderatorSnap);
-    const auth = {
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
-    };
-    const responder = createGetModerationVariantResponder({ db, auth });
-
-    await expect(
-      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
-    ).resolves.toEqual({
-      status: 200,
-      body: {
-        title: '',
-        content: 'Narrative',
-        author: 'Author',
-        options: [],
-      },
-    });
-  });
-
-  it('returns an empty title when the story hierarchy is incomplete', async () => {
-    const optionDocs = [
-      { data: () => undefined },
-      { data: () => ({ content: 'Second option', targetPageNumber: 3 }) },
-    ];
-    const variantSnap = {
-      exists: true,
-      data: () => undefined,
-    };
-    const variantRef = {
-      async get() {
-        return variantSnap;
-      },
-      collection(name) {
-        expect(name).toBe('options');
-        return {
-          async get() {
-            return { docs: optionDocs };
-          },
-        };
-      },
-      parent: {
-        parent: {
-          async get() {
-            return {
-              exists: true,
-              ref: { parent: {} },
-            };
-          },
-        },
-      },
-    };
-    const moderatorSnap = {
-      exists: true,
-      data: () => ({ variant: variantRef }),
-    };
-    const db = createDb(moderatorSnap);
-    const auth = {
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
-    };
-    const responder = createGetModerationVariantResponder({ db, auth });
-
-    await expect(
-      responder(createRequestWithGet(`Bearer ${token}`))
-    ).resolves.toEqual({
-      status: 200,
-      body: {
-        title: '',
-        content: '',
-        author: '',
-        options: [
-          { content: '' },
-          { content: 'Second option', targetPageNumber: 3 },
-        ],
-      },
-    });
-  });
-
   it('returns the normalized story when all Firestore documents exist', async () => {
     const storySnap = {
       exists: true,
@@ -455,9 +356,10 @@ describe('createGetModerationVariantResponder', () => {
         return storySnap;
       },
     };
-    const pageSnap = {
-      exists: true,
-      ref: { parent: { parent: storyRef } },
+    const pageRef = {
+      parent: {
+        parent: storyRef,
+      },
     };
     const variantSnap = {
       exists: true,
@@ -483,11 +385,7 @@ describe('createGetModerationVariantResponder', () => {
         };
       },
       parent: {
-        parent: {
-          async get() {
-            return { ...pageSnap };
-          },
-        },
+        parent: pageRef,
       },
     };
     const moderatorSnap = {
@@ -512,109 +410,6 @@ describe('createGetModerationVariantResponder', () => {
           { content: 'With target', targetPageNumber: 7 },
           { content: 'Without target' },
         ],
-      },
-    });
-  });
-
-  it('returns an empty title when the page snapshot is missing', async () => {
-    const variantSnap = {
-      exists: true,
-      data: () => ({ content: 'Narrative', author: 'Author' }),
-    };
-    const variantRef = {
-      async get() {
-        return variantSnap;
-      },
-      collection() {
-        return {
-          async get() {
-            return { docs: [] };
-          },
-        };
-      },
-      parent: {
-        parent: {
-          async get() {
-            return { exists: false };
-          },
-        },
-      },
-    };
-    const moderatorSnap = {
-      exists: true,
-      data: () => ({ variant: variantRef }),
-    };
-    const db = createDb(moderatorSnap);
-    const auth = {
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
-    };
-    const responder = createGetModerationVariantResponder({ db, auth });
-
-    await expect(
-      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
-    ).resolves.toEqual({
-      status: 200,
-      body: {
-        title: '',
-        content: 'Narrative',
-        author: 'Author',
-        options: [],
-      },
-    });
-  });
-
-  it('returns an empty title when the story snapshot is missing', async () => {
-    const storyRef = {
-      async get() {
-        return { exists: false };
-      },
-    };
-    const pageSnap = {
-      exists: true,
-      ref: { parent: { parent: storyRef } },
-    };
-    const variantSnap = {
-      exists: true,
-      data: () => ({ content: 'Narrative', author: 'Author' }),
-    };
-    const variantRef = {
-      async get() {
-        return variantSnap;
-      },
-      collection() {
-        return {
-          async get() {
-            return { docs: [] };
-          },
-        };
-      },
-      parent: {
-        parent: {
-          async get() {
-            return pageSnap;
-          },
-        },
-      },
-    };
-    const moderatorSnap = {
-      exists: true,
-      data: () => ({ variant: variantRef }),
-    };
-    const db = createDb(moderatorSnap);
-    const auth = {
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
-    };
-    const responder = createGetModerationVariantResponder({ db, auth });
-
-    await expect(
-      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
-    ).resolves.toEqual({
-      status: 200,
-      body: {
-        title: '',
-        content: 'Narrative',
-        author: 'Author',
-        options: [],
       },
     });
   });
