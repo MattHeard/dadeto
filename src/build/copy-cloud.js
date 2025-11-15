@@ -1078,7 +1078,7 @@ await Promise.all([
   ),
   rewriteImport(
     generateStatsVerifyAdminFile,
-    '../mark-variant-dirty/verifyAdmin.js',
+    '../mark-variant-dirty/mark-variant-dirty-core.js',
     './mark-variant-dirty-verifyAdmin.js'
   ),
 ]);
