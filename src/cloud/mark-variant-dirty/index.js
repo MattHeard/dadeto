@@ -13,22 +13,20 @@ import {
   createHandleCorsOrigin,
   createHandleRequest,
   createIsAdminUid,
-  createVerifyAdmin,
   createCorsOptions,
   findPageRef,
   findPagesSnap,
   findVariantsSnap,
   findVariantRef,
   getAllowedOrigins,
-  getAuthHeader,
   isAllowedOrigin,
   markVariantDirtyImpl,
-  matchAuthHeader,
   parseMarkVariantRequestBody,
   refFromSnap,
   sendForbidden,
   sendUnauthorized,
 } from './mark-variant-dirty-core.js';
+import { createVerifyAdmin } from './cloud-core.js';
 
 const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 
@@ -61,8 +59,6 @@ const markVariantDirtyAction = (pageNumber, variantName) =>
   });
 
 const verifyAdmin = createVerifyAdmin({
-  getAuthHeader,
-  matchAuthHeader,
   verifyToken: token => auth.verifyIdToken(token),
   isAdminUid: createIsAdminUid(ADMIN_UID),
   sendUnauthorized,

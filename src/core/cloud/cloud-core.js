@@ -58,3 +58,96 @@ export const productionOrigins = [
   'https://dendritestories.co.nz',
   'https://www.dendritestories.co.nz',
 ];
+
+/**
+ * Extract the Authorization header from a request.
+ * @param {import('express').Request} req Incoming HTTP request.
+ * @returns {string} Authorization header or an empty string.
+ */
+export function getAuthHeader(req) {
+  return req?.get?.('Authorization') || '';
+}
+
+/**
+ * Parse a bearer token from an Authorization header.
+ * @param {string} authHeader Authorization header string.
+ * @returns {string[] | null} Matches capturing the bearer token.
+ */
+export function matchAuthHeader(authHeader) {
+  return authHeader.match(/^Bearer (.+)$/);
+}
+
+const defaultMissingTokenMessage = 'Missing token';
+
+/**
+ * Build a human-friendly invalid token message.
+ * @param {unknown} error Validation error.
+ * @returns {string} Message sent to clients when token validation fails.
+ */
+function defaultInvalidTokenMessage(error) {
+  const candidate = error?.message;
+  return ['Invalid token', candidate][Number(typeof candidate === 'string')];
+}
+
+/**
+ * Create a reusable admin guard.
+ * @param {object} deps Authorization collaborators.
+ * @param {(req: import('express').Request) => string} [deps.getAuthHeader] Header extractor.
+ * @param {(authHeader: string) => string[] | null} [deps.matchAuthHeader] Bearer parser.
+ * @param {(token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>} deps.verifyToken Token validator.
+ * @param {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} deps.isAdminUid Admin UID checker.
+ * @param {(res: import('express').Response, message: string) => void} deps.sendUnauthorized Sends 401 responses.
+ * @param {(res: import('express').Response) => void} deps.sendForbidden Sends 403 responses.
+ * @param {string} [deps.missingTokenMessage] Message when the Authorization header is missing.
+ * @param {(error: unknown) => string} [deps.getInvalidTokenMessage] Custom invalid token message.
+ * @returns {(req: import('express').Request, res: import('express').Response) => Promise<boolean>}
+ */
+export function createVerifyAdmin({
+  getAuthHeader: resolveAuthHeader = getAuthHeader,
+  matchAuthHeader: resolveToken = matchAuthHeader,
+  verifyToken,
+  isAdminUid,
+  sendUnauthorized,
+  sendForbidden,
+  missingTokenMessage = defaultMissingTokenMessage,
+  getInvalidTokenMessage = defaultInvalidTokenMessage,
+} = {}) {
+  if (typeof verifyToken !== 'function') {
+    throw new TypeError('verifyToken must be provided');
+  }
+  if (typeof isAdminUid !== 'function') {
+    throw new TypeError('isAdminUid must be provided');
+  }
+  if (typeof sendUnauthorized !== 'function') {
+    throw new TypeError('sendUnauthorized must be provided');
+  }
+  if (typeof sendForbidden !== 'function') {
+    throw new TypeError('sendForbidden must be provided');
+  }
+
+  return async function verifyAdmin(req, res) {
+    const authHeader = resolveAuthHeader(req);
+    const match = resolveToken(authHeader);
+    const token = match?.[1] || '';
+    if (!token) {
+      sendUnauthorized(res, missingTokenMessage);
+      return false;
+    }
+
+    try {
+      const decoded = await verifyToken(token);
+      const isAdmin = Boolean(isAdminUid(decoded));
+      if (!isAdmin) {
+        sendForbidden(res);
+        return false;
+      }
+    } catch (error) {
+      const message =
+        getInvalidTokenMessage(error) || defaultInvalidTokenMessage(error);
+      sendUnauthorized(res, message);
+      return false;
+    }
+
+    return true;
+  };
+}

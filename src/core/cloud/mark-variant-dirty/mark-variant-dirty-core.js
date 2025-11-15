@@ -1,4 +1,4 @@
-import { productionOrigins } from './cloud-core.js';
+import { productionOrigins } from '../cloud-core.js';
 
 const POST_METHOD = 'POST';
 
@@ -25,6 +25,7 @@ export function getAllowedOrigins(environmentVariables) {
   return productionOrigins;
 }
 
+export { getAuthHeader, matchAuthHeader } from '../cloud-core.js';
 /**
  * Determine whether an origin is permitted.
  * @param {string | null | undefined} origin Request origin header.
@@ -225,19 +226,6 @@ export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
  * @param {import('express').Request} req HTTP request.
  * @returns {string} Authorization header or empty string.
  */
-export function getAuthHeader(req) {
-  return req?.get?.('Authorization') || '';
-}
-
-/**
- * Match a bearer token from an Authorization header.
- * @param {string} authHeader Authorization header.
- * @returns {string[] | null} Match result capturing the bearer token components.
- */
-export function matchAuthHeader(authHeader) {
-  return authHeader.match(/^Bearer (.+)$/);
-}
-
 /**
  * Send a 401 response with a message.
  * @param {import('express').Response} res HTTP response.
@@ -258,80 +246,6 @@ export function sendForbidden(res) {
 }
 
 const defaultMissingTokenMessage = 'Missing token';
-const defaultGetAuthHeader = getAuthHeader;
-const defaultMatchAuthHeader = matchAuthHeader;
-
-/**
- *
- * @param error
- */
-function defaultInvalidTokenMessage(error) {
-  const candidate = error?.message;
-  return ['Invalid token', candidate][Number(typeof candidate === 'string')];
-}
-
-/**
- * Create an admin verification helper.
- * @param {object} deps Authorization dependencies.
- * @param {(req: import('express').Request) => string} [deps.getAuthHeader] Extracts the Authorization header.
- * @param {(authHeader: string) => string[] | null} [deps.matchAuthHeader] Parses a bearer token.
- * @param {(token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>} deps.verifyToken Token verifier.
- * @param {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} deps.isAdminUid Admin UID checker.
- * @param {(res: import('express').Response, message: string) => void} deps.sendUnauthorized Sends a 401.
- * @param {(res: import('express').Response) => void} deps.sendForbidden Sends a 403.
- * @param {string} [deps.missingTokenMessage] Message for absent header.
- * @param {(error: unknown) => string} [deps.getInvalidTokenMessage] Message for invalid token errors.
- * @returns {(req: import('express').Request, res: import('express').Response) => Promise<boolean>}
- */
-export function createVerifyAdmin({
-  getAuthHeader = defaultGetAuthHeader,
-  matchAuthHeader = defaultMatchAuthHeader,
-  verifyToken,
-  isAdminUid,
-  sendUnauthorized,
-  sendForbidden,
-  missingTokenMessage = defaultMissingTokenMessage,
-  getInvalidTokenMessage = defaultInvalidTokenMessage,
-} = {}) {
-  if (typeof verifyToken !== 'function') {
-    throw new TypeError('verifyToken must be provided');
-  }
-  if (typeof isAdminUid !== 'function') {
-    throw new TypeError('isAdminUid must be provided');
-  }
-  if (typeof sendUnauthorized !== 'function') {
-    throw new TypeError('sendUnauthorized must be provided');
-  }
-  if (typeof sendForbidden !== 'function') {
-    throw new TypeError('sendForbidden must be provided');
-  }
-
-  return async function verifyAdmin(req, res) {
-    const authHeader = getAuthHeader(req);
-    const match = matchAuthHeader(authHeader);
-    const token = match?.[1] || '';
-    if (!token) {
-      sendUnauthorized(res, missingTokenMessage);
-      return false;
-    }
-
-    try {
-      const decoded = await verifyToken(token);
-      const isAdmin = Boolean(isAdminUid(decoded));
-      if (!isAdmin) {
-        sendForbidden(res);
-        return false;
-      }
-    } catch (error) {
-      const message =
-        getInvalidTokenMessage(error) || defaultInvalidTokenMessage(error);
-      sendUnauthorized(res, message);
-      return false;
-    }
-
-    return true;
-  };
-}
 
 /**
  * Ensure the incoming request uses the allowed HTTP method.
