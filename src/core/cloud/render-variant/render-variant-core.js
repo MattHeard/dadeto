@@ -348,9 +348,10 @@ function buildVariantAttrs(variants, targetPageNumber) {
 }
 
 /**
- *
- * @param storyTitle
- * @param showTitleHeading
+ * Determine whether the story title heading should render.
+ * @param {string} storyTitle - Candidate title text for the heading.
+ * @param {boolean} showTitleHeading - Flag that toggles heading rendering.
+ * @returns {boolean} True when both the title and the toggle are present.
  */
 function shouldRenderTitleHeading(storyTitle, showTitleHeading) {
   return Boolean(storyTitle && showTitleHeading);
@@ -368,74 +369,72 @@ function buildTitleHeadingHtml(storyTitle, showTitleHeading) {
 }
 
 /**
- *
- * @param root0
- * @param root0.storyTitle
+ * Build the head title via the resolved parameters object.
+ * @param {{ storyTitle?: string }} root0 - Normalized build properties.
+ * @returns {string} Document title for the `<head>` element.
  */
 function buildHeadTitleFromParams({ storyTitle }) {
   return buildHeadTitle(storyTitle);
 }
 
 /**
- *
- * @param root0
- * @param root0.author
- * @param root0.authorUrl
+ * Build the author section HTML from normalized inputs.
+ * @param {{ author?: string, authorUrl?: string }} root0 - Normalized author metadata.
+ * @returns {string} Author HTML snippet or an empty string.
  */
 function buildAuthorHtmlFromParams({ author, authorUrl }) {
   return buildAuthorHtml(author, authorUrl);
 }
 
 /**
- *
- * @param root0
- * @param root0.parentUrl
+ * Render the parent link markup from the normalized parameters.
+ * @param {{ parentUrl?: string }} root0 - Parent link metadata.
+ * @returns {string} Link paragraph HTML or an empty string.
  */
 function buildParentLink({ parentUrl }) {
   return buildLinkParagraph(parentUrl, 'Back');
 }
 
 /**
- *
- * @param root0
- * @param root0.firstPageUrl
+ * Render the first-page link from the normalized parameters.
+ * @param {{ firstPageUrl?: string }} root0 - Data used to build the link.
+ * @returns {string} Link paragraph HTML or an empty string.
  */
 function buildFirstPageLink({ firstPageUrl }) {
   return buildLinkParagraph(firstPageUrl, 'First page');
 }
 
 /**
- *
- * @param root0
- * @param root0.pageNumber
+ * Build the rewrite helper link from normalized parameters.
+ * @param {{ pageNumber: number }} root0 - Parameters describing the current page.
+ * @returns {string} Rewrite link HTML.
  */
 function buildRewriteLinkFromParams({ pageNumber }) {
   return buildRewriteLink(pageNumber);
 }
 
 /**
- *
- * @param root0
- * @param root0.pageNumber
- * @param root0.variantName
+ * Build the report HTML snippet using normalized parameters.
+ * @param {{ pageNumber: number, variantName: string }} root0 - Parameters for the current variant.
+ * @returns {string} Report link HTML.
  */
 function buildReportHtmlFromParams({ pageNumber, variantName }) {
   return buildReportHtml(pageNumber, variantName);
 }
 
 /**
- *
- * @param root0
- * @param root0.pageNumber
+ * Build pagination controls from normalized parameters.
+ * @param {{ pageNumber: number }} root0 - Parameters describing the current page.
+ * @returns {string} Pagination control HTML.
  */
 function buildPageNumberHtmlFromParams({ pageNumber }) {
   return buildPageNumberHtml(pageNumber);
 }
 
 /**
- *
- * @param root0
- * @param root0.content
+ * Render paragraph markup from normalized parameters.
+ * @param {{ content: string }} root0 - Variant content to render.
+ * @returns {string} Inline paragraph HTML.
  */
 function buildParagraphsFromParams({ content }) {
   return buildParagraphsHtml(content);
@@ -542,8 +541,9 @@ function buildParagraphsHtml(content) {
 }
 
 /**
- *
- * @param headTitle
+ * Build the `<head>` element for the variant HTML.
+ * @param {string} headTitle - Text to place inside the `<title>` tag.
+ * @returns {string} `<head>` markup for the HTML document.
  */
 function buildHeadElement(headTitle) {
   return `  <head>
@@ -560,8 +560,9 @@ function buildHeadElement(headTitle) {
 }
 
 /**
- *
- * @param mainContent
+ * Build the `<body>` section including header, menu, and scripts.
+ * @param {string} mainContent - Rendered `<main>` block for the variant.
+ * @returns {string} Complete `<body>` markup.
  */
 function buildBodyElement(mainContent) {
   return `  <body>
@@ -597,8 +598,17 @@ function buildMainContent(resolvedParams) {
  * @param {unknown} buildHtmlInput - Argument passed in by the caller.
  * @returns {boolean} True when the input looks like the object signature.
  */
+const BUILD_HTML_BASE_DEFAULTS = {
+  storyTitle: '',
+  author: '',
+  authorUrl: '',
+  parentUrl: '',
+  firstPageUrl: '',
+  showTitleHeading: true,
+};
+
 /**
- *
+ * Render a variant page given normalized build input.
  * @param {{
  *   pageNumber: number,
  *   variantName: string,
@@ -611,20 +621,7 @@ function buildMainContent(resolvedParams) {
  *   firstPageUrl?: string,
  *   showTitleHeading?: boolean,
  * }} buildHtmlInput - Rendering parameters provided either positionally or via an object.
- * @returns {string} Rendered variant page.
- */
-const BUILD_HTML_BASE_DEFAULTS = {
-  storyTitle: '',
-  author: '',
-  authorUrl: '',
-  parentUrl: '',
-  firstPageUrl: '',
-  showTitleHeading: true,
-};
-
-/**
- *
- * @param buildHtmlInput
+ * @returns {string} Rendered HTML for the variant page.
  */
 export function buildHtml(buildHtmlInput) {
   const resolvedParams = { ...BUILD_HTML_BASE_DEFAULTS, ...buildHtmlInput };
@@ -639,18 +636,6 @@ ${bodyElement}
 </html>`;
 }
 
-/**
- *
- * @param buildHtmlInput
- * @param baseDefaults
- * @param positionalArgs
- */
-/**
- * Normalize the arguments provided to `buildHtml` regardless of its overload.
- * @param {unknown} buildHtmlInput - First argument, possibly the object form.
- * @param {IArguments} posArgs - The entire arguments list provided to `buildHtml`.
- * @returns {{ pageNumber: number, variantName: string, content: string, options: unknown, storyTitle: string, author: string, authorUrl: string, parentUrl: string, firstPageUrl: string, showTitleHeading: boolean }}
- */
 /**
  *
  * @param {number} pageNumber - Page number used to build each link.
@@ -955,7 +940,7 @@ async function buildOptionMetadata({
  * @param {Record<string, any>} data Raw option document data.
  * @param {number} visibilityThreshold Minimum visibility required for variants.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for errors.
- * @returns {Promise<{targetPageNumber?: number, targetVariantName?: string, targetVariants?: {name: string, weight: number}[]}>}
+ * @returns {Promise<{targetPageNumber?: number, targetVariantName?: string, targetVariants?: {name: string, weight: number}[]}>} Target metadata derived from the option.
  */
 async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
   let targetPageNumber;
@@ -1069,26 +1054,23 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
 }
 
 /**
- * Resolve author metadata for the rendered variant, creating landing pages if needed.
- * @param {object} options - Inputs for author lookup.
- * @param {Record<string, any>} options.variant - Variant data being rendered.
- * @param {{doc: Function}} options.db - Firestore-like database used to load author documents.
- * @param {{file: (path: string) => { save: Function, exists: () => Promise<[boolean]> }}} options.bucket - Bucket handle used to read/write author HTML.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
- * @param variant
- * @returns {Promise<{authorName: string, authorUrl: string | undefined}>} Author metadata for templates.
+ * Derive the author name to display when rendering a variant.
+ * @param {Record<string, any>} variant - Variant metadata provided by Firestore.
+ * @returns {string} Author name or fallback identifier.
  */
 function deriveAuthorName(variant) {
   return variant.authorName || variant.author || '';
 }
 
 /**
- *
- * @param root0
- * @param root0.variant
- * @param root0.db
- * @param root0.bucket
- * @param root0.consoleError
+ * Resolve author metadata for the rendered variant, creating landing pages if needed.
+ * @param {{
+ *   variant: Record<string, any>,
+ *   db: { doc: Function },
+ *   bucket: { file: (path: string) => { save: Function, exists: () => Promise<[boolean]> } },
+ *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
+ * }} root0 - Inputs for author lookup.
+ * @returns {Promise<{authorName: string, authorUrl: string | undefined}>} Author metadata for templates.
  */
 async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
   const authorName = deriveAuthorName(variant);
@@ -1097,11 +1079,12 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
 }
 
 /**
- *
- * @param variant
- * @param db
- * @param bucket
- * @param consoleError
+ * Ensure an author landing page exists and return its public URL.
+ * @param {Record<string, any>} variant - Variant metadata provided by Firestore.
+ * @param {{ doc: Function }} db - Firestore-like database for loading author documents.
+ * @param {{ file: (path: string) => { save: Function, exists: () => Promise<[boolean]> } }} bucket - Storage bucket to persist author HTML.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] - Optional logger for recoverable failures.
+ * @returns {Promise<string | undefined>} URL of the author page, if one exists.
  */
 async function resolveAuthorUrl(variant, db, bucket, consoleError) {
   if (!variant.authorId) {

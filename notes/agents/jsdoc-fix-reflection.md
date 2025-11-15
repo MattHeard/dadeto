@@ -1,0 +1,5 @@
+## JSdoc cleanup reflections
+- **Unexpected hurdle:** The lint run produced a flood of `jsdoc/*` warnings in `src/core/cloud/render-variant` stemming from placeholder comments that had no type/description and even duplicated `@param` lines, so filtering just the warning summary with `rg` was necessary before editing.
+- **What I tried:** Created a small parser to tally warnings by rule, then rewrote each helper's comment to declare typed parameters (and returns) consistently, moved the `buildHtml` doc beside the function, and removed stray doc blocks that had no matching code.
+- **What I learned:** When destructuring dependencies, document the wrapper object rather than reinventing repeated `root0.xxx` docs, and keep `@returns` descriptions paired with their types so the rule stays happy in future changes.
+- **Open questions/follow-ups:** It may help to introduce shared typedefs for the normalized variant parameters to keep these comments concise and avoid reintroducing `jsdoc` noise; check whether other files follow the same pattern and might need similar attention next time.
