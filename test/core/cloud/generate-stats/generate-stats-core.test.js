@@ -60,13 +60,6 @@ describe('createGenerateStatsCore', () => {
       sendForbidden: response => {
         response.status(403).send('Forbidden');
       },
-      getAuthHeader: req => {
-        const header = req.get('Authorization');
-        if (typeof header === 'string') {
-          return header;
-        }
-        return '';
-      },
       matchAuthHeader: authHeader => {
         return authHeader.match(/^Bearer (.+)$/);
       },
