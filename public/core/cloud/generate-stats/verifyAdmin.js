@@ -1,1 +1,1 @@
-export { createVerifyAdmin } from '../mark-variant-dirty/verifyAdmin.js';
+export { createVerifyAdmin } from '../mark-variant-dirty/mark-variant-dirty-core.js';
