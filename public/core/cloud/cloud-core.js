@@ -98,7 +98,7 @@ function defaultInvalidTokenMessage(error) {
  * @param {(res: import('express').Response) => void} deps.sendForbidden Sends 403 responses.
  * @param {string} [deps.missingTokenMessage] Message when the Authorization header is missing.
  * @param {(error: unknown) => string} [deps.getInvalidTokenMessage] Custom invalid token message.
- * @returns {(req: import('express').Request, res: import('express').Response) => Promise<boolean>}
+ * @returns {(req: import('express').Request, res: import('express').Response) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
  */
 export function createVerifyAdmin({
   verifyToken,
