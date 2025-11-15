@@ -186,7 +186,7 @@ async function fetchVariantSnapshot(db, uid) {
  * @returns {Promise<string>} Story title string.
  */
 async function fetchStoryTitle(variantRef) {
-  const pageRef = variantRef.parent?.parent;
+  const pageRef = variantRef.parent.parent;
   let pageSnap = null;
   if (pageRef) {
     pageSnap = await pageRef.get();
