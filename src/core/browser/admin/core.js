@@ -804,7 +804,10 @@ function resolveGoogleAccounts(googleAccountsId) {
  * @returns {{ error?: (message: string) => void }} Logger that safely exposes `error`.
  */
 function resolveLogger(logger) {
-  return hasLoggerError(logger) ? logger : console;
+  if (hasLoggerError(logger)) {
+    return logger;
+  }
+  return console;
 }
 
 /**

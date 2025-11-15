@@ -851,7 +851,7 @@ export function createInvalidatePaths({
 
   const host = cdnHost || 'www.dendritestories.co.nz';
   const urlMap = urlMapName || 'prod-dendrite-url-map';
-  const resolvedProjectId = projectId ? projectId : '';
+  const resolvedProjectId = projectId || '';
 
   /**
    * Retrieve an access token from the metadata server for authenticated requests.
@@ -1074,19 +1074,26 @@ function deriveAuthorName(variant) {
  */
 async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
   const authorName = deriveAuthorName(variant);
-  const authorUrl = await resolveAuthorUrl(variant, db, bucket, consoleError);
+  const authorUrl = await resolveAuthorUrl({
+    variant,
+    db,
+    bucket,
+    consoleError,
+  });
   return { authorName, authorUrl };
 }
 
 /**
  * Ensure an author landing page exists and return its public URL.
- * @param {Record<string, any>} variant - Variant metadata provided by Firestore.
- * @param {{ doc: Function }} db - Firestore-like database for loading author documents.
- * @param {{ file: (path: string) => { save: Function, exists: () => Promise<[boolean]> } }} bucket - Storage bucket to persist author HTML.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] - Optional logger for recoverable failures.
+ * @param {{
+ *   variant: Record<string, any>,
+ *   db: { doc: Function },
+ *   bucket: { file: (path: string) => { save: Function, exists: () => Promise<[boolean]> } },
+ *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
+ * }} root0 - Inputs for creating or reusing an author page.
  * @returns {Promise<string | undefined>} URL of the author page, if one exists.
  */
-async function resolveAuthorUrl(variant, db, bucket, consoleError) {
+async function resolveAuthorUrl({ variant, db, bucket, consoleError }) {
   if (!variant.authorId) {
     return undefined;
   }
