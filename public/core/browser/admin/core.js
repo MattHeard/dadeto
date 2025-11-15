@@ -702,36 +702,88 @@ function validateGoogleSignInDeps({
  * }} Normalized dependencies with required helpers.
  */
 function normalizeGoogleSignInDeps(deps = {}) {
-  const {
-    googleAccountsId,
-    credentialFactory,
-    signInWithCredential,
-    auth,
-    storage,
-    matchMedia,
-    querySelectorAll,
-    logger = console,
-  } = deps;
+  const normalizedDeps = summarizeGoogleSignInDeps(deps);
 
-  validateGoogleSignInDeps({
-    credentialFactory,
-    signInWithCredential,
-    auth,
-    storage,
-    matchMedia,
-    querySelectorAll,
-  });
+  validateGoogleSignInDeps(normalizedDeps);
 
-  return {
-    resolveGoogleAccountsId: resolveGoogleAccounts(googleAccountsId),
-    credentialFactory,
-    signInWithCredential,
-    auth,
-    storage,
-    matchMedia,
-    querySelectorAll,
-    safeLogger: resolveLogger(logger),
+  return normalizedDeps;
+}
+
+/**
+ * Normalize the raw Google sign-in inputs without validation.
+ * @param {{
+ *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
+ *   credentialFactory?: (credential: string) => unknown,
+ *   signInWithCredential?: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
+ *   auth?: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage?: { setItem?: (key: string, value: string) => void },
+ *   matchMedia?: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
+ *   querySelectorAll?: (selector: string) => NodeList,
+ *   logger?: { error?: (message: string) => void },
+ * } | undefined} deps - Raw dependency bag.
+ * @returns {{
+ *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
+ *   credentialFactory?: (credential: string) => unknown,
+ *   signInWithCredential?: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
+ *   auth?: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage?: { setItem?: (key: string, value: string) => void },
+ *   matchMedia?: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
+ *   querySelectorAll?: (selector: string) => NodeList,
+ *   safeLogger: { error?: (message: string) => void },
+ *   resolveGoogleAccountsId: () => GoogleAccountsClient | undefined,
+ * }} Normalized dependencies with resolver helpers.
+ */
+function summarizeGoogleSignInDeps(deps = {}) {
+  const normalized = buildNormalizedGoogleSignInDeps(deps);
+
+  normalized.safeLogger = resolveLogger(normalized.logger);
+  normalized.resolveGoogleAccountsId = resolveGoogleAccounts(
+    normalized.googleAccountsId
+  );
+
+  return normalized;
+}
+
+/**
+ * Prepare the raw dependency values with defaults but without validation.
+ * @param {{
+ *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
+ *   credentialFactory?: (credential: string) => unknown,
+ *   signInWithCredential?: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
+ *   auth?: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage?: { setItem?: (key: string, value: string) => void },
+ *   matchMedia?: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
+ *   querySelectorAll?: (selector: string) => NodeList,
+ *   logger?: { error?: (message: string) => void },
+ * } | undefined} deps - Raw dependency bag.
+ * @returns {{
+ *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
+ *   credentialFactory?: (credential: string) => unknown,
+ *   signInWithCredential?: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
+ *   auth?: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage?: { setItem?: (key: string, value: string) => void },
+ *   matchMedia?: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
+ *   querySelectorAll?: (selector: string) => NodeList,
+ *   logger: { error?: (message: string) => void },
+ * } | {}} Normalized dependency bag with defaults applied.
+ */
+function buildNormalizedGoogleSignInDeps(deps = {}) {
+  const normalized = {
+    googleAccountsId: deps.googleAccountsId,
+    credentialFactory: deps.credentialFactory,
+    signInWithCredential: deps.signInWithCredential,
+    auth: deps.auth,
+    storage: deps.storage,
+    matchMedia: deps.matchMedia,
+    querySelectorAll: deps.querySelectorAll,
+    logger: deps.logger,
   };
+
+  if (normalized.logger === undefined || normalized.logger === null) {
+    normalized.logger = console;
+  }
+
+  return normalized;
 }
 
 /**
@@ -752,11 +804,7 @@ function resolveGoogleAccounts(googleAccountsId) {
  * @returns {{ error?: (message: string) => void }} Logger that safely exposes `error`.
  */
 function resolveLogger(logger) {
-  if (logger && typeof logger.error === 'function') {
-    return logger;
-  }
-
-  return console;
+  return hasLoggerError(logger) ? logger : console;
 }
 
 /**
@@ -765,11 +813,7 @@ function resolveLogger(logger) {
  * @returns {boolean} True when the client provides initialize and renderButton.
  */
 function hasRequiredGoogleIdentityMethods(accountsId) {
-  return (
-    Boolean(accountsId) &&
-    typeof accountsId.initialize === 'function' &&
-    typeof accountsId.renderButton === 'function'
-  );
+  return hasInitializeMethod(accountsId) && hasRenderButtonMethod(accountsId);
 }
 
 /**
@@ -778,7 +822,36 @@ function hasRequiredGoogleIdentityMethods(accountsId) {
  * @returns {void}
  */
 function reportMissingGoogleIdentity(logger) {
-  logger?.error?.('Google Identity script missing');
+  if (logger && typeof logger.error === 'function') {
+    logger.error('Google Identity script missing');
+  }
+}
+
+/**
+ * Determine whether the provided logger exposes an `error` method.
+ * @param {{ error?: (message: string) => void } | undefined} logger - Logger candidate.
+ * @returns {boolean} True when an `error` function is available.
+ */
+function hasLoggerError(logger) {
+  return Boolean(logger && typeof logger.error === 'function');
+}
+
+/**
+ * Check whether the Google Identity client exposes `initialize`.
+ * @param {unknown} accountsId - Candidate Google Identity client.
+ * @returns {boolean} True when `initialize` exists.
+ */
+function hasInitializeMethod(accountsId) {
+  return Boolean(accountsId && typeof accountsId.initialize === 'function');
+}
+
+/**
+ * Check whether the Google Identity client exposes `renderButton`.
+ * @param {unknown} accountsId - Candidate Google Identity client.
+ * @returns {boolean} True when `renderButton` exists.
+ */
+function hasRenderButtonMethod(accountsId) {
+  return Boolean(accountsId && typeof accountsId.renderButton === 'function');
 }
 
 /**

@@ -554,16 +554,18 @@ export function createGenerateStatsCore({
   const verifyToken = token => auth.verifyIdToken(token);
   const isAdminUid = decoded => decoded.uid === ADMIN_UID;
   /**
-   *
-   * @param res
-   * @param message
+   * Send a 401 response when authentication fails.
+   * @param {import('express').Response} res - Express response helper.
+   * @param {string} message - Text to include in the response body.
+   * @returns {void}
    */
   function sendUnauthorized(res, message) {
     res.status(401).send(message);
   }
   /**
-   *
-   * @param res
+   * Send a 403 response when authorization fails.
+   * @param {import('express').Response} res - Response helper used to send the rejection.
+   * @returns {void}
    */
   function sendForbidden(res) {
     res.status(403).send('Forbidden');
@@ -577,16 +579,18 @@ export function createGenerateStatsCore({
   const verifyAdmin = createVerifyAdmin(verifyAdminDeps);
 
   /**
-   *
-   * @param req
+   * Check whether the incoming request used POST.
+   * @param {import('express').Request} req - HTTP request to inspect.
+   * @returns {boolean} True when the request method is POST.
    */
   function isPostMethod(req) {
     return req.method === 'POST';
   }
 
   /**
-   *
-   * @param res
+   * Reply with a 405 when a non-POST method is used.
+   * @param {import('express').Response} res - Response object to signal the rejection.
+   * @returns {void}
    */
   function sendPostOnlyResponse(res) {
     res.status(405).send('POST only');
@@ -617,9 +621,10 @@ export function createGenerateStatsCore({
   }
 
   /**
-   *
-   * @param req
-   * @param res
+   * Enforce POST + authorization before invoking the handler.
+   * @param {import('express').Request} req - Incoming HTTP request.
+   * @param {import('express').Response} res - Response object used to send the reply.
+   * @returns {Promise<void>} Resolves after the request handling completes.
    */
   async function handleRequest(req, res) {
     if (!isPostMethod(req)) {

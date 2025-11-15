@@ -696,8 +696,10 @@ function extractBearerToken(header) {
 
 /**
  * Create the helper that validates the Authorization header against an admin user.
- * @param {(token: string) => Promise<{ uid?: string }>} verifyIdToken Firebase token verifier.
- * @param {string} adminUid UID allowed to authorize the request.
+ * @param {{
+ *   verifyIdToken: (token: string) => Promise<{ uid?: string }>,
+ *   adminUid: string
+ * }} root0 - Authorization dependencies.
  * @returns {(options: { req: { get?: (name: string) => unknown, headers?: object }, res: { status: Function, send: Function } }) => Promise<{ uid?: string } | null>} Authorization checker.
  */
 export function createAuthorizeRequest({ verifyIdToken, adminUid }) {
@@ -756,9 +758,10 @@ export function buildHandleRenderRequest({
   });
 
   /**
-   *
-   * @param req
-   * @param res
+   * Guard the render workflow by ensuring the request is authorized.
+   * @param {import('express').Request} req - Request forwarded from the HTTP handler.
+   * @param {import('express').Response} res - Response object used to send errors or success.
+   * @returns {Promise<void>}
    */
   async function executeRenderRequest(req, res) {
     const decoded = await authorizeRequest({ req, res });
@@ -769,8 +772,9 @@ export function buildHandleRenderRequest({
   }
 
   /**
-   *
-   * @param res
+   * Actually run the render helper and send the final response.
+   * @param {import('express').Response} res - Response object for success/failure updates.
+   * @returns {Promise<void>}
    */
   async function executeRenderRequestAfterGuard(res) {
     try {
