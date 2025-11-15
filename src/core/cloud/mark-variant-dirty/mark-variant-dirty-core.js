@@ -245,8 +245,6 @@ export function sendForbidden(res) {
   res.status(403).send('Forbidden');
 }
 
-const defaultMissingTokenMessage = 'Missing token';
-
 /**
  * Ensure the incoming request uses the allowed HTTP method.
  * @param {import('express').Request} req HTTP request.
