@@ -8,7 +8,10 @@ import {
   getCdnHostFromEnv,
   buildHtml,
 } from '../../../../src/core/cloud/generate-stats/generate-stats-core.js';
-import { DEFAULT_BUCKET_NAME } from '../../../../src/core/cloud/cloud-core.js';
+import {
+  DEFAULT_BUCKET_NAME,
+  matchAuthHeader,
+} from '../../../../src/core/cloud/cloud-core.js';
 import { ADMIN_UID } from '../../../../src/core/common-core.js';
 
 describe('createGenerateStatsCore', () => {
@@ -60,9 +63,6 @@ describe('createGenerateStatsCore', () => {
       sendForbidden: response => {
         response.status(403).send('Forbidden');
       },
-      matchAuthHeader: authHeader => {
-        return authHeader.match(/^Bearer (.+)$/);
-      },
       missingTokenMessage: 'Missing token',
       getInvalidTokenMessage: error => {
         const candidate = error?.message;
@@ -90,7 +90,7 @@ describe('createGenerateStatsCore', () => {
       createVerifyAdmin: deps => {
         return async (req, res) => {
           const authHeader = deps.getAuthHeader(req);
-          const match = deps.matchAuthHeader(authHeader);
+          const match = matchAuthHeader(authHeader);
           const token = match?.[1] || '';
           if (!token) {
             deps.sendUnauthorized(res, deps.missingTokenMessage);

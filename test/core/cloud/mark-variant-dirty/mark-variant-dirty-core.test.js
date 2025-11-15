@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
-import {
+import * as markVariantDirtyCore from '../../../../src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js';
+const {
   getAllowedOrigins,
   isAllowedOrigin,
   createHandleCorsOrigin,
@@ -17,7 +18,7 @@ import {
   createIsAdminUid,
   parseMarkVariantRequestBody,
   createHandleRequest,
-} from '../../../../src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js';
+} = markVariantDirtyCore;
 import { productionOrigins } from '../../../../src/core/cloud/cloud-core.js';
 
 describe('mark-variant-dirty core helpers', () => {

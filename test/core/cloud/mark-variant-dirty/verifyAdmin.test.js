@@ -90,14 +90,12 @@ describe('createVerifyAdmin', () => {
   });
 
   test('invokes collaborators to validate admin access', async () => {
-    const matchAuthHeader = jest.fn().mockReturnValue(['Bearer good', 'good']);
     const verifyToken = jest.fn().mockResolvedValue({ uid: 'admin' });
     const isAdminUid = jest.fn().mockReturnValue(true);
     const sendUnauthorized = jest.fn();
     const sendForbidden = jest.fn();
 
     const verifyAdmin = createVerifyAdmin({
-      matchAuthHeader,
       verifyToken,
       isAdminUid,
       sendUnauthorized,
@@ -110,7 +108,6 @@ describe('createVerifyAdmin', () => {
     const authorised = await verifyAdmin(req, res);
 
     expect(authorised).toBe(true);
-    expect(matchAuthHeader).toHaveBeenCalledWith('Bearer good');
     expect(verifyToken).toHaveBeenCalledWith('good');
     expect(isAdminUid).toHaveBeenCalledWith({ uid: 'admin' });
     expect(sendUnauthorized).not.toHaveBeenCalled();

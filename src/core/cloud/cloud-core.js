@@ -92,7 +92,6 @@ function defaultInvalidTokenMessage(error) {
 /**
  * Create a reusable admin guard.
  * @param {object} deps Authorization collaborators.
- * @param {(authHeader: string) => string[] | null} [deps.matchAuthHeader] Bearer parser.
  * @param {(token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>} deps.verifyToken Token validator.
  * @param {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} deps.isAdminUid Admin UID checker.
  * @param {(res: import('express').Response, message: string) => void} deps.sendUnauthorized Sends 401 responses.
@@ -102,7 +101,6 @@ function defaultInvalidTokenMessage(error) {
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<boolean>}
  */
 export function createVerifyAdmin({
-  matchAuthHeader: resolveToken = matchAuthHeader,
   verifyToken,
   isAdminUid,
   sendUnauthorized,
@@ -125,7 +123,7 @@ export function createVerifyAdmin({
 
   return async function verifyAdmin(req, res) {
     const authHeader = getAuthHeader(req);
-    const match = resolveToken(authHeader);
+    const match = matchAuthHeader(authHeader);
     const token = match?.[1] || '';
     if (!token) {
       sendUnauthorized(res, missingTokenMessage);
