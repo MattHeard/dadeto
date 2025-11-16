@@ -249,10 +249,14 @@ export function createHandleVariantVisibilityChange({
   assertFunctionDependency('getVisibility', getVisibility);
 
   return async function handleVariantVisibilityChange(change) {
-    const before = change?.before ?? null;
-    const after = change?.after ?? null;
+    const before = change?.before;
+    const after = change?.after;
 
-    if (!after?.exists) {
+    if (!change) {
+      return removeVariantHtmlForSnapshot(null);
+    }
+
+    if (!after.exists) {
       return removeVariantHtmlForSnapshot(before);
     }
 
