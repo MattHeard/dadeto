@@ -948,32 +948,12 @@ async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
   let targetVariants;
 
   if (data.targetPage) {
-    try {
-      const targetSnap = await data.targetPage.get();
-
-      if (targetSnap.exists) {
-        targetPageNumber = targetSnap.data().number;
-        const variantSnap = await data.targetPage
-          .collection('variants')
-          .orderBy('name')
-          .get();
-        const visible = variantSnap.docs.filter(
-          doc => (doc.data().visibility ?? 1) >= visibilityThreshold
-        );
-
-        if (visible.length) {
-          targetVariantName = visible[0].data().name;
-          targetVariants = visible.map(doc => ({
-            name: doc.data().name,
-            weight: doc.data().visibility ?? 1,
-          }));
-        }
-      }
-    } catch (error) {
-      if (consoleError) {
-        consoleError('target page lookup failed', error?.message || error);
-      }
-    }
+    ({ targetPageNumber, targetVariantName, targetVariants } =
+      await fetchTargetPageMetadata(
+        data.targetPage,
+        visibilityThreshold,
+        consoleError
+      ));
   } else if (data.targetPageNumber !== undefined) {
     targetPageNumber = data.targetPageNumber;
   }
@@ -983,6 +963,61 @@ async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
     targetVariantName,
     targetVariants,
   };
+}
+
+/**
+ * Retrieve metadata for a referenced target page, including the first visible variant.
+ * @param {object} targetPage Firestore reference for the target page document.
+ * @param {number} visibilityThreshold Minimum visibility required for a variant to be considered published.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for unexpected failures.
+ * @returns {Promise<{
+ *   targetPageNumber?: number,
+ *   targetVariantName?: string,
+ *   targetVariants?: {name: string, weight: number}[],
+ * }>} Metadata derived from the target page lookup.
+ */
+async function fetchTargetPageMetadata(
+  targetPage,
+  visibilityThreshold,
+  consoleError
+) {
+  try {
+    const targetSnap = await targetPage.get();
+
+    if (!targetSnap.exists) {
+      return {};
+    }
+
+    const targetPageNumber = targetSnap.data().number;
+    const variantSnap = await targetPage
+      .collection('variants')
+      .orderBy('name')
+      .get();
+    const visible = variantSnap.docs.filter(
+      doc => (doc.data().visibility ?? 1) >= visibilityThreshold
+    );
+
+    if (!visible.length) {
+      return { targetPageNumber };
+    }
+
+    const targetVariantName = visible[0].data().name;
+    const targetVariants = visible.map(doc => ({
+      name: doc.data().name,
+      weight: doc.data().visibility ?? 1,
+    }));
+
+    return {
+      targetPageNumber,
+      targetVariantName,
+      targetVariants,
+    };
+  } catch (error) {
+    if (consoleError) {
+      consoleError('target page lookup failed', error?.message || error);
+    }
+    return {};
+  }
 }
 
 /**
