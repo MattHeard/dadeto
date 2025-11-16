@@ -526,8 +526,6 @@ export function createGenerateStatsCore({
    */
   async function generate() {
     const {
-      storyCountFn = getStoryCount,
-      pageCountFn = getPageCount,
       unmoderatedPageCountFn = getUnmoderatedPageCount,
       topStoriesFn = getTopStories,
       storageInstance = storage,
@@ -536,8 +534,8 @@ export function createGenerateStatsCore({
     } = {};
     const [storyCount, pageCount, unmoderatedCount, topStories] =
       await Promise.all([
-        storyCountFn(),
-        pageCountFn(),
+        getStoryCount(),
+        getPageCount(),
         unmoderatedPageCountFn(),
         topStoriesFn(),
       ]);
