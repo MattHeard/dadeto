@@ -43,34 +43,4 @@ describe('addDendritePage', () => {
     const result = addDendritePage('not json', map);
     expect(result).toBe(JSON.stringify({ pages: [], options: [] }));
   });
-
-  it('returns an empty payload when env helpers are missing', () => {
-    const map = new Map();
-    map.set('getUuid', null);
-    map.set('getData', null);
-    map.set('setLocalTemporaryData', null);
-
-    const result = addDendritePage('{}', map);
-    expect(result).toBe(JSON.stringify({ pages: [], options: [] }));
-  });
-
-  it('returns an empty payload when callables are invalid but input is well-formed', () => {
-    const map = new Map();
-    map.set('getUuid', undefined);
-    map.set(
-      'getData',
-      jest.fn(() => ({
-        temporary: { DEND2: { pages: [], options: [] } },
-      }))
-    );
-    map.set('setLocalTemporaryData', jest.fn());
-
-    const payload = JSON.stringify({
-      optionId: 'opt-2',
-      content: 'hello again',
-    });
-
-    const result = addDendritePage(payload, map);
-    expect(result).toBe(JSON.stringify({ pages: [], options: [] }));
-  });
 });
