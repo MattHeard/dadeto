@@ -25,31 +25,40 @@ export function addDendritePage(input, env) {
   const parsed = safeParseJson(input);
   if (!isValidInput(parsed)) {
     return emptyResponse();
-  } else {
-    const getUuid = env?.get?.('getUuid');
-    const getData = env?.get?.('getData');
-    const setLocalTemporaryData = env?.get?.('setLocalTemporaryData');
-    if (!areCallables(getUuid, getData, setLocalTemporaryData)) {
-      return emptyResponse();
-    }
-
-    const pageId = getUuid();
-    const opts = createOptions(parsed, getUuid, pageId);
-    const page = {
-      id: pageId,
-      optionId: parsed.optionId,
-      content: parsed.content,
-    };
-
-    const currentData = getData();
-    const newData = deepClone(currentData);
-    ensureDend2(newData);
-    newData.temporary.DEND2.pages.push(page);
-    newData.temporary.DEND2.options.push(...opts);
-    setLocalTemporaryData(newData);
-
-    return JSON.stringify({ pages: [page], options: opts });
   }
+
+  return persistDendritePage(parsed, env);
+}
+
+/**
+ *
+ * @param parsed
+ * @param env
+ */
+function persistDendritePage(parsed, env) {
+  const getUuid = env?.get?.('getUuid');
+  const getData = env?.get?.('getData');
+  const setLocalTemporaryData = env?.get?.('setLocalTemporaryData');
+  if (!areCallables(getUuid, getData, setLocalTemporaryData)) {
+    return emptyResponse();
+  }
+
+  const pageId = getUuid();
+  const opts = createOptions(parsed, getUuid, pageId);
+  const page = {
+    id: pageId,
+    optionId: parsed.optionId,
+    content: parsed.content,
+  };
+
+  const currentData = getData();
+  const newData = deepClone(currentData);
+  ensureDend2(newData);
+  newData.temporary.DEND2.pages.push(page);
+  newData.temporary.DEND2.options.push(...opts);
+  setLocalTemporaryData(newData);
+
+  return JSON.stringify({ pages: [page], options: opts });
 }
 
 /**
