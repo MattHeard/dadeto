@@ -377,11 +377,12 @@ async function handleVariantSnapshotResponse(variantSnapshot) {
 }
 
 /**
- * Load the normalized story title and option list for a variant reference.
- * @param {FirestoreDocumentReference} variantRef Variant document reference.
+ * Load the normalized story title and option list for a variant snapshot.
+ * @param {VariantSnapshot} variantSnapshot Snapshot describing the assigned variant.
  * @returns {Promise<{ storyTitle: string, options: VariantOption[] }>} Title and options payload.
  */
-async function resolveVariantTitleAndOptions(variantRef) {
+async function resolveVariantTitleAndOptions(variantSnapshot) {
+  const { variantRef } = variantSnapshot;
   const [storyTitle, options] = await Promise.all([
     fetchStoryTitle(variantRef),
     buildOptions(variantRef),
@@ -396,11 +397,11 @@ async function resolveVariantTitleAndOptions(variantRef) {
  * @returns {Promise<ResponderResult>} Success response payload.
  */
 async function buildSuccessVariantResponse(variantSnapshot) {
-  const { variantSnap, variantRef } = variantSnapshot;
+  const { variantSnap } = variantSnapshot;
   const variantData = variantSnap.data() ?? {};
 
   const { storyTitle, options } =
-    await resolveVariantTitleAndOptions(variantRef);
+    await resolveVariantTitleAndOptions(variantSnapshot);
 
   return {
     status: 200,
