@@ -362,23 +362,23 @@ async function buildVariantResponse({ db, uid }) {
 
   if ('status' in variantSnapshot) {
     return variantSnapshot;
+  } else {
+    const { variantSnap, variantRef } = variantSnapshot;
+    const variantData = variantSnap.data() ?? {};
+
+    const [storyTitle, options] = await Promise.all([
+      fetchStoryTitle(variantRef),
+      buildOptions(variantRef),
+    ]);
+
+    return {
+      status: 200,
+      body: {
+        title: storyTitle,
+        content: normalizeString(variantData.content),
+        author: normalizeString(variantData.author),
+        options,
+      },
+    };
   }
-
-  const { variantSnap, variantRef } = variantSnapshot;
-  const variantData = variantSnap.data() ?? {};
-
-  const [storyTitle, options] = await Promise.all([
-    fetchStoryTitle(variantRef),
-    buildOptions(variantRef),
-  ]);
-
-  return {
-    status: 200,
-    body: {
-      title: storyTitle,
-      content: normalizeString(variantData.content),
-      author: normalizeString(variantData.author),
-      options,
-    },
-  };
 }
