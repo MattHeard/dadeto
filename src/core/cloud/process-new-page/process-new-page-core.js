@@ -723,10 +723,6 @@ export function createProcessNewPageHandler({
   assertRandomUuid(randomUUID);
   assertFieldValue(fieldValue);
 
-  if (!db || typeof db.doc !== 'function' || typeof db.batch !== 'function') {
-    throw new TypeError('db must provide doc and batch helpers');
-  }
-
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
   return async function handleProcessNewPage(snapshot) {
