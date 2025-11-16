@@ -440,16 +440,10 @@ async function createVariantWithOptions({
     randomUUID,
   });
 
-  batch.set(newVariantRef, {
-    name: nextName,
-    content: submission.content,
-    authorId: submission.authorId || null,
-    authorName: submission.author,
-    incomingOption: submission.incomingOptionFullName || null,
-    moderatorReputationSum: 0,
-    rand: random(),
-    createdAt: getServerTimestamp(),
-  });
+  batch.set(
+    newVariantRef,
+    buildVariantPayload(nextName, submission, random, getServerTimestamp)
+  );
 
   normalizeOptions(submission.options).forEach((text, position) => {
     const optionRef = newVariantRef.collection('options').doc(randomUUID());
@@ -540,6 +534,27 @@ function resolveVariantRef({ pageDocRef, snapshotRef, randomUUID }) {
 }
 
 /**
+ * Build the variant document payload written to Firestore.
+ * @param {string} nextName Name assigned to the new variant.
+ * @param {object} submission Submission payload containing variant content.
+ * @param {() => number} random Random source for variant ordering.
+ * @param {() => unknown} getServerTimestamp Firestore server timestamp helper.
+ * @returns {object} Data stored in the new variant document.
+ */
+function buildVariantPayload(nextName, submission, random, getServerTimestamp) {
+  return {
+    name: nextName,
+    content: submission.content,
+    authorId: submission.authorId || null,
+    authorName: submission.author,
+    incomingOption: submission.incomingOptionFullName || null,
+    moderatorReputationSum: 0,
+    rand: random(),
+    createdAt: getServerTimestamp(),
+  };
+}
+
+/**
  * Build the Cloud Function handler for processing new page submissions.
  * @param {object} options Collaborators required by the handler.
  * @param {import('firebase-admin/firestore').Firestore} options.db Firestore instance used for document access.
@@ -559,7 +574,7 @@ export function createProcessNewPageHandler({
   db,
   fieldValue,
   randomUUID,
-  random = Math.random,
+  random,
   findAvailablePageNumberFn = findAvailablePageNumber,
   incrementVariantNameFn = incrementVariantName,
 }) {

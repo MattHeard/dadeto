@@ -216,6 +216,7 @@ describe('createProcessNewPageHandler', () => {
         db: null,
         fieldValue,
         randomUUID: () => 'uuid',
+        random: Math.random,
       })
     ).toThrow(new TypeError('db must provide doc and batch helpers'));
 
@@ -224,6 +225,7 @@ describe('createProcessNewPageHandler', () => {
         db: { doc: jest.fn(), batch: jest.fn() },
         fieldValue: { increment: () => {} },
         randomUUID: () => 'uuid',
+        random: Math.random,
       })
     ).toThrow(new TypeError('fieldValue.serverTimestamp must be a function'));
 
@@ -232,6 +234,7 @@ describe('createProcessNewPageHandler', () => {
         db: { doc: jest.fn(), batch: jest.fn() },
         fieldValue: { serverTimestamp: () => {} },
         randomUUID: () => 'uuid',
+        random: Math.random,
       })
     ).toThrow(new TypeError('fieldValue.increment must be a function'));
 
@@ -240,6 +243,7 @@ describe('createProcessNewPageHandler', () => {
         db: { doc: jest.fn(), batch: jest.fn() },
         fieldValue,
         randomUUID: null,
+        random: Math.random,
       })
     ).toThrow(new TypeError('randomUUID must be a function'));
 
@@ -257,6 +261,7 @@ describe('createProcessNewPageHandler', () => {
         db: { doc: jest.fn(), batch: jest.fn() },
         fieldValue,
         randomUUID: () => 'uuid',
+        random: Math.random,
         findAvailablePageNumberFn: null,
       })
     ).toThrow(new TypeError('findAvailablePageNumber must be a function'));
@@ -266,6 +271,7 @@ describe('createProcessNewPageHandler', () => {
         db: { doc: jest.fn(), batch: jest.fn() },
         fieldValue,
         randomUUID: () => 'uuid',
+        random: Math.random,
         incrementVariantNameFn: null,
       })
     ).toThrow(new TypeError('incrementVariantName must be a function'));
@@ -279,6 +285,7 @@ describe('createProcessNewPageHandler', () => {
         db,
         fieldValue,
         randomUUID: () => 'uuid',
+        random: Math.random,
       })
     ).toThrow(new TypeError('db must provide doc and batch helpers'));
   });
@@ -288,6 +295,7 @@ describe('createProcessNewPageHandler', () => {
       db: { doc: jest.fn(), batch: jest.fn(() => createBatch()) },
       fieldValue,
       randomUUID: () => 'uuid',
+      random: Math.random,
     });
 
     const snapshot = { data: () => ({ processed: true }) };
@@ -308,6 +316,7 @@ describe('createProcessNewPageHandler', () => {
       },
       fieldValue,
       randomUUID: () => 'uuid',
+      random: Math.random,
     });
 
     await handler(snapshot);
