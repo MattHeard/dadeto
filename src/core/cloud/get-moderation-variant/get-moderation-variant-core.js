@@ -315,10 +315,7 @@ async function handleAuthorizedRequest({ db, auth, token }) {
   const { uid, error } = await resolveUidFromToken(auth, token);
 
   if (error) {
-    return {
-      ...INVALID_TOKEN_RESPONSE,
-      body: normalizeString(error?.message) || INVALID_TOKEN_RESPONSE.body,
-    };
+    return createInvalidTokenResponse(error);
   }
 
   if (!uid) {
@@ -367,4 +364,16 @@ async function resolveUidFromToken(auth, token) {
   } catch (error) {
     return { uid: null, error };
   }
+}
+
+/**
+ * Format the invalid token response, normalizing any error message for the client.
+ * @param {unknown} error Error raised while verifying the token.
+ * @returns {ResponderResult} Invalid token response payload.
+ */
+function createInvalidTokenResponse(error) {
+  return {
+    ...INVALID_TOKEN_RESPONSE,
+    body: normalizeString(error?.message) || INVALID_TOKEN_RESPONSE.body,
+  };
 }
