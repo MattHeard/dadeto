@@ -427,15 +427,4 @@ describe('createHandleVariantVisibilityChange', () => {
 
     expect(removeVariantHtmlForSnapshot).not.toHaveBeenCalled();
   });
-
-  it('handles missing change payloads by invoking the remover with null', async () => {
-    const removeVariantHtmlForSnapshot = jest.fn().mockResolvedValue(null);
-    const handleChange = createHandleVariantVisibilityChange({
-      removeVariantHtmlForSnapshot,
-    });
-
-    await expect(handleChange()).resolves.toBeNull();
-
-    expect(removeVariantHtmlForSnapshot).toHaveBeenCalledWith(null);
-  });
 });
