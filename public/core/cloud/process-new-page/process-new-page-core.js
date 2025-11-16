@@ -434,9 +434,11 @@ async function createVariantWithOptions({
     incrementVariantNameFn
   );
 
-  const newVariantRef = getVariantCollection(pageDocRef).doc(
-    snapshotRef?.id ?? randomUUID()
-  );
+  const newVariantRef = resolveVariantRef({
+    pageDocRef,
+    snapshotRef,
+    randomUUID,
+  });
 
   batch.set(newVariantRef, {
     name: nextName,
@@ -523,6 +525,18 @@ function calculateNextVariantName(
   }
 
   return incrementVariantNameFn(latestName);
+}
+
+/**
+ * Resolve the Firestore reference for the new variant document.
+ * @param {object} params Inputs used to build the reference.
+ * @param {import('firebase-admin/firestore').DocumentReference} params.pageDocRef Page document reference.
+ * @param {import('firebase-admin/firestore').DocumentReference} [params.snapshotRef] Submission document reference.
+ * @param {() => string} params.randomUUID UUID generator used when snapshot ID is missing.
+ * @returns {import('firebase-admin/firestore').DocumentReference} Newly minted variant reference.
+ */
+function resolveVariantRef({ pageDocRef, snapshotRef, randomUUID }) {
+  return getVariantCollection(pageDocRef).doc(snapshotRef?.id ?? randomUUID());
 }
 
 /**
