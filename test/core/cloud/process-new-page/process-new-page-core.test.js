@@ -255,26 +255,6 @@ describe('createProcessNewPageHandler', () => {
         random: null,
       })
     ).toThrow(new TypeError('random must be a function'));
-
-    expect(() =>
-      createProcessNewPageHandler({
-        db: { doc: jest.fn(), batch: jest.fn() },
-        fieldValue,
-        randomUUID: () => 'uuid',
-        random: Math.random,
-        findAvailablePageNumberFn: null,
-      })
-    ).toThrow(new TypeError('findAvailablePageNumber must be a function'));
-
-    expect(() =>
-      createProcessNewPageHandler({
-        db: { doc: jest.fn(), batch: jest.fn() },
-        fieldValue,
-        randomUUID: () => 'uuid',
-        random: Math.random,
-        incrementVariantNameFn: null,
-      })
-    ).toThrow(new TypeError('incrementVariantName must be a function'));
   });
 
   it('throws when the database does not expose a batch helper', () => {
@@ -601,8 +581,6 @@ describe('createProcessNewPageHandler', () => {
     };
 
     const batch = createBatch();
-    const findAvailablePageNumberFn = jest.fn(() => Promise.resolve(41));
-
     const db = {
       doc: jest.fn(path => {
         if (path === 'incoming/options/existing-target') {
@@ -614,6 +592,13 @@ describe('createProcessNewPageHandler', () => {
         throw new Error(`Unexpected doc path: ${path}`);
       }),
       batch: jest.fn(() => batch),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ empty: true, docs: [] }),
+          })),
+        })),
+      })),
     };
 
     const handler = createProcessNewPageHandler({
@@ -621,7 +606,6 @@ describe('createProcessNewPageHandler', () => {
       fieldValue,
       randomUUID: jest.fn(() => 'uuid'),
       random: jest.fn(() => 0.25),
-      findAvailablePageNumberFn,
     });
 
     const snapshot = {
@@ -637,7 +621,6 @@ describe('createProcessNewPageHandler', () => {
     await expect(handler(snapshot)).resolves.toBeNull();
 
     expect(pageDocRef.get).toHaveBeenCalled();
-    expect(findAvailablePageNumberFn).not.toHaveBeenCalled();
     expect(storyRef.collection).not.toHaveBeenCalledWith('pages');
     expect(optionDocs).toHaveLength(1);
     expect(batch.commit).toHaveBeenCalled();
@@ -699,6 +682,13 @@ describe('createProcessNewPageHandler', () => {
         throw new Error(`Unexpected doc path: ${path}`);
       }),
       batch: jest.fn(() => createBatch()),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ empty: true, docs: [] }),
+          })),
+        })),
+      })),
     };
 
     const handler = createProcessNewPageHandler({
@@ -706,7 +696,6 @@ describe('createProcessNewPageHandler', () => {
       fieldValue,
       randomUUID: jest.fn(() => 'generated'),
       random: jest.fn(() => 0.3),
-      findAvailablePageNumberFn: jest.fn(() => Promise.resolve(7)),
     });
 
     const snapshot = {
@@ -779,8 +768,6 @@ describe('createProcessNewPageHandler', () => {
     };
 
     const batch = createBatch();
-    const findAvailablePageNumberFn = jest.fn(() => Promise.resolve(11));
-
     const db = {
       doc: jest.fn(path => {
         if (path === 'incoming/options/error-target') {
@@ -792,6 +779,13 @@ describe('createProcessNewPageHandler', () => {
         throw new Error(`Unexpected doc path: ${path}`);
       }),
       batch: jest.fn(() => batch),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ empty: true, docs: [] }),
+          })),
+        })),
+      })),
     };
 
     const handler = createProcessNewPageHandler({
@@ -799,7 +793,6 @@ describe('createProcessNewPageHandler', () => {
       fieldValue,
       randomUUID: jest.fn(() => 'generated'),
       random: jest.fn(() => 0.6),
-      findAvailablePageNumberFn,
     });
 
     const snapshot = {
@@ -813,7 +806,6 @@ describe('createProcessNewPageHandler', () => {
     await handler(snapshot);
 
     expect(targetPage.get).toHaveBeenCalled();
-    expect(findAvailablePageNumberFn).toHaveBeenCalled();
     expect(batch.update).toHaveBeenCalledWith(optionRef, {
       targetPage: expect.objectContaining({ id: 'generated' }),
     });
