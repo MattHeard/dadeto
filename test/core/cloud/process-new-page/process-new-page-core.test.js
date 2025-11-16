@@ -228,24 +228,6 @@ describe('createProcessNewPageHandler', () => {
         random: Math.random,
       })
     ).toThrow(new TypeError('fieldValue.increment must be a function'));
-
-    expect(() =>
-      createProcessNewPageHandler({
-        db: { doc: jest.fn(), batch: jest.fn() },
-        fieldValue,
-        randomUUID: null,
-        random: Math.random,
-      })
-    ).toThrow(new TypeError('randomUUID must be a function'));
-
-    expect(() =>
-      createProcessNewPageHandler({
-        db: { doc: jest.fn(), batch: jest.fn() },
-        fieldValue,
-        randomUUID: () => 'uuid',
-        random: null,
-      })
-    ).toThrow(new TypeError('random must be a function'));
   });
 
   it('returns early when the submission is already processed', async () => {

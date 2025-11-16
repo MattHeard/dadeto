@@ -1,9 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import {
-  functions,
-  FieldValue,
-  getFirestoreInstance,
-} from './process-new-page-gcf.js';
+import { functions } from 'firebase-functions/v1';
+import { FieldValue } from 'firebase-admin/firestore';
+import { getFirestoreInstance } from './firestore.js';
 import { createProcessNewPageHandler } from './process-new-page-core.js';
 
 const db = getFirestoreInstance();
@@ -21,3 +19,4 @@ export const processNewPage = functions
   .onCreate((snap, context) => handleProcessNewPage(snap, context));
 
 export { handleProcessNewPage };
+export * from './common-gcf.js';
