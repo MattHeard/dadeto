@@ -67,6 +67,12 @@ describe('findAvailablePageNumber', () => {
     await expect(findAvailablePageNumber(db, random)).resolves.toBe(2);
     expect(db.collectionGroup).toHaveBeenCalledTimes(2);
   });
+
+  it('fails fast when a random generator is missing', async () => {
+    await expect(
+      findAvailablePageNumber({} /* db never used */, 'not-a-function')
+    ).rejects.toThrow('random must be a function');
+  });
 });
 
 /**
