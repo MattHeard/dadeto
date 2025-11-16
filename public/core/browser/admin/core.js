@@ -701,7 +701,7 @@ function validateGoogleSignInDeps({
  *   safeLogger: { error?: (message: string) => void },
  * }} Normalized dependencies with required helpers.
  */
-function normalizeGoogleSignInDeps(deps = {}) {
+function normalizeGoogleSignInDeps(deps) {
   const normalizedDeps = summarizeGoogleSignInDeps(deps);
 
   validateGoogleSignInDeps(normalizedDeps);
@@ -733,7 +733,7 @@ function normalizeGoogleSignInDeps(deps = {}) {
  *   resolveGoogleAccountsId: () => GoogleAccountsClient | undefined,
  * }} Normalized dependencies with resolver helpers.
  */
-function summarizeGoogleSignInDeps(deps = {}) {
+function summarizeGoogleSignInDeps(deps) {
   const normalized = buildNormalizedGoogleSignInDeps(deps);
 
   normalized.safeLogger = resolveLogger(normalized.logger);
@@ -767,16 +767,17 @@ function summarizeGoogleSignInDeps(deps = {}) {
  *   logger: { error?: (message: string) => void },
  * } | {}} Normalized dependency bag with defaults applied.
  */
-function buildNormalizedGoogleSignInDeps(deps = {}) {
+function buildNormalizedGoogleSignInDeps(deps) {
+  const source = deps ?? {};
   const normalized = {
-    googleAccountsId: deps.googleAccountsId,
-    credentialFactory: deps.credentialFactory,
-    signInWithCredential: deps.signInWithCredential,
-    auth: deps.auth,
-    storage: deps.storage,
-    matchMedia: deps.matchMedia,
-    querySelectorAll: deps.querySelectorAll,
-    logger: deps.logger,
+    googleAccountsId: source.googleAccountsId,
+    credentialFactory: source.credentialFactory,
+    signInWithCredential: source.signInWithCredential,
+    auth: source.auth,
+    storage: source.storage,
+    matchMedia: source.matchMedia,
+    querySelectorAll: source.querySelectorAll,
+    logger: source.logger,
   };
 
   if (normalized.logger === undefined || normalized.logger === null) {
@@ -825,9 +826,7 @@ function hasRequiredGoogleIdentityMethods(accountsId) {
  * @returns {void}
  */
 function reportMissingGoogleIdentity(logger) {
-  if (logger && typeof logger.error === 'function') {
-    logger.error('Google Identity script missing');
-  }
+  resolveLogger(logger).error('Google Identity script missing');
 }
 
 /**
