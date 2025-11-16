@@ -287,50 +287,50 @@ export function createGetModerationVariantResponder({ db, auth }) {
 
     if (!token) {
       return MISSING_AUTHORIZATION_RESPONSE;
-    }
+    } else {
+      let uid;
 
-    let uid;
+      try {
+        const decoded = await auth.verifyIdToken(token);
+        uid = decoded?.uid;
+      } catch (error) {
+        return {
+          ...INVALID_TOKEN_RESPONSE,
+          body: normalizeString(error?.message) || INVALID_TOKEN_RESPONSE.body,
+        };
+      }
 
-    try {
-      const decoded = await auth.verifyIdToken(token);
-      uid = decoded?.uid;
-    } catch (error) {
+      if (!uid) {
+        return INVALID_TOKEN_RESPONSE;
+      }
+
+      const variantSnapshot = await fetchVariantSnapshot(db, uid);
+
+      if (!variantSnapshot) {
+        return NO_JOB_RESPONSE;
+      }
+
+      if ('status' in variantSnapshot) {
+        return variantSnapshot;
+      }
+
+      const { variantSnap, variantRef } = variantSnapshot;
+      const variantData = variantSnap.data() ?? {};
+
+      const [storyTitle, options] = await Promise.all([
+        fetchStoryTitle(variantRef),
+        buildOptions(variantRef),
+      ]);
+
       return {
-        ...INVALID_TOKEN_RESPONSE,
-        body: normalizeString(error?.message) || INVALID_TOKEN_RESPONSE.body,
+        status: 200,
+        body: {
+          title: storyTitle,
+          content: normalizeString(variantData.content),
+          author: normalizeString(variantData.author),
+          options,
+        },
       };
     }
-
-    if (!uid) {
-      return INVALID_TOKEN_RESPONSE;
-    }
-
-    const variantSnapshot = await fetchVariantSnapshot(db, uid);
-
-    if (!variantSnapshot) {
-      return NO_JOB_RESPONSE;
-    }
-
-    if ('status' in variantSnapshot) {
-      return variantSnapshot;
-    }
-
-    const { variantSnap, variantRef } = variantSnapshot;
-    const variantData = variantSnap.data() ?? {};
-
-    const [storyTitle, options] = await Promise.all([
-      fetchStoryTitle(variantRef),
-      buildOptions(variantRef),
-    ]);
-
-    return {
-      status: 200,
-      body: {
-        title: storyTitle,
-        content: normalizeString(variantData.content),
-        author: normalizeString(variantData.author),
-        options,
-      },
-    };
   };
 }
