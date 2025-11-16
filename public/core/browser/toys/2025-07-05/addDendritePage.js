@@ -36,9 +36,10 @@ export function addDendritePage(input, env) {
  * @param env
  */
 function persistDendritePage(parsed, env) {
-  const getUuid = env?.get?.('getUuid');
-  const getData = env?.get?.('getData');
-  const setLocalTemporaryData = env?.get?.('setLocalTemporaryData');
+  const getter = env.get.bind(env);
+  const getUuid = getter('getUuid');
+  const getData = getter('getData');
+  const setLocalTemporaryData = getter('setLocalTemporaryData');
   if (!areCallables(getUuid, getData, setLocalTemporaryData)) {
     return emptyResponse();
   }
