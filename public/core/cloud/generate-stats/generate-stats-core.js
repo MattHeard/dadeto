@@ -525,27 +525,20 @@ export function createGenerateStatsCore({
    * @returns {Promise<null>} Resolves with null for compatibility.
    */
   async function generate() {
-    const {
-      unmoderatedPageCountFn = getUnmoderatedPageCount,
-      topStoriesFn = getTopStories,
-      storageInstance = storage,
-      bucketName = DEFAULT_BUCKET_NAME,
-      invalidatePathsFn = invalidatePaths,
-    } = {};
     const [storyCount, pageCount, unmoderatedCount, topStories] =
       await Promise.all([
         getStoryCount(),
         getPageCount(),
-        unmoderatedPageCountFn(),
-        topStoriesFn(),
+        getUnmoderatedPageCount(),
+        getTopStories(),
       ]);
     const html = buildHtml(storyCount, pageCount, unmoderatedCount, topStories);
-    const bucketRef = storageInstance.bucket(bucketName);
+    const bucketRef = storage.bucket(DEFAULT_BUCKET_NAME);
     await bucketRef.file('stats.html').save(html, {
       contentType: 'text/html',
       metadata: { cacheControl: 'no-cache' },
     });
-    await invalidatePathsFn(['/stats.html'], console);
+    await invalidatePaths(['/stats.html'], console);
     return null;
   }
 
