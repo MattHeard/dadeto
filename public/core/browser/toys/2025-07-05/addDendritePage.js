@@ -40,9 +40,6 @@ function persistDendritePage(parsed, env) {
   const getUuid = getter('getUuid');
   const getData = getter('getData');
   const setLocalTemporaryData = getter('setLocalTemporaryData');
-  if (!areCallables(getUuid, getData, setLocalTemporaryData)) {
-    return emptyResponse();
-  }
 
   const pageId = getUuid();
   const opts = createOptions(parsed, getUuid, pageId);
@@ -81,13 +78,4 @@ function safeParseJson(input) {
  */
 function emptyResponse() {
   return JSON.stringify({ pages: [], options: [] });
-}
-
-/**
- * Check that every argument is callable before invoking.
- * @param {...unknown} fns - Candidates for callable functions.
- * @returns {boolean} True when all arguments are functions.
- */
-function areCallables(...fns) {
-  return fns.every(fn => typeof fn === 'function');
 }
