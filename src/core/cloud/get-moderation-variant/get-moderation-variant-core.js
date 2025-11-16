@@ -314,12 +314,8 @@ export function createGetModerationVariantResponder({ db, auth }) {
 async function handleAuthorizedRequest({ db, auth, token }) {
   const { uid, error } = await resolveUidFromToken(auth, token);
 
-  if (error) {
+  if (error || !uid) {
     return createInvalidTokenResponse(error);
-  }
-
-  if (!uid) {
-    return INVALID_TOKEN_RESPONSE;
   }
 
   const variantSnapshot = await fetchVariantSnapshot(db, uid);
