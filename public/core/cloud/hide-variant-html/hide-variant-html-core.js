@@ -248,6 +248,12 @@ export function createHandleVariantVisibilityChange({
   );
   assertFunctionDependency('getVisibility', getVisibility);
 
+  const visibilityTransition = createVisibilityTransitionHandler({
+    removeVariantHtmlForSnapshot,
+    getVisibility,
+    visibilityThreshold,
+  });
+
   return async function handleVariantVisibilityChange(change) {
     const before = change.before;
     const after = change.after;
@@ -255,44 +261,34 @@ export function createHandleVariantVisibilityChange({
     if (!after.exists) {
       return removeVariantHtmlForSnapshot(before);
     } else {
-      return handleTransition({
-        before,
-        after,
-        visibilityThreshold,
-        getVisibility,
-        removeVariantHtmlForSnapshot,
-      });
+      return visibilityTransition({ before, after });
     }
   };
 }
 
 /**
- * Evaluate visibility transition and delete when dropping below threshold.
- * @param {{
- *   before: *,
- *   after: *,
- *   visibilityThreshold: number,
- *   getVisibility: (snapshot: *) => number,
- *   removeVariantHtmlForSnapshot: (snapshot: *) => Promise<null>,
- * }} params Transition inputs.
- * @returns {Promise<null>} Result of deleting rendered HTML when needed.
+ *
+ * @param root0
+ * @param root0.removeVariantHtmlForSnapshot
+ * @param root0.getVisibility
+ * @param root0.visibilityThreshold
  */
-function handleTransition({
-  before,
-  after,
-  visibilityThreshold,
-  getVisibility,
+function createVisibilityTransitionHandler({
   removeVariantHtmlForSnapshot,
+  getVisibility,
+  visibilityThreshold,
 }) {
-  const beforeVisibility = getVisibility(before);
-  const afterVisibility = getVisibility(after);
+  return async function visibilityTransition({ before, after }) {
+    const beforeVisibility = getVisibility(before);
+    const afterVisibility = getVisibility(after);
 
-  if (
-    beforeVisibility >= visibilityThreshold &&
-    afterVisibility < visibilityThreshold
-  ) {
-    return removeVariantHtmlForSnapshot(after);
-  }
+    if (
+      beforeVisibility >= visibilityThreshold &&
+      afterVisibility < visibilityThreshold
+    ) {
+      return removeVariantHtmlForSnapshot(after);
+    }
 
-  return Promise.resolve(null);
+    return null;
+  };
 }
