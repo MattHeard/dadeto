@@ -526,20 +526,37 @@ export function createGenerateStatsCore({
    */
   async function generate() {
     const [storyCount, pageCount, unmoderatedCount, topStories] =
-      await Promise.all([
-        getStoryCount(),
-        getPageCount(),
-        getUnmoderatedPageCount(),
-        getTopStories(),
-      ]);
+      await fetchStatsData();
     const html = buildHtml(storyCount, pageCount, unmoderatedCount, topStories);
-    const bucketRef = storage.bucket(DEFAULT_BUCKET_NAME);
+    const bucketRef = getStatsBucketRef(storage);
     await bucketRef.file('stats.html').save(html, {
       contentType: 'text/html',
       metadata: { cacheControl: 'no-cache' },
     });
     await invalidatePaths(['/stats.html'], console);
     return null;
+  }
+
+  /**
+   * Resolve the Cloud Storage bucket used for stats uploads.
+   * @param {import('@google-cloud/storage').Storage} storageInstance Storage client.
+   * @returns {import('@google-cloud/storage').Bucket} Bucket reference.
+   */
+  function getStatsBucketRef(storageInstance) {
+    return storageInstance.bucket(DEFAULT_BUCKET_NAME);
+  }
+
+  /**
+   * Read the counts and top stories required by the stats page.
+   * @returns {Promise<[number, number, number, Array<{ title: string, variantCount: number }>]>} Counts and stories.
+   */
+  function fetchStatsData() {
+    return Promise.all([
+      getStoryCount(),
+      getPageCount(),
+      getUnmoderatedPageCount(),
+      getTopStories(),
+    ]);
   }
 
   const verifyToken = token => auth.verifyIdToken(token);
