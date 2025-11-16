@@ -426,7 +426,7 @@ describe('createGetModerationVariantResponder', () => {
     };
     const variantSnap = {
       exists: true,
-      data: () => null,
+      data: () => ({}),
     };
     const pageRef = {
       parent: {

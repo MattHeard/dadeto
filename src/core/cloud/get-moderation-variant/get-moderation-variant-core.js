@@ -397,8 +397,7 @@ async function resolveVariantTitleAndOptions(variantSnapshot) {
  * @returns {Promise<ResponderResult>} Success response payload.
  */
 async function buildSuccessVariantResponse(variantSnapshot) {
-  const { variantSnap } = variantSnapshot;
-  const variantData = variantSnap.data() ?? {};
+  const variantData = extractVariantData(variantSnapshot);
 
   const { storyTitle, options } =
     await resolveVariantTitleAndOptions(variantSnapshot);
@@ -412,4 +411,14 @@ async function buildSuccessVariantResponse(variantSnapshot) {
       options,
     },
   };
+}
+
+/**
+ * Extract the non-null variant data from a snapshot.
+ * @param {VariantSnapshot} variantSnapshot Snapshot describing the assigned variant.
+ * @returns {VariantData} Valid variant document data.
+ */
+function extractVariantData(variantSnapshot) {
+  const { variantSnap } = variantSnapshot;
+  return variantSnap.data();
 }
