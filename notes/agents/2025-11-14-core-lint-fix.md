@@ -7,3 +7,6 @@
 
 ## Follow-ups
 - Monitor future lint reports for `complexity` noise once the team decides how to tame that rule.
+
+## Coverage addendum
+- Getting `get-moderation-variant-core` back to 100% required exercising the fallbacks introduced by the `??` operators in `mapOptionDoc` and the final `variantData` normalization. The new test adds a null `variantSnap.data()` plus an option document that returns `null`, confirming the responder still succeeds with empty content and covering both previously-missed branches.

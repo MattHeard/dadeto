@@ -413,6 +413,70 @@ describe('createGetModerationVariantResponder', () => {
       },
     });
   });
+
+  it('falls back to defaults when variant data is missing', async () => {
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Story Title' }),
+    };
+    const storyRef = {
+      async get() {
+        return storySnap;
+      },
+    };
+    const variantSnap = {
+      exists: true,
+      data: () => null,
+    };
+    const pageRef = {
+      parent: {
+        parent: storyRef,
+      },
+    };
+    const variantRef = {
+      async get() {
+        return variantSnap;
+      },
+      collection(name) {
+        expect(name).toBe('options');
+        return {
+          async get() {
+            return {
+              docs: [
+                {
+                  data: () => null,
+                },
+              ],
+            };
+          },
+        };
+      },
+      parent: {
+        parent: pageRef,
+      },
+    };
+    const moderatorSnap = {
+      exists: true,
+      data: () => ({ variant: variantRef }),
+    };
+    const db = createDb(moderatorSnap);
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
+    const responder = createGetModerationVariantResponder({ db, auth });
+
+    await expect(
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
+    ).resolves.toEqual({
+      status: 200,
+      body: {
+        title: 'Story Title',
+        content: '',
+        author: '',
+        options: [{ content: '' }],
+      },
+    });
+  });
 });
 
 it('re-exports the shared origin predicate', () => {
