@@ -63,12 +63,6 @@ function assertFieldValue(fieldValue) {
  * Ensure a UUID generator function is provided.
  * @param {() => string} randomUUID Function that returns a UUID string.
  */
-function assertRandomUuid(randomUUID) {
-  if (typeof randomUUID !== 'function') {
-    throw new TypeError('randomUUID must be a function');
-  }
-}
-
 /**
  * Normalize the submitted options list into an array.
  * @param {unknown} options Options payload received from the submission.
@@ -789,8 +783,6 @@ export function createProcessNewPageHandler({
   randomUUID,
   random,
 }) {
-  assertRandom(random);
-  assertRandomUuid(randomUUID);
   assertFieldValue(fieldValue);
 
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
