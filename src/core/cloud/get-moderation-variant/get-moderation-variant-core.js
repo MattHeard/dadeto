@@ -296,50 +296,63 @@ export function createGetModerationVariantResponder({ db, auth }) {
 
     if (!token) {
       return MISSING_AUTHORIZATION_RESPONSE;
-    } else {
-      let uid;
-
-      try {
-        const decoded = await auth.verifyIdToken(token);
-        uid = decoded?.uid;
-      } catch (error) {
-        return {
-          ...INVALID_TOKEN_RESPONSE,
-          body: normalizeString(error?.message) || INVALID_TOKEN_RESPONSE.body,
-        };
-      }
-
-      if (!uid) {
-        return INVALID_TOKEN_RESPONSE;
-      }
-
-      const variantSnapshot = await fetchVariantSnapshot(db, uid);
-
-      if (!variantSnapshot) {
-        return NO_JOB_RESPONSE;
-      }
-
-      if ('status' in variantSnapshot) {
-        return variantSnapshot;
-      }
-
-      const { variantSnap, variantRef } = variantSnapshot;
-      const variantData = variantSnap.data() ?? {};
-
-      const [storyTitle, options] = await Promise.all([
-        fetchStoryTitle(variantRef),
-        buildOptions(variantRef),
-      ]);
-
-      return {
-        status: 200,
-        body: {
-          title: storyTitle,
-          content: normalizeString(variantData.content),
-          author: normalizeString(variantData.author),
-          options,
-        },
-      };
     }
+
+    return handleAuthorizedRequest({ db, auth, token });
+  };
+}
+
+/**
+ * Resolve and respond to an authenticated request.
+ * @param {{
+ *   db: FirestoreLike,
+ *   auth: AuthLike,
+ *   token: string,
+ * }} params Authenticated request dependencies.
+ * @returns {Promise<ResponderResult>} Response payload for the authorized request.
+ */
+async function handleAuthorizedRequest({ db, auth, token }) {
+  let uid;
+
+  try {
+    const decoded = await auth.verifyIdToken(token);
+    uid = decoded?.uid;
+  } catch (error) {
+    return {
+      ...INVALID_TOKEN_RESPONSE,
+      body: normalizeString(error?.message) || INVALID_TOKEN_RESPONSE.body,
+    };
+  }
+
+  if (!uid) {
+    return INVALID_TOKEN_RESPONSE;
+  }
+
+  const variantSnapshot = await fetchVariantSnapshot(db, uid);
+
+  if (!variantSnapshot) {
+    return NO_JOB_RESPONSE;
+  }
+
+  if ('status' in variantSnapshot) {
+    return variantSnapshot;
+  }
+
+  const { variantSnap, variantRef } = variantSnapshot;
+  const variantData = variantSnap.data() ?? {};
+
+  const [storyTitle, options] = await Promise.all([
+    fetchStoryTitle(variantRef),
+    buildOptions(variantRef),
+  ]);
+
+  return {
+    status: 200,
+    body: {
+      title: storyTitle,
+      content: normalizeString(variantData.content),
+      author: normalizeString(variantData.author),
+      options,
+    },
   };
 }
