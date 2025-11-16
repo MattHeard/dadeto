@@ -318,33 +318,7 @@ async function handleAuthorizedRequest({ db, auth, token }) {
     return createInvalidTokenResponse(error);
   }
 
-  const variantSnapshot = await fetchVariantSnapshot(db, uid);
-
-  if (!variantSnapshot) {
-    return NO_JOB_RESPONSE;
-  }
-
-  if ('status' in variantSnapshot) {
-    return variantSnapshot;
-  }
-
-  const { variantSnap, variantRef } = variantSnapshot;
-  const variantData = variantSnap.data() ?? {};
-
-  const [storyTitle, options] = await Promise.all([
-    fetchStoryTitle(variantRef),
-    buildOptions(variantRef),
-  ]);
-
-  return {
-    status: 200,
-    body: {
-      title: storyTitle,
-      content: normalizeString(variantData.content),
-      author: normalizeString(variantData.author),
-      options,
-    },
-  };
+  return buildVariantResponse({ db, uid });
 }
 
 /**
@@ -371,5 +345,40 @@ function createInvalidTokenResponse(error) {
   return {
     ...INVALID_TOKEN_RESPONSE,
     body: normalizeString(error?.message) || INVALID_TOKEN_RESPONSE.body,
+  };
+}
+
+/**
+ * Load the variant snapshot and build the successful response payload.
+ * @param {{ db: FirestoreLike, uid: string }} params Dependencies for authorized response building.
+ * @returns {Promise<ResponderResult>} Response when a variant is assigned.
+ */
+async function buildVariantResponse({ db, uid }) {
+  const variantSnapshot = await fetchVariantSnapshot(db, uid);
+
+  if (!variantSnapshot) {
+    return NO_JOB_RESPONSE;
+  }
+
+  if ('status' in variantSnapshot) {
+    return variantSnapshot;
+  }
+
+  const { variantSnap, variantRef } = variantSnapshot;
+  const variantData = variantSnap.data() ?? {};
+
+  const [storyTitle, options] = await Promise.all([
+    fetchStoryTitle(variantRef),
+    buildOptions(variantRef),
+  ]);
+
+  return {
+    status: 200,
+    body: {
+      title: storyTitle,
+      content: normalizeString(variantData.content),
+      author: normalizeString(variantData.author),
+      options,
+    },
   };
 }
