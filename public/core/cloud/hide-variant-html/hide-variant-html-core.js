@@ -255,17 +255,44 @@ export function createHandleVariantVisibilityChange({
     if (!after.exists) {
       return removeVariantHtmlForSnapshot(before);
     } else {
-      const beforeVisibility = getVisibility(before);
-      const afterVisibility = getVisibility(after);
-
-      if (
-        beforeVisibility >= visibilityThreshold &&
-        afterVisibility < visibilityThreshold
-      ) {
-        return removeVariantHtmlForSnapshot(after);
-      }
-
-      return null;
+      return handleTransition({
+        before,
+        after,
+        visibilityThreshold,
+        getVisibility,
+        removeVariantHtmlForSnapshot,
+      });
     }
   };
+}
+
+/**
+ * Evaluate visibility transition and delete when dropping below threshold.
+ * @param {{
+ *   before: *,
+ *   after: *,
+ *   visibilityThreshold: number,
+ *   getVisibility: (snapshot: *) => number,
+ *   removeVariantHtmlForSnapshot: (snapshot: *) => Promise<null>,
+ * }} params Transition inputs.
+ * @returns {Promise<null>} Result of deleting rendered HTML when needed.
+ */
+function handleTransition({
+  before,
+  after,
+  visibilityThreshold,
+  getVisibility,
+  removeVariantHtmlForSnapshot,
+}) {
+  const beforeVisibility = getVisibility(before);
+  const afterVisibility = getVisibility(after);
+
+  if (
+    beforeVisibility >= visibilityThreshold &&
+    afterVisibility < visibilityThreshold
+  ) {
+    return removeVariantHtmlForSnapshot(after);
+  }
+
+  return Promise.resolve(null);
 }
