@@ -254,18 +254,18 @@ export function createHandleVariantVisibilityChange({
 
     if (!after.exists) {
       return removeVariantHtmlForSnapshot(before);
+    } else {
+      const beforeVisibility = getVisibility(before);
+      const afterVisibility = getVisibility(after);
+
+      if (
+        beforeVisibility >= visibilityThreshold &&
+        afterVisibility < visibilityThreshold
+      ) {
+        return removeVariantHtmlForSnapshot(after);
+      }
+
+      return null;
     }
-
-    const beforeVisibility = getVisibility(before);
-    const afterVisibility = getVisibility(after);
-
-    if (
-      beforeVisibility >= visibilityThreshold &&
-      afterVisibility < visibilityThreshold
-    ) {
-      return removeVariantHtmlForSnapshot(after);
-    }
-
-    return null;
   };
 }
