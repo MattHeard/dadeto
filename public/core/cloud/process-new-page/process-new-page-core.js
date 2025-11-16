@@ -425,11 +425,7 @@ async function createVariantWithOptions({
   random,
   incrementVariantNameFn,
 }) {
-  const variantsSnap = await pageDocRef
-    .collection('variants')
-    .orderBy('name', 'desc')
-    .limit(1)
-    .get();
+  const variantsSnap = await fetchExistingVariants(pageDocRef);
 
   const latestName = variantsSnap.docs[0]?.data()?.name ?? '';
   let nextName;
@@ -465,6 +461,19 @@ async function createVariantWithOptions({
   });
 
   return newVariantRef;
+}
+
+/**
+ * Fetch the most recent variant documents under a page.
+ * @param {import('firebase-admin/firestore').DocumentReference} pageDocRef Page document reference.
+ * @returns {Promise<import('firebase-admin/firestore').QuerySnapshot>} Snapshot of the most recent variants.
+ */
+function fetchExistingVariants(pageDocRef) {
+  return pageDocRef
+    .collection('variants')
+    .orderBy('name', 'desc')
+    .limit(1)
+    .get();
 }
 
 /**
