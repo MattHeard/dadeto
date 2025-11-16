@@ -402,6 +402,19 @@ async function buildSuccessVariantResponse(variantSnapshot) {
   const { storyTitle, options } =
     await resolveVariantTitleAndOptions(variantSnapshot);
 
+  return buildVariantResponsePayload({
+    storyTitle,
+    variantData,
+    options,
+  });
+}
+
+/**
+ * Build the HTTP response payload for a successful variant lookup.
+ * @param {{ storyTitle: string, variantData: VariantData, options: VariantOption[] }} params Response data.
+ * @returns {ResponderResult} Successful response payload.
+ */
+function buildVariantResponsePayload({ storyTitle, variantData, options }) {
   return {
     status: 200,
     body: {
