@@ -524,7 +524,7 @@ export function createGenerateStatsCore({
    * }} deps - Optional dependency overrides.
    * @returns {Promise<null>} Resolves with null for compatibility.
    */
-  async function generate(deps = {}) {
+  async function generate() {
     const {
       storyCountFn = getStoryCount,
       pageCountFn = getPageCount,
@@ -533,7 +533,7 @@ export function createGenerateStatsCore({
       storageInstance = storage,
       bucketName = DEFAULT_BUCKET_NAME,
       invalidatePathsFn = invalidatePaths,
-    } = deps;
+    } = {};
     const [storyCount, pageCount, unmoderatedCount, topStories] =
       await Promise.all([
         storyCountFn(),
