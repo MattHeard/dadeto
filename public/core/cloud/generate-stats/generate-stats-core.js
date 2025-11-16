@@ -529,12 +529,8 @@ export function createGenerateStatsCore({
       await fetchStatsData();
     const html = buildHtml(storyCount, pageCount, unmoderatedCount, topStories);
     const bucketRef = getStatsBucketRef(storage);
-    await bucketRef.file('stats.html').save(html, {
-      contentType: 'text/html',
-      metadata: { cacheControl: 'no-cache' },
-    });
-    await invalidatePaths(['/stats.html'], console);
-    return null;
+    await uploadStatsHtml(bucketRef, html);
+    return invalidatePaths(['/stats.html'], console);
   }
 
   /**
@@ -544,6 +540,19 @@ export function createGenerateStatsCore({
    */
   function getStatsBucketRef(storageInstance) {
     return storageInstance.bucket(DEFAULT_BUCKET_NAME);
+  }
+
+  /**
+   * Upload the generated HTML to stats bucket.
+   * @param {import('@google-cloud/storage').Bucket} bucketRef Storage bucket reference.
+   * @param {string} html Generated stats document.
+   * @returns {Promise<void>} Resolves when upload completes.
+   */
+  function uploadStatsHtml(bucketRef, html) {
+    return bucketRef.file('stats.html').save(html, {
+      contentType: 'text/html',
+      metadata: { cacheControl: 'no-cache' },
+    });
   }
 
   /**
