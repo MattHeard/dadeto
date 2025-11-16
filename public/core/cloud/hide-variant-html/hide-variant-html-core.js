@@ -254,16 +254,10 @@ export function createHandleVariantVisibilityChange({
     visibilityThreshold,
   });
 
-  return async function handleVariantVisibilityChange(change) {
-    const before = change.before;
-    const after = change.after;
-
-    if (!after.exists) {
-      return removeVariantHtmlForSnapshot(before);
-    } else {
-      return visibilityTransition({ before, after });
-    }
-  };
+  return createVisibilityChangeHandler(
+    removeVariantHtmlForSnapshot,
+    visibilityTransition
+  );
 }
 
 /**
@@ -290,5 +284,27 @@ function createVisibilityTransitionHandler({
     }
 
     return null;
+  };
+}
+
+/**
+ * Bind the delete path and transition handler into the Firestore trigger handler.
+ * @param {(snapshot: *) => Promise<null>} removeVariantHtmlForSnapshot Rendered HTML remover.
+ * @param {(params: { before: *, after: * }) => Promise<null>} visibilityTransition Visibility transition handler.
+ * @returns {(change: { before: *, after: { exists: boolean } }) => Promise<null>} Firestore change handler.
+ */
+function createVisibilityChangeHandler(
+  removeVariantHtmlForSnapshot,
+  visibilityTransition
+) {
+  return async function handleVariantVisibilityChange(change) {
+    const before = change.before;
+    const after = change.after;
+
+    if (!after.exists) {
+      return removeVariantHtmlForSnapshot(before);
+    }
+
+    return visibilityTransition({ before, after });
   };
 }
