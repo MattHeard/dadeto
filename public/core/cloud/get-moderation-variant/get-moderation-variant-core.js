@@ -312,12 +312,9 @@ export function createGetModerationVariantResponder({ db, auth }) {
  * @returns {Promise<ResponderResult>} Response payload for the authorized request.
  */
 async function handleAuthorizedRequest({ db, auth, token }) {
-  let uid;
+  const { uid, error } = await resolveUidFromToken(auth, token);
 
-  try {
-    const decoded = await auth.verifyIdToken(token);
-    uid = decoded?.uid;
-  } catch (error) {
+  if (error) {
     return {
       ...INVALID_TOKEN_RESPONSE,
       body: normalizeString(error?.message) || INVALID_TOKEN_RESPONSE.body,
@@ -355,4 +352,19 @@ async function handleAuthorizedRequest({ db, auth, token }) {
       options,
     },
   };
+}
+
+/**
+ * Verify the ID token and return the decoded UID.
+ * @param {AuthLike} auth Firebase auth helper.
+ * @param {string} token ID token string.
+ * @returns {Promise<{ uid: string | undefined | null, error: unknown }>} UID result and any verification error.
+ */
+async function resolveUidFromToken(auth, token) {
+  try {
+    const decoded = await auth.verifyIdToken(token);
+    return { uid: decoded?.uid ?? null, error: null };
+  } catch (error) {
+    return { uid: null, error };
+  }
 }
