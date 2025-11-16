@@ -360,25 +360,43 @@ async function buildVariantResponse({ db, uid }) {
     return NO_JOB_RESPONSE;
   }
 
+  return handleVariantSnapshotResponse(variantSnapshot);
+}
+
+/**
+ * Resolve the response for an existing variant snapshot.
+ * @param {VariantSnapshot} variantSnapshot Snapshot describing the assigned variant.
+ * @returns {Promise<ResponderResult>} Response payload for the snapshot.
+ */
+async function handleVariantSnapshotResponse(variantSnapshot) {
   if ('status' in variantSnapshot) {
     return variantSnapshot;
-  } else {
-    const { variantSnap, variantRef } = variantSnapshot;
-    const variantData = variantSnap.data() ?? {};
-
-    const [storyTitle, options] = await Promise.all([
-      fetchStoryTitle(variantRef),
-      buildOptions(variantRef),
-    ]);
-
-    return {
-      status: 200,
-      body: {
-        title: storyTitle,
-        content: normalizeString(variantData.content),
-        author: normalizeString(variantData.author),
-        options,
-      },
-    };
   }
+
+  return buildSuccessVariantResponse(variantSnapshot);
+}
+
+/**
+ * Compose the successful variant payload from a snapshot.
+ * @param {VariantSnapshot} variantSnapshot Snapshot describing the assigned variant.
+ * @returns {Promise<ResponderResult>} Success response payload.
+ */
+async function buildSuccessVariantResponse(variantSnapshot) {
+  const { variantSnap, variantRef } = variantSnapshot;
+  const variantData = variantSnap.data() ?? {};
+
+  const [storyTitle, options] = await Promise.all([
+    fetchStoryTitle(variantRef),
+    buildOptions(variantRef),
+  ]);
+
+  return {
+    status: 200,
+    body: {
+      title: storyTitle,
+      content: normalizeString(variantData.content),
+      author: normalizeString(variantData.author),
+      options,
+    },
+  };
 }
