@@ -427,7 +427,7 @@ async function createVariantWithOptions({
 }) {
   const variantsSnap = await fetchExistingVariants(pageDocRef);
 
-  const latestName = variantsSnap.docs[0]?.data()?.name ?? '';
+  const latestName = getLatestVariantName(variantsSnap);
   let nextName;
   if (variantsSnap.empty) {
     nextName = 'a';
@@ -496,6 +496,15 @@ async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
   if (!authorSnap?.exists) {
     batch.set(authorRef, { uuid: randomUUID() });
   }
+}
+
+/**
+ * Extract the latest variant name from the provided snapshot.
+ * @param {import('firebase-admin/firestore').QuerySnapshot} variantsSnap Snapshot of the existing variants.
+ * @returns {string} Latest variant name or an empty string when none exist.
+ */
+function getLatestVariantName(variantsSnap) {
+  return variantsSnap.docs[0]?.data()?.name ?? '';
 }
 
 /**
