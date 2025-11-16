@@ -1251,7 +1251,6 @@ describe('createInitGoogleSignIn', () => {
     expect(renderButton).not.toHaveBeenCalled();
   });
 });
-
 describe('getStatusParagraph and related lookups', () => {
   it('resolves known admin elements', () => {
     const status = { id: 'renderStatus' };
