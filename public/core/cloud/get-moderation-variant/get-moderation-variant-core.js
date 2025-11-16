@@ -152,6 +152,16 @@ function getAuthorizationHeader(request) {
     .map(key => request.get(key))
     .find(value => typeof value === 'string');
 }
+
+/**
+ * Extracts the bearer token from a request-like object.
+ * @param {RequestLike} request Incoming HTTP request object.
+ * @returns {string} Bearer token string or an empty string when missing.
+ */
+function resolveTokenFromRequest(request) {
+  const authHeader = getAuthorizationHeader(request);
+  return parseAuthorizationHeader(authHeader) || '';
+}
 /**
  * Resolves the variant assigned to the authenticated moderator.
  * @param {FirestoreLike} db Firestore dependency used to read moderator data.
@@ -282,8 +292,7 @@ export function createGetModerationVariantResponder({ db, auth }) {
   assertAuthInstance(auth);
 
   return async function respond(request) {
-    const authHeader = getAuthorizationHeader(request);
-    const token = parseAuthorizationHeader(authHeader);
+    const token = resolveTokenFromRequest(request);
 
     if (!token) {
       return MISSING_AUTHORIZATION_RESPONSE;
