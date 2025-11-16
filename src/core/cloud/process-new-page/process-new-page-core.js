@@ -701,6 +701,76 @@ async function finalizeSubmission({
 }
 
 /**
+ * Process a submission that still needs work.
+ * @param {object} params Inputs required to process the submission.
+ * @param {object} params.submission Submission payload.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot.
+ * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
+ * @param {() => string} params.randomUUID UUID generator for new documents.
+ * @param {() => number} params.random Random number generator for variant ordering.
+ * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
+ * @param {{
+ *   serverTimestamp: () => unknown,
+ *   increment: (value: number) => unknown,
+ * }} params.fieldValue FieldValue helper used for stats.
+ * @returns {Promise<null>} Promise that resolves after processing completes.
+ */
+async function processUnprocessedSubmission({
+  submission,
+  snapshot,
+  db,
+  randomUUID,
+  random,
+  getServerTimestamp,
+  fieldValue,
+}) {
+  const incomingOptionFullName = submission.incomingOptionFullName;
+  const directPageNumber = submission.pageNumber;
+
+  if (shouldSkipSubmission({ incomingOptionFullName, directPageNumber })) {
+    await markSubmissionProcessed(snapshot);
+    return null;
+  }
+
+  const batch = db.batch();
+  const pageContext = await resolveSubmissionPageContext({
+    db,
+    incomingOptionFullName,
+    directPageNumber,
+    snapshot,
+    batch,
+    randomUUID,
+    random,
+    getServerTimestamp,
+  });
+
+  if (!pageContext) {
+    await markSubmissionProcessed(snapshot);
+    return null;
+  }
+
+  const { pageDocRef, storyRef, variantRef } = pageContext;
+  const { pageDocRef: ensuredPageDocRef, storyRef: ensuredStoryRef } =
+    ensurePageContextReferences({ pageDocRef, storyRef });
+
+  await finalizeSubmission({
+    batch,
+    pageDocRef: ensuredPageDocRef,
+    storyRef: ensuredStoryRef,
+    variantRef,
+    submission,
+    randomUUID,
+    random,
+    getServerTimestamp,
+    snapshot,
+    db,
+    fieldValue,
+  });
+
+  return null;
+}
+
+/**
  * Build the Cloud Function handler for processing new page submissions.
  * @param {object} options Collaborators required by the handler.
  * @param {import('firebase-admin/firestore').Firestore} options.db Firestore instance used for document access.
@@ -730,51 +800,16 @@ export function createProcessNewPageHandler({
 
     if (submission.processed) {
       return null;
+    } else {
+      return processUnprocessedSubmission({
+        submission,
+        snapshot,
+        db,
+        randomUUID,
+        random,
+        getServerTimestamp,
+        fieldValue,
+      });
     }
-
-    const incomingOptionFullName = submission.incomingOptionFullName;
-    const directPageNumber = submission.pageNumber;
-
-    if (shouldSkipSubmission({ incomingOptionFullName, directPageNumber })) {
-      await markSubmissionProcessed(snapshot);
-      return null;
-    }
-
-    const batch = db.batch();
-    const pageContext = await resolveSubmissionPageContext({
-      db,
-      incomingOptionFullName,
-      directPageNumber,
-      snapshot,
-      batch,
-      randomUUID,
-      random,
-      getServerTimestamp,
-    });
-
-    if (!pageContext) {
-      await markSubmissionProcessed(snapshot);
-      return null;
-    }
-
-    const { pageDocRef, storyRef, variantRef } = pageContext;
-    const { pageDocRef: ensuredPageDocRef, storyRef: ensuredStoryRef } =
-      ensurePageContextReferences({ pageDocRef, storyRef });
-
-    await finalizeSubmission({
-      batch,
-      pageDocRef: ensuredPageDocRef,
-      storyRef: ensuredStoryRef,
-      variantRef,
-      submission,
-      randomUUID,
-      random,
-      getServerTimestamp,
-      snapshot,
-      db,
-      fieldValue,
-    });
-
-    return null;
   };
 }
