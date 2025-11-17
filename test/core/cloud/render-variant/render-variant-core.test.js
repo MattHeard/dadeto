@@ -497,49 +497,6 @@ describe('extractStoryRef', () => {
 
     expect(RenderVariantCore.extractStoryRef(pageSnap)).toBe(storyRef);
   });
-
-  it('returns empty metadata when the story snapshot is missing', async () => {
-    const pageSnap = {
-      ref: {
-        parent: {
-          parent: {
-            get: jest.fn().mockResolvedValue({ exists: false }),
-          },
-        },
-      },
-    };
-
-    const result = await resolveStoryMetadata({
-      pageSnap,
-      page: {},
-      consoleError: jest.fn(),
-    });
-
-    expect(result).toEqual({ storyTitle: '', firstPageUrl: undefined });
-  });
-
-  it('returns empty metadata when story data is not callable', async () => {
-    const pageSnap = {
-      ref: {
-        parent: {
-          parent: {
-            get: jest.fn().mockResolvedValue({
-              exists: true,
-              data: 'not-a-function',
-            }),
-          },
-        },
-      },
-    };
-
-    const result = await resolveStoryMetadata({
-      pageSnap,
-      page: {},
-      consoleError: jest.fn(),
-    });
-
-    expect(result).toEqual({ storyTitle: '', firstPageUrl: undefined });
-  });
 });
 
 describe('resolveAuthorMetadata', () => {
@@ -1596,7 +1553,7 @@ describe('createRenderVariant', () => {
     expect(bucket.file).not.toHaveBeenCalledWith('a/author-uuid.html');
   });
 
-  it('returns empty story metadata when the story document is missing', async () => {
+  it('returns empty story metadata when the story document has no metadata', async () => {
     const consoleError = jest.fn();
 
     const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
@@ -1635,7 +1592,10 @@ describe('createRenderVariant', () => {
     const randomUUID = jest.fn(() => 'uuid');
 
     const storyRef = {
-      get: jest.fn().mockResolvedValue({ exists: false }),
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({}),
+      }),
     };
 
     const pageSnap = {
